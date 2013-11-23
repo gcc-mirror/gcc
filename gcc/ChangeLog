@@ -1,3 +1,7 @@
+2013-11-23  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/vsx.md (fusion peepholes): Disable when !TARGET_VSX.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/59061
