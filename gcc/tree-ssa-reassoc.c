@@ -2935,9 +2935,15 @@ maybe_optimize_range_tests (gimple stmt)
 		      tree new_lhs = make_ssa_name (TREE_TYPE (lhs), NULL);
 		      enum tree_code rhs_code
 			= gimple_assign_rhs_code (cast_stmt);
-		      gimple g
-			= gimple_build_assign_with_ops (rhs_code, new_lhs,
-							new_op, NULL_TREE);
+		      gimple g;
+		      if (is_gimple_min_invariant (new_op))
+			{
+			  new_op = fold_convert (TREE_TYPE (lhs), new_op);
+			  g = gimple_build_assign (new_lhs, new_op);
+			}
+		      else
+			g = gimple_build_assign_with_ops (rhs_code, new_lhs,
+							  new_op, NULL_TREE);
 		      gimple_stmt_iterator gsi = gsi_for_stmt (cast_stmt);
 		      gimple_set_uid (g, gimple_uid (cast_stmt));
 		      gimple_set_visited (g, true);

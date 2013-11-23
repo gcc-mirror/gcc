@@ -1,3 +1,11 @@
+2013-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59154
+	* tree-ssa-reassoc.c (maybe_optimize_range_tests): When changing
+	rhs1 of a cast and new_op is invariant, fold_convert it.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Only call
+	simplify_conversion_from_bitmask if rhs1 is a SSA_NAME.
+
 2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/56788
