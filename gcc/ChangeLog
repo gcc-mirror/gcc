@@ -1,3 +1,16 @@
+2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56788
+	* config/i386/i386.c (bdesc_multi_arg) <IX86_BUILTIN_VFRCZSS>:
+	Declare as MULTI_ARG_1_SF instruction.
+	<IX86_BUILTIN_VFRCZSD>: Decleare as MULTI_ARG_1_DF instruction.
+	* config/i386/sse.md (*xop_vmfrcz<mode>2): Rename
+	from *xop_vmfrcz_<mode>.
+	* config/i386/xopintrin.h (_mm_frcz_ss): Use __builtin_ia32_movss
+	to merge scalar result with __A.
+	(_mm_frcz_sd): Use __builtin_ia32_movsd to merge scalar
+	result with __A.
+
 2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.h (recalculate_side_effects): Delete.
@@ -87,16 +100,14 @@
 	(get_adjustment_for_base): Use operator enum.
 	(sra_ipa_modify_expr): Rename to ipa_modify_expr and move to
 	ipa-prop.c.
-	(sra_ipa_modify_assign): Rename sra_ipa_modify_expr to
-	ipa_modify_expr.
+	(sra_ipa_modify_assign): Rename sra_ipa_modify_expr to ipa_modify_expr.
 	(ipa_sra_modify_function_body): Same.  No longer static.
 	(sra_ipa_reset_debug_stmts): Use operator enum.
 	(modify_function): Do not pass prefix argument.
 
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
-	* ubsan.c (ubsan_source_location): Don't crash on
-	unknown locations.
+	* ubsan.c (ubsan_source_location): Don't crash on unknown locations.
 	(ubsan_pass): Ignore clobber stmts.
 
 	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_MISSING_RETURN): New built-in.
@@ -136,8 +147,7 @@
 	(cond_arg_set_in_b): Remove.
 	(record_temporary_equivalences_from_stmts_at_dest): New bitmap
 	arguments and a boolean indicating if we have passed a backedge.
-	If we have passed a backedge, then perform invalidations as
-	needed.
+	If we have passed a backedge, then perform invalidations as needed.
 	(thread_around_empty_blocks): If we have seen a backedge, then
 	use the dummy simplify routine.
 	(thread_through_normal_block): Likewise.  Pass bitmaps and
@@ -418,7 +428,8 @@
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_pack_trunc_<mode>,
-	vec_pack_trunc_v2df, vec_pack_trunc_df): Swap source ops for big-endian.
+	vec_pack_trunc_v2df, vec_pack_trunc_df): Swap source ops for
+	big-endian.
 
 2013-11-22  Tejas Belagod  <tejas.belagod@arm.com>
 
