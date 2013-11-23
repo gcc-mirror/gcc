@@ -28588,10 +28588,23 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 	   name, suffix[smclass], flags & SECTION_ENTSIZE);
 }
 
+#define IN_NAMED_SECTION(DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+
 static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
-			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+			     unsigned HOST_WIDE_INT align)
 {
+  /* Place variables with alignment stricter than BIGGEST_ALIGNMENT into
+     named section.  */
+  if (align > BIGGEST_ALIGNMENT)
+    {
+      resolve_unique_section (decl, reloc, true);
+      if (IN_NAMED_SECTION (decl))
+	return get_named_section (decl, NULL, reloc);
+    }
+
   if (decl_readonly_section (decl, reloc))
     {
       if (TREE_PUBLIC (decl))
@@ -28629,10 +28642,12 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 {
   const char *name;
 
-  /* Use select_section for private and uninitialized data.  */
+  /* Use select_section for private data and uninitialized data with
+     alignment <= BIGGEST_ALIGNMENT.  */
   if (!TREE_PUBLIC (decl)
       || DECL_COMMON (decl)
-      || DECL_INITIAL (decl) == NULL_TREE
+      || (DECL_INITIAL (decl) == NULL_TREE
+	  && DECL_ALIGN (decl) <= BIGGEST_ALIGNMENT)
       || DECL_INITIAL (decl) == error_mark_node
       || (flag_zero_initialized_in_bss
 	  && initializer_zerop (DECL_INITIAL (decl))))
