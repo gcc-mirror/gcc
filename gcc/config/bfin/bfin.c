@@ -2992,7 +2992,7 @@ static int first_preg_to_save, first_dreg_to_save;
 static int n_regs_to_save;
 
 int
-push_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+analyze_push_multiple_operation (rtx op)
 {
   int lastdreg = 8, lastpreg = 6;
   int i, group;
@@ -3063,7 +3063,7 @@ push_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 int
-pop_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+analyze_pop_multiple_operation (rtx op)
 {
   int lastdreg = 8, lastpreg = 6;
   int i, group;
@@ -3132,7 +3132,7 @@ output_push_multiple (rtx insn, rtx *operands)
   int ok;
   
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  ok = push_multiple_operation (PATTERN (insn), VOIDmode);
+  ok = analyze_push_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
   
   if (first_dreg_to_save == 8)
@@ -3156,7 +3156,7 @@ output_pop_multiple (rtx insn, rtx *operands)
   int ok;
   
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  ok = pop_multiple_operation (PATTERN (insn), VOIDmode);
+  ok = analyze_pop_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
 
   if (first_dreg_to_save == 8)
@@ -4136,8 +4136,8 @@ workaround_rts_anomaly (void)
 
 	  if (GET_CODE (pat) == PARALLEL)
 	    {
-	      if (push_multiple_operation (pat, VOIDmode)
-		  || pop_multiple_operation (pat, VOIDmode))
+	      if (analyze_push_multiple_operation (pat)
+		  || analyze_pop_multiple_operation (pat))
 		this_cycles = n_regs_to_save;
 	    }
 	  else
