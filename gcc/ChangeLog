@@ -1,3 +1,7 @@
+2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cilk-common.c (expand_builtin_cilk_detach): Dereference worker.
+
 2013-11-23  David Edelson  <dje.gcc@gmail.com>
 	    Andrew Dixie  <andrewd@gentrack.com>
 
