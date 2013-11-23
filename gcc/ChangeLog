@@ -1,5 +1,17 @@
 2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mn10300/mn10300-protos.h (mn10300_store_multiple_operation):
+	Delete.
+	(mn10300_store_multiple_operation_p): Declare.
+	* config/mn10300/mn10300.c (mn10300_store_multiple_operation):
+	Rename to...
+	(mn10300_store_multiple_operation_p): ...this and remove mode
+	argument.
+	* config/mn10300/predicates.md (mn10300_store_multiple_operation):
+	Define.
+
+2013-11-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/bfin/bfin-protos.h (push_multiple_operation): Delete.
 	(pop_multiple_operation): Delete.
 	(analyze_push_multiple_operation): Declare.
