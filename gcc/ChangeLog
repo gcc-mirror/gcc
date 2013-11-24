@@ -1,3 +1,24 @@
+2013-11-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* jump.c (reset_insn_reg_label_operand_notes): New function,
+	split out from ...
+	(init_label_info): ... here.  Reset LABEL_NUSES in cfglayout mode.
+	* cfgcleanup.c (delete_dead_jump_tables_between): New function,
+	split out from ...
+	(delete_dead_jumptables): ... here.  Handle cfglayout mode.
+	(cleanup_cfg): Delete dead jump tables in cfglayout mode if an
+	expensive CFG cleanup is called for.
+	* cfgrtl.c (fixup_reorder_chain): Remove BARRIERs from fallthru paths.
+	(cfg_layout_finalize): Delete dead jump tables before re-building
+	the insns chain.
+	* ira.c (ira): Rebuild jump labels *after* deleting unreachable
+	basic blocks, not before.
+	* loop-init.c (rtl_loop_done): Call for an expensive CFG cleanup.
+
+	* modulo-sched.c (sms_schedule): Do not look for BARRIERs in the
+	insns chain of a scheduling extended basic block, they cannot appear
+	there in cfglayout mode.
+
 2013-11-24  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-fsanitize=leak): Add link to the wiki page.

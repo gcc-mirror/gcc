@@ -2944,40 +2944,65 @@ delete_unreachable_blocks (void)
   return changed;
 }
 
+
+/* Look for, and delete, any dead jumptables between START and END.  */
+
+static void
+delete_dead_jump_tables_between (rtx start, rtx end)
+{
+  rtx insn, next;
+
+  for (insn = start; insn != end; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      if (next != NULL_RTX
+	  && LABEL_P (insn)
+	  && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
+	  && JUMP_TABLE_DATA_P (next))
+	{
+	  rtx label = insn, jump = next;
+
+	  if (dump_file)
+	    fprintf (dump_file, "Dead jumptable %i removed\n",
+		     INSN_UID (insn));
+
+	  next = NEXT_INSN (next);
+	  delete_insn (jump);
+	  delete_insn (label);
+	}
+    }
+}
+
+
 /* Delete any jump tables never referenced.  We can't delete them at the
-   time of removing tablejump insn as they are referenced by the preceding
-   insns computing the destination, so we delay deleting and garbagecollect
-   them once life information is computed.  */
+   time of removing tablejump insn as the label preceding the jump table
+   data may be referenced by the preceding insns computing the destination.
+   So we delay deleting and garbage-collect them from time to time, after
+   a CFG cleanup.  */
+
 void
 delete_dead_jumptables (void)
 {
   basic_block bb;
 
-  /* A dead jump table does not belong to any basic block.  Scan insns
-     between two adjacent basic blocks.  */
+  /* Label reference count must up-to-date to detect dead jump tables.  */
+  rebuild_jump_labels (get_insns ());
+
   FOR_EACH_BB (bb)
     {
-      rtx insn, next;
-
-      for (insn = NEXT_INSN (BB_END (bb));
-	   insn && !NOTE_INSN_BASIC_BLOCK_P (insn);
-	   insn = next)
+      if (current_ir_type () == IR_RTL_CFGLAYOUT)
 	{
-	  next = NEXT_INSN (insn);
-	  if (LABEL_P (insn)
-	      && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
-	      && JUMP_TABLE_DATA_P (next))
-	    {
-	      rtx label = insn, jump = next;
-
-	      if (dump_file)
-		fprintf (dump_file, "Dead jumptable %i removed\n",
-			 INSN_UID (insn));
-
-	      next = NEXT_INSN (next);
-	      delete_insn (jump);
-	      delete_insn (label);
-	    }
+	  /* Jump tables only appear in the header or footer of BB.  */
+	  delete_dead_jump_tables_between (BB_HEADER (bb), NULL_RTX);
+	  delete_dead_jump_tables_between (BB_FOOTER (bb), NULL_RTX);
+	}
+      else
+	{
+	  /* Jump tables are in the insns chain between basic blocks.  */
+	  rtx start = NEXT_INSN (BB_END (bb));
+	  rtx end = (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+	    ? NULL_RTX : BB_HEAD (bb->next_bb);
+	  delete_dead_jump_tables_between (start, end);
 	}
     }
 }
@@ -3049,13 +3074,13 @@ cleanup_cfg (int mode)
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_exit_edges ();
 
-  /* Don't call delete_dead_jumptables in cfglayout mode, because
-     that function assumes that jump tables are in the insns stream.
-     But we also don't _have_ to delete dead jumptables in cfglayout
-     mode because we shouldn't even be looking at things that are
-     not in a basic block.  Dead jumptables are cleaned up when
-     going out of cfglayout mode.  */
-  if (!(mode & CLEANUP_CFGLAYOUT))
+  /* Don't always call delete_dead_jumptables in cfglayout mode, because
+     jump tables can only appear in the headers and footers of basic blocks
+     and we usually are not interested in anything hiding there.
+     But if an expensive cleanup is called for, garbage-collect the dead
+     jump tables to get label reference counts right.  This sometimes
+     allows some labels to be removed and more basic blocks to be merged.  */
+  if (!(mode & CLEANUP_CFGLAYOUT) || (mode & CLEANUP_EXPENSIVE))
     delete_dead_jumptables ();
 
   /* ???  We probably do this way too often.  */
