@@ -1,3 +1,8 @@
+2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/float-exact-1.c: Use dg-add-options ieee.
+	[LDBL_MANT_DIG == 113]: Fix wrong variable name.
+
 2013-11-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59228
@@ -24,8 +29,8 @@
 2013-11-22  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/pr10474.c: Also test ppc64.
-	* gcc.dg/ira-shrinkwrap-prep-1.c: Also tes ppc64, changed all ints
-        to longs.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Also test ppc64, chang all ints
+	to longs.
 	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
 
 2013-11-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
