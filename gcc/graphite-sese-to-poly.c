@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "sese.h"
 #include "tree-ssa-propagate.h"
-#include "expr.h"
 
 #ifdef HAVE_cloog
 #include "expr.h"
