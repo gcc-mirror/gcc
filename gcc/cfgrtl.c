@@ -3696,10 +3696,10 @@ fixup_reorder_chain (void)
 #endif
 
   /* Now add jumps and labels as needed to match the blocks new
-     outgoing edges.  Fixup missing or redundant BARRIERs.  */
+     outgoing edges.  */
 
-  for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; bb ;
-       bb = (basic_block) bb->aux)
+  for (bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; bb ; bb = (basic_block)
+       bb->aux)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
@@ -3853,26 +3853,13 @@ fixup_reorder_chain (void)
 
   relink_block_chain (/*stay_in_cfglayout_mode=*/false);
 
-  /* Annoying special case - stray barriers left in the code.  This happens
-     if a tablejump is transformed to a simpe or confitional jump, or if a
-     basic block ending in a tablejump is removed but the jump table itself
-     is not.  */
+  /* Annoying special case - jump around dead jumptables left in the code.  */
   FOR_EACH_BB (bb)
     {
       edge e = find_fallthru_edge (bb->succs);
 
-      if (e && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-	{
-	  rtx insn, next;
-	  for (insn = NEXT_INSN (BB_END (e->src));
-	       insn != BB_HEAD (e->dest);
-	       insn = next)
-	    {
-	      next = NEXT_INSN (insn);
-	      if (BARRIER_P (insn))
-		remove_insn (insn);
-	    }
-	}
+      if (e && !can_fallthru (e->src, e->dest))
+	force_nonfallthru (e);
     }
 
   /* Ensure goto_locus from edges has some instructions with that locus
@@ -4286,7 +4273,7 @@ break_superblocks (void)
 }
 
 /* Finalize the changes: reorder insn list according to the sequence specified
-   by aux pointers, enter compensation code.  */
+   by aux pointers, enter compensation code, rebuild scope forest.  */
 
 void
 cfg_layout_finalize (void)
@@ -4294,7 +4281,6 @@ cfg_layout_finalize (void)
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
-  delete_dead_jumptables ();
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
   if (reload_completed
@@ -4304,6 +4290,9 @@ cfg_layout_finalize (void)
       )
     fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
+
+  rebuild_jump_labels (get_insns ());
+  delete_dead_jumptables ();
 
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
