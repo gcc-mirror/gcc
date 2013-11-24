@@ -1,3 +1,8 @@
+2013-11-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Correct
+	for little endian.
+
 2013-11-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* graphite-sese-to-poly.c: Don't include extra "expr.h".
