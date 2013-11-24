@@ -177,6 +177,34 @@ make_pass_cleanup_barriers (gcc::context *ctxt)
 }
 
 
+/* Remove all REG_LABEL_OPERAND notes from INSN.
+
+   REG_LABEL_TARGET notes (including the JUMP_LABEL field) are sticky and
+   not reset here; that way we won't lose association with a label when
+   e.g. the source for a target register disappears out of reach for targets
+   that may use jump-target registers.  Jump transformations are supposed to
+   transform any REG_LABEL_TARGET notes.  The target label reference in a
+   branch may disappear from the branch (and from the instruction before it)
+   for other reasons, like register allocation.  */
+
+static void
+reset_insn_reg_label_operand_notes (rtx insn)
+{
+  if (INSN_P (insn))
+    {
+      rtx note, next;
+
+      for (note = REG_NOTES (insn); note; note = next)
+	{
+	  next = XEXP (note, 1);
+	  if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
+	      && ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+	    remove_note (insn, note);
+	}
+    }
+}
+
+
 /* Initialize LABEL_NUSES and JUMP_LABEL fields, add REG_LABEL_TARGET
    for remaining targets for JUMP_P.  Delete any REG_LABEL_OPERAND
    notes whose labels don't occur in the insn any more.  */
@@ -186,32 +214,38 @@ init_label_info (rtx f)
 {
   rtx insn;
 
-  for (insn = f; insn; insn = NEXT_INSN (insn))
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
     {
-      if (LABEL_P (insn))
-	LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
+      basic_block bb;
 
-      /* REG_LABEL_TARGET notes (including the JUMP_LABEL field) are
-	 sticky and not reset here; that way we won't lose association
-	 with a label when e.g. the source for a target register
-	 disappears out of reach for targets that may use jump-target
-	 registers.  Jump transformations are supposed to transform
-	 any REG_LABEL_TARGET notes.  The target label reference in a
-	 branch may disappear from the branch (and from the
-	 instruction before it) for other reasons, like register
-	 allocation.  */
-
-      if (INSN_P (insn))
+      FOR_EACH_BB (bb)
 	{
-	  rtx note, next;
+	  /* Labels only appear between BB_HEAD and the basic block note,
+	     and in the basic block header and footer.  */
+	  for (insn = BB_HEAD (bb);
+	       insn && LABEL_P (insn);
+	       insn = NEXT_INSN (insn))
+	    LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
+	  for (insn = BB_HEADER (bb); insn; insn = NEXT_INSN (insn))
+	    if (LABEL_P (insn))
+	      LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
+	  for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
+	    if (LABEL_P (insn))
+	      LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
 
-	  for (note = REG_NOTES (insn); note; note = next)
-	    {
-	      next = XEXP (note, 1);
-	      if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
-		  && ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-		remove_note (insn, note);
-	    }
+	  FOR_BB_INSNS (bb, insn)
+	    if (INSN_P (insn))
+	      reset_insn_reg_label_operand_notes (insn);
+	}
+    }
+  else
+    {
+      for (insn = f; insn; insn = NEXT_INSN (insn))
+	{
+	  if (LABEL_P (insn))
+	    LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
+	  if (INSN_P (insn))
+	    reset_insn_reg_label_operand_notes (insn);
 	}
     }
 }
