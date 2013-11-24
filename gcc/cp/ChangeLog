@@ -1,3 +1,9 @@
+2013-10-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58162
+	* parser.c (cp_parser_late_parse_one_default_arg): Set
+	TARGET_EXPR_DIRECT_INIT_P.
+
 2013-11-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cvt.c (cp_convert_to_pointer): Call build_ptrmemfunc before
