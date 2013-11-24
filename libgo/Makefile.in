@@ -212,10 +212,10 @@ am__objects_6 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-type-float.lo go-type-identity.lo go-type-interface.lo \
 	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
 	go-unsafe-new.lo go-unsafe-newarray.lo go-unsafe-pointer.lo \
-	go-unwind.lo chan.lo cpuprof.lo env_posix.lo lfstack.lo \
-	$(am__objects_1) mcache.lo mcentral.lo $(am__objects_2) \
-	mfinal.lo mfixalloc.lo mgc0.lo mheap.lo msize.lo \
-	$(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
+	go-unwind.lo go-varargs.lo chan.lo cpuprof.lo env_posix.lo \
+	lfstack.lo $(am__objects_1) mcache.lo mcentral.lo \
+	$(am__objects_2) mfinal.lo mfixalloc.lo mgc0.lo mheap.lo \
+	msize.lo $(am__objects_3) panic.lo parfor.lo print.lo proc.lo \
 	runtime.lo signal_unix.lo thread.lo yield.lo $(am__objects_4) \
 	iface.lo malloc.lo map.lo mprof.lo netpoll.lo reflect.lo \
 	runtime1.lo sema.lo sigqueue.lo string.lo time.lo \
@@ -819,6 +819,7 @@ runtime_files = \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
+	runtime/go-varargs.c \
 	runtime/chan.c \
 	runtime/cpuprof.c \
 	runtime/env_posix.c \
@@ -2451,6 +2452,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-newarray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-unwind.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-varargs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lfstack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_futex.Plo@am__quote@
@@ -2978,6 +2980,13 @@ go-unwind.lo: runtime/go-unwind.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-unwind.c' object='go-unwind.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-unwind.lo `test -f 'runtime/go-unwind.c' || echo '$(srcdir)/'`runtime/go-unwind.c
+
+go-varargs.lo: runtime/go-varargs.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-varargs.lo -MD -MP -MF $(DEPDIR)/go-varargs.Tpo -c -o go-varargs.lo `test -f 'runtime/go-varargs.c' || echo '$(srcdir)/'`runtime/go-varargs.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-varargs.Tpo $(DEPDIR)/go-varargs.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-varargs.c' object='go-varargs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-varargs.lo `test -f 'runtime/go-varargs.c' || echo '$(srcdir)/'`runtime/go-varargs.c
 
 chan.lo: runtime/chan.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT chan.lo -MD -MP -MF $(DEPDIR)/chan.Tpo -c -o chan.lo `test -f 'runtime/chan.c' || echo '$(srcdir)/'`runtime/chan.c
