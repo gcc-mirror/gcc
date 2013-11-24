@@ -7414,7 +7414,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
   tree basetype = NULL_TREE;
-  tree access_binfo;
+  tree access_binfo, binfo;
   tree optype;
   tree first_mem_arg = NULL_TREE;
   tree instance_ptr;
@@ -7454,6 +7454,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   if (!conversion_path)
     conversion_path = BASELINK_BINFO (fns);
   access_binfo = BASELINK_ACCESS_BINFO (fns);
+  binfo = BASELINK_BINFO (fns);
   optype = BASELINK_OPTYPE (fns);
   fns = BASELINK_FUNCTIONS (fns);
   if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
@@ -7697,13 +7698,13 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	    {
 	      /* Optimize away vtable lookup if we know that this
 		 function can't be overridden.  We need to check if
-		 the context and the instance type are the same,
+		 the context and the type where we found fn are the same,
 		 actually FN might be defined in a different class
 		 type because of a using-declaration. In this case, we
 		 do not want to perform a non-virtual call.  */
 	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
 		  && same_type_ignoring_top_level_qualifiers_p
-		  (DECL_CONTEXT (fn), TREE_TYPE (instance))
+		  (DECL_CONTEXT (fn), BINFO_TYPE (binfo))
 		  && resolves_to_fixed_type_p (instance, 0))
 		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
