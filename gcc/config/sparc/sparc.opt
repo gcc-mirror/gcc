@@ -146,6 +146,9 @@ EnumValue
 Enum(sparc_processor_type) String(leon) Value(PROCESSOR_LEON)
 
 EnumValue
+Enum(sparc_processor_type) String(leon3) Value(PROCESSOR_LEON3)
+
+EnumValue
 Enum(sparc_processor_type) String(sparclite) Value(PROCESSOR_SPARCLITE)
 
 EnumValue
@@ -203,7 +206,7 @@ Enable workaround for single erratum of AT697F processor
 
 mfix-ut699
 Target Report RejectNegative Var(sparc_fix_ut699)
-Enable workarounds for the FP errata of the UT699 processor
+Enable workarounds for the errata of the UT699 processor
 
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double

@@ -206,7 +206,7 @@
 ;; 'f' for all DF/TFmode values, including those that are specific to the v8.
 
 ;; Attribute for cpu type.
-;; These must match the values for enum processor_type in sparc.h.
+;; These must match the values of the enum processor_type in sparc-opts.h.
 (define_attr "cpu"
   "v7,
    cypress,
@@ -214,6 +214,7 @@
    supersparc,
    hypersparc,
    leon,
+   leon3,
    sparclite,
    f930,
    f934,

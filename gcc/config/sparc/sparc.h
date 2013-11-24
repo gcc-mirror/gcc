@@ -136,21 +136,22 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_supersparc	2
 #define TARGET_CPU_hypersparc	3
 #define TARGET_CPU_leon		4
-#define TARGET_CPU_sparclite	5
-#define TARGET_CPU_f930		5       /* alias */
-#define TARGET_CPU_f934		5       /* alias */
-#define TARGET_CPU_sparclite86x	6
-#define TARGET_CPU_sparclet	7
-#define TARGET_CPU_tsc701	7       /* alias */
-#define TARGET_CPU_v9		8	/* generic v9 implementation */
-#define TARGET_CPU_sparcv9	8	/* alias */
-#define TARGET_CPU_sparc64	8	/* alias */
-#define TARGET_CPU_ultrasparc	9
-#define TARGET_CPU_ultrasparc3	10
-#define TARGET_CPU_niagara	11
-#define TARGET_CPU_niagara2	12
-#define TARGET_CPU_niagara3	13
-#define TARGET_CPU_niagara4	14
+#define TARGET_CPU_leon3	5
+#define TARGET_CPU_sparclite	6
+#define TARGET_CPU_f930		6       /* alias */
+#define TARGET_CPU_f934		6       /* alias */
+#define TARGET_CPU_sparclite86x	7
+#define TARGET_CPU_sparclet	8
+#define TARGET_CPU_tsc701	8       /* alias */
+#define TARGET_CPU_v9		9	/* generic v9 implementation */
+#define TARGET_CPU_sparcv9	9	/* alias */
+#define TARGET_CPU_sparc64	9	/* alias */
+#define TARGET_CPU_ultrasparc	10
+#define TARGET_CPU_ultrasparc3	11
+#define TARGET_CPU_niagara	12
+#define TARGET_CPU_niagara2	13
+#define TARGET_CPU_niagara3	14
+#define TARGET_CPU_niagara4	15
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
  || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
@@ -232,7 +233,8 @@ extern enum cmodel sparc_cmodel;
 #define ASM_CPU32_DEFAULT_SPEC ""
 #endif
 
-#if TARGET_CPU_DEFAULT == TARGET_CPU_leon
+#if TARGET_CPU_DEFAULT == TARGET_CPU_leon \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_leon3
 #define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
 #define ASM_CPU32_DEFAULT_SPEC ""
 #endif
@@ -282,6 +284,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=supersparc:-D__supersparc__ -D__sparc_v8__} \
 %{mcpu=hypersparc:-D__hypersparc__ -D__sparc_v8__} \
 %{mcpu=leon:-D__leon__ -D__sparc_v8__} \
+%{mcpu=leon3:-D__leon__ -D__sparc_v8__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
 %{mcpu=ultrasparc3:-D__sparc_v9__} \
@@ -330,6 +333,7 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=supersparc:-Av8} \
 %{mcpu=hypersparc:-Av8} \
 %{mcpu=leon:-Av8} \
+%{mcpu=leon3:-Av8} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:%{!mv8plus:-Av9a}} \
