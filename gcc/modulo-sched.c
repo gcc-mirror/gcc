@@ -1471,7 +1471,7 @@ sms_schedule (void)
 	continue;
       }
 
-      /* Don't handle BBs with calls
+      /* Don't handle BBs with calls or barriers
 	 or !single_set with the exception of instructions that include
 	 count_reg---these instructions are part of the control part
 	 that do-loop recognizes.
@@ -1481,6 +1481,7 @@ sms_schedule (void)
          rtx set;
 
         if (CALL_P (insn)
+            || BARRIER_P (insn)
             || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
                 && !reg_mentioned_p (count_reg, insn))
@@ -1495,6 +1496,8 @@ sms_schedule (void)
 	    {
 	      if (CALL_P (insn))
 		fprintf (dump_file, "SMS loop-with-call\n");
+	      else if (BARRIER_P (insn))
+		fprintf (dump_file, "SMS loop-with-barrier\n");
               else if ((NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
                 && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
                 fprintf (dump_file, "SMS loop-with-not-single-set\n");

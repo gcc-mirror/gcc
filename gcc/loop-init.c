@@ -415,7 +415,7 @@ rtl_loop_done (void)
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
-  cleanup_cfg (CLEANUP_EXPENSIVE);
+  cleanup_cfg (0);
   if (dump_file)
     {
       dump_reg_info (dump_file);

@@ -1,5 +1,10 @@
 2013-11-24  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR bootstrap/59279
+	Revert previous commit.
+
+2013-11-24  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* jump.c (reset_insn_reg_label_operand_notes): New function,
 	split out from ...
 	(init_label_info): ... here.  Reset LABEL_NUSES in cfglayout mode.

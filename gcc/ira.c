@@ -5273,9 +5273,9 @@ ira (FILE *f)
   if (optimize && rebuild_p)
     {
       timevar_push (TV_JUMP);
+      rebuild_jump_labels (get_insns ());
       if (purge_all_dead_edges ())
 	delete_unreachable_blocks ();
-      rebuild_jump_labels (get_insns ());
       timevar_pop (TV_JUMP);
     }
 
