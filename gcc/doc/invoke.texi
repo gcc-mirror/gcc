@@ -5267,14 +5267,17 @@ See @uref{http://code.google.com/p/address-sanitizer/} for more details.
 Enable ThreadSanitizer, a fast data race detector.
 Memory access instructions will be instrumented to detect
 data race bugs.
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for
+more details.
 
 @item -fsanitize=leak
 Enable LeakSanitizer, a memory leak detector.
 This option only matters for linking of executables and if neither
 @option{-fsanitize=address} nor @option{-fsanitize=thread} is used.  In that
 case it will link the executable against a library that overrides @code{malloc}
-and other allocator functions.
+and other allocator functions.  See
+@uref{https://code.google.com/p/address-sanitizer/wiki/LeakSanitizer} for more
+details.
 
 @item -fsanitize=undefined
 Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
