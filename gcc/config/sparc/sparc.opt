@@ -211,6 +211,12 @@ Enable workarounds for the errata of the UT699 processor
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double
 
+Mask(LEON)
+;; Generate code for LEON
+
+Mask(LEON3)
+;; Generate code for LEON3
+
 Mask(SPARCLITE)
 ;; Generate code for SPARClite
 

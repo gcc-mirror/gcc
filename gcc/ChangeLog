@@ -1,6 +1,28 @@
 2013-11-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
+	2013-08-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Add GAS check for LEON instructions on SPARC.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config.gcc (with_cpu): Remove sparc-leon*-* and deal with LEON in the
+	sparc*-*-* block.
+	* config/sparc/sparc.opt (LEON, LEON3): New masks.
+	* config/sparc/sparc.h (ASM_CPU32_DEFAULT_SPEC): Set to AS_LEON_FLAG
+	for LEON or LEON3.
+	(ASM_CPU_SPEC): Pass AS_LEON_FLAG if -mcpu=leon or -mcpu=leon3.
+	(AS_LEON_FLAG): New macro.
+	* config/sparc/sparc.c (sparc_option_override): Set MASK_LEON for leon
+	and MASK_LEON3 for leon3 and unset them if HAVE_AS_LEON is not defined.
+	Deal with LEON and LEON3 for the memory model.
+	* config/sparc/sync.md (atomic_compare_and_swap<mode>): Enable if LEON3
+	(atomic_compare_and_swap<mode>_1): Likewise.
+	(*atomic_compare_and_swap<mode>_1): Likewise.
+
+2013-11-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
 	2013-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (SPARC Options): Document new leon3 processor value.
