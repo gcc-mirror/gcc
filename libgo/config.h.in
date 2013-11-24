@@ -177,6 +177,9 @@
 /* Define to 1 if the system has the type `off64_t'. */
 #undef HAVE_OFF64_T
 
+/* Define to 1 if you have the `open64' function. */
+#undef HAVE_OPEN64
+
 /* Define to 1 if you have the `openat' function. */
 #undef HAVE_OPENAT
 

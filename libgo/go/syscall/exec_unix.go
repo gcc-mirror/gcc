@@ -30,7 +30,7 @@ import (
 //chdir(path *byte) _C_int
 
 //sysnb	raw_fcntl(fd int, cmd int, arg int) (val int, err Errno)
-//fcntl(fd _C_int, cmd _C_int, arg _C_int) _C_int
+//__go_fcntl(fd _C_int, cmd _C_int, arg _C_int) _C_int
 
 //sysnb	raw_close(fd int) (err Errno)
 //close(fd _C_int) _C_int

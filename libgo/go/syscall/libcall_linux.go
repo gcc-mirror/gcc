@@ -9,7 +9,7 @@ package syscall
 import "unsafe"
 
 //sys	Openat(dirfd int, path string, flags int, mode uint32) (fd int, err error)
-//openat(dirfd _C_int, path *byte, flags _C_int, mode Mode_t) _C_int
+//__go_openat(dirfd _C_int, path *byte, flags _C_int, mode Mode_t) _C_int
 
 //sys	futimesat(dirfd int, path *byte, times *[2]Timeval) (err error)
 //futimesat(dirfd _C_int, path *byte, times *[2]Timeval) _C_int
