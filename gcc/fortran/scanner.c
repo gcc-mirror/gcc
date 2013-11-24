@@ -465,24 +465,6 @@ gfc_open_included_file (const char *name, bool include_cwd, bool module)
   return f;
 }
 
-FILE *
-gfc_open_intrinsic_module (const char *name)
-{
-  FILE *f = NULL;
-
-  if (IS_ABSOLUTE_PATH (name))
-    {
-      f = gfc_open_file (name);
-      if (f && gfc_cpp_makedep ())
-	gfc_cpp_add_dep (name, true);
-    }
-
-  if (!f)
-    f = open_included_file (name, intrinsic_modules_dirs, true, true);
-
-  return f;
-}
-
 
 /* Test to see if we're at the end of the main source file.  */
 

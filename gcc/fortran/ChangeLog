@@ -1,3 +1,8 @@
+2013-11-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* scanner.c (gfc_open_intrinsic_module): Remove function.
+	* gfortran.h (gfc_open_intrinsic_module): Remove prototype.
+
 2013-11-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59228
