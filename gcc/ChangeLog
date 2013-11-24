@@ -1,6 +1,13 @@
 2013-11-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
+	2013-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/t-rtems: Add leon3 multilibs.
+
+2013-11-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
 	2013-08-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Add GAS check for LEON instructions on SPARC.

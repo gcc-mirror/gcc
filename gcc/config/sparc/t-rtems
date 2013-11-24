@@ -17,6 +17,6 @@
 # <http://www.gnu.org/licenses/>.
 #
 
-MULTILIB_OPTIONS = msoft-float mcpu=v8
-MULTILIB_DIRNAMES = soft v8
+MULTILIB_OPTIONS = msoft-float mcpu=v8/mcpu=leon3
+MULTILIB_DIRNAMES = soft v8 leon3
 MULTILIB_MATCHES = msoft-float=mno-fpu
