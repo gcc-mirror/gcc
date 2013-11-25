@@ -18042,7 +18042,9 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   (void) cleanup;
 
   if (!processing_specialization)
-    parser->auto_is_implicit_function_template_parm_p = true;
+    if (!current_function_decl
+	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
+      parser->auto_is_implicit_function_template_parm_p = true;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);

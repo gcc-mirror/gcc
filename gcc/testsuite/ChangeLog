@@ -1,3 +1,11 @@
+2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59112
+	PR c++/59113
+	g++.dg/cpp1y/pr58533.C: Updated testcase.
+	g++.dg/cpp1y/pr59112.C: New testcase.
+	g++.dg/cpp1y/pr59113.C: New testcase.
+
 2013-11-25  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/thumb2-slow-flash-data.c: New.
