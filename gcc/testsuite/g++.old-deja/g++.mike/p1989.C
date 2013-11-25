@@ -108,7 +108,7 @@ List_DL<T>::prepend(const T& item)
 
 template<class T>
 void
-List_DL<T>::insert(const T& item, Pix x, bool before = TRUE)
+List_DL<T>::insert(const T& item, Pix x, bool before = TRUE)  // { dg-error "default arguments" }
 {
     link<T> *l = (link<T> *) x;
 
