@@ -1,3 +1,13 @@
+2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53976
+	PR target/59243
+	* config/sh/sh_optimize_sett_clrt.cc (struct ccreg_value): Update
+	comments.
+	(sh_optimize_sett_clrt::find_last_ccreg_values): Check stack of
+	previously visited basic blocks before recursing instead of only one
+	basic block.
+
 2013-11-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (cortexa53_tuning): New struct.
