@@ -1,3 +1,13 @@
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59080
+	* pt.c (unify): Don't call unify_array_domain with a NULL_TREE
+	third argument.
+
+	PR c++/59096
+	* pt.c (apply_late_template_attributes): Check that TREE_VALUE
+	isn't NULL_TREE in the attribute_takes_identifier_p case.
+
 2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/59112

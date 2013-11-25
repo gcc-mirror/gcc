@@ -8624,7 +8624,8 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 		 pass it through tsubst.  Attributes like mode, format,
 		 cleanup and several target specific attributes expect it
 		 unmodified.  */
-	      else if (attribute_takes_identifier_p (get_attribute_name (t)))
+	      else if (attribute_takes_identifier_p (get_attribute_name (t))
+		       && TREE_VALUE (t))
 		{
 		  tree chain
 		    = tsubst_expr (TREE_CHAIN (TREE_VALUE (t)), args, complain,
@@ -17210,8 +17211,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  /* Also deduce from the length of the initializer list.  */
 	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
 	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
-	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
-				     idx, explain_p);
+	  if (TYPE_DOMAIN (parm) != NULL_TREE)
+	    return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				       idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the

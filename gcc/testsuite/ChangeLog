@@ -1,3 +1,11 @@
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59080
+	* g++.dg/cpp0x/initlist75.C: New.
+
+	PR c++/59096
+	* g++.dg/cpp0x/gen-attrs-57.C: New.
+
 2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/59112
