@@ -12880,10 +12880,15 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	{
 	  dw_die_ref type_die;
 
-	  /* Note that a CONST_DOUBLE rtx could represent either an integer
-	     or a floating-point constant.  A CONST_DOUBLE is used whenever
-	     the constant requires more than one word in order to be
-	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
+	  /* Note that if TARGET_SUPPORTS_WIDE_INT == 0, a
+	     CONST_DOUBLE rtx could represent either an large integer
+	     or a floating-point constant.  If
+	     TARGET_SUPPORTS_WIDE_INT != 0, the value is always a
+	     floating point constant.
+
+	     When it is an integer, a CONST_DOUBLE is used whenever
+	     the constant requires 2 HWIs to be adequately
+	     represented.  We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
 		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
