@@ -390,7 +390,7 @@ ubsan_create_data (const char *name, location_t loc,
 {
   va_list args;
   tree ret, t;
-  tree fields[3];
+  tree fields[5];
   vec<tree, va_gc> *saved_args = NULL;
   size_t i = 0;
 
@@ -428,7 +428,7 @@ ubsan_create_data (const char *name, location_t loc,
     {
       /* We have to add two more decls.  */
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-				pointer_sized_int_node);
+			      pointer_sized_int_node);
       DECL_CONTEXT (fields[i]) = ret;
       DECL_CHAIN (fields[i - 1]) = fields[i];
       i++;
