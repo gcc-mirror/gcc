@@ -43,7 +43,7 @@
 	* config/aarch64/aarch64.c
 	(aapcs_vfp_sub_candidate): Use wide-int interfaces.
 	(aarch64_float_const_representable_p): Likewise.
-	* config/arc/arc.c
+	* config/arc/arc.c: Include wide-int.h.
 	(arc_can_use_doloop_p): Use wide-int interfaces.
 	* config/arm/arm.c
 	(aapcs_vfp_sub_candidate): Use wide-int interfaces.
