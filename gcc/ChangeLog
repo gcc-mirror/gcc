@@ -1,3 +1,7 @@
+2013-11-25  Marek Polacek  <polacek@redhat.com>
+
+	* ubsan.c (ubsan_create_data): Increase the size of the fields array.
+
 2013-11-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-dfa.c: Remove unused convert.h include.
