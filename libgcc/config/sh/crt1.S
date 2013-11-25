@@ -697,7 +697,7 @@ profiling_enabled:
 start:
 	mov.l	stack_k,r15
 
-#if defined (__SH3__) || (defined (__SH_FPU_ANY__) && ! defined (__SH2A__)) || defined (__SH4_NOFPU__)
+#if defined (__SH3__) || (defined (__SH_FPU_ANY__) && ! defined (__SH2E__) && ! defined (__SH2A__)) || defined (__SH4_NOFPU__)
 #define VBR_SETUP
 	! before zeroing the bss ...
 	! if the vbr is already set to vbr_start then the program has been restarted

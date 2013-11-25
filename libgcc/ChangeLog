@@ -1,3 +1,7 @@
+2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt1.S (start): Don't do VBR_SETUP for SH2E.
+
 2013-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/t-softfp (soft-fp-objects-base): New variable.
