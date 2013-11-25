@@ -1,3 +1,8 @@
+2013-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/t-softfp (soft-fp-objects-base): New variable.
+	(soft-fp-objects): Use it.
+
 2013-11-23  David Edelson  <dje.gcc@gmail.com>
 	    Andrew Dixie  <andrewd@gentrack.com>
 
