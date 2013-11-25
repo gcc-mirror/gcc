@@ -86,7 +86,7 @@ solaris_pragma_align (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree t, x;
   enum cpp_ttype ttype;
-  HOST_WIDE_INT low;
+  unsigned HOST_WIDE_INT low;
 
   if (pragma_lex (&x) != CPP_NUMBER
       || pragma_lex (&t) != CPP_OPEN_PAREN)

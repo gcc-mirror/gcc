@@ -92,7 +92,7 @@
 	* config/rs6000/rs6000.md
 	Use const_scalar_int_operand.  Handle CONST_WIDE_INT.
 	* config/sol2-c.c
-	(solaris_pragma_align): Use tree_fits_uhwi_p.
+	(solaris_pragma_align): Change low to unsigned HWI.  Use tree_fits_uhwi_p.
 	* config/sparc/sparc.c: Include wide-int.h.
 	(sparc_fold_builtin): Use wide-int interfaces.
 	* config/vax/vax.c: Include wide-int.h.
