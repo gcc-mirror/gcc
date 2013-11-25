@@ -533,6 +533,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-m3-ldrd @gol
 -munaligned-access @gol
 -mneon-for-64bits @gol
+-mslow-flash-data @gol
 -mrestrict-it}
 
 @emph{AVR Options}
@@ -12344,6 +12345,13 @@ defined.
 Enables using Neon to handle scalar 64-bits operations. This is
 disabled by default since the cost of moving data from core registers
 to Neon is high.
+
+@item -mslow-flash-data
+@opindex mslow-flash-data
+Assume loading data from flash is slower than fetching instruction.
+Therefore literal load is minimized for better performance.
+This option is only supported when compiling for ARMv7 M-profile and
+off by default.
 
 @item -mrestrict-it
 @opindex mrestrict-it

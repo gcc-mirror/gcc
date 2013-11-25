@@ -329,7 +329,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 /* Should MOVW/MOVT be used in preference to a constant pool.  */
 #define TARGET_USE_MOVT \
-  (arm_arch_thumb2 && !optimize_size && !current_tune->prefer_constant_pool)
+  (arm_arch_thumb2 \
+   && (arm_disable_literal_pool \
+       || (!optimize_size && !current_tune->prefer_constant_pool)))
 
 /* We could use unified syntax for arm mode, but for now we just use it
    for Thumb-2.  */
@@ -553,6 +555,11 @@ extern int arm_arch_thumb_hwdiv;
 /* Nonzero if we should use Neon to handle 64-bits operations rather
    than core registers.  */
 extern int prefer_neon_for_64bits;
+
+/* Nonzero if we shouldn't use literal pools.  */
+#ifndef USED_FOR_TARGET
+extern bool arm_disable_literal_pool;
+#endif
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)
