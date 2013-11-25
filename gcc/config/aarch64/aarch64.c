@@ -224,6 +224,15 @@ static const struct tune_params generic_tunings =
   NAMED_PARAM (memmov_cost, 4)
 };
 
+static const struct tune_params cortexa53_tunings =
+{
+  &cortexa53_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  NAMED_PARAM (memmov_cost, 4)
+};
+
 /* A processor implementing AArch64.  */
 struct processor
 {
