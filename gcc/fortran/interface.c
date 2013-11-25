@@ -2426,6 +2426,24 @@ get_expr_storage_size (gfc_expr *e)
 			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer));
 	    }
         }
+      else if (ref->type == REF_COMPONENT && ref->u.c.component->attr.function
+	       && ref->u.c.component->attr.proc_pointer
+	       && ref->u.c.component->attr.dimension)
+	{
+	  /* Array-valued procedure-pointer components.  */
+	  gfc_array_spec *as = ref->u.c.component->as;
+	  for (i = 0; i < as->rank; i++)
+	    {
+	      if (!as->upper[i] || !as->lower[i]
+		  || as->upper[i]->expr_type != EXPR_CONSTANT
+		  || as->lower[i]->expr_type != EXPR_CONSTANT)
+		return 0;
+
+	      elements = elements
+			 * (mpz_get_si (as->upper[i]->value.integer)
+			    - mpz_get_si (as->lower[i]->value.integer) + 1L);
+	    }
+	}
     }
 
   if (substrlen)

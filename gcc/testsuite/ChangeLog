@@ -1,3 +1,8 @@
+2013-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59143
+	* gfortran.dg/typebound_proc_30.f90: New.
+
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59080
