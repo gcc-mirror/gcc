@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 #include <vector>
+#include <algorithm>
 
 /*
 This pass tries to eliminate unnecessary sett or clrt instructions in cases
@@ -87,16 +88,15 @@ private:
   struct ccreg_value
   {
     // The insn at which the ccreg value was determined.
+    // Might be NULL_RTX if e.g. an unknown value is recorded for an
+    // empty basic block.
     rtx insn;
 
     // The basic block where the insn was discovered.
-    // Notice that the CFG might be invalid at late RTL stages and
-    // BLOCK_FOR_INSN might return null.  Thus the basic block are recorded
-    // here while traversing them.
     basic_block bb;
 
-    // The value of ccreg.  If NULL_RTX, the value is not known, e.g. if the
-    // ccreg is clobbered.
+    // The value of ccreg.  If NULL_RTX, the exact value is not known, but
+    // the ccreg is changed in some way (e.g. clobbered).
     rtx value;
   };
 
@@ -113,7 +113,7 @@ private:
   // start insn.
   void find_last_ccreg_values (rtx start_insn, basic_block bb,
 			       std::vector<ccreg_value>& values_out,
-			       basic_block prev_visited_bb = NULL) const;
+			       std::vector<basic_block>& prev_visited_bb) const;
 
   // Given a cbranch insn, its basic block and another basic block, determine
   // the value to which the ccreg will be set after jumping/falling through to
@@ -199,6 +199,10 @@ sh_optimize_sett_clrt::execute (void)
   std::vector<ccreg_value> ccreg_values;
   ccreg_values.reserve (32);
 
+  // Something for recording visited basic blocks to avoid infinite recursion.
+  std::vector<basic_block> visited_bbs;
+  visited_bbs.reserve (32);
+
   // Look for insns that set the ccreg to a constant value and see if it can
   // be optimized.
   basic_block bb;
@@ -221,7 +225,9 @@ sh_optimize_sett_clrt::execute (void)
 	    log_msg ("\n");
 
 	    ccreg_values.clear ();
-	    find_last_ccreg_values (PREV_INSN (i), bb, ccreg_values);
+	    visited_bbs.clear ();
+	    find_last_ccreg_values (PREV_INSN (i), bb, ccreg_values,
+				    visited_bbs);
 
 	    log_msg ("number of ccreg values collected: %u\n",
 		     (unsigned int)ccreg_values.size ());
@@ -307,12 +313,16 @@ void
 sh_optimize_sett_clrt
 ::find_last_ccreg_values (rtx start_insn, basic_block bb,
 			  std::vector<ccreg_value>& values_out,
-			  basic_block prev_visited_bb) const
+			  std::vector<basic_block>& prev_visited_bb) const
 {
-  if (start_insn == NULL_RTX)
-    return;
-
-  log_msg ("looking for ccreg values in [bb %d]\n", bb->index);
+  // FIXME: For larger CFGs this will unnecessarily re-visit basic blocks.
+  // Once a basic block has been visited, the result should be stored in
+  // some container so that it can be looked up quickly eliminating the
+  // re-visits.
+  log_msg ("looking for ccreg values in [bb %d] ", bb->index);
+  if (!prev_visited_bb.empty ())
+    log_msg ("(prev visited [bb %d])", prev_visited_bb.back ()->index);
+  log_msg ("\n");
 
   for (rtx i = start_insn; i != NULL_RTX && i != PREV_INSN (BB_HEAD (bb));
        i = PREV_INSN (i))
@@ -341,7 +351,7 @@ sh_optimize_sett_clrt
 	  return;
 	}
 
-      if (any_condjump_p (i) && onlyjump_p (i) && prev_visited_bb != NULL)
+      if (any_condjump_p (i) && onlyjump_p (i) && !prev_visited_bb.empty ())
 	{
 	  // For a conditional branch the ccreg value will be a known constant
 	  // of either 0 or STORE_FLAG_VALUE after branching/falling through
@@ -353,10 +363,11 @@ sh_optimize_sett_clrt
 	  ccreg_value v;
 	  v.insn = i;
 	  v.bb = bb;
-	  v.value = GEN_INT (sh_cbranch_ccreg_value (i, bb, prev_visited_bb));
+	  v.value = GEN_INT (sh_cbranch_ccreg_value (i, bb,
+						     prev_visited_bb.back ()));
 
 	  log_msg ("    branches to [bb %d] with ccreg value ",
-		   prev_visited_bb->index);
+		   prev_visited_bb.back ()->index);
 	  log_rtx (v.value);
 	  log_msg ("\n");
 
@@ -370,26 +381,35 @@ sh_optimize_sett_clrt
   // In this case, check the predecessor basic blocks.
   unsigned int pred_bb_count = 0;
 
-  // If the current basic block is the same as the previous one, it's a loop.
-  // Don't try to recurse again, as this will result in an infinite loop.
-  if (bb != prev_visited_bb)
-    for (edge_iterator ei = ei_start (bb->preds); !ei_end_p (ei); ei_next (&ei))
-      {
-	basic_block pred_bb = ei_edge (ei)->src;
-	if (pred_bb->index == ENTRY_BLOCK)
-	  continue;
+  // If the current basic block is not in the stack of previously visited
+  // basic blocks yet, we can recursively check the predecessor basic blocks.
+  // Otherwise we have a loop in the CFG and recursing again will result in
+  // an infinite loop.
+  if (std::find (prev_visited_bb.rbegin (), prev_visited_bb.rend (), bb)
+      == prev_visited_bb.rend ())
+    {
+      prev_visited_bb.push_back (bb);
 
-	pred_bb_count += 1;
-	find_last_ccreg_values (BB_END (pred_bb), pred_bb, values_out, bb);
-      }
+      for (edge_iterator ei = ei_start (bb->preds); !ei_end_p (ei);
+	   ei_next (&ei))
+	{
+	  basic_block pred_bb = ei_edge (ei)->src;
+	  pred_bb_count += 1;
+	  find_last_ccreg_values (BB_END (pred_bb), pred_bb, values_out,
+				  prev_visited_bb);
+	}
+
+      prev_visited_bb.pop_back ();
+    }
+  else
+    log_msg ("loop detected for [bb %d]\n", bb->index);
 
   log_msg ("[bb %d] pred_bb_count = %u\n", bb->index, pred_bb_count);
 
-  // If here, we've walked up all the predecessor basic blocks without finding
-  // anything setcc related.  Add an entry for the last insn of the current
-  // basic block with the ccreg value being set to unknown (NULL_RTX).
   if (pred_bb_count == 0)
   {
+    // If we haven't checked a single predecessor basic block, the current
+    // basic block is probably a leaf block and we don't know the ccreg value.
     log_msg ("unknown ccreg value for [bb %d]\n", bb->index);
 
     ccreg_value v;
