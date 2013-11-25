@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
-#include "convert.h"
 #include "params.h"
 
 /* Build and maintain data flow information for trees.  */
