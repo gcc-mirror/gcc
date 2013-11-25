@@ -1,5 +1,10 @@
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58607
+	* semantics.c (check_constexpr_ctor_body): Check for BIND_EXPR_VARS.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58810
 	* decl.c (grokdeclarator): Don't handle qualified free functions here,
 	leave the diagnostic to grokfndecl.

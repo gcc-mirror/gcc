@@ -1,5 +1,10 @@
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58607
+	* g++.dg/cpp0x/constexpr-ice9.C: New.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58810
 	* g++.dg/other/cv_func3.C: New.
 	* g++.dg/other/cv_func.C: Adjust.
