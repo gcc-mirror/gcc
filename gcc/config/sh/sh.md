@@ -8801,7 +8801,7 @@ label:
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(plus (match_dup 2) (const_int -1)))
+	(plus:SI (match_dup 2) (const_int -1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH2"
   "#"
