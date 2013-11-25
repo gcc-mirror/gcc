@@ -1,3 +1,8 @@
+2013-11-25  Andrew Macleod  <amacleod@redhat.com>
+
+	PR bootstrap/59260
+	* fold-const.c: Include hash-table.h.
+
 2013-11-25  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59258

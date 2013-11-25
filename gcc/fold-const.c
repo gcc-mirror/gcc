@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
+#include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
