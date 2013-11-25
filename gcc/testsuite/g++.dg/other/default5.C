@@ -43,5 +43,5 @@ template<int> struct B
   void F2(int, int, int = 0);
 };
 
-template<int N> void B<N>::F1(int, int = 0, int) {}
-template<int N> void B<N>::F2(int = 0, int, int) {}  // { dg-error "default" }
+template<int N> void B<N>::F1(int, int = 0, int) {}  // { dg-error "default arguments" }
+template<int N> void B<N>::F2(int = 0, int, int) {}  // { dg-error "default arguments|parameter 2" }

@@ -1,5 +1,13 @@
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/54485
+	* g++.dg/other/default8.C: New.
+	* g++.dg/tc1/dr217.C: Remove xfail.
+	* g++.dg/other/default5.C: Adjust.
+	* g++.old-deja/g++.mike/p1989.C: Likewise.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58607
 	* g++.dg/cpp0x/constexpr-ice9.C: New.
 

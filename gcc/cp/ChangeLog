@@ -1,5 +1,11 @@
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/54485
+	* decl.c (duplicate_decls): Enforce 8.3.6/6 about default arguments
+	for member functions of class templates.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58607
 	* semantics.c (check_constexpr_ctor_body): Check for BIND_EXPR_VARS.
 
