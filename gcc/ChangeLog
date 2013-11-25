@@ -1,5 +1,9 @@
 2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (doloop_end_split): Add missing SI mode.
+
+2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/53976
 	PR target/59243
 	* config/sh/sh_optimize_sett_clrt.cc (struct ccreg_value): Update
