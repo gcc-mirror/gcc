@@ -1,3 +1,8 @@
+2013-11-25  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Selectively
+	invalidate loop information.
+
 2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (doloop_end_split): Add missing SI mode.
