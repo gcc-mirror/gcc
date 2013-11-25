@@ -1,3 +1,22 @@
+2013-11-25  Terry Guo  <terry.guo@arm.com>
+
+	* doc/invoke.texi (-mslow-flash-data): Document new option.
+	* config/arm/arm.opt (mslow-flash-data): New option.
+	* config/arm/arm-protos.h (arm_max_const_double_inline_cost): Declare
+	it.
+	* config/arm/arm.h (TARGET_USE_MOVT): Always true when literal pools
+	are disabled.
+	(arm_disable_literal_pool): Declare it.
+	* config/arm/arm.c (arm_disable_literal_pool): New variable.
+	(arm_option_override): Handle new option.
+	(thumb2_legitimate_address_p): Don't allow symbol references when
+	literal pools are disabled.
+	(arm_max_const_double_inline_cost): New function.
+	* config/arm/arm.md (types.md): Include it before ...
+	(use_literal_pool): New attribute.
+	(enabled): Use new attribute.
+	(split pattern): Replace symbol+offset with MOVW/MOVT.
+
 2013-11-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR bootstrap/59279

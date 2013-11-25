@@ -1,3 +1,7 @@
+2013-11-25  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data.c: New.
+
 2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/float-exact-1.c: Use dg-add-options ieee.
