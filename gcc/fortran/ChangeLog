@@ -1,3 +1,9 @@
+2013-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59143
+	* interface.c (get_expr_storage_size): Handle array-valued type-bound
+	procedures.
+
 2013-11-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* scanner.c (gfc_open_intrinsic_module): Remove function.
