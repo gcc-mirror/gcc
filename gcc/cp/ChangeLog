@@ -1,5 +1,11 @@
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58810
+	* decl.c (grokdeclarator): Don't handle qualified free functions here,
+	leave the diagnostic to grokfndecl.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/59080
 	* pt.c (unify): Don't call unify_array_domain with a NULL_TREE
 	third argument.

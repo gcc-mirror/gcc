@@ -1,3 +1,10 @@
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58810
+	* g++.dg/other/cv_func3.C: New.
+	* g++.dg/other/cv_func.C: Adjust.
+	* g++.dg/parse/fn-typedef2.C: Likewise.
+
 2013-11-25  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59250
@@ -20,9 +27,9 @@
 
 	PR c++/59112
 	PR c++/59113
-	g++.dg/cpp1y/pr58533.C: Updated testcase.
-	g++.dg/cpp1y/pr59112.C: New testcase.
-	g++.dg/cpp1y/pr59113.C: New testcase.
+	* g++.dg/cpp1y/pr58533.C: Updated testcase.
+	* g++.dg/cpp1y/pr59112.C: New testcase.
+	* g++.dg/cpp1y/pr59113.C: New testcase.
 
 2013-11-25  Terry Guo  <terry.guo@arm.com>
 

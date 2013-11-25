@@ -10256,21 +10256,6 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (decl_context != TYPENAME)
 	{
-	  /* A cv-qualifier-seq shall only be part of the function type
-	     for a non-static member function. A ref-qualifier shall only
-	     .... /same as above/ [dcl.fct] */
-	  if ((type_memfn_quals (type) != TYPE_UNQUALIFIED
-	       || type_memfn_rqual (type) != REF_QUAL_NONE)
-	      && (current_class_type == NULL_TREE || staticp) )
-	    {
-	      error (staticp
-                     ? G_("qualified function types cannot be used to "
-                          "declare static member functions")
-                     : G_("qualified function types cannot be used to "
-                          "declare free functions"));
-	      type = TYPE_MAIN_VARIANT (type);
-	    }
-
 	  /* The qualifiers on the function type become the qualifiers on
 	     the non-static member function. */
 	  memfn_quals |= type_memfn_quals (type);
