@@ -1,3 +1,11 @@
+2013-11-25  Vidya Praveen  <vidyapraveen@arm.com>
+
+	Backport from mainline
+	2013-10-21  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort().
+	* gcc.dg/20050922-1.c: Remove stdlib.h and declare abort() and exit().
+
 2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
