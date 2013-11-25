@@ -1,3 +1,7 @@
+2013-11-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-dfa.c: Remove unused convert.h include.
+
 2013-11-25  Terry Guo  <terry.guo@arm.com>
 
 	* doc/invoke.texi (-mslow-flash-data): Document new option.
