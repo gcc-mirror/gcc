@@ -1,3 +1,10 @@
+2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59112
+	PR c++/59113
+	* parser.c (cp_parser_parameter_declaration_clause): Disallow implicit
+	function templates in local functions unless defining a lambda.
+
 2013-11-23  Easwaran Raman  <eraman@google.com>
 
 	PR c++/59031

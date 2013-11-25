@@ -3,5 +3,5 @@
 
 void foo()
 {
-  void (*fp)(auto); // { dg-error "template" }
+  void (*fp)(auto); // { dg-error "auto|not permitted" }
 }
