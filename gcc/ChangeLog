@@ -1,5 +1,12 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59229
+	* config/i386/i386.c (device_alg): Fix up formatting.
+	(ix86_expand_set_or_movmem): Handle max_size < epilogue_size_needed
+	similarly to count && count < epilogue_size_needed.  Fix up
+	comment typo.
+	* builtins.c (determine_block_size): Fix comment typo.
+
 	PR sanitizer/59258
 	* ubsan.c (ubsan_source_location): Don't add any location
 	to ADDR_EXPR in the ctor.  Revert 2013-11-22 change.

@@ -1,5 +1,8 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59229
+	* gcc.c-torture/execute/pr59229.c: New test.
+
 	PR rtl-optimization/59166
 	* gcc.dg/torture/pr59166.c: New test.
 
