@@ -1,5 +1,9 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59273
+	* tree-vect-generic.c (optimize_vector_constructor): Don't optimize
+	if there isn't optab handler for the corresponding vector PLUS_EXPR.
+
 	PR rtl-optimization/59166
 	* ira.c (find_moveable_pseudos): Use DF_REF_REAL_LOC instead of
 	DF_REF_LOC in validate_change call.
