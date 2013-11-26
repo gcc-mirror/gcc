@@ -6993,34 +6993,9 @@ label:
   prepare_move_operands (operands, QImode);
 })
 
-;; If movqi_reg_reg is specified as an alternative of movqi, movqi will be
-;; selected to copy QImode regs.  If one of them happens to be allocated
-;; on the stack, reload will stick to movqi insn and generate wrong
-;; displacement addressing because of the generic m alternatives.
-;; With the movqi_reg_reg being specified before movqi it will be initially
-;; picked to load/store regs.  If the regs regs are on the stack reload
-;; try other insns and not stick to movqi_reg_reg, unless there were spilled
-;; pseudos in which case 'm' constraints pertain.
-;; The same applies to the movhi variants.
-;;
-;; Notice, that T bit is not allowed as a mov src operand here.  This is to
-;; avoid things like (set (reg:QI) (subreg:QI (reg:SI T_REG) 0)), which
-;; introduces zero extensions after T bit stores and redundant reg copies.
-;;
-;; FIXME: We can't use 'arith_reg_operand' (which disallows T_REG) as a
-;; predicate for the mov src operand because reload will have trouble
-;; reloading MAC subregs otherwise.  For that probably special patterns
-;; would be required.
-(define_insn "*mov<mode>_reg_reg"
-  [(set (match_operand:QIHI 0 "arith_reg_dest" "=r,m,*z")
-	(match_operand:QIHI 1 "register_operand" "r,*z,m"))]
-  "TARGET_SH1 && !t_reg_operand (operands[1], VOIDmode)"
-  "@
-	mov	%1,%0
-	mov.<bw>	%1,%0
-	mov.<bw>	%1,%0"
-  [(set_attr "type" "move,store,load")])
-
+;; Specifying the displacement addressing load / store patterns separately
+;; before the generic movqi / movhi pattern allows controlling the order
+;; in which load / store insns are selected in a more fine grained way.
 ;; FIXME: The non-SH2A and SH2A variants should be combined by adding
 ;; "enabled" attribute as it is done in other targets.
 (define_insn "*mov<mode>_store_mem_disp04"
@@ -7070,38 +7045,44 @@ label:
   [(set_attr "type" "load")
    (set_attr "length" "2,2,4")])
 
-;; The m constraints basically allow any kind of addresses to be used with any
-;; source/target register as the other operand.  This is not true for 
-;; displacement addressing modes on anything but SH2A.  That's why the
-;; specialized load/store insns are specified above.
-(define_insn "*movqi"
-  [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,m,r,l")
-	(match_operand:QI 1 "general_movsrc_operand"  "i,m,r,l,r"))]
+;; The order of the constraint alternatives is important here.
+;; Q/r has to come first, otherwise PC relative loads might wrongly get
+;; placed into delay slots.  Since there is no QImode PC relative load, the
+;; Q constraint and general_movsrc_operand will reject it for QImode.
+;; The Snd alternatives should come before Sdd in order to avoid a preference
+;; of using r0 als the register operand for addressing modes other than
+;; displacement addressing.
+;; The Sdd alternatives allow only r0 as register operand, even though on
+;; SH2A any register could be allowed by switching to a 32 bit insn.
+;; Generally sticking to the r0 is preferrable, since it generates smaller
+;; code.  Obvious r0 reloads can then be eliminated with a peephole on SH2A.
+(define_insn "*mov<mode>"
+  [(set (match_operand:QIHI 0 "general_movdst_operand"
+			      "=r,r,r,Snd,r,  Sdd,z,  r,l")
+	(match_operand:QIHI 1 "general_movsrc_operand"
+			       "Q,r,i,r,  Snd,z,  Sdd,l,r"))]
   "TARGET_SH1
-   && (arith_reg_operand (operands[0], QImode)
-       || arith_reg_operand (operands[1], QImode))"
+   && (arith_reg_operand (operands[0], <MODE>mode)
+       || arith_reg_operand (operands[1], <MODE>mode))"
   "@
+	mov.<bw>	%1,%0
 	mov	%1,%0
-	mov.b	%1,%0
-	mov.b	%1,%0
+	mov	%1,%0
+	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0
 	sts	%1,%0
 	lds	%1,%0"
- [(set_attr "type" "movi8,load,store,prget,prset")])
-
-(define_insn "*movhi"
-  [(set (match_operand:HI 0 "general_movdst_operand" "=r,r,r,m,r,l")
-	(match_operand:HI 1 "general_movsrc_operand"  "Q,i,m,r,l,r"))]
-  "TARGET_SH1
-   && (arith_reg_operand (operands[0], HImode)
-       || arith_reg_operand (operands[1], HImode))"
-  "@
-	mov.w	%1,%0
-	mov	%1,%0
-	mov.w	%1,%0
-	mov.w	%1,%0
-	sts	%1,%0
-	lds	%1,%0"
- [(set_attr "type" "pcload,movi8,load,store,prget,prset")])
+  [(set_attr "type" "pcload,move,movi8,store,load,store,load,prget,prset")
+   (set (attr "length")
+	(cond [(and (match_operand 0 "displacement_mem_operand")
+		    (not (match_operand 0 "short_displacement_mem_operand")))
+	       (const_int 4)
+	       (and (match_operand 1 "displacement_mem_operand")
+		    (not (match_operand 1 "short_displacement_mem_operand")))
+	       (const_int 4)]
+	      (const_int 2)))])
 
 (define_insn "*movqi_media"
   [(set (match_operand:QI 0 "general_movdst_operand" "=r,r,r,m")
