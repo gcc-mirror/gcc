@@ -1,3 +1,8 @@
+2013-11-26  Meador Inge  <meadori@codesourcery.com>
+
+        * upc-genericize.c (upc_expand_get): Ensure that temporaries
+        are declared via a DECL_EXPR.
+
 2013-10-01 Gary Funck  <gary@intrepid.com>
 
 	Implement pointer-to-shared -> integer conversions.

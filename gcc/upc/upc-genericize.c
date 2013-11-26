@@ -205,6 +205,14 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
       result_tmp = upc_create_tmp_var (result_type);
       TREE_ADDRESSABLE (result_tmp) = 1;
       result_addr = build_fold_addr_expr_loc (loc, result_tmp);
+      /* A DECL_EXPR is sometimes needed (for example when applying
+         sizeof() to a UPC shared VLA) to properly declare
+	 the type of the temp. variable used to hold the result
+	 of the expression.  */
+      result_addr = build2 (COMPOUND_EXPR, TREE_TYPE (result_addr),
+			    build1 (DECL_EXPR, TREE_TYPE (result_tmp),
+				    result_tmp),
+			    result_addr);
       lib_args = tree_cons (NULL_TREE, result_addr,
 			    tree_cons (NULL_TREE, src_addr,
 				       tree_cons (NULL_TREE, size,
