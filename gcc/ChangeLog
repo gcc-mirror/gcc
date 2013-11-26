@@ -1,3 +1,13 @@
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59245
+	* tree-vrp.c (set_value_range): Assert that we don't have
+	overflowed constants (but our infinities).
+	(set_value_range_to_value): Drop all overflow flags.
+	(vrp_visit_phi_node): Likewise.
+	(vrp_visit_assignment_or_call): Use set_value_range_to_value
+	to set a constant range.
+
 2013-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/59290
