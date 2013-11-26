@@ -1,3 +1,24 @@
+2013-11-26   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/55552
+	* configure.ac (install_gold_as_default): New.  Set to yes for
+	--disable-ld or --enable-gold=default.
+	(gcc_cv_ld_gold_srcdir): New.
+	(gcc_cv_ld): Also check in-tree gold if install_gold_as_default
+	is yes.
+	(ORIGINAL_LD_BFD_FOR_TARGET): New AC_SUBST.
+	(ORIGINAL_LD_GOLD_FOR_TARGET): Likewise.
+	* configure: Regenerated.
+
+	* exec-tool.in (ORIGINAL_LD_BFD_FOR_TARGET): New variable.
+	(ORIGINAL_LD_GOLD_FOR_TARGET): Likewise.
+	(original) [collect-ld && -fuse-ld=bfd]: Set to
+	$ORIGINAL_LD_BFD_FOR_TARGET.
+	(original) [collect-ld && -fuse-ld=gold]: Set to
+	$ORIGINAL_LD_GOLD_FOR_TARGET.
+	(dir) [collect-ld && ../gold/ld-new]: Set to gold.
+	(fast_install) [collect-ld && ../gold/ld-new]: Set to yes.
+
 2013-11-26  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (require_pic_register): Handle high pic base

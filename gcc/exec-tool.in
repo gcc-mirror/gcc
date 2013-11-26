@@ -21,6 +21,8 @@
 
 ORIGINAL_AS_FOR_TARGET="@ORIGINAL_AS_FOR_TARGET@"
 ORIGINAL_LD_FOR_TARGET="@ORIGINAL_LD_FOR_TARGET@"
+ORIGINAL_LD_BFD_FOR_TARGET="@ORIGINAL_LD_BFD_FOR_TARGET@"
+ORIGINAL_LD_GOLD_FOR_TARGET="@ORIGINAL_LD_GOLD_FOR_TARGET@"
 ORIGINAL_PLUGIN_LD_FOR_TARGET="@ORIGINAL_PLUGIN_LD_FOR_TARGET@"
 ORIGINAL_NM_FOR_TARGET="@ORIGINAL_NM_FOR_TARGET@"
 exeext=@host_exeext@
@@ -36,15 +38,32 @@ case "$invoked" in
     dir=gas
     ;;
   collect-ld)
-    # when using a linker plugin, gcc will always pass '-plugin' as the
-    # first or second option to the linker.
-    if test x"$1" = "x-plugin" || test x"$2" = "x-plugin"; then
-      original=$ORIGINAL_PLUGIN_LD_FOR_TARGET
-    else
-      original=$ORIGINAL_LD_FOR_TARGET
-    fi
+    # Check -fuse-ld=bfd and -fuse-ld=gold
+    case " $* " in
+      *\ -fuse-ld=bfd\ *)
+	original=$ORIGINAL_LD_BFD_FOR_TARGET
+	;;
+      *\ -fuse-ld=gold\ *)
+	original=$ORIGINAL_LD_GOLD_FOR_TARGET
+	;;
+      *)
+	# when using a linker plugin, gcc will always pass '-plugin' as the
+	# first or second option to the linker.
+	if test x"$1" = "x-plugin" || test x"$2" = "x-plugin"; then
+	  original=$ORIGINAL_PLUGIN_LD_FOR_TARGET
+	else
+	  original=$ORIGINAL_LD_FOR_TARGET
+	fi
+	;;
+    esac
     prog=ld-new$exeext
-    dir=ld
+    if test "$original" = ../gold/ld-new$exeext; then
+      dir=gold
+      # No need to handle relink since gold doesn't use libtool.
+      fast_install=yes
+    else
+      dir=ld
+    fi
     id=ld
     ;;
   nm)
