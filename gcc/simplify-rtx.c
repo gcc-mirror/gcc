@@ -296,7 +296,7 @@ delegitimize_mem_from_attrs (rtx x)
 	    int unsignedp, volatilep = 0;
 
 	    decl = get_inner_reference (decl, &bitsize, &bitpos, &toffset,
-					&mode, &unsignedp, &volatilep, false);
+					&mode, &unsignedp, &volatilep);
 	    if (bitsize != GET_MODE_BITSIZE (mode)
 		|| (bitpos % BITS_PER_UNIT)
 		|| (toffset && !tree_fits_shwi_p (toffset)))

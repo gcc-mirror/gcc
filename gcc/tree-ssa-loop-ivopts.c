@@ -1684,7 +1684,7 @@ may_be_unaligned_p (tree ref, tree step)
      does to check whether the object must be loaded by parts when
      STRICT_ALIGNMENT is true.  */
   base = get_inner_reference (ref, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &volatilep, true);
+			      &unsignedp, &volatilep);
   base_type = TREE_TYPE (base);
   base_align = get_object_alignment (base);
   base_align = MAX (base_align, TYPE_ALIGN (base_type));
@@ -3781,7 +3781,7 @@ split_address_cost (struct ivopts_data *data,
   int unsignedp, volatilep;
 
   core = get_inner_reference (addr, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &volatilep, false);
+			      &unsignedp, &volatilep);
 
   if (toffset != 0
       || bitpos % BITS_PER_UNIT != 0

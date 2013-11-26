@@ -1488,7 +1488,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   enum machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
-				    &mode, &unsignedp, &volatilep, false);
+				    &mode, &unsignedp, &volatilep);
   if (bitpos % (size_in_bytes * BITS_PER_UNIT)
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     {

@@ -121,7 +121,7 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
   enum machine_mode mode;
   int volatilep = 0, unsignedp = 0;
   base = get_inner_reference (expr, &bitsize, &bitpos, &offset,
-			      &mode, &unsignedp, &volatilep, false);
+			      &mode, &unsignedp, &volatilep);
 
   /* No need to instrument accesses to decls that don't escape,
      they can't escape to other threads then.  */
