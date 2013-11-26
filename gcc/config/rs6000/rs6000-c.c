@@ -4208,7 +4208,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       /* If we can use the VSX xxpermdi instruction, use that for extract.  */
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_MEM_VSX_P (mode)
-	  && tree_fits_uhwi_p (arg2)
+	  && TREE_CODE (arg2) == INTEGER_CST
 	  && wi::ltu_p (arg2, 2))
 	{
 	  tree call = NULL_TREE;
@@ -4293,7 +4293,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       /* If we can use the VSX xxpermdi instruction, use that for insert.  */
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_UNIT_VSX_P (mode)
-	  && tree_fits_uhwi_p (arg2)
+	  && TREE_CODE (arg2) == INTEGER_CST
 	  && wi::ltu_p (arg2, 2))
 	{
 	  tree call = NULL_TREE;
