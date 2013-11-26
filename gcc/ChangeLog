@@ -1,3 +1,10 @@
+2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(VAR1): Use new naming scheme for aarch64_builtins.
+	(aarch64_builtin_vectorized_function): Use new
+	aarch64_builtins names.
+
 2013-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59287

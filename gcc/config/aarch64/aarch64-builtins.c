@@ -320,7 +320,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 
 #undef VAR1
 #define VAR1(T, N, MAP, A) \
-  AARCH64_SIMD_BUILTIN_##N##A,
+  AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 enum aarch64_builtins
 {
@@ -897,11 +897,11 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) 1
 #define AARCH64_FIND_FRINT_VARIANT(N) \
   (AARCH64_CHECK_BUILTIN_MODE (2, D) \
-    ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v2df] \
+    ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_##N##v2df] \
     : (AARCH64_CHECK_BUILTIN_MODE (4, S) \
-	? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v4sf] \
+	? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_##N##v4sf] \
 	: (AARCH64_CHECK_BUILTIN_MODE (2, S) \
-	   ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_##N##v2sf] \
+	   ? aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_##N##v2sf] \
 	   : NULL_TREE)))
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
     {
@@ -937,7 +937,7 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
         case BUILT_IN_CLZ:
           {
             if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-              return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_clzv4si];
+              return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_clzv4si];
             return NULL_TREE;
           }
 #undef AARCH64_CHECK_BUILTIN_MODE
@@ -947,47 +947,47 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 	case BUILT_IN_LFLOOR:
 	case BUILT_IN_IFLOORF:
 	  {
-	    tree new_tree = NULL_TREE;
+	    enum aarch64_builtins builtin;
 	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2dfv2di];
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2dfv2di;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv4sfv4si];
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv4sfv4si;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lfloorv2sfv2si];
-	    return new_tree;
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lfloorv2sfv2si;
+	    else
+	      return NULL_TREE;
+
+	    return aarch64_builtin_decls[builtin];
 	  }
 	case BUILT_IN_LCEIL:
 	case BUILT_IN_ICEILF:
 	  {
-	    tree new_tree = NULL_TREE;
+	    enum aarch64_builtins builtin;
 	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2dfv2di];
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2dfv2di;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv4sfv4si];
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv4sfv4si;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lceilv2sfv2si];
-	    return new_tree;
+	      builtin = AARCH64_SIMD_BUILTIN_UNOP_lceilv2sfv2si;
+	    else
+	      return NULL_TREE;
+
+	    return aarch64_builtin_decls[builtin];
 	  }
 	case BUILT_IN_LROUND:
 	case BUILT_IN_IROUNDF:
 	  {
-	    tree new_tree = NULL_TREE;
+	    enum aarch64_builtins builtin;
 	    if (AARCH64_CHECK_BUILTIN_MODE (2, D))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv2dfv2di];
+	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2dfv2di;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv4sfv4si];
+	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv4sfv4si;
 	    else if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	      new_tree =
-		aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_lroundv2sfv2si];
-	    return new_tree;
+	      builtin =	AARCH64_SIMD_BUILTIN_UNOP_lroundv2sfv2si;
+	    else
+	      return NULL_TREE;
+
+	    return aarch64_builtin_decls[builtin];
 	  }
 
 	default:
@@ -1000,7 +1000,7 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 
 #undef VAR1
 #define VAR1(T, N, MAP, A) \
-  case AARCH64_SIMD_BUILTIN_##N##A:
+  case AARCH64_SIMD_BUILTIN_##T##_##N##A:
 
 tree
 aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
