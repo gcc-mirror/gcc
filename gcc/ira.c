@@ -4812,7 +4812,7 @@ find_moveable_pseudos (void)
 	{
 	  rtx def_reg = DF_REF_REG (def);
 	  rtx newreg = ira_create_new_reg (def_reg);
-	  if (validate_change (def_insn, DF_REF_LOC (def), newreg, 0))
+	  if (validate_change (def_insn, DF_REF_REAL_LOC (def), newreg, 0))
 	    {
 	      unsigned nregno = REGNO (newreg);
 	      emit_insn_before (gen_move_insn (def_reg, newreg), use_insn);
@@ -5034,7 +5034,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       rtx newreg = NULL_RTX;
       df_ref use, next;
-      for (use = DF_REG_USE_CHAIN (REGNO(dest)); use; use = next)
+      for (use = DF_REG_USE_CHAIN (REGNO (dest)); use; use = next)
 	{
 	  rtx uin = DF_REF_INSN (use);
 	  next = DF_REF_NEXT_REG (use);
@@ -5045,7 +5045,7 @@ split_live_ranges_for_shrink_wrap (void)
 	    {
 	      if (!newreg)
 		newreg = ira_create_new_reg (dest);
-	      validate_change (uin, DF_REF_LOC (use), newreg, true);
+	      validate_change (uin, DF_REF_REAL_LOC (use), newreg, true);
 	    }
 	}
 

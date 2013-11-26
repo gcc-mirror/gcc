@@ -1,5 +1,10 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/59166
+	* ira.c (find_moveable_pseudos): Use DF_REF_REAL_LOC instead of
+	DF_REF_LOC in validate_change call.
+	(split_live_ranges_for_shrink_wrap): Likewise.
+
 	PR middle-end/59150
 	* omp-low.c (lower_rec_input_clause): For reduction with placeholder
 	of references to constant size types in simd loops, defer emitting
