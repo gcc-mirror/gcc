@@ -1,6 +1,26 @@
 2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
+	(aarch64_types_bsl_p_qualifiers): New.
+	(aarch64_types_bsl_s_qualifiers): Likewise.
+	(aarch64_types_bsl_u_qualifiers): Likewise.
+	(TYPES_BSL_P): Likewise.
+	(TYPES_BSL_S): Likewise.
+	(TYPES_BSL_U): Likewise.
+	(BUILTIN_VALLDIF): Likewise.
+	(BUILTIN_VDQQH): Likewise.
+	* config/aarch64/aarch64-simd-builtins.def (simd_bsl): New.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_bsl<mode>_internal): Handle more modes.
+	(aarch64_simd_bsl<mode>): Likewise.
+	* config/aarch64/arm_neon.h
+	(vbsl<q>_<fpsu><8,16,32,64): Implement using builtins.
+	* config/aarch64/iterators.md (VALLDIF): New.
+	(Vbtype): Handle more modes.
+
+2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
 	(aarch64_type_qualifiers): Add qualifier_poly.
 	(aarch64_build_scalar_type): Also build Poly types.
 	(aarch64_build_vector_type): Likewise.

@@ -181,6 +181,22 @@ aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_LOAD1 (aarch64_types_load1_qualifiers)
 #define TYPES_LOADSTRUCT (aarch64_types_load1_qualifiers)
 
+static enum aarch64_type_qualifiers
+aarch64_types_bsl_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_unsigned,
+      qualifier_poly, qualifier_poly };
+#define TYPES_BSL_P (aarch64_types_bsl_p_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_bsl_s_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_none, qualifier_unsigned,
+      qualifier_none, qualifier_none };
+#define TYPES_BSL_S (aarch64_types_bsl_s_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_bsl_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_unsigned };
+#define TYPES_BSL_U (aarch64_types_bsl_u_qualifiers)
+
 /* The first argument (return type) of a store should be void type,
    which we represent with qualifier_void.  Their first operand will be
    a DImode pointer to the location to store to, so we must use
@@ -255,6 +271,9 @@ aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define BUILTIN_VALLDI(T, N, MAP) \
   VAR11 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
 	 v4si, v2di, v2sf, v4sf, v2df, di)
+#define BUILTIN_VALLDIF(T, N, MAP) \
+  VAR12 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, \
+	 v4si, v2di, v2sf, v4sf, v2df, di, df)
 #define BUILTIN_VB(T, N, MAP) \
   VAR2 (T, N, MAP, v8qi, v16qi)
 #define BUILTIN_VD(T, N, MAP) \
@@ -279,6 +298,8 @@ aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
 #define BUILTIN_VDQV(T, N, MAP) \
   VAR5 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v4si)
+#define BUILTIN_VDQQH(T, N, MAP) \
+  VAR4 (T, N, MAP, v8qi, v16qi, v4hi, v8hi)
 #define BUILTIN_VDQ_BHSI(T, N, MAP) \
   VAR6 (T, N, MAP, v8qi, v16qi, v4hi, v8hi, v2si, v4si)
 #define BUILTIN_VDQ_I(T, N, MAP) \

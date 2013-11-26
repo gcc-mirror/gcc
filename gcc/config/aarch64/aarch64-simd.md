@@ -1662,15 +1662,15 @@
 ;;     bif op0, op1, mask
 
 (define_insn "aarch64_simd_bsl<mode>_internal"
-  [(set (match_operand:VALL 0 "register_operand"		"=w,w,w")
-	(ior:VALL
-	   (and:VALL
+  [(set (match_operand:VALLDIF 0 "register_operand"		"=w,w,w")
+	(ior:VALLDIF
+	   (and:VALLDIF
 	     (match_operand:<V_cmp_result> 1 "register_operand"	" 0,w,w")
-	     (match_operand:VALL 2 "register_operand"		" w,w,0"))
-	   (and:VALL
+	     (match_operand:VALLDIF 2 "register_operand"	" w,w,0"))
+	   (and:VALLDIF
 	     (not:<V_cmp_result>
 		(match_dup:<V_cmp_result> 1))
-	     (match_operand:VALL 3 "register_operand"		" w,0,w"))
+	     (match_operand:VALLDIF 3 "register_operand"	" w,0,w"))
 	))]
   "TARGET_SIMD"
   "@
@@ -1681,10 +1681,10 @@
 )
 
 (define_expand "aarch64_simd_bsl<mode>"
-  [(match_operand:VALL 0 "register_operand")
+  [(match_operand:VALLDIF 0 "register_operand")
    (match_operand:<V_cmp_result> 1 "register_operand")
-   (match_operand:VALL 2 "register_operand")
-   (match_operand:VALL 3 "register_operand")]
+   (match_operand:VALLDIF 2 "register_operand")
+   (match_operand:VALLDIF 3 "register_operand")]
  "TARGET_SIMD"
 {
   /* We can't alias operands together if they have different modes.  */

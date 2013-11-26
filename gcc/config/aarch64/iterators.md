@@ -107,6 +107,10 @@
 ;; All vector modes and DI.
 (define_mode_iterator VALLDI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF DI])
 
+;; All vector modes and DI and DF.
+(define_mode_iterator VALLDIF [V8QI V16QI V4HI V8HI V2SI V4SI
+			       V2DI V2SF V4SF V2DF DI DF])
+
 ;; Vector modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
 
@@ -363,7 +367,8 @@
 			  (V4HI "8b") (V8HI  "16b")
 			  (V2SI "8b") (V4SI  "16b")
 			  (V2DI "16b") (V2SF  "8b")
-			  (V4SF "16b") (V2DF  "16b")])
+			  (V4SF "16b") (V2DF  "16b")
+			  (DI   "8b")  (DF    "8b")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr VEL [(V8QI "QI") (V16QI "QI")
