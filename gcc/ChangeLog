@@ -27,9 +27,6 @@
 	* tree-ssa-loop-ivopts.c (may_be_unaligned_p,
 	split_address_cost): Adjust.
 	* tsan.c (instrument_expr): Adjust.
-	* ada/gcc-interface/decl.c (elaborate_expression_1): Adjust.
-	* ada/gcc-interface/trans.c (Attribute_to_gnu): Adjust.
-	* ada/gcc-interface/utils2.c (build_unary_op): Adjust.
 	* config/mips/mips.c (r10k_safe_mem_expr_p): Adjust.
 
 2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
