@@ -1,3 +1,10 @@
+2013-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/59290
+	* config/arm/arm.md (*zextendsidi_negsi): New pattern.
+	* config/arm/arm.c (arm_new_rtx_costs): Initialise cost correctly
+	for zero_extend case.
+
 2013-11-26   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/55552
