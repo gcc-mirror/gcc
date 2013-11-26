@@ -1,5 +1,11 @@
 2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/arm_neon.h (vtbx1_<psu>8): Emulate behaviour
+	using other intrinsics.
+	(vtbx3_<psu>8): Likewise.
+
+2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-builtins.c
 	(aarch64_types_bsl_p_qualifiers): New.
 	(aarch64_types_bsl_s_qualifiers): Likewise.
