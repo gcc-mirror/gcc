@@ -12216,8 +12216,11 @@ before execution begins.
 
 @item -mpic-register=@var{reg}
 @opindex mpic-register
-Specify the register to be used for PIC addressing.  The default is R10
-unless stack-checking is enabled, when R9 is used.
+Specify the register to be used for PIC addressing.
+For standard PIC base case, the default will be any suitable register
+determined by compiler.  For single PIC base case, the default is
+@samp{R9} if target is EABI based or stack-checking is enabled,
+otherwise the default is @samp{R10}.
 
 @item -mpic-data-is-text-relative
 @opindex mpic-data-is-text-relative
