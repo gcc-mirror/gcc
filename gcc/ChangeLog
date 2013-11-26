@@ -1,5 +1,10 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59014
+	* tree-vrp.c (register_edge_assert_for_1): Don't look
+	through conversions from non-integral types or through
+	narrowing conversions.
+
 	PR target/59229
 	* config/i386/i386.c (device_alg): Fix up formatting.
 	(ix86_expand_set_or_movmem): Handle max_size < epilogue_size_needed
