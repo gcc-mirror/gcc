@@ -5054,8 +5054,6 @@ easy_altivec_constant (rtx op, enum machine_mode mode)
 
   if (mode == V2DImode)
     {
-      /* In case the compiler is built 32-bit, CONST_WIDE_INT
-	 constants are not easy.  */
       if (GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_INT
 	  || GET_CODE (CONST_VECTOR_ELT (op, 1)) != CONST_INT)
 	return false;

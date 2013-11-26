@@ -73,7 +73,7 @@
 	(splat_input_operand): Likewise.
 	* config/rs6000/rs6000.c
 	(num_insns_constant): Handle CONST_WIDE_INT.
-	(easy_altivec_constant): Update comment.
+	(easy_altivec_constant): Remove comment.
 	(paired_expand_vector_init): Use CONSTANT_P.
 	(rs6000_legitimize_address): Handle CONST_WIDE_INT.
 	(rs6000_emit_move): Update checks.
