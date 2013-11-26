@@ -1,5 +1,10 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/59258
+	* ubsan.c (ubsan_source_location): Don't add any location
+	to ADDR_EXPR in the ctor.  Revert 2013-11-22 change.
+	(ubsan_create_data): Strip block info from LOC.
+
 	PR middle-end/59273
 	* tree-vect-generic.c (optimize_vector_constructor): Don't optimize
 	if there isn't optab handler for the corresponding vector PLUS_EXPR.
