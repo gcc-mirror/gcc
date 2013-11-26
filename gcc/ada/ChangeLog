@@ -1,3 +1,10 @@
+2013-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Remove parameter keep_aligning from get_inner_reference.
+	* gcc-interface/decl.c (elaborate_expression_1): Adjust.
+	* gcc-interface/trans.c (Attribute_to_gnu): Adjust.
+	* gcc-interface/utils2.c (build_unary_op): Adjust.
+
 2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Set TREE_SIDE_EFFECTS
