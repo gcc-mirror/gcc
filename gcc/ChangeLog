@@ -1,6 +1,18 @@
 2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
+	(aarch64_type_qualifiers): Add qualifier_poly.
+	(aarch64_build_scalar_type): Also build Poly types.
+	(aarch64_build_vector_type): Likewise.
+	(aarch64_build_type): Likewise.
+	(aarch64_build_signed_type): New.
+	(aarch64_build_unsigned_type): Likewise.
+	(aarch64_build_poly_type): Likewise.
+	(aarch64_init_simd_builtins): Also handle Poly types.
+
+2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
 	(VAR1): Use new naming scheme for aarch64_builtins.
 	(aarch64_builtin_vectorized_function): Use new
 	aarch64_builtins names.

@@ -124,7 +124,9 @@ enum aarch64_type_qualifiers
   /* qualifier_pointer | qualifier_map_mode  */
   qualifier_pointer_map_mode = 0x84,
   /* qualifier_const_pointer | qualifier_map_mode  */
-  qualifier_const_pointer_map_mode = 0x86
+  qualifier_const_pointer_map_mode = 0x86,
+  /* Polynomial types.  */
+  qualifier_poly = 0x100
 };
 
 typedef struct
@@ -340,7 +342,9 @@ static GTY(()) tree aarch64_builtin_decls[AARCH64_BUILTIN_MAX];
 /* Return a tree for a signed or unsigned argument of either
    the mode specified by MODE, or the inner mode of MODE.  */
 tree
-aarch64_build_scalar_type (enum machine_mode mode, bool unsigned_p)
+aarch64_build_scalar_type (enum machine_mode mode,
+			   bool unsigned_p,
+			   bool poly_p)
 {
 #undef INT_TYPES
 #define INT_TYPES \
@@ -357,6 +361,7 @@ aarch64_build_scalar_type (enum machine_mode mode, bool unsigned_p)
 /* Statically declare all the possible types we might need.  */
 #undef AARCH64_TYPE_BUILDER
 #define AARCH64_TYPE_BUILDER(X) \
+  static tree X##_aarch64_type_node_p = NULL; \
   static tree X##_aarch64_type_node_s = NULL; \
   static tree X##_aarch64_type_node_u = NULL;
 
@@ -376,6 +381,11 @@ aarch64_build_scalar_type (enum machine_mode mode, bool unsigned_p)
       return (X##_aarch64_type_node_u \
 	      ? X##_aarch64_type_node_u \
 	      : X##_aarch64_type_node_u \
+		  = make_unsigned_type (GET_MODE_PRECISION (mode))); \
+    else if (poly_p) \
+       return (X##_aarch64_type_node_p \
+	      ? X##_aarch64_type_node_p \
+	      : X##_aarch64_type_node_p \
 		  = make_unsigned_type (GET_MODE_PRECISION (mode))); \
     else \
        return (X##_aarch64_type_node_s \
@@ -411,7 +421,9 @@ aarch64_build_scalar_type (enum machine_mode mode, bool unsigned_p)
 }
 
 tree
-aarch64_build_vector_type (enum machine_mode mode, bool unsigned_p)
+aarch64_build_vector_type (enum machine_mode mode,
+			   bool unsigned_p,
+			   bool poly_p)
 {
   tree eltype;
 
@@ -431,7 +443,8 @@ aarch64_build_vector_type (enum machine_mode mode, bool unsigned_p)
 #undef AARCH64_TYPE_BUILDER
 #define AARCH64_TYPE_BUILDER(X) \
   static tree X##_aarch64_type_node_s = NULL; \
-  static tree X##_aarch64_type_node_u = NULL;
+  static tree X##_aarch64_type_node_u = NULL; \
+  static tree X##_aarch64_type_node_p = NULL;
 
   VECTOR_TYPES
 
@@ -446,20 +459,28 @@ aarch64_build_vector_type (enum machine_mode mode, bool unsigned_p)
 	     : X##_aarch64_type_node_u \
 		= build_vector_type_for_mode (aarch64_build_scalar_type \
 						(GET_MODE_INNER (mode), \
-						 unsigned_p), mode); \
+						 unsigned_p, poly_p), mode); \
+    else if (poly_p) \
+       return X##_aarch64_type_node_p \
+	      ? X##_aarch64_type_node_p \
+	      : X##_aarch64_type_node_p \
+		= build_vector_type_for_mode (aarch64_build_scalar_type \
+						(GET_MODE_INNER (mode), \
+						 unsigned_p, poly_p), mode); \
     else \
        return X##_aarch64_type_node_s \
 	      ? X##_aarch64_type_node_s \
 	      : X##_aarch64_type_node_s \
 		= build_vector_type_for_mode (aarch64_build_scalar_type \
 						(GET_MODE_INNER (mode), \
-						 unsigned_p), mode); \
+						 unsigned_p, poly_p), mode); \
     break;
 
   switch (mode)
     {
       default:
-	eltype = aarch64_build_scalar_type (GET_MODE_INNER (mode), unsigned_p);
+	eltype = aarch64_build_scalar_type (GET_MODE_INNER (mode),
+					    unsigned_p, poly_p);
 	return build_vector_type_for_mode (eltype, mode);
 	break;
       VECTOR_TYPES
@@ -467,12 +488,30 @@ aarch64_build_vector_type (enum machine_mode mode, bool unsigned_p)
 }
 
 tree
-aarch64_build_type (enum machine_mode mode, bool unsigned_p)
+aarch64_build_type (enum machine_mode mode, bool unsigned_p, bool poly_p)
 {
   if (VECTOR_MODE_P (mode))
-    return aarch64_build_vector_type (mode, unsigned_p);
+    return aarch64_build_vector_type (mode, unsigned_p, poly_p);
   else
-    return aarch64_build_scalar_type (mode, unsigned_p);
+    return aarch64_build_scalar_type (mode, unsigned_p, poly_p);
+}
+
+tree
+aarch64_build_signed_type (enum machine_mode mode)
+{
+  return aarch64_build_type (mode, false, false);
+}
+
+tree
+aarch64_build_unsigned_type (enum machine_mode mode)
+{
+  return aarch64_build_type (mode, true, false);
+}
+
+tree
+aarch64_build_poly_type (enum machine_mode mode)
+{
+  return aarch64_build_type (mode, false, true);
 }
 
 static void
@@ -480,32 +519,30 @@ aarch64_init_simd_builtins (void)
 {
   unsigned int i, fcode = AARCH64_SIMD_BUILTIN_BASE + 1;
 
-  /* In order that 'poly' types mangle correctly they must not share
-     a base tree with the other scalar types, thus we must generate them
-     as a special case.  */
-  tree aarch64_simd_polyQI_type_node =
-    make_signed_type (GET_MODE_PRECISION (QImode));
-  tree aarch64_simd_polyHI_type_node =
-    make_signed_type (GET_MODE_PRECISION (HImode));
+  /* Signed scalar type nodes.  */
+  tree aarch64_simd_intQI_type_node = aarch64_build_signed_type (QImode);
+  tree aarch64_simd_intHI_type_node = aarch64_build_signed_type (HImode);
+  tree aarch64_simd_intSI_type_node = aarch64_build_signed_type (SImode);
+  tree aarch64_simd_intDI_type_node = aarch64_build_signed_type (DImode);
+  tree aarch64_simd_intTI_type_node = aarch64_build_signed_type (TImode);
+  tree aarch64_simd_intEI_type_node = aarch64_build_signed_type (EImode);
+  tree aarch64_simd_intOI_type_node = aarch64_build_signed_type (OImode);
+  tree aarch64_simd_intCI_type_node = aarch64_build_signed_type (CImode);
+  tree aarch64_simd_intXI_type_node = aarch64_build_signed_type (XImode);
 
-  /* Scalar type nodes.  */
-  tree aarch64_simd_intQI_type_node = aarch64_build_type (QImode, false);
-  tree aarch64_simd_intHI_type_node = aarch64_build_type (HImode, false);
-  tree aarch64_simd_intSI_type_node = aarch64_build_type (SImode, false);
-  tree aarch64_simd_intDI_type_node = aarch64_build_type (DImode, false);
-  tree aarch64_simd_intTI_type_node = aarch64_build_type (TImode, false);
-  tree aarch64_simd_intEI_type_node = aarch64_build_type (EImode, false);
-  tree aarch64_simd_intOI_type_node = aarch64_build_type (OImode, false);
-  tree aarch64_simd_intCI_type_node = aarch64_build_type (CImode, false);
-  tree aarch64_simd_intXI_type_node = aarch64_build_type (XImode, false);
-  tree aarch64_simd_intUQI_type_node = aarch64_build_type (QImode, true);
-  tree aarch64_simd_intUHI_type_node = aarch64_build_type (HImode, true);
-  tree aarch64_simd_intUSI_type_node = aarch64_build_type (SImode, true);
-  tree aarch64_simd_intUDI_type_node = aarch64_build_type (DImode, true);
+  /* Unsigned scalar type nodes.  */
+  tree aarch64_simd_intUQI_type_node = aarch64_build_unsigned_type (QImode);
+  tree aarch64_simd_intUHI_type_node = aarch64_build_unsigned_type (HImode);
+  tree aarch64_simd_intUSI_type_node = aarch64_build_unsigned_type (SImode);
+  tree aarch64_simd_intUDI_type_node = aarch64_build_unsigned_type (DImode);
+
+  /* Poly scalar type nodes.  */
+  tree aarch64_simd_polyQI_type_node = aarch64_build_poly_type (QImode);
+  tree aarch64_simd_polyHI_type_node = aarch64_build_poly_type (HImode);
 
   /* Float type nodes.  */
-  tree aarch64_simd_float_type_node = aarch64_build_type (SFmode, false);
-  tree aarch64_simd_double_type_node = aarch64_build_type (DFmode, false);
+  tree aarch64_simd_float_type_node = aarch64_build_signed_type (SFmode);
+  tree aarch64_simd_double_type_node = aarch64_build_signed_type (DFmode);
 
   /* Define typedefs which exactly correspond to the modes we are basing vector
      types on.  If you change these names you'll need to change
@@ -603,6 +640,11 @@ aarch64_init_simd_builtins (void)
 	      type_signature[arg_num] = 'u';
 	      print_type_signature_p = true;
 	    }
+	  else if (qualifiers & qualifier_poly)
+	    {
+	      type_signature[arg_num] = 'p';
+	      print_type_signature_p = true;
+	    }
 	  else
 	    type_signature[arg_num] = 's';
 
@@ -621,7 +663,8 @@ aarch64_init_simd_builtins (void)
 	    op_mode = GET_MODE_INNER (op_mode);
 
 	  eltype = aarch64_build_type (op_mode,
-				       qualifiers & qualifier_unsigned);
+				       qualifiers & qualifier_unsigned,
+				       qualifiers & qualifier_poly);
 
 	  /* Add qualifiers.  */
 	  if (qualifiers & qualifier_const)
