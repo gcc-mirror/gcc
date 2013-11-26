@@ -1,3 +1,17 @@
+2013-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gomp/openmp-simd-1.c: Cleanup original tree dump.
+	* gcc.dg/gomp/openmp-simd-2.c: Ditto.
+	* g++.dg/gomp/openmp-simd-1.C: Ditto.
+	* g++.dg/gomp/openmp-simd-2.C: Ditto.
+	* gfortran.dg/c_loc_test_22.f90: Ditto.
+	* gcc.dg/tree-ssa/attr-alias-2.c: Cleanup optimized tree dump.
+	* gcc.dg/tree-ssa/isolate-5.c: Ditto.
+	* gcc.dg/tree-ssa/pr57361.c: Cleanup dse1 tree dump.
+	* gcc.dg/vect/vect-124.c: Cleanup vect tree dump.
+	* gcc.dg/pr57518.c: Cleanup ira rtl dump.
+	* gcc.dg/tree-prof/cold_partition_label.c: Cleanup saved temps.
+
 2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.target/arm/20131120.c: New test.

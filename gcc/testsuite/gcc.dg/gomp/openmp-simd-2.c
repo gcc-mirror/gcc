@@ -40,3 +40,4 @@ void bar(int n, float *a, float *b)
 /* { dg-final { scan-tree-dump-times "pragma omp simd safelen\\(64\\)" 1 "original" } } */
 /* { dg-final { scan-tree-dump-not "omp parallel" "original" } } */
 /* { dg-final { scan-tree-dump-not "omp for" "original" } } */
+/* { dg-final { cleanup-tree-dump "original" } } */
