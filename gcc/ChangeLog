@@ -1,3 +1,10 @@
+2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59152
+	* omp-low.c (expand_omp_for_static_chunk): Don't set loop->latch
+	for the inner loop if collapse_bb is non-NULL.
+	(expand_omp_simd): Use cont_bb rather than e->dest as latch.
+
 2013-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Remove parameter keep_aligning from get_inner_reference.

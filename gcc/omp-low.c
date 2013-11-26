@@ -6491,7 +6491,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	{
 	  struct loop *loop = alloc_loop ();
 	  loop->header = body_bb;
-	  loop->latch = cont_bb;
+	  if (collapse_bb == NULL)
+	    loop->latch = cont_bb;
 	  add_loop (loop, trip_loop);
 	}
     }
@@ -6771,7 +6772,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
     {
       struct loop *loop = alloc_loop ();
       loop->header = l1_bb;
-      loop->latch = e->dest;
+      loop->latch = cont_bb;
       add_loop (loop, l1_bb->loop_father);
       if (safelen == NULL_TREE)
 	loop->safelen = INT_MAX;

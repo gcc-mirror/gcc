@@ -1,3 +1,8 @@
+2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59152
+	* c-c++-common/gomp/pr59152.c: New test.
+
 2013-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/gomp/openmp-simd-1.c: Cleanup original tree dump.
