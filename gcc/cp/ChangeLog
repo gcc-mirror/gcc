@@ -1,5 +1,11 @@
 2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58700
+	* decl.c (grokdeclarator): Don't try to pass declarator->id_loc
+	to build_lang_decl_loc when declarator is null.
+
+2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* cvt.c (cp_convert_and_check): Avoid calling cp_convert
 	unnecessarily.
 
