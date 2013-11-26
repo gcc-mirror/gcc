@@ -8552,8 +8552,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int count;
 	tree index = TYPE_DOMAIN (type);
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	count = rs6000_aggregate_candidate (TREE_TYPE (type), modep);
@@ -8582,8 +8584,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  return -1;
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -8612,9 +8616,10 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	int sub_count;
 	tree field;
 
-	/* Can't handle incomplete types.  */
-	if (!COMPLETE_TYPE_P (type))
-	  return -1;
+	/* Can't handle incomplete types nor sizes that are not
+	   fixed.  */
+	if (!COMPLETE_TYPE_P (type)
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	  {
