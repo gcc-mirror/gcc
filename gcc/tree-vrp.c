@@ -441,6 +441,9 @@ set_value_range (value_range_t *vr, enum value_range_type t, tree min,
 
       gcc_assert (min && max);
 
+      gcc_assert ((!TREE_OVERFLOW_P (min) || is_overflow_infinity (min))
+		  && (!TREE_OVERFLOW_P (max) || is_overflow_infinity (max)));
+
       if (INTEGRAL_TYPE_P (TREE_TYPE (min)) && t == VR_ANTI_RANGE)
 	gcc_assert (!vrp_val_is_min (min) || !vrp_val_is_max (max));
 
@@ -616,7 +619,8 @@ static inline void
 set_value_range_to_value (value_range_t *vr, tree val, bitmap equiv)
 {
   gcc_assert (is_gimple_min_invariant (val));
-  val = avoid_overflow_infinity (val);
+  if (TREE_OVERFLOW_P (val))
+    val = drop_tree_overflow (val);
   set_value_range (vr, VR_RANGE, val, val, equiv);
 }
 
@@ -6738,8 +6742,8 @@ vrp_visit_assignment_or_call (gimple stmt, tree *output_p)
 
       /* Try folding the statement to a constant first.  */
       tree tem = gimple_fold_stmt_to_constant (stmt, vrp_valueize);
-      if (tem && !is_overflow_infinity (tem))
-	set_value_range (&new_vr, VR_RANGE, tem, tem, NULL);
+      if (tem)
+	set_value_range_to_value (&new_vr, tem, NULL);
       /* Then dispatch to value-range extracting functions.  */
       else if (code == GIMPLE_CALL)
 	extract_range_basic (&new_vr, stmt);
@@ -8336,7 +8340,7 @@ vrp_visit_phi_node (gimple phi)
 	    }
 	  else
 	    {
-	      if (is_overflow_infinity (arg))
+	      if (TREE_OVERFLOW_P (arg))
 		arg = drop_tree_overflow (arg);
 
 	      vr_arg.type = VR_RANGE;
