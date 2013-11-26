@@ -23275,7 +23275,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
 	{
 	  parser->lexer->in_pragma = true;
 	  cp_parser_omp_declare_reduction_exprs (member_function, parser);
-	  finish_function (0);
+	  finish_function (/*inline*/2);
 	  cp_check_omp_declare_reduction (member_function);
 	}
       else

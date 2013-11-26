@@ -1,3 +1,9 @@
+2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58874
+	* parser.c (cp_parser_late_parsing_for_member): For OpenMP UDRs
+	pass 2 instead of 0 to finish_function.
+
 2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58700
