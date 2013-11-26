@@ -68,9 +68,9 @@
 	* config/rs6000/predicates.md
 	(any_operand): Add const_wide_int.
 	(zero_constant): Likewise.
-	(non_logical_cint_operand): Likewise.
 	(input_operand): Likewise.
 	(splat_input_operand): Likewise.
+	(non_logical_cint_operand): Change const_double to const_wide_int.
 	* config/rs6000/rs6000.c
 	(num_insns_constant): Handle CONST_WIDE_INT.
 	(easy_altivec_constant): Remove comment.
