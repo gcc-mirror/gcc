@@ -1,3 +1,23 @@
+2013-11-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/58314
+	PR target/50751
+	* config/sh/sh.c (max_mov_insn_displacement, disp_addr_displacement):
+	Prefix function names with 'sh_'.  Make them non-static.
+	* config/sh/sh-protos.h (sh_disp_addr_displacement,
+	sh_max_mov_insn_displacement): Add declarations.
+	* config/sh/constraints.md (Q): Reject QImode.
+	(Sdd): Use match_code "mem".
+	(Snd): Fix erroneous matching of non-memory operands.
+	* config/sh/predicates.md (short_displacement_mem_operand): New
+	predicate.
+	(general_movsrc_operand): Disallow PC relative QImode loads.
+	* config/sh/sh.md (*mov<mode>_reg_reg): Remove it.
+	(*movqi, *movhi): Merge both insns into...
+	(*mov<mode>): ... this new insn.  Replace generic 'm' constraints with
+	'Snd' and 'Sdd' constraints.  Calculate insn length dynamically based
+	on the operand types.
+
 2013-11-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.c (epiphany_expand_prologue):
