@@ -3185,15 +3185,26 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		}
 	      else if (TREE_CONSTANT (x))
 		{
-		  const char *name = NULL;
-		  if (DECL_NAME (var))
-		    name = IDENTIFIER_POINTER (DECL_NAME (new_var));
+		  /* For reduction with placeholder in SIMD loop,
+		     defer adding the initialization of the reference,
+		     because if we decide to use SIMD array for it,
+		     the initilization could cause expansion ICE.  */
+		  if (c_kind == OMP_CLAUSE_REDUCTION
+		      && OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
+		      && is_simd)
+		    x = NULL_TREE;
+		  else
+		    {
+		      const char *name = NULL;
+		      if (DECL_NAME (var))
+			name = IDENTIFIER_POINTER (DECL_NAME (new_var));
 
-		  x = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (new_var)),
-					  name);
-		  gimple_add_tmp_var (x);
-		  TREE_ADDRESSABLE (x) = 1;
-		  x = build_fold_addr_expr_loc (clause_loc, x);
+		      x = create_tmp_var_raw (TREE_TYPE (TREE_TYPE (new_var)),
+					      name);
+		      gimple_add_tmp_var (x);
+		      TREE_ADDRESSABLE (x) = 1;
+		      x = build_fold_addr_expr_loc (clause_loc, x);
+		    }
 		}
 	      else
 		{
@@ -3201,8 +3212,11 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  x = build_call_expr_loc (clause_loc, atmp, 1, x);
 		}
 
-	      x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
-	      gimplify_assign (new_var, x, ilist);
+	      if (x)
+		{
+		  x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
+		  gimplify_assign (new_var, x, ilist);
+		}
 
 	      new_var = build_simple_mem_ref_loc (clause_loc, new_var);
 	    }
@@ -3499,6 +3513,29 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			  gimple_seq_add_seq (&llist[1], tseq);
 			}
 		      break;
+		    }
+		  /* If this is a reference to constant size reduction var
+		     with placeholder, we haven't emitted the initializer
+		     for it because it is undesirable if SIMD arrays are used.
+		     But if they aren't used, we need to emit the deferred
+		     initialization now.  */
+		  else if (is_reference (var) && is_simd)
+		    {
+		      tree z
+			= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (new_vard)));
+		      if (TREE_CONSTANT (z))
+			{
+			  const char *name = NULL;
+			  if (DECL_NAME (var))
+			    name = IDENTIFIER_POINTER (DECL_NAME (new_vard));
+
+			  z = create_tmp_var_raw
+				(TREE_TYPE (TREE_TYPE (new_vard)), name);
+			  gimple_add_tmp_var (z);
+			  TREE_ADDRESSABLE (z) = 1;
+			  z = build_fold_addr_expr_loc (clause_loc, z);
+			  gimplify_assign (new_vard, z, ilist);
+			}
 		    }
 		  x = lang_hooks.decls.omp_clause_default_ctor
 				(c, new_var, unshare_expr (x));

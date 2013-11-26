@@ -1,5 +1,11 @@
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59150
+	* omp-low.c (lower_rec_input_clause): For reduction with placeholder
+	of references to constant size types in simd loops, defer emitting
+	initializer for the new_var, emit it later on only if not using
+	SIMD arrays for it.
+
 	PR middle-end/59152
 	* omp-low.c (expand_omp_for_static_chunk): Don't set loop->latch
 	for the inner loop if collapse_bb is non-NULL.
