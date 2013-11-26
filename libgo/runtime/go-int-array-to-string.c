@@ -30,6 +30,8 @@ __go_int_array_to_string (const void* p, intgo len)
 
       if (v < 0 || v > 0x10ffff)
 	v = 0xfffd;
+      else if (0xd800 <= v && v <= 0xdfff)
+	v = 0xfffd;
 
       if (v <= 0x7f)
 	slen += 1;
@@ -55,6 +57,8 @@ __go_int_array_to_string (const void* p, intgo len)
       /* If V is out of range for UTF-8, substitute the replacement
 	 character.  */
       if (v < 0 || v > 0x10ffff)
+	v = 0xfffd;
+      else if (0xd800 <= v && v <= 0xdfff)
 	v = 0xfffd;
 
       if (v <= 0x7f)
