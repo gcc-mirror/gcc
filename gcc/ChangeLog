@@ -1,3 +1,10 @@
+2013-11-26  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (require_pic_register): Handle high pic base
+	register for thumb-1.
+	(arm_load_pic_register): Also initialize high pic base register.
+	* doc/invoke.texi: Update documentation for option -mpic-register.
+
 2013-11-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/58314
