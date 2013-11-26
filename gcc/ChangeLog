@@ -1,3 +1,8 @@
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
+	* pretty-print.c (output_buffer::~output_buffer): Really
+	free the obstacks.
+
 2013-11-25  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Selectively
