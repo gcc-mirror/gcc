@@ -1,3 +1,8 @@
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59287
+	* gcc.dg/tree-ssa/alias-29.c: New testcase.
+
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54485

@@ -1,5 +1,11 @@
 2013-11-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/59287
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Remove no longer necessary special-casing of union accesses.
+
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
 	* pretty-print.c (output_buffer::~output_buffer): Really
 	free the obstacks.
 

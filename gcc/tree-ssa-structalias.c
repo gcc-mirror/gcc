@@ -3163,29 +3163,6 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       return;
     }
 
-  /* Handle type-punning through unions.  If we are extracting a pointer
-     from a union via a possibly type-punning access that pointer
-     points to anything, similar to a conversion of an integer to
-     a pointer.  */
-  if (!lhs_p)
-    {
-      tree u;
-      for (u = t;
-	   TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
-	   u = TREE_OPERAND (u, 0))
-	if (TREE_CODE (u) == COMPONENT_REF
-	    && TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
-	  {
-	    struct constraint_expr temp;
-
-	    temp.offset = 0;
-	    temp.var = anything_id;
-	    temp.type = ADDRESSOF;
-	    results->safe_push (temp);
-	    return;
-	  }
-    }
-
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
 
   /* Pretend to take the address of the base, we'll take care of
