@@ -15135,54 +15135,6 @@ vtbl4_p8 (poly8x8x4_t tab, uint8x8_t idx)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vtbx1_s8 (int8x8_t r, int8x8_t tab, int8x8_t idx)
-{
-  int8x8_t result;
-  int8x8_t tmp1;
-  int8x16_t temp = vcombine_s8 (tab, vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vtbx1_u8 (uint8x8_t r, uint8x8_t tab, uint8x8_t idx)
-{
-  uint8x8_t result;
-  uint8x8_t tmp1;
-  uint8x16_t temp = vcombine_u8 (tab, vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vtbx1_p8 (poly8x8_t r, poly8x8_t tab, uint8x8_t idx)
-{
-  poly8x8_t result;
-  poly8x8_t tmp1;
-  poly8x16_t temp = vcombine_p8 (tab, vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vtbx2_s8 (int8x8_t r, int8x8x2_t tab, int8x8_t idx)
 {
   int8x8_t result = r;
@@ -15215,63 +15167,6 @@ vtbx2_p8 (poly8x8_t r, poly8x8x2_t tab, uint8x8_t idx)
            : "+w"(result)
            : "w"(temp), "w"(idx)
            : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vtbx3_s8 (int8x8_t r, int8x8x3_t tab, int8x8_t idx)
-{
-  int8x8_t result;
-  int8x8_t tmp1;
-  int8x16x2_t temp;
-  temp.val[0] = vcombine_s8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_s8 (tab.val[2], vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vtbx3_u8 (uint8x8_t r, uint8x8x3_t tab, uint8x8_t idx)
-{
-  uint8x8_t result;
-  uint8x8_t tmp1;
-  uint8x16x2_t temp;
-  temp.val[0] = vcombine_u8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_u8 (tab.val[2], vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vtbx3_p8 (poly8x8_t r, poly8x8x3_t tab, uint8x8_t idx)
-{
-  poly8x8_t result;
-  poly8x8_t tmp1;
-  poly8x16x2_t temp;
-  temp.val[0] = vcombine_p8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_p8 (tab.val[2], vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
   return result;
 }
 
@@ -24918,6 +24813,66 @@ __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vsubd_u64 (uint64x1_t __a, uint64x1_t __b)
 {
   return __a - __b;
+}
+
+/* vtbx1  */
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vtbx1_s8 (int8x8_t __r, int8x8_t __tab, int8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (vreinterpret_u8_s8 (__idx),
+			      vmov_n_u8 (8));
+  int8x8_t __tbl = vtbl1_s8 (__tab, __idx);
+
+  return vbsl_s8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vtbx1_u8 (uint8x8_t __r, uint8x8_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (8));
+  uint8x8_t __tbl = vtbl1_u8 (__tab, __idx);
+
+  return vbsl_u8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vtbx1_p8 (poly8x8_t __r, poly8x8_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (8));
+  poly8x8_t __tbl = vtbl1_p8 (__tab, __idx);
+
+  return vbsl_p8 (__mask, __tbl, __r);
+}
+
+/* vtbx3  */
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vtbx3_s8 (int8x8_t __r, int8x8x3_t __tab, int8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (vreinterpret_u8_s8 (__idx),
+			      vmov_n_u8 (24));
+  int8x8_t __tbl = vtbl3_s8 (__tab, __idx);
+
+  return vbsl_s8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vtbx3_u8 (uint8x8_t __r, uint8x8x3_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (24));
+  uint8x8_t __tbl = vtbl3_u8 (__tab, __idx);
+
+  return vbsl_u8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vtbx3_p8 (poly8x8_t __r, poly8x8x3_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (24));
+  poly8x8_t __tbl = vtbl3_p8 (__tab, __idx);
+
+  return vbsl_p8 (__mask, __tbl, __r);
 }
 
 /* vtrn */
