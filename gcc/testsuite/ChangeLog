@@ -1,3 +1,7 @@
+2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/arm/20131120.c: New test.
+
 2013-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59245

@@ -1,3 +1,8 @@
+2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/arm/arm.c (arm_legitimize_address): Check xop1 is not
+	a constant immediate before force_reg.
+
 2013-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59245
