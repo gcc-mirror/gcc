@@ -229,13 +229,13 @@ ubsan_source_location (location_t loc)
   xloc = expand_location (loc);
 
   /* Fill in the values from LOC.  */
-  size_t len = xloc.file ? strlen (xloc.file) : 0;
-  tree str = build_string (len + 1, xloc.file ? xloc.file : "");
+  size_t len = strlen (xloc.file);
+  tree str = build_string (len + 1, xloc.file);
   TREE_TYPE (str) = build_array_type (char_type_node,
 				      build_index_type (size_int (len)));
   TREE_READONLY (str) = 1;
   TREE_STATIC (str) = 1;
-  str = build_fold_addr_expr_loc (loc, str);
+  str = build_fold_addr_expr (str);
   tree ctor = build_constructor_va (type, 3, NULL_TREE, str, NULL_TREE,
 				    build_int_cst (unsigned_type_node,
 						   xloc.line), NULL_TREE,
@@ -398,6 +398,7 @@ ubsan_create_data (const char *name, location_t loc,
   tree td_type = ubsan_type_descriptor_type ();
   TYPE_READONLY (td_type) = 1;
   td_type = build_pointer_type (td_type);
+  loc = LOCATION_LOCUS (loc);
 
   /* Create the structure type.  */
   ret = make_node (RECORD_TYPE);
