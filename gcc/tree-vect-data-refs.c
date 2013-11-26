@@ -2970,7 +2970,7 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
      SSA_NAME OFF and put the loop invariants into a tree BASE
      that can be gimplified before the loop.  */
   base = get_inner_reference (DR_REF (dr), &pbitsize, &pbitpos, &off,
-			      &pmode, &punsignedp, &pvolatilep, false);
+			      &pmode, &punsignedp, &pvolatilep);
   gcc_assert (base != NULL_TREE && (pbitpos % BITS_PER_UNIT) == 0);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -3466,7 +3466,7 @@ again:
 	    }
 
 	  outer_base = get_inner_reference (inner_base, &pbitsize, &pbitpos,
-		          &poffset, &pmode, &punsignedp, &pvolatilep, false);
+		          &poffset, &pmode, &punsignedp, &pvolatilep);
 	  gcc_assert (outer_base != NULL_TREE);
 
 	  if (pbitpos % BITS_PER_UNIT != 0)
