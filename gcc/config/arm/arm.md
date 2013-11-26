@@ -4718,6 +4718,24 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
+(define_insn_and_split "*zextendsidi_negsi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+        (zero_extend:DI (neg:SI (match_operand:SI 1 "s_register_operand" "r"))))]
+   "TARGET_32BIT"
+   "#"
+   ""
+   [(set (match_dup 2)
+         (neg:SI (match_dup 1)))
+    (set (match_dup 3)
+         (const_int 0))]
+   {
+      operands[2] = gen_lowpart (SImode, operands[0]);
+      operands[3] = gen_highpart (SImode, operands[0]);
+   }
+ [(set_attr "length" "8")
+  (set_attr "type" "multiple")]
+)
+
 ;; Negate an extended 32-bit value.
 (define_insn_and_split "*negdi_extendsidi"
   [(set (match_operand:DI 0 "s_register_operand" "=l,r")

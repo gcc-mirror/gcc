@@ -1,3 +1,8 @@
+2013-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/59290
+	* gcc.target/arm/negdi-2.c: Scan more general register names.
+
 2013-11-26  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/thumb1-pic-high-reg.c: New case.

@@ -10130,6 +10130,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  if (speed_p)
 	    *cost += 2 * extra_cost->alu.shift;
 	}
+      else  /* GET_MODE (XEXP (x, 0)) == SImode.  */
+        *cost = COSTS_N_INSNS (1);
 
       /* Widening beyond 32-bits requires one more insn.  */
       if (mode == DImode)
