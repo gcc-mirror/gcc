@@ -23453,7 +23453,8 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
   /* If expected size is not known but max size is small enough
      so inline version is a win, set expected size into
      the range.  */
-  if (max > 1 && (unsigned HOST_WIDE_INT)max >= max_size && expected_size == -1)
+  if (max > 1 && (unsigned HOST_WIDE_INT) max >= max_size
+      && expected_size == -1)
     expected_size = min_size / 2 + max_size / 2;
 
   /* If user specified the algorithm, honnor it if possible.  */
@@ -23752,7 +23753,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool noalign;
   enum machine_mode move_mode = VOIDmode;
   int unroll_factor = 1;
-  /* TODO: Once vlaue ranges are available, fill in proper data.  */
+  /* TODO: Once value ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
   unsigned HOST_WIDE_INT max_size = -1;
   unsigned HOST_WIDE_INT probable_max_size = -1;
@@ -23967,21 +23968,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	 loop variant.  */
       if (issetmem && epilogue_size_needed > 2 && !promoted_val)
 	force_loopy_epilogue = true;
-      if (count)
+      if ((count && count < (unsigned HOST_WIDE_INT) epilogue_size_needed)
+	  || max_size < (unsigned HOST_WIDE_INT) epilogue_size_needed)
 	{
-	  if (count < (unsigned HOST_WIDE_INT)epilogue_size_needed)
-	    {
-	      /* If main algorithm works on QImode, no epilogue is needed.
-		 For small sizes just don't align anything.  */
-	      if (size_needed == 1)
-		desired_align = align;
-	      else
-		goto epilogue;
-	    }
+	  /* If main algorithm works on QImode, no epilogue is needed.
+	     For small sizes just don't align anything.  */
+	  if (size_needed == 1)
+	    desired_align = align;
+	  else
+	    goto epilogue;
 	}
-      else if (min_size < (unsigned HOST_WIDE_INT)epilogue_size_needed)
+      else if (!count
+	       && min_size < (unsigned HOST_WIDE_INT) epilogue_size_needed)
 	{
-	  gcc_assert (max_size >= (unsigned HOST_WIDE_INT)epilogue_size_needed);
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (epilogue_size_needed),

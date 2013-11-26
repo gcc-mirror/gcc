@@ -3142,7 +3142,7 @@ determine_block_size (tree len, rtx len_rtx,
 	}
       else if (range_type == VR_ANTI_RANGE)
 	{
-	  /* Anti range 0...N lets us to determine minmal size to N+1.  */
+	  /* Anti range 0...N lets us to determine minimal size to N+1.  */
 	  if (min.is_zero ())
 	    {
 	      if ((max + double_int_one).fits_uhwi ())
@@ -3152,7 +3152,7 @@ determine_block_size (tree len, rtx len_rtx,
 
 	     int n;
 	     if (n < 100)
-	       memcpy (a,b, n)
+	       memcpy (a, b, n)
 
 	     Produce anti range allowing negative values of N.  We still
 	     can use the information and make a guess that N is not negative.
