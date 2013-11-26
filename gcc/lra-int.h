@@ -33,16 +33,6 @@ along with GCC; see the file COPYING3.	If not see
    base and index registers might require a reload too.	 */
 #define LRA_MAX_INSN_RELOADS (MAX_RECOG_OPERANDS * 3)
 
-/* Return the hard register which given pseudo REGNO assigned to.
-   Negative value means that the register got memory or we don't know
-   allocation yet.  */
-static inline int
-lra_get_regno_hard_regno (int regno)
-{
-  resize_reg_info ();
-  return reg_renumber[regno];
-}
-
 typedef struct lra_live_range *lra_live_range_t;
 
 /* The structure describes program points where a given pseudo lives.
@@ -393,6 +383,31 @@ extern void lra_eliminate (bool);
 extern void lra_eliminate_reg_if_possible (rtx *);
 
 
+
+/* Return the hard register which given pseudo REGNO assigned to.
+   Negative value means that the register got memory or we don't know
+   allocation yet.  */
+static inline int
+lra_get_regno_hard_regno (int regno)
+{
+  resize_reg_info ();
+  return reg_renumber[regno];
+}
+
+/* Change class of pseudo REGNO to NEW_CLASS.  Print info about it
+   using TITLE.  Output a new line if NL_P.  */
+static void inline
+lra_change_class (int regno, enum reg_class new_class,
+		  const char *title, bool nl_p)
+{
+  lra_assert (regno >= FIRST_PSEUDO_REGISTER);
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file, "%s class %s for r%d",
+	     title, reg_class_names[new_class], regno);
+  setup_reg_classes (regno, new_class, NO_REGS, new_class);
+  if (lra_dump_file != NULL && nl_p)
+    fprintf (lra_dump_file, "\n");
+}
 
 /* Update insn operands which are duplication of NOP operand.  The
    insn is represented by its LRA internal representation ID.  */

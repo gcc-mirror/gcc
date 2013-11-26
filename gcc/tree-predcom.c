@@ -191,6 +191,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "cfgloop.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -198,15 +204,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "ggc.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-chrec.h"
@@ -1536,7 +1543,7 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
 static void
 execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
 {
-  vec<tree> vars;
+  auto_vec<tree> vars;
   dref a;
   unsigned n_writes = 0, ridx, i;
   tree var;
@@ -1575,8 +1582,6 @@ execute_load_motion (struct loop *loop, chain_p chain, bitmap tmp_vars)
       replace_ref_with (a->stmt, vars[ridx],
 			!is_read, !is_read);
     }
-
-  vars.release ();
 }
 
 /* Returns the single statement in that NAME is used, excepting
@@ -2035,7 +2040,11 @@ combinable_refs_p (dref r1, dref r2,
 
   stmt = find_common_use_stmt (&name1, &name2);
 
-  if (!stmt)
+  if (!stmt
+      /* A simple post-dominance check - make sure the combination
+         is executed under the same condition as the references.  */
+      || (gimple_bb (stmt) != gimple_bb (r1->stmt)
+	  && gimple_bb (stmt) != gimple_bb (r2->stmt)))
     return false;
 
   acode = gimple_assign_rhs_code (stmt);
@@ -2266,7 +2275,7 @@ try_combine_chains (vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
-  vec<chain_p> worklist = vNULL;
+  auto_vec<chain_p> worklist;
 
   FOR_EACH_VEC_ELT (*chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
@@ -2292,8 +2301,6 @@ try_combine_chains (vec<chain_p> *chains)
 	    }
 	}
     }
-
-  worklist.release ();
 }
 
 /* Prepare initializers for CHAIN in LOOP.  Returns false if this is
@@ -2505,11 +2512,10 @@ tree_predictive_commoning (void)
 {
   bool unrolled = false;
   struct loop *loop;
-  loop_iterator li;
   unsigned ret = 0;
 
   initialize_original_copy_tables ();
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     if (optimize_loop_for_speed_p (loop))
       {
 	unrolled |= tree_predictive_commoning_loop (loop);

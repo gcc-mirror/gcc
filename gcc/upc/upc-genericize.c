@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "input.h"
 #include "c/c-tree.h"
 #include "flags.h"
@@ -41,9 +42,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "bitmap.h"
 #include "cgraph.h"
-#include "gimple.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
 #include "gimple-low.h"
 #include "gimplify.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "timevar.h"
 #include "tree-check.h"
 #include "tree-cfg.h"
@@ -146,7 +150,7 @@ upc_copy_value_to_tmp_var (tree *val_expr, tree val)
   const tree type = TREE_TYPE (val);
   const tree tmp_var = upc_create_tmp_var (type);
   *val_expr = build2 (INIT_EXPR, type, tmp_var, val);
-  SET_EXPR_LOCATION (*val_expr, EXPR_LOC_OR_HERE (val));
+  SET_EXPR_LOCATION (*val_expr, EXPR_LOC_OR_LOC (val, input_location));
   return tmp_var;
 }
 
@@ -342,8 +346,8 @@ upc_make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos)
       tree size = TYPE_SIZE (TREE_TYPE (inner));
       if ((INTEGRAL_TYPE_P (TREE_TYPE (inner))
 	   || POINTER_TYPE_P (TREE_TYPE (inner)))
-	  && host_integerp (size, 0)
-	  && tree_low_cst (size, 0) == bitsize)
+	  && tree_fits_shwi_p (size)
+	  && tree_to_shwi (size) == bitsize)
 	return fold_convert (type, inner);
     }
   result = build3 (BIT_FIELD_REF, type, inner,
@@ -708,7 +712,7 @@ upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
   tree stmt = *stmt_p;
   tree sync_op = UPC_SYNC_OP (stmt);
   tree sync_id = UPC_SYNC_ID (stmt);
-  const int op = (int) tree_low_cst (sync_op, 1);
+  const int op = tree_to_shwi (sync_op);
   const char *libfunc_name = (char *) 0;
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
@@ -734,7 +738,9 @@ upc_genericize_sync_stmt (location_t loc, tree *stmt_p)
     sync_id = build_int_cst (NULL_TREE, INT_MIN);
   lib_args = tree_cons (NULL_TREE, sync_id, NULL_TREE);
   if (doprofcall)
-    lib_args = upc_gasp_add_src_args (lib_args, input_filename, input_line);
+    lib_args = upc_gasp_add_src_args (lib_args,
+                                      LOCATION_FILE (input_location),
+                                      LOCATION_LINE (input_location));
   *stmt_p = build_function_call (loc, libfunc, lib_args);
 }
 
@@ -899,7 +905,7 @@ upc_genericize_pts_arith_expr (location_t loc, tree *expr_p)
 	         constant to be a UPC pointer-to-shared type.  This won't
 	         play well when we try to negate it. For now, convert
 	         it back to a size type. */
-	      int_op = ssize_int (tree_low_cst (int_op, 0));
+	      int_op = ssize_int (tree_to_shwi (int_op));
 	    }
 	  TREE_SET_CODE (exp, PLUS_EXPR);
 	  /* Make sure that int_op is a signed type to

@@ -28,6 +28,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stmt.h"
+#include "varasm.h"
+#include "stor-layout.h"
+#include "stringpool.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
@@ -39,12 +43,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "vec.h"
 #include "target.h"
-#include "gimple.h"
+#include "pointer-set.h"
+#include "hash-table.h"
 #include "gimplify.h"
 #include "bitmap.h"
-#include "hash-table.h"
 #include "omp-low.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
@@ -2142,7 +2145,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      && type_dependent_expression_p (current_class_ref)))
 	{
 	  result = build_nt_call_vec (fn, *args);
-	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_HERE (fn));
+	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_LOC (fn, input_location));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (cfun)
 	    {
@@ -2717,7 +2720,8 @@ begin_class_definition (tree t)
      before.  */
   if (! TYPE_ANONYMOUS_P (t))
     {
-      struct c_fileinfo *finfo = get_fileinfo (input_filename);
+      struct c_fileinfo *finfo = \
+	get_fileinfo (LOCATION_FILE (input_location));
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	(t, finfo->interface_unknown);
@@ -4372,24 +4376,17 @@ handle_omp_array_sections (tree c)
 {
   bool maybe_zero_len = false;
   unsigned int first_non_one = 0;
-  vec<tree> types = vNULL;
+  auto_vec<tree> types;
   tree first = handle_omp_array_sections_1 (c, OMP_CLAUSE_DECL (c), types,
 					    maybe_zero_len, first_non_one);
   if (first == error_mark_node)
-    {
-      types.release ();
-      return true;
-    }
+    return true;
   if (first == NULL_TREE)
-    {
-      types.release ();
-      return false;
-    }
+    return false;
   if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
     {
       tree t = OMP_CLAUSE_DECL (c);
       tree tem = NULL_TREE;
-      types.release ();
       if (processing_template_decl)
 	return false;
       /* Need to evaluate side effects in the length expressions
@@ -4419,10 +4416,7 @@ handle_omp_array_sections (tree c)
       if (int_size_in_bytes (TREE_TYPE (first)) <= 0)
 	maybe_zero_len = true;
       if (processing_template_decl && maybe_zero_len)
-	{
-	  types.release ();
-	  return false;
-	}
+	return false;
 
       for (i = num, t = OMP_CLAUSE_DECL (c); i > 0;
 	   t = TREE_CHAIN (t))
@@ -4465,7 +4459,6 @@ handle_omp_array_sections (tree c)
 				"array section is not contiguous in %qs "
 				"clause",
 				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		      types.release ();
 		      return true;
 		    }
 		}
@@ -4521,7 +4514,6 @@ handle_omp_array_sections (tree c)
 		size = size_binop (MULT_EXPR, size, l);
 	    }
 	}
-      types.release ();
       if (!processing_template_decl)
 	{
 	  if (side_effects)
@@ -8274,7 +8266,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
 			  bool allow_non_constant, bool addr,
 			  bool *non_constant_p, bool *overflow_p)
 {
-  location_t loc = EXPR_LOC_OR_HERE (t);
+  location_t loc = EXPR_LOC_OR_LOC (t, input_location);
   tree fun = get_function_named_in_call (t);
   tree result;
   constexpr_call new_call = { NULL, NULL, NULL, 0 };
@@ -8611,7 +8603,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
       *non_constant_p = true;
       return t;
     }
-  i = tree_low_cst (index, 0);
+  i = tree_to_shwi (index);
   if (TREE_CODE (ary) == CONSTRUCTOR)
     return (*CONSTRUCTOR_ELTS (ary))[i].value;
   else if (elem_nchars == 1)
@@ -8726,8 +8718,8 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
 
   start = TREE_OPERAND (t, 2);
-  istart = tree_low_cst (start, 0);
-  isize = tree_low_cst (TREE_OPERAND (t, 1), 0);
+  istart = tree_to_shwi (start);
+  isize = tree_to_shwi (TREE_OPERAND (t, 1));
   utype = TREE_TYPE (t);
   if (!TYPE_UNSIGNED (utype))
     utype = build_nonstandard_integer_type (TYPE_PRECISION (utype), 1);
@@ -8739,11 +8731,11 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
 	return value;
       if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE
 	  && TREE_CODE (value) == INTEGER_CST
-	  && host_integerp (bitpos, 0)
-	  && host_integerp (DECL_SIZE (field), 0))
+	  && tree_fits_shwi_p (bitpos)
+	  && tree_fits_shwi_p (DECL_SIZE (field)))
 	{
-	  HOST_WIDE_INT bit = tree_low_cst (bitpos, 0);
-	  HOST_WIDE_INT sz = tree_low_cst (DECL_SIZE (field), 0);
+	  HOST_WIDE_INT bit = tree_to_shwi (bitpos);
+	  HOST_WIDE_INT sz = tree_to_shwi (DECL_SIZE (field));
 	  HOST_WIDE_INT shift;
 	  if (bit >= istart && bit + sz <= istart + isize)
 	    {
@@ -8900,7 +8892,7 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
 		     bool *non_constant_p, bool *overflow_p)
 {
   tree elttype = TREE_TYPE (atype);
-  int max = tree_low_cst (array_type_nelts (atype), 0);
+  int max = tree_to_shwi (array_type_nelts (atype));
   vec<constructor_elt, va_gc> *n;
   vec_alloc (n, max + 1);
   bool pre_init = false;
@@ -9119,9 +9111,9 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (type, TREE_TYPE (op00type))))
 	    {
-	      HOST_WIDE_INT offset = tree_low_cst (op01, 0);
+	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_low_cst (part_width, 0)/BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
@@ -9655,7 +9647,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	    && !integer_zerop (op))
 	  {
 	    if (!allow_non_constant)
-	      error_at (EXPR_LOC_OR_HERE (t),
+	      error_at (EXPR_LOC_OR_LOC (t, input_location),
 			"reinterpret_cast from integer to pointer");
 	    *non_constant_p = true;
 	    return t;
@@ -9701,7 +9693,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
     case EXPR_STMT:
     case OFFSET_REF:
       if (!allow_non_constant)
-        error_at (EXPR_LOC_OR_HERE (t),
+        error_at (EXPR_LOC_OR_LOC (t, input_location),
 		  "expression %qE is not a constant-expression", t);
       *non_constant_p = true;
       break;
@@ -9974,7 +9966,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 		  {
 		    if (flags & tf_error)
 		      {
-			error_at (EXPR_LOC_OR_HERE (t),
+			error_at (EXPR_LOC_OR_LOC (t, input_location),
 				  "call to non-constexpr function %qD", fun);
 			explain_invalid_constexpr_fn (fun);
 		      }
@@ -10066,7 +10058,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	    && !integer_zerop (from))
 	  {
 	    if (flags & tf_error)
-	      error_at (EXPR_LOC_OR_HERE (t),
+	      error_at (EXPR_LOC_OR_LOC (t, input_location),
 			"reinterpret_cast from integer to pointer");
 	    return false;
 	  }

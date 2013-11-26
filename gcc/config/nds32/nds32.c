@@ -25,6 +25,9 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "calls.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -4563,7 +4566,7 @@ nds32_fp_as_gp_check_available (void)
       || frame_pointer_needed
       || NDS32_REQUIRED_CALLEE_SAVED_P (FP_REGNUM)
       || (cfun->stdarg == 1)
-      || (find_fallthru_edge (EXIT_BLOCK_PTR->preds) == NULL))
+      || (find_fallthru_edge (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) == NULL))
     return 0;
 
   /* Now we can check the possibility of using fp_as_gp optimization.  */

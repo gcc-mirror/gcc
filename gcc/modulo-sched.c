@@ -1308,7 +1308,7 @@ canon_loop (struct loop *loop)
 
   /* Avoid annoying special cases of edges going to exit
      block.  */
-  FOR_EACH_EDGE (e, i, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, i, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if ((e->flags & EDGE_FALLTHRU) && (EDGE_COUNT (e->src->succs) > 1))
       split_edge (e);
 
@@ -1351,7 +1351,6 @@ sms_schedule (void)
   ddg_ptr *g_arr, g;
   int * node_order;
   int maxii, max_asap;
-  loop_iterator li;
   partial_schedule_ptr ps;
   basic_block bb = NULL;
   struct loop *loop;
@@ -1395,7 +1394,7 @@ sms_schedule (void)
 
   /* Build DDGs for all the relevant loops and hold them in G_ARR
      indexed by the loop index.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       rtx head, tail;
       rtx count_reg;
@@ -1406,7 +1405,7 @@ sms_schedule (void)
           if (dump_file)
             fprintf (dump_file, "SMS reached max limit... \n");
 
-	  FOR_EACH_LOOP_BREAK (li);
+	  break;
         }
 
       if (dump_file)
@@ -1533,7 +1532,7 @@ sms_schedule (void)
   }
 
   /* We don't want to perform SMS on new loops - created by versioning.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       rtx head, tail;
       rtx count_reg, count_init;
@@ -3345,7 +3344,7 @@ rest_of_handle_sms (void)
 
   /* Finalize layout changes.  */
   FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
+    if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
   free_dominance_info (CDI_DOMINATORS);
   cfg_layout_finalize ();

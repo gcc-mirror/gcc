@@ -27,6 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -35,12 +42,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "hash-table.h"
 #include "tree-iterator.h"
 #include "alloc-pool.h"
 #include "obstack.h"
@@ -2180,11 +2188,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
      phis to translate through.  */
   else
     {
-      vec<basic_block> worklist;
       size_t i;
       basic_block bprime, first = NULL;
 
-      worklist.create (EDGE_COUNT (block->succs));
+      auto_vec<basic_block> worklist (EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
 	  if (!first
@@ -2222,7 +2229,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	  else
 	    bitmap_set_and (ANTIC_OUT, ANTIC_IN (bprime));
 	}
-      worklist.release ();
     }
 
   /* Prune expressions that are clobbered in block and thus become
@@ -2344,11 +2350,10 @@ compute_partial_antic_aux (basic_block block,
      them.  */
   else
     {
-      vec<basic_block> worklist;
       size_t i;
       basic_block bprime;
 
-      worklist.create (EDGE_COUNT (block->succs));
+      auto_vec<basic_block> worklist (EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
 	  if (e->flags & EDGE_DFS_BACK)
@@ -2380,7 +2385,6 @@ compute_partial_antic_aux (basic_block block,
 						expression_for_id (i));
 	    }
 	}
-      worklist.release ();
     }
 
   /* Prune expressions that are clobbered in block and thus become
@@ -2465,7 +2469,7 @@ compute_antic (void)
     }
 
   /* At the exit block we anticipate nothing.  */
-  BB_VISITED (EXIT_BLOCK_PTR) = 1;
+  BB_VISITED (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
 
   changed_blocks = sbitmap_alloc (last_basic_block + 1);
   bitmap_ones (changed_blocks);
@@ -3460,7 +3464,6 @@ do_regular_insertion (basic_block block, basic_block dom)
     }
 
   exprs.release ();
-  avail.release ();
   return new_stuff;
 }
 
@@ -3478,7 +3481,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   bool new_stuff = false;
   vec<pre_expr> exprs;
   pre_expr expr;
-  vec<pre_expr> avail = vNULL;
+  auto_vec<pre_expr> avail;
   int i;
 
   exprs = sorted_array_from_bitmap_set (PA_IN (block));
@@ -3599,7 +3602,6 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
     }
 
   exprs.release ();
-  avail.release ();
   return new_stuff;
 }
 
@@ -3666,7 +3668,7 @@ insert (void)
       num_iterations++;
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
-      new_stuff = insert_aux (ENTRY_BLOCK_PTR);
+      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
       /* Clear the NEW sets before the next iteration.  We have already
          fully propagated its contents.  */
@@ -3711,24 +3713,25 @@ compute_avail (void)
 
       e = get_or_alloc_expr_for_name (name);
       add_to_value (get_expr_value_id (e), e);
-      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), e);
+      bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)), e);
+      bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+				    e);
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR),
+      print_bitmap_set (dump_file, TMP_GEN (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			"tmp_gen", ENTRY_BLOCK);
-      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR),
+      print_bitmap_set (dump_file, AVAIL_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			"avail_out", ENTRY_BLOCK);
     }
 
   /* Allocate the worklist.  */
-  worklist = XNEWVEC (basic_block, n_basic_blocks);
+  worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Seed the algorithm by putting the dominator children of the entry
      block on the worklist.  */
-  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR);
+  for (son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
        son;
        son = next_dom_son (CDI_DOMINATORS, son))
     worklist[sp++] = son;
@@ -3823,7 +3826,7 @@ compute_avail (void)
 	      {
 		vn_reference_t ref;
 		pre_expr result = NULL;
-		vec<vn_reference_op_s> ops = vNULL;
+		auto_vec<vn_reference_op_s> ops;
 
 		/* We can value number only calls to real functions.  */
 		if (gimple_call_internal_p (stmt))
@@ -3833,7 +3836,6 @@ compute_avail (void)
 		vn_reference_lookup_pieces (gimple_vuse (stmt), 0,
 					    gimple_expr_type (stmt),
 					    ops, &ref, VN_NOWALK);
-		ops.release ();
 		if (!ref)
 		  continue;
 
@@ -4655,7 +4657,7 @@ init_pre (void)
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
 
-  postorder = XNEWVEC (int, n_basic_blocks);
+  postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   postorder_num = inverted_post_order_compute (postorder);
 
   alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
@@ -4731,7 +4733,7 @@ do_pre (void)
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
      computing ANTIC, either, even though it's plenty fast.  */
-  if (n_basic_blocks < 4000)
+  if (n_basic_blocks_for_fn (cfun) < 4000)
     {
       compute_antic ();
       insert ();

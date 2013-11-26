@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_SCALAR_EVOLUTION_H
 
 extern tree number_of_latch_executions (struct loop *);
-extern tree number_of_exit_cond_executions (struct loop *);
 extern gimple get_loop_exit_condition (const struct loop *);
 
 extern void scev_initialize (void);
@@ -40,14 +39,14 @@ extern bool simple_iv (struct loop *, struct loop *, tree, struct affine_iv_d *,
 		       bool);
 extern tree compute_overall_effect_of_inner_loop (struct loop *, tree);
 
-/* Returns the basic block preceding LOOP or ENTRY_BLOCK_PTR when the
-   loop is function's body.  */
+/* Returns the basic block preceding LOOP, or the CFG entry block when
+   the loop is function's body.  */
 
 static inline basic_block
 block_before_loop (loop_p loop)
 {
   edge preheader = loop_preheader_edge (loop);
-  return (preheader ? preheader->src : ENTRY_BLOCK_PTR);
+  return (preheader ? preheader->src : ENTRY_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Analyze all the parameters of the chrec that were left under a

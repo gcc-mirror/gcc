@@ -3873,7 +3873,7 @@ df_entry_block_defs_collect (struct df_collection_rec *collection_rec,
   EXECUTE_IF_SET_IN_BITMAP (entry_block_defs, 0, i, bi)
     {
       df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-		     ENTRY_BLOCK_PTR, NULL, DF_REF_REG_DEF, 0);
+		     ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, DF_REF_REG_DEF, 0);
     }
 
   df_canonize_collection_rec (collection_rec);
@@ -4034,17 +4034,17 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
 
   EXECUTE_IF_SET_IN_BITMAP (exit_block_uses, 0, i, bi)
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0);
+		   EXIT_BLOCK_PTR_FOR_FN (cfun), NULL, DF_REF_REG_USE, 0);
 
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
   /* It is deliberate that this is not put in the exit block uses but
      I do not know why.  */
   if (reload_completed
       && !bitmap_bit_p (exit_block_uses, ARG_POINTER_REGNUM)
-      && bb_has_eh_pred (EXIT_BLOCK_PTR)
+      && bb_has_eh_pred (EXIT_BLOCK_PTR_FOR_FN (cfun))
       && fixed_regs[ARG_POINTER_REGNUM])
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[ARG_POINTER_REGNUM], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0);
+		   EXIT_BLOCK_PTR_FOR_FN (cfun), NULL, DF_REF_REG_USE, 0);
 #endif
 
   df_canonize_collection_rec (collection_rec);

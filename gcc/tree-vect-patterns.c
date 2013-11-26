@@ -22,17 +22,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "target.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "cfgloop.h"
 #include "expr.h"
@@ -783,8 +789,8 @@ vect_recog_pow_pattern (vec<gimple> *stmts, tree *type_in,
   *type_out = NULL_TREE;
 
   /* Catch squaring.  */
-  if ((host_integerp (exp, 0)
-       && tree_low_cst (exp, 0) == 2)
+  if ((tree_fits_shwi_p (exp)
+       && tree_to_shwi (exp) == 2)
       || (TREE_CODE (exp) == REAL_CST
           && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
     {
@@ -1635,14 +1641,13 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
 
   if (TREE_CODE (def) == INTEGER_CST)
     {
-      if (!host_integerp (def, 1)
-	  || (unsigned HOST_WIDE_INT) tree_low_cst (def, 1)
-	     >= GET_MODE_PRECISION (TYPE_MODE (type))
+      if (!tree_fits_uhwi_p (def)
+	  || tree_to_uhwi (def) >= GET_MODE_PRECISION (TYPE_MODE (type))
 	  || integer_zerop (def))
 	return NULL;
       def2 = build_int_cst (stype,
 			    GET_MODE_PRECISION (TYPE_MODE (type))
-			    - tree_low_cst (def, 1));
+			    - tree_to_uhwi (def));
     }
   else
     {

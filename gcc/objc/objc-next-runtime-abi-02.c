@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
 
 #ifdef OBJCPLUS
 #include "cp/cp-tree.h"
@@ -3267,7 +3268,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 
   if (field && TREE_CODE (field) == FIELD_DECL)
     instanceSize = int_byte_position (field) * BITS_PER_UNIT
-		   + tree_low_cst (DECL_SIZE (field), 0);
+		   + tree_to_shwi (DECL_SIZE (field));
   else
     instanceSize = 0;
   instanceSize /= BITS_PER_UNIT;

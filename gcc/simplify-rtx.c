@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -298,13 +299,13 @@ delegitimize_mem_from_attrs (rtx x)
 					&mode, &unsignedp, &volatilep, false);
 	    if (bitsize != GET_MODE_BITSIZE (mode)
 		|| (bitpos % BITS_PER_UNIT)
-		|| (toffset && !host_integerp (toffset, 0)))
+		|| (toffset && !tree_fits_shwi_p (toffset)))
 	      decl = NULL;
 	    else
 	      {
 		offset += bitpos / BITS_PER_UNIT;
 		if (toffset)
-		  offset += TREE_INT_CST_LOW (toffset);
+		  offset += tree_to_shwi (toffset);
 	      }
 	    break;
 	  }
@@ -1930,17 +1931,13 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	   && SCALAR_FLOAT_MODE_P (mode)
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op)))
     {
-      REAL_VALUE_TYPE d, t;
+      REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
       switch (code)
 	{
 	case SQRT:
-	  if (HONOR_SNANS (mode) && real_isnan (&d))
-	    return 0;
-	  real_sqrt (&t, mode, &d);
-	  d = t;
-	  break;
+	  return 0;
 	case ABS:
 	  d = real_value_abs (&d);
 	  break;

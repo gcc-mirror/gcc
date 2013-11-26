@@ -27,12 +27,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "timevar.h"
 #include "dumpfile.h"
@@ -597,11 +604,11 @@ remove_unused_scope_block_p (tree scope)
       eliminated.  */
    else if (!nsubblocks)
      ;
-   /* For terse debug info we can eliminate info on unused variables.  */
-   else if (debug_info_level == DINFO_LEVEL_NONE
-	    || debug_info_level == DINFO_LEVEL_TERSE)
+   /* When not generating debug info we can eliminate info on unused
+      variables.  */
+   else if (debug_info_level == DINFO_LEVEL_NONE)
      {
-       /* Even for -g0/-g1 don't prune outer scopes from artificial
+       /* Even for -g0 don't prune outer scopes from artificial
 	  functions, otherwise diagnostics using tree_nonartificial_location
 	  will not be emitted properly.  */
        if (inlined_function_outer_scope_p (scope))
@@ -1007,7 +1014,7 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       pred_bb = e->src;
-      if (pred_bb == ENTRY_BLOCK_PTR)
+      if (pred_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       /* TMP is variables live-on-entry from BB that aren't defined in the
 	 predecessor block.  This should be the live on entry vars to pred.
@@ -1085,7 +1092,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	bitmap_set_bit (&live->liveout[def_bb->index], p);
     }
   else
-    def_bb = ENTRY_BLOCK_PTR;
+    def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   /* Visit each use of SSA_NAME and if it isn't in the same block as the def,
      add it to the list of live on entry blocks.  */
@@ -1101,7 +1108,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 	     defined in that block, or whether its live on entry.  */
 	  int index = PHI_ARG_INDEX_FROM_USE (use);
 	  edge e = gimple_phi_arg_edge (use_stmt, index);
-	  if (e->src != ENTRY_BLOCK_PTR)
+	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      if (e->src != def_bb)
 		add_block = e->src;
@@ -1167,14 +1174,14 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 	      if (p == NO_PARTITION)
 		continue;
 	      e = gimple_phi_arg_edge (phi, i);
-	      if (e->src != ENTRY_BLOCK_PTR)
+	      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 		bitmap_set_bit (&liveinfo->liveout[e->src->index], p);
 	    }
 	}
 
       /* Add each successors live on entry to this bock live on exit.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
-        if (e->dest != EXIT_BLOCK_PTR)
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  bitmap_ior_into (&liveinfo->liveout[bb->index],
 			   live_on_entry (liveinfo, e->dest));
     }
@@ -1367,12 +1374,12 @@ verify_live_on_entry (tree_live_info_p live)
    /* Check for live on entry partitions and report those with a DEF in
       the program. This will typically mean an optimization has done
       something wrong.  */
-  bb = ENTRY_BLOCK_PTR;
+  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   num = 0;
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       int entry_block = e->dest->index;
-      if (e->dest == EXIT_BLOCK_PTR)
+      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
         continue;
       for (i = 0; i < (unsigned)num_var_partitions (map); i++)
 	{

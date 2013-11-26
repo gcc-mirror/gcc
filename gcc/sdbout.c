@@ -45,6 +45,8 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "tm.h"
 #include "debug.h"
 #include "tree.h"
+#include "varasm.h"
+#include "stor-layout.h"
 #include "ggc.h"
 #include "vec.h"
 
@@ -535,10 +537,10 @@ plain_type_1 (tree type, int level)
 	    = (TYPE_DOMAIN (type)
 	       && TYPE_MIN_VALUE (TYPE_DOMAIN (type)) != 0
 	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != 0
-	       && host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
-	       && host_integerp (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0)
-	       ? (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0)
-		  - tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0) + 1)
+	       && tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	       && tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type)))
+	       ? (tree_to_shwi (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+		  - tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) + 1)
 	       : 0);
 
 	return PUSH_DERIVED_LEVEL (DT_ARY, m);
@@ -994,8 +996,8 @@ sdbout_field_types (tree type)
     if (TREE_CODE (tail) == FIELD_DECL
 	&& DECL_NAME (tail)
 	&& DECL_SIZE (tail)
-	&& host_integerp (DECL_SIZE (tail), 1)
-	&& host_integerp (bit_position (tail), 0))
+	&& tree_fits_uhwi_p (DECL_SIZE (tail))
+	&& tree_fits_shwi_p (bit_position (tail)))
       {
 	if (POINTER_TYPE_P (TREE_TYPE (tail)))
 	  sdbout_one_type (TREE_TYPE (TREE_TYPE (tail)));
@@ -1134,7 +1136,7 @@ sdbout_one_type (tree type)
 		  continue;
 
 		PUT_SDB_DEF (IDENTIFIER_POINTER (child_type_name));
-		PUT_SDB_INT_VAL (tree_low_cst (BINFO_OFFSET (child), 0));
+		PUT_SDB_INT_VAL (tree_to_shwi (BINFO_OFFSET (child)));
 		PUT_SDB_SCL (member_scl);
 		sdbout_type (BINFO_TYPE (child));
 		PUT_SDB_ENDEF;
@@ -1152,10 +1154,10 @@ sdbout_one_type (tree type)
 	        if (TREE_CODE (value) == CONST_DECL)
 	          value = DECL_INITIAL (value);
 
-	        if (host_integerp (value, 0))
+	        if (tree_fits_shwi_p (value))
 		  {
 		    PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
-		    PUT_SDB_INT_VAL (tree_low_cst (value, 0));
+		    PUT_SDB_INT_VAL (tree_to_shwi (value));
 		    PUT_SDB_SCL (C_MOE);
 		    PUT_SDB_TYPE (T_MOE);
 		    PUT_SDB_ENDEF;
@@ -1173,8 +1175,8 @@ sdbout_one_type (tree type)
 	    if (TREE_CODE (tem) == FIELD_DECL
 		&& DECL_NAME (tem)
 		&& DECL_SIZE (tem)
-		&& host_integerp (DECL_SIZE (tem), 1)
-		&& host_integerp (bit_position (tem), 0))
+		&& tree_fits_uhwi_p (DECL_SIZE (tem))
+		&& tree_fits_shwi_p (bit_position (tem)))
 	      {
 		const char *name;
 
@@ -1185,7 +1187,7 @@ sdbout_one_type (tree type)
 		    PUT_SDB_INT_VAL (int_bit_position (tem));
 		    PUT_SDB_SCL (C_FIELD);
 		    sdbout_type (DECL_BIT_FIELD_TYPE (tem));
-		    PUT_SDB_SIZE (tree_low_cst (DECL_SIZE (tem), 1));
+		    PUT_SDB_SIZE (tree_to_uhwi (DECL_SIZE (tem)));
 		  }
 		else
 		  {

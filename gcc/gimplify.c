@@ -24,9 +24,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "stringpool.h"
+#include "calls.h"
+#include "varasm.h"
+#include "stor-layout.h"
+#include "stmt.h"
+#include "print-tree.h"
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "tree-pretty-print.h"
@@ -82,6 +98,37 @@ enum omp_region_type
   ORT_TARGET = 32
 };
 
+/* Gimplify hashtable helper.  */
+
+struct gimplify_hasher : typed_free_remove <elt_t>
+{
+  typedef elt_t value_type;
+  typedef elt_t compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
+
+struct gimplify_ctx
+{
+  struct gimplify_ctx *prev_context;
+
+  vec<gimple> bind_expr_stack;
+  tree temps;
+  gimple_seq conditional_cleanups;
+  tree exit_label;
+  tree return_temp;
+
+  vec<tree> case_labels;
+  /* The formal temporary table.  Should this be persistent?  */
+  hash_table <gimplify_hasher> temp_htab;
+
+  int conditions;
+  bool save_stack;
+  bool into_ssa;
+  bool allow_rhs_cond_expr;
+  bool in_cleanup_point_expr;
+};
+
 struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
@@ -93,9 +140,8 @@ struct gimplify_omp_ctx
   bool combined_loop;
 };
 
-struct gimplify_ctx *gimplify_ctxp;
+static struct gimplify_ctx *gimplify_ctxp;
 static struct gimplify_omp_ctx *gimplify_omp_ctxp;
-
 
 /* Forward declaration.  */
 static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
@@ -127,14 +173,63 @@ gimplify_seq_add_seq (gimple_seq *dst_p, gimple_seq src)
   gsi_insert_seq_after_without_update (&si, src, GSI_NEW_STMT);
 }
 
+
+/* Pointer to a list of allocated gimplify_ctx structs to be used for pushing
+   and popping gimplify contexts.  */
+
+static struct gimplify_ctx *ctx_pool = NULL;
+
+/* Return a gimplify context struct from the pool.  */
+
+static inline struct gimplify_ctx *
+ctx_alloc (void)
+{
+  struct gimplify_ctx * c = ctx_pool;
+
+  if (c)
+    ctx_pool = c->prev_context;
+  else
+    c = XNEW (struct gimplify_ctx);
+
+  memset (c, '\0', sizeof (*c));
+  return c;
+}
+
+/* Put gimplify context C back into the pool.  */
+
+static inline void
+ctx_free (struct gimplify_ctx *c)
+{
+  c->prev_context = ctx_pool;
+  ctx_pool = c;
+}
+
+/* Free allocated ctx stack memory.  */
+
+void
+free_gimplify_stack (void)
+{
+  struct gimplify_ctx *c;
+
+  while ((c = ctx_pool))
+    {
+      ctx_pool = c->prev_context;
+      free (c);
+    }
+}
+
+
 /* Set up a context for the gimplifier.  */
 
 void
-push_gimplify_context (struct gimplify_ctx *c)
+push_gimplify_context (bool in_ssa, bool rhs_cond_ok)
 {
-  memset (c, '\0', sizeof (*c));
+  struct gimplify_ctx *c = ctx_alloc ();
+
   c->prev_context = gimplify_ctxp;
   gimplify_ctxp = c;
+  gimplify_ctxp->into_ssa = in_ssa;
+  gimplify_ctxp->allow_rhs_cond_expr = rhs_cond_ok;
 }
 
 /* Tear down a context for the gimplifier.  If BODY is non-null, then
@@ -161,6 +256,7 @@ pop_gimplify_context (gimple body)
 
   if (c->temp_htab.is_created ())
     c->temp_htab.dispose ();
+  ctx_free (c);
 }
 
 /* Push a GIMPLE_BIND tuple onto the stack of bindings.  */
@@ -428,7 +524,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
-  SET_EXPR_LOCATION (mod, EXPR_LOC_OR_HERE (val));
+  SET_EXPR_LOCATION (mod, EXPR_LOC_OR_LOC (val, input_location));
 
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
@@ -538,7 +634,7 @@ gimple_add_tmp_var (tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!host_integerp (DECL_SIZE_UNIT (tmp), 1))
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = current_function_decl;
@@ -1661,6 +1757,59 @@ gimplify_var_or_parm_decl (tree *expr_p)
   return GS_ALL_DONE;
 }
 
+/* Recalculate the value of the TREE_SIDE_EFFECTS flag for T.  */
+
+static void
+recalculate_side_effects (tree t)
+{
+  enum tree_code code = TREE_CODE (t);
+  int len = TREE_OPERAND_LENGTH (t);
+  int i;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_expression:
+      switch (code)
+	{
+	case INIT_EXPR:
+	case MODIFY_EXPR:
+	case VA_ARG_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  /* All of these have side-effects, no matter what their
+	     operands are.  */
+	  return;
+
+	default:
+	  break;
+	}
+      /* Fall through.  */
+
+    case tcc_comparison:  /* a comparison expression */
+    case tcc_unary:       /* a unary arithmetic expression */
+    case tcc_binary:      /* a binary arithmetic expression */
+    case tcc_reference:   /* a reference */
+    case tcc_vl_exp:        /* a function call */
+      TREE_SIDE_EFFECTS (t) = TREE_THIS_VOLATILE (t);
+      for (i = 0; i < len; ++i)
+	{
+	  tree op = TREE_OPERAND (t, i);
+	  if (op && TREE_SIDE_EFFECTS (op))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	}
+      break;
+
+    case tcc_constant:
+      /* No side-effects.  */
+      return;
+
+    default:
+      gcc_unreachable ();
+   }
+}
+
 /* Gimplify the COMPONENT_REF, ARRAY_REF, REALPART_EXPR or IMAGPART_EXPR
    node *EXPR_P.
 
@@ -2427,7 +2576,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ANDIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_LOC_OR_HERE (expr);
+	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the && on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2449,7 +2598,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ORIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_LOC_OR_HERE (expr);
+	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the || on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2513,7 +2662,7 @@ shortcut_cond_expr (tree expr)
   /* If there was nothing else in our arms, just forward the label(s).  */
   if (!then_se && !else_se)
     return shortcut_cond_r (pred, true_label_p, false_label_p,
-			    EXPR_LOC_OR_HERE (expr));
+			    EXPR_LOC_OR_LOC (expr, input_location));
 
   /* If our last subexpression already has a terminal label, reuse it.  */
   if (else_se)
@@ -2545,7 +2694,7 @@ shortcut_cond_expr (tree expr)
   jump_over_else = block_may_fallthru (then_);
 
   pred = shortcut_cond_r (pred, true_label_p, false_label_p,
-			  EXPR_LOC_OR_HERE (expr));
+			  EXPR_LOC_OR_LOC (expr, input_location));
 
   expr = NULL;
   append_to_statement_list (pred, &expr);
@@ -5002,7 +5151,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
 	    }
 	  else
 	    {
-	      gimple gtry;
+	      gimple_statement_try *gtry;
 	      gimple_seq seq;
 	      enum gimple_try_flags kind;
 
@@ -5016,7 +5165,7 @@ gimplify_cleanup_point_expr (tree *expr_p, gimple_seq *pre_p)
               /* Do not use gsi_replace here, as it may scan operands.
                  We want to do a simple structural modification only.  */
 	      gsi_set_stmt (&iter, gtry);
-	      iter = gsi_start (gtry->gimple_try.eval);
+	      iter = gsi_start (gtry->eval);
 	    }
 	}
       else
@@ -5719,7 +5868,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   enum omp_region_type region_type)
 {
   struct gimplify_omp_ctx *ctx, *outer_ctx;
-  struct gimplify_ctx gctx;
   tree c;
 
   ctx = new_omp_context (region_type);
@@ -5856,7 +6004,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      omp_add_variable (ctx, OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
 				GOVD_LOCAL | GOVD_SEEN);
 	      gimplify_omp_ctxp = ctx;
-	      push_gimplify_context (&gctx);
+	      push_gimplify_context ();
 
 	      OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c) = NULL;
 	      OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c) = NULL;
@@ -5865,7 +6013,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  		&OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c));
 	      pop_gimplify_context
 		(gimple_seq_first_stmt (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c)));
-	      push_gimplify_context (&gctx);
+	      push_gimplify_context ();
 	      gimplify_and_add (OMP_CLAUSE_REDUCTION_MERGE (c),
 		  		&OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c));
 	      pop_gimplify_context
@@ -5879,7 +6027,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		   && OMP_CLAUSE_LASTPRIVATE_STMT (c))
 	    {
 	      gimplify_omp_ctxp = ctx;
-	      push_gimplify_context (&gctx);
+	      push_gimplify_context ();
 	      if (TREE_CODE (OMP_CLAUSE_LASTPRIVATE_STMT (c)) != BIND_EXPR)
 		{
 		  tree bind = build3 (BIND_EXPR, void_type_node, NULL,
@@ -6302,14 +6450,13 @@ gimplify_omp_parallel (tree *expr_p, gimple_seq *pre_p)
   tree expr = *expr_p;
   gimple g;
   gimple_seq body = NULL;
-  struct gimplify_ctx gctx;
 
   gimplify_scan_omp_clauses (&OMP_PARALLEL_CLAUSES (expr), pre_p,
 			     OMP_PARALLEL_COMBINED (expr)
 			     ? ORT_COMBINED_PARALLEL
 			     : ORT_PARALLEL);
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   g = gimplify_and_return_first (OMP_PARALLEL_BODY (expr), &body);
   if (gimple_code (g) == GIMPLE_BIND)
@@ -6339,14 +6486,13 @@ gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
   tree expr = *expr_p;
   gimple g;
   gimple_seq body = NULL;
-  struct gimplify_ctx gctx;
 
   gimplify_scan_omp_clauses (&OMP_TASK_CLAUSES (expr), pre_p,
 			     find_omp_clause (OMP_TASK_CLAUSES (expr),
 					      OMP_CLAUSE_UNTIED)
 			     ? ORT_UNTIED_TASK : ORT_TASK);
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   g = gimplify_and_return_first (OMP_TASK_BODY (expr), &body);
   if (gimple_code (g) == GIMPLE_BIND)
@@ -6744,8 +6890,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   gimplify_scan_omp_clauses (&OMP_CLAUSES (expr), pre_p, ort);
   if (ort == ORT_TARGET || ort == ORT_TARGET_DATA)
     {
-      struct gimplify_ctx gctx;
-      push_gimplify_context (&gctx);
+      push_gimplify_context ();
       gimple g = gimplify_and_return_first (OMP_BODY (expr), &body);
       if (gimple_code (g) == GIMPLE_BIND)
 	pop_gimplify_context (g);
@@ -6980,7 +7125,6 @@ gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
   tree expr = *expr_p, temp, tbody = TRANSACTION_EXPR_BODY (expr);
   gimple g;
   gimple_seq body = NULL;
-  struct gimplify_ctx gctx;
   int subcode = 0;
 
   /* Wrap the transaction body in a BIND_EXPR so we have a context
@@ -6993,7 +7137,7 @@ gimplify_transaction (tree *expr_p, gimple_seq *pre_p)
       TRANSACTION_EXPR_BODY (expr) = bind;
     }
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
   temp = voidify_wrapper_expr (*expr_p, NULL);
 
   g = gimplify_and_return_first (TRANSACTION_EXPR_BODY (expr), &body);
@@ -8351,7 +8495,6 @@ gimplify_body (tree fndecl, bool do_parms)
   location_t saved_location = input_location;
   gimple_seq parm_stmts, seq;
   gimple outer_bind;
-  struct gimplify_ctx gctx;
   struct cgraph_node *cgn;
 
   timevar_push (TV_TREE_GIMPLIFY);
@@ -8361,7 +8504,7 @@ gimplify_body (tree fndecl, bool do_parms)
   default_rtl_profile ();
 
   gcc_assert (gimplify_ctxp == NULL);
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   if (flag_openmp)
     {

@@ -4522,6 +4522,9 @@ find_moveable_pseudos (void)
   pseudo_replaced_reg.release ();
   pseudo_replaced_reg.safe_grow_cleared (max_regs);
 
+  df_analyze ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
   i = 0;
   bitmap_initialize (&live, 0);
   bitmap_initialize (&used, 0);
@@ -4834,19 +4837,23 @@ find_moveable_pseudos (void)
   free (bb_moveable_reg_sets);
 
   last_moveable_pseudo = max_reg_num ();
+
+  fix_reg_equiv_init ();
+  expand_reg_info ();
+  regstat_free_n_sets_and_refs ();
+  regstat_free_ri ();
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
+  free_dominance_info (CDI_DOMINATORS);
 }
 
-
-/* If insn is interesting for parameter range-splitting shring-wrapping
-   preparation, i.e. it is a single set from a hard register to a pseudo, which
-   is live at CALL_DOM, return the destination.  Otherwise return NULL.  */
+/* If SET pattern SET is an assignment from a hard register to a pseudo which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), return
+   the destination.  Otherwise return NULL.  */
 
 static rtx
-interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
 {
-  rtx set = single_set (insn);
-  if (!set)
-    return NULL;
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
   if (!REG_P (src) || !HARD_REGISTER_P (src)
@@ -4854,6 +4861,41 @@ interesting_dest_for_shprep (rtx insn, basic_block call_dom)
       || (call_dom && !bitmap_bit_p (df_get_live_in (call_dom), REGNO (dest))))
     return NULL;
   return dest;
+}
+
+/* If insn is interesting for parameter range-splitting shring-wrapping
+   preparation, i.e. it is a single set from a hard register to a pseudo, which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), or a
+   parallel statement with only one such statement, return the destination.
+   Otherwise return NULL.  */
+
+static rtx
+interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+{
+  if (!INSN_P (insn))
+    return NULL;
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == SET)
+    return interesting_dest_for_shprep_1 (pat, call_dom);
+
+  if (GET_CODE (pat) != PARALLEL)
+    return NULL;
+  rtx ret = NULL;
+  for (int i = 0; i < XVECLEN (pat, 0); i++)
+    {
+      rtx sub = XVECEXP (pat, 0, i);
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
+	continue;
+      if (GET_CODE (sub) != SET
+	  || side_effects_p (sub))
+	return NULL;
+      rtx dest = interesting_dest_for_shprep_1 (sub, call_dom);
+      if (dest && ret)
+	return NULL;
+      if (dest)
+	ret = dest;
+    }
+  return ret;
 }
 
 /* Split live ranges of pseudos that are loaded from hard registers in the
@@ -4865,7 +4907,7 @@ static bool
 split_live_ranges_for_shrink_wrap (void)
 {
   basic_block bb, call_dom = NULL;
-  basic_block first = single_succ (ENTRY_BLOCK_PTR);
+  basic_block first = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   rtx insn, last_interesting_insn = NULL;
   bitmap_head need_new, reachable;
   vec<basic_block> queue;
@@ -4875,7 +4917,7 @@ split_live_ranges_for_shrink_wrap (void)
 
   bitmap_initialize (&need_new, 0);
   bitmap_initialize (&reachable, 0);
-  queue.create (n_basic_blocks);
+  queue.create (n_basic_blocks_for_fn (cfun));
 
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
@@ -4910,7 +4952,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       bb = queue.pop ();
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest != EXIT_BLOCK_PTR
+	if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && bitmap_set_bit (&reachable, e->dest->index))
 	  queue.quick_push (e->dest);
     }
@@ -5194,7 +5236,19 @@ ira (FILE *f)
 #endif
   df_analyze ();
 
+  init_reg_equiv ();
+  if (ira_conflicts_p)
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+
+      if (split_live_ranges_for_shrink_wrap ())
+	df_analyze ();
+
+      free_dominance_info (CDI_DOMINATORS);
+    }
+
   df_clear_flags (DF_NO_INSN_RESCAN);
+
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
 
@@ -5212,7 +5266,6 @@ ira (FILE *f)
   if (resize_reg_info () && flag_ira_loop_pressure)
     ira_set_pseudo_classes (true, ira_dump_file);
 
-  init_reg_equiv ();
   rebuild_p = update_equiv_regs ();
   setup_reg_equiv ();
   setup_reg_equiv_init ();
@@ -5235,22 +5288,7 @@ ira (FILE *f)
      allocation because of -O0 usage or because the function is too
      big.  */
   if (ira_conflicts_p)
-    {
-      df_analyze ();
-      calculate_dominance_info (CDI_DOMINATORS);
-
-      find_moveable_pseudos ();
-      if (split_live_ranges_for_shrink_wrap ())
-	df_analyze ();
-
-      fix_reg_equiv_init ();
-      expand_reg_info ();
-      regstat_free_n_sets_and_refs ();
-      regstat_free_ri ();
-      regstat_init_n_sets_and_refs ();
-      regstat_compute_ri ();
-      free_dominance_info (CDI_DOMINATORS);
-    }
+    find_moveable_pseudos ();
 
   max_regno_before_ira = max_reg_num ();
   ira_setup_eliminable_regset (true);

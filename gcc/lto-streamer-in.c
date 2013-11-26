@@ -26,12 +26,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "toplev.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "expr.h"
 #include "flags.h"
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
 #include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -42,11 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-pass.h"
 #include "function.h"
-#include "ggc.h"
 #include "diagnostic.h"
 #include "except.h"
 #include "debug.h"
-#include "vec.h"
 #include "ipa-utils.h"
 #include "data-streamer.h"
 #include "gimple-streamer.h"
@@ -587,7 +590,7 @@ make_new_block (struct function *fn, unsigned int index)
   basic_block bb = alloc_block ();
   bb->index = index;
   SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
-  n_basic_blocks_for_function (fn)++;
+  n_basic_blocks_for_fn (fn)++;
   return bb;
 }
 
@@ -658,7 +661,7 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
       index = streamer_read_hwi (ib);
     }
 
-  p_bb = ENTRY_BLOCK_PTR_FOR_FUNCTION (fn);
+  p_bb = ENTRY_BLOCK_PTR_FOR_FN (fn);
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
@@ -995,7 +998,7 @@ input_function (tree fn_decl, struct data_in *data_in,
      of a gimple body is used by the cgraph routines, but we should
      really use the presence of the CFG.  */
   {
-    edge_iterator ei = ei_start (ENTRY_BLOCK_PTR->succs);
+    edge_iterator ei = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
     gimple_set_body (fn_decl, bb_seq (ei_edge (ei)->dest));
   }
 

@@ -24,19 +24,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "toplev.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "diagnostic-core.h"
 #include "tm.h"
 #include "cgraph.h"
-#include "ggc.h"
 #include "tree-ssa-operands.h"
 #include "tree-pass.h"
 #include "langhooks.h"
-#include "vec.h"
 #include "bitmap.h"
-#include "pointer-set.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "lto.h"
 #include "lto-tree.h"
@@ -2480,7 +2482,7 @@ lto_wpa_write_files (void)
 	       lsei_next_in_partition (&lsei))
 	    {
 	      symtab_node *node = lsei_node (lsei);
-	      fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
+	      fprintf (cgraph_dump_file, "%s ", node->asm_name ());
 	    }
 	  fprintf (cgraph_dump_file, "\n  Symbols in boundary: ");
 	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
@@ -2489,7 +2491,7 @@ lto_wpa_write_files (void)
 	      symtab_node *node = lsei_node (lsei);
 	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
 		{
-	          fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
+	          fprintf (cgraph_dump_file, "%s ", node->asm_name ());
 		  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
 		  if (cnode
 		      && lto_symtab_encoder_encode_body_p (part->encoder, cnode))

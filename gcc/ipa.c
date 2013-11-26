@@ -22,13 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "calls.h"
+#include "stringpool.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "gimple.h"
-#include "gimplify.h"
-#include "ggc.h"
-#include "flags.h"
 #include "pointer-set.h"
+#include "gimple-expr.h"
+#include "gimplify.h"
+#include "flags.h"
 #include "target.h"
 #include "tree-iterator.h"
 #include "ipa-utils.h"
@@ -218,9 +219,9 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Devirtualizing call in %s/%i to %s/%i\n",
-		     cgraph_node_name (edge->caller),
+		     edge->caller->name (),
 		     edge->caller->order,
-		     cgraph_node_name (target), target->order);
+		     target->name (), target->order);
 	  edge = cgraph_make_edge_direct (edge, target);
 	  if (!inline_summary_vec && edge->call_stmt)
 	    cgraph_redirect_edge_call_stmt_to_callee (edge);
@@ -245,7 +246,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
      hope calls to them will be devirtualized. 
 
      Again we remove them after inlining.  In late optimization some
-     devirtualization may happen, but it is not importnat since we won't inline
+     devirtualization may happen, but it is not important since we won't inline
      the call. In theory early opts and IPA should work out all important cases.
 
    - virtual clones needs bodies of their origins for later materialization;
@@ -273,7 +274,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
    by reachable symbols or origins of clones).  The queue is represented
    as linked list by AUX pointer terminated by 1.
 
-   A the end we keep all reachable symbols. For symbols in boundary we always
+   At the end we keep all reachable symbols. For symbols in boundary we always
    turn definition into a declaration, but we may keep function body around
    based on body_needed_for_clonning
 
@@ -451,7 +452,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       if (!node->aux)
 	{
 	  if (file)
-	    fprintf (file, " %s", cgraph_node_name (node));
+	    fprintf (file, " %s", node->name ());
 	  cgraph_remove_node (node);
 	  changed = true;
 	}
@@ -465,7 +466,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (node->definition)
 	    {
 	      if (file)
-		fprintf (file, " %s", cgraph_node_name (node));
+		fprintf (file, " %s", node->name ());
 	      node->analyzed = false;
 	      node->definition = false;
 	      node->cpp_implicit_alias = false;
@@ -511,7 +512,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->decl)))
 	{
 	  if (file)
-	    fprintf (file, " %s", varpool_node_name (vnode));
+	    fprintf (file, " %s", vnode->name ());
 	  varpool_remove_node (vnode);
 	  changed = true;
 	}
@@ -521,7 +522,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (vnode->definition)
 	    {
 	      if (file)
-		fprintf (file, " %s", varpool_node_name (vnode));
+		fprintf (file, " %s", vnode->name ());
 	      changed = true;
 	    }
 	  vnode->definition = false;
@@ -553,7 +554,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	if (!cgraph_for_node_and_aliases (node, has_addr_references_p, NULL, true))
 	  {
 	    if (file)
-	      fprintf (file, " %s", cgraph_node_name (node));
+	      fprintf (file, " %s", node->name ());
 	    node->address_taken = false;
 	    changed = true;
 	    if (cgraph_local_node_p (node))
@@ -621,7 +622,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	if (TREE_ADDRESSABLE (vnode->decl) && !address_taken)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, " %s (addressable)", varpool_node_name (vnode));
+	      fprintf (dump_file, " %s (addressable)", vnode->name ());
 	    TREE_ADDRESSABLE (vnode->decl) = 0;
 	  }
 	if (!TREE_READONLY (vnode->decl) && !address_taken && !written
@@ -631,7 +632,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	    && DECL_SECTION_NAME (vnode->decl) == NULL)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, " %s (read-only)", varpool_node_name (vnode));
+	      fprintf (dump_file, " %s (read-only)", vnode->name ());
 	    TREE_READONLY (vnode->decl) = 1;
 	  }
       }
@@ -1078,17 +1079,17 @@ function_and_variable_visibility (bool whole_program)
       fprintf (dump_file, "\nMarking local functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->local.local)
-	  fprintf (dump_file, " %s", cgraph_node_name (node));
+	  fprintf (dump_file, " %s", node->name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible functions:");
       FOR_EACH_DEFINED_FUNCTION (node)
 	if (node->externally_visible)
-	  fprintf (dump_file, " %s", cgraph_node_name (node));
+	  fprintf (dump_file, " %s", node->name ());
       fprintf (dump_file, "\n\n");
       fprintf (dump_file, "\nMarking externally visible variables:");
       FOR_EACH_DEFINED_VARIABLE (vnode)
 	if (vnode->externally_visible)
-	  fprintf (dump_file, " %s", varpool_node_name (vnode));
+	  fprintf (dump_file, " %s", vnode->name ());
       fprintf (dump_file, "\n\n");
     }
   cgraph_function_flags_ready = true;

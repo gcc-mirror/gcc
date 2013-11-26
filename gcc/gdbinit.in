@@ -94,6 +94,15 @@ Print the expression that is $ in C syntax.
 Works only when an inferior is executing.
 end
 
+define pmz
+set mpz_out_str(stderr, 10, $)
+end
+
+document pmz
+Print the mpz value that is $
+Works only when an inferior is executing.
+end
+
 define ptc
 output (enum tree_code) $.common.code
 echo \n

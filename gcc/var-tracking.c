@@ -91,16 +91,19 @@
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
+#include "stor-layout.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "basic-block.h"
 #include "tm_p.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "reload.h"
 #include "sbitmap.h"
 #include "alloc-pool.h"
 #include "fibheap.h"
-#include "hash-table.h"
 #include "regs.h"
 #include "expr.h"
 #include "tree-pass.h"
@@ -112,7 +115,6 @@
 #include "params.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
-#include "pointer-set.h"
 #include "recog.h"
 #include "tm_p.h"
 #include "alias.h"
@@ -833,16 +835,18 @@ vt_stack_adjustments (void)
   int sp;
 
   /* Initialize entry block.  */
-  VTI (ENTRY_BLOCK_PTR)->visited = true;
-  VTI (ENTRY_BLOCK_PTR)->in.stack_adjust = INCOMING_FRAME_SP_OFFSET;
-  VTI (ENTRY_BLOCK_PTR)->out.stack_adjust = INCOMING_FRAME_SP_OFFSET;
+  VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->visited = true;
+  VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->in.stack_adjust =
+ INCOMING_FRAME_SP_OFFSET;
+  VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->out.stack_adjust =
+ INCOMING_FRAME_SP_OFFSET;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ei_start (ENTRY_BLOCK_PTR->succs);
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs);
 
   while (sp)
     {
@@ -863,7 +867,7 @@ vt_stack_adjustments (void)
 	  VTI (dest)->visited = true;
 	  VTI (dest)->in.stack_adjust = offset = VTI (src)->out.stack_adjust;
 
-	  if (dest != EXIT_BLOCK_PTR)
+	  if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    for (insn = BB_HEAD (dest);
 		 insn != NEXT_INSN (BB_END (dest));
 		 insn = NEXT_INSN (insn))
@@ -6290,9 +6294,9 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			  && DECL_INITIAL (SYMBOL_REF_DECL (l->loc)))
 			{
 			  initial = DECL_INITIAL (SYMBOL_REF_DECL (l->loc));
-			  if (host_integerp (initial, 0))
+			  if (tree_fits_shwi_p (initial))
 			    {
-			      item = GEN_INT (tree_low_cst (initial, 0));
+			      item = GEN_INT (tree_to_shwi (initial));
 			      item = gen_rtx_CONCAT (indmode, mem, item);
 			      call_arguments
 				= gen_rtx_EXPR_LIST (VOIDmode, item,
@@ -6371,7 +6375,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	= TYPE_MODE (TREE_TYPE (OBJ_TYPE_REF_EXPR (obj_type_ref)));
       rtx clobbered = gen_rtx_MEM (mode, this_arg);
       HOST_WIDE_INT token
-	= tree_low_cst (OBJ_TYPE_REF_TOKEN (obj_type_ref), 0);
+	= tree_to_shwi (OBJ_TYPE_REF_TOKEN (obj_type_ref));
       if (token)
 	clobbered = plus_constant (mode, clobbered,
 				   token * GET_MODE_SIZE (mode));
@@ -6904,10 +6908,10 @@ vt_find_locations (void)
   timevar_push (TV_VAR_TRACKING_DATAFLOW);
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
-  rc_order = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
+  rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   bb_order = XNEWVEC (int, last_basic_block);
   pre_and_rev_post_order_compute (NULL, rc_order, false);
-  for (i = 0; i < n_basic_blocks - NUM_FIXED_BLOCKS; i++)
+  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
@@ -7032,7 +7036,7 @@ vt_find_locations (void)
 		{
 		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    {
-		      if (e->dest == EXIT_BLOCK_PTR)
+		      if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 			continue;
 
 		      if (bitmap_bit_p (visited, e->dest->index))
@@ -9581,7 +9585,7 @@ vt_add_function_parameter (tree parm)
   if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
     return;
 
-  out = &VTI (ENTRY_BLOCK_PTR)->out;
+  out = &VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->out;
 
   dv = dv_from_decl (parm);
 
@@ -9928,7 +9932,7 @@ vt_initialize (void)
       for (;;)
 	{
 	  edge e;
-	  if (bb->next_bb == EXIT_BLOCK_PTR
+	  if (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      || ! single_pred_p (bb->next_bb))
 	    break;
 	  e = find_edge (bb, bb->next_bb);
@@ -10031,7 +10035,7 @@ vt_initialize (void)
     }
 
   hard_frame_pointer_adjustment = -1;
-  VTI (ENTRY_BLOCK_PTR)->flooded = true;
+  VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->flooded = true;
   cfa_base_rtx = NULL_RTX;
   return true;
 }
@@ -10157,7 +10161,8 @@ variable_tracking_main_1 (void)
       return 0;
     }
 
-  if (n_basic_blocks > 500 && n_edges / n_basic_blocks >= 20)
+  if (n_basic_blocks_for_fn (cfun) > 500 &&
+      n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
     {
       vt_debug_insns_local (true);
       return 0;

@@ -11,8 +11,9 @@
 #include "toplev.h"
 #include "intl.h"
 #include "tree.h"
-#include "gimple.h"
-#include "gimplify.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "gimple-expr.h"
 #include "tree-iterator.h"
 #include "convert.h"
 #include "real.h"
@@ -3343,9 +3344,9 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
       tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
 
       expr_tree = fold_convert(int_type_tree, expr_tree);
-      if (host_integerp(expr_tree, 0))
+      if (tree_fits_shwi_p (expr_tree))
 	{
-	  HOST_WIDE_INT intval = tree_low_cst(expr_tree, 0);
+	  HOST_WIDE_INT intval = tree_to_shwi (expr_tree);
 	  std::string s;
 	  Lex::append_char(intval, true, &s, this->location());
 	  Expression* se = Expression::make_string(s, this->location());
@@ -9862,8 +9863,11 @@ Call_expression::do_get_tree(Translate_context* context)
     fndecl = TREE_OPERAND(fndecl, 0);
 
   // Add a type cast in case the type of the function is a recursive
-  // type which refers to itself.
-  if (!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl))
+  // type which refers to itself.  We don't do this for an interface
+  // method because 1) an interface method never refers to itself, so
+  // we always have a function type here; 2) we pass an extra first
+  // argument to an interface method, so fnfield_type is not correct.
+  if ((!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl)) && !is_interface_method)
     fn = fold_convert_loc(location.gcc_location(), fnfield_type, fn);
 
   // This is to support builtin math functions when using 80387 math.

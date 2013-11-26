@@ -734,10 +734,9 @@ doloop_optimize (struct loop *loop)
 void
 doloop_optimize_loops (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       doloop_optimize (loop);
     }

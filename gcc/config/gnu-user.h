@@ -134,3 +134,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Additional libraries needed by -static-libtsan.  */
 #undef STATIC_LIBTSAN_LIBS
 #define STATIC_LIBTSAN_LIBS "-ldl -lpthread"
+
+/* Additional libraries needed by -static-liblsan.  */
+#undef STATIC_LIBLSAN_LIBS
+#define STATIC_LIBLSAN_LIBS "-ldl -lpthread"
+
+/* Additional libraries needed by -static-libubsan.  */
+#undef STATIC_LIBUBSAN_LIBS
+#define STATIC_LIBUBSAN_LIBS "-ldl -lpthread"

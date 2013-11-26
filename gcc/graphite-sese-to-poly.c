@@ -34,6 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"
@@ -42,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
@@ -57,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 
 #ifdef HAVE_cloog
+#include "expr.h"
 #include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"
 
@@ -1508,9 +1515,9 @@ pdr_add_data_dimensions (isl_set *extent, scop_p scop, data_reference_p dr)
          subscript - low >= 0 and high - subscript >= 0 in case one of
 	 the two bounds isn't known.  Do the same here?  */
 
-      if (host_integerp (low, 0)
+      if (tree_fits_shwi_p (low)
 	  && high
-	  && host_integerp (high, 0)
+	  && tree_fits_shwi_p (high)
 	  /* 1-element arrays at end of structures may extend over
 	     their declared size.  */
 	  && !(array_at_struct_end_p (ref)
@@ -3062,12 +3069,11 @@ rewrite_commutative_reductions_out_of_ssa_loop (scop_p scop,
 static void
 rewrite_commutative_reductions_out_of_ssa (scop_p scop)
 {
-  loop_iterator li;
   loop_p loop;
   bool changed = false;
   sese region = SCOP_REGION (scop);
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if (loop_in_sese_p (loop, region))
       changed |= rewrite_commutative_reductions_out_of_ssa_loop (scop, loop);
 
@@ -3089,12 +3095,11 @@ rewrite_commutative_reductions_out_of_ssa (scop_p scop)
 static bool
 scop_ivs_can_be_represented (scop_p scop)
 {
-  loop_iterator li;
   loop_p loop;
   gimple_stmt_iterator psi;
   bool result = true;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
 	continue;
@@ -3114,7 +3119,7 @@ scop_ivs_can_be_represented (scop_p scop)
 	    }
 	}
       if (!result)
-	FOR_EACH_LOOP_BREAK (li);
+	break;
     }
 
   return result;

@@ -30,6 +30,12 @@
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "sbitmap.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -37,11 +43,11 @@
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
-#include "vec.h"
 #include "value-prof.h"
 
 /* This file implements a generic value propagation engine based on
@@ -183,7 +189,8 @@ cfg_blocks_add (basic_block bb)
 {
   bool head = false;
 
-  gcc_assert (bb != ENTRY_BLOCK_PTR && bb != EXIT_BLOCK_PTR);
+  gcc_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	      && bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   gcc_assert (!bitmap_bit_p (bb_in_list, bb->index));
 
   if (cfg_blocks_empty_p ())
@@ -278,7 +285,7 @@ static void
 add_control_edge (edge e)
 {
   basic_block bb = e->dest;
-  if (bb == EXIT_BLOCK_PTR)
+  if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
 
   /* If the edge had already been executed, skip it.  */
@@ -407,7 +414,7 @@ simulate_block (basic_block block)
   gimple_stmt_iterator gsi;
 
   /* There is nothing to do for the exit block.  */
-  if (block == EXIT_BLOCK_PTR)
+  if (block == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -501,7 +508,7 @@ ssa_prop_init (void)
   cfg_blocks.safe_grow_cleared (20);
 
   /* Initially assume that every edge in the CFG is not executable.
-     (including the edges coming out of ENTRY_BLOCK_PTR).  */
+     (including the edges coming out of the entry block).  */
   FOR_ALL_BB (bb)
     {
       gimple_stmt_iterator si;
@@ -518,7 +525,7 @@ ssa_prop_init (void)
 
   /* Seed the algorithm by adding the successors of the entry block to the
      edge worklist.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     add_control_edge (e);
 }
 

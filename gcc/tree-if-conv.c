@@ -85,9 +85,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -96,6 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
@@ -916,7 +923,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   unsigned int visited_count = 0;
 
   gcc_assert (loop->num_nodes);
-  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   blocks = XCNEWVEC (basic_block, loop->num_nodes);
   visited = BITMAP_ALLOC (NULL);
@@ -1213,7 +1220,6 @@ if_convertible_loop_p (struct loop *loop)
 	free (dr->aux);
     }
 
-  loop_nest.release ();
   free_data_refs (refs);
   free_dependence_relations (ddrs);
   return res;
@@ -1786,7 +1792,6 @@ tree_if_conversion (struct loop *loop)
 static unsigned int
 main_tree_if_conversion (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
   unsigned todo = 0;
@@ -1794,7 +1799,7 @@ main_tree_if_conversion (void)
   if (number_of_loops (cfun) <= 1)
     return 0;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     if (flag_tree_loop_if_convert == 1
 	|| flag_tree_loop_if_convert_stores == 1
 	|| flag_tree_loop_vectorize

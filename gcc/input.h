@@ -57,11 +57,8 @@ extern location_t input_location;
   ((tree) ((IS_ADHOC_LOC (LOC)) ? get_data_from_adhoc_loc (line_table, (LOC)) \
    : NULL))
 
-#define input_line LOCATION_LINE (input_location)
-#define input_filename LOCATION_FILE (input_location)
 #define in_system_header_at(LOC) \
   ((linemap_location_in_system_header_p (line_table, LOC)))
-#define in_system_header (in_system_header_at (input_location))
 
 void dump_line_table_statistics (void);
 

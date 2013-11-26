@@ -1,3 +1,36 @@
+2013-11-23  David Edelson  <dje.gcc@gmail.com>
+	    Andrew Dixie  <andrewd@gentrack.com>
+
+	PR target/33704
+	* config/rs6000/aixinitfini.c: New file.
+	* config/rs6000/t-aix-cxa (LIB2ADD_ST): Add aixinitfini.c.
+	* config/rs6000/libgcc-aix-cxa.ver (GCC_4.9): Add libgcc initfini
+	symbols.
+
+2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	 * config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.
+
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* libgcov-driver.c (run_accounted): Make global level static.
+	(gcov_exit_merge_summary): Silence warning; do not clear
+	run_accounted here.
+	(gcov_exit): Clear it here.
+
+	* libgcov-driver.c (gcov_exit_merge_summary): Fix setting
+	run_accounted.
+
+	* libgcov-driver.c (get_gcov_dump_complete): Update comments.
+	(all_prg, crc32): Remove static vars.
+	(gcov_exit_compute_summary): Rewrite to return crc32; do not clear
+	all_prg.
+	(gcov_exit_merge_gcda): Add crc32 parameter.
+	(gcov_exit_merge_summary): Add crc32 and all_prg parameter;
+	do not account run if it was already accounted.
+	(gcov_exit_dump_gcov): Add crc32 and all_prg parameters.
+	(gcov_exit): Initialize all_prg; update.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.

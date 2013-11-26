@@ -41,12 +41,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "calls.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
-#include "pointer-set.h"
 #include "splay-tree.h"
-#include "ggc.h"
 #include "ipa-utils.h"
 #include "ipa-reference.h"
 #include "flags.h"
@@ -562,7 +566,7 @@ generate_summary (void)
 	  l = &get_reference_vars_info (node)->local;
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_asm_name (node), node->order);
+		   node->asm_name (), node->order);
 	  fprintf (dump_file, "\n  locals read: ");
 	  if (l->statics_read)
 	    EXECUTE_IF_SET_IN_BITMAP (l->statics_read,
@@ -600,7 +604,7 @@ read_write_all_from_decl (struct cgraph_node *node,
       read_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all\n",
-		  cgraph_node_asm_name (node), node->order);
+		  node->asm_name (), node->order);
     }
   else
     {
@@ -610,7 +614,7 @@ read_write_all_from_decl (struct cgraph_node *node,
       write_all = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
          fprintf (dump_file, "   %s/%i -> read all, write all\n",
-		  cgraph_node_asm_name (node), node->order);
+		  node->asm_name (), node->order);
     }
 }
 
@@ -723,7 +727,7 @@ propagate (void)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting cycle with %s/%i\n",
-		  cgraph_node_asm_name (node), node->order);
+		  node->asm_name (), node->order);
 
       vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
 
@@ -732,7 +736,7 @@ propagate (void)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i\n",
-		     cgraph_node_asm_name (w), w->order);
+		     w->asm_name (), w->order);
 	  get_read_write_all_from_node (w, read_all, write_all);
 	  if (read_all && write_all)
 	    break;
@@ -796,7 +800,7 @@ propagate (void)
 
 	  fprintf (dump_file,
 		   "\nFunction name:%s/%i:",
-		   cgraph_node_asm_name (node), node->order);
+		   node->asm_name (), node->order);
 
 	  ipa_reference_vars_info_t node_info = get_reference_vars_info (node);
 	  ipa_reference_global_vars_info_t node_g = &node_info->global;
@@ -808,7 +812,7 @@ propagate (void)
 	      ipa_reference_local_vars_info_t w_l = &w_ri->local;
 	      if (w != node)
 		fprintf (dump_file, "\n  next cycle: %s/%i ",
-			 cgraph_node_asm_name (w), w->order);
+			 w->asm_name (), w->order);
 	      fprintf (dump_file, "\n    locals read: ");
 	      dump_static_vars_set_to_file (dump_file, w_l->statics_read);
 	      fprintf (dump_file, "\n    locals written: ");
@@ -1086,7 +1090,7 @@ ipa_reference_read_optimization_summary (void)
 	      if (dump_file)
 		fprintf (dump_file,
 			 "\nFunction name:%s/%i:\n  static not read:",
-			 cgraph_node_asm_name (node), node->order);
+			 node->asm_name (), node->order);
 
 	      /* Set the statics not read.  */
 	      v_count = streamer_read_hwi (ib);

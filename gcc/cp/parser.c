@@ -25,6 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "print-tree.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "trans-mem.h"
 #include "cp-tree.h"
 #include "intl.h"
 #include "c-family/c-pragma.h"
@@ -5084,7 +5088,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    {
 	      /* 17.6.3.3.5  */
 	      const char *name = UDLIT_OP_SUFFIX (id);
-	      if (name[0] != '_' && !in_system_header && declarator_p)
+	      if (name[0] != '_' && !in_system_header_at (input_location)
+		  && declarator_p)
 		warning (0, "literal operator suffixes not preceded by %<_%>"
 			    " are reserved for future standardization");
 	    }
@@ -7682,7 +7687,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 
 	  /* Warn about old-style casts, if so requested.  */
 	  if (warn_old_style_cast
-	      && !in_system_header
+	      && !in_system_header_at (input_location)
 	      && !VOID_TYPE_P (type)
 	      && current_lang_name != lang_name_c)
 	    warning (OPT_Wold_style_cast, "use of old-style cast");
@@ -10761,7 +10766,7 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	  /* A declaration consisting of a single semicolon is
 	     invalid.  Allow it unless we're being pedantic.  */
 	  cp_lexer_consume_token (parser->lexer);
-	  if (!in_system_header)
+	  if (!in_system_header_at (input_location))
 	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
 	  continue;
 	}
@@ -15523,7 +15528,7 @@ cp_parser_enumerator_list (cp_parser* parser, tree type)
       /* If the next token is a `}', there is a trailing comma.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (cxx_dialect < cxx11 && !in_system_header)
+	  if (cxx_dialect < cxx11 && !in_system_header_at (input_location))
 	    pedwarn (input_location, OPT_Wpedantic,
                      "comma at end of enumerator list");
 	  break;
@@ -18037,7 +18042,9 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
   (void) cleanup;
 
   if (!processing_specialization)
-    parser->auto_is_implicit_function_template_parm_p = true;
+    if (!current_function_decl
+	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
+      parser->auto_is_implicit_function_template_parm_p = true;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -18052,7 +18059,8 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     /* There are no parameters.  */
     {
 #ifndef NO_IMPLICIT_EXTERN_C
-      if (in_system_header && current_class_type == NULL
+      if (in_system_header_at (input_location)
+	  && current_class_type == NULL
 	  && current_lang_name == lang_name_c)
 	return NULL_TREE;
       else
@@ -20789,7 +20797,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
 
 #if 0
   /* Enable this once a lot of code has transitioned to noexcept?  */
-  if (cxx_dialect >= cxx11 && !in_system_header)
+  if (cxx_dialect >= cxx11 && !in_system_header_at (input_location))
     warning (OPT_Wdeprecated, "dynamic exception specifications are "
 	     "deprecated in C++0x; use %<noexcept%> instead");
 #endif
@@ -26962,8 +26970,8 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
     return list;
   num = fold_non_dependent_expr (num);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
-      || !host_integerp (num, 0)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || !tree_fits_shwi_p (num)
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc, "collapse argument needs positive constant integer expression");
@@ -28929,7 +28937,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 
@@ -30341,7 +30349,7 @@ static void
 cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 				 enum pragma_context)
 {
-  vec<tree> types = vNULL;
+  auto_vec<tree> types;
   enum tree_code reduc_code = ERROR_MARK;
   tree reduc_id = NULL_TREE, orig_reduc_id = NULL_TREE, type;
   unsigned int i;
@@ -30456,7 +30464,6 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     {
      fail:
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      types.release ();
       return;
     }
 
@@ -30561,7 +30568,6 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     }
 
   cp_parser_require_pragma_eol (parser, pragma_tok);
-  types.release ();
 }
 
 /* OpenMP 4.0

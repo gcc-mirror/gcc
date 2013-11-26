@@ -26,6 +26,10 @@
 #include "rtl.h"
 #include "insn-attr.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "regs.h"
 #include "df.h"
 #include "hard-reg-set.h"
@@ -42,6 +46,16 @@
 #include "recog.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "optabs.h"
@@ -1796,7 +1810,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
   unsigned regno;
   unsigned regno2;
   rtx insn;
-  rtx (*gen_mem_ref)(enum machine_mode, rtx) = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
+  rtx (*gen_mem_ref)(enum machine_mode, rtx)
+    = (frame_pointer_needed)? gen_frame_mem : gen_rtx_MEM;
 
 
   for (regno = V0_REGNUM; regno <= V31_REGNUM; regno++)
@@ -1839,16 +1854,17 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 		    ( gen_load_pairdf (gen_rtx_REG (DFmode, regno), mem,
 				       gen_rtx_REG (DFmode, regno2), mem2));
 
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DFmode, regno));
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DFmode, regno2));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DFmode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DFmode, regno2));
 		}
 
 		  /* The first part of a frame-related parallel insn
 		     is always assumed to be relevant to the frame
 		     calculations; subsequent parts, are only
 		     frame-related if explicitly marked.  */
-	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0,
-					    1)) = 1;
+	      RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, 1)) = 1;
 	      regno = regno2;
 	      start_offset += increment * 2;
 	    }
@@ -1859,7 +1875,8 @@ aarch64_save_or_restore_fprs (int start_offset, int increment,
 	      else
 		{
 		  insn = emit_move_insn (gen_rtx_REG (DFmode, regno), mem);
-		  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, regno));
+		  add_reg_note (insn, REG_CFA_RESTORE,
+				gen_rtx_REG (DImode, regno));
 		}
 	      start_offset += increment;
 	    }
@@ -6030,18 +6047,18 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6070,8 +6087,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6102,8 +6119,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6863,7 +6880,7 @@ aarch64_simd_attr_length_move (rtx insn)
 static HOST_WIDE_INT
 aarch64_simd_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
   return MIN (align, 128);
 }
 

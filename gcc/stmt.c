@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "tree.h"
+#include "varasm.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "except.h"
@@ -41,16 +43,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "diagnostic-core.h"
 #include "output.h"
-#include "ggc.h"
 #include "langhooks.h"
 #include "predict.h"
 #include "optabs.h"
 #include "target.h"
+#include "pointer-set.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "regs.h"
 #include "alloc-pool.h"
 #include "pretty-print.h"
-#include "pointer-set.h"
 #include "params.h"
 #include "dumpfile.h"
 
@@ -776,8 +782,8 @@ dump_case_nodes (FILE *f, struct case_node *root,
 
   dump_case_nodes (f, root->left, indent_step, indent_level);
 
-  low = tree_low_cst (root->low, 0);
-  high = tree_low_cst (root->high, 0);
+  low = tree_to_shwi (root->low);
+  high = tree_to_shwi (root->high);
 
   fputs (";; ", f);
   if (high == low)
@@ -854,7 +860,7 @@ expand_switch_as_decision_tree_p (tree range,
      who knows...  */
   max_ratio = optimize_insn_for_size_p () ? 3 : 10;
   if (count < case_values_threshold ()
-      || ! host_integerp (range, /*pos=*/1)
+      || ! tree_fits_uhwi_p (range)
       || compare_tree_int (range, max_ratio * count) > 0)
     return true;
 
@@ -1019,7 +1025,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 
   /* Get table of labels to jump to, in order of case index.  */
 
-  ncases = tree_low_cst (range, 0) + 1;
+  ncases = tree_to_shwi (range) + 1;
   labelvec = XALLOCAVEC (rtx, ncases);
   memset (labelvec, 0, ncases * sizeof (rtx));
 
@@ -1029,11 +1035,11 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 	 value since that should fit in a HOST_WIDE_INT while the
 	 actual values may not.  */
       HOST_WIDE_INT i_low
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->low, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->low, minval));
       HOST_WIDE_INT i_high
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->high, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->high, minval));
       HOST_WIDE_INT i;
 
       for (i = i_low; i <= i_high; i ++)

@@ -625,7 +625,7 @@ schedule_ebbs (void)
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return;
 
   if (profile_info && flag_branch_probabilities)
@@ -648,7 +648,7 @@ schedule_ebbs (void)
 	{
 	  edge e;
 	  tail = BB_END (bb);
-	  if (bb->next_bb == EXIT_BLOCK_PTR
+	  if (bb->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      || LABEL_P (BB_HEAD (bb->next_bb)))
 	    break;
 	  e = find_fallthru_edge (bb->succs);
@@ -683,7 +683,7 @@ ebb_add_block (basic_block bb, basic_block after)
   /* Recovery blocks are always bounded by BARRIERS,
      therefore, they always form single block EBB,
      therefore, we can use rec->index to identify such EBBs.  */
-  if (after == EXIT_BLOCK_PTR)
+  if (after == EXIT_BLOCK_PTR_FOR_FN (cfun))
     bitmap_set_bit (&dont_calc_deps, bb->index);
   else if (after == last_bb)
     last_bb = bb;

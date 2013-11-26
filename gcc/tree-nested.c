@@ -22,10 +22,18 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "function.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
+#include "pointer-set.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -36,7 +44,6 @@
 #include "tree-cfg.h"
 #include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "gimple-low.h"
 
 

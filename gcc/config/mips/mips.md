@@ -881,15 +881,6 @@
 (define_mode_attr sqrt_condition
   [(SF "!ISA_MIPS1") (DF "!ISA_MIPS1") (V2SF "TARGET_SB1")])
 
-;; This attribute gives the conditions under which RECIP.fmt and RSQRT.fmt
-;; instructions can be used.  The MIPS32 and MIPS64 ISAs say that RECIP.D
-;; and RSQRT.D are unpredictable when doubles are stored in pairs of FPRs,
-;; so for safety's sake, we apply this restriction to all targets.
-(define_mode_attr recip_condition
-  [(SF "ISA_HAS_FP4")
-   (DF "ISA_HAS_FP4 && TARGET_FLOAT64")
-   (V2SF "TARGET_SB1")])
-
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
 (define_code_iterator any_extend [sign_extend zero_extend])
@@ -2501,7 +2492,8 @@
   "<divide_condition>"
 {
   if (const_1_operand (operands[1], <MODE>mode))
-    if (!(<recip_condition> && flag_unsafe_math_optimizations))
+    if (!(ISA_HAS_FP_RECIP_RSQRT (<MODE>mode)
+	  && flag_unsafe_math_optimizations))
       operands[1] = force_reg (<MODE>mode, operands[1]);
 })
 
@@ -2539,7 +2531,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
 		  (match_operand:ANYF 2 "register_operand" "f")))]
-  "<recip_condition> && flag_unsafe_math_optimizations"
+  "ISA_HAS_FP_RECIP_RSQRT (<MODE>mode) && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "recip.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -2674,7 +2666,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
 		  (sqrt:ANYF (match_operand:ANYF 2 "register_operand" "f"))))]
-  "<recip_condition> && flag_unsafe_math_optimizations"
+  "ISA_HAS_FP_RECIP_RSQRT (<MODE>mode) && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "rsqrt.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -2692,7 +2684,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(sqrt:ANYF (div:ANYF (match_operand:ANYF 1 "const_1_operand" "")
 			     (match_operand:ANYF 2 "register_operand" "f"))))]
-  "<recip_condition> && flag_unsafe_math_optimizations"
+  "ISA_HAS_FP_RECIP_RSQRT (<MODE>mode) && flag_unsafe_math_optimizations"
 {
   if (TARGET_FIX_SB1)
     return "rsqrt.<fmt>\t%0,%2\;mov.<fmt>\t%0,%0";
@@ -4448,7 +4440,7 @@
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(mem:ANYF (plus:P (match_operand:P 1 "register_operand" "d")
 			  (match_operand:P 2 "register_operand" "d"))))]
-  "ISA_HAS_FP4"
+  "ISA_HAS_LXC1_SXC1"
   "<ANYF:loadx>\t%0,%1(%2)"
   [(set_attr "type" "fpidxload")
    (set_attr "mode" "<ANYF:UNITMODE>")])
@@ -4457,7 +4449,7 @@
   [(set (mem:ANYF (plus:P (match_operand:P 1 "register_operand" "d")
 			  (match_operand:P 2 "register_operand" "d")))
 	(match_operand:ANYF 0 "register_operand" "f"))]
-  "ISA_HAS_FP4"
+  "ISA_HAS_LXC1_SXC1"
   "<ANYF:storex>\t%0,%1(%2)"
   [(set_attr "type" "fpidxstore")
    (set_attr "mode" "<ANYF:UNITMODE>")])
@@ -6776,7 +6768,7 @@
 (define_insn "*mov<GPR:mode>_on_<MOVECC:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(if_then_else:GPR
-	 (match_operator:MOVECC 4 "equality_operator"
+	 (match_operator 4 "equality_operator"
 		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
@@ -6788,10 +6780,23 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
+(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+       (if_then_else:GPR
+        (match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>")
+        (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
+        (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
+  "ISA_HAS_CONDMOVE"
+  "@
+    movn\t%0,%z2,%1
+    movz\t%0,%z3,%1"
+  [(set_attr "type" "condmove")
+   (set_attr "mode" "<GPR:MODE>")])
+
 (define_insn "*mov<SCALARF:mode>_on_<MOVECC:mode>"
   [(set (match_operand:SCALARF 0 "register_operand" "=f,f")
 	(if_then_else:SCALARF
-	 (match_operator:MOVECC 4 "equality_operator"
+	 (match_operator 4 "equality_operator"
 		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:SCALARF 2 "register_operand" "f,0")

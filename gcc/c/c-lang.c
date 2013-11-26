@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "fold-const.h"
 #include "c-tree.h"
 #include "c-family/c-common.h"
 #include "langhooks.h"

@@ -28,6 +28,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
+#include "varasm.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "flags.h"
@@ -2015,7 +2018,7 @@ java_add_stmt (tree new_stmt)
   tree stmts = current_binding_level->stmts;
   tree_stmt_iterator i;
 
-  if (input_filename)
+  if (LOCATION_FILE (input_location))
     walk_tree (&new_stmt, set_input_location, NULL, NULL);
 
   if (stmts == NULL)

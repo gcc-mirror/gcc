@@ -262,7 +262,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wsign-conversion  -Wsizeof-pointer-memaccess @gol
+-Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
+-Wsizeof-pointer-memaccess @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
@@ -454,7 +455,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
--static-libasan -static-libtsan -static-libubsan @gol
+-static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -532,6 +533,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-m3-ldrd @gol
 -munaligned-access @gol
 -mneon-for-64bits @gol
+-mslow-flash-data @gol
 -mrestrict-it}
 
 @emph{AVR Options}
@@ -796,7 +798,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmad -mno-mad -mimadd -mno-imadd -mfused-madd  -mno-fused-madd  -nocpp @gol
 -mfix-24k -mno-fix-24k @gol
 -mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400 @gol
--mfix-r10000 -mno-fix-r10000  -mfix-vr4120  -mno-fix-vr4120 @gol
+-mfix-r10000 -mno-fix-r10000  -mfix-rm7000 -mno-fix-rm7000 @gol
+-mfix-vr4120  -mno-fix-vr4120 @gol
 -mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
 -mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
@@ -4591,6 +4594,14 @@ value, like assigning a signed integer expression to an unsigned
 integer variable. An explicit cast silences the warning. In C, this
 option is enabled also by @option{-Wconversion}.
 
+@item -Wfloat-conversion
+@opindex Wfloat-conversion
+@opindex Wno-float-conversion
+Warn for implicit conversions that reduce the precision of a real value.
+This includes conversions from real to integer, and from higher precision
+real to lower precision real values.  This option is also enabled by
+@option{-Wconversion}.
+
 @item -Wsizeof-pointer-memaccess
 @opindex Wsizeof-pointer-memaccess
 @opindex Wno-sizeof-pointer-memaccess
@@ -5223,8 +5234,8 @@ Level 0 produces no debug information at all.  Thus, @option{-g0} negates
 
 Level 1 produces minimal information, enough for making backtraces in
 parts of the program that you don't plan to debug.  This includes
-descriptions of functions and external variables, but no information
-about local variables and no line numbers.
+descriptions of functions and external variables, and line number
+tables, but no information about local variables.
 
 Level 3 includes extra information, such as all the macro definitions
 present in the program.  Some debuggers support macro expansion when
@@ -5257,12 +5268,57 @@ See @uref{http://code.google.com/p/address-sanitizer/} for more details.
 Enable ThreadSanitizer, a fast data race detector.
 Memory access instructions will be instrumented to detect
 data race bugs.
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for
+more details.
+
+@item -fsanitize=leak
+Enable LeakSanitizer, a memory leak detector.
+This option only matters for linking of executables and if neither
+@option{-fsanitize=address} nor @option{-fsanitize=thread} is used.  In that
+case it will link the executable against a library that overrides @code{malloc}
+and other allocator functions.  See
+@uref{https://code.google.com/p/address-sanitizer/wiki/LeakSanitizer} for more
+details.
 
 @item -fsanitize=undefined
-Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector
+Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
 Various computations will be instrumented to detect undefined behavior
-at runtime, e.g.@: division by zero or various overflows.
+at runtime.  Current suboptions are:
+
+@itemize @bullet
+
+@item @option{-fsanitize=shift}
+
+This option enables checking that the result of a shift operation is
+not undefined.  Note that what exactly is considered undefined differs
+slightly between C and C++, as well as between ISO C90 and C99, etc.
+
+@item @option{-fsanitize=integer-divide-by-zero}
+
+Detect integer division by zero as well as @code{INT_MIN / -1} division.
+
+@item @option{-fsanitize=unreachable}
+
+With this option, the compiler will turn the @code{__builtin_unreachable}
+call into a diagnostics message call instead.  When reaching the
+@code{__builtin_unreachable} call, the behavior is undefined.
+
+@item @option{-fsanitize=vla-bound}
+
+This option instructs the compiler to check that the size of a variable
+length array is positive.  This option does not have any effect in
+@option{-std=c++1y} mode, as the standard requires the exception be thrown
+instead.
+
+@item @option{-fsanitize=null}
+
+This option enables pointer checking.  Particularly, the application
+built with this option turned on will issue an error message when it
+tries to dereference a NULL pointer, or if a reference (possibly an
+rvalue reference) is bound to a NULL pointer.
+
+@end itemize
+
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
 This currently works only for the C family of languages.
@@ -8137,6 +8193,8 @@ exception handling, for linkonce sections, for functions with a user-defined
 section attribute and on any architecture that does not support named
 sections.
 
+Enabled for x86 at levels @option{-O2}, @option{-O3}.
+
 @item -freorder-functions
 @opindex freorder-functions
 Reorder functions in the object file in order to
@@ -8588,9 +8646,8 @@ need to support linker plugins to allow a full-featured build environment
 @command{gcc-nm}, @command{gcc-ranlib} wrappers to pass the right options
 to these tools. With non fat LTO makefiles need to be modified to use them.
 
-The default is @option{-ffat-lto-objects} but this default is intended to
-change in future releases when linker plugin enabled environments become more
-common.
+The default is @option{-fno-fat-lto-objects} on targets with linker plugin
+support.
 
 @item -fcompare-elim
 @opindex fcompare-elim
@@ -10179,6 +10236,15 @@ the GCC driver automatically links against @option{libtsan}.  If
 option is not used, then this links against the shared version of
 @file{libtsan}.  The @option{-static-libtsan} option directs the GCC
 driver to link @file{libtsan} statically, without necessarily linking
+other libraries statically.
+
+@item -static-liblsan
+When the @option{-fsanitize=leak} option is used to link a program,
+the GCC driver automatically links against @option{liblsan}.  If
+@file{liblsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{liblsan}.  The @option{-static-liblsan} option directs the GCC
+driver to link @file{liblsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libubsan
@@ -12153,6 +12219,12 @@ before execution begins.
 Specify the register to be used for PIC addressing.  The default is R10
 unless stack-checking is enabled, when R9 is used.
 
+@item -mpic-data-is-text-relative
+@opindex mpic-data-is-text-relative
+Assume that each data segments are relative to text segment at load time.
+Therefore, it permits addressing data using PC-relative operations.
+This option is on by default for targets other than VxWorks RTP.
+
 @item -mpoke-function-name
 @opindex mpoke-function-name
 Write the name of each function into the text section, directly
@@ -12273,6 +12345,13 @@ defined.
 Enables using Neon to handle scalar 64-bits operations. This is
 disabled by default since the cost of moving data from core registers
 to Neon is high.
+
+@item -mslow-flash-data
+@opindex mslow-flash-data
+Assume loading data from flash is slower than fetching instruction.
+Therefore literal load is minimized for better performance.
+This option is only supported when compiling for ARMv7 M-profile and
+off by default.
 
 @item -mrestrict-it
 @opindex mrestrict-it
@@ -14460,22 +14539,22 @@ Intel Core 2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
 @item corei7
-Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1
-and SSE4.2 instruction set support.
+Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2 and POPCNT instruction set support.
 
 @item corei7-avx
 Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, AVX, AES and PCLMUL instruction set support.
+SSE4.1, SSE4.2, POPCNT, AVX, AES and PCLMUL instruction set support.
 
 @item core-avx-i
 Intel Core CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C instruction
-set support.
+SSE4.1, SSE4.2, POPCNT, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C
+instruction set support.
 
 @item core-avx2
 Intel Core CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI, BMI2
-and F16C instruction set support.
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+BMI, BMI2 and F16C instruction set support.
 
 @item atom
 Intel Atom CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
@@ -14483,7 +14562,7 @@ instruction set support.
 
 @item slm
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1 and SSE4.2 instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -17420,6 +17499,12 @@ This option can only be used if the target architecture supports
 branch-likely instructions.  @option{-mfix-r10000} is the default when
 @option{-march=r10000} is used; @option{-mno-fix-r10000} is the default
 otherwise.
+
+@item -mfix-rm7000
+@itemx -mno-fix-rm7000
+@opindex mfix-rm7000
+Work around the RM7000 @code{dmult}/@code{dmultu} errata.  The
+workarounds are implemented by the assembler rather than by GCC@.
 
 @item -mfix-vr4120
 @itemx -mno-fix-vr4120

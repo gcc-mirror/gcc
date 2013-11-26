@@ -1,6 +1,54 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* java-gimplify.c: Add required include files from gimple.h.
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* class.c (maybe_layout_super_class): Update comment.
+	* decl.c (java_add_stmt): Remove use of input_filename macro.
+	* jcf-parse.c (set_source_filename): Remove use of
+	input_filename macro.
+	(parse_class_file): Remove use of input_line and input_filename
+	macros.
+	(java_parse_file): Remove use of input_filename macro.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* class.c, expr.c: Replace tree_low_cst (..., 0) with tree_to_shwi
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* class.c, expr.c: Replace host_integerp (..., 0) with
+	tree_fits_shwi_p throughout.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* java-gimplify.c: Include only gimplify.h and gimple.h as needed.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* builtins.c: Include stor-layout.h.
+	Include stringpool.h.
+	* class.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* constants.c: Include stringpool.h.
+	Include stor-layout.h.
+	* decl.c: Include stor-layout.h.
+	Include stringpool.h.
+	Include varasm.h.
+	* except.c: Include stringpool.h.
+	Include stor-layout.h.
+	* expr.c: Include stringpool.h.
+	Include stor-layout.h.
+	* jcf-parse.c: Include stringpool.h.
+	* mangle.c: Include stringpool.h.
+	* resource.c: Include stringpool.h.
+	Include stor-layout.h.
+	* typeck.c: Include stor-layout.h.
+	Include stringpool.h.
+	* verify-glue.c: Include stringpool.h.
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 

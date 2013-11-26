@@ -8,7 +8,10 @@
 
 #include "toplev.h"
 #include "tree.h"
-#include "gimple.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 #include "tree-iterator.h"
 #include "cgraph.h"

@@ -25,6 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
@@ -49,6 +53,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "hash-table.h"
 #include "langhooks.h"
+#include "pointer-set.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "intl.h"
@@ -1525,23 +1538,22 @@ ia64_split_tmode_move (rtx operands[])
      the value it points to.  In that case we have to do the loads in
      the appropriate order so that the pointer is not destroyed too
      early.  Also we must not generate a postmodify for that second
-     load, or rws_access_regno will die.  */
+     load, or rws_access_regno will die.  And we must not generate a
+     postmodify for the second load if the destination register 
+     overlaps with the base register.  */
   if (GET_CODE (operands[1]) == MEM
       && reg_overlap_mentioned_p (operands[0], operands[1]))
     {
       rtx base = XEXP (operands[1], 0);
-      rtx first_write = gen_rtx_REG (DImode, REGNO (operands[0]));
       while (GET_CODE (base) != REG)
 	base = XEXP (base, 0);
 
       if (REGNO (base) == REGNO (operands[0]))
-	{
-	  reversed = true;
-	  first_write = gen_rtx_REG (DImode, REGNO (operands[0]) + 1);
-	}
+	reversed = true;
 
-      if (GET_CODE (operands[0]) == REG
-	  && reg_overlap_mentioned_p (first_write, operands[1]))
+      if (refers_to_regno_p (REGNO (operands[0]),
+			     REGNO (operands[0])+2,
+			     base, 0))
 	dead = true;
     }
   /* Another reason to do the moves in reversed order is if the first
@@ -3489,7 +3501,7 @@ ia64_expand_prologue (void)
       edge e;
       edge_iterator ei;
 
-      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
 	if ((e->flags & EDGE_FAKE) == 0
 	    && (e->flags & EDGE_FALLTHRU) != 0)
 	  break;
@@ -10184,7 +10196,8 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx insn)
 
   if (NOTE_INSN_BASIC_BLOCK_P (insn))
     {
-      last_block = NOTE_BASIC_BLOCK (insn)->next_bb == EXIT_BLOCK_PTR;
+      last_block = NOTE_BASIC_BLOCK (insn)->next_bb
+     == EXIT_BLOCK_PTR_FOR_FN (cfun);
 
       /* Restore unwind state from immediately before the epilogue.  */
       if (need_copy_state)

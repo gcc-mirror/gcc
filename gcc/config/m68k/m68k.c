@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "calls.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "rtl.h"
 #include "function.h"
 #include "regs.h"
@@ -514,7 +517,7 @@ m68k_option_override (void)
     {
       enum target_device dev;
       dev = all_microarchs[M68K_DEFAULT_TUNE].device;
-      m68k_tune_flags = all_devices[dev]->flags;
+      m68k_tune_flags = all_devices[dev].flags;
     }
 #endif
   else

@@ -1,3 +1,291 @@
+2013-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59143
+	* gfortran.dg/typebound_proc_30.f90: New.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59080
+	* g++.dg/cpp0x/initlist75.C: New.
+
+	PR c++/59096
+	* g++.dg/cpp0x/gen-attrs-57.C: New.
+
+2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59112
+	PR c++/59113
+	g++.dg/cpp1y/pr58533.C: Updated testcase.
+	g++.dg/cpp1y/pr59112.C: New testcase.
+	g++.dg/cpp1y/pr59113.C: New testcase.
+
+2013-11-25  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data.c: New.
+
+2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/float-exact-1.c: Use dg-add-options ieee.
+	[LDBL_MANT_DIG == 113]: Fix wrong variable name.
+
+2013-11-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59228
+	* gfortran.dg/asynchronous_4.f90: New.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Fix
+	cleanup-tree-dump directive.
+
+2013-11-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/20081223-1.c: Add -ffat-lto-objects.
+	* gcc.dg/vect/vect.exp: Add -ffat-lto-objects.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ubsan/return-1.C: New test.
+	* g++.dg/ubsan/return-2.C: New test.
+
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Tweak to avoid
+	optimizing away some __asan_report* calls.
+
+2013-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/pr10474.c: Also test ppc64.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Also test ppc64, change all ints
+	to longs.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+
+2013-11-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* gcc.target/powerpc/direct-move.h (VSX_REG_ATTR): Allow test to
+	specify an appropriate register class for VSX operations.
+	(load_vsx): Use it.
+	(load_gpr_to_vsx): Likewise.
+	(load_vsx_to_gpr): Likewise.
+	* gcc.target/powerpc/direct-move-vint1.c: Use an appropriate
+	register class for VSX registers that the type can handle.  Remove
+	checks for explicit number of instructions generated, just check
+	if the instruction is generated.
+	* gcc.target/powerpc/direct-move-vint2.c: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-double2.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long2.c: Likewise.
+
+	* gcc.target/powerpc/pr59054.c: Remove duplicate code.
+
+	* gcc.target/powerpc/bool3-av.c: Limit to 64-bit mode for now.
+	* gcc.target/powerpc/bool3-p7.c: Likewise.
+	* gcc.target/powerpc/bool3-p8.c: Likewise.
+
+	* gcc.target/powerpc/p8vector-ldst.c: Just check that the
+	appropriate instructions are generated, don't check the count.
+
+2013-11-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59216
+	* gcc.target/arm/negdi-4.c: Delete invalid test.
+	* gcc.dg/torture/pr59216.c: New test.
+
+2013-11-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vmov_n_1.c: New testcase.
+
+2013-11-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20131122-0.c: New testcase.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-124.c: New test.
+
+2013-11-21  Cary Coutant  <ccoutant@google.com>
+
+	* gcc.dg/debug/dwarf2/mlt1.c: New test.
+	* gcc.dg/debug/dwarf2/mlt2.c: New test.
+
+2013-11-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59221
+	* gcc.c-torture/execute/pr59221.c: New test.
+
+2013-11-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/59227
+	* gfortran.dg/erf_3.F90: XFAIL on spu-* and ia64-*-linux*.
+	Make more generic for other platforms.
+
+2013-11-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53976
+	* gcc.target/sh/pr53976-1.c: New.
+
+2013-11-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/49024
+	* gfortran.dg/erf_3.F90: New file.
+
+2013-11-20  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr48258-1.c: Skip for little endian.
+
+2013-11-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59133
+	* gcc.target/i386/pr59133.c: New.
+
+2013-11-20  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/21718
+	* gcc.dg/float-exact-1.c: New test.
+
+2013-11-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/54300
+	* gcc.target/arm/pr54300.C: New test.
+
+2013-11-20  Diego Novillo  <dnovillo@google.com>
+
+	PR 59212
+	* g++.dg/plugin/selfassign.c: Include stringpool.h
+
+2013-11-20  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/darwin-longlong.c (msw): Make endian-safe.
+
+2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/htm-1.c: Rename to ...
+	* gcc/testsuite/gcc.target/s390/htm-builtins-compile-1.c: ... this
+	one.
+	* gcc.target/s390/htm-xl-intrin-1.c: Rename to ...
+	* gcc.target/s390/htm-builtins-compile-3.c: ... this one.
+	* gcc.target/s390/htm-builtins-compile-2.c: New testcase.
+	* gcc.target/s390/htm-builtins-1.c: New testcase.
+	* gcc.target/s390/htm-builtins-2.c: New testcase.
+	* gcc.target/s390/s390.exp: Add check for htm machine.
+
+2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
+
+	PR c/53001
+	* c-c++-common/Wfloat-conversion.c: Copies relevant
+	tests from c-c++-common/Wconversion-real.c,
+	gcc.dg/Wconversion-real-integer.c and gcc.dg/pr35635.c into
+	new testcase for conversions that are warned about by
+	-Wfloat-conversion.
+
+2013-11-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR rtl-optimization/59099
+	* gcc.target/i386/pr59099.c: New test.
+
+2013-11-19  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: New testcase.
+
+2013-11-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-2.c (MAKE_SLOT): New macro to
+	construct parameter slot value in endian-independent way.
+	(fcevv, fciievv, fcvevv): Use it.
+
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa/devirt9.C: Fix prevoius change.
+
+2013-11-19  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gcc.c-torture/execute/20101011-1.c (__aarch64__):
+	Remove defined(__linux__).
+
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59164
+	* gcc.dg/torture/pr59164.c: New testcase.
+
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58956
+	* gcc.dg/torture/pr58956.c: New testcase.
+
+2013-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/null-1.c: New test.
+	* c-c++-common/ubsan/null-2.c: New test.
+	* c-c++-common/ubsan/null-3.c: New test.
+	* c-c++-common/ubsan/null-4.c: New test.
+	* c-c++-common/ubsan/null-5.c: New test.
+	* c-c++-common/ubsan/null-6.c: New test.
+	* c-c++-common/ubsan/null-7.c: New test.
+	* c-c++-common/ubsan/null-8.c: New test.
+	* c-c++-common/ubsan/null-9.c: New test.
+	* c-c++-common/ubsan/null-10.c: New test.
+	* c-c++-common/ubsan/null-11.c: New test.
+	* gcc.dg/ubsan/c99-shift-2.c: Adjust dg-output.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-3.c: Likewise.
+
+2013-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/c11-complex-1.c: Use dg-add-options ieee.
+
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* ipa/devirt9.C: Verify that the optimization happens already before.
+	whole-program.
+
+2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57517
+	* gfortran.fortran-torture/compile/pr57517.f90: New testcase.
+	* gcc.dg/torture/pr57517.c: Likewise.
+
+2013-11-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/memcpy-3.c: New testcase.
+
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/59175
+	* gcc.target/i386/memcpy-2.c: Fix template;
+	add +1 so the testcase passes at 32bit.
+
+2013-11-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* c-c++-common/cilk-plus/PS/reduction-3.c: Use stdlib.h.
+	Remove spurious FIXME.
+
+2013-11-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/cilk-plus/PS/body.c: Add fopenmp effective target check.
+
+2013-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53473
+	* g++.dg/cpp0x/constexpr-noexcept7.C: New.
+
+2013-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59125
+	PR tree-optimization/54570
+	* gcc.dg/builtin-object-size-8.c: Un-xfail.
+	* gcc.dg/builtin-object-size-14.c: New testcase.
+	* gcc.dg/strlenopt-14gf.c: Adjust.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+	* gcc.dg/strlenopt-4gf.c: Likewise.
+
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile11.adb: New test.
+	* gnat.dg/volatile11_pkg.ad[sb]: New helper.
+
 2013-11-18  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59106
@@ -102,6 +390,11 @@
 	PR c++/57887
 	* g++.dg/cpp0x/nsdmi-template3.C: New.
 	* g++.dg/cpp0x/nsdmi-template4.C: Likewise.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* gcc.dg/plugin/selfassign.c: Include stringpool.h.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
 
 2013-11-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -1078,8 +1371,8 @@
 	* gcc.dg/vmx/gcc-bug-i.c: Add little endian variant.
 	* gcc.dg/vmx/eg-5.c: Likewise.
 
-2013-10-28   Claudiu Zissulescu  <claziss@synopsys.com>
-	     Joern Rennecke  <joern.rennecke@embecosm.com>
+2013-10-28  Claudiu Zissulescu  <claziss@synopsys.com>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.target/arc/jump-around-jump.c: New test.
 

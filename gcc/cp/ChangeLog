@@ -1,3 +1,163 @@
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59080
+	* pt.c (unify): Don't call unify_array_domain with a NULL_TREE
+	third argument.
+
+	PR c++/59096
+	* pt.c (apply_late_template_attributes): Check that TREE_VALUE
+	isn't NULL_TREE in the attribute_takes_identifier_p case.
+
+2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59112
+	PR c++/59113
+	* parser.c (cp_parser_parameter_declaration_clause): Disallow implicit
+	function templates in local functions unless defining a lambda.
+
+2013-11-23  Easwaran Raman  <eraman@google.com>
+
+	PR c++/59031
+	* call.c (build_new_method_call_1): Comnpare function context
+	with BASELINK_BINFO type rather than instance type before
+	marking the call with LOOKUP_NONVIRTUAL.
+
+2013-11-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58868
+	* init.c (build_aggr_init): Don't clobber the type of init
+	if we got an INIT_EXPR back from build_vec_init.
+	(build_vec_init): Do digest_init on trivial initialization.
+
+2013-11-23  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR c++/58525
+	* call.c (build_operator_new_call): Add flag_exceptions check.
+	* decl.c (compute_array_index_type): Ditto.
+	* init.c (build_new_1): Ditto.
+	(build_vec_init): Ditto.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c: Include target.h and c-family/c-ubsan.h.
+	(cp_ubsan_maybe_instrument_return): New function.
+	(cp_genericize): Call it if -fsanitize=return.
+
+	* decl2.c: Include asan.h.
+	(one_static_initialization_or_destruction): If -fsanitize=address,
+	init is non-NULL and guard is NULL, set
+	vnode->dynamically_initialized.
+	(do_static_initialization_or_destruction): Call
+	__asan_{before,after}_dynamic_init around the static initialization.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* class.c: Add required include files from gimple.h.
+	* cp-gimplify.c: Likewise
+	* decl2.c: Likewise
+	* init.c: Likewise
+	* optimize.c: Likewise
+	* pt.c: Likewise
+	* semantics.c: Likewise
+	* tree.c: Likewise
+	* typeck.c: Likewise
+	* vtable-class-hierarchy.c: Likewise
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (build_integral_nontype_arg_conv): Remove use of
+	EXPR_LOC_OR_HERE macro.
+	(convert_like_real): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+	(build_cxx_call): Likewise.
+	(perform_implicit_conversion_flags): Likewise.
+	(initialize_reference): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_reference): Likewise.
+	(ocp_convert): Likewise.
+	(convert_to_void): Likewise.
+	* decl.c (pop_label): Update comment.
+	(pop_switch): Remove use of EXPR_LOC_OR_HERE macro.
+	(check_tag_decl): Remove use of in_system_header macro.
+	(make_rtl_for_nonlocal_decl): Remove use of input_filename
+	macro.
+	(compute_array_index_type): Remove use of in_system_header
+	macro.
+	(grokdeclarator): Likewise.
+	* error.c (dump_global_iord): Remove use of input_filename
+	macro.
+	(location_of): Remove use of EXPR_LOC_OR_HERE macro.
+	(maybe_warn_cpp0x): Remove use of in_system_header macro.
+	* init.c (build_new_1): Remove use of EXPR_LOC_OR_HERE macro.
+	* lex.c (handle_pragma_interface): Remove use of input_filename
+	macro.
+	(handle_pragma_implementation): Likewise.
+	(cxx_make_type): Likewise.
+	(in_main_input_context): Likewise.
+	* name-lookup.c (push_binding_level): Remove use of
+	input_line macro.
+	(leave_scope): Likewise.
+	(resume_scope): Likewise.
+	* parser.c (cp_parser_unqualified_id): Remove use of
+	in_system_header macro.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_declaration_seq_opt): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_parameter_declaration_clause): Likewise.
+	(cp_parser_exception_specification_opt): Likewise.
+	* pt.c (unify_arg_conversion): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(convert_nontype_argument): Likewise.
+	(push_tinst_level): Remove use of in_system_header macro.
+	(tsubst_copy_and_build): Remove use of EXPR_LOC_OR_HERE
+	macros.
+	(do_decl_instantiation): Remove use of in_system_header macro.
+	(do_type_instantiation): Likewise.
+	* semantics.c (finish_call_expr): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(begin_class_definition): Remove use of input_filename macro.
+	(cxx_eval_call_expression): Remove use of EXPR_LOC_OR_HERE
+	macro.
+	(cxx_eval_constant_expression): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	(rationalize_conditional_expr): Likewise.
+	(build_x_compound_expr_from_list): Likewise.
+	(convert_for_assignment): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
+2013-11-22  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* parser.c, semantics.c: Change some local variables from vec to
+	auto_vec or stack_vec.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* decl.c (reshape_init_array_1): Use tree_to_uhwi rather than
+	tree_low_cst.
+	(grokdeclarator): Update comment to refer to tree_to_[su]hwi rather
+	than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* call.c, class.c, decl.c, error.c: Replace tree_low_cst (..., 1) with
+	tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* class.c, dump.c, error.c, init.c, method.c, parser.c, semantics.c:
+	Replace tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* decl.c: Replace host_integerp (..., 1) with tree_fits_uhwi_p
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* error.c, init.c, parser.c, semantics.c: Replace
+	host_integerp (..., 0) with tree_fits_shwi_p throughout.
+
 2013-11-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59123
@@ -55,6 +215,68 @@
 	* semantics.c: Likewise.
 	* tree.c: Likewise.
 	* vtable-class-hierarchy.c: Likewise.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* call.c: Include stor-layout.h.
+	Include trans-mem.h.
+	Include stringpool.h.
+	* class.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include attribs.h.
+	* cp-gimplify.c: Include stor-layout.h.
+	* cvt.c: Include stor-layout.h.
+	* decl.c: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include calls.h.
+	* decl2.c: Include stringpool.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	Include calls.h.
+	* error.c: Include stringpool.h.
+	* except.c: Include stringpool.h.
+	Include trans-mem.h.
+	Include attribs.h.
+	* init.c: Include stringpool.h.
+	Include varasm.h.
+	* lambda.c: Include stringpool.h.
+	* lex.c: Include stringpool.h.
+	* mangle.c: Include stor-layout.h.
+	Include stringpool.h.
+	* method.c: Include stringpool.h.
+	Include varasm.h.
+	* name-lookup.c: Include stringpool.h.
+	Include print-tree.h.
+	Include attribs.h.
+	* optimize.c: Include stringpool.h.
+	* parser.c: Include print-tree.h.
+	Include stringpool.h.
+	Include attribs.h.
+	Include trans-mem.h.
+	* pt.c: Include stringpool.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	* ptree.c: Include print-tree.h.
+	* repo.c: Include stringpool.h.
+	* rtti.c: Include stringpool.h.
+	Include stor-layout.h.
+	* semantics.c: Include stmt.h.
+	Include varasm.h.
+	Include stor-layout.h.
+	Include stringpool.h.
+	* tree.c: Include stor-layout.h.
+	Include print-tree.h.
+	Include tree-iterator.h.
+	* typeck.c: Include stor-layout.h.
+	Include varasm.h.
+	* typeck2.c: Include stor-layout.h.
+	Include varasm.h.
+	* vtable-class-hierarchy.c: Include stringpool.h.
+	Include stor-layout.h.
 
 2013-11-12  Andrew MacLeod <amacleod@redhat.com>
 

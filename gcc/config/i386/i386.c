@@ -23,6 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "calls.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -47,6 +52,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "reload.h"
 #include "cgraph.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "dwarf2.h"
@@ -3131,9 +3146,9 @@ ix86_option_override_internal (bool main_args_p,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE | PTA_FXSR},
       {"slm", PROCESSOR_SLM, CPU_SLM,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_MOVBE
-	| PTA_FXSR},
+	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
+	| PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_POPCNT | PTA_AES
+	| PTA_PCLMUL | PTA_RDRND | PTA_MOVBE | PTA_FXSR},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE | PTA_PRFCHW},
       {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
@@ -3907,7 +3922,7 @@ ix86_option_override_internal (bool main_args_p,
      functions. */
   else if (fast_math_flags_set_p (&global_options)
 	   && TARGET_SSE2_P (opts->x_ix86_isa_flags))
-    ix86_fpmath = FPMATH_SSE;
+    opts->x_ix86_fpmath = FPMATH_SSE;
   else
     opts->x_ix86_fpmath = TARGET_FPMATH_DEFAULT_P (opts->x_ix86_isa_flags);
 
@@ -5588,7 +5603,7 @@ ix86_eax_live_at_start_p (void)
      to correct at this point.  This gives false positives for broken
      functions that might use uninitialized data that happens to be
      allocated in eax, but who cares?  */
-  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR), 0);
+  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun)), 0);
 }
 
 static bool
@@ -6279,7 +6294,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 		      for (i = (int_bit_position (field)
 				+ (bit_offset % 64)) / 8 / 8;
 			   i < ((int_bit_position (field) + (bit_offset % 64))
-			        + tree_low_cst (DECL_SIZE (field), 0)
+			        + tree_to_shwi (DECL_SIZE (field))
 				+ 63) / 8 / 8; i++)
 			classes[i] =
 			  merge_classes (X86_64_INTEGER_CLASS,
@@ -9311,7 +9326,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      Recompute the value as needed.  Do not recompute when amount of registers
      didn't change as reload does multiple calls to the function and does not
      expect the decision to change within single iteration.  */
-  else if (!optimize_bb_for_size_p (ENTRY_BLOCK_PTR)
+  else if (!optimize_bb_for_size_p (ENTRY_BLOCK_PTR_FOR_FN (cfun))
            && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
@@ -11400,7 +11415,7 @@ ix86_expand_epilogue (int style)
       /* Leave results in shorter dependency chains on CPUs that are
 	 able to grok it fast.  */
       else if (TARGET_USE_LEAVE
-	       || optimize_bb_for_size_p (EXIT_BLOCK_PTR)
+	       || optimize_bb_for_size_p (EXIT_BLOCK_PTR_FOR_FN (cfun))
 	       || !cfun->machine->use_fast_prologue_epilogue)
 	ix86_emit_leave ();
       else
@@ -11884,27 +11899,6 @@ ix86_live_on_entry (bitmap regs)
     }
 }
 
-/* Determine if op is suitable SUBREG RTX for address.  */
-
-static bool
-ix86_address_subreg_operand (rtx op)
-{
-  enum machine_mode mode;
-
-  if (!REG_P (op))
-    return false;
-
-  mode = GET_MODE (op);
-
-  /* Don't allow SUBREGs that span more than a word.  It can lead to spill
-     failures when the register is one word out of a two word structure.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return false;
-
-  /* Allow only SUBREGs of non-eliminable hard registers.  */
-  return register_no_elim_operand (op, mode);
-}
-
 /* Extract the parts of an RTL expression that is a valid memory address
    for an instruction.  Return 0 if the structure of the address is
    grossly off.  Return -1 if the address contains ASHIFT, so it is not
@@ -11961,7 +11955,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     base = addr;
   else if (GET_CODE (addr) == SUBREG)
     {
-      if (ix86_address_subreg_operand (SUBREG_REG (addr)))
+      if (REG_P (SUBREG_REG (addr)))
 	base = addr;
       else
 	return 0;
@@ -12025,7 +12019,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      break;
 
 	    case SUBREG:
-	      if (!ix86_address_subreg_operand (SUBREG_REG (op)))
+	      if (!REG_P (SUBREG_REG (op)))
 		return 0;
 	      /* FALLTHRU */
 
@@ -12078,17 +12072,11 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       if (REG_P (index))
 	;
       else if (GET_CODE (index) == SUBREG
-	       && ix86_address_subreg_operand (SUBREG_REG (index)))
+	       && REG_P (SUBREG_REG (index)))
 	;
       else
 	return 0;
     }
-
-/* Address override works only on the (%reg) part of %fs:(%reg).  */
-  if (seg != SEG_DEFAULT
-      && ((base && GET_MODE (base) != word_mode)
-	  || (index && GET_MODE (index) != word_mode)))
-    return 0;
 
   /* Extract the integral value of scale.  */
   if (scale_rtx)
@@ -12606,6 +12594,45 @@ ix86_legitimize_reload_address (rtx x,
   return false;
 }
 
+/* Determine if op is suitable RTX for an address register.
+   Return naked register if a register or a register subreg is
+   found, otherwise return NULL_RTX.  */
+
+static rtx
+ix86_validate_address_register (rtx op)
+{
+  enum machine_mode mode = GET_MODE (op);
+
+  /* Only SImode or DImode registers can form the address.  */
+  if (mode != SImode && mode != DImode)
+    return NULL_RTX;
+
+  if (REG_P (op))
+    return op;
+  else if (GET_CODE (op) == SUBREG)
+    {
+      rtx reg = SUBREG_REG (op);
+
+      if (!REG_P (reg))
+	return NULL_RTX;
+
+      mode = GET_MODE (reg);
+
+      /* Don't allow SUBREGs that span more than a word.  It can
+	 lead to spill failures when the register is one word out
+	 of a two word structure.  */
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return NULL_RTX;
+
+      /* Allow only SUBREGs of non-eliminable hard registers.  */
+      if (register_no_elim_operand (reg, mode))
+	return reg;
+    }
+
+  /* Op is not a register.  */
+  return NULL_RTX;
+}
+
 /* Recognizes RTL expressions that are valid memory addresses for an
    instruction.  The MODE argument is the machine mode for the MEM
    expression that wants to use this address.
@@ -12621,6 +12648,7 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
+  enum ix86_address_seg seg;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     /* Decomposition failed.  */
@@ -12630,21 +12658,14 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   index = parts.index;
   disp = parts.disp;
   scale = parts.scale;
+  seg = parts.seg;
 
   /* Validate base register.  */
   if (base)
     {
-      rtx reg;
+      rtx reg = ix86_validate_address_register (base);
 
-      if (REG_P (base))
-  	reg = base;
-      else if (GET_CODE (base) == SUBREG && REG_P (SUBREG_REG (base)))
-	reg = SUBREG_REG (base);
-      else
-	/* Base is not a register.  */
-	return false;
-
-      if (GET_MODE (base) != SImode && GET_MODE (base) != DImode)
+      if (reg == NULL_RTX)
 	return false;
 
       if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
@@ -12656,17 +12677,9 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   /* Validate index register.  */
   if (index)
     {
-      rtx reg;
+      rtx reg = ix86_validate_address_register (index);
 
-      if (REG_P (index))
-  	reg = index;
-      else if (GET_CODE (index) == SUBREG && REG_P (SUBREG_REG (index)))
-	reg = SUBREG_REG (index);
-      else
-	/* Index is not a register.  */
-	return false;
-
-      if (GET_MODE (index) != SImode && GET_MODE (index) != DImode)
+      if (reg == NULL_RTX)
 	return false;
 
       if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
@@ -12678,6 +12691,12 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   /* Index and base should have the same mode.  */
   if (base && index
       && GET_MODE (base) != GET_MODE (index))
+    return false;
+
+  /* Address override works only on the (%reg) part of %fs:(%reg).  */
+  if (seg != SEG_DEFAULT
+      && ((base && GET_MODE (base) != word_mode)
+	  || (index && GET_MODE (index) != word_mode)))
     return false;
 
   /* Validate scale factor.  */
@@ -23726,7 +23745,8 @@ bool
 ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 			   rtx align_exp, rtx expected_align_exp,
 			   rtx expected_size_exp, rtx min_size_exp,
-			   rtx max_size_exp, bool issetmem)
+			   rtx max_size_exp, rtx probable_max_size_exp,
+			   bool issetmem)
 {
   rtx destreg;
   rtx srcreg = NULL;
@@ -23750,6 +23770,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   /* TODO: Once vlaue ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
   unsigned HOST_WIDE_INT max_size = -1;
+  unsigned HOST_WIDE_INT probable_max_size = -1;
   bool misaligned_prologue_used = false;
 
   if (CONST_INT_P (align_exp))
@@ -23765,13 +23786,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     align = MEM_ALIGN (dst) / BITS_PER_UNIT;
 
   if (CONST_INT_P (count_exp))
-    min_size = max_size = count = expected_size = INTVAL (count_exp);
-  if (min_size_exp)
-    min_size = INTVAL (min_size_exp);
-  if (max_size_exp)
-    max_size = INTVAL (max_size_exp);
-  if (CONST_INT_P (expected_size_exp) && count == 0)
-    expected_size = INTVAL (expected_size_exp);
+    min_size = max_size = probable_max_size = count = expected_size
+      = INTVAL (count_exp);
+  else
+    {
+      if (min_size_exp)
+	min_size = INTVAL (min_size_exp);
+      if (max_size_exp)
+	max_size = INTVAL (max_size_exp);
+      if (probable_max_size_exp)
+	probable_max_size = INTVAL (probable_max_size_exp);
+      if (CONST_INT_P (expected_size_exp) && count == 0)
+	expected_size = INTVAL (expected_size_exp);
+     }
 
   /* Make sure we don't need to care about overflow later on.  */
   if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
@@ -23779,7 +23806,8 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
-  alg = decide_alg (count, expected_size, min_size, max_size, issetmem,
+  alg = decide_alg (count, expected_size, min_size, probable_max_size,
+		    issetmem,
 		    issetmem && val_exp == const0_rtx,
 		    &dynamic_check, &noalign);
   if (alg == libcall)
@@ -29176,8 +29204,8 @@ static const struct builtin_description bdesc_multi_arg[] =
   { OPTION_MASK_ISA_XOP, CODE_FOR_xop_shlv8hi3,         "__builtin_ia32_vpshlw",      IX86_BUILTIN_VPSHLW,      UNKNOWN,      (int)MULTI_ARG_2_HI },
   { OPTION_MASK_ISA_XOP, CODE_FOR_xop_shlv16qi3,        "__builtin_ia32_vpshlb",      IX86_BUILTIN_VPSHLB,      UNKNOWN,      (int)MULTI_ARG_2_QI },
 
-  { OPTION_MASK_ISA_XOP, CODE_FOR_xop_vmfrczv4sf2,       "__builtin_ia32_vfrczss",     IX86_BUILTIN_VFRCZSS,     UNKNOWN,      (int)MULTI_ARG_2_SF },
-  { OPTION_MASK_ISA_XOP, CODE_FOR_xop_vmfrczv2df2,       "__builtin_ia32_vfrczsd",     IX86_BUILTIN_VFRCZSD,     UNKNOWN,      (int)MULTI_ARG_2_DF },
+  { OPTION_MASK_ISA_XOP, CODE_FOR_xop_vmfrczv4sf2,       "__builtin_ia32_vfrczss",     IX86_BUILTIN_VFRCZSS,     UNKNOWN,      (int)MULTI_ARG_1_SF },
+  { OPTION_MASK_ISA_XOP, CODE_FOR_xop_vmfrczv2df2,       "__builtin_ia32_vfrczsd",     IX86_BUILTIN_VFRCZSD,     UNKNOWN,      (int)MULTI_ARG_1_DF },
   { OPTION_MASK_ISA_XOP, CODE_FOR_xop_frczv4sf2,         "__builtin_ia32_vfrczps",     IX86_BUILTIN_VFRCZPS,     UNKNOWN,      (int)MULTI_ARG_1_SF },
   { OPTION_MASK_ISA_XOP, CODE_FOR_xop_frczv2df2,         "__builtin_ia32_vfrczpd",     IX86_BUILTIN_VFRCZPD,     UNKNOWN,      (int)MULTI_ARG_1_DF },
   { OPTION_MASK_ISA_XOP, CODE_FOR_xop_frczv8sf2,         "__builtin_ia32_vfrczps256",  IX86_BUILTIN_VFRCZPS256,  UNKNOWN,      (int)MULTI_ARG_1_SF2 },
@@ -29332,7 +29360,7 @@ ix86_builtin_tm_load (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M64);
@@ -29352,7 +29380,7 @@ ix86_builtin_tm_store (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M64);
@@ -29835,7 +29863,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
   make_edge (bb1, bb3, EDGE_FALSE_VALUE); 
 
   remove_edge (e23);
-  make_edge (bb2, EXIT_BLOCK_PTR, 0);
+  make_edge (bb2, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 
   pop_cfun ();
 
@@ -30705,7 +30733,6 @@ ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;
   basic_block empty_bb;
-  vec<tree> fn_ver_vec = vNULL;
   tree default_ver_decl;
   struct cgraph_node *versn;
   struct cgraph_node *node;
@@ -30735,7 +30762,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
 
   push_cfun (DECL_STRUCT_FUNCTION (resolver_decl));
 
-  fn_ver_vec.create (2);
+  stack_vec<tree, 2> fn_ver_vec;
 
   for (versn_info = node_version_info->next; versn_info;
        versn_info = versn_info->next)
@@ -30753,7 +30780,6 @@ ix86_generate_version_dispatcher_body (void *node_p)
     }
 
   dispatch_function_versions (resolver_decl, &fn_ver_vec, &empty_bb);
-  fn_ver_vec.release ();
   rebuild_cgraph_edges (); 
   pop_cfun ();
   return resolver_decl;
@@ -32574,7 +32600,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       gcc_assert (target == 0);
       if (memory)
 	{
-	  op = force_reg (Pmode, convert_to_mode (Pmode, op, 1));
+	  op = ix86_zero_extend_to_Pmode (op);
 	  target = gen_rtx_MEM (tmode, op);
 	}
       else
@@ -32619,7 +32645,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	  if (i == memory)
 	    {
 	      /* This must be the memory operand.  */
-	      op = force_reg (Pmode, convert_to_mode (Pmode, op, 1));
+	      op = ix86_zero_extend_to_Pmode (op);
 	      op = gen_rtx_MEM (mode, op);
 	      gcc_assert (GET_MODE (op) == mode
 			  || GET_MODE (op) == VOIDmode);
@@ -32672,8 +32698,8 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+  if (!tree_fits_uhwi_p (arg)
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;
@@ -32867,7 +32893,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       mode1 = insn_data[icode].operand[1].mode;
       mode2 = insn_data[icode].operand[2].mode;
 
-      op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
+      op0 = ix86_zero_extend_to_Pmode (op0);
       op0 = gen_rtx_MEM (mode1, op0);
 
       if (!insn_data[icode].operand[0].predicate (op0, mode0))
@@ -32899,7 +32925,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	op0 = expand_normal (arg0);
 	icode = CODE_FOR_sse2_clflush;
 	if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	  op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
+	  op0 = ix86_zero_extend_to_Pmode (op0);
 
 	emit_insn (gen_sse2_clflush (op0));
 	return 0;
@@ -32912,7 +32938,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
       if (!REG_P (op0))
-	op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
+	op0 = ix86_zero_extend_to_Pmode (op0);
       if (!REG_P (op1))
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
@@ -33169,7 +33195,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       op0 = expand_normal (arg0);
       icode = CODE_FOR_lwp_llwpcb;
       if (!insn_data[icode].operand[0].predicate (op0, Pmode))
-	op0 = force_reg (Pmode, convert_to_mode (Pmode, op0, 1));
+	op0 = ix86_zero_extend_to_Pmode (op0);
       emit_insn (gen_lwp_llwpcb (op0));
       return 0;
 
@@ -33465,7 +33491,7 @@ addcarryx:
       /* Force memory operand only with base register here.  But we
 	 don't want to do it on memory operand for other builtin
 	 functions.  */
-      op1 = force_reg (Pmode, convert_to_mode (Pmode, op1, 1));
+      op1 = ix86_zero_extend_to_Pmode (op1);
 
       if (!insn_data[icode].operand[1].predicate (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
@@ -36570,7 +36596,7 @@ ix86_pad_returns (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       basic_block bb = e->src;
       rtx ret = BB_END (bb);
@@ -36670,14 +36696,14 @@ ix86_count_insn (basic_block bb)
       edge prev_e;
       edge_iterator prev_ei;
 
-      if (e->src == ENTRY_BLOCK_PTR)
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  min_prev_count = 0;
 	  break;
 	}
       FOR_EACH_EDGE (prev_e, prev_ei, e->src->preds)
 	{
-	  if (prev_e->src == ENTRY_BLOCK_PTR)
+	  if (prev_e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      int count = ix86_count_insn_bb (e->src);
 	      if (count < min_prev_count)
@@ -36701,7 +36727,7 @@ ix86_pad_short_function (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       rtx ret = BB_END (e->src);
       if (JUMP_P (ret) && ANY_RETURN_P (PATTERN (ret)))
@@ -36741,7 +36767,7 @@ ix86_seh_fixup_eh_fallthru (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       rtx insn, next;
 

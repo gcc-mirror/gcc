@@ -862,6 +862,8 @@ extern void destroy_output_block (struct output_block *);
 extern void lto_output_tree (struct output_block *, tree, bool, bool);
 extern void lto_output_toplevel_asms (void);
 extern void produce_asm (struct output_block *ob, tree fn);
+extern void lto_output ();
+extern void produce_asm_for_decls ();
 void lto_output_decl_state_streams (struct output_block *,
 				    struct lto_out_decl_state *);
 void lto_output_decl_state_refs (struct output_block *,

@@ -27,6 +27,10 @@
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "obstack.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -864,6 +868,9 @@ int arm_arch_thumb_hwdiv;
 /* Nonzero if we should use Neon to handle 64-bits operations rather
    than core registers.  */
 int prefer_neon_for_64bits = 0;
+
+/* Nonzero if we shouldn't use literal pools.  */
+bool arm_disable_literal_pool = false;
 
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
    we must report the mode of the memory reference from
@@ -2449,6 +2456,10 @@ arm_option_override (void)
 	arm_pic_register = pic_register;
     }
 
+  if (TARGET_VXWORKS_RTP
+      && !global_options_set.x_arm_pic_data_is_text_relative)
+    arm_pic_data_is_text_relative = 0;
+
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
@@ -2564,6 +2575,16 @@ arm_option_override (void)
   /* TBD: Dwarf info for apcs frame is not handled yet.  */
   if (TARGET_APCS_FRAME)
     flag_shrink_wrap = false;
+
+  /* We only support -mslow-flash-data on armv7-m targets.  */
+  if (target_slow_flash_data
+      && ((!(arm_arch7 && !arm_arch_notm) && !arm_arch7em)
+	  || (TARGET_THUMB1 || flag_pic || TARGET_NEON)))
+    error ("-mslow-flash-data only supports non-pic code on armv7-m targets");
+
+  /* Currently, for slow flash data, we just disable literal pools.  */
+  if (target_slow_flash_data)
+    arm_disable_literal_pool = true;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -4728,18 +4749,18 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4768,8 +4789,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4800,8 +4821,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -5935,7 +5956,8 @@ require_pic_register (void)
 	         we can't yet emit instructions directly in the final
 		 insn stream.  Queue the insns on the entry edge, they will
 		 be committed after everything else is expanded.  */
-	      insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR));
+	      insert_insn_on_edge (seq,
+				   single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	    }
 	}
     }
@@ -5965,7 +5987,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	   || (GET_CODE (orig) == SYMBOL_REF &&
 	       SYMBOL_REF_LOCAL_P (orig)))
 	  && NEED_GOT_RELOC
-	  && !TARGET_VXWORKS_RTP)
+	  && arm_pic_data_is_text_relative)
 	insn = arm_pic_static_addr (orig, reg);
       else
 	{
@@ -6407,6 +6429,25 @@ thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	      || (arm_address_register_rtx_p (xop1, strict_p)
 		  && thumb2_legitimate_index_p (mode, xop0, strict_p)));
     }
+
+  /* Normally we can assign constant values to target registers without
+     the help of constant pool.  But there are cases we have to use constant
+     pool like:
+     1) assign a label to register.
+     2) sign-extend a 8bit value to 32bit and then assign to register.
+
+     Constant pool access in format:
+     (set (reg r0) (mem (symbol_ref (".LC0"))))
+     will cause the use of literal pool (later in function arm_reorg).
+     So here we mark such format as an invalid format, then the compiler
+     will adjust it into:
+     (set (reg r0) (symbol_ref (".LC0")))
+     (set (reg r0) (mem (reg r0))).
+     No extra register is required, and (mem (reg r0)) won't cause the use
+     of literal pools.  */
+  else if (arm_disable_literal_pool && code == SYMBOL_REF
+	   && CONSTANT_POOL_ADDRESS_P (x))
+    return 0;
 
   else if (GET_MODE_CLASS (mode) != MODE_FLOAT
 	   && code == SYMBOL_REF
@@ -8758,6 +8799,30 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
    call (one insn for -Os) and then one for processing the result.  */
 #define LIBCALL_COST(N) COSTS_N_INSNS (N + (speed_p ? 18 : 2))
 
+#define HANDLE_NARROW_SHIFT_ARITH(OP, IDX)				\
+	do								\
+	  {								\
+	    shift_op = shifter_op_p (XEXP (x, IDX), &shift_reg);	\
+	    if (shift_op != NULL					\
+	        && arm_rtx_shift_left_p (XEXP (x, IDX)))		\
+	      {								\
+	        if (shift_reg)						\
+		  {							\
+		    if (speed_p)					\
+		      *cost += extra_cost->alu.arith_shift_reg;	\
+		    *cost += rtx_cost (shift_reg, ASHIFT, 1, speed_p);	\
+		  }							\
+	        else if (speed_p)					\
+		  *cost += extra_cost->alu.arith_shift;		\
+									\
+		  *cost += (rtx_cost (shift_op, ASHIFT, 0, speed_p)	\
+			  + rtx_cost (XEXP (x, 1 - IDX),		\
+			              OP, 1, speed_p));		\
+	        return true;						\
+	      }								\
+	  }								\
+	while (0);
+
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained with an operation with code OUTER_CODE.
    SPEED_P indicates whether the cost desired is the performance cost,
@@ -9114,6 +9179,15 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) < 4)
 	{
+	  rtx shift_op, shift_reg;
+	  shift_reg = NULL;
+
+	  /* We check both sides of the MINUS for shifter operands since,
+	     unlike PLUS, it's not commutative.  */
+
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 0)
+	  HANDLE_NARROW_SHIFT_ARITH (MINUS, 1)
+
 	  /* Slightly disparage, as we might need to widen the result.  */
 	  *cost = 1 + COSTS_N_INSNS (1);
 	  if (speed_p)
@@ -9213,11 +9287,18 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  return false;
 	}
 
+	/* Narrow modes can be synthesized in SImode, but the range
+	   of useful sub-operations is limited.  Check for shift operations
+	   on one of the operands.  Only left shifts can be used in the
+	   narrow modes.  */
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) < 4)
 	{
-	  /* Narrow modes can be synthesized in SImode, but the range
-	     of useful sub-operations is limited.  */
+	  rtx shift_op, shift_reg;
+	  shift_reg = NULL;
+
+	  HANDLE_NARROW_SHIFT_ARITH (PLUS, 0)
+
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
 	      int insns = arm_gen_constant (PLUS, SImode, NULL_RTX,
@@ -10335,6 +10416,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return false;
     }
 }
+
+#undef HANDLE_NARROW_SHIFT_ARITH
 
 /* RTX costs when optimizing for size.  */
 static bool
@@ -16171,6 +16254,19 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   minipool_fix_tail = fix;
 }
 
+/* Return maximum allowed cost of synthesizing a 64-bit constant VAL inline.
+   Returns the number of insns needed, or 99 if we always want to synthesize
+   the value.  */
+int
+arm_max_const_double_inline_cost ()
+{
+  /* Let the value get synthesized to avoid the use of literal pools.  */
+  if (arm_disable_literal_pool)
+    return 99;
+
+  return ((optimize_size || arm_ld_sched) ? 3 : 4);
+}
+
 /* Return the cost of synthesizing a 64-bit constant VAL inline.
    Returns the number of insns needed, or 99 if we don't know how to
    do it.  */
@@ -18336,7 +18432,8 @@ arm_r3_live_at_start_p (void)
   /* Just look at cfg info, which is still close enough to correct at this
      point.  This gives false positives for broken functions that might use
      uninitialized data that happens to be allocated in r3, but who cares?  */
-  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR), 3);
+  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+			  3);
 }
 
 /* Compute the number of bytes used to store the static chain register on the
@@ -19869,7 +19966,7 @@ any_sibcall_could_use_r3 (void)
 
   if (!crtl->tail_call_emit)
     return false;
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     if (e->flags & EDGE_SIBCALL)
       {
 	rtx call = BB_END (e->src);
@@ -21458,7 +21555,7 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
 	{
 	  /* See legitimize_pic_address for an explanation of the
 	     TARGET_VXWORKS_RTP check.  */
-	  if (TARGET_VXWORKS_RTP
+	  if (!arm_pic_data_is_text_relative
 	      || (GET_CODE (x) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (x)))
 	    fputs ("(GOT)", asm_out_file);
 	  else
@@ -27940,10 +28037,11 @@ arm_dbx_register_number (unsigned int regno)
 static rtx
 arm_dwarf_register_span (rtx rtl)
 {
+  enum machine_mode mode;
   unsigned regno;
+  rtx parts[8];
   int nregs;
   int i;
-  rtx p;
 
   regno = REGNO (rtl);
   if (!IS_VFP_REGNUM (regno))
@@ -27956,15 +28054,33 @@ arm_dwarf_register_span (rtx rtl)
      corresponding D register.  Until GDB supports this, we shall use the
      legacy encodings.  We also use these encodings for D0-D15 for
      compatibility with older debuggers.  */
-  if (VFP_REGNO_OK_FOR_SINGLE (regno))
+  mode = GET_MODE (rtl);
+  if (GET_MODE_SIZE (mode) < 8)
     return NULL_RTX;
 
-  nregs = GET_MODE_SIZE (GET_MODE (rtl)) / 8;
-  p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs));
-  for (i = 0; i < nregs; i++)
-    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, regno + i);
+  if (VFP_REGNO_OK_FOR_SINGLE (regno))
+    {
+      nregs = GET_MODE_SIZE (mode) / 4;
+      for (i = 0; i < nregs; i += 2)
+	if (TARGET_BIG_END)
+	  {
+	    parts[i] = gen_rtx_REG (SImode, regno + i + 1);
+	    parts[i + 1] = gen_rtx_REG (SImode, regno + i);
+	  }
+	else
+	  {
+	    parts[i] = gen_rtx_REG (SImode, regno + i);
+	    parts[i + 1] = gen_rtx_REG (SImode, regno + i + 1);
+	  }
+    }
+  else
+    {
+      nregs = GET_MODE_SIZE (mode) / 8;
+      for (i = 0; i < nregs; i++)
+	parts[i] = gen_rtx_REG (DImode, regno + i);
+    }
 
-  return p;
+  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nregs , parts));
 }
 
 #if ARM_UNWIND_INFO
@@ -28807,7 +28923,7 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 static HOST_WIDE_INT
 arm_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
 
   if (TARGET_AAPCS_BASED)
     align = MIN (align, 64);

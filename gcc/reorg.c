@@ -3643,7 +3643,7 @@ dbr_schedule (rtx first)
 
   /* If the current function has no insns other than the prologue and
      epilogue, then do not try to fill any delay slots.  */
-  if (n_basic_blocks == NUM_FIXED_BLOCKS)
+  if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
     return;
 
   /* Find the highest INSN_UID and allocate and initialize our map from

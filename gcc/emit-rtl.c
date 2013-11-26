@@ -38,9 +38,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "rtl.h"
 #include "tree.h"
+#include "varasm.h"
+#include "basic-block.h"
+#include "tree-eh.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "function.h"
+#include "stringpool.h"
 #include "expr.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -48,14 +52,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "bitmap.h"
-#include "basic-block.h"
-#include "ggc.h"
 #include "debug.h"
 #include "langhooks.h"
 #include "df.h"
 #include "params.h"
 #include "target.h"
-#include "tree-eh.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -1541,12 +1542,12 @@ get_mem_align_offset (rtx mem, unsigned int align)
 	  tree bit_offset = DECL_FIELD_BIT_OFFSET (field);
 
 	  if (!byte_offset
-	      || !host_integerp (byte_offset, 1)
-	      || !host_integerp (bit_offset, 1))
+	      || !tree_fits_uhwi_p (byte_offset)
+	      || !tree_fits_uhwi_p (bit_offset))
 	    return -1;
 
-	  offset += tree_low_cst (byte_offset, 1);
-	  offset += tree_low_cst (bit_offset, 1) / BITS_PER_UNIT;
+	  offset += tree_to_uhwi (byte_offset);
+	  offset += tree_to_uhwi (bit_offset) / BITS_PER_UNIT;
 
 	  if (inner == NULL_TREE)
 	    {
@@ -1770,10 +1771,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
-	      if (host_integerp (off_tree, 1))
+	      if (tree_fits_uhwi_p (off_tree))
 		{
 		  attrs.offset_known_p = true;
-		  attrs.offset = tree_low_cst (off_tree, 1);
+		  attrs.offset = tree_to_uhwi (off_tree);
 		  apply_bitpos = bitpos;
 		}
 	    }
@@ -1800,10 +1801,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       attrs.align = MAX (attrs.align, obj_align);
     }
 
-  if (host_integerp (new_size, 1))
+  if (tree_fits_uhwi_p (new_size))
     {
       attrs.size_known_p = true;
-      attrs.size = tree_low_cst (new_size, 1);
+      attrs.size = tree_to_uhwi (new_size);
     }
 
   /* If we modified OFFSET based on T, then subtract the outstanding
@@ -2273,15 +2274,15 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 	      && attrs.offset >= 0)
 	    break;
 
-	  if (! host_integerp (offset, 1))
+	  if (! tree_fits_uhwi_p (offset))
 	    {
 	      attrs.expr = NULL_TREE;
 	      break;
 	    }
 
 	  attrs.expr = TREE_OPERAND (attrs.expr, 0);
-	  attrs.offset += tree_low_cst (offset, 1);
-	  attrs.offset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+	  attrs.offset += tree_to_uhwi (offset);
+	  attrs.offset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
 			   / BITS_PER_UNIT);
 	}
       /* Similarly for the decl.  */

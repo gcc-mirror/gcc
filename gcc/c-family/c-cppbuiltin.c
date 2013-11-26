@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
 #include "version.h"
 #include "flags.h"
 #include "c-common.h"
@@ -107,7 +109,7 @@ static void
 builtin_define_type_sizeof (const char *name, tree type)
 {
   builtin_define_with_int_value (name,
-				 tree_low_cst (TYPE_SIZE_UNIT (type), 1));
+				 tree_to_uhwi (TYPE_SIZE_UNIT (type)));
 }
 
 /* Define the float.h constants for TYPE using NAME_PREFIX, FP_SUFFIX,
@@ -649,7 +651,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
   /* Tell the source code about various types.  These map to the C++11 and C11
      macros where 2 indicates lock-free always, and 1 indicates sometimes
      lock free.  */
-#define SIZEOF_NODE(T) (tree_low_cst (TYPE_SIZE_UNIT (T), 1))
+#define SIZEOF_NODE(T) (tree_to_uhwi (TYPE_SIZE_UNIT (T)))
 #define SWAP_INDEX(T) ((SIZEOF_NODE (T) < SWAP_LIMIT) ? SIZEOF_NODE (T) : 0)
   builtin_define_with_int_value ("__GCC_ATOMIC_BOOL_LOCK_FREE", 
 			(have_swap[SWAP_INDEX (boolean_type_node)]? 2 : 1));

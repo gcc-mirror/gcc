@@ -85,7 +85,8 @@ mark_irreducible_loops (void)
   gcc_assert (current_loops != NULL);
 
   /* Reset the flags.  */
-  FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
       act->flags &= ~BB_IRREDUCIBLE_LOOP;
       FOR_EACH_EDGE (e, ei, act->succs)
@@ -95,11 +96,12 @@ mark_irreducible_loops (void)
   /* Create the edge lists.  */
   g = new_graph (last_basic_block + num);
 
-  FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
+  FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR_FOR_FN (cfun),
+		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     FOR_EACH_EDGE (e, ei, act->succs)
       {
 	/* Ignore edges to exit.  */
-	if (e->dest == EXIT_BLOCK_PTR)
+	if (e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  continue;
 
 	src = BB_REPR (act);

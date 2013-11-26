@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "except.h"
@@ -282,10 +283,10 @@ int_expr_size (tree exp)
       gcc_assert (size);
     }
 
-  if (size == 0 || !host_integerp (size, 0))
+  if (size == 0 || !tree_fits_shwi_p (size))
     return -1;
 
-  return tree_low_cst (size, 0);
+  return tree_to_shwi (size);
 }
 
 /* Return a copy of X in which all memory references

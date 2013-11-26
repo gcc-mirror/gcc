@@ -1,3 +1,64 @@
+2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Set TREE_SIDE_EFFECTS
+	on the conditional expression directly.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Add required include files from gimple.h.
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/utils2.c (build_call_raise): Remove use of
+	input_line macro.
+	(build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use tree_to_uhwi.
+	* gcc-interface/utils.c (make_packable_type): Likewise.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Use tree_to_shwi rather than
+	tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/decl.c, gcc-interface/utils.c, gcc-interface/utils2.c:
+	Replace tree_low_cst (..., 1) with tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c: Update comments to refer to
+	tree_fits_shwi_p rather than host_integerp.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use tree_fits_uhwi_p
+	rather than host_integerp.
+	* gcc-interface/utils.c (rest_of_record_type_compilation): Likewise.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/decl.c, gcc-interface/misc.c, gcc-interface/utils.c:
+	Replace host_integerp (..., 1) with tree_fits_uhwi_p throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc-interface/cuintp.c: Replace host_integerp (..., 0) with
+	tree_fits_shwi_p throughout.
+
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (TARGET_ABI_OPEN_VMS): Delete as redundant.
+
+2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): For an Out parameter passed by
+	copy and that don't need to be  copied in, only evaluate its address.
+
 2013-11-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Deal with an
@@ -26,6 +87,25 @@
 2013-11-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc-interface/trans.c: Include gimple.h and pointer-set.h.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* gcc-interface/decl.c: Include stringpool.h
+	Include stor-layout.h
+	* gcc-interface/misc.c: Include stor-layout.h
+	Include print-tree.h
+	* gcc-interface/trans.c: Include stringpool.h
+	Include stor-layout.h
+	Include stmt.h
+	Include varasm.h
+	* gcc-interface/utils.c: Include stringpool.h
+	Include stor-layout.h
+	Include attribs.h
+	Include varasm.h
+	* gcc-interface/utils2.c: Include stringpool.h
+	Include stor-layout.h
+	Include attribs.h
+	Include varasm.h
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 

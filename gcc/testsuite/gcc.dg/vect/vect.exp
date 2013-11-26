@@ -76,7 +76,7 @@ lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 # Main loop.
 set VECT_ADDITIONAL_FLAGS [list ""]
 if { [check_effective_target_lto] } {
-    lappend VECT_ADDITIONAL_FLAGS "-flto"
+    lappend VECT_ADDITIONAL_FLAGS "-flto -ffat-lto-objects"
 }
 foreach flags $VECT_ADDITIONAL_FLAGS {
     dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \

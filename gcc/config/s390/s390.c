@@ -26,6 +26,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "print-tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "calls.h"
 #include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -47,6 +52,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "optabs.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "df.h"
@@ -895,7 +910,8 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	{
 	  /* For CCRAWmode put the required cc mask into the second
 	     operand.  */
-	  if (GET_MODE (XVECEXP (*op0, 0, 0)) == CCRAWmode)
+        if (GET_MODE (XVECEXP (*op0, 0, 0)) == CCRAWmode
+            && INTVAL (*op1) >= 0 && INTVAL (*op1) <= 3)
 	    *op1 = gen_rtx_CONST_INT (VOIDmode, 1 << (3 - INTVAL (*op1)));
 	  *op0 = XVECEXP (*op0, 0, 0);
 	  *code = new_code;
@@ -7964,9 +7980,12 @@ s390_optimize_nonescaping_tx (void)
   if (!cfun->machine->tbegin_p)
     return;
 
-  for (bb_index = 0; bb_index < n_basic_blocks; bb_index++)
+  for (bb_index = 0; bb_index < n_basic_blocks_for_fn (cfun); bb_index++)
     {
       bb = BASIC_BLOCK (bb_index);
+
+      if (!bb)
+	continue;
 
       FOR_BB_INSNS (bb, insn)
 	{
@@ -8081,7 +8100,10 @@ s390_optimize_nonescaping_tx (void)
   if (!result)
     return;
 
-  PATTERN (tbegin_insn) = XVECEXP (PATTERN (tbegin_insn), 0, 0);
+  PATTERN (tbegin_insn) = gen_rtx_PARALLEL (VOIDmode,
+			    gen_rtvec (2,
+				       XVECEXP (PATTERN (tbegin_insn), 0, 0),
+				       XVECEXP (PATTERN (tbegin_insn), 0, 1)));
   INSN_CODE (tbegin_insn) = -1;
   df_insn_rescan (tbegin_insn);
 
@@ -9793,6 +9815,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
   const int CC3 = 1 << 0;
   rtx abort_label = gen_label_rtx ();
   rtx leave_label = gen_label_rtx ();
+  rtx retry_plus_two = gen_reg_rtx (SImode);
   rtx retry_reg = gen_reg_rtx (SImode);
   rtx retry_label = NULL_RTX;
   rtx jump;
@@ -9801,16 +9824,17 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
   if (retry != NULL_RTX)
     {
       emit_move_insn (retry_reg, retry);
+      emit_insn (gen_addsi3 (retry_plus_two, retry_reg, const2_rtx));
+      emit_insn (gen_addsi3 (retry_reg, retry_reg, const1_rtx));
       retry_label = gen_label_rtx ();
       emit_label (retry_label);
     }
 
   if (clobber_fprs_p)
-    emit_insn (gen_tbegin_1 (tdb,
-		 gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK)));
+    emit_insn (gen_tbegin_1 (gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK), tdb));
   else
-    emit_insn (gen_tbegin_nofloat_1 (tdb,
-		 gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK)));
+    emit_insn (gen_tbegin_nofloat_1 (gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK),
+				     tdb));
 
   jump = s390_emit_jump (abort_label,
 			 gen_rtx_NE (VOIDmode,
@@ -9831,6 +9855,10 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
   /* Abort handler code.  */
 
   emit_label (abort_label);
+  emit_move_insn (dest, gen_rtx_UNSPEC (SImode,
+					gen_rtvec (1, gen_rtx_REG (CCRAWmode,
+								   CC_REGNUM)),
+					UNSPEC_CC_TO_INT));
   if (retry != NULL_RTX)
     {
       rtx count = gen_reg_rtx (SImode);
@@ -9842,7 +9870,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
       add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
 
       /* CC2 - transient failure. Perform retry with ppa.  */
-      emit_move_insn (count, retry);
+      emit_move_insn (count, retry_plus_two);
       emit_insn (gen_subsi3 (count, count, retry_reg));
       emit_insn (gen_tx_assist (count));
       jump = emit_jump_insn (gen_doloop_si64 (retry_label,
@@ -9852,10 +9880,6 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
       LABEL_NUSES (retry_label) = 1;
     }
 
-  emit_move_insn (dest, gen_rtx_UNSPEC (SImode,
-					gen_rtvec (1, gen_rtx_REG (CCRAWmode,
-								   CC_REGNUM)),
-					UNSPEC_CC_TO_INT));
   emit_label (leave_label);
 }
 
@@ -9894,6 +9918,9 @@ static void
 s390_init_builtins (void)
 {
   tree ftype, uint64_type;
+  tree returns_twice_attr = tree_cons (get_identifier ("returns_twice"),
+				       NULL, NULL);
+  tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
 
   /* void foo (void) */
   ftype = build_function_type_list (void_type_node, NULL_TREE);
@@ -9904,17 +9931,17 @@ s390_init_builtins (void)
   ftype = build_function_type_list (void_type_node, integer_type_node,
 				    NULL_TREE);
   add_builtin_function ("__builtin_tabort", ftype,
-			S390_BUILTIN_TABORT, BUILT_IN_MD, NULL, NULL_TREE);
+			S390_BUILTIN_TABORT, BUILT_IN_MD, NULL, noreturn_attr);
   add_builtin_function ("__builtin_tx_assist", ftype,
 			S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
 
   /* int foo (void *) */
   ftype = build_function_type_list (integer_type_node, ptr_type_node, NULL_TREE);
   add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
-			BUILT_IN_MD, NULL, NULL_TREE);
+			BUILT_IN_MD, NULL, returns_twice_attr);
   add_builtin_function ("__builtin_tbegin_nofloat", ftype,
 			S390_BUILTIN_TBEGIN_NOFLOAT,
-			BUILT_IN_MD, NULL, NULL_TREE);
+			BUILT_IN_MD, NULL, returns_twice_attr);
 
   /* int foo (void *, int) */
   ftype = build_function_type_list (integer_type_node, ptr_type_node,
@@ -9922,11 +9949,11 @@ s390_init_builtins (void)
   add_builtin_function ("__builtin_tbegin_retry", ftype,
 			S390_BUILTIN_TBEGIN_RETRY,
 			BUILT_IN_MD,
-			NULL, NULL_TREE);
+			NULL, returns_twice_attr);
   add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
 			S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
 			BUILT_IN_MD,
-			NULL, NULL_TREE);
+			NULL, returns_twice_attr);
 
   /* int foo (void) */
   ftype = build_function_type_list (integer_type_node, NULL_TREE);
@@ -10193,9 +10220,9 @@ s390_encode_section_info (tree decl, rtx rtl, int first)
 	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_ALIGN1;
       if (!DECL_SIZE (decl)
 	  || !DECL_ALIGN (decl)
-	  || !host_integerp (DECL_SIZE (decl), 0)
+	  || !tree_fits_shwi_p (DECL_SIZE (decl))
 	  || (DECL_ALIGN (decl) <= 64
-	      && DECL_ALIGN (decl) != tree_low_cst (DECL_SIZE (decl), 0)))
+	      && DECL_ALIGN (decl) != tree_to_shwi (DECL_SIZE (decl))))
 	SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_NOT_NATURALLY_ALIGNED;
     }
 

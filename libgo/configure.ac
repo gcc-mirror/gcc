@@ -154,7 +154,7 @@ AM_CONDITIONAL(LIBGO_IS_IRIX, test $is_irix = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
 AM_CONDITIONAL(LIBGO_IS_NETBSD, test $is_netbsd = yes)
 AM_CONDITIONAL(LIBGO_IS_OPENBSD, test $is_openbsd = yes)
-AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonly = yes)
+AM_CONDITIONAL(LIBGO_IS_DRAGONFLY, test $is_dragonfly = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
 AM_CONDITIONAL(LIBGO_IS_SOLARIS, test $is_solaris = yes)
 AC_SUBST(GOOS)
@@ -506,7 +506,7 @@ AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv dl_iterate_phdr)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 
-AC_CHECK_FUNCS(accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat)
+AC_CHECK_FUNCS(accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat)
 AC_TYPE_OFF_T
 AC_CHECK_TYPES([loff_t])
 

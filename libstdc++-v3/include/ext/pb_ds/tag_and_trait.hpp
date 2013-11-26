@@ -447,7 +447,7 @@ namespace __gnu_pbds
     template<typename Key, typename Mapped, typename _Alloc, typename Tag,
 	     typename Policy_Tl = null_type>
       struct container_base_dispatch;
-  } // namespace __detail
+  } // namespace detail
   //@}
 } // namespace __gnu_pbds
 

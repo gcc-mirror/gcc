@@ -32,6 +32,8 @@
 #include "output.h"
 #include "insn-attr.h"
 #include "tree.h"
+#include "varasm.h"
+#include "calls.h"
 #include "flags.h"
 #include "except.h"
 #include "function.h"
@@ -103,7 +105,7 @@ output_file_start (void)
   FILE *file = asm_out_file;
   int i;
 
-  fprintf (file, ".file \"%s\";\n", input_filename);
+  fprintf (file, ".file \"%s\";\n", LOCATION_FILE (input_location));
   
   for (i = 0; arg_regs[i] >= 0; i++)
     ;
@@ -2990,7 +2992,7 @@ static int first_preg_to_save, first_dreg_to_save;
 static int n_regs_to_save;
 
 int
-push_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+analyze_push_multiple_operation (rtx op)
 {
   int lastdreg = 8, lastpreg = 6;
   int i, group;
@@ -3061,7 +3063,7 @@ push_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 
 int
-pop_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+analyze_pop_multiple_operation (rtx op)
 {
   int lastdreg = 8, lastpreg = 6;
   int i, group;
@@ -3130,7 +3132,7 @@ output_push_multiple (rtx insn, rtx *operands)
   int ok;
   
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  ok = push_multiple_operation (PATTERN (insn), VOIDmode);
+  ok = analyze_push_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
   
   if (first_dreg_to_save == 8)
@@ -3154,7 +3156,7 @@ output_pop_multiple (rtx insn, rtx *operands)
   int ok;
   
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
-  ok = pop_multiple_operation (PATTERN (insn), VOIDmode);
+  ok = analyze_pop_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
 
   if (first_dreg_to_save == 8)
@@ -3598,7 +3600,7 @@ hwloop_optimize (hwloop_info loop)
 
       if (single_pred_p (bb)
 	  && single_pred_edge (bb)->flags & EDGE_FALLTHRU
-	  && single_pred (bb) != ENTRY_BLOCK_PTR)
+	  && single_pred (bb) != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  bb = single_pred (bb);
 	  last_insn = BB_END (bb);
@@ -4134,8 +4136,8 @@ workaround_rts_anomaly (void)
 
 	  if (GET_CODE (pat) == PARALLEL)
 	    {
-	      if (push_multiple_operation (pat, VOIDmode)
-		  || pop_multiple_operation (pat, VOIDmode))
+	      if (analyze_push_multiple_operation (pat)
+		  || analyze_pop_multiple_operation (pat))
 		this_cycles = n_regs_to_save;
 	    }
 	  else

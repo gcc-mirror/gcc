@@ -134,7 +134,7 @@ try_simplify_condjump (basic_block cbranch_block)
      unconditional jump.  */
   jump_block = cbranch_fallthru_edge->dest;
   if (!single_pred_p (jump_block)
-      || jump_block->next_bb == EXIT_BLOCK_PTR
+      || jump_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
       || !FORWARDER_BLOCK_P (jump_block))
     return false;
   jump_dest_block = single_succ (jump_block);
@@ -157,7 +157,7 @@ try_simplify_condjump (basic_block cbranch_block)
      unconditional branch.  */
   cbranch_dest_block = cbranch_jump_edge->dest;
 
-  if (cbranch_dest_block == EXIT_BLOCK_PTR
+  if (cbranch_dest_block == EXIT_BLOCK_PTR_FOR_FN (cfun)
       || !can_fallthru (jump_block, cbranch_dest_block))
     return false;
 
@@ -455,11 +455,11 @@ try_forward_edges (int mode, basic_block b)
 	 bb-reorder.c:partition_hot_cold_basic_blocks for complete
 	 details.  */
 
-      if (first != EXIT_BLOCK_PTR
+      if (first != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && find_reg_note (BB_END (first), REG_CROSSING_JUMP, NULL_RTX))
 	return changed;
 
-      while (counter < n_basic_blocks)
+      while (counter < n_basic_blocks_for_fn (cfun))
 	{
 	  basic_block new_target = NULL;
 	  bool new_target_threaded = false;
@@ -467,12 +467,12 @@ try_forward_edges (int mode, basic_block b)
 
 	  if (FORWARDER_BLOCK_P (target)
 	      && !(single_succ_edge (target)->flags & EDGE_CROSSING)
-	      && single_succ (target) != EXIT_BLOCK_PTR)
+	      && single_succ (target) != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      /* Bypass trivial infinite loops.  */
 	      new_target = single_succ (target);
 	      if (target == new_target)
-		counter = n_basic_blocks;
+		counter = n_basic_blocks_for_fn (cfun);
 	      else if (!optimize)
 		{
 		  /* When not optimizing, ensure that edges or forwarder
@@ -521,7 +521,8 @@ try_forward_edges (int mode, basic_block b)
 	      if (t)
 		{
 		  if (!threaded_edges)
-		    threaded_edges = XNEWVEC (edge, n_basic_blocks);
+		    threaded_edges = XNEWVEC (edge,
+					      n_basic_blocks_for_fn (cfun));
 		  else
 		    {
 		      int i;
@@ -533,7 +534,7 @@ try_forward_edges (int mode, basic_block b)
 			  break;
 		      if (i < nthreaded_edges)
 			{
-			  counter = n_basic_blocks;
+			  counter = n_basic_blocks_for_fn (cfun);
 			  break;
 			}
 		    }
@@ -542,7 +543,9 @@ try_forward_edges (int mode, basic_block b)
 		  if (t->dest == b)
 		    break;
 
-		  gcc_assert (nthreaded_edges < n_basic_blocks - NUM_FIXED_BLOCKS);
+		  gcc_assert (nthreaded_edges
+			      < (n_basic_blocks_for_fn (cfun)
+				 - NUM_FIXED_BLOCKS));
 		  threaded_edges[nthreaded_edges++] = t;
 
 		  new_target = t->dest;
@@ -558,7 +561,7 @@ try_forward_edges (int mode, basic_block b)
 	  threaded |= new_target_threaded;
 	}
 
-      if (counter >= n_basic_blocks)
+      if (counter >= n_basic_blocks_for_fn (cfun))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Infinite loop in BB %i.\n",
@@ -577,7 +580,7 @@ try_forward_edges (int mode, basic_block b)
 	  e->goto_locus = goto_locus;
 
 	  /* Don't force if target is exit block.  */
-	  if (threaded && target != EXIT_BLOCK_PTR)
+	  if (threaded && target != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      notice_new_block (redirect_edge_and_branch_force (e, target));
 	      if (dump_file)
@@ -790,7 +793,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 	fprintf (dump_file, "Merged %d and %d without moving.\n",
 		 b_index, c_index);
 
-      return b->prev_bb == ENTRY_BLOCK_PTR ? b : b->prev_bb;
+      return b->prev_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun) ? b : b->prev_bb;
     }
 
   /* Otherwise we will need to move code around.  Do that only if expensive
@@ -828,7 +831,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
       if (! c_has_outgoing_fallthru)
 	{
 	  merge_blocks_move_successor_nojumps (b, c);
-	  return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
+	  return next == ENTRY_BLOCK_PTR_FOR_FN (cfun) ? next->next_bb : next;
 	}
 
       /* If B does not have an incoming fallthru, then it can be moved
@@ -840,7 +843,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 	{
 	  basic_block bb;
 
-	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
+	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    return NULL;
 	  bb = force_nonfallthru (b_fallthru_edge);
 	  if (bb)
@@ -848,7 +851,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
 	}
 
       merge_blocks_move_predecessor_nojumps (b, c);
-      return next == ENTRY_BLOCK_PTR ? next->next_bb : next;
+      return next == ENTRY_BLOCK_PTR_FOR_FN (cfun) ? next->next_bb : next;
     }
 
   return NULL;
@@ -1264,7 +1267,7 @@ walk_to_nondebug_insn (rtx *i1, basic_block *bb1, bool follow_fallthru,
         return;
 
       fallthru = find_fallthru_edge ((*bb1)->preds);
-      if (!fallthru || fallthru->src == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+      if (!fallthru || fallthru->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
           || !single_succ_p (fallthru->src))
         return;
 
@@ -1532,12 +1535,13 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   edge e1, e2;
   edge_iterator ei;
 
-  /* If we performed shrink-wrapping, edges to the EXIT_BLOCK_PTR can
+  /* If we performed shrink-wrapping, edges to the exit block can
      only be distinguished for JUMP_INSNs.  The two paths may differ in
      whether they went through the prologue.  Sibcalls are fine, we know
      that we either didn't need or inserted an epilogue before them.  */
   if (crtl->shrink_wrapped
-      && single_succ_p (bb1) && single_succ (bb1) == EXIT_BLOCK_PTR
+      && single_succ_p (bb1)
+      && single_succ (bb1) == EXIT_BLOCK_PTR_FOR_FN (cfun)
       && !JUMP_P (BB_END (bb1))
       && !(CALL_P (BB_END (bb1)) && SIBLING_CALL_P (BB_END (bb1))))
     return false;
@@ -1739,12 +1743,20 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	}
     }
 
+  /* Find the last non-debug non-note instruction in each bb, except
+     stop when we see the NOTE_INSN_BASIC_BLOCK, as old_insns_match_p
+     handles that case specially. old_insns_match_p does not handle
+     other types of instruction notes.  */
   rtx last1 = BB_END (bb1);
   rtx last2 = BB_END (bb2);
-  if (DEBUG_INSN_P (last1))
-    last1 = prev_nondebug_insn (last1);
-  if (DEBUG_INSN_P (last2))
-    last2 = prev_nondebug_insn (last2);
+  while (!NOTE_INSN_BASIC_BLOCK_P (last1) &&
+         (DEBUG_INSN_P (last1) || NOTE_P (last1)))
+    last1 = PREV_INSN (last1);
+  while (!NOTE_INSN_BASIC_BLOCK_P (last2) &&
+         (DEBUG_INSN_P (last2) || NOTE_P (last2)))
+    last2 = PREV_INSN (last2);
+  gcc_assert (last1 && last2);
+
   /* First ensure that the instructions match.  There may be many outgoing
      edges so this test is generally cheaper.  */
   if (old_insns_match_p (mode, last1, last2) != dir_both)
@@ -1899,7 +1911,8 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
     e2 = single_pred_edge (src2), src2 = e2->src;
 
   /* Nothing to do if we reach ENTRY, or a common source block.  */
-  if (src1 == ENTRY_BLOCK_PTR || src2 == ENTRY_BLOCK_PTR)
+  if (src1 == ENTRY_BLOCK_PTR_FOR_FN (cfun) || src2
+      == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return false;
   if (src1 == src2)
     return false;
@@ -2143,7 +2156,7 @@ try_crossjump_bb (int mode, basic_block bb)
   /* Don't crossjump if this block ends in a computed jump,
      unless we are optimizing for size.  */
   if (optimize_bb_for_size_p (bb)
-      && bb != EXIT_BLOCK_PTR
+      && bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
       && computed_jump_p (BB_END (bb)))
     return false;
 
@@ -2284,7 +2297,7 @@ try_head_merge_bb (basic_block bb)
   /* Don't crossjump if this block ends in a computed jump,
      unless we are optimizing for size.  */
   if (optimize_bb_for_size_p (bb)
-      && bb != EXIT_BLOCK_PTR
+      && bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
       && computed_jump_p (BB_END (bb)))
     return false;
 
@@ -2300,7 +2313,7 @@ try_head_merge_bb (basic_block bb)
     }
 
   for (ix = 0; ix < nedges; ix++)
-    if (EDGE_SUCC (bb, ix)->dest == EXIT_BLOCK_PTR)
+    if (EDGE_SUCC (bb, ix)->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
       return false;
 
   for (ix = 0; ix < nedges; ix++)
@@ -2620,7 +2633,8 @@ try_optimize_cfg (int mode)
 		     "\n\ntry_optimize_cfg iteration %i\n\n",
 		     iterations);
 
-	  for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR;)
+	  for (b = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb; b
+	       != EXIT_BLOCK_PTR_FOR_FN (cfun);)
 	    {
 	      basic_block c;
 	      edge s;
@@ -2637,7 +2651,8 @@ try_optimize_cfg (int mode)
 	      if (EDGE_COUNT (b->preds) == 0
 		  || (EDGE_COUNT (b->succs) == 0
 		      && trivially_empty_bb_p (b)
-		      && single_succ_edge (ENTRY_BLOCK_PTR)->dest != b))
+		      && single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest
+		      != b))
 		{
 		  c = b->prev_bb;
 		  if (EDGE_COUNT (b->preds) > 0)
@@ -2677,8 +2692,8 @@ try_optimize_cfg (int mode)
 		    }
 		  delete_basic_block (b);
 		  changed = true;
-		  /* Avoid trying to remove ENTRY_BLOCK_PTR.  */
-		  b = (c == ENTRY_BLOCK_PTR ? c->next_bb : c);
+		  /* Avoid trying to remove the exit block.  */
+		  b = (c == ENTRY_BLOCK_PTR_FOR_FN (cfun) ? c->next_bb : c);
 		  continue;
 		}
 
@@ -2693,7 +2708,7 @@ try_optimize_cfg (int mode)
 		     if CASE_DROPS_THRU, this can be a tablejump with
 		     some element going to the same place as the
 		     default (fallthru).  */
-		  && (single_pred (b) == ENTRY_BLOCK_PTR
+		  && (single_pred (b) == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 		      || !JUMP_P (BB_END (single_pred (b)))
 		      || ! label_is_jump_target_p (BB_HEAD (b),
 						   BB_END (single_pred (b)))))
@@ -2713,14 +2728,15 @@ try_optimize_cfg (int mode)
 		  /* Note that forwarder_block_p true ensures that
 		     there is a successor for this block.  */
 		  && (single_succ_edge (b)->flags & EDGE_FALLTHRU)
-		  && n_basic_blocks > NUM_FIXED_BLOCKS + 1)
+		  && n_basic_blocks_for_fn (cfun) > NUM_FIXED_BLOCKS + 1)
 		{
 		  if (dump_file)
 		    fprintf (dump_file,
 			     "Deleting fallthru block %i.\n",
 			     b->index);
 
-		  c = b->prev_bb == ENTRY_BLOCK_PTR ? b->next_bb : b->prev_bb;
+		  c = ((b->prev_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+		       ? b->next_bb : b->prev_bb);
 		  redirect_edge_succ_nodup (single_pred_edge (b),
 					    single_succ (b));
 		  delete_basic_block (b);
@@ -2733,7 +2749,7 @@ try_optimize_cfg (int mode)
 	      if (single_succ_p (b)
 		  && (s = single_succ_edge (b))
 		  && !(s->flags & EDGE_COMPLEX)
-		  && (c = s->dest) != EXIT_BLOCK_PTR
+		  && (c = s->dest) != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && single_pred_p (c)
 		  && b != c)
 		{
@@ -2777,7 +2793,7 @@ try_optimize_cfg (int mode)
 		 can either delete the jump entirely, or replace it
 		 with a simple unconditional jump.  */
 	      if (single_succ_p (b)
-		  && single_succ (b) != EXIT_BLOCK_PTR
+		  && single_succ (b) != EXIT_BLOCK_PTR_FOR_FN (cfun)
 		  && onlyjump_p (BB_END (b))
 		  && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
 		  && try_redirect_by_replacing_jump (single_succ_edge (b),
@@ -2816,7 +2832,7 @@ try_optimize_cfg (int mode)
 	    }
 
 	  if ((mode & CLEANUP_CROSSJUMP)
-	      && try_crossjump_bb (mode, EXIT_BLOCK_PTR))
+	      && try_crossjump_bb (mode, EXIT_BLOCK_PTR_FOR_FN (cfun)))
 	    changed = true;
 
 	  if (block_was_dirty)
@@ -2873,7 +2889,8 @@ delete_unreachable_blocks (void)
   if (MAY_HAVE_DEBUG_INSNS && current_ir_type () == IR_GIMPLE
       && dom_info_available_p (CDI_DOMINATORS))
     {
-      for (b = EXIT_BLOCK_PTR->prev_bb; b != ENTRY_BLOCK_PTR; b = prev_bb)
+      for (b = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
+	   b != ENTRY_BLOCK_PTR_FOR_FN (cfun); b = prev_bb)
 	{
 	  prev_bb = b->prev_bb;
 
@@ -2909,7 +2926,8 @@ delete_unreachable_blocks (void)
     }
   else
     {
-      for (b = EXIT_BLOCK_PTR->prev_bb; b != ENTRY_BLOCK_PTR; b = prev_bb)
+      for (b = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
+	   b != ENTRY_BLOCK_PTR_FOR_FN (cfun); b = prev_bb)
 	{
 	  prev_bb = b->prev_bb;
 

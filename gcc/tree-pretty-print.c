@@ -23,9 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "expr.h"
 #include "tree-pretty-print.h"
 #include "hashtab.h"
-#include "gimple.h"
+#include "pointer-set.h"
+#include "gimple-expr.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
@@ -272,8 +275,8 @@ dump_array_domain (pretty_printer *buffer, tree domain, int spc, int flags)
 
       if (min && max
 	  && integer_zerop (min)
-	  && host_integerp (max, 0))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (max) + 1);
+	  && tree_fits_shwi_p (max))
+	pp_wide_integer (buffer, tree_to_shwi (max) + 1);
       else
 	{
 	  if (min)
@@ -2264,6 +2267,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "OBJ_TYPE_REF(");
       dump_generic_node (buffer, OBJ_TYPE_REF_EXPR (node), spc, flags, false);
       pp_semicolon (buffer);
+      if (!(flags & TDF_SLIM) && virtual_method_call_p (node))
+	{
+	  pp_string (buffer, "(");
+	  dump_generic_node (buffer, obj_type_ref_class (node), spc, flags, false);
+	  pp_string (buffer, ")");
+	}
       dump_generic_node (buffer, OBJ_TYPE_REF_OBJECT (node), spc, flags, false);
       pp_arrow (buffer);
       dump_generic_node (buffer, OBJ_TYPE_REF_TOKEN (node), spc, flags, false);

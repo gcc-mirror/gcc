@@ -101,7 +101,7 @@ namespace cilk {
 #   define CILK_EXPORT      /* nothing */
 #   define CILK_EXPORT_DATA /* nothing */
 #else /* Unix/gcc */
-#   ifdef IN_CILK_RUNTIME
+#   if defined(IN_CILK_RUNTIME) && defined(HAVE_ATTRIBUTE_VISIBILITY)
 #       define CILK_EXPORT      __attribute__((visibility("protected")))
 #       define CILK_EXPORT_DATA __attribute__((visibility("protected")))
 #   else

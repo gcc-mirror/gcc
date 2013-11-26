@@ -1,3 +1,7 @@
+2013-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* bootstrap-ubsan.mk (POSTSTAGE1_LDFLAGS): Add -ldl.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* picflag.m4 (m68k-*-*): Use default PIC flag.

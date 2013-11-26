@@ -23,11 +23,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "hash-table.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
+#include "calls.h"
+#include "varasm.h"
+#include "stor-layout.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "asan.h"
@@ -38,10 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "hash-table.h"
 #include "alloc-pool.h"
 #include "cfgloop.h"
 #include "gimple-builder.h"
+#include "ubsan.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -214,7 +224,7 @@ along with GCC; see the file COPYING3.  If not see
        // Name of the module where the global variable is declared.
        const void *__module_name;
 
-       // This is always set to NULL for now.
+       // 1 if it has dynamic initialization, 0 otherwise.
        uptr __has_dynamic_init;
      }
 
@@ -1461,7 +1471,9 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     case COMPONENT_REF:
     case INDIRECT_REF:
     case MEM_REF:
+    case VAR_DECL:
       break;
+      /* FALLTHRU */
     default:
       return;
     }
@@ -1475,8 +1487,8 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   tree offset;
   enum machine_mode mode;
   int volatilep = 0, unsignedp = 0;
-  get_inner_reference (t, &bitsize, &bitpos, &offset,
-		       &mode, &unsignedp, &volatilep, false);
+  tree inner = get_inner_reference (t, &bitsize, &bitpos, &offset,
+				    &mode, &unsignedp, &volatilep, false);
   if (bitpos % (size_in_bytes * BITS_PER_UNIT)
       || bitsize != size_in_bytes * BITS_PER_UNIT)
     {
@@ -1489,6 +1501,34 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 					   NULL_TREE), location, is_store);
 	}
       return;
+    }
+
+  if (TREE_CODE (inner) == VAR_DECL
+      && offset == NULL_TREE
+      && bitpos >= 0
+      && DECL_SIZE (inner)
+      && tree_fits_shwi_p (DECL_SIZE (inner))
+      && bitpos + bitsize <= tree_to_shwi (DECL_SIZE (inner)))
+    {
+      if (DECL_THREAD_LOCAL_P (inner))
+	return;
+      if (!TREE_STATIC (inner))
+	{
+	  /* Automatic vars in the current function will be always
+	     accessible.  */
+	  if (decl_function_context (inner) == current_function_decl)
+	    return;
+	}
+      /* Always instrument external vars, they might be dynamically
+	 initialized.  */
+      else if (!DECL_EXTERNAL (inner))
+	{
+	  /* For static vars if they are known not to be dynamically
+	     initialized, they will be always accessible.  */
+	  struct varpool_node *vnode = varpool_get_node (inner);
+	  if (vnode && !vnode->dynamically_initialized)
+	    return;
+	}
     }
 
   base = build_fold_addr_expr (t);
@@ -1949,6 +1989,34 @@ transform_statements (void)
 }
 
 /* Build
+   __asan_before_dynamic_init (module_name)
+   or
+   __asan_after_dynamic_init ()
+   call.  */
+
+tree
+asan_dynamic_init_call (bool after_p)
+{
+  tree fn = builtin_decl_implicit (after_p
+				   ? BUILT_IN_ASAN_AFTER_DYNAMIC_INIT
+				   : BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT);
+  tree module_name_cst = NULL_TREE;
+  if (!after_p)
+    {
+      pretty_printer module_name_pp;
+      pp_string (&module_name_pp, main_input_filename);
+
+      if (shadow_ptr_types[0] == NULL_TREE)
+	asan_init_shadow_ptr_types ();
+      module_name_cst = asan_pp_string (&module_name_pp);
+      module_name_cst = fold_convert (const_ptr_type_node,
+				      module_name_cst);
+    }
+
+  return build_call_expr (fn, after_p ? 0 : 1, module_name_cst);
+}
+
+/* Build
    struct __asan_global
    {
      const void *__beg;
@@ -2029,7 +2097,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node,
 					build_fold_addr_expr (refdecl)));
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
   size += asan_red_zone_size (size);
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, size));
@@ -2037,7 +2105,10 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 			  fold_convert (const_ptr_type_node, str_cst));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, module_name_cst));
-  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE, build_int_cst (uptr, 0));
+  struct varpool_node *vnode = varpool_get_node (decl);
+  int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
+  CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
+			  build_int_cst (uptr, has_dynamic_init));
   init = build_constructor (type, vinner);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init);
 }
@@ -2054,6 +2125,8 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR
     = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_CONST_PTR
+    = build_function_type_list (void_type_node, const_ptr_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR_PTR
     = build_function_type_list (void_type_node, ptr_type_node,
 				ptr_type_node, NULL_TREE);
@@ -2368,6 +2441,89 @@ gimple_opt_pass *
 make_pass_asan_O0 (gcc::context *ctxt)
 {
   return new pass_asan_O0 (ctxt);
+}
+
+/* Perform optimization of sanitize functions.  */
+
+static unsigned int
+execute_sanopt (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+
+	  if (!is_gimple_call (stmt))
+	    continue;
+
+	  if (gimple_call_internal_p (stmt))
+	    switch (gimple_call_internal_fn (stmt))
+	      {
+	      case IFN_UBSAN_NULL:
+		ubsan_expand_null_ifn (gsi);
+		break;
+	      default:
+		break;
+	      }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Optimized\n  ");
+	      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+    }
+  return 0;
+}
+
+static bool
+gate_sanopt (void)
+{
+  return flag_sanitize;
+}
+
+namespace {
+
+const pass_data pass_data_sanopt =
+{
+  GIMPLE_PASS, /* type */
+  "sanopt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_flow | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
+};
+
+class pass_sanopt : public gimple_opt_pass
+{
+public:
+  pass_sanopt (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_sanopt, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_sanopt (); }
+  unsigned int execute () { return execute_sanopt (); }
+
+}; // class pass_sanopt
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_sanopt (gcc::context *ctxt)
+{
+  return new pass_sanopt (ctxt);
 }
 
 #include "gt-asan.h"

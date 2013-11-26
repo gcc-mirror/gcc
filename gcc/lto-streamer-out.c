@@ -25,22 +25,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
 #include "expr.h"
 #include "flags.h"
 #include "params.h"
 #include "input.h"
 #include "hashtab.h"
 #include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "function.h"
-#include "ggc.h"
 #include "diagnostic-core.h"
 #include "except.h"
-#include "vec.h"
 #include "lto-symtab.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
@@ -1592,7 +1596,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 
   streamer_write_hwi (ob, -1);
 
-  bb = ENTRY_BLOCK_PTR;
+  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   while (bb->next_bb)
     {
       streamer_write_hwi (ob, bb->next_bb->index);
@@ -1966,7 +1970,7 @@ copy_function (struct cgraph_node *node)
 
 /* Main entry point from the pass manager.  */
 
-static void
+void
 lto_output (void)
 {
   struct lto_out_decl_state *decl_state;
@@ -2015,53 +2019,6 @@ lto_output (void)
   lto_bitmap_free (output);
 #endif
 }
-
-namespace {
-
-const pass_data pass_data_ipa_lto_gimple_out =
-{
-  IPA_PASS, /* type */
-  "lto_gimple_out", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  false, /* has_execute */
-  TV_IPA_LTO_GIMPLE_OUT, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_ipa_lto_gimple_out : public ipa_opt_pass_d
-{
-public:
-  pass_ipa_lto_gimple_out (gcc::context *ctxt)
-    : ipa_opt_pass_d (pass_data_ipa_lto_gimple_out, ctxt,
-		      NULL, /* generate_summary */
-		      lto_output, /* write_summary */
-		      NULL, /* read_summary */
-		      lto_output, /* write_optimization_summary */
-		      NULL, /* read_optimization_summary */
-		      NULL, /* stmt_fixup */
-		      0, /* function_transform_todo_flags_start */
-		      NULL, /* function_transform */
-		      NULL) /* variable_transform */
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_lto_out (); }
-
-}; // class pass_ipa_lto_gimple_out
-
-} // anon namespace
-
-ipa_opt_pass_d *
-make_pass_ipa_lto_gimple_out (gcc::context *ctxt)
-{
-  return new pass_ipa_lto_gimple_out (ctxt);
-}
-
 
 /* Write each node in encoded by ENCODER to OB, as well as those reachable
    from it and required for correct representation of its semantics.
@@ -2382,7 +2339,7 @@ produce_symtab (struct output_block *ob)
    this file to be written in to a section that can then be read in to
    recover these on other side.  */
 
-static void
+void
 produce_asm_for_decls (void)
 {
   struct lto_out_decl_state *out_state;
@@ -2485,51 +2442,4 @@ produce_asm_for_decls (void)
   lto_symtab_encoder_delete (ob->decl_state->symtab_node_encoder);
   lto_function_decl_states.release ();
   destroy_output_block (ob);
-}
-
-
-namespace {
-
-const pass_data pass_data_ipa_lto_finish_out =
-{
-  IPA_PASS, /* type */
-  "lto_decls_out", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  false, /* has_execute */
-  TV_IPA_LTO_DECL_OUT, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_ipa_lto_finish_out : public ipa_opt_pass_d
-{
-public:
-  pass_ipa_lto_finish_out (gcc::context *ctxt)
-    : ipa_opt_pass_d (pass_data_ipa_lto_finish_out, ctxt,
-		      NULL, /* generate_summary */
-		      produce_asm_for_decls, /* write_summary */
-		      NULL, /* read_summary */
-		      produce_asm_for_decls, /* write_optimization_summary */
-		      NULL, /* read_optimization_summary */
-		      NULL, /* stmt_fixup */
-		      0, /* function_transform_todo_flags_start */
-		      NULL, /* function_transform */
-		      NULL) /* variable_transform */
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_lto_out (); }
-
-}; // class pass_ipa_lto_finish_out
-
-} // anon namespace
-
-ipa_opt_pass_d *
-make_pass_ipa_lto_finish_out (gcc::context *ctxt)
-{
-  return new pass_ipa_lto_finish_out (ctxt);
 }

@@ -130,11 +130,13 @@ static void invalidate_insn_data_regno_info (lra_insn_recog_data_t, rtx, int);
 
 /* Expand all regno related info needed for LRA.  */
 static void
-expand_reg_data (void)
+expand_reg_data (int old)
 {
   resize_reg_info ();
   expand_reg_info ();
   ira_expand_reg_equiv ();
+  for (int i = (int) max_reg_num () - 1; i >= old; i--)
+    lra_change_class (i, ALL_REGS, "      Set", true);
 }
 
 /* Create and return a new reg of ORIGINAL mode.  If ORIGINAL is NULL
@@ -178,7 +180,7 @@ lra_create_new_reg_with_unique_value (enum machine_mode md_mode, rtx original,
 		 title, REGNO (new_reg));
       fprintf (lra_dump_file, "\n");
     }
-  expand_reg_data ();
+  expand_reg_data (max_reg_num ());
   setup_reg_classes (REGNO (new_reg), rclass, NO_REGS, rclass);
   return new_reg;
 }
@@ -417,7 +419,7 @@ lra_emit_add (rtx x, rtx y, rtx z)
   /* Functions emit_... can create pseudos -- so expand the pseudo
      data.  */
   if (old != max_reg_num ())
-    expand_reg_data ();
+    expand_reg_data (old);
 }
 
 /* The number of emitted reload insns so far.  */
@@ -443,7 +445,7 @@ lra_emit_move (rtx x, rtx y)
       /* Function emit_move can create pseudos -- so expand the pseudo
 	 data.	*/
       if (old != max_reg_num ())
-	expand_reg_data ();
+	expand_reg_data (old);
       return;
     }
   lra_emit_add (x, XEXP (y, 0), XEXP (y, 1));
@@ -2059,14 +2061,14 @@ has_nonexceptional_receiver (void)
     return true;
 
   /* First determine which blocks can reach exit via normal paths.  */
-  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
   FOR_EACH_BB (bb)
     bb->flags &= ~BB_REACHABLE;
 
   /* Place the exit block on our worklist.  */
-  EXIT_BLOCK_PTR->flags |= BB_REACHABLE;
-  *tos++ = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->flags |= BB_REACHABLE;
+  *tos++ = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
   /* Iterate: find everything reachable from what we've already seen.  */
   while (tos != worklist)
@@ -2238,6 +2240,10 @@ lra (FILE *f)
 
   init_insn_recog_data ();
 
+  /* We can not set up reload_in_progress because it prevents new
+     pseudo creation.  */
+  lra_in_progress = 1;
+
 #ifdef ENABLE_CHECKING
   check_rtl (false);
 #endif
@@ -2247,10 +2253,6 @@ lra (FILE *f)
   lra_inheritance_iter = lra_undo_inheritance_iter = 0;
 
   setup_reg_spill_flag ();
-
-  /* We can not set up reload_in_progress because it prevents new
-     pseudo creation.  */
-  lra_in_progress = 1;
 
   /* Function remove_scratches can creates new pseudos for clobbers --
      so set up lra_constraint_new_regno_start before its call to

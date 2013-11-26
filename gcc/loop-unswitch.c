@@ -138,13 +138,12 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
 void
 unswitch_loops (void)
 {
-  loop_iterator li;
   struct loop *loop;
   bool changed = false;
 
   /* Go through inner loops (only original ones).  */
 
-  FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
+  FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     changed |= unswitch_single_loop (loop, NULL_RTX, 0);
 
   iv_analysis_done ();
@@ -434,7 +433,7 @@ unswitch_loop (struct loop *loop, basic_block unswitch_on, rtx cond, rtx cinsn)
 
   /* Create a block with the condition.  */
   prob = true_edge->probability;
-  switch_bb = create_empty_bb (EXIT_BLOCK_PTR->prev_bb);
+  switch_bb = create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
   seq = compare_and_jump_seq (XEXP (cond, 0), XEXP (cond, 1), GET_CODE (cond),
 			      block_label (true_edge->dest),
 			      prob, cinsn);

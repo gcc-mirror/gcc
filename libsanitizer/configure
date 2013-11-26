@@ -606,6 +606,8 @@ LTLIBOBJS
 LIBOBJS
 USING_MAC_INTERPOSE_FALSE
 USING_MAC_INTERPOSE_TRUE
+LSAN_SUPPORTED_FALSE
+LSAN_SUPPORTED_TRUE
 TSAN_SUPPORTED_FALSE
 TSAN_SUPPORTED_TRUE
 enable_static
@@ -11117,7 +11119,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11120 "configure"
+#line 11122 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11223,7 +11225,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11226 "configure"
+#line 11228 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14523,6 +14525,7 @@ fi
 
 # Get target configury.
 unset TSAN_SUPPORTED
+unset LSAN_SUPPORTED
 . ${srcdir}/configure.tgt
  if test "x$TSAN_SUPPORTED" = "xyes"; then
   TSAN_SUPPORTED_TRUE=
@@ -14530,6 +14533,14 @@ unset TSAN_SUPPORTED
 else
   TSAN_SUPPORTED_TRUE='#'
   TSAN_SUPPORTED_FALSE=
+fi
+
+ if test "x$LSAN_SUPPORTED" = "xyes"; then
+  LSAN_SUPPORTED_TRUE=
+  LSAN_SUPPORTED_FALSE='#'
+else
+  LSAN_SUPPORTED_TRUE='#'
+  LSAN_SUPPORTED_FALSE=
 fi
 
 
@@ -14720,6 +14731,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${TSAN_SUPPORTED_TRUE}" && test -z "${TSAN_SUPPORTED_FALSE}"; then
   as_fn_error "conditional \"TSAN_SUPPORTED\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LSAN_SUPPORTED_TRUE}" && test -z "${LSAN_SUPPORTED_FALSE}"; then
+  as_fn_error "conditional \"LSAN_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_MAC_INTERPOSE_TRUE}" && test -z "${USING_MAC_INTERPOSE_FALSE}"; then

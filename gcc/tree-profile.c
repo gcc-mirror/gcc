@@ -34,13 +34,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "coverage.h"
 #include "tree.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
+#include "varasm.h"
+#include "tree-nested.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
 #include "cgraph.h"
 #include "tree-cfg.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-into-ssa.h"
 #include "tree-pass.h"
@@ -437,7 +444,8 @@ gimple_gen_ic_func_profiler (void)
     stmt1: __gcov_indirect_call_profiler_v2 (profile_id,
 					     &current_function_decl)
    */
-  gsi = gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR)));
+  gsi =
+					     gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))));
 
   cur_func = force_gimple_operand_gsi (&gsi,
 				       build_addr (current_function_decl,

@@ -22,10 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "calls.h"
+#include "expr.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
+#include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -38,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "ggc.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-data-ref.h"
@@ -47,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 
 
@@ -493,7 +500,7 @@ bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
   /* Now walk the dominators of the loop header and use the entry
      guards to refine the estimates.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -659,7 +666,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
   if (!no_overflow)
     {
       max = double_int::mask (TYPE_PRECISION (type)
-			      - tree_low_cst (num_ending_zeros (s), 1));
+			      - tree_to_uhwi (num_ending_zeros (s)));
       mpz_set_double_int (bnd, max, true);
       return;
     }
@@ -748,7 +755,7 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
   bits = num_ending_zeros (s);
   bound = build_low_bits_mask (niter_type,
 			       (TYPE_PRECISION (niter_type)
-				- tree_low_cst (bits, 1)));
+				- tree_to_uhwi (bits)));
 
   d = fold_binary_to_constant (LSHIFT_EXPR, niter_type,
 			       build_int_cst (niter_type, 1), bits);
@@ -1778,7 +1785,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
      the number of BBs times the number of loops in degenerate
      cases.  */
   for (bb = loop->header;
-       bb != ENTRY_BLOCK_PTR && cnt < MAX_DOMINATORS_TO_WALK;
+       bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) && cnt < MAX_DOMINATORS_TO_WALK;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       if (!single_pred_p (bb))
@@ -3583,14 +3590,13 @@ estimated_stmt_executions (struct loop *loop, double_int *nit)
 void
 estimate_numbers_of_iterations (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
   fold_defer_overflow_warnings ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       estimate_numbers_of_iterations_loop (loop);
     }
@@ -3860,10 +3866,9 @@ free_numbers_of_iterations_estimates_loop (struct loop *loop)
 void
 free_numbers_of_iterations_estimates (void)
 {
-  loop_iterator li;
   struct loop *loop;
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       free_numbers_of_iterations_estimates_loop (loop);
     }

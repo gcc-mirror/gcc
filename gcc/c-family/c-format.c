@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "flags.h"
 #include "c-common.h"
 #include "c-objc.h"
@@ -1459,8 +1460,8 @@ check_format_arg (void *ctx, tree format_tree,
 	  res->number_non_literal++;
 	  return;
 	}
-      if (!host_integerp (arg1, 0)
-	  || (offset = tree_low_cst (arg1, 0)) < 0)
+      if (!tree_fits_shwi_p (arg1)
+	  || (offset = tree_to_shwi (arg1)) < 0)
 	{
 	  res->number_non_literal++;
 	  return;
@@ -1506,8 +1507,8 @@ check_format_arg (void *ctx, tree format_tree,
       return;
     }
   if (TREE_CODE (format_tree) == ARRAY_REF
-      && host_integerp (TREE_OPERAND (format_tree, 1), 0)
-      && (offset += tree_low_cst (TREE_OPERAND (format_tree, 1), 0)) >= 0)
+      && tree_fits_shwi_p (TREE_OPERAND (format_tree, 1))
+      && (offset += tree_to_shwi (TREE_OPERAND (format_tree, 1))) >= 0)
     format_tree = TREE_OPERAND (format_tree, 0);
   if (TREE_CODE (format_tree) == VAR_DECL
       && TREE_CODE (TREE_TYPE (format_tree)) == ARRAY_TYPE
@@ -1537,9 +1538,9 @@ check_format_arg (void *ctx, tree format_tree,
       /* Variable length arrays can't be initialized.  */
       gcc_assert (TREE_CODE (array_size) == INTEGER_CST);
 
-      if (host_integerp (array_size, 0))
+      if (tree_fits_shwi_p (array_size))
 	{
-	  HOST_WIDE_INT array_size_value = TREE_INT_CST_LOW (array_size);
+	  HOST_WIDE_INT array_size_value = tree_to_shwi (array_size);
 	  if (array_size_value > 0
 	      && array_size_value == (int) array_size_value
 	      && format_length > array_size_value)

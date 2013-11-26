@@ -31,6 +31,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
+#include "gcc-symtab.h"
+#include "varasm.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -960,9 +964,9 @@ align_variable (tree decl, bool dont_output_data)
      In particular, a.out format supports a maximum alignment of 4.  */
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning (0, "alignment of %q+D is greater than maximum object "
-               "file alignment.  Using %d", decl,
-	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
+      error ("alignment of %q+D is greater than maximum object "
+	     "file alignment %d", decl,
+	     MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
 
@@ -1136,7 +1140,7 @@ get_block_for_decl (tree decl)
      constant size.  */
   if (DECL_SIZE_UNIT (decl) == NULL)
     return NULL;
-  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
     return NULL;
 
   /* Find out which section should contain DECL.  We cannot put it into
@@ -1635,7 +1639,7 @@ assemble_start_function (tree decl, const char *fnname)
 	 align the hot section and write out the hot section label.
 	 But if the current function is a thunk, we do not have a CFG.  */
       if (!cfun->is_thunk
-	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
+	  && BB_PARTITION (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb) == BB_COLD_PARTITION)
 	{
 	  switch_to_section (text_section);
 	  assemble_align (DECL_ALIGN (decl));
@@ -1889,7 +1893,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 {
   unsigned HOST_WIDE_INT size, rounded;
 
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
   rounded = size;
 
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_protect_global (decl))
@@ -1908,8 +1912,8 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 
   if (!sect->noswitch.callback (decl, name, size, rounded)
       && (unsigned HOST_WIDE_INT) (align / BITS_PER_UNIT) > rounded)
-    warning (0, "requested alignment for %q+D is greater than "
-	     "implemented alignment of %wu", decl, rounded);
+    error ("requested alignment for %q+D is greater than "
+	   "implemented alignment of %wu", decl, rounded);
 }
 
 /* A subroutine of assemble_variable.  Output the label and contents of
@@ -1936,11 +1940,11 @@ assemble_variable_contents (tree decl, const char *name,
 	  && !initializer_zerop (DECL_INITIAL (decl)))
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
-			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
+			 tree_to_uhwi (DECL_SIZE_UNIT (decl)),
 			 get_variable_align (decl));
       else
 	/* Leave space for it.  */
-	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
     }
 }
 
@@ -2126,7 +2130,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       if (asan_protected)
 	{
 	  unsigned HOST_WIDE_INT int size
-	    = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	    = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  assemble_zeros (asan_red_zone_size (size));
 	}
     }
@@ -2709,7 +2713,7 @@ decode_addr_const (tree exp, struct addr_const *value)
   while (1)
     {
       if (TREE_CODE (target) == COMPONENT_REF
-	  && host_integerp (byte_position (TREE_OPERAND (target, 1)), 0))
+	  && tree_fits_shwi_p (byte_position (TREE_OPERAND (target, 1))))
 	{
 	  offset += int_byte_position (TREE_OPERAND (target, 1));
 	  target = TREE_OPERAND (target, 0);
@@ -2717,8 +2721,8 @@ decode_addr_const (tree exp, struct addr_const *value)
       else if (TREE_CODE (target) == ARRAY_REF
 	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
-	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
-		     * tree_low_cst (TREE_OPERAND (target, 1), 0));
+	  offset += (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (target)))
+		     * tree_to_shwi (TREE_OPERAND (target, 1)));
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == MEM_REF
@@ -4664,7 +4668,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   if (TREE_CODE (exp) == FDESC_EXPR)
     {
 #ifdef ASM_OUTPUT_FDESC
-      HOST_WIDE_INT part = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      HOST_WIDE_INT part = tree_to_shwi (TREE_OPERAND (exp, 1));
       tree decl = TREE_OPERAND (exp, 0);
       ASM_OUTPUT_FDESC (asm_out_file, decl, part);
 #else
@@ -4833,9 +4837,9 @@ output_constructor_array_range (oc_local_state *local)
     = int_size_in_bytes (TREE_TYPE (local->type));
 
   HOST_WIDE_INT lo_index
-    = tree_low_cst (TREE_OPERAND (local->index, 0), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 0));
   HOST_WIDE_INT hi_index
-    = tree_low_cst (TREE_OPERAND (local->index, 1), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 1));
   HOST_WIDE_INT index;
 
   unsigned int align2
@@ -4876,7 +4880,7 @@ output_constructor_regular_field (oc_local_state *local)
       double_int idx = tree_to_double_int (local->index)
 		       - tree_to_double_int (local->min_index);
       idx = idx.sext (prec);
-      fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
+      fieldpos = (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (local->val)))
 		  * idx.low);
     }
   else if (local->field != NULL_TREE)
@@ -4926,7 +4930,7 @@ output_constructor_regular_field (oc_local_state *local)
 	  gcc_assert (!fieldsize || !DECL_CHAIN (local->field));
 	}
       else
-	fieldsize = tree_low_cst (DECL_SIZE_UNIT (local->field), 1);
+	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
     }
   else
     fieldsize = int_size_in_bytes (TREE_TYPE (local->type));
@@ -4951,15 +4955,15 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
   /* Bit size of this element.  */
   HOST_WIDE_INT ebitsize
     = (local->field
-       ? tree_low_cst (DECL_SIZE (local->field), 1)
-       : tree_low_cst (TYPE_SIZE (TREE_TYPE (local->type)), 1));
+       ? tree_to_uhwi (DECL_SIZE (local->field))
+       : tree_to_uhwi (TYPE_SIZE (TREE_TYPE (local->type))));
 
   /* Relative index of this element if this is an array component.  */
   HOST_WIDE_INT relative_index
     = (!local->field
        ? (local->index
-	  ? (tree_low_cst (local->index, 0)
-	     - tree_low_cst (local->min_index, 0))
+	  ? (tree_to_shwi (local->index)
+	     - tree_to_shwi (local->min_index))
 	  : local->last_relative_index + 1)
        : 0);
 
@@ -7083,7 +7087,7 @@ place_block_symbol (rtx symbol)
     {
       decl = SYMBOL_REF_DECL (symbol);
       alignment = get_variable_align (decl);
-      size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
       if ((flag_sanitize & SANITIZE_ADDRESS)
 	  && asan_protect_global (decl))
 	{
@@ -7249,7 +7253,7 @@ output_object_block (struct object_block *block)
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
 	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
-	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  offset += size;
 	  if ((flag_sanitize & SANITIZE_ADDRESS)
 	      && asan_protect_global (decl))

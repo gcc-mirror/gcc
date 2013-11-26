@@ -44,6 +44,12 @@ class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
   symtab_node
 {
 public:
+  /* Return name.  */
+  const char *name () const;
+
+  /* Return asm name.  */
+  const char * asm_name () const;
+
   /* Type of the symbol.  */
   ENUM_BITFIELD (symtab_type) type : 8;
 
@@ -428,7 +434,7 @@ struct GTY(()) cgraph_indirect_call_info
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
-  tree otr_type;
+  tree otr_type, outer_type;
   /* Index of the parameter that is called.  */
   int param_index;
   /* ECF flags determined from the caller.  */
@@ -449,6 +455,8 @@ struct GTY(()) cgraph_indirect_call_info
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;
+  unsigned int maybe_in_construction : 1;
+  unsigned int maybe_derived_type : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
@@ -520,6 +528,14 @@ class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node {
 public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
+
+  /* Set when variable has statically initialized pointer
+     or is a static bounds variable and needs initalization.  */
+  unsigned need_bounds_init : 1;
+
+  /* Set if the variable is dynamically initialized, except for
+     function local statics.   */
+  unsigned dynamically_initialized : 1;
 };
 
 /* Every top level asm statement is put into a asm_node.  */
@@ -589,8 +605,6 @@ void symtab_unregister_node (symtab_node *);
 void symtab_remove_node (symtab_node *);
 symtab_node *symtab_get_node (const_tree);
 symtab_node *symtab_node_for_asm (const_tree asmname);
-const char * symtab_node_asm_name (symtab_node *);
-const char * symtab_node_name (symtab_node *);
 void symtab_insert_node_to_hashtable (symtab_node *);
 void symtab_add_to_same_comdat_group (symtab_node *, symtab_node *);
 void symtab_dissolve_same_comdat_group_list (symtab_node *node);
@@ -737,7 +751,7 @@ void cgraph_finalize_function (tree, bool);
 void finalize_compilation_unit (void);
 void compile (void);
 void init_cgraph (void);
-bool cgraph_process_new_functions (void);
+void cgraph_process_new_functions (void);
 void cgraph_process_same_body_aliases (void);
 void fixup_same_cpp_alias_visibility (symtab_node *, symtab_node *target, tree);
 /*  Initialize datastructures so DECL is a function in lowered gimple form.
@@ -846,6 +860,8 @@ void symtab_initialize_asm_name_hash (void);
 void symtab_prevail_in_asm_name_hash (symtab_node *node);
 void varpool_remove_initializer (struct varpool_node *);
 
+/* In cgraph.c */
+extern void change_decl_assembler_name (tree, tree);
 
 /* Return callgraph node for given symbol and check it is a function. */
 static inline struct cgraph_node *
@@ -877,34 +893,6 @@ varpool_get_node (const_tree decl)
 {
   gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   return varpool (symtab_get_node (decl));
-}
-
-/* Return asm name of cgraph node.  */
-static inline const char *
-cgraph_node_asm_name (struct cgraph_node *node)
-{
-  return symtab_node_asm_name (node);
-}
-
-/* Return asm name of varpool node.  */
-static inline const char *
-varpool_node_asm_name (struct varpool_node *node)
-{
-  return symtab_node_asm_name (node);
-}
-
-/* Return name of cgraph node.  */
-static inline const char *
-cgraph_node_name (struct cgraph_node *node)
-{
-  return symtab_node_name (node);
-}
-
-/* Return name of varpool node.  */
-static inline const char *
-varpool_node_name (struct varpool_node *node)
-{
-  return symtab_node_name (node);
 }
 
 /* Walk all symbols.  */

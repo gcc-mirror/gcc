@@ -488,6 +488,7 @@ runtime_files = \
 	runtime/go-unsafe-newarray.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unwind.c \
+	runtime/go-varargs.c \
 	runtime/chan.c \
 	runtime/cpuprof.c \
 	runtime/env_posix.c \

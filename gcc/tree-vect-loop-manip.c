@@ -24,10 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "dumpfile.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -36,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-into-ssa.h"
@@ -660,7 +664,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   bool insert_after;
   tree init = build_int_cst (TREE_TYPE (niters), 0);
   tree step = build_int_cst (TREE_TYPE (niters), 1);
-  LOC loop_loc;
+  source_location loop_loc;
   enum tree_code code;
 
   orig_cond = get_loop_exit_condition (loop);
@@ -690,9 +694,9 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   loop_loc = find_loop_location (loop);
   if (dump_enabled_p ())
     {
-      if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOC)
-	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
-		     LOC_LINE (loop_loc));
+      if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOCATION)
+	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOCATION_FILE (loop_loc),
+		     LOCATION_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
       dump_printf (MSG_NOTE, "\n");
     }
@@ -1056,7 +1060,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   basic_block new_exit_bb;
   gimple_stmt_iterator gsi;
   edge exit_e = single_exit (loop);
-  LOC loop_loc;
+  source_location loop_loc;
   tree cost_pre_condition = NULL_TREE;
   /* There are many aspects to how likely the first loop is going to be executed.
      Without histogram we can't really do good job.  Simply set it to
@@ -1364,7 +1368,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
    location is calculated.
    Return the loop location if succeed and NULL if not.  */
 
-LOC
+source_location
 find_loop_location (struct loop *loop)
 {
   gimple stmt = NULL;
@@ -1372,7 +1376,7 @@ find_loop_location (struct loop *loop)
   gimple_stmt_iterator si;
 
   if (!loop)
-    return UNKNOWN_LOC;
+    return UNKNOWN_LOCATION;
 
   stmt = get_loop_exit_condition (loop);
 
@@ -1384,7 +1388,7 @@ find_loop_location (struct loop *loop)
      try to estimate the loop location */
 
   if (!loop->header)
-    return UNKNOWN_LOC;
+    return UNKNOWN_LOCATION;
 
   bb = loop->header;
 
@@ -1395,154 +1399,9 @@ find_loop_location (struct loop *loop)
         return gimple_location (stmt);
     }
 
-  return UNKNOWN_LOC;
+  return UNKNOWN_LOCATION;
 }
 
-
-/* This function builds ni_name = number of iterations loop executes
-   on the loop preheader.  If SEQ is given the stmt is instead emitted
-   there.  */
-
-static tree
-vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq seq)
-{
-  tree ni_name, var;
-  gimple_seq stmts = NULL;
-  edge pe;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
-
-  var = create_tmp_var (TREE_TYPE (ni), "niters");
-  ni_name = force_gimple_operand (ni, &stmts, false, var);
-
-  pe = loop_preheader_edge (loop);
-  if (stmts)
-    {
-      if (seq)
-	gimple_seq_add_seq (&seq, stmts);
-      else
-	{
-	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
-    }
-
-  return ni_name;
-}
-
-
-/* This function generates the following statements:
-
- ni_name = number of iterations loop executes
- ratio = ni_name / vf
- ratio_mult_vf_name = ratio * vf
-
- and places them at the loop preheader edge or in COND_EXPR_STMT_LIST
- if that is non-NULL.  */
-
-void
-vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
-				 tree *ni_name_ptr,
-				 tree *ratio_mult_vf_name_ptr,
-				 tree *ratio_name_ptr,
-				 gimple_seq cond_expr_stmt_list)
-{
-
-  edge pe;
-  basic_block new_bb;
-  gimple_seq stmts;
-  tree ni_name, ni_minus_gap_name;
-  tree var;
-  tree ratio_name;
-  tree ratio_mult_vf_name;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree ni = LOOP_VINFO_NITERS (loop_vinfo);
-  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  tree log_vf;
-
-  pe = loop_preheader_edge (loop);
-
-  /* Generate temporary variable that contains
-     number of iterations loop executes.  */
-
-  ni_name = vect_build_loop_niters (loop_vinfo, cond_expr_stmt_list);
-  log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
-
-  /* If epilogue loop is required because of data accesses with gaps, we
-     subtract one iteration from the total number of iterations here for
-     correct calculation of RATIO.  */
-  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    {
-      ni_minus_gap_name = fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
-				       ni_name,
-			               build_one_cst (TREE_TYPE (ni_name)));
-      if (!is_gimple_val (ni_minus_gap_name))
-	{
-	  var = create_tmp_var (TREE_TYPE (ni), "ni_gap");
-
-          stmts = NULL;
-          ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
-						    true, var);
-          if (cond_expr_stmt_list)
-            gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
-          else
-            {
-              pe = loop_preheader_edge (loop);
-              new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-              gcc_assert (!new_bb);
-            }
-        }
-    }
-  else
-    ni_minus_gap_name = ni_name;
-
-  /* Create: ratio = ni >> log2(vf) */
-
-  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_minus_gap_name),
-			    ni_minus_gap_name, log_vf);
-  if (!is_gimple_val (ratio_name))
-    {
-      var = create_tmp_var (TREE_TYPE (ni), "bnd");
-
-      stmts = NULL;
-      ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
-      if (cond_expr_stmt_list)
-	gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
-      else
-	{
-	  pe = loop_preheader_edge (loop);
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
-    }
-
-  /* Create: ratio_mult_vf = ratio << log2 (vf).  */
-
-  ratio_mult_vf_name = fold_build2 (LSHIFT_EXPR, TREE_TYPE (ratio_name),
-				    ratio_name, log_vf);
-  if (!is_gimple_val (ratio_mult_vf_name))
-    {
-      var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
-
-      stmts = NULL;
-      ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
-						 true, var);
-      if (cond_expr_stmt_list)
-	gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
-      else
-	{
-	  pe = loop_preheader_edge (loop);
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
-    }
-
-  *ni_name_ptr = ni_name;
-  *ratio_mult_vf_name_ptr = ratio_mult_vf_name;
-  *ratio_name_ptr = ratio_name;
-
-  return;
-}
 
 /* Function vect_can_advance_ivs_p
 
@@ -1672,7 +1531,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
   gimple_stmt_iterator gsi, gsi1;
   basic_block update_bb = update_e->dest;
 
-  /* gcc_assert (vect_can_advance_ivs_p (loop_vinfo)); */
+  gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
 
   /* Make sure there exists a single-predecessor exit bb:  */
   gcc_assert (single_pred_p (exit_bb));
@@ -1761,10 +1620,10 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
    test.  */
 
 void
-vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
+vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo,
+				tree ni_name, tree ratio_mult_vf_name,
 				unsigned int th, bool check_profitability)
 {
-  tree ni_name, ratio_mult_vf_name;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *new_loop;
   edge update_e;
@@ -1779,15 +1638,6 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
                      "=== vect_do_peeling_for_loop_bound ===\n");
 
   initialize_original_copy_tables ();
-
-  /* Generate the following variables on the preheader of original loop:
-
-     ni_name = number of iteration the original loop executes
-     ratio = ni_name / vf
-     ratio_mult_vf_name = ratio * vf  */
-  vect_generate_tmps_on_preheader (loop_vinfo, &ni_name,
-				   &ratio_mult_vf_name, ratio,
-				   cond_expr_stmt_list);
 
   loop_num  = loop->num;
 
@@ -1889,16 +1739,16 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
 
   pe = loop_preheader_edge (loop);
 
-  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
+  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
-      int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "known peeling = %d.\n", npeel);
 
       iters = build_int_cst (niters_type, npeel);
-      *bound = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      *bound = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
     }
   else
     {
@@ -2024,12 +1874,11 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
    peeling is recorded in LOOP_VINFO_UNALIGNED_DR.  */
 
 void
-vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
+vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
 			       unsigned int th, bool check_profitability)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree niters_of_prolog_loop, ni_name;
-  tree n_iters;
+  tree niters_of_prolog_loop;
   tree wide_prolog_niters;
   struct loop *new_loop;
   int max_iter;
@@ -2042,7 +1891,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
 
   initialize_original_copy_tables ();
 
-  ni_name = vect_build_loop_niters (loop_vinfo, NULL);
+  gimple_seq stmts = NULL;
+  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo,
 							   ni_name,
 							   &bound);
@@ -2070,9 +1920,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
                "loop to %d\n", max_iter);
 
   /* Update number of times loop executes.  */
-  n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
-		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
+		TREE_TYPE (ni_name), ni_name, niters_of_prolog_loop);
 
   if (types_compatible_p (sizetype, TREE_TYPE (niters_of_prolog_loop)))
     wide_prolog_niters = niters_of_prolog_loop;
@@ -2376,7 +2225,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   loop_version (loop, cond_expr, &condition_bb,
 		prob, prob, REG_BR_PROB_BASE - prob, true);
 
-  if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
+  if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
       && dump_enabled_p ())
     {
       if (version_alias)

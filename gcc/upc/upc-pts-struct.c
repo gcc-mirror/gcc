@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "input.h"
@@ -41,8 +42,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "upc-pts.h"
 #include "upc-rts-names.h"
 #include "upc-gasp.h"
-#include "cgraph.h"
-#include "gimple.h"
+#include "stor-layout.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
@@ -135,10 +137,9 @@ upc_pts_struct_init_type (void)
 					 null_struct_parse_info);
   pedantic = save_pedantic;
   gcc_assert (TYPE_SIZE (upc_pts_rep_type_node));
-  gcc_assert (host_integerp (TYPE_SIZE (upc_pts_rep_type_node), 1));
-  gcc_assert ((unsigned HOST_WIDE_INT)
-                tree_low_cst (TYPE_SIZE (upc_pts_rep_type_node), 1)
-		== 2 * POINTER_SIZE);
+  gcc_assert (tree_fits_uhwi_p (TYPE_SIZE (upc_pts_rep_type_node)));
+  gcc_assert (tree_to_uhwi (TYPE_SIZE (upc_pts_rep_type_node))
+	      == 2 * POINTER_SIZE);
   pts_mode = mode_for_size_tree (TYPE_SIZE (upc_pts_rep_type_node),
                                  MODE_INT, 0);
   gcc_assert (pts_mode != BLKmode);
@@ -523,7 +524,9 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
 	  lib_args = tree_cons (NULL_TREE, src, NULL_TREE);
 	  if (doprofcall)
 	    lib_args =
-	      upc_gasp_add_src_args (lib_args, input_filename, input_line);
+	      upc_gasp_add_src_args (lib_args,
+	                             LOCATION_FILE (input_location),
+				     LOCATION_LINE (input_location));
 	  lib_call = build_function_call (loc, libfunc, lib_args);
 	  result = build1 (VIEW_CONVERT_EXPR, type, lib_call);
 	}

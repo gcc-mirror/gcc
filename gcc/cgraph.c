@@ -28,17 +28,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "varasm.h"
+#include "calls.h"
+#include "print-tree.h"
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
 #include "toplev.h"
 #include "flags.h"
-#include "ggc.h"
 #include "debug.h"
 #include "target.h"
-#include "basic-block.h"
 #include "cgraph.h"
 #include "intl.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "timevar.h"
@@ -562,11 +567,11 @@ cgraph_get_create_node (tree decl)
       if (dump_file)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s/%i) and turned into root of the clone tree.\n",
-		 xstrdup (cgraph_node_name (node)), node->order);
+		 xstrdup (node->name ()), node->order);
     }
   else if (dump_file)
     fprintf (dump_file, "Introduced new external node "
-	     "(%s/%i).\n", xstrdup (cgraph_node_name (node)),
+	     "(%s/%i).\n", xstrdup (node->name ()),
 	     node->order);
   return node;
 }
@@ -959,16 +964,26 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
       && (target = gimple_call_fn (call_stmt))
       && virtual_method_call_p (target))
     {
-      tree type = obj_type_ref_class (target);
+      tree otr_type;
+      HOST_WIDE_INT otr_token;
+      ipa_polymorphic_call_context context;
 
+      get_polymorphic_call_info (caller->decl,
+				 target,
+				 &otr_type, &otr_token,
+				 &context);
 
       /* Only record types can have virtual calls.  */
-      gcc_assert (TREE_CODE (type) == RECORD_TYPE);
+      gcc_assert (TREE_CODE (otr_type) == RECORD_TYPE);
+      edge->indirect_info->polymorphic = true;
       edge->indirect_info->param_index = -1;
-      edge->indirect_info->otr_token
-	 = tree_low_cst (OBJ_TYPE_REF_TOKEN (target), 1);
-      edge->indirect_info->otr_type = type;
-      edge->indirect_info->polymorphic = 1;
+      edge->indirect_info->otr_token = otr_token;
+      edge->indirect_info->otr_type = otr_type;
+      edge->indirect_info->outer_type = context.outer_type;
+      edge->indirect_info->offset = context.offset;
+      edge->indirect_info->maybe_in_construction
+	 = context.maybe_in_construction;
+      edge->indirect_info->maybe_derived_type = context.maybe_derived_type;
     }
 
   edge->next_callee = caller->indirect_calls;
@@ -1097,8 +1112,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
     {
       fprintf (dump_file, "Indirect call -> speculative call"
 	       " %s/%i => %s/%i\n",
-	       xstrdup (cgraph_node_name (n)), n->order,
-	       xstrdup (cgraph_node_name (n2)), n2->order);
+	       xstrdup (n->name ()), n->order,
+	       xstrdup (n2->name ()), n2->order);
     }
   e->speculative = true;
   e2 = cgraph_create_edge (n, n2, e->call_stmt, direct_count, direct_frequency);
@@ -1217,16 +1232,16 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
 	    {
 	      fprintf (dump_file, "Speculative indirect call %s/%i => %s/%i has "
 		       "turned out to have contradicting known target ",
-		       xstrdup (cgraph_node_name (edge->caller)), edge->caller->order,
-		       xstrdup (cgraph_node_name (e2->callee)), e2->callee->order);
+		       xstrdup (edge->caller->name ()), edge->caller->order,
+		       xstrdup (e2->callee->name ()), e2->callee->order);
 	      print_generic_expr (dump_file, callee_decl, 0);
 	      fprintf (dump_file, "\n");
 	    }
 	  else
 	    {
 	      fprintf (dump_file, "Removing speculative call %s/%i => %s/%i\n",
-		       xstrdup (cgraph_node_name (edge->caller)), edge->caller->order,
-		       xstrdup (cgraph_node_name (e2->callee)), e2->callee->order);
+		       xstrdup (edge->caller->name ()), edge->caller->order,
+		       xstrdup (e2->callee->name ()), e2->callee->order);
 	    }
 	}
     }
@@ -1342,9 +1357,9 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
 		     "Type mismatch.\n",
-		     xstrdup (cgraph_node_name (e->caller)),
+		     xstrdup (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (cgraph_node_name (e->callee)),
+		     xstrdup (e->callee->name ()),
 		     e->callee->order);
 	  e = cgraph_resolve_speculation (e, NULL);
 	  /* We are producing the final function body and will throw away the
@@ -1361,9 +1376,9 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	    fprintf (dump_file,
 		     "Expanding speculative call of %s/%i -> %s/%i count:"
 		     HOST_WIDEST_INT_PRINT_DEC"\n",
-		     xstrdup (cgraph_node_name (e->caller)),
+		     xstrdup (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (cgraph_node_name (e->callee)),
+		     xstrdup (e->callee->name ()),
 		     e->callee->order,
 		     (HOST_WIDEST_INT)e->count);
 	  gcc_assert (e2->speculative);
@@ -1411,8 +1426,8 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "updating call of %s/%i -> %s/%i: ",
-	       xstrdup (cgraph_node_name (e->caller)), e->caller->order,
-	       xstrdup (cgraph_node_name (e->callee)), e->callee->order);
+	       xstrdup (e->caller->name ()), e->caller->order,
+	       xstrdup (e->callee->name ()), e->callee->order);
       print_gimple_stmt (cgraph_dump_file, e->call_stmt, 0, dump_flags);
       if (e->callee->clone.combined_args_to_skip)
 	{
@@ -1891,13 +1906,13 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
   if (node->global.inlined_to)
     fprintf (f, "  Function %s/%i is inline copy in %s/%i\n",
-	     xstrdup (cgraph_node_name (node)),
+	     xstrdup (node->name ()),
 	     node->order,
-	     xstrdup (cgraph_node_name (node->global.inlined_to)),
+	     xstrdup (node->global.inlined_to->name ()),
 	     node->global.inlined_to->order);
   if (node->clone_of)
     fprintf (f, "  Clone of %s/%i\n",
-	     cgraph_node_asm_name (node->clone_of),
+	     node->clone_of->asm_name (),
 	     node->clone_of->order);
   if (cgraph_function_flags_ready)
     fprintf (f, "  Availability: %s\n",
@@ -1912,7 +1927,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
   if (node->origin)
-    fprintf (f, " nested in: %s", cgraph_node_asm_name (node->origin));
+    fprintf (f, " nested in: %s", node->origin->asm_name ());
   if (gimple_has_body_p (node->decl))
     fprintf (f, " body");
   if (node->process)
@@ -1958,7 +1973,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     {
-      fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->caller),
+      fprintf (f, "%s/%i ", edge->caller->asm_name (),
 	       edge->caller->order);
       if (edge->count)
 	fprintf (f, "("HOST_WIDEST_INT_PRINT_DEC"x) ",
@@ -1979,7 +1994,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   fprintf (f, "\n  Calls: ");
   for (edge = node->callees; edge; edge = edge->next_callee)
     {
-      fprintf (f, "%s/%i ", cgraph_node_asm_name (edge->callee),
+      fprintf (f, "%s/%i ", edge->callee->asm_name (),
 	       edge->callee->order);
       if (edge->speculative)
 	fprintf (f, "(speculative) ");
@@ -2321,7 +2336,7 @@ cgraph_node_cannot_return (struct cgraph_node *node)
    and thus it is safe to ignore its side effects for IPA analysis
    when computing side effects of the caller.
    FIXME: We could actually mark all edges that have no reaching
-   patch to EXIT_BLOCK_PTR or throw to get better results.  */
+   patch to the exit block or throw to get better results.  */
 bool
 cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
 {
@@ -2599,8 +2614,8 @@ verify_cgraph_node (struct cgraph_node *node)
     if (e->aux)
       {
 	error ("aux field set for edge %s->%s",
-	       identifier_to_locale (cgraph_node_name (e->caller)),
-	       identifier_to_locale (cgraph_node_name (e->callee)));
+	       identifier_to_locale (e->caller->name ()),
+	       identifier_to_locale (e->callee->name ()));
 	error_found = true;
       }
   if (node->count < 0)
@@ -2638,7 +2653,7 @@ verify_cgraph_node (struct cgraph_node *node)
       if (e->aux)
 	{
 	  error ("aux field set for indirect edge from %s",
-		 identifier_to_locale (cgraph_node_name (e->caller)));
+		 identifier_to_locale (e->caller->name ()));
 	  error_found = true;
 	}
       if (!e->indirect_unknown_callee
@@ -2646,7 +2661,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	{
 	  error ("An indirect edge from %s is not marked as indirect or has "
 		 "associated indirect_info, the corresponding statement is: ",
-		 identifier_to_locale (cgraph_node_name (e->caller)));
+		 identifier_to_locale (e->caller->name ()));
 	  cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	  error_found = true;
 	}
@@ -2866,8 +2881,8 @@ verify_cgraph_node (struct cgraph_node *node)
 	  if (!e->aux)
 	    {
 	      error ("edge %s->%s has no corresponding call_stmt",
-		     identifier_to_locale (cgraph_node_name (e->caller)),
-		     identifier_to_locale (cgraph_node_name (e->callee)));
+		     identifier_to_locale (e->caller->name ()),
+		     identifier_to_locale (e->callee->name ()));
 	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	      error_found = true;
 	    }
@@ -2878,7 +2893,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	  if (!e->aux && !e->speculative)
 	    {
 	      error ("an indirect edge from %s has no corresponding call_stmt",
-		     identifier_to_locale (cgraph_node_name (e->caller)));
+		     identifier_to_locale (e->caller->name ()));
 	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	      error_found = true;
 	    }

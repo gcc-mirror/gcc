@@ -40,6 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"			/* For rtl.h: needs enum reg_class.  */
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "stor-layout.h"
+#include "varasm.h"
+#include "trans-mem.h"
 #include "langhooks.h"
 #include "input.h"
 #include "cpplib.h"
@@ -791,8 +796,7 @@ c_parser_consume_pragma (c_parser *parser)
   parser->in_pragma = true;
 }
 
-/* Update the globals input_location and in_system_header from
-   TOKEN.  */
+/* Update the global input_location from TOKEN.  */
 static inline void
 c_parser_set_source_position_from_token (c_token *token)
 {
@@ -6366,7 +6370,7 @@ c_parser_unary_expression (c_parser *parser)
       ret.value = build_indirect_ref (op_loc, op.value, RO_UNARY_STAR);
       return ret;
     case CPP_PLUS:
-      if (!c_dialect_objc () && !in_system_header)
+      if (!c_dialect_objc () && !in_system_header_at (input_location))
 	warning_at (op_loc,
 		    OPT_Wtraditional,
 		    "traditional C rejects the unary plus operator");
@@ -10199,8 +10203,8 @@ c_parser_omp_clause_collapse (c_parser *parser, tree list)
   mark_exp_read (num);
   num = c_fully_fold (num, false, NULL);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
-      || !host_integerp (num, 0)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || !tree_fits_shwi_p (num)
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc,
@@ -11926,7 +11930,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 

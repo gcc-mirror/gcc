@@ -28,6 +28,9 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "stringpool.h"
+#include "varasm.h"
 #include "flags.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -626,7 +629,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 static unsigned int
 resolve_atomic_size (tree type)
 {
-  unsigned HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
@@ -1712,7 +1715,8 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
   filename = build_string (len, str);
   line_number
     = (gnat_node != Empty && Sloc (gnat_node) != No_Location)
-      ? Get_Logical_Line_Number (Sloc(gnat_node)) : input_line;
+      ? Get_Logical_Line_Number (Sloc(gnat_node))
+      : LOCATION_LINE (input_location);
 
   TREE_TYPE (filename) = build_array_type (unsigned_char_type_node,
 					   build_index_type (size_int (len)));
@@ -1758,7 +1762,7 @@ build_call_raise_range (int msg, Node_Id gnat_node,
     }
   else
     {
-      line_number = input_line;
+      line_number = LOCATION_LINE (input_location);
       column_number = 0;
     }
 
@@ -1808,7 +1812,7 @@ build_call_raise_column (int msg, Node_Id gnat_node)
     }
   else
     {
-      line_number = input_line;
+      line_number = LOCATION_LINE (input_location);
       column_number = 0;
     }
 

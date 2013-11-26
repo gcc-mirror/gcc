@@ -40,11 +40,15 @@
 # include <bits/c++14_warning.h>
 #else
 
-namespace std //_GLIBCXX_VISIBILITY(default)
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace experimental
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _CharT, typename _Traits>
+    constexpr _CharT
+    basic_string_view<_CharT, _Traits>::_S_empty_str[1];
 
   template<typename _CharT, typename _Traits>
     typename basic_string_view<_CharT, _Traits>::size_type

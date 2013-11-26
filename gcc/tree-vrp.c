@@ -22,10 +22,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
 #include "flags.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "calls.h"
 #include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
@@ -33,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
@@ -5015,15 +5023,15 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  name2 = gimple_assign_rhs1 (def_stmt);
 	  cst2 = gimple_assign_rhs2 (def_stmt);
 	  if (TREE_CODE (name2) == SSA_NAME
-	      && host_integerp (cst2, 1)
+	      && tree_fits_uhwi_p (cst2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
-	      && IN_RANGE (tree_low_cst (cst2, 1), 1, prec - 1)
+	      && IN_RANGE (tree_to_uhwi (cst2), 1, prec - 1)
 	      && prec <= HOST_BITS_PER_DOUBLE_INT
 	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val)))
 	      && live_on_edge (e, name2)
 	      && !has_single_use (name2))
 	    {
-	      mask = double_int::mask (tree_low_cst (cst2, 1));
+	      mask = double_int::mask (tree_to_uhwi (cst2));
 	      val2 = fold_binary (LSHIFT_EXPR, TREE_TYPE (val), val, cst2);
 	    }
 	}
@@ -5892,8 +5900,7 @@ find_assert_locations (void)
      the order we compute liveness and insert asserts we otherwise
      fail to insert asserts into the loop latch.  */
   loop_p loop;
-  loop_iterator li;
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       i = loop->latch->index;
       unsigned int j = single_succ_edge (loop->latch)->dest_idx;

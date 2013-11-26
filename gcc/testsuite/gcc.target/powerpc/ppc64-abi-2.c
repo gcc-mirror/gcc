@@ -121,6 +121,12 @@ typedef union
   vector int v;
 } vector_int_t;
 
+#ifdef __LITTLE_ENDIAN__
+#define MAKE_SLOT(x, y) ((long)x | ((long)y << 32))
+#else
+#define MAKE_SLOT(x, y) ((long)y | ((long)x << 32))
+#endif
+
 /* Paramter passing.
    s : gpr 3
    v : vpr 2
@@ -228,8 +234,8 @@ fcevv (char *s, ...)
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
   
-  if (sp->slot[2].l != 0x100000002ULL
-      || sp->slot[4].l != 0x500000006ULL)
+  if (sp->slot[2].l != MAKE_SLOT (1, 2)
+      || sp->slot[4].l !=  MAKE_SLOT (5, 6))
     abort();
 }
 
@@ -270,8 +276,8 @@ fciievv (char *s, int i, int j, ...)
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
   
-  if (sp->slot[4].l != 0x100000002ULL
-      || sp->slot[6].l != 0x500000006ULL)
+  if (sp->slot[4].l != MAKE_SLOT (1, 2)
+      || sp->slot[6].l !=  MAKE_SLOT (5, 6))
     abort();
 }
 
@@ -298,8 +304,8 @@ fcvevv (char *s, vector int x, ...)
   sp = __builtin_frame_address(0);
   sp = sp->backchain;
   
-  if (sp->slot[4].l != 0x100000002ULL
-      || sp->slot[6].l != 0x500000006ULL)
+  if (sp->slot[4].l != MAKE_SLOT (1, 2)
+      || sp->slot[6].l !=  MAKE_SLOT (5, 6))
     abort();
 }
 

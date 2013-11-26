@@ -1,8 +1,8 @@
 // { dg-do compile }
-
-// 2007-03-12  Stephen M. Webb  <stephen.webb@bregmasoft.com>
+// { dg-options "-std=gnu++11" }
+// { dg-require-cstdint "" }
 //
-// Copyright (C) 2007-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,24 +19,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 7.8.2 basic_regex constructors
+#include <ext/random>
 
-#include <tr1/regex>
-#include <testsuite_hooks.h>
-
-void
-test01() 
-{ 
-  bool test __attribute__((unused)) = true;
-
-  std::tr1::regex re("(wee|week)(knights|night)", std::tr1::regex::extended);
-  
-  VERIFY( re.flags() == std::tr1::regex::extended );
-  VERIFY( re.mark_count() == 0 );
-}
-
-int main()
-{
-  test01();
-  return 0;
-}
+template class __gnu_cxx::hypergeometric_distribution<unsigned short>;
+template class __gnu_cxx::hypergeometric_distribution<unsigned int>;
+template class __gnu_cxx::hypergeometric_distribution<unsigned long>;
+template class __gnu_cxx::hypergeometric_distribution<unsigned long long>;

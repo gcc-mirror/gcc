@@ -25,11 +25,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stmt.h"
+#include "stor-layout.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"
 #include "gimplify-me.h"
 #include "gimple-ssa.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 
 
@@ -42,7 +51,6 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
 			gimple_predicate gimple_test_f, tree var)
 {
   enum gimplify_status ret;
-  struct gimplify_ctx gctx;
   location_t saved_location;
 
   *stmts = NULL;
@@ -54,16 +62,13 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
       && (*gimple_test_f) (expr))
     return expr;
 
-  push_gimplify_context (&gctx);
-  gimplify_ctxp->into_ssa = gimple_in_ssa_p (cfun);
-  gimplify_ctxp->allow_rhs_cond_expr = true;
+  push_gimplify_context (gimple_in_ssa_p (cfun), true);
   saved_location = input_location;
   input_location = UNKNOWN_LOCATION;
 
   if (var)
     {
-      if (gimplify_ctxp->into_ssa
-	  && is_gimple_reg (var))
+      if (gimple_in_ssa_p (cfun) && is_gimple_reg (var))
 	var = make_ssa_name (var, NULL);
       expr = build2 (MODIFY_EXPR, TREE_TYPE (var), var, expr);
     }
@@ -157,10 +162,8 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
   tree lhs;
   gimple_seq pre = NULL;
   gimple post_stmt = NULL;
-  struct gimplify_ctx gctx;
 
-  push_gimplify_context (&gctx);
-  gimplify_ctxp->into_ssa = gimple_in_ssa_p (cfun);
+  push_gimplify_context (gimple_in_ssa_p (cfun));
 
   switch (gimple_code (stmt))
     {

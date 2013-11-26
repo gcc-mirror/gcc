@@ -94,6 +94,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "trans-mem.h"
+#include "calls.h"
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "flags.h"
@@ -104,9 +106,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tree-pass.h"
 #include "coverage.h"
-#include "ggc.h"
 #include "rtl.h"
 #include "bitmap.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-ssa.h"
 #include "ipa-prop.h"
@@ -222,8 +228,8 @@ report_inline_failed_reason (struct cgraph_edge *e)
   if (dump_file)
     {
       fprintf (dump_file, "  not inlinable: %s/%i -> %s/%i, %s\n",
-	       xstrdup (cgraph_node_name (e->caller)), e->caller->order,
-	       xstrdup (cgraph_node_name (e->callee)), e->callee->order,
+	       xstrdup (e->caller->name ()), e->caller->order,
+	       xstrdup (e->callee->name ()), e->callee->order,
 	       cgraph_inline_failed_string (e->inline_failed));
     }
 }
@@ -434,9 +440,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "call is cold and code would grow by %i\n",
-		     xstrdup (cgraph_node_name (e->caller)),
+		     xstrdup (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (cgraph_node_name (callee)), callee->order,
+		     xstrdup (callee->name ()), callee->order,
 		     growth);
 	  want_inline = false;
 	}
@@ -445,9 +451,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns\n",
-		     xstrdup (cgraph_node_name (e->caller)),
+		     xstrdup (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (cgraph_node_name (callee)), callee->order,
+		     xstrdup (callee->name ()), callee->order,
 		     growth);
 	  want_inline = false;
 	}
@@ -458,9 +464,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns "
 		     "divided by number of calls\n",
-		     xstrdup (cgraph_node_name (e->caller)),
+		     xstrdup (e->caller->name ()),
 		     e->caller->order,
-		     xstrdup (cgraph_node_name (callee)), callee->order,
+		     xstrdup (callee->name ()), callee->order,
 		     growth);
 	  want_inline = false;
 	}
@@ -870,9 +876,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   if (dump)
     {
       fprintf (dump_file, "    Badness calculation for %s/%i -> %s/%i\n",
-	       xstrdup (cgraph_node_name (edge->caller)),
+	       xstrdup (edge->caller->name ()),
 	       edge->caller->order,
-	       xstrdup (cgraph_node_name (callee)),
+	       xstrdup (callee->name ()),
 	       edge->callee->order);
       fprintf (dump_file, "      size growth %i, time %i ",
 	       growth,
@@ -1037,9 +1043,9 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	    {
 	      fprintf (dump_file,
 		       "  decreasing badness %s/%i -> %s/%i, %i to %i\n",
-		       xstrdup (cgraph_node_name (edge->caller)),
+		       xstrdup (edge->caller->name ()),
 		       edge->caller->order,
-		       xstrdup (cgraph_node_name (edge->callee)),
+		       xstrdup (edge->callee->name ()),
 		       edge->callee->order,
 		       (int)n->key,
 		       badness);
@@ -1054,9 +1060,9 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	 {
 	   fprintf (dump_file,
 		    "  enqueuing call %s/%i -> %s/%i, badness %i\n",
-		    xstrdup (cgraph_node_name (edge->caller)),
+		    xstrdup (edge->caller->name ()),
 		    edge->caller->order,
-		    xstrdup (cgraph_node_name (edge->callee)),
+		    xstrdup (edge->callee->name ()),
 		    edge->callee->order,
 		    badness);
 	 }
@@ -1288,7 +1294,7 @@ recursive_inlining (struct cgraph_edge *edge,
   if (dump_file)
     fprintf (dump_file,
 	     "  Performing recursive inlining on %s\n",
-	     cgraph_node_name (node));
+	     node->name ());
 
   /* Do the inlining and update list of recursive call during process.  */
   while (!fibheap_empty (heap))
@@ -1522,7 +1528,7 @@ inline_small_functions (void)
   fibheap_t edge_heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_size, max_size;
-  vec<cgraph_edge_p> new_indirect_edges = vNULL;
+  auto_vec<cgraph_edge_p> new_indirect_edges;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   struct cgraph_edge_hook_list *edge_removal_hook_holder;
@@ -1595,7 +1601,7 @@ inline_small_functions (void)
 
       if (dump_file)
 	fprintf (dump_file, "Enqueueing calls in %s/%i.\n",
-		 cgraph_node_name (node), node->order);
+		 node->name (), node->order);
 
       for (edge = node->callees; edge; edge = next)
 	{
@@ -1678,13 +1684,13 @@ inline_small_functions (void)
 	{
 	  fprintf (dump_file,
 		   "\nConsidering %s/%i with %i size\n",
-		   cgraph_node_name (callee), callee->order,
+		   callee->name (), callee->order,
 		   inline_summary (callee)->size);
 	  fprintf (dump_file,
 		   " to be inlined into %s/%i in %s:%i\n"
 		   " Estimated growth after inlined into all is %+i insns.\n"
 		   " Estimated badness is %i, frequency %.2f.\n",
-		   cgraph_node_name (edge->caller), edge->caller->order,
+		   edge->caller->name (), edge->caller->order,
 		   flag_wpa ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
 		   flag_wpa ? -1
@@ -1797,7 +1803,7 @@ inline_small_functions (void)
 	  fprintf (dump_file,
 		   " Inlined into %s which now has time %i and size %i,"
 		   "net change of %+i.\n",
-		   cgraph_node_name (edge->caller),
+		   edge->caller->name (),
 		   inline_summary (edge->caller)->time,
 		   inline_summary (edge->caller)->size,
 		   overall_size - old_size);
@@ -1813,7 +1819,6 @@ inline_small_functions (void)
     }
 
   free_growth_caches ();
-  new_indirect_edges.release ();
   fibheap_delete (edge_heap);
   if (dump_file)
     fprintf (dump_file,
@@ -1848,8 +1853,8 @@ flatten_function (struct cgraph_node *node, bool early)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Not inlining %s into %s to avoid cycle.\n",
-		     xstrdup (cgraph_node_name (callee)),
-		     xstrdup (cgraph_node_name (e->caller)));
+		     xstrdup (callee->name ()),
+		     xstrdup (e->caller->name ()));
 	  e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
@@ -1889,8 +1894,8 @@ flatten_function (struct cgraph_node *node, bool early)
          recursing through the original node if the node was cloned.  */
       if (dump_file)
 	fprintf (dump_file, " Inlining %s into %s.\n",
-		 xstrdup (cgraph_node_name (callee)),
-		 xstrdup (cgraph_node_name (e->caller)));
+		 xstrdup (callee->name ()),
+		 xstrdup (e->caller->name ()));
       orig_callee = callee;
       inline_call (e, true, NULL, NULL, false);
       if (e->callee != orig_callee)
@@ -1935,11 +1940,11 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 	{
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
-		   cgraph_node_name (node),
+		   node->name (),
 		   inline_summary (node)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
-		   cgraph_node_name (node->callers->caller),
+		   node->callers->caller->name (),
 		   inline_summary (node->callers->caller)->size);
 	}
 
@@ -1947,7 +1952,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
       if (dump_file)
 	fprintf (dump_file,
 		 " Inlined into %s which now has %i size\n",
-		 cgraph_node_name (caller),
+		 caller->name (),
 		 inline_summary (caller)->size);
       if (!(*num_calls)--)
 	{
@@ -2007,7 +2012,7 @@ ipa_inline (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "Flattening %s\n", cgraph_node_name (node));
+		     "Flattening %s\n", node->name ());
 	  flatten_function (node, false);
 	}
     }
@@ -2115,7 +2120,7 @@ inline_always_inline_functions (struct cgraph_node *node)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "  Not inlining recursive call to %s.\n",
-		     cgraph_node_name (e->callee));
+		     e->callee->name ());
 	  e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
@@ -2133,8 +2138,8 @@ inline_always_inline_functions (struct cgraph_node *node)
 
       if (dump_file)
 	fprintf (dump_file, "  Inlining %s into %s (always_inline).\n",
-		 xstrdup (cgraph_node_name (e->callee)),
-		 xstrdup (cgraph_node_name (e->caller)));
+		 xstrdup (e->callee->name ()),
+		 xstrdup (e->caller->name ()));
       inline_call (e, true, NULL, NULL, false);
       inlined = true;
     }
@@ -2168,7 +2173,7 @@ early_inline_small_functions (struct cgraph_node *node)
 
       if (dump_file)
 	fprintf (dump_file, "Considering inline candidate %s.\n",
-		 cgraph_node_name (callee));
+		 callee->name ());
 
       if (!can_early_inline_edge_p (e))
 	continue;
@@ -2185,8 +2190,8 @@ early_inline_small_functions (struct cgraph_node *node)
 
       if (dump_file)
 	fprintf (dump_file, " Inlining %s into %s.\n",
-		 xstrdup (cgraph_node_name (callee)),
-		 xstrdup (cgraph_node_name (e->caller)));
+		 xstrdup (callee->name ()),
+		 xstrdup (e->caller->name ()));
       inline_call (e, true, NULL, NULL, true);
       inlined = true;
     }
@@ -2247,7 +2252,7 @@ early_inliner (void)
 	 all calls in it.  */
       if (dump_file)
 	fprintf (dump_file,
-		 "Flattening %s\n", cgraph_node_name (node));
+		 "Flattening %s\n", node->name ());
       flatten_function (node, true);
       inlined = true;
     }

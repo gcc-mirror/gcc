@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "input.h"
@@ -35,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tm.h"
 #include "function.h"
+#include "stor-layout.h"
+#include "varasm.h"
 #include "target.h"
 #include "upc-act.h"
 #include "upc-gasp.h"
@@ -44,8 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
-/* define decl_default_tls_model() prototype */
-#include "rtl.h"
 
 static tree upc_pts_packed_build_addrfield (location_t, tree);
 static tree upc_pts_packed_build_cond_expr (location_t, tree);
@@ -510,7 +511,9 @@ upc_pts_packed_build_cvt (location_t loc, tree exp)
 	  lib_args = tree_cons (NULL_TREE, src, NULL_TREE);
 	  if (doprofcall)
 	    lib_args =
-	      upc_gasp_add_src_args (lib_args, input_filename, input_line);
+	      upc_gasp_add_src_args (lib_args,
+	                             LOCATION_FILE (input_location),
+				     LOCATION_LINE (input_location));
 	  lib_call = build_function_call (loc, libfunc, lib_args);
 	  result = build1 (VIEW_CONVERT_EXPR, type, lib_call);
 	}

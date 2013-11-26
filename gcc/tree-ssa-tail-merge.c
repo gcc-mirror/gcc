@@ -190,10 +190,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "trans-mem.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "flags.h"
 #include "function.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -201,9 +209,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "tree-into-ssa.h"
-#include "tree-ssa-alias.h"
 #include "params.h"
-#include "hash-table.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-dump.h"
@@ -307,6 +313,7 @@ stmt_local_def (gimple stmt)
   def_operand_p def_p;
 
   if (gimple_has_side_effects (stmt)
+      || stmt_could_throw_p (stmt)
       || gimple_vdef (stmt) != NULL_TREE)
     return false;
 
@@ -763,11 +770,11 @@ static void
 init_worklist (void)
 {
   alloc_aux_for_blocks (sizeof (struct aux_bb_info));
-  same_succ_htab.create (n_basic_blocks);
+  same_succ_htab.create (n_basic_blocks_for_fn (cfun));
   same_succ_edge_flags = XCNEWVEC (int, last_basic_block);
   deleted_bbs = BITMAP_ALLOC (NULL);
   deleted_bb_preds = BITMAP_ALLOC (NULL);
-  worklist.create (n_basic_blocks);
+  worklist.create (n_basic_blocks_for_fn (cfun));
   find_same_succ ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -995,7 +1002,7 @@ static vec<bb_cluster> all_clusters;
 static void
 alloc_cluster_vectors (void)
 {
-  all_clusters.create (n_basic_blocks);
+  all_clusters.create (n_basic_blocks_for_fn (cfun));
 }
 
 /* Reset all cluster vectors.  */

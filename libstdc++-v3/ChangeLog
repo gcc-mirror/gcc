@@ -1,3 +1,170 @@
+2013-11-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>):
+	Remove _M_bucket, use same information in normal local_iterator.
+	(operator==): Remove redundant _M_can_compare check.
+	* include/debug/safe_local_iterator.tcc: Adapt.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/unordered_map: Likewise.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/Makefile.am (check_DEJAGNU_normal_targets): Add 10.
+	(check-DEJAGNU): Add normal10, run 28_regex/[ab]*
+	tests as another separate job.
+	* testsuite/Makefile.in: Regenerated.
+
+2013-11-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4 (libtool_VERSION): Bump.
+	* configure: Regenerate.
+	* doc/xml/manual/abi.xml: Update version information.
+
+	PR libstdc++/59247
+	* include/bits/c++config (_GLIBCXX_INLINE_VERSION): Declare namespace
+	std::experimental::__7 as inline.
+	* include/bits/regex.h (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Do not
+	enclose namespace __detail.
+	* include/bits/regex.tcc (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Likewise.
+	* include/std/iomanip (_GLIBCXX_BEGIN_NAMESPACE_VERSION): Likewise.
+	* include/ext/pb_ds/tag_and_trait.hpp (detail): Fix comment.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust line number.
+
+2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	values.cc: Fix further thinkos.
+
+2013-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	values.cc: Fix thinkos.
+
+2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/experimental/string_view: Rep empty string with unit-length
+	static constexpr string. Uncomment _GLIBCXX_VISIBILITY. Enforce
+	invariant of no nullptr string pointer.
+	* include/experimental/string_view.tcc: Ditto.
+	* testsuite/experimental/string_view/cons/char/1.cc: data() for empty
+	string_view is no longer nullptr.
+	* testsuite/experimental/string_view/cons/wchar_t/1.cc: Ditto.
+	* testsuite/experimental/string_view/operations/data/char/1.cc: Ditto.
+	* testsuite/experimental/string_view/operations/data/wchar_t/1.cc:
+	Ditto.
+
+2013-11-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement __gnu_cxx::hypergeometric_distribution.
+	* include/ext/random: Add hypergeometric_distribution.
+	* include/ext/random.tcc: Add hypergeometric_distribution.
+	* testsuite/util/testsuite_random.h (hypergeometric_pdf): New pdf
+	for the hypergeometric discreet distribution;
+	(lbincoef): New supporting function for binomial coefficients.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	serialize.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	equal.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	inequal.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/operators/
+	values.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/cons/parms.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/cons/default.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/ext/random/hypergeometric_distribution/requirements/
+	typedefs.cc: New.
+
+2013-11-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/59173
+	* include/ext/pointer.h (pointer_traits<>::rebind<>): Add template
+	keyword in nested name.
+
+	PR libstdc++/49204
+	* include/std/future (__future_base::_State_base): Rename to
+	__future_base::_State_baseV2.
+	(__future_base::_State_baseV2::~_State_baseV2): Define as defaulted.
+	(__future_base::_State_baseV2::_M_run_deferred): Rename to
+	_M_complete_async.
+	(__future_base::_State_baseV2::_M_has_deferred): Add new virtual.
+	(__future_base::_State_baseV2::wait_for): Call _M_has_deferred() to
+	test for a deferred function, or call _M_complete_async() to join an
+	async thread that has made the shared state ready.
+	(__future_base::_State_baseV2::wait_until): Likewise.
+	(__future_base::_Async_state_common): Rename to _Async_state_commonV2.
+	(__future_base::_Async_state_commonV2::_M_run_deferred): Rename to
+	_M_complete_async.
+	* src/c++11/compatibility-thread-c++0x.cc (__future_base::_State_base):
+	Export old definition.
+	(__future_base::_Async_state_common): Likewise.
+	* src/c++11/future.cc (__future_base::_State_base::~_State_base):
+	Remove.
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* testsuite/30_threads/async/async.cc: Test future_status::timeout
+	and future_status::ready.
+	* testsuite/30_threads/async/sync.cc: Test future_status::deferred.
+
+2013-11-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/17_intro/static.cc: Ignore AIX TOC reload warnings.
+
+2013-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/23_containers/forward_list/allocator/noexcept.cc: Change
+	to compile-only test. Adjust swap overload to handle rebound
+	allocators.
+	* testsuite/23_containers/map/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/multiset/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/set/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/vector/allocator/noexcept.cc: Likewise.
+	* testsuite/23_containers/vector/allocator/swap.cc: Add elements
+	before swapping.
+
+	* config/abi/pre/gnu.ver (_ZNSt11regex_errorC*): Export regex_error
+	constructors.
+	* testsuite/20_util/addressof/1.cc: Remove { dg-do compile }.
+	* testsuite/20_util/allocator_traits/members/destroy.cc: Likewise.
+	* testsuite/20_util/allocator_traits/members/select.cc: Likewise. Fix
+	failure.
+	* testsuite/28_regex/basic_regex/ctors/extended/cstring.cc: Likewise.
+	* testsuite/28_regex/init-list.cc: Likewise.
+	* testsuite/28_regex/regex_error/regex_error.cc: Likewise.
+	* testsuite/28_regex/sub_match/length.cc: Likewise. Add main.
+	* testsuite/28_regex/sub_match/cast_char.cc: Likewise. Fix test.
+	* testsuite/28_regex/sub_match/cast_wchar_t.cc: Likewise.
+	* testsuite/tr1/7_regular_expressions/regex/cons/char/
+	c_string_extended.cc: Delete.
+
+2013-11-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/experimental/string_view (_S_max_size): Remove.
+	(basic_string_view<>::max_size): Adjust.
+	* testsuite/experimental/string_view/capacity/1.cc: Clean-up.
+	* testsuite/experimental/string_view/inserters/pod/10081-out.cc:
+	Likewise.
+
+2013-11-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Create new table for TS statuses.
+
+2013-11-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_base<_S_single>): Use
+	non-atomic operations.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line number.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
 2013-11-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement N3762 string_view: a non-owning reference to a string.

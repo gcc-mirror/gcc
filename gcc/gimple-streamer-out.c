@@ -23,6 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -78,7 +84,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
   hist = gimple_histogram_value (cfun, stmt);
   bp_pack_value (&bp, hist != NULL, 1);
-  bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
+  bp_pack_var_len_unsigned (&bp, stmt->subcode);
 
   /* Emit location information for the statement.  */
   stream_output_location (ob, &bp, LOCATION_LOCUS (gimple_location (stmt)));

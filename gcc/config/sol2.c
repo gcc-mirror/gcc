@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "varasm.h"
 #include "output.h"
 #include "tm.h"
 #include "rtl.h"

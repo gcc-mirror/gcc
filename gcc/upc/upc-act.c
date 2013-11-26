@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "input.h"
 #include "c/c-tree.h"
 #include "langhooks.h"
@@ -36,7 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "output.h"
 #include "toplev.h"
-#include "gimple.h"
+#include "attribs.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
 #include "ggc.h"
 #include "tm.h"
 #include "function.h"
@@ -51,8 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
-/* define decl_default_tls_model() prototype */
-#include "rtl.h"
+#include "varasm.h"
 
 /* UPC_PTS is a table of functions that implement various
    operations on expressions which refer to UPC pointers-to-shared,
@@ -730,7 +733,7 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
 	  error_at (loc, "UPC layout qualifier is not an integral constant");
           block_factor = size_one_node;
 	}
-      else if (tree_low_cst (layout_qualifier, 0) < 0)
+      else if (tree_to_shwi (layout_qualifier) < 0)
         {
 	  error_at (loc, "UPC layout qualifier must be a non-negative "
 	                 "integral constant");
@@ -741,7 +744,7 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
     }
 
   if (TREE_OVERFLOW_P (block_factor)
-      || tree_low_cst (block_factor, 1) > (HOST_WIDE_INT) UPC_MAX_BLOCK_SIZE)
+      || tree_to_uhwi (block_factor) > UPC_MAX_BLOCK_SIZE)
     {
       error_at (loc, "the maximum UPC block size in this implementation "
                      "is %ld", (long int) UPC_MAX_BLOCK_SIZE);

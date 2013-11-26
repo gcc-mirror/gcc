@@ -72,9 +72,9 @@
 	    t = DECL_SIZE_UNIT (t);
 	  else
 	    t = TYPE_SIZE_UNIT (TREE_TYPE (t));
-	  if (t && host_integerp (t, 0))
+	  if (t && tree_fits_shwi_p (t))
 	    {
-	      size = tree_low_cst (t, 0);
+	      size = tree_to_shwi (t);
 	      if (size < 0)
 		size = 0;
 	    }

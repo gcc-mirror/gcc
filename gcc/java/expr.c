@@ -33,6 +33,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 				   PARM_BOUNDARY.  */
 				   
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "java-tree.h"
 #include "javaop.h"
@@ -1049,8 +1051,8 @@ build_newarray (int atype_value, tree length)
   tree prim_type = decode_newarray_type (atype_value);
   tree type
     = build_java_array_type (prim_type,
-			     host_integerp (length, 0) == INTEGER_CST
-			     ? tree_low_cst (length, 0) : -1);
+			     tree_fits_shwi_p (length) == INTEGER_CST
+			     ? tree_to_shwi (length) : -1);
 
   /* Pass a reference to the primitive type class and save the runtime
      some work.  */
@@ -1069,8 +1071,8 @@ build_anewarray (tree class_type, tree length)
 {
   tree type
     = build_java_array_type (class_type,
-			     host_integerp (length, 0)
-			     ? tree_low_cst (length, 0) : -1);
+			     tree_fits_shwi_p (length)
+			     ? tree_to_shwi (length) : -1);
 
   return build_call_nary (promote_type (type),
 			  build_address_of (soft_anewarray_node),

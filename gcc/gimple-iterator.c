@@ -23,6 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -68,7 +74,7 @@ update_bb_for_stmts (gimple_seq_node first, gimple_seq_node last,
 {
   gimple_seq_node n;
 
-  for (n = first; n; n = n->gsbase.next)
+  for (n = first; n; n = n->next)
     {
       gimple_set_bb (n, bb);
       if (n == last)
@@ -86,7 +92,7 @@ update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
   int bb_freq = 0;
   gimple_seq_node n;
 
-  for (n = first; n ; n = n->gsbase.next)
+  for (n = first; n ; n = n->next)
     if (is_gimple_call (n))
       {
 	struct cgraph_edge *e;
@@ -124,7 +130,7 @@ gsi_insert_seq_nodes_before (gimple_stmt_iterator *i,
   basic_block bb;
   gimple_seq_node cur = i->ptr;
 
-  gcc_assert (!cur || cur->gsbase.prev);
+  gcc_assert (!cur || cur->prev);
 
   if ((bb = gsi_bb (*i)) != NULL)
     update_bb_for_stmts (first, last, bb);
@@ -132,13 +138,13 @@ gsi_insert_seq_nodes_before (gimple_stmt_iterator *i,
   /* Link SEQ before CUR in the sequence.  */
   if (cur)
     {
-      first->gsbase.prev = cur->gsbase.prev;
-      if (first->gsbase.prev->gsbase.next)
-	first->gsbase.prev->gsbase.next = first;
+      first->prev = cur->prev;
+      if (first->prev->next)
+	first->prev->next = first;
       else
 	gimple_seq_set_first (i->seq, first);
-      last->gsbase.next = cur;
-      cur->gsbase.prev = last;
+      last->next = cur;
+      cur->prev = last;
     }
   else
     {
@@ -149,11 +155,11 @@ gsi_insert_seq_nodes_before (gimple_stmt_iterator *i,
 	 labels, so it returns an iterator after the end of the block, and
 	 we need to insert before it; it might be cleaner to add a flag to the
 	 iterator saying whether we are at the start or end of the list).  */
-      last->gsbase.next = NULL;
+      last->next = NULL;
       if (itlast)
 	{
-	  first->gsbase.prev = itlast;
-	  itlast->gsbase.next = first;
+	  first->prev = itlast;
+	  itlast->next = first;
 	}
       else
 	gimple_seq_set_first (i->seq, first);
@@ -242,7 +248,7 @@ gsi_insert_seq_nodes_after (gimple_stmt_iterator *i,
   basic_block bb;
   gimple_seq_node cur = i->ptr;
 
-  gcc_assert (!cur || cur->gsbase.prev);
+  gcc_assert (!cur || cur->prev);
 
   /* If the iterator is inside a basic block, we need to update the
      basic block information for all the nodes between FIRST and LAST.  */
@@ -252,20 +258,20 @@ gsi_insert_seq_nodes_after (gimple_stmt_iterator *i,
   /* Link SEQ after CUR.  */
   if (cur)
     {
-      last->gsbase.next = cur->gsbase.next;
-      if (last->gsbase.next)
+      last->next = cur->next;
+      if (last->next)
 	{
-	  last->gsbase.next->gsbase.prev = last;
+	  last->next->prev = last;
 	}
       else
 	gimple_seq_set_last (i->seq, last);
-      first->gsbase.prev = cur;
-      cur->gsbase.next = first;
+      first->prev = cur;
+      cur->next = first;
     }
   else
     {
       gcc_assert (!gimple_seq_last (*i->seq));
-      last->gsbase.next = NULL;
+      last->next = NULL;
       gimple_seq_set_first (i->seq, first);
       gimple_seq_set_last (i->seq, last);
     }
@@ -347,15 +353,15 @@ gsi_split_seq_after (gimple_stmt_iterator i)
   cur = i.ptr;
 
   /* How can we possibly split after the end, or before the beginning?  */
-  gcc_assert (cur && cur->gsbase.next);
-  next = cur->gsbase.next;
+  gcc_assert (cur && cur->next);
+  next = cur->next;
 
   pold_seq = i.seq;
 
   gimple_seq_set_first (&new_seq, next);
   gimple_seq_set_last (&new_seq, gimple_seq_last (*pold_seq));
   gimple_seq_set_last (pold_seq, cur);
-  cur->gsbase.next = NULL;
+  cur->next = NULL;
 
   return new_seq;
 }
@@ -371,17 +377,17 @@ gsi_set_stmt (gimple_stmt_iterator *gsi, gimple stmt)
   gimple orig_stmt = gsi_stmt (*gsi);
   gimple prev, next;
 
-  stmt->gsbase.next = next = orig_stmt->gsbase.next;
-  stmt->gsbase.prev = prev = orig_stmt->gsbase.prev;
+  stmt->next = next = orig_stmt->next;
+  stmt->prev = prev = orig_stmt->prev;
   /* Note how we don't clear next/prev of orig_stmt.  This is so that
      copies of *GSI our callers might still hold (to orig_stmt)
      can be advanced as if they too were replaced.  */
-  if (prev->gsbase.next)
-    prev->gsbase.next = stmt;
+  if (prev->next)
+    prev->next = stmt;
   else
     gimple_seq_set_first (gsi->seq, stmt);
   if (next)
-    next->gsbase.prev = stmt;
+    next->prev = stmt;
   else
     gimple_seq_set_last (gsi->seq, stmt);
 
@@ -402,10 +408,10 @@ gsi_split_seq_before (gimple_stmt_iterator *i, gimple_seq *pnew_seq)
 
   /* How can we possibly split after the end?  */
   gcc_assert (cur);
-  prev = cur->gsbase.prev;
+  prev = cur->prev;
 
   old_seq = *i->seq;
-  if (!prev->gsbase.next)
+  if (!prev->next)
     *i->seq = NULL;
   i->seq = pnew_seq;
 
@@ -415,8 +421,8 @@ gsi_split_seq_before (gimple_stmt_iterator *i, gimple_seq *pnew_seq)
 
   /* Cut OLD_SEQ before I.  */
   gimple_seq_set_last (&old_seq, prev);
-  if (prev->gsbase.next)
-    prev->gsbase.next = NULL;
+  if (prev->next)
+    prev->next = NULL;
 }
 
 
@@ -576,20 +582,20 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
 
   /* Update the iterator and re-wire the links in I->SEQ.  */
   cur = i->ptr;
-  next = cur->gsbase.next;
-  prev = cur->gsbase.prev;
+  next = cur->next;
+  prev = cur->prev;
   /* See gsi_set_stmt for why we don't reset prev/next of STMT.  */
 
   if (next)
     /* Cur is not last.  */
-    next->gsbase.prev = prev;
-  else if (prev->gsbase.next)
+    next->prev = prev;
+  else if (prev->next)
     /* Cur is last but not first.  */
     gimple_seq_set_last (i->seq, prev);
 
-  if (prev->gsbase.next)
+  if (prev->next)
     /* Cur is not first.  */
-    prev->gsbase.next = next;
+    prev->next = next;
   else
     /* Cur is first.  */
     *i->seq = next;
@@ -713,7 +719,7 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
  restart:
   if (single_pred_p (dest)
       && gimple_seq_empty_p (phi_nodes (dest))
-      && dest != EXIT_BLOCK_PTR)
+      && dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_start_bb (dest);
       if (gsi_end_p (*gsi))
@@ -744,7 +750,7 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
   src = e->src;
   if ((e->flags & EDGE_ABNORMAL) == 0
       && single_succ_p (src)
-      && src != ENTRY_BLOCK_PTR)
+      && src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
     {
       *gsi = gsi_last_bb (src);
       if (gsi_end_p (*gsi))
@@ -830,7 +836,8 @@ gsi_commit_edge_inserts (void)
   edge e;
   edge_iterator ei;
 
-  gsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR), NULL);
+  gsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
+			      NULL);
 
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)

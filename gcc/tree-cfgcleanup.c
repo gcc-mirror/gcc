@@ -27,8 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "flags.h"
 #include "function.h"
-#include "ggc.h"
 #include "langhooks.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -36,8 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-manip.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-pass.h"
@@ -235,7 +241,7 @@ cleanup_control_flow_bb (basic_block bb)
    the start of the successor block.
 
    As a precondition, we require that BB be not equal to
-   ENTRY_BLOCK_PTR.  */
+   the entry block.  */
 
 static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
@@ -248,15 +254,15 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       /* If PHI_WANTED is false, BB must not have any PHI nodes.
 	 Otherwise, BB must have PHI nodes.  */
       || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted
-      /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
-      || single_succ (bb) == EXIT_BLOCK_PTR
+      /* BB may not be a predecessor of the exit block.  */
+      || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
       /* Nor should this be an infinite loop.  */
       || single_succ (bb) == bb
       /* BB may not have an abnormal outgoing edge.  */
       || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     return false;
 
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR);
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   locus = single_succ_edge (bb)->goto_locus;
 
@@ -266,7 +272,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
     edge e;
 
     FOR_EACH_EDGE (e, ei, bb->preds)
-      if (e->src == ENTRY_BLOCK_PTR || (e->flags & EDGE_EH))
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
 	return false;
       /* If goto_locus of any of the edges differs, prevent removing
 	 the forwarder block for -O0.  */
@@ -905,7 +911,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 static unsigned int
 merge_phi_nodes (void)
 {
-  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks);
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   basic_block *current = worklist;
   basic_block bb;
 

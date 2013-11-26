@@ -22,10 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -193,7 +199,7 @@ associate_equivalences_with_edges (void)
 
 	      /* Now walk over the blocks to determine which ones were
 		 marked as being reached by a useful case label.  */
-	      for (i = 0; i < n_basic_blocks; i++)
+	      for (i = 0; i < n_basic_blocks_for_fn (cfun); i++)
 		{
 		  tree node = info[i];
 

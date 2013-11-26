@@ -70,7 +70,7 @@ struct common_sched_info_def
   /* Called to notify frontend, that new basic block is being added.
      The first parameter - new basic block.
      The second parameter - block, after which new basic block is being added,
-     or EXIT_BLOCK_PTR, if recovery block is being added,
+     or the exit block, if recovery block is being added,
      or NULL, if standalone block is being added.  */
   void (*add_block) (basic_block, basic_block);
 
@@ -945,14 +945,15 @@ extern vec<haifa_deps_insn_data_def> h_d_i_d;
 /* INSN is a speculation check that will simply reexecute the speculatively
    scheduled instruction if the speculation fails.  */
 #define IS_SPECULATION_SIMPLE_CHECK_P(INSN) \
-  (RECOVERY_BLOCK (INSN) == EXIT_BLOCK_PTR)
+  (RECOVERY_BLOCK (INSN) == EXIT_BLOCK_PTR_FOR_FN (cfun))
 
 /* INSN is a speculation check that will branch to RECOVERY_BLOCK if the
    speculation fails.  Insns in that block will reexecute the speculatively
    scheduled code and then will return immediately after INSN thus preserving
    semantics of the program.  */
 #define IS_SPECULATION_BRANCHY_CHECK_P(INSN) \
-  (RECOVERY_BLOCK (INSN) != NULL && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR)
+  (RECOVERY_BLOCK (INSN) != NULL             \
+   && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR_FOR_FN (cfun))
 
 
 /* Dep status (aka ds_t) of the link encapsulates all information for a given

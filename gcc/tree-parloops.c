@@ -23,15 +23,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
+#include "stor-layout.h"
+#include "tree-nested.h"
 #include "gimple-ssa.h"
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
@@ -1744,7 +1752,6 @@ static void
 gen_parallel_loop (struct loop *loop, reduction_info_table_type reduction_list,
 		   unsigned n_threads, struct tree_niter_desc *niter)
 {
-  loop_iterator li;
   tree many_iterations_cond, type, nit;
   tree arg_struct, new_arg_struct;
   gimple_seq stmts;
@@ -1899,7 +1906,7 @@ gen_parallel_loop (struct loop *loop, reduction_info_table_type reduction_list,
 
   /* Free loop bound estimations that could contain references to
      removed statements.  */
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     free_numbers_of_iterations_estimates_loop (loop);
 
   /* Expand the parallel constructs.  We do it directly here instead of running
@@ -2140,11 +2147,10 @@ parallelize_loops (void)
   bool changed = false;
   struct loop *loop;
   struct tree_niter_desc niter_desc;
-  loop_iterator li;
   reduction_info_table_type reduction_list;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
-  LOC loop_loc;
+  source_location loop_loc;
 
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (parallelized_function_p (cfun->decl))
@@ -2156,7 +2162,7 @@ parallelize_loops (void)
   reduction_list.create (10);
   init_stmt_vec_info_vec ();
 
-  FOR_EACH_LOOP (li, loop, 0)
+  FOR_EACH_LOOP (loop, 0)
     {
       reduction_list.empty ();
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2224,9 +2230,9 @@ parallelize_loops (void)
 	else
 	  fprintf (dump_file, "parallelizing inner loop %d\n",loop->header->index);
 	loop_loc = find_loop_location (loop);
-	if (loop_loc != UNKNOWN_LOC)
+	if (loop_loc != UNKNOWN_LOCATION)
 	  fprintf (dump_file, "\nloop at %s:%d: ",
-		   LOC_FILE (loop_loc), LOC_LINE (loop_loc));
+		   LOCATION_FILE (loop_loc), LOCATION_LINE (loop_loc));
       }
       gen_parallel_loop (loop, reduction_list,
 			 n_threads, &niter_desc);

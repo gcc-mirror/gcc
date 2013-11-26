@@ -146,7 +146,7 @@ static void
 init_dom_info (struct dom_info *di, enum cdi_direction dir)
 {
   /* We need memory for n_basic_blocks nodes.  */
-  unsigned int num = n_basic_blocks;
+  unsigned int num = n_basic_blocks_for_fn (cfun);
   init_ar (di->dfs_parent, TBB, num, 0);
   init_ar (di->path_min, TBB, num, i);
   init_ar (di->key, TBB, num, i);
@@ -227,27 +227,27 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, bool reverse)
   edge_iterator *stack;
   edge_iterator ei, einext;
   int sp;
-  /* Start block (ENTRY_BLOCK_PTR for forward problem, EXIT_BLOCK for backward
+  /* Start block (the entry block for forward problem, exit block for backward
      problem).  */
   basic_block en_block;
   /* Ending block.  */
   basic_block ex_block;
 
-  stack = XNEWVEC (edge_iterator, n_basic_blocks + 1);
+  stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Initialize our border blocks, and the first edge.  */
   if (reverse)
     {
       ei = ei_start (bb->preds);
-      en_block = EXIT_BLOCK_PTR;
-      ex_block = ENTRY_BLOCK_PTR;
+      en_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
+      ex_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
     }
   else
     {
       ei = ei_start (bb->succs);
-      en_block = ENTRY_BLOCK_PTR;
-      ex_block = EXIT_BLOCK_PTR;
+      en_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+      ex_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
     }
 
   /* When the stack is empty we break out of this loop.  */
@@ -333,7 +333,8 @@ static void
 calc_dfs_tree (struct dom_info *di, bool reverse)
 {
   /* The first block is the ENTRY_BLOCK (or EXIT_BLOCK if REVERSE).  */
-  basic_block begin = reverse ? EXIT_BLOCK_PTR : ENTRY_BLOCK_PTR;
+  basic_block begin = (reverse
+		       ? EXIT_BLOCK_PTR_FOR_FN (cfun) : ENTRY_BLOCK_PTR_FOR_FN (cfun));
   di->dfs_order[last_basic_block] = di->dfsnum;
   di->dfs_to_bb[di->dfsnum] = begin;
   di->dfsnum++;
@@ -394,7 +395,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
   di->nodes = di->dfsnum - 1;
 
   /* This aborts e.g. when there is _no_ path from ENTRY to EXIT at all.  */
-  gcc_assert (di->nodes == (unsigned int) n_basic_blocks - 1);
+  gcc_assert (di->nodes == (unsigned int) n_basic_blocks_for_fn (cfun) - 1);
 }
 
 /* Compress the path from V to the root of its set and update path_min at the
@@ -501,9 +502,9 @@ calc_idoms (struct dom_info *di, bool reverse)
   edge_iterator ei, einext;
 
   if (reverse)
-    en_block = EXIT_BLOCK_PTR;
+    en_block = EXIT_BLOCK_PTR_FOR_FN (cfun);
   else
-    en_block = ENTRY_BLOCK_PTR;
+    en_block = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   /* Go backwards in DFS order, to first look at the leafs.  */
   v = di->nodes;
@@ -652,7 +653,7 @@ calculate_dominance_info (enum cdi_direction dir)
 	{
 	  b->dom[dir_index] = et_new_tree (b);
 	}
-      n_bbs_in_dom_tree[dir_index] = n_basic_blocks;
+      n_bbs_in_dom_tree[dir_index] = n_basic_blocks_for_fn (cfun);
 
       init_dom_info (&di, dir);
       calc_dfs_tree (&di, reverse);
@@ -1097,7 +1098,7 @@ prune_bbs_to_update_dominators (vec<basic_block> bbs,
 
   for (i = 0; bbs.iterate (i, &bb);)
     {
-      if (bb == ENTRY_BLOCK_PTR)
+      if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	goto succeed;
 
       if (single_pred_p (bb))
@@ -1171,7 +1172,7 @@ determine_dominators_for_sons (struct graph *g, vec<basic_block> bbs,
   if (son[y] == -1)
     return;
   if (y == (int) bbs.length ())
-    ybb = ENTRY_BLOCK_PTR;
+    ybb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   else
     ybb = bbs[y];
 
@@ -1344,7 +1345,7 @@ iterate_fix_dominators (enum cdi_direction dir, vec<basic_block> bbs,
 	set_immediate_dominator (CDI_DOMINATORS, bb, NULL);
       *map->insert (bb) = i;
     }
-  *map->insert (ENTRY_BLOCK_PTR) = n;
+  *map->insert (ENTRY_BLOCK_PTR_FOR_FN (cfun)) = n;
 
   g = new_graph (n + 1);
   for (y = 0; y < g->n_vertices; y++)

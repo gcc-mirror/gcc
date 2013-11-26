@@ -194,6 +194,24 @@ if test "$libbacktrace_cv_sys_sync" = "yes"; then
 fi
 AC_SUBST(BACKTRACE_SUPPORTS_THREADS)
 
+# Test for __atomic support.
+AC_CACHE_CHECK([__atomic extensions],
+[libbacktrace_cv_sys_atomic],
+[if test -n "${with_target_subdir}"; then
+   libbacktrace_cv_sys_atomic=yes
+ else
+   AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM([int i;],
+     		      [__atomic_load_n (&i, __ATOMIC_ACQUIRE);
+		       __atomic_store_n (&i, 1, __ATOMIC_RELEASE);])],
+     [libbacktrace_cv_sys_atomic=yes],
+     [libbacktrace_cv_sys_atomic=no])
+ fi])
+if test "$libbacktrace_cv_sys_atomic" = "yes"; then
+  AC_DEFINE([HAVE_ATOMIC_FUNCTIONS], 1,
+	    [Define to 1 if you have the __atomic functions])
+fi
+
 # The library needs to be able to read the executable itself.  Compile
 # a file to determine the executable format.  The awk script
 # filetype.awk prints out the file type.

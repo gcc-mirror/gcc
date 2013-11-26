@@ -77,7 +77,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "expr.h"
 #include "gimple-pretty-print.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "tree-ssa-loop-niter.h"
@@ -2838,16 +2844,16 @@ gcd_of_steps_may_divide_p (const_tree chrec, const_tree cst)
   HOST_WIDE_INT cd = 0, val;
   tree step;
 
-  if (!host_integerp (cst, 0))
+  if (!tree_fits_shwi_p (cst))
     return true;
-  val = tree_low_cst (cst, 0);
+  val = tree_to_shwi (cst);
 
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
     {
       step = CHREC_RIGHT (chrec);
-      if (!host_integerp (step, 0))
+      if (!tree_fits_shwi_p (step))
 	return true;
-      cd = gcd (cd, tree_low_cst (step, 0));
+      cd = gcd (cd, tree_to_shwi (step));
       chrec = CHREC_LEFT (chrec);
     }
 
@@ -4744,10 +4750,9 @@ analyze_all_data_dependences (struct loop *loop)
 void
 tree_check_data_deps (void)
 {
-  loop_iterator li;
   struct loop *loop_nest;
 
-  FOR_EACH_LOOP (li, loop_nest, 0)
+  FOR_EACH_LOOP (loop_nest, 0)
     analyze_all_data_dependences (loop_nest);
 }
 

@@ -611,14 +611,14 @@ has_nonexceptional_receiver (void)
     return true;
 
   /* First determine which blocks can reach exit via normal paths.  */
-  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
   FOR_EACH_BB (bb)
     bb->flags &= ~BB_REACHABLE;
 
   /* Place the exit block on our worklist.  */
-  EXIT_BLOCK_PTR->flags |= BB_REACHABLE;
-  *tos++ = EXIT_BLOCK_PTR;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->flags |= BB_REACHABLE;
+  *tos++ = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
   /* Iterate: find everything reachable from what we've already seen.  */
   while (tos != worklist)

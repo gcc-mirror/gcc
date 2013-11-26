@@ -137,7 +137,7 @@ extern size_t reg_info_p_size;
    frequency.  */
 #define REG_FREQ_FROM_BB(bb) (optimize_size				      \
 			      || (flag_branch_probabilities		      \
-				  && !ENTRY_BLOCK_PTR->count)		      \
+				  && !ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)   \
 			      ? REG_FREQ_MAX				      \
 			      : ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\
 			      ? ((bb)->frequency * REG_FREQ_MAX / BB_FREQ_MAX)\

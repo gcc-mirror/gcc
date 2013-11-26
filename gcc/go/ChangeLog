@@ -1,6 +1,34 @@
+2013-11-23  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::function_type): Add result_struct
+	parameter.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-gcc.cc: Add required include files from gimple.h.
+	* go-lang.c: Likewise
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gofrontend/expressions.cc: Replace tree_low_cst (..., 0) with
+	tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gofrontend/expressions.cc: Replace host_integerp (..., 0) with
+	tree_fits_shwi_p throughout.
+
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-lang.c: Include only gimplify.h and gimple.h as needed.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* go-backend.c: Include stor-layout.h.
+	* go-gcc.cc: Include stringpool.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	* go-lang.c: Include stor-layout.h.
 
 2013-11-12  Andrew MacLeod  <amacleod@redhat.com>
 

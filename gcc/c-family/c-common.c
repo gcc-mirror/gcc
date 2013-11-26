@@ -23,9 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "intl.h"
 #include "tree.h"
+#include "fold-const.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "varasm.h"
+#include "trans-mem.h"
 #include "flags.h"
 #include "c-pragma.h"
-#include "ggc.h"
 #include "c-common.h"
 #include "c-objc.h"
 #include "c-upc.h"
@@ -43,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "cgraph.h"
 #include "target-def.h"
-#include "gimple.h"
 #include "gimplify.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
@@ -2561,7 +2566,7 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 }
 
 /* Checks if expression EXPR of real/integer type cannot be converted 
-   to the real/integer type TYPE. Function returns true when:
+   to the real/integer type TYPE. Function returns non-zero when:
 	* EXPR is a constant which cannot be exactly converted to TYPE 
 	* EXPR is not a constant and size of EXPR's type > than size of TYPE, 
 	  for EXPR type and TYPE being both integers or both real.
@@ -2569,14 +2574,14 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 	* EXPR is not a constant of integer type which cannot be 
 	  exactly converted to real type.  
    Function allows conversions between types of different signedness and
-   does not return true in that case.  Function can produce signedness
-   warnings if PRODUCE_WARNS is true.  */
-bool
+   can return SAFE_CONVERSION (zero) in that case.  Function can produce
+   signedness warnings if PRODUCE_WARNS is true.  */
+enum conversion_safety
 unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 {
-  bool give_warning = false;
+  enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_HERE (expr);
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
@@ -2586,7 +2591,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	  && TREE_CODE (type) == INTEGER_TYPE)
 	{
 	  if (!real_isinteger (TREE_REAL_CST_PTR (expr), TYPE_MODE (expr_type)))
-	    give_warning = true;
+	    give_warning = UNSAFE_REAL;
 	}
       /* Warn for an integer constant that does not fit into integer type.  */
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
@@ -2607,7 +2612,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			    " constant value to negative integer");
 	    }
 	  else
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 	}
       else if (TREE_CODE (type) == REAL_TYPE)
 	{
@@ -2616,7 +2621,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	    {
 	      REAL_VALUE_TYPE a = real_value_from_int_cst (0, expr);
 	      if (!exact_real_truncate (TYPE_MODE (type), &a))
-		give_warning = true;
+		give_warning = UNSAFE_REAL;
 	    }
 	  /* Warn for a real constant that does not fit into a smaller
 	     real type.  */
@@ -2625,7 +2630,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 	    {
 	      REAL_VALUE_TYPE a = TREE_REAL_CST (expr);
 	      if (!exact_real_truncate (TYPE_MODE (type), &a))
-		give_warning = true;
+		give_warning = UNSAFE_REAL;
 	    }
 	}
     }
@@ -2634,7 +2639,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
       /* Warn for real types converted to integer types.  */
       if (TREE_CODE (expr_type) == REAL_TYPE
 	  && TREE_CODE (type) == INTEGER_TYPE)
-	give_warning = true;
+	give_warning = UNSAFE_REAL;
 
       else if (TREE_CODE (expr_type) == INTEGER_TYPE
 	       && TREE_CODE (type) == INTEGER_TYPE)
@@ -2672,7 +2677,7 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			  && int_fits_type_p (op1, c_common_signed_type (type))
 			  && int_fits_type_p (op1,
 					      c_common_unsigned_type (type))))
-		    return false;
+		    return SAFE_CONVERSION;
 		  /* If constant is unsigned and fits in the target
 		     type, then the result will also fit.  */
 		  else if ((TREE_CODE (op0) == INTEGER_CST
@@ -2681,12 +2686,12 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 			   || (TREE_CODE (op1) == INTEGER_CST
 			       && unsigned1
 			       && int_fits_type_p (op1, type)))
-		    return false;
+		    return SAFE_CONVERSION;
 		}
 	    }
 	  /* Warn for integer types converted to smaller integer types.  */
 	  if (TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 
 	  /* When they are the same width but different signedness,
 	     then the value may change.  */
@@ -2722,14 +2727,14 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
 
 	  if (!exact_real_truncate (TYPE_MODE (type), &real_low_bound)
 	      || !exact_real_truncate (TYPE_MODE (type), &real_high_bound))
-	    give_warning = true;
+	    give_warning = UNSAFE_OTHER;
 	}
 
       /* Warn for real types converted to smaller real types.  */
       else if (TREE_CODE (expr_type) == REAL_TYPE
 	       && TREE_CODE (type) == REAL_TYPE
 	       && TYPE_PRECISION (type) < TYPE_PRECISION (expr_type))
-	give_warning = true;
+	give_warning = UNSAFE_REAL;
     }
 
   return give_warning;
@@ -2742,9 +2747,10 @@ static void
 conversion_warning (tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_HERE (expr);
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  enum conversion_safety conversion_kind;
 
-  if (!warn_conversion && !warn_sign_conversion)
+  if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
     return;
 
   switch (TREE_CODE (expr))
@@ -2771,7 +2777,12 @@ conversion_warning (tree type, tree expr)
 
     case REAL_CST:
     case INTEGER_CST:
-      if (unsafe_conversion_p (type, expr, true))
+      conversion_kind = unsafe_conversion_p (type, expr, true);
+      if (conversion_kind == UNSAFE_REAL)
+	warning_at (loc, OPT_Wfloat_conversion,
+		    "conversion to %qT alters %qT constant value",
+		    type, expr_type);
+      else if (conversion_kind)
 	warning_at (loc, OPT_Wconversion,
 		    "conversion to %qT alters %qT constant value",
 		    type, expr_type);
@@ -2790,7 +2801,12 @@ conversion_warning (tree type, tree expr)
       }
 
     default: /* 'expr' is not a constant.  */
-      if (unsafe_conversion_p (type, expr, true))
+      conversion_kind = unsafe_conversion_p (type, expr, true);
+      if (conversion_kind == UNSAFE_REAL)
+	warning_at (loc, OPT_Wfloat_conversion,
+		    "conversion to %qT from %qT may alter its value",
+		    type, expr_type);
+      else if (conversion_kind)
 	warning_at (loc, OPT_Wconversion,
 		    "conversion to %qT from %qT may alter its value",
 		    type, expr_type);
@@ -2804,7 +2820,7 @@ conversion_warning (tree type, tree expr)
 void
 warnings_for_convert_and_check (tree type, tree expr, tree result)
 {
-  location_t loc = EXPR_LOC_OR_HERE (expr);
+  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -3014,7 +3030,7 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 	  && (!only_writes || list->writer))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
-	  warning_at (EXPR_LOC_OR_HERE (writer),
+	  warning_at (EXPR_LOC_OR_LOC (writer, input_location),
 		      OPT_Wsequence_point, "operation on %qE may be undefined",
 		      list->expr);
 	}
@@ -4012,7 +4028,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
-  location_t loc = EXPR_LOC_OR_HERE (op0);
+  location_t loc = EXPR_LOC_OR_LOC (op0, input_location);
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -4310,7 +4326,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	     the comparison isn't an issue, so suppress the
 	     warning.  */
 	  bool warn = 
-	    warn_type_limits && !in_system_header
+	    warn_type_limits && !in_system_header_at (loc)
 	    && c_inhibit_evaluation_warnings == 0
 	    && !(TREE_CODE (primop0) == INTEGER_CST
 		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
@@ -7059,11 +7075,11 @@ get_priority (tree args, bool is_destructor)
 
   arg = TREE_VALUE (args);
   arg = default_conversion (arg);
-  if (!host_integerp (arg, /*pos=*/0)
+  if (!tree_fits_shwi_p (arg)
       || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
     goto invalid;
 
-  pri = tree_low_cst (arg, /*pos=*/0);
+  pri = tree_to_shwi (arg);
   if (pri < 0 || pri > MAX_INIT_PRIORITY)
     goto invalid;
 
@@ -8537,14 +8553,14 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   size = TREE_VALUE (args);
 
-  if (!host_integerp (size, 1))
+  if (!tree_fits_uhwi_p (size))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
   /* Get the vector size (in bytes).  */
-  vecsize = tree_low_cst (size, 1);
+  vecsize = tree_to_uhwi (size);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -8570,14 +8586,14 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       || (!SCALAR_FLOAT_MODE_P (orig_mode)
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
-      || !host_integerp (TYPE_SIZE_UNIT (type), 1)
+      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE)
     {
       error ("invalid vector type for attribute %qE", name);
       return NULL_TREE;
     }
 
-  if (vecsize % tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+  if (vecsize % tree_to_uhwi (TYPE_SIZE_UNIT (type)))
     {
       error ("vector size not an integral multiple of component size");
       return NULL;
@@ -8590,7 +8606,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
     }
 
   /* Calculate how many units fit in the vector.  */
-  nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  nunits = vecsize / tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (nunits & (nunits - 1))
     {
       error ("number of components of the vector not a power of two");
@@ -9269,10 +9285,7 @@ check_function_arguments_recurse (void (*callback)
 	       to be valid.  */
 	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
 
-	    gcc_assert (TREE_CODE (format_num_expr) == INTEGER_CST
-			&& !TREE_INT_CST_HIGH (format_num_expr));
-
-	    format_num = TREE_INT_CST_LOW (format_num_expr);
+	    format_num = tree_to_uhwi (format_num_expr);
 
 	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;
 		 inner_arg != 0;
@@ -9781,8 +9794,7 @@ fold_offsetof_1 (tree expr)
 	  return error_mark_node;
 	}
       off = size_binop_loc (input_location, PLUS_EXPR, DECL_FIELD_OFFSET (t),
-			    size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t),
-						    1)
+			    size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				      / BITS_PER_UNIT));
       break;
 
@@ -10154,7 +10166,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
     {
       error ("size of array is too large");
       /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_low_cst().  */
+	 crash in tree_to_[su]hwi().  */
       type = error_mark_node;
     }
 
@@ -10212,7 +10224,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
-  size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
 
@@ -10372,7 +10384,7 @@ get_atomic_generic_size (location_t loc, tree function,
       return 0;
     }
 
-  size_0 = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type_0)), 1);
+  size_0 = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type_0)));
 
   /* Zero size objects are not allowed.  */
   if (size_0 == 0)
@@ -10397,7 +10409,7 @@ get_atomic_generic_size (location_t loc, tree function,
 		    function);
 	  return 0;
 	}
-      size = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type)), 1);
+      size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
       if (size != size_0)
 	{
 	  error_at (loc, "size mismatch in argument %d of %qE", x + 1,
@@ -10412,7 +10424,7 @@ get_atomic_generic_size (location_t loc, tree function,
       tree p = (*params)[x];
       if (TREE_CODE (p) == INTEGER_CST)
         {
-	  int i = tree_low_cst (p, 1);
+	  int i = tree_to_uhwi (p);
 	  if (i < 0 || (i & MEMMODEL_MASK) >= MEMMODEL_LAST)
 	    {
 	      warning_at (loc, OPT_Winvalid_memory_model,
@@ -11306,24 +11318,24 @@ warn_for_sign_compare (location_t location,
       if (TREE_CODE (op1) == BIT_NOT_EXPR)
 	op1 = c_common_get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
 
-      if (host_integerp (op0, 0) || host_integerp (op1, 0))
+      if (tree_fits_shwi_p (op0) || tree_fits_shwi_p (op1))
         {
           tree primop;
           HOST_WIDE_INT constant, mask;
           int unsignedp;
           unsigned int bits;
 
-          if (host_integerp (op0, 0))
+          if (tree_fits_shwi_p (op0))
             {
               primop = op1;
               unsignedp = unsignedp1;
-              constant = tree_low_cst (op0, 0);
+              constant = tree_to_shwi (op0);
             }
           else
             {
               primop = op0;
               unsignedp = unsignedp0;
-              constant = tree_low_cst (op1, 0);
+              constant = tree_to_shwi (op1);
             }
 
           bits = TYPE_PRECISION (TREE_TYPE (primop));
@@ -11765,9 +11777,8 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       tree type1;
 
       if (TREE_CODE (index) == INTEGER_CST)
-        if (!host_integerp (index, 1)
-            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
-               >= TYPE_VECTOR_SUBPARTS (type)))
+        if (!tree_fits_uhwi_p (index)
+            || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
       c_common_mark_addressable_vec (*vecp);

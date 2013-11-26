@@ -135,7 +135,7 @@ __go_file_line (uintptr pc, String *fn, String *file, intgo *line)
 static void
 syminfo_callback (void *data, uintptr_t pc __attribute__ ((unused)),
 		  const char *symname __attribute__ ((unused)),
-		  uintptr_t address)
+		  uintptr_t address, uintptr_t size __attribute__ ((unused)))
 {
   uintptr_t *pval = (uintptr_t *) data;
 

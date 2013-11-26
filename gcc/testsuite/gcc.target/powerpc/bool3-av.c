@@ -1,4 +1,4 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
+/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -mcpu=power6 -mabi=altivec -maltivec -mno-vsx" } */

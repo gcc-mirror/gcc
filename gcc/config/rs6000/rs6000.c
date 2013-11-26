@@ -32,6 +32,11 @@
 #include "recog.h"
 #include "obstack.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "print-tree.h"
+#include "varasm.h"
 #include "expr.h"
 #include "optabs.h"
 #include "except.h"
@@ -51,6 +56,16 @@
 #include "reload.h"
 #include "cfgloop.h"
 #include "sched-int.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -3217,6 +3232,12 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
+  /* If little-endian, default to -mstrict-align on older processors.
+     Testing for htm matches power8 and later.  */
+  if (!BYTES_BIG_ENDIAN
+      && !(processor_target_table[tune_index].target_enable & OPTION_MASK_HTM))
+    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
+
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {
@@ -6125,10 +6146,10 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (!DECL_SIZE_UNIT (decl))
 	    return false;
 
-	  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+	  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
 	    return false;
 
-	  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  dsize = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  if (dsize > 32768)
 	    return false;
 
@@ -6151,8 +6172,8 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (TREE_CODE (decl) == STRING_CST)
 	    dsize = TREE_STRING_LENGTH (decl);
 	  else if (TYPE_SIZE_UNIT (type)
-		   && host_integerp (TYPE_SIZE_UNIT (type), 1))
-	    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+		   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+	    dsize = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 	  else
 	    return false;
 	  if (dsize > 32768)
@@ -7978,6 +7999,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, enum machine_mode mode)
   gcc_assert (!BYTES_BIG_ENDIAN
 	      && VECTOR_MEM_VSX_P (mode)
 	      && mode != TImode
+	      && !gpr_or_gpr_p (dest, source)
 	      && (MEM_P (source) ^ MEM_P (dest)));
 
   if (MEM_P (source))
@@ -8553,18 +8575,18 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -8593,8 +8615,8 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -8625,8 +8647,8 @@ rs6000_aggregate_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || ((HOST_WIDE_INT) tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -9164,7 +9186,7 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -9646,7 +9668,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -12402,8 +12424,8 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+  if (!tree_fits_uhwi_p (arg)
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;
@@ -16680,6 +16702,13 @@ rs6000_cannot_change_mode_class (enum machine_mode from,
 	  if (TARGET_IEEEQUAD && (to == TFmode || from == TFmode))
 	    return true;
 
+	  /* TDmode in floating-mode registers must always go into a register
+	     pair with the most significant word in the even-numbered register
+	     to match ISA requirements.  In little-endian mode, this does not
+	     match subreg numbering, so we cannot allow subregs.  */
+	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
+	    return true;
+
 	  if (from_size < 8 || to_size < 8)
 	    return true;
 
@@ -19621,6 +19650,39 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   reg_mode_size = GET_MODE_SIZE (reg_mode);
 
   gcc_assert (reg_mode_size * nregs == GET_MODE_SIZE (mode));
+
+  /* TDmode residing in FP registers is special, since the ISA requires that
+     the lower-numbered word of a register pair is always the most significant
+     word, even in little-endian mode.  This does not match the usual subreg
+     semantics, so we cannnot use simplify_gen_subreg in those cases.  Access
+     the appropriate constituent registers "by hand" in little-endian mode.
+
+     Note we do not need to check for destructive overlap here since TDmode
+     can only reside in even/odd register pairs.  */
+  if (FP_REGNO_P (reg) && DECIMAL_FLOAT_MODE_P (mode) && !BYTES_BIG_ENDIAN)
+    {
+      rtx p_src, p_dst;
+      int i;
+
+      for (i = 0; i < nregs; i++)
+	{
+	  if (REG_P (src) && FP_REGNO_P (REGNO (src)))
+	    p_src = gen_rtx_REG (reg_mode, REGNO (src) + nregs - 1 - i);
+	  else
+	    p_src = simplify_gen_subreg (reg_mode, src, mode,
+					 i * reg_mode_size);
+
+	  if (REG_P (dst) && FP_REGNO_P (REGNO (dst)))
+	    p_dst = gen_rtx_REG (reg_mode, REGNO (dst) + nregs - 1 - i);
+	  else
+	    p_dst = simplify_gen_subreg (reg_mode, dst, mode,
+					 i * reg_mode_size);
+
+	  emit_insn (gen_rtx_SET (VOIDmode, p_dst, p_src));
+	}
+
+      return;
+    }
 
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
     {
@@ -22963,7 +23025,7 @@ rs6000_emit_prologue (void)
 				      && DEFAULT_ABI == ABI_V4
 				      && flag_pic
 				      && ! info->lr_save_p
-				      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0);
+				      && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds) > 0);
       if (save_LR_around_toc_setup)
 	{
 	  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -28543,10 +28605,23 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 	   name, suffix[smclass], flags & SECTION_ENTSIZE);
 }
 
+#define IN_NAMED_SECTION(DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+
 static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
-			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+			     unsigned HOST_WIDE_INT align)
 {
+  /* Place variables with alignment stricter than BIGGEST_ALIGNMENT into
+     named section.  */
+  if (align > BIGGEST_ALIGNMENT)
+    {
+      resolve_unique_section (decl, reloc, true);
+      if (IN_NAMED_SECTION (decl))
+	return get_named_section (decl, NULL, reloc);
+    }
+
   if (decl_readonly_section (decl, reloc))
     {
       if (TREE_PUBLIC (decl))
@@ -28584,10 +28659,12 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 {
   const char *name;
 
-  /* Use select_section for private and uninitialized data.  */
+  /* Use select_section for private data and uninitialized data with
+     alignment <= BIGGEST_ALIGNMENT.  */
   if (!TREE_PUBLIC (decl)
       || DECL_COMMON (decl)
-      || DECL_INITIAL (decl) == NULL_TREE
+      || (DECL_INITIAL (decl) == NULL_TREE
+	  && DECL_ALIGN (decl) <= BIGGEST_ALIGNMENT)
       || DECL_INITIAL (decl) == error_mark_node
       || (flag_zero_initialized_in_bss
 	  && initializer_zerop (DECL_INITIAL (decl))))
@@ -29817,6 +29894,8 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	  break;
       if (i == 16)
 	{
+          if (!BYTES_BIG_ENDIAN)
+            elt = 15 - elt;
 	  emit_insn (gen_altivec_vspltb (target, op0, GEN_INT (elt)));
 	  return true;
 	}
@@ -29984,6 +30063,21 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
       dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
 
+      /* For little endian, swap operands and invert/swap selectors
+	 to get the correct xxpermdi.  The operand swap sets up the
+	 inputs as a little endian array.  The selectors are swapped
+	 because they are defined to use big endian ordering.  The
+	 selectors are inverted to get the correct doublewords for
+	 little endian ordering.  */
+      if (!BYTES_BIG_ENDIAN)
+	{
+	  int n;
+	  perm0 = 3 - perm0;
+	  perm1 = 3 - perm1;
+	  n = perm0, perm0 = perm1, perm1 = n;
+	  x = op0, op0 = op1, op1 = x;
+	}
+
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
       x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
@@ -30079,7 +30173,7 @@ rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
   unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
   rtx perm[16];
 
-  high = (highp == BYTES_BIG_ENDIAN ? 0 : nelt / 2);
+  high = (highp ? 0 : nelt / 2);
   for (i = 0; i < nelt / 2; i++)
     {
       perm[i * 2] = GEN_INT (i + high);

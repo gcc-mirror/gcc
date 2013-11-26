@@ -29,3 +29,8 @@ int main()
   std::cout << "i am old-skool\n";
   return 0;
 }
+// Ignore TOC warnings on AIX
+// { dg-prune-output "ld: 0711-768 WARNING" }
+// { dg-prune-output "recognized no-op" }
+// { dg-prune-output "TOC-reload" }
+

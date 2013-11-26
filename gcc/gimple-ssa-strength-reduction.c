@@ -37,10 +37,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
-#include "basic-block.h"
+#include "stor-layout.h"
+#include "expr.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
@@ -48,12 +56,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "domwalk.h"
-#include "pointer-set.h"
 #include "expmed.h"
 #include "params.h"
-#include "hash-table.h"
 #include "tree-ssa-address.h"
 
 /* Information about a strength reduction candidate.  Each statement
@@ -609,8 +616,8 @@ stmt_cost (gimple gs, bool speed)
     case MULT_EXPR:
       rhs2 = gimple_assign_rhs2 (gs);
 
-      if (host_integerp (rhs2, 0))
-	return mult_by_coeff_cost (TREE_INT_CST_LOW (rhs2), lhs_mode, speed);
+      if (tree_fits_shwi_p (rhs2))
+	return mult_by_coeff_cost (tree_to_shwi (rhs2), lhs_mode, speed);
 
       gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
       return mul_cost (speed, lhs_mode);
@@ -732,7 +739,7 @@ slsr_process_phi (gimple phi, bool speed)
 	  derived_base_name = arg;
 
 	  if (SSA_NAME_IS_DEFAULT_DEF (arg))
-	    arg_bb = single_succ (ENTRY_BLOCK_PTR);
+	    arg_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 	  else
 	    gimple_bb (SSA_NAME_DEF_STMT (arg));
 	}

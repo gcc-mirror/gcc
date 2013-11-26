@@ -22,6 +22,7 @@ test_struct a,b;
 
 int size = sizeof (test_struct);
 /* Test for consistency on sizes 1, 2, 4, 8, 16 and 32.  */
+int
 main ()
 {
   test_struct c;

@@ -28,6 +28,10 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "attribs.h"
+#include "varasm.h"
 #include "flags.h"
 #include "toplev.h"
 #include "diagnostic-core.h"
@@ -771,7 +775,7 @@ make_aligning_type (tree type, unsigned int align, tree size,
 tree
 make_packable_type (tree type, bool in_record)
 {
-  unsigned HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 1);
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
   unsigned HOST_WIDE_INT new_size;
   tree new_type, old_field, field_list = NULL_TREE;
   unsigned int align;
@@ -806,12 +810,12 @@ make_packable_type (tree type, bool in_record)
 
       /* Do not try to shrink the size if the RM size is not constant.  */
       if (TYPE_CONTAINS_TEMPLATE_P (type)
-	  || !host_integerp (TYPE_ADA_SIZE (type), 1))
+	  || !tree_fits_uhwi_p (TYPE_ADA_SIZE (type)))
 	return type;
 
       /* Round the RM size up to a unit boundary to get the minimal size
 	 for a BLKmode record.  Give up if it's already the size.  */
-      new_size = TREE_INT_CST_LOW (TYPE_ADA_SIZE (type));
+      new_size = tree_to_uhwi (TYPE_ADA_SIZE (type));
       new_size = (new_size + BITS_PER_UNIT - 1) & -BITS_PER_UNIT;
       if (new_size == size)
 	return type;
@@ -832,7 +836,7 @@ make_packable_type (tree type, bool in_record)
 
       if (RECORD_OR_UNION_TYPE_P (new_field_type)
 	  && !TYPE_FAT_POINTER_P (new_field_type)
-	  && host_integerp (TYPE_SIZE (new_field_type), 1))
+	  && tree_fits_uhwi_p (TYPE_SIZE (new_field_type)))
 	new_field_type = make_packable_type (new_field_type, true);
 
       /* However, for the last field in a not already packed record type
@@ -915,10 +919,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 
   /* If size indicates an error, just return TYPE to avoid propagating
      the error.  Likewise if it's too large to represent.  */
-  if (!size_tree || !host_integerp (size_tree, 1))
+  if (!size_tree || !tree_fits_uhwi_p (size_tree))
     return type;
 
-  size = tree_low_cst (size_tree, 1);
+  size = tree_to_uhwi (size_tree);
 
   switch (TREE_CODE (type))
     {
@@ -1741,26 +1745,26 @@ rest_of_record_type_compilation (tree record_type)
 
 	  if (!pos
 	      && TREE_CODE (curpos) == MULT_EXPR
-	      && host_integerp (TREE_OPERAND (curpos, 1), 1))
+	      && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1)))
 	    {
 	      tree offset = TREE_OPERAND (curpos, 0);
-	      align = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
+	      align = tree_to_uhwi (TREE_OPERAND (curpos, 1));
 	      align = scale_by_factor_of (offset, align);
 	      last_pos = round_up (last_pos, align);
 	      pos = compute_related_constant (curpos, last_pos);
 	    }
 	  else if (!pos
 		   && TREE_CODE (curpos) == PLUS_EXPR
-		   && host_integerp (TREE_OPERAND (curpos, 1), 1)
+		   && tree_fits_uhwi_p (TREE_OPERAND (curpos, 1))
 		   && TREE_CODE (TREE_OPERAND (curpos, 0)) == MULT_EXPR
-		   && host_integerp
-		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1))
+		   && tree_fits_uhwi_p
+		      (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1)))
 	    {
 	      tree offset = TREE_OPERAND (TREE_OPERAND (curpos, 0), 0);
 	      unsigned HOST_WIDE_INT addend
-	        = tree_low_cst (TREE_OPERAND (curpos, 1), 1);
+	        = tree_to_uhwi (TREE_OPERAND (curpos, 1));
 	      align
-		= tree_low_cst (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1), 1);
+		= tree_to_uhwi (TREE_OPERAND (TREE_OPERAND (curpos, 0), 1));
 	      align = scale_by_factor_of (offset, align);
 	      align = MIN (align, addend & -addend);
 	      last_pos = round_up (last_pos, align);
@@ -2377,8 +2381,8 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
 	 that an alignment of 0 is taken as infinite.  */
       unsigned int known_align;
 
-      if (host_integerp (pos, 1))
-	known_align = tree_low_cst (pos, 1) & - tree_low_cst (pos, 1);
+      if (tree_fits_uhwi_p (pos))
+	known_align = tree_to_uhwi (pos) & - tree_to_uhwi (pos);
       else
 	known_align = BITS_PER_UNIT;
 
@@ -2388,7 +2392,7 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
 
       layout_decl (field_decl, known_align);
       SET_DECL_OFFSET_ALIGN (field_decl,
-			     host_integerp (pos, 1) ? BIGGEST_ALIGNMENT
+			     tree_fits_uhwi_p (pos) ? BIGGEST_ALIGNMENT
 			     : BITS_PER_UNIT);
       pos_from_bit (&DECL_FIELD_OFFSET (field_decl),
 		    &DECL_FIELD_BIT_OFFSET (field_decl),
@@ -2548,8 +2552,8 @@ invalidate_global_renaming_pointers (void)
 bool
 value_factor_p (tree value, HOST_WIDE_INT factor)
 {
-  if (host_integerp (value, 1))
-    return tree_low_cst (value, 1) % factor == 0;
+  if (tree_fits_uhwi_p (value))
+    return tree_to_uhwi (value) % factor == 0;
 
   if (TREE_CODE (value) == MULT_EXPR)
     return (value_factor_p (TREE_OPERAND (value, 0), factor)
@@ -2608,16 +2612,16 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
   /* If the distance between the end of prev_field and the beginning of
      curr_field is constant, then there is a gap if the value of this
      constant is not null. */
-  if (offset && host_integerp (offset, 1))
+  if (offset && tree_fits_uhwi_p (offset))
     return !integer_zerop (offset);
 
   /* If the size and position of the previous field are constant,
      then check the sum of this size and position. There will be a gap
      iff it is not multiple of the current field alignment. */
-  if (host_integerp (DECL_SIZE (prev_field), 1)
-      && host_integerp (bit_position (prev_field), 1))
-    return ((tree_low_cst (bit_position (prev_field), 1)
-	     + tree_low_cst (DECL_SIZE (prev_field), 1))
+  if (tree_fits_uhwi_p (DECL_SIZE (prev_field))
+      && tree_fits_uhwi_p (bit_position (prev_field)))
+    return ((tree_to_uhwi (bit_position (prev_field))
+	     + tree_to_uhwi (DECL_SIZE (prev_field)))
 	    % DECL_ALIGN (curr_field) != 0);
 
   /* If both the position and size of the previous field are multiples
@@ -3274,7 +3278,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       if (TYPE_VAX_FLOATING_POINT_P (type))
-	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
+	switch (tree_to_uhwi (TYPE_DIGITS_VALUE (type)))
 	  {
 	  case 6:
 	    dtype = 10;
@@ -3314,7 +3318,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case COMPLEX_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	  && TYPE_VAX_FLOATING_POINT_P (type))
-	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
+	switch (tree_to_uhwi (TYPE_DIGITS_VALUE (type)))
 	  {
 	  case 6:
 	    dtype = 12;
@@ -3575,7 +3579,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       if (TYPE_VAX_FLOATING_POINT_P (type))
-	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
+	switch (tree_to_uhwi (TYPE_DIGITS_VALUE (type)))
 	  {
 	  case 6:
 	    dtype = 10;
@@ -3615,7 +3619,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     case COMPLEX_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	  && TYPE_VAX_FLOATING_POINT_P (type))
-	switch (tree_low_cst (TYPE_DIGITS_VALUE (type), 1))
+	switch (tree_to_uhwi (TYPE_DIGITS_VALUE (type)))
 	  {
 	  case 6:
 	    dtype = 12;
@@ -6302,7 +6306,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   size = TREE_VALUE (args);
 
-  if (!host_integerp (size, 1))
+  if (!tree_fits_uhwi_p (size))
     {
       warning (OPT_Wattributes, "%qs attribute ignored",
 	       IDENTIFIER_POINTER (name));
@@ -6310,7 +6314,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
     }
 
   /* Get the vector size (in bytes).  */
-  vecsize = tree_low_cst (size, 1);
+  vecsize = tree_to_uhwi (size);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -6334,7 +6338,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       || (!SCALAR_FLOAT_MODE_P (orig_mode)
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
-      || !host_integerp (TYPE_SIZE_UNIT (type), 1)
+      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE)
     {
       error ("invalid vector type for attribute %qs",
@@ -6342,7 +6346,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
     }
 
-  if (vecsize % tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+  if (vecsize % tree_to_uhwi (TYPE_SIZE_UNIT (type)))
     {
       error ("vector size not an integral multiple of component size");
       return NULL;
@@ -6355,7 +6359,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
     }
 
   /* Calculate how many units fit in the vector.  */
-  nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  nunits = vecsize / tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (nunits & (nunits - 1))
     {
       error ("number of components of the vector not a power of two");
@@ -6403,7 +6407,7 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
      bases, and this attribute is for binding implementors, not end-users, so
      we should never get there from legitimate explicit uses.  */
 
-  if (!host_integerp (rep_size, 1))
+  if (!tree_fits_uhwi_p (rep_size))
     return NULL_TREE;
 
   /* Get the element type/mode and check this is something we know
@@ -6418,7 +6422,7 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       || (!SCALAR_FLOAT_MODE_P (elem_mode)
 	  && GET_MODE_CLASS (elem_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (elem_mode))
-      || !host_integerp (TYPE_SIZE_UNIT (elem_type), 1))
+      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (elem_type)))
     {
       error ("invalid element type for attribute %qs",
 	     IDENTIFIER_POINTER (name));
@@ -6427,9 +6431,9 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
   /* Sanity check the vector size and element type consistency.  */
 
-  vec_bytes = tree_low_cst (rep_size, 1);
+  vec_bytes = tree_to_uhwi (rep_size);
 
-  if (vec_bytes % tree_low_cst (TYPE_SIZE_UNIT (elem_type), 1))
+  if (vec_bytes % tree_to_uhwi (TYPE_SIZE_UNIT (elem_type)))
     {
       error ("vector size not an integral multiple of component size");
       return NULL;
@@ -6441,7 +6445,7 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       return NULL;
     }
 
-  vec_units = vec_bytes / tree_low_cst (TYPE_SIZE_UNIT (elem_type), 1);
+  vec_units = vec_bytes / tree_to_uhwi (TYPE_SIZE_UNIT (elem_type));
   if (vec_units & (vec_units - 1))
     {
       error ("number of components of the vector not a power of two");

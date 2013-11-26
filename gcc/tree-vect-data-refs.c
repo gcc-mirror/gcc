@@ -24,12 +24,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "dumpfile.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "tm_p.h"
 #include "target.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -37,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-manip.h"
@@ -772,7 +778,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Modulo alignment.  */
   misalign = size_binop (FLOOR_MOD_EXPR, misalign, alignment);
 
-  if (!host_integerp (misalign, 1))
+  if (!tree_fits_uhwi_p (misalign))
     {
       /* Negative or overflowed misalignment value.  */
       if (dump_enabled_p ())
@@ -781,7 +787,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       return false;
     }
 
-  SET_DR_MISALIGNMENT (dr, TREE_INT_CST_LOW (misalign));
+  SET_DR_MISALIGNMENT (dr, tree_to_uhwi (misalign));
 
   if (dump_enabled_p ())
     {
@@ -960,10 +966,10 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 static bool
 not_size_aligned (tree exp)
 {
-  if (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
+  if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (exp))))
     return true;
 
-  return (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
+  return (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (exp)))
 	  > get_object_alignment (exp));
 }
 
@@ -1733,9 +1739,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
           LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
           if (npeel)
-            LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
+            LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) = npeel;
           else
-            LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
+            LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+	      = DR_MISALIGNMENT (dr0);
 	  SET_DR_MISALIGNMENT (dr0, 0);
 	  if (dump_enabled_p ())
             {
@@ -2544,11 +2551,11 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	  /* Check that the data-refs have the same constant size and step.  */
 	  tree sza = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra)));
 	  tree szb = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb)));
-	  if (!host_integerp (sza, 1)
-	      || !host_integerp (szb, 1)
+	  if (!tree_fits_uhwi_p (sza)
+	      || !tree_fits_uhwi_p (szb)
 	      || !tree_int_cst_equal (sza, szb)
-	      || !host_integerp (DR_STEP (dra), 0)
-	      || !host_integerp (DR_STEP (drb), 0)
+	      || !tree_fits_shwi_p (DR_STEP (dra))
+	      || !tree_fits_shwi_p (DR_STEP (drb))
 	      || !tree_int_cst_equal (DR_STEP (dra), DR_STEP (drb)))
 	    break;
 
@@ -2569,13 +2576,13 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 
 	  /* If init_b == init_a + the size of the type * k, we have an
 	     interleaving, and DRA is accessed before DRB.  */
-	  HOST_WIDE_INT type_size_a = TREE_INT_CST_LOW (sza);
+	  HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
 	  if ((init_b - init_a) % type_size_a != 0)
 	    break;
 
 	  /* The step (if not zero) is greater than the difference between
 	     data-refs' inits.  This splits groups into suitable sizes.  */
-	  HOST_WIDE_INT step = TREE_INT_CST_LOW (DR_STEP (dra));
+	  HOST_WIDE_INT step = tree_to_shwi (DR_STEP (dra));
 	  if (step != 0 && step <= (init_b - init_a))
 	    break;
 
@@ -2877,12 +2884,12 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
 				DR_BASE_ADDRESS (dr_a2->dr),
 				0)
-	      || !host_integerp (dr_a1->offset, 0)
-	      || !host_integerp (dr_a2->offset, 0))
+	      || !tree_fits_shwi_p (dr_a1->offset)
+	      || !tree_fits_shwi_p (dr_a2->offset))
 	    continue;
 
-	  HOST_WIDE_INT diff = TREE_INT_CST_LOW (dr_a2->offset) -
-			       TREE_INT_CST_LOW (dr_a1->offset);
+	  HOST_WIDE_INT diff = (tree_to_shwi (dr_a2->offset)
+				- tree_to_shwi (dr_a1->offset));
 
 
 	  /* Now we check if the following condition is satisfied:
@@ -3069,9 +3076,9 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	    }
 	  break;
 	case MULT_EXPR:
-	  if (scale == 1 && host_integerp (op1, 0))
+	  if (scale == 1 && tree_fits_shwi_p (op1))
 	    {
-	      scale = tree_low_cst (op1, 0);
+	      scale = tree_to_shwi (op1);
 	      off = op0;
 	      continue;
 	    }
@@ -3268,7 +3275,7 @@ again:
 		      STRIP_NOPS (off);
 		      if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
 			  && TREE_CODE (off) == MULT_EXPR
-			  && host_integerp (TREE_OPERAND (off, 1), 1))
+			  && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
 			{
 			  tree step = TREE_OPERAND (off, 1);
 			  off = TREE_OPERAND (off, 0);

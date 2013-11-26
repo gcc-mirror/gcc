@@ -118,8 +118,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "vtable-verify.h"
-#include "gimple.h"
 #include "gimplify.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 
 static int num_calls_to_regset = 0;
 static int num_calls_to_regpair = 0;

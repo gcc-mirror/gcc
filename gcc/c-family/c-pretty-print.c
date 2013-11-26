@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
+#include "attribs.h"
 #include "intl.h"
 #include "c-pretty-print.h"
 #include "tree-pretty-print.h"
@@ -612,8 +614,8 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 	  tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (t));
 	  tree type = TREE_TYPE (maxval);
 
-	  if (host_integerp (maxval, 0))
-	    pp_wide_integer (this, tree_low_cst (maxval, 0) + 1);
+	  if (tree_fits_shwi_p (maxval))
+	    pp_wide_integer (this, tree_to_shwi (maxval) + 1);
 	  else
 	    expression (fold_build2 (PLUS_EXPR, type, maxval,
                                      build_int_cst (type, 1)));
@@ -941,10 +943,10 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     ? TYPE_CANONICAL (TREE_TYPE (i))
     : TREE_TYPE (i);
 
-  if (host_integerp (i, 0))
-    pp_wide_integer (pp, TREE_INT_CST_LOW (i));
-  else if (host_integerp (i, 1))
-    pp_unsigned_wide_integer (pp, TREE_INT_CST_LOW (i));
+  if (tree_fits_shwi_p (i))
+    pp_wide_integer (pp, tree_to_shwi (i));
+  else if (tree_fits_uhwi_p (i))
+    pp_unsigned_wide_integer (pp, tree_to_uhwi (i));
   else
     {
       unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (i);
@@ -1625,8 +1627,8 @@ c_pretty_printer::postfix_expression (tree e)
 	if (type
 	    && tree_int_cst_equal (TYPE_SIZE (type), TREE_OPERAND (e, 1)))
 	  {
-	    HOST_WIDE_INT bitpos = tree_low_cst (TREE_OPERAND (e, 2), 0);
-	    HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 0);
+	    HOST_WIDE_INT bitpos = tree_to_shwi (TREE_OPERAND (e, 2));
+	    HOST_WIDE_INT size = tree_to_shwi (TYPE_SIZE (type));
 	    if ((bitpos % size) == 0)
 	      {
 		pp_c_left_paren (this);

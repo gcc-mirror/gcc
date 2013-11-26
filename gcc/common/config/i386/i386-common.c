@@ -789,6 +789,8 @@ static const struct default_options ix86_option_optimization_table[] =
   {
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
+    /* Enable function splitting at -O2 and higher.  */
+    { OPT_LEVELS_2_PLUS, OPT_freorder_blocks_and_partition, NULL, 1 },
     /* Turn off -fschedule-insns by default.  It tends to make the
        problem with not enough registers even worse.  */
     { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },

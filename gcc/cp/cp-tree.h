@@ -359,7 +359,8 @@ struct GTY(()) tree_overload {
 /* Returns true iff NODE is a BASELINK.  */
 #define BASELINK_P(NODE) \
   (TREE_CODE (NODE) == BASELINK)
-/* The BINFO indicating the base from which the BASELINK_FUNCTIONS came.  */
+/* The BINFO indicating the base in which lookup found the
+   BASELINK_FUNCTIONS.  */
 #define BASELINK_BINFO(NODE) \
   (((struct tree_baselink*) BASELINK_CHECK (NODE))->binfo)
 /* The functions referred to by the BASELINK; either a FUNCTION_DECL,

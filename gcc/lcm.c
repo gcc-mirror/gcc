@@ -101,7 +101,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  qin = qout = worklist = XNEWVEC (basic_block, n_basic_blocks);
+  qin = qout = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* We want a maximal solution, so make an optimistic initialization of
      ANTIN.  */
@@ -116,13 +116,13 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are predecessors of the exit block so that we
      can easily identify them below.  */
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    e->src->aux = EXIT_BLOCK_PTR;
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    e->src->aux = EXIT_BLOCK_PTR_FOR_FN (cfun);
 
   /* Iterate until the worklist is empty.  */
   while (qlen)
@@ -134,7 +134,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
       if (qout >= qend)
 	qout = worklist;
 
-      if (bb->aux == EXIT_BLOCK_PTR)
+      if (bb->aux == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	/* Do not clear the aux field for blocks which are predecessors of
 	   the EXIT block.  That way we never add then to the worklist
 	   again.  */
@@ -153,7 +153,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 	   to add the predecessors of this block to the worklist
 	   if they are not already on the worklist.  */
 	FOR_EACH_EDGE (e, ei, bb->preds)
-	  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
+	  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      *qin++ = e->src;
 	      e->src->aux = e;
@@ -188,11 +188,11 @@ compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
     {
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
       succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-      if (pred == ENTRY_BLOCK_PTR)
+      if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	bitmap_copy (earliest[x], antin[succ->index]);
       else
 	{
-	  if (succ == EXIT_BLOCK_PTR)
+	  if (succ == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    bitmap_clear (earliest[x]);
 	  else
 	    {
@@ -254,7 +254,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist
-    = XNEWVEC (basic_block, n_basic_blocks);
+    = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
 
   /* Initialize a mapping from each edge to its index.  */
   for (i = 0; i < num_edges; i++)
@@ -276,7 +276,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      do not want to be overly optimistic.  Consider an outgoing edge from
      the entry block.  That edge should always have a LATER value the
      same as EARLIEST for that edge.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     bitmap_copy (later[(size_t) e->aux], earliest[(size_t) e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
@@ -290,8 +290,8 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. */
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Iterate until the worklist is empty.  */
   while (qlen)
@@ -317,7 +317,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 				      antloc[e->src->index])
 	    /* If LATER for an outgoing edge was changed, then we need
 	       to add the target of the outgoing edge to the worklist.  */
-	    && e->dest != EXIT_BLOCK_PTR && e->dest->aux == 0)
+	    && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && e->dest->aux == 0)
 	  {
 	    *qin++ = e->dest;
 	    e->dest->aux = e;
@@ -331,7 +331,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      for the EXIT block.  We allocated an extra entry in the LATERIN array
      for just this purpose.  */
   bitmap_ones (laterin[last_basic_block]);
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     bitmap_and (laterin[last_basic_block],
 		     laterin[last_basic_block],
 		     later[(size_t) e->aux]);
@@ -358,7 +358,7 @@ compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
     {
       basic_block b = INDEX_EDGE_SUCC_BB (edge_list, x);
 
-      if (b == EXIT_BLOCK_PTR)
+      if (b == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	bitmap_and_compl (insert[x], later[x], laterin[last_basic_block]);
       else
 	bitmap_and_compl (insert[x], later[x], laterin[b->index]);
@@ -481,7 +481,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
   qin = qout = worklist =
-    XNEWVEC (basic_block, n_basic_blocks - NUM_FIXED_BLOCKS);
+    XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
 
   /* We want a maximal solution.  */
   bitmap_vector_ones (avout, last_basic_block);
@@ -495,13 +495,13 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
     }
 
   qin = worklist;
-  qend = &worklist[n_basic_blocks - NUM_FIXED_BLOCKS];
-  qlen = n_basic_blocks - NUM_FIXED_BLOCKS;
+  qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
+  qlen = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
 
   /* Mark blocks which are successors of the entry block so that we
      can easily identify them below.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    e->dest->aux = ENTRY_BLOCK_PTR;
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
+    e->dest->aux = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   /* Iterate until the worklist is empty.  */
   while (qlen)
@@ -516,7 +516,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
       /* If one of the predecessor blocks is the ENTRY block, then the
 	 intersection of avouts is the null set.  We can identify such blocks
 	 by the special value in the AUX field in the block structure.  */
-      if (bb->aux == ENTRY_BLOCK_PTR)
+      if (bb->aux == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	/* Do not clear the aux field for blocks which are successors of the
 	   ENTRY block.  That way we never add then to the worklist again.  */
 	bitmap_clear (avin[bb->index]);
@@ -534,7 +534,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
 	   to add the successors of this block to the worklist
 	   if they are not already on the worklist.  */
 	FOR_EACH_EDGE (e, ei, bb->succs)
-	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
+	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {
 	      *qin++ = e->dest;
 	      e->dest->aux = e;
@@ -570,11 +570,11 @@ compute_farthest (struct edge_list *edge_list, int n_exprs,
     {
       pred = INDEX_EDGE_PRED_BB (edge_list, x);
       succ = INDEX_EDGE_SUCC_BB (edge_list, x);
-      if (succ == EXIT_BLOCK_PTR)
+      if (succ == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	bitmap_copy (farthest[x], st_avout[pred->index]);
       else
 	{
-	  if (pred == ENTRY_BLOCK_PTR)
+	  if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    bitmap_clear (farthest[x]);
 	  else
 	    {
@@ -610,7 +610,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist = XNEWVEC (basic_block, n_basic_blocks + 1);
+  tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
   /* Initialize NEARER for each edge and build a mapping from an edge to
      its index.  */
@@ -624,7 +624,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
      do not want to be overly optimistic.  Consider an incoming edge to
      the exit block.  That edge should always have a NEARER value the
      same as FARTHEST for that edge.  */
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     bitmap_copy (nearer[(size_t)e->aux], farthest[(size_t)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit
@@ -656,7 +656,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
 				      st_avloc[e->dest->index])
 	    /* If NEARER for an incoming edge was changed, then we need
 	       to add the source of the incoming edge to the worklist.  */
-	    && e->src != ENTRY_BLOCK_PTR && e->src->aux == 0)
+	    && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun) && e->src->aux == 0)
 	  {
 	    *tos++ = e->src;
 	    e->src->aux = e;
@@ -667,7 +667,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
      for the ENTRY block.  We allocated an extra entry in the NEAREROUT array
      for just this purpose.  */
   bitmap_ones (nearerout[last_basic_block]);
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     bitmap_and (nearerout[last_basic_block],
 		     nearerout[last_basic_block],
 		     nearer[(size_t) e->aux]);
@@ -693,7 +693,7 @@ compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *st_avloc,
   for (x = 0; x < NUM_EDGES (edge_list); x++)
     {
       basic_block b = INDEX_EDGE_PRED_BB (edge_list, x);
-      if (b == ENTRY_BLOCK_PTR)
+      if (b == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	bitmap_and_compl (insert[x], nearer[x], nearerout[last_basic_block]);
       else
 	bitmap_and_compl (insert[x], nearer[x], nearerout[b->index]);

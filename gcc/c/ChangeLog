@@ -1,3 +1,43 @@
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-typeck.c: Add required include files from gimple.h.
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (define_label, shadow_tag_warned)
+	(check_bitfield_type_and_width, grokdeclarator, grokparms,
+	store_parm_decls_newstyle, store_parm_decls_oldstyle)
+	(declspecs_add_type): Remove use of in_system_header macro.
+	* c-parser.c (c_parser_unary_expression): Likewise.
+	* c-typeck.c (store_init_value, process_init_element)
+	(c_start_case): Likewise.
+
+	* c-decl.c (build_enumerator): Remove use of EXPR_LOC_OR_HERE
+	macro.
+
+	* c-parser.c (c_parser_set_source_position_from_token): Remove
+	reference to in_system_header from comment.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-decl.c (grokdeclarator): Update comment to refer to
+	tree_to_[su]hwi rather than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-decl.c, c-typeck.c: Replace tree_low_cst (..., 1) with
+	tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-parser.c: Replace tree_low_cst (..., 0) with tree_to_shwi
+	throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-parser.c: Replace host_integerp (..., 0) with tree_fits_shwi_p
+	throughout.
+
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-parser.c (c_parser_cilk_simd): New.
@@ -18,6 +58,24 @@
 2013-11-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-typeck.c: Include only gimplify.h and gimple.h as needed.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* c-decl.c: Include print-tree.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include attribs.h.
+	Include stringpool.h.
+	* c-lang.c: Include fold-const.h.
+	* c-parser.c: Include stringpool.h.
+	Include attribs.h.
+	Include stor-layout.h.
+	Include varasm.h.
+	Include trans-mem.h.
+	* c-typeck.c: Include stor-layout.h.
+	Include trans-mem.h.
+	Include varasm.h.
+	Include stmt.h.
 
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 

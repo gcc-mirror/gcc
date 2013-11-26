@@ -117,163 +117,6 @@
 ;; Instruction types and attributes
 ;; -------------------------------------------------------------------
 
-;; Main data types used by the insntructions
-
-(define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF"
-  (const_string "unknown"))
-
-(define_attr "mode2" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF"
-  (const_string "unknown"))
-
-; The "v8type" attribute is used to for fine grained classification of
-; AArch64 instructions.  This table briefly explains the meaning of each type.
-
-; adc              add/subtract with carry.
-; adcs             add/subtract with carry (setting condition flags).
-; adr              calculate address.
-; alu              simple alu instruction (no memory or fp regs access).
-; alu_ext          simple alu instruction (sign/zero-extended register).
-; alu_shift        simple alu instruction, with a source operand shifted by a constant.
-; alus             simple alu instruction (setting condition flags).
-; alus_ext         simple alu instruction (sign/zero-extended register, setting condition flags).
-; alus_shift       simple alu instruction, with a source operand shifted by a constant (setting condition flags).
-; bfm              bitfield move operation.
-; branch           branch.
-; call             subroutine call.
-; ccmp             conditional compare.
-; clz              count leading zeros/sign bits.
-; csel             conditional select.
-; dmb              data memory barrier.
-; extend           sign/zero-extend (specialised bitfield move).
-; extr             extract register-sized bitfield encoding.
-; fpsimd_load      load single floating point / simd scalar register from memory.
-; fpsimd_load2     load pair of floating point / simd scalar registers from memory.
-; fpsimd_store     store single floating point / simd scalar register to memory.
-; fpsimd_store2    store pair floating point / simd scalar registers to memory.
-; fadd             floating point add/sub.
-; fccmp            floating point conditional compare.
-; fcmp             floating point comparison.
-; fconst           floating point load immediate.
-; fcsel            floating point conditional select.
-; fcvt             floating point convert (float to float).
-; fcvtf2i          floating point convert (float to integer).
-; fcvti2f          floating point convert (integer to float).
-; fdiv             floating point division operation.
-; ffarith          floating point abs, neg or cpy.
-; fmadd            floating point multiply-add/sub.
-; fminmax          floating point min/max.
-; fmov             floating point move (float to float).
-; fmovf2i          floating point move (float to integer).
-; fmovi2f          floating point move (integer to float).
-; fmul             floating point multiply.
-; frint            floating point round to integral.
-; fsqrt            floating point square root.
-; load_acq         load-acquire.
-; load             load single general register from memory
-; load2            load pair of general registers from memory
-; logic            logical operation (register).
-; logic_imm        and/or/xor operation (immediate).
-; logic_shift      logical operation with shift.
-; logics           logical operation (register, setting condition flags).
-; logics_imm       and/or/xor operation (immediate, setting condition flags).
-; logics_shift     logical operation with shift (setting condition flags).
-; madd             integer multiply-add/sub.
-; maddl            widening integer multiply-add/sub.
-; misc             miscellaneous - any type that doesn't fit into the rest.
-; move             integer move operation.
-; move2            double integer move operation.
-; movk             move 16-bit immediate with keep.
-; movz             move 16-bit immmediate with zero/one.
-; mrs              system/special register move.
-; mulh             64x64 to 128-bit multiply (high part).
-; mull             widening multiply.
-; mult             integer multiply instruction.
-; prefetch         memory prefetch.
-; rbit             reverse bits.
-; rev              reverse bytes.
-; sdiv             integer division operation (signed).
-; shift            variable shift operation.
-; shift_imm        immediate shift operation (specialised bitfield move).
-; store_rel        store-release.
-; store            store single general register to memory.
-; store2           store pair of general registers to memory.
-; udiv             integer division operation (unsigned).
-
-(define_attr "v8type"
-   "adc,\
-   adcs,\
-   adr,\
-   alu,\
-   alu_ext,\
-   alu_shift,\
-   alus,\
-   alus_ext,\
-   alus_shift,\
-   bfm,\
-   branch,\
-   call,\
-   ccmp,\
-   clz,\
-   csel,\
-   dmb,\
-   div,\
-   div64,\
-   extend,\
-   extr,\
-   fpsimd_load,\
-   fpsimd_load2,\
-   fpsimd_store2,\
-   fpsimd_store,\
-   fadd,\
-   fccmp,\
-   fcvt,\
-   fcvtf2i,\
-   fcvti2f,\
-   fcmp,\
-   fconst,\
-   fcsel,\
-   fdiv,\
-   ffarith,\
-   fmadd,\
-   fminmax,\
-   fmov,\
-   fmovf2i,\
-   fmovi2f,\
-   fmul,\
-   frint,\
-   fsqrt,\
-   load_acq,\
-   load1,\
-   load2,\
-   logic,\
-   logic_imm,\
-   logic_shift,\
-   logics,\
-   logics_imm,\
-   logics_shift,\
-   madd,\
-   maddl,\
-   misc,\
-   move,\
-   move2,\
-   movk,\
-   movz,\
-   mrs,\
-   mulh,\
-   mull,\
-   mult,\
-   prefetch,\
-   rbit,\
-   rev,\
-   sdiv,\
-   shift,\
-   shift_imm,\
-   store_rel,\
-   store1,\
-   store2,\
-   udiv"
-  (const_string "alu"))
-
 ; The "type" attribute is is included here from AArch32 backend to be able
 ; to share pipeline descriptions.
 (include "../arm/types.md")
@@ -328,16 +171,14 @@
   [(set (pc) (match_operand:DI 0 "register_operand" "r"))]
   ""
   "br\\t%0"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 )
 
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
   "b\\t%l0"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 )
 
 (define_expand "cbranch<mode>4"
@@ -375,8 +216,7 @@
 			   (pc)))]
   ""
   "b%m0\\t%l2"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 )
 
 (define_expand "casesi"
@@ -440,7 +280,6 @@
   return aarch64_output_casesi (operands);
   "
   [(set_attr "length" "16")
-   (set_attr "v8type" "branch")
    (set_attr "type" "branch")]
 )
 
@@ -448,7 +287,7 @@
   [(unspec[(const_int 0)] UNSPEC_NOP)]
   ""
   "nop"
-  [(set_attr "v8type" "misc")]
+  [(set_attr "type" "no_insn")]
 )
 
 (define_expand "prologue"
@@ -482,8 +321,7 @@
   [(return)]
   ""
   "ret"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 )
 
 (define_insn "eh_return"
@@ -491,8 +329,7 @@
     UNSPECV_EH_RETURN)]
   ""
   "#"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 
 )
 
@@ -513,8 +350,7 @@
 			   (pc)))]
   ""
   "<cbz>\\t%<w>0, %l1"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 
 )
 
@@ -533,9 +369,7 @@
     return \"ubfx\\t%<w>3, %<w>0, %1, #1\;<cbz>\\t%<w>3, %l2\";
   return \"<tbz>\\t%<w>0, %1, %l2\";
   "
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")
-   (set_attr "mode" "<MODE>")
+  [(set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
 			   (lt (minus (match_dup 2) (pc)) (const_int 32764)))
@@ -555,9 +389,7 @@
     return \"ubfx\\t%<w>2, %<w>0, <sizem1>, #1\;<cbz>\\t%<w>2, %l1\";
   return \"<tbz>\\t%<w>0, <sizem1>, %l1\";
   "
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")
-   (set_attr "mode" "<MODE>")
+  [(set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -32768))
 			   (lt (minus (match_dup 1) (pc)) (const_int 32764)))
@@ -601,8 +433,7 @@
    (clobber (reg:DI LR_REGNUM))]
   ""
   "blr\\t%0"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")]
+  [(set_attr "type" "call")]
 )
 
 (define_insn "*call_symbol"
@@ -613,8 +444,7 @@
   "GET_CODE (operands[0]) == SYMBOL_REF
    && !aarch64_is_long_call_p (operands[0])"
   "bl\\t%a0"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")]
+  [(set_attr "type" "call")]
 )
 
 (define_expand "call_value"
@@ -651,8 +481,7 @@
    (clobber (reg:DI LR_REGNUM))]
   ""
   "blr\\t%1"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")]
+  [(set_attr "type" "call")]
 
 )
 
@@ -665,8 +494,7 @@
   "GET_CODE (operands[1]) == SYMBOL_REF
    && !aarch64_is_long_call_p (operands[1])"
   "bl\\t%a1"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")]
+  [(set_attr "type" "call")]
 )
 
 (define_expand "sibcall"
@@ -701,8 +529,7 @@
    (use (match_operand 2 "" ""))]
   "GET_CODE (operands[0]) == SYMBOL_REF"
   "b\\t%a0"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 
 )
 
@@ -714,8 +541,7 @@
    (use (match_operand 3 "" ""))]
   "GET_CODE (operands[1]) == SYMBOL_REF"
   "b\\t%a1"
-  [(set_attr "v8type" "branch")
-   (set_attr "type" "branch")]
+  [(set_attr "type" "branch")]
 )
 
 ;; Call subroutine returning any type.
@@ -792,11 +618,9 @@
        gcc_unreachable ();
      }
 }
-  [(set_attr "v8type" "move,alu,alu,load1,load1,store1,store1,*,*,*")
-   (set_attr "type" "mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,\
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,\
                      neon_from_gp<q>,neon_from_gp<q>, neon_dup")
-   (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")
-   (set_attr "mode" "<MODE>")]
+   (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")]
 )
 
 (define_expand "mov<mode>"
@@ -834,10 +658,8 @@
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1"
-  [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
                      adr,adr,fmov,fmov,fmov")
-   (set_attr "mode" "SI")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes")]
 )
 
@@ -861,10 +683,8 @@
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    movi\\t%d0, %1"
-  [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov,fmov")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
                      adr,adr,fmov,fmov,fmov,fmov")
-   (set_attr "mode" "DI")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
    (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,yes")]
 )
@@ -877,9 +697,7 @@
   "UINTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && UINTVAL (operands[1]) % 16 == 0"
   "movk\\t%<w>0, %X2, lsl %1"
-  [(set_attr "v8type" "movk")
-   (set_attr "type" "mov_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "mov_imm")]
 )
 
 (define_expand "movti"
@@ -909,11 +727,8 @@
    stp\\txzr, xzr, %0
    ldr\\t%q0, %1
    str\\t%q1, %0"
-  [(set_attr "v8type" "move2,fmovi2f,fmovf2i,*, \
-		       load2,store2,store2,fpsimd_load,fpsimd_store")
-   (set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
+  [(set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
 		             load2,store2,store2,f_loadd,f_stored")
-   (set_attr "mode" "DI,DI,DI,TI,DI,DI,DI,TI,TI")
    (set_attr "length" "8,8,8,4,4,4,4,4,4")
    (set_attr "simd" "*,*,*,yes,*,*,*,*,*")
    (set_attr "fp" "*,*,*,*,*,*,*,yes,yes")]
@@ -963,12 +778,8 @@
    ldr\\t%w0, %1
    str\\t%w1, %0
    mov\\t%w0, %w1"
-  [(set_attr "v8type" "fmovi2f,fmovf2i,\
-		       fmov,fconst,fpsimd_load,\
-		       fpsimd_store,fpsimd_load,fpsimd_store,fmov")
-   (set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
-                     f_loads,f_stores,f_loads,f_stores,fmov")
-   (set_attr "mode" "SF")]
+  [(set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
+                     f_loads,f_stores,f_loads,f_stores,fmov")]
 )
 
 (define_insn "*movdf_aarch64"
@@ -986,12 +797,8 @@
    ldr\\t%x0, %1
    str\\t%x1, %0
    mov\\t%x0, %x1"
-  [(set_attr "v8type" "fmovi2f,fmovf2i,\
-		       fmov,fconst,fpsimd_load,\
-		       fpsimd_store,fpsimd_load,fpsimd_store,move")
-   (set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
-                     f_loadd,f_stored,f_loadd,f_stored,mov_reg")
-   (set_attr "mode" "DF")]
+  [(set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
+                     f_loadd,f_stored,f_loadd,f_stored,mov_reg")]
 )
 
 (define_expand "movtf"
@@ -1028,10 +835,8 @@
    str\\t%q1, %0
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0"
-  [(set_attr "v8type" "logic,move2,fmovi2f,fmovf2i,fconst,fconst,fpsimd_load,fpsimd_store,fpsimd_load2,fpsimd_store2")
-   (set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
+  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
                      f_loadd,f_stored,neon_load1_2reg,neon_store1_2reg")
-   (set_attr "mode" "DF,DF,DF,DF,DF,DF,TF,TF,DF,DF")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
    (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
    (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*")]
@@ -1060,9 +865,7 @@
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (<MODE>mode)))"
   "ldp\\t%<w>0, %<w>2, %1"
-  [(set_attr "v8type" "load2")
-   (set_attr "type" "load2")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "load2")]
 )
 
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
@@ -1077,9 +880,7 @@
 			       XEXP (operands[0], 0),
 			       GET_MODE_SIZE (<MODE>mode)))"
   "stp\\t%<w>1, %<w>3, %0"
-  [(set_attr "v8type" "store2")
-   (set_attr "type" "store2")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "store2")]
 )
 
 ;; Operands 1 and 3 are tied together by the final condition; so we allow
@@ -1094,9 +895,7 @@
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (<MODE>mode)))"
   "ldp\\t%<w>0, %<w>2, %1"
-  [(set_attr "v8type" "fpsimd_load2")
-   (set_attr "type" "neon_load1_2reg<q>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "neon_load1_2reg<q>")]
 )
 
 ;; Operands 0 and 2 are tied together by the final condition; so we allow
@@ -1111,9 +910,7 @@
 			       XEXP (operands[0], 0),
 			       GET_MODE_SIZE (<MODE>mode)))"
   "stp\\t%<w>1, %<w>3, %0"
-  [(set_attr "v8type" "fpsimd_store2")
-   (set_attr "type" "neon_store1_2reg<q>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
 ;; Load pair with writeback.  This is primarily used in function epilogues
@@ -1131,9 +928,7 @@
                    (match_operand:P 5 "const_int_operand" "n"))))])]
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
-  [(set_attr "v8type" "load2")
-   (set_attr "type" "load2")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "load2")]
 )
 
 ;; Store pair with writeback.  This is primarily used in function prologues
@@ -1151,9 +946,7 @@
           (match_operand:GPI 3 "register_operand" "r"))])]
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
   "stp\\t%<w>2, %<w>3, [%0, %4]!"
-  [(set_attr "v8type" "store2")
-   (set_attr "type" "store2")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "store2")]
 )
 
 ;; -------------------------------------------------------------------
@@ -1173,9 +966,7 @@
   "@
    sxtw\t%0, %w1
    ldrsw\t%0, %1"
-  [(set_attr "v8type" "extend,load1")
-   (set_attr "type" "extend,load1")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "extend,load1")]
 )
 
 (define_insn "*zero_extendsidi2_aarch64"
@@ -1185,9 +976,7 @@
   "@
    uxtw\t%0, %w1
    ldr\t%w0, %1"
-  [(set_attr "v8type" "extend,load1")
-   (set_attr "type" "extend,load1")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "extend,load1")]
 )
 
 (define_expand "<ANY_EXTEND:optab><SHORT:mode><GPI:mode>2"
@@ -1203,9 +992,7 @@
   "@
    sxt<SHORT:size>\t%<GPI:w>0, %w1
    ldrs<SHORT:size>\t%<GPI:w>0, %1"
-  [(set_attr "v8type" "extend,load1")
-   (set_attr "type" "extend,load1")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "extend,load1")]
 )
 
 (define_insn "*zero_extend<SHORT:mode><GPI:mode>2_aarch64"
@@ -1216,9 +1003,7 @@
    uxt<SHORT:size>\t%<GPI:w>0, %w1
    ldr<SHORT:size>\t%w0, %1
    ldr\t%<SHORT:size>0, %1"
-  [(set_attr "v8type" "extend,load1,load1")
-   (set_attr "type" "extend,load1,load1")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "extend,load1,load1")]
 )
 
 (define_expand "<optab>qihi2"
@@ -1234,9 +1019,7 @@
   "@
    <su>xtb\t%w0, %w1
    <ldrxt>b\t%w0, %1"
-  [(set_attr "v8type" "extend,load1")
-   (set_attr "type" "extend,load1")
-   (set_attr "mode" "HI")]
+  [(set_attr "type" "extend,load1")]
 )
 
 ;; -------------------------------------------------------------------
@@ -1279,9 +1062,7 @@
   add\\t%w0, %w1, %2
   add\\t%w0, %w1, %w2
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_imm,alu_reg,alu_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_imm,alu_reg,alu_imm")]
 )
 
 ;; zero_extend version of above
@@ -1296,9 +1077,7 @@
   add\\t%w0, %w1, %2
   add\\t%w0, %w1, %w2
   sub\\t%w0, %w1, #%n2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_imm,alu_reg,alu_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_imm,alu_reg,alu_imm")]
 )
 
 (define_insn "*adddi3_aarch64"
@@ -1313,9 +1092,7 @@
   add\\t%x0, %x1, %x2
   sub\\t%x0, %x1, #%n2
   add\\t%d0, %d1, %d2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_imm,alu_reg,alu_imm,alu_reg")
-   (set_attr "mode" "DI")
+  [(set_attr "type" "alu_imm,alu_reg,alu_imm,alu_reg")
    (set_attr "simd" "*,*,*,yes")]
 )
 
@@ -1332,9 +1109,7 @@
   adds\\t%<w>0, %<w>1, %<w>2
   adds\\t%<w>0, %<w>1, %<w>2
   subs\\t%<w>0, %<w>1, #%n2"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg,alus_imm,alus_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
 )
 
 ;; zero_extend version of above
@@ -1351,9 +1126,7 @@
   adds\\t%w0, %w1, %w2
   adds\\t%w0, %w1, %w2
   subs\\t%w0, %w1, #%n2"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg,alus_imm,alus_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
 )
 
 (define_insn "*adds_mul_imm_<mode>"
@@ -1369,9 +1142,7 @@
 		  (match_dup 3)))]
   ""
   "adds\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "v8type" "alus_shift")
-   (set_attr "type" "alus_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn "*subs_mul_imm_<mode>"
@@ -1387,9 +1158,7 @@
 		   (mult:GPI (match_dup 2) (match_dup 3))))]
   ""
   "subs\\t%<w>0, %<w>1, %<w>2, lsl %p3"
-  [(set_attr "v8type" "alus_shift")
-   (set_attr "type" "alus_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn "*adds_<optab><ALLX:mode>_<GPI:mode>"
@@ -1403,9 +1172,7 @@
 	(plus:GPI (ANY_EXTEND:GPI (match_dup 1)) (match_dup 2)))]
   ""
   "adds\\t%<GPI:w>0, %<GPI:w>2, %<GPI:w>1, <su>xt<ALLX:size>"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 (define_insn "*subs_<optab><ALLX:mode>_<GPI:mode>"
@@ -1419,9 +1186,7 @@
 	(minus:GPI (match_dup 1) (ANY_EXTEND:GPI (match_dup 2))))]
   ""
   "subs\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size>"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 (define_insn "*adds_<optab><mode>_multp2"
@@ -1441,9 +1206,7 @@
 		  (match_dup 4)))]
   "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
   "adds\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 (define_insn "*subs_<optab><mode>_multp2"
@@ -1463,9 +1226,7 @@
 				  (const_int 0))))]
   "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
   "subs\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 (define_insn "*add<mode>3nr_compare0"
@@ -1479,9 +1240,7 @@
   cmn\\t%<w>0, %<w>1
   cmn\\t%<w>0, %<w>1
   cmp\\t%<w>0, #%n1"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg,alus_imm,alus_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
 )
 
 (define_insn "*compare_neg<mode>"
@@ -1491,9 +1250,7 @@
 	 (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "cmn\\t%<w>1, %<w>0"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg")]
 )
 
 (define_insn "*add_<shift>_<mode>"
@@ -1503,9 +1260,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -1513,13 +1268,11 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	 (plus:SI (ASHIFT:SI (match_operand:SI 1 "register_operand" "r")
-		             (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
-	          (match_operand:SI 3 "register_operand" "r"))))]
+			     (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
+		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "*add_mul_imm_<mode>"
@@ -1529,9 +1282,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "*add_<optab><ALLX:mode>_<GPI:mode>"
@@ -1540,9 +1291,7 @@
 		  (match_operand:GPI 2 "register_operand" "r")))]
   ""
   "add\\t%<GPI:w>0, %<GPI:w>2, %<GPI:w>1, <su>xt<ALLX:size>"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1553,9 +1302,7 @@
 		  (match_operand:GPI 2 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w2, %w1, <su>xt<SHORT:size>"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*add_<optab><ALLX:mode>_shft_<GPI:mode>"
@@ -1566,9 +1313,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<GPI:w>0, %<GPI:w>3, %<GPI:w>1, <su>xt<ALLX:size> %2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1581,9 +1326,7 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <su>xt<SHORT:size> %2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*add_<optab><ALLX:mode>_mult_<GPI:mode>"
@@ -1594,9 +1337,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<GPI:w>0, %<GPI:w>3, %<GPI:w>1, <su>xt<ALLX:size> %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1608,9 +1349,7 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <su>xt<SHORT:size> %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*add_<optab><mode>_multp2"
@@ -1623,9 +1362,7 @@
 		  (match_operand:GPI 4 "register_operand" "r")))]
   "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
   "add\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1640,9 +1377,7 @@
 		  (match_operand:SI 4 "register_operand" "r"))))]
   "aarch64_is_extend_from_extract (SImode, operands[2], operands[3])"
   "add\\t%w0, %w4, %w1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*add<mode>3_carryin"
@@ -1654,9 +1389,7 @@
 		(match_operand:GPI 2 "register_operand" "r"))))]
    ""
    "adc\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 ;; zero_extend version of above
@@ -1670,9 +1403,7 @@
 	       (match_operand:SI 2 "register_operand" "r")))))]
    ""
    "adc\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add<mode>3_carryin_alt1"
@@ -1684,9 +1415,7 @@
               (geu:GPI (reg:CC CC_REGNUM) (const_int 0))))]
    ""
    "adc\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 ;; zero_extend version of above
@@ -1700,9 +1429,7 @@
               (geu:SI (reg:CC CC_REGNUM) (const_int 0)))))]
    ""
    "adc\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add<mode>3_carryin_alt2"
@@ -1714,9 +1441,7 @@
 	      (match_operand:GPI 2 "register_operand" "r")))]
    ""
    "adc\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 ;; zero_extend version of above
@@ -1730,9 +1455,7 @@
 	      (match_operand:SI 2 "register_operand" "r"))))]
    ""
    "adc\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add<mode>3_carryin_alt3"
@@ -1744,9 +1467,7 @@
 	      (match_operand:GPI 1 "register_operand" "r")))]
    ""
    "adc\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 ;; zero_extend version of above
@@ -1760,9 +1481,7 @@
 	      (match_operand:SI 1 "register_operand" "r"))))]
    ""
    "adc\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*add_uxt<mode>_multp2"
@@ -1777,9 +1496,7 @@
   operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
 					   INTVAL (operands[3])));
   return \"add\t%<w>0, %<w>4, %<w>1, uxt%e3 %p2\";"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1796,9 +1513,7 @@
   operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
 					   INTVAL (operands[3])));
   return \"add\t%w0, %w4, %w1, uxt%e3 %p2\";"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "subsi3"
@@ -1807,9 +1522,7 @@
 		   (match_operand:SI 2 "register_operand" "r")))]
   ""
   "sub\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_reg")]
 )
 
 ;; zero_extend version of above
@@ -1820,9 +1533,7 @@
 		   (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "sub\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_reg")]
 )
 
 (define_insn "subdi3"
@@ -1833,9 +1544,7 @@
   "@
    sub\\t%x0, %x1, %x2
    sub\\t%d0, %d1, %d2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "DI")
+  [(set_attr "type" "alu_reg, neon_sub")
    (set_attr "simd" "*,yes")]
 )
 
@@ -1849,9 +1558,7 @@
 	(minus:GPI (match_dup 1) (match_dup 2)))]
   ""
   "subs\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg")]
 )
 
 ;; zero_extend version of above
@@ -1864,9 +1571,7 @@
 	(zero_extend:DI (minus:SI (match_dup 1) (match_dup 2))))]
   ""
   "subs\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alus_reg")]
 )
 
 (define_insn "*sub_<shift>_<mode>"
@@ -1877,9 +1582,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "sub\\t%<w>0, %<w>3, %<w>1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -1892,9 +1595,7 @@
 		    (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "sub\\t%w0, %w3, %w1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "*sub_mul_imm_<mode>"
@@ -1905,9 +1606,7 @@
 		    (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))))]
   ""
   "sub\\t%<w>0, %<w>3, %<w>1, lsl %p2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -1920,9 +1619,7 @@
 		    (match_operand:QI 2 "aarch64_pwr_2_si" "n")))))]
   ""
   "sub\\t%w0, %w3, %w1, lsl %p2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "*sub_<optab><ALLX:mode>_<GPI:mode>"
@@ -1932,9 +1629,7 @@
 		    (match_operand:ALLX 2 "register_operand" "r"))))]
   ""
   "sub\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size>"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1946,9 +1641,7 @@
 		    (match_operand:SHORT 2 "register_operand" "r")))))]
   ""
   "sub\\t%w0, %w1, %w2, <su>xt<SHORT:size>"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*sub_<optab><ALLX:mode>_shft_<GPI:mode>"
@@ -1959,9 +1652,7 @@
 			       (match_operand 3 "aarch64_imm3" "Ui3"))))]
   ""
   "sub\\t%<GPI:w>0, %<GPI:w>1, %<GPI:w>2, <su>xt<ALLX:size> %3"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -1974,9 +1665,7 @@
 			      (match_operand 3 "aarch64_imm3" "Ui3")))))]
   ""
   "sub\\t%w0, %w1, %w2, <su>xt<SHORT:size> %3"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*sub_<optab><mode>_multp2"
@@ -1989,9 +1678,7 @@
 		    (const_int 0))))]
   "aarch64_is_extend_from_extract (<MODE>mode, operands[2], operands[3])"
   "sub\\t%<w>0, %<w>4, %<w>1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -2006,9 +1693,7 @@
 		    (const_int 0)))))]
   "aarch64_is_extend_from_extract (SImode, operands[2], operands[3])"
   "sub\\t%w0, %w4, %w1, <su>xt%e3 %p2"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn "*sub<mode>3_carryin"
@@ -2020,9 +1705,7 @@
 	       (match_operand:GPI 2 "register_operand" "r")))]
    ""
    "sbc\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 ;; zero_extend version of the above
@@ -2036,9 +1719,7 @@
 	       (match_operand:SI 2 "register_operand" "r"))))]
    ""
    "sbc\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*sub_uxt<mode>_multp2"
@@ -2053,9 +1734,7 @@
   operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
 					   INTVAL (operands[3])));
   return \"sub\t%<w>0, %<w>4, %<w>1, uxt%e3 %p2\";"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_ext")]
 )
 
 ;; zero_extend version of above
@@ -2072,9 +1751,7 @@
   operands[3] = GEN_INT (aarch64_uxt_size (exact_log2 (INTVAL (operands[2])),
 					   INTVAL (operands[3])));
   return \"sub\t%w0, %w4, %w1, uxt%e3 %p2\";"
-  [(set_attr "v8type" "alu_ext")
-   (set_attr "type" "alu_ext")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_ext")]
 )
 
 (define_insn_and_split "absdi2"
@@ -2105,9 +1782,7 @@
 							     GEN_INT (63)))));
     DONE;
   }
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "alu_reg")]
 )
 
 (define_insn "neg<mode>2"
@@ -2117,10 +1792,8 @@
   "@
    neg\\t%<w>0, %<w>1
    neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg, neon_neg<q>")
-   (set_attr "simd" "*,yes")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_reg, neon_neg<q>")
+   (set_attr "simd" "*,yes")]
 )
 
 ;; zero_extend version of above
@@ -2129,9 +1802,7 @@
 	(zero_extend:DI (neg:SI (match_operand:SI 1 "register_operand" "r"))))]
   ""
   "neg\\t%w0, %w1"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_reg")]
 )
 
 (define_insn "*ngc<mode>"
@@ -2140,9 +1811,7 @@
 		   (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "ngc\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*ngcsi_uxtw"
@@ -2152,9 +1821,7 @@
 		   (match_operand:SI 1 "register_operand" "r"))))]
   ""
   "ngc\\t%w0, %w1"
-  [(set_attr "v8type" "adc")
-   (set_attr "type" "adc_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "adc_reg")]
 )
 
 (define_insn "*neg<mode>2_compare0"
@@ -2165,9 +1832,7 @@
 	(neg:GPI (match_dup 1)))]
   ""
   "negs\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg")]
 )
 
 ;; zero_extend version of above
@@ -2179,9 +1844,7 @@
 	(zero_extend:DI (neg:SI (match_dup 1))))]
   ""
   "negs\\t%w0, %w1"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alus_reg")]
 )
 
 (define_insn "*neg_<shift><mode>3_compare0"
@@ -2195,9 +1858,7 @@
 	(neg:GPI (ASHIFT:GPI (match_dup 1) (match_dup 2))))]
   ""
   "negs\\t%<w>0, %<w>1, <shift> %2"
-  [(set_attr "v8type" "alus_shift")
-   (set_attr "type" "alus_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn "*neg_<shift>_<mode>2"
@@ -2207,9 +1868,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "neg\\t%<w>0, %<w>1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -2221,9 +1880,7 @@
 		  (match_operand:QI 2 "aarch64_shift_imm_si" "n")))))]
   ""
   "neg\\t%w0, %w1, <shift> %2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "*neg_mul_imm_<mode>2"
@@ -2233,9 +1890,7 @@
 		  (match_operand:QI 2 "aarch64_pwr_2_<mode>" "n"))))]
   ""
   "neg\\t%<w>0, %<w>1, lsl %p2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -2247,9 +1902,7 @@
 		  (match_operand:QI 2 "aarch64_pwr_2_si" "n")))))]
   ""
   "neg\\t%w0, %w1, lsl %p2"
-  [(set_attr "v8type" "alu_shift")
-   (set_attr "type" "alu_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "alu_shift_imm")]
 )
 
 (define_insn "mul<mode>3"
@@ -2258,9 +1911,7 @@
 		  (match_operand:GPI 2 "register_operand" "r")))]
   ""
   "mul\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "mult")
-   (set_attr "type" "mul")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "mul")]
 )
 
 ;; zero_extend version of above
@@ -2271,9 +1922,7 @@
 		  (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "mul\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "mult")
-   (set_attr "type" "mul")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "mul")]
 )
 
 (define_insn "*madd<mode>"
@@ -2283,9 +1932,7 @@
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "madd\\t%<w>0, %<w>1, %<w>2, %<w>3"
-  [(set_attr "v8type" "madd")
-   (set_attr "type" "mla")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "mla")]
 )
 
 ;; zero_extend version of above
@@ -2297,9 +1944,7 @@
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "madd\\t%w0, %w1, %w2, %w3"
-  [(set_attr "v8type" "madd")
-   (set_attr "type" "mla")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "mla")]
 )
 
 (define_insn "*msub<mode>"
@@ -2310,9 +1955,7 @@
 
   ""
   "msub\\t%<w>0, %<w>1, %<w>2, %<w>3"
-  [(set_attr "v8type" "madd")
-   (set_attr "type" "mla")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "mla")]
 )
 
 ;; zero_extend version of above
@@ -2325,9 +1968,7 @@
 
   ""
   "msub\\t%w0, %w1, %w2, %w3"
-  [(set_attr "v8type" "madd")
-   (set_attr "type" "mla")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "mla")]
 )
 
 (define_insn "*mul<mode>_neg"
@@ -2337,9 +1978,7 @@
 
   ""
   "mneg\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "mult")
-   (set_attr "type" "mul")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "mul")]
 )
 
 ;; zero_extend version of above
@@ -2351,9 +1990,7 @@
 
   ""
   "mneg\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "mult")
-   (set_attr "type" "mul")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "mul")]
 )
 
 (define_insn "<su_optab>mulsidi3"
@@ -2362,9 +1999,7 @@
 		 (ANY_EXTEND:DI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "<su>mull\\t%0, %w1, %w2"
-  [(set_attr "v8type" "mull")
-   (set_attr "type" "<su>mull")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "<su>mull")]
 )
 
 (define_insn "<su_optab>maddsidi4"
@@ -2375,9 +2010,7 @@
 		 (match_operand:DI 3 "register_operand" "r")))]
   ""
   "<su>maddl\\t%0, %w1, %w2, %3"
-  [(set_attr "v8type" "maddl")
-   (set_attr "type" "<su>mlal")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "<su>mlal")]
 )
 
 (define_insn "<su_optab>msubsidi4"
@@ -2389,9 +2022,7 @@
 		   (match_operand:SI 2 "register_operand" "r")))))]
   ""
   "<su>msubl\\t%0, %w1, %w2, %3"
-  [(set_attr "v8type" "maddl")
-   (set_attr "type" "<su>mlal")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "<su>mlal")]
 )
 
 (define_insn "*<su_optab>mulsidi_neg"
@@ -2401,9 +2032,7 @@
 		  (ANY_EXTEND:DI (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "<su>mnegl\\t%0, %w1, %w2"
-  [(set_attr "v8type" "mull")
-   (set_attr "type" "<su>mull")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "<su>mull")]
 )
 
 (define_insn "<su>muldi3_highpart"
@@ -2416,9 +2045,7 @@
 	  (const_int 64))))]
   ""
   "<su>mulh\\t%0, %1, %2"
-  [(set_attr "v8type" "mulh")
-   (set_attr "type" "<su>mull")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "<su>mull")]
 )
 
 (define_insn "<su_optab>div<mode>3"
@@ -2427,9 +2054,7 @@
 		     (match_operand:GPI 2 "register_operand" "r")))]
   ""
   "<su>div\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "<su>div")
-   (set_attr "type" "<su>div")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "<su>div")]
 )
 
 ;; zero_extend version of above
@@ -2440,9 +2065,7 @@
 		     (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "<su>div\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "<su>div")
-   (set_attr "type" "<su>div")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "<su>div")]
 )
 
 ;; -------------------------------------------------------------------
@@ -2458,9 +2081,7 @@
    cmp\\t%<w>0, %<w>1
    cmp\\t%<w>0, %<w>1
    cmn\\t%<w>0, #%n1"
-  [(set_attr "v8type" "alus")
-   (set_attr "type" "alus_reg,alus_imm,alus_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_reg,alus_imm,alus_imm")]
 )
 
 (define_insn "*cmp<mode>"
@@ -2471,9 +2092,7 @@
    "@
     fcmp\\t%<s>0, #0.0
     fcmp\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "fcmp")
-   (set_attr "type" "fcmp<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fcmp<s>")]
 )
 
 (define_insn "*cmpe<mode>"
@@ -2484,9 +2103,7 @@
    "@
     fcmpe\\t%<s>0, #0.0
     fcmpe\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "fcmp")
-   (set_attr "type" "fcmp<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fcmp<s>")]
 )
 
 (define_insn "*cmp_swp_<shift>_reg<mode>"
@@ -2497,9 +2114,7 @@
 			(match_operand:GPI 2 "aarch64_reg_or_zero" "rZ")))]
   ""
   "cmp\\t%<w>2, %<w>0, <shift> %1"
-  [(set_attr "v8type" "alus_shift")
-   (set_attr "type" "alus_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn "*cmp_swp_<optab><ALLX:mode>_reg<GPI:mode>"
@@ -2509,9 +2124,7 @@
 			(match_operand:GPI 1 "register_operand" "r")))]
   ""
   "cmp\\t%<GPI:w>1, %<GPI:w>0, <su>xt<ALLX:size>"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 (define_insn "*cmp_swp_<optab><ALLX:mode>_shft_<GPI:mode>"
@@ -2523,9 +2136,7 @@
 	(match_operand:GPI 2 "register_operand" "r")))]
   ""
   "cmp\\t%<GPI:w>2, %<GPI:w>0, <su>xt<ALLX:size> %1"
-  [(set_attr "v8type" "alus_ext")
-   (set_attr "type" "alus_ext")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "alus_ext")]
 )
 
 ;; -------------------------------------------------------------------
@@ -2564,9 +2175,7 @@
 	 [(match_operand 2 "cc_register" "") (const_int 0)]))]
   ""
   "cset\\t%<w>0, %m1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "csel")]
 )
 
 ;; zero_extend version of the above
@@ -2577,9 +2186,7 @@
 	  [(match_operand 2 "cc_register" "") (const_int 0)])))]
   ""
   "cset\\t%w0, %m1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "csel")]
 )
 
 (define_insn "cstore<mode>_neg"
@@ -2588,9 +2195,7 @@
 		  [(match_operand 2 "cc_register" "") (const_int 0)])))]
   ""
   "csetm\\t%<w>0, %m1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "csel")]
 )
 
 ;; zero_extend version of the above
@@ -2601,9 +2206,7 @@
 		  [(match_operand 2 "cc_register" "") (const_int 0)]))))]
   ""
   "csetm\\t%w0, %m1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "csel")]
 )
 
 (define_expand "cmov<mode>6"
@@ -2656,9 +2259,7 @@
    csinc\\t%<w>0, %<w>4, <w>zr, %M1
    mov\\t%<w>0, -1
    mov\\t%<w>0, 1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "csel")]
 )
 
 ;; zero_extend version of above
@@ -2681,9 +2282,7 @@
    csinc\\t%w0, %w4, wzr, %M1
    mov\\t%w0, -1
    mov\\t%w0, 1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "csel")]
 )
 
 (define_insn "*cmov<mode>_insn"
@@ -2695,9 +2294,7 @@
 	 (match_operand:GPF 4 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcsel\\t%<s>0, %<s>3, %<s>4, %m1"
-  [(set_attr "v8type" "fcsel")
-   (set_attr "type" "fcsel")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fcsel")]
 )
 
 (define_expand "mov<mode>cc"
@@ -2745,9 +2342,8 @@
 		 (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "csinc\\t%<w>0, %<w>1, %<w>1, %M2"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "csel")]
+)
 
 (define_insn "csinc3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2759,9 +2355,7 @@
 	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
   ""
   "csinc\\t%<w>0, %<w>4, %<w>3, %M1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "csel")]
 )
 
 (define_insn "*csinv3<mode>_insn"
@@ -2773,9 +2367,8 @@
 	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
   ""
   "csinv\\t%<w>0, %<w>4, %<w>3, %M1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "csel")]
+)
 
 (define_insn "*csneg3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2786,9 +2379,8 @@
 	  (match_operand:GPI 4 "aarch64_reg_or_zero" "rZ")))]
   ""
   "csneg\\t%<w>0, %<w>4, %<w>3, %M1"
-  [(set_attr "v8type" "csel")
-   (set_attr "type" "csel")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "csel")]
+)
 
 ;; -------------------------------------------------------------------
 ;; Logical operations
@@ -2800,9 +2392,8 @@
 		     (match_operand:GPI 2 "aarch64_logical_operand" "r,<lconst>")))]
   ""
   "<logical>\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "logic,logic_imm")
-   (set_attr "type" "logic_reg,logic_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logic_reg,logic_imm")]
+)
 
 ;; zero_extend version of above
 (define_insn "*<optab>si3_uxtw"
@@ -2812,9 +2403,8 @@
 		     (match_operand:SI 2 "aarch64_logical_operand" "r,K"))))]
   ""
   "<logical>\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "logic,logic_imm")
-   (set_attr "type" "logic_reg,logic_imm")
-   (set_attr "mode" "SI")])
+  [(set_attr "type" "logic_reg,logic_imm")]
+)
 
 (define_insn "*and<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -2826,9 +2416,7 @@
 	(and:GPI (match_dup 1) (match_dup 2)))]
   ""
   "ands\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "logics,logics_imm")
-   (set_attr "type" "logics_reg,logics_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "logics_reg,logics_imm")]
 )
 
 ;; zero_extend version of above
@@ -2842,9 +2430,7 @@
 	(zero_extend:DI (and:SI (match_dup 1) (match_dup 2))))]
   ""
   "ands\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "logics,logics_imm")
-   (set_attr "type" "logics_reg,logics_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "logics_reg,logics_imm")]
 )
 
 (define_insn "*and_<SHIFT:optab><mode>3_compare0"
@@ -2859,9 +2445,7 @@
 	(and:GPI (SHIFT:GPI (match_dup 1) (match_dup 2)) (match_dup 3)))]
   ""
   "ands\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logics_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "logics_shift_imm")]
 )
 
 ;; zero_extend version of above
@@ -2878,9 +2462,7 @@
 				(match_dup 3))))]
   ""
   "ands\\t%w0, %w3, %w1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logics_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "logics_shift_imm")]
 )
 
 (define_insn "*<LOGICAL:optab>_<SHIFT:optab><mode>3"
@@ -2891,9 +2473,8 @@
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "<LOGICAL:logical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logic_shift")
-   (set_attr "type" "logic_shift_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logic_shift_imm")]
+)
 
 ;; zero_extend version of above
 (define_insn "*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw"
@@ -2905,18 +2486,16 @@
 		     (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "<LOGICAL:logical>\\t%w0, %w3, %w1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logic_shift")
-   (set_attr "type" "logic_shift_imm")
-   (set_attr "mode" "SI")])
+  [(set_attr "type" "logic_shift_imm")]
+)
 
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(not:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "mvn\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "logic")
-   (set_attr "type" "logic_reg")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logic_reg")]
+)
 
 (define_insn "*one_cmpl_<optab><mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2924,9 +2503,8 @@
 			    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
   "mvn\\t%<w>0, %<w>1, <shift> %2"
-  [(set_attr "v8type" "logic_shift")
-   (set_attr "type" "logic_shift_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logic_shift_imm")]
+)
 
 (define_insn "*<LOGICAL:optab>_one_cmpl<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2935,9 +2513,8 @@
 		     (match_operand:GPI 2 "register_operand" "r")))]
   ""
   "<LOGICAL:nlogical>\\t%<w>0, %<w>2, %<w>1"
-  [(set_attr "v8type" "logic")
-   (set_attr "type" "logic_reg")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logic_reg")]
+)
 
 (define_insn "*and_one_cmpl<mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -2950,9 +2527,8 @@
 	(and:GPI (not:GPI (match_dup 1)) (match_dup 2)))]
   ""
   "bics\\t%<w>0, %<w>2, %<w>1"
-  [(set_attr "v8type" "logics")
-   (set_attr "type" "logics_reg")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logics_reg")]
+)
 
 ;; zero_extend version of above
 (define_insn "*and_one_cmplsi3_compare0_uxtw"
@@ -2966,9 +2542,8 @@
 	(zero_extend:DI (and:SI (not:SI (match_dup 1)) (match_dup 2))))]
   ""
   "bics\\t%w0, %w2, %w1"
-  [(set_attr "v8type" "logics")
-   (set_attr "type" "logics_reg")
-   (set_attr "mode" "SI")])
+  [(set_attr "type" "logics_reg")]
+)
 
 (define_insn "*<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
@@ -2979,9 +2554,8 @@
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "<LOGICAL:nlogical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logic_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logics_shift_imm")]
+)
 
 (define_insn "*and_one_cmpl_<SHIFT:optab><mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -2998,9 +2572,8 @@
 		   (match_dup 1) (match_dup 2))) (match_dup 3)))]
   ""
   "bics\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logics_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logics_shift_imm")]
+)
 
 ;; zero_extend version of above
 (define_insn "*and_one_cmpl_<SHIFT:optab>si3_compare0_uxtw"
@@ -3018,18 +2591,16 @@
 			  (SHIFT:SI (match_dup 1) (match_dup 2))) (match_dup 3))))]
   ""
   "bics\\t%w0, %w3, %w1, <SHIFT:shift> %2"
-  [(set_attr "v8type" "logics_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "SI")])
+  [(set_attr "type" "logics_shift_imm")]
+)
 
 (define_insn "clz<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(clz:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "clz\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "clz")
-   (set_attr "type" "clz")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "clz")]
+)
 
 (define_expand "ffs<mode>2"
   [(match_operand:GPI 0 "register_operand")
@@ -3051,18 +2622,16 @@
 	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_CLS))]
   ""
   "cls\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "clz")
-   (set_attr "type" "clz")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "clz")]
+)
 
 (define_insn "rbit<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_RBIT))]
   ""
   "rbit\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "rbit")
-   (set_attr "type" "rbit")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "rbit")]
+)
 
 (define_expand "ctz<mode>2"
   [(match_operand:GPI 0 "register_operand")
@@ -3083,9 +2652,8 @@
 	 (const_int 0)))]
   ""
   "tst\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "logics")
-   (set_attr "type" "logics_reg")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logics_reg")]
+)
 
 (define_insn "*and_<SHIFT:optab><mode>3nr_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -3097,9 +2665,8 @@
 	(const_int 0)))]
   ""
   "tst\\t%<w>2, %<w>0, <SHIFT:shift> %1"
-  [(set_attr "v8type" "logics_shift")
-   (set_attr "type" "logics_shift_imm")
-   (set_attr "mode" "<MODE>")])
+  [(set_attr "type" "logics_shift_imm")]
+)
 
 ;; -------------------------------------------------------------------
 ;; Shifts
@@ -3200,9 +2767,7 @@
    ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
    lsl\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "neon_shift_imm<q>, neon_shift_reg<q>,shift_reg")
-   (set_attr "mode" "*,*,<MODE>")]
+   (set_attr "type" "neon_shift_imm<q>, neon_shift_reg<q>,shift_reg")]
 )
 
 ;; Logical right shift using SISD or Integer instruction
@@ -3217,9 +2782,7 @@
    #
    lsr\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")
-   (set_attr "mode" "*,*,<MODE>")]
+   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")]
 )
 
 (define_split
@@ -3260,9 +2823,7 @@
    #
    asr\t%<w>0, %<w>1, %<w>2"
   [(set_attr "simd" "yes,yes,no")
-   (set_attr "v8type" "*,*,shift")
-   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")
-   (set_attr "mode" "*,*,<MODE>")]
+   (set_attr "type" "neon_shift_imm<q>,neon_shift_reg<q>,shift_reg")]
 )
 
 (define_split
@@ -3353,9 +2914,7 @@
           (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "rUs<cmode>")))]
   ""
   "ror\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "shift_reg")]
 )
 
 ;; zero_extend version of above
@@ -3366,9 +2925,7 @@
 	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_si" "rUss"))))]
   ""
   "<shift>\\t%w0, %w1, %w2"
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_reg")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "shift_reg")]
 )
 
 (define_insn "*ashl<mode>3_insn"
@@ -3377,9 +2934,7 @@
 		      (match_operand:QI 2 "aarch64_reg_or_shift_imm_si" "rUss")))]
   ""
   "lsl\\t%<w>0, %<w>1, %<w>2"
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "shift_reg")]
 )
 
 (define_insn "*<optab><mode>3_insn"
@@ -3391,9 +2946,7 @@
   operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
   return "<bfshift>\t%w0, %w1, %2, %3";
 }
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "*extr<mode>5_insn"
@@ -3405,9 +2958,7 @@
   "UINTVAL (operands[3]) < GET_MODE_BITSIZE (<MODE>mode) &&
    (UINTVAL (operands[3]) + UINTVAL (operands[4]) == GET_MODE_BITSIZE (<MODE>mode))"
   "extr\\t%<w>0, %<w>1, %<w>2, %4"
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "shift_imm")]
 )
 
 ;; zero_extend version of the above
@@ -3421,9 +2972,7 @@
   "UINTVAL (operands[3]) < 32 &&
    (UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32)"
   "extr\\t%w0, %w1, %w2, %4"
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "shift_imm")]
 )
 
 (define_insn "*ror<mode>3_insn"
@@ -3435,9 +2984,7 @@
   operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
   return "ror\\t%<w>0, %<w>1, %3";
 }
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_imm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "shift_imm")]
 )
 
 ;; zero_extend version of the above
@@ -3451,9 +2998,7 @@
   operands[3] = GEN_INT (32 - UINTVAL (operands[2]));
   return "ror\\t%w0, %w1, %3";
 }
-  [(set_attr "v8type" "shift")
-   (set_attr "type" "shift_imm")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "shift_imm")]
 )
 
 (define_insn "*<ANY_EXTEND:optab><GPI:mode>_ashl<SHORT:mode>"
@@ -3466,9 +3011,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "<su>bfiz\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "*zero_extend<GPI:mode>_lshr<SHORT:mode>"
@@ -3481,9 +3024,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "ubfx\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "*extend<GPI:mode>_ashr<SHORT:mode>"
@@ -3496,9 +3037,7 @@
   operands[3] = GEN_INT (<SHORT:sizen> - UINTVAL (operands[2]));
   return "sbfx\\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 ;; -------------------------------------------------------------------
@@ -3521,9 +3060,7 @@
 			 (match_operand 3 "const_int_operand" "n")))]
   ""
   "<su>bfx\\t%<w>0, %<w>1, %3, %2"
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 ;; Bitfield Insert (insv)
@@ -3566,9 +3103,7 @@
      || (UINTVAL (operands[2]) + UINTVAL (operands[1])
 	 > GET_MODE_BITSIZE (<MODE>mode)))"
   "bfi\\t%<w>0, %<w>3, %2, %1"
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "*extr_insv_lower_reg<mode>"
@@ -3582,9 +3117,7 @@
      || (UINTVAL (operands[3]) + UINTVAL (operands[1])
 	 > GET_MODE_BITSIZE (<MODE>mode)))"
   "bfxil\\t%<w>0, %<w>2, %3, %1"
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "*<optab><ALLX:mode>_shft_<GPI:mode>"
@@ -3599,9 +3132,7 @@
 	      : GEN_INT (<GPI:sizen> - UINTVAL (operands[2]));
   return "<su>bfiz\t%<GPI:w>0, %<GPI:w>1, %2, %3";
 }
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<GPI:MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 ;; XXX We should match (any_extend (ashift)) here, like (and (ashift)) below
@@ -3614,9 +3145,7 @@
   "exact_log2 ((INTVAL (operands[3]) >> INTVAL (operands[2])) + 1) >= 0
    && (INTVAL (operands[3]) & ((1 << INTVAL (operands[2])) - 1)) == 0"
   "ubfiz\\t%<w>0, %<w>1, %2, %P3"
-  [(set_attr "v8type" "bfm")
-   (set_attr "type" "bfm")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "bfm")]
 )
 
 (define_insn "bswap<mode>2"
@@ -3624,9 +3153,7 @@
         (bswap:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "rev\\t%<w>0, %<w>1"
-  [(set_attr "v8type" "rev")
-   (set_attr "type" "rev")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "rev")]
 )
 
 (define_insn "bswaphi2"
@@ -3634,9 +3161,7 @@
         (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
   ""
   "rev16\\t%w0, %w1"
-  [(set_attr "v8type" "rev")
-   (set_attr "type" "rev")
-   (set_attr "mode" "HI")]
+  [(set_attr "type" "rev")]
 )
 
 ;; zero_extend version of above
@@ -3645,9 +3170,7 @@
         (zero_extend:DI (bswap:SI (match_operand:SI 1 "register_operand" "r"))))]
   ""
   "rev\\t%w0, %w1"
-  [(set_attr "v8type" "rev")
-   (set_attr "type" "rev")
-   (set_attr "mode" "SI")]
+  [(set_attr "type" "rev")]
 )
 
 ;; -------------------------------------------------------------------
@@ -3663,9 +3186,7 @@
 	 FRINT))]
   "TARGET_FLOAT"
   "frint<frint_suffix>\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frint")
-   (set_attr "type" "f_rint<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "f_rint<s>")]
 )
 
 ;; frcvt floating-point round to integer and convert standard patterns.
@@ -3676,10 +3197,7 @@
 		      FCVT)))]
   "TARGET_FLOAT"
   "fcvt<frint_suffix><su>\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
+  [(set_attr "type" "f_cvtf2i")]
 )
 
 ;; fma - no throw
@@ -3691,9 +3209,7 @@
 		 (match_operand:GPF 3 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fmadd\\t%<s>0, %<s>1, %<s>2, %<s>3"
-  [(set_attr "v8type" "fmadd")
-   (set_attr "type" "fmac<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmac<s>")]
 )
 
 (define_insn "fnma<mode>4"
@@ -3703,9 +3219,7 @@
 		 (match_operand:GPF 3 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fmsub\\t%<s>0, %<s>1, %<s>2, %<s>3"
-  [(set_attr "v8type" "fmadd")
-   (set_attr "type" "fmac<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmac<s>")]
 )
 
 (define_insn "fms<mode>4"
@@ -3715,9 +3229,7 @@
 		 (neg:GPF (match_operand:GPF 3 "register_operand" "w"))))]
   "TARGET_FLOAT"
   "fnmsub\\t%<s>0, %<s>1, %<s>2, %<s>3"
-  [(set_attr "v8type" "fmadd")
-   (set_attr "type" "fmac<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmac<s>")]
 )
 
 (define_insn "fnms<mode>4"
@@ -3727,9 +3239,7 @@
 		 (neg:GPF (match_operand:GPF 3 "register_operand" "w"))))]
   "TARGET_FLOAT"
   "fnmadd\\t%<s>0, %<s>1, %<s>2, %<s>3"
-  [(set_attr "v8type" "fmadd")
-   (set_attr "type" "fmac<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmac<s>")]
 )
 
 ;; If signed zeros are ignored, -(a * b + c) = -a * b - c.
@@ -3740,9 +3250,7 @@
 			  (match_operand:GPF 3 "register_operand" "w"))))]
   "!HONOR_SIGNED_ZEROS (<MODE>mode) && TARGET_FLOAT"
   "fnmadd\\t%<s>0, %<s>1, %<s>2, %<s>3"
-  [(set_attr "v8type" "fmadd")
-   (set_attr "type" "fmac<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmac<s>")]
 )
 
 ;; -------------------------------------------------------------------
@@ -3754,10 +3262,7 @@
         (float_extend:DF (match_operand:SF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvt\\t%d0, %s1"
-  [(set_attr "v8type" "fcvt")
-   (set_attr "type" "f_cvt")
-   (set_attr "mode" "DF")
-   (set_attr "mode2" "SF")]
+  [(set_attr "type" "f_cvt")]
 )
 
 (define_insn "truncdfsf2"
@@ -3765,10 +3270,7 @@
         (float_truncate:SF (match_operand:DF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvt\\t%s0, %d1"
-  [(set_attr "v8type" "fcvt")
-   (set_attr "type" "f_cvt")
-   (set_attr "mode" "SF")
-   (set_attr "mode2" "DF")]
+  [(set_attr "type" "f_cvt")]
 )
 
 (define_insn "fix_trunc<GPF:mode><GPI:mode>2"
@@ -3776,10 +3278,7 @@
         (fix:GPI (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvtzs\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
+  [(set_attr "type" "f_cvtf2i")]
 )
 
 (define_insn "fixuns_trunc<GPF:mode><GPI:mode>2"
@@ -3787,10 +3286,7 @@
         (unsigned_fix:GPI (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fcvtzu\\t%<GPI:w>0, %<GPF:s>1"
-  [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvtf2i")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
+  [(set_attr "type" "f_cvtf2i")]
 )
 
 (define_insn "float<GPI:mode><GPF:mode>2"
@@ -3798,10 +3294,7 @@
         (float:GPF (match_operand:GPI 1 "register_operand" "r")))]
   "TARGET_FLOAT"
   "scvtf\\t%<GPF:s>0, %<GPI:w>1"
-  [(set_attr "v8type" "fcvti2f")
-   (set_attr "type" "f_cvti2f")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
+  [(set_attr "type" "f_cvti2f")]
 )
 
 (define_insn "floatuns<GPI:mode><GPF:mode>2"
@@ -3809,10 +3302,7 @@
         (unsigned_float:GPF (match_operand:GPI 1 "register_operand" "r")))]
   "TARGET_FLOAT"
   "ucvtf\\t%<GPF:s>0, %<GPI:w>1"
-  [(set_attr "v8type" "fcvt")
-   (set_attr "type" "f_cvt")
-   (set_attr "mode" "<GPF:MODE>")
-   (set_attr "mode2" "<GPI:MODE>")]
+  [(set_attr "type" "f_cvt")]
 )
 
 ;; -------------------------------------------------------------------
@@ -3826,9 +3316,7 @@
          (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fadd\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fadd")
-   (set_attr "type" "fadd<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fadd<s>")]
 )
 
 (define_insn "sub<mode>3"
@@ -3838,9 +3326,7 @@
          (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fsub\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fadd")
-   (set_attr "type" "fadd<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fadd<s>")]
 )
 
 (define_insn "mul<mode>3"
@@ -3850,9 +3336,7 @@
          (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fmul\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fmul")
-   (set_attr "type" "fmul<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmul<s>")]
 )
 
 (define_insn "*fnmul<mode>3"
@@ -3862,9 +3346,7 @@
 		 (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fnmul\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fmul")
-   (set_attr "type" "fmul<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fmul<s>")]
 )
 
 (define_insn "div<mode>3"
@@ -3874,9 +3356,7 @@
          (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fdiv\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fdiv")
-   (set_attr "type" "fdiv<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fdiv<s>")]
 )
 
 (define_insn "neg<mode>2"
@@ -3884,9 +3364,7 @@
         (neg:GPF (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fneg\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "ffarith")
-   (set_attr "type" "ffarith<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "ffarith<s>")]
 )
 
 (define_insn "sqrt<mode>2"
@@ -3894,9 +3372,7 @@
         (sqrt:GPF (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fsqrt\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "fsqrt")
-   (set_attr "type" "fsqrt<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "fsqrt<s>")]
 )
 
 (define_insn "abs<mode>2"
@@ -3904,9 +3380,7 @@
         (abs:GPF (match_operand:GPF 1 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fabs\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "ffarith")
-   (set_attr "type" "ffarith<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "ffarith<s>")]
 )
 
 ;; Given that smax/smin do not specify the result when either input is NaN,
@@ -3919,9 +3393,7 @@
 		  (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fmaxnm\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fminmax")
-   (set_attr "type" "f_minmax<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "f_minmax<s>")]
 )
 
 (define_insn "smin<mode>3"
@@ -3930,9 +3402,7 @@
 		  (match_operand:GPF 2 "register_operand" "w")))]
   "TARGET_FLOAT"
   "fminnm\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "fminmax")
-   (set_attr "type" "f_minmax<s>")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "f_minmax<s>")]
 )
 
 ;; -------------------------------------------------------------------
@@ -3958,15 +3428,13 @@
 ;; The following secondary reload helpers patterns are invoked
 ;; after or during reload as we don't want these patterns to start
 ;; kicking in during the combiner.
- 
+
 (define_insn "aarch64_movdi_<mode>low"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (truncate:DI (match_operand:TX 1 "register_operand" "w")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %d1"
-  [(set_attr "v8type" "fmovf2i")
-   (set_attr "type" "f_mrc")
-   (set_attr "mode"   "DI")
+  [(set_attr "type" "f_mrc")
    (set_attr "length" "4")
   ])
 
@@ -3977,9 +3445,7 @@
 		       (const_int 64))))]
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %1.d[1]"
-  [(set_attr "v8type" "fmovf2i")
-   (set_attr "type" "f_mrc")
-   (set_attr "mode"   "DI")
+  [(set_attr "type" "f_mrc")
    (set_attr "length" "4")
   ])
 
@@ -3989,9 +3455,7 @@
         (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%0.d[1], %x1"
-  [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "f_mcr")
-   (set_attr "mode"   "DI")
+  [(set_attr "type" "f_mcr")
    (set_attr "length" "4")
   ])
 
@@ -4000,9 +3464,7 @@
         (zero_extend:TX (match_operand:DI 1 "register_operand" "r")))]
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %x1"
-  [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "f_mcr")
-   (set_attr "mode"   "DI")
+  [(set_attr "type" "f_mcr")
    (set_attr "length" "4")
   ])
 
@@ -4012,9 +3474,7 @@
 	  (truncate:DI (match_operand:TI 1 "register_operand" "w"))))]
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %d1"
-  [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "f_mcr")
-   (set_attr "mode"   "DI")
+  [(set_attr "type" "f_mcr")
    (set_attr "length" "4")
   ])
 
@@ -4045,9 +3505,7 @@
 		  (match_operand 2 "aarch64_valid_symref" "S")))]
   ""
   "add\\t%<w>0, %<w>1, :lo12:%a2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "alu_reg")]
 )
 
 (define_insn "ldr_got_small_<mode>"
@@ -4058,9 +3516,7 @@
 		    UNSPEC_GOTSMALLPIC))]
   ""
   "ldr\\t%<w>0, [%1, #:got_lo12:%a2]"
-  [(set_attr "v8type" "load1")
-   (set_attr "type" "load1")
-   (set_attr "mode" "<MODE>")]
+  [(set_attr "type" "load1")]
 )
 
 (define_insn "ldr_got_small_sidi"
@@ -4072,9 +3528,7 @@
 		    UNSPEC_GOTSMALLPIC)))]
   "TARGET_ILP32"
   "ldr\\t%w0, [%1, #:got_lo12:%a2]"
-  [(set_attr "v8type" "load1")
-   (set_attr "type" "load1")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "load1")]
 )
 
 (define_insn "ldr_got_tiny"
@@ -4083,9 +3537,7 @@
 		   UNSPEC_GOTTINYPIC))]
   ""
   "ldr\\t%0, %L1"
-  [(set_attr "v8type" "load1")
-   (set_attr "type" "load1")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "load1")]
 )
 
 (define_insn "aarch64_load_tp_hard"
@@ -4093,9 +3545,7 @@
 	(unspec:DI [(const_int 0)] UNSPEC_TLS))]
   ""
   "mrs\\t%0, tpidr_el0"
-  [(set_attr "v8type" "mrs")
-   (set_attr "type" "mrs")
-   (set_attr "mode" "DI")]
+  [(set_attr "type" "mrs")]
 )
 
 ;; The TLS ABI specifically requires that the compiler does not schedule
@@ -4119,8 +3569,7 @@
   ]
   ""
   "adrp\\tx0, %A1\;add\\tx0, x0, %L1\;bl\\t%2\;nop"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")
+  [(set_attr "type" "call")
    (set_attr "length" "16")])
 
 (define_insn "tlsie_small"
@@ -4129,9 +3578,7 @@
 		   UNSPEC_GOTSMALLTLS))]
   ""
   "adrp\\t%0, %A1\;ldr\\t%0, [%0, #%L1]"
-  [(set_attr "v8type" "load1")
-   (set_attr "type" "load1")
-   (set_attr "mode" "DI")
+  [(set_attr "type" "load1")
    (set_attr "length" "8")]
 )
 
@@ -4142,9 +3589,7 @@
 		   UNSPEC_GOTSMALLTLS))]
   ""
   "add\\t%0, %1, #%G2\;add\\t%0, %0, #%L2"
-  [(set_attr "v8type" "alu")
-   (set_attr "type" "alu_reg")
-   (set_attr "mode" "DI")
+  [(set_attr "type" "alu_reg")
    (set_attr "length" "8")]
 )
 
@@ -4156,8 +3601,7 @@
    (clobber (match_scratch:DI 1 "=r"))]
   "TARGET_TLS_DESC"
   "adrp\\tx0, %A0\;ldr\\t%1, [x0, #%L0]\;add\\tx0, x0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
-  [(set_attr "v8type" "call")
-   (set_attr "type" "call")
+  [(set_attr "type" "call")
    (set_attr "length" "16")])
 
 (define_insn "stack_tie"

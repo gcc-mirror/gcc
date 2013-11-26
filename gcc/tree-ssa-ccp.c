@@ -114,11 +114,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stor-layout.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -126,6 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "stringpool.h"
 #include "tree-ssanames.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
@@ -135,7 +144,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "dbgcnt.h"
 #include "params.h"
-#include "hash-table.h"
 
 
 /* Possible lattice values.  */
@@ -1487,18 +1495,18 @@ bit_value_assume_aligned (gimple stmt)
 	       && TREE_CODE (ptrval.value) == INTEGER_CST)
 	      || ptrval.mask.is_minus_one ());
   align = gimple_call_arg (stmt, 1);
-  if (!host_integerp (align, 1))
+  if (!tree_fits_uhwi_p (align))
     return ptrval;
-  aligni = tree_low_cst (align, 1);
+  aligni = tree_to_uhwi (align);
   if (aligni <= 1
       || (aligni & (aligni - 1)) != 0)
     return ptrval;
   if (gimple_call_num_args (stmt) > 2)
     {
       misalign = gimple_call_arg (stmt, 2);
-      if (!host_integerp (misalign, 1))
+      if (!tree_fits_uhwi_p (misalign))
 	return ptrval;
-      misaligni = tree_low_cst (misalign, 1);
+      misaligni = tree_to_uhwi (misalign);
       if (misaligni >= aligni)
 	return ptrval;
     }
@@ -1764,7 +1772,7 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
-typedef hash_table <pointer_hash <gimple_statement_d> > gimple_htab;
+typedef hash_table <pointer_hash <gimple_statement_base> > gimple_htab;
 
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
@@ -1822,7 +1830,7 @@ gsi_prev_dom_bb_nondebug (gimple_stmt_iterator *i)
   while (gsi_end_p (*i))
     {
       dom = get_immediate_dominator (CDI_DOMINATORS, i->bb);
-      if (dom == NULL || dom == ENTRY_BLOCK_PTR)
+      if (dom == NULL || dom == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	return;
 
       *i = gsi_last_bb (dom);
@@ -1881,10 +1889,10 @@ fold_builtin_alloca_with_align (gimple stmt)
   arg = get_constant_value (gimple_call_arg (stmt, 0));
   if (arg == NULL_TREE
       || TREE_CODE (arg) != INTEGER_CST
-      || !host_integerp (arg, 1))
+      || !tree_fits_uhwi_p (arg))
     return NULL_TREE;
 
-  size = TREE_INT_CST_LOW (arg);
+  size = tree_to_uhwi (arg);
 
   /* Heuristic: don't fold large allocas.  */
   threshold = (unsigned HOST_WIDE_INT)PARAM_VALUE (PARAM_LARGE_STACK_FRAME);
@@ -2312,7 +2320,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
     case 0:
       break;
     case 1:
-      if (single_succ_edge (bb)->dest != EXIT_BLOCK_PTR)
+      if (single_succ_edge (bb)->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return NULL_TREE;
       break;
     default:

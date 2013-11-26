@@ -26,6 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
+#include "calls.h"
+#include "varasm.h"
 #include "flags.h"
 #include "expr.h"
 #include "optabs.h"
@@ -48,6 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "params.h"
 #include "ggc.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "cfgloop.h"
@@ -716,7 +728,9 @@ got_mode_name:;
 
 /* Register SH specific RTL passes.  */
 extern opt_pass* make_pass_sh_treg_combine (gcc::context* ctx, bool split_insns,
-				     const char* name);
+					    const char* name);
+extern opt_pass* make_pass_sh_optimize_sett_clrt (gcc::context* ctx,
+						  const char* name);
 static void
 register_sh_passes (void)
 {
@@ -740,6 +754,13 @@ register_sh_passes (void)
      reordering as this sometimes creates new opportunities.  */
   register_pass (make_pass_sh_treg_combine (g, true, "sh_treg_combine3"),
 		 PASS_POS_INSERT_AFTER, "split4", 1);
+
+  /* Optimize sett and clrt insns, by e.g. removing them if the T bit value
+     is known after a conditional branch.
+     This must be done after basic blocks and branch conditions have
+     stabilized and won't be changed by further passes.  */
+  register_pass (make_pass_sh_optimize_sett_clrt (g, "sh_optimize_sett_clrt"),
+		 PASS_POS_INSERT_BEFORE, "sched2", 1);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 

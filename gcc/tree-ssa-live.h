@@ -273,8 +273,8 @@ static inline bitmap
 live_on_entry (tree_live_info_p live, basic_block bb)
 {
   gcc_checking_assert (live->livein
-		       && bb != ENTRY_BLOCK_PTR
-		       && bb != EXIT_BLOCK_PTR);
+		       && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+		       && bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   return &live->livein[bb->index];
 }
@@ -287,8 +287,8 @@ static inline bitmap
 live_on_exit (tree_live_info_p live, basic_block bb)
 {
   gcc_checking_assert (live->liveout
-		       && bb != ENTRY_BLOCK_PTR
-		       && bb != EXIT_BLOCK_PTR);
+		       && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+		       && bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   return &live->liveout[bb->index];
 }

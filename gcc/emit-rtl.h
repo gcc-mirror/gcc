@@ -113,4 +113,7 @@ get_max_uid (void)
 {
   return crtl->emit.x_cur_insn_uid;
 }
+
+extern void set_decl_incoming_rtl (tree, rtx, bool);
+
 #endif /* GCC_EMIT_RTL_H */

@@ -19,7 +19,7 @@ package syscall
 //mmap64(addr *byte, length Size_t, prot _C_int, flags _C_int, fd _C_int, offset Offset_t) *byte
 
 //sys	Open(path string, mode int, perm uint32) (fd int, err error)
-//open64(path *byte, mode _C_int, perm Mode_t) _C_int
+//__go_open64(path *byte, mode _C_int, perm Mode_t) _C_int
 
 //sys	Pread(fd int, p []byte, offset int64) (n int, err error)
 //pread64(fd _C_int, buf *byte, count Size_t, offset Offset_t) Ssize_t

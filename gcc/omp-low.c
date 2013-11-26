@@ -26,7 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "stor-layout.h"
 #include "rtl.h"
+#include "pointer-set.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -43,13 +52,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "tree-ssanames.h"
 #include "tree-into-ssa.h"
+#include "expr.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "ggc.h"
 #include "except.h"
 #include "splay-tree.h"
 #include "optabs.h"
@@ -2290,8 +2299,8 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 			: "#pragma omp cancellation point");
 	      return false;
 	    }
-	  switch (host_integerp (gimple_call_arg (stmt, 0), 0)
-		  ? tree_low_cst (gimple_call_arg (stmt, 0), 0)
+	  switch (tree_fits_shwi_p (gimple_call_arg (stmt, 0))
+		  ? tree_to_shwi (gimple_call_arg (stmt, 0))
 		  : 0)
 	    {
 	    case 1:
@@ -2954,7 +2963,7 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx, int &max_vf,
 				    OMP_CLAUSE_SAFELEN);
 	  if (c
 	      && compare_tree_int (OMP_CLAUSE_SAFELEN_EXPR (c), max_vf) == -1)
-	    max_vf = tree_low_cst (OMP_CLAUSE_SAFELEN_EXPR (c), 0);
+	    max_vf = tree_to_shwi (OMP_CLAUSE_SAFELEN_EXPR (c));
 	}
       if (max_vf > 1)
 	{
@@ -6769,12 +6778,11 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       else
 	{
 	  safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
-	  if (!host_integerp (safelen, 1)
-	      || (unsigned HOST_WIDE_INT) tree_low_cst (safelen, 1)
-		 > INT_MAX)
+	  if (!tree_fits_uhwi_p (safelen)
+	      || tree_to_uhwi (safelen) > INT_MAX)
 	    loop->safelen = INT_MAX;
 	  else
-	    loop->safelen = tree_low_cst (safelen, 1);
+	    loop->safelen = tree_to_uhwi (safelen);
 	  if (loop->safelen == 1)
 	    loop->safelen = 0;
 	}
@@ -6899,7 +6907,6 @@ static void
 expand_omp_sections (struct omp_region *region)
 {
   tree t, u, vin = NULL, vmain, vnext, l2;
-  vec<tree> label_vec;
   unsigned len;
   basic_block entry_bb, l0_bb, l1_bb, l2_bb, default_bb;
   gimple_stmt_iterator si, switch_si;
@@ -6952,7 +6959,7 @@ expand_omp_sections (struct omp_region *region)
 
   /* Use vec::quick_push on label_vec throughout, since we know the size
      in advance.  */
-  label_vec.create (len);
+  auto_vec<tree> label_vec (len);
 
   /* The call to GOMP_sections_start goes in ENTRY_BB, replacing the
      GIMPLE_OMP_SECTIONS statement.  */
@@ -7048,7 +7055,6 @@ expand_omp_sections (struct omp_region *region)
   stmt = gimple_build_switch (vmain, u, label_vec);
   gsi_insert_after (&switch_si, stmt, GSI_SAME_STMT);
   gsi_remove (&switch_si, true);
-  label_vec.release ();
 
   si = gsi_start_bb (default_bb);
   stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
@@ -7678,7 +7684,7 @@ expand_omp_atomic (struct omp_region *region)
   HOST_WIDE_INT index;
 
   /* Make sure the type is one of the supported sizes.  */
-  index = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  index = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   index = exact_log2 (index);
   if (index >= 0 && index <= 4)
     {
@@ -8233,7 +8239,7 @@ build_omp_regions (void)
 {
   gcc_assert (root_omp_region == NULL);
   calculate_dominance_info (CDI_DOMINATORS);
-  build_omp_regions_1 (ENTRY_BLOCK_PTR, NULL, false);
+  build_omp_regions_1 (ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, false);
 }
 
 /* Main entry point for expanding OMP-GIMPLE into runtime calls.  */
@@ -8349,11 +8355,10 @@ lower_omp_sections (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple_stmt_iterator tgsi;
   gimple stmt, new_stmt, bind, t;
   gimple_seq ilist, dlist, olist, new_body;
-  struct gimplify_ctx gctx;
 
   stmt = gsi_stmt (*gsi_p);
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   dlist = NULL;
   ilist = NULL;
@@ -8559,9 +8564,8 @@ lower_omp_single (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   tree block;
   gimple t, bind, single_stmt = gsi_stmt (*gsi_p);
   gimple_seq bind_body, bind_body_tail = NULL, dlist;
-  struct gimplify_ctx gctx;
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
@@ -8619,9 +8623,8 @@ lower_omp_master (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple stmt = gsi_stmt (*gsi_p), bind;
   location_t loc = gimple_location (stmt);
   gimple_seq tseq;
-  struct gimplify_ctx gctx;
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
@@ -8686,9 +8689,8 @@ lower_omp_ordered (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 {
   tree block;
   gimple stmt = gsi_stmt (*gsi_p), bind, x;
-  struct gimplify_ctx gctx;
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
@@ -8732,7 +8734,6 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple stmt = gsi_stmt (*gsi_p), bind;
   location_t loc = gimple_location (stmt);
   gimple_seq tbody;
-  struct gimplify_ctx gctx;
 
   name = gimple_omp_critical_name (stmt);
   if (name)
@@ -8785,7 +8786,7 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       unlock = build_call_expr_loc (loc, unlock, 0);
     }
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   block = make_node (BLOCK);
   bind = gimple_build_bind (NULL, NULL, block);
@@ -8832,9 +8833,9 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 
   /* When possible, use a strict equality expression.  This can let VRP
      type optimizations deduce the value and remove a copy.  */
-  if (host_integerp (fd->loop.step, 0))
+  if (tree_fits_shwi_p (fd->loop.step))
     {
-      HOST_WIDE_INT step = TREE_INT_CST_LOW (fd->loop.step);
+      HOST_WIDE_INT step = tree_to_shwi (fd->loop.step);
       if (step == 1 || step == -1)
 	cond_code = EQ_EXPR;
     }
@@ -8852,7 +8853,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
       /* Optimize: v = 0; is usually cheaper than v = some_other_constant.  */
       vinit = fd->loop.n1;
       if (cond_code == EQ_EXPR
-	  && host_integerp (fd->loop.n2, 0)
+	  && tree_fits_shwi_p (fd->loop.n2)
 	  && ! integer_zerop (fd->loop.n2))
 	vinit = build_int_cst (TREE_TYPE (fd->loop.v), 0);
       else
@@ -8875,9 +8876,8 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple stmt = gsi_stmt (*gsi_p), new_stmt;
   gimple_seq omp_for_body, body, dlist;
   size_t i;
-  struct gimplify_ctx gctx;
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   lower_omp (gimple_omp_for_pre_body_ptr (stmt), ctx);
 
@@ -9092,7 +9092,6 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
   bool record_needs_remap = false, srecord_needs_remap = false;
   splay_tree_node n;
   struct omp_taskcopy_context tcctx;
-  struct gimplify_ctx gctx;
   location_t loc = gimple_location (task_stmt);
 
   child_fn = gimple_omp_task_copy_fn (task_stmt);
@@ -9105,7 +9104,7 @@ create_task_copyfn (gimple task_stmt, omp_context *ctx)
     DECL_CONTEXT (t) = child_fn;
 
   /* Populate the function.  */
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
   push_cfun (child_cfun);
 
   bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
@@ -9385,7 +9384,6 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple stmt = gsi_stmt (*gsi_p);
   gimple par_bind, bind, dep_bind = NULL;
   gimple_seq par_body, olist, ilist, par_olist, par_rlist, par_ilist, new_body;
-  struct gimplify_ctx gctx, dep_gctx;
   location_t loc = gimple_location (stmt);
 
   clauses = gimple_omp_taskreg_clauses (stmt);
@@ -9410,7 +9408,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (gimple_code (stmt) == GIMPLE_OMP_TASK
       && find_omp_clause (clauses, OMP_CLAUSE_DEPEND))
     {
-      push_gimplify_context (&dep_gctx);
+      push_gimplify_context ();
       dep_bind = gimple_build_bind (NULL, NULL, make_node (BLOCK));
       lower_depend_clauses (stmt, &dep_ilist, &dep_olist);
     }
@@ -9418,7 +9416,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (ctx->srecord_type)
     create_task_copyfn (stmt, ctx);
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   par_olist = NULL;
   par_ilist = NULL;
@@ -9508,7 +9506,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   gimple stmt = gsi_stmt (*gsi_p);
   gimple tgt_bind = NULL, bind;
   gimple_seq tgt_body = NULL, olist, ilist, new_body;
-  struct gimplify_ctx gctx;
   location_t loc = gimple_location (stmt);
   int kind = gimple_omp_target_kind (stmt);
   unsigned int map_cnt = 0;
@@ -9523,7 +9520,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     tgt_body = gimple_omp_body (stmt);
   child_fn = ctx->cb.dst_fn;
 
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     switch (OMP_CLAUSE_CODE (c))
@@ -9809,8 +9806,7 @@ static void
 lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 {
   gimple teams_stmt = gsi_stmt (*gsi_p);
-  struct gimplify_ctx gctx;
-  push_gimplify_context (&gctx);
+  push_gimplify_context ();
 
   tree block = make_node (BLOCK);
   gimple bind = gimple_build_bind (NULL, NULL, block);
@@ -10103,10 +10099,8 @@ execute_lower_omp (void)
 
   if (all_contexts->root)
     {
-      struct gimplify_ctx gctx;
-
       if (task_shared_vars)
-	push_gimplify_context (&gctx);
+	push_gimplify_context ();
       lower_omp (&body, NULL);
       if (task_shared_vars)
 	pop_gimplify_context (NULL);

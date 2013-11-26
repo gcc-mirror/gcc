@@ -154,7 +154,7 @@ ipa_dump_references (FILE * file, struct ipa_ref_list *list)
   for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
     {
       fprintf (file, "%s/%i (%s)",
-               symtab_node_asm_name (ref->referred),
+               ref->referred->asm_name (),
                ref->referred->order,
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)
@@ -173,7 +173,7 @@ ipa_dump_referring (FILE * file, struct ipa_ref_list *list)
   for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
     {
       fprintf (file, "%s/%i (%s)",
-               symtab_node_asm_name (ref->referring),
+               ref->referring->asm_name (),
                ref->referring->order,
 	       ipa_ref_use_name [ref->use]);
       if (ref->speculative)

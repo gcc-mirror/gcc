@@ -1,3 +1,102 @@
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.h (ubsan_instrument_return): New prototype.
+	* c-ubsan.c (ubsan_instrument_return): New function.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-common.c: Add required include files from gimple.h.
+	* c-gimplify.c: Likewise
+	* cilk.c: Likewise
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (unsafe_conversion_p): Remove use of
+	EXPR_LOC_OR_HERE macro.
+	(conversion_warning): Likewise.
+	(warnings_for_convert_and_check): Likewise.
+	(warn_for_collisions_1): Likewise.
+	(shorten_compare): Likewise, and remove use of in_system_header
+	macro, using the location from the former.
+	* c-lex.c (dump_one_header): Remove use of input_filename macro.
+	(cb_def_pragma): Remove use of in_system_header macro.
+	(lex_string): Likewise.
+	* c-pragma.c (handle_pragma_float_const_decimal64): Likewise.
+
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+	    Mike Stump  <mikestump@comcast.net>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-ada-spec.c (is_simple_enum): Use tree_to_shwi and tree_to_uhwi
+	instead of TREE_INT_CST_LOW, in cases where there is a protecting
+	tree_fits_shwi_p or tree_fits_uhwi_p.
+	(dump_generic_ada_node): Likewise.
+	* c-format.c (check_format_arg): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+
+2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* c-common.c (check_function_arguments_recurse): Use tree_to_uhwi.
+
+2013-11-19  Joshua J Cogliati  <jrincayc@yahoo.com>
+
+	PR c/53001
+	* c-common.c (unsafe_conversion_p): Make this function
+	return an enumeration with more detail.
+	(conversion_warning): Use the new return type of
+	unsafe_conversion_p to separately warn either about conversions
+	that lower floating point number precision or about the other
+	kinds of conversions.
+	* c-common.h (enum conversion_safety): New enumeration.
+ 	(unsafe_conversion_p): switching return type to
+ 	conversion_safety enumeration.
+	* c.opt: Adding new warning -Wfloat-conversion and
+	enabling it with -Wconversion.
+
+2013-11-19  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * c-opts.c: Include plugin.h.
+        (cb_file_change): Invoke plugin event PLUGIN_INCLUDE_FILE.
+
+2013-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* c-ubsan.c (ubsan_instrument_division): Adjust ubsan_create_data
+	call.
+	(ubsan_instrument_shift): Likewise.
+	(ubsan_instrument_vla): Likewise.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-common.c (convert_vector_to_pointer_for_subscript): Remove
+	cast to unsigned type.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-common.c (fold_offsetof_1): Use tree_to_uhwi rather than
+	tree_low_cst.
+	(complete_array_type): Update comment to refer to tree_to_[su]hwi
+	rather than tree_low_cst.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-common.c, c-cppbuiltin.c: Replace tree_low_cst (..., 1) with
+	tree_to_uhwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-common.c, c-format.c, c-omp.c, c-pretty-print.c: Replace
+	tree_low_cst (..., 0) with tree_to_shwi throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-ada-spec.c, c-common.c, c-pretty-print.c: Replace
+	host_integerp (..., 1) with tree_fits_uhwi_p throughout.
+
+2013-11-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-ada-spec.c, c-common.c, c-format.c, c-pretty-print.c: Replace
+	host_integerp (..., 0) with tree_fits_shwi_p throughout.
+
 2013-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-cilkplus.c: New file.
@@ -23,6 +122,29 @@
 	* c-common.c: Likewise.
 	* c-gimplify.c: Likewise.
 	* cilk.c: Likewise.
+
+2013-11-14  Diego Novillo  <dnovillo@google.com>
+
+	* c-common.c: Include fold-const.h.
+	Include stor-layout.h.
+	Include calls.h.
+	Include stringpool.h.
+	Include attribs.h.
+	Include varasm.h.
+	Include trans-mem.h.
+	* c-cppbuiltin.c: Include stor-layout.h.
+	Include stringpool.h.
+	* c-format.c: Include stringpool.h.
+	* c-lex.c: Include stringpool.h.
+	Include stor-layout.h.
+	* c-pragma.c: Include stringpool.h.
+	Include attribs.h.
+	Include varasm.h.
+	Include gcc-symtab.h.
+	* c-pretty-print.c: Include stor-layout.h.
+	Include attribs.h.
+	* cilk.c: Include stringpool.h.
+	Include calls.h.
 
 2013-11-13  Joseph Myers  <joseph@codesourcery.com>
 

@@ -789,13 +789,13 @@ do {									     \
 
 /* Emit rtl for profiling.  Output assembler code to FILE
    to call "_mcount" for profiling a function entry.  */
-#define PROFILE_HOOK(LABEL)                                    \
-{                                                              \
-  rtx fun,lr;                                                  \
-  lr = get_hard_reg_initial_val (Pmode, LR_REGNUM);            \
-  fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);               \
-  emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lr, Pmode); \
-}
+#define PROFILE_HOOK(LABEL)						\
+  {									\
+    rtx fun, lr;							\
+    lr = get_hard_reg_initial_val (Pmode, LR_REGNUM);			\
+    fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);			\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lr, Pmode);	\
+  }
 
 /* All the work done in PROFILE_HOOK, but still required.  */
 #define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)
@@ -853,5 +853,8 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define AARCH64_VALID_SIMD_QREG_MODE(MODE) \
   ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
    || (MODE) == V4SFmode || (MODE) == V2DImode || mode == V2DFmode)
+
+#define ENDIAN_LANE_N(mode, n)  \
+  (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
 
 #endif /* GCC_AARCH64_H */
