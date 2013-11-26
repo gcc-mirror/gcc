@@ -1,3 +1,10 @@
+2013-11-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_expand_prologue):
+	Remove unused variable save_config.
+	(epiphany_compute_frame_size): Avoid signed/unsigned comparison in
+	assert.
+
 2013-11-26  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vtbx1_<psu>8): Emulate behaviour
