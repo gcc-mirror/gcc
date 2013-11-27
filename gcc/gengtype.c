@@ -2657,15 +2657,48 @@ get_string_option (options_p opt, const char *key)
   return NULL;
 }
 
+/* Machinery for avoiding duplicate tags within switch statements.  */
+struct seen_tag
+{
+  const char *tag;
+  struct seen_tag *next;
+};
+
+int
+already_seen_tag (struct seen_tag *seen_tags, const char *tag)
+{
+  /* Linear search, so O(n^2), but n is currently small.  */
+  while (seen_tags)
+    {
+      if (!strcmp (seen_tags->tag, tag))
+	return 1;
+      seen_tags = seen_tags->next;
+    }
+  /* Not yet seen this tag. */
+  return 0;
+}
+
+void
+mark_tag_as_seen (struct seen_tag **seen_tags, const char *tag)
+{
+  /* Add to front of linked list. */
+  struct seen_tag *new_node = XCNEW (struct seen_tag);
+  new_node->tag = tag;
+  new_node->next = *seen_tags;
+  *seen_tags = new_node;
+}
+
 static void
-walk_subclasses (type_p base, struct walk_type_data *d)
+walk_subclasses (type_p base, struct walk_type_data *d,
+		 struct seen_tag **seen_tags)
 {
   for (type_p sub = base->u.s.first_subclass; sub != NULL;
        sub = sub->u.s.next_sibling_class)
     {
       const char *type_tag = get_string_option (sub->u.s.opt, "tag");
-      if (type_tag)
+      if (type_tag && !already_seen_tag (*seen_tags, type_tag))
 	{
+	  mark_tag_as_seen (seen_tags, type_tag);
 	  oprintf (d->of, "%*scase %s:\n", d->indent, "", type_tag);
 	  d->indent += 2;
 	  oprintf (d->of, "%*s{\n", d->indent, "");
@@ -2681,7 +2714,7 @@ walk_subclasses (type_p base, struct walk_type_data *d)
 	  oprintf (d->of, "%*sbreak;\n", d->indent, "");
 	  d->indent -= 2;
 	}
-      walk_subclasses (sub, d);
+      walk_subclasses (sub, d, seen_tags);
     }
 }
 
@@ -3228,7 +3261,8 @@ walk_type (type_p t, struct walk_type_data *d)
 	else if (desc)
 	  {
 	    /* Add cases to handle subclasses.  */
-	    walk_subclasses (t, d);
+	    struct seen_tag *tags = NULL;
+	    walk_subclasses (t, d, &tags);
 
 	    /* Ensure that if someone forgets a "tag" option that we don't
 	       silent fail to traverse that subclass's fields.  */
