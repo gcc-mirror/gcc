@@ -1676,13 +1676,20 @@ thread_through_all_blocks (bool may_peel_loop_headers)
 		  {
 		    struct loop *loop = (*path)[0]->e->dest->loop_father;
 
-		    retval |= thread_block ((*path)[0]->e->dest, false);
-		    e->aux = NULL;
-
-		    /* This jump thread likely totally scrambled this loop.
-		       So arrange for it to be fixed up.  */
-		    loop->header = NULL;
-		    loop->latch = NULL;
+		    if (thread_block ((*path)[0]->e->dest, false))
+		      {
+			/* This jump thread likely totally scrambled this loop.
+			   So arrange for it to be fixed up.  */
+			loop->header = NULL;
+			loop->latch = NULL;
+			e->aux = NULL;
+		      }
+		    else
+		      {
+		        delete_jump_thread_path (path);
+			e->aux = NULL;
+			ei_next (&ei);
+		      }
 		  }
 	      }
 	   else
