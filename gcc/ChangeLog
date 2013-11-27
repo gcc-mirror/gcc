@@ -1,3 +1,9 @@
+2013-11-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
+	clobber the loop structure thread_block was unsuccessful.  If
+	thread_block was unsuccessful, cleanup appropriately.
+
 2013-11-27  Chen Liqin <liqin.gcc@gmail.com>
 
 	* config/score/score.h (REG_CLASS_FROM_LETTER): Delete.
