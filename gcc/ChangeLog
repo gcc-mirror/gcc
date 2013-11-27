@@ -1,3 +1,9 @@
+2013-11-27   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/59311
+	* dwarf2cfi.c (dwf_regno): Assert reg isn't pseudo register.
+	* lra-spills.c (spill_pseudos): Handle REG_XXX notes.
+
 2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (track_expr_p): Do not track declarations for parts
