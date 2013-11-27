@@ -1,3 +1,9 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59310
+	* parser.c (cp_parser_omp_target): Call keep_next_level only
+	if flag_openmp.
+
 2013-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58647
