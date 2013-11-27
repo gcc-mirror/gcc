@@ -1,3 +1,25 @@
+2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58723
+	* cgraphbuild.c (build_cgraph_edges): Do not build edges
+	for internal calls.
+	(rebuild_cgraph_edges): Likewise.
+	* ipa-inline-analysis.c (estimate_function_body_sizes):
+	Skip internal calls.
+	* tree-inline.c (estimate_num_insns): Estimate size of internal
+	calls as 0.
+	(gimple_expand_calls_inline): Do not try inline-expanding
+	internal calls.
+	* lto-streamer-in.c (input_cfg): Stream loop safelen,
+	force_vect and simduid.
+	(input_struct_function_base): Stream has_force_vect_loops
+	and has_simduid_loops.
+	(input_function): Adjust.
+	* lto-streamer-out.c (output_cfg): Stream loop safelen,
+	force_vect and simduid.
+	(output_struct_function_base): Stream has_force_vect_loops
+	and has_simduid_loops.
+
 2013-11-27  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/winnt.c (i386_pe_section_type_flags): Use const

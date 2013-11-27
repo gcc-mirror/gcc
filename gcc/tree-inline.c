@@ -3797,12 +3797,16 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
     case GIMPLE_CALL:
       {
-	tree decl = gimple_call_fndecl (stmt);
+	tree decl;
 	struct cgraph_node *node = NULL;
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || !(node = cgraph_get_node (decl)) || node->definition)
+	if (gimple_call_internal_p (stmt))
+	  return 0;
+	else if (!(decl = gimple_call_fndecl (stmt))
+		 || !(node = cgraph_get_node (decl))
+		 || node->definition)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
@@ -4423,6 +4427,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
       gimple stmt = gsi_stmt (gsi);
 
       if (is_gimple_call (stmt)
+	  && !gimple_call_internal_p (stmt)
 	  && expand_call_inline (bb, stmt, id))
 	return true;
     }
