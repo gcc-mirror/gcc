@@ -940,7 +940,7 @@ slsr_process_ref (gimple gs)
     return;
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
-			      &unsignedp, &volatilep);
+			      &unsignedp, &volatilep, false);
   index = double_int::from_uhwi (bitpos);
 
   if (!restructure_reference (&base, &offset, &index, &type))

@@ -13934,7 +13934,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev)
 
   obj = get_inner_reference (TREE_OPERAND (loc, 0),
 			     &bitsize, &bitpos, &offset, &mode,
-			     &unsignedp, &volatilep);
+			     &unsignedp, &volatilep, false);
   STRIP_NOPS (obj);
   if (bitpos % BITS_PER_UNIT)
     {
@@ -14211,7 +14211,7 @@ loc_list_from_tree (tree loc, int want_address)
 	int unsignedp, volatilep = 0;
 
 	obj = get_inner_reference (loc, &bitsize, &bitpos, &offset, &mode,
-				   &unsignedp, &volatilep);
+				   &unsignedp, &volatilep, false);
 
 	gcc_assert (obj != loc);
 
@@ -15521,7 +15521,7 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
     return NULL_TREE;
 
   cvar = get_inner_reference (val_expr, &bitsize, &bitpos, &offset,
-			      &mode, &unsignedp, &volatilep);
+			      &mode, &unsignedp, &volatilep, true);
 
   if (cvar == NULL_TREE
       || TREE_CODE (cvar) != VAR_DECL
