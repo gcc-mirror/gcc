@@ -1,3 +1,9 @@
+2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/59138
+	* expr.c (emit_group_store): Don't write past the end of the structure.
+	(store_bit_field): Fix formatting.
+
 2013-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59288
