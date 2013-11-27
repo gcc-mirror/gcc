@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
+// { dg-require-cmath "" }
 //
 // 2013-11-18  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 //
@@ -31,7 +32,6 @@
 void
 test01()
 {
-#if _GLIBCXX_USE_C99_MATH_TR1
   using namespace __gnu_test;
 
   std::mt19937 eng;
@@ -50,7 +50,6 @@ test01()
   auto bhd3 = std::bind(hd3, eng);
   testDiscreteDist(bhd3, [](int k)
 		   { return hypergeometric_pdf(k, 100, 20, 5); });
-#endif
 }
 
 int

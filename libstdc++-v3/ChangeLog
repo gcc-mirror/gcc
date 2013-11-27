@@ -1,5 +1,8 @@
 2013-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* testsuite/ext/random/hypergeometric_distribution/operators/values.cc:
+	Use dg-require-cmath instead.
+
 	* testsuite/ext/random/hypergeometric_distribution/operators/values.cc
 	(test01): Wrap in _GLIBCXX_USE_C99_MATH_TR1.
 
