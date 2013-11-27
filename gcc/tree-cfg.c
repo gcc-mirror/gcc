@@ -2712,15 +2712,29 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
       if (TREE_CODE (t) == BIT_FIELD_REF)
 	{
-	  if (!tree_fits_uhwi_p (TREE_OPERAND (t, 1))
-	      || !tree_fits_uhwi_p (TREE_OPERAND (t, 2)))
+	  tree t0 = TREE_OPERAND (t, 0);
+	  tree t1 = TREE_OPERAND (t, 1);
+	  tree t2 = TREE_OPERAND (t, 2);
+	  tree t0_type = TREE_TYPE (t0);
+	  unsigned HOST_WIDE_INT t0_size = 0;
+
+	  if (tree_fits_uhwi_p (TYPE_SIZE (t0_type)))
+	    t0_size = tree_to_uhwi (TYPE_SIZE (t0_type));
+	  else 
+	    {
+	      HOST_WIDE_INT t0_max_size = max_int_size_in_bytes (t0_type);
+	      if (t0_max_size > 0)
+		t0_size = t0_max_size * BITS_PER_UNIT;
+	    }
+	  if (!tree_fits_uhwi_p (t1)
+	      || !tree_fits_uhwi_p (t2))
 	    {
 	      error ("invalid position or size operand to BIT_FIELD_REF");
 	      return t;
 	    }
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (t))
 	      && (TYPE_PRECISION (TREE_TYPE (t))
-		  != tree_to_uhwi (TREE_OPERAND (t, 1))))
+		  != tree_to_uhwi (t1)))
 	    {
 	      error ("integral result type precision does not match "
 		     "field size of BIT_FIELD_REF");
@@ -2729,10 +2743,17 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
 		   && TYPE_MODE (TREE_TYPE (t)) != BLKmode
 		   && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
-		       != tree_to_uhwi (TREE_OPERAND (t, 1))))
+		       != tree_to_uhwi (t1)))
 	    {
 	      error ("mode precision of non-integral result does not "
 		     "match field size of BIT_FIELD_REF");
+	      return t;
+	    }
+	  if (t0_size != 0
+	      && tree_to_uhwi (t1) + tree_to_uhwi (t2) > t0_size)
+	    {
+	      error ("position plus size exceeds size of referenced object in "
+		     "BIT_FIELD_REF");
 	      return t;
 	    }
 	}

@@ -1,3 +1,13 @@
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/59037
+	* fold-const.c (fold_indirect_ref_1): Don't create out-of-bounds
+	BIT_FIELD_REF.
+	* gimple-fold.c (gimple_fold_indirect_ref): Same.
+	* tree-cfg.c (verify_expr): Give error if BIT_FIELD_REF is
+	out-of-bounds.
+
 2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/59138
