@@ -12529,10 +12529,10 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context)
 			      "parallel for simd")];
 
 	  c_parser_consume_token (parser);
+	  strcpy (p_name, "#pragma omp target");
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return c_parser_omp_teams (loc, parser, p_name,
 				       OMP_TARGET_CLAUSE_MASK, cclauses);
-	  strcpy (p_name, "#pragma omp target");
 	  keep_next_level ();
 	  tree block = c_begin_compound_stmt (true);
 	  tree ret = c_parser_omp_teams (loc, parser, p_name,
@@ -13566,10 +13566,8 @@ c_parser_cilk_all_clauses (c_parser *parser)
    loops.  */
 
 static void
-c_parser_cilk_simd (c_parser *parser ATTRIBUTE_UNUSED)
+c_parser_cilk_simd (c_parser *parser)
 {
-  char p_name[100];
-  strcpy (p_name, "#pragma omp");
   tree clauses = c_parser_cilk_all_clauses (parser);
   tree block = c_begin_compound_stmt (true);
   location_t loc = c_parser_peek_token (parser)->location;

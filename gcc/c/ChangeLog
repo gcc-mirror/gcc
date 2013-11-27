@@ -1,3 +1,11 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59310
+	* c-parser.c (c_parser_omp_target): Copy "#pragma omp target"
+	to p_name before calling c_parser_omp_teams instead of after.
+	(c_parser_cilk_simd): Remove wrong ATTRIBUTE_UNUSED from parser
+	argument.  Remove unused p_name variable.
+
 2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
