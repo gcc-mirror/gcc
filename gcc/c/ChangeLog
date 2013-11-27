@@ -1,3 +1,9 @@
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/59032
+	* c-typeck.c (build_unary_op): Allow vector increment and decrement.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-typeck.c: Add required include files from gimple.h.

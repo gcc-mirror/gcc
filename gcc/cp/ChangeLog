@@ -1,6 +1,12 @@
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/59032
+	* typeck.c (cp_build_unary_op): Allow vector increment and decrement.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
 	PR middle-end/59037
 	* semantics.c (cxx_fold_indirect_ref): Don't create out-of-bounds
 	BIT_FIELD_REF.

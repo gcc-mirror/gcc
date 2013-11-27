@@ -3982,7 +3982,7 @@ build_unary_op (location_t location,
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
-	  && typecode != COMPLEX_TYPE)
+	  && typecode != COMPLEX_TYPE && typecode != VECTOR_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -4047,7 +4047,9 @@ build_unary_op (location_t location,
 	  }
 	else
 	  {
-	    inc = integer_one_node;
+	    inc = VECTOR_TYPE_P (argtype)
+	      ? build_one_cst (argtype)
+	      : integer_one_node;
 	    inc = convert (argtype, inc);
 	  }
 
