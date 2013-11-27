@@ -1,3 +1,7 @@
+2013-11-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* config/ia64/hpux.h (TARGET_LIBC_HAS_FUNCTION): Fix typo.
+
 2013-11-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype.c (struct seen_tag): New.
