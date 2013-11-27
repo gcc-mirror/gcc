@@ -1,3 +1,69 @@
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* cgraph.h (enum cgraph_simd_clone_arg_type): New.
+	(struct cgraph_simd_clone_arg, struct cgraph_simd_clone): New.
+	(struct cgraph_node): Add simdclone and simd_clones fields.
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen,
+	ix86_simd_clone_adjust, ix86_simd_clone_usable): New functions.
+	(TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN,
+	TARGET_SIMD_CLONE_ADJUST, TARGET_SIMD_CLONE_USABLE): Define.
+	* doc/tm.texi.in (TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN,
+	TARGET_SIMD_CLONE_ADJUST, TARGET_SIMD_CLONE_USABLE): Add.
+	* doc/tm.texi: Regenerated.
+	* ggc.h (ggc_alloc_cleared_simd_clone_stat): New function.
+	* ipa-cp.c (determine_versionability): Fail if "omp declare simd"
+	attribute is present.
+	* omp-low.c: Include pretty-print.h, ipa-prop.h and tree-eh.h.
+	(simd_clone_vector_of_formal_parm_types): New function.
+	(simd_clone_struct_alloc, simd_clone_struct_copy,
+	simd_clone_vector_of_formal_parm_types, simd_clone_clauses_extract,
+	simd_clone_compute_base_data_type, simd_clone_mangle,
+	simd_clone_create, simd_clone_adjust_return_type,
+	create_tmp_simd_array, simd_clone_adjust_argument_types,
+	simd_clone_init_simd_arrays): New functions.
+	(struct modify_stmt_info): New type.
+	(ipa_simd_modify_stmt_ops, ipa_simd_modify_function_body,
+	simd_clone_adjust, expand_simd_clones, ipa_omp_simd_clone): New
+	functions.
+	(pass_data_omp_simd_clone): New variable.
+	(pass_omp_simd_clone): New class.
+	(make_pass_omp_simd_clone): New function.
+	* passes.def (pass_omp_simd_clone): New.
+	* target.def (TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN,
+	TARGET_SIMD_CLONE_ADJUST, TARGET_SIMD_CLONE_USABLE): New target
+	hooks.
+	* target.h (struct cgraph_node, struct cgraph_simd_node): Declare.
+	* tree-core.h (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE): Document.
+	* tree.h (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE): Define.
+	* tree-pass.h (make_pass_omp_simd_clone): New prototype.
+	* tree-vect-data-refs.c: Include cgraph.h.
+	(vect_analyze_data_refs): Inline by hand find_data_references_in_loop
+	and find_data_references_in_bb, if find_data_references_in_stmt
+	fails, still allow calls to #pragma omp declare simd functions
+	in #pragma omp simd loops unless they contain data references among
+	the call arguments or in lhs.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Handle
+	calls with no lhs.
+	(vect_transform_loop): Allow NULL STMT_VINFO_VECTYPE for calls without
+	lhs.
+	* tree-vectorizer.h (enum stmt_vec_info_type): Add
+	call_simd_clone_vec_info_type.
+	(struct _stmt_vec_info): Add simd_clone_fndecl field.
+	(STMT_VINFO_SIMD_CLONE_FNDECL): Define.
+	* tree-vect-stmts.c: Include tree-ssa-loop.h,
+	tree-scalar-evolution.h and cgraph.h.
+	(vectorizable_call): Handle calls without lhs.  Assert
+	!stmt_can_throw_internal instead of failing for it.  Don't update
+	EH stuff.
+	(struct simd_call_arg_info): New.
+	(vectorizable_simd_clone_call): New function.
+	(vect_transform_stmt): Call it.
+	(vect_analyze_stmt): Likewise.  Allow NULL STMT_VINFO_VECTYPE for
+	calls without lhs.
+	* ipa-prop.c (ipa_add_new_function): Only call ipa_analyze_node
+	if cgraph_function_with_gimple_body_p is true.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 

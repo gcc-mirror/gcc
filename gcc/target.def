@@ -1521,6 +1521,36 @@ hook_int_uint_mode_1)
 
 HOOK_VECTOR_END (sched)
 
+/* Functions relating to OpenMP and Cilk Plus SIMD clones.  */
+#undef HOOK_PREFIX
+#define HOOK_PREFIX "TARGET_SIMD_CLONE_"
+HOOK_VECTOR (TARGET_SIMD_CLONE, simd_clone)
+
+DEFHOOK
+(compute_vecsize_and_simdlen,
+"This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}\n\
+fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also\n\
+@var{simdlen} field if it was previously 0.\n\
+The hook should return 0 if SIMD clones shouldn't be emitted,\n\
+or number of @var{vecsize_mangle} variants that should be emitted.",
+int, (struct cgraph_node *, struct cgraph_simd_clone *, tree, int), NULL)
+
+DEFHOOK
+(adjust,
+"This hook should add implicit @code{attribute(target(\"...\"))} attribute\n\
+to SIMD clone @var{node} if needed.",
+void, (struct cgraph_node *), NULL)
+
+DEFHOOK
+(usable,
+"This hook should return -1 if SIMD clone @var{node} shouldn't be used\n\
+in vectorized loops in current function, or non-negative number if it is\n\
+usable.  In that case, the smaller the number is, the more desirable it is\n\
+to use it.",
+int, (struct cgraph_node *), NULL)
+
+HOOK_VECTOR_END (simd_clone)
+
 /* Functions relating to vectorization.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_VECTORIZE_"

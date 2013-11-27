@@ -4422,6 +4422,12 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
 
+@hook TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+
+@hook TARGET_SIMD_CLONE_ADJUST
+
+@hook TARGET_SIMD_CLONE_USABLE
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

@@ -43690,6 +43690,184 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   return val;
 }
 
+/* Set CLONEI->vecsize_mangle, CLONEI->vecsize_int,
+   CLONEI->vecsize_float and if CLONEI->simdlen is 0, also
+   CLONEI->simdlen.  Return 0 if SIMD clones shouldn't be emitted,
+   or number of vecsize_mangle variants that should be emitted.  */
+
+static int
+ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
+					     struct cgraph_simd_clone *clonei,
+					     tree base_type, int num)
+{
+  int ret = 1;
+
+  if (clonei->simdlen
+      && (clonei->simdlen < 2
+	  || clonei->simdlen > 16
+	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
+    {
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %d\n", clonei->simdlen);
+      return 0;
+    }
+
+  tree ret_type = TREE_TYPE (TREE_TYPE (node->decl));
+  if (TREE_CODE (ret_type) != VOID_TYPE)
+    switch (TYPE_MODE (ret_type))
+      {
+      case QImode:
+      case HImode:
+      case SImode:
+      case DImode:
+      case SFmode:
+      case DFmode:
+      /* case SCmode: */
+      /* case DCmode: */
+	break;
+      default:
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported return type %qT for simd\n", ret_type);
+	return 0;
+      }
+
+  tree t;
+  int i;
+
+  for (t = DECL_ARGUMENTS (node->decl), i = 0; t; t = DECL_CHAIN (t), i++)
+    /* FIXME: Shouldn't we allow such arguments if they are uniform?  */
+    switch (TYPE_MODE (TREE_TYPE (t)))
+      {
+      case QImode:
+      case HImode:
+      case SImode:
+      case DImode:
+      case SFmode:
+      case DFmode:
+      /* case SCmode: */
+      /* case DCmode: */
+	break;
+      default:
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported argument type %qT for simd\n", TREE_TYPE (t));
+	return 0;
+      }
+
+  if (clonei->cilk_elemental)
+    {
+      /* Parse here processor clause.  If not present, default to 'b'.  */
+      clonei->vecsize_mangle = 'b';
+    }
+  else if (!TREE_PUBLIC (node->decl))
+    {
+      /* If the function isn't exported, we can pick up just one ISA
+	 for the clones.  */
+      if (TARGET_AVX2)
+	clonei->vecsize_mangle = 'd';
+      else if (TARGET_AVX)
+	clonei->vecsize_mangle = 'c';
+      else
+	clonei->vecsize_mangle = 'b';
+      ret = 1;
+    }
+  else
+    {
+      clonei->vecsize_mangle = "bcd"[num];
+      ret = 3;
+    }
+  switch (clonei->vecsize_mangle)
+    {
+    case 'b':
+      clonei->vecsize_int = 128;
+      clonei->vecsize_float = 128;
+      break;
+    case 'c':
+      clonei->vecsize_int = 128;
+      clonei->vecsize_float = 256;
+      break;
+    case 'd':
+      clonei->vecsize_int = 256;
+      clonei->vecsize_float = 256;
+      break;
+    }
+  if (clonei->simdlen == 0)
+    {
+      if (SCALAR_INT_MODE_P (TYPE_MODE (base_type)))
+	clonei->simdlen = clonei->vecsize_int;
+      else
+	clonei->simdlen = clonei->vecsize_float;
+      clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      if (clonei->simdlen > 16)
+	clonei->simdlen = 16;
+    }
+  return ret;
+}
+
+/* Add target attribute to SIMD clone NODE if needed.  */
+
+static void
+ix86_simd_clone_adjust (struct cgraph_node *node)
+{
+  const char *str = NULL;
+  gcc_assert (node->decl == cfun->decl);
+  switch (node->simdclone->vecsize_mangle)
+    {
+    case 'b':
+      if (!TARGET_SSE2)
+	str = "sse2";
+      break;
+    case 'c':
+      if (!TARGET_AVX)
+	str = "avx";
+      break;
+    case 'd':
+      if (!TARGET_AVX2)
+	str = "avx2";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (str == NULL)
+    return;
+  push_cfun (NULL);
+  tree args = build_tree_list (NULL_TREE, build_string (strlen (str), str));
+  bool ok = ix86_valid_target_attribute_p (node->decl, NULL, args, 0);
+  gcc_assert (ok);
+  pop_cfun ();
+  ix86_previous_fndecl = NULL_TREE;
+  ix86_set_current_function (node->decl);
+}
+
+/* If SIMD clone NODE can't be used in a vectorized loop
+   in current function, return -1, otherwise return a badness of using it
+   (0 if it is most desirable from vecsize_mangle point of view, 1
+   slightly less desirable, etc.).  */
+
+static int
+ix86_simd_clone_usable (struct cgraph_node *node)
+{
+  switch (node->simdclone->vecsize_mangle)
+    {
+    case 'b':
+      if (!TARGET_SSE2)
+	return -1;
+      if (!TARGET_AVX)
+	return 0;
+      return TARGET_AVX2 ? 2 : 1;
+    case 'c':
+      if (!TARGET_AVX)
+	return -1;
+      return TARGET_AVX2 ? 1 : 0;
+      break;
+    case 'd':
+      if (!TARGET_AVX2)
+	return -1;
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Implement TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P.  */
 
 static bool
@@ -44177,6 +44355,18 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
+
+#undef TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+#define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
+  ix86_simd_clone_compute_vecsize_and_simdlen
+
+#undef TARGET_SIMD_CLONE_ADJUST
+#define TARGET_SIMD_CLONE_ADJUST \
+  ix86_simd_clone_adjust
+
+#undef TARGET_SIMD_CLONE_USABLE
+#define TARGET_SIMD_CLONE_USABLE \
+  ix86_simd_clone_usable
 
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "diagnostic-core.h"
+#include "cgraph.h"
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
 #include "optabs.h"
@@ -3167,10 +3168,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
   if (loop_vinfo)
     {
+      basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+
       loop = LOOP_VINFO_LOOP (loop_vinfo);
-      if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo))
-	  || find_data_references_in_loop
-	       (loop, &LOOP_VINFO_DATAREFS (loop_vinfo)))
+      datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+      if (!find_loop_nest (loop, &LOOP_VINFO_LOOP_NEST (loop_vinfo)))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3179,7 +3181,57 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  return false;
 	}
 
-      datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+      for (i = 0; i < loop->num_nodes; i++)
+	{
+	  gimple_stmt_iterator gsi;
+
+	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
+	      if (!find_data_references_in_stmt (loop, stmt, &datarefs))
+		{
+		  if (is_gimple_call (stmt) && loop->safelen)
+		    {
+		      tree fndecl = gimple_call_fndecl (stmt), op;
+		      if (fndecl != NULL_TREE)
+			{
+			  struct cgraph_node *node = cgraph_get_node (fndecl);
+			  if (node != NULL && node->simd_clones != NULL)
+			    {
+			      unsigned int j, n = gimple_call_num_args (stmt);
+			      for (j = 0; j < n; j++)
+				{
+				  op = gimple_call_arg (stmt, j);
+				  if (DECL_P (op)
+				      || (REFERENCE_CLASS_P (op)
+					  && get_base_address (op)))
+				    break;
+				}
+			      op = gimple_call_lhs (stmt);
+			      /* Ignore #pragma omp declare simd functions
+				 if they don't have data references in the
+				 call stmt itself.  */
+			      if (j == n
+				  && !(op
+				       && (DECL_P (op)
+					   || (REFERENCE_CLASS_P (op)
+					       && get_base_address (op)))))
+				continue;
+			    }
+			}
+		    }
+		  LOOP_VINFO_DATAREFS (loop_vinfo) = datarefs;
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "not vectorized: loop contains function "
+				     "calls or data references that cannot "
+				     "be analyzed\n");
+		  return false;
+		}
+	    }
+	}
+
+      LOOP_VINFO_DATAREFS (loop_vinfo) = datarefs;
     }
   else
     {

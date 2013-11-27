@@ -5818,6 +5818,26 @@ The default is @code{NULL_TREE} which means to not vectorize gather
 loads.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN (struct cgraph_node *@var{}, struct cgraph_simd_clone *@var{}, @var{tree}, @var{int})
+This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}
+fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also
+@var{simdlen} field if it was previously 0.
+The hook should return 0 if SIMD clones shouldn't be emitted,
+or number of @var{vecsize_mangle} variants that should be emitted.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SIMD_CLONE_ADJUST (struct cgraph_node *@var{})
+This hook should add implicit @code{attribute(target("..."))} attribute
+to SIMD clone @var{node} if needed.
+@end deftypefn
+
+@deftypefn {Target Hook} int TARGET_SIMD_CLONE_USABLE (struct cgraph_node *@var{})
+This hook should return -1 if SIMD clone @var{node} shouldn't be used
+in vectorized loops in current function, or non-negative number if it is
+usable.  In that case, the smaller the number is, the more desirable it is
+to use it.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

@@ -1,3 +1,25 @@
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-simd-1.C (f38): Make sure
+	simdlen is a power of two.
+	* gcc.dg/gomp/simd-clones-2.c: Compile on all targets.
+	Remove -msse2.  Adjust regexps for name mangling changes.
+	* gcc.dg/gomp/simd-clones-3.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-1.c: New test.
+	* gcc.dg/vect/vect-simd-clone-2.c: New test.
+	* gcc.dg/vect/vect-simd-clone-3.c: New test.
+	* gcc.dg/vect/vect-simd-clone-4.c: New test.
+	* gcc.dg/vect/vect-simd-clone-5.c: New test.
+	* gcc.dg/vect/vect-simd-clone-6.c: New test.
+	* gcc.dg/vect/vect-simd-clone-7.c: New test.
+	* gcc.dg/vect/vect-simd-clone-8.c: New test.
+	* gcc.dg/vect/vect-simd-clone-9.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10.h: New file.
+	* gcc.dg/vect/vect-simd-clone-10a.c: New file.
+	* gcc.dg/vect/vect-simd-clone-11.c: New test.
+
 2013-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/cilk-plus/cilk-plus.exp: Append to ld_library_path.

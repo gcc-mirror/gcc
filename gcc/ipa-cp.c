@@ -430,6 +430,13 @@ determine_versionability (struct cgraph_node *node)
     reason = "not a tree_versionable_function";
   else if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     reason = "insufficient body availability";
+  else if (lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (node->decl)))
+    {
+      /* Ideally we should clone the SIMD clones themselves and create
+	 vector copies of them, so IPA-cp and SIMD clones can happily
+	 coexist, but that may not be worth the effort.  */
+      reason = "function has SIMD clones";
+    }
 
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",

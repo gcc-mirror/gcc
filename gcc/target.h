@@ -93,6 +93,8 @@ extern bool target_default_pointer_address_modes_p (void);
 struct stdarg_info;
 struct spec_info_def;
 struct hard_reg_set_container;
+struct cgraph_node;
+struct cgraph_simd_clone;
 
 /* The struct used by the secondary_reload target hook.  */
 typedef struct secondary_reload_info
