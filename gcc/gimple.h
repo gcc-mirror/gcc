@@ -408,6 +408,20 @@ struct GTY((tag("GSS_EH_CTRL")))
   int region;
 };
 
+struct GTY((tag("GSS_EH_CTRL")))
+  gimple_statement_resx : public gimple_statement_eh_ctrl
+{
+  /* No extra fields; adds invariant:
+       stmt->code == GIMPLE_RESX.  */
+};
+
+struct GTY((tag("GSS_EH_CTRL")))
+  gimple_statement_eh_dispatch : public gimple_statement_eh_ctrl
+{
+  /* No extra fields; adds invariant:
+       stmt->code == GIMPLE_EH_DISPATH.  */
+};
+
 
 /* GIMPLE_TRY */
 
@@ -535,10 +549,9 @@ struct GTY((tag("GSS_OMP_FOR")))
 };
 
 
-/* GIMPLE_OMP_PARALLEL */
-
-struct GTY((tag("GSS_OMP_PARALLEL")))
-  gimple_statement_omp_parallel : public gimple_statement_omp
+/* GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET */
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gimple_statement_omp_parallel_layout : public gimple_statement_omp
 {
   /* [ WORD 1-7 ] : base class */
 
@@ -555,11 +568,35 @@ struct GTY((tag("GSS_OMP_PARALLEL")))
   tree data_arg;
 };
 
+/* GIMPLE_OMP_PARALLEL or GIMPLE_TASK */
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gimple_statement_omp_taskreg : public gimple_statement_omp_parallel_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_PARALLEL
+	 || stmt->code == GIMPLE_OMP_TASK.  */
+};
+
+
+/* GIMPLE_OMP_PARALLEL */
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gimple_statement_omp_parallel : public gimple_statement_omp_taskreg
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_PARALLEL.  */
+};
+
+struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+  gimple_statement_omp_target : public gimple_statement_omp_parallel_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_TARGET.  */
+};
 
 /* GIMPLE_OMP_TASK */
 
 struct GTY((tag("GSS_OMP_TASK")))
-  gimple_statement_omp_task : public gimple_statement_omp_parallel
+  gimple_statement_omp_task : public gimple_statement_omp_taskreg
 {
   /* [ WORD 1-10 ] : base class */
 
@@ -611,15 +648,29 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS */
 
-struct GTY((tag("GSS_OMP_SINGLE")))
-  gimple_statement_omp_single : public gimple_statement_omp
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gimple_statement_omp_single_layout : public gimple_statement_omp
 {
   /* [ WORD 1-7 ] : base class */
 
   /* [ WORD 7 ]  */
   tree clauses;
+};
+
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gimple_statement_omp_single : public gimple_statement_omp_single_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_SINGLE.  */
+};
+
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gimple_statement_omp_teams : public gimple_statement_omp_single_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_TEAMS.  */
 };
 
 
@@ -639,13 +690,29 @@ struct GTY((tag("GSS_OMP_ATOMIC_LOAD")))
 /* GIMPLE_OMP_ATOMIC_STORE.
    See note on GIMPLE_OMP_ATOMIC_LOAD.  */
 
-struct GTY((tag("GSS_OMP_ATOMIC_STORE")))
-  gimple_statement_omp_atomic_store : public gimple_statement_base
+struct GTY((tag("GSS_OMP_ATOMIC_STORE_LAYOUT")))
+  gimple_statement_omp_atomic_store_layout : public gimple_statement_base
 {
   /* [ WORD 1-6 ] : base class */
 
   /* [ WORD 7 ]  */
   tree val;
+};
+
+struct GTY((tag("GSS_OMP_ATOMIC_STORE_LAYOUT")))
+  gimple_statement_omp_atomic_store :
+    public gimple_statement_omp_atomic_store_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_ATOMIC_STORE.  */
+};
+
+struct GTY((tag("GSS_OMP_ATOMIC_STORE_LAYOUT")))
+  gimple_statement_omp_return :
+    public gimple_statement_omp_atomic_store_layout
+{
+    /* No extra fields; adds invariant:
+         stmt->code == GIMPLE_OMP_RETURN.  */
 };
 
 /* GIMPLE_TRANSACTION.  */
@@ -730,9 +797,17 @@ is_a_helper <gimple_statement_catch>::test (gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <gimple_statement_eh_ctrl>::test (gimple gs)
+is_a_helper <gimple_statement_resx>::test (gimple gs)
 {
-  return gs->code == GIMPLE_RESX || gs->code == GIMPLE_EH_DISPATCH;
+  return gs->code == GIMPLE_RESX;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gimple_statement_eh_dispatch>::test (gimple gs)
+{
+  return gs->code == GIMPLE_EH_DISPATCH;
 }
 
 template <>
@@ -772,7 +847,15 @@ template <>
 inline bool
 is_a_helper <gimple_statement_omp_atomic_store>::test (gimple gs)
 {
-  return gs->code == GIMPLE_OMP_ATOMIC_STORE || gs->code == GIMPLE_OMP_RETURN;
+  return gs->code == GIMPLE_OMP_ATOMIC_STORE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gimple_statement_omp_return>::test (gimple gs)
+{
+  return gs->code == GIMPLE_OMP_RETURN;
 }
 
 template <>
@@ -802,9 +885,25 @@ is_a_helper <gimple_statement_omp_for>::test (gimple gs)
 template <>
 template <>
 inline bool
+is_a_helper <gimple_statement_omp_taskreg>::test (gimple gs)
+{
+  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gimple_statement_omp_parallel>::test (gimple gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK || gs->code == GIMPLE_OMP_TARGET;
+  return gs->code == GIMPLE_OMP_PARALLEL;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gimple_statement_omp_target>::test (gimple gs)
+{
+  return gs->code == GIMPLE_OMP_TARGET;
 }
 
 template <>
@@ -820,7 +919,15 @@ template <>
 inline bool
 is_a_helper <gimple_statement_omp_single>::test (gimple gs)
 {
-  return gs->code == GIMPLE_OMP_SINGLE || gs->code == GIMPLE_OMP_TEAMS;
+  return gs->code == GIMPLE_OMP_SINGLE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gimple_statement_omp_teams>::test (gimple gs)
+{
+  return gs->code == GIMPLE_OMP_TEAMS;
 }
 
 template <>
@@ -898,9 +1005,17 @@ is_a_helper <const gimple_statement_catch>::test (const_gimple gs)
 template <>
 template <>
 inline bool
-is_a_helper <const gimple_statement_eh_ctrl>::test (const_gimple gs)
+is_a_helper <const gimple_statement_resx>::test (const_gimple gs)
 {
-  return gs->code == GIMPLE_RESX || gs->code == GIMPLE_EH_DISPATCH;
+  return gs->code == GIMPLE_RESX;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gimple_statement_eh_dispatch>::test (const_gimple gs)
+{
+  return gs->code == GIMPLE_EH_DISPATCH;
 }
 
 template <>
@@ -924,7 +1039,15 @@ template <>
 inline bool
 is_a_helper <const gimple_statement_omp_atomic_store>::test (const_gimple gs)
 {
-  return gs->code == GIMPLE_OMP_ATOMIC_STORE || gs->code == GIMPLE_OMP_RETURN;
+  return gs->code == GIMPLE_OMP_ATOMIC_STORE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gimple_statement_omp_return>::test (const_gimple gs)
+{
+  return gs->code == GIMPLE_OMP_RETURN;
 }
 
 template <>
@@ -954,9 +1077,25 @@ is_a_helper <const gimple_statement_omp_for>::test (const_gimple gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gimple_statement_omp_taskreg>::test (const_gimple gs)
+{
+  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gimple_statement_omp_parallel>::test (const_gimple gs)
 {
-  return gs->code == GIMPLE_OMP_PARALLEL || gs->code == GIMPLE_OMP_TASK || gs->code == GIMPLE_OMP_TARGET;
+  return gs->code == GIMPLE_OMP_PARALLEL;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gimple_statement_omp_target>::test (const_gimple gs)
+{
+  return gs->code == GIMPLE_OMP_TARGET;
 }
 
 template <>
@@ -972,7 +1111,15 @@ template <>
 inline bool
 is_a_helper <const gimple_statement_omp_single>::test (const_gimple gs)
 {
-  return gs->code == GIMPLE_OMP_SINGLE || gs->code == GIMPLE_OMP_TEAMS;
+  return gs->code == GIMPLE_OMP_SINGLE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gimple_statement_omp_teams>::test (const_gimple gs)
+{
+  return gs->code == GIMPLE_OMP_TEAMS;
 }
 
 template <>
@@ -1753,9 +1900,9 @@ gimple_omp_return_nowait_p (const_gimple g)
 static inline void
 gimple_omp_return_set_lhs (gimple g, tree lhs)
 {
-  gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <gimple_statement_omp_atomic_store> (g);
-  omp_atomic_store_stmt->val = lhs;
+  gimple_statement_omp_return *omp_return_stmt =
+    as_a <gimple_statement_omp_return> (g);
+  omp_return_stmt->val = lhs;
 }
 
 
@@ -1764,9 +1911,9 @@ gimple_omp_return_set_lhs (gimple g, tree lhs)
 static inline tree
 gimple_omp_return_lhs (const_gimple g)
 {
-  const gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <const gimple_statement_omp_atomic_store> (g);
-  return omp_atomic_store_stmt->val;
+  const gimple_statement_omp_return *omp_return_stmt =
+    as_a <const gimple_statement_omp_return> (g);
+  return omp_return_stmt->val;
 }
 
 
@@ -1775,9 +1922,9 @@ gimple_omp_return_lhs (const_gimple g)
 static inline tree *
 gimple_omp_return_lhs_ptr (gimple g)
 {
-  gimple_statement_omp_atomic_store *omp_atomic_store_stmt =
-    as_a <gimple_statement_omp_atomic_store> (g);
-  return &omp_atomic_store_stmt->val;
+  gimple_statement_omp_return *omp_return_stmt =
+    as_a <gimple_statement_omp_return> (g);
+  return &omp_return_stmt->val;
 }
 
 
@@ -3780,9 +3927,9 @@ gimple_phi_arg_has_location (gimple gs, size_t i)
 static inline int
 gimple_resx_region (const_gimple gs)
 {
-  const gimple_statement_eh_ctrl *eh_ctrl_stmt =
-    as_a <const gimple_statement_eh_ctrl> (gs);
-  return eh_ctrl_stmt->region;
+  const gimple_statement_resx *resx_stmt =
+    as_a <const gimple_statement_resx> (gs);
+  return resx_stmt->region;
 }
 
 /* Set REGION to be the region number for GIMPLE_RESX GS.  */
@@ -3790,9 +3937,8 @@ gimple_resx_region (const_gimple gs)
 static inline void
 gimple_resx_set_region (gimple gs, int region)
 {
-  gimple_statement_eh_ctrl *eh_ctrl_stmt =
-    as_a <gimple_statement_eh_ctrl> (gs);
-  eh_ctrl_stmt->region = region;
+  gimple_statement_resx *resx_stmt = as_a <gimple_statement_resx> (gs);
+  resx_stmt->region = region;
 }
 
 /* Return the region number for GIMPLE_EH_DISPATCH GS.  */
@@ -3800,9 +3946,9 @@ gimple_resx_set_region (gimple gs, int region)
 static inline int
 gimple_eh_dispatch_region (const_gimple gs)
 {
-  const gimple_statement_eh_ctrl *eh_ctrl_stmt =
-    as_a <const gimple_statement_eh_ctrl> (gs);
-  return eh_ctrl_stmt->region;
+  const gimple_statement_eh_dispatch *eh_dispatch_stmt =
+    as_a <const gimple_statement_eh_dispatch> (gs);
+  return eh_dispatch_stmt->region;
 }
 
 /* Set REGION to be the region number for GIMPLE_EH_DISPATCH GS.  */
@@ -3810,9 +3956,9 @@ gimple_eh_dispatch_region (const_gimple gs)
 static inline void
 gimple_eh_dispatch_set_region (gimple gs, int region)
 {
-  gimple_statement_eh_ctrl *eh_ctrl_stmt =
-    as_a <gimple_statement_eh_ctrl> (gs);
-  eh_ctrl_stmt->region = region;
+  gimple_statement_eh_dispatch *eh_dispatch_stmt =
+    as_a <gimple_statement_eh_dispatch> (gs);
+  eh_dispatch_stmt->region = region;
 }
 
 /* Return the number of labels associated with the switch statement GS.  */
@@ -4650,9 +4796,9 @@ gimple_omp_task_set_data_arg (gimple gs, tree data_arg)
 static inline tree
 gimple_omp_taskreg_clauses (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->clauses;
+  const gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <const gimple_statement_omp_taskreg> (gs);
+  return omp_taskreg_stmt->clauses;
 }
 
 
@@ -4661,9 +4807,9 @@ gimple_omp_taskreg_clauses (const_gimple gs)
 static inline tree *
 gimple_omp_taskreg_clauses_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->clauses;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  return &omp_taskreg_stmt->clauses;
 }
 
 
@@ -4673,9 +4819,9 @@ gimple_omp_taskreg_clauses_ptr (gimple gs)
 static inline void
 gimple_omp_taskreg_set_clauses (gimple gs, tree clauses)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->clauses = clauses;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  omp_taskreg_stmt->clauses = clauses;
 }
 
 
@@ -4684,9 +4830,9 @@ gimple_omp_taskreg_set_clauses (gimple gs, tree clauses)
 static inline tree
 gimple_omp_taskreg_child_fn (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->child_fn;
+  const gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <const gimple_statement_omp_taskreg> (gs);
+  return omp_taskreg_stmt->child_fn;
 }
 
 /* Return a pointer to the child function used to hold the body of
@@ -4695,9 +4841,9 @@ gimple_omp_taskreg_child_fn (const_gimple gs)
 static inline tree *
 gimple_omp_taskreg_child_fn_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->child_fn;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  return &omp_taskreg_stmt->child_fn;
 }
 
 
@@ -4706,9 +4852,9 @@ gimple_omp_taskreg_child_fn_ptr (gimple gs)
 static inline void
 gimple_omp_taskreg_set_child_fn (gimple gs, tree child_fn)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->child_fn = child_fn;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  omp_taskreg_stmt->child_fn = child_fn;
 }
 
 
@@ -4718,9 +4864,9 @@ gimple_omp_taskreg_set_child_fn (gimple gs, tree child_fn)
 static inline tree
 gimple_omp_taskreg_data_arg (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->data_arg;
+  const gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <const gimple_statement_omp_taskreg> (gs);
+  return omp_taskreg_stmt->data_arg;
 }
 
 
@@ -4729,9 +4875,9 @@ gimple_omp_taskreg_data_arg (const_gimple gs)
 static inline tree *
 gimple_omp_taskreg_data_arg_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->data_arg;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  return &omp_taskreg_stmt->data_arg;
 }
 
 
@@ -4740,9 +4886,9 @@ gimple_omp_taskreg_data_arg_ptr (gimple gs)
 static inline void
 gimple_omp_taskreg_set_data_arg (gimple gs, tree data_arg)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->data_arg = data_arg;
+  gimple_statement_omp_taskreg *omp_taskreg_stmt =
+    as_a <gimple_statement_omp_taskreg> (gs);
+  omp_taskreg_stmt->data_arg = data_arg;
 }
 
 
@@ -4883,9 +5029,9 @@ gimple_omp_single_set_clauses (gimple gs, tree clauses)
 static inline tree
 gimple_omp_target_clauses (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->clauses;
+  const gimple_statement_omp_target *omp_target_stmt =
+    as_a <const gimple_statement_omp_target> (gs);
+  return omp_target_stmt->clauses;
 }
 
 
@@ -4894,9 +5040,9 @@ gimple_omp_target_clauses (const_gimple gs)
 static inline tree *
 gimple_omp_target_clauses_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->clauses;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  return &omp_target_stmt->clauses;
 }
 
 
@@ -4905,9 +5051,9 @@ gimple_omp_target_clauses_ptr (gimple gs)
 static inline void
 gimple_omp_target_set_clauses (gimple gs, tree clauses)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->clauses = clauses;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  omp_target_stmt->clauses = clauses;
 }
 
 
@@ -4937,9 +5083,9 @@ gimple_omp_target_set_kind (gimple g, int kind)
 static inline tree
 gimple_omp_target_child_fn (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->child_fn;
+  const gimple_statement_omp_target *omp_target_stmt =
+    as_a <const gimple_statement_omp_target> (gs);
+  return omp_target_stmt->child_fn;
 }
 
 /* Return a pointer to the child function used to hold the body of
@@ -4948,9 +5094,9 @@ gimple_omp_target_child_fn (const_gimple gs)
 static inline tree *
 gimple_omp_target_child_fn_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->child_fn;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  return &omp_target_stmt->child_fn;
 }
 
 
@@ -4959,9 +5105,9 @@ gimple_omp_target_child_fn_ptr (gimple gs)
 static inline void
 gimple_omp_target_set_child_fn (gimple gs, tree child_fn)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->child_fn = child_fn;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  omp_target_stmt->child_fn = child_fn;
 }
 
 
@@ -4971,9 +5117,9 @@ gimple_omp_target_set_child_fn (gimple gs, tree child_fn)
 static inline tree
 gimple_omp_target_data_arg (const_gimple gs)
 {
-  const gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <const gimple_statement_omp_parallel> (gs);
-  return omp_parallel_stmt->data_arg;
+  const gimple_statement_omp_target *omp_target_stmt =
+    as_a <const gimple_statement_omp_target> (gs);
+  return omp_target_stmt->data_arg;
 }
 
 
@@ -4982,9 +5128,9 @@ gimple_omp_target_data_arg (const_gimple gs)
 static inline tree *
 gimple_omp_target_data_arg_ptr (gimple gs)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  return &omp_parallel_stmt->data_arg;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  return &omp_target_stmt->data_arg;
 }
 
 
@@ -4993,9 +5139,9 @@ gimple_omp_target_data_arg_ptr (gimple gs)
 static inline void
 gimple_omp_target_set_data_arg (gimple gs, tree data_arg)
 {
-  gimple_statement_omp_parallel *omp_parallel_stmt =
-    as_a <gimple_statement_omp_parallel> (gs);
-  omp_parallel_stmt->data_arg = data_arg;
+  gimple_statement_omp_target *omp_target_stmt =
+    as_a <gimple_statement_omp_target> (gs);
+  omp_target_stmt->data_arg = data_arg;
 }
 
 
@@ -5004,9 +5150,9 @@ gimple_omp_target_set_data_arg (gimple gs, tree data_arg)
 static inline tree
 gimple_omp_teams_clauses (const_gimple gs)
 {
-  const gimple_statement_omp_single *omp_single_stmt =
-    as_a <const gimple_statement_omp_single> (gs);
-  return omp_single_stmt->clauses;
+  const gimple_statement_omp_teams *omp_teams_stmt =
+    as_a <const gimple_statement_omp_teams> (gs);
+  return omp_teams_stmt->clauses;
 }
 
 
@@ -5015,9 +5161,9 @@ gimple_omp_teams_clauses (const_gimple gs)
 static inline tree *
 gimple_omp_teams_clauses_ptr (gimple gs)
 {
-  gimple_statement_omp_single *omp_single_stmt =
-    as_a <gimple_statement_omp_single> (gs);
-  return &omp_single_stmt->clauses;
+  gimple_statement_omp_teams *omp_teams_stmt =
+    as_a <gimple_statement_omp_teams> (gs);
+  return &omp_teams_stmt->clauses;
 }
 
 
@@ -5026,9 +5172,9 @@ gimple_omp_teams_clauses_ptr (gimple gs)
 static inline void
 gimple_omp_teams_set_clauses (gimple gs, tree clauses)
 {
-  gimple_statement_omp_single *omp_single_stmt =
-    as_a <gimple_statement_omp_single> (gs);
-  omp_single_stmt->clauses = clauses;
+  gimple_statement_omp_teams *omp_teams_stmt =
+    as_a <gimple_statement_omp_teams> (gs);
+  omp_teams_stmt->clauses = clauses;
 }
 
 

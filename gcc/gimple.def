@@ -221,7 +221,7 @@ DEFGSCODE(GIMPLE_NOP, "gimple_nop", GSS_BASE)
 DEFGSCODE(GIMPLE_OMP_ATOMIC_LOAD, "gimple_omp_atomic_load",
 	  GSS_OMP_ATOMIC_LOAD)
 DEFGSCODE(GIMPLE_OMP_ATOMIC_STORE, "gimple_omp_atomic_store",
-	  GSS_OMP_ATOMIC_STORE)
+	  GSS_OMP_ATOMIC_STORE_LAYOUT)
 
 /* GIMPLE_OMP_CONTINUE marks the location of the loop or sections
    iteration in partially lowered OpenMP code.  */
@@ -300,7 +300,7 @@ DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP)
    DATA_ARG is a local variable in the parent function containing data
    to be shared with CHILD_FN.  This is used to implement all the data
    sharing clauses.  */
-DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL)
+DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL_LAYOUT)
 
 /* GIMPLE_OMP_TASK <BODY, CLAUSES, CHILD_FN, DATA_ARG, COPY_FN,
 		    ARG_SIZE, ARG_ALIGN> represents
@@ -329,7 +329,7 @@ DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL)
 DEFGSCODE(GIMPLE_OMP_TASK, "gimple_omp_task", GSS_OMP_TASK)
 
 /* OMP_RETURN marks the end of an OpenMP directive.  */
-DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", GSS_OMP_ATOMIC_STORE)
+DEFGSCODE(GIMPLE_OMP_RETURN, "gimple_omp_return", GSS_OMP_ATOMIC_STORE_LAYOUT)
 
 /* OMP_SECTION <BODY> represents #pragma omp section.
    BODY is the sequence of statements in the section body.  */
@@ -351,7 +351,7 @@ DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", GSS_BASE)
 /* GIMPLE_OMP_SINGLE <BODY, CLAUSES> represents #pragma omp single
    BODY is the sequence of statements inside the single section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
-DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE)
+DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE_LAYOUT)
 
 /* GIMPLE_OMP_TARGET <BODY, CLAUSES, CHILD_FN> represents
    #pragma omp target {,data,update}
@@ -364,12 +364,12 @@ DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE)
    DATA_ARG is a vec of 3 local variables in the parent function
    containing data to be mapped to CHILD_FN.  This is used to
    implement the MAP clauses.  */
-DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL)
+DEFGSCODE(GIMPLE_OMP_TARGET, "gimple_omp_target", GSS_OMP_PARALLEL_LAYOUT)
 
 /* GIMPLE_OMP_TEAMS <BODY, CLAUSES> represents #pragma omp teams
    BODY is the sequence of statements inside the single section.
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
-DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE)
+DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_SINGLE_LAYOUT)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 

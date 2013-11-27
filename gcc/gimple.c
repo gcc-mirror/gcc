@@ -701,8 +701,8 @@ gimple_build_wce (gimple_seq cleanup)
 gimple
 gimple_build_resx (int region)
 {
-  gimple_statement_eh_ctrl *p =
-    as_a <gimple_statement_eh_ctrl> (
+  gimple_statement_resx *p =
+    as_a <gimple_statement_resx> (
       gimple_build_with_ops (GIMPLE_RESX, ERROR_MARK, 0));
   p->region = region;
   return p;
@@ -751,8 +751,8 @@ gimple_build_switch (tree index, tree default_label, vec<tree> args)
 gimple
 gimple_build_eh_dispatch (int region)
 {
-  gimple_statement_eh_ctrl *p =
-    as_a <gimple_statement_eh_ctrl> (
+  gimple_statement_eh_dispatch *p =
+    as_a <gimple_statement_eh_dispatch> (
       gimple_build_with_ops (GIMPLE_EH_DISPATCH, ERROR_MARK, 0));
   p->region = region;
   return p;

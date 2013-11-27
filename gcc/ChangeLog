@@ -1,3 +1,160 @@
+2013-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype.c (struct seen_tag): New.
+	(already_seen_tag): New.
+	(mark_tag_as_seen): New.
+	(walk_subclasses): Support having multiple subclasses using the
+	same tag by tracking which tags have already been seen, and using
+	this to avoid adding duplicate cases to the "switch" statement.
+	The call to already_seen_tag introduces an O(N^2) when running
+	gengtype on N, the number of tags, due to the repeated linear
+	search, but currently max(N) is relatively small (the number of
+	GSS codes, which is 26).
+	(walk_type): Pass in a seen_tag for use by the walk_subclasses
+	recursion.
+
+	* gimple.def (GIMPLE_OMP_ATOMIC_STORE, GIMPLE_OMP_RETURN): Rename
+	underlying GSS values for these codes (from GSS_OMP_ATOMIC_STORE to
+	GSS_OMP_ATOMIC_STORE_LAYOUT) to make clear that although
+	GIMPLE_OMP_RETURN happens to share the data layout of
+	GIMPLE_OMP_ATOMIC_STORE, they are not otherwise related.
+	(GIMPLE_OMP_PARALLEL, GIMPLE_OMP_TARGET): Likewise, rename
+	underlying GSS value from GSS_OMP_PARALLEL to
+	GSS_OMP_PARALLEL_LAYOUT to make clear that these gimple codes are
+	not directly related; they merely share in-memory layout.
+	(GIMPLE_OMP_SINGLE, GIMPLE_OMP_TEAMS): Likewise, rename GSS values
+	for these two codes from GSS_OMP_SINGLE to GSS_OMP_SINGLE_LAYOUT.
+
+	* gsstruct.def (GSS_OMP_PARALLEL, gimple_statement_omp_parallel):
+	Rename to...
+	(GSS_OMP_PARALLEL_LAYOUT, gimple_statement_omp_parallel_layout):
+	...these.
+	(GSS_OMP_SINGLE, gimple_statement_omp_single): Rename to...
+	(GSS_OMP_SINGLE_LAYOUT, gimple_statement_omp_single_layout):
+	...these.
+	(GSS_OMP_ATOMIC_STORE, gimple_statement_omp_atomic_store): Rename
+	to...
+	(GSS_OMP_ATOMIC_STORE_LAYOUT, gimple_statement_omp_atomic_store):
+	...these.
+
+	* gimple.h (gimple_statement_resx): New subclass of
+	gimple_statement_eh_ctrl, with the invariant that
+	stmt->code == GIMPLE_RESX.
+	(gimple_statement_eh_dispatch): New subclass of
+	gimple_statement_eh_ctrl, with the invariant that
+	stmt->code == GIMPLE_EH_DISPATH.
+
+	(gimple_statement_omp_parallel): The existing class expressed
+	a layout (GSS_OMP_PARALLEL), but the codes with that layout
+	are not all related, so it makes more sense for this class to
+	express a *code* (GIMPLE_OMP_PARALLEL).  GSS_OMP_PARALLEL has
+	been renamed to GSS_OMP_PARALLEL_LAYOUT to express this, so
+	rename the existing gimple_statement_omp_parallel class to...
+	(gimple_statement_omp_parallel_layout): ...this, expressing
+	a statement of structure layout GSS_OMP_PARALLEL_LAYOUT.
+	(gimple_statement_omp_taskreg): New subclass of
+	gimple_statement_omp_parallel_layout, expressing the invariant
+	that the code is one of GIMPLE_OMP_PARALLEL or GIMPLE_OMP_TASK,
+	as used by the various gimple_omp_taskreg_ accessors.
+	(gimple_statement_omp_parallel): Reintroduce this class, this time
+	as a subclass of gimple_statement_omp_taskreg to express the
+	invariant stmt->code == GIMPLE_OMP_PARALLEL.
+	(gimple_statement_omp_target) New class, subclassing
+	gimple_statement_omp_parallel_layout, to express the invariant
+	stmt->code == GIMPLE_OMP_TARGET.
+	(gimple_statement_omp_task): Update to inherit from
+	gimple_statement_omp_taskreg rather than
+	gimple_statement_omp_parallel.
+
+	(gimple_statement_omp_single): Rename to...
+	(gimple_statement_omp_single_layout): ...this, expressing the
+	invariant that the layout is GSS_OMP_SINGLE_LAYOUT.
+	(gimple_statement_omp_single): ...and reintroduce this name as
+	a subclass of gimple_statement_omp_single_layout, expressing
+	the invariant that code == GIMPLE_OMP_SINGLE.
+	(gimple_statement_omp_teams): New class, subclassing
+	gimple_statement_omp_single_layout, for the code GIMPLE_OMP_TEAMS.
+
+	(gimple_statement_omp_atomic_store): Rename to...
+	(gimple_statement_omp_atomic_store_layout): ...this, expressing
+	the invariant that the layout is GSS_OMP_ATOMIC_STORE_LAYOUT.
+	(gimple_statement_omp_atomic_store): ...and reintroduce this
+	name as a subclass of gimple_statement_omp_atomic_store_layout
+	with code == GIMPLE_OMP_ATOMIC_STORE.
+	(gimple_statement_omp_return): New class, subclassing
+	gimple_statement_omp_atomic_store_layout for the code
+	GIMPLE_OMP_RETURN.
+
+	(is_a_helper <gimple_statement_eh_ctrl>::test): Delete.
+	(is_a_helper <gimple_statement_resx>::test): New.
+	(is_a_helper <gimple_statement_eh_dispatch>::test): New.
+	(is_a_helper <gimple_statement_omp_atomic_store>::test): Only
+	check for GIMPLE_OMP_ATOMIC_STORE, not for GIMPLE_OMP_RETURN.
+	(is_a_helper <gimple_statement_omp_return>::test): New.
+	(is_a_helper <gimple_statement_omp_taskreg>::test): New.
+	(is_a_helper <gimple_statement_omp_parallel>::test): Only check
+	for GIMPLE_OMP_PARALLEL, not for GIMPLE_OMP_TASK or
+	GIMPLE_OMP_TARGET.
+	(is_a_helper <gimple_statement_omp_target>::test): New.
+	(is_a_helper <gimple_statement_omp_single>::test): Only check
+	for GIMPLE_OMP_SINGLE, not for GIMPLE_OMP_TEAMS.
+	(is_a_helper <gimple_statement_omp_teams>::test): New.
+
+	(is_a_helper <const gimple_statement_eh_ctrl>::test): Delete.
+	(is_a_helper <const gimple_statement_resx>::test): New.
+	(is_a_helper <const gimple_statement_eh_dispatch>::test): New.
+	(is_a_helper <const gimple_statement_omp_atomic_store>::test): Only
+	check for GIMPLE_OMP_ATOMIC_STORE, not for GIMPLE_OMP_RETURN.
+	(is_a_helper <const gimple_statement_omp_return>::test): New.
+	(is_a_helper <const gimple_statement_omp_taskreg>::test): New.
+	(is_a_helper <const gimple_statement_omp_parallel>::test): Only
+	check for GIMPLE_OMP_PARALLEL, not for GIMPLE_OMP_TASK or
+	GIMPLE_OMP_TARGET.
+	(is_a_helper <const gimple_statement_omp_target>::test): New.
+	(is_a_helper <const gimple_statement_omp_single>::test): Only
+	check for GIMPLE_OMP_SINGLE, not for GIMPLE_OMP_TEAMS.
+	(is_a_helper <const gimple_statement_omp_teams>::test): New.
+
+	(gimple_omp_return_set_lhs, gimple_omp_return_lhs,
+	gimple_omp_return_lhs_ptr): Replace bogus downcasts to
+	gimple_statement_omp_atomic_store with downcasts to
+	gimple_statement_omp_return, thus requiring that the code be
+	GIMPLE_OMP_RETURN.
+	(gimple_resx_region, gimple_resx_set_region): Replace bogus
+	downcasts to gimple_statement_eh_ctrl with downcasts to
+	gimple_statement_resx, thus requiring that the code be
+	GIMPLE_RESX.
+	(gimple_eh_dispatch_region, gimple_eh_dispatch_set_region):
+	Replace bogus downcasts to const gimple_statement_eh_ctrl with
+	downcasts to gimple_statement_eh_dispatch, thus requiring that
+	the code be GIMPLE_EH_DISPATCH.
+	(gimple_omp_taskreg_clauses, gimple_omp_taskreg_clauses_ptr)
+	gimple_omp_taskreg_set_clauses, gimple_omp_taskreg_child_fn,
+	gimple_omp_taskreg_child_fn_ptr, gimple_omp_taskreg_set_child_fn,
+	gimple_omp_taskreg_data_arg, gimple_omp_taskreg_data_arg_ptr,
+	gimple_omp_taskreg_set_data_arg): Replace bogus downcasts to
+	gimple_statement_omp_parallel with downcasts to
+	gimple_statement_omp_taskreg, thus requiring that the code be
+	either GIMPLE_OMP_PARALLEL or GIMPLE_OMP_TASK.
+	(gimple_omp_target_clauses, gimple_omp_target_clauses_ptr
+	gimple_omp_target_set_clauses, gimple_omp_target_child_fn
+	gimple_omp_target_child_fn_ptr, gimple_omp_target_set_child_fn
+	gimple_omp_target_data_arg, gimple_omp_target_data_arg_ptr
+	gimple_omp_target_set_data_arg): Replace bogus downcasts to
+	gimple_statement_omp_parallel with downcasts to
+	gimple_statement_omp_target, thus requiring that the code be
+	GIMPLE_OMP_TARGET.
+	(gimple_omp_teams_clauses, gimple_omp_teams_clauses_ptr
+	gimple_omp_teams_set_clauses): Replace bogus downcasts to
+	gimple_statement_omp_single with downcasts to
+	gimple_statement_omp_teams, thus requiring that the code be
+	GIMPLE_OMP_TEAMS.
+
+	* gimple.c (gimple_build_resx): Fix bogus as_a<> to use
+	gimple_statement_resx.
+	(gimple_build_eh_dispatch): Fix bogus as_a<> to use
+	gimple_statement_eh_dispatch.
+
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59014
