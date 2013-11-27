@@ -1030,51 +1030,51 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      res = wi::div_trunc (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::div_trunc (arg1, arg2, sign, &overflow);
       break;
 
     case FLOOR_DIV_EXPR:
-      res = wi::div_floor (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::div_floor (arg1, arg2, sign, &overflow);
       break;
 
     case CEIL_DIV_EXPR:
-      res = wi::div_ceil (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::div_ceil (arg1, arg2, sign, &overflow);
       break;
 
     case ROUND_DIV_EXPR:
-      res = wi::div_round (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::div_round (arg1, arg2, sign, &overflow);
       break;
 
     case TRUNC_MOD_EXPR:
-      res = wi::mod_trunc (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::mod_trunc (arg1, arg2, sign, &overflow);
       break;
 
     case FLOOR_MOD_EXPR:
-      res = wi::mod_floor (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::mod_floor (arg1, arg2, sign, &overflow);
       break;
 
     case CEIL_MOD_EXPR:
-      res = wi::mod_ceil (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::mod_ceil (arg1, arg2, sign, &overflow);
       break;
 
     case ROUND_MOD_EXPR:
-      res = wi::mod_round (arg1, arg2, sign, &overflow);
-      if (overflow)
+      if (arg2 == 0)
 	return NULL_TREE;
+      res = wi::mod_round (arg1, arg2, sign, &overflow);
       break;
 
     case MIN_EXPR:
