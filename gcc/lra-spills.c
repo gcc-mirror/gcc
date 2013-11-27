@@ -477,9 +477,30 @@ spill_pseudos (void)
       FOR_BB_INSNS (bb, insn)
 	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
 	  {
+	    rtx *link_loc, link;
 	    remove_pseudos (&PATTERN (insn), insn);
 	    if (CALL_P (insn))
 	      remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn);
+	    for (link_loc = &REG_NOTES (insn);
+		 (link = *link_loc) != NULL_RTX;
+		 link_loc = &XEXP (link, 1))
+	      {
+		switch (REG_NOTE_KIND (link))
+		  {
+		  case REG_FRAME_RELATED_EXPR:
+		  case REG_CFA_DEF_CFA:
+		  case REG_CFA_ADJUST_CFA:
+		  case REG_CFA_OFFSET:
+		  case REG_CFA_REGISTER:
+		  case REG_CFA_EXPRESSION:
+		  case REG_CFA_RESTORE:
+		  case REG_CFA_SET_VDRAP:
+		    remove_pseudos (&XEXP (link, 0), insn);
+		    break;
+		  default:
+		    break;
+		  }
+	      }
 	    if (lra_dump_file != NULL)
 	      fprintf (lra_dump_file,
 		       "Changing spilled pseudos to memory in insn #%u\n",
