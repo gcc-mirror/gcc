@@ -498,7 +498,7 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_LINKONCE;
 
   /* See if we already have an entry for this section.  */
-  slot = htab.find_slot ((unsigned int *)name, INSERT);
+  slot = htab.find_slot ((const unsigned int *)name, INSERT);
   if (!*slot)
     {
       *slot = (unsigned int *) xmalloc (sizeof (unsigned int));
