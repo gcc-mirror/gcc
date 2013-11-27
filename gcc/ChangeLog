@@ -337,37 +337,6 @@
 	for the inner loop if collapse_bb is non-NULL.
 	(expand_omp_simd): Use cont_bb rather than e->dest as latch.
 
-2013-11-26  Bernd Edlinger  <bernd.edlinger@hotmail.de>
-
-	Remove parameter keep_aligning from get_inner_reference.
-	* tree.h (get_inner_reference): Adjust header.
-	* expr.c (get_inner_reference): Remove parameter keep_aligning.
-	(get_bit_range, expand_assignment,
-	expand_expr_addr_expr_1, expand_expr_real_1): Adjust.
-	* asan.c (instrument_derefs): Adjust.
-	* builtins.c (get_object_alignment_2): Adjust. Remove handling of
-	VIEW_CONVERT_EXPR.
-	* cfgexpand.c (expand_debug_expr): Adjust.
-	* dbxout.c (dbxout_expand_expr): Adjust.
-	* dwarf2out.c (loc_list_for_address_of_addr_expr_of_indirect_ref,
-	loc_list_from_tree, fortran_common): Adjust.
-	* fold-const.c (optimize_bit_field_compare,
-	decode_field_reference, fold_unary_loc, fold_comparison,
-	split_address_to_core_and_offset): Adjust.
-	* gimple-ssa-strength-reduction.c (slsr_process_ref): Adjust.
-	* simplifx-rtx.c (delegitimize_mem_from_attrs): Adjust.
-	* tree-affine.c (tree_to_aff_combination,
-	get_inner_reference_aff): Adjust.
-	* tree-data-ref.c (split_constant_offset_1,
-	dr_analyze_innermost): Adjust.
-	* tree-vect-data-refs.c (vect_check_gather,
-	vect_analyze_data_refs): Adjust.
-	* tree-scalar-evolution.c (interpret_rhs_expr): Adjust.
-	* tree-ssa-loop-ivopts.c (may_be_unaligned_p,
-	split_address_cost): Adjust.
-	* tsan.c (instrument_expr): Adjust.
-	* config/mips/mips.c (r10k_safe_mem_expr_p): Adjust.
-
 2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/arm/arm.c (arm_legitimize_address): Check xop1 is not

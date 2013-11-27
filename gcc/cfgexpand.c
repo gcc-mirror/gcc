@@ -3941,7 +3941,7 @@ expand_debug_expr (tree exp)
 	tree offset;
 	int volatilep = 0;
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
-					&mode1, &unsignedp, &volatilep);
+					&mode1, &unsignedp, &volatilep, false);
 	rtx orig_op0;
 
 	if (bitsize == 0)

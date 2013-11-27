@@ -1658,7 +1658,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 
 	  base = get_inner_reference (TREE_OPERAND (rhs1, 0),
 				      &bitsize, &bitpos, &offset,
-				      &mode, &unsignedp, &volatilep);
+				      &mode, &unsignedp, &volatilep, false);
 
 	  if (TREE_CODE (base) == MEM_REF)
 	    {

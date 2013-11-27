@@ -6269,7 +6269,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 	  int unsignedp, volatilep;
 
 	  inner = get_inner_reference (inner, &bitsize, &bitpos, &offset,
-				       &mode, &unsignedp, &volatilep);
+				       &mode, &unsignedp, &volatilep, false);
 	  /* If the offset is variable, err on the side of caution.  */
 	  if (offset)
 	    inner = NULL_TREE;
