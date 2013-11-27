@@ -1,3 +1,12 @@
+2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (track_expr_p): Do not track declarations for parts
+	of tracked parameters.
+	(add_stores): Do not track values for tracked parameters passed in
+	multiple locations.
+	(vt_get_decl_and_offset): Handle PARALLEL.
+	(vt_add_function_parameter): Handle parameters with incoming PARALLEL.
+
 2013-11-27  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Do not
@@ -11,9 +20,8 @@
 
 2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
-	* fold-const.c
-	(int_const_binop_1): Make INT_MIN % -1 return 0 with the overflow
-	bit set.
+	* fold-const.c (int_const_binop_1): Make INT_MIN % -1 return 0 with the
+	overflow bit set.
 
 2013-11-27  Richard Biener  <rguenther@suse.de>
 
