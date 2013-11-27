@@ -1,3 +1,10 @@
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59306
+	* ubsan.c (instrument_null): Use gimple_store_p/gimple_assign_load_p
+	instead of walk_gimple_op.
+	(ubsan_pass): Adjust.  Call instrument_null only if SANITIZE_NULL.
+
 2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
