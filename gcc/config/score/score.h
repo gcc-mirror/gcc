@@ -395,9 +395,6 @@ enum reg_class
 /* The class value for index registers.  */
 #define INDEX_REG_CLASS                NO_REGS
 
-extern enum reg_class score_char_to_class[256];
-#define REG_CLASS_FROM_LETTER(C)       score_char_to_class[(unsigned char) (C)]
-
 /* Addressing modes, and classification of registers for them.  */
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) \
   score_regno_mode_ok_for_base_p (REGNO, 1)
