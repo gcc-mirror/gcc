@@ -1,3 +1,9 @@
+2013-11-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* libgcc2.c (__udivmoddi4): Define new implementation when
+	TARGET_HAS_NO_HW_DIVIDE is defined, for processors without any
+	divide instructions.
+
 2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/crt1.S (start): Don't do VBR_SETUP for SH2E.

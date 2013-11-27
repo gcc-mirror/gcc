@@ -5365,6 +5365,14 @@ If this macro evaluates to @code{false} the comparison functions return
 in @file{libgcc.a}, you do not need to define this macro.
 @end defmac
 
+@defmac TARGET_HAS_NO_HW_DIVIDE
+This macro should be defined if the target has no hardware divide
+instructions.  If this macro is defined, GCC will use an algorithm which
+make use of simple logical and arithmetic operations for 64-bit
+division.  If the macro is not defined, GCC will use an algorithm which
+make use of a 64-bit by 32-bit divide primitive.
+@end defmac
+
 @cindex @code{EDOM}, implicit usage
 @findex matherr
 @defmac TARGET_EDOM
