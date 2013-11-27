@@ -31,7 +31,8 @@ dg-finish
 
 set library_var [get_multilibs]
 # Pointing the ld_library_path to the Cilk Runtime library binaries. 
-set ld_library_path "${library_var}/libcilkrts/.libs"
+append ld_library_path ":${library_var}/libcilkrts/.libs"
+set_ld_library_path_env_vars
 
 global TEST_EXTRA_LIBS
 set TEST_EXTRA_LIBS "-L${library_var}/libcilkrts/.libs"
