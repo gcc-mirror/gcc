@@ -1,3 +1,8 @@
+2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59288
+	* gcc.dg/torture/pr59288.c: New testcase.
+
 2013-11-27  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/undefined-1.c: New test.

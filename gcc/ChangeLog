@@ -1,3 +1,9 @@
+2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59288
+	* tree-vect-loop.c (get_initial_def_for_induction): Do not
+	re-analyze the PHI but use STMT_VINFO_LOOP_PHI_EVOLUTION_PART.
+
 2013-11-27  Marek Polacek  <polacek@redhat.com>
 
 	* ubsan.c (ubsan_type_descriptor): If varpool_get_node returns NULL
