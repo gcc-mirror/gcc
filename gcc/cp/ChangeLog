@@ -1,3 +1,9 @@
+2013-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58647
+	* semantics.c (cxx_eval_constant_expression, [COMPONENT_REF]):
+	Handle function COMPONENT_REFs.
+
 2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,8 @@
+2013-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58647
+	* g++.dg/parse/crash66.C: New.
+
 2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* gcc.dg/c90-const-expr-8.c: Look for overflow on INT_MIN % -1.
