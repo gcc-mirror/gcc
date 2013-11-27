@@ -1,3 +1,7 @@
+2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* soft-fp/op-4.h: Update from glibc.
+
 2013-11-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* libgcc2.c (__udivmoddi4): Define new implementation when
@@ -24,7 +28,7 @@
 
 2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
-	 * config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.
+	* config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.
 
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
