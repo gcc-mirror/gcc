@@ -1,3 +1,8 @@
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59306
+	* g++.dg/ubsan/pr59306.C: New test.
+
 2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

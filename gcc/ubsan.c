@@ -614,24 +614,22 @@ instrument_mem_ref (tree t, gimple_stmt_iterator *iter, bool is_lhs)
   gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
 
-/* Callback function for the pointer instrumentation.  */
+/* Perform the pointer instrumentation.  */
 
-static tree
-instrument_null (tree *tp, int * /*walk_subtree*/, void *data)
+static void
+instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 {
-  tree t = *tp;
+  gimple stmt = gsi_stmt (gsi);
+  tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
+  t = get_base_address (t);
   const enum tree_code code = TREE_CODE (t);
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-
   if (code == MEM_REF
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
-    instrument_mem_ref (TREE_OPERAND (t, 0), &wi->gsi, wi->is_lhs);
+    instrument_mem_ref (TREE_OPERAND (t, 0), &gsi, is_lhs);
   else if (code == ADDR_EXPR
 	   && POINTER_TYPE_P (TREE_TYPE (t))
 	   && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == METHOD_TYPE)
-    instrument_member_call (&wi->gsi);
-
-  return NULL_TREE;
+    instrument_member_call (&gsi);
 }
 
 /* Gate and execute functions for ubsan pass.  */
@@ -646,7 +644,6 @@ ubsan_pass (void)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
-	  struct walk_stmt_info wi;
 	  gimple stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt) || gimple_clobber_p (stmt))
 	    {
@@ -654,9 +651,14 @@ ubsan_pass (void)
 	      continue;
 	    }
 
-	  memset (&wi, 0, sizeof (wi));
-	  wi.gsi = gsi;
-	  walk_gimple_op (stmt, instrument_null, &wi);
+	  if (flag_sanitize & SANITIZE_NULL)
+	    {
+	      if (gimple_store_p (stmt))
+		instrument_null (gsi, true);
+	      if (gimple_assign_load_p (stmt))
+		instrument_null (gsi, false);
+	    }
+
 	  gsi_next (&gsi);
 	}
     }
