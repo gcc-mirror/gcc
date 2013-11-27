@@ -1,3 +1,9 @@
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	* ubsan.c (ubsan_type_descriptor): If varpool_get_node returns NULL
+	for a decl, recreate that decl.  Save into the hash table VAR_DECLs
+	rather than ADDR_EXPRs.
+
 2013-11-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* config/ia64/hpux.h (TARGET_LIBC_HAS_FUNCTION): Fix typo.

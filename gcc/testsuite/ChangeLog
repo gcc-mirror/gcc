@@ -1,3 +1,7 @@
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/undefined-1.c: New test.
+
 2013-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59014
