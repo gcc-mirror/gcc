@@ -1,3 +1,9 @@
+2013-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/cilk-plus/cilk-plus.exp: Append to ld_library_path.
+	Call set_ld_library_path_env_vars.
+	* g++.dg/cilk-plus/cilk-plus.exp: Likewise.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
