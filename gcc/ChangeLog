@@ -1,3 +1,8 @@
+2013-11-27  Chen Liqin <liqin.gcc@gmail.com>
+
+	* config/score/score.h (REG_CLASS_FROM_LETTER): Delete.
+	(score_char_to_class): Likewise.
+
 2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* fold-const.c
