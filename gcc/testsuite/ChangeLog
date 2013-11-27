@@ -1,3 +1,16 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57393
+	PR tree-optimization/58018
+	PR tree-optimization/58131
+	* gcc.dg/torture/pr57393-1.c: New test.
+	* gcc.dg/torture/pr57393-2.c: New test.
+	* gcc.dg/torture/pr57393-3.c: New test.
+	* gcc.dg/torture/pr58018.c: New test.
+	* gcc.dg/torture/pr58131.c: New test.
+	* gfortran.dg/pr57393-1.f90: New test.
+	* gfortran.dg/pr57393-2.f90: New test.
+
 2013-11-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gfortran.dg/nan_7.f90: Disable for little endian PowerPC.
