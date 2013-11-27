@@ -376,6 +376,19 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  if (gimple_get_lhs (stmt) == NULL_TREE)
 	    {
+	      if (is_gimple_call (stmt))
+		{
+		  /* Ignore calls with no lhs.  These must be calls to
+		     #pragma omp simd functions, and what vectorization factor
+		     it really needs can't be determined until
+		     vectorizable_simd_clone_call.  */
+		  if (!analyze_pattern_stmt && gsi_end_p (pattern_def_si))
+		    {
+		      pattern_def_seq = NULL;
+		      gsi_next (&si);
+		    }
+		  continue;
+		}
 	      if (dump_enabled_p ())
 		{
 	          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5699,7 +5712,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   bool grouped_store;
   bool slp_scheduled = false;
-  unsigned int nunits;
   gimple stmt, pattern_stmt;
   gimple_seq pattern_def_seq = NULL;
   gimple_stmt_iterator pattern_def_si = gsi_none ();
@@ -5957,16 +5969,18 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		transform_pattern_stmt = false;
             }
 
-	  gcc_assert (STMT_VINFO_VECTYPE (stmt_info));
-	  nunits = (unsigned int) TYPE_VECTOR_SUBPARTS (
-                                               STMT_VINFO_VECTYPE (stmt_info));
-	  if (!STMT_SLP_TYPE (stmt_info)
-	      && nunits != (unsigned int) vectorization_factor
-              && dump_enabled_p ())
-	    /* For SLP VF is set according to unrolling factor, and not to
-	       vector size, hence for SLP this print is not valid.  */
-            dump_printf_loc (MSG_NOTE, vect_location,
-			     "multiple-types.\n");
+	  if (STMT_VINFO_VECTYPE (stmt_info))
+	    {
+	      unsigned int nunits
+		= (unsigned int)
+		  TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+	      if (!STMT_SLP_TYPE (stmt_info)
+		  && nunits != (unsigned int) vectorization_factor
+		  && dump_enabled_p ())
+		  /* For SLP VF is set according to unrolling factor, and not
+		     to vector size, hence for SLP this print is not valid.  */
+		dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
+	    }
 
 	  /* SLP. Schedule all the SLP instances when the first SLP stmt is
 	     reached.  */

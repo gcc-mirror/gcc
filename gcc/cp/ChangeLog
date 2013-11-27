@@ -1,3 +1,9 @@
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): For #pragma omp declare simd
+	linear clause step call maybe_constant_value.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 

@@ -426,6 +426,19 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      enqueue_node (cnode, &first, reachable);
 		    }
 		}
+
+	    }
+	  /* If any reachable function has simd clones, mark them as
+	     reachable as well.  */
+	  if (cnode->simd_clones)
+	    {
+	      cgraph_node *next;
+	      for (next = cnode->simd_clones;
+		   next;
+		   next = next->simdclone->next_clone)
+		if (in_boundary_p
+		    || !pointer_set_insert (reachable, next))
+		  enqueue_node (next, &first, reachable);
 	    }
 	}
       /* When we see constructor of external variable, keep referred nodes in the

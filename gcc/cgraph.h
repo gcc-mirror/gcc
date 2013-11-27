@@ -256,6 +256,99 @@ struct GTY(()) cgraph_clone_info
   bitmap combined_args_to_skip;
 };
 
+enum cgraph_simd_clone_arg_type
+{
+  SIMD_CLONE_ARG_TYPE_VECTOR,
+  SIMD_CLONE_ARG_TYPE_UNIFORM,
+  SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP,
+  SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP,
+  SIMD_CLONE_ARG_TYPE_MASK
+};
+
+/* Function arguments in the original function of a SIMD clone.
+   Supplementary data for `struct simd_clone'.  */
+
+struct GTY(()) cgraph_simd_clone_arg {
+  /* Original function argument as it originally existed in
+     DECL_ARGUMENTS.  */
+  tree orig_arg;
+
+  /* orig_arg's function (or for extern functions type from
+     TYPE_ARG_TYPES).  */
+  tree orig_type;
+
+  /* If argument is a vector, this holds the vector version of
+     orig_arg that after adjusting the argument types will live in
+     DECL_ARGUMENTS.  Otherwise, this is NULL.
+
+     This basically holds:
+       vector(simdlen) __typeof__(orig_arg) new_arg.  */
+  tree vector_arg;
+
+  /* vector_arg's type (or for extern functions new vector type.  */
+  tree vector_type;
+
+  /* If argument is a vector, this holds the array where the simd
+     argument is held while executing the simd clone function.  This
+     is a local variable in the cloned function.  Its content is
+     copied from vector_arg upon entry to the clone.
+
+     This basically holds:
+       __typeof__(orig_arg) simd_array[simdlen].  */
+  tree simd_array;
+
+  /* A SIMD clone's argument can be either linear (constant or
+     variable), uniform, or vector.  */
+  enum cgraph_simd_clone_arg_type arg_type;
+
+  /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP this is
+     the constant linear step, if arg_type is
+     SIMD_CLONE_ARG_TYPE_LINEAR_VARIABLE_STEP, this is index of
+     the uniform argument holding the step, otherwise 0.  */
+  HOST_WIDE_INT linear_step;
+
+  /* Variable alignment if available, otherwise 0.  */
+  unsigned int alignment;
+};
+
+/* Specific data for a SIMD function clone.  */
+
+struct GTY(()) cgraph_simd_clone {
+  /* Number of words in the SIMD lane associated with this clone.  */
+  unsigned int simdlen;
+
+  /* Number of annotated function arguments in `args'.  This is
+     usually the number of named arguments in FNDECL.  */
+  unsigned int nargs;
+
+  /* Max hardware vector size in bits for integral vectors.  */
+  unsigned int vecsize_int;
+
+  /* Max hardware vector size in bits for floating point vectors.  */
+  unsigned int vecsize_float;
+
+  /* The mangling character for a given vector size.  This is is used
+     to determine the ISA mangling bit as specified in the Intel
+     Vector ABI.  */
+  unsigned char vecsize_mangle;
+
+  /* True if this is the masked, in-branch version of the clone,
+     otherwise false.  */
+  unsigned int inbranch : 1;
+
+  /* True if this is a Cilk Plus variant.  */
+  unsigned int cilk_elemental : 1;
+
+  /* Doubly linked list of SIMD clones.  */
+  struct cgraph_node *prev_clone, *next_clone;
+
+  /* Original cgraph node the SIMD clones were created for.  */
+  struct cgraph_node *origin;
+
+  /* Annotated function arguments for the original function.  */
+  struct cgraph_simd_clone_arg GTY((length ("%h.nargs"))) args[1];
+};
+
 
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
@@ -283,6 +376,12 @@ public:
   htab_t GTY((param_is (struct cgraph_edge))) call_site_hash;
   /* Declaration node used to be clone of. */
   tree former_clone_of;
+
+  /* If this is a SIMD clone, this points to the SIMD specific
+     information for it.  */
+  struct cgraph_simd_clone *simdclone;
+  /* If this function has SIMD clones, this points to the first clone.  */
+  struct cgraph_node *simd_clones;
 
   /* Interprocedural passes scheduled to have their transform functions
      applied next time we execute local pass on them.  We maintain it

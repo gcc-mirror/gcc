@@ -903,6 +903,9 @@ struct GTY(()) tree_base {
        CALL_ALLOCA_FOR_VAR_P in
            CALL_EXPR
 
+       OMP_CLAUSE_LINEAR_VARIABLE_STRIDE in
+	   OMP_CLAUSE_LINEAR
+
    side_effects_flag:
 
        TREE_SIDE_EFFECTS in

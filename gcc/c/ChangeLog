@@ -1,3 +1,9 @@
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_builtin_function_ext_scope): Avoid binding if
+	external_scope is NULL.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
