@@ -272,8 +272,12 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   type = TYPE_MAIN_VARIANT (type);
 
   tree decl = decl_for_type_lookup (type);
-  if (decl != NULL_TREE)
-    return decl;
+  /* It is possible that some of the earlier created DECLs were found
+     unused, in that case they weren't emitted and varpool_get_node
+     returns NULL node on them.  But now we really need them.  Thus,
+     renew them here.  */
+  if (decl != NULL_TREE && varpool_get_node (decl))
+    return build_fold_addr_expr (decl);
 
   tree dtype = ubsan_type_descriptor_type ();
   tree type2 = type;
@@ -372,11 +376,10 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   DECL_INITIAL (decl) = ctor;
   rest_of_decl_compilation (decl, 1, 0);
 
-  /* Save the address of the VAR_DECL into the hash table.  */
-  decl = build_fold_addr_expr (decl);
+  /* Save the VAR_DECL into the hash table.  */
   decl_for_type_insert (type, decl);
 
-  return decl;
+  return build_fold_addr_expr (decl);
 }
 
 /* Create a structure for the ubsan library.  NAME is a name of the new
