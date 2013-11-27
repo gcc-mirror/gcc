@@ -1,3 +1,9 @@
+2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* fold-const.c
+	(int_const_binop_1): Make INT_MIN % -1 return 0 with the overflow
+	bit set.
+
 2013-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58723
