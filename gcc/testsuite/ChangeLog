@@ -1,3 +1,9 @@
+2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
+	    Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	PR target/56788
+	* gcc.target/i386/xop-frczX.c: New test.
+
 2013-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59014
