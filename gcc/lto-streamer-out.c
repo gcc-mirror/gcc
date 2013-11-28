@@ -135,8 +135,10 @@ tree_is_indexable (tree t)
      definition.  */
   if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
-  else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
-	   && !TREE_STATIC (t))
+  else if (((TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+	    || TREE_CODE (t) == TYPE_DECL
+	    || TREE_CODE (t) == CONST_DECL)
+	   && decl_function_context (t))
     return false;
   else if (TREE_CODE (t) == DEBUG_EXPR_DECL)
     return false;
