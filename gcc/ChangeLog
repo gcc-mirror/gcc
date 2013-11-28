@@ -1,3 +1,8 @@
+2013-11-28  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (v7m_extra_costs): New table.
+	(arm_v7m_tune): Use it.
+
 2013-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.h (TIME_LIBRARY): Define.
