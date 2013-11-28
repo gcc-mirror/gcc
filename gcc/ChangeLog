@@ -1,3 +1,9 @@
+2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59330
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Simplify
+	and fix delayed marking of free calls not necessary.
+
 2013-11-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa-propagate.c (valid_gimple_call_p): Pass TREE_TYPE to
