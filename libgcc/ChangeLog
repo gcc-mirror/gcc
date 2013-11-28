@@ -1,3 +1,8 @@
+2013-11-26  Matthew Leach  <matthew.leach@arm.com>
+
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state):	Check
+	for correct opcodes on BE.
+
 2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* soft-fp/op-4.h: Update from glibc.

@@ -25,6 +25,19 @@
 #include <signal.h>
 #include <sys/ucontext.h>
 
+
+/* Since insns are always stored LE, on a BE system the opcodes will
+   be loaded byte-reversed.  Therefore, define two sets of opcodes,
+   one for LE and one for BE.  */
+
+#if __AARCH64EB__
+#define MOVZ_X8_8B	0x681180d2
+#define SVC_0		0x010000d4
+#else
+#define MOVZ_X8_8B	0xd2801168
+#define SVC_0		0xd4000001
+#endif
+
 #define MD_FALLBACK_FRAME_STATE_FOR aarch64_fallback_frame_state
 
 static _Unwind_Reason_Code
@@ -55,7 +68,7 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
      0xd2801168         movz x8, #0x8b
      0xd4000001         svc  0x0
    */
-  if (pc[0] != 0xd2801168 || pc[1] != 0xd4000001)
+  if (pc[0] != MOVZ_X8_8B || pc[1] != SVC_0)
     {
       return _URC_END_OF_STACK;
     }
