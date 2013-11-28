@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void asan_function_start (void);
 extern void asan_finish_file (void);
-extern rtx asan_emit_stack_protection (rtx, HOST_WIDE_INT *, tree *, int);
+extern rtx asan_emit_stack_protection (rtx, rtx, unsigned int, HOST_WIDE_INT *,
+				       tree *, int);
 extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
@@ -49,8 +50,10 @@ extern alias_set_type asan_shadow_set;
 #define ASAN_STACK_MAGIC_MIDDLE		0xf2
 #define ASAN_STACK_MAGIC_RIGHT		0xf3
 #define ASAN_STACK_MAGIC_PARTIAL	0xf4
+#define ASAN_STACK_MAGIC_USE_AFTER_RET	0xf5
 
-#define ASAN_STACK_FRAME_MAGIC	0x41b58ab3
+#define ASAN_STACK_FRAME_MAGIC		0x41b58ab3
+#define ASAN_STACK_RETIRED_MAGIC	0x45e0360e
 
 /* Return true if DECL should be guarded on the stack.  */
 
