@@ -178,12 +178,14 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   return t;
 }
 
-/* Store range information MIN, and MAX to tree ssa_name NAME.  */
+/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name NAME.  */
 
 void
-set_range_info (tree name, const widest_int &min, const widest_int &max)
+set_range_info (tree name, enum value_range_type range_type,
+		const widest_int &min, const widest_int &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
 
   /* Allocate if not available.  */
@@ -195,12 +197,16 @@ set_range_info (tree name, const widest_int &min, const widest_int &max)
 						false);
     }
 
+  /* Record the range type.  */
+  if (SSA_NAME_RANGE_TYPE (name) != range_type)
+    SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
+
   /* Set the values.  */
   ri->min = min;
   ri->max = max;
 
   /* If it is a range, try to improve nonzero_bits from the min/max.  */
-  if (wi::cmp (min, max, TYPE_SIGN (TREE_TYPE (name))) != 1)
+  if (range_type == VR_RANGE)
     {
       int prec = TYPE_PRECISION (TREE_TYPE (name));
 
@@ -223,7 +229,6 @@ set_range_info (tree name, const widest_int &min, const widest_int &max)
 enum value_range_type
 get_range_info (const_tree name, widest_int *min, widest_int *max)
 {
-  enum value_range_type range_type;
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (min && max);
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
@@ -234,22 +239,9 @@ get_range_info (const_tree name, widest_int *min, widest_int *max)
 	      > 2 * HOST_BITS_PER_WIDE_INT))
     return VR_VARYING;
 
-  /* If min > max, it is VR_ANTI_RANGE.  */
-  if (wi::cmp (ri->min, ri->max, TYPE_SIGN (TREE_TYPE (name))) == 1)
-    {
-      /* VR_ANTI_RANGE ~[min, max] is encoded as [max + 1, min - 1].  */
-      range_type = VR_ANTI_RANGE;
-      *min = ri->max + 1;
-      *max = ri->min - 1;
-    }
-  else
-  {
-    /* Otherwise (when min <= max), it is VR_RANGE.  */
-    range_type = VR_RANGE;
-    *min = ri->min;
-    *max = ri->max;
-  }
-  return range_type;
+  *min = ri->min;
+  *max = ri->max;
+  return SSA_NAME_RANGE_TYPE (name);
 }
 
 /* Change non-zero bits bitmask of NAME.  */
@@ -259,7 +251,7 @@ set_nonzero_bits (tree name, const widest_int &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   if (SSA_NAME_RANGE_INFO (name) == NULL)
-    set_range_info (name,
+    set_range_info (name, VR_RANGE,
 		    wi::to_widest (TYPE_MIN_VALUE (TREE_TYPE (name))),
 		    wi::to_widest (TYPE_MAX_VALUE (TREE_TYPE (name))));
   range_info_def *ri = SSA_NAME_RANGE_INFO (name);
@@ -490,15 +482,17 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }
 
-/* Creates a duplicate of the range_info_def at RANGE_INFO for use by
-   the SSA name NAME.  */
+/* Creates a duplicate of the range_info_def at RANGE_INFO of type
+   RANGE_TYPE for use by the SSA name NAME.  */
 void
-duplicate_ssa_name_range_info (tree name, struct range_info_def *range_info)
+duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
+			       struct range_info_def *range_info)
 {
   struct range_info_def *new_range_info;
 
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (!SSA_NAME_RANGE_INFO (name));
+  gcc_assert (!SSA_NAME_ANTI_RANGE_P (name));
 
   if (!range_info)
     return;
@@ -506,6 +500,8 @@ duplicate_ssa_name_range_info (tree name, struct range_info_def *range_info)
   new_range_info = ggc_alloc_range_info_def ();
   *new_range_info = *range_info;
 
+  gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
+  SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
   SSA_NAME_RANGE_INFO (name) = new_range_info;
 }
 
@@ -530,7 +526,8 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
       struct range_info_def *old_range_info = SSA_NAME_RANGE_INFO (name);
 
       if (old_range_info)
-	duplicate_ssa_name_range_info (new_name, old_range_info);
+	duplicate_ssa_name_range_info (new_name, SSA_NAME_RANGE_TYPE (name),
+				       old_range_info);
     }
 
   return new_name;
