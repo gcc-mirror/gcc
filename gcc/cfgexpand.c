@@ -1833,7 +1833,7 @@ expand_used_vars (void)
 	  sz = data.asan_vec[0] - prev_offset;
 	  if (data.asan_alignb > ASAN_RED_ZONE_SIZE
 	      && data.asan_alignb <= 4096
-	      && sz + ASAN_RED_ZONE_SIZE >= data.asan_alignb)
+	      && sz + ASAN_RED_ZONE_SIZE >= (int) data.asan_alignb)
 	    redzonesz = ((sz + ASAN_RED_ZONE_SIZE + data.asan_alignb - 1)
 			 & ~(data.asan_alignb - HOST_WIDE_INT_1)) - sz;
 	  offset
