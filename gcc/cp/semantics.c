@@ -6548,7 +6548,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
       stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
       OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
     }
-  add_stmt (stmt);
+  finish_expr_stmt (stmt);
 }
 
 void
