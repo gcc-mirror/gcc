@@ -256,7 +256,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wno-overflow @gol
+-Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -3321,6 +3321,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmaybe-uninitialized @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnonnull  @gol
+-Wopenmp-simd @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
@@ -4814,6 +4815,12 @@ attribute.
 @opindex Wno-overflow
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
+
+@item -Wopenmp-simd
+@opindex Wopenm-simd
+Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
+simd directive set by user.  The @option{-fsimd-cost-model=unlimited} can
+be used to relax the cost model.
 
 @item -Woverride-init @r{(C and Objective-C only)}
 @opindex Woverride-init
@@ -8070,6 +8077,14 @@ required runtime checks for data dependence or alignment but otherwise
 is equal to the @code{dynamic} model.
 The default cost model depends on other optimization flags and is
 either @code{dynamic} or @code{cheap}.
+
+@item -fsimd-cost-model=@var{model}
+@opindex fsimd-cost-model
+Alter the cost model used for vectorization of loops marked with the OpenMP
+or Cilk Plus simd directive.  The @var{model} argument should be one of
+@code{unlimited}, @code{dynamic}, @code{cheap}.  All values of @var{model}
+have the same meaning as described in @option{-fvect-cost-model} and by
+default a cost model defined with @option{-fvect-cost-model} is used.
 
 @item -ftree-vrp
 @opindex ftree-vrp

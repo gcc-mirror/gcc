@@ -2176,7 +2176,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
     }
 
   /* Cost model: check if the vectorization is worthwhile.  */
-  if (!unlimited_cost_model ()
+  if (!unlimited_cost_model (NULL)
       && !vect_bb_vectorization_profitable_p (bb_vinfo))
     {
       if (dump_enabled_p ())

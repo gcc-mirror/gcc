@@ -1097,7 +1097,8 @@ vect_peeling_hash_insert (loop_vec_info loop_vinfo, struct data_reference *dr,
       *new_slot = slot;
     }
 
-  if (!supportable_dr_alignment && unlimited_cost_model ())
+  if (!supportable_dr_alignment
+      && unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
     slot->count += VECT_MAX_COST;
 }
 
@@ -1207,7 +1208,7 @@ vect_peeling_hash_choose_best_peeling (loop_vec_info loop_vinfo,
    res.peel_info.dr = NULL;
    res.body_cost_vec = stmt_vector_for_cost ();
 
-   if (!unlimited_cost_model ())
+   if (!unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
      {
        res.inside_cost = INT_MAX;
        res.outside_cost = INT_MAX;
@@ -1436,7 +1437,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  vectorization factor.
                  We do this automtically for cost model, since we calculate cost
                  for every peeling option.  */
-              if (unlimited_cost_model ())
+              if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
                 possible_npeel_number = vf /nelements;
 
               /* Handle the aligned case. We may decide to align some other
@@ -1444,7 +1445,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (DR_MISALIGNMENT (dr) == 0)
                 {
                   npeel_tmp = 0;
-                  if (unlimited_cost_model ())
+                  if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
                     possible_npeel_number++;
                 }
 

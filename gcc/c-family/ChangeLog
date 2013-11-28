@@ -1,3 +1,7 @@
+2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	* c.opt (Wopenmp-simd): New.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.h (ubsan_instrument_return): New prototype.
