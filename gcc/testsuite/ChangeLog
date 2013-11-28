@@ -1,3 +1,8 @@
+2013-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57293
+	* gcc.target/i386/pr57293.c: New.
+
 2013-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/vrinta-ce.c: New testcase.

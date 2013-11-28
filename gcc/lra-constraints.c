@@ -318,7 +318,7 @@ in_mem_p (int regno)
 /* If we have decided to substitute X with another value, return that
    value, otherwise return X.  */
 static rtx
-get_equiv_substitution (rtx x)
+get_equiv (rtx x)
 {
   int regno;
   rtx res;
@@ -335,6 +335,19 @@ get_equiv_substitution (rtx x)
   if ((res = ira_reg_equiv[regno].invariant) != NULL_RTX)
     return res;
   gcc_unreachable ();
+}
+
+/* If we have decided to substitute X with the equivalent value,
+   return that value after elimination for INSN, otherwise return
+   X.  */
+static rtx
+get_equiv_with_elimination (rtx x, rtx insn)
+{
+  rtx res = get_equiv (x);
+
+  if (x == res || CONSTANT_P (res))
+    return res;
+  return lra_eliminate_regs_1 (insn, res, GET_MODE (res), false, false, true);
 }
 
 /* Set up curr_operand_mode.  */
@@ -1101,7 +1114,7 @@ process_addr_reg (rtx *loc, rtx *before, rtx *after, enum reg_class cl)
     {
       regno = REGNO (reg);
       rclass = get_reg_class (regno);
-      if ((*loc = get_equiv_substitution (reg)) != reg)
+      if ((*loc = get_equiv_with_elimination (reg, curr_insn)) != reg)
 	{
 	  if (lra_dump_file != NULL)
 	    {
@@ -2007,6 +2020,13 @@ process_alt_operands (int only_alternative)
 	      int const_to_mem = 0;
 	      bool no_regs_p;
 
+	      /* Never do output reload of stack pointer.  It makes
+		 impossible to do elimination when SP is changed in
+		 RTL.  */
+	      if (op == stack_pointer_rtx && ! frame_pointer_needed
+		  && curr_static_id->operand[nop].type != OP_IN)
+		goto fail;
+
 	      /* If this alternative asks for a specific reg class, see if there
 		 is at least one allocatable register in that class.  */
 	      no_regs_p
@@ -2517,7 +2537,7 @@ equiv_address_substitution (struct address_info *ad)
   else
     {
       base_reg = *base_term;
-      new_base_reg = get_equiv_substitution (base_reg);
+      new_base_reg = get_equiv_with_elimination (base_reg, curr_insn);
     }
   index_term = strip_subreg (ad->index_term);
   if (index_term == NULL)
@@ -2525,7 +2545,7 @@ equiv_address_substitution (struct address_info *ad)
   else
     {
       index_reg = *index_term;
-      new_index_reg = get_equiv_substitution (index_reg);
+      new_index_reg = get_equiv_with_elimination (index_reg, curr_insn);
     }
   if (base_reg == new_base_reg && index_reg == new_index_reg)
     return false;
@@ -3055,7 +3075,7 @@ curr_insn_transform (void)
 
       if (GET_CODE (old) == SUBREG)
 	old = SUBREG_REG (old);
-      subst = get_equiv_substitution (old);
+      subst = get_equiv_with_elimination (old, curr_insn);
       if (subst != old)
 	{
 	  subst = copy_rtx (subst);
@@ -3260,6 +3280,9 @@ curr_insn_transform (void)
       if (INSN_CODE (curr_insn) >= 0
           && (p = get_insn_name (INSN_CODE (curr_insn))) != NULL)
         fprintf (lra_dump_file, " {%s}", p);
+      if (curr_id->sp_offset != 0)
+        fprintf (lra_dump_file, " (sp_off=%" HOST_WIDE_INT_PRINT "d)",
+		 curr_id->sp_offset);
        fprintf (lra_dump_file, "\n");
     }
 
@@ -3638,7 +3661,7 @@ loc_equivalence_change_p (rtx *loc)
   if (code == SUBREG)
     {
       reg = SUBREG_REG (x);
-      if ((subst = get_equiv_substitution (reg)) != reg
+      if ((subst = get_equiv_with_elimination (reg, curr_insn)) != reg
 	  && GET_MODE (subst) == VOIDmode)
 	{
 	  /* We cannot reload debug location.  Simplify subreg here
@@ -3648,7 +3671,7 @@ loc_equivalence_change_p (rtx *loc)
 	  return true;
 	}
     }
-  if (code == REG && (subst = get_equiv_substitution (x)) != x)
+  if (code == REG && (subst = get_equiv_with_elimination (x, curr_insn)) != x)
     {
       *loc = subst;
       return true;
@@ -3676,7 +3699,7 @@ loc_equivalence_callback (rtx loc, const_rtx, void *)
   if (!REG_P (loc))
     return NULL_RTX;
 
-  rtx subst = get_equiv_substitution (loc);
+  rtx subst = get_equiv_with_elimination (loc, curr_insn);
   if (subst != loc)
     return subst;
 
@@ -3848,21 +3871,27 @@ lra_constraints (bool first_p)
   lra_risky_transformations_p = false;
   new_insn_uid_start = get_max_uid ();
   new_regno_start = first_p ? lra_constraint_new_regno_start : max_reg_num ();
+  /* Mark used hard regs for target stack size calulations.  */
+  for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
+    if (lra_reg_info[i].nrefs != 0
+	&& (hard_regno = lra_get_regno_hard_regno (i)) >= 0)
+      {
+	int j, nregs;
+
+	nregs = hard_regno_nregs[hard_regno][lra_reg_info[i].biggest_mode];
+	for (j = 0; j < nregs; j++)
+	  df_set_regs_ever_live (hard_regno + j, true);
+      }
+  /* Do elimination before the equivalence processing as we can spill
+     some pseudos during elimination.  */
+  lra_eliminate (false, first_p);
   bitmap_initialize (&equiv_insn_bitmap, &reg_obstack);
   for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
     if (lra_reg_info[i].nrefs != 0)
       {
 	ira_reg_equiv[i].profitable_p = true;
 	reg = regno_reg_rtx[i];
-	if ((hard_regno = lra_get_regno_hard_regno (i)) >= 0)
-	  {
-	    int j, nregs;
-
-	    nregs = hard_regno_nregs[hard_regno][lra_reg_info[i].biggest_mode];
-	    for (j = 0; j < nregs; j++)
-	      df_set_regs_ever_live (hard_regno + j, true);
-	  }
-	else if ((x = get_equiv_substitution (reg)) != reg)
+	if (lra_get_regno_hard_regno (i) < 0 && (x = get_equiv (reg)) != reg)
 	  {
 	    bool pseudo_p = contains_reg_p (x, false, false);
 
@@ -3911,7 +3940,7 @@ lra_constraints (bool first_p)
 	      ira_reg_equiv[i].defined_p = false;
 	    if (contains_reg_p (x, false, true))
 	      ira_reg_equiv[i].profitable_p = false;
-	    if (get_equiv_substitution (reg) != reg)
+	    if (get_equiv (reg) != reg)
 	      bitmap_ior_into (&equiv_insn_bitmap, &lra_reg_info[i].insn_bitmap);
 	  }
       }
@@ -3919,7 +3948,6 @@ lra_constraints (bool first_p)
      substituted by their equivalences.  */
   EXECUTE_IF_SET_IN_BITMAP (&equiv_insn_bitmap, 0, uid, bi)
     lra_push_insn_by_uid (uid);
-  lra_eliminate (false);
   min_len = lra_insn_stack_length ();
   new_insns_num = 0;
   last_bb = NULL;
@@ -3973,7 +4001,7 @@ lra_constraints (bool first_p)
 	      if (GET_CODE (dest_reg) == SUBREG)
 		dest_reg = SUBREG_REG (dest_reg);
 	      if ((REG_P (dest_reg)
-		   && (x = get_equiv_substitution (dest_reg)) != dest_reg
+		   && (x = get_equiv (dest_reg)) != dest_reg
 		   /* Remove insns which set up a pseudo whose value
 		      can not be changed.  Such insns might be not in
 		      init_insns because we don't update equiv data
@@ -3993,8 +4021,7 @@ lra_constraints (bool first_p)
 		       || in_list_p (curr_insn,
 				     ira_reg_equiv
 				     [REGNO (dest_reg)].init_insns)))
-		  || (((x = get_equiv_substitution (SET_SRC (set)))
-		       != SET_SRC (set))
+		  || (((x = get_equiv (SET_SRC (set))) != SET_SRC (set))
 		      && in_list_p (curr_insn,
 				    ira_reg_equiv
 				    [REGNO (SET_SRC (set))].init_insns)))
