@@ -1,3 +1,7 @@
+2013-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vrinta-ce.c: New testcase.
+
 2013-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59323

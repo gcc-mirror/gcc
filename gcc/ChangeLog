@@ -1,3 +1,10 @@
+2013-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/iterators.md (vrint_conds): New int attribute.
+	* config/arm/vfp.md (<vrint_pattern><SDF:mode>2): Set conds attribute.
+	(smax<mode>3): Likewise.
+	(smin<mode>3): Likewise.
+
 2013-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree-core.h (tree_base): Document use of static_flag for SSA_NAME.
