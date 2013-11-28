@@ -1,3 +1,17 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (struct stack_vars_data): Add asan_base and asan_alignb
+	fields.
+	(expand_stack_vars): For -fsanitize=address, use (and set initially)
+	data->asan_base as base for vars and update asan_alignb.
+	(expand_used_vars): Initialize data.asan_base and data.asan_alignb.
+	Pass them to asan_emit_stack_protection.
+	* asan.c (asan_detect_stack_use_after_return): New variable.
+	(asan_emit_stack_protection): Add pbase and alignb arguments.
+	Implement use after return sanitization.
+	* asan.h (asan_emit_stack_protection): Adjust prototype.
+	(ASAN_STACK_MAGIC_USE_AFTER_RET, ASAN_STACK_RETIRED_MAGIC): Define.
+
 2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	* common.opt: Introduced a new option -fsimd-cost-model.
