@@ -1436,6 +1436,14 @@ extern void protected_set_expr_location (tree, location_t);
 #define SSA_NAME_PTR_INFO(N) \
    SSA_NAME_CHECK (N)->ssa_name.info.ptr_info
 
+/* True if SSA_NAME_RANGE_INFO describes an anti-range.  */
+#define SSA_NAME_ANTI_RANGE_P(N) \
+    SSA_NAME_CHECK (N)->base.static_flag
+
+/* The type of range described by SSA_NAME_RANGE_INFO.  */
+#define SSA_NAME_RANGE_TYPE(N) \
+    (SSA_NAME_ANTI_RANGE_P (N) ? VR_ANTI_RANGE : VR_RANGE)
+
 /* Value range info attributes for SSA_NAMEs of non pointer-type variables.  */
 #define SSA_NAME_RANGE_INFO(N) \
     SSA_NAME_CHECK (N)->ssa_name.info.range_info

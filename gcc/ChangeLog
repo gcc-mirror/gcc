@@ -1,3 +1,19 @@
+2013-11-28  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree-core.h (tree_base): Document use of static_flag for SSA_NAME.
+	* tree.h (SSA_NAME_ANTI_RANGE_P, SSA_NAME_RANGE_TYPE): New macros.
+	* tree-ssanames.h (set_range_info): Add range_type argument.
+	(duplicate_ssa_name_range_info): Likewise.
+	* tree-ssanames.c (set_range_info): Take the range type as argument
+	and store it in SSA_NAME_ANTI_RANGE_P.
+	(duplicate_ssa_name_range_info): Likewise.
+	(get_range_info): Use SSA_NAME_ANTI_RANGE_P.
+	(set_nonzero_bits): Update call to set_range_info.
+	(duplicate_ssa_name_fn): Update call to duplicate_ssa_name_range_info.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* tree-vrp.c (remove_range_assertions): Update call to set_range_info.
+	(vrp_finalize): Likewise, passing anti-ranges directly.
+
 2013-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59330

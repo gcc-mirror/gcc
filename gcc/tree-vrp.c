@@ -6596,7 +6596,8 @@ remove_range_assertions (void)
 		    && all_imm_uses_in_stmt_or_feed_cond (var, stmt,
 							  single_pred (bb)))
 		  {
-		    set_range_info (var, SSA_NAME_RANGE_INFO (lhs)->min,
+		    set_range_info (var, SSA_NAME_RANGE_TYPE (lhs),
+				    SSA_NAME_RANGE_INFO (lhs)->min,
 				    SSA_NAME_RANGE_INFO (lhs)->max);
 		    maybe_set_nonzero_bits (bb, var);
 		  }
@@ -9602,36 +9603,12 @@ vrp_finalize (void)
 	continue;
 
 	if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
-	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST))
-	  {
-	    if (vr_value[i]->type == VR_RANGE)
-	      set_range_info (name,
-			      tree_to_double_int (vr_value[i]->min),
-			      tree_to_double_int (vr_value[i]->max));
-	    else if (vr_value[i]->type == VR_ANTI_RANGE)
-	      {
-		/* VR_ANTI_RANGE ~[min, max] is encoded compactly as
-		   [max + 1, min - 1] without additional attributes.
-		   When min value > max value, we know that it is
-		   VR_ANTI_RANGE; it is VR_RANGE otherwise.  */
-
-		/* ~[0,0] anti-range is represented as
-		   range.  */
-		if (TYPE_UNSIGNED (TREE_TYPE (name))
-		    && integer_zerop (vr_value[i]->min)
-		    && integer_zerop (vr_value[i]->max))
-		  set_range_info (name,
-				  double_int_one,
-				  double_int::max_value
-				  (TYPE_PRECISION (TREE_TYPE (name)), true));
-		else
-		  set_range_info (name,
-				  tree_to_double_int (vr_value[i]->max)
-				  + double_int_one,
-				  tree_to_double_int (vr_value[i]->min)
-				  - double_int_one);
-	      }
-	  }
+	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
+	    && (vr_value[i]->type == VR_RANGE
+		|| vr_value[i]->type == VR_ANTI_RANGE))
+	  set_range_info (name, vr_value[i]->type,
+			  tree_to_double_int (vr_value[i]->min),
+			  tree_to_double_int (vr_value[i]->max));
       }
 
   /* Free allocated memory.  */

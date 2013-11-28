@@ -70,7 +70,8 @@ struct GTY (()) range_info_def {
 enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree, double_int, double_int);
+extern void set_range_info (tree, enum value_range_type, double_int,
+			    double_int);
 /* Gets the value range from SSA.  */
 extern enum value_range_type get_range_info (const_tree, double_int *,
 					     double_int *);
@@ -93,7 +94,8 @@ extern struct ptr_info_def *get_ptr_info (tree);
 extern tree copy_ssa_name_fn (struct function *, tree, gimple);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple);
-extern void duplicate_ssa_name_range_info (tree, struct range_info_def *);
+extern void duplicate_ssa_name_range_info (tree, enum value_range_type,
+					   struct range_info_def *);
 extern void release_defs (gimple);
 extern void replace_ssa_name_symbol (tree, tree);
 
