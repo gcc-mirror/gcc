@@ -1,3 +1,8 @@
+2013-11-28  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_rtx_costs): Adjust MULT cost if it is
+	not optimized for size.
+
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (struct stack_vars_data): Add asan_base and asan_alignb
