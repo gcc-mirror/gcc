@@ -822,6 +822,9 @@ struct GTY(()) tree_base {
        TRANSACTION_EXPR_OUTER in
 	   TRANSACTION_EXPR
 
+       SSA_NAME_ANTI_RANGE_P in
+	   SSA_NAME
+
    public_flag:
 
        TREE_OVERFLOW in
