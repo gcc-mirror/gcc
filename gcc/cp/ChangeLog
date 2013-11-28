@@ -1,3 +1,9 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59297
+	* semantics.c (finish_omp_atomic): Call finish_expr_stmt
+	rather than add_stmt.
+
 2013-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++spec.c (TIMELIB): Define.
