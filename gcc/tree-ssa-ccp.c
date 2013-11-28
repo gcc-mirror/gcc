@@ -237,6 +237,14 @@ debug_lattice_value (prop_value_t val)
   fprintf (stderr, "\n");
 }
 
+/* Extend NONZERO_BITS to a full mask, with the upper bits being set.  */
+
+static widest_int
+extend_mask (const wide_int &nonzero_bits)
+{
+  return (wi::mask <widest_int> (wi::get_precision (nonzero_bits), true)
+	  | widest_int::from (nonzero_bits, UNSIGNED));
+}
 
 /* Compute a default value for variable VAR and store it in the
    CONST_VAL array.  The following rules are used to get default
@@ -279,15 +287,12 @@ get_default_value (tree var)
 	  val.mask = -1;
 	  if (flag_tree_bit_ccp)
 	    {
-	      widest_int nonzero_bits = get_nonzero_bits (var);
-	      widest_int mask
-		= wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (var)), false);
-	      if (nonzero_bits != -1 && nonzero_bits != mask)
+	      wide_int nonzero_bits = get_nonzero_bits (var);
+	      if (nonzero_bits != -1)
 		{
 		  val.lattice_val = CONSTANT;
 		  val.value = build_zero_cst (TREE_TYPE (var));
-		  /* CCP wants the bits above precision set.  */
-		  val.mask = nonzero_bits | ~mask;
+		  val.mask = extend_mask (nonzero_bits);
 		}
 	    }
 	}
@@ -895,7 +900,9 @@ ccp_finalize (void)
 	}
       else
 	{
-	  widest_int nonzero_bits = val->mask | wi::to_widest (val->value);
+	  unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
+	  wide_int nonzero_bits = wide_int::from (val->mask, precision,
+						  UNSIGNED) | val->value;
 	  nonzero_bits &= get_nonzero_bits (name);
 	  set_nonzero_bits (name, nonzero_bits);
 	}
@@ -1758,29 +1765,25 @@ evaluate_stmt (gimple stmt)
       && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME)
     {
       tree lhs = gimple_get_lhs (stmt);
-      widest_int nonzero_bits = get_nonzero_bits (lhs);
-      widest_int mask
-	= wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (lhs)), false);
-      if (nonzero_bits != -1 && nonzero_bits != mask)
+      wide_int nonzero_bits = get_nonzero_bits (lhs);
+      if (nonzero_bits != -1)
 	{
 	  if (!is_constant)
 	    {
 	      val.lattice_val = CONSTANT;
 	      val.value = build_zero_cst (TREE_TYPE (lhs));
-	      /* CCP wants the bits above precision set.  */
-	      val.mask = nonzero_bits | ~mask;
+	      val.mask = extend_mask (nonzero_bits);
 	      is_constant = true;
 	    }
 	  else
 	    {
-	      widest_int valv = wi::to_widest (val.value);
-	      if ((valv & ~nonzero_bits & mask) != 0)
+	      if (wi::bit_and_not (val.value, nonzero_bits) != 0)
 		val.value = wide_int_to_tree (TREE_TYPE (lhs),
-					      valv & nonzero_bits);
+					      nonzero_bits & val.value);
 	      if (nonzero_bits == 0)
 		val.mask = 0;
 	      else
-		val.mask = val.mask & (nonzero_bits | ~mask);
+		val.mask = extend_mask (nonzero_bits);
 	    }
 	}
     }

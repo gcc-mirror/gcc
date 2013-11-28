@@ -3125,7 +3125,7 @@ determine_block_size (tree len, rtx len_rtx,
     }
   else
     {
-      widest_int min, max;
+      wide_int min, max;
       enum value_range_type range_type = VR_UNDEFINED;
 
       /* Determine bounds from the type.  */
@@ -3152,9 +3152,8 @@ determine_block_size (tree len, rtx len_rtx,
 	  /* Anti range 0...N lets us to determine minmal size to N+1.  */
 	  if (min == 0)
 	    {
-	      widest_int max_plus_one = max + 1;
-	      if (wi::fits_uhwi_p (max_plus_one))
-		*min_size = max_plus_one.to_uhwi ();
+	      if (wi::fits_uhwi_p (max) && max.to_uhwi () + 1 != 0)
+		*min_size = max.to_uhwi () + 1;
 	    }
 	  /* Code like
 

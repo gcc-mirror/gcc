@@ -653,6 +653,9 @@ public:
   HOST_WIDE_INT slow () const;
   HOST_WIDE_INT shigh () const;
 
+  template <typename T>
+  generic_wide_int &operator = (const T &);
+
 #define BINARY_PREDICATE(OP, F) \
   template <typename T> \
   bool OP (const T &c) const { return wi::F (*this, c); }
@@ -829,6 +832,15 @@ generic_wide_int <storage>::elt (unsigned int i) const
     return sign_mask ();
   else
     return this->get_val ()[i];
+}
+
+template <typename storage>
+template <typename T>
+generic_wide_int <storage> &
+generic_wide_int <storage>::operator = (const T &x)
+{
+  storage::operator = (x);
+  return *this;
 }
 
 namespace wi
@@ -1187,6 +1199,159 @@ get_binary_result (const T1 &, const T2 &)
 {
   return FIXED_WIDE_INT (N) ();
 }
+
+/* A reference to one element of a trailing_wide_ints structure.  */
+class trailing_wide_int_storage
+{
+private:
+  /* The precision of the integer, which is a fixed property of the
+     parent trailing_wide_ints.  */
+  unsigned int m_precision;
+
+  /* A pointer to the length field.  */
+  unsigned char *m_len;
+
+  /* A pointer to the HWI array.  There are enough elements to hold all
+     values of precision M_PRECISION.  */
+  HOST_WIDE_INT *m_val;
+
+public:
+  trailing_wide_int_storage (unsigned int, unsigned char *, HOST_WIDE_INT *);
+
+  /* The standard generic_wide_int storage methods.  */
+  unsigned int get_len () const;
+  unsigned int get_precision () const;
+  const HOST_WIDE_INT *get_val () const;
+  HOST_WIDE_INT *write_val ();
+  void set_len (unsigned int, bool = false);
+
+  template <typename T>
+  trailing_wide_int_storage &operator = (const T &);
+};
+
+typedef generic_wide_int <trailing_wide_int_storage> trailing_wide_int;
+
+/* trailing_wide_int behaves like a wide_int.  */
+namespace wi
+{
+  template <>
+  struct int_traits <trailing_wide_int_storage>
+    : public int_traits <wide_int_storage> {};
+}
+
+/* An array of N wide_int-like objects that can be put at the end of
+   a variable-sized structure.  Use extra_size to calculate how many
+   bytes beyond the sizeof need to be allocated.  Use set_precision
+   to initialize the structure.  */
+template <int N>
+class GTY(()) trailing_wide_ints
+{
+private:
+  /* The shared precision of each number.  */
+  unsigned short m_precision;
+
+  /* The shared maximum length of each number.  */
+  unsigned char m_max_len;
+
+  /* The current length of each number.  */
+  unsigned char m_len[N];
+
+  /* The variable-length part of the structure, which always contains
+     at least one HWI.  Element I starts at index I * M_MAX_LEN.  */
+  HOST_WIDE_INT m_val[1];
+
+public:
+  void set_precision (unsigned int);
+  trailing_wide_int operator [] (unsigned int);
+  static size_t extra_size (unsigned int);
+};
+
+inline trailing_wide_int_storage::
+trailing_wide_int_storage (unsigned int precision, unsigned char *len,
+			   HOST_WIDE_INT *val)
+  : m_precision (precision), m_len (len), m_val (val)
+{
+}
+
+inline unsigned int
+trailing_wide_int_storage::get_len () const
+{
+  return *m_len;
+}
+
+inline unsigned int
+trailing_wide_int_storage::get_precision () const
+{
+  return m_precision;
+}
+
+inline const HOST_WIDE_INT *
+trailing_wide_int_storage::get_val () const
+{
+  return m_val;
+}
+
+inline HOST_WIDE_INT *
+trailing_wide_int_storage::write_val ()
+{
+  return m_val;
+}
+
+inline void
+trailing_wide_int_storage::set_len (unsigned int len, bool is_sign_extended)
+{
+  *m_len = len;
+  if (!is_sign_extended && len * HOST_BITS_PER_WIDE_INT > m_precision)
+    m_val[len - 1] = sext_hwi (m_val[len - 1],
+			       m_precision % HOST_BITS_PER_WIDE_INT);
+}
+
+template <typename T>
+inline trailing_wide_int_storage &
+trailing_wide_int_storage::operator = (const T &x)
+{
+  WIDE_INT_REF_FOR (T) xi (x, m_precision);
+  wi::copy (*this, xi);
+  return *this;
+}
+
+/* Initialize the structure and record that all elements have precision
+   PRECISION.  */
+template <int N>
+inline void
+trailing_wide_ints <N>::set_precision (unsigned int precision)
+{
+  m_precision = precision;
+  m_max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
+	       / HOST_BITS_PER_WIDE_INT);
+}
+
+/* Return a reference to element INDEX.  */
+template <int N>
+inline trailing_wide_int
+trailing_wide_ints <N>::operator [] (unsigned int index)
+{
+  return trailing_wide_int_storage (m_precision, &m_len[index],
+				    &m_val[index * m_max_len]);
+}
+
+/* Return how many extra bytes need to be added to the end of the structure
+   in order to handle N wide_ints of precision PRECISION.  */
+template <int N>
+inline size_t
+trailing_wide_ints <N>::extra_size (unsigned int precision)
+{
+  unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
+			  / HOST_BITS_PER_WIDE_INT);
+  return (N * max_len - 1) * sizeof (HOST_WIDE_INT);
+}
+
+/* This macro is used in structures that end with a trailing_wide_ints field
+   called FIELD.  It declares get_NAME() and set_NAME() methods to access
+   element I of FIELD.  */
+#define TRAILING_WIDE_INT_ACCESSOR(NAME, FIELD, I) \
+  trailing_wide_int get_##NAME () { return FIELD[I]; } \
+  template <typename T> void set_##NAME (const T &x) { FIELD[I] = x; }
 
 namespace wi
 {
@@ -2723,6 +2888,24 @@ gt_pch_nx (generic_wide_int <T> *)
 template<typename T>
 void
 gt_pch_nx (generic_wide_int <T> *, void (*) (void *, void *), void *)
+{
+}
+
+template<int N>
+void
+gt_ggc_mx (trailing_wide_ints <N> *)
+{
+}
+
+template<int N>
+void
+gt_pch_nx (trailing_wide_ints <N> *)
+{
+}
+
+template<int N>
+void
+gt_pch_nx (trailing_wide_ints <N> *, void (*) (void *, void *), void *)
 {
 }
 

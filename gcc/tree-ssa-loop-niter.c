@@ -125,7 +125,7 @@ static void
 determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		       mpz_t min, mpz_t max)
 {
-  widest_int minv, maxv;
+  wide_int minv, maxv;
   enum value_range_type rtype = VR_VARYING;
 
   /* If the expression is a constant, we know its value exactly.  */
@@ -142,6 +142,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
   if (TREE_CODE (var) == SSA_NAME && INTEGRAL_TYPE_P (type))
     {
       edge e = loop_preheader_edge (loop);
+      signop sgn = TYPE_SIGN (type);
       gimple_stmt_iterator gsi;
 
       /* Either for VAR itself...  */
@@ -151,7 +152,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple phi = gsi_stmt (gsi);
-	  widest_int minc, maxc;
+	  wide_int minc, maxc;
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
 	      && (get_range_info (gimple_phi_result (phi), &minc, &maxc)
 		  == VR_RANGE))
@@ -164,20 +165,20 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		}
 	      else
 		{
-		  minv = wi::smax (minv, minc);
-		  maxv = wi::smin (maxv, maxc);
-		  gcc_assert (wi::les_p (minv, maxv));
+		  minv = wi::max (minv, minc, sgn);
+		  maxv = wi::min (maxv, maxc, sgn);
+		  gcc_assert (wi::le_p (minv, maxv, sgn));
 		}
 	    }
 	}
       if (rtype == VR_RANGE)
 	{
 	  mpz_t minm, maxm;
-	  gcc_assert (wi::les_p (minv, maxv));
+	  gcc_assert (wi::le_p (minv, maxv, sgn));
 	  mpz_init (minm);
 	  mpz_init (maxm);
-	  wi::to_mpz (minv, minm, SIGNED);
-	  wi::to_mpz (maxv, maxm, SIGNED);
+	  wi::to_mpz (minv, minm, sgn);
+	  wi::to_mpz (maxv, maxm, sgn);
 	  mpz_add (minm, minm, off);
 	  mpz_add (maxm, maxm, off);
 	  /* If the computation may not wrap or off is zero, then this

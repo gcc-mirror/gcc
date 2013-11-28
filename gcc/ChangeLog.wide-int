@@ -677,6 +677,7 @@
 	* tree-ssa-ccp.c: Update comment at top of file.  Include
 	wide-int-print.h.
 	(struct prop_value_d): Change type of mask to widest_int.
+	(extend_mask): New function.
 	(dump_lattice_value): Use wide-int interfaces.
 	(get_default_value): Likewise.
 	(set_constant_value): Likewise.
@@ -768,16 +769,20 @@
 	* tree-ssa-math-opts.c
 	(gimple_expand_builtin_pow): Update calls to real_to_integer.
 	* tree-ssanames.c
-	(set_range_info): Use widest_ints rather than double_ints.
-	(get_range_info): Likewise.
+	(set_range_info): Use wide_int_refs rather than double_ints.
+	Adjust for trailing_wide_ints <3> representation.
 	(set_nonzero_bits): Likewise.
+	(get_range_info): Return wide_ints rather than double_ints.
+	Adjust for trailing_wide_ints <3> representation.
 	(get_nonzero_bits): Likewise.
+	(duplicate_ssa_name_range_info): Adjust for trailing_wide_ints <3>
+	representation.
 	* tree-ssanames.h
-	(struct range_info_def): Change type of min, max and nonzero_bits
-	to widest_int.
-	(set_range_info): Use widest_ints rather than double_ints.
-	(get_range_info): Likewise.
+	(struct range_info_def): Replace min, max and nonzero_bits with
+	a trailing_wide_ints <3>.
+	(set_range_info): Use wide_int_refs rather than double_ints.
 	(set_nonzero_bits): Likewise.
+	(get_range_info): Return wide_ints rather than double_ints.
 	(get_nonzero_bits): Likewise.
 	* tree-ssa-phiopt.c
 	(jump_function_from_stmt): Use wide-int interfaces.

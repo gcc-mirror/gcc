@@ -6422,8 +6422,7 @@ maybe_set_nonzero_bits (basic_block bb, tree var)
 	return;
     }
   cst = gimple_assign_rhs2 (stmt);
-  set_nonzero_bits (var, (get_nonzero_bits (var)
-			  & ~wi::to_widest (cst)));
+  set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var), cst));
 }
 
 /* Convert range assertion expressions into the implied copies and
@@ -6508,8 +6507,8 @@ remove_range_assertions (void)
 							  single_pred (bb)))
 		  {
 		    set_range_info (var, SSA_NAME_RANGE_TYPE (lhs),
-				    SSA_NAME_RANGE_INFO (lhs)->min,
-				    SSA_NAME_RANGE_INFO (lhs)->max);
+				    SSA_NAME_RANGE_INFO (lhs)->get_min (),
+				    SSA_NAME_RANGE_INFO (lhs)->get_max ());
 		    maybe_set_nonzero_bits (bb, var);
 		  }
 	      }
@@ -9534,9 +9533,8 @@ vrp_finalize (void)
 	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
 	    && (vr_value[i]->type == VR_RANGE
 		|| vr_value[i]->type == VR_ANTI_RANGE))
-	  set_range_info (name, vr_value[i]->type,
-			  wi::to_widest (vr_value[i]->min),
-			  wi::to_widest (vr_value[i]->max));
+	  set_range_info (name, vr_value[i]->type, vr_value[i]->min,
+			  vr_value[i]->max);
       }
 
   /* Free allocated memory.  */

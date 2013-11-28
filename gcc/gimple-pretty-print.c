@@ -1754,7 +1754,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
   if (!POINTER_TYPE_P (TREE_TYPE (node))
       && SSA_NAME_RANGE_INFO (node))
     {
-      widest_int min, max, nonzero_bits;
+      wide_int min, max, nonzero_bits;
       value_range_type range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)
@@ -1769,9 +1769,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
 	  pp_printf (buffer, "]");
 	}
       nonzero_bits = get_nonzero_bits (node);
-      if (nonzero_bits != -1
-	  && (nonzero_bits
-	      != wi::mask <widest_int> (TYPE_PRECISION (TREE_TYPE (node)), false)))
+      if (nonzero_bits != -1)
 	{
 	  pp_string (buffer, " NONZERO ");
 	  pp_wide_int (buffer, nonzero_bits, UNSIGNED);
