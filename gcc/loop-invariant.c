@@ -1823,7 +1823,7 @@ calculate_loop_reg_pressure (void)
 	bitmap_initialize (&LOOP_DATA (loop)->regs_ref, &reg_obstack);
 	bitmap_initialize (&LOOP_DATA (loop)->regs_live, &reg_obstack);
       }
-  ira_setup_eliminable_regset (false);
+  ira_setup_eliminable_regset ();
   bitmap_initialize (&curr_regs_live, &reg_obstack);
   FOR_EACH_BB (bb)
     {

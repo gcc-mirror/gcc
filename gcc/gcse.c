@@ -3509,7 +3509,7 @@ calculate_bb_reg_pressure (void)
   bitmap_iterator bi;
 
 
-  ira_setup_eliminable_regset (false);
+  ira_setup_eliminable_regset ();
   curr_regs_live = BITMAP_ALLOC (&reg_obstack);
   FOR_EACH_BB (bb)
     {

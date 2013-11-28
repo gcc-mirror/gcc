@@ -1,3 +1,63 @@
+2013-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57293
+	* ira.h (ira_setup_eliminable_regset): Remove parameter.
+	* ira.c (ira_setup_eliminable_regset): Ditto.  Add
+	SUPPORTS_STACK_ALIGNMENT for crtl->stack_realign_needed.
+	Don't call lra_init_elimination.
+	(ira): Call ira_setup_eliminable_regset without arguments.
+	* loop-invariant.c (calculate_loop_reg_pressure): Remove argument
+	from ira_setup_eliminable_regset call.
+	* gcse.c (calculate_bb_reg_pressure): Ditto.
+	* haifa-sched.c (sched_init): Ditto.
+	* lra.h (lra_init_elimination): Remove the prototype.
+	* lra-int.h (lra_insn_recog_data): New member sp_offset.  Move
+	used_insn_alternative upper.
+	(lra_eliminate_regs_1): Add one more parameter.
+	(lra-eliminate): Ditto.
+	* lra.c (lra_invalidate_insn_data): Set sp_offset.
+	(setup_sp_offset): New.
+	(lra_process_new_insns): Call setup_sp_offset.
+	(lra): Add argument to lra_eliminate calls.
+	* lra-constraints.c (get_equiv_substitution): Rename to get_equiv.
+	(get_equiv_with_elimination): New.
+	(process_addr_reg): Call get_equiv_with_elimination instead of
+	get_equiv_substitution.
+	(equiv_address_substitution): Ditto.
+	(loc_equivalence_change_p): Ditto.
+	(loc_equivalence_callback, lra_constraints): Ditto.
+	(curr_insn_transform): Ditto.  Print the sp offset
+	(process_alt_operands): Prevent stack pointer reloads.
+	(lra_constraints): Remove one argument from lra_eliminate call.
+	Move it up.  Mark used hard regs bfore it.  Use
+	get_equiv_with_elimination instead of get_equiv_substitution.
+	* lra-eliminations.c (lra_eliminate_regs_1): Add parameter and
+	assert for param values combination.  Use sp offset.  Add argument
+	to lra_eliminate_regs_1 calls.
+	(lra_eliminate_regs): Add argument to lra_eliminate_regs_1 call.
+	(curr_sp_change): New static var.
+	(mark_not_eliminable): Add parameter.  Update curr_sp_change.
+	Don't prevent elimination to sp if we can calculate its change.
+	Pass the argument to mark_not_eliminable calls.
+	(eliminate_regs_in_insn): Add a parameter.  Use sp offset.  Add
+	argument to lra_eliminate_regs_1 call.
+	(update_reg_eliminate): Move calculation of hard regs for spill
+	lower.  Switch off lra_in_progress temporarily to generate regs
+	involved into elimination.
+	(lra_init_elimination): Rename to init_elimination.  Make it
+	static.  Set up insn sp offset, check the offsets at the end of
+	BBs.
+	(process_insn_for_elimination): Add parameter.  Pass its value to
+	eliminate_regs_in_insn.
+	(lra_eliminate): : Add parameter.  Pass its value to
+	process_insn_for_elimination.  Add assert for param values
+	combination.  Call init_elimination.  Don't update offsets in
+	equivalence substitutions.
+	* lra-spills.c (assign_mem_slot): Don't call lra_eliminate_regs_1
+	for created stack slot.
+	(remove_pseudos): Call lra_eliminate_regs_1 before changing memory
+	onto stack slot.
+
 2013-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/iterators.md (vrint_conds): New int attribute.

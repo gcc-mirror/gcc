@@ -163,7 +163,6 @@ assign_mem_slot (int i)
       x = assign_stack_local (mode, total_size,
 			      min_align > inherent_align
 			      || total_size > inherent_size ? -1 : 0);
-      x = lra_eliminate_regs_1 (x, GET_MODE (x), false, false, true);
       stack_slot = x;
       /* Cancel the big-endian correction done in assign_stack_local.
 	 Get the address of the beginning of the slot.	This is so we
@@ -430,8 +429,15 @@ remove_pseudos (rtx *loc, rtx insn)
 	 into scratches back.  */
       && ! lra_former_scratch_p (i))
     {
-      hard_reg = spill_hard_reg[i];
-      *loc = copy_rtx (hard_reg != NULL_RTX ? hard_reg : pseudo_slots[i].mem);
+      if ((hard_reg = spill_hard_reg[i]) != NULL_RTX)
+	*loc = copy_rtx (hard_reg);
+      else
+	{
+	  rtx x = lra_eliminate_regs_1 (insn, pseudo_slots[i].mem,
+					GET_MODE (pseudo_slots[i].mem),
+					false, false, true);
+	  *loc = x != pseudo_slots[i].mem ? x : copy_rtx (x);
+	}
       return;
     }
 

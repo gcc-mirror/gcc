@@ -207,7 +207,8 @@ lra_set_regno_unique_value (int regno)
   lra_reg_info[regno].val = get_new_reg_value ();
 }
 
-/* Invalidate INSN related info used by LRA.  */
+/* Invalidate INSN related info used by LRA.  The info should never be
+   used after that.  */
 void
 lra_invalidate_insn_data (rtx insn)
 {
@@ -1273,17 +1274,24 @@ lra_update_insn_recog_data (rtx insn)
   int n;
   unsigned int uid = INSN_UID (insn);
   struct lra_static_insn_data *insn_static_data;
+  HOST_WIDE_INT sp_offset = 0;
 
   check_and_expand_insn_recog_data (uid);
   if ((data = lra_insn_recog_data[uid]) != NULL
       && data->icode != INSN_CODE (insn))
     {
+      sp_offset = data->sp_offset;
       invalidate_insn_data_regno_info (data, insn, get_insn_freq (insn));
       invalidate_insn_recog_data (uid);
       data = NULL;
     }
   if (data == NULL)
-    return lra_get_insn_recog_data (insn);
+    {
+      data = lra_get_insn_recog_data (insn);
+      /* Initiate or restore SP offset.  */
+      data->sp_offset = sp_offset;
+      return data;
+    }
   insn_static_data = data->insn_static_data;
   data->used_insn_alternative = -1;
   if (DEBUG_INSN_P (insn))
@@ -1837,6 +1845,20 @@ push_insns (rtx from, rtx to)
       lra_push_insn (insn);
 }
 
+/* Set up sp offset for insn in range [FROM, LAST].  The offset is
+   taken from the next BB insn after LAST or zero if there in such
+   insn.  */
+static void
+setup_sp_offset (rtx from, rtx last)
+{
+  rtx before = next_nonnote_insn_bb (last);
+  HOST_WIDE_INT offset = (before == NULL_RTX || ! INSN_P (before)
+			  ? 0 : lra_get_insn_recog_data (before)->sp_offset);
+
+  for (rtx insn = from; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
+    lra_get_insn_recog_data (insn)->sp_offset = offset;
+}
+
 /* Emit insns BEFORE before INSN and insns AFTER after INSN.  Put the
    insns onto the stack.  Print about emitting the insns with
    TITLE.  */
@@ -1845,7 +1867,9 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
 {
   rtx last;
 
-  if (lra_dump_file != NULL && (before != NULL_RTX || after != NULL_RTX))
+  if (before == NULL_RTX && after == NULL_RTX)
+    return;
+  if (lra_dump_file != NULL)
     {
       dump_insn_slim (lra_dump_file, insn);
       if (before != NULL_RTX)
@@ -1864,6 +1888,7 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
     {
       emit_insn_before (before, insn);
       push_insns (PREV_INSN (insn), PREV_INSN (before));
+      setup_sp_offset (before, PREV_INSN (insn));
     }
   if (after != NULL_RTX)
     {
@@ -1871,6 +1896,7 @@ lra_process_new_insns (rtx insn, rtx before, rtx after, const char *title)
 	;
       emit_insn_after (after, insn);
       push_insns (last, insn);
+      setup_sp_offset (after, last);
     }
 }
 
@@ -2314,7 +2340,7 @@ lra (FILE *f)
 	     For example, rs6000 can make
 	     RS6000_PIC_OFFSET_TABLE_REGNUM uneliminable if we started
 	     to use a constant pool.  */
-	  lra_eliminate (false);
+	  lra_eliminate (false, false);
 	  /* Do inheritance only for regular algorithms.  */
 	  if (! lra_simple_p)
 	    lra_inheritance ();
@@ -2368,13 +2394,13 @@ lra (FILE *f)
       lra_spill ();
       /* Assignment of stack slots changes elimination offsets for
 	 some eliminations.  So update the offsets here.  */
-      lra_eliminate (false);
+      lra_eliminate (false, false);
       lra_constraint_new_regno_start = max_reg_num ();
       lra_constraint_new_insn_uid_start = get_max_uid ();
       lra_constraint_iter_after_spill = 0;
     }
   restore_scratches ();
-  lra_eliminate (true);
+  lra_eliminate (true, false);
   lra_final_code_change ();
   lra_in_progress = 0;
   if (live_p)
