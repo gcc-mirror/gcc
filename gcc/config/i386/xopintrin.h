@@ -745,13 +745,17 @@ _mm_frcz_pd (__m128d __A)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_frcz_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_vfrczss ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) __builtin_ia32_movss ((__v4sf)__A,
+					(__v4sf)
+					__builtin_ia32_vfrczss ((__v4sf)__B));
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_frcz_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_vfrczsd ((__v2df)__A, (__v2df)__B);
+  return (__m128d) __builtin_ia32_movsd ((__v2df)__A,
+					 (__v2df)
+					 __builtin_ia32_vfrczsd ((__v2df)__B));
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

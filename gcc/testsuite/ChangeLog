@@ -1,3 +1,19 @@
+2013-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/56788
+	* config/i386/i386.c (bdesc_multi_arg) <IX86_BUILTIN_VFRCZSS>:
+	Declare as MULTI_ARG_1_SF instruction.
+	<IX86_BUILTIN_VFRCZSD>: Decleare as MULTI_ARG_1_DF instruction.
+	* config/i386/sse.md (*xop_vmfrcz<mode>2): Rename
+	from *xop_vmfrcz_<mode>.
+	* config/i386/xopintrin.h (_mm_frcz_ss): Use __builtin_ia32_movss
+	to merge scalar result with __A.
+	(_mm_frcz_sd): Use __builtin_ia32_movsd to merge scalar
+	result with __A.
+
 2013-11-28  Terry Guo  <terry.guo@arm.com>
 
 	Backport mainline r205391
