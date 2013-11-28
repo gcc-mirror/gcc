@@ -1,3 +1,17 @@
+2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	* common.opt: Introduced a new option -fsimd-cost-model.
+	* doc/invoke.texi: Introduced a new openmp-simd warning and
+	a new -fsimd-cost-model option.
+	* tree-vectorizer.h (unlimited_cost_model): Interface updated
+	to rely on the particular loop info.
+	* tree-vect-data-refs.c (vect_peeling_hash_insert): Ditto.
+	(vect_peeling_hash_choose_best_peeling): Ditto.
+	(vect_enhance_data_refs_alignment): Ditto.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Ditto.
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Ditto
+	plus added openmp-simd warining.
+
 2013-11-27   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/59311

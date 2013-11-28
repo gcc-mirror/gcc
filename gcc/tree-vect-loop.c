@@ -2716,7 +2716,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
   /* Cost model disabled.  */
-  if (unlimited_cost_model ())
+  if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
     {
       dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.\n");
       *ret_min_profitable_niters = 0;
@@ -2949,6 +2949,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* vector version will never be profitable.  */
   else
     {
+      if (LOOP_VINFO_LOOP (loop_vinfo)->force_vect)
+	warning_at (vect_location, OPT_Wopenmp_simd, "vectorization "
+		    "did not happen for a simd loop");
+
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "cost model: the vector iteration cost = %d "
