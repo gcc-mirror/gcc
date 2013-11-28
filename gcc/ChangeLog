@@ -1,3 +1,7 @@
+2013-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (TIME_LIBRARY): Define.
+
 2013-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59323
