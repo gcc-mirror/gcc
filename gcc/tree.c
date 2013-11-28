@@ -1205,82 +1205,13 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
   if (l > 1)
     {
       if (pcst.elt (l - 1) == 0)
-	gcc_assert (pcst.elt (l - 2) < 0);
+	gcc_checking_assert (pcst.elt (l - 2) < 0);
       if (pcst.elt (l - 1) == (HOST_WIDE_INT) -1)
-	gcc_assert (pcst.elt (l - 2) >= 0);
+	gcc_checking_assert (pcst.elt (l - 2) >= 0);
     }
 
   wide_int cst = wide_int::from (pcst, prec, sgn);
   unsigned int ext_len = get_int_cst_ext_nunits (type, cst);
-
-  switch (TREE_CODE (type))
-    {
-    case NULLPTR_TYPE:
-      gcc_assert (cst == 0);
-      /* Fallthru.  */
-
-    case POINTER_TYPE:
-    case REFERENCE_TYPE:
-    case POINTER_BOUNDS_TYPE:
-      /* Cache NULL pointer and zero bounds.  */
-      if (cst == 0)
-	{
-	  limit = 1;
-	  ix = 0;
-	}
-      break;
-
-    case BOOLEAN_TYPE:
-      /* Cache false or true.  */
-      limit = 2;
-      if (wi::leu_p (cst, 1))
-	ix = cst.to_uhwi ();
-      break;
-
-    case INTEGER_TYPE:
-    case OFFSET_TYPE:
-      if (TYPE_SIGN (type) == UNSIGNED)
-	{
-	  /* Cache 0..N */
-	  limit = INTEGER_SHARE_LIMIT;
-
-	  /* This is a little hokie, but if the prec is smaller than
-	     what is necessary to hold INTEGER_SHARE_LIMIT, then the
-	     obvious test will not get the correct answer.  */
-	  if (prec < HOST_BITS_PER_WIDE_INT)
-	    {
-	      if (cst.to_uhwi () < (unsigned HOST_WIDE_INT) INTEGER_SHARE_LIMIT)
-		ix = cst.to_uhwi ();
-	    }
-	  else if (wi::ltu_p (cst, INTEGER_SHARE_LIMIT))
-	    ix = cst.to_uhwi ();
-	}
-      else
-	{
-	  /* Cache -1..N */
-	  limit = INTEGER_SHARE_LIMIT + 1;
-
-	  if (cst == -1)
-	    ix = 0;
-	  else if (!wi::neg_p (cst))
-	    {
-	      if (prec < HOST_BITS_PER_WIDE_INT)
-		{
-		  if (cst.to_shwi () < INTEGER_SHARE_LIMIT)
-		    ix = cst.to_shwi () + 1;
-		}
-	      else if (wi::lts_p (cst, INTEGER_SHARE_LIMIT))
-		ix = cst.to_shwi () + 1;
-	    }
-	}
-      break;
-
-    case ENUMERAL_TYPE:
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
 
   if (ext_len == 1)
     {
@@ -1290,6 +1221,56 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	hwi = cst.to_uhwi ();
       else
 	hwi = cst.to_shwi ();
+
+      switch (TREE_CODE (type))
+	{
+	case NULLPTR_TYPE:
+	  gcc_assert (hwi == 0);
+	  /* Fallthru.  */
+
+	case POINTER_TYPE:
+	case REFERENCE_TYPE:
+	case POINTER_BOUNDS_TYPE:
+	  /* Cache NULL pointer and zero bounds.  */
+	  if (hwi == 0)
+	    {
+	      limit = 1;
+	      ix = 0;
+	    }
+	  break;
+
+	case BOOLEAN_TYPE:
+	  /* Cache false or true.  */
+	  limit = 2;
+	  if (hwi < 2)
+	    ix = hwi;
+	  break;
+
+	case INTEGER_TYPE:
+	case OFFSET_TYPE:
+	  if (TYPE_SIGN (type) == UNSIGNED)
+	    {
+	      /* Cache [0, N).  */
+	      limit = INTEGER_SHARE_LIMIT;
+	      if (IN_RANGE (hwi, 0, INTEGER_SHARE_LIMIT - 1))
+		ix = hwi;
+	    }
+	  else
+	    {
+	      /* Cache [-1, N).  */
+	      limit = INTEGER_SHARE_LIMIT + 1;
+	      if (IN_RANGE (hwi, -1, INTEGER_SHARE_LIMIT - 1))
+		ix = hwi + 1;
+	    }
+	  break;
+
+	case ENUMERAL_TYPE:
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
       if (ix >= 0)
 	{
 	  /* Look for it in the type's vector of small shared ints.  */
@@ -1302,10 +1283,10 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	  t = TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix);
 	  if (t)
 	    /* Make sure no one is clobbering the shared constant.  */
-	    gcc_assert (TREE_TYPE (t) == type
-			&& TREE_INT_CST_NUNITS (t) == 1
-			&& TREE_INT_CST_EXT_NUNITS (t) == 1
-			&& TREE_INT_CST_ELT (t, 0) == hwi);
+	    gcc_checking_assert (TREE_TYPE (t) == type
+				 && TREE_INT_CST_NUNITS (t) == 1
+				 && TREE_INT_CST_EXT_NUNITS (t) == 1
+				 && TREE_INT_CST_ELT (t, 0) == hwi);
 	  else
 	    {
 	      /* Create a new shared int.  */
