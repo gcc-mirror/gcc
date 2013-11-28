@@ -511,6 +511,10 @@
                                   (UNSPEC_VRINTA "no") (UNSPEC_VRINTM "no")
                                   (UNSPEC_VRINTR "yes") (UNSPEC_VRINTX "yes")])
 
+(define_int_attr vrint_conds [(UNSPEC_VRINTZ "nocond") (UNSPEC_VRINTP "unconditional")
+                              (UNSPEC_VRINTA "unconditional") (UNSPEC_VRINTM "unconditional")
+                              (UNSPEC_VRINTR "nocond") (UNSPEC_VRINTX "nocond")])
+
 (define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
                                 (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")
                                 (UNSPEC_NVRINTX "x") (UNSPEC_NVRINTN "n")])
