@@ -1,3 +1,9 @@
+2013-11-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-propagate.c (valid_gimple_call_p): Pass TREE_TYPE to
+	is_gimple_reg_type.
+	* ipa-prop.c (determine_known_aggregate_parts): Likewise.
+
 2013-11-28  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (v7m_extra_costs): New table.
