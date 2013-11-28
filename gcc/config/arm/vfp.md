@@ -1264,6 +1264,7 @@
   "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
   "vrint<vrint_variant>%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1"
   [(set_attr "predicable" "<vrint_predicable>")
+   (set_attr "conds" "<vrint_conds>")
    (set_attr "type" "f_rint<vfp_type>")]
 )
 
@@ -1280,7 +1281,8 @@
 		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
   "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
   "vmaxnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "f_minmax<vfp_type>")]
+  [(set_attr "type" "f_minmax<vfp_type>")
+   (set_attr "conds" "unconditional")]
 )
 
 (define_insn "smin<mode>3"
@@ -1289,7 +1291,8 @@
 		  (match_operand:SDF 2 "register_operand" "<F_constraint>")))]
   "TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 <vfp_double_cond>"
   "vminnm.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "f_minmax<vfp_type>")]
+  [(set_attr "type" "f_minmax<vfp_type>")
+   (set_attr "conds" "unconditional")]
 )
 
 ;; Unimplemented insns:
