@@ -1,3 +1,9 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59327
+	* cfgexpand.c (expand_used_vars): Avoid warning on 32-bit
+	HWI hosts.
+
 2013-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/57293
