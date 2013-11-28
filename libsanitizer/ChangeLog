@@ -1,3 +1,11 @@
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59106
+	* ubsan/Makefile.am (AM_CXXFLAGS): Disable -frtti for files that
+	don't need it.
+	* ubsan/Makefile.in: Regenerated.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/59061
