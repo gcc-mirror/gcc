@@ -2,6 +2,10 @@
 
 	* bootstrap-ubsan.mk (POSTSTAGE1_LDFLAGS): Add -ldl.
 
+2013-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* bootstrap-lto.mk: Use -ffat-lto-objects.
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* picflag.m4 (m68k-*-*): Use default PIC flag.
@@ -25,6 +29,10 @@
 
 	* bootstrap-asan.mk (POSTSTAGE1_LDFLAGS): Add
 	-B$$r/prev-$(TARGET_SUBDIR)/libsanitizer/asan/.
+
+2013-01-23  Shenghou Ma  <minux.ma@gmail.com>
+
+	* isl.m4: don't echo $CFLAGS for ISL_CHECK_VERSION.
 
 2013-01-15  Richard Biener  <rguenther@suse.de>
 
