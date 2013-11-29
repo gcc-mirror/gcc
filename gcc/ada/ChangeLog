@@ -1,3 +1,11 @@
+2013-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/54040
+	PR ada/59346
+	* s-osinte-hpux.ads (timespec): Change type of tv_nsec field to time_t.
+	* s-osinte-kfreebsd-gnu.ads (timespec): Likewise.
+	* s-osinte-solaris-posix.ads (timespec): Likewise.
+
 2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Set TREE_SIDE_EFFECTS
