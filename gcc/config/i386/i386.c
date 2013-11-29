@@ -2047,8 +2047,6 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* Mask registers.  */
   MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
   MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  /* MPX bound registers */
-  BND_REGS, BND_REGS, BND_REGS, BND_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -2065,7 +2063,6 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
   93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -2082,7 +2079,6 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
   75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
   118, 119, 120, 121, 122, 123, 124, 125, /* Mask registers */
-  126, 127, 128, 129,			/* bound registers */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -2151,7 +2147,6 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
   93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  -1, -1, -1, -1,                       /* bound registers */
 };
 
 /* Define parameter passing and return registers.  */
@@ -2583,7 +2578,6 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mrtm",		OPTION_MASK_ISA_RTM },
     { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
-    { "-mmpx",          OPTION_MASK_ISA_MPX },
   };
 
   /* Flag options.  */
@@ -3078,7 +3072,6 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512ER		(HOST_WIDE_INT_1 << 41)
 #define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
 #define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
-#define PTA_MPX			(HOST_WIDE_INT_1 << 44)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -4271,11 +4264,6 @@ ix86_conditional_register_usage (void)
       for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
     }
-
-  /* If MPX is disabled, squash the registers.  */
-  if (! TARGET_MPX)
-    for (i = FIRST_BND_REG; i <= LAST_BND_REG; i++)
-      fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
 
@@ -8998,7 +8986,7 @@ ix86_code_end (void)
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
-      output_asm_insn ("%!ret", NULL);
+      fputs ("\tret\n", asm_out_file);
       final_end_function ();
       init_insn_lengths ();
       free_after_compilation (cfun);
@@ -9056,7 +9044,7 @@ output_set_got (rtx dest, rtx label)
 
       xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
-      output_asm_insn ("%!call\t%X2", xops);
+      output_asm_insn ("call\t%X2", xops);
 
 #if TARGET_MACHO
       /* Output the Mach-O "canonical" pic base label name ("Lxx$pb") here.
@@ -14424,7 +14412,7 @@ print_reg (rtx x, int code, FILE *file)
     case 8:
     case 4:
     case 12:
-      if (! ANY_FP_REG_P (x) &&  ! ANY_BND_REG_P (x))
+      if (! ANY_FP_REG_P (x))
 	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
@@ -14547,7 +14535,6 @@ get_some_local_dynamic_name (void)
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    @ -- print a segment register of thread base pointer load
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
-   ! -- print MPX prefix for jxx/call/ret instructions if required.
  */
 
 void
@@ -15047,11 +15034,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    fputs ("addr32 ", file);
 	  return;
 
-	case '!':
-	  if (ix86_bnd_prefixed_insn_p (NULL_RTX))
-	    fputs ("bnd ", file);
-	  return;
-
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}
@@ -15194,7 +15176,7 @@ static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
   return (code == '@' || code == '*' || code == '+' || code == '&'
-	  || code == ';' || code == '~' || code == '^' || code == '!');
+	  || code == ';' || code == '~' || code == '^');
 }
 
 /* Print a memory operand whose address is ADDR.  */
@@ -15223,25 +15205,6 @@ ix86_print_operand_address (FILE *file, rtx addr)
       gcc_assert (TARGET_64BIT);
       ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
       code = 'q';
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDMK_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 1), &parts);
-      gcc_assert (parts.base == NULL_RTX || parts.index == NULL_RTX);
-      if (parts.base != NULL_RTX)
-	{
-	  parts.index = parts.base;
-	  parts.scale = 1;
-	}
-      parts.base = XVECEXP (addr, 0, 0);
-      addr = XVECEXP (addr, 0, 0);
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDLDX_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
-      gcc_assert (parts.index == NULL_RTX);
-      parts.index = XVECEXP (addr, 0, 1);
-      addr = XVECEXP (addr, 0, 0);
     }
   else
     ok = ix86_decompose_address (addr, &parts);
@@ -24551,13 +24514,13 @@ ix86_output_call_insn (rtx insn, rtx call_op)
   if (SIBLING_CALL_P (insn))
     {
       if (direct_p)
-	xasm = "%!jmp\t%P0";
+	xasm = "jmp\t%P0";
       /* SEH epilogue detection requires the indirect branch case
 	 to include REX.W.  */
       else if (TARGET_SEH)
-	xasm = "%!rex.W jmp %A0";
+	xasm = "rex.W jmp %A0";
       else
-	xasm = "%!jmp\t%A0";
+	xasm = "jmp\t%A0";
 
       output_asm_insn (xasm, &call_op);
       return "";
@@ -24594,9 +24557,9 @@ ix86_output_call_insn (rtx insn, rtx call_op)
     }
 
   if (direct_p)
-    xasm = "%!call\t%P0";
+    xasm = "call\t%P0";
   else
-    xasm = "%!call\t%A0";
+    xasm = "call\t%A0";
 
   output_asm_insn (xasm, &call_op);
 
@@ -34762,7 +34725,6 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
       case SSE_FIRST_REG:
       case FP_TOP_REG:
       case FP_SECOND_REG:
-      case BND_REGS:
 	return true;
 
       default:
@@ -35111,8 +35073,6 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return VALID_FP_MODE_P (mode);
   if (MASK_REGNO_P (regno))
     return VALID_MASK_REG_MODE (mode);
-  if (BND_REGNO_P (regno))
-    return VALID_BND_REG_MODE (mode);
   if (SSE_REGNO_P (regno))
     {
       /* We implement the move patterns for all vector modes into and
@@ -35924,10 +35884,6 @@ x86_order_regs_for_local_alloc (void)
 
    /* Mask register.  */
    for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
-     reg_alloc_order [pos++] = i;
-
-   /* MPX bound registers.  */
-   for (i = FIRST_BND_REG; i <= LAST_BND_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */
@@ -42426,18 +42382,6 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
   set_unique_reg_note (get_last_insn (), REG_EQUAL,
 		       gen_rtx_MULT (mode, op1, op2));
-}
-
-/* Return 1 if control tansfer instruction INSN
-   should be encoded with bnd prefix.
-   If insn is NULL then return 1 when control
-   transfer instructions should be prefixed with
-   bnd by default for current function.  */
-
-bool
-ix86_bnd_prefixed_insn_p (rtx insn ATTRIBUTE_UNUSED)
-{
-  return false;
 }
 
 /* Calculate integer abs() using only SSE2 instructions.  */

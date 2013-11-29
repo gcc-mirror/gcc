@@ -18289,7 +18289,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    gen_formal_parameter_pack_die (generic_decl_parm,
 					   parm, subr_die,
 					   &parm);
-	  else if (parm && !POINTER_BOUNDS_P (parm))
+	  else if (parm)
 	    {
 	      dw_die_ref parm_die = gen_decl_die (parm, NULL, subr_die);
 
@@ -18301,8 +18301,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 	      parm = DECL_CHAIN (parm);
 	    }
-	  else if (parm)
-	    parm = DECL_CHAIN (parm);
 
 	  if (generic_decl_parm)
 	    generic_decl_parm = DECL_CHAIN (generic_decl_parm);
@@ -19800,7 +19798,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
-    case POINTER_BOUNDS_TYPE:
       /* No DIEs needed for fundamental types.  */
       break;
 
@@ -20451,8 +20448,7 @@ dwarf2out_global_decl (tree decl)
      declarations, file-scope (extern) function declarations (which
      had no corresponding body) and file-scope tagged type declarations
      and definitions which have not yet been forced out.  */
-  if ((TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
-      && !POINTER_BOUNDS_P (decl))
+  if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
     dwarf2out_decl (decl);
 }
 

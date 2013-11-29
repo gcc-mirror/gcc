@@ -5787,18 +5787,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
-      && fcode != BUILT_IN_FREE
-      && fcode != BUILT_IN_CHKP_SET_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_INIT_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_NULL_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_COPY_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_NARROW_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_STORE_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_LBOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_UBOUNDS
-      && fcode != BUILT_IN_CHKP_CHECK_PTR_BOUNDS
-      && fcode != BUILT_IN_CHKP_GET_PTR_LBOUND
-      && fcode != BUILT_IN_CHKP_GET_PTR_UBOUND)
+      && fcode != BUILT_IN_FREE)
     return expand_call (exp, target, ignore);
 
   /* The built-in function expanders test for target == const0_rtx
@@ -6849,51 +6838,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_CILK_POP_FRAME:
       expand_builtin_cilk_pop_frame (exp);
       return const0_rtx;
-
-    case BUILT_IN_CHKP_INIT_PTR_BOUNDS:
-    case BUILT_IN_CHKP_NULL_PTR_BOUNDS:
-    case BUILT_IN_CHKP_COPY_PTR_BOUNDS:
-      return expand_normal (CALL_EXPR_ARG (exp, 0));
-
-    case BUILT_IN_CHKP_CHECK_PTR_LBOUNDS:
-    case BUILT_IN_CHKP_CHECK_PTR_UBOUNDS:
-    case BUILT_IN_CHKP_CHECK_PTR_BOUNDS:
-    case BUILT_IN_CHKP_SET_PTR_BOUNDS:
-    case BUILT_IN_CHKP_NARROW_PTR_BOUNDS:
-    case BUILT_IN_CHKP_STORE_PTR_BOUNDS:
-    case BUILT_IN_CHKP_GET_PTR_LBOUND:
-    case BUILT_IN_CHKP_GET_PTR_UBOUND:
-      /* We allow user CHKP builtins if Pointer Bounds
-	 Checker is off.  */
-      if (!flag_check_pointer_bounds)
-	{
-	  if (fcode == BUILT_IN_CHKP_SET_PTR_BOUNDS
-	      || fcode == BUILT_IN_CHKP_NARROW_PTR_BOUNDS)
-	    return expand_normal (CALL_EXPR_ARG (exp, 0));
-	  else if (fcode == BUILT_IN_CHKP_GET_PTR_LBOUND)
-	    return expand_normal (size_zero_node);
-	  else if (fcode == BUILT_IN_CHKP_GET_PTR_UBOUND)
-	    return expand_normal (size_int (-1));
-	  else
-	    return const0_rtx;
-	}
-      /* FALLTHROUGH */
-
-    case BUILT_IN_CHKP_BNDMK:
-    case BUILT_IN_CHKP_BNDSTX:
-    case BUILT_IN_CHKP_BNDCL:
-    case BUILT_IN_CHKP_BNDCU:
-    case BUILT_IN_CHKP_BNDLDX:
-    case BUILT_IN_CHKP_BNDRET:
-    case BUILT_IN_CHKP_INTERSECT:
-    case BUILT_IN_CHKP_ARG_BND:
-    case BUILT_IN_CHKP_NARROW:
-    case BUILT_IN_CHKP_EXTRACT_LOWER:
-    case BUILT_IN_CHKP_EXTRACT_UPPER:
-      /* Software implementation of pointers checker is NYI.
-	 Target support is required.  */
-      error ("Your target platform does not support -fcheck-pointers");
-      break;
 
     default:	/* just do library call, if unknown builtin */
       break;
