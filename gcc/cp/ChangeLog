@@ -1,3 +1,9 @@
+2013-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59331
+	* decl.c (compute_array_index_type): Don't build COMPOUND_EXPR for
+	instrumentation.
+
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59297

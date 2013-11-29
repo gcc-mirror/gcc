@@ -8434,8 +8434,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 		 LE_EXPR rather than LT_EXPR.  */
 	      tree t = fold_build2 (PLUS_EXPR, TREE_TYPE (itype), itype,
 				    build_one_cst (TREE_TYPE (itype)));
-	      t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t),
-			       ubsan_instrument_vla (input_location, t), t);
+	      t = ubsan_instrument_vla (input_location, t);
 	      finish_expr_stmt (t);
 	    }
 	}
