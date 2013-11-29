@@ -1,3 +1,8 @@
+2013-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bootstrap-asan.mk (POSTSTAGE1_LDFLAGS): Add
+	-B$$r/prev-$(TARGET_SUBDIR)/libsanitizer/.
+
 2013-11-19  Marek Polacek  <polacek@redhat.com>
 
 	* bootstrap-ubsan.mk (POSTSTAGE1_LDFLAGS): Add -ldl.
