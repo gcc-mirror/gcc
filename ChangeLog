@@ -2,10 +2,6 @@
 
 	* MAINTAINERS: Update my email address.
 
-2013-11-18  Jan Hubicka  <jh@suse.cz>
-
-	* config/bootstrap-lto.mk: Use -ffat-lto-objects.
-
 2013-11-15  David Edelsohn  <dje.gcc@gmail.com>
 
 	* MAINTAINERS (Global Reviewers, c++): Remove Mark Mitchell.
@@ -220,7 +216,6 @@
 
 2013-01-23  Shenghou Ma  <minux.ma@gmail.com>
 
-	* config/isl.m4: don't echo $CFLAGS for ISL_CHECK_VERSION.
 	* configure: Re-generate.
 
 2013-01-15  Richard Biener  <rguenther@suse.de>
