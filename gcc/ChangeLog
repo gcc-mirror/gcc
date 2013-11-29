@@ -1,3 +1,15 @@
+2013-11-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59340
+	* lra.c (check_rtl): Use recog_memoized instead of insn_invalid_p.
+
+	Revert
+	2013-11-20  Robert Suchanek  <Robert.Suchanek@imgtec.com>
+
+	* lra.c (lra): Set lra_in_progress before check_rtl call.
+	* recog.c (insn_invalid_p): Add !lra_in_progress to prevent
+	adding clobber regs when LRA is running.
+
 2013-11-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/59289
