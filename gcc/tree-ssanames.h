@@ -81,7 +81,7 @@ extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (void);
 extern void ssanames_print_statistics (void);
 extern tree make_ssa_name_fn (struct function *, tree, gimple);
-extern void release_ssa_name (tree);
+extern void release_ssa_name_fn (struct function *, tree);
 extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
 				    unsigned int *);
 extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
@@ -125,6 +125,14 @@ static inline tree
 duplicate_ssa_name (tree var, gimple stmt)
 {
   return duplicate_ssa_name_fn (cfun, var, stmt);
+}
+
+/* Release the SSA name NAME used in function cfun.  */
+
+static inline void
+release_ssa_name (tree name)
+{
+  release_ssa_name_fn (cfun, name);
 }
 
 /* Return an anonymous SSA_NAME node for type TYPE defined in statement STMT

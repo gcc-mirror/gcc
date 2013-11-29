@@ -301,7 +301,7 @@ get_nonzero_bits (const_tree name)
    other fields must be assumed clobbered.  */
 
 void
-release_ssa_name (tree var)
+release_ssa_name_fn (struct function *fn, tree var)
 {
   if (!var)
     return;
@@ -341,7 +341,7 @@ release_ssa_name (tree var)
       while (imm->next != imm)
 	delink_imm_use (imm->next);
 
-      (*SSANAMES (cfun))[SSA_NAME_VERSION (var)] = NULL_TREE;
+      (*SSANAMES (fn))[SSA_NAME_VERSION (var)] = NULL_TREE;
       memset (var, 0, tree_size (var));
 
       imm->prev = imm;
@@ -363,7 +363,7 @@ release_ssa_name (tree var)
       SSA_NAME_IN_FREE_LIST (var) = 1;
 
       /* And finally put it on the free list.  */
-      vec_safe_push (FREE_SSANAMES (cfun), var);
+      vec_safe_push (FREE_SSANAMES (fn), var);
     }
 }
 

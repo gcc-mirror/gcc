@@ -2021,10 +2021,6 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
   tree vdef = gimple_vdef (gs);
   tree vuse = gimple_vuse (gs);
 
-  if (!ssa_operands_active (DECL_STRUCT_FUNCTION (current_function_decl))
-      || !gimple_references_memory_p (gs))
-    return;
-
   if (vdef != NULL_TREE)
     {
       pp_string (buffer, "# ");
