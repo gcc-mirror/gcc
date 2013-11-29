@@ -2715,17 +2715,6 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  tree t0 = TREE_OPERAND (t, 0);
 	  tree t1 = TREE_OPERAND (t, 1);
 	  tree t2 = TREE_OPERAND (t, 2);
-	  tree t0_type = TREE_TYPE (t0);
-	  unsigned HOST_WIDE_INT t0_size = 0;
-
-	  if (tree_fits_uhwi_p (TYPE_SIZE (t0_type)))
-	    t0_size = tree_to_uhwi (TYPE_SIZE (t0_type));
-	  else 
-	    {
-	      HOST_WIDE_INT t0_max_size = max_int_size_in_bytes (t0_type);
-	      if (t0_max_size > 0)
-		t0_size = t0_max_size * BITS_PER_UNIT;
-	    }
 	  if (!tree_fits_uhwi_p (t1)
 	      || !tree_fits_uhwi_p (t2))
 	    {
@@ -2749,8 +2738,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 		     "match field size of BIT_FIELD_REF");
 	      return t;
 	    }
-	  if (t0_size != 0
-	      && tree_to_uhwi (t1) + tree_to_uhwi (t2) > t0_size)
+	  if (!AGGREGATE_TYPE_P (TREE_TYPE (t0))
+	      && (tree_to_uhwi (t1) + tree_to_uhwi (t2)
+		  > tree_to_uhwi (TYPE_SIZE (TREE_TYPE (t0)))))
 	    {
 	      error ("position plus size exceeds size of referenced object in "
 		     "BIT_FIELD_REF");
