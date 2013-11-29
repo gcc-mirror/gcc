@@ -1,3 +1,8 @@
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59338
+	* gcc.dg/torture/pr59338.c: New testcase.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/59326

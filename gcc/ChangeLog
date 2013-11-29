@@ -1,5 +1,11 @@
 2013-11-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/59338
+	* tree-cfg.c (verify_expr): Restrict bounds verification of
+	BIT_FIELD_REF arguments to non-aggregate typed base objects.
+
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/59334
 	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Fix bug
 	in previous commit.
