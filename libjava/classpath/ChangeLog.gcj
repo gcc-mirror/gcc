@@ -1,3 +1,9 @@
+2013-11-29  Matthias Klose  <doko@ubuntu.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c,
+	native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c:
+	Fix freetype includes.
+
 2013-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/56258

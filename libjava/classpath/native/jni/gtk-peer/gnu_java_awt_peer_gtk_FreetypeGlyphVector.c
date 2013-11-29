@@ -42,8 +42,9 @@ exception statement from your version. */
 #include <pango/pango.h>
 #include <pango/pangoft2.h>
 #include <pango/pangofc-font.h>
-#include <freetype/ftglyph.h>
-#include <freetype/ftoutln.h>
+#include <ft2build.h>
+#include FT_GLYPH_H
+#include FT_OUTLINE_H
 #include "jcl.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_FreetypeGlyphVector.h"
