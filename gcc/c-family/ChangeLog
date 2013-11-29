@@ -1,3 +1,9 @@
+2013-11-29   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/59309
+	* cilk.c (gimplify_cilk_spawn): Properly handle function without
+	arguments.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59280
