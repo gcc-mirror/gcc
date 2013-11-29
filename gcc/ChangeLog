@@ -1,3 +1,26 @@
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59208
+	* tree-ssa-operands.h (fini_ssa_operands, verify_ssa_operands,
+	free_stmt_operands, update_stmt_operands): Add struct function
+	argument.
+	* tree-ssa-operands.c: Remove uses of cfun, propagate struct
+	function argument from fini_ssa_operands, verify_ssa_operands,
+	free_stmt_operands and update_stmt_operands everywhere.
+	* tree-ssanames.h (release_ssa_name_fn): New.
+	(release_ssa_name): Inline wrapper around release_ssa_name_fn.
+	* tree-ssanames.c (release_ssa_name): Rename to ...
+	(release_ssa_name_fn): ... this and add struct function argument.
+	* gimple-ssa.h (update_stmt, update_stmt_if_modified): Adjust.
+	(update_stmt_fn): New function.
+	* tree-cfg.c (move_block_to_fn): Adjust.
+	* tree-if-conv.c (free_bb_predicate): Likewise.
+	* tree-ssa.c (verify_ssa): Likewise.
+	(delete_tree_ssa): Likewise.
+	* gimple-pretty-print.c (dump_gimple_mem_ops): Remove guard.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Call
+	update_stmt_fn instead of update_stmt.
+
 2013-11-29  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm.h (THUMB_SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS

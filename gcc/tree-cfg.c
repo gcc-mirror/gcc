@@ -6540,7 +6540,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
 
       /* We cannot leave any operands allocated from the operand caches of
 	 the current function.  */
-      free_stmt_operands (stmt);
+      free_stmt_operands (cfun, stmt);
       push_cfun (dest_cfun);
       update_stmt (stmt);
       pop_cfun ();
