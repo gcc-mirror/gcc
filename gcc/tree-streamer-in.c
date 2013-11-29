@@ -425,6 +425,48 @@ unpack_ts_optimization (struct bitpack_d *bp, tree expr)
 }
 
 
+/* Unpack all the non-pointer fields of the TS_OMP_CLAUSE
+   structure of expression EXPR from bitpack BP.  */
+
+static void
+unpack_ts_omp_clause_value_fields (struct data_in *data_in,
+				   struct bitpack_d *bp, tree expr)
+{
+  OMP_CLAUSE_LOCATION (expr) = stream_input_location (bp, data_in);
+  switch (OMP_CLAUSE_CODE (expr))
+    {
+    case OMP_CLAUSE_DEFAULT:
+      OMP_CLAUSE_DEFAULT_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_default_kind,
+			  OMP_CLAUSE_DEFAULT_LAST);
+      break;
+    case OMP_CLAUSE_SCHEDULE:
+      OMP_CLAUSE_SCHEDULE_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_schedule_kind,
+			  OMP_CLAUSE_SCHEDULE_LAST);
+      break;
+    case OMP_CLAUSE_DEPEND:
+      OMP_CLAUSE_DEPEND_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST);
+      break;
+    case OMP_CLAUSE_MAP:
+      OMP_CLAUSE_MAP_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_map_kind, OMP_CLAUSE_MAP_LAST);
+      break;
+    case OMP_CLAUSE_PROC_BIND:
+      OMP_CLAUSE_PROC_BIND_KIND (expr)
+	= bp_unpack_enum (bp, omp_clause_proc_bind_kind,
+			  OMP_CLAUSE_PROC_BIND_LAST);
+      break;
+    case OMP_CLAUSE_REDUCTION:
+      OMP_CLAUSE_REDUCTION_CODE (expr)
+	= bp_unpack_enum (bp, tree_code, MAX_TREE_CODES);
+      break;
+    default:
+      break;
+    }
+}
+
 /* Unpack all the non-pointer fields in EXPR into a bit pack.  */
 
 static void
@@ -493,6 +535,9 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
       if (length > 0)
 	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
     }
+
+  if (code == OMP_CLAUSE)
+    unpack_ts_omp_clause_value_fields (data_in, bp, expr);
 }
 
 
@@ -577,6 +622,12 @@ streamer_alloc_tree (struct lto_input_block *ib, struct data_in *data_in,
     {
       unsigned HOST_WIDE_INT nargs = streamer_read_uhwi (ib);
       return build_vl_exp (CALL_EXPR, nargs + 3);
+    }
+  else if (code == OMP_CLAUSE)
+    {
+      enum omp_clause_code subcode
+	= (enum omp_clause_code) streamer_read_uhwi (ib);
+      return build_omp_clause (UNKNOWN_LOCATION, subcode);
     }
   else
     {
@@ -960,6 +1011,22 @@ lto_input_ts_constructor_tree_pointers (struct lto_input_block *ib,
 }
 
 
+/* Read all pointer fields in the TS_OMP_CLAUSE structure of EXPR from
+   input block IB.  DATA_IN contains tables and descriptors for the
+   file being read.  */
+
+static void
+lto_input_ts_omp_clause_tree_pointers (struct lto_input_block *ib,
+				       struct data_in *data_in, tree expr)
+{
+  int i;
+
+  for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
+    OMP_CLAUSE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
+  OMP_CLAUSE_CHAIN (expr) = stream_read_tree (ib, data_in);
+}
+
+
 /* Read all pointer fields in EXPR from input block IB.  DATA_IN
    contains tables and descriptors for the file being read.  */
 
@@ -1021,6 +1088,9 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     lto_input_ts_constructor_tree_pointers (ib, data_in, expr);
+
+  if (code == OMP_CLAUSE)
+    lto_input_ts_omp_clause_tree_pointers (ib, data_in, expr);
 }
 
 

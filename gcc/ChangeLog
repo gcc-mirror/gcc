@@ -1,3 +1,28 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/59326
+	* tree-core.h (enum omp_clause_schedule_kind): Add
+	OMP_CLAUSE_SCHEDULE_LAST.
+	(enum omp_clause_default_kind): Add OMP_CLAUSE_DEFAULT_LAST.
+	(enum omp_clause_depend_kind): Add OMP_CLAUSE_DEPEND_LAST.
+	(enum omp_clause_map_kind): Add OMP_CLAUSE_MAP_LAST.
+	(enum omp_clause_proc_bind_kind): Add OMP_CLAUSE_PROC_BIND_LAST.
+	* lto-streamer-out.c (lto_is_streamable): Allow streaming
+	OMP_CLAUSE.
+	(DFS_write_tree_body): Handle OMP_CLAUSE.
+	* tree-streamer-out.c (pack_ts_omp_clause_value_fields): New
+	function.
+	(streamer_pack_tree_bitfields): Call it for OMP_CLAUSE.
+	(write_ts_omp_clause_tree_pointers): New function.
+	(streamer_write_tree_body): Call it for OMP_CLAUSE.
+	(streamer_write_tree_header): For OMP_CLAUSE stream OMP_CLAUSE_CODE.
+	* tree-streamer-in.c (unpack_ts_omp_clause_value_fields): New
+	function.
+	(unpack_value_fields): Call it for OMP_CLAUSE.
+	(streamer_alloc_tree): Handle OMP_CLAUSE.
+	(lto_input_ts_omp_clause_tree_pointers): New function.
+	(streamer_read_tree_body): Call it for OMP_CLAUSE.
+
 2013-11-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/implement-c.texi: Document C11 implementation-defined
