@@ -1200,7 +1200,8 @@ eliminate_unnecessary_stmts (void)
 	      if (TREE_CODE (ptr) == SSA_NAME)
 		{
 		  gimple def_stmt = SSA_NAME_DEF_STMT (ptr);
-		  if (!gimple_plf (def_stmt, STMT_NECESSARY))
+		  if (!gimple_nop_p (def_stmt)
+		      && !gimple_plf (def_stmt, STMT_NECESSARY))
 		    gimple_set_plf (stmt, STMT_NECESSARY, false);
 		}
 	    }

@@ -1,3 +1,9 @@
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59334
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Fix bug
+	in previous commit.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 
