@@ -1,3 +1,8 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59280
+	* c-c++-common/pr59280.c: New test.
+
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59297
