@@ -1,3 +1,8 @@
+2013-11-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/59289
+	* config/arm/arm.c (cortexa15_extra_costs): Adjust costs.
+
 2013-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59208
