@@ -2234,6 +2234,27 @@ wi::add (const T1 &x, const T2 &y)
       val[0] = xi.ulow () + yi.ulow ();
       result.set_len (1);
     }
+  /* If the precision is known at compile time to be greater than
+     HOST_BITS_PER_WIDE_INT, we can optimize the single-HWI case
+     knowing that (a) all bits in those HWIs are significant and
+     (b) the result has room for at least two HWIs.  This provides
+     a fast path for things like offset_int and widest_int.
+
+     The STATIC_CONSTANT_P test prevents this path from being
+     used for wide_ints.  wide_ints with precisions greater than
+     HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
+     point handling them inline.  */
+  else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
+	   && xi.len + yi.len == 2)
+    {
+      unsigned HOST_WIDE_INT xl = xi.ulow ();
+      unsigned HOST_WIDE_INT yl = yi.ulow ();
+      unsigned HOST_WIDE_INT resultl = xl + yl;
+      val[0] = resultl;
+      val[1] = (HOST_WIDE_INT) resultl < 0 ? 0 : -1;
+      result.set_len (1 + (((resultl ^ xl) & (resultl ^ yl))
+			   >> (HOST_BITS_PER_WIDE_INT - 1)));
+    }
   else
     result.set_len (add_large (val, xi.val, xi.len,
 			       yi.val, yi.len, precision,
@@ -2287,6 +2308,27 @@ wi::sub (const T1 &x, const T2 &y)
     {
       val[0] = xi.ulow () - yi.ulow ();
       result.set_len (1);
+    }
+  /* If the precision is known at compile time to be greater than
+     HOST_BITS_PER_WIDE_INT, we can optimize the single-HWI case
+     knowing that (a) all bits in those HWIs are significant and
+     (b) the result has room for at least two HWIs.  This provides
+     a fast path for things like offset_int and widest_int.
+
+     The STATIC_CONSTANT_P test prevents this path from being
+     used for wide_ints.  wide_ints with precisions greater than
+     HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
+     point handling them inline.  */
+  else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
+	   && xi.len + yi.len == 2)
+    {
+      unsigned HOST_WIDE_INT xl = xi.ulow ();
+      unsigned HOST_WIDE_INT yl = yi.ulow ();
+      unsigned HOST_WIDE_INT resultl = xl - yl;
+      val[0] = resultl;
+      val[1] = (HOST_WIDE_INT) resultl < 0 ? 0 : -1;
+      result.set_len (1 + (((resultl ^ xl) & (xl ^ yl))
+			   >> (HOST_BITS_PER_WIDE_INT - 1)));
     }
   else
     result.set_len (sub_large (val, xi.val, xi.len,
