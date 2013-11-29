@@ -2343,6 +2343,14 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       && !current_function_decl)
     DECL_EXTERNAL (newdecl) = 0;
 
+  /* An inline definition following a static declaration is not
+     DECL_EXTERNAL.  */
+  if (new_is_definition
+      && (DECL_DECLARED_INLINE_P (newdecl)
+	  || DECL_DECLARED_INLINE_P (olddecl))
+      && !TREE_PUBLIC (olddecl))
+    DECL_EXTERNAL (newdecl) = 0;
+
   if (DECL_EXTERNAL (newdecl))
     {
       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
