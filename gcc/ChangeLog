@@ -1,5 +1,10 @@
 2013-11-29  Yvan Roux  <yvan.roux@linaro.org>
 
+	* config/arm/arm.h (THUMB_SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS
+	for LRA.
+
+2013-11-29  Yvan Roux  <yvan.roux@linaro.org>
+
 	 * config/arm/arm.md (store_minmaxsi): Use only when
 	optimize_function_for_size_p.
 
