@@ -1,5 +1,12 @@
 2013-11-29  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/42262
+	* c-typeck.c (process_init_element): Do not treat a string as
+	initializing a whole array when used with a designator for an
+	individual element.
+
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/57574
 	* c-decl.c (merge_decls): Clear DECL_EXTERNAL for a definition of
 	an inline function following a static declaration.
