@@ -1,4 +1,18 @@
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR lto/59326
+	* omp-low.c (simd_clone_create): Return NULL if for definition
+	!cgraph_function_with_gimple_body_p (old_node).  Call cgraph_get_body
+	before calling cgraph_function_versioning.
+	(expand_simd_clones): Look for "omp declare simd" attribute first.
+	Don't check targetm.simd_clone.compute_vecsize_and_simdlen here.
+	Punt if node->global.inlined_to.
+	(pass_omp_simd_clone::gate): Also enable if in_lto_p && !flag_wpa.
+	Disable pass if targetm.simd_clone.compute_vecsize_and_simdlen is NULL.
+	* lto-streamer-out.c (hash_tree): Handle OMP_CLAUSE.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/59326
 	* tree-core.h (enum omp_clause_schedule_kind): Add

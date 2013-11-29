@@ -1,4 +1,10 @@
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR lto/59326
+	* lto.c (compare_tree_sccs_1): Handle OMP_CLAUSE.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/59326
 	* lto.c (mentions_vars_p_omp_clause): New function.

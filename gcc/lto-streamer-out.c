@@ -1060,6 +1060,39 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 	}
     }
 
+  if (code == OMP_CLAUSE)
+    {
+      int i;
+
+      v = iterative_hash_host_wide_int (OMP_CLAUSE_CODE (t), v);
+      switch (OMP_CLAUSE_CODE (t))
+	{
+	case OMP_CLAUSE_DEFAULT:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEFAULT_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_SCHEDULE:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_SCHEDULE_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_DEPEND:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEPEND_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_MAP:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_MAP_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_PROC_BIND:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_PROC_BIND_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_REDUCTION:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_REDUCTION_CODE (t), v);
+	  break;
+	default:
+	  break;
+	}
+      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t)]; i++)
+	visit (OMP_CLAUSE_OPERAND (t, i));
+      visit (OMP_CLAUSE_CHAIN (t));
+    }
+
   return v;
 
 #undef visit

@@ -10912,8 +10912,13 @@ simd_clone_create (struct cgraph_node *old_node)
 {
   struct cgraph_node *new_node;
   if (old_node->definition)
-    new_node = cgraph_function_versioning (old_node, vNULL, NULL, NULL, false,
-					   NULL, NULL, "simdclone");
+    {
+      if (!cgraph_function_with_gimple_body_p (old_node))
+	return NULL;
+      cgraph_get_body (old_node);
+      new_node = cgraph_function_versioning (old_node, vNULL, NULL, NULL,
+					     false, NULL, NULL, "simdclone");
+    }
   else
     {
       tree old_decl = old_node->decl;
@@ -11622,13 +11627,13 @@ simd_clone_adjust (struct cgraph_node *node)
 static void
 expand_simd_clones (struct cgraph_node *node)
 {
-  if (lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
-    return;
-
   tree attr = lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl));
-  if (!attr || targetm.simd_clone.compute_vecsize_and_simdlen == NULL)
+  if (attr == NULL_TREE
+      || node->global.inlined_to
+      || lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
     return;
+
   /* Ignore
      #pragma omp declare simd
      extern int foo ();
@@ -11764,8 +11769,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return flag_openmp || flag_openmp_simd
-			|| flag_enable_cilkplus; }
+  bool gate () { return ((flag_openmp || flag_openmp_simd
+			  || flag_enable_cilkplus || (in_lto_p && !flag_wpa))
+			 && (targetm.simd_clone.compute_vecsize_and_simdlen
+			     != NULL)); }
   unsigned int execute () { return ipa_omp_simd_clone (); }
 };
 
