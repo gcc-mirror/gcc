@@ -1,3 +1,8 @@
+2013-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lib/asan-dg.exp (asan_link_flags): Properly add path to
+	libsanitizer.spec to cflags.
+
 2013-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59208
