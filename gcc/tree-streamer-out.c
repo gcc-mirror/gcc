@@ -390,6 +390,46 @@ pack_ts_optimization (struct bitpack_d *bp, tree expr)
 }
 
 
+/* Pack all the non-pointer fields of the TS_OMP_CLAUSE structure
+   of expression EXPR into bitpack BP.  */
+
+static void
+pack_ts_omp_clause_value_fields (struct output_block *ob,
+				 struct bitpack_d *bp, tree expr)
+{
+  stream_output_location (ob, bp, OMP_CLAUSE_LOCATION (expr));
+  switch (OMP_CLAUSE_CODE (expr))
+    {
+    case OMP_CLAUSE_DEFAULT:
+      bp_pack_enum (bp, omp_clause_default_kind, OMP_CLAUSE_DEFAULT_LAST,
+		    OMP_CLAUSE_DEFAULT_KIND (expr));
+      break;
+    case OMP_CLAUSE_SCHEDULE:
+      bp_pack_enum (bp, omp_clause_schedule_kind, OMP_CLAUSE_SCHEDULE_LAST,
+		    OMP_CLAUSE_SCHEDULE_KIND (expr));
+      break;
+    case OMP_CLAUSE_DEPEND:
+      bp_pack_enum (bp, omp_clause_depend_kind, OMP_CLAUSE_DEPEND_LAST,
+		    OMP_CLAUSE_DEPEND_KIND (expr));
+      break;
+    case OMP_CLAUSE_MAP:
+      bp_pack_enum (bp, omp_clause_map_kind, OMP_CLAUSE_MAP_LAST,
+		    OMP_CLAUSE_MAP_KIND (expr));
+      break;
+    case OMP_CLAUSE_PROC_BIND:
+      bp_pack_enum (bp, omp_clause_proc_bind_kind, OMP_CLAUSE_PROC_BIND_LAST,
+		    OMP_CLAUSE_PROC_BIND_KIND (expr));
+      break;
+    case OMP_CLAUSE_REDUCTION:
+      bp_pack_enum (bp, tree_code, MAX_TREE_CODES,
+		    OMP_CLAUSE_REDUCTION_CODE (expr));
+      break;
+    default:
+      break;
+    }
+}
+
+
 /* Pack all the bitfields in EXPR into a bit pack.  */
 
 void
@@ -451,6 +491,9 @@ streamer_pack_tree_bitfields (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     bp_pack_var_len_unsigned (bp, CONSTRUCTOR_NELTS (expr));
+
+  if (code == OMP_CLAUSE)
+    pack_ts_omp_clause_value_fields (ob, bp, expr);
 }
 
 
@@ -853,6 +896,29 @@ write_ts_constructor_tree_pointers (struct output_block *ob, tree expr,
     }
 }
 
+
+/* Write all pointer fields in the TS_OMP_CLAUSE structure of EXPR
+   to output block OB.  If REF_P is true, write a reference to EXPR's
+   pointer fields.  */
+
+static void
+write_ts_omp_clause_tree_pointers (struct output_block *ob, tree expr,
+				   bool ref_p)
+{
+  int i;
+  for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
+    stream_write_tree (ob, OMP_CLAUSE_OPERAND (expr, i), ref_p);
+  if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_REDUCTION)
+    {
+      /* We don't stream these right now, handle it if streaming
+	 of them is needed.  */
+      gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (expr) == NULL);
+      gcc_assert (OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (expr) == NULL);
+    }
+  stream_write_tree (ob, OMP_CLAUSE_CHAIN (expr), ref_p);
+}
+
+
 /* Write all pointer fields in EXPR to output block OB.  If REF_P is true,
    the leaves of EXPR are emitted as references.  */
 
@@ -915,6 +981,9 @@ streamer_write_tree_body (struct output_block *ob, tree expr, bool ref_p)
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     write_ts_constructor_tree_pointers (ob, expr, ref_p);
+
+  if (code == OMP_CLAUSE)
+    write_ts_omp_clause_tree_pointers (ob, expr, ref_p);
 }
 
 
@@ -963,6 +1032,8 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
     streamer_write_uhwi (ob, BINFO_N_BASE_BINFOS (expr));
   else if (TREE_CODE (expr) == CALL_EXPR)
     streamer_write_uhwi (ob, call_expr_nargs (expr));
+  else if (TREE_CODE (expr) == OMP_CLAUSE)
+    streamer_write_uhwi (ob, OMP_CLAUSE_CODE (expr));
 }
 
 

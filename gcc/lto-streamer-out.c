@@ -299,7 +299,6 @@ lto_is_streamable (tree expr)
 	 && code != BIND_EXPR
 	 && code != WITH_CLEANUP_EXPR
 	 && code != STATEMENT_LIST
-	 && code != OMP_CLAUSE
 	 && (code == CASE_LABEL_EXPR
 	     || code == DECL_EXPR
 	     || TREE_CODE_CLASS (code) != tcc_statement);
@@ -667,6 +666,14 @@ DFS_write_tree_body (struct output_block *ob,
 	  DFS_follow_tree_edge (index);
 	  DFS_follow_tree_edge (value);
 	}
+    }
+
+  if (code == OMP_CLAUSE)
+    {
+      int i;
+      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
+	DFS_follow_tree_edge (OMP_CLAUSE_OPERAND (expr, i));
+      DFS_follow_tree_edge (OMP_CLAUSE_CHAIN (expr));
     }
 
 #undef DFS_follow_tree_edge

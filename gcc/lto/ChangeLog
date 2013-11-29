@@ -1,3 +1,10 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/59326
+	* lto.c (mentions_vars_p_omp_clause): New function.
+	(mentions_vars_p): Call it for OMP_CLAUSE.  Remove break;
+	after return stmts.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto.c: Add required include files from gimple.h.
