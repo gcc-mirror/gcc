@@ -210,6 +210,10 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+link_libasan = @link_libasan@
+link_liblsan = @link_liblsan@
+link_libtsan = @link_libtsan@
+link_libubsan = @link_libubsan@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -256,7 +260,7 @@ libubsan_la_SOURCES = $(ubsan_files)
 libubsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(am__append_1) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
+libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

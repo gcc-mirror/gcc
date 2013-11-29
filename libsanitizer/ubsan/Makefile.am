@@ -23,7 +23,7 @@ if !USING_MAC_INTERPOSE
 libubsan_la_LIBADD += $(top_builddir)/interception/libinterception.la
 endif
 libubsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
+libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 
 # Use special rules for files that require RTTI support.
 ubsan_handlers_cxx.% ubsan_type_hash.% : AM_CXXFLAGS += -frtti
