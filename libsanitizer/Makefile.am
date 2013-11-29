@@ -50,5 +50,7 @@ AM_MAKEFLAGS = \
 
 MAKEOVERRIDES=
 
+nodist_toolexeclib_HEADERS = libsanitizer.spec
+
 ## ################################################################
 

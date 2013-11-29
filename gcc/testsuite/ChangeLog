@@ -1,3 +1,12 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59063
+	* c-c++-common/asan/pr59063-1.c: New test.
+	* c-c++-common/asan/pr59063-2.c: Likewise.
+	* lib/asan-dg.exp: Add path to libsanitizer.spec to cflags.
+	* lib/ubsan-dg.exp: Likewise.
+
 2013-11-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt29.ad[sb]: New test.

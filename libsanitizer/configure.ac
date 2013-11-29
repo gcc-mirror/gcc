@@ -83,13 +83,46 @@ unset LSAN_SUPPORTED
 AM_CONDITIONAL(TSAN_SUPPORTED, [test "x$TSAN_SUPPORTED" = "xyes"])
 AM_CONDITIONAL(LSAN_SUPPORTED, [test "x$LSAN_SUPPORTED" = "xyes"])
 
+# Check for functions needed.
+AC_CHECK_FUNCS(clock_getres clock_gettime clock_settime)
+
+# Common libraries that we need to link against for all sanitizer libs.
+link_sanitizer_common='-lpthread -ldl'
+
+# Set up the set of additional libraries that we need to link against for libasan.
+link_libasan=$link_sanitizer_common
+AC_SUBST(link_libasan)
+
+# Set up the set of additional libraries that we need to link against for libtsan.
+link_libtsan=$link_sanitizer_common
+AC_SUBST(link_libtsan)
+
+# Set up the set of additional libraries that we need to link against for libubsan.
+link_libubsan=$link_sanitizer_common
+AC_SUBST(link_libubsan)
+
+# Set up the set of additional libraries that we need to link against for liblsan.
+link_liblsan=$link_sanitizer_common
+AC_SUBST(link_liblsan)
+
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.  This
+# test is copied from libgomp.
+if test $ac_cv_func_clock_gettime = no; then
+  AC_CHECK_LIB(rt, clock_gettime,
+    [link_libasan="-lrt $link_libasan"
+link_libtsan="-lrt $link_libtsan"
+# Other sanitizers do not override clock_* API
+])
+fi
+
 case "$host" in
   *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
   *) MAC_INTERPOSE=false ;;
 esac
 AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile libsanitizer.spec])
 
 AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common lsan asan ubsan], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF

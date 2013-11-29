@@ -606,6 +606,10 @@ LTLIBOBJS
 LIBOBJS
 USING_MAC_INTERPOSE_FALSE
 USING_MAC_INTERPOSE_TRUE
+link_liblsan
+link_libubsan
+link_libtsan
+link_libasan
 LSAN_SUPPORTED_FALSE
 LSAN_SUPPORTED_TRUE
 TSAN_SUPPORTED_FALSE
@@ -11119,7 +11123,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11122 "configure"
+#line 11126 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11225,7 +11229,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11228 "configure"
+#line 11232 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14544,6 +14548,89 @@ else
 fi
 
 
+# Check for functions needed.
+for ac_func in clock_getres clock_gettime clock_settime
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+# Common libraries that we need to link against for all sanitizer libs.
+link_sanitizer_common='-lpthread -ldl'
+
+# Set up the set of additional libraries that we need to link against for libasan.
+link_libasan=$link_sanitizer_common
+
+
+# Set up the set of additional libraries that we need to link against for libtsan.
+link_libtsan=$link_sanitizer_common
+
+
+# Set up the set of additional libraries that we need to link against for libubsan.
+link_libubsan=$link_sanitizer_common
+
+
+# Set up the set of additional libraries that we need to link against for liblsan.
+link_liblsan=$link_sanitizer_common
+
+
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.  This
+# test is copied from libgomp.
+if test $ac_cv_func_clock_gettime = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
+$as_echo_n "checking for clock_gettime in -lrt... " >&6; }
+if test "${ac_cv_lib_rt_clock_gettime+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime ();
+int
+main ()
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_rt_clock_gettime=yes
+else
+  ac_cv_lib_rt_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
+$as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
+  link_libasan="-lrt $link_libasan"
+link_libtsan="-lrt $link_libtsan"
+# Other sanitizers do not override clock_* API
+
+fi
+
+fi
+
 case "$host" in
   *-*-darwin*) MAC_INTERPOSE=true ; enable_static=no ;;
   *) MAC_INTERPOSE=false ;;
@@ -14557,7 +14644,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile libsanitizer.spec"
 
 
 ac_config_files="$ac_config_files interception/Makefile sanitizer_common/Makefile lsan/Makefile asan/Makefile ubsan/Makefile"
@@ -15692,6 +15779,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libsanitizer.spec") CONFIG_FILES="$CONFIG_FILES libsanitizer.spec" ;;
     "interception/Makefile") CONFIG_FILES="$CONFIG_FILES interception/Makefile" ;;
     "sanitizer_common/Makefile") CONFIG_FILES="$CONFIG_FILES sanitizer_common/Makefile" ;;
     "lsan/Makefile") CONFIG_FILES="$CONFIG_FILES lsan/Makefile" ;;

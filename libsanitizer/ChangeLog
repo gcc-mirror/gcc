@@ -1,3 +1,24 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59063
+	* libsanitizer.spec.in: Add spec file to hold link flags for
+	various sanitizer libs.
+	* configure.ac: Check whether clock_* routines come from librt.
+	* asan/Makefile.am (libasan_la_LDFLAGS): Libs now come from
+	configure.ac.
+	* tsan/Makefile.am (libtsan_la_LDFLAGS): Likewise.
+	* ubsan/Makefile.am (libubsan_la_LDFLAGS): Likewise.
+	* lsan/Makefile.am (liblsan_la_LDFLAGS): Likewise.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 
