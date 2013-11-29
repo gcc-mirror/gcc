@@ -6,8 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---        Copyright (C) 1991-1994, Florida State University                 --
---        Copyright (C) 1995-2005,2008,2012 Free Software Foundation, Inc.  --
+--               Copyright (C) 1991-1994, Florida State University          --
+--            Copyright (C) 1995-2013, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -492,7 +492,7 @@ private
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : long;
+      tv_nsec : time_t;
    end record;
    pragma Convention (C, timespec);
 
