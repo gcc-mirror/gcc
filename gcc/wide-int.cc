@@ -1252,11 +1252,12 @@ wi_pack (unsigned HOST_WIDE_INT *result,
    mode needs to exist if the value is to be usable.  Clients that use
    FULL need to check for this.
 
-   If HIGH or FULL are not set, throw away the upper half after the check
-   is made to see if it overflows.  Unfortunately there is no better
-   way to check for overflow than to do this.  OVERFLOW is assumed to
-   be sticky so it should be initialized.  SGN controls the signedness
-   and is used to check overflow or if HIGH or FULL is set.  */
+   If HIGH or FULL are not set, throw away the upper half after the
+   check is made to see if it overflows.  Unfortunately there is no
+   better way to check for overflow than to do this.  If OVERFLOW is
+   nonnull, record in *OVERFLOW whether the result overflowed.  SGN
+   controls the signedness and is used to check overflow or if HIGH or
+   FULL is set.  */
 unsigned int
 wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 		  unsigned int op1len, const HOST_WIDE_INT *op2,
