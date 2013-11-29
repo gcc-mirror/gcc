@@ -1,5 +1,10 @@
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/59326
+	* gcc.dg/vect/vect-simd-clone-12.c: New test.
+	* gcc.dg/vect/vect-simd-clone-12a.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10a.c: Remove extern keywords.
+
 	PR c/59280
 	* c-c++-common/pr59280.c: New test.
 
