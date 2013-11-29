@@ -1,3 +1,15 @@
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/implement-c.texi: Document C11 implementation-defined
+	behavior.  Refer to -ffp-contract=fast for contraction behavior.
+	* doc/invoke.texi (-std=c99, std=c11): Update description of
+	completeness.
+	(-std=gnu99): Don't mention as future default.
+	(-std=gnu11): Mention as intended future default.
+	* doc/standards.texi: Update descriptions of C99 and C11 support.
+	Limit statement about C99 facilities for freestanding
+	implementations to some platforms only.
+
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59327

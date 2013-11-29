@@ -1654,16 +1654,24 @@ ISO C90 as modified in amendment 1.
 @itemx c9x
 @itemx iso9899:1999
 @itemx iso9899:199x
-ISO C99.  Note that this standard is not yet fully supported; see
+ISO C99.  This standard is substantially completely supported, modulo
+bugs, extended identifiers (supported except for corner cases when
+@option{-fextended-identifiers} is used) and floating-point issues
+(mainly but not entirely relating to optional C99 features from
+Annexes F and G).  See
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item c11
 @itemx c1x
 @itemx iso9899:2011
-ISO C11, the 2011 revision of the ISO C standard.
-Support is incomplete and experimental.  The name @samp{c1x} is
-deprecated.
+ISO C11, the 2011 revision of the ISO C standard.  This standard is
+substantially completely supported, modulo bugs, extended identifiers
+(supported except for corner cases when
+@option{-fextended-identifiers} is used), floating-point issues
+(mainly but not entirely relating to optional C11 features from
+Annexes F and G) and the optional Annexes K (Bounds-checking
+interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -1672,13 +1680,12 @@ is the default for C code.
 
 @item gnu99
 @itemx gnu9x
-GNU dialect of ISO C99.  When ISO C99 is fully implemented in GCC,
-this will become the default.  The name @samp{gnu9x} is deprecated.
+GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  Support is incomplete and experimental.  The
-name @samp{gnu1x} is deprecated.
+GNU dialect of ISO C11.  This is intended to become the default in a
+future release of GCC.  The name @samp{gnu1x} is deprecated.
 
 @item c++98
 @itemx c++03
