@@ -8504,6 +8504,7 @@ process_init_element (struct c_expr value, bool implicit,
   tree orig_value = value.value;
   int string_flag = orig_value != 0 && TREE_CODE (orig_value) == STRING_CST;
   bool strict_string = value.original_code == STRING_CST;
+  bool was_designated = designator_depth != 0;
 
   designator_depth = 0;
   designator_erroneous = 0;
@@ -8512,6 +8513,7 @@ process_init_element (struct c_expr value, bool implicit,
      char x[] = {"foo"}; */
   if (string_flag
       && constructor_type
+      && !was_designated
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))
