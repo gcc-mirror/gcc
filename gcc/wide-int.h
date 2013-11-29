@@ -1858,17 +1858,31 @@ wi::cmps (const T1 &x, const T2 &y)
   unsigned int precision = get_binary_precision (x, y);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  if (wi::fits_shwi_p (yi))
     {
-      HOST_WIDE_INT xl = xi.to_shwi ();
-      HOST_WIDE_INT yl = yi.to_shwi ();
-      if (xl < yl)
+      /* Special case for comparisons with 0.  */
+      if (STATIC_CONSTANT_P (yi.val[0] == 0))
+	return neg_p (xi) ? -1 : !(xi.len == 1 && xi.val[0] == 0);
+      /* If x fits into a signed HWI, we can compare directly.  */
+      if (wi::fits_shwi_p (xi))
+	{
+	  HOST_WIDE_INT xl = xi.to_shwi ();
+	  HOST_WIDE_INT yl = yi.to_shwi ();
+	  return xl < yl ? -1 : xl > yl;
+	}
+      /* If x doesn't fit and is negative, then it must be more
+	 negative than any signed HWI, and hence smaller than y.  */
+      if (neg_p (xi))
 	return -1;
-      else if (xl > yl)
-	return 1;
-      else
-	return 0;
+      /* If x is positive, then it must be larger than any signed HWI,
+	 and hence greater than y.  */
+      return 1;
     }
+  /* Optimize the opposite case, if it can be detected at compile time.  */
+  if (STATIC_CONSTANT_P (xi.len == 1))
+    /* If YI is negative it is lower than the least HWI.
+       If YI is positive it is greater than the greatest HWI.  */
+    return neg_p (yi) ? 1 : -1;
   return cmps_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
 
@@ -1881,16 +1895,35 @@ wi::cmpu (const T1 &x, const T2 &y)
   unsigned int precision = get_binary_precision (x, y);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  /* Optimize comparisons with constants.  */
+  if (STATIC_CONSTANT_P (yi.len == 1 && yi.val[0] >= 0))
+    {
+      /* If XI doesn't fit in a HWI then it must be larger than YI.  */
+      if (xi.len != 1)
+	return 1;
+      /* Otherwise compare directly.  */
+      unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
+      unsigned HOST_WIDE_INT yl = yi.val[0];
+      return xl < yl ? -1 : xl > yl;
+    }
+  if (STATIC_CONSTANT_P (xi.len == 1 && xi.val[0] >= 0))
+    {
+      /* If YI doesn't fit in a HWI then it must be larger than XI.  */
+      if (yi.len != 1)
+	return -1;
+      /* Otherwise compare directly.  */
+      unsigned HOST_WIDE_INT xl = xi.val[0];
+      unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
+      return xl < yl ? -1 : xl > yl;
+    }
+  /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
+     for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
+     values does not change the result.  */
+  if (xi.len + yi.len == 2)
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
-      if (xl < yl)
-	return -1;
-      else if (xl == yl)
-	return 0;
-      else
-	return 1;
+      return xl < yl ? -1 : xl > yl;
     }
   return cmpu_large (xi.val, xi.len, precision, yi.val, yi.len);
 }
