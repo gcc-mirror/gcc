@@ -1,3 +1,7 @@
+2013-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* MAINTAINERS: Update my email address.
+
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* config/bootstrap-lto.mk: Use -ffat-lto-objects.
