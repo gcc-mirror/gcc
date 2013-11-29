@@ -1,3 +1,8 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59280
+	* c-c++-common/pr59280.c: New test.
+
 2013-11-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/arm/lp1243022.c: Skip target arm-neon.

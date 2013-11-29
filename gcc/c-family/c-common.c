@@ -7014,6 +7014,10 @@ get_priority (tree args, bool is_destructor)
     }
 
   arg = TREE_VALUE (args);
+  if (TREE_CODE (arg) == IDENTIFIER_NODE)
+    goto invalid;
+  if (arg == error_mark_node)
+    return DEFAULT_INIT_PRIORITY;
   arg = default_conversion (arg);
   if (!tree_fits_shwi_p (arg)
       || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
