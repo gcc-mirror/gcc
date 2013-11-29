@@ -2789,7 +2789,20 @@ wi::lshift (const T1 &x, const T2 &y)
   else
     {
       unsigned int shift = yi.to_uhwi ();
-      if (precision <= HOST_BITS_PER_WIDE_INT)
+      /* For fixed-precision integers like offset_int and widest_int,
+	 handle the case where the shift value is constant and the
+	 result is a single nonnegative HWI (meaning that we don't
+	 need to worry about val[1]).  This is particularly common
+	 for converting a byte count to a bit count.
+
+	 For variable-precision integers like wide_int, handle HWI
+	 and sub-HWI integers inline.  */
+      if (STATIC_CONSTANT_P (xi.precision > HOST_BITS_PER_WIDE_INT)
+	  ? (STATIC_CONSTANT_P (shift < HOST_BITS_PER_WIDE_INT - 1)
+	     && xi.len == 1
+	     && xi.val[0] <= (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT)
+					      HOST_WIDE_INT_MAX >> shift))
+	  : precision <= HOST_BITS_PER_WIDE_INT)
 	{
 	  val[0] = xi.ulow () << shift;
 	  result.set_len (1);
@@ -2821,7 +2834,17 @@ wi::lrshift (const T1 &x, const T2 &y)
   else
     {
       unsigned int shift = yi.to_uhwi ();
-      if (xi.precision <= HOST_BITS_PER_WIDE_INT)
+      /* For fixed-precision integers like offset_int and widest_int,
+	 handle the case where the shift value is constant and the
+	 shifted value is a single nonnegative HWI (meaning that all
+	 bits above the HWI are zero).  This is particularly common
+	 for converting a bit count to a byte count.
+
+	 For variable-precision integers like wide_int, handle HWI
+	 and sub-HWI integers inline.  */
+      if (STATIC_CONSTANT_P (xi.precision > HOST_BITS_PER_WIDE_INT)
+	  ? xi.len == 1 && xi.val[0] >= 0
+	  : xi.precision <= HOST_BITS_PER_WIDE_INT)
 	{
 	  val[0] = xi.to_uhwi () >> shift;
 	  result.set_len (1);
