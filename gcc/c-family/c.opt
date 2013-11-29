@@ -862,11 +862,6 @@ fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
-fcheck-pointer-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
-Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
-control instrumentation.
-
 fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
 Enable Cilk Plus

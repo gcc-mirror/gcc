@@ -628,10 +628,6 @@ public:
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
 
-  /* Set when variable has statically initialized pointer
-     or is a static bounds variable and needs initalization.  */
-  unsigned need_bounds_init : 1;
-
   /* Set if the variable is dynamically initialized, except for
      function local statics.   */
   unsigned dynamically_initialized : 1;

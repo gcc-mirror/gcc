@@ -669,10 +669,6 @@ mrtm
 Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation
 
-mmpx
-Target Report Mask(ISA_MPX) Var(ix86_isa_flags) Save
-Support MPX code generation
-
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)
 Use given stack-protector guard

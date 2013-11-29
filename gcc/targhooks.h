@@ -206,12 +206,5 @@ extern bool default_member_type_forces_blk (const_tree, enum machine_mode);
 extern void default_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);
 extern tree std_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
-
-extern rtx default_load_bounds_for_arg (rtx, rtx, rtx);
-extern void default_store_bounds_for_arg (rtx, rtx, rtx, rtx);
-extern tree default_fn_abi_va_list_bounds_size (tree);
-extern tree default_chkp_bound_type (void);
-extern enum machine_mode default_chkp_bound_mode (void);
-extern tree default_builtin_chkp_function (unsigned int);
 extern bool can_use_doloop_if_innermost (double_int, double_int,
 					 unsigned int, bool);

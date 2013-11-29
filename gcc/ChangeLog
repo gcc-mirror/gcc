@@ -1,3 +1,248 @@
+2013-11-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Reverted:
+	2013-11-20  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* cgraph.h (varpool_node): Add need_bounds_init field.
+	* lto-cgraph.c (lto_output_varpool_node): Output
+	need_bounds_init value.
+	(input_varpool_node): Read need_bounds_init value.
+	* varpool.c (dump_varpool_node): Dump need_bounds_init field.
+
+	Reverted:
+	2013-11-20  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* dbxout.c (dbxout_type): Ignore POINTER_BOUNDS_TYPE.
+	* dwarf2out.c (gen_subprogram_die): Ignore bound args.
+	(gen_type_die_with_usage): Skip pointer bounds.
+	(dwarf2out_global_decl): Likewise.
+
+	Reverted:
+	2013-11-18  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_VAR): New.
+	* chkp-builtins.def (BUILT_IN_CHKP_BIND_BOUNDS): New.
+	* cfgexpand.c (expand_call_stmt): Expand BUILT_IN_CHKP_BIND_BOUNDS.
+	* gimple.c (gimple_call_get_nobnd_arg_index): Remove.
+	* gimple.h (gf_mask): Add GF_CALL_WITH_BOUNDS.
+	(gimple_call_with_bounds_p): New.
+	(gimple_call_set_with_bounds): New.
+	(gimple_call_num_nobnd_args): Remove.
+	(gimple_call_nobnd_arg): Remove.
+	* tree.h (CALL_WITH_BOUNDS_P): New.
+	* rtl.h (CALL_EXPR_WITH_BOUNDS_P): New.
+
+	Reverted:
+	2013-11-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* common.opt (fcheck-pointer-bounds): Move to ...
+	* c-family/c.opt: ... here.
+	* langhooks-def.h (LANG_HOOKS_CHKP_SUPPORTED): Remove.
+	(LANG_HOOKS_INITIALIZER): Remove LANG_HOOKS_CHKP_SUPPORTED.
+	* langhooks.h (lang_hooks): Remove chkp_supported field.
+	* toplev.c (process_options): Remove chkp_supported check.
+
+	Reverted:
+	2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* tree-core.h (tree_index): Add TI_POINTER_BOUNDS_TYPE.
+	* tree.h (POINTER_BOUNDS_P): New.
+	(BOUNDED_TYPE_P): New.
+	(BOUNDED_P): New.
+	(pointer_bounds_type_node): New.
+	* tree.c (build_common_tree_nodes): Initialize
+	pointer_bounds_type_node.
+	* gimple.h (gimple_call_get_nobnd_arg_index): New.
+	(gimple_call_num_nobnd_args): New.
+	(gimple_call_nobnd_arg): New.
+	(gimple_return_retbnd): New.
+	(gimple_return_set_retbnd): New
+	* gimple.c (gimple_build_return): Increase number of ops
+	for return statement.
+	(gimple_call_get_nobnd_arg_index): New.
+	* gimple-pretty-print.c (dump_gimple_return): Print second op.
+
+	Reverted:
+	2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* ipa.c (cgraph_build_static_cdtor_1): Support contructors
+	with "chkp ctor" and "bnd_legacy" attributes.
+	* gimplify.c (gimplify_init_constructor): Avoid infinite
+	loop during gimplification of bounds initializer.
+
+	Reverted:
+	2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* c-family/c-common.c (handle_bnd_variable_size_attribute): New.
+	(handle_bnd_legacy): New.
+	(c_common_attribute_table): Add bnd_variable_size and bnd_legacy.
+	* doc/extend.texi: Document bnd_variable_size and bnd_legacy
+	attributes.
+
+	Reverted:
+	2013-10-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* builtin-types.def (BT_FN_VOID_CONST_PTR): New.
+	(BT_FN_PTR_CONST_PTR): New.
+	(BT_FN_CONST_PTR_CONST_PTR): New.
+	(BT_FN_PTR_CONST_PTR_SIZE): New.
+	(BT_FN_PTR_CONST_PTR_CONST_PTR): New.
+	(BT_FN_VOID_PTRPTR_CONST_PTR): New.
+	(BT_FN_VOID_CONST_PTR_SIZE): New.
+	(BT_FN_PTR_CONST_PTR_CONST_PTR_SIZE): New.
+	* chkp-builtins.def: New.
+	* builtins.def: include chkp-builtins.def.
+	(DEF_CHKP_BUILTIN): New.
+	* builtins.c (expand_builtin): Support BUILT_IN_CHKP_INIT_PTR_BOUNDS,
+	BUILT_IN_CHKP_NULL_PTR_BOUNDS, BUILT_IN_CHKP_COPY_PTR_BOUNDS,
+	BUILT_IN_CHKP_CHECK_PTR_LBOUNDS, BUILT_IN_CHKP_CHECK_PTR_UBOUNDS,
+	BUILT_IN_CHKP_CHECK_PTR_BOUNDS, BUILT_IN_CHKP_SET_PTR_BOUNDS,
+	BUILT_IN_CHKP_NARROW_PTR_BOUNDS, BUILT_IN_CHKP_STORE_PTR_BOUNDS,
+	BUILT_IN_CHKP_GET_PTR_LBOUND, BUILT_IN_CHKP_GET_PTR_UBOUND,
+	BUILT_IN_CHKP_BNDMK, BUILT_IN_CHKP_BNDSTX, BUILT_IN_CHKP_BNDCL,
+	BUILT_IN_CHKP_BNDCU, BUILT_IN_CHKP_BNDLDX, BUILT_IN_CHKP_BNDRET,
+	BUILT_IN_CHKP_INTERSECT, BUILT_IN_CHKP_ARG_BND, BUILT_IN_CHKP_NARROW,
+	BUILT_IN_CHKP_EXTRACT_LOWER, BUILT_IN_CHKP_EXTRACT_UPPER.
+	* common.opt (fcheck-pointer-bounds): New.
+	* toplev.c (process_options): Check Pointer Bounds Checker is
+	supported.
+	* doc/extend.texi: Document Pointer Bounds Checker built-in functions.
+
+	Reverted:
+	2013-10-30  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* target.def (builtin_chkp_function): New.
+	(chkp_bound_type): New.
+	(chkp_bound_mode): New.
+	(fn_abi_va_list_bounds_size): New.
+	(load_bounds_for_arg): New.
+	(store_bounds_for_arg): New.
+	* targhooks.h (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_fn_abi_va_list_bounds_size): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode): New.
+	(default_builtin_chkp_function): New.
+	* targhooks.c (default_load_bounds_for_arg): New.
+	(default_store_bounds_for_arg): New.
+	(default_fn_abi_va_list_bounds_size): New.
+	(default_chkp_bound_type): New.
+	(default_chkp_bound_mode); New.
+	(default_builtin_chkp_function): New.
+	* doc/tm.texi.in (TARGET_FN_ABI_VA_LIST_BOUNDS_SIZE): New.
+	(TARGET_LOAD_BOUNDS_FOR_ARG): New.
+	(TARGET_STORE_BOUNDS_FOR_ARG): New.
+	(TARGET_BUILTIN_CHKP_FUNCTION): New.
+	(TARGET_CHKP_BOUND_TYPE): New.
+	(TARGET_CHKP_BOUND_MODE): New.
+	* doc/tm.texi: Regenerated.
+	* langhooks.h (lang_hooks): Add chkp_supported field.
+	* langhooks-def.h (LANG_HOOKS_CHKP_SUPPORTED): New.
+	(LANG_HOOKS_INITIALIZER); Add LANG_HOOKS_CHKP_SUPPORTED.
+
+	Reverted:
+	2013-10-24  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* config/i386/constraints.md (B): New.
+	(Ti): New.
+	(Tb): New.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add __MPX__.
+	* config/i386/i386-modes.def (BND32): New.
+	(BND64): New.
+	* config/i386/i386-protos.h (ix86_bnd_prefixed_insn_p): New.
+	* config/i386/i386.c (isa_opts): Add mmpx.
+	(regclass_map): Add bound registers.
+	(dbx_register_map): Likewise.
+	(dbx64_register_map): Likewise.
+	(svr4_dbx_register_map): Likewise.
+	(PTA_MPX): New.
+	(ix86_option_override_internal): Support MPX ISA.
+	(ix86_conditional_register_usage): Support bound registers.
+	(print_reg): Likewise.
+	(ix86_code_end): Add MPX bnd prefix.
+	(output_set_got): Likewise.
+	(ix86_output_call_insn): Likewise.
+	(ix86_print_operand): Add '!' (MPX bnd) print prefix support.
+	(ix86_print_operand_punct_valid_p): Likewise.
+	(ix86_print_operand_address): Support UNSPEC_BNDMK_ADDR and
+	UNSPEC_BNDMK_ADDR.
+	(ix86_class_likely_spilled_p): Add bound regs support.
+	(ix86_hard_regno_mode_ok): Likewise.
+	(x86_order_regs_for_local_alloc): Likewise.
+	(ix86_bnd_prefixed_insn_p): New.
+	* config/i386/i386.h (FIRST_PSEUDO_REGISTER): Fix to new value.
+	(FIXED_REGISTERS): Add bound registers.
+	(CALL_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(HARD_REGNO_NREGS): Likewise.
+	(TARGET_MPX): New.
+	(VALID_BND_REG_MODE): New.
+	(FIRST_BND_REG): New.
+	(LAST_BND_REG): New.
+	(reg_class): Add BND_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(BND_REGNO_P): New.
+	(ANY_BND_REG_P): New.
+	(BNDmode): New.
+	(HI_REGISTER_NAMES): Add bound registers.
+	* config/i386/i386.md (UNSPEC_BNDMK): New.
+	(UNSPEC_BNDMK_ADDR): New.
+	(UNSPEC_BNDSTX): New.
+	(UNSPEC_BNDLDX): New.
+	(UNSPEC_BNDLDX_ADDR): New.
+	(UNSPEC_BNDCL): New.
+	(UNSPEC_BNDCU): New.
+	(UNSPEC_BNDCN): New.
+	(UNSPEC_MPX_FENCE): New.
+	(BND0_REG): New.
+	(BND1_REG): New.
+	(type): Add mpxmov, mpxmk, mpxchk, mpxld, mpxst.
+	(length_immediate): Likewise.
+	(prefix_0f): Likewise.
+	(memory): Likewise.
+	(prefix_rep): Check for bnd prefix.
+	(length_nobnd): New.
+	(length): Use length_nobnd if specified.
+	(BND): New.
+	(bnd_ptr): New.
+	(BNDCHECK): New.
+	(bndcheck): New.
+	(*jcc_1): Add bnd prefix and rename length attr to length_nobnd.
+	(*jcc_2): Likewise.
+	(jump): Likewise.
+	(simple_return_internal): Likewise.
+	(simple_return_pop_internal): Likewise.
+	(*indirect_jump): Add MPX bnd prefix.
+	(*tablejump_1): Likewise.
+	(simple_return_internal_long): Likewise.
+	(simple_return_indirect_internal): Likewise.
+	(<mode>_mk): New.
+	(*<mode>_mk): New.
+	(mov<mode>): New.
+	(*mov<mode>_internal_mpx): New.
+	(<mode>_<bndcheck>): New.
+	(*<mode>_<bndcheck>): New.
+	(<mode>_ldx): New.
+	(*<mode>_ldx): New.
+	(<mode>_stx): New.
+	(*<mode>_stx): New.
+	* config/i386/predicates.md (lea_address_operand): Rename to...
+	(address_no_seg_operand): ... this.
+	(address_mpx_no_base_operand): New.
+	(address_mpx_no_index_operand): New.
+	(bnd_mem_operator): New.
+	* config/i386/i386.opt (mmpx): New.
+	* doc/invoke.texi: Add documentation for the flags -mmpx, -mno-mpx.
+	* doc/rtl.texi Add documentation for BND32mode and BND64mode.
+
+	Reverted:
+	2013-10-24  Ilya Enkovich  <ilya.enkovich@intel.com>
+	* mode-classes.def (MODE_POINTER_BOUNDS): New.
+	* tree.def (POINTER_BOUNDS_TYPE): New.
+	* genmodes.c (complete_mode): Support MODE_POINTER_BOUNDS.
+	(POINTER_BOUNDS_MODE): New.
+	(make_pointer_bounds_mode): New.
+	* machmode.h (POINTER_BOUNDS_MODE_P): New.
+	* stor-layout.c (int_mode_for_mode): Support MODE_POINTER_BOUNDS.
+	(layout_type): Support POINTER_BOUNDS_TYPE.
+	* tree-pretty-print.c (dump_generic_node): Support POINTER_BOUNDS_TYPE.
+	* tree.c (build_int_cst_wide): Support POINTER_BOUNDS_TYPE.
+	(type_contains_placeholder_1): Likewise.
+	* tree.h (POINTER_BOUNDS_TYPE_P): New.
+	* varasm.c (output_constant): Support POINTER_BOUNDS_TYPE.
+	* doc/rtl.texi (MODE_POINTER_BOUNDS): New.
+
 2013-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59338
