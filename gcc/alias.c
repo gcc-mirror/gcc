@@ -342,7 +342,7 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 	  || (DECL_P (ref->base)
 	      && (DECL_SIZE (ref->base) == NULL_TREE
 		  || TREE_CODE (DECL_SIZE (ref->base)) != INTEGER_CST
-		  || wi::ltu_p (DECL_SIZE (ref->base),
+		  || wi::ltu_p (wi::to_offset (DECL_SIZE (ref->base)),
 				ref->offset + ref->size)))))
     return false;
 

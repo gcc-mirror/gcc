@@ -1740,13 +1740,15 @@ wi::ltu_p (const T1 &x, const T2 &y)
   unsigned int precision = get_binary_precision (x, y);
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
-  /* Optimize comparisons with constants and with sub-HWI unsigned
-     integers.  */
+  /* Optimize comparisons with constants.  */
   if (STATIC_CONSTANT_P (yi.len == 1 && yi.val[0] >= 0))
     return xi.len == 1 && xi.to_uhwi () < (unsigned HOST_WIDE_INT) yi.val[0];
   if (STATIC_CONSTANT_P (xi.len == 1 && xi.val[0] >= 0))
     return yi.len != 1 || yi.to_uhwi () > (unsigned HOST_WIDE_INT) xi.val[0];
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
+     for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
+     values does not change the result.  */
+  if (xi.len + yi.len == 2)
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
