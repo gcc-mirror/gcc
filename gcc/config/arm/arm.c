@@ -1168,94 +1168,94 @@ const struct cpu_cost_table cortexa15_extra_costs =
 {
   /* ALU */
   {
-    COSTS_N_INSNS (1),	/* Arith.  */
-    COSTS_N_INSNS (1),	/* Logical.  */
-    COSTS_N_INSNS (1),	/* Shift.  */
-    COSTS_N_INSNS (1),	/* Shift_reg.  */
+    0,			/* Arith.  */
+    0,			/* Logical.  */
+    0,			/* Shift.  */
+    0,			/* Shift_reg.  */
     COSTS_N_INSNS (1),	/* Arith_shift.  */
     COSTS_N_INSNS (1),	/* Arith_shift_reg.  */
     COSTS_N_INSNS (1),	/* Log_shift.  */
     COSTS_N_INSNS (1),	/* Log_shift_reg.  */
-    COSTS_N_INSNS (1),	/* Extend.  */
-    COSTS_N_INSNS (2),	/* Extend_arith.  */
-    COSTS_N_INSNS (2),	/* Bfi.  */
-    COSTS_N_INSNS (1),	/* Bfx.  */
-    COSTS_N_INSNS (1),	/* Clz.  */
-    COSTS_N_INSNS (1),	/* non_exec.  */
+    0,			/* Extend.  */
+    COSTS_N_INSNS (1),	/* Extend_arith.  */
+    COSTS_N_INSNS (1),	/* Bfi.  */
+    0,			/* Bfx.  */
+    0,			/* Clz.  */
+    0,			/* non_exec.  */
     true		/* non_exec_costs_exec.  */
   },
   /* MULT SImode */
   {
     {
-      COSTS_N_INSNS (3),	/* Simple.  */
-      COSTS_N_INSNS (4),	/* Flag_setting.  */
-      COSTS_N_INSNS (3),	/* Extend.  */
-      COSTS_N_INSNS (4),	/* Add.  */
-      COSTS_N_INSNS (4),	/* Extend_add.  */
-      COSTS_N_INSNS (19)	/* Idiv.  */
+      COSTS_N_INSNS (2),	/* Simple.  */
+      COSTS_N_INSNS (3),	/* Flag_setting.  */
+      COSTS_N_INSNS (2),	/* Extend.  */
+      COSTS_N_INSNS (2),	/* Add.  */
+      COSTS_N_INSNS (2),	/* Extend_add.  */
+      COSTS_N_INSNS (18)	/* Idiv.  */
     },
     /* MULT DImode */
     {
       0,			/* Simple (N/A).  */
       0,			/* Flag_setting (N/A).  */
-      COSTS_N_INSNS (4),	/* Extend.  */
+      COSTS_N_INSNS (3),	/* Extend.  */
       0,			/* Add (N/A).  */
-      COSTS_N_INSNS (6),	/* Extend_add.  */
+      COSTS_N_INSNS (3),	/* Extend_add.  */
       0				/* Idiv (N/A).  */
     }
   },
   /* LD/ST */
   {
-    COSTS_N_INSNS (4),	/* Load.  */
-    COSTS_N_INSNS (4),	/* Load_sign_extend.  */
-    COSTS_N_INSNS (4),	/* Ldrd.  */
-    COSTS_N_INSNS (5),	/* Ldm_1st.  */
+    COSTS_N_INSNS (3),	/* Load.  */
+    COSTS_N_INSNS (3),	/* Load_sign_extend.  */
+    COSTS_N_INSNS (3),	/* Ldrd.  */
+    COSTS_N_INSNS (4),	/* Ldm_1st.  */
     1,			/* Ldm_regs_per_insn_1st.  */
     2,			/* Ldm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (5),	/* Loadf.  */
-    COSTS_N_INSNS (5),	/* Loadd.  */
-    COSTS_N_INSNS (1),  /* Load_unaligned.  */
-    COSTS_N_INSNS (1),	/* Store.  */
-    COSTS_N_INSNS (1),	/* Strd.  */
-    COSTS_N_INSNS (2),	/* Stm_1st.  */
+    COSTS_N_INSNS (4),	/* Loadf.  */
+    COSTS_N_INSNS (4),	/* Loadd.  */
+    0,			/* Load_unaligned.  */
+    0,			/* Store.  */
+    0,			/* Strd.  */
+    COSTS_N_INSNS (1),	/* Stm_1st.  */
     1,			/* Stm_regs_per_insn_1st.  */
     2,			/* Stm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (1),	/* Storef.  */
-    COSTS_N_INSNS (1),	/* Stored.  */
-    COSTS_N_INSNS (1)	/* Store_unaligned.  */
+    0,			/* Storef.  */
+    0,			/* Stored.  */
+    0			/* Store_unaligned.  */
   },
   {
     /* FP SFmode */
     {
-      COSTS_N_INSNS (18),	/* Div.  */
-      COSTS_N_INSNS (5),	/* Mult.  */
-      COSTS_N_INSNS (3),	/* Mult_addsub. */
-      COSTS_N_INSNS (13),	/* Fma.  */
-      COSTS_N_INSNS (5),	/* Addsub.  */
-      COSTS_N_INSNS (5),	/* Fpconst. */
-      COSTS_N_INSNS (3),	/* Neg.  */
-      COSTS_N_INSNS (3),	/* Compare.  */
-      COSTS_N_INSNS (3),	/* Widen.  */
-      COSTS_N_INSNS (3),	/* Narrow.  */
-      COSTS_N_INSNS (3),	/* Toint.  */
-      COSTS_N_INSNS (3),	/* Fromint.  */
-      COSTS_N_INSNS (3)		/* Roundint.  */
+      COSTS_N_INSNS (17),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub. */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst. */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (5),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
     },
     /* FP DFmode */
     {
-      COSTS_N_INSNS (32),	/* Div.  */
-      COSTS_N_INSNS (5),	/* Mult.  */
-      COSTS_N_INSNS (3),	/* Mult_addsub.  */
-      COSTS_N_INSNS (13),	/* Fma.  */
-      COSTS_N_INSNS (5),	/* Addsub.  */
-      COSTS_N_INSNS (3),	/* Fpconst.  */
-      COSTS_N_INSNS (3),	/* Neg.  */
-      COSTS_N_INSNS (3),	/* Compare.  */
-      COSTS_N_INSNS (3),	/* Widen.  */
-      COSTS_N_INSNS (3),	/* Narrow.  */
-      COSTS_N_INSNS (3),	/* Toint.  */
-      COSTS_N_INSNS (3),	/* Fromint.  */
-      COSTS_N_INSNS (3)		/* Roundint.  */
+      COSTS_N_INSNS (31),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub.  */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst.  */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (2),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
     }
   },
   /* Vector */
