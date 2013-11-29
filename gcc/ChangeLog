@@ -1,3 +1,8 @@
+2013-11-29  Yvan Roux  <yvan.roux@linaro.org>
+
+	 * config/arm/arm.md (store_minmaxsi): Use only when
+	optimize_function_for_size_p.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 
