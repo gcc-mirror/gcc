@@ -1,3 +1,7 @@
+2013-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt29.ad[sb]: New test.
+
 2013-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59338
