@@ -1,3 +1,10 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59280
+	* c-common.c (get_priority): If TREE_VALUE (args) is IDENTIFIER_NODE,
+	goto invalid.  If it is error_mark_node, don't issue further
+	diagnostics.
+
 2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	* c.opt (Wopenmp-simd): New.
