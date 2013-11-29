@@ -1,3 +1,9 @@
+2013-11-29  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/experimental/string_view/requirements/exception,
+	testsuite/experimental/string_view/capacity/wchar_t,
+	testsuite/experimental/string_view/capacity/char: Remove empty dirs.
+
 2013-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/ext/random/hypergeometric_distribution/operators/values.cc:
