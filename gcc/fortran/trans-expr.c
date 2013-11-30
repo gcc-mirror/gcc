@@ -670,7 +670,6 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
     gfc_add_modify (&parmse->post, vptr,
 		    fold_convert (TREE_TYPE (vptr), ctree));
 
-  gcc_assert (!optional || (optional && !copyback));
   if (optional)
     {
       tree tmp2;
