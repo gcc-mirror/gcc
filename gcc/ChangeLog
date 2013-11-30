@@ -1,3 +1,10 @@
+2013-11-30  Paulo Matos  <pmatos@broadcom.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* combine.c (reg_nonzero_bits_for_combine): Apply mask transformation
+	as applied to nonzero_sign_valid when last_set_mode has less precision
+	than mode.
+
 2013-11-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR sanitizer/59275
