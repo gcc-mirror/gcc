@@ -1,3 +1,10 @@
+2013-11-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR sanitizer/59275
+	* doc/invoke.texi (-fsanitize=address,leak): Mention the associated
+	environment variable and link to a list with flags.
+	(-fsanitize=thread): Ditto and update link.
+
 2013-11-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59340
