@@ -16,6 +16,7 @@ type i386Regs struct {
 	esp uint32
 	eax uint32 // Value to return in %eax.
 	st0 uint64 // Value to return in %st(0).
+	sr  int32  // Set to non-zero if hidden struct pointer.
 }
 
 // MakeFuncStubGo implements the 386 calling convention for MakeFunc.
@@ -56,10 +57,12 @@ func MakeFuncStubGo(regs *i386Regs, c *makeFuncImpl) {
 	in := make([]Value, 0, len(ftyp.in))
 	ap := uintptr(regs.esp)
 
+	regs.sr = 0
 	var retPtr unsafe.Pointer
 	if retStruct {
 		retPtr = *(*unsafe.Pointer)(unsafe.Pointer(ap))
 		ap += ptrSize
+		regs.sr = 1
 	}
 
 	for _, rt := range ftyp.in {
