@@ -9472,7 +9472,13 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
 		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
 		   REGNO (x)))))
     {
-      *nonzero &= rsp->last_set_nonzero_bits;
+      unsigned HOST_WIDE_INT mask = rsp->last_set_nonzero_bits;
+
+      if (GET_MODE_PRECISION (rsp->last_set_mode) < GET_MODE_PRECISION (mode))
+	/* We don't know anything about the upper bits.  */
+	mask |= GET_MODE_MASK (mode) ^ GET_MODE_MASK (rsp->last_set_mode);
+
+      *nonzero &= mask;
       return NULL;
     }
 
@@ -9505,6 +9511,7 @@ reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
       if (GET_MODE_PRECISION (GET_MODE (x)) < GET_MODE_PRECISION (mode))
 	/* We don't know anything about the upper bits.  */
 	mask |= GET_MODE_MASK (mode) ^ GET_MODE_MASK (GET_MODE (x));
+
       *nonzero &= mask;
     }
 
