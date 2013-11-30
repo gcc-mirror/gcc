@@ -26,9 +26,9 @@ reflect.makeFuncStub:
 	     esp uint32		// 0x0
 	     eax uint32		// 0x4
 	     st0 uint64		// 0x8
-	     rs  int32		// 0x10
+	     sr  int32		// 0x10
 	   }
-	   The rs field is set by the function to a non-zero value if
+	   The sr field is set by the function to a non-zero value if
 	   the function takes a struct hidden pointer that must be
 	   popped off the stack.  */
 
