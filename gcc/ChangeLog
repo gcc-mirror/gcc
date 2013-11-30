@@ -8,7 +8,7 @@
 	(smax<mode>3): Likewise.
 	(smin<mode>3): Likewise.
 
-2013-11-19  Uros Bizjak  <ubizjak@gmail.com>
+2013-11-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
 	2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
