@@ -1,5 +1,12 @@
 2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/57354
+	* trans-array.c (gfc_conv_resolve_dependencies): For other than
+	SS_SECTION, do a dependency check if the lhs is liable to be
+	reallocated.
+
+2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/58410
 	* trans-array.c (gfc_alloc_allocatable_for_assignment): Do not
 	use the array bounds of an unallocated array but set its size
