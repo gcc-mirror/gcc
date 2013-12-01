@@ -2239,6 +2239,14 @@ runtime_sigprof()
 	if(prof.fn == nil || prof.hz == 0)
 		return;
 
+	if(runtime_atomicload(&runtime_in_callers) > 0) {
+		// If SIGPROF arrived while already fetching runtime
+		// callers we can have trouble on older systems
+		// because the unwind library calls dl_iterate_phdr
+		// which was not recursive in the past.
+		return;
+	}
+
 	runtime_lock(&prof);
 	if(prof.fn == nil) {
 		runtime_unlock(&prof);
