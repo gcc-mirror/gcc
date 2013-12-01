@@ -8068,6 +8068,7 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tree size1;
   tree size2;
   tree array1;
+  tree cond_null;
   tree cond;
   tree tmp;
   tree tmp2;
@@ -8143,9 +8144,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   jump_label2 = gfc_build_label_decl (NULL_TREE);
 
   /* Allocate if data is NULL.  */
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+  cond_null = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 			 array1, build_int_cst (TREE_TYPE (array1), 0));
-  tmp = build3_v (COND_EXPR, cond,
+  tmp = build3_v (COND_EXPR, cond_null,
 		  build1_v (GOTO_EXPR, jump_label1),
 		  build_empty_stmt (input_location));
   gfc_add_expr_to_block (&fblock, tmp);
@@ -8197,13 +8198,25 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   tmp = build1_v (LABEL_EXPR, jump_label1);
   gfc_add_expr_to_block (&fblock, tmp);
 
-  size1 = gfc_conv_descriptor_size (desc, expr1->rank);
+  /* If the lhs has not been allocated, its bounds will not have been
+     initialized and so its size is set to zero.  */
+  size1 = gfc_create_var (gfc_array_index_type, NULL);
+  gfc_init_block (&alloc_block);
+  gfc_add_modify (&alloc_block, size1, gfc_index_zero_node);
+  gfc_init_block (&realloc_block);
+  gfc_add_modify (&realloc_block, size1,
+		  gfc_conv_descriptor_size (desc, expr1->rank));
+  tmp = build3_v (COND_EXPR, cond_null,
+		  gfc_finish_block (&alloc_block),
+		  gfc_finish_block (&realloc_block));
+  gfc_add_expr_to_block (&fblock, tmp);
 
-  /* Get the rhs size.  Fix both sizes.  */
+  /* Get the rhs size and fix it.  */
   if (expr2)
     desc2 = rss->info->data.array.descriptor;
   else
     desc2 = NULL_TREE;
+
   size2 = gfc_index_one_node;
   for (n = 0; n < expr2->rank; n++)
     {
@@ -8217,8 +8230,6 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			       gfc_array_index_type,
 			       tmp, size2);
     }
-
-  size1 = gfc_evaluate_now (size1, &fblock);
   size2 = gfc_evaluate_now (size2, &fblock);
 
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
