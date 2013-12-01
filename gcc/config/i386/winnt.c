@@ -565,8 +565,9 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
 	 sets 'discard' characteristic, rather than telling linker
 	 to warn of size or content mismatch, so do the same.  */ 
       bool discard = (flags & SECTION_CODE)
-		      || lookup_attribute ("selectany",
-					   DECL_ATTRIBUTES (decl));	 
+		      || (TREE_CODE (decl) != IDENTIFIER_NODE
+			  && lookup_attribute ("selectany",
+					       DECL_ATTRIBUTES (decl)));
       fprintf (asm_out_file, "\t.linkonce %s\n",
 	       (discard  ? "discard" : "same_size"));
     }
