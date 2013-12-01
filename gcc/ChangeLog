@@ -1,6 +1,11 @@
-2013-12-01  Bernd Edlinger <bernd.edlinger@hotmail.de>
+2013-12-01  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* expr.c (emit_group_store): Corrected BITFIELD_END parameter.
+	* config/i386/winnt.c (i386_pe_asm_named_section): Be prepared for an
+	identifier node.
+
+2013-12-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expr.c (emit_group_store): Fix off-by-one BITFIELD_END argument.
 
 2013-11-30  Paulo Matos  <pmatos@broadcom.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
