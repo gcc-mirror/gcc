@@ -4335,10 +4335,18 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 
   for (ss = rss; ss != gfc_ss_terminator; ss = ss->next)
     {
-      if (ss->info->type != GFC_SS_SECTION)
-	continue;
-
       ss_expr = ss->info->expr;
+
+      if (ss->info->type != GFC_SS_SECTION)
+	{
+	  if (gfc_option.flag_realloc_lhs
+	      && dest_expr != ss_expr
+	      && gfc_is_reallocatable_lhs (dest_expr)
+	      && ss_expr->rank)
+	    nDepend = gfc_check_dependency (dest_expr, ss_expr, true);
+
+	  continue;
+	}
 
       if (dest_expr->symtree->n.sym != ss_expr->symtree->n.sym)
 	{
