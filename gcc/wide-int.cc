@@ -1296,6 +1296,20 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
       return 1;
     }
 
+  /* Handle multiplications by 1.  */
+  if (op1len == 1 && op1[0] == 1)
+    {
+      for (i = 0; i < op2len; i++)
+	val[i] = op2[i];
+      return op2len;
+    }
+  if (op2len == 1 && op2[0] == 1)
+    {
+      for (i = 0; i < op1len; i++)
+	val[i] = op1[i];
+      return op1len;
+    }
+
   /* If we need to check for overflow, we can only do half wide
      multiplies quickly because we need to look at the top bits to
      check for the overflow.  */
