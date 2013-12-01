@@ -1,3 +1,7 @@
+2013-12-01  Bernd Edlinger <bernd.edlinger@hotmail.de>
+
+	* expr.c (emit_group_store): Corrected BITFIELD_END parameter.
+
 2013-11-30  Paulo Matos  <pmatos@broadcom.com>
 	    Eric Botcazou  <ebotcazou@adacore.com>
 

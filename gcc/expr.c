@@ -2131,7 +2131,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	  /* Make sure not to write past the end of the struct.  */
 	  store_bit_field (dest,
 			   adj_bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			   bytepos * BITS_PER_UNIT, ssize * BITS_PER_UNIT,
+			   bytepos * BITS_PER_UNIT, ssize * BITS_PER_UNIT - 1,
 			   VOIDmode, tmps[i]);
 	}
 
