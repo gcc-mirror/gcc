@@ -45,17 +45,34 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "erfc_scaled_inc.c"
 #endif
 
-#if defined(HAVE_GFC_REAL_16) && defined(GFC_REAL_16_IS_LONG_DOUBLE)
-#undef KIND
-#define KIND 16
-#include "erfc_scaled_inc.c"
-#endif
+#ifdef HAVE_GFC_REAL_16
 
+/* For quadruple-precision, netlib's implementation is
+   not accurate enough.  We provide another one.  */
 
 #ifdef GFC_REAL_16_IS_FLOAT128
 
-/* For quadruple-precision (__float128), netlib's implementation is
-   not accurate enough.  We provide another one.  */
+# define _THRESH -106.566990228185312813205074546585730Q
+# define _M_2_SQRTPI M_2_SQRTPIq
+# define _INF __builtin_infq()
+# define _ERFC(x) erfcq(x)
+# define _EXP(x) expq(x)
+
+#else
+
+# define _THRESH -106.566990228185312813205074546585730L
+# define _M_2_SQRTPI M_2_SQRTPIl
+# define _INF __builtin_infl()
+# ifdef HAVE_ERFCL
+#  define _ERFC(x) erfcl(x)
+# endif
+# ifdef HAVE_EXPL
+#  define _EXP(x) expl(x)
+# endif
+
+#endif
+
+#if defined(_ERFC) && defined(_EXP)
 
 extern GFC_REAL_16 erfc_scaled_r16 (GFC_REAL_16);
 export_proto(erfc_scaled_r16);
@@ -63,15 +80,15 @@ export_proto(erfc_scaled_r16);
 GFC_REAL_16
 erfc_scaled_r16 (GFC_REAL_16 x)
 {
-  if (x < -106.566990228185312813205074546585730Q)
+  if (x < _THRESH)
     {
-      return __builtin_infq();
+      return _INF;
     }
   if (x < 12)
     {
       /* Compute directly as ERFC_SCALED(x) = ERFC(x) * EXP(X**2).
 	 This is not perfect, but much better than netlib.  */
-      return erfcq(x) * expq(x * x);
+      return _ERFC(x) * _EXP(x * x);
     }
   else
     {
@@ -97,9 +114,10 @@ erfc_scaled_r16 (GFC_REAL_16 x)
 	  n++;
 	}
 
-      return (1 + sum) / x * (M_2_SQRTPIq / 2);
+      return (1 + sum) / x * (_M_2_SQRTPI / 2);
     }
 }
 
 #endif
 
+#endif
