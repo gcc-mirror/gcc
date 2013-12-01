@@ -14930,7 +14930,7 @@ field_byte_offset (const_tree decl)
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes
-    = wi::udiv_trunc (object_offset_in_bits, BITS_PER_UNIT);
+    = wi::lrshift (object_offset_in_bits, LOG2_BITS_PER_UNIT);
   return object_offset_in_bytes.to_shwi ();
 }
 

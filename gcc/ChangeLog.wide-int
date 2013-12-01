@@ -111,6 +111,7 @@
 	(stabstr_U): Use wide-int interfaces.
 	(dbxout_type): Update to use cst_fits_shwi_p.
 	* defaults.h
+	(LOG2_BITS_PER_UNIT): Define.
 	(TARGET_SUPPORTS_WIDE_INT): Add default.
 	* dfp.c: Include wide-int.h.
 	(decimal_real_to_integer2): Use wide-int interfaces and rename to

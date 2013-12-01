@@ -2127,18 +2127,19 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 		  if (TREE_CODE (rbase) != MEM_REF)
 		    return false;
 		  // Compare pointers.
-		  offset += mem_ref_offset (base) * BITS_PER_UNIT;
-		  roffset += mem_ref_offset (rbase) * BITS_PER_UNIT;
+		  offset += wi::lshift (mem_ref_offset (base),
+					LOG2_BITS_PER_UNIT);
+		  roffset += wi::lshift (mem_ref_offset (rbase),
+					 LOG2_BITS_PER_UNIT);
 		  base = TREE_OPERAND (base, 0);
 		  rbase = TREE_OPERAND (rbase, 0);
 		}
-	      if (base == rbase)
-		{
-		  offset_int size = wi::to_offset (len) * BITS_PER_UNIT;
-		  if (wi::les_p (offset, roffset)
-		      && wi::les_p (roffset + ref->max_size, offset + size))
-		    return true;
-		}
+	      if (base == rbase
+		  && wi::les_p (offset, roffset)
+		  && wi::les_p (roffset + ref->max_size,
+				offset + wi::lshift (wi::to_offset (len),
+						     LOG2_BITS_PER_UNIT)))
+		return true;
 	      break;
 	    }
 

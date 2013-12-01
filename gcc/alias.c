@@ -2355,8 +2355,8 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 
       offset_int woffset
 	= (wi::to_offset (xoffset)
-	   + wi::udiv_trunc (wi::to_offset (DECL_FIELD_BIT_OFFSET (field)),
-			     BITS_PER_UNIT));
+	   + wi::lrshift (wi::to_offset (DECL_FIELD_BIT_OFFSET (field)),
+			  LOG2_BITS_PER_UNIT));
       if (!wi::fits_uhwi_p (woffset))
 	{
 	  *known_p = false;

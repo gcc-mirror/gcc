@@ -897,7 +897,7 @@ restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
       c2 = 0;
     }
 
-  c4 = wi::udiv_floor (index, BITS_PER_UNIT);
+  c4 = wi::lrshift (index, LOG2_BITS_PER_UNIT);
   c5 = backtrace_base_for_ref (&t2);
 
   *pbase = t1;
