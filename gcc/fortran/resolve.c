@@ -8247,10 +8247,11 @@ resolve_transfer (gfc_code *code)
 	 && exp->value.op.op == INTRINSIC_PARENTHESES)
     exp = exp->value.op.op1;
 
-  if (exp && exp->expr_type == EXPR_NULL && exp->ts.type == BT_UNKNOWN)
+  if (exp && exp->expr_type == EXPR_NULL
+      && code->ext.dt)
     {
-      gfc_error ("NULL intrinsic at %L in data transfer statement requires "
-		 "MOLD=", &exp->where);
+      gfc_error ("Invalid context for NULL () intrinsic at %L",
+		 &exp->where);
       return;
     }
 

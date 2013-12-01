@@ -1,3 +1,9 @@
+2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34547
+	* gfortran.dg/null_5.f90 : Include new error.
+	* gfortran.dg/null_6.f90 : Include new error.
+
 2013-11-29  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59331

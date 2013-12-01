@@ -1,3 +1,9 @@
+2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34547
+	* resolve.c (resolve_transfer): EXPR_NULL is always in an
+	invalid context in a transfer statement.
+
 2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
 
 	* lang.opt (Wopenmp-simd): New.
