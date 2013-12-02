@@ -1,3 +1,9 @@
+2013-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/59356
+	* tree-dfa.h (get_addr_base_and_unit_offset_1) <case ARRAY_REF>: Do the
+	offset computation using the precision of the index type.
+
 2013-12-02  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR target/58785

@@ -102,11 +102,11 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
-
-		hindex -= TREE_INT_CST_LOW (low_bound);
-		hindex *= TREE_INT_CST_LOW (unit_size);
-		byte_offset += hindex;
+		double_int doffset
+		  = (TREE_INT_CST (index) - TREE_INT_CST (low_bound))
+		    .sext (TYPE_PRECISION (TREE_TYPE (index)));
+		doffset *= tree_to_double_int (unit_size);
+		byte_offset += doffset.to_shwi ();
 	      }
 	    else
 	      return NULL_TREE;
