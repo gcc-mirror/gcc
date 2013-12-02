@@ -1,5 +1,6 @@
 2013-12-02  Yvan Roux  <yvan.roux@linaro.org>
 
+	PR target/58785
 	* config/arm/arm.c (arm_preferred_reload_class): Only return LO_REGS
 	when rclass is GENERAL_REGS.
 
