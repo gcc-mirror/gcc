@@ -929,8 +929,10 @@ enum
 };
 
 extern int epiphany_normal_fp_rounding;
+#ifndef IN_LIBGCC2
 extern rtl_opt_pass *make_pass_mode_switch_use (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_resolve_sw_modes (gcc::context *ctxt);
+#endif
 
 /* This will need to be adjusted when FP_CONTRACT_ON is properly
    implemented.  */
