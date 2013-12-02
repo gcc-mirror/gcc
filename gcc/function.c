@@ -4405,7 +4405,6 @@ invoke_set_current_function_hook (tree fndecl)
 	  cl_optimization_restore (&global_options, TREE_OPTIMIZATION (opts));
 	}
 
-      targetm.set_current_function (fndecl);
       this_fn_optabs = this_target_optabs;
 
       if (opts != optimization_default_node)
@@ -4415,6 +4414,8 @@ invoke_set_current_function_hook (tree fndecl)
 	    this_fn_optabs = (struct target_optabs *)
 	      TREE_OPTIMIZATION_OPTABS (opts);
 	}
+
+      targetm.set_current_function (fndecl);
     }
 }
 
