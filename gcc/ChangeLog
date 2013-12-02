@@ -1,3 +1,8 @@
+2013-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59353
+	* doc/invoke.texi: Document -fsanitize=return.
+
 2013-12-02  Tobias Burnus  <burnus@net-b.de>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
