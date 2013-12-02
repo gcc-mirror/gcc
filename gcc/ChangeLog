@@ -1,3 +1,10 @@
+2013-12-02  Tobias Burnus  <burnus@net-b.de>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR middle-end/59257
+	* doc/invoke.texi: Add missing @opindex.
+	(-fsanitize=): Use @gcctabopt instead of @itemize.
+
 2013-12-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Fix C++0x memory model for unaligned fields in packed, aligned(4)
