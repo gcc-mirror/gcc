@@ -1,4 +1,11 @@
-2013-12-02 Sterling Augustine  <saugustine@google.com>
+2013-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59358
+	* tree-vrp.c (union_ranges): To check for the partially
+	overlapping ranges or adjacent ranges, also compare *vr0max
+	with vr1max.
+
+2013-12-02  Sterling Augustine  <saugustine@google.com>
 
 	* dwarf2out.c (output_pubnames): Use comp_unit_die ()->die_offset
 	when there isn't a skeleton die.
