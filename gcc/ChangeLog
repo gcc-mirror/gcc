@@ -1,5 +1,13 @@
 2013-12-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/59139
+	* tree-ssa-loop-niter.c (chain_of_csts_start): Properly match
+	code in get_val_for.
+	(get_val_for): Use gcc_checking_asserts.
+
+2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59199
 	* tree-ssa-operands.c (opf_implicit): Remove.
 	(opf_address_taken): New flag.
 	(get_expr_operands): Remove early out, pass down
