@@ -1,3 +1,15 @@
+2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (opf_implicit): Remove.
+	(opf_address_taken): New flag.
+	(get_expr_operands): Remove early out, pass down
+	opf_address_taken for ADDR_EXPRs, add a use operand only
+	for non-opf_address_taken bases.
+	(get_indirect_ref_operands): Rename to ...
+	(get_mem_ref_operands): ... this.
+	(get_asm_expr_operands): Rename to ...
+	(get_asm_stmt_operands): ... this.
+
 2013-12-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* ipa-inline.c (check_callers): Add missed pointer de-reference.
