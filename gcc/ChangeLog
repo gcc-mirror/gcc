@@ -1,3 +1,7 @@
+2013-12-02  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* ipa-inline.c (check_callers): Add missed pointer de-reference.
+
 2013-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/59356
