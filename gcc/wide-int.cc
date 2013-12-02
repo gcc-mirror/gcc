@@ -1247,22 +1247,18 @@ wi_pack (unsigned HOST_WIDE_INT *result,
 }
 
 /* Multiply Op1 by Op2.  If HIGH is set, only the upper half of the
-   result is returned.  If FULL is set, the entire result is returned
-   in a mode that is twice the width of the inputs.  However, that
-   mode needs to exist if the value is to be usable.  Clients that use
-   FULL need to check for this.
+   result is returned.  
 
-   If HIGH or FULL are not set, throw away the upper half after the
-   check is made to see if it overflows.  Unfortunately there is no
-   better way to check for overflow than to do this.  If OVERFLOW is
-   nonnull, record in *OVERFLOW whether the result overflowed.  SGN
-   controls the signedness and is used to check overflow or if HIGH or
-   FULL is set.  */
+   If HIGH is not set, throw away the upper half after the check is
+   made to see if it overflows.  Unfortunately there is no better way
+   to check for overflow than to do this.  If OVERFLOW is nonnull,
+   record in *OVERFLOW whether the result overflowed.  SGN controls
+   the signedness and is used to check overflow or if HIGH is set.  */
 unsigned int
 wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 		  unsigned int op1len, const HOST_WIDE_INT *op2,
 		  unsigned int op2len, unsigned int prec, signop sgn,
-		  bool *overflow, bool high, bool full)
+		  bool *overflow, bool high)
 {
   unsigned HOST_WIDE_INT o0, o1, k, t;
   unsigned int i;
@@ -1313,7 +1309,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
   /* If we need to check for overflow, we can only do half wide
      multiplies quickly because we need to look at the top bits to
      check for the overflow.  */
-  if ((high || full || needs_overflow)
+  if ((high || needs_overflow)
       && (prec <= HOST_BITS_PER_HALF_WIDE_INT))
     {
       unsigned HOST_WIDE_INT r;
@@ -1372,7 +1368,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 
   /* We did unsigned math above.  For signed we must adjust the
      product (assuming we need to see that).  */
-  if (sgn == SIGNED && (full || high || needs_overflow))
+  if (sgn == SIGNED && (high || needs_overflow))
     {
       unsigned HOST_WIDE_INT b;
       if (op1[op1len-1] < 0)
@@ -1420,13 +1416,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 	  *overflow = true;
     }
 
-  if (full)
-    {
-      /* compute [2prec] <- [prec] * [prec] */
-      wi_pack ((unsigned HOST_WIDE_INT *) val, r, 2 * half_blocks_needed);
-      return canonize (val, blocks_needed * 2, prec * 2);
-    }
-  else if (high)
+  if (high)
     {
       /* compute [prec] <- ([prec] * [prec]) >> [prec] */
       wi_pack ((unsigned HOST_WIDE_INT *) val,

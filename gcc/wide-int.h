@@ -1575,7 +1575,7 @@ namespace wi
   unsigned int mul_internal (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			     unsigned int, const HOST_WIDE_INT *,
 			     unsigned int, unsigned int, signop, bool *,
-			     bool, bool);
+			     bool);
   unsigned int divmod_internal (HOST_WIDE_INT *, unsigned int *,
 				HOST_WIDE_INT *, const HOST_WIDE_INT *,
 				unsigned int, unsigned int,
@@ -2394,7 +2394,7 @@ wi::mul (const T1 &x, const T2 &y)
     }
   else
     result.set_len (mul_internal (val, xi.val, xi.len, yi.val, yi.len,
-				  precision, UNSIGNED, 0, false, false));
+				  precision, UNSIGNED, 0, false));
   return result;
 }
 
@@ -2410,7 +2410,7 @@ wi::mul (const T1 &x, const T2 &y, signop sgn, bool *overflow)
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   result.set_len (mul_internal (val, xi.val, xi.len,
 				yi.val, yi.len, precision,
-				sgn, overflow, false, false));
+				sgn, overflow, false));
   return result;
 }
 
@@ -2444,7 +2444,7 @@ wi::mul_high (const T1 &x, const T2 &y, signop sgn)
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   result.set_len (mul_internal (val, xi.val, xi.len,
 				yi.val, yi.len, precision,
-				sgn, 0, true, false));
+				sgn, 0, true));
   return result;
 }
 
@@ -3033,8 +3033,6 @@ namespace wi
   wide_int max_value (never_used1 *);
   wide_int max_value (never_used2 *);
 
-  wide_int mul_full (const wide_int_ref &, const wide_int_ref &, signop);
-
   /* FIXME: this is target dependent, so should be elsewhere.
      It also seems to assume that CHAR_BIT == BITS_PER_UNIT.  */
   wide_int from_buffer (const unsigned char *, unsigned int);
@@ -3063,19 +3061,6 @@ namespace wi
 			     bool, unsigned int);
   unsigned int from_array (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			   unsigned int, unsigned int, bool);
-}
-
-/* Perform a widening multiplication of X and Y, extending the values
-   according according to SGN.  */
-inline wide_int
-wi::mul_full (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
-{
-  gcc_checking_assert (x.precision == y.precision);
-  wide_int result = wide_int::create (x.precision * 2);
-  result.set_len (mul_internal (result.write_val (), x.val, x.len,
-				y.val, y.len, x.precision,
-				sgn, 0, false, true));
-  return result;
 }
 
 /* Return a PRECISION-bit integer in which the low WIDTH bits are set
