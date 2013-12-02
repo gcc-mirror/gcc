@@ -529,8 +529,8 @@ set_lattice_value (tree var, prop_value_t new_val)
 static prop_value_t get_value_for_expr (tree, bool);
 static prop_value_t bit_value_binop (enum tree_code, tree, tree, tree);
 static void bit_value_binop_1 (enum tree_code, tree, widest_int *, widest_int *,
-			       tree, widest_int, widest_int,
-			       tree, widest_int, widest_int);
+			       tree, const widest_int &, const widest_int &,
+			       tree, const widest_int &, const widest_int &);
 
 /* Return a widest_int that can be used for bitwise simplifications
    from VAL.  */
@@ -1199,11 +1199,13 @@ bit_value_unop_1 (enum tree_code code, tree type,
 static void
 bit_value_binop_1 (enum tree_code code, tree type,
 		   widest_int *val, widest_int *mask,
-		   tree r1type, widest_int r1val, widest_int r1mask,
-		   tree r2type, widest_int r2val, widest_int r2mask)
+		   tree r1type, const widest_int &r1val,
+		   const widest_int &r1mask, tree r2type,
+		   const widest_int &r2val, const widest_int &r2mask)
 {
   signop sgn = TYPE_SIGN (type);
   int width = TYPE_PRECISION (type);
+  bool swap_p = false;
 
   /* Assume we'll get a constant result.  Use an initial non varying
      value, we fall back to varying in the end if necessary.  */
@@ -1376,27 +1378,19 @@ bit_value_binop_1 (enum tree_code code, tree type,
 
     case GE_EXPR:
     case GT_EXPR:
+      swap_p = true;
+      code = swap_tree_comparison (code);
+      /* Fall through.  */
     case LT_EXPR:
     case LE_EXPR:
       {
-	widest_int o1val, o2val, o1mask, o2mask;
 	int minmax, maxmin;
 
-	if ((code == GE_EXPR) || (code == GT_EXPR))
-	  {
-	    o1val = r2val;
-	    o1mask = r2mask;
-	    o2val = r1val;
-	    o2mask = r1mask;
-	    code = swap_tree_comparison (code);
-	  }
-	else
-	  {
-	    o1val = r1val;
-	    o1mask = r1mask;
-	    o2val = r2val;
-	    o2mask = r2mask;
-	  }
+	const widest_int &o1val = swap_p ? r2val : r1val;
+	const widest_int &o1mask = swap_p ? r2mask : r1mask;
+	const widest_int &o2val = swap_p ? r1val : r2val;
+	const widest_int &o2mask = swap_p ? r1mask : r2mask;
+
 	/* If the most significant bits are not known we know nothing.  */
 	if (wi::neg_p (o1mask) || wi::neg_p (o2mask))
 	  break;

@@ -4683,13 +4683,13 @@ extract_code_and_val_from_cond_with_ops (tree name, enum tree_code cond_code,
    SGNBIT back.  */
 
 static wide_int
-masked_increment (wide_int val, wide_int mask, wide_int sgnbit,
-		  unsigned int prec)
+masked_increment (const wide_int &val_in, const wide_int &mask,
+		  const wide_int &sgnbit, unsigned int prec)
 {
   wide_int bit = wi::one (prec), res;
   unsigned int i;
 
-  val ^= sgnbit;
+  wide_int val = val_in ^ sgnbit;
   for (i = 0; i < prec; i++, bit += bit)
     {
       res = mask;

@@ -2043,7 +2043,7 @@ replace_unconditional_candidate (slsr_cand_t c)
    MAX_INCR_VEC_LEN increments have been found.  */
 
 static inline int
-incr_vec_index (widest_int increment)
+incr_vec_index (const widest_int &increment)
 {
   unsigned i;
   

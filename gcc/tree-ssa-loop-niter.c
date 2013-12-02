@@ -527,7 +527,7 @@ end:
    difference of two values in TYPE.  */
 
 static void
-bounds_add (bounds *bnds, widest_int delta, tree type)
+bounds_add (bounds *bnds, const widest_int &delta, tree type)
 {
   mpz_t mdelta, max;
 
@@ -2624,10 +2624,10 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
    is taken at last when the STMT is executed BOUND + 1 times.
    REALISTIC is true if BOUND is expected to be close to the real number
    of iterations.  UPPER is true if we are sure the loop iterates at most
-   BOUND times.  I_BOUND is an unsigned wide_int upper estimate on BOUND.  */
+   BOUND times.  I_BOUND is a widest_int upper estimate on BOUND.  */
 
 static void
-record_estimate (struct loop *loop, tree bound, widest_int i_bound,
+record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
 		 gimple at_stmt, bool is_exit, bool realistic, bool upper)
 {
   widest_int delta;
@@ -2683,15 +2683,15 @@ record_estimate (struct loop *loop, tree bound, widest_int i_bound,
     delta = 0;
   else
     delta = 1;
-  i_bound += delta;
+  widest_int new_i_bound = i_bound + delta;
 
   /* If an overflow occurred, ignore the result.  */
-  if (wi::ltu_p (i_bound, delta))
+  if (wi::ltu_p (new_i_bound, delta))
     return;
 
   if (upper && !is_exit)
-    do_warn_aggressive_loop_optimizations (loop, i_bound, at_stmt);
-  record_niter_bound (loop, i_bound, realistic, upper);
+    do_warn_aggressive_loop_optimizations (loop, new_i_bound, at_stmt);
+  record_niter_bound (loop, new_i_bound, realistic, upper);
 }
 
 /* Record the estimate on number of iterations of LOOP based on the fact that

@@ -886,8 +886,8 @@ copy_ref_info (tree new_ref, tree old_ref)
 			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
 			       < align)))))
 	    {
-	      unsigned int inc = (mem_ref_offset (old_ref).to_uhwi ()
-				  - mem_ref_offset (new_ref).to_uhwi ());
+	      unsigned int inc = (mem_ref_offset (old_ref).to_short_addr ()
+				  - mem_ref_offset (new_ref).to_short_addr ());
 	      adjust_ptr_info_misalignment (new_pi, inc);
 	    }
 	  else
