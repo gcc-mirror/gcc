@@ -1,3 +1,10 @@
+2013-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59358
+	* tree-vrp.c (union_ranges): To check for the partially
+	overlapping ranges or adjacent ranges, also compare *vr0max
+	with vr1max.
+
 2013-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59139
