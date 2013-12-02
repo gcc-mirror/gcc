@@ -5355,6 +5355,14 @@ built with this option turned on will issue an error message when it
 tries to dereference a NULL pointer, or if a reference (possibly an
 rvalue reference) is bound to a NULL pointer.
 
+@item -fsanitize=return
+@opindex fsanitize=return
+
+This option enables return statement checking.  Programs
+built with this option turned on will issue an error message
+when the end of a non-void function is reached without actually
+returning a value.  This option works in C++ only.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
