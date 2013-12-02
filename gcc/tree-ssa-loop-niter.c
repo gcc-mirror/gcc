@@ -2075,7 +2075,8 @@ chain_of_csts_start (struct loop *loop, tree x)
       return NULL;
     }
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  if (gimple_code (stmt) != GIMPLE_ASSIGN
+      || gimple_assign_rhs_class (stmt) == GIMPLE_TERNARY_RHS)
     return NULL;
 
   code = gimple_assign_rhs_code (stmt);
@@ -2143,7 +2144,7 @@ get_val_for (tree x, tree base)
 {
   gimple stmt;
 
-  gcc_assert (is_gimple_min_invariant (base));
+  gcc_checking_assert (is_gimple_min_invariant (base));
 
   if (!x)
     return base;
@@ -2152,7 +2153,7 @@ get_val_for (tree x, tree base)
   if (gimple_code (stmt) == GIMPLE_PHI)
     return base;
 
-  gcc_assert (is_gimple_assign (stmt));
+  gcc_checking_assert (is_gimple_assign (stmt));
 
   /* STMT must be either an assignment of a single SSA name or an
      expression involving an SSA name and a constant.  Try to fold that

@@ -1,3 +1,8 @@
+2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59139
+	* gcc.dg/torture/pr59139.c: New testcase.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
