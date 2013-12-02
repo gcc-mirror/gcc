@@ -1663,9 +1663,10 @@ divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
    the division overflowed.  */
 unsigned int
 wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
-		     HOST_WIDE_INT *remainder, const HOST_WIDE_INT *dividend,
+		     HOST_WIDE_INT *remainder,
+		     const HOST_WIDE_INT *dividend_val,
 		     unsigned int dividend_len, unsigned int dividend_prec,
-		     const HOST_WIDE_INT *divisor, unsigned int divisor_len,
+		     const HOST_WIDE_INT *divisor_val, unsigned int divisor_len,
 		     unsigned int divisor_prec, signop sgn,
 		     bool *oflow)
 {
@@ -1680,42 +1681,25 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
   unsigned HOST_HALF_WIDE_INT
     b_divisor[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   unsigned int m, n;
-  HOST_WIDE_INT u0[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT u1[WIDE_INT_MAX_ELTS];
   bool dividend_neg = false;
   bool divisor_neg = false;
   bool overflow = false;
+  wide_int neg_dividend, neg_divisor;
 
-  if (divisor[0] == 0 && divisor_len == 1)
+  wide_int_ref dividend = wi::storage_ref (dividend_val, dividend_len,
+					   dividend_prec);
+  wide_int_ref divisor = wi::storage_ref (divisor_val, divisor_len,
+					  divisor_prec);
+  if (divisor == 0)
     overflow = true;
 
-  /* The smallest signed number / -1 causes overflow.  */
+  /* The smallest signed number / -1 causes overflow.  The dividend_len
+     check is for speed rather than correctness.  */
   if (sgn == SIGNED
       && dividend_len == BLOCKS_NEEDED (dividend_prec)
-      && divisor_len == 1)
-    {
-      HOST_WIDE_INT divisor_low = divisor[0];
-      if (divisor_prec < HOST_BITS_PER_WIDE_INT)
-	divisor_low = sext_hwi (divisor_low, divisor_prec);
-      unsigned HOST_WIDE_INT dividend_high = dividend[dividend_len - 1];
-      dividend_high <<= -dividend_prec % HOST_BITS_PER_WIDE_INT;
-      if (divisor_low == -1
-	  && HOST_WIDE_INT (dividend_high) == HOST_WIDE_INT_MIN)
-	{
-	  /* The smallest neg number is 100...00.  The high word was
-	     checked above, now check the rest of the words are zero.  */
-	  unsigned int i;
-	  bool all_zero = true;
-	  for (i = 0; i + 1 < dividend_len; i++)
-	    if (dividend[i] != 0)
-	      {
-		all_zero = false;
-		break;
-	      }
-	  if (all_zero)
-	    overflow = true;
-	}
-    }
+      && divisor == -1
+      && wi::only_sign_bit_p (dividend))
+    overflow = true;
 
   /* If overflow is set, just get out.  There will only be grief by
      continuing.  */
@@ -1737,27 +1721,30 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
     *oflow = false;
 
   /* Do it on the host if you can.  */
-  if (dividend_prec <= HOST_BITS_PER_WIDE_INT
-      && divisor_prec <= HOST_BITS_PER_WIDE_INT)
+  if (sgn == SIGNED
+      && wi::fits_shwi_p (dividend)
+      && wi::fits_shwi_p (divisor))
     {
-      if (sgn == SIGNED)
-	{
-	  HOST_WIDE_INT o0 = sext_hwi (dividend[0], dividend_prec);
-	  HOST_WIDE_INT o1 = sext_hwi (divisor[0], divisor_prec);
+      HOST_WIDE_INT o0 = dividend.to_shwi ();
+      HOST_WIDE_INT o1 = divisor.to_shwi ();
 
+      if (o0 == HOST_WIDE_INT_MIN && o1 == -1)
+	{
+	  gcc_checking_assert (dividend_prec > HOST_BITS_PER_WIDE_INT);
 	  if (quotient)
-	    quotient[0] = o0 / o1;
+	    {
+	      quotient[0] = HOST_WIDE_INT_MIN;
+	      quotient[1] = 0;
+	    }
 	  if (remainder)
 	    {
-	      remainder[0] = o0 % o1;
+	      remainder[0] = 0;
 	      *remainder_len = 1;
 	    }
+	  return 2;
 	}
       else
 	{
-	  unsigned HOST_WIDE_INT o0 = zext_hwi (dividend[0], dividend_prec);
-	  unsigned HOST_WIDE_INT o1 = zext_hwi (divisor[0], divisor_prec);
-
 	  if (quotient)
 	    quotient[0] = o0 / o1;
 	  if (remainder)
@@ -1765,8 +1752,24 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	      remainder[0] = o0 % o1;
 	      *remainder_len = 1;
 	    }
+	  return 1;
 	}
+    }
 
+  if (sgn == UNSIGNED
+      && wi::fits_uhwi_p (dividend)
+      && wi::fits_uhwi_p (divisor))
+    {
+      unsigned HOST_WIDE_INT o0 = dividend.to_uhwi ();
+      unsigned HOST_WIDE_INT o1 = divisor.to_uhwi ();
+
+      if (quotient)
+	quotient[0] = o0 / o1;
+      if (remainder)
+	{
+	  remainder[0] = o0 % o1;
+	  *remainder_len = 1;
+	}
       return 1;
     }
 
@@ -1774,36 +1777,34 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
      did.  */
   if (sgn == SIGNED)
     {
-      if (top_bit_of (dividend, dividend_len, dividend_prec))
+      if (wi::neg_p (dividend))
 	{
-	  dividend_len = wi::sub_large (u0, zeros, 1, dividend, dividend_len,
-					dividend_prec, UNSIGNED, 0);
-	  dividend = u0;
+	  neg_dividend = -dividend;
+	  dividend = neg_dividend;
 	  dividend_neg = true;
 	}
-      if (top_bit_of (divisor, divisor_len, divisor_prec))
+      if (wi::neg_p (divisor))
 	{
-	  divisor_len = wi::sub_large (u1, zeros, 1, divisor, divisor_len,
-				       divisor_prec, UNSIGNED, 0);
-	  divisor = u1;
+	  neg_divisor = -divisor;
+	  divisor = neg_divisor;
 	  divisor_neg = true;
 	}
     }
 
-  wi_unpack (b_dividend, (const unsigned HOST_WIDE_INT*)dividend,
-	     dividend_len, dividend_blocks_needed, dividend_prec, sgn);
-  wi_unpack (b_divisor, (const unsigned HOST_WIDE_INT*)divisor,
-	     divisor_len, divisor_blocks_needed, divisor_prec, sgn);
+  wi_unpack (b_dividend, (const unsigned HOST_WIDE_INT *) dividend.get_val (),
+	     dividend.get_len (), dividend_blocks_needed, dividend_prec, sgn);
+  wi_unpack (b_divisor, (const unsigned HOST_WIDE_INT *) divisor.get_val (),
+	     divisor.get_len (), divisor_blocks_needed, divisor_prec, sgn);
 
-  if (top_bit_of (dividend, dividend_len, dividend_prec) && sgn == SIGNED)
+  if (wi::neg_p (dividend, sgn))
     m = dividend_blocks_needed;
   else
-    m = 2 * dividend_len;
+    m = 2 * dividend.get_len ();
 
-  if (top_bit_of (divisor, divisor_len, divisor_prec) && sgn == SIGNED)
+  if (wi::neg_p (divisor, sgn))
     n = divisor_blocks_needed;
   else
-    n = 2 * divisor_len;
+    n = 2 * divisor.get_len ();
 
   /* We need to find the top non zero block of b_divisor.  At most the
      top two blocks are zero.  */

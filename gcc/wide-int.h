@@ -886,12 +886,21 @@ private:
   HOST_WIDE_INT scratch[2];
 
 public:
+  wide_int_ref_storage (const wi::storage_ref &);
+
   template <typename T>
   wide_int_ref_storage (const T &);
 
   template <typename T>
   wide_int_ref_storage (const T &, unsigned int);
 };
+
+/* Create a reference from an existing reference.  */
+template <bool SE>
+inline wide_int_ref_storage <SE>::
+wide_int_ref_storage (const wi::storage_ref &x)
+  : storage_ref (x)
+{}
 
 /* Create a reference to integer X in its natural precision.  Note
    that the natural precision is host-dependent for primitive
