@@ -1,3 +1,8 @@
+2013-12-02 Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (output_pubnames): Use comp_unit_die ()->die_offset
+	when there isn't a skeleton die.
+
 2013-12-02  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59353

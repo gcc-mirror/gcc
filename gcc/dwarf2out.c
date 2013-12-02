@@ -9293,7 +9293,7 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 	      if (type_node != NULL)
 	        die_offset = (type_node->skeleton_die != NULL
 			      ? type_node->skeleton_die->die_offset
-			      : 0);
+			      : comp_unit_die ()->die_offset);
 	    }
 
           output_pubname (die_offset, pub);
