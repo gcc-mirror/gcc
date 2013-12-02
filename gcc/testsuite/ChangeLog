@@ -1,6 +1,12 @@
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/59032
+	* c-c++-common/pr59032.c: New testcase.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
 	PR middle-end/59037
 	* c-c++-common/pr59037.c: New testcase.
 

@@ -3629,7 +3629,8 @@ build_unary_op (location_t location,
       /* Report invalid types.  */
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
-	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
+	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
+	  && typecode != VECTOR_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -3694,7 +3695,9 @@ build_unary_op (location_t location,
 	  }
 	else
 	  {
-	    inc = integer_one_node;
+	    inc = (TREE_CODE (argtype) == VECTOR_TYPE
+		   ? build_one_cst (argtype)
+		   : integer_one_node);
 	    inc = convert (argtype, inc);
 	  }
 
