@@ -3418,7 +3418,7 @@ gimple_fold_indirect_ref (tree t)
           unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
           tree index = bitsize_int (indexi);
           if (offset / part_widthi
-              <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
+	      < TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
             return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (addr, 0),
                                 part_width, index);
 	}

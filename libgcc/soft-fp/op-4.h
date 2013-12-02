@@ -709,7 +709,7 @@
       else if (rsize <= 2*_FP_W_TYPE_SIZE)				\
 	{								\
 	  r = X##_f[1];							\
-	  r <<= _FP_W_TYPE_SIZE;					\
+	  r = (rsize <= _FP_W_TYPE_SIZE ? 0 : r << _FP_W_TYPE_SIZE);	\
 	  r += X##_f[0];						\
 	}								\
       else								\
@@ -717,11 +717,11 @@
 	  /* I'm feeling lazy so we deal with int == 3words (implausible)*/ \
 	  /* and int == 4words as a single case.			 */ \
 	  r = X##_f[3];							\
-	  r <<= _FP_W_TYPE_SIZE;					\
+	  r = (rsize <= _FP_W_TYPE_SIZE ? 0 : r << _FP_W_TYPE_SIZE);	\
 	  r += X##_f[2];						\
-	  r <<= _FP_W_TYPE_SIZE;					\
+	  r = (rsize <= _FP_W_TYPE_SIZE ? 0 : r << _FP_W_TYPE_SIZE);	\
 	  r += X##_f[1];						\
-	  r <<= _FP_W_TYPE_SIZE;					\
+	  r = (rsize <= _FP_W_TYPE_SIZE ? 0 : r << _FP_W_TYPE_SIZE);	\
 	  r += X##_f[0];						\
 	}								\
     }									\

@@ -350,7 +350,8 @@ enum omp_clause_schedule_kind {
   OMP_CLAUSE_SCHEDULE_DYNAMIC,
   OMP_CLAUSE_SCHEDULE_GUIDED,
   OMP_CLAUSE_SCHEDULE_AUTO,
-  OMP_CLAUSE_SCHEDULE_RUNTIME
+  OMP_CLAUSE_SCHEDULE_RUNTIME,
+  OMP_CLAUSE_SCHEDULE_LAST
 };
 
 enum omp_clause_default_kind {
@@ -358,7 +359,8 @@ enum omp_clause_default_kind {
   OMP_CLAUSE_DEFAULT_SHARED,
   OMP_CLAUSE_DEFAULT_NONE,
   OMP_CLAUSE_DEFAULT_PRIVATE,
-  OMP_CLAUSE_DEFAULT_FIRSTPRIVATE
+  OMP_CLAUSE_DEFAULT_FIRSTPRIVATE,
+  OMP_CLAUSE_DEFAULT_LAST
 };
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
@@ -458,8 +460,6 @@ enum tree_index {
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
   TI_POINTER_SIZED_TYPE,
-
-  TI_POINTER_BOUNDS_TYPE,
 
   TI_UPC_PTS_TYPE,
   TI_UPC_PTS_REP_TYPE,
@@ -842,6 +842,9 @@ struct GTY(()) tree_base {
        TRANSACTION_EXPR_OUTER in
 	   TRANSACTION_EXPR
 
+       SSA_NAME_ANTI_RANGE_P in
+	   SSA_NAME
+
    public_flag:
 
        TREE_OVERFLOW in
@@ -922,6 +925,9 @@ struct GTY(()) tree_base {
        CALL_FROM_THUNK_P and
        CALL_ALLOCA_FOR_VAR_P in
            CALL_EXPR
+
+       OMP_CLAUSE_LINEAR_VARIABLE_STRIDE in
+	   OMP_CLAUSE_LINEAR
 
    side_effects_flag:
 
@@ -1124,7 +1130,8 @@ enum omp_clause_depend_kind
 {
   OMP_CLAUSE_DEPEND_IN,
   OMP_CLAUSE_DEPEND_OUT,
-  OMP_CLAUSE_DEPEND_INOUT
+  OMP_CLAUSE_DEPEND_INOUT,
+  OMP_CLAUSE_DEPEND_LAST
 };
 
 enum omp_clause_map_kind
@@ -1136,7 +1143,8 @@ enum omp_clause_map_kind
   /* The following kind is an internal only map kind, used for pointer based
      array sections.  OMP_CLAUSE_SIZE for these is not the pointer size,
      which is implicitly POINTER_SIZE / BITS_PER_UNIT, but the bias.  */
-  OMP_CLAUSE_MAP_POINTER
+  OMP_CLAUSE_MAP_POINTER,
+  OMP_CLAUSE_MAP_LAST
 };
 
 enum omp_clause_proc_bind_kind
@@ -1146,7 +1154,8 @@ enum omp_clause_proc_bind_kind
   OMP_CLAUSE_PROC_BIND_TRUE = 1,
   OMP_CLAUSE_PROC_BIND_MASTER = 2,
   OMP_CLAUSE_PROC_BIND_CLOSE = 3,
-  OMP_CLAUSE_PROC_BIND_SPREAD = 4
+  OMP_CLAUSE_PROC_BIND_SPREAD = 4,
+  OMP_CLAUSE_PROC_BIND_LAST
 };
 
 struct GTY(()) tree_exp {

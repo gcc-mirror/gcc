@@ -443,6 +443,7 @@ enum stmt_vec_info_type {
   shift_vec_info_type,
   op_vec_info_type,
   call_vec_info_type,
+  call_simd_clone_vec_info_type,
   assignment_vec_info_type,
   condition_vec_info_type,
   reduc_vec_info_type,
@@ -565,6 +566,9 @@ typedef struct _stmt_vec_info {
      of this stmt.  */
   vec<dr_p> same_align_refs;
 
+  /* Selected SIMD clone's function decl.  */
+  tree simd_clone_fndecl;
+
   /* Classify the def of this stmt.  */
   enum vect_def_type def_type;
 
@@ -633,6 +637,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_PATTERN_DEF_SEQ(S)      (S)->pattern_def_seq
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs
+#define STMT_VINFO_SIMD_CLONE_FNDECL(S)	   (S)->simd_clone_fndecl
 #define STMT_VINFO_DEF_TYPE(S)             (S)->def_type
 #define STMT_VINFO_GROUP_FIRST_ELEMENT(S)  (S)->first_element
 #define STMT_VINFO_GROUP_NEXT_ELEMENT(S)   (S)->next_element
@@ -910,9 +915,12 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
-unlimited_cost_model ()
+unlimited_cost_model (loop_p loop)
 {
-  return flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED;
+  if (loop != NULL && loop->force_vect
+      && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
+    return flag_simd_cost_model == VECT_COST_MODEL_UNLIMITED;
+  return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
 }
 
 /* Source location */

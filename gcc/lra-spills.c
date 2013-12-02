@@ -163,7 +163,6 @@ assign_mem_slot (int i)
       x = assign_stack_local (mode, total_size,
 			      min_align > inherent_align
 			      || total_size > inherent_size ? -1 : 0);
-      x = lra_eliminate_regs_1 (x, GET_MODE (x), false, false, true);
       stack_slot = x;
       /* Cancel the big-endian correction done in assign_stack_local.
 	 Get the address of the beginning of the slot.	This is so we
@@ -430,8 +429,15 @@ remove_pseudos (rtx *loc, rtx insn)
 	 into scratches back.  */
       && ! lra_former_scratch_p (i))
     {
-      hard_reg = spill_hard_reg[i];
-      *loc = copy_rtx (hard_reg != NULL_RTX ? hard_reg : pseudo_slots[i].mem);
+      if ((hard_reg = spill_hard_reg[i]) != NULL_RTX)
+	*loc = copy_rtx (hard_reg);
+      else
+	{
+	  rtx x = lra_eliminate_regs_1 (insn, pseudo_slots[i].mem,
+					GET_MODE (pseudo_slots[i].mem),
+					false, false, true);
+	  *loc = x != pseudo_slots[i].mem ? x : copy_rtx (x);
+	}
       return;
     }
 
@@ -477,9 +483,30 @@ spill_pseudos (void)
       FOR_BB_INSNS (bb, insn)
 	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
 	  {
+	    rtx *link_loc, link;
 	    remove_pseudos (&PATTERN (insn), insn);
 	    if (CALL_P (insn))
 	      remove_pseudos (&CALL_INSN_FUNCTION_USAGE (insn), insn);
+	    for (link_loc = &REG_NOTES (insn);
+		 (link = *link_loc) != NULL_RTX;
+		 link_loc = &XEXP (link, 1))
+	      {
+		switch (REG_NOTE_KIND (link))
+		  {
+		  case REG_FRAME_RELATED_EXPR:
+		  case REG_CFA_DEF_CFA:
+		  case REG_CFA_ADJUST_CFA:
+		  case REG_CFA_OFFSET:
+		  case REG_CFA_REGISTER:
+		  case REG_CFA_EXPRESSION:
+		  case REG_CFA_RESTORE:
+		  case REG_CFA_SET_VDRAP:
+		    remove_pseudos (&XEXP (link, 0), insn);
+		    break;
+		  default:
+		    break;
+		  }
+	      }
 	    if (lra_dump_file != NULL)
 	      fprintf (lra_dump_file,
 		       "Changing spilled pseudos to memory in insn #%u\n",

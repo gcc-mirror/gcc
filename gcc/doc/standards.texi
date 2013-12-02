@@ -85,8 +85,8 @@ as @dfn{AMD1}; the amended standard is sometimes known as @dfn{C94} or
 @option{-pedantic} to receive all required diagnostics).
 
 A new edition of the ISO C standard was published in 1999 as ISO/IEC
-9899:1999, and is commonly known as @dfn{C99}.  GCC has incomplete
-support for this standard version; see
+9899:1999, and is commonly known as @dfn{C99}.  GCC has substantially
+complete support for this standard version; see
 @uref{http://gcc.gnu.org/c99status.html} for details.  To select this
 standard, use @option{-std=c99} or @option{-std=iso9899:1999}.  (While in
 development, drafts of this standard version were referred to as
@@ -97,8 +97,8 @@ Corrigenda published in 2001, 2004 and 2007.  GCC does not support the
 uncorrected version.
 
 A fourth version of the C standard, known as @dfn{C11}, was published
-in 2011 as ISO/IEC 9899:2011.  GCC has limited incomplete support for
-parts of this standard, enabled with @option{-std=c11} or
+in 2011 as ISO/IEC 9899:2011.  GCC has substantially complete support
+for this standard, enabled with @option{-std=c11} or
 @option{-std=iso9899:2011}.  (While in development, drafts of this
 standard version were referred to as @dfn{C1X}.)
 
@@ -111,10 +111,9 @@ select an extended version of the C language explicitly with
 @option{-std=gnu90} (for C90 with GNU extensions), @option{-std=gnu99}
 (for C99 with GNU extensions) or @option{-std=gnu11} (for C11 with GNU
 extensions).  The default, if no C language dialect
-options are given, is @option{-std=gnu90}; this will change to
-@option{-std=gnu99} or @option{-std=gnu11} in some future release when
-the C99 or C11 support is
-complete.  Some features that are part of the C99 standard are
+options are given, is @option{-std=gnu90}; this is intended to change
+to @option{-std=gnu11} in some future release.  Some features that are
+part of the C99 standard are
 accepted as extensions in C90 mode, and some features that are part of
 the C11 standard are accepted as extensions in C90 and C99 modes.
 
@@ -156,7 +155,7 @@ your own arrangements for linking and startup.
 
 GCC does not provide the library facilities required only of hosted
 implementations, nor yet all the facilities required by C99 of
-freestanding implementations; to use the facilities of a hosted
+freestanding implementations on all platforms; to use the facilities of a hosted
 environment, you will need to find them elsewhere (for example, in the
 GNU C library).  @xref{Standard Libraries,,Standard Libraries}.
 

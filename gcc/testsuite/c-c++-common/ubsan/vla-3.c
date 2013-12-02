@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=vla-bound -w" } */
+/* { dg-options "-fsanitize=vla-bound" } */
 
 /* Don't instrument the arrays here.  */
 int

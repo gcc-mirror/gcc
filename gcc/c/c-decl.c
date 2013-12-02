@@ -2353,6 +2353,14 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       && !current_function_decl)
     DECL_EXTERNAL (newdecl) = 0;
 
+  /* An inline definition following a static declaration is not
+     DECL_EXTERNAL.  */
+  if (new_is_definition
+      && (DECL_DECLARED_INLINE_P (newdecl)
+	  || DECL_DECLARED_INLINE_P (olddecl))
+      && !TREE_PUBLIC (olddecl))
+    DECL_EXTERNAL (newdecl) = 0;
+
   if (DECL_EXTERNAL (newdecl))
     {
       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
@@ -3660,8 +3668,9 @@ c_builtin_function_ext_scope (tree decl)
   const char *name = IDENTIFIER_POINTER (id);
   C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
 
-  bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
-	UNKNOWN_LOCATION);
+  if (external_scope)
+    bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
+	  UNKNOWN_LOCATION);
 
   /* Builtins in the implementation namespace are made visible without
      needing to be explicitly declared.  See push_file_scope.  */

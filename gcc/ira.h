@@ -178,7 +178,7 @@ extern struct ira_reg_equiv *ira_reg_equiv;
 extern void ira_init_once (void);
 extern void ira_init (void);
 extern void ira_finish_once (void);
-extern void ira_setup_eliminable_regset (bool);
+extern void ira_setup_eliminable_regset (void);
 extern rtx ira_eliminate_regs (rtx, enum machine_mode);
 extern void ira_set_pseudo_classes (bool, FILE *);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *);

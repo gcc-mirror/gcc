@@ -163,6 +163,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_ARCH_SPEC
 #define LINK_ARCH_SPEC LINK_ARCH32_SPEC
 
+/* C++11 programs need -lrt for nanosleep.  */
+#define TIME_LIBRARY "rt"
+
 #ifndef USE_GLD
 /* With Sun ld, -rdynamic is a no-op.  */
 #define RDYNAMIC_SPEC ""

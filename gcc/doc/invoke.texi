@@ -256,7 +256,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wno-overflow @gol
+-Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -669,7 +669,7 @@ Objective-C and Objective-C++ Dialects}.
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
@@ -1654,16 +1654,24 @@ ISO C90 as modified in amendment 1.
 @itemx c9x
 @itemx iso9899:1999
 @itemx iso9899:199x
-ISO C99.  Note that this standard is not yet fully supported; see
+ISO C99.  This standard is substantially completely supported, modulo
+bugs, extended identifiers (supported except for corner cases when
+@option{-fextended-identifiers} is used) and floating-point issues
+(mainly but not entirely relating to optional C99 features from
+Annexes F and G).  See
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item c11
 @itemx c1x
 @itemx iso9899:2011
-ISO C11, the 2011 revision of the ISO C standard.
-Support is incomplete and experimental.  The name @samp{c1x} is
-deprecated.
+ISO C11, the 2011 revision of the ISO C standard.  This standard is
+substantially completely supported, modulo bugs, extended identifiers
+(supported except for corner cases when
+@option{-fextended-identifiers} is used), floating-point issues
+(mainly but not entirely relating to optional C11 features from
+Annexes F and G) and the optional Annexes K (Bounds-checking
+interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -1672,13 +1680,12 @@ is the default for C code.
 
 @item gnu99
 @itemx gnu9x
-GNU dialect of ISO C99.  When ISO C99 is fully implemented in GCC,
-this will become the default.  The name @samp{gnu9x} is deprecated.
+GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  Support is incomplete and experimental.  The
-name @samp{gnu1x} is deprecated.
+GNU dialect of ISO C11.  This is intended to become the default in a
+future release of GCC.  The name @samp{gnu1x} is deprecated.
 
 @item c++98
 @itemx c++03
@@ -3321,6 +3328,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmaybe-uninitialized @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnonnull  @gol
+-Wopenmp-simd @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
@@ -4815,6 +4823,12 @@ attribute.
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
 
+@item -Wopenmp-simd
+@opindex Wopenm-simd
+Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
+simd directive set by user.  The @option{-fsimd-cost-model=unlimited} can
+be used to relax the cost model.
+
 @item -Woverride-init @r{(C and Objective-C only)}
 @opindex Woverride-init
 @opindex Wno-override-init
@@ -5262,14 +5276,20 @@ many times it is given.  This is mainly intended to be used with
 Enable AddressSanitizer, a fast memory error detector.
 Memory access instructions will be instrumented to detect
 out-of-bounds and use-after-free bugs.
-See @uref{http://code.google.com/p/address-sanitizer/} for more details.
+See @uref{http://code.google.com/p/address-sanitizer/} for
+more details.  The run-time behavior can be influenced using the
+@env{ASAN_OPTIONS} environment variable; see
+@url{https://code.google.com/p/address-sanitizer/wiki/Flags#Run-time_flags} for
+a list of supported options.
 
 @item -fsanitize=thread
 Enable ThreadSanitizer, a fast data race detector.
 Memory access instructions will be instrumented to detect
-data race bugs.
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for
-more details.
+data race bugs.  See @uref{http://code.google.com/p/thread-sanitizer/} for more
+details. The run-time behavior can be influenced using the @env{TSAN_OPTIONS}
+environment variable; see
+@url{https://code.google.com/p/thread-sanitizer/wiki/Flags} for a list of
+supported options.
 
 @item -fsanitize=leak
 Enable LeakSanitizer, a memory leak detector.
@@ -5278,7 +5298,8 @@ This option only matters for linking of executables and if neither
 case it will link the executable against a library that overrides @code{malloc}
 and other allocator functions.  See
 @uref{https://code.google.com/p/address-sanitizer/wiki/LeakSanitizer} for more
-details.
+details.  The run-time behavior can be influenced using the
+@env{LSAN_OPTIONS} environment variable.
 
 @item -fsanitize=undefined
 Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
@@ -8070,6 +8091,14 @@ required runtime checks for data dependence or alignment but otherwise
 is equal to the @code{dynamic} model.
 The default cost model depends on other optimization flags and is
 either @code{dynamic} or @code{cheap}.
+
+@item -fsimd-cost-model=@var{model}
+@opindex fsimd-cost-model
+Alter the cost model used for vectorization of loops marked with the OpenMP
+or Cilk Plus simd directive.  The @var{model} argument should be one of
+@code{unlimited}, @code{dynamic}, @code{cheap}.  All values of @var{model}
+have the same meaning as described in @option{-fvect-cost-model} and by
+default a cost model defined with @option{-fvect-cost-model} is used.
 
 @item -ftree-vrp
 @opindex ftree-vrp
@@ -12216,8 +12245,11 @@ before execution begins.
 
 @item -mpic-register=@var{reg}
 @opindex mpic-register
-Specify the register to be used for PIC addressing.  The default is R10
-unless stack-checking is enabled, when R9 is used.
+Specify the register to be used for PIC addressing.
+For standard PIC base case, the default will be any suitable register
+determined by compiler.  For single PIC base case, the default is
+@samp{R9} if target is EABI based or stack-checking is enabled,
+otherwise the default is @samp{R10}.
 
 @item -mpic-data-is-text-relative
 @opindex mpic-data-is-text-relative
@@ -15065,8 +15097,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mrtm
 @itemx -mtbm
 @itemx -mno-tbm
-@itemx -mmpx
-@itemx -mno-mpx
 @opindex mmmx
 @opindex mno-mmx
 @opindex msse
@@ -15076,7 +15106,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
+FXSR, XSAVE, XSAVEOPT, LZCNT, RTM or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and

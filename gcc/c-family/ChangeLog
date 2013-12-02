@@ -1,3 +1,20 @@
+2013-11-29   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/59309
+	* cilk.c (gimplify_cilk_spawn): Properly handle function without
+	arguments.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59280
+	* c-common.c (get_priority): If TREE_VALUE (args) is IDENTIFIER_NODE,
+	goto invalid.  If it is error_mark_node, don't issue further
+	diagnostics.
+
+2013-11-28  Sergey Ostanevich  <sergos.gnu@gmail.com>
+
+	* c.opt (Wopenmp-simd): New.
+
 2013-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.h (ubsan_instrument_return): New prototype.

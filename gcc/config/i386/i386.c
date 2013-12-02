@@ -2047,8 +2047,6 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* Mask registers.  */
   MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
   MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  /* MPX bound registers */
-  BND_REGS, BND_REGS, BND_REGS, BND_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -2065,7 +2063,6 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
   93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  101, 102, 103, 104,			/* bound registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -2082,7 +2079,6 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
   75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
   118, 119, 120, 121, 122, 123, 124, 125, /* Mask registers */
-  126, 127, 128, 129,			/* bound registers */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -2151,7 +2147,6 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
   93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
-  -1, -1, -1, -1,                       /* bound registers */
 };
 
 /* Define parameter passing and return registers.  */
@@ -2583,7 +2578,6 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mrtm",		OPTION_MASK_ISA_RTM },
     { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
-    { "-mmpx",          OPTION_MASK_ISA_MPX },
   };
 
   /* Flag options.  */
@@ -3078,7 +3072,6 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512ER		(HOST_WIDE_INT_1 << 41)
 #define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
 #define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
-#define PTA_MPX			(HOST_WIDE_INT_1 << 44)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -4271,11 +4264,6 @@ ix86_conditional_register_usage (void)
       for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
     }
-
-  /* If MPX is disabled, squash the registers.  */
-  if (! TARGET_MPX)
-    for (i = FIRST_BND_REG; i <= LAST_BND_REG; i++)
-      fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
 
@@ -9013,7 +9001,7 @@ ix86_code_end (void)
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
-      output_asm_insn ("%!ret", NULL);
+      fputs ("\tret\n", asm_out_file);
       final_end_function ();
       init_insn_lengths ();
       free_after_compilation (cfun);
@@ -9071,7 +9059,7 @@ output_set_got (rtx dest, rtx label)
 
       xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
-      output_asm_insn ("%!call\t%X2", xops);
+      output_asm_insn ("call\t%X2", xops);
 
 #if TARGET_MACHO
       /* Output the Mach-O "canonical" pic base label name ("Lxx$pb") here.
@@ -14439,7 +14427,7 @@ print_reg (rtx x, int code, FILE *file)
     case 8:
     case 4:
     case 12:
-      if (! ANY_FP_REG_P (x) &&  ! ANY_BND_REG_P (x))
+      if (! ANY_FP_REG_P (x))
 	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
@@ -14562,7 +14550,6 @@ get_some_local_dynamic_name (void)
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
    @ -- print a segment register of thread base pointer load
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
-   ! -- print MPX prefix for jxx/call/ret instructions if required.
  */
 
 void
@@ -15062,11 +15049,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    fputs ("addr32 ", file);
 	  return;
 
-	case '!':
-	  if (ix86_bnd_prefixed_insn_p (NULL_RTX))
-	    fputs ("bnd ", file);
-	  return;
-
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}
@@ -15209,7 +15191,7 @@ static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
   return (code == '@' || code == '*' || code == '+' || code == '&'
-	  || code == ';' || code == '~' || code == '^' || code == '!');
+	  || code == ';' || code == '~' || code == '^');
 }
 
 /* Print a memory operand whose address is ADDR.  */
@@ -15238,25 +15220,6 @@ ix86_print_operand_address (FILE *file, rtx addr)
       gcc_assert (TARGET_64BIT);
       ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
       code = 'q';
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDMK_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 1), &parts);
-      gcc_assert (parts.base == NULL_RTX || parts.index == NULL_RTX);
-      if (parts.base != NULL_RTX)
-	{
-	  parts.index = parts.base;
-	  parts.scale = 1;
-	}
-      parts.base = XVECEXP (addr, 0, 0);
-      addr = XVECEXP (addr, 0, 0);
-    }
-  else if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_BNDLDX_ADDR)
-    {
-      ok = ix86_decompose_address (XVECEXP (addr, 0, 0), &parts);
-      gcc_assert (parts.index == NULL_RTX);
-      parts.index = XVECEXP (addr, 0, 1);
-      addr = XVECEXP (addr, 0, 0);
     }
   else
     ok = ix86_decompose_address (addr, &parts);
@@ -23468,7 +23431,8 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
   /* If expected size is not known but max size is small enough
      so inline version is a win, set expected size into
      the range.  */
-  if (max > 1 && (unsigned HOST_WIDE_INT)max >= max_size && expected_size == -1)
+  if (max > 1 && (unsigned HOST_WIDE_INT) max >= max_size
+      && expected_size == -1)
     expected_size = min_size / 2 + max_size / 2;
 
   /* If user specified the algorithm, honnor it if possible.  */
@@ -23767,7 +23731,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool noalign;
   enum machine_mode move_mode = VOIDmode;
   int unroll_factor = 1;
-  /* TODO: Once vlaue ranges are available, fill in proper data.  */
+  /* TODO: Once value ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
   unsigned HOST_WIDE_INT max_size = -1;
   unsigned HOST_WIDE_INT probable_max_size = -1;
@@ -23982,21 +23946,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	 loop variant.  */
       if (issetmem && epilogue_size_needed > 2 && !promoted_val)
 	force_loopy_epilogue = true;
-      if (count)
+      if ((count && count < (unsigned HOST_WIDE_INT) epilogue_size_needed)
+	  || max_size < (unsigned HOST_WIDE_INT) epilogue_size_needed)
 	{
-	  if (count < (unsigned HOST_WIDE_INT)epilogue_size_needed)
-	    {
-	      /* If main algorithm works on QImode, no epilogue is needed.
-		 For small sizes just don't align anything.  */
-	      if (size_needed == 1)
-		desired_align = align;
-	      else
-		goto epilogue;
-	    }
+	  /* If main algorithm works on QImode, no epilogue is needed.
+	     For small sizes just don't align anything.  */
+	  if (size_needed == 1)
+	    desired_align = align;
+	  else
+	    goto epilogue;
 	}
-      else if (min_size < (unsigned HOST_WIDE_INT)epilogue_size_needed)
+      else if (!count
+	       && min_size < (unsigned HOST_WIDE_INT) epilogue_size_needed)
 	{
-	  gcc_assert (max_size >= (unsigned HOST_WIDE_INT)epilogue_size_needed);
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp,
 				   GEN_INT (epilogue_size_needed),
@@ -24567,13 +24529,13 @@ ix86_output_call_insn (rtx insn, rtx call_op)
   if (SIBLING_CALL_P (insn))
     {
       if (direct_p)
-	xasm = "%!jmp\t%P0";
+	xasm = "jmp\t%P0";
       /* SEH epilogue detection requires the indirect branch case
 	 to include REX.W.  */
       else if (TARGET_SEH)
-	xasm = "%!rex.W jmp %A0";
+	xasm = "rex.W jmp %A0";
       else
-	xasm = "%!jmp\t%A0";
+	xasm = "jmp\t%A0";
 
       output_asm_insn (xasm, &call_op);
       return "";
@@ -24610,9 +24572,9 @@ ix86_output_call_insn (rtx insn, rtx call_op)
     }
 
   if (direct_p)
-    xasm = "%!call\t%P0";
+    xasm = "call\t%P0";
   else
-    xasm = "%!call\t%A0";
+    xasm = "call\t%A0";
 
   output_asm_insn (xasm, &call_op);
 
@@ -34778,7 +34740,6 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
       case SSE_FIRST_REG:
       case FP_TOP_REG:
       case FP_SECOND_REG:
-      case BND_REGS:
 	return true;
 
       default:
@@ -35127,8 +35088,6 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return VALID_FP_MODE_P (mode);
   if (MASK_REGNO_P (regno))
     return VALID_MASK_REG_MODE (mode);
-  if (BND_REGNO_P (regno))
-    return VALID_BND_REG_MODE (mode);
   if (SSE_REGNO_P (regno))
     {
       /* We implement the move patterns for all vector modes into and
@@ -35940,10 +35899,6 @@ x86_order_regs_for_local_alloc (void)
 
    /* Mask register.  */
    for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
-     reg_alloc_order [pos++] = i;
-
-   /* MPX bound registers.  */
-   for (i = FIRST_BND_REG; i <= LAST_BND_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */
@@ -42444,18 +42399,6 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 		       gen_rtx_MULT (mode, op1, op2));
 }
 
-/* Return 1 if control tansfer instruction INSN
-   should be encoded with bnd prefix.
-   If insn is NULL then return 1 when control
-   transfer instructions should be prefixed with
-   bnd by default for current function.  */
-
-bool
-ix86_bnd_prefixed_insn_p (rtx insn ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 /* Calculate integer abs() using only SSE2 instructions.  */
 
 void
@@ -43706,6 +43649,184 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
   return val;
 }
 
+/* Set CLONEI->vecsize_mangle, CLONEI->vecsize_int,
+   CLONEI->vecsize_float and if CLONEI->simdlen is 0, also
+   CLONEI->simdlen.  Return 0 if SIMD clones shouldn't be emitted,
+   or number of vecsize_mangle variants that should be emitted.  */
+
+static int
+ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
+					     struct cgraph_simd_clone *clonei,
+					     tree base_type, int num)
+{
+  int ret = 1;
+
+  if (clonei->simdlen
+      && (clonei->simdlen < 2
+	  || clonei->simdlen > 16
+	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
+    {
+      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		  "unsupported simdlen %d\n", clonei->simdlen);
+      return 0;
+    }
+
+  tree ret_type = TREE_TYPE (TREE_TYPE (node->decl));
+  if (TREE_CODE (ret_type) != VOID_TYPE)
+    switch (TYPE_MODE (ret_type))
+      {
+      case QImode:
+      case HImode:
+      case SImode:
+      case DImode:
+      case SFmode:
+      case DFmode:
+      /* case SCmode: */
+      /* case DCmode: */
+	break;
+      default:
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported return type %qT for simd\n", ret_type);
+	return 0;
+      }
+
+  tree t;
+  int i;
+
+  for (t = DECL_ARGUMENTS (node->decl), i = 0; t; t = DECL_CHAIN (t), i++)
+    /* FIXME: Shouldn't we allow such arguments if they are uniform?  */
+    switch (TYPE_MODE (TREE_TYPE (t)))
+      {
+      case QImode:
+      case HImode:
+      case SImode:
+      case DImode:
+      case SFmode:
+      case DFmode:
+      /* case SCmode: */
+      /* case DCmode: */
+	break;
+      default:
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported argument type %qT for simd\n", TREE_TYPE (t));
+	return 0;
+      }
+
+  if (clonei->cilk_elemental)
+    {
+      /* Parse here processor clause.  If not present, default to 'b'.  */
+      clonei->vecsize_mangle = 'b';
+    }
+  else if (!TREE_PUBLIC (node->decl))
+    {
+      /* If the function isn't exported, we can pick up just one ISA
+	 for the clones.  */
+      if (TARGET_AVX2)
+	clonei->vecsize_mangle = 'd';
+      else if (TARGET_AVX)
+	clonei->vecsize_mangle = 'c';
+      else
+	clonei->vecsize_mangle = 'b';
+      ret = 1;
+    }
+  else
+    {
+      clonei->vecsize_mangle = "bcd"[num];
+      ret = 3;
+    }
+  switch (clonei->vecsize_mangle)
+    {
+    case 'b':
+      clonei->vecsize_int = 128;
+      clonei->vecsize_float = 128;
+      break;
+    case 'c':
+      clonei->vecsize_int = 128;
+      clonei->vecsize_float = 256;
+      break;
+    case 'd':
+      clonei->vecsize_int = 256;
+      clonei->vecsize_float = 256;
+      break;
+    }
+  if (clonei->simdlen == 0)
+    {
+      if (SCALAR_INT_MODE_P (TYPE_MODE (base_type)))
+	clonei->simdlen = clonei->vecsize_int;
+      else
+	clonei->simdlen = clonei->vecsize_float;
+      clonei->simdlen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      if (clonei->simdlen > 16)
+	clonei->simdlen = 16;
+    }
+  return ret;
+}
+
+/* Add target attribute to SIMD clone NODE if needed.  */
+
+static void
+ix86_simd_clone_adjust (struct cgraph_node *node)
+{
+  const char *str = NULL;
+  gcc_assert (node->decl == cfun->decl);
+  switch (node->simdclone->vecsize_mangle)
+    {
+    case 'b':
+      if (!TARGET_SSE2)
+	str = "sse2";
+      break;
+    case 'c':
+      if (!TARGET_AVX)
+	str = "avx";
+      break;
+    case 'd':
+      if (!TARGET_AVX2)
+	str = "avx2";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (str == NULL)
+    return;
+  push_cfun (NULL);
+  tree args = build_tree_list (NULL_TREE, build_string (strlen (str), str));
+  bool ok = ix86_valid_target_attribute_p (node->decl, NULL, args, 0);
+  gcc_assert (ok);
+  pop_cfun ();
+  ix86_previous_fndecl = NULL_TREE;
+  ix86_set_current_function (node->decl);
+}
+
+/* If SIMD clone NODE can't be used in a vectorized loop
+   in current function, return -1, otherwise return a badness of using it
+   (0 if it is most desirable from vecsize_mangle point of view, 1
+   slightly less desirable, etc.).  */
+
+static int
+ix86_simd_clone_usable (struct cgraph_node *node)
+{
+  switch (node->simdclone->vecsize_mangle)
+    {
+    case 'b':
+      if (!TARGET_SSE2)
+	return -1;
+      if (!TARGET_AVX)
+	return 0;
+      return TARGET_AVX2 ? 2 : 1;
+    case 'c':
+      if (!TARGET_AVX)
+	return -1;
+      return TARGET_AVX2 ? 1 : 0;
+      break;
+    case 'd':
+      if (!TARGET_AVX2)
+	return -1;
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Implement TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P.  */
 
 static bool
@@ -44193,6 +44314,18 @@ ix86_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS ix86_spill_class
+
+#undef TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+#define TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN \
+  ix86_simd_clone_compute_vecsize_and_simdlen
+
+#undef TARGET_SIMD_CLONE_ADJUST
+#define TARGET_SIMD_CLONE_ADJUST \
+  ix86_simd_clone_adjust
+
+#undef TARGET_SIMD_CLONE_USABLE
+#define TARGET_SIMD_CLONE_USABLE \
+  ix86_simd_clone_usable
 
 #undef TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P
 #define TARGET_FLOAT_EXCEPTIONS_ROUNDING_SUPPORTED_P \

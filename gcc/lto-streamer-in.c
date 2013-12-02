@@ -598,7 +598,8 @@ make_new_block (struct function *fn, unsigned int index)
 /* Read the CFG for function FN from input block IB.  */
 
 static void
-input_cfg (struct lto_input_block *ib, struct function *fn,
+input_cfg (struct lto_input_block *ib, struct data_in *data_in,
+	   struct function *fn,
 	   int count_materialization_scale)
 {
   unsigned int bb_count;
@@ -713,6 +714,11 @@ input_cfg (struct lto_input_block *ib, struct function *fn,
 	  loop->nb_iterations_estimate.low = streamer_read_uhwi (ib);
 	  loop->nb_iterations_estimate.high = streamer_read_hwi (ib);
 	}
+
+      /* Read OMP SIMD related info.  */
+      loop->safelen = streamer_read_hwi (ib);
+      loop->force_vect = streamer_read_hwi (ib);
+      loop->simduid = stream_read_tree (ib, data_in);
 
       place_new_loop (fn, loop);
 
@@ -877,6 +883,8 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->has_nonlocal_label = bp_unpack_value (&bp, 1);
   fn->calls_alloca = bp_unpack_value (&bp, 1);
   fn->calls_setjmp = bp_unpack_value (&bp, 1);
+  fn->has_force_vect_loops = bp_unpack_value (&bp, 1);
+  fn->has_simduid_loops = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
 
@@ -923,7 +931,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   if (!node)
     node = cgraph_create_node (fn_decl);
   input_struct_function_base (fn, data_in, ib);
-  input_cfg (ib_cfg, fn, node->count_materialization_scale);
+  input_cfg (ib_cfg, data_in, fn, node->count_materialization_scale);
 
   /* Read all the SSA names.  */
   input_ssa_names (ib, data_in, fn);

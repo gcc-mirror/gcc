@@ -1,3 +1,8 @@
+2013-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (GCC_LIBSTDCXX_RAW_CXX_FLAGS): Remove.
+	* configure: Regenerate.
+
 2013-11-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libcilkrts_cv_have_attribute_visibility): Check

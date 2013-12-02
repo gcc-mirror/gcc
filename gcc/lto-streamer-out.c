@@ -135,8 +135,10 @@ tree_is_indexable (tree t)
      definition.  */
   if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
-  else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
-	   && !TREE_STATIC (t))
+  else if (((TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
+	    || TREE_CODE (t) == TYPE_DECL
+	    || TREE_CODE (t) == CONST_DECL)
+	   && decl_function_context (t))
     return false;
   else if (TREE_CODE (t) == DEBUG_EXPR_DECL)
     return false;
@@ -297,7 +299,6 @@ lto_is_streamable (tree expr)
 	 && code != BIND_EXPR
 	 && code != WITH_CLEANUP_EXPR
 	 && code != STATEMENT_LIST
-	 && code != OMP_CLAUSE
 	 && (code == CASE_LABEL_EXPR
 	     || code == DECL_EXPR
 	     || TREE_CODE_CLASS (code) != tcc_statement);
@@ -665,6 +666,14 @@ DFS_write_tree_body (struct output_block *ob,
 	  DFS_follow_tree_edge (index);
 	  DFS_follow_tree_edge (value);
 	}
+    }
+
+  if (code == OMP_CLAUSE)
+    {
+      int i;
+      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (expr)]; i++)
+	DFS_follow_tree_edge (OMP_CLAUSE_OPERAND (expr, i));
+      DFS_follow_tree_edge (OMP_CLAUSE_CHAIN (expr));
     }
 
 #undef DFS_follow_tree_edge
@@ -1049,6 +1058,39 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 	  visit (index);
 	  visit (value);
 	}
+    }
+
+  if (code == OMP_CLAUSE)
+    {
+      int i;
+
+      v = iterative_hash_host_wide_int (OMP_CLAUSE_CODE (t), v);
+      switch (OMP_CLAUSE_CODE (t))
+	{
+	case OMP_CLAUSE_DEFAULT:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEFAULT_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_SCHEDULE:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_SCHEDULE_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_DEPEND:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_DEPEND_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_MAP:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_MAP_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_PROC_BIND:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_PROC_BIND_KIND (t), v);
+	  break;
+	case OMP_CLAUSE_REDUCTION:
+	  v = iterative_hash_host_wide_int (OMP_CLAUSE_REDUCTION_CODE (t), v);
+	  break;
+	default:
+	  break;
+	}
+      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t)]; i++)
+	visit (OMP_CLAUSE_OPERAND (t, i));
+      visit (OMP_CLAUSE_CHAIN (t));
     }
 
   return v;
@@ -1642,6 +1684,11 @@ output_cfg (struct output_block *ob, struct function *fn)
 	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.low);
 	  streamer_write_hwi (ob, loop->nb_iterations_estimate.high);
 	}
+
+      /* Write OMP SIMD related info.  */
+      streamer_write_hwi (ob, loop->safelen);
+      streamer_write_hwi (ob, loop->force_vect);
+      stream_write_tree (ob, loop->simduid, true);
     }
 
   ob->main_stream = tmp_stream;
@@ -1735,6 +1782,8 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_nonlocal_label, 1);
   bp_pack_value (&bp, fn->calls_alloca, 1);
   bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->has_force_vect_loops, 1);
+  bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
 

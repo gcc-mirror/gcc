@@ -1235,6 +1235,161 @@ add_unit_ranges (struct backtrace_state *state, uintptr_t base_address,
   return 1;
 }
 
+/* Find the address range covered by a compilation unit, reading from
+   UNIT_BUF and adding values to U.  Returns 1 if all data could be
+   read, 0 if there is some error.  */
+
+static int
+find_address_ranges (struct backtrace_state *state, uintptr_t base_address,
+		     struct dwarf_buf *unit_buf, 
+		     const unsigned char *dwarf_str, size_t dwarf_str_size,
+		     const unsigned char *dwarf_ranges,
+		     size_t dwarf_ranges_size,
+		     int is_bigendian, backtrace_error_callback error_callback,
+		     void *data, struct unit *u,
+		     struct unit_addrs_vector *addrs)
+{
+  while (unit_buf->left > 0)
+    {
+      uint64_t code;
+      const struct abbrev *abbrev;
+      uint64_t lowpc;
+      int have_lowpc;
+      uint64_t highpc;
+      int have_highpc;
+      int highpc_is_relative;
+      uint64_t ranges;
+      int have_ranges;
+      size_t i;
+
+      code = read_uleb128 (unit_buf);
+      if (code == 0)
+	return 1;
+
+      abbrev = lookup_abbrev (&u->abbrevs, code, error_callback, data);
+      if (abbrev == NULL)
+	return 0;
+
+      lowpc = 0;
+      have_lowpc = 0;
+      highpc = 0;
+      have_highpc = 0;
+      highpc_is_relative = 0;
+      ranges = 0;
+      have_ranges = 0;
+      for (i = 0; i < abbrev->num_attrs; ++i)
+	{
+	  struct attr_val val;
+
+	  if (!read_attribute (abbrev->attrs[i].form, unit_buf,
+			       u->is_dwarf64, u->version, u->addrsize,
+			       dwarf_str, dwarf_str_size, &val))
+	    return 0;
+
+	  switch (abbrev->attrs[i].name)
+	    {
+	    case DW_AT_low_pc:
+	      if (val.encoding == ATTR_VAL_ADDRESS)
+		{
+		  lowpc = val.u.uint;
+		  have_lowpc = 1;
+		}
+	      break;
+
+	    case DW_AT_high_pc:
+	      if (val.encoding == ATTR_VAL_ADDRESS)
+		{
+		  highpc = val.u.uint;
+		  have_highpc = 1;
+		}
+	      else if (val.encoding == ATTR_VAL_UINT)
+		{
+		  highpc = val.u.uint;
+		  have_highpc = 1;
+		  highpc_is_relative = 1;
+		}
+	      break;
+
+	    case DW_AT_ranges:
+	      if (val.encoding == ATTR_VAL_UINT
+		  || val.encoding == ATTR_VAL_REF_SECTION)
+		{
+		  ranges = val.u.uint;
+		  have_ranges = 1;
+		}
+	      break;
+
+	    case DW_AT_stmt_list:
+	      if (abbrev->tag == DW_TAG_compile_unit
+		  && (val.encoding == ATTR_VAL_UINT
+		      || val.encoding == ATTR_VAL_REF_SECTION))
+		u->lineoff = val.u.uint;
+	      break;
+
+	    case DW_AT_name:
+	      if (abbrev->tag == DW_TAG_compile_unit
+		  && val.encoding == ATTR_VAL_STRING)
+		u->filename = val.u.string;
+	      break;
+
+	    case DW_AT_comp_dir:
+	      if (abbrev->tag == DW_TAG_compile_unit
+		  && val.encoding == ATTR_VAL_STRING)
+		u->comp_dir = val.u.string;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+
+      if (abbrev->tag == DW_TAG_compile_unit
+	  || abbrev->tag == DW_TAG_subprogram)
+	{
+	  if (have_ranges)
+	    {
+	      if (!add_unit_ranges (state, base_address, u, ranges, lowpc,
+				    is_bigendian, dwarf_ranges,
+				    dwarf_ranges_size, error_callback,
+				    data, addrs))
+		return 0;
+	    }
+	  else if (have_lowpc && have_highpc)
+	    {
+	      struct unit_addrs a;
+
+	      if (highpc_is_relative)
+		highpc += lowpc;
+	      a.low = lowpc;
+	      a.high = highpc;
+	      a.u = u;
+
+	      if (!add_unit_addr (state, base_address, a, error_callback, data,
+				  addrs))
+		return 0;
+	    }
+
+	  /* If we found the PC range in the DW_TAG_compile_unit, we
+	     can stop now.  */
+	  if (abbrev->tag == DW_TAG_compile_unit
+	      && (have_ranges || (have_lowpc && have_highpc)))
+	    return 1;
+	}
+
+      if (abbrev->has_children)
+	{
+	  if (!find_address_ranges (state, base_address, unit_buf,
+				    dwarf_str, dwarf_str_size,
+				    dwarf_ranges, dwarf_ranges_size,
+				    is_bigendian, error_callback, data,
+				    u, addrs))
+	    return 0;
+	}
+    }
+
+  return 1;
+}
+
 /* Build a mapping from address ranges to the compilation units where
    the line number information for that range can be found.  Returns 1
    on success, 0 on failure.  */
@@ -1276,24 +1431,8 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       struct dwarf_buf unit_buf;
       int version;
       uint64_t abbrev_offset;
-      const struct abbrev *abbrev;
       int addrsize;
-      const unsigned char *unit_data;
-      size_t unit_data_len;
-      size_t unit_data_offset;
-      uint64_t code;
-      size_t i;
-      uint64_t lowpc;
-      int have_lowpc;
-      uint64_t highpc;
-      int have_highpc;
-      int highpc_is_relative;
-      uint64_t ranges;
-      int have_ranges;
-      uint64_t lineoff;
-      int have_lineoff;
-      const char *filename;
-      const char *comp_dir;
+      struct unit *u;
 
       if (info.reported_underflow)
 	goto fail;
@@ -1328,156 +1467,45 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       addrsize = read_byte (&unit_buf);
 
-      unit_data = unit_buf.buf;
-      unit_data_len = unit_buf.left;
-      unit_data_offset = unit_buf.buf - unit_data_start;
-
-      /* We only look at the first attribute in the compilation unit.
-	 In practice this will be a DW_TAG_compile_unit which will
-	 tell us the PC range and where to find the line number
-	 information.  */
-
-      code = read_uleb128 (&unit_buf);
-      abbrev = lookup_abbrev (&abbrevs, code, error_callback, data);
-      if (abbrev == NULL)
+      u = ((struct unit *)
+	   backtrace_alloc (state, sizeof *u, error_callback, data));
+      if (u == NULL)
 	goto fail;
+      u->unit_data = unit_buf.buf;
+      u->unit_data_len = unit_buf.left;
+      u->unit_data_offset = unit_buf.buf - unit_data_start;
+      u->version = version;
+      u->is_dwarf64 = is_dwarf64;
+      u->addrsize = addrsize;
+      u->filename = NULL;
+      u->comp_dir = NULL;
+      u->abs_filename = NULL;
+      u->lineoff = 0;
+      u->abbrevs = abbrevs;
+      memset (&abbrevs, 0, sizeof abbrevs);
 
-      lowpc = 0;
-      have_lowpc = 0;
-      highpc = 0;
-      have_highpc = 0;
-      highpc_is_relative = 0;
-      ranges = 0;
-      have_ranges = 0;
-      lineoff = 0;
-      have_lineoff = 0;
-      filename = NULL;
-      comp_dir = NULL;
-      for (i = 0; i < abbrev->num_attrs; ++i)
+      /* The actual line number mappings will be read as needed.  */
+      u->lines = NULL;
+      u->lines_count = 0;
+      u->function_addrs = NULL;
+      u->function_addrs_count = 0;
+
+      if (!find_address_ranges (state, base_address, &unit_buf,
+				dwarf_str, dwarf_str_size,
+				dwarf_ranges, dwarf_ranges_size,
+				is_bigendian, error_callback, data,
+				u, addrs))
 	{
-	  struct attr_val val;
-
-	  if (!read_attribute (abbrev->attrs[i].form, &unit_buf, is_dwarf64,
-			       version, addrsize, dwarf_str, dwarf_str_size,
-			       &val))
-	    goto fail;
-
-	  switch (abbrev->attrs[i].name)
-	    {
-	    case DW_AT_low_pc:
-	      if (val.encoding == ATTR_VAL_ADDRESS)
-		{
-		  lowpc = val.u.uint;
-		  have_lowpc = 1;
-		}
-	      break;
-	    case DW_AT_high_pc:
-	      if (val.encoding == ATTR_VAL_ADDRESS)
-		{
-		  highpc = val.u.uint;
-		  have_highpc = 1;
-		}
-	      else if (val.encoding == ATTR_VAL_UINT)
-		{
-		  highpc = val.u.uint;
-		  have_highpc = 1;
-		  highpc_is_relative = 1;
-		}
-	      break;
-	    case DW_AT_ranges:
-	      if (val.encoding == ATTR_VAL_UINT
-		  || val.encoding == ATTR_VAL_REF_SECTION)
-		{
-		  ranges = val.u.uint;
-		  have_ranges = 1;
-		}
-	      break;
-	    case DW_AT_stmt_list:
-	      if (val.encoding == ATTR_VAL_UINT
-		  || val.encoding == ATTR_VAL_REF_SECTION)
-		{
-		  lineoff = val.u.uint;
-		  have_lineoff = 1;
-		}
-	      break;
-	    case DW_AT_name:
-	      if (val.encoding == ATTR_VAL_STRING)
-		filename = val.u.string;
-	      break;
-	    case DW_AT_comp_dir:
-	      if (val.encoding == ATTR_VAL_STRING)
-		comp_dir = val.u.string;
-	      break;
-	    default:
-	      break;
-	    }
+	  free_abbrevs (state, &u->abbrevs, error_callback, data);
+	  backtrace_free (state, u, sizeof *u, error_callback, data);
+	  goto fail;
 	}
 
       if (unit_buf.reported_underflow)
-	goto fail;
-
-      if (((have_lowpc && have_highpc) || have_ranges) && have_lineoff)
 	{
-	  struct unit *u;
-	  struct unit_addrs a;
-
-	  u = ((struct unit *)
-	       backtrace_alloc (state, sizeof *u, error_callback, data));
-	  if (u == NULL)
-	    goto fail;
-	  u->unit_data = unit_data;
-	  u->unit_data_len = unit_data_len;
-	  u->unit_data_offset = unit_data_offset;
-	  u->version = version;
-	  u->is_dwarf64 = is_dwarf64;
-	  u->addrsize = addrsize;
-	  u->filename = filename;
-	  u->comp_dir = comp_dir;
-	  u->abs_filename = NULL;
-	  u->lineoff = lineoff;
-	  u->abbrevs = abbrevs;
-	  memset (&abbrevs, 0, sizeof abbrevs);
-
-	  /* The actual line number mappings will be read as
-	     needed.  */
-	  u->lines = NULL;
-	  u->lines_count = 0;
-	  u->function_addrs = NULL;
-	  u->function_addrs_count = 0;
-
-	  if (have_ranges)
-	    {
-	      if (!add_unit_ranges (state, base_address, u, ranges, lowpc,
-				    is_bigendian, dwarf_ranges,
-				    dwarf_ranges_size, error_callback, data,
-				    addrs))
-		{
-		  free_abbrevs (state, &u->abbrevs, error_callback, data);
-		  backtrace_free (state, u, sizeof *u, error_callback, data);
-		  goto fail;
-		}
-	    }
-	  else
-	    {
-	      if (highpc_is_relative)
-		highpc += lowpc;
-	      a.low = lowpc;
-	      a.high = highpc;
-	      a.u = u;
-
-	      if (!add_unit_addr (state, base_address, a, error_callback, data,
-				  addrs))
-		{
-		  free_abbrevs (state, &u->abbrevs, error_callback, data);
-		  backtrace_free (state, u, sizeof *u, error_callback, data);
-		  goto fail;
-		}
-	    }
-	}
-      else
-	{
-	  free_abbrevs (state, &abbrevs, error_callback, data);
-	  memset (&abbrevs, 0, sizeof abbrevs);
+	  free_abbrevs (state, &u->abbrevs, error_callback, data);
+	  backtrace_free (state, u, sizeof *u, error_callback, data);
+	  goto fail;
 	}
     }
   if (info.reported_underflow)

@@ -4067,7 +4067,7 @@ build_unary_op (location_t location,
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
-	  && typecode != COMPLEX_TYPE)
+	  && typecode != COMPLEX_TYPE && typecode != VECTOR_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -4137,7 +4137,9 @@ build_unary_op (location_t location,
 	  }
 	else
 	  {
-	    inc = integer_one_node;
+	    inc = VECTOR_TYPE_P (argtype)
+	      ? build_one_cst (argtype)
+	      : integer_one_node;
 	    inc = convert (argtype, inc);
 	  }
 
@@ -8763,6 +8765,7 @@ process_init_element (struct c_expr value, bool implicit,
   tree orig_value = value.value;
   int string_flag = orig_value != 0 && TREE_CODE (orig_value) == STRING_CST;
   bool strict_string = value.original_code == STRING_CST;
+  bool was_designated = designator_depth != 0;
 
   designator_depth = 0;
   designator_erroneous = 0;
@@ -8771,6 +8774,7 @@ process_init_element (struct c_expr value, bool implicit,
      char x[] = {"foo"}; */
   if (string_flag
       && constructor_type
+      && !was_designated
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))

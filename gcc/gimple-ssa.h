@@ -141,7 +141,7 @@ update_stmt (gimple s)
   if (gimple_has_ops (s))
     {
       gimple_set_modified (s, true);
-      update_stmt_operands (s);
+      update_stmt_operands (cfun, s);
     }
 }
 
@@ -151,7 +151,19 @@ static inline void
 update_stmt_if_modified (gimple s)
 {
   if (gimple_modified_p (s))
-    update_stmt_operands (s);
+    update_stmt_operands (cfun, s);
+}
+
+/* Mark statement S as modified, and update it.  */
+
+static inline void
+update_stmt_fn (struct function *fn, gimple s)
+{
+  if (gimple_has_ops (s))
+    {
+      gimple_set_modified (s, true);
+      update_stmt_operands (fn, s);
+    }
 }
 
 

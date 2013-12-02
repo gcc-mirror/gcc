@@ -426,6 +426,19 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		      enqueue_node (cnode, &first, reachable);
 		    }
 		}
+
+	    }
+	  /* If any reachable function has simd clones, mark them as
+	     reachable as well.  */
+	  if (cnode->simd_clones)
+	    {
+	      cgraph_node *next;
+	      for (next = cnode->simd_clones;
+		   next;
+		   next = next->simdclone->next_clone)
+		if (in_boundary_p
+		    || !pointer_set_insert (reachable, next))
+		  enqueue_node (next, &first, reachable);
 	    }
 	}
       /* When we see constructor of external variable, keep referred nodes in the
@@ -1262,11 +1275,9 @@ make_pass_ipa_whole_program_visibility (gcc::context *ctxt)
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must
-   be one of 'I' (for a constructor), 'D' (for a destructor), 'P'
-   (for chp static vars constructor) or 'B' (for chkp static bounds
-   constructor).  BODY is a STATEMENT_LIST containing GENERIC
-   statements.  PRIORITY is the initialization priority for this
-   constructor or destructor.
+   be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
+   is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
+   initialization priority for this constructor or destructor. 
 
    FINAL specify whether the externally visible name for collect2 should
    be produced. */
@@ -1325,20 +1336,6 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
       DECL_STATIC_CONSTRUCTOR (decl) = 1;
       decl_init_priority_insert (decl, priority);
       break;
-    case 'P':
-      DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("chkp ctor"),
-					  NULL,
-					  NULL_TREE);
-      decl_init_priority_insert (decl, priority);
-      break;
-    case 'B':
-      DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("bnd_legacy"),
-					  NULL,
-					  NULL_TREE);
-      decl_init_priority_insert (decl, priority);
-      break;
     case 'D':
       DECL_STATIC_DESTRUCTOR (decl) = 1;
       decl_fini_priority_insert (decl, priority);
@@ -1356,11 +1353,9 @@ cgraph_build_static_cdtor_1 (char which, tree body, int priority, bool final)
 }
 
 /* Generate and emit a static constructor or destructor.  WHICH must
-   be one of 'I' (for a constructor), 'D' (for a destructor), 'P'
-   (for chkp static vars constructor) or 'B' (for chkp static bounds
-   constructor).  BODY is a STATEMENT_LIST containing GENERIC
-   statements.  PRIORITY is the initialization priority for this
-   constructor or destructor.  */
+   be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
+   is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
+   initialization priority for this constructor or destructor.  */
 
 void
 cgraph_build_static_cdtor (char which, tree body, int priority)

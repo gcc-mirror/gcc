@@ -5202,6 +5202,8 @@ finish_omp_clauses (tree clauses)
 	      t = mark_rvalue_use (t);
 	      if (!processing_template_decl)
 		{
+		  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == PARM_DECL)
+		    t = maybe_constant_value (t);
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		  if (TREE_CODE (TREE_TYPE (OMP_CLAUSE_DECL (c)))
 		      == POINTER_TYPE)
@@ -6546,7 +6548,7 @@ finish_omp_atomic (enum tree_code code, enum tree_code opcode, tree lhs,
       stmt = build2 (OMP_ATOMIC, void_type_node, integer_zero_node, stmt);
       OMP_ATOMIC_SEQ_CST (stmt) = seq_cst;
     }
-  add_stmt (stmt);
+  finish_expr_stmt (stmt);
 }
 
 void
@@ -7596,6 +7598,11 @@ check_constexpr_ctor_body (tree last, tree list)
 	    break;
 	  if (TREE_CODE (t) == BIND_EXPR)
 	    {
+	      if (BIND_EXPR_VARS (t))
+		{
+		  ok = false;
+		  break;
+		}
 	      if (!check_constexpr_ctor_body (last, BIND_EXPR_BODY (t)))
 		return false;
 	      else
@@ -9117,7 +9124,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
-	      if (offset/part_widthi <= TYPE_VECTOR_SUBPARTS (op00type))
+	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
 		return fold_build3_loc (loc,
 					BIT_FIELD_REF, type, op00,
 					part_width, index);
@@ -9596,6 +9603,16 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
       break;
 
     case COMPONENT_REF:
+      if (is_overloaded_fn (t))
+	{
+	  /* We can only get here in checking mode via 
+	     build_non_dependent_expr,  because any expression that
+	     calls or takes the address of the function will have
+	     pulled a FUNCTION_DECL out of the COMPONENT_REF.  */
+	  gcc_checking_assert (allow_non_constant);
+	  *non_constant_p = true;
+	  return t;
+	}
       r = cxx_eval_component_reference (call, t, allow_non_constant, addr,
 					non_constant_p, overflow_p);
       break;

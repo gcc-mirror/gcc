@@ -11,6 +11,13 @@
 #include "runtime.h"
 #include "array.h"
 
+/* This is set to non-zero when calling backtrace_full.  This is used
+   to avoid getting hanging on a recursive lock in dl_iterate_phdr on
+   older versions of glibc when a SIGPROF signal arrives while
+   collecting a backtrace.  */
+
+uint32 runtime_in_callers;
+
 /* Argument passed to callback function.  */
 
 struct callers_data
@@ -111,8 +118,10 @@ runtime_callers (int32 skip, Location *locbuf, int32 m)
   data.skip = skip + 1;
   data.index = 0;
   data.max = m;
+  runtime_xadd (&runtime_in_callers, 1);
   backtrace_full (__go_get_backtrace_state (), 0, callback, error_callback,
 		  &data);
+  runtime_xadd (&runtime_in_callers, -1);
   return data.index;
 }
 

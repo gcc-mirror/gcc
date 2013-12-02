@@ -66,7 +66,7 @@ h8 port			Kazu Hirata		kazu@codesourcery.com
 hppa port		Jeff Law		law@redhat.com
 hppa port		John David Anglin	dave.anglin@nrc-cnrc.gc.ca
 i386 port		Richard Henderson	rth@redhat.com
-i386 port		Jan Hubicka		jh@suse.cz
+i386 port		Jan Hubicka		hubicka@ucw.cz
 i386 port		Uros Bizjak		ubizjak@gmail.com
 ia64 port		Jim Wilson		wilson@tuliptree.org
 ia64 port		Steve Ellcey		sellcey@mips.com
@@ -112,7 +112,7 @@ tilegx port		Walter Lee		walt@tilera.com
 tilepro port		Walter Lee		walt@tilera.com
 v850 port		Nick Clifton		nickc@redhat.com
 vax port		Matt Thomas		matt@3am-software.com
-x86-64 port		Jan Hubicka		jh@suse.cz
+x86-64 port		Jan Hubicka		hubicka@ucw.cz
 xstormy16 port		Nick Clifton		nickc@redhat.com
 xtensa port		Sterling Augustine	augustine.sterling@gmail.com
 
@@ -188,7 +188,7 @@ scheduler (+ haifa)	Vladimir Makarov	vmakarov@redhat.com
 modulo-scheduler	Ayal Zaks		zaks@il.ibm.com
 reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
-callgraph		Jan Hubicka		jh@suse.cz
+callgraph		Jan Hubicka		hubicka@ucw.cz
 debugging code		Jim Wilson		wilson@tuliptree.org
 dwarf debugging code	Jason Merrill		jason@redhat.com
 dwarf debugging code	Cary Coutant		ccoutant@google.com
@@ -222,9 +222,9 @@ docs co-maintainer	Joseph Myers		joseph@codesourcery.com
 docstring relicensing	Diego Novillo		dnovillo@google.com
 docstring relicensing	Gerald Pfeifer		gerald@pfeifer.com
 docstring relicensing	Joseph Myers		joseph@codesourcery.com
-predict.def		Jan Hubicka		jh@suse.cz
+predict.def		Jan Hubicka		hubicka@ucw.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
-gcov			Jan Hubicka		jh@suse.cz
+gcov			Jan Hubicka		hubicka@ucw.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
 option handling		Joseph Myers		joseph@codesourcery.com
@@ -240,7 +240,7 @@ code sinking		Daniel Berlin		dberlin@dberlin.org
 tree browser/unparser	Sebastian Pop		sebastian.pop@amd.com
 scev, data dependence	Daniel Berlin		dberlin@dberlin.org
 scev, data dependence	Sebastian Pop		sebastian.pop@amd.com
-profile feedback	Jan Hubicka		jh@suse.cz
+profile feedback	Jan Hubicka		hubicka@ucw.cz
 type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 alias analysis		Daniel Berlin		dberlin@dberlin.org
 reload			Ulrich Weigand		uweigand@de.ibm.com

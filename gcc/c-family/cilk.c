@@ -757,7 +757,10 @@ gimplify_cilk_spawn (tree *spawn_p, gimple_seq *before ATTRIBUTE_UNUSED,
 
   /* This should give the number of parameters.  */
   total_args = list_length (new_args);
-  arg_array = XNEWVEC (tree, total_args);
+  if (total_args)
+    arg_array = XNEWVEC (tree, total_args);
+  else
+    arg_array = NULL;
 
   ii_args = new_args;
   for (ii = 0; ii < total_args; ii++)
@@ -771,7 +774,7 @@ gimplify_cilk_spawn (tree *spawn_p, gimple_seq *before ATTRIBUTE_UNUSED,
 
   call1 = cilk_call_setjmp (cfun->cilk_frame_decl);
 
-  if (*arg_array == NULL_TREE)
+  if (arg_array == NULL || *arg_array == NULL_TREE)
     call2 = build_call_expr (function, 0);
   else 
     call2 = build_call_expr_loc_array (EXPR_LOCATION (*spawn_p), function, 

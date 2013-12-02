@@ -2300,6 +2300,10 @@ fvect-cost-model=
 Common Joined RejectNegative Enum(vect_cost_model) Var(flag_vect_cost_model) Init(VECT_COST_MODEL_DEFAULT)
 Specifies the cost model for vectorization
  
+fsimd-cost-model=
+Common Joined RejectNegative Enum(vect_cost_model) Var(flag_simd_cost_model) Init(VECT_COST_MODEL_UNLIMITED)
+Specifies the vectorization cost model for code marked with a simd directive
+
 Enum
 Name(vect_cost_model) Type(enum vect_cost_model) UnknownError(unknown vectorizer cost model %qs)
 

@@ -1,3 +1,9 @@
+2013-11-29  Matthias Klose  <doko@ubuntu.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c,
+	native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c:
+	Fix freetype includes.
+
 2013-04-16  Andreas Schwab  <schwab@suse.de>
 
 	* native/fdlibm/ieeefp.h: Add support for aarch64.

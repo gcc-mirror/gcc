@@ -1,3 +1,36 @@
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/42262
+	* c-typeck.c (process_init_element): Do not treat a string as
+	initializing a whole array when used with a designator for an
+	individual element.
+
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/57574
+	* c-decl.c (merge_decls): Clear DECL_EXTERNAL for a definition of
+	an inline function following a static declaration.
+
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59310
+	* c-parser.c (c_parser_omp_target): Copy "#pragma omp target"
+	to p_name before calling c_parser_omp_teams instead of after.
+	(c_parser_cilk_simd): Remove wrong ATTRIBUTE_UNUSED from parser
+	argument.  Remove unused p_name variable.
+
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_builtin_function_ext_scope): Avoid binding if
+	external_scope is NULL.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/59032
+	* c-typeck.c (build_unary_op): Allow vector increment and decrement.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-typeck.c: Add required include files from gimple.h.

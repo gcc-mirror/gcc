@@ -1424,7 +1424,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
-      if (!is_gimple_reg_type (rhs)
+      if (!is_gimple_reg_type (TREE_TYPE (rhs))
 	  || TREE_CODE (lhs) == BIT_FIELD_REF
 	  || contains_bitfld_component_ref_p (lhs))
 	break;
@@ -3217,7 +3217,8 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 static void
 ipa_add_new_function (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-  ipa_analyze_node (node);
+  if (cgraph_function_with_gimple_body_p (node))
+    ipa_analyze_node (node);
 }
 
 /* Register our cgraph hooks if they are not already there.  */

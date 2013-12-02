@@ -2454,6 +2454,15 @@ runtime_sigprof()
 		return;
 	}
 	n = 0;
+
+	if(runtime_atomicload(&runtime_in_callers) > 0) {
+		// If SIGPROF arrived while already fetching runtime
+		// callers we can have trouble on older systems
+		// because the unwind library calls dl_iterate_phdr
+		// which was not recursive in the past.
+		traceback = false;
+	}
+
 	if(traceback) {
 		n = runtime_callers(0, prof.locbuf, nelem(prof.locbuf));
 		for(i = 0; i < n; i++)

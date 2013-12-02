@@ -50,8 +50,8 @@ output_buffer::output_buffer ()
 
 output_buffer::~output_buffer ()
 {
-  obstack_free (&chunk_obstack, obstack_finish (&chunk_obstack));
-  obstack_free (&formatted_obstack, obstack_finish (&formatted_obstack));
+  obstack_free (&chunk_obstack, NULL);
+  obstack_free (&formatted_obstack, NULL);
 }
 
 /* A pointer to the formatted diagnostic message.  */

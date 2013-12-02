@@ -1,3 +1,12 @@
+2013-11-27  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (find_address_ranges): New static function, broken out
+	of build_address_map.
+	(build_address_map): Call it.
+	* btest.c (check): Check for missing filename or function, rather
+	than crashing.
+	(f3): Check that enough frames were returned.
+
 2013-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* backtrace.h (backtrace_syminfo_callback): Add symsize argument.

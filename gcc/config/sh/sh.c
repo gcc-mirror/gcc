@@ -316,9 +316,7 @@ static rtx sh_trampoline_adjust_address (rtx);
 static void sh_conditional_register_usage (void);
 static bool sh_legitimate_constant_p (enum machine_mode, rtx);
 static int mov_insn_size (enum machine_mode, bool);
-static int max_mov_insn_displacement (enum machine_mode, bool);
 static int mov_insn_alignment_mask (enum machine_mode, bool);
-static HOST_WIDE_INT disp_addr_displacement (rtx);
 static bool sequence_insn_p (rtx);
 static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
 static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
@@ -3582,8 +3580,8 @@ mov_insn_size (enum machine_mode mode, bool consider_sh2a)
 
 /* Determine the maximum possible displacement for a move insn for the
    specified mode.  */
-static int
-max_mov_insn_displacement (enum machine_mode mode, bool consider_sh2a)
+int
+sh_max_mov_insn_displacement (machine_mode mode, bool consider_sh2a)
 {
   /* The 4 byte displacement move insns are the same as the 2 byte
      versions but take a 12 bit displacement.  All we need to do is to
@@ -3619,8 +3617,8 @@ mov_insn_alignment_mask (enum machine_mode mode, bool consider_sh2a)
 }
 
 /* Return the displacement value of a displacement address.  */
-static inline HOST_WIDE_INT
-disp_addr_displacement (rtx x)
+HOST_WIDE_INT
+sh_disp_addr_displacement (rtx x)
 {
   gcc_assert (satisfies_constraint_Sdd (x));
   return INTVAL (XEXP (XEXP (x, 0), 1));
@@ -3657,12 +3655,12 @@ sh_address_cost (rtx x, enum machine_mode mode,
 	 HImode and QImode loads/stores with displacement put pressure on
 	 R0 which will most likely require another reg copy.  Thus account
 	 a higher cost for that.  */
-      if (offset > 0 && offset <= max_mov_insn_displacement (mode, false))
+      if (offset > 0 && offset <= sh_max_mov_insn_displacement (mode, false))
 	return (mode == HImode || mode == QImode) ? 2 : 1;
 
       /* The displacement would fit into a 4 byte move insn (SH2A).  */
       if (TARGET_SH2A
-	  && offset > 0 && offset <= max_mov_insn_displacement (mode, true))
+	  && offset > 0 && offset <= sh_max_mov_insn_displacement (mode, true))
 	return 2;
 
       /* The displacement is probably out of range and will require extra
@@ -10175,7 +10173,7 @@ sh_legitimate_index_p (enum machine_mode mode, rtx op, bool consider_sh2a,
   else
     {
       const HOST_WIDE_INT offset = INTVAL (op);
-      const int max_disp = max_mov_insn_displacement (mode, consider_sh2a);
+      const int max_disp = sh_max_mov_insn_displacement (mode, consider_sh2a);
       const int align_mask = mov_insn_alignment_mask (mode, consider_sh2a);
 
       /* If the mode does not support any displacement always return false.
@@ -10361,7 +10359,7 @@ sh_find_mov_disp_adjust (enum machine_mode mode, HOST_WIDE_INT offset)
      effectively disable the small displacement insns.  */
   const int mode_sz = GET_MODE_SIZE (mode);
   const int mov_insn_sz = mov_insn_size (mode, false);
-  const int max_disp = max_mov_insn_displacement (mode, false);
+  const int max_disp = sh_max_mov_insn_displacement (mode, false);
   const int max_disp_next = max_disp + mov_insn_sz;
   HOST_WIDE_INT align_modifier = offset > 127 ? mov_insn_sz : 0;
   HOST_WIDE_INT offset_adjust;
@@ -13121,7 +13119,8 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
      the insns must have the appropriate alternatives.  */
   if ((mode == QImode || mode == HImode) && rclass != R0_REGS
       && satisfies_constraint_Sdd (x)
-      && disp_addr_displacement (x) <= max_mov_insn_displacement (mode, false))
+      && sh_disp_addr_displacement (x)
+	 <= sh_max_mov_insn_displacement (mode, false))
     return R0_REGS;
 
   /* When reload is trying to address a QImode or HImode subreg on the stack, 

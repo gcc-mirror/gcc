@@ -1,3 +1,7 @@
+2013-12-02 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 205582 into gupc branch.
+
 2013-11-26  Meador Inge  <meadori@codesourcery.com>
 
         * upc/upc-genericize.c (upc_expand_get): Ensure that temporaries

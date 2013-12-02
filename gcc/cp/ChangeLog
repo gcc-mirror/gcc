@@ -1,3 +1,86 @@
+2013-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59331
+	* decl.c (compute_array_index_type): Don't build COMPOUND_EXPR for
+	instrumentation.
+
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59297
+	* semantics.c (finish_omp_atomic): Call finish_expr_stmt
+	rather than add_stmt.
+
+2013-11-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++spec.c (TIMELIB): Define.
+	(WITHLIBC, SKIPOPT): Adjust values.
+	(lang_specific_driver): Add TIME_LIBRARY if not passed explicitly.
+
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59310
+	* parser.c (cp_parser_omp_target): Call keep_next_level only
+	if flag_openmp.
+
+2013-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58647
+	* semantics.c (cxx_eval_constant_expression, [COMPONENT_REF]):
+	Handle function COMPONENT_REFs.
+
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): For #pragma omp declare simd
+	linear clause step call maybe_constant_value.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/59032
+	* typeck.c (cp_build_unary_op): Allow vector increment and decrement.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/59037
+	* semantics.c (cxx_fold_indirect_ref): Don't create out-of-bounds
+	BIT_FIELD_REF.
+
+2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58874
+	* parser.c (cp_parser_late_parsing_for_member): For OpenMP UDRs
+	pass 2 instead of 0 to finish_function.
+
+2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58700
+	* decl.c (grokdeclarator): Don't try to pass declarator->id_loc
+	to build_lang_decl_loc when declarator is null.
+
+2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cvt.c (cp_convert_and_check): Avoid calling cp_convert
+	unnecessarily.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54485
+	* decl.c (duplicate_decls): Enforce 8.3.6/6 about default arguments
+	for member functions of class templates.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58607
+	* semantics.c (check_constexpr_ctor_body): Check for BIND_EXPR_VARS.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58810
+	* decl.c (grokdeclarator): Don't handle qualified free functions here,
+	leave the diagnostic to grokfndecl.
+
 2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59080

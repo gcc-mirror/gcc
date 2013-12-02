@@ -39,6 +39,7 @@ proc asan_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
 
     if { $gccpath != "" } {
+      append flags " -B${gccpath}/libsanitizer/ "
       if { [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.a"]
 	   || [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.${shlib_ext}"] } {
 	  append flags " -B${gccpath}/libsanitizer/asan/ "

@@ -2502,7 +2502,8 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	    }
 
 
-	  if (is_gimple_call (stmt))
+	  if (is_gimple_call (stmt)
+	      && !gimple_call_internal_p (stmt))
 	    {
 	      struct cgraph_edge *edge = cgraph_edge (node, stmt);
 	      struct inline_edge_summary *es = inline_edge_summary (edge);

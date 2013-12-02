@@ -335,6 +335,8 @@ build_cgraph_edges (void)
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl),
 				    stmt, bb->count, freq);
+	      else if (gimple_call_internal_p (stmt))
+		;
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),
@@ -464,6 +466,8 @@ rebuild_cgraph_edges (void)
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl), stmt,
 				    bb->count, freq);
+	      else if (gimple_call_internal_p (stmt))
+		;
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),

@@ -1,7 +1,7 @@
 /* Test case to check if function foo gets split and the cold function
    gets a label.  */
 /* { dg-require-effective-target freorder } */
-/* { dg-options "-O2 -freorder-blocks-and-partition --save-temps" } */
+/* { dg-options "-O2 -freorder-blocks-and-partition -save-temps" } */
 
 #define SIZE 10000
 
@@ -34,3 +34,5 @@ main (int argc, char *argv[])
   foo (argc);
   return 0;
 }
+
+/* { dg-final-use { cleanup-saved-temps } } */

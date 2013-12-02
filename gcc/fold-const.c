@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
+#include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -1109,7 +1110,22 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
     case ROUND_MOD_EXPR:
       if (op2.is_zero ())
 	return NULL_TREE;
-      tmp = op1.divmod_with_overflow (op2, uns, code, &res, &overflow);
+
+      /* Check for the case the case of INT_MIN % -1 and return
+       overflow and result = 0.  The TImode case is handled properly
+       in double-int.  */
+      if (TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT 
+	  && !uns
+          && op2.is_minus_one () 
+	  && op1.high == (HOST_WIDE_INT) -1
+	  && (HOST_WIDE_INT) op1.low 
+	  == (((HOST_WIDE_INT)-1) << (TYPE_PRECISION (type) - 1)))
+	{
+	  overflow = 1;
+	  res = double_int_zero;
+	}
+      else
+	tmp = op1.divmod_with_overflow (op2, uns, code, &res, &overflow);
       break;
 
     case MIN_EXPR:
@@ -16767,7 +16783,7 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
-	      if (offset/part_widthi <= TYPE_VECTOR_SUBPARTS (op00type))
+	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
 		return fold_build3_loc (loc,
 					BIT_FIELD_REF, type, op00,
 					part_width, index);
