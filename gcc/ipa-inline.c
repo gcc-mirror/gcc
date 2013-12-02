@@ -762,7 +762,7 @@ check_callers (struct cgraph_node *node, void *has_hot_call)
      {
        if (!can_inline_edge_p (e, true))
          return true;
-       if (!has_hot_call && cgraph_maybe_hot_edge_p (e))
+       if (!(*(bool *)has_hot_call) && cgraph_maybe_hot_edge_p (e))
 	 *(bool *)has_hot_call = true;
      }
   return false;
