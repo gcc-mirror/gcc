@@ -1,3 +1,8 @@
+2013-12-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn: Work around makeinfo generated file names
+	and references with "_002d" instead of "-".
+
 2013-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Disable snapshots from gcc-4_6-branch.
