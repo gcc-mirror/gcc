@@ -1,3 +1,8 @@
+2013-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/vla-1.c: Split the tests into individual
+	functions.
+
 2013-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59139
