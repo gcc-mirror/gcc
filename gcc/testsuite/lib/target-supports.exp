@@ -2146,6 +2146,32 @@ proc check_effective_target_vect_floatuint_cvt { } {
     return $et_vect_floatuint_cvt_saved
 }
 
+# Return 1 if the target supports #pragma omp declare simd, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_simd_clones { } {
+    global et_vect_simd_clones_saved
+
+    if [info exists et_vect_simd_clones_saved] {
+	verbose "check_effective_target_vect_simd_clones: using cached result" 2
+    } else {
+	set et_vect_simd_clones_saved 0
+	if { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	    # On i?86/x86_64 #pragma omp declare simd builds a sse2, avx and
+	    # avx2 clone.  Only the right clone for the specified arch will be
+	    # chosen, but still we need to at least be able to assemble
+	    # avx2.
+	    if { [check_effective_target_avx2] } {
+		set et_vect_simd_clones_saved 1
+	    }
+	}
+    }
+
+    verbose "check_effective_target_vect_simd_clones: returning $et_vect_simd_clones_saved" 2
+    return $et_vect_simd_clones_saved
+}
+
 # Return 1 if this is a AArch64 target supporting big endian
 proc check_effective_target_aarch64_big_endian { } {
     return [check_no_compiler_messages aarch64_big_endian assembly {
@@ -5104,6 +5130,18 @@ proc check_effective_target_avx { } {
 	   __builtin_ia32_vzeroall ();
 	}
     } "-O2 -mavx" ]
+}
+
+# Return 1 if avx2 instructions can be compiled.
+proc check_effective_target_avx2 { } {
+    return [check_no_compiler_messages avx2 object {
+	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+	__v4di
+	mm256_is32_andnotsi256  (__v4di __X, __v4di __Y)
+        {
+	   return __builtin_ia32_andnotsi256 (__X, __Y);
+	}
+    } "-O0 -mavx2" ]
 }
 
 # Return 1 if sse instructions can be compiled.

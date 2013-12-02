@@ -1,3 +1,23 @@
+2013-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/59326
+	* gcc.target/i386/i386.exp (check_effective_target_avx2): Move to...
+	* lib/target-supports.exp (check_effective_target_avx2): ... here.
+	(check_effective_target_vect_simd_clones): New.
+	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-require-effective-target
+	vect_simd_clones.
+	* gcc.dg/vect/vect-simd-clone-2.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-3.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-4.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-5.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-6.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-7.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-8.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-9.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-11.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
 2013-12-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/pr56997-4.c: New testcase.
