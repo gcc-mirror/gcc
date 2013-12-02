@@ -1,3 +1,7 @@
+2013-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt30.adb: New test.
+
 2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57354
