@@ -1,5 +1,8 @@
 2013-12-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59358
+	* gcc.c-torture/execute/pr59358.c: New test.
+
 	PR lto/59326
 	* gcc.target/i386/i386.exp (check_effective_target_avx2): Move to...
 	* lib/target-supports.exp (check_effective_target_avx2): ... here.
