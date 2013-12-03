@@ -1,3 +1,19 @@
+2013-12-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* gcc.dg/20020312-2.c: Add __nds32__ case.
+	* gcc.dg/builtin-apply2.c: Skip for nds32*-*-*.
+	* gcc.dg/sibcall-3.c: Expected fail for nds32*-*-*.
+	* gcc.dg/sibcall-4.c: Expected fail for nds32*-*-*.
+	* gcc.dg/stack-usage-1.c (SIZE): Define case for __nds32__.
+	* gcc.dg/torture/pr37868.c: Skip for nds32*-*-*.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Skip for nds32*-*-*.
+	* gcc.dg/tree-ssa/20040204-1.c: Expected fail for nds32*-*-*.
+	* gcc.dg/tree-ssa/pr42585.c: Skip for nds32*-*-*.
+	* gcc.dg/tree-ssa/sra-12.c: Skip for nds32*-*-*.
+	* gcc.target/nds32: New nds32 specific directory and testcases.
+	* lib/target-supports.exp (check_profiling_available): Check for
+	nds32*-*-elf.
+
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59362
