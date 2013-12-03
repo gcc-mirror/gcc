@@ -1,3 +1,19 @@
+2013-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58864
+	* dojump.c (save_pending_stack_adjust, restore_pending_stack_adjust):
+	New functions.
+	* expr.h (struct saved_pending_stack_adjust): New type.
+	(save_pending_stack_adjust, restore_pending_stack_adjust): New
+	prototypes.
+	* optabs.c (emit_conditional_move): Call save_pending_stack_adjust
+	and get_last_insn before do_pending_stack_adjust, call
+	restore_pending_stack_adjust after delete_insns_since.
+	* expr.c (expand_expr_real_2): Don't call do_pending_stack_adjust
+	before calling emit_conditional_move.
+	* expmed.c (expand_sdiv_pow2): Likewise.
+	* calls.c (expand_call): Use {save,restore}_pending_stack_adjust.
+
 2013-12-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59322

@@ -1,7 +1,12 @@
+2013-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58864
+	* g++.dg/opt/pr58864.C: New test.
+
 2013-12-02  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59322
-	* gcc.c-torture/compile/pr59322.c: New test
+	* gcc.c-torture/compile/pr59322.c: New test.
 
 2013-12-02  Sriraman Tallam  <tmsriram@google.com>
 

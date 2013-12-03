@@ -3736,11 +3736,6 @@ expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
     {
       rtx temp2;
 
-      /* ??? emit_conditional_move forces a stack adjustment via
-	 compare_from_rtx so, if the sequence is discarded, it will
-	 be lost.  Do it now instead.  */
-      do_pending_stack_adjust ();
-
       start_sequence ();
       temp2 = copy_to_mode_reg (mode, op0);
       temp = expand_binop (mode, add_optab, temp2, gen_int_mode (d - 1, mode),
