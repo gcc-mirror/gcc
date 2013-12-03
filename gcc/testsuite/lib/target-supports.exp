@@ -530,6 +530,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget mn10300-*-elf*]
 	     || [istarget moxie-*-elf*]
 	     || [istarget msp430-*-*]
+	     || [istarget nds32*-*-elf]
 	     || [istarget picochip-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
