@@ -1,3 +1,9 @@
+2013-11-03  Nenad Vukicevic <nenad@intrepid.com>
+
+	* portals4/gupcr_atomic.upc (gupcr_set_optype_val): Add missing
+	break on case statement.
+	(gupcr_negate_atomic_type): Ditto.
+
 2013-10-23  Nenad Vukicevic <nenad@intrepid.com>
 
 	* configure.ac: Rework checking of GDB availability for backtracing.

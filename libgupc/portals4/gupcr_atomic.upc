@@ -257,6 +257,7 @@ gupcr_set_optype_val (void *buf, upc_type_t type, int value)
       break;
     case UPC_DOUBLE:
       FUNC_TYPE_SET (UPC_DOUBLE, double);
+      break;
     default:
       gupcr_error ("wrong UPC type (%d)", type);
     }
@@ -307,6 +308,7 @@ gupcr_negate_atomic_type (void *dbuf, const void *sbuf, upc_type_t type)
       break;
     case UPC_DOUBLE:
       FUNC_TYPE_NEGATE (UPC_DOUBLE, double);
+      break;
     default:
       gupcr_error ("wrong UPC type (%d)", type);
     }
