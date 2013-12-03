@@ -1,3 +1,8 @@
+2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* gcc.dg/pr59351.c: New test.
+
 2013-12-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* gcc.dg/20020312-2.c: Add __nds32__ case.
