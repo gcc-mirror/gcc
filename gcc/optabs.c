@@ -4558,8 +4558,11 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (!COMPARISON_P (comparison))
     return NULL_RTX;
 
-  do_pending_stack_adjust ();
+  /* State variables we need to save and restore if cmove can't be used.  */
+  int save_pending_stack_adjust = pending_stack_adjust;
+  int save_stack_pointer_delta = stack_pointer_delta;
   last = get_last_insn ();
+  do_pending_stack_adjust ();
   prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 		    GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
 		    &comparison, &cmode);
@@ -4579,6 +4582,8 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	}
     }
   delete_insns_since (last);
+  pending_stack_adjust = save_pending_stack_adjust;
+  stack_pointer_delta = save_stack_pointer_delta;
   return NULL_RTX;
 }
 

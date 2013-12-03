@@ -1,3 +1,9 @@
+2013-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58864
+	* optabs.c (emit_conditional_move): Save and restore
+	pending_stack_adjust and stack_pointer_delta if cmove can't be used.
+
 2013-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59358
