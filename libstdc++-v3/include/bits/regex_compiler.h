@@ -237,6 +237,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Matches a character range (bracket expression)
+  // TODO: Convert used _M_flags fields to template parameters, including
+  // collate and icase. Avoid using std::set, could use flat_set
+  // (sorted vector and binary search) instead; use an fixed sized (256)
+  // vector<bool> for char specialization if necessary.
   template<typename _TraitsT>
     struct _BracketMatcher
     {
