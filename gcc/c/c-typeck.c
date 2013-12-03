@@ -5205,6 +5205,14 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
+  /* Ensure an error for assigning a non-lvalue array to an array in
+     C90.  */
+  if (TREE_CODE (lhstype) == ARRAY_TYPE)
+    {
+      error_at (location, "assignment to expression with array type");
+      return error_mark_node;
+    }
+
   /* For ObjC properties, defer this check.  */
   if (!objc_is_property_ref (lhs) && !lvalue_or_else (location, lhs, lv_assign))
     return error_mark_node;
