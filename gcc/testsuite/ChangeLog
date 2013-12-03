@@ -1,3 +1,11 @@
+2013-12-03  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59063
+	* lib/asan-dg.exp: Don't add anything to flags if libsanitizer
+	has not been found.
+	* lib/ubsan-dg.exp: Likewise.  Append to flags also
+	-B${gccpath}/libsanitizer/.
+
 2013-12-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Skip for little
