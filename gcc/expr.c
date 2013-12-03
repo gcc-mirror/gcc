@@ -8801,12 +8801,6 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  {
 	    rtx insn;
 
-	    /* ??? Same problem as in expmed.c: emit_conditional_move
-	       forces a stack adjustment via compare_from_rtx, and we
-	       lose the stack adjustment if the sequence we are about
-	       to create is discarded.  */
-	    do_pending_stack_adjust ();
-
 	    start_sequence ();
 
 	    /* Try to emit the conditional move.  */
