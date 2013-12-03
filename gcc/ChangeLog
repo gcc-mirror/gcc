@@ -1,3 +1,9 @@
+2013-12-03  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/htmintrin.h (_TEXASR_INSTRUCTION_FETCH_CONFLICT): Fix
+	typo in macro name.
+	(_TEXASRU_INSTRUCTION_FETCH_CONFLICT): Likewise.
+
 2013-12-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/aarch64/aarch64.c (aarch64_frame_pointer_required): Check
