@@ -1251,7 +1251,7 @@ struct GTY(()) tree_block {
   tree fragment_chain;
 };
 
-struct GTY(()) tree_type_common {
+struct GTY((user)) tree_type_common {
   struct tree_common common;
   tree size;
   tree size_unit;
@@ -1281,16 +1281,21 @@ struct GTY(()) tree_type_common {
   tree pointer_to;
   tree reference_to;
   union tree_type_symtab {
-    int GTY ((tag ("TYPE_SYMTAB_IS_ADDRESS"))) address;
-    const char * GTY ((tag ("TYPE_SYMTAB_IS_POINTER"))) pointer;
-    struct die_struct * GTY ((tag ("TYPE_SYMTAB_IS_DIE"))) die;
-  } GTY ((desc ("debug_hooks->tree_type_symtab_field"))) symtab;
+    int address;
+    const char *pointer;
+    struct die_struct *die;
+  } symtab;
   tree name;
   tree next_variant;
   tree main_variant;
   tree context;
   tree canonical;
 };
+
+/* Garbage collection and PCH support for tree_type_common.  */
+extern void gt_ggc_mx (tree_type_common *t);
+extern void gt_pch_nx (tree_type_common *t);
+extern void gt_pch_nx (tree_type_common *t, gt_pointer_operator, void *);
 
 struct GTY(()) tree_type_with_lang_specific {
   struct tree_type_common common;

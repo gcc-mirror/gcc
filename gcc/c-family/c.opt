@@ -866,11 +866,11 @@ fbuiltin-
 C UPC ObjC C++ ObjC++ Joined
 
 fcanonical-system-headers
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcilkplus
-C UPC Objc C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
+C UPC ObjC C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
 Enable Cilk Plus
 
 fcond-mismatch

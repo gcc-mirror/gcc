@@ -1,3 +1,26 @@
+2013-12-03 Meador Inge  <meadori@codesourcery.com>
+
+	* tree-core.h (tree_type_common): Change tree_type_common to use
+	user-provided GC marking.
+	(gt_ggc_mx, gt_pch_nx): New prototypes.
+	* tree.c (gt_ggc_mx, gt_pch_nx): New functions.
+
+2013-12-03 Gary Funck  <gary@intrepid.com>
+
+	Revert:
+
+	2011-10-10  Gary Funck  <gary@intrepid.com>
+
+	* tree.c (check_qualified_type, check_aligned_type):
+	Call tree_int_cst_equal() to compare UPC blocking factors
+	if the corresponding tree pointers are not equal.
+	* c-typeck.c (comptypes_internal, c_build_qualified_type_1): Ditto.
+
+2013-12-03 Gary Funck  <gary@intrepid.com>
+
+	* c-family/c.opt: Fix typo introduced in 2013-06-03
+	merge with trunk.
+
 2013-12-02 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 205582 into gupc branch.

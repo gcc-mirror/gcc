@@ -6126,9 +6126,7 @@ check_qualified_type (const_tree cand, const_tree base,
                       int type_quals, tree layout_qualifier)
 {
   return (TYPE_QUALS (cand) == type_quals
-	  && (TYPE_BLOCK_FACTOR (cand) == layout_qualifier
-	      || tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
-	                             layout_qualifier))
+	  && TYPE_BLOCK_FACTOR (cand) == layout_qualifier
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -6144,9 +6142,7 @@ static bool
 check_aligned_type (const_tree cand, const_tree base, unsigned int align)
 {
   return (TYPE_QUALS (cand) == TYPE_QUALS (base)
-	  && (TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
-	      || tree_int_cst_equal (TYPE_BLOCK_FACTOR (cand),
-	                             TYPE_BLOCK_FACTOR (base)))
+	  && TYPE_BLOCK_FACTOR (cand) == TYPE_BLOCK_FACTOR (base)
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
@@ -12351,6 +12347,121 @@ block_may_fallthru (const_tree block)
     default:
       return lang_hooks.block_may_fallthru (stmt);
     }
+}
+
+/* Garbage collection support for tree_type_common.  */
+
+extern void gt_ggc_mx (tree&);
+extern void gt_ggc_mx_die_struct (void *);
+
+void gt_ggc_mx (tree_type_common *tt)
+{
+  tree t = (tree) tt;
+  tree block_factor = TYPE_BLOCK_FACTOR (t);
+
+  gt_ggc_mx (tt->common.typed.type);
+  gt_ggc_mx (tt->common.chain);
+  gt_ggc_mx (tt->size);
+  gt_ggc_mx (tt->size_unit);
+  gt_ggc_mx (tt->attributes);
+  gt_ggc_mx (tt->pointer_to);
+  gt_ggc_mx (tt->reference_to);
+  switch (debug_hooks->tree_type_symtab_field)
+    {
+    case TYPE_SYMTAB_IS_ADDRESS:
+      break;
+    case TYPE_SYMTAB_IS_POINTER:
+      gt_ggc_m_S (tt->symtab.pointer);
+      break;
+    case TYPE_SYMTAB_IS_DIE:
+      gt_ggc_mx_die_struct (tt->symtab.die);
+      break;
+    default:
+      break;
+    }
+  gt_ggc_mx (tt->name);
+  gt_ggc_mx (tt->next_variant);
+  gt_ggc_mx (tt->main_variant);
+  gt_ggc_mx (tt->context);
+  gt_ggc_mx (tt->canonical);
+
+  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+    gt_ggc_mx (block_factor);
+}
+
+/* PCH support for tree_type_common.  */
+
+extern void gt_pch_nx (tree&);
+extern void gt_ggc_nx_die_struct (void *);
+
+void gt_pch_nx (tree_type_common *tt)
+{
+  tree t = (tree) tt;
+  tree block_factor = TYPE_BLOCK_FACTOR (t);
+
+  gt_pch_nx (tt->common.typed.type);
+  gt_pch_nx (tt->common.chain);
+  gt_pch_nx (tt->size);
+  gt_pch_nx (tt->size_unit);
+  gt_pch_nx (tt->attributes);
+  gt_pch_nx (tt->pointer_to);
+  gt_pch_nx (tt->reference_to);
+  switch (debug_hooks->tree_type_symtab_field)
+    {
+    case TYPE_SYMTAB_IS_ADDRESS:
+      break;
+    case TYPE_SYMTAB_IS_POINTER:
+      gt_pch_n_S (tt->symtab.pointer);
+      break;
+    case TYPE_SYMTAB_IS_DIE:
+      gt_pch_nx_die_struct (tt->symtab.die);
+      break;
+    default:
+      break;
+    }
+  gt_pch_nx (tt->name);
+  gt_pch_nx (tt->next_variant);
+  gt_pch_nx (tt->main_variant);
+  gt_pch_nx (tt->context);
+  gt_pch_nx (tt->canonical);
+
+  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+    gt_pch_nx (block_factor);
+}
+
+void gt_pch_nx (tree_type_common *tt, gt_pointer_operator op, void *cookie)
+{
+  tree t = (tree) tt;
+  tree block_factor = TYPE_BLOCK_FACTOR (t);
+
+  op (&(tt->common.typed.type), cookie);
+  op (&(tt->common.chain), cookie);
+  op (&(tt->size), cookie);
+  op (&(tt->size_unit), cookie);
+  op (&(tt->attributes), cookie);
+  op (&(tt->pointer_to), cookie);
+  op (&(tt->reference_to), cookie);
+  switch (debug_hooks->tree_type_symtab_field)
+    {
+    case TYPE_SYMTAB_IS_ADDRESS:
+      break;
+    case TYPE_SYMTAB_IS_POINTER:
+      op (&(tt->symtab.pointer), cookie);
+      break;
+    case TYPE_SYMTAB_IS_DIE:
+      op (&(tt->symtab.die), cookie);
+      break;
+    default:
+      break;
+    }
+  op (&(tt->name), cookie);
+  op (&(tt->next_variant), cookie);
+  op (&(tt->main_variant), cookie);
+  op (&(tt->context), cookie);
+  op (&(tt->canonical), cookie);
+
+  if (TYPE_HAS_BLOCK_FACTOR_X (t))
+    op (&(block_factor), cookie);
 }
 
 /* True if we are using EH to handle cleanups.  */
