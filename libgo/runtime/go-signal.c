@@ -218,7 +218,7 @@ runtime_sighandler (int sig, Siginfo *info,
 	  G *g;
 
 	  g = runtime_g ();
-	  runtime_traceback (g);
+	  runtime_traceback ();
 	  runtime_tracebackothers (g);
 
 	  /* The gc library calls runtime_dumpregs here, and provides
