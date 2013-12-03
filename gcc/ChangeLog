@@ -1,3 +1,9 @@
+2013-12-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59322
+	* tree-ssa-threadedge.c (create_edge_and_update_destination_phis):
+	Remove code which copied jump threading paths.
+
 2013-12-02  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/58944
