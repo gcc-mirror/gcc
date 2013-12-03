@@ -1,3 +1,12 @@
+2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* c-decl.c (build_compound_literal): Allow compound literals with
+	empty initial value.
+
 2013-12-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/winnt.c (i386_pe_asm_named_section): Be prepared for an
