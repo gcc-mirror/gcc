@@ -162,6 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return false;
     }
 
+  // TODO: Use a function vector to dispatch, instead of using switch-case.
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
     bool __dfs_mode>
   template<bool __match_mode>
