@@ -1,3 +1,7 @@
+2013-12-03  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr57363.c: New test.
+
 2013-12-03  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/59020
