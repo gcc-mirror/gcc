@@ -1,3 +1,10 @@
+2013-12-03   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59363
+	* config/i386/i386.c (emit_memset): Adjust destination address
+	after gen_strset.
+	(expand_setmem_epilogue): Likewise.
+
 2013-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/56344

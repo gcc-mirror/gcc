@@ -22854,6 +22854,8 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
       if (piece_size <= GET_MODE_SIZE (word_mode))
 	{
 	  emit_insn (gen_strset (destptr, dst, promoted_val));
+	  dst = adjust_automodify_address_nv (dst, move_mode, destptr,
+					      piece_size);
 	  continue;
 	}
 
@@ -22923,14 +22925,18 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
 	{
 	  dest = change_address (destmem, DImode, destptr);
 	  emit_insn (gen_strset (destptr, dest, value));
+	  dest = adjust_automodify_address_nv (dest, DImode, destptr, 8);
 	  emit_insn (gen_strset (destptr, dest, value));
 	}
       else
 	{
 	  dest = change_address (destmem, SImode, destptr);
 	  emit_insn (gen_strset (destptr, dest, value));
+	  dest = adjust_automodify_address_nv (dest, SImode, destptr, 4);
 	  emit_insn (gen_strset (destptr, dest, value));
+	  dest = adjust_automodify_address_nv (dest, SImode, destptr, 8);
 	  emit_insn (gen_strset (destptr, dest, value));
+	  dest = adjust_automodify_address_nv (dest, SImode, destptr, 12);
 	  emit_insn (gen_strset (destptr, dest, value));
 	}
       emit_label (label);
@@ -22948,6 +22954,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
 	{
 	  dest = change_address (destmem, SImode, destptr);
 	  emit_insn (gen_strset (destptr, dest, value));
+	  dest = adjust_automodify_address_nv (dest, SImode, destptr, 4);
 	  emit_insn (gen_strset (destptr, dest, value));
 	}
       emit_label (label);
