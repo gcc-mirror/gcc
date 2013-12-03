@@ -1,3 +1,11 @@
+2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* gcc.dg/pr59351.c: New test.
+
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59011

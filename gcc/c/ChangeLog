@@ -1,3 +1,12 @@
+2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* c-decl.c (build_compound_literal): Allow compound literals with
+	empty initial value.
+
 2013-11-27  Tom de Vries  <tom@codesourcery.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
