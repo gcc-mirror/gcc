@@ -256,6 +256,7 @@ testsuite		Mike Stump		mikestump@comcast.net
 testsuite		Janis Johnson		janisjo@codesourcery.com
 register allocation	Vladimir Makarov	vmakarov@redhat.com
 gdbhooks.py		David Malcolm		dmalcolm@redhat.com
+SLSR			Bill Schmidt		wschmidt@linux.vnet.ibm.com
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.

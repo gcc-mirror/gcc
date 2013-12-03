@@ -1,3 +1,7 @@
+2013-12-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* MAINTAINERS: Add self as SLSR maintainer.
+
 2013-11-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* MAINTAINERS: Update my email address.
