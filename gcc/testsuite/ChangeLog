@@ -1,5 +1,8 @@
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59011
+	* gcc.dg/pr59011.c: New test.
+
 	PR target/58864
 	* g++.dg/opt/pr58864.C: New test.
 
