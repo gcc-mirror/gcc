@@ -4693,7 +4693,9 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
     {
       int failure = complete_array_type (&TREE_TYPE (decl),
 					 DECL_INITIAL (decl), true);
-      gcc_assert (!failure);
+      /* If complete_array_type returns 3, it means that the
+         initial value of the compound literal is empty.  Allow it.  */
+      gcc_assert (failure == 0 || failure == 3);
 
       type = TREE_TYPE (decl);
       TREE_TYPE (DECL_INITIAL (decl)) = type;
