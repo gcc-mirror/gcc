@@ -1138,6 +1138,13 @@ class Type
 			  Function_type* equal_fntype, Named_object** hash_fn,
 			  Named_object** equal_fn);
 
+  void
+  write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype,
+		   Function_type* equal_fntype);
+
+  void
+  write_named_equal(Gogo*, Named_type*);
+
   // Build a composite literal for the uncommon type information.
   Expression*
   uncommon_type_constructor(Gogo*, Type* uncommon_type,
