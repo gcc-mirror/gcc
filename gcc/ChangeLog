@@ -1,5 +1,12 @@
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59011
+	* gimplify.c (nonlocal_vla_vars): New variable.
+	(gimplify_var_or_parm_decl): Put VAR_DECLs for VLAs into
+	nonlocal_vla_vars chain.
+	(gimplify_body): Call declare_vars on nonlocal_vla_vars chain
+	if outer_bind has DECL_INITIAL (current_function_decl) block.
+
 	PR target/58864
 	* dojump.c (save_pending_stack_adjust, restore_pending_stack_adjust):
 	New functions.
