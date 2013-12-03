@@ -1,3 +1,9 @@
+2013-12-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+        * config/avr/avr.c (avr_option_override): Warn if asked to generate
+        position independent code.
+        * config/avr/avr.h: Modify LINK_SPEC to reject -shared.
+
 2013-12-03   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59363
