@@ -641,8 +641,10 @@ public:
   generic_wide_int (const T &, unsigned int);
 
   /* Conversions.  */
-  HOST_WIDE_INT to_shwi (unsigned int = 0) const;
-  unsigned HOST_WIDE_INT to_uhwi (unsigned int = 0) const;
+  HOST_WIDE_INT to_shwi (unsigned int) const;
+  HOST_WIDE_INT to_shwi () const;
+  unsigned HOST_WIDE_INT to_uhwi (unsigned int) const;
+  unsigned HOST_WIDE_INT to_uhwi () const;
   HOST_WIDE_INT to_short_addr () const;
 
   /* Public accessors for the interior of a wide int.  */
@@ -732,16 +734,21 @@ template <typename storage>
 inline HOST_WIDE_INT
 generic_wide_int <storage>::to_shwi (unsigned int precision) const
 {
-  if (precision == 0)
-    {
-      if (is_sign_extended)
-	return this->get_val ()[0];
-      precision = this->get_precision ();
-    }
   if (precision < HOST_BITS_PER_WIDE_INT)
     return sext_hwi (this->get_val ()[0], precision);
   else
     return this->get_val ()[0];
+}
+
+/* Return THIS as a signed HOST_WIDE_INT, in its natural precision.  */
+template <typename storage>
+inline HOST_WIDE_INT
+generic_wide_int <storage>::to_shwi () const
+{
+  if (is_sign_extended)
+    return this->get_val ()[0];
+  else
+    return to_shwi (this->get_precision ());
 }
 
 /* Return THIS as an unsigned HOST_WIDE_INT, zero-extending from
@@ -751,12 +758,18 @@ template <typename storage>
 inline unsigned HOST_WIDE_INT
 generic_wide_int <storage>::to_uhwi (unsigned int precision) const
 {
-  if (precision == 0)
-    precision = this->get_precision ();
   if (precision < HOST_BITS_PER_WIDE_INT)
     return zext_hwi (this->get_val ()[0], precision);
   else
     return this->get_val ()[0];
+}
+
+/* Return THIS as an signed HOST_WIDE_INT, in its natural precision.  */
+template <typename storage>
+inline unsigned HOST_WIDE_INT
+generic_wide_int <storage>::to_uhwi () const
+{
+  return to_uhwi (this->get_precision ());
 }
 
 /* TODO: The compiler is half converted from using HOST_WIDE_INT to
@@ -2286,9 +2299,7 @@ wi::add (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();
       unsigned HOST_WIDE_INT resultl = xl + yl;
-      if (precision == 0)
-	*overflow = false;
-      else if (sgn == SIGNED)
+      if (sgn == SIGNED)
 	*overflow = (((resultl ^ xl) & (resultl ^ yl))
 		     >> (precision - 1)) & 1;
       else
@@ -2361,9 +2372,7 @@ wi::sub (const T1 &x, const T2 &y, signop sgn, bool *overflow)
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();
       unsigned HOST_WIDE_INT resultl = xl - yl;
-      if (precision == 0)
-	*overflow = false;
-      else if (sgn == SIGNED)
+      if (sgn == SIGNED)
 	*overflow = (((xl ^ yl) & (resultl ^ xl)) >> (precision - 1)) & 1;
       else
 	*overflow = ((resultl << (HOST_BITS_PER_WIDE_INT - precision))

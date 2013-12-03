@@ -265,9 +265,8 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
 wide_int
 wi::max_value (unsigned int precision, signop sgn)
 {
-  if (precision == 0)
-    return shwi (0, precision);
-  else if (sgn == UNSIGNED)
+  gcc_checking_assert (precision != 0);
+  if (sgn == UNSIGNED)
     /* The unsigned max is just all ones.  */
     return shwi (-1, precision);
   else
@@ -280,7 +279,8 @@ wi::max_value (unsigned int precision, signop sgn)
 wide_int
 wi::min_value (unsigned int precision, signop sgn)
 {
-  if (precision == 0 || sgn == UNSIGNED)
+  gcc_checking_assert (precision != 0);
+  if (sgn == UNSIGNED)
     return uhwi (0, precision);
   else
     /* The signed min is all zeros except the top bit.  This must be
@@ -1438,9 +1438,6 @@ wi::popcount (const wide_int_ref &x)
   unsigned int i;
   int count;
 
-  if (x.precision == 0)
-    return 0;
-
   /* The high order block is special if it is the last block and the
      precision is not an even multiple of HOST_BITS_PER_WIDE_INT.  We
      have to clear out any ones above the precision before doing
@@ -2033,10 +2030,6 @@ wi::ctz (const wide_int_ref &x)
 int
 wi::exact_log2 (const wide_int_ref &x)
 {
-  /* 0-precision values can only hold 0.  */
-  if (x.precision == 0)
-    return -1;
-
   /* Reject cases where there are implicit -1 blocks above HIGH.  */
   if (x.len * HOST_BITS_PER_WIDE_INT < x.precision && x.sign_mask () < 0)
     return -1;
