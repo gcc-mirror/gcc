@@ -1,5 +1,17 @@
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59362
+	* tree-object-size.c (object_sizes): Change into array of
+	vec<unsigned HOST_WIDE_INT>.
+	(compute_builtin_object_size): Check computed bitmap for
+	non-NULL instead of object_sizes.  Call safe_grow on object_sizes
+	vector if new SSA_NAMEs appeared.
+	(init_object_sizes): Check computed bitmap for non-NULL.
+	Call safe_grow on object_sizes elements instead of initializing
+	it with XNEWVEC.
+	(fini_object_sizes): Call release on object_sizes elements, don't
+	set it to NULL.
+
 	PR middle-end/59011
 	* gimplify.c (nonlocal_vla_vars): New variable.
 	(gimplify_var_or_parm_decl): Put VAR_DECLs for VLAs into
