@@ -1,3 +1,42 @@
+2013-12-02  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/58944
+	* config/i386/i386.opt (ix86_arch_string): Mark this variable
+	for saving in cl_target_option.
+	(ix86_tune_string): Ditto.
+	(ix86_cmodel): Ditto.
+	(ix86_abi): Ditto.
+	(ix86_asm_dialect): Ditto.
+	(ix86_branch_cost): Ditto.
+	(ix86_dump_tunes): Ditto.
+	(ix86_force_align_arg_pointer): Ditto.
+	(ix86_force_drap): Ditto.
+	(ix86_incoming_stack_boundary_arg): Ditto.
+	(ix86_pmode): Ditto.
+	(ix86_preferred_stack_boundary_arg): Ditto.
+	(ix86_recip_name): Ditto.
+	(ix86_regparm): Ditto.
+	(ix86_section_threshold): Ditto.
+	(ix86_sse2avx): Ditto.
+	(ix86_stack_protector_guard): Ditto.
+	(ix86_stringop_alg): Ditto.
+	(ix86_tls_dialect): Ditto.
+	(ix86_tune_ctrl_string): Ditto.
+	(ix86_tune_memcpy_strategy): Ditto.
+	(ix86_tune_memset_strategy): Ditto.
+	(ix86_tune_no_default): Ditto.
+	(ix86_veclibabi_type): Ditto.
+	* config/i386/i386.c 
+	(function_specific_save): Save the above variables
+	in gcc_options to cl_target_option.
+	(function_specific_restore): Do the reverse done in
+	function_specific_save.
+	(ix86_valid_target_attribute_tree): Change ix86_arch_string
+	and ix86_tune_string to use the opts structure.
+	(ix86_option_override_internal):Change
+	ix86_incoming_stack_boundary_arg to
+	opts->x_ix86_incoming_stack_boundary_arg
+
 2013-12-02  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.h: Wrap rtl_opt_pass declarations

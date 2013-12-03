@@ -1,3 +1,8 @@
+2013-12-02  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/58944
+	* testsuite/gcc.target/i386/pr58944.c: New test.	
+
 2013-12-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/58235

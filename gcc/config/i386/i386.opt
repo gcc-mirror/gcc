@@ -48,6 +48,14 @@ unsigned char arch
 TargetSave
 unsigned char tune
 
+;; -march= processor-string
+TargetSave
+const char *x_ix86_arch_string
+
+;; -mtune= processor-string
+TargetSave
+const char *x_ix86_tune_string
+
 ;; CPU schedule model
 TargetSave
 unsigned char schedule
@@ -75,6 +83,94 @@ unsigned char tune_defaulted
 ;; whether -march was specified
 TargetSave
 unsigned char arch_specified
+
+;; -mcmodel= model
+TargetSave
+enum cmodel x_ix86_cmodel
+
+;; -mabi=
+TargetSave
+enum calling_abi x_ix86_abi
+
+;; -masm=
+TargetSave
+enum asm_dialect x_ix86_asm_dialect
+
+;; -mbranch-cost=
+TargetSave
+int x_ix86_branch_cost
+
+;; -mdump-tune-features= 
+TargetSave
+int x_ix86_dump_tunes
+
+;; -mstackrealign=
+TargetSave
+int x_ix86_force_align_arg_pointer
+
+;; -mforce-drap= 
+TargetSave
+int x_ix86_force_drap
+
+;; -mincoming-stack-boundary=
+TargetSave
+int x_ix86_incoming_stack_boundary_arg
+
+;; -maddress-mode=
+TargetSave
+enum pmode x_ix86_pmode
+
+;; -mpreferred-stack-boundary= 
+TargetSave
+int x_ix86_preferred_stack_boundary_arg
+
+;; -mrecip=
+TargetSave
+const char *x_ix86_recip_name
+
+;; -mregparm=
+TargetSave
+int x_ix86_regparm
+
+;; -mlarge-data-threshold=
+TargetSave
+int x_ix86_section_threshold
+
+;; -msse2avx=
+TargetSave
+int x_ix86_sse2avx
+
+;; -mstack-protector-guard=
+TargetSave
+enum stack_protector_guard x_ix86_stack_protector_guard
+
+;; -mstringop-strategy=
+TargetSave
+enum stringop_alg x_ix86_stringop_alg
+
+;; -mtls-dialect=
+TargetSave
+enum tls_dialect x_ix86_tls_dialect
+
+;; -mtune-ctrl=
+TargetSave
+const char *x_ix86_tune_ctrl_string
+
+;; -mmemcpy-strategy=
+TargetSave
+const char *x_ix86_tune_memcpy_strategy
+
+;; -mmemset-strategy=
+TargetSave
+const char *x_ix86_tune_memset_strategy
+
+;; -mno-default=
+TargetSave
+int x_ix86_tune_no_default
+
+;; -mveclibabi=
+TargetSave
+enum ix86_veclibabi x_ix86_veclibabi_type
 
 ;; x86 options
 m128bit-long-double
