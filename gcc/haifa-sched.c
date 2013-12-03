@@ -6553,50 +6553,6 @@ setup_sched_dump (void)
 		? stderr : dump_file);
 }
 
-/* Try to group comparison and the following conditional jump INSN if
-   they're already adjacent. This is to prevent scheduler from scheduling
-   them apart.  */
-
-static void
-try_group_insn (rtx insn)
-{
-  unsigned int condreg1, condreg2;
-  rtx cc_reg_1;
-  rtx prev;
-
-  if (!any_condjump_p (insn))
-    return;
-
-  targetm.fixed_condition_code_regs (&condreg1, &condreg2);
-  cc_reg_1 = gen_rtx_REG (CCmode, condreg1);
-  prev = prev_nonnote_nondebug_insn (insn);
-  if (!reg_referenced_p (cc_reg_1, PATTERN (insn))
-      || !prev
-      || !modified_in_p (cc_reg_1, prev))
-    return;
-
-  /* Different microarchitectures support macro fusions for different
-     combinations of insn pairs.  */
-  if (!targetm.sched.macro_fusion_pair_p
-      || !targetm.sched.macro_fusion_pair_p (prev, insn))
-    return;
-
-  SCHED_GROUP_P (insn) = 1;
-}
-
-/* If the last cond jump and the cond register defining insn are consecutive
-   before scheduling, we want them to be in a schedule group. This is good
-   for performance on microarchitectures supporting macro-fusion.  */
-
-static void
-group_insns_for_macro_fusion ()
-{
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    try_group_insn (BB_END (bb));
-}
-
 /* Initialize some global state for the scheduler.  This function works
    with the common data shared between all the schedulers.  It is called
    from the scheduler specific initialization routine.  */
@@ -6725,11 +6681,6 @@ sched_init (void)
     }
 
   curr_state = xmalloc (dfa_state_size);
-
-  /* Group compare and branch insns for macro-fusion.  */
-  if (targetm.sched.macro_fusion_p
-      && targetm.sched.macro_fusion_p ())
-    group_insns_for_macro_fusion ();
 }
 
 static void haifa_init_only_bb (basic_block, basic_block);

@@ -1,3 +1,13 @@
+2013-12-03  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/59020
+	* sched-deps.c (try_group_insn): Move it from haifa-sched.c to here.
+	(sched_analyze_insn): Call try_group_insn.
+	(sched_analyze): Cleanup SCHED_GROUP_P before start the analysis.
+	* haifa-sched.c (try_group_insn): Moved to sched-deps.c.
+	(group_insns_for_macro_fusion): Removed.
+	(sched_init): Remove calling group_insns_for_macro_fusion.
+
 2013-12-03  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/htmintrin.h (_TEXASR_INSTRUCTION_FETCH_CONFLICT): Fix
