@@ -3866,16 +3866,16 @@ ix86_option_override_internal (bool main_args_p,
   ix86_incoming_stack_boundary = ix86_default_incoming_stack_boundary;
   if (opts_set->x_ix86_incoming_stack_boundary_arg)
     {
-      if (ix86_incoming_stack_boundary_arg
+      if (opts->x_ix86_incoming_stack_boundary_arg
 	  < (TARGET_64BIT_P (opts->x_ix86_isa_flags) ? 4 : 2)
-	  || ix86_incoming_stack_boundary_arg > 12)
+	  || opts->x_ix86_incoming_stack_boundary_arg > 12)
 	error ("-mincoming-stack-boundary=%d is not between %d and 12",
-	       ix86_incoming_stack_boundary_arg,
+	       opts->x_ix86_incoming_stack_boundary_arg,
 	       TARGET_64BIT_P (opts->x_ix86_isa_flags) ? 4 : 2);
       else
 	{
 	  ix86_user_incoming_stack_boundary
-	    = (1 << ix86_incoming_stack_boundary_arg) * BITS_PER_UNIT;
+	    = (1 << opts->x_ix86_incoming_stack_boundary_arg) * BITS_PER_UNIT;
 	  ix86_incoming_stack_boundary
 	    = ix86_user_incoming_stack_boundary;
 	}
@@ -4282,6 +4282,30 @@ ix86_function_specific_save (struct cl_target_option *ptr,
   ptr->x_ix86_isa_flags_explicit = opts->x_ix86_isa_flags_explicit;
   ptr->x_ix86_target_flags_explicit = opts->x_ix86_target_flags_explicit;
   ptr->x_recip_mask_explicit = opts->x_recip_mask_explicit;
+  ptr->x_ix86_arch_string = opts->x_ix86_arch_string;
+  ptr->x_ix86_tune_string = opts->x_ix86_tune_string;
+  ptr->x_ix86_cmodel = opts->x_ix86_cmodel;
+  ptr->x_ix86_abi = opts->x_ix86_abi;
+  ptr->x_ix86_asm_dialect = opts->x_ix86_asm_dialect;
+  ptr->x_ix86_branch_cost = opts->x_ix86_branch_cost;
+  ptr->x_ix86_dump_tunes = opts->x_ix86_dump_tunes;
+  ptr->x_ix86_force_align_arg_pointer = opts->x_ix86_force_align_arg_pointer;
+  ptr->x_ix86_force_drap = opts->x_ix86_force_drap;
+  ptr->x_ix86_incoming_stack_boundary_arg = opts->x_ix86_incoming_stack_boundary_arg;
+  ptr->x_ix86_pmode = opts->x_ix86_pmode;
+  ptr->x_ix86_preferred_stack_boundary_arg = opts->x_ix86_preferred_stack_boundary_arg;
+  ptr->x_ix86_recip_name = opts->x_ix86_recip_name;
+  ptr->x_ix86_regparm = opts->x_ix86_regparm;
+  ptr->x_ix86_section_threshold = opts->x_ix86_section_threshold;
+  ptr->x_ix86_sse2avx = opts->x_ix86_sse2avx;
+  ptr->x_ix86_stack_protector_guard = opts->x_ix86_stack_protector_guard;
+  ptr->x_ix86_stringop_alg = opts->x_ix86_stringop_alg;
+  ptr->x_ix86_tls_dialect = opts->x_ix86_tls_dialect;
+  ptr->x_ix86_tune_ctrl_string = opts->x_ix86_tune_ctrl_string;
+  ptr->x_ix86_tune_memcpy_strategy = opts->x_ix86_tune_memcpy_strategy;
+  ptr->x_ix86_tune_memset_strategy = opts->x_ix86_tune_memset_strategy;
+  ptr->x_ix86_tune_no_default = opts->x_ix86_tune_no_default;
+  ptr->x_ix86_veclibabi_type = opts->x_ix86_veclibabi_type;
 
   /* The fields are char but the variables are not; make sure the
      values fit in the fields.  */
@@ -4311,6 +4335,30 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_ix86_isa_flags_explicit = ptr->x_ix86_isa_flags_explicit;
   opts->x_ix86_target_flags_explicit = ptr->x_ix86_target_flags_explicit;
   opts->x_recip_mask_explicit = ptr->x_recip_mask_explicit;
+  opts->x_ix86_arch_string = ptr->x_ix86_arch_string;
+  opts->x_ix86_tune_string = ptr->x_ix86_tune_string;
+  opts->x_ix86_cmodel = ptr->x_ix86_cmodel;
+  opts->x_ix86_abi = ptr->x_ix86_abi;
+  opts->x_ix86_asm_dialect = ptr->x_ix86_asm_dialect;
+  opts->x_ix86_branch_cost = ptr->x_ix86_branch_cost;
+  opts->x_ix86_dump_tunes = ptr->x_ix86_dump_tunes;
+  opts->x_ix86_force_align_arg_pointer = ptr->x_ix86_force_align_arg_pointer;
+  opts->x_ix86_force_drap = ptr->x_ix86_force_drap;
+  opts->x_ix86_incoming_stack_boundary_arg = ptr->x_ix86_incoming_stack_boundary_arg;
+  opts->x_ix86_pmode = ptr->x_ix86_pmode;
+  opts->x_ix86_preferred_stack_boundary_arg = ptr->x_ix86_preferred_stack_boundary_arg;
+  opts->x_ix86_recip_name = ptr->x_ix86_recip_name;
+  opts->x_ix86_regparm = ptr->x_ix86_regparm;
+  opts->x_ix86_section_threshold = ptr->x_ix86_section_threshold;
+  opts->x_ix86_sse2avx = ptr->x_ix86_sse2avx;
+  opts->x_ix86_stack_protector_guard = ptr->x_ix86_stack_protector_guard;
+  opts->x_ix86_stringop_alg = ptr->x_ix86_stringop_alg;
+  opts->x_ix86_tls_dialect = ptr->x_ix86_tls_dialect;
+  opts->x_ix86_tune_ctrl_string = ptr->x_ix86_tune_ctrl_string;
+  opts->x_ix86_tune_memcpy_strategy = ptr->x_ix86_tune_memcpy_strategy;
+  opts->x_ix86_tune_memset_strategy = ptr->x_ix86_tune_memset_strategy;
+  opts->x_ix86_tune_no_default = ptr->x_ix86_tune_no_default;
+  opts->x_ix86_veclibabi_type = ptr->x_ix86_veclibabi_type;
 
   /* Recreate the arch feature tests if the arch changed */
   if (old_arch != ix86_arch)
@@ -4625,8 +4673,8 @@ ix86_valid_target_attribute_tree (tree args,
 				  struct gcc_options *opts,
 				  struct gcc_options *opts_set)
 {
-  const char *orig_arch_string = ix86_arch_string;
-  const char *orig_tune_string = ix86_tune_string;
+  const char *orig_arch_string = opts->x_ix86_arch_string;
+  const char *orig_tune_string = opts->x_ix86_tune_string;
   enum fpmath_unit orig_fpmath_set = opts_set->x_ix86_fpmath;
   int orig_tune_defaulted = ix86_tune_defaulted;
   int orig_arch_specified = ix86_arch_specified;
