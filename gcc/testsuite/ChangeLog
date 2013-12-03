@@ -1,3 +1,10 @@
+2013-12-03  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/59020
+	* testsuite/gcc.dg/pr59020.c: New.
+	* testsuite/gcc.dg/macro-fusion-1.c: New.
+	* testsuite/gcc.dg/macro-fusion-2.c: New.
+
 2013-12-03  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59063
