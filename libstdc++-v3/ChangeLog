@@ -1,3 +1,8 @@
+2013-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/fstream (basic_filebuf::open): Use preformatted text
+	for table in Doxygen comment.
+
 2013-12-03  Tim Shen  <timshen91@gmail.com>
 
 	* regex_compiler.h: Add todo comment.
