@@ -3045,6 +3045,15 @@ expand_call (tree exp, rtx target, int ignore)
 	    {
 	      rtx before_arg = get_last_insn ();
 
+	      /* We don't allow passing huge (> 2^30 B) arguments
+	         by value.  It would cause an overflow later on.  */
+	      if (adjusted_args_size.constant
+		  >= (1 << (HOST_BITS_PER_INT - 2)))
+	        {
+	          sorry ("passing too large argument on stack");
+		  continue;
+		}
+
 	      if (store_one_arg (&args[i], argblock, flags,
 				 adjusted_args_size.var != 0,
 				 reg_parm_stack_space)
