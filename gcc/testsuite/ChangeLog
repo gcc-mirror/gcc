@@ -1,3 +1,8 @@
+2013-12-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59322
+	* gcc.c-torture/compile/pr59322.c: New test
+
 2013-12-02  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/58944
