@@ -2664,6 +2664,11 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define IMPORTED_DECL_ASSOCIATED_DECL(NODE) \
 (DECL_INITIAL (IMPORTED_DECL_CHECK (NODE)))
 
+/* Getter of the symbol declaration associated with the
+   NAMELIST_DECL node.  */
+#define NAMELIST_DECL_ASSOCIATED_DECL(NODE) \
+  (DECL_INITIAL (NODE))
+
 /* A STATEMENT_LIST chains statements together in GENERIC and GIMPLE.
    To reduce overhead, the nodes containing the statements are not trees.
    This avoids the overhead of tree_common on all linked list elements.

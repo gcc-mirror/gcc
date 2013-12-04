@@ -3185,6 +3185,7 @@ static inline int is_redundant_typedef (const_tree);
 static bool is_naming_typedef_decl (const_tree);
 static inline dw_die_ref get_context_die (tree);
 static void gen_namespace_die (tree, dw_die_ref);
+static dw_die_ref gen_namelist_decl (tree, dw_die_ref, tree);
 static dw_die_ref gen_decl_die (tree, tree, dw_die_ref);
 static dw_die_ref force_decl_die (tree);
 static dw_die_ref force_type_die (tree);
@@ -20429,6 +20430,11 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 	gen_namespace_die (decl, context_die);
       break;
 
+    case NAMELIST_DECL:
+      gen_namelist_decl (DECL_NAME (decl), context_die,
+			 NAMELIST_DECL_ASSOCIATED_DECL (decl));
+      break;
+
     default:
       /* Probably some frontend-internal decl.  Assume we don't care.  */
       gcc_assert ((int)TREE_CODE (decl) > NUM_TREE_CODES);
@@ -20518,7 +20524,12 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	      gen_type_die_for_member (type, decl,
 				       get_context_die (TYPE_CONTEXT (type)));
 	    }
-	  at_import_die = force_decl_die (decl);
+	  if (TREE_CODE (decl) == NAMELIST_DECL)
+	    at_import_die = gen_namelist_decl (DECL_NAME (decl),
+					 get_context_die (DECL_CONTEXT (decl)),
+					 NULL_TREE);
+	  else
+	    at_import_die = force_decl_die (decl);
 	}
     }
 
@@ -20589,6 +20600,43 @@ dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
   dwarf2out_imported_module_or_decl_1 (decl, name, context, scope_die);
 
 }
+
+/* Output debug information for namelists.   */
+
+static dw_die_ref
+gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
+{
+  dw_die_ref nml_die, nml_item_die, nml_item_ref_die;
+  tree value;
+  unsigned i;
+
+  if (debug_info_level <= DINFO_LEVEL_TERSE)
+    return NULL;
+
+  gcc_assert (scope_die != NULL);
+  nml_die = new_die (DW_TAG_namelist, scope_die, NULL);
+  add_AT_string (nml_die, DW_AT_name, IDENTIFIER_POINTER (name));
+
+  /* If there are no item_decls, we have a nondefining namelist, e.g.
+     with USE association; hence, set DW_AT_declaration.  */
+  if (item_decls == NULL_TREE)
+    {
+      add_AT_flag (nml_die, DW_AT_declaration, 1);
+      return nml_die;
+    }
+
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (item_decls), i, value)
+    {
+      nml_item_ref_die = lookup_decl_die (value);
+      if (!nml_item_ref_die)
+	nml_item_ref_die = force_decl_die (value);
+
+      nml_item_die = new_die (DW_TAG_namelist_item, nml_die, NULL);
+      add_AT_die_ref (nml_item_die, DW_AT_namelist_items, nml_item_ref_die);
+    }
+  return nml_die;
+}
+
 
 /* Write the debugging output for DECL.  */
 
@@ -20708,6 +20756,9 @@ dwarf2out_decl (tree decl)
       if (decl_function_context (decl))
 	context_die = NULL;
 
+      break;
+
+    case NAMELIST_DECL:
       break;
 
     default:

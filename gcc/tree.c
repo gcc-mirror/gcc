@@ -551,6 +551,8 @@ initialize_tree_contains_struct (void)
   gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[NAMELIST_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[NAMELIST_DECL][TS_DECL_COMMON]);
 }
 
 
