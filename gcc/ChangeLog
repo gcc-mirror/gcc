@@ -42,8 +42,7 @@
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59355
-	* ipa-devirt.c (gate_ipa_devirt): Return false if
-	!flag_devirtualize.
+	* ipa-devirt.c (gate_ipa_devirt): Return false if !flag_devirtualize.
 	* opts.c (common_handle_option): Fix comment spelling.
 
 2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
@@ -88,9 +87,9 @@
 
 2013-12-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
-        * config/avr/avr.c (avr_option_override): Warn if asked to generate
-        position independent code.
-        * config/avr/avr.h: Modify LINK_SPEC to reject -shared.
+	* config/avr/avr.c (avr_option_override): Warn if asked to generate
+	position independent code.
+	* config/avr/avr.h: Modify LINK_SPEC to reject -shared.
 
 2013-12-03   H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -102,8 +101,7 @@
 2013-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/56344
-	* calls.c (expand_call): Disallow passing huge arguments
-	by value.
+	* calls.c (expand_call): Disallow passing huge arguments by value.
 
 2013-12-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -174,9 +172,8 @@
 	(ix86_tune_memset_strategy): Ditto.
 	(ix86_tune_no_default): Ditto.
 	(ix86_veclibabi_type): Ditto.
-	* config/i386/i386.c 
-	(function_specific_save): Save the above variables
-	in gcc_options to cl_target_option.
+	* config/i386/i386.c (function_specific_save): Save the above
+	variables in gcc_options to cl_target_option.
 	(function_specific_restore): Do the reverse done in
 	function_specific_save.
 	(ix86_valid_target_attribute_tree): Change ix86_arch_string
@@ -193,9 +190,8 @@
 2013-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59358
-	* tree-vrp.c (union_ranges): To check for the partially
-	overlapping ranges or adjacent ranges, also compare *vr0max
-	with vr1max.
+	* tree-vrp.c (union_ranges): To check for the partially overlapping
+	ranges or adjacent ranges, also compare *vr0max with vr1max.
 
 2013-12-02  Sterling Augustine  <saugustine@google.com>
 
@@ -239,9 +235,8 @@
 	PR middle-end/59199
 	* tree-ssa-operands.c (opf_implicit): Remove.
 	(opf_address_taken): New flag.
-	(get_expr_operands): Remove early out, pass down
-	opf_address_taken for ADDR_EXPRs, add a use operand only
-	for non-opf_address_taken bases.
+	(get_expr_operands): Remove early out, pass down opf_address_taken for
+	ADDR_EXPRs, add a use operand only for non-opf_address_taken bases.
 	(get_indirect_ref_operands): Rename to ...
 	(get_mem_ref_operands): ... this.
 	(get_asm_expr_operands): Rename to ...
@@ -265,7 +260,7 @@
 
 2013-12-02 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-	* loop-unroll.c (decide_unroll_constant_iterations): Check macro 
+	* loop-unroll.c (decide_unroll_constant_iterations): Check macro
 	TARGET_LOOP_UNROLL_ADJUST while deciding unroll factor.
 
 2013-12-01  Eric Botcazou  <ebotcazou@adacore.com>
@@ -338,15 +333,14 @@
 
 2013-11-29  Yvan Roux  <yvan.roux@linaro.org>
 
-	 * config/arm/arm.md (store_minmaxsi): Use only when
+	* config/arm/arm.md (store_minmaxsi): Use only when
 	optimize_function_for_size_p.
 
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59063
-	* config/gnu-user.h: Removed old code for setting up sanitizer
-	libs.
+	* config/gnu-user.h: Removed old code for setting up sanitizer libs.
 	* gcc.c: Using libsanitizer spec instead of explicit libs.
 
 2013-11-29  Ilya Enkovich  <ilya.enkovich@intel.com>
@@ -629,17 +623,14 @@
 	(enum omp_clause_depend_kind): Add OMP_CLAUSE_DEPEND_LAST.
 	(enum omp_clause_map_kind): Add OMP_CLAUSE_MAP_LAST.
 	(enum omp_clause_proc_bind_kind): Add OMP_CLAUSE_PROC_BIND_LAST.
-	* lto-streamer-out.c (lto_is_streamable): Allow streaming
-	OMP_CLAUSE.
+	* lto-streamer-out.c (lto_is_streamable): Allow streaming OMP_CLAUSE.
 	(DFS_write_tree_body): Handle OMP_CLAUSE.
-	* tree-streamer-out.c (pack_ts_omp_clause_value_fields): New
-	function.
+	* tree-streamer-out.c (pack_ts_omp_clause_value_fields): New function.
 	(streamer_pack_tree_bitfields): Call it for OMP_CLAUSE.
 	(write_ts_omp_clause_tree_pointers): New function.
 	(streamer_write_tree_body): Call it for OMP_CLAUSE.
 	(streamer_write_tree_header): For OMP_CLAUSE stream OMP_CLAUSE_CODE.
-	* tree-streamer-in.c (unpack_ts_omp_clause_value_fields): New
-	function.
+	* tree-streamer-in.c (unpack_ts_omp_clause_value_fields): New function.
 	(unpack_value_fields): Call it for OMP_CLAUSE.
 	(streamer_alloc_tree): Handle OMP_CLAUSE.
 	(lto_input_ts_omp_clause_tree_pointers): New function.
@@ -660,8 +651,7 @@
 2013-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59327
-	* cfgexpand.c (expand_used_vars): Avoid warning on 32-bit
-	HWI hosts.
+	* cfgexpand.c (expand_used_vars): Avoid warning on 32-bit HWI hosts.
 
 2013-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -710,8 +700,7 @@
 	lower.  Switch off lra_in_progress temporarily to generate regs
 	involved into elimination.
 	(lra_init_elimination): Rename to init_elimination.  Make it
-	static.  Set up insn sp offset, check the offsets at the end of
-	BBs.
+	static.  Set up insn sp offset, check the offsets at the end of BBs.
 	(process_insn_for_elimination): Add parameter.  Pass its value to
 	eliminate_regs_in_insn.
 	(lra_eliminate): : Add parameter.  Pass its value to
@@ -834,8 +823,8 @@
 
 2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
-	* fold-const.c (int_const_binop_1): Make INT_MIN % -1 return 0 with the
-	overflow bit set.
+	* fold-const.c (int_const_binop_1): Make INT_MIN % -1 return 0 with
+	the overflow bit set.
 
 2013-11-27  Richard Biener  <rguenther@suse.de>
 
@@ -909,8 +898,7 @@
 	(make_pass_omp_simd_clone): New function.
 	* passes.def (pass_omp_simd_clone): New.
 	* target.def (TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN,
-	TARGET_SIMD_CLONE_ADJUST, TARGET_SIMD_CLONE_USABLE): New target
-	hooks.
+	TARGET_SIMD_CLONE_ADJUST, TARGET_SIMD_CLONE_USABLE): New target hooks.
 	* target.h (struct cgraph_node, struct cgraph_simd_node): Declare.
 	* tree-core.h (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE): Document.
 	* tree.h (OMP_CLAUSE_LINEAR_VARIABLE_STRIDE): Define.
@@ -923,8 +911,8 @@
 	the call arguments or in lhs.
 	* tree-vect-loop.c (vect_determine_vectorization_factor): Handle
 	calls with no lhs.
-	(vect_transform_loop): Allow NULL STMT_VINFO_VECTYPE for calls without
-	lhs.
+	(vect_transform_loop): Allow NULL STMT_VINFO_VECTYPE for calls
+	without lhs.
 	* tree-vectorizer.h (enum stmt_vec_info_type): Add
 	call_simd_clone_vec_info_type.
 	(struct _stmt_vec_info): Add simd_clone_fndecl field.
@@ -1006,10 +994,8 @@
 	(GSS_OMP_PARALLEL_LAYOUT, gimple_statement_omp_parallel_layout):
 	...these.
 	(GSS_OMP_SINGLE, gimple_statement_omp_single): Rename to...
-	(GSS_OMP_SINGLE_LAYOUT, gimple_statement_omp_single_layout):
-	...these.
-	(GSS_OMP_ATOMIC_STORE, gimple_statement_omp_atomic_store): Rename
-	to...
+	(GSS_OMP_SINGLE_LAYOUT, gimple_statement_omp_single_layout): ...these.
+	(GSS_OMP_ATOMIC_STORE, gimple_statement_omp_atomic_store): Rename to...
 	(GSS_OMP_ATOMIC_STORE_LAYOUT, gimple_statement_omp_atomic_store):
 	...these.
 
@@ -1098,8 +1084,7 @@
 	GIMPLE_OMP_RETURN.
 	(gimple_resx_region, gimple_resx_set_region): Replace bogus
 	downcasts to gimple_statement_eh_ctrl with downcasts to
-	gimple_statement_resx, thus requiring that the code be
-	GIMPLE_RESX.
+	gimple_statement_resx, thus requiring that the code be GIMPLE_RESX.
 	(gimple_eh_dispatch_region, gimple_eh_dispatch_set_region):
 	Replace bogus downcasts to const gimple_statement_eh_ctrl with
 	downcasts to gimple_statement_eh_dispatch, thus requiring that
@@ -1198,8 +1183,7 @@
 	* configure.ac (install_gold_as_default): New.  Set to yes for
 	--disable-ld or --enable-gold=default.
 	(gcc_cv_ld_gold_srcdir): New.
-	(gcc_cv_ld): Also check in-tree gold if install_gold_as_default
-	is yes.
+	(gcc_cv_ld): Also check in-tree gold if install_gold_as_default is yes.
 	(ORIGINAL_LD_BFD_FOR_TARGET): New AC_SUBST.
 	(ORIGINAL_LD_GOLD_FOR_TARGET): Likewise.
 	* configure: Regenerated.
@@ -1289,8 +1273,7 @@
 
 	* config/aarch64/aarch64-builtins.c
 	(VAR1): Use new naming scheme for aarch64_builtins.
-	(aarch64_builtin_vectorized_function): Use new
-	aarch64_builtins names.
+	(aarch64_builtin_vectorized_function): Use new aarch64_builtins names.
 
 2013-11-26  Richard Biener  <rguenther@suse.de>
 
@@ -1346,8 +1329,8 @@
 
 	* doc/invoke.texi (-mslow-flash-data): Document new option.
 	* config/arm/arm.opt (mslow-flash-data): New option.
-	* config/arm/arm-protos.h (arm_max_const_double_inline_cost): Declare
-	it.
+	* config/arm/arm-protos.h (arm_max_const_double_inline_cost):
+	Declare it.
 	* config/arm/arm.h (TARGET_USE_MOVT): Always true when literal pools
 	are disabled.
 	(arm_disable_literal_pool): Declare it.
@@ -1602,7 +1585,7 @@
 
 2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
-	* config/i386/i386.c(processor_alias_table): Enable PTA_AES,
+	* config/i386/i386.c (processor_alias_table): Enable PTA_AES,
 	PTA_PCLMUL and PTA_RDRND for Silvermont.
 	* config/i386/driver-i386.c (host_detect_local_cpu): Set up cpu
 	for Silvermont.
