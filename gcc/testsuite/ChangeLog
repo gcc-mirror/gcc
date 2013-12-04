@@ -1,5 +1,8 @@
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/59268
+	* g++.dg/cpp0x/constexpr-template6.C: New test.
+
 	PR rtl-optimization/58726
 	* gcc.c-torture/execute/pr58726.c: New test.
 
