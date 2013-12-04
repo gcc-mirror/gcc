@@ -29,6 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "hashtab.h"
 #include "bitmap.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -541,12 +547,11 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 static void
 dump_gimple_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
-  tree t, t2;
+  tree t;
 
   t = gimple_return_retval (gs);
-  t2 = gimple_return_retbnd (gs);
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%T %T>", gs, t, t2);
+    dump_gimple_fmt (buffer, spc, flags, "%G <%T>", gs, t);
   else
     {
       pp_string (buffer, "return");
@@ -554,11 +559,6 @@ dump_gimple_return (pretty_printer *buffer, gimple gs, int spc, int flags)
 	{
 	  pp_space (buffer);
 	  dump_generic_node (buffer, t, spc, flags, false);
-	}
-      if (t2)
-	{
-	  pp_string (buffer, ", ");
-	  dump_generic_node (buffer, t2, spc, flags, false);
 	}
       pp_semicolon (buffer);
     }
@@ -2014,10 +2014,6 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   tree vdef = gimple_vdef (gs);
   tree vuse = gimple_vuse (gs);
-
-  if (!ssa_operands_active (DECL_STRUCT_FUNCTION (current_function_decl))
-      || !gimple_references_memory_p (gs))
-    return;
 
   if (vdef != NULL_TREE)
     {

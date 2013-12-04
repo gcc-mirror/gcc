@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-iterator.h"
 #include "type-utils.h"
-#include "gimple.h"
 #include "gimplify.h"
 
 /* The type of functions taking a tree, and some additional data, and
@@ -5437,7 +5436,7 @@ unify_arg_conversion (bool explain_p, tree to_type,
 		      tree from_type, tree arg)
 {
   if (explain_p)
-    inform (EXPR_LOC_OR_HERE (arg),
+    inform (EXPR_LOC_OR_LOC (arg, input_location),
 	    "  cannot convert %qE (type %qT) to type %qT",
 	    arg, from_type, to_type);
   return 1;
@@ -5677,7 +5676,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		return NULL_TREE;
 	      expr = cxx_constant_value (expr);
 	      if (errorcount > errs || warningcount + werrorcount > warns)
-		inform (EXPR_LOC_OR_HERE (expr),
+		inform (EXPR_LOC_OR_LOC (expr, input_location),
 			"in template argument for type %qT ", type);
 	      if (expr == error_mark_node)
 		return NULL_TREE;
@@ -8093,7 +8092,7 @@ push_tinst_level (tree d)
   new_level->decl = d;
   new_level->locus = input_location;
   new_level->errors = errorcount+sorrycount;
-  new_level->in_system_header_p = in_system_header;
+  new_level->in_system_header_p = in_system_header_at (input_location);
   new_level->next = current_tinst_level;
   current_tinst_level = new_level;
 
@@ -8625,7 +8624,8 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 		 pass it through tsubst.  Attributes like mode, format,
 		 cleanup and several target specific attributes expect it
 		 unmodified.  */
-	      else if (attribute_takes_identifier_p (get_attribute_name (t)))
+	      else if (attribute_takes_identifier_p (get_attribute_name (t))
+		       && TREE_VALUE (t))
 		{
 		  tree chain
 		    = tsubst_expr (TREE_CHAIN (TREE_VALUE (t)), args, complain,
@@ -14505,7 +14505,7 @@ tsubst_copy_and_build (tree t,
 		      fn = TREE_OPERAND (fn, 1);
 		    if (is_overloaded_fn (fn))
 		      fn = get_first_fn (fn);
-		    if (permerror (EXPR_LOC_OR_HERE (t),
+		    if (permerror (EXPR_LOC_OR_LOC (t, input_location),
 				   "%qD was not declared in this scope, "
 				   "and no declarations were found by "
 				   "argument-dependent lookup at the point "
@@ -14515,15 +14515,17 @@ tsubst_copy_and_build (tree t,
 			  /* Can't say anything more.  */;
 			else if (DECL_CLASS_SCOPE_P (fn))
 			  {
-			    inform (EXPR_LOC_OR_HERE (t),
+			    location_t loc = EXPR_LOC_OR_LOC (t,
+							      input_location);
+			    inform (loc,
 				    "declarations in dependent base %qT are "
 				    "not found by unqualified lookup",
 				    DECL_CLASS_CONTEXT (fn));
 			    if (current_class_ptr)
-			      inform (EXPR_LOC_OR_HERE (t),
+			      inform (loc,
 				      "use %<this->%D%> instead", function);
 			    else
-			      inform (EXPR_LOC_OR_HERE (t),
+			      inform (loc,
 				      "use %<%T::%D%> instead",
 				      current_class_name, function);
 			  }
@@ -17209,8 +17211,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  /* Also deduce from the length of the initializer list.  */
 	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
 	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
-	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
-				     idx, explain_p);
+	  if (TYPE_DOMAIN (parm) != NULL_TREE)
+	    return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				       idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the
@@ -18807,7 +18810,7 @@ do_decl_instantiation (tree decl, tree storage)
     ;
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
-      if (!in_system_header && (cxx_dialect == cxx98))
+      if (!in_system_header_at (input_location) && (cxx_dialect == cxx98))
 	pedwarn (input_location, OPT_Wpedantic, 
 		 "ISO C++ 1998 forbids the use of %<extern%> on explicit "
 		 "instantiations");
@@ -18900,7 +18903,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
 
   if (storage != NULL_TREE)
     {
-      if (!in_system_header)
+      if (!in_system_header_at (input_location))
 	{
 	  if (storage == ridpointers[(int) RID_EXTERN])
 	    {

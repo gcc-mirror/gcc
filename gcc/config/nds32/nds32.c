@@ -2471,7 +2471,7 @@ performance_cost:
       break;
 
     case MULT:
-      *total = COSTS_N_INSNS (5);
+      *total = COSTS_N_INSNS (1);
       break;
 
     case DIV:

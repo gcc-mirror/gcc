@@ -239,3 +239,11 @@
   gcc_assert (REG_P (op));
   return IREG_P (op);
 })
+
+(define_predicate "push_multiple_operation"
+  (and (match_code "parallel")
+       (match_test "analyze_push_multiple_operation (op)")))
+
+(define_predicate "pop_multiple_operation"
+  (and (match_code "parallel")
+       (match_test "analyze_pop_multiple_operation (op)")))

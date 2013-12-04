@@ -4839,259 +4839,6 @@ vaddlvq_u32 (uint32x4_t a)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vbsl_f32 (uint32x2_t a, float32x2_t b, float32x2_t c)
-{
-  float32x2_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vbsl_p8 (uint8x8_t a, poly8x8_t b, poly8x8_t c)
-{
-  poly8x8_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vbsl_p16 (uint16x4_t a, poly16x4_t b, poly16x4_t c)
-{
-  poly16x4_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vbsl_s8 (uint8x8_t a, int8x8_t b, int8x8_t c)
-{
-  int8x8_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vbsl_s16 (uint16x4_t a, int16x4_t b, int16x4_t c)
-{
-  int16x4_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vbsl_s32 (uint32x2_t a, int32x2_t b, int32x2_t c)
-{
-  int32x2_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vbsl_s64 (uint64x1_t a, int64x1_t b, int64x1_t c)
-{
-  int64x1_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vbsl_u8 (uint8x8_t a, uint8x8_t b, uint8x8_t c)
-{
-  uint8x8_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vbsl_u16 (uint16x4_t a, uint16x4_t b, uint16x4_t c)
-{
-  uint16x4_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vbsl_u32 (uint32x2_t a, uint32x2_t b, uint32x2_t c)
-{
-  uint32x2_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vbsl_u64 (uint64x1_t a, uint64x1_t b, uint64x1_t c)
-{
-  uint64x1_t result;
-  __asm__ ("bsl %0.8b, %2.8b, %3.8b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vbslq_f32 (uint32x4_t a, float32x4_t b, float32x4_t c)
-{
-  float32x4_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vbslq_f64 (uint64x2_t a, float64x2_t b, float64x2_t c)
-{
-  float64x2_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vbslq_p8 (uint8x16_t a, poly8x16_t b, poly8x16_t c)
-{
-  poly8x16_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vbslq_p16 (uint16x8_t a, poly16x8_t b, poly16x8_t c)
-{
-  poly16x8_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vbslq_s8 (uint8x16_t a, int8x16_t b, int8x16_t c)
-{
-  int8x16_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vbslq_s16 (uint16x8_t a, int16x8_t b, int16x8_t c)
-{
-  int16x8_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vbslq_s32 (uint32x4_t a, int32x4_t b, int32x4_t c)
-{
-  int32x4_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vbslq_s64 (uint64x2_t a, int64x2_t b, int64x2_t c)
-{
-  int64x2_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vbslq_u8 (uint8x16_t a, uint8x16_t b, uint8x16_t c)
-{
-  uint8x16_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vbslq_u16 (uint16x8_t a, uint16x8_t b, uint16x8_t c)
-{
-  uint16x8_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vbslq_u32 (uint32x4_t a, uint32x4_t b, uint32x4_t c)
-{
-  uint32x4_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vbslq_u64 (uint64x2_t a, uint64x2_t b, uint64x2_t c)
-{
-  uint64x2_t result;
-  __asm__ ("bsl %0.16b, %2.16b, %3.16b"
-           : "=w"(result)
-           : "0"(a), "w"(b), "w"(c)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vcls_s8 (int8x8_t a)
 {
@@ -8314,127 +8061,6 @@ vmlsq_u32 (uint32x4_t a, uint32x4_t b, uint32x4_t c)
   return result;
 }
 
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vmov_n_f32 (float32_t a)
-{
-  float32x2_t result;
-  __asm__ ("dup %0.2s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vmov_n_p8 (uint32_t a)
-{
-  poly8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vmov_n_p16 (uint32_t a)
-{
-  poly16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vmov_n_s8 (int32_t a)
-{
-  int8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vmov_n_s16 (int32_t a)
-{
-  int16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vmov_n_s32 (int32_t a)
-{
-  int32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vmov_n_s64 (int64_t a)
-{
-  int64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vmov_n_u8 (uint32_t a)
-{
-  uint8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vmov_n_u16 (uint32_t a)
-{
-  uint16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vmov_n_u32 (uint32_t a)
-{
-  uint32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vmov_n_u64 (uint64_t a)
-{
-  uint64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
 vmovl_high_s8 (int8x16_t a)
 {
@@ -8695,133 +8321,6 @@ vmovn_u64 (uint64x2_t a)
   __asm__ ("xtn %0.2s,%1.2d"
            : "=w"(result)
            : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vmovq_n_f32 (float32_t a)
-{
-  float32x4_t result;
-  __asm__ ("dup %0.4s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vmovq_n_f64 (float64_t a)
-{
-  return (float64x2_t) {a, a};
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vmovq_n_p8 (uint32_t a)
-{
-  poly8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vmovq_n_p16 (uint32_t a)
-{
-  poly16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vmovq_n_s8 (int32_t a)
-{
-  int8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vmovq_n_s16 (int32_t a)
-{
-  int16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vmovq_n_s32 (int32_t a)
-{
-  int32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vmovq_n_s64 (int64_t a)
-{
-  int64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vmovq_n_u8 (uint32_t a)
-{
-  uint8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vmovq_n_u16 (uint32_t a)
-{
-  uint16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vmovq_n_u32 (uint32_t a)
-{
-  uint32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vmovq_n_u64 (uint64_t a)
-{
-  uint64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
            : /* No clobbers */);
   return result;
 }
@@ -15636,54 +15135,6 @@ vtbl4_p8 (poly8x8x4_t tab, uint8x8_t idx)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vtbx1_s8 (int8x8_t r, int8x8_t tab, int8x8_t idx)
-{
-  int8x8_t result;
-  int8x8_t tmp1;
-  int8x16_t temp = vcombine_s8 (tab, vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vtbx1_u8 (uint8x8_t r, uint8x8_t tab, uint8x8_t idx)
-{
-  uint8x8_t result;
-  uint8x8_t tmp1;
-  uint8x16_t temp = vcombine_u8 (tab, vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vtbx1_p8 (poly8x8_t r, poly8x8_t tab, uint8x8_t idx)
-{
-  poly8x8_t result;
-  poly8x8_t tmp1;
-  poly8x16_t temp = vcombine_p8 (tab, vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("movi %0.8b, 8\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {%2.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "w"(temp), "w"(idx), "w"(r)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vtbx2_s8 (int8x8_t r, int8x8x2_t tab, int8x8_t idx)
 {
   int8x8_t result = r;
@@ -15716,63 +15167,6 @@ vtbx2_p8 (poly8x8_t r, poly8x8x2_t tab, uint8x8_t idx)
            : "+w"(result)
            : "w"(temp), "w"(idx)
            : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vtbx3_s8 (int8x8_t r, int8x8x3_t tab, int8x8_t idx)
-{
-  int8x8_t result;
-  int8x8_t tmp1;
-  int8x16x2_t temp;
-  temp.val[0] = vcombine_s8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_s8 (tab.val[2], vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vtbx3_u8 (uint8x8_t r, uint8x8x3_t tab, uint8x8_t idx)
-{
-  uint8x8_t result;
-  uint8x8_t tmp1;
-  uint8x16x2_t temp;
-  temp.val[0] = vcombine_u8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_u8 (tab.val[2], vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vtbx3_p8 (poly8x8_t r, poly8x8x3_t tab, uint8x8_t idx)
-{
-  poly8x8_t result;
-  poly8x8_t tmp1;
-  poly8x16x2_t temp;
-  temp.val[0] = vcombine_p8 (tab.val[0], tab.val[1]);
-  temp.val[1] = vcombine_p8 (tab.val[2], vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __asm__ ("ld1 {v16.16b - v17.16b}, %2\n\t"
-	   "movi %0.8b, 24\n\t"
-	   "cmhs %0.8b, %3.8b, %0.8b\n\t"
-	   "tbl %1.8b, {v16.16b - v17.16b}, %3.8b\n\t"
-	   "bsl %0.8b, %4.8b, %1.8b\n\t"
-           : "+w"(result), "=&w"(tmp1)
-           : "Q"(temp), "w"(idx), "w"(r)
-           : "v16", "v17", "memory");
   return result;
 }
 
@@ -15913,118 +15307,272 @@ vaddd_u64 (uint64x1_t __a, uint64x1_t __b)
   return __a + __b;
 }
 
+#if __AARCH64EB__
+#define __LANE0(__t) ((__t) - 1)
+#else
+#define __LANE0(__t) 0
+#endif
+
 /* vaddv */
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vaddv_s8 (int8x8_t __a)
 {
-  return vget_lane_s8 (__builtin_aarch64_reduc_splus_v8qi (__a), 0);
+  return vget_lane_s8 (__builtin_aarch64_reduc_splus_v8qi (__a), __LANE0 (8));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vaddv_s16 (int16x4_t __a)
 {
-  return vget_lane_s16 (__builtin_aarch64_reduc_splus_v4hi (__a), 0);
+  return vget_lane_s16 (__builtin_aarch64_reduc_splus_v4hi (__a), __LANE0 (4));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vaddv_s32 (int32x2_t __a)
 {
-  return vget_lane_s32 (__builtin_aarch64_reduc_splus_v2si (__a), 0);
+  return vget_lane_s32 (__builtin_aarch64_reduc_splus_v2si (__a), __LANE0 (2));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vaddv_u8 (uint8x8_t __a)
 {
   return vget_lane_u8 ((uint8x8_t)
-		__builtin_aarch64_reduc_uplus_v8qi ((int8x8_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v8qi ((int8x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vaddv_u16 (uint16x4_t __a)
 {
   return vget_lane_u16 ((uint16x4_t)
-		__builtin_aarch64_reduc_uplus_v4hi ((int16x4_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v4hi ((int16x4_t) __a),
+		__LANE0 (4));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vaddv_u32 (uint32x2_t __a)
 {
   return vget_lane_u32 ((uint32x2_t)
-		__builtin_aarch64_reduc_uplus_v2si ((int32x2_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v2si ((int32x2_t) __a),
+		__LANE0 (2));
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vaddvq_s8 (int8x16_t __a)
 {
-  return vgetq_lane_s8 (__builtin_aarch64_reduc_splus_v16qi (__a), 0);
+  return vgetq_lane_s8 (__builtin_aarch64_reduc_splus_v16qi (__a),
+			__LANE0 (16));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vaddvq_s16 (int16x8_t __a)
 {
-  return vgetq_lane_s16 (__builtin_aarch64_reduc_splus_v8hi (__a), 0);
+  return vgetq_lane_s16 (__builtin_aarch64_reduc_splus_v8hi (__a), __LANE0 (8));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vaddvq_s32 (int32x4_t __a)
 {
-  return vgetq_lane_s32 (__builtin_aarch64_reduc_splus_v4si (__a), 0);
+  return vgetq_lane_s32 (__builtin_aarch64_reduc_splus_v4si (__a), __LANE0 (4));
 }
 
 __extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vaddvq_s64 (int64x2_t __a)
 {
-  return vgetq_lane_s64 (__builtin_aarch64_reduc_splus_v2di (__a), 0);
+  return vgetq_lane_s64 (__builtin_aarch64_reduc_splus_v2di (__a), __LANE0 (2));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vaddvq_u8 (uint8x16_t __a)
 {
   return vgetq_lane_u8 ((uint8x16_t)
-		__builtin_aarch64_reduc_uplus_v16qi ((int8x16_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v16qi ((int8x16_t) __a),
+		__LANE0 (16));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vaddvq_u16 (uint16x8_t __a)
 {
   return vgetq_lane_u16 ((uint16x8_t)
-		__builtin_aarch64_reduc_uplus_v8hi ((int16x8_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v8hi ((int16x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vaddvq_u32 (uint32x4_t __a)
 {
   return vgetq_lane_u32 ((uint32x4_t)
-		__builtin_aarch64_reduc_uplus_v4si ((int32x4_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v4si ((int32x4_t) __a),
+		__LANE0 (4));
 }
 
 __extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vaddvq_u64 (uint64x2_t __a)
 {
   return vgetq_lane_u64 ((uint64x2_t)
-		__builtin_aarch64_reduc_uplus_v2di ((int64x2_t) __a), 0);
+		__builtin_aarch64_reduc_uplus_v2di ((int64x2_t) __a),
+		__LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vaddv_f32 (float32x2_t __a)
 {
-  float32x2_t t = __builtin_aarch64_reduc_splus_v2sf (__a);
-  return vget_lane_f32 (t, 0);
+  float32x2_t __t = __builtin_aarch64_reduc_splus_v2sf (__a);
+  return vget_lane_f32 (__t, __LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vaddvq_f32 (float32x4_t __a)
 {
-  float32x4_t t = __builtin_aarch64_reduc_splus_v4sf (__a);
-  return vgetq_lane_f32 (t, 0);
+  float32x4_t __t = __builtin_aarch64_reduc_splus_v4sf (__a);
+  return vgetq_lane_f32 (__t, __LANE0 (4));
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vaddvq_f64 (float64x2_t __a)
 {
-  float64x2_t t = __builtin_aarch64_reduc_splus_v2df (__a);
-  return vgetq_lane_f64 (t, 0);
+  float64x2_t __t = __builtin_aarch64_reduc_splus_v2df (__a);
+  return vgetq_lane_f64 (__t, __LANE0 (2));
+}
+
+/* vbsl  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vbsl_f32 (uint32x2_t __a, float32x2_t __b, float32x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2sf_suss (__a, __b, __c);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vbsl_p8 (uint8x8_t __a, poly8x8_t __b, poly8x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8qi_pupp (__a, __b, __c);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vbsl_p16 (uint16x4_t __a, poly16x4_t __b, poly16x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4hi_pupp (__a, __b, __c);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vbsl_s8 (uint8x8_t __a, int8x8_t __b, int8x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8qi_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vbsl_s16 (uint16x4_t __a, int16x4_t __b, int16x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4hi_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vbsl_s32 (uint32x2_t __a, int32x2_t __b, int32x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2si_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vbsl_s64 (uint64x1_t __a, int64x1_t __b, int64x1_t __c)
+{
+  return __builtin_aarch64_simd_bsldi_suss (__a, __b, __c);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vbsl_u8 (uint8x8_t __a, uint8x8_t __b, uint8x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8qi_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vbsl_u16 (uint16x4_t __a, uint16x4_t __b, uint16x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4hi_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vbsl_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2si_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vbsl_u64 (uint64x1_t __a, uint64x1_t __b, uint64x1_t __c)
+{
+  return __builtin_aarch64_simd_bsldi_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vbslq_f32 (uint32x4_t __a, float32x4_t __b, float32x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4sf_suss (__a, __b, __c);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vbslq_f64 (uint64x2_t __a, float64x2_t __b, float64x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2df_suss (__a, __b, __c);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vbslq_p8 (uint8x16_t __a, poly8x16_t __b, poly8x16_t __c)
+{
+  return __builtin_aarch64_simd_bslv16qi_pupp (__a, __b, __c);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vbslq_p16 (uint16x8_t __a, poly16x8_t __b, poly16x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8hi_pupp (__a, __b, __c);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vbslq_s8 (uint8x16_t __a, int8x16_t __b, int8x16_t __c)
+{
+  return __builtin_aarch64_simd_bslv16qi_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vbslq_s16 (uint16x8_t __a, int16x8_t __b, int16x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8hi_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vbslq_s32 (uint32x4_t __a, int32x4_t __b, int32x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4si_suss (__a, __b, __c);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vbslq_s64 (uint64x2_t __a, int64x2_t __b, int64x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2di_suss (__a, __b, __c);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vbslq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
+{
+  return __builtin_aarch64_simd_bslv16qi_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vbslq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
+{
+  return __builtin_aarch64_simd_bslv8hi_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vbslq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
+{
+  return __builtin_aarch64_simd_bslv4si_uuuu (__a, __b, __c);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
+{
+  return __builtin_aarch64_simd_bslv2di_uuuu (__a, __b, __c);
 }
 
 /* vcage  */
@@ -20265,97 +19813,106 @@ vmaxnmq_f64 (float64x2_t __a, float64x2_t __b)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smax_nan_v2sf (__a), 0);
+  return vget_lane_f32 (__builtin_aarch64_reduc_smax_nan_v2sf (__a),
+			__LANE0 (2));
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vmaxv_s8 (int8x8_t __a)
 {
-  return vget_lane_s8 (__builtin_aarch64_reduc_smax_v8qi (__a), 0);
+  return vget_lane_s8 (__builtin_aarch64_reduc_smax_v8qi (__a), __LANE0 (8));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vmaxv_s16 (int16x4_t __a)
 {
-  return vget_lane_s16 (__builtin_aarch64_reduc_smax_v4hi (__a), 0);
+  return vget_lane_s16 (__builtin_aarch64_reduc_smax_v4hi (__a), __LANE0 (4));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vmaxv_s32 (int32x2_t __a)
 {
-  return vget_lane_s32 (__builtin_aarch64_reduc_smax_v2si (__a), 0);
+  return vget_lane_s32 (__builtin_aarch64_reduc_smax_v2si (__a), __LANE0 (2));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vmaxv_u8 (uint8x8_t __a)
 {
   return vget_lane_u8 ((uint8x8_t)
-		__builtin_aarch64_reduc_umax_v8qi ((int8x8_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v8qi ((int8x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vmaxv_u16 (uint16x4_t __a)
 {
   return vget_lane_u16 ((uint16x4_t)
-		__builtin_aarch64_reduc_umax_v4hi ((int16x4_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v4hi ((int16x4_t) __a),
+		__LANE0 (4));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vmaxv_u32 (uint32x2_t __a)
 {
   return vget_lane_u32 ((uint32x2_t)
-		__builtin_aarch64_reduc_umax_v2si ((int32x2_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v2si ((int32x2_t) __a),
+		__LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_nan_v4sf (__a), 0);
+  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_nan_v4sf (__a),
+			 __LANE0 (4));
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmaxvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_nan_v2df (__a), 0);
+  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_nan_v2df (__a),
+			 __LANE0 (2));
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vmaxvq_s8 (int8x16_t __a)
 {
-  return vgetq_lane_s8 (__builtin_aarch64_reduc_smax_v16qi (__a), 0);
+  return vgetq_lane_s8 (__builtin_aarch64_reduc_smax_v16qi (__a), __LANE0 (16));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vmaxvq_s16 (int16x8_t __a)
 {
-  return vgetq_lane_s16 (__builtin_aarch64_reduc_smax_v8hi (__a), 0);
+  return vgetq_lane_s16 (__builtin_aarch64_reduc_smax_v8hi (__a), __LANE0 (8));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vmaxvq_s32 (int32x4_t __a)
 {
-  return vgetq_lane_s32 (__builtin_aarch64_reduc_smax_v4si (__a), 0);
+  return vgetq_lane_s32 (__builtin_aarch64_reduc_smax_v4si (__a), __LANE0 (4));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vmaxvq_u8 (uint8x16_t __a)
 {
   return vgetq_lane_u8 ((uint8x16_t)
-		__builtin_aarch64_reduc_umax_v16qi ((int8x16_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v16qi ((int8x16_t) __a),
+		__LANE0 (16));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vmaxvq_u16 (uint16x8_t __a)
 {
   return vgetq_lane_u16 ((uint16x8_t)
-		__builtin_aarch64_reduc_umax_v8hi ((int16x8_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v8hi ((int16x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vmaxvq_u32 (uint32x4_t __a)
 {
   return vgetq_lane_u32 ((uint32x4_t)
-		__builtin_aarch64_reduc_umax_v4si ((int32x4_t) __a), 0);
+		__builtin_aarch64_reduc_umax_v4si ((int32x4_t) __a),
+		__LANE0 (4));
 }
 
 /* vmaxnmv  */
@@ -20363,19 +19920,20 @@ vmaxvq_u32 (uint32x4_t __a)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxnmv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smax_v2sf (__a), 0);
+  return vget_lane_f32 (__builtin_aarch64_reduc_smax_v2sf (__a),
+			__LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vmaxnmvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_v4sf (__a), 0);
+  return vgetq_lane_f32 (__builtin_aarch64_reduc_smax_v4sf (__a), __LANE0 (4));
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vmaxnmvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_v2df (__a), 0);
+  return vgetq_lane_f64 (__builtin_aarch64_reduc_smax_v2df (__a), __LANE0 (2));
 }
 
 /* vmin  */
@@ -20501,97 +20059,107 @@ vminnmq_f64 (float64x2_t __a, float64x2_t __b)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smin_nan_v2sf (__a), 0);
+  return vget_lane_f32 (__builtin_aarch64_reduc_smin_nan_v2sf (__a),
+			__LANE0 (2));
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vminv_s8 (int8x8_t __a)
 {
-  return vget_lane_s8 (__builtin_aarch64_reduc_smin_v8qi (__a), 0);
+  return vget_lane_s8 (__builtin_aarch64_reduc_smin_v8qi (__a),
+		       __LANE0 (8));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vminv_s16 (int16x4_t __a)
 {
-  return vget_lane_s16 (__builtin_aarch64_reduc_smin_v4hi (__a), 0);
+  return vget_lane_s16 (__builtin_aarch64_reduc_smin_v4hi (__a), __LANE0 (4));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vminv_s32 (int32x2_t __a)
 {
-  return vget_lane_s32 (__builtin_aarch64_reduc_smin_v2si (__a), 0);
+  return vget_lane_s32 (__builtin_aarch64_reduc_smin_v2si (__a), __LANE0 (2));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vminv_u8 (uint8x8_t __a)
 {
   return vget_lane_u8 ((uint8x8_t)
-		__builtin_aarch64_reduc_umin_v8qi ((int8x8_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v8qi ((int8x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vminv_u16 (uint16x4_t __a)
 {
   return vget_lane_u16 ((uint16x4_t)
-		__builtin_aarch64_reduc_umin_v4hi ((int16x4_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v4hi ((int16x4_t) __a),
+		__LANE0 (4));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vminv_u32 (uint32x2_t __a)
 {
   return vget_lane_u32 ((uint32x2_t)
-		__builtin_aarch64_reduc_umin_v2si ((int32x2_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v2si ((int32x2_t) __a),
+		__LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_nan_v4sf (__a), 0);
+  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_nan_v4sf (__a),
+			 __LANE0 (4));
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vminvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_nan_v2df (__a), 0);
+  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_nan_v2df (__a),
+			 __LANE0 (2));
 }
 
 __extension__ static __inline int8_t __attribute__ ((__always_inline__))
 vminvq_s8 (int8x16_t __a)
 {
-  return vgetq_lane_s8 (__builtin_aarch64_reduc_smin_v16qi (__a), 0);
+  return vgetq_lane_s8 (__builtin_aarch64_reduc_smin_v16qi (__a), __LANE0 (16));
 }
 
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vminvq_s16 (int16x8_t __a)
 {
-  return vgetq_lane_s16 (__builtin_aarch64_reduc_smin_v8hi (__a), 0);
+  return vgetq_lane_s16 (__builtin_aarch64_reduc_smin_v8hi (__a), __LANE0 (8));
 }
 
 __extension__ static __inline int32_t __attribute__ ((__always_inline__))
 vminvq_s32 (int32x4_t __a)
 {
-  return vgetq_lane_s32 (__builtin_aarch64_reduc_smin_v4si (__a), 0);
+  return vgetq_lane_s32 (__builtin_aarch64_reduc_smin_v4si (__a), __LANE0 (4));
 }
 
 __extension__ static __inline uint8_t __attribute__ ((__always_inline__))
 vminvq_u8 (uint8x16_t __a)
 {
   return vgetq_lane_u8 ((uint8x16_t)
-		__builtin_aarch64_reduc_umin_v16qi ((int8x16_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v16qi ((int8x16_t) __a),
+		__LANE0 (16));
 }
 
 __extension__ static __inline uint16_t __attribute__ ((__always_inline__))
 vminvq_u16 (uint16x8_t __a)
 {
   return vgetq_lane_u16 ((uint16x8_t)
-		__builtin_aarch64_reduc_umin_v8hi ((int16x8_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v8hi ((int16x8_t) __a),
+		__LANE0 (8));
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vminvq_u32 (uint32x4_t __a)
 {
   return vgetq_lane_u32 ((uint32x4_t)
-		__builtin_aarch64_reduc_umin_v4si ((int32x4_t) __a), 0);
+		__builtin_aarch64_reduc_umin_v4si ((int32x4_t) __a),
+		__LANE0 (4));
 }
 
 /* vminnmv  */
@@ -20599,19 +20167,19 @@ vminvq_u32 (uint32x4_t __a)
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminnmv_f32 (float32x2_t __a)
 {
-  return vget_lane_f32 (__builtin_aarch64_reduc_smin_v2sf (__a), 0);
+  return vget_lane_f32 (__builtin_aarch64_reduc_smin_v2sf (__a), __LANE0 (2));
 }
 
 __extension__ static __inline float32_t __attribute__ ((__always_inline__))
 vminnmvq_f32 (float32x4_t __a)
 {
-  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_v4sf (__a), 0);
+  return vgetq_lane_f32 (__builtin_aarch64_reduc_smin_v4sf (__a), __LANE0 (4));
 }
 
 __extension__ static __inline float64_t __attribute__ ((__always_inline__))
 vminnmvq_f64 (float64x2_t __a)
 {
-  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_v2df (__a), 0);
+  return vgetq_lane_f64 (__builtin_aarch64_reduc_smin_v2df (__a), __LANE0 (2));
 }
 
 /* vmla */
@@ -20947,6 +20515,152 @@ vmlsq_laneq_u32 (uint32x4_t __a, uint32x4_t __b,
 		uint32x4_t __c, const int __lane)
 {
   return (__a - (__b * __aarch64_vgetq_lane_u32 (__c, __lane)));
+}
+
+/* vmov_n_  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vmov_n_f32 (float32_t __a)
+{
+  return vdup_n_f32 (__a);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vmov_n_f64 (float64_t __a)
+{
+  return __a;
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vmov_n_p8 (poly8_t __a)
+{
+  return vdup_n_p8 (__a);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vmov_n_p16 (poly16_t __a)
+{
+  return vdup_n_p16 (__a);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vmov_n_s8 (int8_t __a)
+{
+  return vdup_n_s8 (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vmov_n_s16 (int16_t __a)
+{
+  return vdup_n_s16 (__a);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vmov_n_s32 (int32_t __a)
+{
+  return vdup_n_s32 (__a);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vmov_n_s64 (int64_t __a)
+{
+  return __a;
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vmov_n_u8 (uint8_t __a)
+{
+  return vdup_n_u8 (__a);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vmov_n_u16 (uint16_t __a)
+{
+    return vdup_n_u16 (__a);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vmov_n_u32 (uint32_t __a)
+{
+   return vdup_n_u32 (__a);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vmov_n_u64 (uint64_t __a)
+{
+   return __a;
+}
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vmovq_n_f32 (float32_t __a)
+{
+  return vdupq_n_f32 (__a);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vmovq_n_f64 (float64_t __a)
+{
+  return vdupq_n_f64 (__a);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vmovq_n_p8 (poly8_t __a)
+{
+  return vdupq_n_p8 (__a);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vmovq_n_p16 (poly16_t __a)
+{
+  return vdupq_n_p16 (__a);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vmovq_n_s8 (int8_t __a)
+{
+  return vdupq_n_s8 (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vmovq_n_s16 (int16_t __a)
+{
+  return vdupq_n_s16 (__a);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vmovq_n_s32 (int32_t __a)
+{
+  return vdupq_n_s32 (__a);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vmovq_n_s64 (int64_t __a)
+{
+  return vdupq_n_s64 (__a);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vmovq_n_u8 (uint8_t __a)
+{
+  return vdupq_n_u8 (__a);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vmovq_n_u16 (uint16_t __a)
+{
+  return vdupq_n_u16 (__a);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vmovq_n_u32 (uint32_t __a)
+{
+  return vdupq_n_u32 (__a);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vmovq_n_u64 (uint64_t __a)
+{
+  return vdupq_n_u64 (__a);
 }
 
 /* vmul_lane  */
@@ -25101,6 +24815,66 @@ vsubd_u64 (uint64x1_t __a, uint64x1_t __b)
   return __a - __b;
 }
 
+/* vtbx1  */
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vtbx1_s8 (int8x8_t __r, int8x8_t __tab, int8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (vreinterpret_u8_s8 (__idx),
+			      vmov_n_u8 (8));
+  int8x8_t __tbl = vtbl1_s8 (__tab, __idx);
+
+  return vbsl_s8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vtbx1_u8 (uint8x8_t __r, uint8x8_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (8));
+  uint8x8_t __tbl = vtbl1_u8 (__tab, __idx);
+
+  return vbsl_u8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vtbx1_p8 (poly8x8_t __r, poly8x8_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (8));
+  poly8x8_t __tbl = vtbl1_p8 (__tab, __idx);
+
+  return vbsl_p8 (__mask, __tbl, __r);
+}
+
+/* vtbx3  */
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vtbx3_s8 (int8x8_t __r, int8x8x3_t __tab, int8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (vreinterpret_u8_s8 (__idx),
+			      vmov_n_u8 (24));
+  int8x8_t __tbl = vtbl3_s8 (__tab, __idx);
+
+  return vbsl_s8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vtbx3_u8 (uint8x8_t __r, uint8x8x3_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (24));
+  uint8x8_t __tbl = vtbl3_u8 (__tab, __idx);
+
+  return vbsl_u8 (__mask, __tbl, __r);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vtbx3_p8 (poly8x8_t __r, poly8x8x3_t __tab, uint8x8_t __idx)
+{
+  uint8x8_t __mask = vclt_u8 (__idx, vmov_n_u8 (24));
+  poly8x8_t __tbl = vtbl3_p8 (__tab, __idx);
+
+  return vbsl_p8 (__mask, __tbl, __r);
+}
+
 /* vtrn */
 
 __extension__ static __inline float32x2x2_t __attribute__ ((__always_inline__))
@@ -25443,6 +25217,8 @@ __INTERLEAVE_LIST (zip)
 #undef __DEFINTERLEAVE
 
 /* End of optimal implementations in approved order.  */
+
+#undef __LANE0
 
 #undef __aarch64_vget_lane_any
 #undef __aarch64_vget_lane_f32

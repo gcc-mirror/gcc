@@ -256,7 +256,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op -Wlong-long @gol
 -Wmain -Wmaybe-uninitialized -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-include-dirs @gol
--Wno-multichar  -Wnonnull  -Wno-overflow @gol
+-Wno-multichar  -Wnonnull  -Wno-overflow -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -455,7 +455,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
--static-libasan -static-libtsan -static-libubsan @gol
+-static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -533,6 +533,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-m3-ldrd @gol
 -munaligned-access @gol
 -mneon-for-64bits @gol
+-mslow-flash-data @gol
 -mrestrict-it}
 
 @emph{AVR Options}
@@ -668,7 +669,7 @@ Objective-C and Objective-C++ Dialects}.
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mmpx -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
@@ -1500,6 +1501,7 @@ This invokes all subprograms of @command{gcc} under
 @samp{gdb --args cc1 @dots{}}.
 
 @item -fplugin=@var{name}.so
+@opindex fplugin
 Load the plugin code in file @var{name}.so, assumed to be a
 shared object to be dlopen'd by the compiler.  The base name of
 the shared object file is used to identify the plugin for the
@@ -1509,15 +1511,18 @@ Each plugin should define the callback functions specified in the
 Plugins API.
 
 @item -fplugin-arg-@var{name}-@var{key}=@var{value}
+@opindex fplugin-arg
 Define an argument called @var{key} with a value of @var{value}
 for the plugin called @var{name}.
 
 @item -fdump-ada-spec@r{[}-slim@r{]}
+@opindex fdump-ada-spec
 For C and C++ source and include files, generate corresponding Ada
 specs. @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
 GNAT User's Guide}, which provides detailed documentation on this feature.
 
 @item -fdump-go-spec=@var{file}
+@opindex fdump-go-spec
 For input files in any language, generate corresponding Go
 declarations in @var{file}.  This generates Go @code{const},
 @code{type}, @code{var}, and @code{func} declarations which may be a
@@ -1653,16 +1658,24 @@ ISO C90 as modified in amendment 1.
 @itemx c9x
 @itemx iso9899:1999
 @itemx iso9899:199x
-ISO C99.  Note that this standard is not yet fully supported; see
+ISO C99.  This standard is substantially completely supported, modulo
+bugs, extended identifiers (supported except for corner cases when
+@option{-fextended-identifiers} is used) and floating-point issues
+(mainly but not entirely relating to optional C99 features from
+Annexes F and G).  See
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item c11
 @itemx c1x
 @itemx iso9899:2011
-ISO C11, the 2011 revision of the ISO C standard.
-Support is incomplete and experimental.  The name @samp{c1x} is
-deprecated.
+ISO C11, the 2011 revision of the ISO C standard.  This standard is
+substantially completely supported, modulo bugs, extended identifiers
+(supported except for corner cases when
+@option{-fextended-identifiers} is used), floating-point issues
+(mainly but not entirely relating to optional C11 features from
+Annexes F and G) and the optional Annexes K (Bounds-checking
+interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 
 @item gnu90
 @itemx gnu89
@@ -1671,13 +1684,12 @@ is the default for C code.
 
 @item gnu99
 @itemx gnu9x
-GNU dialect of ISO C99.  When ISO C99 is fully implemented in GCC,
-this will become the default.  The name @samp{gnu9x} is deprecated.
+GNU dialect of ISO C99.  The name @samp{gnu9x} is deprecated.
 
 @item gnu11
 @itemx gnu1x
-GNU dialect of ISO C11.  Support is incomplete and experimental.  The
-name @samp{gnu1x} is deprecated.
+GNU dialect of ISO C11.  This is intended to become the default in a
+future release of GCC.  The name @samp{gnu1x} is deprecated.
 
 @item c++98
 @itemx c++03
@@ -1751,6 +1763,7 @@ arguments followed by their declarations is also provided, inside
 comments, after the declaration.
 
 @item -fallow-parameterless-variadic-functions
+@opindex fallow-parameterless-variadic-functions
 Accept variadic functions without named parameters.
 
 Although it is possible to define such a function, this is not very
@@ -2392,7 +2405,7 @@ Note:  This feature APPENDS data to the log file. If you want a fresh log
 file, be sure to delete any existing one.
 
 @item -fvtv-counts
-@opindex (fvtv-counts)
+@opindex fvtv-counts
 This is a debugging flag.  When used in conjunction with
 @option{-fvtable-verify=std} or @option{-fvtable-verify=preinit}, this
 causes the compiler to keep track of the total number of virtual calls
@@ -3320,6 +3333,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wmaybe-uninitialized @gol
 -Wmissing-braces @r{(only for C/ObjC)} @gol
 -Wnonnull  @gol
+-Wopenmp-simd @gol
 -Wparentheses  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
@@ -3490,6 +3504,8 @@ Options,,Options Controlling C Dialect}.
 @table @gcctabopt
 @item -Wformat=1
 @itemx -Wformat
+@opindex Wformat
+@opindex Wformat=1
 Option @option{-Wformat} is equivalent to @option{-Wformat=1}, and
 @option{-Wno-format} is equivalent to @option{-Wformat=0}.  Since
 @option{-Wformat} also checks for null format arguments for several
@@ -3528,6 +3544,7 @@ The C standard specifies that zero-length formats are allowed.
 
 
 @item -Wformat=2
+@opindex Wformat=2
 Enable @option{-Wformat} plus additional format checks.  Currently
 equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
 -Wformat-y2k}.
@@ -4814,6 +4831,12 @@ attribute.
 @opindex Woverflow
 Do not warn about compile-time overflow in constant expressions.
 
+@item -Wopenmp-simd
+@opindex Wopenm-simd
+Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
+simd directive set by user.  The @option{-fsimd-cost-model=unlimited} can
+be used to relax the cost model.
+
 @item -Woverride-init @r{(C and Objective-C only)}
 @opindex Woverride-init
 @opindex Wno-override-init
@@ -5258,55 +5281,89 @@ many times it is given.  This is mainly intended to be used with
 @option{-fcompare-debug}.
 
 @item -fsanitize=address
+@opindex fsanitize=address
 Enable AddressSanitizer, a fast memory error detector.
 Memory access instructions will be instrumented to detect
 out-of-bounds and use-after-free bugs.
-See @uref{http://code.google.com/p/address-sanitizer/} for more details.
+See @uref{http://code.google.com/p/address-sanitizer/} for
+more details.  The run-time behavior can be influenced using the
+@env{ASAN_OPTIONS} environment variable; see
+@url{https://code.google.com/p/address-sanitizer/wiki/Flags#Run-time_flags} for
+a list of supported options.
 
 @item -fsanitize=thread
+@opindex fsanitize=thread
 Enable ThreadSanitizer, a fast data race detector.
 Memory access instructions will be instrumented to detect
-data race bugs.
-See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
+data race bugs.  See @uref{http://code.google.com/p/thread-sanitizer/} for more
+details. The run-time behavior can be influenced using the @env{TSAN_OPTIONS}
+environment variable; see
+@url{https://code.google.com/p/thread-sanitizer/wiki/Flags} for a list of
+supported options.
+
+@item -fsanitize=leak
+@opindex fsanitize=leak
+Enable LeakSanitizer, a memory leak detector.
+This option only matters for linking of executables and if neither
+@option{-fsanitize=address} nor @option{-fsanitize=thread} is used.  In that
+case it will link the executable against a library that overrides @code{malloc}
+and other allocator functions.  See
+@uref{https://code.google.com/p/address-sanitizer/wiki/LeakSanitizer} for more
+details.  The run-time behavior can be influenced using the
+@env{LSAN_OPTIONS} environment variable.
 
 @item -fsanitize=undefined
+@opindex fsanitize=undefined
 Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
 Various computations will be instrumented to detect undefined behavior
 at runtime.  Current suboptions are:
 
-@itemize @bullet
+@table @gcctabopt
 
-@item @option{-fsanitize=shift}
+@item -fsanitize=shift
+@opindex fsanitize=shift
 
 This option enables checking that the result of a shift operation is
 not undefined.  Note that what exactly is considered undefined differs
 slightly between C and C++, as well as between ISO C90 and C99, etc.
 
-@item @option{-fsanitize=integer-divide-by-zero}
+@item -fsanitize=integer-divide-by-zero
+@opindex fsanitize=integer-divide-by-zero
 
 Detect integer division by zero as well as @code{INT_MIN / -1} division.
 
-@item @option{-fsanitize=unreachable}
+@item -fsanitize=unreachable
+@opindex fsanitize=unreachable
 
 With this option, the compiler will turn the @code{__builtin_unreachable}
 call into a diagnostics message call instead.  When reaching the
 @code{__builtin_unreachable} call, the behavior is undefined.
 
-@item @option{-fsanitize=vla-bound}
+@item -fsanitize=vla-bound
+@opindex fsanitize=vla-bound
 
 This option instructs the compiler to check that the size of a variable
 length array is positive.  This option does not have any effect in
 @option{-std=c++1y} mode, as the standard requires the exception be thrown
 instead.
 
-@item @option{-fsanitize=null}
+@item -fsanitize=null
+@opindex fsanitize=null
 
 This option enables pointer checking.  Particularly, the application
 built with this option turned on will issue an error message when it
 tries to dereference a NULL pointer, or if a reference (possibly an
 rvalue reference) is bound to a NULL pointer.
 
-@end itemize
+@item -fsanitize=return
+@opindex fsanitize=return
+
+This option enables return statement checking.  Programs
+built with this option turned on will issue an error message
+when the end of a non-void function is reached without actually
+returning a value.  This option works in C++ only.
+
+@end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
 @option{-fsanitize=undefined} gives a diagnostic message.
@@ -5368,6 +5425,7 @@ information about each symbol.  This option only makes sense when
 generating DWARF 2 debugging information with @option{-gdwarf-2}.
 
 @item -femit-struct-debug-baseonly
+@opindex femit-struct-debug-baseonly
 Emit debug information for struct-like types
 only when the base name of the compilation source file
 matches the base name of file in which the struct is defined.
@@ -5380,6 +5438,7 @@ See @option{-femit-struct-debug-detailed} for more detailed control.
 This option works only with DWARF 2.
 
 @item -femit-struct-debug-reduced
+@opindex femit-struct-debug-reduced
 Emit debug information for struct-like types
 only when the base name of the compilation source file
 matches the base name of file in which the type is defined,
@@ -5710,6 +5769,7 @@ Here are some examples showing uses of these options.
 @itemx -fdump-rtl-@var{pass}
 @itemx -fdump-rtl-@var{pass}=@var{filename}
 @opindex d
+@opindex fdump-rtl-@var{pass}
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the RTL-based passes of the
 compiler.  The file names for most of the dumps are made by appending
@@ -7998,6 +8058,7 @@ variable names which more closely resemble the original variables.  This flag
 is enabled by default at @option{-O} and higher.
 
 @item -ftree-coalesce-inlined-vars
+@opindex ftree-coalesce-inlined-vars
 Tell the copyrename pass (see @option{-ftree-copyrename}) to attempt to
 combine small user-defined variables too, but only if they were inlined
 from other functions.  It is a more limited form of
@@ -8008,6 +8069,7 @@ contain the expected values in a debugging session.  This was the
 default in GCC versions older than 4.7.
 
 @item -ftree-coalesce-vars
+@opindex ftree-coalesce-vars
 Tell the copyrename pass (see @option{-ftree-copyrename}) to attempt to
 combine small user-defined variables too, instead of just compiler
 temporaries.  This may severely limit the ability to debug an optimized
@@ -8059,6 +8121,14 @@ required runtime checks for data dependence or alignment but otherwise
 is equal to the @code{dynamic} model.
 The default cost model depends on other optimization flags and is
 either @code{dynamic} or @code{cheap}.
+
+@item -fsimd-cost-model=@var{model}
+@opindex fsimd-cost-model
+Alter the cost model used for vectorization of loops marked with the OpenMP
+or Cilk Plus simd directive.  The @var{model} argument should be one of
+@code{unlimited}, @code{dynamic}, @code{cheap}.  All values of @var{model}
+have the same meaning as described in @option{-fvect-cost-model} and by
+default a cost model defined with @option{-fvect-cost-model} is used.
 
 @item -ftree-vrp
 @opindex ftree-vrp
@@ -8651,9 +8721,11 @@ the comparison operation before register allocation is complete.
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fuse-ld=bfd
+@opindex fuse-ld=bfd
 Use the @command{bfd} linker instead of the default linker.
 
 @item -fuse-ld=gold
+@opindex fuse-ld=gold
 Use the @command{gold} linker instead of the default linker.
 
 @item -fcprop-registers
@@ -10210,6 +10282,7 @@ for the languages used in the program, or using the option
 @file{libgcc}.
 
 @item -static-libasan
+@opindex static-libasan
 When the @option{-fsanitize=address} option is used to link a program,
 the GCC driver automatically links against @option{libasan}.  If
 @file{libasan} is available as a shared library, and the @option{-static}
@@ -10219,6 +10292,7 @@ driver to link @file{libasan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libtsan
+@opindex static-libtsan
 When the @option{-fsanitize=thread} option is used to link a program,
 the GCC driver automatically links against @option{libtsan}.  If
 @file{libtsan} is available as a shared library, and the @option{-static}
@@ -10227,7 +10301,18 @@ option is not used, then this links against the shared version of
 driver to link @file{libtsan} statically, without necessarily linking
 other libraries statically.
 
+@item -static-liblsan
+@opindex static-liblsan
+When the @option{-fsanitize=leak} option is used to link a program,
+the GCC driver automatically links against @option{liblsan}.  If
+@file{liblsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{liblsan}.  The @option{-static-liblsan} option directs the GCC
+driver to link @file{liblsan} statically, without necessarily linking
+other libraries statically.
+
 @item -static-libubsan
+@opindex static-libubsan
 When the @option{-fsanitize=undefined} option is used to link a program,
 the GCC driver automatically links against @option{libubsan}.  If
 @file{libubsan} is available as a shared library, and the @option{-static}
@@ -10237,6 +10322,7 @@ driver to link @file{libubsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libstdc++
+@opindex static-libstdc++
 When the @command{g++} program is used to link a C++ program, it
 normally automatically links against @option{libstdc++}.  If
 @file{libstdc++} is available as a shared library, and the
@@ -10329,6 +10415,7 @@ If you really need to change the search order for system directories,
 use the @option{-nostdinc} and/or @option{-isystem} options.
 
 @item -iplugindir=@var{dir}
+@opindex iplugindir=
 Set the directory to search for plugins that are passed
 by @option{-fplugin=@var{name}} instead of
 @option{-fplugin=@var{path}/@var{name}.so}.  This option is not meant
@@ -11778,7 +11865,7 @@ Enable Rcw constraint handling - ccfsm condexec mostly depends on this.
 This is the default.
 
 @item -msize-level=@var{level}
-@ opindex msize-level
+@opindex msize-level
 Fine-tune size optimization with regards to instruction lengths and alignment.
 The recognized values for @var{level} are:
 @table @samp
@@ -12196,8 +12283,11 @@ before execution begins.
 
 @item -mpic-register=@var{reg}
 @opindex mpic-register
-Specify the register to be used for PIC addressing.  The default is R10
-unless stack-checking is enabled, when R9 is used.
+Specify the register to be used for PIC addressing.
+For standard PIC base case, the default will be any suitable register
+determined by compiler.  For single PIC base case, the default is
+@samp{R9} if target is EABI based or stack-checking is enabled,
+otherwise the default is @samp{R10}.
 
 @item -mpic-data-is-text-relative
 @opindex mpic-data-is-text-relative
@@ -12325,6 +12415,13 @@ defined.
 Enables using Neon to handle scalar 64-bits operations. This is
 disabled by default since the cost of moving data from core registers
 to Neon is high.
+
+@item -mslow-flash-data
+@opindex mslow-flash-data
+Assume loading data from flash is slower than fetching instruction.
+Therefore literal load is minimized for better performance.
+This option is only supported when compiling for ARMv7 M-profile and
+off by default.
 
 @item -mrestrict-it
 @opindex mrestrict-it
@@ -14535,7 +14632,7 @@ instruction set support.
 
 @item slm
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2 and POPCNT instruction set support.
+SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -15038,8 +15135,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mrtm
 @itemx -mtbm
 @itemx -mno-tbm
-@itemx -mmpx
-@itemx -mno-mpx
 @opindex mmmx
 @opindex mno-mmx
 @opindex msse
@@ -15049,7 +15144,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MPX or 3DNow!@:
+FXSR, XSAVE, XSAVEOPT, LZCNT, RTM or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and

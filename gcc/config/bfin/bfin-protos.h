@@ -105,8 +105,8 @@ extern rtx bfin_va_arg (tree, tree);
 
 extern void bfin_expand_prologue (void);
 extern void bfin_expand_epilogue (int, int, bool);
-extern int push_multiple_operation (rtx, enum machine_mode);
-extern int pop_multiple_operation (rtx, enum machine_mode);
+extern int analyze_push_multiple_operation (rtx);
+extern int analyze_pop_multiple_operation (rtx);
 extern void output_push_multiple (rtx, rtx *);
 extern void output_pop_multiple (rtx, rtx *);
 extern int bfin_hard_regno_rename_ok (unsigned int, unsigned int);

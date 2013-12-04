@@ -56,6 +56,16 @@
 #include "reload.h"
 #include "cfgloop.h"
 #include "sched-int.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "vec.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -28579,10 +28589,23 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 	   name, suffix[smclass], flags & SECTION_ENTSIZE);
 }
 
+#define IN_NAMED_SECTION(DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+
 static section *
 rs6000_xcoff_select_section (tree decl, int reloc,
-			     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+			     unsigned HOST_WIDE_INT align)
 {
+  /* Place variables with alignment stricter than BIGGEST_ALIGNMENT into
+     named section.  */
+  if (align > BIGGEST_ALIGNMENT)
+    {
+      resolve_unique_section (decl, reloc, true);
+      if (IN_NAMED_SECTION (decl))
+	return get_named_section (decl, NULL, reloc);
+    }
+
   if (decl_readonly_section (decl, reloc))
     {
       if (TREE_PUBLIC (decl))
@@ -28620,10 +28643,12 @@ rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 {
   const char *name;
 
-  /* Use select_section for private and uninitialized data.  */
+  /* Use select_section for private data and uninitialized data with
+     alignment <= BIGGEST_ALIGNMENT.  */
   if (!TREE_PUBLIC (decl)
       || DECL_COMMON (decl)
-      || DECL_INITIAL (decl) == NULL_TREE
+      || (DECL_INITIAL (decl) == NULL_TREE
+	  && DECL_ALIGN (decl) <= BIGGEST_ALIGNMENT)
       || DECL_INITIAL (decl) == error_mark_node
       || (flag_zero_initialized_in_bss
 	  && initializer_zerop (DECL_INITIAL (decl))))
@@ -30022,6 +30047,21 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
       vmode = GET_MODE (target);
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
       dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
+
+      /* For little endian, swap operands and invert/swap selectors
+	 to get the correct xxpermdi.  The operand swap sets up the
+	 inputs as a little endian array.  The selectors are swapped
+	 because they are defined to use big endian ordering.  The
+	 selectors are inverted to get the correct doublewords for
+	 little endian ordering.  */
+      if (!BYTES_BIG_ENDIAN)
+	{
+	  int n;
+	  perm0 = 3 - perm0;
+	  perm1 = 3 - perm1;
+	  n = perm0, perm0 = perm1, perm1 = n;
+	  x = op0, op0 = op1, op1 = x;
+	}
 
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));

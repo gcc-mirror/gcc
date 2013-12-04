@@ -35,6 +35,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
+#include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
@@ -884,6 +890,12 @@ struct stack_vars_data
 
   /* Vector of partition representative decls in between the paddings.  */
   vec<tree> asan_decl_vec;
+
+  /* Base pseudo register for Address Sanitizer protected automatic vars.  */
+  rtx asan_base;
+
+  /* Alignment needed for the Address Sanitizer protected automatic vars.  */
+  unsigned int asan_alignb;
 };
 
 /* A subroutine of expand_used_vars.  Give each partition representative
@@ -968,6 +980,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       alignb = stack_vars[i].alignb;
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
+	  base = virtual_stack_vars_rtx;
 	  if ((flag_sanitize & SANITIZE_ADDRESS) && pred)
 	    {
 	      HOST_WIDE_INT prev_offset = frame_offset;
@@ -996,10 +1009,13 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      if (repr_decl == NULL_TREE)
 		repr_decl = stack_vars[i].decl;
 	      data->asan_decl_vec.safe_push (repr_decl);
+	      data->asan_alignb = MAX (data->asan_alignb, alignb);
+	      if (data->asan_base == NULL)
+		data->asan_base = gen_reg_rtx (Pmode);
+	      base = data->asan_base;
 	    }
 	  else
 	    offset = alloc_stack_frame_space (stack_vars[i].size, alignb);
-	  base = virtual_stack_vars_rtx;
 	  base_align = crtl->max_used_stack_slot_alignment;
 	}
       else
@@ -1786,6 +1802,8 @@ expand_used_vars (void)
 
       data.asan_vec = vNULL;
       data.asan_decl_vec = vNULL;
+      data.asan_base = NULL_RTX;
+      data.asan_alignb = 0;
 
       /* Reorder decls to be protected by iterating over the variables
 	 array multiple times, and allocating out of each phase in turn.  */
@@ -1810,16 +1828,25 @@ expand_used_vars (void)
       if (!data.asan_vec.is_empty ())
 	{
 	  HOST_WIDE_INT prev_offset = frame_offset;
-	  HOST_WIDE_INT offset
-	    = alloc_stack_frame_space (ASAN_RED_ZONE_SIZE,
-				       ASAN_RED_ZONE_SIZE);
+	  HOST_WIDE_INT offset, sz, redzonesz;
+	  redzonesz = ASAN_RED_ZONE_SIZE;
+	  sz = data.asan_vec[0] - prev_offset;
+	  if (data.asan_alignb > ASAN_RED_ZONE_SIZE
+	      && data.asan_alignb <= 4096
+	      && sz + ASAN_RED_ZONE_SIZE >= (int) data.asan_alignb)
+	    redzonesz = ((sz + ASAN_RED_ZONE_SIZE + data.asan_alignb - 1)
+			 & ~(data.asan_alignb - HOST_WIDE_INT_1)) - sz;
+	  offset
+	    = alloc_stack_frame_space (redzonesz, ASAN_RED_ZONE_SIZE);
 	  data.asan_vec.safe_push (prev_offset);
 	  data.asan_vec.safe_push (offset);
 
 	  var_end_seq
 	    = asan_emit_stack_protection (virtual_stack_vars_rtx,
+					  data.asan_base,
+					  data.asan_alignb,
 					  data.asan_vec.address (),
-					  data.asan_decl_vec. address (),
+					  data.asan_decl_vec.address (),
 					  data.asan_vec.length ());
 	}
 
@@ -2159,21 +2186,11 @@ expand_call_stmt (gimple stmt)
       return;
     }
 
+  exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
+
+  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
   decl = gimple_call_fndecl (stmt);
   builtin_p = decl && DECL_BUILT_IN (decl);
-
-  /* Bind bounds call is expanded as assignment.  */
-  if (builtin_p
-      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (decl) == BUILT_IN_CHKP_BIND_BOUNDS)
-    {
-      expand_assignment (gimple_call_lhs (stmt),
-			 gimple_call_arg (stmt, 0), false);
-      return;
-    }
-
-  exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
-  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
 
   /* If this is not a builtin function, the function type through which the
      call is made may be different from the type of the function.  */

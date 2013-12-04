@@ -24,6 +24,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tm.h"
 #include "langhooks.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
@@ -34,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "flags.h"
-#include "ggc.h"
 #include "diagnostic.h"
 #include "target.h"
 
@@ -1006,8 +1011,13 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
   tree *cst;
   gimple g;
   tree base = NULL_TREE;
+  optab op;
 
   if (nelts <= 2 || CONSTRUCTOR_NELTS (rhs) != nelts)
+    return;
+  op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
+  if (op == unknown_optab
+      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
     return;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (rhs), i, elt)
     if (TREE_CODE (elt->value) != SSA_NAME

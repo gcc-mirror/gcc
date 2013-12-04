@@ -1138,6 +1138,13 @@ class Type
 			  Function_type* equal_fntype, Named_object** hash_fn,
 			  Named_object** equal_fn);
 
+  void
+  write_named_hash(Gogo*, Named_type*, Function_type* hash_fntype,
+		   Function_type* equal_fntype);
+
+  void
+  write_named_equal(Gogo*, Named_type*);
+
   // Build a composite literal for the uncommon type information.
   Expression*
   uncommon_type_constructor(Gogo*, Type* uncommon_type,
@@ -1839,6 +1846,27 @@ class Function_type : public Type
   Expression*
   type_descriptor_params(Type*, const Typed_identifier*,
 			 const Typed_identifier_list*);
+
+  // A mapping from a list of result types to a backend struct type.
+  class Results_hash
+  {
+  public:
+    unsigned int
+    operator()(const Typed_identifier_list*) const;
+  };
+
+  class Results_equal
+  {
+  public:
+    bool
+    operator()(const Typed_identifier_list*,
+	       const Typed_identifier_list*) const;
+  };
+
+  typedef Unordered_map_hash(Typed_identifier_list*, Btype*,
+			     Results_hash, Results_equal) Results_structs;
+
+  static Results_structs results_structs;
 
   // The receiver name and type.  This will be NULL for a normal
   // function, non-NULL for a method.
@@ -2552,8 +2580,9 @@ class Interface_type : public Type
   Interface_type(Typed_identifier_list* methods, Location location)
     : Type(TYPE_INTERFACE),
       parse_methods_(methods), all_methods_(NULL), location_(location),
-      interface_btype_(NULL), assume_identical_(NULL),
-      methods_are_finalized_(false), seen_(false)
+      interface_btype_(NULL), bmethods_(NULL), assume_identical_(NULL),
+      methods_are_finalized_(false), bmethods_is_placeholder_(false),
+      seen_(false)
   { go_assert(methods == NULL || !methods->empty()); }
 
   // The location where the interface type was defined.
@@ -2619,6 +2648,15 @@ class Interface_type : public Type
   // Make a struct for an empty interface type.
   static Btype*
   get_backend_empty_interface_type(Gogo*);
+
+  // Get a pointer to the backend representation of the method table.
+  Btype*
+  get_backend_methods(Gogo*);
+
+  // Return a placeholder for the backend representation of the
+  // pointer to the method table.
+  Btype*
+  get_backend_methods_placeholder(Gogo*);
 
   // Finish the backend representation of the method types.
   void
@@ -2686,11 +2724,15 @@ class Interface_type : public Type
   Location location_;
   // The backend representation of this type during backend conversion.
   Btype* interface_btype_;
+  // The backend representation of the pointer to the method table.
+  Btype* bmethods_;
   // A list of interface types assumed to be identical during
   // interface comparison.
   mutable Assume_identical* assume_identical_;
   // Whether the methods have been finalized.
   bool methods_are_finalized_;
+  // Whether the bmethods_ field is a placeholder.
+  bool bmethods_is_placeholder_;
   // Used to avoid endless recursion in do_mangled_name.
   mutable bool seen_;
 };

@@ -2,3 +2,8 @@ GCC_4.8 {
   __cxa_atexit
   __cxa_finalize
 }
+
+GCC_4.9 {
+  _GLOBAL__AIXI_shr_o
+  _GLOBAL__AIXD_shr_o
+}

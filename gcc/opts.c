@@ -1450,6 +1450,7 @@ common_handle_option (struct gcc_options *opts,
 	    {
 	      { "address", SANITIZE_ADDRESS, sizeof "address" - 1 },
 	      { "thread", SANITIZE_THREAD, sizeof "thread" - 1 },
+	      { "leak", SANITIZE_LEAK, sizeof "leak" - 1 },
 	      { "shift", SANITIZE_SHIFT, sizeof "shift" - 1 },
 	      { "integer-divide-by-zero", SANITIZE_DIVIDE,
 		sizeof "integer-divide-by-zero" - 1 },
@@ -1457,6 +1458,7 @@ common_handle_option (struct gcc_options *opts,
 	      { "unreachable", SANITIZE_UNREACHABLE,
 		sizeof "unreachable" - 1 },
 	      { "vla-bound", SANITIZE_VLA, sizeof "vla-bound" - 1 },
+	      { "return", SANITIZE_RETURN, sizeof "return" - 1 },
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
 	      { NULL, 0, 0 }
 	    };
@@ -1707,7 +1709,7 @@ common_handle_option (struct gcc_options *opts,
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
       /* Indirect call profiling should do all useful transformations
- 	 speculative devirutalization does.  */
+ 	 speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively
 	  && opts->x_flag_value_profile_transformations)
 	opts->x_flag_devirtualize_speculatively = false;

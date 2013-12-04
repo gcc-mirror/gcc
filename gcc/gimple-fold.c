@@ -31,6 +31,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "dumpfile.h"
 #include "bitmap.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -3414,7 +3420,7 @@ gimple_fold_indirect_ref (tree t)
           unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
           tree index = bitsize_int (indexi);
           if (offset / part_widthi
-              <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
+	      < TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
             return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (addr, 0),
                                 part_width, index);
 	}

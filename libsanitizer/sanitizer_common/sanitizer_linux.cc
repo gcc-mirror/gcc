@@ -785,7 +785,6 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                         *                %r8  = new_tls,
                         *                %r10 = child_tidptr)
                         */
-                       ".cfi_endproc\n"
                        "syscall\n"
 
                        /* if (%rax != 0)
@@ -795,8 +794,9 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
                        "jnz    1f\n"
 
                        /* In the child. Terminate unwind chain. */
-                       ".cfi_startproc\n"
-                       ".cfi_undefined %%rip;\n"
+                       // XXX: We should also terminate the CFI unwind chain
+                       // here. Unfortunately clang 3.2 doesn't support the
+                       // necessary CFI directives, so we skip that part.
                        "xorq   %%rbp,%%rbp\n"
 
                        /* Call "fn(arg)". */

@@ -25,6 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "expr.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -515,7 +524,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
-  SET_EXPR_LOCATION (mod, EXPR_LOC_OR_HERE (val));
+  SET_EXPR_LOCATION (mod, EXPR_LOC_OR_LOC (val, input_location));
 
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
@@ -1680,6 +1689,9 @@ gimplify_conversion (tree *expr_p)
 /* Nonlocal VLAs seen in the current function.  */
 static struct pointer_set_t *nonlocal_vlas;
 
+/* The VAR_DECLs created for nonlocal VLAs for debug info purposes.  */
+static tree nonlocal_vla_vars;
+
 /* Gimplify a VAR_DECL or PARM_DECL.  Return GS_OK if we expanded a
    DECL_VALUE_EXPR, and it's worth re-examining things.  */
 
@@ -1728,14 +1740,13 @@ gimplify_var_or_parm_decl (tree *expr_p)
 	    ctx = ctx->outer_context;
 	  if (!ctx && !pointer_set_insert (nonlocal_vlas, decl))
 	    {
-	      tree copy = copy_node (decl), block;
+	      tree copy = copy_node (decl);
 
 	      lang_hooks.dup_lang_specific_decl (copy);
 	      SET_DECL_RTL (copy, 0);
 	      TREE_USED (copy) = 1;
-	      block = DECL_INITIAL (current_function_decl);
-	      DECL_CHAIN (copy) = BLOCK_VARS (block);
-	      BLOCK_VARS (block) = copy;
+	      DECL_CHAIN (copy) = nonlocal_vla_vars;
+	      nonlocal_vla_vars = copy;
 	      SET_DECL_VALUE_EXPR (copy, unshare_expr (value_expr));
 	      DECL_HAS_VALUE_EXPR_P (copy) = 1;
 	    }
@@ -1746,6 +1757,59 @@ gimplify_var_or_parm_decl (tree *expr_p)
     }
 
   return GS_ALL_DONE;
+}
+
+/* Recalculate the value of the TREE_SIDE_EFFECTS flag for T.  */
+
+static void
+recalculate_side_effects (tree t)
+{
+  enum tree_code code = TREE_CODE (t);
+  int len = TREE_OPERAND_LENGTH (t);
+  int i;
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case tcc_expression:
+      switch (code)
+	{
+	case INIT_EXPR:
+	case MODIFY_EXPR:
+	case VA_ARG_EXPR:
+	case PREDECREMENT_EXPR:
+	case PREINCREMENT_EXPR:
+	case POSTDECREMENT_EXPR:
+	case POSTINCREMENT_EXPR:
+	  /* All of these have side-effects, no matter what their
+	     operands are.  */
+	  return;
+
+	default:
+	  break;
+	}
+      /* Fall through.  */
+
+    case tcc_comparison:  /* a comparison expression */
+    case tcc_unary:       /* a unary arithmetic expression */
+    case tcc_binary:      /* a binary arithmetic expression */
+    case tcc_reference:   /* a reference */
+    case tcc_vl_exp:        /* a function call */
+      TREE_SIDE_EFFECTS (t) = TREE_THIS_VOLATILE (t);
+      for (i = 0; i < len; ++i)
+	{
+	  tree op = TREE_OPERAND (t, i);
+	  if (op && TREE_SIDE_EFFECTS (op))
+	    TREE_SIDE_EFFECTS (t) = 1;
+	}
+      break;
+
+    case tcc_constant:
+      /* No side-effects.  */
+      return;
+
+    default:
+      gcc_unreachable ();
+   }
 }
 
 /* Gimplify the COMPONENT_REF, ARRAY_REF, REALPART_EXPR or IMAGPART_EXPR
@@ -2514,7 +2578,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ANDIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_LOC_OR_HERE (expr);
+	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the && on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2536,7 +2600,7 @@ shortcut_cond_expr (tree expr)
       while (TREE_CODE (pred) == TRUTH_ORIF_EXPR)
 	{
 	  /* Keep the original source location on the first 'if'.  */
-	  location_t locus = EXPR_LOC_OR_HERE (expr);
+	  location_t locus = EXPR_LOC_OR_LOC (expr, input_location);
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  /* Set the source location of the || on the second 'if'.  */
 	  if (EXPR_HAS_LOCATION (pred))
@@ -2600,7 +2664,7 @@ shortcut_cond_expr (tree expr)
   /* If there was nothing else in our arms, just forward the label(s).  */
   if (!then_se && !else_se)
     return shortcut_cond_r (pred, true_label_p, false_label_p,
-			    EXPR_LOC_OR_HERE (expr));
+			    EXPR_LOC_OR_LOC (expr, input_location));
 
   /* If our last subexpression already has a terminal label, reuse it.  */
   if (else_se)
@@ -2632,7 +2696,7 @@ shortcut_cond_expr (tree expr)
   jump_over_else = block_may_fallthru (then_);
 
   pred = shortcut_cond_r (pred, true_label_p, false_label_p,
-			  EXPR_LOC_OR_HERE (expr));
+			  EXPR_LOC_OR_LOC (expr, input_location));
 
   expr = NULL;
   append_to_statement_list (pred, &expr);
@@ -3712,19 +3776,10 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   individual element initialization.  Also don't do this for small
 	   all-zero initializers (which aren't big enough to merit
 	   clearing), and don't try to make bitwise copies of
-	   TREE_ADDRESSABLE types.
-
-	   We cannot apply such transformation when compiling chkp static
-	   initializer because creation of initializer image in the memory
-	   will require static initialization of bounds for it.  It should
-	   result in another gimplification of similar initializer and we
-	   may fall into infinite loop.  */
+	   TREE_ADDRESSABLE types.  */
 	if (valid_const_initializer
 	    && !(cleared || num_nonzero_elements == 0)
-	    && !TREE_ADDRESSABLE (type)
-	    && (!current_function_decl
-		|| !lookup_attribute ("chkp ctor",
-				      DECL_ATTRIBUTES (current_function_decl))))
+	    && !TREE_ADDRESSABLE (type))
 	  {
 	    HOST_WIDE_INT size = int_size_in_bytes (type);
 	    unsigned int align;
@@ -8509,6 +8564,21 @@ gimplify_body (tree fndecl, bool do_parms)
 
   if (nonlocal_vlas)
     {
+      if (nonlocal_vla_vars)
+	{
+	  /* tree-nested.c may later on call declare_vars (..., true);
+	     which relies on BLOCK_VARS chain to be the tail of the
+	     gimple_bind_vars chain.  Ensure we don't violate that
+	     assumption.  */
+	  if (gimple_bind_block (outer_bind)
+	      == DECL_INITIAL (current_function_decl))
+	    declare_vars (nonlocal_vla_vars, outer_bind, true);
+	  else
+	    BLOCK_VARS (DECL_INITIAL (current_function_decl))
+	      = chainon (BLOCK_VARS (DECL_INITIAL (current_function_decl)),
+			 nonlocal_vla_vars);
+	  nonlocal_vla_vars = NULL_TREE;
+	}
       pointer_set_destroy (nonlocal_vlas);
       nonlocal_vlas = NULL;
     }

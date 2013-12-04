@@ -23,11 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "pointer-set.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "langhooks.h"
-#include "pointer-set.h"
 #include "intl.h"
 #include "tree-pass.h"
 #include "ipa-utils.h"
@@ -329,6 +335,8 @@ build_cgraph_edges (void)
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl),
 				    stmt, bb->count, freq);
+	      else if (gimple_call_internal_p (stmt))
+		;
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),
@@ -458,6 +466,8 @@ rebuild_cgraph_edges (void)
 	      if (decl)
 		cgraph_create_edge (node, cgraph_get_create_node (decl), stmt,
 				    bb->count, freq);
+	      else if (gimple_call_internal_p (stmt))
+		;
 	      else
 		cgraph_create_indirect_edge (node, stmt,
 					     gimple_call_flags (stmt),

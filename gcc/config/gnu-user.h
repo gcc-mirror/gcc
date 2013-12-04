@@ -126,11 +126,3 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -ltsan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libtsan:-ltsan}"
 #endif
-
-/* Additional libraries needed by -static-libasan.  */
-#undef STATIC_LIBASAN_LIBS
-#define STATIC_LIBASAN_LIBS "-ldl -lpthread"
-
-/* Additional libraries needed by -static-libtsan.  */
-#undef STATIC_LIBTSAN_LIBS
-#define STATIC_LIBTSAN_LIBS "-ldl -lpthread"

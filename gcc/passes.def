@@ -117,6 +117,7 @@ along with GCC; see the file COPYING3.  If not see
      compiled unit.  */
   INSERT_PASSES_AFTER (all_late_ipa_passes)
   NEXT_PASS (pass_ipa_pta);
+  NEXT_PASS (pass_omp_simd_clone);
   TERMINATE_PASS_LIST ()
 
   /* These passes are run after IPA passes on every function that is being

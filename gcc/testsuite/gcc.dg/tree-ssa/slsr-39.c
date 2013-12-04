@@ -6,7 +6,7 @@
     *PINDEX:   C1 + (C2 * C3) + C4  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-slsr" } */
+/* { dg-options "-O2 -fdump-tree-slsr-details" } */
 
 typedef int arr_2[50][50];
 
@@ -22,5 +22,5 @@ void foo (arr_2 a2, int v1)
   return;
 }
 
-/* { dg-final { scan-tree-dump-times "MEM" 4 "slsr" } } */
+/* { dg-final { scan-tree-dump-times "Replacing reference: " 4 "slsr" } } */
 /* { dg-final { cleanup-tree-dump "slsr" } } */

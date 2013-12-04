@@ -2380,11 +2380,10 @@ compute_regs_asm_clobbered (void)
 }
 
 
-/* Set up ELIMINABLE_REGSET, IRA_NO_ALLOC_REGS, and REGS_EVER_LIVE.
-   If the function is called from IRA (not from the insn scheduler or
-   RTL loop invariant motion), FROM_IRA_P is true.  */
+/* Set up ELIMINABLE_REGSET, IRA_NO_ALLOC_REGS, and
+   REGS_EVER_LIVE.  */
 void
-ira_setup_eliminable_regset (bool from_ira_p)
+ira_setup_eliminable_regset (void)
 {
 #ifdef ELIMINABLE_REGS
   int i;
@@ -2401,16 +2400,16 @@ ira_setup_eliminable_regset (bool from_ira_p)
 	  if the stack pointer is moving.  */
        || (flag_stack_check && STACK_CHECK_MOVING_SP)
        || crtl->accesses_prior_frames
-       || crtl->stack_realign_needed
+       || (SUPPORTS_STACK_ALIGNMENT && crtl->stack_realign_needed)
        /* We need a frame pointer for all Cilk Plus functions that use
 	  Cilk keywords.  */
        || (flag_enable_cilkplus && cfun->is_cilk_function)
        || targetm.frame_pointer_required ());
 
-  if (from_ira_p && ira_use_lra_p)
-    /* It can change FRAME_POINTER_NEEDED.  We call it only from IRA
-       because it is expensive.  */
-    lra_init_elimination ();
+    /* The chance that FRAME_POINTER_NEEDED is changed from inspecting
+       RTL is very small.  So if we use frame pointer for RA and RTL
+       actually prevents this, we will spill pseudos assigned to the
+       frame pointer in LRA.  */
 
   if (frame_pointer_needed)
     df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
@@ -4812,7 +4811,7 @@ find_moveable_pseudos (void)
 	{
 	  rtx def_reg = DF_REF_REG (def);
 	  rtx newreg = ira_create_new_reg (def_reg);
-	  if (validate_change (def_insn, DF_REF_LOC (def), newreg, 0))
+	  if (validate_change (def_insn, DF_REF_REAL_LOC (def), newreg, 0))
 	    {
 	      unsigned nregno = REGNO (newreg);
 	      emit_insn_before (gen_move_insn (def_reg, newreg), use_insn);
@@ -4847,17 +4846,13 @@ find_moveable_pseudos (void)
   free_dominance_info (CDI_DOMINATORS);
 }
 
-
-/* If insn is interesting for parameter range-splitting shring-wrapping
-   preparation, i.e. it is a single set from a hard register to a pseudo, which
-   is live at CALL_DOM, return the destination.  Otherwise return NULL.  */
+/* If SET pattern SET is an assignment from a hard register to a pseudo which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), return
+   the destination.  Otherwise return NULL.  */
 
 static rtx
-interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+interesting_dest_for_shprep_1 (rtx set, basic_block call_dom)
 {
-  rtx set = single_set (insn);
-  if (!set)
-    return NULL;
   rtx src = SET_SRC (set);
   rtx dest = SET_DEST (set);
   if (!REG_P (src) || !HARD_REGISTER_P (src)
@@ -4865,6 +4860,41 @@ interesting_dest_for_shprep (rtx insn, basic_block call_dom)
       || (call_dom && !bitmap_bit_p (df_get_live_in (call_dom), REGNO (dest))))
     return NULL;
   return dest;
+}
+
+/* If insn is interesting for parameter range-splitting shring-wrapping
+   preparation, i.e. it is a single set from a hard register to a pseudo, which
+   is live at CALL_DOM (if non-NULL, otherwise this check is omitted), or a
+   parallel statement with only one such statement, return the destination.
+   Otherwise return NULL.  */
+
+static rtx
+interesting_dest_for_shprep (rtx insn, basic_block call_dom)
+{
+  if (!INSN_P (insn))
+    return NULL;
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == SET)
+    return interesting_dest_for_shprep_1 (pat, call_dom);
+
+  if (GET_CODE (pat) != PARALLEL)
+    return NULL;
+  rtx ret = NULL;
+  for (int i = 0; i < XVECLEN (pat, 0); i++)
+    {
+      rtx sub = XVECEXP (pat, 0, i);
+      if (GET_CODE (sub) == USE || GET_CODE (sub) == CLOBBER)
+	continue;
+      if (GET_CODE (sub) != SET
+	  || side_effects_p (sub))
+	return NULL;
+      rtx dest = interesting_dest_for_shprep_1 (sub, call_dom);
+      if (dest && ret)
+	return NULL;
+      if (dest)
+	ret = dest;
+    }
+  return ret;
 }
 
 /* Split live ranges of pseudos that are loaded from hard registers in the
@@ -5003,7 +5033,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       rtx newreg = NULL_RTX;
       df_ref use, next;
-      for (use = DF_REG_USE_CHAIN (REGNO(dest)); use; use = next)
+      for (use = DF_REG_USE_CHAIN (REGNO (dest)); use; use = next)
 	{
 	  rtx uin = DF_REF_INSN (use);
 	  next = DF_REF_NEXT_REG (use);
@@ -5014,7 +5044,7 @@ split_live_ranges_for_shrink_wrap (void)
 	    {
 	      if (!newreg)
 		newreg = ira_create_new_reg (dest);
-	      validate_change (uin, DF_REF_LOC (use), newreg, true);
+	      validate_change (uin, DF_REF_REAL_LOC (use), newreg, true);
 	    }
 	}
 
@@ -5260,7 +5290,7 @@ ira (FILE *f)
     find_moveable_pseudos ();
 
   max_regno_before_ira = max_reg_num ();
-  ira_setup_eliminable_regset (true);
+  ira_setup_eliminable_regset ();
 
   ira_overall_cost = ira_reg_cost = ira_mem_cost = 0;
   ira_load_cost = ira_store_cost = ira_shuffle_cost = 0;

@@ -1,3 +1,24 @@
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR lto/59326
+	* lto.c (compare_tree_sccs_1): Handle OMP_CLAUSE.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/59326
+	* lto.c (mentions_vars_p_omp_clause): New function.
+	(mentions_vars_p): Call it for OMP_CLAUSE.  Remove break;
+	after return stmts.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto.c: Add required include files from gimple.h.
+	* lto-lang.c: Likewise
+	* lto-object.c: Likewise
+	* lto-partition.c: Likewise
+	* lto-symtab.c: Likewise
+
 2013-11-18  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* lto-partition.c lto-symtab.c lto.c Adjust.

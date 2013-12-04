@@ -26,12 +26,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "cgraph.h"
 #include "tree-pass.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "gimple-walk.h"
 #include "hashtab.h"
-#include "pointer-set.h"
 #include "output.h"
 #include "tm_p.h"
 #include "toplev.h"
@@ -233,7 +235,7 @@ ubsan_source_location (location_t loc)
 				      build_index_type (size_int (len)));
   TREE_READONLY (str) = 1;
   TREE_STATIC (str) = 1;
-  str = build_fold_addr_expr_loc (loc, str);
+  str = build_fold_addr_expr (str);
   tree ctor = build_constructor_va (type, 3, NULL_TREE, str, NULL_TREE,
 				    build_int_cst (unsigned_type_node,
 						   xloc.line), NULL_TREE,
@@ -270,8 +272,12 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   type = TYPE_MAIN_VARIANT (type);
 
   tree decl = decl_for_type_lookup (type);
-  if (decl != NULL_TREE)
-    return decl;
+  /* It is possible that some of the earlier created DECLs were found
+     unused, in that case they weren't emitted and varpool_get_node
+     returns NULL node on them.  But now we really need them.  Thus,
+     renew them here.  */
+  if (decl != NULL_TREE && varpool_get_node (decl))
+    return build_fold_addr_expr (decl);
 
   tree dtype = ubsan_type_descriptor_type ();
   tree type2 = type;
@@ -370,11 +376,10 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
   DECL_INITIAL (decl) = ctor;
   rest_of_decl_compilation (decl, 1, 0);
 
-  /* Save the address of the VAR_DECL into the hash table.  */
-  decl = build_fold_addr_expr (decl);
+  /* Save the VAR_DECL into the hash table.  */
   decl_for_type_insert (type, decl);
 
-  return decl;
+  return build_fold_addr_expr (decl);
 }
 
 /* Create a structure for the ubsan library.  NAME is a name of the new
@@ -388,7 +393,7 @@ ubsan_create_data (const char *name, location_t loc,
 {
   va_list args;
   tree ret, t;
-  tree fields[3];
+  tree fields[5];
   vec<tree, va_gc> *saved_args = NULL;
   size_t i = 0;
 
@@ -396,6 +401,7 @@ ubsan_create_data (const char *name, location_t loc,
   tree td_type = ubsan_type_descriptor_type ();
   TYPE_READONLY (td_type) = 1;
   td_type = build_pointer_type (td_type);
+  loc = LOCATION_LOCUS (loc);
 
   /* Create the structure type.  */
   ret = make_node (RECORD_TYPE);
@@ -426,7 +432,7 @@ ubsan_create_data (const char *name, location_t loc,
     {
       /* We have to add two more decls.  */
       fields[i] = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-				pointer_sized_int_node);
+			      pointer_sized_int_node);
       DECL_CONTEXT (fields[i]) = ret;
       DECL_CHAIN (fields[i - 1]) = fields[i];
       i++;
@@ -608,24 +614,22 @@ instrument_mem_ref (tree t, gimple_stmt_iterator *iter, bool is_lhs)
   gsi_insert_before (iter, g, GSI_SAME_STMT);
 }
 
-/* Callback function for the pointer instrumentation.  */
+/* Perform the pointer instrumentation.  */
 
-static tree
-instrument_null (tree *tp, int * /*walk_subtree*/, void *data)
+static void
+instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
 {
-  tree t = *tp;
+  gimple stmt = gsi_stmt (gsi);
+  tree t = is_lhs ? gimple_get_lhs (stmt) : gimple_assign_rhs1 (stmt);
+  t = get_base_address (t);
   const enum tree_code code = TREE_CODE (t);
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-
   if (code == MEM_REF
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
-    instrument_mem_ref (TREE_OPERAND (t, 0), &wi->gsi, wi->is_lhs);
+    instrument_mem_ref (TREE_OPERAND (t, 0), &gsi, is_lhs);
   else if (code == ADDR_EXPR
 	   && POINTER_TYPE_P (TREE_TYPE (t))
 	   && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == METHOD_TYPE)
-    instrument_member_call (&wi->gsi);
-
-  return NULL_TREE;
+    instrument_member_call (&gsi);
 }
 
 /* Gate and execute functions for ubsan pass.  */
@@ -640,17 +644,21 @@ ubsan_pass (void)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
-	  struct walk_stmt_info wi;
 	  gimple stmt = gsi_stmt (gsi);
-	  if (is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt) || gimple_clobber_p (stmt))
 	    {
 	      gsi_next (&gsi);
 	      continue;
 	    }
 
-	  memset (&wi, 0, sizeof (wi));
-	  wi.gsi = gsi;
-	  walk_gimple_op (stmt, instrument_null, &wi);
+	  if (flag_sanitize & SANITIZE_NULL)
+	    {
+	      if (gimple_store_p (stmt))
+		instrument_null (gsi, true);
+	      if (gimple_assign_load_p (stmt))
+		instrument_null (gsi, false);
+	    }
+
 	  gsi_next (&gsi);
 	}
     }

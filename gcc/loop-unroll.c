@@ -664,6 +664,9 @@ decide_unroll_constant_iterations (struct loop *loop, int flags)
   if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
     nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
 
+  if (targetm.loop_unroll_adjust)
+    nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
   /* Skip big loops.  */
   if (nunroll <= 1)
     {

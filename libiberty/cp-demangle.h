@@ -122,6 +122,11 @@ struct d_info
      mangled name to the demangled name, such as standard
      substitutions and builtin types.  */
   int expansion;
+  /* Non-zero if we are parsing an expression.  */
+  int is_expression;
+  /* Non-zero if we are parsing the type operand of a conversion
+     operator, but not when in an expression.  */
+  int is_conversion;
 };
 
 /* To avoid running past the ending '\0', don't:

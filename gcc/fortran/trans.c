@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "gimple-expr.h"	/* For create_tmp_var_raw.  */
-#include "gimple.h"
 #include "stringpool.h"
 #include "tree-iterator.h"
 #include "diagnostic-core.h"  /* For internal_error.  */
@@ -424,7 +423,7 @@ trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
     }
   else
     asprintf (&message, "In file '%s', around line %d",
-	      gfc_source_file, input_line + 1);
+	      gfc_source_file, LOCATION_LINE (input_location) + 1);
 
   arg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_localized_cstring_const (message));

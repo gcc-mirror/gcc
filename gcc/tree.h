@@ -558,21 +558,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Nonzero if this type is a complete type.  */
 #define COMPLETE_TYPE_P(NODE) (TYPE_SIZE (NODE) != NULL_TREE)
 
-/* Nonzero if this type is a pointer bounds type.  */
-#define POINTER_BOUNDS_TYPE_P(NODE) \
-  (TREE_CODE (NODE) == POINTER_BOUNDS_TYPE)
-
-/* Nonzero if this node has a pointer bounds type.  */
-#define POINTER_BOUNDS_P(NODE) \
-  (POINTER_BOUNDS_TYPE_P (TREE_TYPE (NODE)))
-
-/* Nonzero if this type supposes bounds existence.  */
-#define BOUNDED_TYPE_P(type) (POINTER_TYPE_P (type))
-
-/* Nonzero for objects with bounded type.  */
-#define BOUNDED_P(node) \
-  BOUNDED_TYPE_P (TREE_TYPE (node))
-
 /* Nonzero if this type is the (possibly qualified) void type.  */
 #define VOID_TYPE_P(NODE) (TREE_CODE (NODE) == VOID_TYPE)
 
@@ -849,9 +834,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_ALLOCA_FOR_VAR_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
-/* In a CALL_EXPR, means call was instrumented by Pointer Bounds Checker.  */
-#define CALL_WITH_BOUNDS_P(NODE) (CALL_EXPR_CHECK (NODE)->base.deprecated_flag)
-
 /* In a type, nonzero means that all objects of the type are guaranteed by the
    language or front-end to be properly aligned, so we can indicate that a MEM
    of this type is aligned at least to the alignment of the type, even if it
@@ -1050,8 +1032,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   != UNKNOWN_LOCATION)
 /* The location to be used in a diagnostic about this expression.  Do not
    use this macro if the location will be assigned to other expressions.  */
-#define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) \
-				? (NODE)->exp.locus : input_location)
 #define EXPR_LOC_OR_LOC(NODE, LOCUS) (EXPR_HAS_LOCATION (NODE) \
 				      ? (NODE)->exp.locus : (LOCUS))
 #define EXPR_FILENAME(NODE) LOCATION_FILE (EXPR_CHECK ((NODE))->exp.locus)
@@ -1351,6 +1331,10 @@ extern void protected_set_expr_location (tree, location_t);
    are declared inside of the simd construct.  */
 #define OMP_CLAUSE_LINEAR_NO_COPYOUT(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR))
+
+/* True if a LINEAR clause has a stride that is variable.  */
+#define OMP_CLAUSE_LINEAR_VARIABLE_STRIDE(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR))
 
 #define OMP_CLAUSE_LINEAR_STEP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR), 1)
@@ -3272,8 +3256,6 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
 #define complex_float_type_node		global_trees[TI_COMPLEX_FLOAT_TYPE]
 #define complex_double_type_node	global_trees[TI_COMPLEX_DOUBLE_TYPE]
 #define complex_long_double_type_node	global_trees[TI_COMPLEX_LONG_DOUBLE_TYPE]
-
-#define pointer_bounds_type_node        global_trees[TI_POINTER_BOUNDS_TYPE]
 
 #define void_type_node			global_trees[TI_VOID_TYPE]
 /* The C type `void *'.  */

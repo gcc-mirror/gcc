@@ -24,12 +24,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "dumpfile.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "target.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -2173,7 +2176,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
     }
 
   /* Cost model: check if the vectorization is worthwhile.  */
-  if (!unlimited_cost_model ()
+  if (!unlimited_cost_model (NULL)
       && !vect_bb_vectorization_profitable_p (bb_vinfo))
     {
       if (dump_enabled_p ())

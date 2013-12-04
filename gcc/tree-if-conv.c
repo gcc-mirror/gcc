@@ -89,6 +89,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -207,7 +212,7 @@ free_bb_predicate (basic_block bb)
       gimple_stmt_iterator i;
 
       for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
-	free_stmt_operands (gsi_stmt (i));
+	free_stmt_operands (cfun, gsi_stmt (i));
     }
 
   free (bb->aux);

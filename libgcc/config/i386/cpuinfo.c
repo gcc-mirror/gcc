@@ -170,6 +170,11 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      /* Atom.  */
 	      __cpu_model.__cpu_type = INTEL_ATOM;
 	      break;
+	    case 0x37:
+	    case 0x4d:
+	      /* Silvermont.  */
+	      __cpu_model.__cpu_type = INTEL_SLM;
+	      break;
 	    case 0x1a:
 	    case 0x1e:
 	    case 0x1f:

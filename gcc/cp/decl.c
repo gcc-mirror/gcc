@@ -377,7 +377,8 @@ pop_label (tree label, tree old_value)
 	  location_t location;
 
 	  error ("label %q+D used but not defined", label);
-	  location = input_location; /* FIXME want (input_filename, (line)0) */
+	  location = input_location;
+	    /* FIXME want (LOCATION_FILE (input_location), (line)0) */
 	  /* Avoid crashing later.  */
 	  define_label (location, DECL_NAME (label));
 	}
@@ -1704,25 +1705,47 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE)
 	    t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
 
-	  for (; t1 && t1 != void_list_node;
-	       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
-	    if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
-	      {
-		if (1 == simple_cst_equal (TREE_PURPOSE (t1),
-					   TREE_PURPOSE (t2)))
+	  if (TREE_CODE (TREE_TYPE (newdecl)) == METHOD_TYPE
+	      && CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (newdecl)))
+	    {
+	      /* C++11 8.3.6/6.
+		 Default arguments for a member function of a class template
+		 shall be specified on the initial declaration of the member
+		 function within the class template.  */
+	      for (; t2 && t2 != void_list_node; t2 = TREE_CHAIN (t2))
+		if (TREE_PURPOSE (t2))
 		  {
-		    permerror (input_location, "default argument given for parameter %d of %q#D",
-			       i, newdecl);
-		    permerror (input_location, "after previous specification in %q+#D", olddecl);
+		    permerror (input_location,
+			       "redeclaration of %q#D may not have default "
+			       "arguments", newdecl);
+		    break;
 		  }
-		else
+	    }
+	  else
+	    {
+	      for (; t1 && t1 != void_list_node;
+		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
+		if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
 		  {
-		    error ("default argument given for parameter %d of %q#D",
-			   i, newdecl);
-		    error ("after previous specification in %q+#D",
-				 olddecl);
+		    if (1 == simple_cst_equal (TREE_PURPOSE (t1),
+					       TREE_PURPOSE (t2)))
+		      {
+			permerror (input_location,
+				   "default argument given for parameter %d "
+				   "of %q#D", i, newdecl);
+			permerror (input_location,
+				   "after previous specification in %q+#D",
+				   olddecl);
+		      }
+		    else
+		      {
+			error ("default argument given for parameter %d "
+			       "of %q#D", i, newdecl);
+			error ("after previous specification in %q+#D",
+			       olddecl);
+		      }
 		  }
-	      }
+	    }
 	}
     }
 
@@ -3093,7 +3116,7 @@ pop_switch (void)
   location_t switch_location;
 
   /* Emit warnings as needed.  */
-  switch_location = EXPR_LOC_OR_HERE (cs->switch_stmt);
+  switch_location = EXPR_LOC_OR_LOC (cs->switch_stmt, input_location);
   if (!processing_template_decl)
     c_do_switch_warnings (cs->cases, switch_location,
 			  SWITCH_STMT_TYPE (cs->switch_stmt),
@@ -4242,7 +4265,7 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
     error ("multiple types in one declaration");
   else if (declspecs->redefined_builtin_type)
     {
-      if (!in_system_header)
+      if (!in_system_header_at (input_location))
 	permerror (declspecs->locations[ds_redefined_builtin_type_spec],
 		   "redeclaration of C++ built-in type %qT",
 		   declspecs->redefined_builtin_type);
@@ -4293,7 +4316,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
       /* Anonymous unions are objects, so they can have specifiers.  */;
       SET_ANON_AGGR_TYPE_P (declared_type);
 
-      if (TREE_CODE (declared_type) != UNION_TYPE && !in_system_header)
+      if (TREE_CODE (declared_type) != UNION_TYPE
+	  && !in_system_header_at (input_location))
 	pedwarn (input_location, OPT_Wpedantic, "ISO C++ prohibits anonymous structs");
     }
 
@@ -5847,7 +5871,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 
   /* We try to defer namespace-scope static constants so that they are
      not emitted into the object file unnecessarily.  */
-  filename = input_filename;
+  filename = LOCATION_FILE (input_location);
   if (!DECL_VIRTUAL_P (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
@@ -8310,7 +8334,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	       indicated by the state of complain), so that
 	       another substitution can be found.  */
 	    return error_mark_node;
-	  else if (in_system_header)
+	  else if (in_system_header_at (input_location))
 	    /* Allow them in system headers because glibc uses them.  */;
 	  else if (name)
 	    pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids zero-size array %qD", name);
@@ -8392,7 +8416,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 
 	  stabilize_vla_size (itype);
 
-	  if (cxx_dialect >= cxx1y)
+	  if (cxx_dialect >= cxx1y && flag_exceptions)
 	    {
 	      /* If the VLA bound is larger than half the address space,
 	         or less than zero, throw std::bad_array_length.  */
@@ -8411,8 +8435,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 		 LE_EXPR rather than LT_EXPR.  */
 	      tree t = fold_build2 (PLUS_EXPR, TREE_TYPE (itype), itype,
 				    build_one_cst (TREE_TYPE (itype)));
-	      t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t),
-			       ubsan_instrument_vla (input_location, t), t);
+	      t = ubsan_instrument_vla (input_location, t);
 	      finish_expr_stmt (t);
 	    }
 	}
@@ -9097,7 +9120,7 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_was_error_mark_node)
 	/* We've already issued an error, don't complain more.  */;
-      else if (in_system_header || flag_ms_extensions)
+      else if (in_system_header_at (input_location) || flag_ms_extensions)
 	/* Allow it, sigh.  */;
       else if (! is_main)
 	permerror (input_location, "ISO C++ forbids declaration of %qs with no type", name);
@@ -9120,7 +9143,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  error ("%<__int128%> is not supported by this target");
 	  explicit_int128 = false;
 	}
-      else if (pedantic && ! in_system_header)
+      else if (pedantic && ! in_system_header_at (input_location))
 	pedwarn (input_location, OPT_Wpedantic,
 		 "ISO C++ does not support %<__int128%> for %qs", name);
     }
@@ -10255,21 +10278,6 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (decl_context != TYPENAME)
 	{
-	  /* A cv-qualifier-seq shall only be part of the function type
-	     for a non-static member function. A ref-qualifier shall only
-	     .... /same as above/ [dcl.fct] */
-	  if ((type_memfn_quals (type) != TYPE_UNQUALIFIED
-	       || type_memfn_rqual (type) != REF_QUAL_NONE)
-	      && (current_class_type == NULL_TREE || staticp) )
-	    {
-	      error (staticp
-                     ? G_("qualified function types cannot be used to "
-                          "declare static member functions")
-                     : G_("qualified function types cannot be used to "
-                          "declare free functions"));
-	      type = TYPE_MAIN_VARIANT (type);
-	    }
-
 	  /* The qualifiers on the function type become the qualifiers on
 	     the non-static member function. */
 	  memfn_quals |= type_memfn_quals (type);
@@ -10629,7 +10637,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
-		decl = build_lang_decl_loc (declarator->id_loc,
+		decl = build_lang_decl_loc (declarator
+					    ? declarator->id_loc
+					    : input_location,
 					    VAR_DECL, unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
 		/* Even if there is an in-class initialization, DECL

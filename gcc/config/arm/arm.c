@@ -869,6 +869,9 @@ int arm_arch_thumb_hwdiv;
    than core registers.  */
 int prefer_neon_for_64bits = 0;
 
+/* Nonzero if we shouldn't use literal pools.  */
+bool arm_disable_literal_pool = false;
+
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
    we must report the mode of the memory reference from
    TARGET_PRINT_OPERAND to TARGET_PRINT_OPERAND_ADDRESS.  */
@@ -1165,94 +1168,194 @@ const struct cpu_cost_table cortexa15_extra_costs =
 {
   /* ALU */
   {
-    COSTS_N_INSNS (1),	/* Arith.  */
-    COSTS_N_INSNS (1),	/* Logical.  */
-    COSTS_N_INSNS (1),	/* Shift.  */
-    COSTS_N_INSNS (1),	/* Shift_reg.  */
+    0,			/* Arith.  */
+    0,			/* Logical.  */
+    0,			/* Shift.  */
+    0,			/* Shift_reg.  */
     COSTS_N_INSNS (1),	/* Arith_shift.  */
     COSTS_N_INSNS (1),	/* Arith_shift_reg.  */
     COSTS_N_INSNS (1),	/* Log_shift.  */
     COSTS_N_INSNS (1),	/* Log_shift_reg.  */
-    COSTS_N_INSNS (1),	/* Extend.  */
-    COSTS_N_INSNS (2),	/* Extend_arith.  */
-    COSTS_N_INSNS (2),	/* Bfi.  */
-    COSTS_N_INSNS (1),	/* Bfx.  */
-    COSTS_N_INSNS (1),	/* Clz.  */
-    COSTS_N_INSNS (1),	/* non_exec.  */
+    0,			/* Extend.  */
+    COSTS_N_INSNS (1),	/* Extend_arith.  */
+    COSTS_N_INSNS (1),	/* Bfi.  */
+    0,			/* Bfx.  */
+    0,			/* Clz.  */
+    0,			/* non_exec.  */
     true		/* non_exec_costs_exec.  */
   },
   /* MULT SImode */
   {
     {
-      COSTS_N_INSNS (3),	/* Simple.  */
-      COSTS_N_INSNS (4),	/* Flag_setting.  */
-      COSTS_N_INSNS (3),	/* Extend.  */
-      COSTS_N_INSNS (4),	/* Add.  */
-      COSTS_N_INSNS (4),	/* Extend_add.  */
-      COSTS_N_INSNS (19)	/* Idiv.  */
+      COSTS_N_INSNS (2),	/* Simple.  */
+      COSTS_N_INSNS (3),	/* Flag_setting.  */
+      COSTS_N_INSNS (2),	/* Extend.  */
+      COSTS_N_INSNS (2),	/* Add.  */
+      COSTS_N_INSNS (2),	/* Extend_add.  */
+      COSTS_N_INSNS (18)	/* Idiv.  */
     },
     /* MULT DImode */
     {
       0,			/* Simple (N/A).  */
       0,			/* Flag_setting (N/A).  */
-      COSTS_N_INSNS (4),	/* Extend.  */
+      COSTS_N_INSNS (3),	/* Extend.  */
       0,			/* Add (N/A).  */
-      COSTS_N_INSNS (6),	/* Extend_add.  */
+      COSTS_N_INSNS (3),	/* Extend_add.  */
       0				/* Idiv (N/A).  */
     }
   },
   /* LD/ST */
   {
-    COSTS_N_INSNS (4),	/* Load.  */
-    COSTS_N_INSNS (4),	/* Load_sign_extend.  */
-    COSTS_N_INSNS (4),	/* Ldrd.  */
-    COSTS_N_INSNS (5),	/* Ldm_1st.  */
+    COSTS_N_INSNS (3),	/* Load.  */
+    COSTS_N_INSNS (3),	/* Load_sign_extend.  */
+    COSTS_N_INSNS (3),	/* Ldrd.  */
+    COSTS_N_INSNS (4),	/* Ldm_1st.  */
     1,			/* Ldm_regs_per_insn_1st.  */
     2,			/* Ldm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (5),	/* Loadf.  */
-    COSTS_N_INSNS (5),	/* Loadd.  */
-    COSTS_N_INSNS (1),  /* Load_unaligned.  */
-    COSTS_N_INSNS (1),	/* Store.  */
-    COSTS_N_INSNS (1),	/* Strd.  */
-    COSTS_N_INSNS (2),	/* Stm_1st.  */
+    COSTS_N_INSNS (4),	/* Loadf.  */
+    COSTS_N_INSNS (4),	/* Loadd.  */
+    0,			/* Load_unaligned.  */
+    0,			/* Store.  */
+    0,			/* Strd.  */
+    COSTS_N_INSNS (1),	/* Stm_1st.  */
     1,			/* Stm_regs_per_insn_1st.  */
     2,			/* Stm_regs_per_insn_subsequent.  */
-    COSTS_N_INSNS (1),	/* Storef.  */
-    COSTS_N_INSNS (1),	/* Stored.  */
-    COSTS_N_INSNS (1)	/* Store_unaligned.  */
+    0,			/* Storef.  */
+    0,			/* Stored.  */
+    0			/* Store_unaligned.  */
   },
   {
     /* FP SFmode */
     {
-      COSTS_N_INSNS (18),	/* Div.  */
-      COSTS_N_INSNS (5),	/* Mult.  */
-      COSTS_N_INSNS (3),	/* Mult_addsub. */
-      COSTS_N_INSNS (13),	/* Fma.  */
-      COSTS_N_INSNS (5),	/* Addsub.  */
-      COSTS_N_INSNS (5),	/* Fpconst. */
-      COSTS_N_INSNS (3),	/* Neg.  */
-      COSTS_N_INSNS (3),	/* Compare.  */
-      COSTS_N_INSNS (3),	/* Widen.  */
-      COSTS_N_INSNS (3),	/* Narrow.  */
-      COSTS_N_INSNS (3),	/* Toint.  */
-      COSTS_N_INSNS (3),	/* Fromint.  */
-      COSTS_N_INSNS (3)		/* Roundint.  */
+      COSTS_N_INSNS (17),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub. */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst. */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (5),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
     },
     /* FP DFmode */
     {
-      COSTS_N_INSNS (32),	/* Div.  */
+      COSTS_N_INSNS (31),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub.  */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst.  */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (2),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
+    }
+  },
+  /* Vector */
+  {
+    COSTS_N_INSNS (1)	/* Alu.  */
+  }
+};
+
+const struct cpu_cost_table v7m_extra_costs =
+{
+  /* ALU */
+  {
+    0,			/* Arith.  */
+    0,			/* Logical.  */
+    0,			/* Shift.  */
+    0,			/* Shift_reg.  */
+    0,			/* Arith_shift.  */
+    COSTS_N_INSNS (1),	/* Arith_shift_reg.  */
+    0,			/* Log_shift.  */
+    COSTS_N_INSNS (1),	/* Log_shift_reg.  */
+    0,			/* Extend.  */
+    COSTS_N_INSNS (1),	/* Extend_arith.  */
+    0,			/* Bfi.  */
+    0,			/* Bfx.  */
+    0,			/* Clz.  */
+    COSTS_N_INSNS (1),	/* non_exec.  */
+    false		/* non_exec_costs_exec.  */
+  },
+  {
+    /* MULT SImode */
+    {
+      COSTS_N_INSNS (1),	/* Simple.  */
+      COSTS_N_INSNS (1),	/* Flag_setting.  */
+      COSTS_N_INSNS (2),	/* Extend.  */
+      COSTS_N_INSNS (1),	/* Add.  */
+      COSTS_N_INSNS (3),	/* Extend_add.  */
+      COSTS_N_INSNS (8)		/* Idiv.  */
+    },
+    /* MULT DImode */
+    {
+      0,			/* Simple (N/A).  */
+      0,			/* Flag_setting (N/A).  */
+      COSTS_N_INSNS (2),	/* Extend.  */
+      0,			/* Add (N/A).  */
+      COSTS_N_INSNS (3),	/* Extend_add.  */
+      0				/* Idiv (N/A).  */
+    }
+  },
+  /* LD/ST */
+  {
+    COSTS_N_INSNS (2),	/* Load.  */
+    0,			/* Load_sign_extend.  */
+    COSTS_N_INSNS (3),	/* Ldrd.  */
+    COSTS_N_INSNS (2),	/* Ldm_1st.  */
+    1,			/* Ldm_regs_per_insn_1st.  */
+    1,			/* Ldm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (2),	/* Loadf.  */
+    COSTS_N_INSNS (3),	/* Loadd.  */
+    COSTS_N_INSNS (1),  /* Load_unaligned.  */
+    COSTS_N_INSNS (2),	/* Store.  */
+    COSTS_N_INSNS (3),	/* Strd.  */
+    COSTS_N_INSNS (2),	/* Stm_1st.  */
+    1,			/* Stm_regs_per_insn_1st.  */
+    1,			/* Stm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (2),	/* Storef.  */
+    COSTS_N_INSNS (3),	/* Stored.  */
+    COSTS_N_INSNS (1)  /* Store_unaligned.  */
+  },
+  {
+    /* FP SFmode */
+    {
+      COSTS_N_INSNS (7),	/* Div.  */
+      COSTS_N_INSNS (2),	/* Mult.  */
+      COSTS_N_INSNS (5),	/* Mult_addsub.  */
+      COSTS_N_INSNS (3),	/* Fma.  */
+      COSTS_N_INSNS (1),	/* Addsub.  */
+      0,			/* Fpconst.  */
+      0,			/* Neg.  */
+      0,			/* Compare.  */
+      0,			/* Widen.  */
+      0,			/* Narrow.  */
+      0,			/* Toint.  */
+      0,			/* Fromint.  */
+      0				/* Roundint.  */
+    },
+    /* FP DFmode */
+    {
+      COSTS_N_INSNS (15),	/* Div.  */
       COSTS_N_INSNS (5),	/* Mult.  */
-      COSTS_N_INSNS (3),	/* Mult_addsub.  */
-      COSTS_N_INSNS (13),	/* Fma.  */
-      COSTS_N_INSNS (5),	/* Addsub.  */
-      COSTS_N_INSNS (3),	/* Fpconst.  */
-      COSTS_N_INSNS (3),	/* Neg.  */
-      COSTS_N_INSNS (3),	/* Compare.  */
-      COSTS_N_INSNS (3),	/* Widen.  */
-      COSTS_N_INSNS (3),	/* Narrow.  */
-      COSTS_N_INSNS (3),	/* Toint.  */
-      COSTS_N_INSNS (3),	/* Fromint.  */
-      COSTS_N_INSNS (3)		/* Roundint.  */
+      COSTS_N_INSNS (7),	/* Mult_addsub.  */
+      COSTS_N_INSNS (7),	/* Fma.  */
+      COSTS_N_INSNS (3),	/* Addsub.  */
+      0,			/* Fpconst.  */
+      0,			/* Neg.  */
+      0,			/* Compare.  */
+      0,			/* Widen.  */
+      0,			/* Narrow.  */
+      0,			/* Toint.  */
+      0,			/* Fromint.  */
+      0				/* Roundint.  */
     }
   },
   /* Vector */
@@ -1470,7 +1573,7 @@ const struct tune_params arm_cortex_a9_tune =
 const struct tune_params arm_v7m_tune =
 {
   arm_9e_rtx_costs,
-  &generic_extra_costs,
+  &v7m_extra_costs,
   NULL,						/* Sched adj cost.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
@@ -2572,6 +2675,16 @@ arm_option_override (void)
   /* TBD: Dwarf info for apcs frame is not handled yet.  */
   if (TARGET_APCS_FRAME)
     flag_shrink_wrap = false;
+
+  /* We only support -mslow-flash-data on armv7-m targets.  */
+  if (target_slow_flash_data
+      && ((!(arm_arch7 && !arm_arch_notm) && !arm_arch7em)
+	  || (TARGET_THUMB1 || flag_pic || TARGET_NEON)))
+    error ("-mslow-flash-data only supports non-pic code on armv7-m targets");
+
+  /* Currently, for slow flash data, we just disable literal pools.  */
+  if (target_slow_flash_data)
+    arm_disable_literal_pool = true;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -5904,7 +6017,8 @@ require_pic_register (void)
   if (!crtl->uses_pic_offset_table)
     {
       gcc_assert (can_create_pseudo_p ());
-      if (arm_pic_register != INVALID_REGNUM)
+      if (arm_pic_register != INVALID_REGNUM
+	  && !(TARGET_THUMB1 && arm_pic_register > LAST_LO_REGNUM))
 	{
 	  if (!cfun->machine->pic_reg)
 	    cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
@@ -5930,7 +6044,12 @@ require_pic_register (void)
 	      crtl->uses_pic_offset_table = 1;
 	      start_sequence ();
 
-	      arm_load_pic_register (0UL);
+	      if (TARGET_THUMB1 && arm_pic_register != INVALID_REGNUM
+		  && arm_pic_register > LAST_LO_REGNUM)
+		emit_move_insn (cfun->machine->pic_reg,
+				gen_rtx_REG (Pmode, arm_pic_register));
+	      else
+		arm_load_pic_register (0UL);
 
 	      seq = get_insns ();
 	      end_sequence ();
@@ -6189,6 +6308,14 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 	      emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
 	      emit_insn (gen_pic_add_dot_plus_four (pic_reg, pic_reg, labelno));
 	    }
+	  else if (arm_pic_register != INVALID_REGNUM
+		   && arm_pic_register > LAST_LO_REGNUM
+		   && REGNO (pic_reg) <= LAST_LO_REGNUM)
+	    {
+	      emit_insn (gen_pic_load_addr_unified (pic_reg, pic_rtx, labelno));
+	      emit_move_insn (gen_rtx_REG (Pmode, arm_pic_register), pic_reg);
+	      emit_use (gen_rtx_REG (Pmode, arm_pic_register));
+	    }
 	  else
 	    emit_insn (gen_pic_load_addr_unified (pic_reg, pic_rtx, labelno));
 	}
@@ -6416,6 +6543,25 @@ thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	      || (arm_address_register_rtx_p (xop1, strict_p)
 		  && thumb2_legitimate_index_p (mode, xop0, strict_p)));
     }
+
+  /* Normally we can assign constant values to target registers without
+     the help of constant pool.  But there are cases we have to use constant
+     pool like:
+     1) assign a label to register.
+     2) sign-extend a 8bit value to 32bit and then assign to register.
+
+     Constant pool access in format:
+     (set (reg r0) (mem (symbol_ref (".LC0"))))
+     will cause the use of literal pool (later in function arm_reorg).
+     So here we mark such format as an invalid format, then the compiler
+     will adjust it into:
+     (set (reg r0) (symbol_ref (".LC0")))
+     (set (reg r0) (mem (reg r0))).
+     No extra register is required, and (mem (reg r0)) won't cause the use
+     of literal pools.  */
+  else if (arm_disable_literal_pool && code == SYMBOL_REF
+	   && CONSTANT_POOL_ADDRESS_P (x))
+    return 0;
 
   else if (GET_MODE_CLASS (mode) != MODE_FLOAT
 	   && code == SYMBOL_REF
@@ -6834,10 +6980,7 @@ arm_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
     return rclass;
   else
     {
-      if (rclass == GENERAL_REGS
-	  || rclass == HI_REGS
-	  || rclass == NO_REGS
-	  || rclass == STACK_REG)
+      if (rclass == GENERAL_REGS)
 	return LO_REGS;
       else
 	return rclass;
@@ -7072,7 +7215,8 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
       if (CONSTANT_P (xop0) && !symbol_mentioned_p (xop0))
 	xop0 = force_reg (SImode, xop0);
 
-      if (CONSTANT_P (xop1) && !symbol_mentioned_p (xop1))
+      if (CONSTANT_P (xop1) && !CONST_INT_P (xop1)
+	  && !symbol_mentioned_p (xop1))
 	xop1 = force_reg (SImode, xop1);
 
       if (ARM_BASE_REGISTER_RTX_P (xop0)
@@ -10084,6 +10228,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  if (speed_p)
 	    *cost += 2 * extra_cost->alu.shift;
 	}
+      else  /* GET_MODE (XEXP (x, 0)) == SImode.  */
+        *cost = COSTS_N_INSNS (1);
 
       /* Widening beyond 32-bits requires one more insn.  */
       if (mode == DImode)
@@ -16220,6 +16366,19 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
     minipool_fix_head = fix;
 
   minipool_fix_tail = fix;
+}
+
+/* Return maximum allowed cost of synthesizing a 64-bit constant VAL inline.
+   Returns the number of insns needed, or 99 if we always want to synthesize
+   the value.  */
+int
+arm_max_const_double_inline_cost ()
+{
+  /* Let the value get synthesized to avoid the use of literal pools.  */
+  if (arm_disable_literal_pool)
+    return 99;
+
+  return ((optimize_size || arm_ld_sched) ? 3 : 4);
 }
 
 /* Return the cost of synthesizing a 64-bit constant VAL inline.

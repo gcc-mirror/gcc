@@ -2016,6 +2016,34 @@ else
   in_tree_gas=no
 fi
 
+default_ld=
+AC_ARG_ENABLE(ld,
+[[  --enable-ld[=ARG]       build ld [ARG={default,yes,no}]]],
+[case "${enableval}" in
+ no)
+   default_ld=ld.gold
+   ;;
+ esac])
+
+AC_ARG_ENABLE(gold,
+[[  --enable-gold[=ARG]     build gold [ARG={default,yes,no}]]],
+[case "${enableval}" in
+ default)
+   install_gold_as_default=yes
+   ;;
+ yes)
+   if test x${default_ld} != x; then
+     install_gold_as_default=yes
+   fi
+   ;;
+ no)
+   ;;
+ *)
+   AC_MSG_ERROR([invalid --enable-gold argument])
+   ;;
+ esac],
+[install_gold_as_default=no])
+
 # Identify the linker which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the linker
 # which will be driven by the driver program.
@@ -2026,11 +2054,17 @@ fi
 gcc_cv_gld_major_version=
 gcc_cv_gld_minor_version=
 gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
+gcc_cv_ld_gold_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gold
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 
 AS_VAR_SET_IF(gcc_cv_ld,, [
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
+elif test $install_gold_as_default = yes \
+     && test -f $gcc_cv_ld_gold_srcdir/configure.ac \
+     && test -f ../gold/Makefile \
+     && test x$build = x$host; then
+	gcc_cv_ld=../gold/ld-new$build_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
      && test -f ../ld/Makefile \
      && test x$build = x$host; then
@@ -2112,10 +2146,18 @@ changequote(,)dnl
 	gcc_cv_gld_major_version=`expr "$gcc_cv_gld_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gld_minor_version=`expr "$gcc_cv_gld_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
+	ORIGINAL_LD_BFD_FOR_TARGET=../ld/ld-new$build_exeext
+	ORIGINAL_LD_GOLD_FOR_TARGET=../gold/ld-new$build_exeext
 else
 	AC_MSG_RESULT($gcc_cv_ld)
 	in_tree_ld=no
+	gcc_cvs_ld_program=`dirname $gcc_cv_ld`/`basename $gcc_cv_ld $host_exeext`
+	ORIGINAL_LD_BFD_FOR_TARGET=${gcc_cvs_ld_program}.bfd$host_exeext
+	ORIGINAL_LD_GOLD_FOR_TARGET=${gcc_cvs_ld_program}.gold$host_exeext
 fi
+
+AC_SUBST(ORIGINAL_LD_BFD_FOR_TARGET)
+AC_SUBST(ORIGINAL_LD_GOLD_FOR_TARGET)
 
 # Figure out what nm we will be using.
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils

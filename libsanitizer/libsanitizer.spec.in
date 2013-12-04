@@ -1,0 +1,11 @@
+# This spec file is read by gcc when linking.  It is used to specify the
+# standard libraries we need in order to link with various sanitizer libs.
+
+*link_libasan: @link_libasan@
+
+*link_libtsan: @link_libtsan@
+
+*link_libubsan: @link_libubsan@
+
+*link_liblsan: @link_liblsan@
+

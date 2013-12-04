@@ -2,6 +2,7 @@
    floating-point contents expressed in decimal.  PR 21718.  */
 /* { dg-do run } */
 /* { dg-options "-w" } */
+/* { dg-add-options ieee } */
 
 /* For float (if IEEE binary32), double (if IEEE binary64) and long
    double (if IEEE binary64, x86 extended or IEEE binary128) we test
@@ -2292,7 +2293,7 @@ static const long double ld1c =
 182358152808745703724362178773168996492870519432472065091133\
 11767578125001e-4966L;
 /* 0x1.8p-16494 */
-static const long double ld2ae = 0x1p-16494L, ld2be = 0x2p-16494L, ld1ce = 0x2p-16494L;
+static const long double ld2ae = 0x1p-16494L, ld2be = 0x2p-16494L, ld2ce = 0x2p-16494L;
 static const long double ld2a =
 9.7127626791570376663866584373414698287493540070520215145348\
 265837955593101861790565265072369149749103838172122152721795\

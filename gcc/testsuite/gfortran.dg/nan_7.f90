@@ -2,6 +2,7 @@
 ! { dg-options "-fno-range-check" }
 ! { dg-require-effective-target fortran_real_16 }
 ! { dg-require-effective-target fortran_integer_16 }
+! { dg-skip-if "" { "powerpc*le-*-*" } { "*" } { "" } }
 ! PR47293 NAN not correctly read
 character(len=200) :: str
 real(16) :: r

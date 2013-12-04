@@ -51,14 +51,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-#include "basic-block.h"
 #include "hashtab.h"
-#include "ggc.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "target.h"
 #include "common/common-target.h"
-#include "gimple.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 #include "tree-pass.h"
 #include "predict.h"
@@ -4407,7 +4405,6 @@ invoke_set_current_function_hook (tree fndecl)
 	  cl_optimization_restore (&global_options, TREE_OPTIMIZATION (opts));
 	}
 
-      targetm.set_current_function (fndecl);
       this_fn_optabs = this_target_optabs;
 
       if (opts != optimization_default_node)
@@ -4417,6 +4414,8 @@ invoke_set_current_function_hook (tree fndecl)
 	    this_fn_optabs = (struct target_optabs *)
 	      TREE_OPTIMIZATION_OPTABS (opts);
 	}
+
+      targetm.set_current_function (fndecl);
     }
 }
 

@@ -238,9 +238,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  given in @a __mode.
        *
        *  Table 92, adapted here, gives the relation between openmode
-       *  combinations and the equivalent fopen() flags.
+       *  combinations and the equivalent @c fopen() flags.
        *  (NB: lines app, in|out|app, in|app, binary|app, binary|in|out|app,
        *  and binary|in|app per DR 596)
+       *  <pre>
        *  +---------------------------------------------------------+
        *  | ios_base Flag combination            stdio equivalent   |
        *  |binary  in  out  trunc  app                              |
@@ -265,6 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  |   +     +   +           +            a+b                |
        *  |   +     +               +            a+b                |
        *  +---------------------------------------------------------+
+       *  </pre>
        */
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);

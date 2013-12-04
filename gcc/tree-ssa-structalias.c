@@ -22,7 +22,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
 #include "obstack.h"
 #include "bitmap.h"
 #include "sbitmap.h"
@@ -31,6 +30,12 @@
 #include "tree.h"
 #include "stor-layout.h"
 #include "stmt.h"
+#include "pointer-set.h"
+#include "hash-table.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
@@ -42,14 +47,12 @@
 #include "tree-dfa.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
-#include "hash-table.h"
 #include "function.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "splay-tree.h"
 #include "params.h"
 #include "alias.h"
-#include "pointer-set.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -3157,29 +3160,6 @@ get_constraint_for_component_ref (tree t, vec<ce_s> *results,
       temp.type = SCALAR;
       results->safe_push (temp);
       return;
-    }
-
-  /* Handle type-punning through unions.  If we are extracting a pointer
-     from a union via a possibly type-punning access that pointer
-     points to anything, similar to a conversion of an integer to
-     a pointer.  */
-  if (!lhs_p)
-    {
-      tree u;
-      for (u = t;
-	   TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
-	   u = TREE_OPERAND (u, 0))
-	if (TREE_CODE (u) == COMPONENT_REF
-	    && TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
-	  {
-	    struct constraint_expr temp;
-
-	    temp.offset = 0;
-	    temp.var = anything_id;
-	    temp.type = ADDRESSOF;
-	    results->safe_push (temp);
-	    return;
-	  }
     }
 
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);

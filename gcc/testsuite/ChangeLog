@@ -1,3 +1,519 @@
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59355
+	* g++.dg/ipa/pr59355.C: New test.
+
+2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/tree-ssa/slsr-39.c: Update.
+	* gcc.dg/tree-ssa/slsr-41.c: New test.
+
+2013-12-03  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr57363.c: New test.
+
+2013-12-03  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/59020
+	* testsuite/gcc.dg/pr59020.c: New.
+	* testsuite/gcc.dg/macro-fusion-1.c: New.
+	* testsuite/gcc.dg/macro-fusion-2.c: New.
+
+2013-12-03  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59063
+	* lib/asan-dg.exp: Don't add anything to flags if libsanitizer
+	has not been found.
+	* lib/ubsan-dg.exp: Likewise.  Append to flags also
+	-B${gccpath}/libsanitizer/.
+
+2013-12-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Skip for little
+	endian.
+
+2013-12-03   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59363
+	* gcc.target/i386/pr59363.c: New file.
+
+2013-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* gcc.dg/pr59351.c: New test.
+
+2013-12-03  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* gcc.dg/20020312-2.c: Add __nds32__ case.
+	* gcc.dg/builtin-apply2.c: Skip for nds32*-*-*.
+	* gcc.dg/sibcall-3.c: Expected fail for nds32*-*-*.
+	* gcc.dg/sibcall-4.c: Expected fail for nds32*-*-*.
+	* gcc.dg/stack-usage-1.c (SIZE): Define case for __nds32__.
+	* gcc.dg/torture/pr37868.c: Skip for nds32*-*-*.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Skip for nds32*-*-*.
+	* gcc.dg/tree-ssa/20040204-1.c: Expected fail for nds32*-*-*.
+	* gcc.dg/tree-ssa/pr42585.c: Skip for nds32*-*-*.
+	* gcc.dg/tree-ssa/sra-12.c: Skip for nds32*-*-*.
+	* gcc.target/nds32: New nds32 specific directory and testcases.
+	* lib/target-supports.exp (check_profiling_available): Check for
+	nds32*-*-elf.
+
+2013-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59362
+	* gcc.c-torture/compile/pr59362.c: New test.
+
+	PR middle-end/59011
+	* gcc.dg/pr59011.c: New test.
+
+	PR target/58864
+	* g++.dg/opt/pr58864.C: New test.
+
+2013-12-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59322
+	* gcc.c-torture/compile/pr59322.c: New test.
+
+2013-12-02  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/58944
+	* testsuite/gcc.target/i386/pr58944.c: New test.	
+
+2013-12-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/58235
+	* gcc.dg/c90-array-lval-8.c: New test.
+
+2013-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59358
+	* gcc.c-torture/execute/pr59358.c: New test.
+
+	PR lto/59326
+	* gcc.target/i386/i386.exp (check_effective_target_avx2): Move to...
+	* lib/target-supports.exp (check_effective_target_avx2): ... here.
+	(check_effective_target_vect_simd_clones): New.
+	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-require-effective-target
+	vect_simd_clones.
+	* gcc.dg/vect/vect-simd-clone-2.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-3.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-4.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-5.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-6.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-7.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-8.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-9.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-10.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-11.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-12.c: Likewise.
+
+2013-12-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/pr56997-4.c: New testcase.
+
+2013-12-02  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/vla-1.c: Split the tests into individual
+	functions.
+
+2013-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59139
+	* gcc.dg/torture/pr59139.c: New testcase.
+
+2013-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt30.adb: New test.
+
+2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57354
+	* gfortran.dg/realloc_on_assign_23.f90 : New test
+
+2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34547
+	* gfortran.dg/null_5.f90 : Include new error.
+	* gfortran.dg/null_6.f90 : Include new error.
+
+2013-11-29  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59331
+	* g++.dg/ubsan/pr59331.C: New test.
+	* g++.dg/ubsan/cxx1y-vla.C: Enable -Wall -Wno-unused-variable.
+	Disable the -w option.
+	* c-c++-common/ubsan/vla-1.c: Likewise.
+	* c-c++-common/ubsan/vla-2.c: Likewise.
+	* c-c++-common/ubsan/vla-3.c: Don't use the -w option.
+
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/42262
+	* gcc.dg/c99-init-5.c, gcc.dg/c99-init-6.c: New tests.
+
+2013-11-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lib/asan-dg.exp (asan_link_flags): Properly add path to
+	libsanitizer.spec to cflags.
+
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59208
+	* g++.dg/torture/pr59208.C: New testcase.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59063
+	* c-c++-common/asan/pr59063-1.c: New test.
+	* c-c++-common/asan/pr59063-2.c: Likewise.
+	* lib/asan-dg.exp: Add path to libsanitizer.spec to cflags.
+	* lib/ubsan-dg.exp: Likewise.
+
+2013-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt29.ad[sb]: New test.
+
+2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59338
+	* gcc.dg/torture/pr59338.c: New testcase.
+
+2013-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/59326
+	* gcc.dg/vect/vect-simd-clone-12.c: New test.
+	* gcc.dg/vect/vect-simd-clone-12a.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10a.c: Remove extern keywords.
+
+	PR c/59280
+	* c-c++-common/pr59280.c: New test.
+
+2013-11-29  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/lp1243022.c: Skip target arm-neon.
+
+2013-11-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/57574
+	* gcc.dg/inline-35.c: New test.
+
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59297
+	* g++.dg/gomp/pr59297.C: New test.
+
+2013-11-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/57293
+	* gcc.target/i386/pr57293.c: New.
+
+2013-11-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/vrinta-ce.c: New testcase.
+
+2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59323
+	* gcc.dg/lto/pr59323-2_0.c: New testcase.
+
+2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59330
+	* gcc.dg/torture/pr59330.c: New testcase.
+
+2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59323
+	* gcc.dg/lto/pr59323_0.c: New testcase.
+
+2013-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57393
+	PR tree-optimization/58018
+	PR tree-optimization/58131
+	* gcc.dg/torture/pr57393-1.c: New test.
+	* gcc.dg/torture/pr57393-2.c: New test.
+	* gcc.dg/torture/pr57393-3.c: New test.
+	* gcc.dg/torture/pr58018.c: New test.
+	* gcc.dg/torture/pr58131.c: New test.
+	* gfortran.dg/pr57393-1.f90: New test.
+	* gfortran.dg/pr57393-2.f90: New test.
+
+2013-11-27  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gfortran.dg/nan_7.f90: Disable for little endian PowerPC.
+
+2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-3.c: New test.
+
+2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
+	    Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	PR target/56788
+	* gcc.target/i386/xop-frczX.c: New test.
+
+2013-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59014
+	* gcc.c-torture/execute/pr59014-2.c: New test.
+
+2013-11-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58647
+	* g++.dg/parse/crash66.C: New.
+
+2013-11-27  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* gcc.dg/c90-const-expr-8.c: Look for overflow on INT_MIN % -1.
+	* gcc.dg/c99-const-expr-8.c: Look for overflow on INT_MIN % -1.
+
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59306
+	* g++.dg/ubsan/pr59306.C: New test.
+
+2013-11-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-simd-1.C (f38): Make sure
+	simdlen is a power of two.
+	* gcc.dg/gomp/simd-clones-2.c: Compile on all targets.
+	Remove -msse2.  Adjust regexps for name mangling changes.
+	* gcc.dg/gomp/simd-clones-3.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-1.c: New test.
+	* gcc.dg/vect/vect-simd-clone-2.c: New test.
+	* gcc.dg/vect/vect-simd-clone-3.c: New test.
+	* gcc.dg/vect/vect-simd-clone-4.c: New test.
+	* gcc.dg/vect/vect-simd-clone-5.c: New test.
+	* gcc.dg/vect/vect-simd-clone-6.c: New test.
+	* gcc.dg/vect/vect-simd-clone-7.c: New test.
+	* gcc.dg/vect/vect-simd-clone-8.c: New test.
+	* gcc.dg/vect/vect-simd-clone-9.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10.c: New test.
+	* gcc.dg/vect/vect-simd-clone-10.h: New file.
+	* gcc.dg/vect/vect-simd-clone-10a.c: New file.
+	* gcc.dg/vect/vect-simd-clone-11.c: New test.
+
+2013-11-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/cilk-plus/cilk-plus.exp: Append to ld_library_path.
+	Call set_ld_library_path_env_vars.
+	* g++.dg/cilk-plus/cilk-plus.exp: Likewise.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/59032
+	* c-c++-common/pr59032.c: New testcase.
+
+2013-11-27  Tom de Vries  <tom@codesourcery.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/59037
+	* c-c++-common/pr59037.c: New testcase.
+
+2013-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20131127-1.c: New test.
+
+2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59288
+	* gcc.dg/torture/pr59288.c: New testcase.
+
+2013-11-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/undefined-1.c: New test.
+
+2013-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59014
+	* gcc.c-torture/execute/pr59014.c: New test.
+
+	PR target/59229
+	* gcc.c-torture/execute/pr59229.c: New test.
+
+	PR rtl-optimization/59166
+	* gcc.dg/torture/pr59166.c: New test.
+
+	PR c++/58874
+	* g++.dg/gomp/pr58874.C: New test.
+
+	PR middle-end/59150
+	* g++.dg/gomp/pr59150.C: New test.
+
+	PR middle-end/59152
+	* c-c++-common/gomp/pr59152.c: New test.
+
+2013-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/gomp/openmp-simd-1.c: Cleanup original tree dump.
+	* gcc.dg/gomp/openmp-simd-2.c: Ditto.
+	* g++.dg/gomp/openmp-simd-1.C: Ditto.
+	* g++.dg/gomp/openmp-simd-2.C: Ditto.
+	* gfortran.dg/c_loc_test_22.f90: Ditto.
+	* gcc.dg/tree-ssa/attr-alias-2.c: Cleanup optimized tree dump.
+	* gcc.dg/tree-ssa/isolate-5.c: Ditto.
+	* gcc.dg/tree-ssa/pr57361.c: Cleanup dse1 tree dump.
+	* gcc.dg/vect/vect-124.c: Cleanup vect tree dump.
+	* gcc.dg/pr57518.c: Cleanup ira rtl dump.
+	* gcc.dg/tree-prof/cold_partition_label.c: Cleanup saved temps.
+
+2013-11-26  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/arm/20131120.c: New test.
+
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59245
+	* gcc.dg/torture/pr59245.c: New testcase.
+
+2013-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/59290
+	* gcc.target/arm/negdi-2.c: Scan more general register names.
+
+2013-11-26  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb1-pic-high-reg.c: New case.
+	* gcc.target/arm/thumb1-pic-single-base.c: New case.
+
+2013-11-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58700
+	* g++.dg/parse/bitfield4.C: New.
+
+2013-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59287
+	* gcc.dg/tree-ssa/alias-29.c: New testcase.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54485
+	* g++.dg/other/default8.C: New.
+	* g++.dg/tc1/dr217.C: Remove xfail.
+	* g++.dg/other/default5.C: Adjust.
+	* g++.old-deja/g++.mike/p1989.C: Likewise.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58607
+	* g++.dg/cpp0x/constexpr-ice9.C: New.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58810
+	* g++.dg/other/cv_func3.C: New.
+	* g++.dg/other/cv_func.C: Adjust.
+	* g++.dg/parse/fn-typedef2.C: Likewise.
+
+2013-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59250
+	* g++.dg/ubsan/pr59250.C: New test.
+
+2013-11-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59143
+	* gfortran.dg/typebound_proc_30.f90: New.
+
+2013-11-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59080
+	* g++.dg/cpp0x/initlist75.C: New.
+
+	PR c++/59096
+	* g++.dg/cpp0x/gen-attrs-57.C: New.
+
+2013-11-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59112
+	PR c++/59113
+	* g++.dg/cpp1y/pr58533.C: Updated testcase.
+	* g++.dg/cpp1y/pr59112.C: New testcase.
+	* g++.dg/cpp1y/pr59113.C: New testcase.
+
+2013-11-25  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb2-slow-flash-data.c: New.
+
+2013-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/float-exact-1.c: Use dg-add-options ieee.
+	[LDBL_MANT_DIG == 113]: Fix wrong variable name.
+
+2013-11-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59228
+	* gfortran.dg/asynchronous_4.f90: New.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/no-redundant-instrumentation-7.c: Fix
+	cleanup-tree-dump directive.
+
+2013-11-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/20081223-1.c: Add -ffat-lto-objects.
+	* gcc.dg/vect/vect.exp: Add -ffat-lto-objects.
+
+2013-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ubsan/return-1.C: New test.
+	* g++.dg/ubsan/return-2.C: New test.
+
+	* c-c++-common/asan/no-redundant-instrumentation-1.c: Tweak to avoid
+	optimizing away some __asan_report* calls.
+
+2013-11-22  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/pr10474.c: Also test ppc64.
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Also test ppc64, change all ints
+	to longs.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+
+2013-11-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59054
+	* gcc.target/powerpc/direct-move.h (VSX_REG_ATTR): Allow test to
+	specify an appropriate register class for VSX operations.
+	(load_vsx): Use it.
+	(load_gpr_to_vsx): Likewise.
+	(load_vsx_to_gpr): Likewise.
+	* gcc.target/powerpc/direct-move-vint1.c: Use an appropriate
+	register class for VSX registers that the type can handle.  Remove
+	checks for explicit number of instructions generated, just check
+	if the instruction is generated.
+	* gcc.target/powerpc/direct-move-vint2.c: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-double2.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long2.c: Likewise.
+
+	* gcc.target/powerpc/pr59054.c: Remove duplicate code.
+
+	* gcc.target/powerpc/bool3-av.c: Limit to 64-bit mode for now.
+	* gcc.target/powerpc/bool3-p7.c: Likewise.
+	* gcc.target/powerpc/bool3-p8.c: Likewise.
+
+	* gcc.target/powerpc/p8vector-ldst.c: Just check that the
+	appropriate instructions are generated, don't check the count.
+
+2013-11-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59216
+	* gcc.target/arm/negdi-4.c: Delete invalid test.
+	* gcc.dg/torture/pr59216.c: New test.
+
+2013-11-22  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vmov_n_1.c: New testcase.
+
 2013-11-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/torture/20131122-0.c: New testcase.

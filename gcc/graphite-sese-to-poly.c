@@ -34,6 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimplify.h"
@@ -56,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "sese.h"
 #include "tree-ssa-propagate.h"
-#include "expr.h"
 
 #ifdef HAVE_cloog
 #include "expr.h"

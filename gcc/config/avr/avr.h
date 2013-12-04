@@ -522,7 +522,8 @@ extern const char *avr_device_to_sp8 (int argc, const char **argv);
                                mmcu=at90can64*|\
                                mmcu=at90usb64*:--pmem-wrap-around=64k}}}\
 %:device_to_ld(%{mmcu=*:%*})\
-%:device_to_data_start(%{mmcu=*:%*})"
+%:device_to_data_start(%{mmcu=*:%*})\
+%{shared:%eshared is not supported}"
 
 #define LIB_SPEC \
   "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lc }}}}}"

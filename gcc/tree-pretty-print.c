@@ -27,7 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-pretty-print.h"
 #include "hashtab.h"
-#include "gimple.h"
+#include "pointer-set.h"
+#include "gimple-expr.h"
 #include "cgraph.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
@@ -869,7 +870,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case VOID_TYPE:
-    case POINTER_BOUNDS_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:

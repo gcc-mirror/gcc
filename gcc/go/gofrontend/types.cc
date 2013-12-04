@@ -9,8 +9,6 @@
 #include "toplev.h"
 #include "intl.h"
 #include "tree.h"
-#include "gimple.h"
-#include "gimplify.h"
 #include "real.h"
 #include "convert.h"
 
@@ -1061,8 +1059,9 @@ Type::get_backend_placeholder(Gogo* gogo)
     {
     case TYPE_FUNCTION:
       {
+	// A Go function type is a pointer to a struct type.
 	Location loc = this->function_type()->location();
-	bt = gogo->backend()->placeholder_pointer_type("", loc, true);
+	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
       }
       break;
 
@@ -1155,7 +1154,7 @@ Type::finish_backend(Gogo* gogo, Btype *placeholder)
     case TYPE_FUNCTION:
       {
 	Btype* bt = this->do_get_backend(gogo);
-	if (!gogo->backend()->set_placeholder_function_type(placeholder, bt))
+	if (!gogo->backend()->set_placeholder_pointer_type(placeholder, bt))
 	  go_assert(saw_errors());
       }
       break;
@@ -1834,7 +1833,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
 					       bloc);
   gogo->start_block(bloc);
 
-  if (this->struct_type() != NULL)
+  if (name != NULL && name->real_type()->named_type() != NULL)
+    this->write_named_hash(gogo, name, hash_fntype, equal_fntype);
+  else if (this->struct_type() != NULL)
     this->struct_type()->write_hash_function(gogo, name, hash_fntype,
 					     equal_fntype);
   else if (this->array_type() != NULL)
@@ -1852,7 +1853,9 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
 						false, bloc);
   gogo->start_block(bloc);
 
-  if (this->struct_type() != NULL)
+  if (name != NULL && name->real_type()->named_type() != NULL)
+    this->write_named_equal(gogo, name);
+  else if (this->struct_type() != NULL)
     this->struct_type()->write_equal_function(gogo, name);
   else if (this->array_type() != NULL)
     this->array_type()->write_equal_function(gogo, name);
@@ -1863,6 +1866,100 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name,
   gogo->add_block(b, bloc);
   gogo->lower_block(equal_fn, b);
   gogo->finish_function(bloc);
+}
+
+// Write a hash function that simply calls the hash function for a
+// named type.  This is used when one named type is defined as
+// another.  This ensures that this case works when the other named
+// type is defined in another package and relies on calling hash
+// functions defined only in that package.
+
+void
+Type::write_named_hash(Gogo* gogo, Named_type* name,
+		       Function_type* hash_fntype, Function_type* equal_fntype)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  Named_type* base_type = name->real_type()->named_type();
+  go_assert(base_type != NULL);
+
+  // The pointer to the type we are going to hash.  This is an
+  // unsafe.Pointer.
+  Named_object* key_arg = gogo->lookup("key", NULL);
+  go_assert(key_arg != NULL);
+
+  // The size of the type we are going to hash.
+  Named_object* keysz_arg = gogo->lookup("key_size", NULL);
+  go_assert(keysz_arg != NULL);
+
+  Named_object* hash_fn;
+  Named_object* equal_fn;
+  name->real_type()->type_functions(gogo, base_type, hash_fntype, equal_fntype,
+				    &hash_fn, &equal_fn);
+
+  // Call the hash function for the base type.
+  Expression* key_ref = Expression::make_var_reference(key_arg, bloc);
+  Expression* keysz_ref = Expression::make_var_reference(keysz_arg, bloc);
+  Expression_list* args = new Expression_list();
+  args->push_back(key_ref);
+  args->push_back(keysz_ref);
+  Expression* func = Expression::make_func_reference(hash_fn, NULL, bloc);
+  Expression* call = Expression::make_call(func, args, false, bloc);
+
+  // Return the hash of the base type.
+  Expression_list* vals = new Expression_list();
+  vals->push_back(call);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
+}
+
+// Write an equality function that simply calls the equality function
+// for a named type.  This is used when one named type is defined as
+// another.  This ensures that this case works when the other named
+// type is defined in another package and relies on calling equality
+// functions defined only in that package.
+
+void
+Type::write_named_equal(Gogo* gogo, Named_type* name)
+{
+  Location bloc = Linemap::predeclared_location();
+
+  // The pointers to the types we are going to compare.  These have
+  // type unsafe.Pointer.
+  Named_object* key1_arg = gogo->lookup("key1", NULL);
+  Named_object* key2_arg = gogo->lookup("key2", NULL);
+  go_assert(key1_arg != NULL && key2_arg != NULL);
+
+  Named_type* base_type = name->real_type()->named_type();
+  go_assert(base_type != NULL);
+
+  // Build temporaries with the base type.
+  Type* pt = Type::make_pointer_type(base_type);
+
+  Expression* ref = Expression::make_var_reference(key1_arg, bloc);
+  ref = Expression::make_cast(pt, ref, bloc);
+  Temporary_statement* p1 = Statement::make_temporary(pt, ref, bloc);
+  gogo->add_statement(p1);
+
+  ref = Expression::make_var_reference(key2_arg, bloc);
+  ref = Expression::make_cast(pt, ref, bloc);
+  Temporary_statement* p2 = Statement::make_temporary(pt, ref, bloc);
+  gogo->add_statement(p2);
+
+  // Compare the values for equality.
+  Expression* t1 = Expression::make_temporary_reference(p1, bloc);
+  t1 = Expression::make_unary(OPERATOR_MULT, t1, bloc);
+
+  Expression* t2 = Expression::make_temporary_reference(p2, bloc);
+  t2 = Expression::make_unary(OPERATOR_MULT, t2, bloc);
+
+  Expression* cond = Expression::make_binary(OPERATOR_EQEQ, t1, t2, bloc);
+
+  // Return the equality comparison.
+  Expression_list* vals = new Expression_list();
+  vals->push_back(cond);
+  Statement* s = Statement::make_return_statement(vals, bloc);
+  gogo->add_statement(s);
 }
 
 // Return a composite literal for the type descriptor for a plain type
@@ -3380,6 +3477,48 @@ Function_type::do_hash_for_method(Gogo* gogo) const
   return ret;
 }
 
+// Hash result parameters.
+
+unsigned int
+Function_type::Results_hash::operator()(const Typed_identifier_list* t) const
+{
+  unsigned int hash = 0;
+  for (Typed_identifier_list::const_iterator p = t->begin();
+       p != t->end();
+       ++p)
+    {
+      hash <<= 2;
+      hash = Type::hash_string(p->name(), hash);
+      hash += p->type()->hash_for_method(NULL);
+    }
+  return hash;
+}
+
+// Compare result parameters so that can map identical result
+// parameters to a single struct type.
+
+bool
+Function_type::Results_equal::operator()(const Typed_identifier_list* a,
+					 const Typed_identifier_list* b) const
+{
+  if (a->size() != b->size())
+    return false;
+  Typed_identifier_list::const_iterator pa = a->begin();
+  for (Typed_identifier_list::const_iterator pb = b->begin();
+       pb != b->end();
+       ++pa, ++pb)
+    {
+      if (pa->name() != pb->name()
+	  || !Type::are_identical(pa->type(), pb->type(), true, NULL))
+	return false;
+    }
+  return true;
+}
+
+// Hash from results to a backend struct type.
+
+Function_type::Results_structs Function_type::results_structs;
+
 // Get the backend representation for a function type.
 
 Btype*
@@ -3418,12 +3557,14 @@ Function_type::get_backend_fntype(Gogo* gogo)
         }
 
       std::vector<Backend::Btyped_identifier> bresults;
+      Btype* bresult_struct = NULL;
       if (this->results_ != NULL)
         {
           bresults.resize(this->results_->size());
           size_t i = 0;
           for (Typed_identifier_list::const_iterator p =
-                   this->results_->begin(); p != this->results_->end();
+                   this->results_->begin();
+	       p != this->results_->end();
                ++p, ++i)
 	    {
               bresults[i].name = Gogo::unpack_hidden_name(p->name());
@@ -3431,10 +3572,42 @@ Function_type::get_backend_fntype(Gogo* gogo)
               bresults[i].location = p->location();
             }
           go_assert(i == bresults.size());
+
+	  if (this->results_->size() > 1)
+	    {
+	      // Use the same results struct for all functions that
+	      // return the same set of results.  This is useful to
+	      // unify calls to interface methods with other calls.
+	      std::pair<Typed_identifier_list*, Btype*> val;
+	      val.first = this->results_;
+	      val.second = NULL;
+	      std::pair<Results_structs::iterator, bool> ins =
+		Function_type::results_structs.insert(val);
+	      if (ins.second)
+		{
+		  // Build a new struct type.
+		  Struct_field_list* sfl = new Struct_field_list;
+		  for (Typed_identifier_list::const_iterator p =
+			 this->results_->begin();
+		       p != this->results_->end();
+		       ++p)
+		    {
+		      Typed_identifier tid = *p;
+		      if (tid.name().empty())
+			tid = Typed_identifier("UNNAMED", tid.type(),
+					       tid.location());
+		      sfl->push_back(Struct_field(tid));
+		    }
+		  Struct_type* st = Type::make_struct_type(sfl,
+							   this->location());
+		  ins.first->second = st->get_backend(gogo);
+		}
+	      bresult_struct = ins.first->second;
+	    }
         }
 
       this->fnbtype_ = gogo->backend()->function_type(breceiver, bparameters,
-                                                      bresults,
+                                                      bresults, bresult_struct,
                                                       this->location());
 
     }
@@ -7136,18 +7309,18 @@ Interface_type::get_backend_empty_interface_type(Gogo* gogo)
   return empty_interface_type;
 }
 
-// Return the fields of a non-empty interface type.  This is not
-// declared in types.h so that types.h doesn't have to #include
-// backend.h.
+// Return a pointer to the backend representation of the method table.
 
-static void
-get_backend_interface_fields(Gogo* gogo, Interface_type* type,
-			     bool use_placeholder,
-			     std::vector<Backend::Btyped_identifier>* bfields)
+Btype*
+Interface_type::get_backend_methods(Gogo* gogo)
 {
-  Location loc = type->location();
+  if (this->bmethods_ != NULL && !this->bmethods_is_placeholder_)
+    return this->bmethods_;
 
-  std::vector<Backend::Btyped_identifier> mfields(type->methods()->size() + 1);
+  Location loc = this->location();
+
+  std::vector<Backend::Btyped_identifier>
+    mfields(this->all_methods_->size() + 1);
 
   Type* pdt = Type::make_type_descriptor_ptr_type();
   mfields[0].name = "__type_descriptor";
@@ -7156,8 +7329,8 @@ get_backend_interface_fields(Gogo* gogo, Interface_type* type,
 
   std::string last_name = "";
   size_t i = 1;
-  for (Typed_identifier_list::const_iterator p = type->methods()->begin();
-       p != type->methods()->end();
+  for (Typed_identifier_list::const_iterator p = this->all_methods_->begin();
+       p != this->all_methods_->end();
        ++p, ++i)
     {
       // The type of the method in Go only includes the parameters.
@@ -7188,21 +7361,56 @@ get_backend_interface_fields(Gogo* gogo, Interface_type* type,
 						    ft->location());
 
       mfields[i].name = Gogo::unpack_hidden_name(p->name());
-      mfields[i].btype = (use_placeholder
-			  ? mft->get_backend_placeholder(gogo)
-			  : mft->get_backend(gogo));
+      mfields[i].btype = mft->get_backend_fntype(gogo);
       mfields[i].location = loc;
+
       // Sanity check: the names should be sorted.
       go_assert(p->name() > last_name);
       last_name = p->name();
     }
 
-  Btype* methods = gogo->backend()->struct_type(mfields);
+  Btype* st = gogo->backend()->struct_type(mfields);
+  Btype* ret = gogo->backend()->pointer_type(st);
+
+  if (this->bmethods_ != NULL && this->bmethods_is_placeholder_)
+    gogo->backend()->set_placeholder_pointer_type(this->bmethods_, ret);
+  this->bmethods_ = ret;
+  this->bmethods_is_placeholder_ = false;
+  return ret;
+}
+
+// Return a placeholder for the pointer to the backend methods table.
+
+Btype*
+Interface_type::get_backend_methods_placeholder(Gogo* gogo)
+{
+  if (this->bmethods_ == NULL)
+    {
+      Location loc = this->location();
+      this->bmethods_ = gogo->backend()->placeholder_pointer_type("", loc,
+								  false);
+      this->bmethods_is_placeholder_ = true;
+    }
+  return this->bmethods_;
+}
+
+// Return the fields of a non-empty interface type.  This is not
+// declared in types.h so that types.h doesn't have to #include
+// backend.h.
+
+static void
+get_backend_interface_fields(Gogo* gogo, Interface_type* type,
+			     bool use_placeholder,
+			     std::vector<Backend::Btyped_identifier>* bfields)
+{
+  Location loc = type->location();
 
   bfields->resize(2);
 
   (*bfields)[0].name = "__methods";
-  (*bfields)[0].btype = gogo->backend()->pointer_type(methods);
+  (*bfields)[0].btype = (use_placeholder
+			 ? type->get_backend_methods_placeholder(gogo)
+			 : type->get_backend_methods(gogo));
   (*bfields)[0].location = loc;
 
   Type* vt = Type::make_pointer_type(Type::make_void_type());
@@ -7243,7 +7451,7 @@ Interface_type::do_get_backend(Gogo* gogo)
 void
 Interface_type::finish_backend_methods(Gogo* gogo)
 {
-  if (!this->interface_type()->is_empty())
+  if (!this->is_empty())
     {
       const Typed_identifier_list* methods = this->methods();
       if (methods != NULL)
@@ -7253,6 +7461,10 @@ Interface_type::finish_backend_methods(Gogo* gogo)
 	       ++p)
 	    p->type()->get_backend(gogo);
 	}
+
+      // Getting the backend methods now will set the placeholder
+      // pointer.
+      this->get_backend_methods(gogo);
     }
 }
 
@@ -8544,14 +8756,14 @@ Named_type::do_get_backend(Gogo* gogo)
       if (this->seen_in_get_backend_)
 	{
 	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, true);
+	  return gogo->backend()->circular_pointer_type(bt, false);
 	}
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
       if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, true);
-      if (!gogo->backend()->set_placeholder_function_type(bt, bt1))
+	bt1 = gogo->backend()->circular_pointer_type(bt, false);
+      if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
 

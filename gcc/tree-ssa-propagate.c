@@ -30,6 +30,12 @@
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "sbitmap.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -42,7 +48,6 @@
 #include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
-#include "vec.h"
 #include "value-prof.h"
 
 /* This file implements a generic value propagation engine based on
@@ -662,7 +667,7 @@ valid_gimple_call_p (tree expr)
   for (i = 0; i < nargs; i++)
     {
       tree arg = CALL_EXPR_ARG (expr, i);
-      if (is_gimple_reg_type (arg))
+      if (is_gimple_reg_type (TREE_TYPE (arg)))
 	{
 	  if (!is_gimple_val (arg))
 	    return false;

@@ -36,6 +36,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-iterator.h"
 #include "intl.h"
+#include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -55,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "except.h"
 #include "debug.h"
-#include "pointer-set.h"
 #include "ipa-prop.h"
 #include "value-prof.h"
 #include "tree-pass.h"
@@ -3789,12 +3795,16 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
     case GIMPLE_CALL:
       {
-	tree decl = gimple_call_fndecl (stmt);
+	tree decl;
 	struct cgraph_node *node = NULL;
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || !(node = cgraph_get_node (decl)) || node->definition)
+	if (gimple_call_internal_p (stmt))
+	  return 0;
+	else if (!(decl = gimple_call_fndecl (stmt))
+		 || !(node = cgraph_get_node (decl))
+		 || node->definition)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
@@ -4415,6 +4425,7 @@ gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
       gimple stmt = gsi_stmt (gsi);
 
       if (is_gimple_call (stmt)
+	  && !gimple_call_internal_p (stmt)
 	  && expand_call_inline (bb, stmt, id))
 	return true;
     }

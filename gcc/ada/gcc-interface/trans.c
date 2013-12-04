@@ -33,13 +33,12 @@
 #include "stmt.h"
 #include "varasm.h"
 #include "flags.h"
-#include "ggc.h"
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "gimple.h"
-#include "gimplify.h"
 #include "pointer-set.h"
+#include "gimple-expr.h"
+#include "gimplify.h"
 #include "bitmap.h"
 #include "cgraph.h"
 #include "diagnostic.h"
@@ -2809,8 +2808,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   if (gnu_cond_expr)
     {
       COND_EXPR_THEN (gnu_cond_expr) = gnu_loop_stmt;
+      TREE_SIDE_EFFECTS (gnu_cond_expr) = 1;
       gnu_result = gnu_cond_expr;
-      recalculate_side_effects (gnu_cond_expr);
     }
   else
     gnu_result = gnu_loop_stmt;

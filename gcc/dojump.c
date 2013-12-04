@@ -96,6 +96,29 @@ do_pending_stack_adjust (void)
       pending_stack_adjust = 0;
     }
 }
+
+/* Remember pending_stack_adjust/stack_pointer_delta.
+   To be used around code that may call do_pending_stack_adjust (),
+   but the generated code could be discarded e.g. using delete_insns_since.  */
+
+void
+save_pending_stack_adjust (saved_pending_stack_adjust *save)
+{
+  save->x_pending_stack_adjust = pending_stack_adjust;
+  save->x_stack_pointer_delta = stack_pointer_delta;
+}
+
+/* Restore the saved pending_stack_adjust/stack_pointer_delta.  */
+
+void
+restore_pending_stack_adjust (saved_pending_stack_adjust *save)
+{
+  if (inhibit_defer_pop == 0)
+    {
+      pending_stack_adjust = save->x_pending_stack_adjust;
+      stack_pointer_delta = save->x_stack_pointer_delta;
+    }
+}
 
 /* Expand conditional expressions.  */
 

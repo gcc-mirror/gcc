@@ -2092,7 +2092,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (actual->symtree->n.sym->attr.asynchronous
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
-      && actual->rank && !gfc_is_simply_contiguous (actual, true)
+      && actual->rank && formal->as && !gfc_is_simply_contiguous (actual, true)
       && ((formal->as->type != AS_ASSUMED_SHAPE
 	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
 	  || formal->attr.contiguous))
@@ -2426,6 +2426,24 @@ get_expr_storage_size (gfc_expr *e)
 			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer));
 	    }
         }
+      else if (ref->type == REF_COMPONENT && ref->u.c.component->attr.function
+	       && ref->u.c.component->attr.proc_pointer
+	       && ref->u.c.component->attr.dimension)
+	{
+	  /* Array-valued procedure-pointer components.  */
+	  gfc_array_spec *as = ref->u.c.component->as;
+	  for (i = 0; i < as->rank; i++)
+	    {
+	      if (!as->upper[i] || !as->lower[i]
+		  || as->upper[i]->expr_type != EXPR_CONSTANT
+		  || as->lower[i]->expr_type != EXPR_CONSTANT)
+		return 0;
+
+	      elements = elements
+			 * (mpz_get_si (as->upper[i]->value.integer)
+			    - mpz_get_si (as->lower[i]->value.integer) + 1L);
+	    }
+	}
     }
 
   if (substrlen)

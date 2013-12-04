@@ -88,8 +88,10 @@ endif
 # for the functions in the soft-fp files have not been brought across
 # from glibc.
 
-soft-fp-objects = $(addsuffix $(objext), $(softfp_file_list)) \
-  $(addsuffix _s$(objext), $(softfp_file_list))
+soft-fp-objects-base = $(basename $(notdir $(softfp_file_list)))
+
+soft-fp-objects = $(addsuffix $(objext), $(soft-fp-objects-base)) \
+  $(addsuffix _s$(objext), $(soft-fp-objects-base))
 
 $(soft-fp-objects) : INTERNAL_CFLAGS += -Wno-missing-prototypes -Wno-type-limits
 

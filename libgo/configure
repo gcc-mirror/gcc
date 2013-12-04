@@ -6521,10 +6521,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_i386"
 	    ;;
-	  powerpc64le-*)
+	  powerpc64le-*linux*)
 	    LD="${LD-ld} -m elf32lppclinux"
 	    ;;
-	  powerpc64-*)
+	  powerpc64-*linux*)
 	    LD="${LD-ld} -m elf32ppclinux"
 	    ;;
 	  s390x-*linux*)
@@ -6543,10 +6543,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  powerpcle-*)
+	  powerpcle-*linux*)
 	    LD="${LD-ld} -m elf64lppc"
 	    ;;
-	  powerpc-*)
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -14718,7 +14718,7 @@ else
 fi
 
 
-for ac_func in accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat
+for ac_func in accept4 dup3 epoll_create1 faccessat fallocate fchmodat fchownat futimesat getxattr inotify_add_watch inotify_init inotify_init1 inotify_rm_watch listxattr mkdirat mknodat open64 openat pipe2 removexattr renameat setxattr sync_file_range splice tee unlinkat unshare utimensat
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

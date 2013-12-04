@@ -172,6 +172,19 @@ for file in $MANUALS; do
   fi
 done
 
+# Work around makeinfo generated file names and references with
+# "_002d" instead of "-".
+find . -name '*.html' | while read f; do
+  # Do this for the contents of each file.
+  sed -i -e 's/_002d/-/g' "$f"
+  # And rename files if necessary.
+  ff=`echo $f | sed -e 's/_002d/-/g'`;
+  if [ "$f" != "$ff" ]; then
+    printf "Renaming %s to %s\n" "$f" "$ff" 
+    mv "$f" "$ff"
+  fi
+done
+
 # Then build a gzipped copy of each of the resulting .html, .ps and .tar files
 for file in */*.html *.ps *.pdf *.tar; do
   cat $file | gzip --best > $file.gz

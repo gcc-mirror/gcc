@@ -1240,8 +1240,7 @@ mn10300_expand_epilogue (void)
    registers it saves.  Return 0 otherwise.  */
 
 int
-mn10300_store_multiple_operation (rtx op,
-				  enum machine_mode mode ATTRIBUTE_UNUSED)
+mn10300_store_multiple_operation_p (rtx op)
 {
   int count;
   int mask;

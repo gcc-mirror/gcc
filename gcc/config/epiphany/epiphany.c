@@ -1133,7 +1133,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
       if (total_size + reg_size <= (unsigned) epiphany_stack_offset)
 	{
 	  gcc_assert (first_slot < 0);
-	  gcc_assert (reg_size == 0 || reg_size == epiphany_stack_offset);
+	  gcc_assert (reg_size == 0 || (int) reg_size == epiphany_stack_offset);
 	  last_slot_offset = EPIPHANY_STACK_ALIGN (total_size + reg_size);
 	}
       else
@@ -1694,7 +1694,6 @@ epiphany_expand_prologue (void)
   int interrupt_p;
   enum epiphany_function_type fn_type;
   rtx addr, mem, off, reg;
-  rtx save_config;
 
   if (!current_frame_info.initialized)
     epiphany_compute_frame_size (get_frame_size ());

@@ -906,6 +906,7 @@ notice_eh_throw (rtx insn)
 static inline unsigned
 dwf_regno (const_rtx reg)
 {
+  gcc_assert (REGNO (reg) < FIRST_PSEUDO_REGISTER);
   return DWARF_FRAME_REGNUM (REGNO (reg));
 }
 

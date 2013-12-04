@@ -101,11 +101,15 @@ class Backend
   // is provided so that the names are available.  This should return
   // not the type of a Go function (which is a pointer to a struct)
   // but the type of a C function pointer (which will be used as the
-  // type of the first field of the struct).
+  // type of the first field of the struct).  If there is more than
+  // one result, RESULT_STRUCT is a struct type to hold the results,
+  // and RESULTS may be ignored; if there are zero or one results,
+  // RESULT_STRUCT is NULL.
   virtual Btype*
   function_type(const Btyped_identifier& receiver,
 		const std::vector<Btyped_identifier>& parameters,
 		const std::vector<Btyped_identifier>& results,
+		Btype* result_struct,
 		Location location) = 0;
 
   // Get a struct type.
@@ -121,10 +125,11 @@ class Backend
   // NAME is the name of the type, and the location is where the named
   // type is defined.  This function is also used for unnamed function
   // types with multiple results, in which case the type has no name
-  // and NAME will be empty.  FOR_FUNCTION is true if this is for a Go
-  // function type, which corresponds to a C/C++ pointer to function
-  // type.  The return value will later be passed as the first
-  // parameter to set_placeholder_pointer_type or
+  // and NAME will be empty.  FOR_FUNCTION is true if this is for a C
+  // pointer to function type.  A Go func type is represented as a
+  // pointer to a struct, and the first field of the struct is a C
+  // pointer to function.  The return value will later be passed as
+  // the first parameter to set_placeholder_pointer_type or
   // set_placeholder_function_type.
   virtual Btype*
   placeholder_pointer_type(const std::string& name, Location,

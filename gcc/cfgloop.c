@@ -28,11 +28,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "flags.h"
 #include "tree.h"
+#include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-ssa.h"
-#include "pointer-set.h"
-#include "ggc.h"
 #include "dumpfile.h"
 
 static void flow_loops_cfg_dump (FILE *);

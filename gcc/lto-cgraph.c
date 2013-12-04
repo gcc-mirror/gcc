@@ -26,6 +26,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "stringpool.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "expr.h"
 #include "flags.h"
@@ -33,15 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "hashtab.h"
 #include "langhooks.h"
-#include "basic-block.h"
 #include "bitmap.h"
 #include "function.h"
-#include "ggc.h"
 #include "diagnostic-core.h"
 #include "except.h"
-#include "vec.h"
 #include "timevar.h"
-#include "pointer-set.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"
@@ -580,7 +581,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
 		     && boundary_p && !DECL_EXTERNAL (node->decl), 1);
 	  /* in_other_partition.  */
     }
-  bp_pack_value (&bp, node->need_bounds_init, 1);
   streamer_write_bitpack (&bp);
   if (node->same_comdat_group && !boundary_p)
     {
@@ -1151,7 +1151,6 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->analyzed = bp_unpack_value (&bp, 1);
   node->used_from_other_partition = bp_unpack_value (&bp, 1);
   node->in_other_partition = bp_unpack_value (&bp, 1);
-  node->need_bounds_init = bp_unpack_value (&bp, 1);
   if (node->in_other_partition)
     {
       DECL_EXTERNAL (node->decl) = 1;

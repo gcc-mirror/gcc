@@ -333,7 +333,6 @@ complete_mode (struct mode_data *m)
       break;
 
     case MODE_INT:
-    case MODE_POINTER_BOUNDS:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
     case MODE_FRACT:
@@ -534,19 +533,6 @@ make_special_mode (enum mode_class cl, const char *name,
 {
   new_mode (cl, name, file, line);
 }
-
-#define POINTER_BOUNDS_MODE(N, Y) \
-  make_pointer_bounds_mode (#N, Y, __FILE__, __LINE__)
-
-static void ATTRIBUTE_UNUSED
-make_pointer_bounds_mode (const char *name,
-			  unsigned int bytesize,
-			  const char *file, unsigned int line)
-{
-  struct mode_data *m = new_mode (MODE_POINTER_BOUNDS, name, file, line);
-  m->bytesize = bytesize;
-}
-
 
 #define INT_MODE(N, Y) FRACTIONAL_INT_MODE (N, -1U, Y)
 #define FRACTIONAL_INT_MODE(N, B, Y) \

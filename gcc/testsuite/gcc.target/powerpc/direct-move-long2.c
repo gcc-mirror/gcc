@@ -10,5 +10,6 @@
 #define IS_INT 1
 #define NO_ALTIVEC 1
 #define DO_MAIN
+#define VSX_REG_ATTR "d"
 
 #include "direct-move.h"

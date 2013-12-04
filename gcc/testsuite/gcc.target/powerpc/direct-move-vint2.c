@@ -8,5 +8,6 @@
 
 #define TYPE vector int
 #define DO_MAIN
+#define VSX_REG_ATTR "wa"
 
 #include "direct-move.h"

@@ -28,12 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "hashtab.h"
-#include "ggc.h"
 #include "timevar.h"
 #include "debug.h"
 #include "target.h"
 #include "output.h"
-#include "gimple.h"
+#include "gimple-expr.h"
 #include "flags.h"
 
 /* List of hooks triggered on varpool_node events.  */
@@ -205,8 +204,6 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " initialized");
   if (node->output)
     fprintf (f, " output");
-  if (node->need_bounds_init)
-    fprintf (f, " need-bounds-init");
   if (TREE_READONLY (node->decl))
     fprintf (f, " read-only");
   if (ctor_for_folding (node->decl) != error_mark_node)

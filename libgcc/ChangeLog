@@ -1,3 +1,53 @@
+2013-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* longlong.h: Delete (moved to include/).
+
+2013-12-03  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* config/rs6000/ibm-ldouble.c (__gcc_qadd): Fix add
+	of normal number and qNaN to not raise an inexact exception.
+
+2013-11-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/32/sfp-machine.h (__FP_FRAC_ADDI_4): New macro.
+
+2013-11-28  Matthew Leach  <matthew.leach@arm.com>
+
+	* config/aarch64/linux-unwind.h (aarch64_fallback_frame_state):	Check
+	for correct opcodes on BE.
+
+2013-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* soft-fp/op-4.h: Update from glibc.
+
+2013-11-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* libgcc2.c (__udivmoddi4): Define new implementation when
+	TARGET_HAS_NO_HW_DIVIDE is defined, for processors without any
+	divide instructions.
+
+2013-11-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/crt1.S (start): Don't do VBR_SETUP for SH2E.
+
+2013-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/t-softfp (soft-fp-objects-base): New variable.
+	(soft-fp-objects): Use it.
+
+2013-11-23  David Edelson  <dje.gcc@gmail.com>
+	    Andrew Dixie  <andrewd@gentrack.com>
+
+	PR target/33704
+	* config/rs6000/aixinitfini.c: New file.
+	* config/rs6000/t-aix-cxa (LIB2ADD_ST): Add aixinitfini.c.
+	* config/rs6000/libgcc-aix-cxa.ver (GCC_4.9): Add libgcc initfini
+	symbols.
+
+2013-11-22  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Add Silvermont cases.
+
 2013-11-18  Jan Hubicka  <jh@suse.cz>
 
 	* libgcov-driver.c (run_accounted): Make global level static.

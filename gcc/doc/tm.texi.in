@@ -3696,8 +3696,6 @@ stack.
 
 @hook TARGET_FN_ABI_VA_LIST
 
-@hook TARGET_FN_ABI_VA_LIST_BOUNDS_SIZE
-
 @hook TARGET_CANONICAL_VA_LIST_TYPE
 
 @hook TARGET_GIMPLIFY_VA_ARG_EXPR
@@ -4068,10 +4066,6 @@ These machine description macros help implement varargs:
 
 @hook TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 
-@hook TARGET_LOAD_BOUNDS_FOR_ARG
-
-@hook TARGET_STORE_BOUNDS_FOR_ARG
-
 @node Trampolines
 @section Trampolines for Nested Functions
 @cindex trampolines for nested functions
@@ -4203,6 +4197,14 @@ and 2 to indicate that the first operand is greater than the second.
 If this macro evaluates to @code{false} the comparison functions return
 @minus{}1, 0, and 1 instead of 0, 1, and 2.  If the target uses the routines
 in @file{libgcc.a}, you do not need to define this macro.
+@end defmac
+
+@defmac TARGET_HAS_NO_HW_DIVIDE
+This macro should be defined if the target has no hardware divide
+instructions.  If this macro is defined, GCC will use an algorithm which
+make use of simple logical and arithmetic operations for 64-bit
+division.  If the macro is not defined, GCC will use an algorithm which
+make use of a 64-bit by 32-bit divide primitive.
 @end defmac
 
 @cindex @code{EDOM}, implicit usage
@@ -4421,6 +4423,12 @@ address;  but often a machine-dependent strategy can generate better code.
 @hook TARGET_VECTORIZE_BUILTIN_TM_STORE
 
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
+
+@hook TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
+
+@hook TARGET_SIMD_CLONE_ADJUST
+
+@hook TARGET_SIMD_CLONE_USABLE
 
 @node Anchored Addresses
 @section Anchored Addresses
@@ -8184,10 +8192,6 @@ to by @var{ce_info}.
 
 @hook TARGET_EXPAND_BUILTIN
 
-@hook TARGET_BUILTIN_CHKP_FUNCTION
-@hook TARGET_CHKP_BOUND_TYPE
-@hook TARGET_CHKP_BOUND_MODE
-
 @hook TARGET_RESOLVE_OVERLOADED_BUILTIN
 
 @hook TARGET_FOLD_BUILTIN
@@ -8394,6 +8398,8 @@ and the associated definitions of those functions.
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 
 @hook TARGET_HAS_IFUNC_P
+
+@hook TARGET_ATOMIC_ALIGN_FOR_MODE
 
 @hook TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 

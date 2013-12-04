@@ -26,12 +26,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "target.h"
-#include "ggc.h"
 #include "langhooks.h"
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -1038,7 +1042,7 @@ verify_ssa (bool check_modified_stmt)
 	      goto err;
 	    }
 
-	  if (verify_ssa_operands (stmt))
+	  if (verify_ssa_operands (cfun, stmt))
 	    {
 	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
 	      goto err;
@@ -1191,7 +1195,7 @@ delete_tree_ssa (void)
 
   /* We no longer maintain the SSA operand cache at this point.  */
   if (ssa_operands_active (cfun))
-    fini_ssa_operands ();
+    fini_ssa_operands (cfun);
 
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;

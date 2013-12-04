@@ -2343,6 +2343,14 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
       && !current_function_decl)
     DECL_EXTERNAL (newdecl) = 0;
 
+  /* An inline definition following a static declaration is not
+     DECL_EXTERNAL.  */
+  if (new_is_definition
+      && (DECL_DECLARED_INLINE_P (newdecl)
+	  || DECL_DECLARED_INLINE_P (olddecl))
+      && !TREE_PUBLIC (olddecl))
+    DECL_EXTERNAL (newdecl) = 0;
+
   if (DECL_EXTERNAL (newdecl))
     {
       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
@@ -3328,7 +3336,7 @@ define_label (location_t location, tree name)
       bind_label (name, label, current_function_scope, label_vars);
     }
 
-  if (!in_system_header && lookup_name (name))
+  if (!in_system_header_at (input_location) && lookup_name (name))
     warning_at (location, OPT_Wtraditional,
 		"traditional C lacks a separate namespace "
 		"for labels, identifier %qE conflicts", name);
@@ -3646,8 +3654,9 @@ c_builtin_function_ext_scope (tree decl)
   const char *name = IDENTIFIER_POINTER (id);
   C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
 
-  bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
-	UNKNOWN_LOCATION);
+  if (external_scope)
+    bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
+	  UNKNOWN_LOCATION);
 
   /* Builtins in the implementation namespace are made visible without
      needing to be explicitly declared.  See push_file_scope.  */
@@ -3762,7 +3771,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	}
       else
 	{
-	  if (warned != 1 && !in_system_header)
+	  if (warned != 1 && !in_system_header_at (input_location))
 	    {
 	      pedwarn (input_location, 0,
 		       "useless type name in empty declaration");
@@ -3770,7 +3779,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	    }
 	}
     }
-  else if (warned != 1 && !in_system_header && declspecs->typedef_p)
+  else if (warned != 1 && !in_system_header_at (input_location)
+	   && declspecs->typedef_p)
     {
       pedwarn (input_location, 0, "useless type name in empty declaration");
       warned = 1;
@@ -3802,30 +3812,34 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 1;
     }
 
-  if (!warned && !in_system_header && declspecs->storage_class != csc_none)
+  if (!warned && !in_system_header_at (input_location)
+      && declspecs->storage_class != csc_none)
     {
       warning (0, "useless storage class specifier in empty declaration");
       warned = 2;
     }
 
-  if (!warned && !in_system_header && declspecs->thread_p)
+  if (!warned && !in_system_header_at (input_location) && declspecs->thread_p)
     {
       warning (0, "useless %qs in empty declaration",
 	       declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
       warned = 2;
     }
 
-  if (!warned && !in_system_header && (declspecs->const_p
-				       || declspecs->volatile_p
-				       || declspecs->atomic_p
-				       || declspecs->restrict_p
-				       || declspecs->address_space))
+  if (!warned
+      && !in_system_header_at (input_location)
+      && (declspecs->const_p
+	  || declspecs->volatile_p
+	  || declspecs->atomic_p
+	  || declspecs->restrict_p
+	  || declspecs->address_space))
     {
       warning (0, "useless type qualifier in empty declaration");
       warned = 2;
     }
 
-  if (!warned && !in_system_header && declspecs->alignas_p)
+  if (!warned && !in_system_header_at (input_location)
+      && declspecs->alignas_p)
     {
       warning (0, "useless %<_Alignas%> in empty declaration");
       warned = 2;
@@ -4679,7 +4693,9 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
     {
       int failure = complete_array_type (&TREE_TYPE (decl),
 					 DECL_INITIAL (decl), true);
-      gcc_assert (!failure);
+      /* If complete_array_type returns 3, it means that the
+         initial value of the compound literal is empty.  Allow it.  */
+      gcc_assert (failure == 0 || failure == 3);
 
       type = TREE_TYPE (decl);
       TREE_TYPE (DECL_INITIAL (decl)) = type;
@@ -4821,7 +4837,7 @@ check_bitfield_type_and_width (tree *type, tree *width, tree orig_name)
     }
 
   type_mv = TYPE_MAIN_VARIANT (*type);
-  if (!in_system_header
+  if (!in_system_header_at (input_location)
       && type_mv != integer_type_node
       && type_mv != unsigned_type_node
       && type_mv != boolean_type_node)
@@ -5071,7 +5087,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* Diagnose defaulting to "int".  */
 
-  if (declspecs->default_int_p && !in_system_header)
+  if (declspecs->default_int_p && !in_system_header_at (input_location))
     {
       /* Issue a warning if this is an ISO C 99 program or if
 	 -Wreturn-type and this is a function, or if -Wimplicit;
@@ -5351,7 +5367,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		type = error_mark_node;
 	      }
 
-	    if (pedantic && !in_system_header && flexible_array_type_p (type))
+	    if (pedantic && !in_system_header_at (input_location)
+		&& flexible_array_type_p (type))
 	      pedwarn (loc, OPT_Wpedantic,
 		       "invalid use of structure with flexible array member");
 
@@ -5529,7 +5546,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		    flexible_array_member = (t->kind == cdk_id);
 		  }
 		if (flexible_array_member
-		    && pedantic && !flag_isoc99 && !in_system_header)
+		    && pedantic && !flag_isoc99
+		    && !in_system_header_at (input_location))
 		  pedwarn (loc, OPT_Wpedantic,
 			   "ISO C90 does not support flexible array members");
 
@@ -6383,7 +6401,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       error ("%<[*]%> not allowed in other than function prototype scope");
     }
 
-  if (arg_types == 0 && !funcdef_flag && !in_system_header)
+  if (arg_types == 0 && !funcdef_flag
+      && !in_system_header_at (input_location))
     warning (OPT_Wstrict_prototypes,
 	     "function declaration isn%'t a prototype");
 
@@ -7783,7 +7802,7 @@ build_enumerator (location_t decl_loc, location_t loc,
 
   /* Set basis for default for next value.  */
   the_enum->enum_next_value
-    = build_binary_op (EXPR_LOC_OR_HERE (value),
+    = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
 		       PLUS_EXPR, value, integer_one_node, 0);
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
 
@@ -8057,7 +8076,8 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
      warning if we got here because ARG_INFO_TYPES was error_mark_node
      (this happens when a function definition has just an ellipsis in
      its parameter list).  */
-  else if (!in_system_header && !current_function_scope
+  else if (!in_system_header_at (input_location)
+	   && !current_function_scope
 	   && arg_info->types != error_mark_node)
     warning_at (DECL_SOURCE_LOCATION (fndecl), OPT_Wtraditional,
 		"traditional C rejects ISO C style function definitions");
@@ -8111,7 +8131,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
   tree parmids = arg_info->parms;
   struct pointer_set_t *seen_args = pointer_set_create ();
 
-  if (!in_system_header)
+  if (!in_system_header_at (input_location))
     warning_at (DECL_SOURCE_LOCATION (fndecl),
 		OPT_Wold_style_definition, "old-style function definition");
 
@@ -9469,7 +9489,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  error_at (loc, "%<__int128%> is not supported for this target");
 		  return specs;
 		}
-	      if (!in_system_header)
+	      if (!in_system_header_at (input_location))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C does not support %<__int128%> type");
 

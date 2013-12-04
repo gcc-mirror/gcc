@@ -4,4 +4,4 @@ typedef void ft() const;
 typedef void V;
 typedef V ft() const;
 
-ft f;				// { dg-error "qualified" }
+ft f;				// { dg-error "cv-qualifier" }

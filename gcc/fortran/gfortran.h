@@ -2397,7 +2397,6 @@ void gfc_add_include_path (const char *, bool, bool, bool);
 void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
 FILE *gfc_open_included_file (const char *, bool, bool);
-FILE *gfc_open_intrinsic_module (const char *);
 
 int gfc_at_end (void);
 int gfc_at_eof (void);

@@ -115,12 +115,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "ggc.h"
 #include "pointer-set.h"
 #include "target.h"
 #include "hash-table.h"
 #include "tree-pretty-print.h"
 #include "ipa-utils.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-fold.h"
+#include "gimple-expr.h"
 #include "gimple.h"
 #include "ipa-inline.h"
 #include "diagnostic.h"
@@ -1588,12 +1591,14 @@ ipa_devirt (void)
   return ndevirtualized ? TODO_remove_functions : 0;
 }
 
-/* Gate for IPCP optimization.  */
+/* Gate for speculative IPA devirtualization optimization.  */
 
 static bool
 gate_ipa_devirt (void)
 {
-  return flag_devirtualize_speculatively && optimize;
+  return (flag_devirtualize
+	  && flag_devirtualize_speculatively
+	  && optimize);
 }
 
 namespace {

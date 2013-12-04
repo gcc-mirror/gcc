@@ -596,6 +596,10 @@ Wold-style-definition
 C ObjC Var(warn_old_style_definition) Warning
 Warn if an old-style parameter definition is used
 
+Wopenmp-simd
+C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
+Warn if a simd directive is overridden by the vectorizer cost model
+
 Woverlength-strings
 C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic)
 Warn if a string is longer than the maximum portable length specified by the standard
@@ -857,11 +861,6 @@ C ObjC C++ ObjC++ Joined
 fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
-
-fcheck-pointer-bounds
-C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
-Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
-control instrumentation.
 
 fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)

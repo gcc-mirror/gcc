@@ -102,11 +102,10 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
-
-		hindex -= TREE_INT_CST_LOW (low_bound);
-		hindex *= TREE_INT_CST_LOW (unit_size);
-		byte_offset += hindex;
+		offset_int woffset
+		  = offset_int::from (wi::sub (index, low_bound), SIGNED);
+		woffset *= wi::to_offset (unit_size);
+		byte_offset += woffset.to_shwi ();
 	      }
 	    else
 	      return NULL_TREE;

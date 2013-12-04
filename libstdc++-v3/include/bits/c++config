@@ -169,6 +169,8 @@
     namespace placeholders { }
     namespace regex_constants { }
     namespace this_thread { }
+
+    namespace experimental { }
   }
 
   namespace abi { }
@@ -221,6 +223,8 @@ namespace std
   namespace placeholders { inline namespace __7 { } }
   namespace regex_constants { inline namespace __7 { } }
   namespace this_thread { inline namespace __7 { } }
+
+  namespace experimental { inline namespace __7 { } }
 
   namespace __detail { inline namespace __7 { } }
 }

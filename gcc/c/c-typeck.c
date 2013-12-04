@@ -40,7 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-iterator.h"
 #include "bitmap.h"
-#include "gimple.h"
+#include "pointer-set.h"
+#include "basic-block.h"
+#include "gimple-expr.h"
 #include "gimplify.h"
 #include "tree-inline.h"
 #include "omp-low.h"
@@ -3981,7 +3983,7 @@ build_unary_op (location_t location,
 
       if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE
-	  && typecode != COMPLEX_TYPE)
+	  && typecode != COMPLEX_TYPE && typecode != VECTOR_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
 	    error_at (location, "wrong type argument to increment");
@@ -4046,7 +4048,9 @@ build_unary_op (location_t location,
 	  }
 	else
 	  {
-	    inc = integer_one_node;
+	    inc = VECTOR_TYPE_P (argtype)
+	      ? build_one_cst (argtype)
+	      : integer_one_node;
 	    inc = convert (argtype, inc);
 	  }
 
@@ -5200,6 +5204,14 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
 
+  /* Ensure an error for assigning a non-lvalue array to an array in
+     C90.  */
+  if (TREE_CODE (lhstype) == ARRAY_TYPE)
+    {
+      error_at (location, "assignment to expression with array type");
+      return error_mark_node;
+    }
+
   /* For ObjC properties, defer this check.  */
   if (!objc_is_property_ref (lhs) && !lvalue_or_else (location, lhs, lv_assign))
     return error_mark_node;
@@ -6184,7 +6196,7 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
 
   /* Store the expression if valid; else report error.  */
 
-  if (!in_system_header
+  if (!in_system_header_at (input_location)
       && AGGREGATE_TYPE_P (TREE_TYPE (decl)) && !TREE_STATIC (decl))
     warning (OPT_Wtraditional, "traditional C rejects automatic "
 	     "aggregate initialization");
@@ -8501,6 +8513,7 @@ process_init_element (struct c_expr value, bool implicit,
   tree orig_value = value.value;
   int string_flag = orig_value != 0 && TREE_CODE (orig_value) == STRING_CST;
   bool strict_string = value.original_code == STRING_CST;
+  bool was_designated = designator_depth != 0;
 
   designator_depth = 0;
   designator_erroneous = 0;
@@ -8509,6 +8522,7 @@ process_init_element (struct c_expr value, bool implicit,
      char x[] = {"foo"}; */
   if (string_flag
       && constructor_type
+      && !was_designated
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))
@@ -8687,7 +8701,7 @@ process_init_element (struct c_expr value, bool implicit,
 	     again on the assumption that this must be conditional on
 	     __STDC__ anyway (and we've already complained about the
 	     member-designator already).  */
-	  if (!in_system_header && !constructor_designated
+	  if (!in_system_header_at (input_location) && !constructor_designated
 	      && !(value.value && (integer_zerop (value.value)
 				   || real_zerop (value.value))))
 	    warning (OPT_Wtraditional, "traditional C rejects initialization "
@@ -9288,7 +9302,7 @@ c_start_case (location_t switch_loc,
 	{
 	  tree type = TYPE_MAIN_VARIANT (orig_type);
 
-	  if (!in_system_header
+	  if (!in_system_header_at (input_location)
 	      && (type == long_integer_type_node
 		  || type == long_unsigned_type_node))
 	    warning_at (switch_cond_loc,

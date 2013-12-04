@@ -93,6 +93,8 @@ static int cris_reg_overlap_mentioned_p (rtx, rtx);
 static enum machine_mode cris_promote_function_mode (const_tree, enum machine_mode,
 						     int *, const_tree, int);
 
+static unsigned int cris_atomic_align_for_mode (enum machine_mode);
+
 static void cris_print_base (rtx, FILE *);
 
 static void cris_print_index (rtx, FILE *);
@@ -226,6 +228,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE cris_promote_function_mode
+
+#undef TARGET_ATOMIC_ALIGN_FOR_MODE
+#define TARGET_ATOMIC_ALIGN_FOR_MODE cris_atomic_align_for_mode
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX cris_struct_value_rtx
@@ -4018,6 +4023,14 @@ cris_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
     return mode;
   return CRIS_PROMOTED_MODE (mode, *punsignedp, type);
 } 
+
+/* Atomic types require alignment to be at least their "natural" size.  */
+
+static unsigned int
+cris_atomic_align_for_mode (enum machine_mode mode)
+{
+  return GET_MODE_BITSIZE (mode);
+}
 
 /* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
    time being.  */

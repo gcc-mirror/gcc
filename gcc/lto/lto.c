@@ -28,16 +28,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "tm.h"
 #include "cgraph.h"
-#include "ggc.h"
 #include "tree-ssa-operands.h"
 #include "tree-pass.h"
 #include "langhooks.h"
-#include "vec.h"
 #include "bitmap.h"
-#include "pointer-set.h"
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "lto.h"
 #include "lto-tree.h"
@@ -903,6 +904,19 @@ mentions_vars_p_expr (tree t)
   return false;
 }
 
+/* Check presence of pointers to decls in fields of an OMP_CLAUSE T.  */
+
+static bool
+mentions_vars_p_omp_clause (tree t)
+{
+  int i;
+  if (mentions_vars_p_common (t))
+    return true;
+  for (i = omp_clause_num_ops[OMP_CLAUSE_CODE (t)] - 1; i >= 0; --i)
+    CHECK_VAR (OMP_CLAUSE_OPERAND (t, i));
+  return false;
+}
+
 /* Check presence of pointers to decls that needs later fixup in T.  */
 
 static bool
@@ -921,7 +935,6 @@ mentions_vars_p (tree t)
 
     case FIELD_DECL:
       return mentions_vars_p_field_decl (t);
-      break;
 
     case LABEL_DECL:
     case CONST_DECL:
@@ -930,27 +943,21 @@ mentions_vars_p (tree t)
     case IMPORTED_DECL:
     case NAMESPACE_DECL:
       return mentions_vars_p_decl_common (t);
-      break;
 
     case VAR_DECL:
       return mentions_vars_p_decl_with_vis (t);
-      break;
 
     case TYPE_DECL:
       return mentions_vars_p_decl_non_common (t);
-      break;
 
     case FUNCTION_DECL:
       return mentions_vars_p_function (t);
-      break;
 
     case TREE_BINFO:
       return mentions_vars_p_binfo (t);
-      break;
 
     case PLACEHOLDER_EXPR:
       return mentions_vars_p_common (t);
-      break;
 
     case BLOCK:
     case TRANSLATION_UNIT_DECL:
@@ -960,7 +967,9 @@ mentions_vars_p (tree t)
 
     case CONSTRUCTOR:
       return mentions_vars_p_constructor (t);
-      break;
+
+    case OMP_CLAUSE:
+      return mentions_vars_p_omp_clause (t);
 
     default:
       if (TYPE_P (t))
@@ -1401,6 +1410,36 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 		   TREE_STRING_LENGTH (t1)) != 0)
       return false;
 
+  if (code == OMP_CLAUSE)
+    {
+      compare_values (OMP_CLAUSE_CODE);
+      switch (OMP_CLAUSE_CODE (t1))
+	{
+	case OMP_CLAUSE_DEFAULT:
+	  compare_values (OMP_CLAUSE_DEFAULT_KIND);
+	  break;
+	case OMP_CLAUSE_SCHEDULE:
+	  compare_values (OMP_CLAUSE_SCHEDULE_KIND);
+	  break;
+	case OMP_CLAUSE_DEPEND:
+	  compare_values (OMP_CLAUSE_DEPEND_KIND);
+	  break;
+	case OMP_CLAUSE_MAP:
+	  compare_values (OMP_CLAUSE_MAP_KIND);
+	  break;
+	case OMP_CLAUSE_PROC_BIND:
+	  compare_values (OMP_CLAUSE_PROC_BIND_KIND);
+	  break;
+	case OMP_CLAUSE_REDUCTION:
+	  compare_values (OMP_CLAUSE_REDUCTION_CODE);
+	  compare_values (OMP_CLAUSE_REDUCTION_GIMPLE_INIT);
+	  compare_values (OMP_CLAUSE_REDUCTION_GIMPLE_MERGE);
+	  break;
+	default:
+	  break;
+	}
+    }
+
 #undef compare_values
 
 
@@ -1622,6 +1661,16 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_tree_edges (index, CONSTRUCTOR_ELT (t2, i)->index);
 	  compare_tree_edges (value, CONSTRUCTOR_ELT (t2, i)->value);
 	}
+    }
+
+  if (code == OMP_CLAUSE)
+    {
+      int i;
+
+      for (i = 0; i < omp_clause_num_ops[OMP_CLAUSE_CODE (t1)]; i++)
+	compare_tree_edges (OMP_CLAUSE_OPERAND (t1, i),
+			    OMP_CLAUSE_OPERAND (t2, i));
+      compare_tree_edges (OMP_CLAUSE_CHAIN (t1), OMP_CLAUSE_CHAIN (t2));
     }
 
 #undef compare_tree_edges

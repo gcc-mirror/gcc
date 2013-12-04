@@ -421,6 +421,12 @@
 					   XEXP (XEXP (op, 0), 1),
 					   TARGET_SH2A, true)")))
 
+;; Returns true if OP is a displacement address that can fit into a
+;; 16 bit (non-SH2A) memory load / store insn.
+(define_predicate "short_displacement_mem_operand"
+  (match_test "sh_disp_addr_displacement (op)
+	       <= sh_max_mov_insn_displacement (GET_MODE (op), false)"))
+
 ;; Returns 1 if the operand can be used in an SH2A movu.{b|w} insn.
 (define_predicate "zero_extend_movu_operand"
   (and (match_operand 0 "displacement_mem_operand")
@@ -444,6 +450,11 @@
 {
   if (t_reg_operand (op, mode))
     return 0;
+
+  /* Disallow PC relative QImode loads, since these is no insn to do that
+     and an imm8 load should be used instead.  */
+  if (IS_PC_RELATIVE_LOAD_ADDR_P (op) && GET_MODE (op) == QImode)
+    return false;
 
   if (MEM_P (op))
     {

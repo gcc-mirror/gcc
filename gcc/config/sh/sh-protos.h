@@ -162,6 +162,8 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 extern bool sh_cfun_trap_exit_p (void);
 extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
 extern int sh_eval_treg_value (rtx op);
+extern HOST_WIDE_INT sh_disp_addr_displacement (rtx mem_op);
+extern int sh_max_mov_insn_displacement (machine_mode mode, bool consider_sh2a);
 
 /* Result value of sh_find_set_of_reg.  */
 struct set_of_reg

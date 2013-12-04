@@ -56,13 +56,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "diagnostic-core.h"
 #include "intl.h"
-#include "ggc.h"
-#include "hash-table.h"
 #include "langhooks.h"
 #include "md5.h"
+#include "basic-block.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "tree-eh.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "tree-dfa.h"
+#include "hash-table.h"  /* Required for ENABLE_FOLD_CHECKING.  */
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -16528,7 +16533,7 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
-	      if (offset/part_widthi <= TYPE_VECTOR_SUBPARTS (op00type))
+	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
 		return fold_build3_loc (loc,
 					BIT_FIELD_REF, type, op00,
 					part_width, index);

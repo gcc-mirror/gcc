@@ -28,6 +28,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
+#include "pointer-set.h"
+#include "tree-ssa-alias.h"
+#include "internal-fn.h"
+#include "gimple-expr.h"
+#include "is-a.h"
 #include "gimple.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -40,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
-#include "ggc.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "tree-data-ref.h"
@@ -2160,7 +2164,8 @@ chain_of_csts_start (struct loop *loop, tree x)
       return NULL;
     }
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  if (gimple_code (stmt) != GIMPLE_ASSIGN
+      || gimple_assign_rhs_class (stmt) == GIMPLE_TERNARY_RHS)
     return NULL;
 
   code = gimple_assign_rhs_code (stmt);
@@ -2228,7 +2233,7 @@ get_val_for (tree x, tree base)
 {
   gimple stmt;
 
-  gcc_assert (is_gimple_min_invariant (base));
+  gcc_checking_assert (is_gimple_min_invariant (base));
 
   if (!x)
     return base;
@@ -2237,7 +2242,7 @@ get_val_for (tree x, tree base)
   if (gimple_code (stmt) == GIMPLE_PHI)
     return base;
 
-  gcc_assert (is_gimple_assign (stmt));
+  gcc_checking_assert (is_gimple_assign (stmt));
 
   /* STMT must be either an assignment of a single SSA name or an
      expression involving an SSA name and a constant.  Try to fold that

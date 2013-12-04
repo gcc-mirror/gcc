@@ -257,6 +257,10 @@ Wintrinsics-std
 Fortran Warning
 Warn on intrinsics not part of the selected standard
 
+Wopenmp-simd
+Fortran
+; Documented in C
+
 Wreal-q-constant
 Fortran Warning
 Warn about real-literal-constants with 'q' exponent-letter

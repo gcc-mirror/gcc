@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++11" }
 // { dg-require-cstdint "" }
+// { dg-require-cmath "" }
 //
 // 2013-11-18  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
 //

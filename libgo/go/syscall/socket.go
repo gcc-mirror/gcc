@@ -25,7 +25,7 @@ type RawSockaddrAny struct {
 	Pad  [96]int8
 }
 
-const SizeofSockaddrAny = 0x1c
+const SizeofSockaddrAny = 0x6c
 
 type SockaddrInet4 struct {
 	Port int

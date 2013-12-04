@@ -453,7 +453,7 @@ enum {
 };
 void	runtime_hashinit(void);
 
-void	runtime_traceback();
+void	runtime_traceback(void);
 void	runtime_tracebackothers(G*);
 
 /*
@@ -776,6 +776,7 @@ extern struct backtrace_state *__go_get_backtrace_state(void);
 extern _Bool __go_file_line(uintptr, String*, String*, intgo *);
 extern byte* runtime_progname();
 extern void runtime_main(void*);
+extern uint32 runtime_in_callers;
 
 int32 getproccount(void);
 

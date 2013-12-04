@@ -1,3 +1,27 @@
+2013-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/54040
+	PR ada/59346
+	* s-osinte-hpux.ads (timespec): Change type of tv_nsec field to time_t.
+	* s-osinte-kfreebsd-gnu.ads (timespec): Likewise.
+	* s-osinte-solaris-posix.ads (timespec): Likewise.
+
+2013-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Set TREE_SIDE_EFFECTS
+	on the conditional expression directly.
+
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/trans.c: Add required include files from gimple.h.
+
+2013-11-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/utils2.c (build_call_raise): Remove use of
+	input_line macro.
+	(build_call_raise_range): Likewise.
+	(build_call_raise_column): Likewise.
+
 2013-11-20  Kenneth Zadeck  <zadeck@naturalbridge.com>
 	    Mike Stump  <mikestump@comcast.net>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
