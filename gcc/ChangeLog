@@ -1,3 +1,50 @@
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>  
+	    Marek Polacek  <polacek@redhat.com>
+
+	* opts.c (common_handle_option): Handle
+	-fsanitize=signed-integer-overflow.
+	* config/i386/i386.md (addv<mode>4, subv<mode>4, mulv<mode>4,
+	negv<mode>3, negv<mode>3_1): Define expands.
+	(*addv<mode>4, *subv<mode>4, *mulv<mode>4, *negv<mode>3): Define
+	insns.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_ADD_OVERFLOW,
+	BUILT_IN_UBSAN_HANDLE_SUB_OVERFLOW,
+	BUILT_IN_UBSAN_HANDLE_MUL_OVERFLOW,
+	BUILT_IN_UBSAN_HANDLE_NEGATE_OVERFLOW): Define.
+	* ubsan.h (PROB_VERY_UNLIKELY, PROB_EVEN, PROB_VERY_LIKELY,
+	PROB_ALWAYS): Define.
+	(ubsan_build_overflow_builtin): Declare.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Add folding of
+	internal functions.
+	* ubsan.c (PROB_VERY_UNLIKELY): Don't define here.
+	(ubsan_build_overflow_builtin): New function.
+	(instrument_si_overflow): Likewise.
+	(ubsan_pass): Add signed integer overflow checking.
+	(gate_ubsan): Enable the pass also when SANITIZE_SI_OVERFLOW.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_SI_OVERFLOW.
+	* internal-fn.c: Include ubsan.h and target.h.
+	(ubsan_expand_si_overflow_addsub_check): New function.
+	(ubsan_expand_si_overflow_neg_check): Likewise.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
+	(expand_UBSAN_CHECK_ADD): Likewise.
+	(expand_UBSAN_CHECK_SUB): Likewise.
+	(expand_UBSAN_CHECK_MUL): Likewise.
+	* fold-const.c (fold_binary_loc): Don't fold A + (-B) -> A - B and
+	(-A) + B -> B - A when doing the signed integer overflow checking.
+	* internal-fn.def (UBSAN_CHECK_ADD, UBSAN_CHECK_SUB, UBSAN_CHECK_MUL):
+	Define.
+	* tree-vrp.c (extract_range_basic): Handle internal calls.
+	* optabs.def (addv4_optab, subv4_optab, mulv4_optab, negv4_optab): New
+	optabs.
+	* asan.c: Include predict.h.
+	(PROB_VERY_UNLIKELY, PROB_ALWAYS): Don't define here.
+	* predict.c: Move the PROB_* macros...
+	* predict.h (enum br_predictor): ...here.
+	(PROB_LIKELY, PROB_UNLIKELY): Define.
+	* trans-mem.c: Include predict.h.
+	(PROB_VERY_UNLIKELY, PROB_ALWAYS, PROB_VERY_LIKELY,
+	PROB_LIKELY, PROB_UNLIKELY): Don't define here.
+
 2013-12-04  Jeff Law  <law@redhat.com>
 
 	* expr.c (expand_assignment): Update comments.

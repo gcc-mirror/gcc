@@ -55,13 +55,8 @@
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-ssa-address.h"
+#include "predict.h"
 
-
-#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
-#define PROB_VERY_LIKELY	(PROB_ALWAYS - PROB_VERY_UNLIKELY)
-#define PROB_UNLIKELY		(REG_BR_PROB_BASE / 5 - 1)
-#define PROB_LIKELY		(PROB_ALWAYS - PROB_VERY_LIKELY)
-#define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
 #define A_RUNINSTRUMENTEDCODE	0x0001
 #define A_RUNUNINSTRUMENTEDCODE	0x0002

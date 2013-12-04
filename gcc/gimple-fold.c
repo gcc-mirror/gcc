@@ -2660,8 +2660,37 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	tree fn;
 
 	if (gimple_call_internal_p (stmt))
-	  /* No folding yet for these functions.  */
-	  return NULL_TREE;
+	  {
+	    enum tree_code subcode = ERROR_MARK;
+	    switch (gimple_call_internal_fn (stmt))
+	      {
+	      case IFN_UBSAN_CHECK_ADD:
+		subcode = PLUS_EXPR;
+		break;
+	      case IFN_UBSAN_CHECK_SUB:
+		subcode = MINUS_EXPR;
+		break;
+	      case IFN_UBSAN_CHECK_MUL:
+		subcode = MULT_EXPR;
+		break;
+	      default:
+		return NULL_TREE;
+	      }
+	    tree op0 = (*valueize) (gimple_call_arg (stmt, 0));
+	    tree op1 = (*valueize) (gimple_call_arg (stmt, 1));
+
+	    if (TREE_CODE (op0) != INTEGER_CST
+		|| TREE_CODE (op1) != INTEGER_CST)
+	      return NULL_TREE;
+	    tree res = fold_binary_loc (loc, subcode,
+					TREE_TYPE (gimple_call_arg (stmt, 0)),
+					op0, op1);
+	    if (res
+		&& TREE_CODE (res) == INTEGER_CST
+		&& !TREE_OVERFLOW (res))
+	      return res;
+	    return NULL_TREE;
+	  }
 
 	fn = (*valueize) (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR

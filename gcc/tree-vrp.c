@@ -3757,6 +3757,47 @@ extract_range_basic (value_range_t *vr, gimple stmt)
 	  break;
 	}
     }
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    {
+      enum tree_code subcode = ERROR_MARK;
+      switch (gimple_call_internal_fn (stmt))
+	{
+	case IFN_UBSAN_CHECK_ADD:
+	  subcode = PLUS_EXPR;
+	  break;
+	case IFN_UBSAN_CHECK_SUB:
+	  subcode = MINUS_EXPR;
+	  break;
+	case IFN_UBSAN_CHECK_MUL:
+	  subcode = MULT_EXPR;
+	  break;
+	default:
+	  break;
+	}
+      if (subcode != ERROR_MARK)
+	{
+	  bool saved_flag_wrapv = flag_wrapv;
+	  /* Pretend the arithmetics is wrapping.  If there is
+	     any overflow, we'll complain, but will actually do
+	     wrapping operation.  */
+	  flag_wrapv = 1;
+	  extract_range_from_binary_expr (vr, subcode, type,
+					  gimple_call_arg (stmt, 0),
+					  gimple_call_arg (stmt, 1));
+	  flag_wrapv = saved_flag_wrapv;
+
+	  /* If for both arguments vrp_valueize returned non-NULL,
+	     this should have been already folded and if not, it
+	     wasn't folded because of overflow.  Avoid removing the
+	     UBSAN_CHECK_* calls in that case.  */
+	  if (vr->type == VR_RANGE
+	      && (vr->min == vr->max
+		  || operand_equal_p (vr->min, vr->max, 0)))
+	    set_value_range_to_varying (vr);
+	  return;
+	}
+    }
   if (INTEGRAL_TYPE_P (type)
       && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type,

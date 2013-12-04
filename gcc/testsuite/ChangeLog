@@ -1,5 +1,15 @@
 2013-12-04  Marek Polacek  <polacek@redhat.com>
 
+	* c-c++-common/ubsan/overflow-mul-2.c: New test.
+	* c-c++-common/ubsan/overflow-add-1.c: New test.
+	* c-c++-common/ubsan/overflow-add-2.c: New test.
+	* c-c++-common/ubsan/overflow-mul-1.c: New test.
+	* c-c++-common/ubsan/overflow-sub-1.c: New test.
+	* c-c++-common/ubsan/overflow-sub-2.c: New test.
+	* c-c++-common/ubsan/overflow-negate-1.c: New test.
+
+2013-12-04  Marek Polacek  <polacek@redhat.com>
+
 	PR c/54113
 	* gcc.dg/pr54113.c: New test.
 

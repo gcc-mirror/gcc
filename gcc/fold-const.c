@@ -10350,14 +10350,16 @@ fold_binary_loc (location_t loc,
 
     case PLUS_EXPR:
       /* A + (-B) -> A - B */
-      if (TREE_CODE (arg1) == NEGATE_EXPR)
+      if (TREE_CODE (arg1) == NEGATE_EXPR
+	  && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	return fold_build2_loc (loc, MINUS_EXPR, type,
 			    fold_convert_loc (loc, type, arg0),
 			    fold_convert_loc (loc, type,
 					      TREE_OPERAND (arg1, 0)));
       /* (-A) + B -> B - A */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1))
+	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1)
+	  && (flag_sanitize & SANITIZE_SI_OVERFLOW) == 0)
 	return fold_build2_loc (loc, MINUS_EXPR, type,
 			    fold_convert_loc (loc, type, arg1),
 			    fold_convert_loc (loc, type,
