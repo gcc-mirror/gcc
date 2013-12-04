@@ -4869,8 +4869,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  if (GET_MODE (offset_rtx) != address_mode)
 	    offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
 
-	  /* A constant address in TO_RTX can have VOIDmode, we must not try
-	     to call force_reg for that case.  Avoid that case.  */
+	  /* The check for a constant address in TO_RTX not having VOIDmode
+	     is probably no longer necessary.  */
 	  if (MEM_P (to_rtx)
 	      && GET_MODE (to_rtx) == BLKmode
 	      && GET_MODE (XEXP (to_rtx, 0)) != VOIDmode
@@ -10062,8 +10062,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
 
 	    if (GET_MODE (op0) == BLKmode
-		/* A constant address in OP0 can have VOIDmode, we must
-		   not try to call force_reg in that case.  */
+		/* The check for a constant address in OP0 not having VOIDmode
+		   is probably no longer necessary.  */
 		&& GET_MODE (XEXP (op0, 0)) != VOIDmode
 		&& bitsize != 0
 		&& (bitpos % bitsize) == 0
