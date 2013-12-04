@@ -252,7 +252,7 @@ sig_panic_leadin (int sig)
   /* The signal handler blocked signals; unblock them.  */
   i = sigfillset (&clear);
   __go_assert (i == 0);
-  i = sigprocmask (SIG_UNBLOCK, &clear, NULL);
+  i = pthread_sigmask (SIG_UNBLOCK, &clear, NULL);
   __go_assert (i == 0);
 }
 
