@@ -1,3 +1,10 @@
+2013-12-03  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-structalias.c (constraint_set_union): Change return type
+	from void to bool.
+	(merge_node_constraints): Ditto.
+	(unify_nodes): Update changed set when constraints set changes.
+
 2013-12-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Append gdbasan.in to .gdbinit if CFLAGS contains

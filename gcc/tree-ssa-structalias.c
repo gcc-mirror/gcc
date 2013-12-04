@@ -892,14 +892,16 @@ constraint_vec_find (vec<constraint_t> vec,
   return found;
 }
 
-/* Union two constraint vectors, TO and FROM.  Put the result in TO.  */
+/* Union two constraint vectors, TO and FROM.  Put the result in TO. 
+   Returns true of TO set is changed.  */
 
-static void
+static bool
 constraint_set_union (vec<constraint_t> *to,
 		      vec<constraint_t> *from)
 {
   int i;
   constraint_t c;
+  bool any_change = false;
 
   FOR_EACH_VEC_ELT (*from, i, c)
     {
@@ -907,8 +909,10 @@ constraint_set_union (vec<constraint_t> *to,
 	{
 	  unsigned int place = to->lower_bound (c, constraint_less);
 	  to->safe_insert (place, c);
+          any_change = true;
 	}
     }
+  return any_change;
 }
 
 /* Expands the solution in SET to all sub-fields of variables included.  */
@@ -1028,22 +1032,24 @@ insert_into_complex (constraint_graph_t graph,
 
 
 /* Condense two variable nodes into a single variable node, by moving
-   all associated info from SRC to TO.  */
+   all associated info from FROM to TO. Returns true if TO node's 
+   constraint set changes after the merge.  */
 
-static void
+static bool
 merge_node_constraints (constraint_graph_t graph, unsigned int to,
 			unsigned int from)
 {
   unsigned int i;
   constraint_t c;
+  bool any_change = false;
 
   gcc_checking_assert (find (from) == to);
 
   /* Move all complex constraints from src node into to node  */
   FOR_EACH_VEC_ELT (graph->complex[from], i, c)
     {
-      /* In complex constraints for node src, we may have either
-	 a = *src, and *src = a, or an offseted constraint which are
+      /* In complex constraints for node FROM, we may have either
+	 a = *FROM, and *FROM = a, or an offseted constraint which are
 	 always added to the rhs node's constraints.  */
 
       if (c->rhs.type == DEREF)
@@ -1052,9 +1058,12 @@ merge_node_constraints (constraint_graph_t graph, unsigned int to,
 	c->lhs.var = to;
       else
 	c->rhs.var = to;
+
     }
-  constraint_set_union (&graph->complex[to], &graph->complex[from]);
+  any_change = constraint_set_union (&graph->complex[to],
+				     &graph->complex[from]);
   graph->complex[from].release ();
+  return any_change;
 }
 
 
@@ -1472,7 +1481,11 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
     stats.unified_vars_static++;
 
   merge_graph_nodes (graph, to, from);
-  merge_node_constraints (graph, to, from);
+  if (merge_node_constraints (graph, to, from))
+    {
+      if (update_changed)
+	bitmap_set_bit (changed, to);
+    }
 
   /* Mark TO as changed if FROM was changed. If TO was already marked
      as changed, decrease the changed count.  */
