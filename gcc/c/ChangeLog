@@ -1,3 +1,9 @@
+2013-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/54113
+	* c-decl.c (start_function): Don't warn for missing prototype for
+	inline functions.
+
 2013-12-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59351
