@@ -1,5 +1,8 @@
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59163
+	* g++.dg/torture/pr59163.C: New test.
+
 	PR tree-optimization/59355
 	* g++.dg/ipa/pr59355.C: New test.
 
