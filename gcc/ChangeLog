@@ -1,3 +1,11 @@
+2013-12-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Append gdbasan.in to .gdbinit if CFLAGS contains
+	-fsanitize=address.
+	* configure: Regenerated.
+
+	* gdbasan.in: New file.
+
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58726

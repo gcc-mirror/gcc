@@ -1,0 +1,3 @@
+# Put a breakpoint on __asan_report_error to help with debugging buffer
+# overflow.
+b __asan_report_error
