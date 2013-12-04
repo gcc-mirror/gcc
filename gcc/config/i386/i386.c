@@ -32649,7 +32649,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	     on it.  Try to improve it using get_pointer_alignment,
 	     and if the special builtin is one that requires strict
 	     mode alignment, also from it's GET_MODE_ALIGNMENT.
-	     Failure to do so could leak to ix86_legitimate_combined_insn
+	     Failure to do so could lead to ix86_legitimate_combined_insn
 	     rejecting all changes to such insns.  */
 	  unsigned int align = get_pointer_alignment (arg);
 	  if (aligned_mem && align < GET_MODE_ALIGNMENT (tmode))
@@ -32705,7 +32705,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 		 on it.  Try to improve it using get_pointer_alignment,
 		 and if the special builtin is one that requires strict
 		 mode alignment, also from it's GET_MODE_ALIGNMENT.
-		 Failure to do so could leak to ix86_legitimate_combined_insn
+		 Failure to do so could lead to ix86_legitimate_combined_insn
 		 rejecting all changes to such insns.  */
 	      unsigned int align = get_pointer_alignment (arg);
 	      if (aligned_mem && align < GET_MODE_ALIGNMENT (mode))
