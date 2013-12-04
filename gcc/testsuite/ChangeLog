@@ -1,3 +1,8 @@
+2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/tree-ssa/slsr-39.c: Update.
+	* gcc.dg/tree-ssa/slsr-41.c: New test.
+
 2013-12-03  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr57363.c: New test.

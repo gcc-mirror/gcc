@@ -1,3 +1,20 @@
+2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gimple-ssa-strength-reduction.c: Include tree-affine.h.
+	(name_expansions): New static variable.
+	(alt_base_map): Ditto.
+	(get_alternative_base): New function.
+	(find_basis_for_candidate): For CAND_REF, optionally call
+	find_basis_for_base_expr with the returned value from
+	get_alternative_base.
+	(record_potential_basis): Add new parameter 'base' of type 'tree';
+	add an assertion of non-NULL base; use base to set node->base_expr.
+	(alloc_cand_and_find_basis): Update; call record_potential_basis
+	for CAND_REF with the returned value from get_alternative_base.
+	(replace_refs): Dump details on the replacing.
+	(execute_strength_reduction): Call pointer_map_create for
+	alt_base_map; call free_affine_expand_cache with &name_expansions.
+
 2013-12-03  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/59020
