@@ -1,3 +1,8 @@
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59355
+	* g++.dg/ipa/pr59355.C: New test.
+
 2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.dg/tree-ssa/slsr-39.c: Update.

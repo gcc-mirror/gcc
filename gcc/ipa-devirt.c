@@ -1591,12 +1591,14 @@ ipa_devirt (void)
   return ndevirtualized ? TODO_remove_functions : 0;
 }
 
-/* Gate for IPCP optimization.  */
+/* Gate for speculative IPA devirtualization optimization.  */
 
 static bool
 gate_ipa_devirt (void)
 {
-  return flag_devirtualize_speculatively && optimize;
+  return (flag_devirtualize
+	  && flag_devirtualize_speculatively
+	  && optimize);
 }
 
 namespace {
