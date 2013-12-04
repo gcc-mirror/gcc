@@ -1,3 +1,8 @@
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59163
+	* g++.dg/torture/pr59163.C: New test.
+
 2013-12-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
