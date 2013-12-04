@@ -14159,6 +14159,10 @@ tsubst_copy_and_build (tree t,
 	RETURN (r);
       }
 
+    case POINTER_PLUS_EXPR:
+      return fold_build_pointer_plus (RECUR (TREE_OPERAND (t, 0)),
+				      RECUR (TREE_OPERAND (t, 1)));
+
     case SCOPE_REF:
       RETURN (tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
 				  /*address_p=*/false));
