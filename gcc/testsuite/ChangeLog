@@ -1,5 +1,8 @@
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/58726
+	* gcc.c-torture/execute/pr58726.c: New test.
+
 	PR target/59163
 	* g++.dg/torture/pr59163.C: New test.
 
