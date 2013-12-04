@@ -907,6 +907,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.unextended)
 #define TREE_INT_CST_EXT_NUNITS(NODE) \
   (INTEGER_CST_CHECK (NODE)->base.u.int_length.extended)
+#define TREE_INT_CST_OFFSET_NUNITS(NODE) \
+  (INTEGER_CST_CHECK (NODE)->base.u.int_length.offset)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
 #define TREE_INT_CST_LOW(NODE) \
   ((unsigned HOST_WIDE_INT) TREE_INT_CST_ELT (NODE, 0))
@@ -4623,11 +4625,15 @@ template <int N>
 inline unsigned int
 wi::extended_tree <N>::get_len () const
 {
-  if (N == MAX_BITSIZE_MODE_ANY_INT
-      || N > TYPE_PRECISION (TREE_TYPE (m_t)))
+  if (N == ADDR_MAX_PRECISION)
+    return TREE_INT_CST_OFFSET_NUNITS (m_t);
+  else if (N == MAX_BITSIZE_MODE_ANY_INT)
     return TREE_INT_CST_EXT_NUNITS (m_t);
   else
-    return TREE_INT_CST_NUNITS (m_t);
+    /* This class is designed to be used for specific output precisions
+       and needs to be as fast as possible, so there is no fallback for
+       other casees.  */
+    gcc_unreachable ();
 }
 
 namespace wi

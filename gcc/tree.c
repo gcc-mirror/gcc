@@ -1285,6 +1285,7 @@ wide_int_to_tree (tree type, const wide_int_ref &pcst)
 	    /* Make sure no one is clobbering the shared constant.  */
 	    gcc_checking_assert (TREE_TYPE (t) == type
 				 && TREE_INT_CST_NUNITS (t) == 1
+				 && TREE_INT_CST_OFFSET_NUNITS (t) == 1
 				 && TREE_INT_CST_EXT_NUNITS (t) == 1
 				 && TREE_INT_CST_ELT (t, 0) == hwi);
 	  else
@@ -1964,6 +1965,13 @@ make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)
   TREE_SET_CODE (t, INTEGER_CST);
   TREE_INT_CST_NUNITS (t) = len;
   TREE_INT_CST_EXT_NUNITS (t) = ext_len;
+  /* to_offset can only be applied to trees that are offset_int-sized
+     or smaller.  EXT_LEN is correct if it fits, otherwise the constant
+     must be exactly the precision of offset_int and so LEN is correct.  */
+  if (ext_len <= OFFSET_INT_ELTS)
+    TREE_INT_CST_OFFSET_NUNITS (t) = ext_len;
+  else
+    TREE_INT_CST_OFFSET_NUNITS (t) = len;
 
   TREE_CONSTANT (t) = 1;
 

@@ -764,11 +764,17 @@ struct GTY(()) tree_base {
     struct {
       /* The number of HOST_WIDE_INTs if the INTEGER_CST is accessed in
 	 its native precision.  */
-      unsigned short unextended;
+      unsigned char unextended;
 
       /* The number of HOST_WIDE_INTs if the INTEGER_CST is extended to
 	 wider precisions based on its TYPE_SIGN.  */
-      unsigned short extended;
+      unsigned char extended;
+
+      /* The number of HOST_WIDE_INTs if the INTEGER_CST is accessed in
+	 offset_int precision, with smaller integers being extended
+	 according to their TYPE_SIGN.  This is equal to one of the two
+	 fields above but is cached for speed.  */
+      unsigned char offset;
     } int_length;
 
     /* VEC length.  This field is only used with TREE_VEC.  */

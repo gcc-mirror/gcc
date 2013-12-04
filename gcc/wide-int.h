@@ -256,6 +256,9 @@ along with GCC; see the file COPYING3.  If not see
 #define ADDR_MAX_PRECISION \
   ((ADDR_MAX_BITSIZE + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1))
 
+/* The number of HWIs needed to store an offset_int.  */
+#define OFFSET_INT_ELTS (ADDR_MAX_PRECISION / HOST_BITS_PER_WIDE_INT)
+
 /* The type of result produced by a binary operation on types T1 and T2.
    Defined purely for brevity.  */
 #define WI_BINARY_RESULT(T1, T2) \

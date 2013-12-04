@@ -617,6 +617,7 @@
 	(TREE_INT_CST_HIGH): Delete.
 	(TREE_INT_CST_NUNITS): New.
 	(TREE_INT_CST_EXT_NUNITS): Likewise.
+	(TREE_INT_CST_OFFSET_NUNITS): Likewise.
 	(TREE_INT_CST_ELT): Likewise.
 	(INT_CST_LT): Use wide-int interfaces.
 	(INT_CST_LE): New.
