@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-builder.h"
 #include "ubsan.h"
+#include "predict.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -1310,9 +1311,6 @@ report_error_func (bool is_store, int size_in_bytes)
 	  BUILT_IN_ASAN_REPORT_STORE16 } };
   return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
-
-#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
-#define PROB_ALWAYS		(REG_BR_PROB_BASE)
 
 /* Split the current basic block and create a condition statement
    insertion point right before or after the statement pointed to by

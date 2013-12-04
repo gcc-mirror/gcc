@@ -43,6 +43,7 @@ extern tree ubsan_create_data (const char *, location_t,
 extern tree ubsan_type_descriptor (tree, bool);
 extern tree ubsan_encode_value (tree);
 extern bool is_ubsan_builtin_p (tree);
+extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree, tree);
 
 #endif  /* GCC_UBSAN_H  */
 

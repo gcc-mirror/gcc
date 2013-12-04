@@ -20,6 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PREDICT_H
 #define GCC_PREDICT_H
 
+/* Random guesstimation given names.
+   PROB_VERY_UNLIKELY should be small enough so basic block predicted
+   by it gets below HOT_BB_FREQUENCY_FRACTION.  */
+#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
+#define PROB_EVEN		(REG_BR_PROB_BASE / 2)
+#define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
+#define PROB_ALWAYS		(REG_BR_PROB_BASE)
+#define PROB_UNLIKELY           (REG_BR_PROB_BASE / 5 - 1)
+#define PROB_LIKELY             (PROB_ALWAYS - PROB_VERY_LIKELY)
+
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) ENUM,
 enum br_predictor
 {

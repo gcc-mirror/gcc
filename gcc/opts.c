@@ -1460,6 +1460,8 @@ common_handle_option (struct gcc_options *opts,
 	      { "vla-bound", SANITIZE_VLA, sizeof "vla-bound" - 1 },
 	      { "return", SANITIZE_RETURN, sizeof "return" - 1 },
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
+	      { "signed-integer-overflow", SANITIZE_SI_OVERFLOW,
+		sizeof "signed-integer-overflow" -1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;
