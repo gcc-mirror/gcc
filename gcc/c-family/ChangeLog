@@ -1,3 +1,11 @@
+2013-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/52023
+	* c-common.c (c_sizeof_or_alignof_type): Add parameter min_alignof
+	and check field alignment if set.
+	* c-common.h (c_sizeof_or_alignof_type): Update prototype.
+	(c_sizeof, c_alignof): Update calls to c_sizeof_or_alignof_type.
+
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>  
 	    Marek Polacek  <polacek@redhat.com>
 

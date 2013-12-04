@@ -1,3 +1,8 @@
+2013-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/52023
+	* gcc.dg/c11-align-6.c: New test.
+
 2013-12-04  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/overflow-mul-2.c: New test.

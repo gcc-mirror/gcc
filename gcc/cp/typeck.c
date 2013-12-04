@@ -1562,7 +1562,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
     }
 
   return c_sizeof_or_alignof_type (input_location, complete_type (type),
-				   op == SIZEOF_EXPR,
+				   op == SIZEOF_EXPR, false,
 				   complain);
 }
 

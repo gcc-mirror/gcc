@@ -7273,6 +7273,7 @@ objc_synthesize_getter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
 	     the same type, there is no need to lookup the ivar.  */
 	  size_of = c_sizeof_or_alignof_type (location, TREE_TYPE (property),
 					      true /* is_sizeof */,
+					      false /* min_alignof */,
 					      false /* complain */);
 
 	  if (PROPERTY_NONATOMIC (property))
@@ -7474,6 +7475,7 @@ objc_synthesize_setter (tree klass, tree class_methods ATTRIBUTE_UNUSED, tree pr
 	     the same type, there is no need to lookup the ivar.  */
 	  size_of = c_sizeof_or_alignof_type (location, TREE_TYPE (property),
 					      true /* is_sizeof */,
+					      false /* min_alignof */,
 					      false /* complain */);
 
 	  if (PROPERTY_NONATOMIC (property))

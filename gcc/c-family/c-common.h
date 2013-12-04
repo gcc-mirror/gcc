@@ -759,7 +759,7 @@ extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_save_expr (tree);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
-extern tree c_sizeof_or_alignof_type (location_t, tree, bool, int);
+extern tree c_sizeof_or_alignof_type (location_t, tree, bool, bool, int);
 extern tree c_alignof_expr (location_t, tree);
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
@@ -792,8 +792,8 @@ extern bool keyword_is_type_qualifier (enum rid);
 extern bool keyword_is_decl_specifier (enum rid);
 extern bool cxx_fundamental_alignment_p (unsigned);
 
-#define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, 1)
-#define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, 1)
+#define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
+#define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
 
 /* Subroutine of build_binary_op, used for certain operations.  */
 extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise);
