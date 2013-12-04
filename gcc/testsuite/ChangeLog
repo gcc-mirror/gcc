@@ -1,3 +1,7 @@
+2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack19.adb: New test.
+
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58726
