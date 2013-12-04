@@ -1,5 +1,10 @@
 2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Add specific handling
+	for fields with zero size and no representation clause.
+
+2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Case_Statement_to_gnu): Do not push a binding
 	level for each branch if this is a case expression in Ada 2012.
 	(gnat_to_gnu) <case N_Expression_With_Actions>: Adjust comment.
