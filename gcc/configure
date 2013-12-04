@@ -27508,6 +27508,14 @@ fi
 echo "source ${srcdir}/gdbinit.in" >> .gdbinit
 echo "python import sys; sys.path.append('${srcdir}'); import gdbhooks" >> .gdbinit
 
+# Put a breakpoint on __asan_report_error to help with debugging buffer
+# overflow.
+case "$CFLAGS" in
+*-fsanitize=address*)
+  echo "source ${srcdir}/gdbasan.in" >> .gdbinit
+  ;;
+esac
+
 gcc_tooldir='$(libsubdir)/$(libsubdir_to_prefix)$(target_noncanonical)'
 
 
