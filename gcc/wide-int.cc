@@ -27,6 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "dumpfile.h"
 
+#if GCC_VERSION >= 3000
+#define W_TYPE_SIZE HOST_BITS_PER_WIDE_INT
+typedef unsigned HOST_HALF_WIDE_INT UHWtype;
+typedef unsigned HOST_WIDE_INT UWtype;
+typedef unsigned int UQItype __attribute__ ((mode (QI)));
+typedef unsigned int USItype __attribute__ ((mode (SI)));
+typedef unsigned int UDItype __attribute__ ((mode (DI)));
+#include "longlong.h"
+#endif
+
 /* This is the maximal size of the buffer needed for dump.  */
 const unsigned int MAX_SIZE = (4 * (MAX_BITSIZE_MODE_ANY_INT / 4
 				    + (MAX_BITSIZE_MODE_ANY_INT
@@ -1255,8 +1265,8 @@ wi_pack (unsigned HOST_WIDE_INT *result,
    record in *OVERFLOW whether the result overflowed.  SGN controls
    the signedness and is used to check overflow or if HIGH is set.  */
 unsigned int
-wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
-		  unsigned int op1len, const HOST_WIDE_INT *op2,
+wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
+		  unsigned int op1len, const HOST_WIDE_INT *op2val,
 		  unsigned int op2len, unsigned int prec, signop sgn,
 		  bool *overflow, bool high)
 {
@@ -1285,24 +1295,53 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
   if (needs_overflow)
     *overflow = false;
 
+  wide_int_ref op1 = wi::storage_ref (op1val, op1len, prec);
+  wide_int_ref op2 = wi::storage_ref (op2val, op2len, prec);
+
   /* This is a surprisingly common case, so do it first.  */
-  if ((op1len == 1 && op1[0] == 0) || (op2len == 1 && op2[0] == 0))
+  if (op1 == 0 || op2 == 0)
     {
       val[0] = 0;
       return 1;
     }
 
+#ifdef umul_ppmm
+  if (sgn == UNSIGNED)
+    {
+      /* If the inputs are single HWIs and the output has room for at
+	 least two HWIs, we can use umul_ppmm directly.  */
+      if (prec >= HOST_BITS_PER_WIDE_INT * 2
+	  && wi::fits_uhwi_p (op1)
+	  && wi::fits_uhwi_p (op2))
+	{
+	  umul_ppmm (val[1], val[0], op1.ulow (), op2.ulow ());
+	  return 1 + (val[1] != 0 || val[0] < 0);
+	}
+      /* Likewise if the output is a full single HWI, except that the
+	 upper HWI of the result is only used for determining overflow.
+	 (We handle this case inline when overflow isn't needed.)  */
+      else if (prec == HOST_BITS_PER_WIDE_INT)
+	{
+	  unsigned HOST_WIDE_INT upper;
+	  umul_ppmm (upper, val[0], op1.ulow (), op2.ulow ());
+	  if (needs_overflow)
+	    *overflow = (upper != 0);
+	  return 1;
+	}
+    }
+#endif
+
   /* Handle multiplications by 1.  */
-  if (op1len == 1 && op1[0] == 1)
+  if (op1 == 1)
     {
       for (i = 0; i < op2len; i++)
-	val[i] = op2[i];
+	val[i] = op2val[i];
       return op2len;
     }
-  if (op2len == 1 && op2[0] == 1)
+  if (op2 == 1)
     {
       for (i = 0; i < op1len; i++)
-	val[i] = op1[i];
+	val[i] = op1val[i];
       return op1len;
     }
 
@@ -1316,13 +1355,13 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 
       if (sgn == SIGNED)
 	{
-	  o0 = sext_hwi (op1[0], prec);
-	  o1 = sext_hwi (op2[0], prec);
+	  o0 = op1.to_shwi ();
+	  o1 = op2.to_shwi ();
 	}
       else
 	{
-	  o0 = zext_hwi (op1[0], prec);
-	  o1 = zext_hwi (op2[0], prec);
+	  o0 = op1.to_uhwi ();
+	  o1 = op2.to_uhwi ();
 	}
 
       r = o0 * o1;
@@ -1344,9 +1383,9 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
     }
 
   /* We do unsigned mul and then correct it.  */
-  wi_unpack (u, (const unsigned HOST_WIDE_INT*)op1, op1len,
+  wi_unpack (u, (const unsigned HOST_WIDE_INT *) op1val, op1len,
 	     half_blocks_needed, prec, SIGNED);
-  wi_unpack (v, (const unsigned HOST_WIDE_INT*)op2, op2len,
+  wi_unpack (v, (const unsigned HOST_WIDE_INT *) op2val, op2len,
 	     half_blocks_needed, prec, SIGNED);
 
   /* The 2 is for a full mult.  */
@@ -1371,7 +1410,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
   if (sgn == SIGNED && (high || needs_overflow))
     {
       unsigned HOST_WIDE_INT b;
-      if (op1[op1len-1] < 0)
+      if (wi::neg_p (op1))
 	{
 	  b = 0;
 	  for (i = 0; i < half_blocks_needed; i++)
@@ -1382,7 +1421,7 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
 	      b = t >> (HOST_BITS_PER_WIDE_INT - 1);
 	    }
 	}
-      if (op2[op2len-1] < 0)
+      if (wi::neg_p (op2))
 	{
 	  b = 0;
 	  for (i = 0; i < half_blocks_needed; i++)
