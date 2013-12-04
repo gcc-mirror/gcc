@@ -75,3 +75,7 @@
    helper functions - not everything in libgcc - in the interests of
    maintaining backward compatibility.  */
 #define LIBGCC2_FIXEDBIT_GNU_PREFIX
+
+#if (!defined(__ARM_ARCH_EXT_IDIV__))
+# define TARGET_HAS_NO_HW_DIVIDE
+#endif
