@@ -7974,7 +7974,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	   && old_decl != error_mark_node
 	   && TREE_PUBLIC (decl1)
 	   && !MAIN_NAME_P (DECL_NAME (decl1))
-	   && C_DECL_ISNT_PROTOTYPE (old_decl))
+	   && C_DECL_ISNT_PROTOTYPE (old_decl)
+	   && !DECL_DECLARED_INLINE_P (decl1))
     warning_at (loc, OPT_Wmissing_prototypes,
 		"no previous prototype for %qD", decl1);
   /* Optionally warn of any def with no previous prototype
