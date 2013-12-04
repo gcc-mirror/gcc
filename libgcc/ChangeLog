@@ -1,3 +1,7 @@
+2013-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* longlong.h: Delete (moved to include/).
+
 2013-12-03  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* config/rs6000/ibm-ldouble.c (__gcc_qadd): Fix add
