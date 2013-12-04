@@ -1,4 +1,10 @@
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58726
+	* combine.c (force_to_mode): Fix comment typo.  Don't destructively
+	modify x for ROTATE, ROTATERT and IF_THEN_ELSE.
+
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59163
