@@ -6,6 +6,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 ## Skip over everything if the quadlib is not available:
 if BUILD_LIBQUADMATH
 ACLOCAL_AMFLAGS = -I .. -I ../config
+AM_CPPFLAGS = -I $(top_srcdir)/../include
 
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
