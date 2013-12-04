@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c99 -Wpedantic" } */
+/* { dg-options "-std=c99 -pedantic" } */
 
 unsigned int
 foo (void)

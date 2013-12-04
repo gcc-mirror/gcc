@@ -1,3 +1,8 @@
+2013-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59351
+	* gcc.dg/pr59351.c: Use -pedantic instead of -Wpedantic.
+
 2013-12-03  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
