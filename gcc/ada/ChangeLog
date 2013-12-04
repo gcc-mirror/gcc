@@ -1,5 +1,10 @@
 2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/59382
+	* indepsw-darwin.adb: New file.
+
+2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (components_to_record): Add specific handling
 	for fields with zero size and no representation clause.
 

@@ -69,66 +69,59 @@ AC_SUBST(EXTRA_GNATTOOLS)
 # Per-target case statement
 # -------------------------
 case "${target}" in
-  alpha*-dec-vx*) # Unlike all other Vxworks
-    ;;
-  m68k*-wrs-vx* \
-  | powerpc*-wrs-vxworks \
-  | sparc*-wrs-vx* \
-  | *86-wrs-vxworks \
-  | mips*-wrs-vx*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb"
-    ;;
-  sparc-sun-solaris*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
-    ;;
-  *86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
-    ;;
-  *86-*-linux* \
-  | powerpc*-*-linux* \
-  | *ia64-*-linux* \
-  | alpha*-*-linux* \
-  | sparc*-*-linux* \
-  | hppa*-*-linux* \
-  | *x86_64-*-linux*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb"
-    ;;
-  s390*-*-linux*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb"
-    ;;
-  *86-*-freebsd*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb"
-    ;;
-  hppa*-hp-hpux10*) # Unlike hpux11
-    ;;
-  hppa*-hp-hpux11*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-hpux.adb"
-    ;;
-  *-ibm-aix*)
+  *-*-aix*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt-specific.adb<mlib-tgt-specific-aix.adb \
     indepsw.adb<indepsw-aix.adb"
     ;;
-  alpha*-dec-vms* | alpha*-dec-openvms* | alpha*-dec-vms* \
-  | alpha*-hp-vms* | alpha*-hp-openvms* | alpha*-hp-vms*)
+  *-*-darwin*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb \
+    indepsw.adb<indepsw-darwin.adb"
+    ;;
+  *-*-freebsd*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
+    indepsw.adb<indepsw-gnu.adb"
+    ;;
+  *-*-linux*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
+    indepsw.adb<indepsw-gnu.adb"
+    ;;
+  *-*-lynxos*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
+    indepsw.adb<indepsw-gnu.adb"
+    ;;
+  *-*-solaris*)
+    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
+    ;;
+  *-*-vxworks*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+    indepsw.adb<indepsw-gnu.adb"
+    ;;
+  hppa*-hp-hpux10*)
+    ;;
+  hppa*-hp-hpux11*)
+    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-hpux.adb"
+    ;;
+  ia64-hp-hpux11*)
+    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-ia64-hpux.adb"
+    ;;
+  alpha*-*-vms* | alpha*-*-openvms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt-specific.adb<mlib-tgt-specific-vms-alpha.adb \
     symbols.adb<symbols-vms.adb \
     symbols-processing.adb<symbols-processing-vms-alpha.adb"
-
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
-  ia64*-dec-vms* | ia64*-dec-openvms* | ia64*-dec-vms* \
-  | ia64*-hp-vms* | ia64*-hp-openvms* | ia64*-hp-vms*)
+  ia64-*-vms* | ia64-*-openvms*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt-specific.adb<mlib-tgt-specific-vms-ia64.adb \
     symbols.adb<symbols-vms.adb \
     symbols-processing.adb<symbols-processing-vms-ia64.adb"
-
     EXTRA_GNATTOOLS='../../gnatlbr$(exeext) ../../gnatsym$(exeext)'
     ;;
   *-*-cygwin32* | *-*-mingw32* | *-*-pe)
@@ -136,14 +129,6 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-mingw.adb \
     indepsw.adb<indepsw-mingw.adb"
     EXTRA_GNATTOOLS='../../gnatdll$(exeext)'
-    ;;
-  *-*-darwin*)
-    TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb"
-    ;;
-  *-*-lynxos)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
-    indepsw.adb<indepsw-gnu.adb"
     ;;
 esac
 
