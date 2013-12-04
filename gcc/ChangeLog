@@ -1,3 +1,10 @@
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59355
+	* ipa-devirt.c (gate_ipa_devirt): Return false if
+	!flag_devirtualize.
+	* opts.c (common_handle_option): Fix comment spelling.
+
 2013-12-04  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gimple-ssa-strength-reduction.c: Include tree-affine.h.

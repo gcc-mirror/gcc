@@ -1709,7 +1709,7 @@ common_handle_option (struct gcc_options *opts,
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
       /* Indirect call profiling should do all useful transformations
- 	 speculative devirutalization does.  */
+ 	 speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively
 	  && opts->x_flag_value_profile_transformations)
 	opts->x_flag_devirtualize_speculatively = false;
