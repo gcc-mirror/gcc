@@ -1,3 +1,11 @@
+2013-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR debug/37132
+	* trans-decl.c (generate_namelist_decl, create_module_nml_decl):
+	New static functions.
+	(gfc_generate_module_vars, generate_local_vars): Call them.
+	(gfc_trans_use_stmts): Handle namelists for debug genertion.
+
 2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57354

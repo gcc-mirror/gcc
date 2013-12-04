@@ -1,3 +1,18 @@
+2013-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR debug/37132
+	* lto-streamer.h (LTO_tags): Add LTO_namelist_decl_ref.
+	* tree.def (NAMELIST_DECL): Add.
+	* tree.h (NAMELIST_DECL_ASSOCIATED_DECL): New macro.
+	* tree.c (initialize_tree_contains_struct): Add asserts for it.
+	* dwarf2out.c (gen_namelist_decl): New function.
+	(gen_decl_die, dwarf2out_decl): Call it.
+	(dwarf2out_imported_module_or_decl_1): Handle NAMELIST_DECL.
+	* lto-streamer-in.c (lto_input_tree_ref): Handle NAMELIST_DECL.
+	(lto_input_tree_ref, lto_input_tree_1): Update lto_tag_check_range
+	call.
+	* lto-streamer-out.c (lto_output_tree_ref): Handle NAMELIST_DECL.
+
 2013-12-03  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-structalias.c (constraint_set_union): Change return type

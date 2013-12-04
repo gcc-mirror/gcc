@@ -4144,6 +4144,37 @@ gfc_module_add_decl (struct module_htab_entry *entry, tree decl)
 
 static struct module_htab_entry *cur_module;
 
+
+/* Generate debugging symbols for namelists. This function must come after
+   generate_local_decl to ensure that the variables in the namelist are
+   already declared.  */
+
+static tree
+generate_namelist_decl (gfc_symbol * sym)
+{
+  gfc_namelist *nml;
+  tree decl;
+  vec<constructor_elt, va_gc> *nml_decls = NULL;
+
+  gcc_assert (sym->attr.flavor == FL_NAMELIST);
+  for (nml = sym->namelist; nml; nml = nml->next)
+    {
+      if (nml->sym->backend_decl == NULL_TREE)
+	{
+	  nml->sym->attr.referenced = 1;
+	  nml->sym->backend_decl = gfc_get_symbol_decl (nml->sym);
+	}
+      CONSTRUCTOR_APPEND_ELT (nml_decls, NULL_TREE, nml->sym->backend_decl);
+    }
+
+  decl = make_node (NAMELIST_DECL);
+  TREE_TYPE (decl) = void_type_node;
+  NAMELIST_DECL_ASSOCIATED_DECL (decl) = build_constructor (NULL_TREE, nml_decls);
+  DECL_NAME (decl) = get_identifier (sym->name);
+  return decl;
+}
+
+
 /* Output an initialized decl for a module variable.  */
 
 static void
@@ -4328,6 +4359,18 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 			      || (TREE_CODE (st->n.sym->backend_decl)
 				  != VAR_DECL));
 		  decl = copy_node (st->n.sym->backend_decl);
+		  DECL_CONTEXT (decl) = entry->namespace_decl;
+		  DECL_EXTERNAL (decl) = 1;
+		  DECL_IGNORED_P (decl) = 0;
+		  DECL_INITIAL (decl) = NULL_TREE;
+		}
+	      else if (st->n.sym->attr.flavor == FL_NAMELIST
+		       && st->n.sym->attr.use_only
+		       && st->n.sym->module
+		       && strcmp (st->n.sym->module, use_stmt->module_name)
+			  == 0)
+		{
+		  decl = generate_namelist_decl (st->n.sym);
 		  DECL_CONTEXT (decl) = entry->namespace_decl;
 		  DECL_EXTERNAL (decl) = 1;
 		  DECL_IGNORED_P (decl) = 0;
@@ -4610,6 +4653,21 @@ generate_coarray_init (gfc_namespace * ns __attribute((unused)))
 }
 
 
+static void
+create_module_nml_decl (gfc_symbol *sym)
+{
+  if (sym->attr.flavor == FL_NAMELIST)
+    {
+      tree decl = generate_namelist_decl (sym);
+      pushdecl (decl);
+      gcc_assert (sym->ns->proc_name->attr.flavor == FL_MODULE);
+      DECL_CONTEXT (decl) = sym->ns->proc_name->backend_decl;
+      rest_of_decl_compilation (decl, 1, 0);
+      gfc_module_add_decl (cur_module, decl);
+    }
+}
+
+
 /* Generate all the required code for module variables.  */
 
 void
@@ -4628,6 +4686,7 @@ gfc_generate_module_vars (gfc_namespace * ns)
 
   /* Create decls for all the module variables.  */
   gfc_traverse_ns (ns, gfc_create_module_variable);
+  gfc_traverse_ns (ns, create_module_nml_decl);
 
   if (gfc_option.coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
     generate_coarray_init (ns);
@@ -4893,10 +4952,23 @@ generate_local_decl (gfc_symbol * sym)
     sym->backend_decl = gfc_typenode_for_spec (&(sym->ts));
 }
 
+
+static void
+generate_local_nml_decl (gfc_symbol * sym)
+{
+  if (sym->attr.flavor == FL_NAMELIST && !sym->attr.use_assoc)
+    {
+      tree decl = generate_namelist_decl (sym);
+      pushdecl (decl);
+    }
+}
+
+
 static void
 generate_local_vars (gfc_namespace * ns)
 {
   gfc_traverse_ns (ns, generate_local_decl);
+  gfc_traverse_ns (ns, generate_local_nml_decl);
 }
 
 
