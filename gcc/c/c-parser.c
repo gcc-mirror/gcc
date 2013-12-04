@@ -3045,7 +3045,8 @@ c_parser_alignas_specifier (c_parser * parser)
     {
       struct c_type_name *type = c_parser_type_name (parser);
       if (type != NULL)
-	ret = c_alignof (loc, groktypename (type, NULL, NULL));
+	ret = c_sizeof_or_alignof_type (loc, groktypename (type, NULL, NULL),
+					false, true, 1);
     }
   else
     ret = c_parser_expr_no_commas (parser, NULL).value;
@@ -6446,11 +6447,12 @@ c_parser_alignof_expression (c_parser *parser)
   location_t loc = c_parser_peek_token (parser)->location;
   tree alignof_spelling = c_parser_peek_token (parser)->value;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_ALIGNOF));
+  bool is_c11_alignof = strcmp (IDENTIFIER_POINTER (alignof_spelling),
+				"_Alignof") == 0;
   /* A diagnostic is not required for the use of this identifier in
      the implementation namespace; only diagnose it for the C11
      spelling because of existing code using the other spellings.  */
-  if (!flag_isoc11
-      && strcmp (IDENTIFIER_POINTER (alignof_spelling), "_Alignof") == 0)
+  if (!flag_isoc11 && is_c11_alignof)
     {
       if (flag_isoc99)
 	pedwarn (loc, OPT_Wpedantic, "ISO C99 does not support %qE",
@@ -6494,7 +6496,9 @@ c_parser_alignof_expression (c_parser *parser)
       /* alignof ( type-name ).  */
       c_inhibit_evaluation_warnings--;
       in_alignof--;
-      ret.value = c_alignof (loc, groktypename (type_name, NULL, NULL));
+      ret.value = c_sizeof_or_alignof_type (loc, groktypename (type_name,
+							       NULL, NULL),
+					    false, is_c11_alignof, 1);
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       return ret;
