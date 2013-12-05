@@ -1,3 +1,11 @@
+2013-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59374
+	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependence):
+	Commonize known and unknown dependence case fixing the allowed
+	read-write dependence case and dropping code that should not
+	matter.
+
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/ia64/ia64.md (prologue_allocate_stack): Block auto-

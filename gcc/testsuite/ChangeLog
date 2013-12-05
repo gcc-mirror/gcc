@@ -1,3 +1,9 @@
+2013-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59374
+	* gcc.dg/torture/pr59374-1.c: New testcase.
+	* gcc.dg/torture/pr59374-2.c: Likewise.
+
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/ia64/pr52731.c: New.
