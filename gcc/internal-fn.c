@@ -171,8 +171,6 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
   arg1 = gimple_call_arg (stmt, 1);
   done_label = gen_label_rtx ();
   do_error = gen_label_rtx ();
-  fn = ubsan_build_overflow_builtin (code, gimple_location (stmt),
-				     TREE_TYPE (arg0), arg0, arg1);
   do_pending_stack_adjust ();
   op0 = expand_normal (arg0);
   op1 = expand_normal (arg1);
@@ -237,13 +235,17 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 			       PROB_VERY_LIKELY);
     }
 
-   emit_label (do_error);
-   /* Expand the ubsan builtin call.  */
-   expand_normal (fn);
-   do_pending_stack_adjust ();
+  emit_label (do_error);
+  /* Expand the ubsan builtin call.  */
+  push_temp_slots ();
+  fn = ubsan_build_overflow_builtin (code, gimple_location (stmt),
+				     TREE_TYPE (arg0), arg0, arg1);
+  expand_normal (fn);
+  pop_temp_slots ();
+  do_pending_stack_adjust ();
 
-   /* We're done.  */
-   emit_label (done_label);
+  /* We're done.  */
+  emit_label (done_label);
 
   if (lhs)
     emit_move_insn (target, res);
@@ -262,8 +264,6 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
   arg1 = gimple_call_arg (stmt, 1);
   done_label = gen_label_rtx ();
   do_error = gen_label_rtx ();
-  fn = ubsan_build_overflow_builtin (NEGATE_EXPR, gimple_location (stmt),
-				     TREE_TYPE (arg1), arg1, NULL_TREE);
 
   do_pending_stack_adjust ();
   op1 = expand_normal (arg1);
@@ -313,7 +313,11 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
 
   emit_label (do_error);
   /* Expand the ubsan builtin call.  */
+  push_temp_slots ();
+  fn = ubsan_build_overflow_builtin (NEGATE_EXPR, gimple_location (stmt),
+				     TREE_TYPE (arg1), arg1, NULL_TREE);
   expand_normal (fn);
+  pop_temp_slots ();
   do_pending_stack_adjust ();
 
   /* We're done.  */
@@ -337,8 +341,6 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   arg1 = gimple_call_arg (stmt, 1);
   done_label = gen_label_rtx ();
   do_error = gen_label_rtx ();
-  fn = ubsan_build_overflow_builtin (MULT_EXPR, gimple_location (stmt),
-				     TREE_TYPE (arg0), arg0, arg1);
 
   do_pending_stack_adjust ();
   op0 = expand_normal (arg0);
@@ -418,7 +420,11 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 
   emit_label (do_error);
   /* Expand the ubsan builtin call.  */
+  push_temp_slots ();
+  fn = ubsan_build_overflow_builtin (MULT_EXPR, gimple_location (stmt),
+				     TREE_TYPE (arg0), arg0, arg1);
   expand_normal (fn);
+  pop_temp_slots ();
   do_pending_stack_adjust ();
 
   /* We're done.  */

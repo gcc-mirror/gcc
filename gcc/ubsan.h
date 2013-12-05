@@ -41,7 +41,7 @@ extern tree ubsan_instrument_unreachable (location_t);
 extern tree ubsan_create_data (const char *, location_t,
 			       const struct ubsan_mismatch_data *, ...);
 extern tree ubsan_type_descriptor (tree, bool);
-extern tree ubsan_encode_value (tree);
+extern tree ubsan_encode_value (tree, bool = false);
 extern bool is_ubsan_builtin_p (tree);
 extern tree ubsan_build_overflow_builtin (tree_code, location_t, tree, tree, tree);
 

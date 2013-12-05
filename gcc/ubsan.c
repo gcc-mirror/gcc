@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "tree-ssa-alias.h"
+#include "tree-pretty-print.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "gimple.h"
@@ -40,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ubsan.h"
 #include "c-family/c-common.h"
+#include "rtl.h"
+#include "expr.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -102,45 +105,53 @@ decl_for_type_insert (tree type, tree decl)
 
 /* Helper routine, which encodes a value in the pointer_sized_int_node.
    Arguments with precision <= POINTER_SIZE are passed directly,
-   the rest is passed by reference.  T is a value we are to encode.  */
+   the rest is passed by reference.  T is a value we are to encode.
+   IN_EXPAND_P is true if this function is called during expansion.  */
 
 tree
-ubsan_encode_value (tree t)
+ubsan_encode_value (tree t, bool in_expand_p)
 {
   tree type = TREE_TYPE (t);
-  switch (TREE_CODE (type))
-    {
-    case INTEGER_TYPE:
-      if (TYPE_PRECISION (type) <= POINTER_SIZE)
+  const unsigned int bitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  if (bitsize <= POINTER_SIZE)
+    switch (TREE_CODE (type))
+      {
+      case BOOLEAN_TYPE:
+      case ENUMERAL_TYPE:
+      case INTEGER_TYPE:
 	return fold_build1 (NOP_EXPR, pointer_sized_int_node, t);
+      case REAL_TYPE:
+	{
+	  tree itype = build_nonstandard_integer_type (bitsize, true);
+	  t = fold_build1 (VIEW_CONVERT_EXPR, itype, t);
+	  return fold_convert (pointer_sized_int_node, t);
+	}
+      default:
+	gcc_unreachable ();
+      }
+  else
+    {
+      if (!DECL_P (t) || !TREE_ADDRESSABLE (t))
+	{
+	  /* The reason for this is that we don't want to pessimize
+	     code by making vars unnecessarily addressable.  */
+	  tree var = create_tmp_var (type, NULL);
+	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	  if (in_expand_p)
+	    {
+	      rtx mem
+		= assign_stack_temp_for_type (TYPE_MODE (type),
+					      GET_MODE_SIZE (TYPE_MODE (type)),
+					      type);
+	      SET_DECL_RTL (var, mem);
+	      expand_assignment (var, t, false);
+	      return build_fold_addr_expr (var);
+	    }
+	  t = build_fold_addr_expr (var);
+	  return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
+	}
       else
 	return build_fold_addr_expr (t);
-    case REAL_TYPE:
-      {
-	unsigned int bitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
-	if (bitsize <= POINTER_SIZE)
-	  {
-	    tree itype = build_nonstandard_integer_type (bitsize, true);
-	    t = fold_build1 (VIEW_CONVERT_EXPR, itype, t);
-	    return fold_convert (pointer_sized_int_node, t);
-	  }
-	else
-	  {
-	    if (!TREE_ADDRESSABLE (t))
-	      {
-		/* The reason for this is that we don't want to pessimize
-		   code by making vars unnecessarily addressable.  */
-		tree var = create_tmp_var (TREE_TYPE (t), NULL);
-		tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
-		t = build_fold_addr_expr (var);
-		return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
-	      }
-	    else
-	      return build_fold_addr_expr (t);
-	  }
-      }
-    default:
-      gcc_unreachable ();
     }
 }
 
@@ -663,8 +674,9 @@ ubsan_build_overflow_builtin (tree_code code, location_t loc, tree lhstype,
   tree fn = builtin_decl_explicit (fn_code);
   return build_call_expr_loc (loc, fn, 2 + (code != NEGATE_EXPR),
 			      build_fold_addr_expr_loc (loc, data),
-			      ubsan_encode_value (op0),
-			      op1 ? ubsan_encode_value (op1) : NULL_TREE);
+			      ubsan_encode_value (op0, true),
+			      op1 ? ubsan_encode_value (op1, true)
+				  : NULL_TREE);
 }
 
 /* Perform the signed integer instrumentation.  GSI is the iterator
