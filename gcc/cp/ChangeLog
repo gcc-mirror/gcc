@@ -1,3 +1,10 @@
+2013-12-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59044
+	PR c++/59052
+	* pt.c (most_specialized_class): Use the partially instantiated
+	template for deduction.  Drop the TMPL parameter.
+
 2013-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (duplicate_decls): Replace pairs of errors and permerrors
