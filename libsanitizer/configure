@@ -14564,7 +14564,7 @@ done
 
 
 # Common libraries that we need to link against for all sanitizer libs.
-link_sanitizer_common='-lpthread -ldl'
+link_sanitizer_common='-lpthread -ldl -lm'
 
 # Set up the set of additional libraries that we need to link against for libasan.
 link_libasan=$link_sanitizer_common
