@@ -3444,7 +3444,15 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments)
 	  if (adj->by_ref)
 	    ptype = build_pointer_type (adj->type);
 	  else
-	    ptype = adj->type;
+	    {
+	      ptype = adj->type;
+	      if (is_gimple_reg_type (ptype))
+		{
+		  unsigned malign = GET_MODE_ALIGNMENT (TYPE_MODE (ptype));
+		  if (TYPE_ALIGN (ptype) < malign)
+		    ptype = build_aligned_type (ptype, malign);
+		}
+	    }
 
 	  if (care_for_types)
 	    new_arg_types = tree_cons (NULL_TREE, ptype, new_arg_types);
