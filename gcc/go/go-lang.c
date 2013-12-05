@@ -270,12 +270,6 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
-  /* The isolate_erroneous_paths optimization can change a nil
-     dereference from a panic to a trap, so we have to disable it for
-     Go, even though it is normally enabled by -O2.  */
-  if (!global_options_set.x_flag_isolate_erroneous_paths)
-    global_options.x_flag_isolate_erroneous_paths = 0;
-
   /* Returning false means that the backend should be used.  */
   return false;
 }
