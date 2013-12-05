@@ -1,3 +1,7 @@
+2013-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/warn/pr15774-1.C: Adjust expected message.
+
 2013-12-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59317
@@ -27,7 +31,7 @@
 	* c-c++-common/tsan/thread_leak2.c: New test.
 	* c-c++-common/tsan/tiny_race.c: New test.
 	* c-c++-common/tsan/tls_race.c: New test.
-	* c-c++-common/tsan/write_in_reader_lock.c: New test.	
+	* c-c++-common/tsan/write_in_reader_lock.c: New test.
 	* lib/tsan-dg.exp: New file.
 	* gcc.dg/tsan/tsan.exp: New file.
 	* g++.dg/tsan/tsan.exp: New file.
