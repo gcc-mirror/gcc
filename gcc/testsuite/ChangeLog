@@ -1,3 +1,7 @@
+2013-12-05  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.dg/vect/vect-nop-move.c: New test.
+
 2013-12-05  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/tsan/atomic_stack.c: New test.
