@@ -1,3 +1,12 @@
+2013-12-05  Ian Lance Taylor  <iant@google.com>
+
+	Revert this change; no longer required.
+	2013-11-06  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_post_options): If
+	-fisolate-erroneous-paths was turned on by an optimization option,
+	turn it off.
+
 2013-11-23  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::function_type): Add result_struct
