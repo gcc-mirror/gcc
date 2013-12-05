@@ -1259,7 +1259,7 @@ extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool nonfreeing_call_p (gimple);
-extern bool infer_nonnull_range (gimple, tree);
+extern bool infer_nonnull_range (gimple, tree, bool, bool);
 extern void sort_case_labels (vec<tree> );
 extern void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
 extern void gimple_seq_set_location (gimple_seq , location_t);

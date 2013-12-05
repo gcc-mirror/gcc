@@ -1,3 +1,10 @@
+2013-12-04  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/pr38984.c: Use -fno-isolate-erroneous-paths-dereference.
+	* gcc.dg/tree-ssa/isolate-2.c: Explicitly turn on
+	-fisolate-erroneous-paths-attribute.
+	* gcc.dg/tree-ssa/isolate-4.c: Likewise.
+
 2013-12-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/52023

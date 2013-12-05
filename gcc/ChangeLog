@@ -47,6 +47,25 @@
 
 2013-12-04  Jeff Law  <law@redhat.com>
 
+	* common.opt: Split up -fisolate-erroneous-paths into
+	-fisolate-erroneous-paths-dereference and
+	-fisolate-erroneous-paths-attribute.
+	* invoke.texi: Corresponding changes.
+	* gimple.c (infer_nonnull_range):  Add and use new arguments
+	to control what kind of statements can be used to infer a
+	non-null range.
+	* gimple.h (infer_nonnull_range): Update prototype.
+	* tree-vrp.c (infer_value_range): Corresponding changes.
+	* opts.c (default_options_table): Update due to option split.
+	* gimple-ssa-isolate-paths.c: Fix trailing whitespace.
+	(find_implicit_erroneous_behaviour): Pass additional arguments
+	to infer_nonnull_range.
+	(find_explicit_erroneous_behaviour): Similarly.
+	(gate_isolate_erroneous_paths): Check both of the new
+	options.
+	
+2013-12-04  Jeff Law  <law@redhat.com>
+
 	* expr.c (expand_assignment): Update comments.
 
 2013-12-04  Tobias Burnus  <burnus@net-b.de>

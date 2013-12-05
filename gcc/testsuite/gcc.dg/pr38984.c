@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-delete-null-pointer-checks -fdump-tree-optimized -fno-isolate-erroneous-paths" }
+/* { dg-options "-O2 -fno-delete-null-pointer-checks -fdump-tree-optimized -fno-isolate-erroneous-paths-dereference" }
  * */
 
 int f(int *p)
