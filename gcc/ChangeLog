@@ -1,3 +1,12 @@
+2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/ia64/ia64.md (prologue_allocate_stack): Block auto-
+	generation of predicated version.
+	(epilogue_deallocate_stack): Ditto.
+	(prologue_allocate_stack_pr): Add explicit predicated version.
+	(epilogue_deallocate_stack_pr): Ditto.
+	* config/ia64/ia64.c (ia64_single_set): Use explicit version.
+
 2013-12-05  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac (BUILD_CXXFLAGS) Don't use ALL_CXXFLAGS for
