@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { *-*-linux* } } } */
 /* { dg-options "-static-libasan" } */
 
 #include <time.h>
