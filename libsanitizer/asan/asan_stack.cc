@@ -43,3 +43,11 @@ bool __asan_symbolize(const void *pc, char *out_buffer, int out_size) {
   return false;
 }
 #endif
+
+extern "C" {
+SANITIZER_INTERFACE_ATTRIBUTE
+void __sanitizer_print_stack_trace() {
+  using namespace __asan;
+  PRINT_CURRENT_STACK();
+}
+}  // extern "C"
