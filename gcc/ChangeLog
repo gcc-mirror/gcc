@@ -1,6 +1,15 @@
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/i386.c(IX86_BUILTIN_READ_FLAGS): New.
+	* config/i386/i386.c (ix86_expand_builtin): Generate
+	reg for readflags built-in when optimizing.
+	* config/i386/i386.md (*pushfl<mode>): Rename to ...
+	(pushfl<mode>2): This. Fix iterator.
+	(*popfl<mode>): Rename to ...
+	(*popfl<mode>1): This. Fix iterator.
+
+2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/i386.c (IX86_BUILTIN_READ_FLAGS): New.
 	(IX86_BUILTIN_WRITE_FLAGS): Ditto.
 	(ix86_init_mmx_sse_builtins): Define
 	__builtin_ia32_writeeflags_u32, __builtin_ia32_writeeflags_u64,

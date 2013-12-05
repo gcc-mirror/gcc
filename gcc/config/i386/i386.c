@@ -33457,8 +33457,9 @@ addcarryx:
     case IX86_BUILTIN_READ_FLAGS:
       emit_insn (gen_push (gen_rtx_REG (word_mode, FLAGS_REG)));
 
-      if (target == NULL_RTX
-	  || !register_operand (target, word_mode)
+      if (optimize
+	  || target == NULL_RTX
+	  || !nonimmediate_operand (target, word_mode)
 	  || GET_MODE (target) != word_mode)
 	target = gen_reg_rtx (word_mode);
 
