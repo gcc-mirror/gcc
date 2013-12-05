@@ -1,3 +1,22 @@
+2013-12-05  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/tsan/atomic_stack.c: New test.
+	* c-c++-common/tsan/fd_pipe_race.c: New test.
+	* c-c++-common/tsan/free_race.c: New test.
+	* c-c++-common/tsan/mutexset1.c: New test.
+	* c-c++-common/tsan/race_on_barrier.c: New test.
+	* c-c++-common/tsan/sleep_sync.c: New test.
+	* c-c++-common/tsan/thread_leak.c: New test.
+	* c-c++-common/tsan/thread_leak1.c: New test.
+	* c-c++-common/tsan/thread_leak2.c: New test.
+	* c-c++-common/tsan/tiny_race.c: New test.
+	* c-c++-common/tsan/tls_race.c: New test.
+	* c-c++-common/tsan/write_in_reader_lock.c: New test.	
+	* lib/tsan-dg.exp: New file.
+	* gcc.dg/tsan/tsan.exp: New file.
+	* g++.dg/tsan/tsan.exp: New file.
+	* g++.dg/dg.exp: Prune tsan subdirectory.
+
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc.target/i386/readeflags-1.c: New.
