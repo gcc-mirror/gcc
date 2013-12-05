@@ -5363,6 +5363,19 @@ built with this option turned on will issue an error message
 when the end of a non-void function is reached without actually
 returning a value.  This option works in C++ only.
 
+@item -fsanitize=signed-integer-overflow
+@opindex fsanitize=signed-integer-overflow
+
+This option enables signed integer overflow checking.  We check that
+the result of @code{+}, @code{*}, and both unary and binary @code{-}
+does not overflow in the signed arithmetics.  Note, integer promotion
+rules must be taken into account.  That is, the following is not an
+overflow:
+@smallexample
+signed char a = SCHAR_MAX;
+a++;
+@end smallexample
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
