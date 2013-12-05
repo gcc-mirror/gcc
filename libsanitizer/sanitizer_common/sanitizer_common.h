@@ -134,6 +134,8 @@ extern fd_t report_fd;
 extern bool log_to_file;
 extern char report_path_prefix[4096];
 extern uptr report_fd_pid;
+extern uptr stoptheworld_tracer_pid;
+extern uptr stoptheworld_tracer_ppid;
 
 uptr OpenFile(const char *filename, bool write);
 // Opens the file 'file_name" and reads up to 'max_len' bytes.
@@ -318,8 +320,7 @@ template<typename T>
 class InternalMmapVector {
  public:
   explicit InternalMmapVector(uptr initial_capacity) {
-    CHECK_GT(initial_capacity, 0);
-    capacity_ = initial_capacity;
+    capacity_ = Max(initial_capacity, (uptr)1);
     size_ = 0;
     data_ = (T *)MmapOrDie(capacity_ * sizeof(T), "InternalMmapVector");
   }

@@ -16,7 +16,7 @@ get_current_rev() {
 }
 
 list_files() {
-  (cd $1; ls *.{cc,h,inc} 2> /dev/null)
+  (cd $1; ls *.{cc,h,inc,S} 2> /dev/null)
 
 }
 
