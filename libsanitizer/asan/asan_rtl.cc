@@ -49,6 +49,8 @@ static void AsanDie() {
       UnmapOrDie((void*)kLowShadowBeg, kHighShadowEnd - kLowShadowBeg);
     }
   }
+  if (flags()->coverage)
+    __sanitizer_cov_dump();
   if (death_callback)
     death_callback();
   if (flags()->abort_on_error)
@@ -86,11 +88,11 @@ static const char *MaybeUseAsanDefaultOptionsCompileDefiniton() {
 }
 
 static void ParseFlagsFromString(Flags *f, const char *str) {
-  ParseCommonFlagsFromString(str);
-  CHECK((uptr)common_flags()->malloc_context_size <= kStackTraceMax);
+  CommonFlags *cf = common_flags();
+  ParseCommonFlagsFromString(cf, str);
+  CHECK((uptr)cf->malloc_context_size <= kStackTraceMax);
 
   ParseFlag(str, &f->quarantine_size, "quarantine_size");
-  ParseFlag(str, &f->verbosity, "verbosity");
   ParseFlag(str, &f->redzone, "redzone");
   CHECK_GE(f->redzone, 16);
   CHECK(IsPowerOfTwo(f->redzone));
@@ -119,32 +121,25 @@ static void ParseFlagsFromString(Flags *f, const char *str) {
   ParseFlag(str, &f->print_stats, "print_stats");
   ParseFlag(str, &f->print_legend, "print_legend");
   ParseFlag(str, &f->atexit, "atexit");
+  ParseFlag(str, &f->coverage, "coverage");
   ParseFlag(str, &f->disable_core, "disable_core");
   ParseFlag(str, &f->allow_reexec, "allow_reexec");
   ParseFlag(str, &f->print_full_thread_history, "print_full_thread_history");
   ParseFlag(str, &f->poison_heap, "poison_heap");
+  ParseFlag(str, &f->poison_partial, "poison_partial");
   ParseFlag(str, &f->alloc_dealloc_mismatch, "alloc_dealloc_mismatch");
-  ParseFlag(str, &f->use_stack_depot, "use_stack_depot");
   ParseFlag(str, &f->strict_memcmp, "strict_memcmp");
   ParseFlag(str, &f->strict_init_order, "strict_init_order");
 }
 
 void InitializeFlags(Flags *f, const char *env) {
   CommonFlags *cf = common_flags();
+  SetCommonFlagsDefaults(cf);
   cf->external_symbolizer_path = GetEnv("ASAN_SYMBOLIZER_PATH");
-  cf->symbolize = true;
   cf->malloc_context_size = kDefaultMallocContextSize;
-  cf->fast_unwind_on_fatal = false;
-  cf->fast_unwind_on_malloc = true;
-  cf->strip_path_prefix = "";
-  cf->handle_ioctl = false;
-  cf->log_path = 0;
-  cf->detect_leaks = false;
-  cf->leak_check_at_exit = true;
 
   internal_memset(f, 0, sizeof(*f));
   f->quarantine_size = (ASAN_LOW_MEMORY) ? 1UL << 26 : 1UL << 28;
-  f->verbosity = 0;
   f->redzone = 16;
   f->debug = false;
   f->report_globals = 1;
@@ -168,14 +163,15 @@ void InitializeFlags(Flags *f, const char *env) {
   f->print_stats = false;
   f->print_legend = true;
   f->atexit = false;
+  f->coverage = false;
   f->disable_core = (SANITIZER_WORDSIZE == 64);
   f->allow_reexec = true;
   f->print_full_thread_history = true;
   f->poison_heap = true;
+  f->poison_partial = true;
   // Turn off alloc/dealloc mismatch checker on Mac and Windows for now.
   // TODO(glider,timurrrr): Fix known issues and enable this back.
   f->alloc_dealloc_mismatch = (SANITIZER_MAC == 0) && (SANITIZER_WINDOWS == 0);
-  f->use_stack_depot = true;
   f->strict_memcmp = true;
   f->strict_init_order = false;
 
@@ -184,7 +180,7 @@ void InitializeFlags(Flags *f, const char *env) {
 
   // Override from user-specified string.
   ParseFlagsFromString(f, MaybeCallAsanDefaultOptions());
-  if (flags()->verbosity) {
+  if (cf->verbosity) {
     Report("Using the defaults from __asan_default_options: %s\n",
            MaybeCallAsanDefaultOptions());
   }
@@ -200,10 +196,10 @@ void InitializeFlags(Flags *f, const char *env) {
   }
 #endif
 
-  if (cf->detect_leaks && !f->use_stack_depot) {
-    Report("%s: detect_leaks is ignored (requires use_stack_depot).\n",
-           SanitizerToolName);
-    cf->detect_leaks = false;
+  // Make "strict_init_order" imply "check_initialization_order".
+  // TODO(samsonov): Use a single runtime flag for an init-order checker.
+  if (f->strict_init_order) {
+    f->check_initialization_order = true;
   }
 }
 
@@ -462,7 +458,7 @@ void __asan_init() {
   __asan_option_detect_stack_use_after_return =
       flags()->detect_stack_use_after_return;
 
-  if (flags()->verbosity && options) {
+  if (common_flags()->verbosity && options) {
     Report("Parsed ASAN_OPTIONS: %s\n", options);
   }
 
@@ -472,11 +468,6 @@ void __asan_init() {
   // Setup internal allocator callback.
   SetLowLevelAllocateCallback(OnLowLevelAllocate);
 
-  if (flags()->atexit) {
-    Atexit(asan_atexit);
-  }
-
-  // interceptors
   InitializeAsanInterceptors();
 
   ReplaceSystemMalloc();
@@ -495,7 +486,7 @@ void __asan_init() {
   }
 #endif
 
-  if (flags()->verbosity)
+  if (common_flags()->verbosity)
     PrintAddressSpaceLayout();
 
   if (flags()->disable_core) {
@@ -531,17 +522,18 @@ void __asan_init() {
     Die();
   }
 
+  AsanTSDInit(PlatformTSDDtor);
   InstallSignalHandlers();
 
-  AsanTSDInit(AsanThread::TSDDtor);
   // Allocator should be initialized before starting external symbolizer, as
   // fork() on Mac locks the allocator.
   InitializeAllocator();
 
   // Start symbolizer process if necessary.
-  if (common_flags()->symbolize && &getSymbolizer) {
-    getSymbolizer()
-        ->InitializeExternal(common_flags()->external_symbolizer_path);
+  if (common_flags()->symbolize) {
+    Symbolizer::Init(common_flags()->external_symbolizer_path);
+  } else {
+    Symbolizer::Disable();
   }
 
   // On Linux AsanThread::ThreadStart() calls malloc() that's why asan_inited
@@ -549,6 +541,13 @@ void __asan_init() {
   asan_inited = 1;
   asan_init_is_running = false;
 
+  if (flags()->atexit)
+    Atexit(asan_atexit);
+
+  if (flags()->coverage)
+    Atexit(__sanitizer_cov_dump);
+
+  // interceptors
   InitTlsSize();
 
   // Create main thread.
@@ -568,7 +567,7 @@ void __asan_init() {
   }
 #endif  // CAN_SANITIZE_LEAKS
 
-  if (flags()->verbosity) {
+  if (common_flags()->verbosity) {
     Report("AddressSanitizer Init done\n");
   }
 }

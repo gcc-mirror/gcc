@@ -92,6 +92,11 @@ void SetThreadName(const char *name) {
     asanThreadRegistry().SetThreadName(t->tid(), name);
 }
 
+int OnExit() {
+  // FIXME: ask frontend whether we need to return failure.
+  return 0;
+}
+
 }  // namespace __asan
 
 // ---------------------- Wrappers ---------------- {{{1
@@ -100,6 +105,19 @@ using namespace __asan;  // NOLINT
 DECLARE_REAL_AND_INTERCEPTOR(void *, malloc, uptr)
 DECLARE_REAL_AND_INTERCEPTOR(void, free, void *)
 
+#if !SANITIZER_MAC
+#define ASAN_INTERCEPT_FUNC(name)                                      \
+  do {                                                                 \
+    if ((!INTERCEPT_FUNCTION(name) || !REAL(name)) &&                  \
+        common_flags()->verbosity > 0)                                 \
+      Report("AddressSanitizer: failed to intercept '" #name "'\n");   \
+  } while (0)
+#else
+// OS X interceptors don't need to be initialized with INTERCEPT_FUNCTION.
+#define ASAN_INTERCEPT_FUNC(name)
+#endif  // SANITIZER_MAC
+
+#define COMMON_INTERCEPT_FUNCTION(name) ASAN_INTERCEPT_FUNC(name)
 #define COMMON_INTERCEPTOR_UNPOISON_PARAM(ctx, count) \
   do {                                                \
   } while (false)
@@ -124,16 +142,28 @@ DECLARE_REAL_AND_INTERCEPTOR(void, free, void *)
   do {                                                      \
   } while (false)
 #define COMMON_INTERCEPTOR_SET_THREAD_NAME(ctx, name) SetThreadName(name)
+// Should be asanThreadRegistry().SetThreadNameByUserId(thread, name)
+// But asan does not remember UserId's for threads (pthread_t);
+// and remembers all ever existed threads, so the linear search by UserId
+// can be slow.
+#define COMMON_INTERCEPTOR_SET_PTHREAD_NAME(ctx, thread, name) \
+  do {                                                         \
+  } while (false)
 #define COMMON_INTERCEPTOR_BLOCK_REAL(name) REAL(name)
+#define COMMON_INTERCEPTOR_ON_EXIT(ctx) OnExit()
 #include "sanitizer_common/sanitizer_common_interceptors.inc"
 
 #define COMMON_SYSCALL_PRE_READ_RANGE(p, s) ASAN_READ_RANGE(p, s)
 #define COMMON_SYSCALL_PRE_WRITE_RANGE(p, s) ASAN_WRITE_RANGE(p, s)
 #define COMMON_SYSCALL_POST_READ_RANGE(p, s) \
   do {                                       \
+    (void)(p);                               \
+    (void)(s);                               \
   } while (false)
 #define COMMON_SYSCALL_POST_WRITE_RANGE(p, s) \
   do {                                        \
+    (void)(p);                                \
+    (void)(s);                                \
   } while (false)
 #include "sanitizer_common/sanitizer_common_syscalls.inc"
 
@@ -144,8 +174,6 @@ static thread_return_t THREAD_CALLING_CONV asan_thread_start(void *arg) {
 }
 
 #if ASAN_INTERCEPT_PTHREAD_CREATE
-extern "C" int pthread_attr_getdetachstate(void *attr, int *v);
-
 INTERCEPTOR(int, pthread_create, void *thread,
     void *attr, void *(*start_routine)(void*), void *arg) {
   EnsureMainThreadIDIsCorrect();
@@ -155,7 +183,7 @@ INTERCEPTOR(int, pthread_create, void *thread,
   GET_STACK_TRACE_THREAD;
   int detached = 0;
   if (attr != 0)
-    pthread_attr_getdetachstate(attr, &detached);
+    REAL(pthread_attr_getdetachstate)(attr, &detached);
 
   u32 current_tid = GetCurrentTidOrInvalid();
   AsanThread *t = AsanThread::Create(start_routine, arg);
@@ -256,7 +284,7 @@ static void MlockIsUnsupported() {
   static bool printed = false;
   if (printed) return;
   printed = true;
-  if (flags()->verbosity > 0) {
+  if (common_flags()->verbosity > 0) {
     Printf("INFO: AddressSanitizer ignores "
            "mlock/mlockall/munlock/munlockall\n");
   }
@@ -645,16 +673,6 @@ INTERCEPTOR(int, __cxa_atexit, void (*func)(void *), void *arg,
 }
 #endif  // ASAN_INTERCEPT___CXA_ATEXIT
 
-#if !SANITIZER_MAC
-#define ASAN_INTERCEPT_FUNC(name) do { \
-      if (!INTERCEPT_FUNCTION(name) && flags()->verbosity > 0) \
-        Report("AddressSanitizer: failed to intercept '" #name "'\n"); \
-    } while (0)
-#else
-// OS X interceptors don't need to be initialized with INTERCEPT_FUNCTION.
-#define ASAN_INTERCEPT_FUNC(name)
-#endif  // SANITIZER_MAC
-
 #if SANITIZER_WINDOWS
 INTERCEPTOR_WINAPI(DWORD, CreateThread,
                    void* security, uptr stack_size,
@@ -767,7 +785,7 @@ void InitializeAsanInterceptors() {
   InitializeWindowsInterceptors();
 #endif
 
-  if (flags()->verbosity > 0) {
+  if (common_flags()->verbosity > 0) {
     Report("AddressSanitizer: libc interceptors initialized\n");
   }
 }

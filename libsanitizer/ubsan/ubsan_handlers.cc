@@ -244,15 +244,36 @@ void __ubsan::__ubsan_handle_float_cast_overflow_abort(
 
 void __ubsan::__ubsan_handle_load_invalid_value(InvalidValueData *Data,
                                                 ValueHandle Val) {
-  // TODO: Add deduplication once a SourceLocation is generated for this check.
-  Diag(getCallerLocation(), DL_Error,
+  SourceLocation Loc = Data->Loc.acquire();
+  if (Loc.isDisabled())
+    return;
+
+  Diag(Loc, DL_Error,
        "load of value %0, which is not a valid value for type %1")
     << Value(Data->Type, Val) << Data->Type;
 }
 void __ubsan::__ubsan_handle_load_invalid_value_abort(InvalidValueData *Data,
                                                       ValueHandle Val) {
-  Diag(getCallerLocation(), DL_Error,
-       "load of value %0, which is not a valid value for type %1")
-    << Value(Data->Type, Val) << Data->Type;
+  __ubsan_handle_load_invalid_value(Data, Val);
+  Die();
+}
+
+void __ubsan::__ubsan_handle_function_type_mismatch(
+    FunctionTypeMismatchData *Data,
+    ValueHandle Function) {
+  const char *FName = "(unknown)";
+
+  Location Loc = getFunctionLocation(Function, &FName);
+
+  Diag(Data->Loc, DL_Error,
+       "call to function %0 through pointer to incorrect function type %1")
+    << FName << Data->Type;
+  Diag(Loc, DL_Note, "%0 defined here") << FName;
+}
+
+void __ubsan::__ubsan_handle_function_type_mismatch_abort(
+    FunctionTypeMismatchData *Data,
+    ValueHandle Function) {
+  __ubsan_handle_function_type_mismatch(Data, Function);
   Die();
 }

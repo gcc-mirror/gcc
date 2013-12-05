@@ -1,3 +1,8 @@
+2013-12-05  Kostya Serebryany  <kcc@google.com>
+
+	* c-c++-common/asan/null-deref-1.c: Update the test
+	to match the fresh asan run-time.
+
 2013-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59374

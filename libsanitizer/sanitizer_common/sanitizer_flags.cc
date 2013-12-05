@@ -16,20 +16,40 @@
 
 namespace __sanitizer {
 
-CommonFlags common_flags_dont_use_directly;
+void SetCommonFlagsDefaults(CommonFlags *f) {
+  f->symbolize = true;
+  f->external_symbolizer_path = 0;
+  f->strip_path_prefix = "";
+  f->fast_unwind_on_fatal = false;
+  f->fast_unwind_on_malloc = true;
+  f->handle_ioctl = false;
+  f->malloc_context_size = 1;
+  f->log_path = "stderr";
+  f->verbosity = 0;
+  f->detect_leaks = false;
+  f->leak_check_at_exit = true;
+  f->allocator_may_return_null = false;
+  f->print_summary = true;
+}
 
-void ParseCommonFlagsFromString(const char *str) {
-  CommonFlags *f = common_flags();
-  ParseFlag(str, &f->malloc_context_size, "malloc_context_size");
+void ParseCommonFlagsFromString(CommonFlags *f, const char *str) {
+  ParseFlag(str, &f->symbolize, "symbolize");
+  ParseFlag(str, &f->external_symbolizer_path, "external_symbolizer_path");
   ParseFlag(str, &f->strip_path_prefix, "strip_path_prefix");
   ParseFlag(str, &f->fast_unwind_on_fatal, "fast_unwind_on_fatal");
   ParseFlag(str, &f->fast_unwind_on_malloc, "fast_unwind_on_malloc");
-  ParseFlag(str, &f->symbolize, "symbolize");
   ParseFlag(str, &f->handle_ioctl, "handle_ioctl");
+  ParseFlag(str, &f->malloc_context_size, "malloc_context_size");
   ParseFlag(str, &f->log_path, "log_path");
+  ParseFlag(str, &f->verbosity, "verbosity");
   ParseFlag(str, &f->detect_leaks, "detect_leaks");
   ParseFlag(str, &f->leak_check_at_exit, "leak_check_at_exit");
   ParseFlag(str, &f->allocator_may_return_null, "allocator_may_return_null");
+  ParseFlag(str, &f->print_summary, "print_summary");
+
+  // Do a sanity check for certain flags.
+  if (f->malloc_context_size < 1)
+    f->malloc_context_size = 1;
 }
 
 static bool GetFlagValue(const char *env, const char *name,
