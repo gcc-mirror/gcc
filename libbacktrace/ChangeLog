@@ -1,3 +1,13 @@
+2013-12-05  Ian Lance Taylor  <iant@google.com>
+
+	* alloc.c (backtrace_vector_finish): Add error_callback and data
+	parameters.  Call backtrace_vector_release.  Return address base.
+	* mmap.c (backtrace_vector_finish): Add error_callback and data
+	parameters.  Return address base.
+	* dwarf.c (read_function_info): Get new address base from
+	backtrace_vector_finish.
+	* internal.h (backtrace_vector_finish): Update declaration.
+
 2013-11-27  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c (find_address_ranges): New static function, broken out
