@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 struct X {
   void f (int = 4, char = 'r');	// { dg-error "previous specification" } 
-  void g (int = 4, char = 'r');	// { dg-error "previous specification" } 
+  void g (int = 4, char = 'r');	// { dg-message "previous specification" } 
 };
 
 void

@@ -7,7 +7,7 @@ struct X{
 };
 
 
-void f(X *x = new X);          // { dg-error "" } 
+void f(X *x = new X);          // { dg-message "" } 
 
 void f(X *x = new X(4));       // { dg-error "" } 
 

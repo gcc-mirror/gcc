@@ -1,6 +1,6 @@
 // PR c++/16529
 
-namespace m {} // { dg-error "" }
+namespace m {} // { dg-message "" }
 
 namespace n {
   namespace m {}

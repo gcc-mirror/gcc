@@ -3,7 +3,7 @@ class A
 {
 public:
     A (const A& ccref);
-    friend A const re (const A& v1); // { dg-error "ambiguates" } 
+    friend A const re (const A& v1); // { dg-message "old declaration" } 
 };
 
 A // const

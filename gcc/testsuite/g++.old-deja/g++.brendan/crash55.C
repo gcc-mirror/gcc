@@ -1,6 +1,6 @@
 // { dg-do compile }
 // GROUPS passed old-abort
-      extern int f(int); // { dg-error "ambiguates" }
+      extern int f(int); // { dg-message "old declaration" }
 
       int& f(int x)  // { dg-error "new declaration" }
       {
