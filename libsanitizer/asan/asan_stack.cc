@@ -22,9 +22,12 @@ static bool MaybeCallAsanSymbolize(const void *pc, char *out_buffer,
                              : false;
 }
 
+void PrintStack(const uptr *trace, uptr size) {
+  StackTrace::PrintStack(trace, size, MaybeCallAsanSymbolize);
+}
+
 void PrintStack(StackTrace *stack) {
-  stack->PrintStack(stack->trace, stack->size, common_flags()->symbolize,
-                    common_flags()->strip_path_prefix, MaybeCallAsanSymbolize);
+  PrintStack(stack->trace, stack->size);
 }
 
 }  // namespace __asan

@@ -34,7 +34,6 @@ const uptr kCacheLineSize = 64;
 const uptr kMaxPathLength = 512;
 
 extern const char *SanitizerToolName;  // Can be changed by the tool.
-extern uptr SanitizerVerbosity;
 
 uptr GetPageSize();
 uptr GetPageSizeCached();
@@ -86,6 +85,23 @@ class InternalScopedBuffer {
   void operator=(const InternalScopedBuffer&);
 };
 
+class InternalScopedString : public InternalScopedBuffer<char> {
+ public:
+  explicit InternalScopedString(uptr max_length)
+      : InternalScopedBuffer<char>(max_length), length_(0) {
+    (*this)[0] = '\0';
+  }
+  uptr length() { return length_; }
+  void clear() {
+    (*this)[0] = '\0';
+    length_ = 0;
+  }
+  void append(const char *format, ...);
+
+ private:
+  uptr length_;
+};
+
 // Simple low-level (mmap-based) allocator for internal use. Doesn't have
 // constructor, so all instances of LowLevelAllocator should be
 // linker initialized.
@@ -110,6 +126,7 @@ bool PrintsToTtyCached();
 void Printf(const char *format, ...);
 void Report(const char *format, ...);
 void SetPrintfAndReportCallback(void (*callback)(const char *));
+
 // Can be used to prevent mixing error reports from different sanitizers.
 extern StaticSpinMutex CommonSanitizerReportMutex;
 void MaybeOpenReportFile();
@@ -129,6 +146,14 @@ uptr ReadFileToBuffer(const char *file_name, char **buff,
 // (or NULL if the mapping failes). Stores the size of mmaped region
 // in '*buff_size'.
 void *MapFileToMemory(const char *file_name, uptr *buff_size);
+
+// Error report formatting.
+const char *StripPathPrefix(const char *filepath,
+                            const char *strip_file_prefix);
+void PrintSourceLocation(InternalScopedString *buffer, const char *file,
+                         int line, int column);
+void PrintModuleAndOffset(InternalScopedString *buffer,
+                          const char *module, uptr offset);
 
 // OS
 void DisableCoreDumper();
@@ -153,6 +178,9 @@ void SleepForMillis(int millis);
 u64 NanoTime();
 int Atexit(void (*function)(void));
 void SortArray(uptr *array, uptr size);
+// Strip the directories from the module name, return a new string allocated
+// with internal_strdup.
+char *StripModuleName(const char *module);
 
 // Exit
 void NORETURN Abort();
@@ -176,11 +204,17 @@ typedef void (*CheckFailedCallbackType)(const char *, int, const char *,
                                        u64, u64);
 void SetCheckFailedCallback(CheckFailedCallbackType callback);
 
-// Construct a one-line string like
-//  SanitizerToolName: error_type file:line function
-// and call __sanitizer_report_error_summary on it.
+// We don't want a summary too long.
+const int kMaxSummaryLength = 1024;
+// Construct a one-line string:
+//   SUMMARY: SanitizerToolName: error_message
+// and pass it to __sanitizer_report_error_summary.
+void ReportErrorSummary(const char *error_message);
+// Same as above, but construct error_message as:
+//   error_type: file:line function
 void ReportErrorSummary(const char *error_type, const char *file,
                         int line, const char *function);
+void ReportErrorSummary(const char *error_type, StackTrace *trace);
 
 // Math
 #if SANITIZER_WINDOWS && !defined(__clang__) && !defined(__GNUC__)
@@ -326,6 +360,8 @@ class InternalMmapVector {
     return capacity_;
   }
 
+  void clear() { size_ = 0; }
+
  private:
   void Resize(uptr new_capacity) {
     CHECK_GT(new_capacity, 0);
@@ -431,6 +467,20 @@ typedef bool (*string_predicate_t)(const char *);
 uptr GetListOfModules(LoadedModule *modules, uptr max_modules,
                       string_predicate_t filter);
 
+#if SANITIZER_POSIX
+const uptr kPthreadDestructorIterations = 4;
+#else
+// Unused on Windows.
+const uptr kPthreadDestructorIterations = 0;
+#endif
+
+// Callback type for iterating over a set of memory ranges.
+typedef void (*RangeIteratorCallback)(uptr begin, uptr end, void *arg);
 }  // namespace __sanitizer
+
+inline void *operator new(__sanitizer::operator_new_size_type size,
+                          __sanitizer::LowLevelAllocator &alloc) {
+  return alloc.Allocate(size);
+}
 
 #endif  // SANITIZER_COMMON_H

@@ -12,6 +12,7 @@
 
 #include "asan_poisoning.h"
 #include "sanitizer_common/sanitizer_libc.h"
+#include "sanitizer_common/sanitizer_flags.h"
 
 namespace __asan {
 
@@ -66,7 +67,7 @@ void __asan_poison_memory_region(void const volatile *addr, uptr size) {
   if (!flags()->allow_user_poisoning || size == 0) return;
   uptr beg_addr = (uptr)addr;
   uptr end_addr = beg_addr + size;
-  if (flags()->verbosity >= 1) {
+  if (common_flags()->verbosity >= 1) {
     Printf("Trying to poison memory region [%p, %p)\n",
            (void*)beg_addr, (void*)end_addr);
   }
@@ -108,7 +109,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, uptr size) {
   if (!flags()->allow_user_poisoning || size == 0) return;
   uptr beg_addr = (uptr)addr;
   uptr end_addr = beg_addr + size;
-  if (flags()->verbosity >= 1) {
+  if (common_flags()->verbosity >= 1) {
     Printf("Trying to unpoison memory region [%p, %p)\n",
            (void*)beg_addr, (void*)end_addr);
   }
@@ -242,13 +243,57 @@ static void PoisonAlignedStackMemory(uptr addr, uptr size, bool do_poison) {
 }
 
 void __asan_poison_stack_memory(uptr addr, uptr size) {
-  if (flags()->verbosity > 0)
+  if (common_flags()->verbosity > 0)
     Report("poisoning: %p %zx\n", (void*)addr, size);
   PoisonAlignedStackMemory(addr, size, true);
 }
 
 void __asan_unpoison_stack_memory(uptr addr, uptr size) {
-  if (flags()->verbosity > 0)
+  if (common_flags()->verbosity > 0)
     Report("unpoisoning: %p %zx\n", (void*)addr, size);
   PoisonAlignedStackMemory(addr, size, false);
+}
+
+void __sanitizer_annotate_contiguous_container(const void *beg_p,
+                                               const void *end_p,
+                                               const void *old_mid_p,
+                                               const void *new_mid_p) {
+  if (common_flags()->verbosity >= 2)
+    Printf("contiguous_container: %p %p %p %p\n", beg_p, end_p, old_mid_p,
+           new_mid_p);
+  uptr beg = reinterpret_cast<uptr>(beg_p);
+  uptr end= reinterpret_cast<uptr>(end_p);
+  uptr old_mid = reinterpret_cast<uptr>(old_mid_p);
+  uptr new_mid = reinterpret_cast<uptr>(new_mid_p);
+  uptr granularity = SHADOW_GRANULARITY;
+  CHECK(beg <= old_mid && beg <= new_mid && old_mid <= end && new_mid <= end &&
+        IsAligned(beg, granularity));
+  CHECK_LE(end - beg,
+           FIRST_32_SECOND_64(1UL << 30, 1UL << 34)); // Sanity check.
+
+  uptr a = RoundDownTo(Min(old_mid, new_mid), granularity);
+  uptr c = RoundUpTo(Max(old_mid, new_mid), granularity);
+  uptr d1 = RoundDownTo(old_mid, granularity);
+  uptr d2 = RoundUpTo(old_mid, granularity);
+  // Currently we should be in this state:
+  // [a, d1) is good, [d2, c) is bad, [d1, d2) is partially good.
+  // Make a quick sanity check that we are indeed in this state.
+  if (d1 != d2)
+    CHECK_EQ(*(u8*)MemToShadow(d1), old_mid - d1);
+  if (a + granularity <= d1)
+    CHECK_EQ(*(u8*)MemToShadow(a), 0);
+  if (d2 + granularity <= c && c <= end)
+    CHECK_EQ(*(u8 *)MemToShadow(c - granularity),
+             kAsanContiguousContainerOOBMagic);
+
+  uptr b1 = RoundDownTo(new_mid, granularity);
+  uptr b2 = RoundUpTo(new_mid, granularity);
+  // New state:
+  // [a, b1) is good, [b2, c) is bad, [b1, b2) is partially good.
+  PoisonShadow(a, b1 - a, 0);
+  PoisonShadow(b2, c - b2, kAsanContiguousContainerOOBMagic);
+  if (b1 != b2) {
+    CHECK_EQ(b2 - b1, granularity);
+    *(u8*)MemToShadow(b1) = static_cast<u8>(new_mid - b1);
+  }
 }

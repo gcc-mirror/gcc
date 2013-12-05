@@ -27,6 +27,7 @@
 #include "sanitizer_common/sanitizer_allocator.h"
 #include "sanitizer_common/sanitizer_allocator_internal.h"
 #include "sanitizer_common/sanitizer_common.h"
+#include "sanitizer_common/sanitizer_libignore.h"
 #include "sanitizer_common/sanitizer_suppressions.h"
 #include "sanitizer_common/sanitizer_thread_registry.h"
 #include "tsan_clock.h"
@@ -38,6 +39,7 @@
 #include "tsan_report.h"
 #include "tsan_platform.h"
 #include "tsan_mutexset.h"
+#include "tsan_ignoreset.h"
 
 #if SANITIZER_WORDSIZE != 64
 # error "ThreadSanitizer is supported only on 64-bit platforms"
@@ -409,17 +411,19 @@ struct ThreadState {
   // We do not distinguish beteween ignoring reads and writes
   // for better performance.
   int ignore_reads_and_writes;
+  int ignore_sync;
+  // Go does not support ignores.
+#ifndef TSAN_GO
+  IgnoreSet mop_ignore_set;
+  IgnoreSet sync_ignore_set;
+#endif
+  // C/C++ uses fixed size shadow stack embed into Trace.
+  // Go uses malloc-allocated shadow stack with dynamic size.
+  uptr *shadow_stack;
+  uptr *shadow_stack_end;
   uptr *shadow_stack_pos;
   u64 *racy_shadow_addr;
   u64 racy_state[2];
-#ifndef TSAN_GO
-  // C/C++ uses embed shadow stack of fixed size.
-  uptr shadow_stack[kShadowStackSize];
-#else
-  // Go uses satellite shadow stack with dynamic size.
-  uptr *shadow_stack;
-  uptr *shadow_stack_end;
-#endif
   MutexSet mset;
   ThreadClock clock;
 #ifndef TSAN_GO
@@ -432,6 +436,7 @@ struct ThreadState {
   const int unique_id;
   int in_rtl;
   bool in_symbolizer;
+  bool in_ignored_lib;
   bool is_alive;
   bool is_freeing;
   bool is_vptr_access;
@@ -439,6 +444,7 @@ struct ThreadState {
   const uptr stk_size;
   const uptr tls_addr;
   const uptr tls_size;
+  ThreadContext *tctx;
 
   DeadlockDetector deadlock_detector;
 
@@ -596,6 +602,7 @@ void MapThreadTrace(uptr addr, uptr size);
 void DontNeedShadowFor(uptr addr, uptr size);
 void InitializeShadowMemory();
 void InitializeInterceptors();
+void InitializeLibIgnore();
 void InitializeDynamicAnnotations();
 
 void ReportRace(ThreadState *thr);
@@ -625,6 +632,7 @@ ReportStack *SkipTsanInternalFrames(ReportStack *ent);
 #endif
 
 u32 CurrentStackId(ThreadState *thr, uptr pc);
+ReportStack *SymbolizeStackId(u32 stack_id);
 void PrintCurrentStack(ThreadState *thr, uptr pc);
 void PrintCurrentStackSlow();  // uses libunwind
 
@@ -675,8 +683,11 @@ void ALWAYS_INLINE MemoryWriteAtomic(ThreadState *thr, uptr pc,
 void MemoryResetRange(ThreadState *thr, uptr pc, uptr addr, uptr size);
 void MemoryRangeFreed(ThreadState *thr, uptr pc, uptr addr, uptr size);
 void MemoryRangeImitateWrite(ThreadState *thr, uptr pc, uptr addr, uptr size);
-void ThreadIgnoreBegin(ThreadState *thr);
-void ThreadIgnoreEnd(ThreadState *thr);
+
+void ThreadIgnoreBegin(ThreadState *thr, uptr pc);
+void ThreadIgnoreEnd(ThreadState *thr, uptr pc);
+void ThreadIgnoreSyncBegin(ThreadState *thr, uptr pc);
+void ThreadIgnoreSyncEnd(ThreadState *thr, uptr pc);
 
 void FuncEntry(ThreadState *thr, uptr pc);
 void FuncExit(ThreadState *thr);
@@ -700,12 +711,17 @@ int  MutexUnlock(ThreadState *thr, uptr pc, uptr addr, bool all = false);
 void MutexReadLock(ThreadState *thr, uptr pc, uptr addr);
 void MutexReadUnlock(ThreadState *thr, uptr pc, uptr addr);
 void MutexReadOrWriteUnlock(ThreadState *thr, uptr pc, uptr addr);
+void MutexRepair(ThreadState *thr, uptr pc, uptr addr);  // call on EOWNERDEAD
 
 void Acquire(ThreadState *thr, uptr pc, uptr addr);
 void AcquireGlobal(ThreadState *thr, uptr pc);
 void Release(ThreadState *thr, uptr pc, uptr addr);
 void ReleaseStore(ThreadState *thr, uptr pc, uptr addr);
 void AfterSleep(ThreadState *thr, uptr pc);
+void AcquireImpl(ThreadState *thr, uptr pc, SyncClock *c);
+void ReleaseImpl(ThreadState *thr, uptr pc, SyncClock *c);
+void ReleaseStoreImpl(ThreadState *thr, uptr pc, SyncClock *c);
+void AcquireReleaseImpl(ThreadState *thr, uptr pc, SyncClock *c);
 
 // The hacky call uses custom calling convention and an assembly thunk.
 // It is considerably faster that a normal call for the caller
@@ -718,11 +734,11 @@ void AfterSleep(ThreadState *thr, uptr pc);
 // so we create a reserve stack frame for it (1024b must be enough).
 #define HACKY_CALL(f) \
   __asm__ __volatile__("sub $1024, %%rsp;" \
-                       "/*.cfi_adjust_cfa_offset 1024;*/" \
+                       ".cfi_adjust_cfa_offset 1024;" \
                        ".hidden " #f "_thunk;" \
                        "call " #f "_thunk;" \
                        "add $1024, %%rsp;" \
-                       "/*.cfi_adjust_cfa_offset -1024;*/" \
+                       ".cfi_adjust_cfa_offset -1024;" \
                        ::: "memory", "cc");
 #else
 #define HACKY_CALL(f) f()

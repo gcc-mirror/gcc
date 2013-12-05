@@ -58,6 +58,9 @@ void AsanTSDSet(void *tsd) {
   fake_tsd = tsd;
 }
 
+void PlatformTSDDtor(void *tsd) {
+  AsanThread::TSDDtor(tsd);
+}
 // ---------------------- Various stuff ---------------- {{{1
 void MaybeReexec() {
   // No need to re-exec on Windows.

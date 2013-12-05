@@ -1,4 +1,4 @@
-//===-- asan_linux.cc -----------------------------------------------------===//
+//===-- asan_posix.cc -----------------------------------------------------===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
@@ -42,7 +42,7 @@ static void MaybeInstallSigaction(int signum,
   sigact.sa_flags = SA_SIGINFO;
   if (flags()->use_sigaltstack) sigact.sa_flags |= SA_ONSTACK;
   CHECK_EQ(0, REAL(sigaction)(signum, &sigact, 0));
-  if (flags()->verbosity >= 1) {
+  if (common_flags()->verbosity >= 1) {
     Report("Installed the sigaction for signal %d\n", signum);
   }
 }
@@ -69,7 +69,7 @@ void SetAlternateSignalStack() {
   altstack.ss_flags = 0;
   altstack.ss_size = kAltStackSize;
   CHECK_EQ(0, sigaltstack(&altstack, 0));
-  if (flags()->verbosity > 0) {
+  if (common_flags()->verbosity > 0) {
     Report("Alternative stack for T%d set: [%p,%p)\n",
            GetCurrentTidOrInvalid(),
            altstack.ss_sp, (char*)altstack.ss_sp + altstack.ss_size);
@@ -114,6 +114,15 @@ void AsanTSDSet(void *tsd) {
   pthread_setspecific(tsd_key, tsd);
 }
 
+void PlatformTSDDtor(void *tsd) {
+  AsanThreadContext *context = (AsanThreadContext*)tsd;
+  if (context->destructor_iterations > 1) {
+    context->destructor_iterations--;
+    CHECK_EQ(0, pthread_setspecific(tsd_key, tsd));
+    return;
+  }
+  AsanThread::TSDDtor(tsd);
+}
 }  // namespace __asan
 
 #endif  // SANITIZER_LINUX || SANITIZER_MAC

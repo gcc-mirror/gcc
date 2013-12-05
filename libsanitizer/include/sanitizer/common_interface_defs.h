@@ -25,10 +25,6 @@ extern "C" {
   // Tell the tools to write their reports to "path.<pid>" instead of stderr.
   void __sanitizer_set_report_path(const char *path);
 
-  // Tell the tools to write their reports to given file descriptor instead of
-  // stderr.
-  void __sanitizer_set_report_fd(int fd);
-
   // Notify the tools that the sandbox is going to be turned on. The reserved
   // parameter will be used in the future to hold a structure with functions
   // that the tools may call to bypass the sandbox.
@@ -48,6 +44,44 @@ extern "C" {
   void __sanitizer_unaligned_store16(void *p, uint16_t x);
   void __sanitizer_unaligned_store32(void *p, uint32_t x);
   void __sanitizer_unaligned_store64(void *p, uint64_t x);
+
+  // Record and dump coverage info.
+  void __sanitizer_cov_dump();
+
+  // Annotate the current state of a contiguous container, such as
+  // std::vector, std::string or similar.
+  // A contiguous container is a container that keeps all of its elements
+  // in a contiguous region of memory. The container owns the region of memory
+  // [beg, end); the memory [beg, mid) is used to store the current elements
+  // and the memory [mid, end) is reserved for future elements;
+  // end <= mid <= end. For example, in "std::vector<> v"
+  //   beg = &v[0];
+  //   end = beg + v.capacity() * sizeof(v[0]);
+  //   mid = beg + v.size()     * sizeof(v[0]);
+  //
+  // This annotation tells the Sanitizer tool about the current state of the
+  // container so that the tool can report errors when memory from [mid, end)
+  // is accessed. Insert this annotation into methods like push_back/pop_back.
+  // Supply the old and the new values of mid (old_mid/new_mid).
+  // In the initial state mid == end and so should be the final
+  // state when the container is destroyed or when it reallocates the storage.
+  //
+  // Use with caution and don't use for anything other than vector-like classes.
+  //
+  // For AddressSanitizer, 'beg' should be 8-aligned and 'end' should
+  // be either 8-aligned or it should point to the end of a separate heap-,
+  // stack-, or global- allocated buffer. I.e. the following will not work:
+  //   int64_t x[2];  // 16 bytes, 8-aligned.
+  //   char *beg = (char *)&x[0];
+  //   char *end = beg + 12;  // Not 8 aligned, not the end of the buffer.
+  // This however will work fine:
+  //   int32_t x[3];  // 12 bytes, but 8-aligned under AddressSanitizer.
+  //   char *beg = (char*)&x[0];
+  //   char *end = beg + 12;  // Not 8-aligned, but is the end of the buffer.
+  void __sanitizer_annotate_contiguous_container(const void *beg,
+                                                 const void *end,
+                                                 const void *old_mid,
+                                                 const void *new_mid);
 
 #ifdef __cplusplus
 }  // extern "C"

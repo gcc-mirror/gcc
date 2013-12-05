@@ -23,6 +23,7 @@ tsan_files = \
         tsan_rtl.cc \
         tsan_stat.cc \
         tsan_sync.cc \
+	tsan_ignoreset.cc \
         tsan_interceptors.cc \
         tsan_md5.cc \
         tsan_platform_mac.cc \
