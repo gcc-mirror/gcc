@@ -7159,7 +7159,9 @@ ia64_single_set (rtx insn)
   switch (recog_memoized (insn))
     {
     case CODE_FOR_prologue_allocate_stack:
+    case CODE_FOR_prologue_allocate_stack_pr:
     case CODE_FOR_epilogue_deallocate_stack:
+    case CODE_FOR_epilogue_deallocate_stack_pr:
       ret = XVECEXP (x, 0, 0);
       break;
 
