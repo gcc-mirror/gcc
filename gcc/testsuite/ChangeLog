@@ -1,3 +1,8 @@
+2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/readeflags-1.c: New.
+	* gcc.target/i386/writeeflags-1.c: Ditto.
+
 2013-12-05  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/59369

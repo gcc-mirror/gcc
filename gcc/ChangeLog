@@ -1,3 +1,16 @@
+2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/i386.c(IX86_BUILTIN_READ_FLAGS): New.
+	(IX86_BUILTIN_WRITE_FLAGS): Ditto.
+	(ix86_init_mmx_sse_builtins): Define
+	__builtin_ia32_writeeflags_u32, __builtin_ia32_writeeflags_u64,
+	__builtin_ia32_readeflags_u32, __builtin_ia32_readeflags_u64.
+	(ix86_expand_builtin): Expand them.
+	* config/i386/ia32intrin.h (__readeflags): New.
+	(__writeeflags): Ditto.
+	* gcc/config/i386/i386.md (*pushfl<mode>): Ditto.
+	(*popfl<mode>1): Ditto.
+
 2013-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59374
