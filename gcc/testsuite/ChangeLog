@@ -1,3 +1,26 @@
+2013-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-46336.C: Adjust expected messages.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp1y/auto-fn8.C: Likewise.
+	* g++.dg/gomp/udr-3.C: Likewise.
+	* g++.dg/lookup/extern-c-redecl5.C: Likewise.
+	* g++.dg/lookup/linkage1.C: Likewise.
+	* g++.dg/overload/new1.C: Likewise.
+	* g++.dg/parse/friend5.C: Likewise.
+	* g++.dg/parse/namespace-alias-1.C: Likewise.
+	* g++.dg/parse/namespace10.C: Likewise.
+	* g++.dg/parse/redef2.C: Likewise.
+	* g++.dg/template/friend44.C: Likewise.
+	* g++.old-deja/g++.brendan/crash42.C: Likewise.
+	* g++.old-deja/g++.brendan/crash52.C: Likewise.
+	* g++.old-deja/g++.brendan/crash55.C: Likewise.
+	* g++.old-deja/g++.jason/overload21.C: Likewise.
+	* g++.old-deja/g++.jason/overload5.C: Likewise.
+	* g++.old-deja/g++.jason/redecl1.C: Likewise.
+	* g++.old-deja/g++.law/arm8.C: Likewise.
+	* g++.old-deja/g++.other/main1.C: Likewise.
+
 2013-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56787

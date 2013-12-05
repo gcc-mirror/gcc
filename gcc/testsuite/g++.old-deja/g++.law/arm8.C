@@ -7,7 +7,7 @@
 // Date: Tue, 16 Mar 93 12:05:24 +0100
 
 struct K {
-      void f( int *p  = 0); // { dg-error "" } previous specification
+      void f( int *p  = 0); // { dg-message "" } previous specification
 };
 
 extern int * q;

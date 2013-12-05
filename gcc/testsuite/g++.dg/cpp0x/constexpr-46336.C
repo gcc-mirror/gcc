@@ -4,7 +4,7 @@
 extern "C" {
   enum A { };
   inline constexpr A
-  f(A a, A b)			// { dg-error "previous declaration" }
+  f(A a, A b)			// { dg-message "previous declaration" }
   { return A(static_cast<int>(a) & static_cast<int>(b)); }
   enum B { };
   inline constexpr B

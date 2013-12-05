@@ -1,7 +1,7 @@
 // Negative test for defaulted/deleted fns.
 // { dg-options "-std=c++11" }
 
-void f();			// { dg-error "previous" }
+void f();			// { dg-message "previous" }
 void f() = delete;		// { dg-error "deleted" }
 
 struct A
