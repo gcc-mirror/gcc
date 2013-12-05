@@ -14743,7 +14743,7 @@ then @option{-mtune=pentium4} generates code that is tuned for Pentium 4
 but still runs on i686 machines.
 
 The choices for @var{cpu-type} are the same as for @option{-march}.
-In addition, @option{-mtune} supports an extra choice for @var{cpu-type}:
+In addition, @option{-mtune} supports 2 extra choices for @var{cpu-type}:
 
 @table @samp
 @item generic
@@ -14762,6 +14762,26 @@ that are most common at the time that version of GCC is released.
 There is no @option{-march=generic} option because @option{-march}
 indicates the instruction set the compiler can use, and there is no
 generic instruction set applicable to all processors.  In contrast,
+@option{-mtune} indicates the processor (or, in this case, collection of
+processors) for which the code is optimized.
+
+@item ia
+Produce code optimized for the most current Intel processors, which are
+Haswell and Silvermont for this version of GCC.  If you know the CPU
+on which your code will run, then you should use the corresponding
+@option{-mtune} or @option{-march} option instead of @option{-mtune=ia}.
+But, if you want your application performs better on both Haswell and
+Silvermont, then you should use this option.
+
+As new Intel processors are deployed in the marketplace, the behavior of
+this option will change.  Therefore, if you upgrade to a newer version of
+GCC, code generation controlled by this option will change to reflect
+the most current Intel processors at the time that version of GCC is
+released.
+
+There is no @option{-march=ia} option because @option{-march} indicates
+the instruction set the compiler can use, and there is no common
+instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of
 processors) for which the code is optimized.
 @end table

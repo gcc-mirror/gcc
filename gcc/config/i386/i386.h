@@ -626,6 +626,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_haswell,
   TARGET_CPU_DEFAULT_atom,
   TARGET_CPU_DEFAULT_slm,
+  TARGET_CPU_DEFAULT_ia,
 
   TARGET_CPU_DEFAULT_geode,
   TARGET_CPU_DEFAULT_k6,
