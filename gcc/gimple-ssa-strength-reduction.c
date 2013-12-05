@@ -437,7 +437,10 @@ static struct pointer_map_t *alt_base_map;
 
 /* Given BASE, use the tree affine combiniation facilities to
    find the underlying tree expression for BASE, with any
-   immediate offset excluded.  */
+   immediate offset excluded.
+
+   N.B. we should eliminate this backtracking with better forward
+   analysis in a future release.  */
 
 static tree
 get_alternative_base (tree base)
@@ -565,7 +568,7 @@ find_basis_for_candidate (slsr_cand_t c)
 	}
     }
 
-  if (!basis && c->kind == CAND_REF)
+  if (flag_expensive_optimizations && !basis && c->kind == CAND_REF)
     {
       tree alt_base_expr = get_alternative_base (c->base_expr);
       if (alt_base_expr)
@@ -650,7 +653,7 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base,
     c->basis = find_basis_for_candidate (c);
 
   record_potential_basis (c, base);
-  if (kind == CAND_REF)
+  if (flag_expensive_optimizations && kind == CAND_REF)
     {
       tree alt_base = get_alternative_base (base);
       if (alt_base)

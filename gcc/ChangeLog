@@ -1,3 +1,9 @@
+2013-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gimple-ssa-strength-reduction.c (find_basis_for_candidate): Guard
+	the get_alternative_base call with flag_expensive_optimizations.
+	(alloc_cand_and_find_basis): Likewise.
+
 2013-12-05  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* rtlanal.c (set_noop_p): Return nonzero in case of redundant vec_select
