@@ -1,3 +1,9 @@
+2013-12-05  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59368
+	* Makefile.am (gcc_version): Added gcc_version.
+	* Makefile.in: Regenerate.
+
 2013-12-05  Kostya Serebryany  <kcc@google.com>
 
 	* All source files: Merge from upstream r196090.
