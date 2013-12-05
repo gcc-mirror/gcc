@@ -1,4 +1,11 @@
-2013-12-04  Jakub Jelinek  <jakub@redhat.com>  
+2013-12-05  Alan Modra  <amodra@gmail.com>
+
+	* configure.ac (BUILD_CXXFLAGS) Don't use ALL_CXXFLAGS for
+	build != host.
+	<recursive call for build != host>: Clear GMPINC.  Don't bother
+	saving CFLAGS.
+
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
 	* opts.c (common_handle_option): Handle
@@ -63,7 +70,7 @@
 	(find_explicit_erroneous_behaviour): Similarly.
 	(gate_isolate_erroneous_paths): Check both of the new
 	options.
-	
+
 2013-12-04  Jeff Law  <law@redhat.com>
 
 	* expr.c (expand_assignment): Update comments.
