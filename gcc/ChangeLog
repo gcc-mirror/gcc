@@ -1,3 +1,12 @@
+2013-12-05  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58956
+	* tree-ssa-ter.c (find_replaceable_in_bb): Avoid forwarding
+	loads into stmts that may clobber it.
+
 2013-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58726
