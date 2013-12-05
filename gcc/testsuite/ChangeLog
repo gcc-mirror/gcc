@@ -1,3 +1,9 @@
+2013-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56787
+	* gcc.dg/vect/pr56787.c: Adjust to not require vector float
+	division.
+
 2013-12-05  Kostya Serebryany  <kcc@google.com>
 
 	* c-c++-common/asan/null-deref-1.c: Update the test
