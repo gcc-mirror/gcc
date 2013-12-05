@@ -238,6 +238,22 @@ __rorq (unsigned long long __X, int __C)
   return (__X >> __C) | (__X << (64 - __C));
 }
 
+/* Read flags register */
+extern __inline unsigned long long
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__readeflags (void)
+{
+  return __builtin_ia32_readeflags_u64 ();
+}
+
+/* Write flags register */
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__writeeflags (unsigned long long X)
+{
+  __builtin_ia32_writeeflags_u64 (X);
+}
+
 #define _bswap64(a)		__bswapq(a)
 #define _popcnt64(a)		__popcntq(a)
 #define _lrotl(a,b)		__rolq((a), (b))
@@ -245,6 +261,23 @@ __rorq (unsigned long long __X, int __C)
 #else
 #define _lrotl(a,b)		__rold((a), (b))
 #define _lrotr(a,b)		__rord((a), (b))
+
+/* Read flags register */
+extern __inline unsigned int
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__readeflags (void)
+{
+  return __builtin_ia32_readeflags_u32 ();
+}
+
+/* Write flags register */
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+__writeeflags (unsigned int X)
+{
+  __builtin_ia32_writeeflags_u32 (X);
+}
+
 #endif
 
 #define _bit_scan_forward(a)	__bsfd(a)
