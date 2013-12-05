@@ -1,3 +1,10 @@
+2013-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59333
+	PR sanitizer/59397
+	* c-c++-common/ubsan/pr59333.c: New test.
+	* c-c++-common/ubsan/pr59397.c: New test.
+
 2013-12-05  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.dg/vect/vect-nop-move.c: New test.

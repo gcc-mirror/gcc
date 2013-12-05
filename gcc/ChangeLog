@@ -1,3 +1,19 @@
+2013-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59333
+	PR sanitizer/59397
+	* ubsan.c: Include rtl.h and expr.h.
+	(ubsan_encode_value): Add new parameter.  If expanding, assign
+	a stack slot for DECL_RTL of the temporary and call expand_assignment.
+	Handle BOOLEAN_TYPE and ENUMERAL_TYPE.
+	(ubsan_build_overflow_builtin): Adjust ubsan_encode_value call.
+	* ubsan.h (ubsan_encode_value): Adjust declaration.
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Move
+	ubsan_build_overflow_builtin above expand_normal call.  Surround this call
+	with push_temp_slots and pop_temp_slots.
+	(ubsan_expand_si_overflow_neg_check): Likewise.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
+
 2013-12-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gimple-ssa-strength-reduction.c (find_basis_for_candidate): Guard
