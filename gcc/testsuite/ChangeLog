@@ -1,3 +1,8 @@
+2013-12-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59317
+	* testsuite/gcc.target/mips/pr59317.c: New.
+
 2013-12-05  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59333

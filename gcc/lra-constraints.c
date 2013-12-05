@@ -271,9 +271,11 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
 	 where other reload pseudos are no longer allocatable.  */
       || (INSN_UID (curr_insn) >= new_insn_uid_start
 	  && curr_insn_set != NULL
-	  && (OBJECT_P (SET_SRC (curr_insn_set))
+	  && ((OBJECT_P (SET_SRC (curr_insn_set))
+	       && ! CONSTANT_P (SET_SRC (curr_insn_set)))
 	      || (GET_CODE (SET_SRC (curr_insn_set)) == SUBREG
-		  && OBJECT_P (SUBREG_REG (SET_SRC (curr_insn_set)))))))
+		  && OBJECT_P (SUBREG_REG (SET_SRC (curr_insn_set)))
+		  && ! CONSTANT_P (SUBREG_REG (SET_SRC (curr_insn_set)))))))
     /* When we don't know what class will be used finally for reload
        pseudos, we use ALL_REGS.  */
     return ((regno >= new_regno_start && rclass == ALL_REGS)

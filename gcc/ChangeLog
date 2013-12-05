@@ -1,3 +1,9 @@
+2013-12-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59317
+	* lra-constraints.c (in_class_p): Don't ignore insn with constant
+	as a source.
+
 2013-12-05  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/58253
