@@ -1,3 +1,9 @@
+2013-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/52023
+	* c-common.c (c_sizeof_or_alignof_type): Move a declaration into
+	[ADJUST_FIELD_ALIGN].
+
 2013-12-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/52023

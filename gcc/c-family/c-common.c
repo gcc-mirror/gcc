@@ -5004,10 +5004,10 @@ c_sizeof_or_alignof_type (location_t loc,
 #ifdef BIGGEST_FIELD_ALIGNMENT
 	  align = MIN (align, BIGGEST_FIELD_ALIGNMENT);
 #endif
-	  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
-				   type);
 	  unsigned int field_align = align;
 #ifdef ADJUST_FIELD_ALIGN
+	  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE,
+				   type);
 	  field_align = ADJUST_FIELD_ALIGN (field, field_align);
 #endif
 	  align = MIN (align, field_align);
