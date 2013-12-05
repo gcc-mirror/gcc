@@ -1,3 +1,7 @@
+2013-12-05  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -fsanitize=signed-integer-overflow.
+
 2013-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Support --with-cpu=ia.
