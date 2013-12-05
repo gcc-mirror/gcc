@@ -113,12 +113,24 @@ backtrace_vector_grow (struct backtrace_state *state ATTRIBUTE_UNUSED,
 
 /* Finish the current allocation on VEC.  */
 
-void
-backtrace_vector_finish (struct backtrace_state *state ATTRIBUTE_UNUSED,
-			 struct backtrace_vector *vec)
+void *
+backtrace_vector_finish (struct backtrace_state *state,
+			 struct backtrace_vector *vec,
+			 backtrace_error_callback error_callback,
+			 void *data)
 {
-  vec->base = (char *) vec->base + vec->size;
+  void *ret;
+
+  /* With this allocator we call realloc in backtrace_vector_grow,
+     which means we can't easily reuse the memory here.  So just
+     release it.  */
+  if (!backtrace_vector_release (state, vec, error_callback, data))
+    return NULL;
+  ret = vec->base;
+  vec->base = NULL;
   vec->size = 0;
+  vec->alc = 0;
+  return ret;
 }
 
 /* Release any extra space allocated for VEC.  */
