@@ -1,3 +1,10 @@
+2013-12-06  Ian Bolton  <ian.bolton@arm.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/59091
+	* config/arm/arm.md (trap): New pattern.
+	* config/arm/types.md: Added a type for trap.
+
 2013-12-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* expr.c (expand_assignment): Update bitregion_start and

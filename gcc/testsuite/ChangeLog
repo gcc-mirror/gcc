@@ -1,3 +1,10 @@
+2013-12-06  Ian Bolton  <ian.bolton@arm.com>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/59091
+	* gcc.target/arm/builtin-trap.c: New test.
+	* gcc.target/arm/thumb-builtin-trap.c: Likewise.
+
 2013-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/pdistn.c: New test.
