@@ -1,3 +1,8 @@
+2013-12-06  Andrew Pinski  <apinski@cavium.com>
+
+	PR target/59092
+	* config/aarch64/aarch64.md (trap): New pattern.
+
 2013-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59388
