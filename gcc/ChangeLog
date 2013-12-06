@@ -1,3 +1,11 @@
+2013-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-data-ref.c (struct data_ref_loc_d): Replace pos field with ref.
+	(get_references_in_stmt): Don't record operand addresses, but
+	operands themselves.
+	(find_data_references_in_stmt, graphite_find_data_references_in_stmt):
+	Adjust for the pos -> ref change.
+
 2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Change --with-cpu=ia to --with-cpu=intel.
