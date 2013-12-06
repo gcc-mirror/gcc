@@ -1,6 +1,6 @@
 /* { dg-do run } */ 
 /* { dg-require-effective-target vect_float } */
-/* { dg-options "-O3 -fdump-rtl-combine-details" } */
+/* { dg-additional-options "-fdump-rtl-combine-details" } */
 
 extern void abort (void);
 
@@ -62,3 +62,4 @@ main()
 
 /* { dg-final { scan-rtl-dump "deleting noop move" "combine" { target aarch64*-*-* } } } */
 /* { dg-final { cleanup-rtl-dump "combine" } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */
