@@ -106,10 +106,10 @@ protected:
 
 public:
   /* A list of sub-passes to run, dependent on gate predicate.  */
-  struct opt_pass *sub;
+  opt_pass *sub;
 
   /* Next in the list of passes to run, independent of gate predicate.  */
-  struct opt_pass *next;
+  opt_pass *next;
 
   /* Static pass number, used as a fragment of the dump file name.  */
   int static_pass_number;
@@ -321,7 +321,7 @@ enum pass_positioning_ops
 
 struct register_pass_info
 {
-  struct opt_pass *pass;            /* New pass to register.  */
+  opt_pass *pass;		    /* New pass to register.  */
   const char *reference_pass_name;  /* Name of the reference pass for hooking
                                        up the new pass.  */
   int ref_pass_instance_number;     /* Insert the pass at the specified
@@ -583,16 +583,16 @@ extern gimple_opt_pass *make_pass_update_address_taken (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_convert_switch (gcc::context *ctxt);
 
 /* Current optimization pass.  */
-extern struct opt_pass *current_pass;
+extern opt_pass *current_pass;
 
-extern bool execute_one_pass (struct opt_pass *);
-extern void execute_pass_list (struct opt_pass *);
-extern void execute_ipa_pass_list (struct opt_pass *);
-extern void execute_ipa_summary_passes (struct ipa_opt_pass_d *);
+extern bool execute_one_pass (opt_pass *);
+extern void execute_pass_list (opt_pass *);
+extern void execute_ipa_pass_list (opt_pass *);
+extern void execute_ipa_summary_passes (ipa_opt_pass_d *);
 extern void execute_all_ipa_transforms (void);
 extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple *);
-extern bool pass_init_dump_file (struct opt_pass *);
-extern void pass_fini_dump_file (struct opt_pass *);
+extern bool pass_init_dump_file (opt_pass *);
+extern void pass_fini_dump_file (opt_pass *);
 
 extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
@@ -601,7 +601,7 @@ extern void ipa_write_summaries (void);
 extern void ipa_write_optimization_summaries (struct lto_symtab_encoder_d *);
 extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
-extern void register_one_dump_file (struct opt_pass *);
+extern void register_one_dump_file (opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
 
 /* Set to true if the pass is called the first time during compilation of the

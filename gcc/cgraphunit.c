@@ -2019,7 +2019,7 @@ ipa_passes (void)
       cgraph_process_new_functions ();
 
       execute_ipa_summary_passes
-	((struct ipa_opt_pass_d *) passes->all_regular_ipa_passes);
+	((ipa_opt_pass_d *) passes->all_regular_ipa_passes);
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
