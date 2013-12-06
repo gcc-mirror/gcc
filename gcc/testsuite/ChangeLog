@@ -1,3 +1,12 @@
+2013-12-06  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/59043
+	* g++.dg/pubtypes.C: Adjust the regular expression.
+	* gcc.dg/pubtypes-1.c: Likewise.
+	* gcc.dg/pubtypes-2.c: Likewise.
+	* gcc.dg/pubtypes-3.c: Likewise.
+	* gcc.dg/pubtypes-4.c: Likewise.
+
 2013-12-06  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.dg/vect/vect-nop-move.c: Fix dg options.
