@@ -1,3 +1,10 @@
+2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	PR target/59343
+	* config/sh/sh.md (*cbranch_t): Check that there are no labels between
+	the s1 insn and the testing insn.  Remove REG_DEAD note	from s1 insn.
+
 2013-12-05  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

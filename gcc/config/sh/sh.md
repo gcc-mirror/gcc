@@ -8427,11 +8427,9 @@ label:
 
   while (true)
     {
-      /* It's not safe to go beyond the current basic block after reload.  */
       set_of_reg s1 = sh_find_set_of_reg (tested_reg, s0.insn,
-					  reload_completed
-					  ? prev_nonnote_insn_bb
-					  : prev_nonnote_insn);
+					  prev_nonnote_insn);
+
       if (s1.set_src == NULL_RTX)
 	break;
 
@@ -8449,15 +8447,25 @@ label:
 	  continue;
 	}
 
-	/* It's only safe to remove the testing insn if the T bit is not
-	   modified between the testing insn and the insn that stores the
-	   T bit.  Notice that some T bit stores such as negc also modify
-	   the T bit.  */
-	if (modified_between_p (get_t_reg_rtx (), s1.insn, testing_insn)
-	    || modified_in_p (get_t_reg_rtx (), s1.insn))
-	  operands[2] = NULL_RTX;
+      /* It's only safe to remove the testing insn if the T bit is not
+	 modified between the testing insn and the insn that stores the
+	 T bit.  Notice that some T bit stores such as negc also modify
+	 the T bit.  */
+      if (modified_between_p (get_t_reg_rtx (), s1.insn, testing_insn)
+	  || modified_in_p (get_t_reg_rtx (), s1.insn)
+	  || !no_labels_between_p (s1.insn, testing_insn))
+	operands[2] = NULL_RTX;
+      else
+	{
+	  /* If the insn that sets the tested reg has a REG_DEAD note on
+	     the T bit remove that note since we're extending the usage
+	     of the T bit.  */
+	  rtx n = find_regno_note (s1.insn, REG_DEAD, T_REG);
+	  if (n != NULL_RTX)
+	    remove_note (s1.insn, n);
+	}
 
-	break;
+      break;
     }
 
   if (operands[2] == NULL_RTX)
