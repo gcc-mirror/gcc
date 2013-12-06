@@ -1,5 +1,11 @@
 2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer_shmid_ds): Use u64 on time fields for x32.
+	(__sanitizer_clock_t): Use long long for x32.
+
+2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* sanitizer_common/sanitizer_platform_limits_linux.cc: Include
 	<sys/stat.h>, instead of <asm/stat.h>, if __x86_64__ is defined.
 	(struct___old_kernel_stat_sz): Don't check if __x86_64__ is defined.
