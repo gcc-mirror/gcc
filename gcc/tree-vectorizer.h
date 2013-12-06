@@ -250,8 +250,11 @@ typedef struct _loop_vec_info {
   /* The loop basic blocks.  */
   basic_block *bbs;
 
+  /* Number of latch executions.  */
+  tree num_itersm1;
   /* Number of iterations.  */
   tree num_iters;
+  /* Number of iterations of the original loop.  */
   tree num_iters_unchanged;
 
   /* Minimum number of iterations below which vectorization is expected to
@@ -349,9 +352,11 @@ typedef struct _loop_vec_info {
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)                 (L)->loop
 #define LOOP_VINFO_BBS(L)                  (L)->bbs
+#define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
 #define LOOP_VINFO_NITERS(L)               (L)->num_iters
-/* Since LOOP_VINFO_NITERS can change after prologue peeling
-   retain total unchanged scalar loop iterations for cost model.  */
+/* Since LOOP_VINFO_NITERS and LOOP_VINFO_NITERSM1 can change after
+   prologue peeling retain total unchanged scalar loop iterations for
+   cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L) (L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable

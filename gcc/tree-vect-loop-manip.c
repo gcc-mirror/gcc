@@ -1061,7 +1061,6 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   gimple_stmt_iterator gsi;
   edge exit_e = single_exit (loop);
   source_location loop_loc;
-  tree cost_pre_condition = NULL_TREE;
   /* There are many aspects to how likely the first loop is going to be executed.
      Without histogram we can't really do good job.  Simply set it to
      2/3, so the first loop is not reordered to the end of function and
@@ -1263,21 +1262,17 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   /* Epilogue peeling.  */
   if (!update_first_loop_count)
     {
+      loop_vec_info loop_vinfo = loop_vec_info_for_loop (loop);
+      tree scalar_loop_iters = LOOP_VINFO_NITERSM1 (loop_vinfo);
+      unsigned limit = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+	limit = limit + 1;
+      if (check_profitability
+	  && th > limit)
+	limit = th;
       pre_condition =
-	fold_build2 (LE_EXPR, boolean_type_node, *first_niters,
-		     build_int_cst (TREE_TYPE (*first_niters), 0));
-      if (check_profitability)
-	{
-	  tree scalar_loop_iters
-	    = unshare_expr (LOOP_VINFO_NITERS_UNCHANGED
-					(loop_vec_info_for_loop (loop)));
-	  cost_pre_condition =
-	    fold_build2 (LE_EXPR, boolean_type_node, scalar_loop_iters,
-		         build_int_cst (TREE_TYPE (scalar_loop_iters), th));
-
-	  pre_condition = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-				       cost_pre_condition, pre_condition);
-	}
+	fold_build2 (LT_EXPR, boolean_type_node, scalar_loop_iters,
+		     build_int_cst (TREE_TYPE (scalar_loop_iters), limit));
       if (cond_expr)
 	{
 	  pre_condition =
@@ -1922,6 +1917,9 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, tree ni_name,
   /* Update number of times loop executes.  */
   LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
 		TREE_TYPE (ni_name), ni_name, niters_of_prolog_loop);
+  LOOP_VINFO_NITERSM1 (loop_vinfo) = fold_build2 (MINUS_EXPR,
+		TREE_TYPE (ni_name),
+		LOOP_VINFO_NITERSM1 (loop_vinfo), niters_of_prolog_loop);
 
   if (types_compatible_p (sizetype, TREE_TYPE (niters_of_prolog_loop)))
     wide_prolog_niters = niters_of_prolog_loop;

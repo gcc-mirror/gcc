@@ -1,3 +1,19 @@
+2013-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59058
+	* tree-vectorizer.h (struct _loop_vec_info): Add num_itersm1
+	member.
+	(LOOP_VINFO_NITERSM1): New macro.
+	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): Express
+	the vector loop entry test in terms of scalar latch executions.
+	(vect_do_peeling_for_alignment): Update LOOP_VINFO_NITERSM1.
+	* tree-vect-loop.c (vect_get_loop_niters): Also return the
+	number of latch executions.
+	(new_loop_vec_info): Initialize LOOP_VINFO_NITERSM1.
+	(vect_analyze_loop_form): Likewise.
+	(vect_generate_tmps_on_preheader): Compute the number of
+	vectorized iterations differently.
+
 2013-12-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/score/score.c (score_force_temporary): Delete function.

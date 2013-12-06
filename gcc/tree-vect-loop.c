@@ -791,12 +791,14 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 /* Function vect_get_loop_niters.
 
    Determine how many iterations the loop is executed and place it
-   in NUMBER_OF_ITERATIONS.
+   in NUMBER_OF_ITERATIONS.  Place the number of latch iterations
+   in NUMBER_OF_ITERATIONSM1.
 
    Return the loop exit condition.  */
 
 static gimple
-vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
+vect_get_loop_niters (struct loop *loop, tree *number_of_iterations,
+		      tree *number_of_iterationsm1)
 {
   tree niters;
 
@@ -805,12 +807,14 @@ vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
 		     "=== get_loop_niters ===\n");
 
   niters = number_of_latch_executions (loop);
+  *number_of_iterationsm1 = niters;
+
   /* We want the number of loop header executions which is the number
      of latch executions plus one.
      ???  For UINT_MAX latch executions this number overflows to zero
      for loops like do { n++; } while (n != 0);  */
   if (niters && !chrec_contains_undetermined (niters))
-    niters = fold_build2 (PLUS_EXPR, TREE_TYPE (niters), niters,
+    niters = fold_build2 (PLUS_EXPR, TREE_TYPE (niters), unshare_expr (niters),
 			  build_int_cst (TREE_TYPE (niters), 1));
   *number_of_iterations = niters;
 
@@ -916,6 +920,7 @@ new_loop_vec_info (struct loop *loop)
    gcc_assert (nbbs == loop->num_nodes);
 
   LOOP_VINFO_BBS (res) = bbs;
+  LOOP_VINFO_NITERSM1 (res) = NULL;
   LOOP_VINFO_NITERS (res) = NULL;
   LOOP_VINFO_NITERS_UNCHANGED (res) = NULL;
   LOOP_VINFO_COST_MODEL_MIN_ITERS (res) = 0;
@@ -1071,7 +1076,7 @@ vect_analyze_loop_form (struct loop *loop)
 {
   loop_vec_info loop_vinfo;
   gimple loop_cond;
-  tree number_of_iterations = NULL;
+  tree number_of_iterations = NULL, number_of_iterationsm1 = NULL;
   loop_vec_info inner_loop_vinfo = NULL;
 
   if (dump_enabled_p ())
@@ -1246,7 +1251,8 @@ vect_analyze_loop_form (struct loop *loop)
 	}
     }
 
-  loop_cond = vect_get_loop_niters (loop, &number_of_iterations);
+  loop_cond = vect_get_loop_niters (loop, &number_of_iterations,
+				    &number_of_iterationsm1);
   if (!loop_cond)
     {
       if (dump_enabled_p ())
@@ -1280,6 +1286,7 @@ vect_analyze_loop_form (struct loop *loop)
     }
 
   loop_vinfo = new_loop_vec_info (loop);
+  LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
 
@@ -5637,12 +5644,11 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   tree var;
   tree ratio_name;
   tree ratio_mult_vf_name;
-  tree ni = LOOP_VINFO_NITERS (loop_vinfo);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
   tree log_vf;
 
-  log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
+  log_vf = build_int_cst (TREE_TYPE (ni_name), exact_log2 (vf));
 
   /* If epilogue loop is required because of data accesses with gaps, we
      subtract one iteration from the total number of iterations here for
@@ -5654,7 +5660,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 			               build_one_cst (TREE_TYPE (ni_name)));
       if (!is_gimple_val (ni_minus_gap_name))
 	{
-	  var = create_tmp_var (TREE_TYPE (ni), "ni_gap");
+	  var = create_tmp_var (TREE_TYPE (ni_name), "ni_gap");
           gimple stmts = NULL;
           ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
 						    true, var);
@@ -5665,12 +5671,22 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
     ni_minus_gap_name = ni_name;
 
   /* Create: ratio = ni >> log2(vf) */
-
-  ratio_name = fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_minus_gap_name),
-			    ni_minus_gap_name, log_vf);
+  /* ???  As we have ni == number of latch executions + 1, ni could
+     have overflown to zero.  So avoid computing ratio based on ni
+     but compute it using the fact that we know ratio will be at least
+     one, thus via (ni - vf) >> log2(vf) + 1.  */
+  ratio_name
+    = fold_build2 (PLUS_EXPR, TREE_TYPE (ni_name),
+		   fold_build2 (RSHIFT_EXPR, TREE_TYPE (ni_name),
+				fold_build2 (MINUS_EXPR, TREE_TYPE (ni_name),
+					     ni_minus_gap_name,
+					     build_int_cst
+					       (TREE_TYPE (ni_name), vf)),
+				log_vf),
+		   build_int_cst (TREE_TYPE (ni_name), 1));
   if (!is_gimple_val (ratio_name))
     {
-      var = create_tmp_var (TREE_TYPE (ni), "bnd");
+      var = create_tmp_var (TREE_TYPE (ni_name), "bnd");
       gimple stmts = NULL;
       ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
       gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -5685,7 +5701,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 					ratio_name, log_vf);
       if (!is_gimple_val (ratio_mult_vf_name))
 	{
-	  var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
+	  var = create_tmp_var (TREE_TYPE (ni_name), "ratio_mult_vf");
 	  gimple stmts = NULL;
 	  ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
 						     true, var);
