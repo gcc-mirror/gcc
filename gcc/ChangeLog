@@ -1,3 +1,13 @@
+2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* cgraphunit.c: Remove struct tags when referring to class
+	ipa_opt_pass_d or class opt_pass.
+	* function.h: Likewise.
+	* lto-cgraph.c: Likewise.
+	* pass_manager.h: Likewise.
+	* passes.c: Likewise.
+	* tree-pass.h: Likewise.
+
 2013-12-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058

@@ -389,7 +389,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   intptr_t ref;
   bool in_other_partition = false;
   struct cgraph_node *clone_of, *ultimate_clone_of;
-  struct ipa_opt_pass_d *pass;
+  ipa_opt_pass_d *pass;
   int i;
   bool alias_p;
 
@@ -1060,12 +1060,12 @@ input_node (struct lto_file_decl_data *file_data,
   node->ipa_transforms_to_apply = vNULL;
   for (i = 0; i < count; i++)
     {
-      struct opt_pass *pass;
+      opt_pass *pass;
       int pid = streamer_read_hwi (ib);
 
       gcc_assert (pid < passes->passes_by_id_size);
       pass = passes->passes_by_id[pid];
-      node->ipa_transforms_to_apply.safe_push ((struct ipa_opt_pass_d *) pass);
+      node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *) pass);
     }
 
   if (tag == LTO_symtab_analyzed_node)
