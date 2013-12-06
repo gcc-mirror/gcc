@@ -1,6 +1,13 @@
+2013-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59405
+	* config/i386/i386.c (type_natural_mode): Properly handle
+	size 8 for !TARGET_64BIT.
+
 2013-12-06  Trevor Saunders  <tsaunders@mozilla.com>
 
-	* tree-ssa-pre.c (compute_antic_aux): Remove redundant call to vec::release.
+	* tree-ssa-pre.c (compute_antic_aux): Remove redundant call to
+	vec::release.
 
 2013-12-06  Ian Bolton  <ian.bolton@arm.com>
 	    Mark Mitchell  <mark@codesourcery.com>
@@ -11,8 +18,7 @@
 
 2013-12-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	* expr.c (expand_assignment): Update bitregion_start and
-	bitregion_end.
+	* expr.c (expand_assignment): Update bitregion_start and bitregion_end.
 
 2013-12-06  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -86,8 +92,7 @@
 2013-12-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058
-	* tree-vectorizer.h (struct _loop_vec_info): Add num_itersm1
-	member.
+	* tree-vectorizer.h (struct _loop_vec_info): Add num_itersm1 member.
 	(LOOP_VINFO_NITERSM1): New macro.
 	* tree-vect-loop-manip.c (slpeel_tree_peel_loop_to_edge): Express
 	the vector loop entry test in terms of scalar latch executions.
@@ -117,8 +122,7 @@
 	* config/i386/i386.c (cpu_names): Add "ia".
 	(processor_alias_table): Likewise.
 	(ix86_option_override_internal): Disallow -march=ia.
-	* config/i386/i386.h (target_cpu_default): Add
-	TARGET_CPU_DEFAULT_ia.
+	* config/i386/i386.h (target_cpu_default): Add TARGET_CPU_DEFAULT_ia.
 
 	* doc/invoke.texi: Document -mtune=ia.
 
@@ -145,8 +149,8 @@
 	(ubsan_build_overflow_builtin): Adjust ubsan_encode_value call.
 	* ubsan.h (ubsan_encode_value): Adjust declaration.
 	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Move
-	ubsan_build_overflow_builtin above expand_normal call.  Surround this call
-	with push_temp_slots and pop_temp_slots.
+	ubsan_build_overflow_builtin above expand_normal call.  Surround
+	this call with push_temp_slots and pop_temp_slots.
 	(ubsan_expand_si_overflow_neg_check): Likewise.
 	(ubsan_expand_si_overflow_mul_check): Likewise.
 
@@ -158,8 +162,8 @@
 
 2013-12-05  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* rtlanal.c (set_noop_p): Return nonzero in case of redundant vec_select
-	for overlapping register lanes.
+	* rtlanal.c (set_noop_p): Return nonzero in case of redundant
+	vec_select for overlapping register lanes.
 
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
@@ -172,7 +176,7 @@
 
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/i386.c (IX86_BUILTIN_READ_FLAGS): New.
+	* config/i386/i386.c (IX86_BUILTIN_READ_FLAGS): New.
 	(IX86_BUILTIN_WRITE_FLAGS): Ditto.
 	(ix86_init_mmx_sse_builtins): Define
 	__builtin_ia32_writeeflags_u32, __builtin_ia32_writeeflags_u64,
@@ -188,8 +192,7 @@
 	PR tree-optimization/59374
 	* tree-vect-data-refs.c (vect_slp_analyze_data_ref_dependence):
 	Commonize known and unknown dependence case fixing the allowed
-	read-write dependence case and dropping code that should not
-	matter.
+	read-write dependence case and dropping code that should not matter.
 
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
@@ -214,8 +217,7 @@
 	-fsanitize=signed-integer-overflow.
 	* config/i386/i386.md (addv<mode>4, subv<mode>4, mulv<mode>4,
 	negv<mode>3, negv<mode>3_1): Define expands.
-	(*addv<mode>4, *subv<mode>4, *mulv<mode>4, *negv<mode>3): Define
-	insns.
+	(*addv<mode>4, *subv<mode>4, *mulv<mode>4, *negv<mode>3): Define insns.
 	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_ADD_OVERFLOW,
 	BUILT_IN_UBSAN_HANDLE_SUB_OVERFLOW,
 	BUILT_IN_UBSAN_HANDLE_MUL_OVERFLOW,
@@ -260,9 +262,8 @@
 	-fisolate-erroneous-paths-dereference and
 	-fisolate-erroneous-paths-attribute.
 	* invoke.texi: Corresponding changes.
-	* gimple.c (infer_nonnull_range):  Add and use new arguments
-	to control what kind of statements can be used to infer a
-	non-null range.
+	* gimple.c (infer_nonnull_range):  Add and use new arguments to control
+	what kind of statements can be used to infer a non-null range.
 	* gimple.h (infer_nonnull_range): Update prototype.
 	* tree-vrp.c (infer_value_range): Corresponding changes.
 	* opts.c (default_options_table): Update due to option split.
@@ -270,8 +271,7 @@
 	(find_implicit_erroneous_behaviour): Pass additional arguments
 	to infer_nonnull_range.
 	(find_explicit_erroneous_behaviour): Similarly.
-	(gate_isolate_erroneous_paths): Check both of the new
-	options.
+	(gate_isolate_erroneous_paths): Check both of the new options.
 
 2013-12-04  Jeff Law  <law@redhat.com>
 
@@ -559,7 +559,7 @@
 	* config/arm/arm.c (arm_preferred_reload_class): Only return LO_REGS
 	when rclass is GENERAL_REGS.
 
-2013-12-02 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2013-12-02  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* loop-unroll.c (decide_unroll_constant_iterations): Check macro
 	TARGET_LOOP_UNROLL_ADJUST while deciding unroll factor.
@@ -1096,7 +1096,7 @@
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Ditto
 	plus added openmp-simd warining.
 
-2013-11-27   H.J. Lu  <hongjiu.lu@intel.com>
+2013-11-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/59311
 	* dwarf2cfi.c (dwf_regno): Assert reg isn't pseudo register.
@@ -1478,7 +1478,7 @@
 	* config/arm/arm.c (arm_new_rtx_costs): Initialise cost correctly
 	for zero_extend case.
 
-2013-11-26   H.J. Lu  <hongjiu.lu@intel.com>
+2013-11-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/55552
 	* configure.ac (install_gold_as_default): New.  Set to yes for
@@ -1893,7 +1893,7 @@
 
 	* doc/invoke.texi: Mention AES, PCLMUL and RDRND for Silvermont.
 
-2013-11-22 Andrew MacLeod  <amacleod@redhat.com>
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* hooks.h (hook_uint_mode_0): Add Prototype.
 	* hooks.c (hook_uint_mode_0): New default function.
@@ -1903,7 +1903,7 @@
 	* doc/tm.texi.in (TARGET_ATOMIC_ALIGN_FOR_MODE): Define.
 	* doc/tm.texi (TARGET_ATOMIC_ALIGN_FOR_MODE): Add description.
 
-2013-11-22 Andrew MacLeod  <amacleod@redhat.com>
+2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple.h: Remove all includes.
 	(recalculate_side_effects): Move prototype to gimplify.h.
@@ -4140,7 +4140,7 @@
 	* profile.c (compute_branch_probabilities): Do not sanity check
 	run_max.
 
-2013-11-18 Kenneth Zadeck <zadeck@naturalbridge.com>
+2013-11-18  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* tree.c (int_fits_type_p): Change GET_MODE_BITSIZE to
 	GET_MODE_PRECISION.
@@ -4642,7 +4642,7 @@
 	* lto-streamer-in.c (input function): Call cgraph_create_node if
 	cgraph_get_node failed.
 
-2013-11-14   Olivier Hainque  <hainque@adacore.com>
+2013-11-14  Olivier Hainque  <hainque@adacore.com>
 
 	* cfgexpand.c (defer_stack_allocation): When optimization is enabled,
 	defer allocation of DECL_IGNORED_P variables at toplevel unless really
@@ -10459,7 +10459,7 @@
 	* config/iq2000/iq2000.c (init_cumulative_args): Likewise.
 	* config/rs6000/rs6000.c (init_cumulative_args): Likewise.
 
-2013-10-16 Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+2013-10-16  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Enable FMA4
 	for AMD bdver3.
@@ -10469,7 +10469,7 @@
 	* config/cris/t-elfmulti (MULTILIB_OPTIONS, MULTILIB_DIRNAMES)
 	(MULTILIB_MATCHES): Add multilib for -march=v8.
 
-2013-10-15 Sriraman Tallam  <tmsriram@google.com>
+2013-10-15  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/57756
 	* optc-save-gen.awk: Add extra parameter to the save and restore

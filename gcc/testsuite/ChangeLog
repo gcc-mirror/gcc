@@ -1,5 +1,10 @@
+2013-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59405
+	* gcc.target/i386/pr59405.c: New test.
+
 2013-12-06  Ian Bolton  <ian.bolton@arm.com>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/59091
 	* gcc.target/arm/builtin-trap.c: New test.
@@ -56,7 +61,7 @@
 
 2013-12-05  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * gcc.target/i386/readeflags-1.c: New.
+	* gcc.target/i386/readeflags-1.c: New.
 	* gcc.target/i386/writeeflags-1.c: Ditto.
 
 2013-12-05  Yury Gribov  <y.gribov@samsung.com>
@@ -91,8 +96,7 @@
 2013-12-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56787
-	* gcc.dg/vect/pr56787.c: Adjust to not require vector float
-	division.
+	* gcc.dg/vect/pr56787.c: Adjust to not require vector float division.
 
 2013-12-05  Kostya Serebryany  <kcc@google.com>
 
@@ -182,10 +186,9 @@
 
 2013-12-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Skip for little
-	endian.
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-34.c: Skip for little endian.
 
-2013-12-03   H.J. Lu  <hongjiu.lu@intel.com>
+2013-12-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59363
 	* gcc.target/i386/pr59363.c: New file.
@@ -230,7 +233,7 @@
 2013-12-02  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/58944
-	* testsuite/gcc.target/i386/pr58944.c: New test.	
+	* testsuite/gcc.target/i386/pr58944.c: New test.
 
 2013-12-02  Joseph Myers  <joseph@codesourcery.com>
 
@@ -2306,7 +2309,7 @@
 
 	* gcc.dg/tree-prof/tree-prof.exp: Fix comment.
 
-2013-10-15 Sriraman Tallam  <tmsriram@google.com>
+2013-10-15  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/57756
 	* gcc.target/i386/pr57756.c: New test.

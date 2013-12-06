@@ -6172,7 +6172,8 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum)
 		      }
 		    return TYPE_MODE (type);
 		  }
-		else if ((size == 8 || size == 16) && !TARGET_SSE)
+		else if (((size == 8 && TARGET_64BIT) || size == 16)
+			 && !TARGET_SSE)
 		  {
 		    static bool warnedsse;
 
@@ -6184,10 +6185,21 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum)
 			warning (0, "SSE vector argument without SSE "
 				 "enabled changes the ABI");
 		      }
-		    return mode;
 		  }
-		else
-		  return mode;
+		else if ((size == 8 && !TARGET_64BIT) && !TARGET_MMX)
+		  {
+		    static bool warnedmmx;
+
+		    if (cum
+			&& !warnedmmx
+			&& cum->warn_mmx)
+		      {
+			warnedmmx = true;
+			warning (0, "MMX vector argument without MMX "
+				 "enabled changes the ABI");
+		      }
+		  }
+		return mode;
 	      }
 
 	  gcc_unreachable ();
