@@ -2208,7 +2208,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	  BB_VISITED (block) = 0;
 	  BB_DEFERRED (block) = 1;
 	  changed = true;
-	  worklist.release ();
 	  goto maybe_dump_sets;
 	}
 

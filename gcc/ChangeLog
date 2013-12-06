@@ -1,3 +1,7 @@
+2013-12-06  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* tree-ssa-pre.c (compute_antic_aux): Remove redundant call to vec::release.
+
 2013-12-06  Ian Bolton  <ian.bolton@arm.com>
 	    Mark Mitchell  <mark@codesourcery.com>
 
