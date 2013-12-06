@@ -1,3 +1,10 @@
+2013-12-06  Caroline Tice  <cmtice@google.com>
+
+	Submitting patch from Stephen Checkoway, s@cs.jhu.edu
+	* vtable-verify.c (verify_bb_vtables): Replace all uses of verified
+	vtable pointer with the results of the verification call, rather than
+	only the uses in the next statement.
+
 2013-12-06  Andrew Pinski  <apinski@cavium.com>
 
 	PR target/59092
