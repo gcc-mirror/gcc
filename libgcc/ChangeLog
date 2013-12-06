@@ -1,3 +1,7 @@
+2013-12-06  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config.host (microblaze-*-rtems*): New.
+
 2013-12-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/arm/bpapi-lib.h (TARGET_HAS_NO_HW_DIVIDE): Define for

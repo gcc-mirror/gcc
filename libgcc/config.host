@@ -754,6 +754,10 @@ microblaze*-*-elf)
 	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit"
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o crti.o crtn.o"
 	;;
+microblaze*-*-rtems*)
+	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit"
+	extra_parts="$extra_parts crtbeginS.o crtendS.o crtbeginT.o crti.o crtn.o"
+	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
