@@ -1,3 +1,9 @@
+2013-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59388
+	* tree-ssa-reassoc.c (update_range_test): If op == range->exp,
+	gimplify tem after stmt rather than before it.
+
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
