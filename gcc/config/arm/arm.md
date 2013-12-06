@@ -9927,6 +9927,23 @@
    (set_attr "type" "mov_reg")]
 )
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "*
+  if (TARGET_ARM)
+    return \".inst\\t0xe7f000f0\";
+  else
+    return \".inst\\t0xdeff\";
+  "
+  [(set (attr "length")
+	(if_then_else (eq_attr "is_thumb" "yes")
+		      (const_int 2)
+		      (const_int 4)))
+   (set_attr "type" "trap")
+   (set_attr "conds" "unconditional")]
+)
+
 
 ;; Patterns to allow combination of arithmetic, cond code and shifts
 
