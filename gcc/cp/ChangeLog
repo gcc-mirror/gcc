@@ -1,3 +1,9 @@
+2013-12-06  Caroline Tice  <cmtice@google.com>
+
+	Submitting patch from Stephen Checkoway, s@cs.jhu.edu
+	* vtable-class-hierarchy.c (init_functions): Make the libvtv
+	function decls externally visible.
+
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* decl2.c: Remove struct tags when referring to class varpool_node.
