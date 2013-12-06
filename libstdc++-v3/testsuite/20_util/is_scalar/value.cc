@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2010-11-30  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
@@ -19,30 +21,22 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_scalar;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_scalar, int>(true)) );
-  VERIFY( (test_category<is_scalar, float>(true)) );
-  VERIFY( (test_category<is_scalar, EnumType>(true)) );
-  VERIFY( (test_category<is_scalar, int*>(true)) );
-  VERIFY( (test_category<is_scalar, int(*)(int)>(true)) );
-  VERIFY( (test_category<is_scalar, int (ClassType::*)>(true)) );
-  VERIFY( (test_category<is_scalar, int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_category<is_scalar, std::nullptr_t>(true)) );
+  static_assert(test_category<is_scalar, int>(true), "");
+  static_assert(test_category<is_scalar, float>(true), "");
+  static_assert(test_category<is_scalar, EnumType>(true), "");
+  static_assert(test_category<is_scalar, int*>(true), "");
+  static_assert(test_category<is_scalar, int(*)(int)>(true), "");
+  static_assert(test_category<is_scalar, int (ClassType::*)>(true), "");
+  static_assert(test_category<is_scalar, int (ClassType::*) (int)>(true), "");
+  static_assert(test_category<is_scalar, std::nullptr_t>(true), "");
 
   // Sanity check.
-  VERIFY( (test_category<is_scalar, ClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_scalar, ClassType>(false), "");
 }
