@@ -2351,7 +2351,7 @@ ipa_write_summaries (void)
 {
   lto_symtab_encoder_t encoder;
   int i, order_pos;
-  struct varpool_node *vnode;
+  varpool_node *vnode;
   struct cgraph_node *node;
   struct cgraph_node **order;
 

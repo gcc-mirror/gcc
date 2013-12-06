@@ -138,7 +138,7 @@ protected:
   }
 };
 
-struct varpool_node;
+class varpool_node;
 struct cgraph_node;
 struct lto_symtab_encoder_d;
 
@@ -171,7 +171,7 @@ public:
      function body via this hook.  */
   unsigned int function_transform_todo_flags_start;
   unsigned int (*function_transform) (struct cgraph_node *);
-  void (*variable_transform) (struct varpool_node *);
+  void (*variable_transform) (varpool_node *);
 
 protected:
   ipa_opt_pass_d (const pass_data& data, gcc::context *ctxt,
@@ -183,7 +183,7 @@ protected:
 		  void (*stmt_fixup) (struct cgraph_node *, gimple *),
 		  unsigned int function_transform_todo_flags_start,
 		  unsigned int (*function_transform) (struct cgraph_node *),
-		  void (*variable_transform) (struct varpool_node *))
+		  void (*variable_transform) (varpool_node *))
     : opt_pass (data, ctxt),
       generate_summary (generate_summary),
       write_summary (write_summary),

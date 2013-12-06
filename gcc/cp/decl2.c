@@ -1749,7 +1749,7 @@ maybe_make_one_only (tree decl)
 
       if (VAR_P (decl))
 	{
-          struct varpool_node *node = varpool_node_for_decl (decl);
+          varpool_node *node = varpool_node_for_decl (decl);
 	  DECL_COMDAT (decl) = 1;
 	  /* Mark it needed so we don't forget to emit it.  */
           node->forced_by_abi = true;
@@ -1871,7 +1871,7 @@ mark_needed (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      struct varpool_node *node = varpool_node_for_decl (decl);
+      varpool_node *node = varpool_node_for_decl (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->forced_by_abi = true;
@@ -1920,7 +1920,7 @@ maybe_emit_vtables (tree ctype)
   tree vtbl;
   tree primary_vtbl;
   int needed = 0;
-  struct varpool_node *current = NULL, *last = NULL;
+  varpool_node *current = NULL, *last = NULL;
 
   /* If the vtables for this class have already been emitted there is
      nothing more to do.  */
@@ -3466,7 +3466,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 	  finish_expr_stmt (init);
 	  if (flag_sanitize & SANITIZE_ADDRESS)
 	    {
-	      struct varpool_node *vnode = varpool_get_node (decl);
+	      varpool_node *vnode = varpool_get_node (decl);
 	      if (vnode)
 		vnode->dynamically_initialized = 1;
 	    }

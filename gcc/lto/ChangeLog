@@ -1,3 +1,9 @@
+2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* lto.c: Remove struct tags when referring to class varpool_node.
+	* lto-partition.c: Likewise.
+	* lto-symtab.c: Likewise.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 

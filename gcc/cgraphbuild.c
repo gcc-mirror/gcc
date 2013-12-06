@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 struct record_reference_ctx
 {
   bool only_vars;
-  struct varpool_node *varpool_node;
+  class varpool_node *varpool_node;
 };
 
 /* Walk tree and record all calls and references to functions/variables.
@@ -89,7 +89,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data)
 
       if (TREE_CODE (decl) == VAR_DECL)
 	{
-	  struct varpool_node *vnode = varpool_node_for_decl (decl);
+	  varpool_node *vnode = varpool_node_for_decl (decl);
 	  ipa_record_reference (ctx->varpool_node,
 				vnode,
 				IPA_REF_ADDR, NULL);
@@ -128,7 +128,7 @@ record_type_list (struct cgraph_node *node, tree list)
 	  type = TREE_OPERAND (type, 0);
 	  if (TREE_CODE (type) == VAR_DECL)
 	    {
-	      struct varpool_node *vnode = varpool_node_for_decl (type);
+	      varpool_node *vnode = varpool_node_for_decl (type);
 	      ipa_record_reference (node,
 				    vnode,
 				    IPA_REF_ADDR, NULL);
@@ -238,7 +238,7 @@ mark_address (gimple stmt, tree addr, void *data)
   else if (addr && TREE_CODE (addr) == VAR_DECL
 	   && (TREE_STATIC (addr) || DECL_EXTERNAL (addr)))
     {
-      struct varpool_node *vnode = varpool_node_for_decl (addr);
+      varpool_node *vnode = varpool_node_for_decl (addr);
 
       ipa_record_reference ((symtab_node *)data,
 			    vnode,
@@ -267,7 +267,7 @@ mark_load (gimple stmt, tree t, void *data)
   else if (t && TREE_CODE (t) == VAR_DECL
 	   && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      struct varpool_node *vnode = varpool_node_for_decl (t);
+      varpool_node *vnode = varpool_node_for_decl (t);
 
       ipa_record_reference ((symtab_node *)data,
 			    vnode,
@@ -285,7 +285,7 @@ mark_store (gimple stmt, tree t, void *data)
   if (t && TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      struct varpool_node *vnode = varpool_node_for_decl (t);
+      varpool_node *vnode = varpool_node_for_decl (t);
 
       ipa_record_reference ((symtab_node *)data,
 			    vnode,
@@ -426,7 +426,7 @@ void
 record_references_in_initializer (tree decl, bool only_vars)
 {
   struct pointer_set_t *visited_nodes = pointer_set_create ();
-  struct varpool_node *node = varpool_node_for_decl (decl);
+  varpool_node *node = varpool_node_for_decl (decl);
   struct record_reference_ctx ctx = {false, NULL};
 
   ctx.varpool_node = node;
