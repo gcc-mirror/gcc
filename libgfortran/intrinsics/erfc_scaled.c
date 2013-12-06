@@ -61,6 +61,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #else
 
 # define _THRESH -106.566990228185312813205074546585730L
+# ifndef M_2_SQRTPIl
+#  define M_2_SQRTPIl 1.128379167095512573896158903121545172L
+# endif
 # define _M_2_SQRTPI M_2_SQRTPIl
 # define _INF __builtin_infl()
 # ifdef HAVE_ERFCL
