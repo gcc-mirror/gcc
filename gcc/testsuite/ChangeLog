@@ -1,3 +1,7 @@
+2013-12-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.dg/vect/vect-nop-move.c: Fix dg options.
+
 2013-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59405
