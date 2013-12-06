@@ -1,3 +1,33 @@
+2013-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/59316
+	* config/sparc/sparc.h (SPARC_LOW_FE_EXCEPT_VALUES): Define.
+	* config/sparc/sol2.h (SPARC_LOW_FE_EXCEPT_VALUES): Redefine.
+	* config/sparc/sparc.c (TARGET_INIT_BUILTINS): Move around.
+	(TARGET_BUILTIN_DECL): Define.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): Likewise.
+	(sparc32_initialize_trampoline): Adjust call to gen_flush.
+	(enum sparc_builtins): New enumeral type.
+	(sparc_builtins): New static array.
+	(sparc_builtins_icode): Likewise.
+	(def_builtin): Accept a separate icode and save the result.
+	(def_builtin_const): Likewise.
+	(sparc_fpu_init_builtins): New function.
+	(sparc_vis_init_builtins): Pass the builtin code.
+	(sparc_init_builtins): Call it if TARGET_FPU.
+	(sparc_builtin_decl): New function.
+	(sparc_expand_builtin): Deal with SPARC_BUILTIN_{LD,ST}FSR.
+	(sparc_handle_vis_mul8x16): Use the builtin code.
+	(sparc_fold_builtin): Likewise.  Deal with SPARC_BUILTIN_{LD,ST}FSR
+	and SPARC_BUILTIN_PDISTN.
+	(compound_expr): New helper function.
+	(sparc_atomic_assign_expand_fenv): New function.
+	* config/sparc/sparc.md (unspecv): Reorder values, add UNSPECV_LDFSR
+	and UNSPECV_STFSR.
+	(flush, flushdi): Merge into single pattern.
+	(ldfsr): New instruction.
+	(stfsr): Likewise.
+
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* asan.c: Remove struct tags when referring to class varpool_node.
