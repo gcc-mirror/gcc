@@ -1,6 +1,21 @@
 2013-12-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2013-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59334
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Fix bug
+	in previous commit.
+ 
+	2013-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59330
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Simplify
+	and fix delayed marking of free calls not necessary.
+
+2013-12-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2013-11-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59288
