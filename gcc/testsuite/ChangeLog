@@ -1,3 +1,8 @@
+2013-12-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/pdistn.c: New test.
+	* gcc.target/sparc/pdistn-2.c: Likewise.
+
 2013-12-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59058
