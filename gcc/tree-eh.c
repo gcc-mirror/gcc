@@ -2685,7 +2685,7 @@ tree_could_trap_p (tree expr)
 	 LTO partition.  */
       if (DECL_WEAK (expr) && !DECL_COMDAT (expr))
 	{
-	  struct varpool_node *node;
+	  varpool_node *node;
 	  if (!DECL_EXTERNAL (expr))
 	    return false;
 	  node = varpool_variable_node (varpool_get_node (expr), NULL);

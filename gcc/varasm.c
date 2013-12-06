@@ -2366,7 +2366,7 @@ mark_decl_referenced (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      struct varpool_node *node = varpool_node_for_decl (decl);
+      varpool_node *node = varpool_node_for_decl (decl);
       /* C++ frontend use mark_decl_references to force COMDAT variables
          to be output that might appear dead otherwise.  */
       node->force_output = true;
@@ -6727,7 +6727,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   if (TREE_CODE (exp) == VAR_DECL && TREE_PUBLIC (exp)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
-      struct varpool_node *vnode = varpool_get_node (exp);
+      varpool_node *vnode = varpool_get_node (exp);
       if (vnode && resolution_local_p (vnode->resolution))
 	resolved_locally = true;
       if (vnode
@@ -6820,7 +6820,7 @@ decl_binds_to_current_def_p (tree decl)
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
-      struct varpool_node *vnode = varpool_get_node (decl);
+      varpool_node *vnode = varpool_get_node (decl);
       if (vnode
 	  && vnode->resolution != LDPR_UNKNOWN)
 	return resolution_to_local_definition_p (vnode->resolution);

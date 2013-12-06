@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 struct cgraph_node;
-struct varpool_node;
+class varpool_node;
 class symtab_node;
 
 

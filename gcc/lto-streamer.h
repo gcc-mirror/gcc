@@ -886,7 +886,7 @@ void lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t,
 					  symtab_node *);
 
 bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
-					      struct varpool_node *);
+					      varpool_node *);
 void output_symtab (void);
 void input_symtab (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
@@ -1081,7 +1081,7 @@ lsei_cgraph_node (lto_symtab_encoder_iterator lsei)
 }
 
 /* Return the node pointed to by LSI.  */
-static inline struct varpool_node *
+static inline varpool_node *
 lsei_varpool_node (lto_symtab_encoder_iterator lsei)
 {
   return varpool (lsei.encoder->nodes[lsei.index].node);

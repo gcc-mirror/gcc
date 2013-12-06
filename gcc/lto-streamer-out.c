@@ -339,7 +339,7 @@ get_symbol_initial_value (struct output_block *ob, tree expr)
       && initial)
     {
       lto_symtab_encoder_t encoder;
-      struct varpool_node *vnode;
+      varpool_node *vnode;
 
       encoder = ob->decl_state->symtab_node_encoder;
       vnode = varpool_get_node (expr);

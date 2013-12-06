@@ -1,5 +1,34 @@
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* asan.c: Remove struct tags when referring to class varpool_node.
+	* cgraph.h: Likewise.
+	* cgraphbuild.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* dbxout.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-ref-inline.h: Likewise.
+	* ipa-ref.h: Likewise.
+	* ipa-reference.c: Likewise.
+	* ipa-utils.c: Likewise.
+	* ipa.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* lto-streamer-out.c: Likewise.
+	* lto-streamer.h: Likewise.
+	* passes.c: Likewise.
+	* toplev.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-emutls.c: Likewise.
+	* tree-pass.h: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree.c: Likewise.
+	* varasm.c: Likewise.
+	* varpool.c: Likewise.
+
+2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* cgraphunit.c: Remove struct tags when referring to class
 	ipa_opt_pass_d or class opt_pass.
 	* function.h: Likewise.

@@ -2481,7 +2481,7 @@ dbxout_expand_expr (tree expr)
 	  /* If this is a var that might not be actually output,
 	     return NULL, otherwise stabs might reference an undefined
 	     symbol.  */
-	  struct varpool_node *node = varpool_get_node (expr);
+	  varpool_node *node = varpool_get_node (expr);
 	  if (!node || !node->definition)
 	    return NULL;
 	}

@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool
 can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 {
-  struct varpool_node *vnode;
+  varpool_node *vnode;
   struct cgraph_node *node;
   symtab_node *snode;
 

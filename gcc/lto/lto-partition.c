@@ -408,8 +408,8 @@ node_cmp (const void *pa, const void *pb)
 static int
 varpool_node_cmp (const void *pa, const void *pb)
 {
-  const struct varpool_node *a = *(const struct varpool_node * const *) pa;
-  const struct varpool_node *b = *(const struct varpool_node * const *) pb;
+  const varpool_node *a = *(const varpool_node * const *) pa;
+  const varpool_node *b = *(const varpool_node * const *) pb;
   return b->order - a->order;
 }
 
@@ -457,14 +457,14 @@ lto_balanced_map (void)
   int n_nodes = 0;
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
   struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
-  struct varpool_node **varpool_order = NULL;
+  varpool_node **varpool_order = NULL;
   int i;
   struct cgraph_node *node;
   int total_size = 0, best_total_size = 0;
   int partition_size;
   ltrans_partition partition;
   int last_visited_node = 0;
-  struct varpool_node *vnode;
+  varpool_node *vnode;
   int cost = 0, internal = 0;
   int best_n_nodes = 0, best_i = 0, best_cost =
     INT_MAX, best_internal = 0;
@@ -494,13 +494,13 @@ lto_balanced_map (void)
       FOR_EACH_VARIABLE (vnode)
 	if (get_symbol_class (vnode) == SYMBOL_PARTITION)
 	  n_varpool_nodes++;
-      varpool_order = XNEWVEC (struct varpool_node *, n_varpool_nodes);
+      varpool_order = XNEWVEC (varpool_node *, n_varpool_nodes);
 
       n_varpool_nodes = 0;
       FOR_EACH_VARIABLE (vnode)
 	if (get_symbol_class (vnode) == SYMBOL_PARTITION)
 	  varpool_order[n_varpool_nodes++] = vnode;
-      qsort (varpool_order, n_varpool_nodes, sizeof (struct varpool_node *),
+      qsort (varpool_order, n_varpool_nodes, sizeof (varpool_node *),
 	     varpool_node_cmp);
     }
 

@@ -551,7 +551,7 @@ make_pass_slp_vectorize (gcc::context *ctxt)
 static unsigned int
 increase_alignment (void)
 {
-  struct varpool_node *vnode;
+  varpool_node *vnode;
 
   vect_location = UNKNOWN_LOCATION;
 

@@ -2913,7 +2913,7 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   if (TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
-      struct varpool_node *node = varpool_get_node (t);
+      varpool_node *node = varpool_get_node (t);
       if (node && node->alias && node->analyzed)
 	{
 	  node = varpool_variable_node (node, NULL);
@@ -5746,7 +5746,7 @@ create_variable_info_for (tree decl, const char *name)
 	 for it.  */
       else
 	{
-	  struct varpool_node *vnode = varpool_get_node (decl);
+	  varpool_node *vnode = varpool_get_node (decl);
 
 	  /* For escaped variables initialize them from nonlocal.  */
 	  if (!varpool_all_refs_explicit_p (vnode))
@@ -7079,7 +7079,7 @@ static unsigned int
 ipa_pta_execute (void)
 {
   struct cgraph_node *node;
-  struct varpool_node *var;
+  varpool_node *var;
   int from;
 
   in_ipa_mode = 1;

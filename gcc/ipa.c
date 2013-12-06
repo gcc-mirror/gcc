@@ -291,7 +291,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 {
   symtab_node *first = (symtab_node *) (void *) 1;
   struct cgraph_node *node, *next;
-  struct varpool_node *vnode, *vnext;
+  varpool_node *vnode, *vnext;
   bool changed = false;
   struct pointer_set_t *reachable = pointer_set_create ();
   struct pointer_set_t *body_needed_for_clonning = pointer_set_create ();
@@ -606,7 +606,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 void
 ipa_discover_readonly_nonaddressable_vars (void)
 {
-  struct varpool_node *vnode;
+  varpool_node *vnode;
   if (dump_file)
     fprintf (dump_file, "Clearing variable flags:");
   FOR_EACH_VARIABLE (vnode)
@@ -663,7 +663,7 @@ address_taken_from_non_vtable_p (symtab_node *node)
 					     i, ref); i++)
     if (ref->use == IPA_REF_ADDR)
       {
-	struct varpool_node *node;
+	varpool_node *node;
 	if (is_a <cgraph_node> (ref->referring))
 	  return true;
 	node = ipa_ref_referring_varpool_node (ref);
@@ -801,7 +801,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 /* Return true when variable VNODE should be considered externally visible.  */
 
 bool
-varpool_externally_visible_p (struct varpool_node *vnode)
+varpool_externally_visible_p (varpool_node *vnode)
 {
   if (DECL_EXTERNAL (vnode->decl))
     return true;
@@ -895,7 +895,7 @@ static unsigned int
 function_and_variable_visibility (bool whole_program)
 {
   struct cgraph_node *node;
-  struct varpool_node *vnode;
+  varpool_node *vnode;
 
   /* All aliases should be procssed at this point.  */
   gcc_checking_assert (!alias_pairs || !alias_pairs->length ());

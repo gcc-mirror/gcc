@@ -15148,7 +15148,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
     return *tp;
   else if (TREE_CODE (*tp) == VAR_DECL)
     {
-      struct varpool_node *node = varpool_get_node (*tp);
+      varpool_node *node = varpool_get_node (*tp);
       if (!node || !node->definition)
 	return *tp;
     }
@@ -17828,7 +17828,7 @@ premark_types_used_by_global_vars_helper (void **slot,
     {
       /* Ask cgraph if the global variable really is to be emitted.
          If yes, then we'll keep the DIE of ENTRY->TYPE.  */
-      struct varpool_node *node = varpool_get_node (entry->var_decl);
+      varpool_node *node = varpool_get_node (entry->var_decl);
       if (node && node->definition)
 	{
 	  die->die_perennial_p = 1;

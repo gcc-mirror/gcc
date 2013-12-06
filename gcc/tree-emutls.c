@@ -373,7 +373,7 @@ emutls_index (tree decl)
 static tree
 emutls_decl (tree decl)
 {
-  struct varpool_node *var;
+  varpool_node *var;
   unsigned int i;
 
   i = emutls_index (decl);
@@ -435,7 +435,7 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
   addr = access_vars[index];
   if (addr == NULL)
     {
-      struct varpool_node *cvar;
+      varpool_node *cvar;
       tree cdecl;
       gimple x;
 
@@ -707,10 +707,10 @@ lower_emutls_function_body (struct cgraph_node *node)
    Callback for varpool_for_variable_and_aliases.  */
 
 static bool
-create_emultls_var (struct varpool_node *var, void *data)
+create_emultls_var (varpool_node *var, void *data)
 {
   tree cdecl;
-  struct varpool_node *cvar;
+  varpool_node *cvar;
 
   cdecl = new_emutls_decl (var->decl,
 			   var->alias && var->analyzed
@@ -743,7 +743,7 @@ create_emultls_var (struct varpool_node *var, void *data)
 static unsigned int
 ipa_lower_emutls (void)
 {
-  struct varpool_node *var;
+  varpool_node *var;
   struct cgraph_node *func;
   bool any_aliases = false;
   tree ctor_body = NULL;

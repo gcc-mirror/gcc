@@ -737,10 +737,10 @@ process_common_attributes (tree decl)
 
 static void
 process_function_and_variable_attributes (struct cgraph_node *first,
-                                          struct varpool_node *first_var)
+                                          varpool_node *first_var)
 {
   struct cgraph_node *node;
-  struct varpool_node *vnode;
+  varpool_node *vnode;
 
   for (node = cgraph_first_function (); node != first;
        node = cgraph_next_function (node))
@@ -813,7 +813,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 void
 varpool_finalize_decl (tree decl)
 {
-  struct varpool_node *node = varpool_node_for_decl (decl);
+  varpool_node *node = varpool_node_for_decl (decl);
 
   gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
 
@@ -928,8 +928,8 @@ analyze_functions (void)
      intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
   struct cgraph_node *first_handled = first_analyzed;
-  static struct varpool_node *first_analyzed_var;
-  struct varpool_node *first_handled_var = first_analyzed_var;
+  static varpool_node *first_analyzed_var;
+  varpool_node *first_handled_var = first_analyzed_var;
   struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
   symtab_node *node;
@@ -1891,7 +1891,7 @@ struct cgraph_order_sort
   union
   {
     struct cgraph_node *f;
-    struct varpool_node *v;
+    varpool_node *v;
     struct asm_node *a;
   } u;
 };
@@ -1909,7 +1909,7 @@ output_in_order (void)
   struct cgraph_order_sort *nodes;
   int i;
   struct cgraph_node *pf;
-  struct varpool_node *pv;
+  varpool_node *pv;
   struct asm_node *pa;
 
   max = symtab_order;
