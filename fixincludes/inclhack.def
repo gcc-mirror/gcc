@@ -4066,6 +4066,20 @@ fix = {
 };
 
 /*
+ *  Linux kernel's vt.h breaks C++
+ */
+fix = {
+    hackname  = suse_linux_vt_cxx;
+    files     = linux/vt.h;
+
+    select    = "^[ \t]*unsigned int new;";
+    c_fix     = format;
+    c_fix_arg = "unsigned int newev;";
+
+    test_text = "        unsigned int new;               /* New console (if changing) */";
+};
+
+/*
  *  Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
  *  that is visible to any ANSI compiler using this include.  Simply
  *  delete the lines that #define some string functions to internal forms.
