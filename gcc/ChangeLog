@@ -1,3 +1,10 @@
+2013-12-05  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/score/score.c (score_force_temporary): Delete function.
+	(score_split_symbol): Ditto.
+	* config/score/score.h (ASM_OUTPUT_ADDR_DIFF_ELT): Add extra
+	parentheses to silence ambiguity warning and reindent.
+
 2013-12-05  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -fsanitize=signed-integer-overflow.
