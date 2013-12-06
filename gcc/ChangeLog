@@ -1,3 +1,29 @@
+2013-12-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59288
+	* tree-vect-loop.c (get_initial_def_for_induction): Do not
+	re-analyze the PHI but use STMT_VINFO_LOOP_PHI_EVOLUTION_PART.
+
+	2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59164
+	* tree-vect-loop.c (vect_analyze_loop_operations): Adjust
+	check whether we can create an epilogue loop to reflect the
+	cases where we create one.
+
+	2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58137
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Do not create vectors of pointers.
+	* tree-vect-loop.c (get_initial_def_for_induction): Use proper
+	types for the components of the vector initializer.
+	* tree-cfg.c (verify_gimple_assign_binary): Remove special-casing
+	allowing pointer vectors with PLUS_EXPR/MINUS_EXPR.
+
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

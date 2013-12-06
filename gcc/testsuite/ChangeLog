@@ -1,3 +1,21 @@
+2013-12-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59288
+	* gcc.dg/torture/pr59288.c: New testcase.
+
+	2013-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59164
+	* gcc.dg/torture/pr59164.c: New testcase.
+
+	2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58137
+	* gcc.target/i386/pr58137.c: New testcase.
+
 2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

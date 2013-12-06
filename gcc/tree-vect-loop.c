@@ -1537,7 +1537,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0
-      || LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+      || LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location, "epilog loop required.");
@@ -3115,14 +3115,12 @@ get_initial_def_for_induction (gimple iv_phi)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree scalar_type;
   tree vectype;
   int nunits;
   edge pe = loop_preheader_edge (loop);
   struct loop *iv_loop;
   basic_block new_bb;
   tree new_vec, vec_init, vec_step, t;
-  tree access_fn;
   tree new_var;
   tree new_name;
   gimple init_stmt, induction_phi, new_stmt;
@@ -3130,7 +3128,6 @@ get_initial_def_for_induction (gimple iv_phi)
   tree init_expr, step_expr;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int i;
-  bool ok;
   int ncopies;
   tree expr;
   stmt_vec_info phi_info = vinfo_for_stmt (iv_phi);
@@ -3159,16 +3156,14 @@ get_initial_def_for_induction (gimple iv_phi)
   latch_e = loop_latch_edge (iv_loop);
   loop_arg = PHI_ARG_DEF_FROM_EDGE (iv_phi, latch_e);
 
-  access_fn = analyze_scalar_evolution (iv_loop, PHI_RESULT (iv_phi));
-  gcc_assert (access_fn);
-  STRIP_NOPS (access_fn);
-  ok = vect_is_simple_iv_evolution (iv_loop->num, access_fn,
-                                    &init_expr, &step_expr);
-  gcc_assert (ok);
-  pe = loop_preheader_edge (iv_loop);
+  step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (phi_info);
+  gcc_assert (step_expr != NULL_TREE);
 
-  scalar_type = TREE_TYPE (init_expr);
-  vectype = get_vectype_for_scalar_type (scalar_type);
+  pe = loop_preheader_edge (iv_loop);
+  init_expr = PHI_ARG_DEF_FROM_EDGE (iv_phi,
+				     loop_preheader_edge (iv_loop));
+
+  vectype = get_vectype_for_scalar_type (TREE_TYPE (init_expr));
   resvectype = get_vectype_for_scalar_type (TREE_TYPE (PHI_RESULT (iv_phi)));
   gcc_assert (vectype);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -3176,6 +3171,16 @@ get_initial_def_for_induction (gimple iv_phi)
 
   gcc_assert (phi_info);
   gcc_assert (ncopies >= 1);
+
+  /* Convert the step to the desired type.  */
+  step_expr = force_gimple_operand (fold_convert (TREE_TYPE (vectype),
+						  step_expr),
+				    &stmts, true, NULL_TREE);
+  if (stmts)
+    {
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
 
   /* Find the first insertion point in the BB.  */
   si = gsi_after_labels (bb);
@@ -3186,9 +3191,7 @@ get_initial_def_for_induction (gimple iv_phi)
       /* iv_loop is nested in the loop to be vectorized.  init_expr had already
 	 been created during vectorization of previous stmts.  We obtain it
 	 from the STMT_VINFO_VEC_STMT of the defining stmt.  */
-      tree iv_def = PHI_ARG_DEF_FROM_EDGE (iv_phi,
-                                           loop_preheader_edge (iv_loop));
-      vec_init = vect_get_vec_def_for_operand (iv_def, iv_phi, NULL);
+      vec_init = vect_get_vec_def_for_operand (init_expr, iv_phi, NULL);
       /* If the initial value is not of proper type, convert it.  */
       if (!useless_type_conversion_p (vectype, TREE_TYPE (vec_init)))
 	{
@@ -3211,8 +3214,11 @@ get_initial_def_for_induction (gimple iv_phi)
 
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
-      new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
-      new_name = force_gimple_operand (init_expr, &stmts, false, new_var);
+      new_var = vect_get_new_vect_var (TREE_TYPE (vectype),
+				       vect_scalar_var, "var_");
+      new_name = force_gimple_operand (fold_convert (TREE_TYPE (vectype),
+						     init_expr),
+				       &stmts, false, new_var);
       if (stmts)
 	{
 	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -3224,9 +3230,7 @@ get_initial_def_for_induction (gimple iv_phi)
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
-	  enum tree_code code = POINTER_TYPE_P (scalar_type)
-				? POINTER_PLUS_EXPR : PLUS_EXPR;
-	  init_stmt = gimple_build_assign_with_ops (code, new_var,
+	  init_stmt = gimple_build_assign_with_ops (PLUS_EXPR, new_var,
 						    new_name, step_expr);
 	  new_name = make_ssa_name (new_var, init_stmt);
 	  gimple_assign_set_lhs (init_stmt, new_name);
