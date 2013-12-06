@@ -755,13 +755,15 @@ typedef struct score_args
 /* Output of Dispatch Tables.  */
 /* This is how to output an element of a case-vector.  We can make the
    entries PC-relative in GP-relative when .gp(d)word is supported.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)                \
-  do {                                                                    \
-    if (TARGET_SCORE7)                                                    \
-      if (flag_pic)                                                       \
-        fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
-      else                                                                \
-        fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)			\
+  do {										\
+    if (TARGET_SCORE7)								\
+      {										\
+	if (flag_pic)								\
+	  fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);	\
+	else									\
+	  fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);	\
+      }										\
   } while (0)
 
 /* Jump table alignment is explicit in ASM_OUTPUT_CASE_LABEL.  */
