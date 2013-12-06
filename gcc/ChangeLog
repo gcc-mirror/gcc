@@ -1,5 +1,9 @@
 2013-12-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59388
+	* tree-ssa-reassoc.c (update_range_test): If op == range->exp,
+	gimplify tem after stmt rather than before it.
+
 	* tree-data-ref.c (struct data_ref_loc_d): Replace pos field with ref.
 	(get_references_in_stmt): Don't record operand addresses, but
 	operands themselves.

@@ -1,3 +1,8 @@
+2013-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59388
+	* gcc.c-torture/execute/pr59388.c: New test.
+
 2013-12-06  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/59043
