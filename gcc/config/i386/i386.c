@@ -2434,7 +2434,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "core-avx2",
   "atom",
   "slm",
-  "ia",
+  "intel",
   "geode",
   "k6",
   "k6-2",
@@ -3143,7 +3143,7 @@ ix86_option_override_internal (bool main_args_p,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
 	| PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_POPCNT | PTA_AES
 	| PTA_PCLMUL | PTA_RDRND | PTA_MOVBE | PTA_FXSR},
-      {"ia", PROCESSOR_SLM, CPU_SLM,
+      {"intel", PROCESSOR_SLM, CPU_SLM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3
 	| PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_POPCNT | PTA_FXSR},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
@@ -3632,8 +3632,8 @@ ix86_option_override_internal (bool main_args_p,
   if (!strcmp (opts->x_ix86_arch_string, "generic"))
     error ("generic CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
-  else if (!strcmp (ix86_arch_string, "ia"))
-    error ("ia CPU can be used only for %stune=%s %s",
+  else if (!strcmp (ix86_arch_string, "intel"))
+    error ("intel CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
   else if (!strncmp (opts->x_ix86_arch_string, "generic", 7) || i == pta_size)
     error ("bad value (%s) for %sarch=%s %s",

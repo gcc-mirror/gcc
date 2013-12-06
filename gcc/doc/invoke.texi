@@ -14778,11 +14778,11 @@ generic instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of
 processors) for which the code is optimized.
 
-@item ia
+@item intel
 Produce code optimized for the most current Intel processors, which are
 Haswell and Silvermont for this version of GCC.  If you know the CPU
 on which your code will run, then you should use the corresponding
-@option{-mtune} or @option{-march} option instead of @option{-mtune=ia}.
+@option{-mtune} or @option{-march} option instead of @option{-mtune=intel}.
 But, if you want your application performs better on both Haswell and
 Silvermont, then you should use this option.
 
@@ -14792,7 +14792,7 @@ GCC, code generation controlled by this option will change to reflect
 the most current Intel processors at the time that version of GCC is
 released.
 
-There is no @option{-march=ia} option because @option{-march} indicates
+There is no @option{-march=intel} option because @option{-march} indicates
 the instruction set the compiler can use, and there is no common
 instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of

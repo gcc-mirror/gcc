@@ -1,3 +1,15 @@
+2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Change --with-cpu=ia to --with-cpu=intel.
+
+	* config/i386/i386.c (cpu_names): Replace "ia" with "intel".
+	(processor_alias_table): Likewise.
+	(ix86_option_override_internal): Likewise.
+	* config/i386/i386.h (target_cpu_default): Replace
+	TARGET_CPU_DEFAULT_ia with TARGET_CPU_DEFAULT_intel.
+
+	* doc/invoke.texi: Replace -mtune=ia with -mtune=intel.
+
 2013-12-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59405
