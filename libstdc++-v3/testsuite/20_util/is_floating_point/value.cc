@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 //
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
@@ -18,51 +19,45 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_floating_point;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_floating_point, void>(false)) );
-  VERIFY( (test_category<is_floating_point, char>(false)) );
-  VERIFY( (test_category<is_floating_point, signed char>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned char>(false)) );
+  static_assert(test_category<is_floating_point, void>(false), "");
+  static_assert(test_category<is_floating_point, char>(false), "");
+  static_assert(test_category<is_floating_point, signed char>(false), "");
+  static_assert(test_category<is_floating_point, unsigned char>(false), "");
 #ifdef _GLIBCXX_USE_WCHAR_T
-  VERIFY( (test_category<is_floating_point, wchar_t>(false)) );
+  static_assert(test_category<is_floating_point, wchar_t>(false), "");
 #endif
-  VERIFY( (test_category<is_floating_point, short>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned short>(false)) );
-  VERIFY( (test_category<is_floating_point, int>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned int>(false)) );
-  VERIFY( (test_category<is_floating_point, long>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned long>(false)) );
-  VERIFY( (test_category<is_floating_point, long long>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned long long>(false)) );
+  static_assert(test_category<is_floating_point, short>(false), "");
+  static_assert(test_category<is_floating_point, unsigned short>(false), "");
+  static_assert(test_category<is_floating_point, int>(false), "");
+  static_assert(test_category<is_floating_point, unsigned int>(false), "");
+  static_assert(test_category<is_floating_point, long>(false), "");
+  static_assert(test_category<is_floating_point, unsigned long>(false), "");
+  static_assert(test_category<is_floating_point, long long>(false), "");
+  static_assert(test_category<is_floating_point,
+		unsigned long long>(false), "");
 
-  VERIFY( (test_category<is_floating_point, float>(true)) );
-  VERIFY( (test_category<is_floating_point, double>(true)) );
-  VERIFY( (test_category<is_floating_point, long double>(true)) );
+  static_assert(test_category<is_floating_point, float>(true), "");
+  static_assert(test_category<is_floating_point, double>(true), "");
+  static_assert(test_category<is_floating_point, long double>(true), "");
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_FLOAT128
-  VERIFY( (test_category<is_floating_point, __float128>(true)) );
+  static_assert(test_category<is_floating_point, __float128>(true), "");
 #endif
 
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( (test_category<is_floating_point, __int128>(false)) );
-  VERIFY( (test_category<is_floating_point, unsigned __int128>(false)) );
+  static_assert(test_category<is_floating_point, __int128>(false), "");
+  static_assert(test_category<is_floating_point,
+		unsigned __int128>(false), "");
 #endif
 
   // Sanity check.
-  VERIFY( (test_category<is_floating_point, ClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_floating_point, ClassType>(false), "");
 }

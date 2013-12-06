@@ -1,3 +1,53 @@
+2013-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_tr1.h (test_category, test_property,
+	test_relationship): constexpr in c++11 mode.
+	* testsuite/20_util/add_lvalue_reference/value.cc: Use static_assert
+	and change to dg-do compile testcase.
+	* testsuite/20_util/add_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/aligned_storage/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_constructor/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_default_constructor/value.cc: Likewise.
+	* testsuite/20_util/is_compound/value.cc: Likewise.
+	* testsuite/20_util/is_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_convertible/value.cc: Likewise.
+	* testsuite/20_util/is_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_floating_point/value.cc: Likewise.
+	* testsuite/20_util/is_function/value.cc: Likewise.
+	* testsuite/20_util/is_fundamental/value.cc: Likewise.
+	* testsuite/20_util/is_integral/value.cc: Likewise.
+	* testsuite/20_util/is_literal_type/value.cc: Likewise.
+	* testsuite/20_util/is_lvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/is_member_function_pointer/value.cc: Likewise.
+	* testsuite/20_util/is_member_object_pointer/value.cc: Likewise.
+	* testsuite/20_util/is_member_pointer/value.cc: Likewise.
+	* testsuite/20_util/is_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_move_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_default_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_null_pointer/value.cc: Likewise.
+	* testsuite/20_util/is_object/value.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Likewise.
+	* testsuite/20_util/is_reference/value.cc: Likewise.
+	* testsuite/20_util/is_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/is_scalar/value.cc: Likewise.
+	* testsuite/20_util/is_signed/value.cc: Likewise.
+	* testsuite/20_util/is_standard_layout/value.cc: Likewise.
+	* testsuite/20_util/is_trivial/value.cc: Likewise.
+	* testsuite/20_util/is_trivially_destructible/value.cc: Likewise.
+	* testsuite/20_util/is_unsigned/value.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-1.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-2.cc: Likewise.
+	* testsuite/20_util/remove_reference/value.cc: Likewise.
+
 2013-12-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/fstream (basic_filebuf::open): Use preformatted text
