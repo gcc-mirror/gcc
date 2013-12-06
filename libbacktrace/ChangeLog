@@ -1,3 +1,16 @@
+2013-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* elf.c (ET_DYN): Undefine and define again.
+	(elf_add): Add exe argument, if true and ehdr.e_type is ET_DYN,
+	return early -1 without closing the descriptor.
+	(struct phdr_data): Add exe_descriptor.
+	(phdr_callback): If pd->exe_descriptor is not -1, for very first
+	call if dlpi_name is NULL just call elf_add with the exe_descriptor,
+	otherwise backtrace_close the exe_descriptor if not -1.  Adjust
+	call to elf_add.
+	(backtrace_initialize): Adjust call to elf_add.  If it returns
+	-1, set pd.exe_descriptor to descriptor, otherwise set it to -1.
+
 2013-12-05  Ian Lance Taylor  <iant@google.com>
 
 	* alloc.c (backtrace_vector_finish): Add error_callback and data

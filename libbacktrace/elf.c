@@ -96,6 +96,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef ELFDATA2LSB
 #undef ELFDATA2MSB
 #undef EV_CURRENT
+#undef ET_DYN
 #undef SHN_LORESERVE
 #undef SHN_XINDEX
 #undef SHN_UNDEF
@@ -170,6 +171,8 @@ typedef struct {
 #define ELFDATA2MSB 2
 
 #define EV_CURRENT 1
+
+#define ET_DYN 3
 
 typedef struct {
   b_elf_word	sh_name;		/* Section name, index in string tbl */
@@ -507,12 +510,16 @@ elf_syminfo (struct backtrace_state *state, uintptr_t addr,
     callback (data, addr, sym->name, sym->address, sym->size);
 }
 
-/* Add the backtrace data for one ELF file.  */
+/* Add the backtrace data for one ELF file.  Returns 1 on success,
+   0 on failure (in both cases descriptor is closed) or -1 if exe
+   is non-zero and the ELF file is ET_DYN, which tells the caller that
+   elf_add will need to be called on the descriptor again after
+   base_address is determined.  */
 
 static int
 elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
 	 backtrace_error_callback error_callback, void *data,
-	 fileline *fileline_fn, int *found_sym, int *found_dwarf)
+	 fileline *fileline_fn, int *found_sym, int *found_dwarf, int exe)
 {
   struct backtrace_view ehdr_view;
   b_elf_ehdr ehdr;
@@ -590,6 +597,12 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
       error_callback (data, "executable file has unknown endianness", 0);
       goto fail;
     }
+
+  /* If the executable is ET_DYN, it is either a PIE, or we are running
+     directly a shared library with .interp.  We need to wait for
+     dl_iterate_phdr in that case to determine the actual base_address.  */
+  if (exe && ehdr.e_type == ET_DYN)
+    return -1;
 
   shoff = ehdr.e_shoff;
   shnum = ehdr.e_shnum;
@@ -847,6 +860,7 @@ struct phdr_data
   fileline *fileline_fn;
   int *found_sym;
   int *found_dwarf;
+  int exe_descriptor;
 };
 
 /* Callback passed to dl_iterate_phdr.  Load debug info from shared
@@ -862,17 +876,32 @@ phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
   fileline elf_fileline_fn;
   int found_dwarf;
 
-  /* There is not much we can do if we don't have the module name.  */
+  /* There is not much we can do if we don't have the module name,
+     unless executable is ET_DYN, where we expect the very first
+     phdr_callback to be for the PIE.  */
   if (info->dlpi_name == NULL || info->dlpi_name[0] == '\0')
-    return 0;
+    {
+      if (pd->exe_descriptor == -1)
+	return 0;
+      descriptor = pd->exe_descriptor;
+      pd->exe_descriptor = -1;
+    }
+  else
+    {
+      if (pd->exe_descriptor != -1)
+	{
+	  backtrace_close (pd->exe_descriptor, pd->error_callback, pd->data);
+	  pd->exe_descriptor = -1;
+	}
 
-  descriptor = backtrace_open (info->dlpi_name, pd->error_callback, pd->data,
-			       &does_not_exist);
-  if (descriptor < 0)
-    return 0;
+      descriptor = backtrace_open (info->dlpi_name, pd->error_callback,
+				   pd->data, &does_not_exist);
+      if (descriptor < 0)
+	return 0;
+    }
 
   if (elf_add (pd->state, descriptor, info->dlpi_addr, pd->error_callback,
-	       pd->data, &elf_fileline_fn, pd->found_sym, &found_dwarf))
+	       pd->data, &elf_fileline_fn, pd->found_sym, &found_dwarf, 0))
     {
       if (found_dwarf)
 	{
@@ -893,13 +922,15 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
 		      backtrace_error_callback error_callback,
 		      void *data, fileline *fileline_fn)
 {
+  int ret;
   int found_sym;
   int found_dwarf;
   fileline elf_fileline_fn;
   struct phdr_data pd;
 
-  if (!elf_add (state, descriptor, 0, error_callback, data, &elf_fileline_fn,
-		&found_sym, &found_dwarf))
+  ret = elf_add (state, descriptor, 0, error_callback, data, &elf_fileline_fn,
+		 &found_sym, &found_dwarf, 1);
+  if (!ret)
     return 0;
 
   pd.state = state;
@@ -908,6 +939,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   pd.fileline_fn = &elf_fileline_fn;
   pd.found_sym = &found_sym;
   pd.found_dwarf = &found_dwarf;
+  pd.exe_descriptor = ret < 0 ? descriptor : -1;
 
   dl_iterate_phdr (phdr_callback, (void *) &pd);
 
