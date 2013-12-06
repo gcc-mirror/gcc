@@ -1,3 +1,9 @@
+2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc: Include
+	<sys/stat.h>, instead of <asm/stat.h>, if __x86_64__ is defined.
+	(struct___old_kernel_stat_sz): Don't check if __x86_64__ is defined.
+
 2013-12-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (link_sanitizer_common): Add -lm.
