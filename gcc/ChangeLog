@@ -1,5 +1,13 @@
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
+	* config.gcc (*linux*): Split libc selection from Android support.
+	Add libc selection to all *linux* targets.  Add Android support to
+	architectures that support it.
+	(arm*-*-linux-*, i[34567]86-*-linux*, x86_64-*-linux*,)
+	(mips*-*-linux*): Add Android support.
+
+2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
 	* config/bfin/uclinux.h, config/c6x/uclinux-elf.h,
 	* config/lm32/uclinux-elf.h, config/m68k/uclinux.h,
 	* config/moxie/uclinux.h (TARGET_LIBC_HAS_FUNCTION): Move definitions
