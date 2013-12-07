@@ -1,3 +1,7 @@
+2013-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* ssp.c (fail): Avoid -Wformat-security warning.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

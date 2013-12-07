@@ -1,5 +1,5 @@
 /* Stack protector support.
-   Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005-2013 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -136,7 +136,7 @@ fail (const char *msg1, size_t msg1len, const char *msg3)
 #ifdef HAVE_SYSLOG_H
   /* Only send the error to syslog if there was no tty available.  */
   else
-    syslog (LOG_CRIT, msg3);
+    syslog (LOG_CRIT, "%s", msg3);
 #endif /* HAVE_SYSLOG_H */
 
   /* Try very hard to exit.  Note that signals may be blocked preventing
