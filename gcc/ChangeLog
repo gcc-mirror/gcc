@@ -1,3 +1,8 @@
+2013-12-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.md (bswapdi2_32bit): Remove ?? from r->r
+	alternative.
+
 2013-12-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (microblaze*-*-rtems*): Add TARGET_BIG_ENDIAN_DEFAULT.
