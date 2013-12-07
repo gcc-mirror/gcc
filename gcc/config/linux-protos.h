@@ -18,6 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-extern bool linux_android_has_ifunc_p (void);
+extern bool linux_has_ifunc_p (void);
 
-extern bool linux_android_libc_has_function (enum function_class fn_class);
+extern bool linux_libc_has_function (enum function_class fn_class);

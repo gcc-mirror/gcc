@@ -102,4 +102,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Determine what functions are present at the runtime;
    this includes full c99 runtime and sincos.  */
 #undef TARGET_LIBC_HAS_FUNCTION
-#define TARGET_LIBC_HAS_FUNCTION linux_android_libc_has_function
+#define TARGET_LIBC_HAS_FUNCTION linux_libc_has_function

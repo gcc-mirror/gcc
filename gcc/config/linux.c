@@ -27,13 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 /* Android does not support GNU indirect functions.  */
 
 bool
-linux_android_has_ifunc_p (void)
+linux_has_ifunc_p (void)
 {
   return TARGET_ANDROID ? false : HAVE_GNU_INDIRECT_FUNCTION;
 }
 
 bool
-linux_android_libc_has_function (enum function_class fn_class)
+linux_libc_has_function (enum function_class fn_class)
 {
   if (OPTION_GLIBC)
     return true;

@@ -1,5 +1,15 @@
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
+	* config/linux.c (linux_android_has_ifunc_p): Rename to
+	linux_has_ifunc_p.
+	(linux_android_libc_has_function): Rename to linux_libc_has_function.
+	* config/linux-protos.h (linux_android_has_ifunc_p,)
+	(linux_android_libc_has_function): Update declarations.
+	* config/linux.h, config/linux-android.h, config/alpha/linux.h,
+	* config/rs6000/linux.h, config/rs6000/linux64.h: Update.
+
+2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
 	* linux-android.c: Rename to linux.c.
 	* t-linux-android: Rename to t-linux.  Update references
 	to linux-android.c
