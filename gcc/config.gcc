@@ -1887,6 +1887,14 @@ microblaze*-linux*)
 	tmake_file="${tmake_file} microblaze/t-microblaze-linux"
 	;;
 microblaze*-*-rtems*)
+	case $target in
+		microblazeel-*)
+			tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=0"
+			;;
+		microblaze-*)
+			tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=4321"
+			;;
+	esac
 	tm_file="${tm_file} dbxelf.h"
 	tm_file="${tm_file} microblaze/rtems.h rtems.h newlib-stdint.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
