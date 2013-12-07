@@ -1,5 +1,9 @@
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
+	* config/linux.c (linux_has_ifunc_p): Use correct test.
+
+2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
 	* config/linux.c (linux_android_has_ifunc_p): Rename to
 	linux_has_ifunc_p.
 	(linux_android_libc_has_function): Rename to linux_libc_has_function.
