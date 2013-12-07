@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 bool
 linux_has_ifunc_p (void)
 {
-  return TARGET_ANDROID ? false : HAVE_GNU_INDIRECT_FUNCTION;
+  return OPTION_BIONIC ? false : HAVE_GNU_INDIRECT_FUNCTION;
 }
 
 bool
