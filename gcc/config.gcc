@@ -702,10 +702,10 @@ case ${target} in
   case $target in
     *linux*)
       tm_p_file="${tm_p_file} linux-protos.h"
-      tmake_file="${tmake_file} t-linux-android"
+      tmake_file="${tmake_file} t-linux"
+      extra_objs="$extra_objs linux.o"
       tm_file="$tm_file linux-android.h"
       extra_options="$extra_options linux-android.opt"
-      extra_objs="$extra_objs linux-android.o"
       ;;
   esac
   # Enable compilation for Android by default for *android* targets.
@@ -1000,7 +1000,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
-	extra_objs="$extra_objs linux-android.o"
+	extra_objs="$extra_objs linux.o"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -1074,7 +1074,7 @@ bfin*-uclinux*)
 	;;
 bfin*-linux-uclibc*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
-	tmake_file="bfin/t-bfin-linux t-slibgcc t-linux-android"
+	tmake_file="bfin/t-bfin-linux t-slibgcc t-linux"
 	use_collect2=no
 	;;
 bfin*-rtems*)
@@ -1109,7 +1109,7 @@ cris-*-elf | cris-*-none)
 crisv32-*-linux* | cris-*-linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
-	tmake_file="cris/t-cris cris/t-linux t-slibgcc t-linux-android"
+	tmake_file="cris/t-cris cris/t-linux t-slibgcc t-linux"
 	extra_options="${extra_options} cris/linux.opt"
 	case $target in
 	  cris-*-*)
