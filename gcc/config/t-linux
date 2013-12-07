@@ -16,6 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-linux-android.o: $(srcdir)/config/linux-android.c
+linux.o: $(srcdir)/config/linux.c
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
