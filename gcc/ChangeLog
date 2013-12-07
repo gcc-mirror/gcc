@@ -1,5 +1,16 @@
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
+	* config/bfin/uclinux.h, config/c6x/uclinux-elf.h,
+	* config/lm32/uclinux-elf.h, config/m68k/uclinux.h,
+	* config/moxie/uclinux.h (TARGET_LIBC_HAS_FUNCTION): Move definitions
+	to linux.h.
+	* config/linux-android.h (TARGET_HAS_IFUNC_P): Move definition
+	to linux.h.
+	* config/linux.h (TARGET_LIBC_HAS_FUNCTION, TARGET_HAS_IFUNC_P):
+	Define appropriately for Linux and uClinux targets.
+
+2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
 	* config/linux.c (linux_has_ifunc_p): Use correct test.
 
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>

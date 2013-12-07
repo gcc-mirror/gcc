@@ -76,6 +76,3 @@
 
 #undef  CC1_SPEC
 #define CC1_SPEC "%{G*} %{!fno-PIC:-fPIC}"
-
-#undef TARGET_LIBC_HAS_FUNCTION
-#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
