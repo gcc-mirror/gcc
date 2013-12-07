@@ -676,11 +676,15 @@ case ${target} in
       native_system_header_dir=/include
       ;;
   esac
-  # glibc / uclibc / bionic switch.
+  # Linux C libraries selection switch: glibc / uclibc / bionic.
   # uclibc and bionic aren't usable for GNU/Hurd and neither for GNU/k*BSD.
   case $target in
     *linux*)
-      extra_options="$extra_options linux.opt";;
+      tm_p_file="${tm_p_file} linux-protos.h"
+      tmake_file="${tmake_file} t-linux"
+      extra_objs="${extra_objs} linux.o"
+      extra_options="${extra_options} linux.opt"
+      ;;
   esac
   case $target in
     *-*-*android*)
@@ -698,16 +702,6 @@ case ${target} in
   default_use_cxa_atexit=yes
   use_gcc_tgmath=no
   use_gcc_stdint=wrap
-  # Add Android userspace support to Linux targets.
-  case $target in
-    *linux*)
-      tm_p_file="${tm_p_file} linux-protos.h"
-      tmake_file="${tmake_file} t-linux"
-      extra_objs="$extra_objs linux.o"
-      tm_file="$tm_file linux-android.h"
-      extra_options="$extra_options linux-android.opt"
-      ;;
-  esac
   # Enable compilation for Android by default for *android* targets.
   case $target in
     *-*-*android*)
@@ -993,6 +987,7 @@ arm*-*-netbsdelf*)
 	;;
 arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
+	extra_options="${extra_options} linux-android.opt"
 	case $target in
 	arm*b-*-linux*)
 	    tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
@@ -1000,7 +995,6 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
 	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
-	extra_objs="$extra_objs linux.o"
 	# Define multilib configuration for arm-linux-androideabi.
 	case ${target} in
 	*-androideabi)
@@ -1373,7 +1367,8 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h glibc-stdint.h"
 	case ${target} in
 	i[34567]86-*-linux*)
-		tm_file="${tm_file} linux.h"
+		tm_file="${tm_file} linux.h linux-android.h"
+		extra_options="${extra_options} linux-android.opt"
 		# Assume modern glibc
 		default_gnu_indirect_function=yes
 		if test x$enable_targets = xall; then
@@ -1434,7 +1429,8 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 		 i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h"
 	case ${target} in
 	x86_64-*-linux*)
-		tm_file="${tm_file} linux.h i386/linux-common.h i386/linux64.h"
+		tm_file="${tm_file} linux.h linux-android.h i386/linux-common.h i386/linux64.h"
+		extra_options="${extra_options} linux-android.opt"
 		# Assume modern glibc
 		default_gnu_indirect_function=yes
 	  	;;
@@ -1949,7 +1945,8 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 	gas=yes
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
-        tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
+	extra_options="${extra_options} linux-android.opt"
 	if test x$enable_targets = xall; then
 		tm_file="${tm_file} mips/gnu-user64.h mips/linux64.h"
 		tmake_file="${tmake_file} mips/t-linux64"
