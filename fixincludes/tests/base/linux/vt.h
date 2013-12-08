@@ -10,5 +10,5 @@
 
 
 #if defined( SUSE_LINUX_VT_CXX_CHECK )
-unsigned int newev;               /* New console (if changing) */
+unsigned int newev;      /* New console (if changing) */
 #endif  /* SUSE_LINUX_VT_CXX_CHECK */

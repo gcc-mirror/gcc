@@ -11,7 +11,7 @@ autogen definitions fixincl;
           pattern='^/\*$' \
           trailer='^/\*EOF\*[/]' \
           input=inclhack.def \
-          key='hackname[ 	]*=[ 	]*(.*);'
+          key=$'hackname[ \t]*=[ \t]*(.*);'
 
    Set up a debug test so we can make the templates emit special
    code while debugging these fixes:  */
@@ -1140,6 +1140,20 @@ fix = {
 };
 
 /*
+ *  Old Linux kernel's <compiler.h> header breaks Traditional CPP
+ */
+fix = {
+    hackname  = complier_h_tradcpp;
+    files     = linux/compiler.h;
+
+    select    = "#define __builtin_warning\\(x, y\\.\\.\\.\\) \\(1\\)";
+    c_fix     = format;
+    c_fix_arg = "/* __builtin_warning(x, y...) is obsolete */";
+
+    test_text = "#define __builtin_warning(x, y...) (1)";
+};
+
+/*
  *  Fix various macros used to define ioctl numbers.
  *  The traditional syntax was:
  *
@@ -1509,6 +1523,60 @@ fix = {
 };
 
 /*
+ *  Incorrect feraiseexcept extern inline in bits/fenv.h on x86_64
+ *  that fails when compiling for SSE-less 32-bit x86.
+ */
+fix = {
+    hackname  = feraiseexcept_nosse_divbyzero;
+    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
+    files     = bits/fenv.h, '*/bits/fenv.h';
+    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %1, %0 *\" : "
+		": \"x\" \\(__f\\), \"x\" \\(__g\\)\\);$";
+    bypass    = "\"fdivp .*; fwait\"";
+    
+    c_fix     = format;
+    c_fix_arg = <<- _EOText_
+	# ifdef __SSE_MATH__
+	%0
+	# else
+	%1__asm__ __volatile__ ("fdivp %%%%st, %%%%st(1); fwait"
+	%1			: "=t" (__f) : "0" (__f), "u" (__g) : "st(1)");
+	# endif
+	_EOText_;
+
+    test_text = <<- _EOText_
+	  __asm__ __volatile__ ("divss %1, %0" : : "x" (__f), "x" (__g));
+	_EOText_;
+};
+
+/*
+ *  Incorrect feraiseexcept extern inline in bits/fenv.h on x86_64
+ *  that fails when compiling for SSE-less 32-bit x86.
+ */
+fix = {
+    hackname  = feraiseexcept_nosse_invalid;
+    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
+    files     = bits/fenv.h, '*/bits/fenv.h';
+    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %0, %0 *\" : "
+		": \"x\" \\(__f\\)\\);$";
+    bypass    = "\"fdiv .*; fwait\"";
+    
+    c_fix     = format;
+    c_fix_arg = <<- _EOText_
+	# ifdef __SSE_MATH__
+	%0
+	# else
+	%1__asm__ __volatile__ ("fdiv %%%%st, %%%%st(0); fwait"
+	%1			: "=t" (__f) : "0" (__f));
+	# endif
+	_EOText_;
+
+    test_text = <<- _EOText_
+	  __asm__ __volatile__ ("divss %0, %0" : : "x" (__f));
+	_EOText_;
+};
+
+/*
  *  Between 8/24/1998 and 2/17/2001, FreeBSD system headers presume
  *  neither the existence of GCC 3 nor its exact feature set yet break
  *  (by design?) when __GNUC__ is set beyond 2.
@@ -1738,7 +1806,7 @@ fix = {
    versions.  */
 fix = {
     hackname  = glibc_strncpy;
-    files     = bits/string2.h;
+    files     = bits/string2.h, '*/bits/string2.h';
     bypass    = "__builtin_strncpy";
     c_fix     = format;
     c_fix_arg = "#  define strncpy(dest, src, n) __builtin_strncpy (dest, src, n)";
@@ -2007,6 +2075,34 @@ fix = {
 };
 
 /*
+ * hpux sendfile()
+ */
+fix = {
+    hackname  = hpux11_extern_sendfile;
+    mach      = "*-hp-hpux11.[12]*";
+    files     = sys/socket.h;
+    select    = "^[ \t]*extern sbsize_t sendfile.*\n.*, int\\)\\);\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef _APP32_64BIT_OFF_T\n%0#endif\n";
+    test_text = "   extern sbsize_t sendfile __((int, int, off_t, bsize_t,\n"
+        "                               const struct iovec *, int));\n";
+};
+
+/*
+ * hpux sendpath()
+ */
+fix = {
+    hackname  = hpux11_extern_sendpath;
+    mach      = "*-hp-hpux11.[12]*";
+    files     = sys/socket.h;
+    select    = "^[ \t]*extern sbsize_t sendpath.*\n.*, int\\)\\);\n";
+    c_fix     = format;
+    c_fix_arg = "#ifndef _APP32_64BIT_OFF_T\n%0#endif\n";
+    test_text = "   extern sbsize_t sendpath __((int, int, off_t, bsize_t,\n"
+        "                               const struct iovec *, int));\n";
+};
+
+/*
  *  Keep HP-UX 11 from stomping on C++ math namespace
  *  with defines for fabsf.
  */
@@ -2107,6 +2203,76 @@ fix = {
 };
 
 /*
+ * hpux intptr
+ */
+fix = {
+    hackname  = hpux_c99_intptr;
+    mach      = "*-hp-hpux11.3*";
+    files     = stdint-hpux11.h, stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MAX[ \t]*"
+        "INT32_MAX[ \t]*$@#define PTRDIFF_MAX (2147483647l)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MIN[ \t]*"
+        "INT32_MIN[ \t]*$@#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MAX[ \t]*"
+        "INT32_MAX[ \t]*$@#define INTPTR_MAX (2147483647l)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MIN[ \t]*"
+        "INT32_MIN[ \t]*$@#define INTPTR_MIN (-INTPTR_MAX - 1)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINTPTR_MAX[ \t]*"
+        "UINT32_MAX[ \t]*$@#define UINTPTR_MAX (4294967295ul)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*SIZE_MAX[ \t]*"
+        "UINT32_MAX[ \t]*$@#define SIZE_MAX (4294967295ul)@";
+    test_text = "#define PTRDIFF_MAX	INT32_MAX\n"
+		"#define PTRDIFF_MIN	INT32_MIN\n"
+		"#define INTPTR_MAX	INT32_MAX\n"
+		"#define INTPTR_MIN	INT32_MIN\n"
+		"#define UINTPTR_MAX	UINT32_MAX\n"
+		"#define SIZE_MAX	UINT32_MAX\n";
+};
+
+/*
+ * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
+ */
+fix = {
+    hackname  = hpux_c99_inttypes;
+    mach      = "*-hp-hpux11.[23]*";
+    files     = inttypes.h;
+    files     = stdint-hpux11.h, stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*"
+        "__CONCAT_U__(__c)[ \t]*$@#define UINT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*"
+        "__CONCAT_U__(__c)[ \t]*$@#define UINT16_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT32_C(__c)[ \t]*"
+        "__CONCAT__(__c,l)[ \t]*$@#define INT32_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT32_C(__c)[ \t].*$@"
+        "#define UINT32_C(__c) __CONCAT__(__c,u)@";
+    test_text = "#define UINT8_C(__c)     __CONCAT_U__(__c)\n"
+                "#define UINT16_C(__c)    __CONCAT_U__(__c)\n"
+		"#define INT32_C(__c)     __CONCAT__(__c,l)\n"
+		"#define UINT32_C(__c)     __CONCAT__(__c,ul)\n";
+};
+
+/*
+ * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
+ */
+fix = {
+    hackname  = hpux_c99_inttypes2;
+    mach      = "*-hp-hpux11.2*";
+    files     = stdint-hpux11.h, stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT8_C(__c)[ \t]*"
+        "((signed char)(__c))[ \t]*$@#define INT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*"
+        "((unsigned char)(__c))[ \t]*$@#define UINT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT16_C(__c)[ \t]*"
+        "((short)(__c))[ \t]*$@#define INT16_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*"
+        "((unsigned short)(__c))[ \t]*$@#define UINT16_C(__c) (__c)@";
+    test_text = "#  define	INT8_C(__c)	((signed char)(__c))\n"
+                "#  define      UINT8_C(__c)    ((unsigned char)(__c))\n"
+		"#  define      INT16_C(__c)    ((short)(__c))\n"
+		"#  define	UINT16_C(__c)	((unsigned short)(__c))\n";
+};
+
+/*
  *  Fix hpux broken ctype macros
  */
 fix = {
@@ -2119,6 +2285,26 @@ fix = {
 
     test_text = ": __SB_masks ? __SB_masks[__alnum] & _ISCNTRL\n"
 		"# define isalpha(__c) (__SB_masks ? __SB_masks[__c] & _IS\n";
+};
+
+/*
+ * hpux errno()
+ */
+fix = {
+    hackname  = hpux_extern_errno;
+    mach      = "*-hp-hpux10.*";
+    mach      = "*-hp-hpux11.[0-2]*";
+    files     = errno.h;
+    select    = "^[ \t]*extern int errno;$";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n"
+        "extern \"C\" {\n"
+        "#endif\n"
+        "%0\n"
+        "#ifdef __cplusplus\n"
+        "}\n"
+        "#endif";
+    test_text = "   extern int errno;\n";
 };
 
 /*
@@ -2149,6 +2335,33 @@ fix = {
 };
 
 /*
+ * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
+ */
+fix = {
+    hackname  = hpux_imaginary_i;
+    mach      = "ia64-hp-hpux11.*";
+    files     = complex.h;
+    select    = "^[ \t]*#[ \t]*define[ \t]*_Complex_I.*";
+    c_fix     = format;
+    c_fix_arg = "#define _Complex_I (__extension__ 1.0iF)";
+    test_text = "#define _Complex_I (0.f+_Imaginary_I)\n";
+};
+
+/*
+ * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
+ */
+fix = {
+    hackname  = hpux_inttype_int8_t;
+    mach      = "*-hp-hpux1[01].*";
+    files     = sys/_inttypes.h;
+    select    = "^[ \t]*typedef[ \t]*char[ \t]*int(_least){0,1}8_t.*";
+    c_fix     = format;
+    c_fix_arg = "typedef signed char int%18_t;";
+    test_text = "typedef char int_least8_t;\n"
+                "typedef char int8_t;\n";
+};
+
+/*
  * HP-UX long_double
  */
 fix = {
@@ -2170,10 +2383,10 @@ fix = {
 		"extern long_double strtold(const char *, char **);\n";
 };
 
- /*
-  * We cannot use the above rule on 11.31 because it removes the strtold
-  * definition.  ia64 is OK with no hack, PA needs some help.
-  */
+/*
+ * We cannot use the above rule on 11.31 because it removes the strtold
+ * definition.  ia64 is OK with no hack, PA needs some help.
+ */
 fix = {
     hackname  = hpux_long_double_2;
     mach      = "hppa*-*-hpux11.3*";
@@ -2187,82 +2400,6 @@ fix = {
     test_text = "#  if !defined(__ia64) || "
         "!defined(_PROTOTYPES) || "
         "defined(_LONG_DOUBLE_STRUCT)\n";
-};
-
-/*
- *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
- */
-fix = {
-    hackname = hpux_systime;
-    files    = sys/time.h;
-    select   = "^extern struct sigevent;";
-
-    c_fix     = format;
-    c_fix_arg = "struct sigevent;";
-
-    test_text = 'extern struct sigevent;';
-};
-
-/*
- *  Wrap spu_info in ifdef _KERNEL.  GCC cannot handle an array of unknown
- *  type and mpinfou is only defined when _KERNEL is set.
- */
-fix = {
-    hackname = hpux_spu_info;
-    mach     = "*-hp-hpux*";
-    /*
-     *  It is tempting to omit the first "files" entry.  Do not.
-     *  The testing machinery will take the first "files" entry as the name
-     *  of a test file to play with.  It would be a nuisance to have a directory
-     *  with the name "*".
-     */
-    files    = "ia64/sys/getppdp.h";
-    files    = "*/sys/getppdp.h";
-    select   = "^.*extern.*spu_info.*";
-
-    c_fix     = format;
-    c_fix_arg = "#ifdef _KERNEL\n%0\n#endif";
-
-    test_text = "extern union mpinfou spu_info[];";
-};
-
-fix = {
-    hackname  = hpux11_extern_sendfile;
-    mach      = "*-hp-hpux11.[12]*";
-    files     = sys/socket.h;
-    select    = "^[ \t]*extern sbsize_t sendfile.*\n.*, int\\)\\);\n";
-    c_fix     = format;
-    c_fix_arg = "#ifndef _APP32_64BIT_OFF_T\n%0#endif\n";
-    test_text = "   extern sbsize_t sendfile __((int, int, off_t, bsize_t,\n"
-        "                               const struct iovec *, int));\n";
-};
-
-fix = {
-    hackname  = hpux11_extern_sendpath;
-    mach      = "*-hp-hpux11.[12]*";
-    files     = sys/socket.h;
-    select    = "^[ \t]*extern sbsize_t sendpath.*\n.*, int\\)\\);\n";
-    c_fix     = format;
-    c_fix_arg = "#ifndef _APP32_64BIT_OFF_T\n%0#endif\n";
-    test_text = "   extern sbsize_t sendpath __((int, int, off_t, bsize_t,\n"
-        "                               const struct iovec *, int));\n";
-};
-
-fix = {
-    hackname  = hpux_extern_errno;
-    mach      = "*-hp-hpux10.*";
-    mach      = "*-hp-hpux11.[0-2]*";
-    files     = errno.h;
-    select    = "^[ \t]*extern int errno;$";
-    c_fix     = format;
-    c_fix_arg = "#ifdef __cplusplus\n"
-        "extern \"C\" {\n"
-        "#endif\n"
-        "%0\n"
-        "#ifdef __cplusplus\n"
-        "}\n"
-        "#endif";
-    test_text = "   extern int errno;\n";
 };
 
 /*
@@ -2307,71 +2444,32 @@ fix = {
 		"}\n";
 };
 
+/*
+ *  Wrap spu_info in ifdef _KERNEL.  GCC cannot handle an array of unknown
+ *  type and mpinfou is only defined when _KERNEL is set.
+ */
 fix = {
-    hackname  = hpux_c99_intptr;
-    mach      = "*-hp-hpux11.3*";
-    files     = stdint-hpux11.h, stdint.h;
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MAX[ \t]*"
-        "INT32_MAX[ \t]*$@#define PTRDIFF_MAX (2147483647l)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MIN[ \t]*"
-        "INT32_MIN[ \t]*$@#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MAX[ \t]*"
-        "INT32_MAX[ \t]*$@#define INTPTR_MAX (2147483647l)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MIN[ \t]*"
-        "INT32_MIN[ \t]*$@#define INTPTR_MIN (-INTPTR_MAX - 1)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINTPTR_MAX[ \t]*"
-        "UINT32_MAX[ \t]*$@#define UINTPTR_MAX (4294967295ul)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*SIZE_MAX[ \t]*"
-        "UINT32_MAX[ \t]*$@#define SIZE_MAX (4294967295ul)@";
-    test_text = "#define PTRDIFF_MAX	INT32_MAX\n"
-		"#define PTRDIFF_MIN	INT32_MIN\n"
-		"#define INTPTR_MAX	INT32_MAX\n"
-		"#define INTPTR_MIN	INT32_MIN\n"
-		"#define UINTPTR_MAX	UINT32_MAX\n"
-		"#define SIZE_MAX	UINT32_MAX\n";
+    hackname = hpux_spu_info;
+    mach     = "*-hp-hpux*";
+    /*
+     *  It is tempting to omit the first "files" entry.  Do not.
+     *  The testing machinery will take the first "files" entry as the name
+     *  of a test file to play with.  It would be a nuisance to have a directory
+     *  with the name "*".
+     */
+    files    = "ia64/sys/getppdp.h";
+    files    = "*/sys/getppdp.h";
+    select   = "^.*extern.*spu_info.*";
+
+    c_fix     = format;
+    c_fix_arg = "#ifdef _KERNEL\n%0\n#endif";
+
+    test_text = "extern union mpinfou spu_info[];";
 };
 
 /*
  * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
  */
-
-fix = {
-    hackname  = hpux_c99_inttypes;
-    mach      = "*-hp-hpux11.[23]*";
-    files     = inttypes.h;
-    files     = stdint-hpux11.h, stdint.h;
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*"
-        "__CONCAT_U__(__c)[ \t]*$@#define UINT8_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*"
-        "__CONCAT_U__(__c)[ \t]*$@#define UINT16_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT32_C(__c)[ \t]*"
-        "__CONCAT__(__c,l)[ \t]*$@#define INT32_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT32_C(__c)[ \t].*$@"
-        "#define UINT32_C(__c) __CONCAT__(__c,u)@";
-    test_text = "#define UINT8_C(__c)     __CONCAT_U__(__c)\n"
-                "#define UINT16_C(__c)    __CONCAT_U__(__c)\n"
-		"#define INT32_C(__c)     __CONCAT__(__c,l)\n"
-		"#define UINT32_C(__c)     __CONCAT__(__c,ul)\n";
-};
-
-fix = {
-    hackname  = hpux_c99_inttypes2;
-    mach      = "*-hp-hpux11.2*";
-    files     = stdint-hpux11.h, stdint.h;
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT8_C(__c)[ \t]*"
-        "((signed char)(__c))[ \t]*$@#define INT8_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*"
-        "((unsigned char)(__c))[ \t]*$@#define UINT8_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT16_C(__c)[ \t]*"
-        "((short)(__c))[ \t]*$@#define INT16_C(__c) (__c)@";
-    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*"
-        "((unsigned short)(__c))[ \t]*$@#define UINT16_C(__c) (__c)@";
-    test_text = "#  define	INT8_C(__c)	((signed char)(__c))\n"
-                "#  define      UINT8_C(__c)    ((unsigned char)(__c))\n"
-		"#  define      INT16_C(__c)    ((short)(__c))\n"
-		"#  define	UINT16_C(__c)	((unsigned short)(__c))\n";
-};
-
 fix = {
     hackname  = hpux_stdint_least_fast;
     mach      = "*-hp-hpux11.2*";
@@ -2385,25 +2483,18 @@ fix = {
 	_EOFix_;
 };
 
+/*
+ *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
+ */
 fix = {
-    hackname  = hpux_inttype_int8_t;
-    mach      = "*-hp-hpux1[01].*";
-    files     = sys/_inttypes.h;
-    select    = "^[ \t]*typedef[ \t]*char[ \t]*int(_least){0,1}8_t.*";
-    c_fix     = format;
-    c_fix_arg = "typedef signed char int%18_t;";
-    test_text = "typedef char int_least8_t;\n"
-                "typedef char int8_t;\n";
-};
+    hackname = hpux_systime;
+    files    = sys/time.h;
+    select   = "^extern struct sigevent;";
 
-fix = {
-    hackname  = hpux_imaginary_i;
-    mach      = "ia64-hp-hpux11.*";
-    files     = complex.h;
-    select    = "^[ \t]*#[ \t]*define[ \t]*_Complex_I.*";
     c_fix     = format;
-    c_fix_arg = "#define _Complex_I (__extension__ 1.0iF)";
-    test_text = "#define _Complex_I (0.f+_Imaginary_I)\n";
+    c_fix_arg = "struct sigevent;";
+
+    test_text = 'extern struct sigevent;';
 };
 
 /*
@@ -2411,7 +2502,7 @@ fix = {
  */
 fix = {
     hackname  = huge_val_hex;
-    files     = bits/huge_val.h;
+    files     = bits/huge_val.h, '*/bits/huge_val.h';
     select    = "^#[ \t]*define[ \t]*HUGE_VAL[ \t].*0x1\\.0p.*";
     bypass    = "__builtin_huge_val";
 
@@ -2426,7 +2517,7 @@ fix = {
  */
 fix = {
     hackname  = huge_valf_hex;
-    files     = bits/huge_val.h;
+    files     = bits/huge_val.h, '*/bits/huge_val.h';
     select    = "^#[ \t]*define[ \t]*HUGE_VALF[ \t].*0x1\\.0p.*";
     bypass    = "__builtin_huge_valf";
 
@@ -2441,7 +2532,7 @@ fix = {
  */
 fix = {
     hackname  = huge_vall_hex;
-    files     = bits/huge_val.h;
+    files     = bits/huge_val.h, '*/bits/huge_val.h';
     select    = "^#[ \t]*define[ \t]*HUGE_VALL[ \t].*0x1\\.0p.*";
     bypass    = "__builtin_huge_vall";
 
@@ -2579,7 +2670,8 @@ fix = {
     test_text = "#define __CONCAT__(a,b) a/**/b";
 };
 
-/* The /usr/include/sys/ucontext.h on ia64-*linux-gnu systems defines
+/*
+ * The /usr/include/sys/ucontext.h on ia64-*linux-gnu systems defines
  * an _SC_GR0_OFFSET macro using an idiom that isn't a compile time
  * constant on recent versions of g++.
  */
@@ -2792,9 +2884,11 @@ fix = {
     test_text = "#define __END_DECLS };";
 };
 
-/* newlib's stdint.h has several failures to conform to C99.  The fix
-   for these removed a comment that can be matched to identify unfixed
-   versions.  */
+/*
+ * newlib's stdint.h has several failures to conform to C99.  The fix
+ *  for these removed a comment that can be matched to identify unfixed
+ *  versions.
+ */
 fix = {
     hackname  = newlib_stdint_1;
     files     = stdint-newlib.h, stdint.h;
@@ -3242,290 +3336,6 @@ fix = {
 };
 
 /*
- *  Before Solaris 10, <iso/setjmp_iso.h> doesn't mark longjump noreturn.
- */
-fix = {
-    hackname  = solaris_longjmp_noreturn;
-    mach      = "*-*-solaris2*";
-    files     = "iso/setjmp_iso.h";
-    bypass    = "__NORETURN";
-    select    = "(.*longjmp\\(jmp_buf.*[^)]+\\));";
-    c_fix     = format;
-    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
-
-    test_text = "extern void longjmp(jmp_buf, int);";
-};
-
-/*
- * Sun Solaris 10 defines several C99 math macros in terms of
- * builtins specific to the Studio compiler, in particular not
- * compatible with the GNU compiler.
- */
-fix = {
-    hackname = solaris_math_1;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tHUGE_VA%1\t(__builtin_huge_va%2())";
-    c_fix_arg = "^#define[ \t]+HUGE_VA([LF]+)[ \t]+__builtin_huge_va([lf]+)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	HUGE_VAL\n"
-    "#define	HUGE_VAL	__builtin_huge_val\n"
-    "#undef	HUGE_VALF\n"
-    "#define	HUGE_VALF	__builtin_huge_valf\n"
-    "#undef	HUGE_VALL\n"
-    "#define	HUGE_VALL	__builtin_huge_vall";
-};
-
-fix = {
-    hackname = solaris_math_2;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tINFINITY\t(__builtin_inff())";
-    c_fix_arg = "^#define[ \t]+INFINITY[ \t]+__builtin_infinity";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	INFINITY\n"
-    "#define	INFINITY	__builtin_infinity";
-};
-
-fix = {
-    hackname = solaris_math_3;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tNAN\t\t(__builtin_nanf(\"\"))";
-    c_fix_arg = "^#define[ \t]+NAN[ \t]+__builtin_nan";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	NAN\n"
-    "#define	NAN	__builtin_nan";
-};
-
-fix = {
-    hackname = solaris_math_4;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tfpclassify(x) \\\n"
-                "  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, "
-                    "FP_SUBNORMAL, FP_ZERO, (x))";
-    c_fix_arg = "^#define[ \t]+fpclassify\\(x\\)[ \t]+__builtin_fpclassify\\(x\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	fpclassify\n"
-    "#define	fpclassify(x)	__builtin_fpclassify(x)";
-};
-
-fix = {
-    hackname = solaris_math_8;
-    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tsignbit(x)\t(sizeof(x) == sizeof(float) \\\n"
-                "\t\t\t   ? __builtin_signbitf(x) \\\n"
-                "\t\t\t   : sizeof(x) == sizeof(long double) \\\n"
-                "\t\t\t     ? __builtin_signbitl(x) \\\n"
-                "\t\t\t     : __builtin_signbit(x))";
-    c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
-    test_text = <<- _EOText_
-	#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
-	#undef	signbit
-	#define	signbit(x)	__builtin_signbit(x)
-	_EOText_;
-};
-
-fix = {
-    hackname = solaris_math_9;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\t%1(x, y)%2__builtin_%1(x, y)";
-    c_fix_arg = "^#define[ \t]+([a-z]+)\\(x, y\\)([ \t]+)\\(\\(x\\) "
-                    "__builtin_[a-z]+\\(y\\)\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	isgreater\n"
-    "#define	isgreater(x, y)		((x) __builtin_isgreater(y))\n"
-    "#undef	isgreaterequal\n"
-    "#define	isgreaterequal(x, y)	((x) __builtin_isgreaterequal(y))\n"
-    "#undef	isless\n"
-    "#define	isless(x, y)		((x) __builtin_isless(y))\n"
-    "#undef	islessequal\n"
-    "#define	islessequal(x, y)	((x) __builtin_islessequal(y))\n"
-    "#undef	islessgreater\n"
-    "#define	islessgreater(x, y)	((x) __builtin_islessgreater(y))\n"
-    "#undef	isunordered\n"
-    "#define	isunordered(x, y)	((x) __builtin_isunordered(y))";
-};
-
-/*
- * On Solaris 11, if you do isinf(NaN) you'll get a floating point
- * exception.  Provide an alternative using GCC's builtin.
- */
-
-fix = {
-    hackname  = solaris_math_10;
-    select    = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files     = iso/math_c99.h;
-    c_fix     = format;
-    c_fix_arg = "#define\tisinf(x) __builtin_isinf(x)";
-    c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__extension__\\([ \t]*\\\\\n"
-                "[ \t]*\\{[ \t]*__typeof\\(x\\)[ \t]*__x_i[ \t]*=[ \t]*\\(x\\);"
-                    "[ \t]*\\\\\n"
-                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
-                    "INFINITY[ \t]*\\|\\|[ \t]*\\\\\n"
-                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
-                    "\\(-INFINITY\\);[ \t]*\\}\\)";
-    test_text =
-    '#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"'"\n"
-    "#undef	isinf\n"
-    "#define	isinf(x)	__extension__( \\\\\n"
-    "			{ __typeof(x) __x_i = (x); \\\\\n"
-    "			__x_i == (__typeof(__x_i)) INFINITY || \\\\\n"
-    "			__x_i == (__typeof(__x_i)) (-INFINITY); })";
-};
-
-/*
- * Sun Solaris defines PTHREAD_MUTEX_INITIALIZER with a trailing
- * "0" for the last field of the pthread_mutex_t structure, which is
- * of type upad64_t, which itself is typedef'd to int64_t, but with
- * __STDC__ defined (e.g. by -ansi) it is a union. So change the
- * initializer to "{0}" instead
- */
-fix = {
-    hackname = solaris_mutex_init_2;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    /*
-     * On Solaris 10, this fix is unnecessary because upad64_t is
-     * always defined correctly regardless of the definition of the
-     * __STDC__ macro.  The first "mach" pattern matches up to
-     * solaris9.  The second "mach" pattern will not match any two (or
-     * more) digit solaris version, but it will match e.g. 2.5.1.
-     */
-    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1, {0}}%4\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+"
-                "(|/\*.*\*/[ \t]*\\\\\n[ \t]*)\\{.*)"
-                ",[ \t]*0\\}" "(|[ \t].*)$";
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
-    "#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\\\\\n"
-    "	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}\n"
-    "#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\\\\\n"
-    "	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}";
-};
-
-/*
- *  The pow overloads with int were removed in C++ 2011 DR 550.
- */
-fix = {
-    hackname  = solaris_pow_int_overload;
-    mach      = '*-*-solaris2*';
-    files     = "iso/math_iso.h";
-    select    = "^[ \t]*inline [a-z ]* pow\\([^()]*, int [^()]*\\)"
-		" *\\{[^{}]*\n[^{}]*\\}";
-    c_fix     = format;
-    c_fix_arg = "#if __cplusplus < 201103L\n%0\n#endif";
-
-    test_text =
-    "	inline long double pow(long double __X, int __Y) { return\n"
-    "		__powl(__X, (long double) (__Y)); }";
-};
-
-/*
- * Sun Solaris defines PTHREAD_RWLOCK_INITIALIZER with a "0" for some
- *  fields of the pthread_rwlock_t structure, which are of type
- *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
- *  defined (e.g. by -ansi) it is a union. So change the initializer
- *  to "{0}" instead.
- */
-fix = {
-    hackname = solaris_rwlock_init_1;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1{0, 0, 0, {{0}, {0}, {0}}, {{0}, {0}}, {{0}, {0}}}\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_RWLOCK_INITIALIZER[ \t]+)"
-                "\\{0, 0, 0, \\{0, 0, 0\\}, \\{0, 0\\}, \\{0, 0\\}\\}[ \t]*$";
-
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_RWLOCK_INITIALIZER\t{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
-};
-
-/*
- * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
- * structure.  As such, it need two levels of brackets, but only
- * contains one.  Wrap the macro definition in an extra layer.
- */
-fix = {
-    hackname = solaris_once_init_1;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris*';
-    c_fix = format;
-    c_fix_arg = "%1{%2}%3";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{)([^}]+)(\\})[ \t]*$";
-    test_text =
-    '#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"'"\n"
-    "#define PTHREAD_ONCE_INIT\t{0, 0, 0, PTHREAD_ONCE_NOTDONE}";
-};
-
-/*
- * Sun Solaris defines PTHREAD_ONCE_INIT with a "0" for some
- *  fields of the pthread_once_t structure, which are of type
- *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
- *  defined (e.g. by -ansi) it is a union. So change the initializer
- *  to "{0}" instead.  This test relies on solaris_once_init_1.
- */
-fix = {
-    hackname = solaris_once_init_2;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    /*
-     * On Solaris 10, this fix is unnecessary because upad64_t is
-     * always defined correctly regardless of the definition of the
-     * __STDC__ macro.  The first "mach" pattern matches up to
-     * solaris9.  The second "mach" pattern will not match any two (or
-     * more) digit solaris version, but it will match e.g. 2.5.1.
-     */
-    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1{0}, {0}, {0}, {%3}%4\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{\\{)"
-                "(0, 0, 0, )(PTHREAD_[A-Z_]+)(\\}\\})[ \t]*$";
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_ONCE_INIT\t{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}\n";
-};
-
-/*
  * Sun Solaris 2 has a version of sys/int_const.h that defines
  * UINT8_C and UINT16_C to unsigned constants.
  */
@@ -3618,6 +3428,261 @@ fix = {
 };
 
 /*
+ *  Before Solaris 10, <iso/setjmp_iso.h> doesn't mark longjump noreturn.
+ */
+fix = {
+    hackname  = solaris_longjmp_noreturn;
+    mach      = "*-*-solaris2*";
+    files     = "iso/setjmp_iso.h";
+    bypass    = "__NORETURN";
+    select    = "(.*longjmp\\(jmp_buf.*[^)]+\\));";
+    c_fix     = format;
+    c_fix_arg = "%1 __attribute__ ((__noreturn__));";
+
+    test_text = "extern void longjmp(jmp_buf, int);";
+};
+
+/*
+ * Sun Solaris 10 defines several C99 math macros in terms of
+ * builtins specific to the Studio compiler, in particular not
+ * compatible with the GNU compiler.
+ */
+fix = {
+    hackname = solaris_math_1;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tHUGE_VA%1\t(__builtin_huge_va%2())";
+    c_fix_arg = "^#define[ \t]+HUGE_VA([LF]+)[ \t]+__builtin_huge_va([lf]+)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	HUGE_VAL\n"
+    "#define	HUGE_VAL	__builtin_huge_val\n"
+    "#undef	HUGE_VALF\n"
+    "#define	HUGE_VALF	__builtin_huge_valf\n"
+    "#undef	HUGE_VALL\n"
+    "#define	HUGE_VALL	__builtin_huge_vall";
+};
+
+/*
+ * On Solaris 11, if you do isinf(NaN) you'll get a floating point
+ * exception.  Provide an alternative using GCC's builtin.
+ */
+fix = {
+    hackname  = solaris_math_10;
+    select    = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files     = iso/math_c99.h;
+    c_fix     = format;
+    c_fix_arg = "#define\tisinf(x) __builtin_isinf(x)";
+    c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__extension__\\([ \t]*\\\\\n"
+                "[ \t]*\\{[ \t]*__typeof\\(x\\)[ \t]*__x_i[ \t]*=[ \t]*\\(x\\);"
+                    "[ \t]*\\\\\n"
+                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
+                    "INFINITY[ \t]*\\|\\|[ \t]*\\\\\n"
+                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
+                    "\\(-INFINITY\\);[ \t]*\\}\\)";
+    test_text =
+    '#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"'"\n"
+    "#undef	isinf\n"
+    "#define	isinf(x)	__extension__( \\\\\n"
+    "			{ __typeof(x) __x_i = (x); \\\\\n"
+    "			__x_i == (__typeof(__x_i)) INFINITY || \\\\\n"
+    "			__x_i == (__typeof(__x_i)) (-INFINITY); })";
+};
+
+/*
+ * Solaris math INFINITY
+ */
+fix = {
+    hackname = solaris_math_2;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tINFINITY\t(__builtin_inff())";
+    c_fix_arg = "^#define[ \t]+INFINITY[ \t]+__builtin_infinity";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	INFINITY\n"
+    "#define	INFINITY	__builtin_infinity";
+};
+
+/*
+ * Solaris math NAN
+ */
+fix = {
+    hackname = solaris_math_3;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tNAN\t\t(__builtin_nanf(\"\"))";
+    c_fix_arg = "^#define[ \t]+NAN[ \t]+__builtin_nan";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	NAN\n"
+    "#define	NAN	__builtin_nan";
+};
+
+/*
+ * Solaris math fpclassify
+ */
+fix = {
+    hackname = solaris_math_4;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tfpclassify(x) \\\n"
+                "  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, "
+                    "FP_SUBNORMAL, FP_ZERO, (x))";
+    c_fix_arg = "^#define[ \t]+fpclassify\\(x\\)[ \t]+__builtin_fpclassify\\(x\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	fpclassify\n"
+    "#define	fpclassify(x)	__builtin_fpclassify(x)";
+};
+
+/*
+ * Solaris math signbit
+ */
+fix = {
+    hackname = solaris_math_8;
+    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\tsignbit(x)\t(sizeof(x) == sizeof(float) \\\n"
+                "\t\t\t   ? __builtin_signbitf(x) \\\n"
+                "\t\t\t   : sizeof(x) == sizeof(long double) \\\n"
+                "\t\t\t     ? __builtin_signbitl(x) \\\n"
+                "\t\t\t     : __builtin_signbit(x))";
+    c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
+    test_text = <<- _EOText_
+	#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
+	#undef	signbit
+	#define	signbit(x)	__builtin_signbit(x)
+	_EOText_;
+};
+
+/*
+ * Solaris math comparison macros
+ */
+fix = {
+    hackname = solaris_math_9;
+    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    bypass = "__GNUC__";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = "#define\t%1(x, y)%2__builtin_%1(x, y)";
+    c_fix_arg = "^#define[ \t]+([a-z]+)\\(x, y\\)([ \t]+)\\(\\(x\\) "
+                    "__builtin_[a-z]+\\(y\\)\\)";
+    test_text =
+    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
+    "#undef	isgreater\n"
+    "#define	isgreater(x, y)		((x) __builtin_isgreater(y))\n"
+    "#undef	isgreaterequal\n"
+    "#define	isgreaterequal(x, y)	((x) __builtin_isgreaterequal(y))\n"
+    "#undef	isless\n"
+    "#define	isless(x, y)		((x) __builtin_isless(y))\n"
+    "#undef	islessequal\n"
+    "#define	islessequal(x, y)	((x) __builtin_islessequal(y))\n"
+    "#undef	islessgreater\n"
+    "#define	islessgreater(x, y)	((x) __builtin_islessgreater(y))\n"
+    "#undef	isunordered\n"
+    "#define	isunordered(x, y)	((x) __builtin_isunordered(y))";
+};
+
+/*
+ * Sun Solaris defines PTHREAD_MUTEX_INITIALIZER with a trailing
+ * "0" for the last field of the pthread_mutex_t structure, which is
+ * of type upad64_t, which itself is typedef'd to int64_t, but with
+ * __STDC__ defined (e.g. by -ansi) it is a union. So change the
+ * initializer to "{0}" instead
+ */
+fix = {
+    hackname = solaris_mutex_init_2;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    /*
+     * On Solaris 10, this fix is unnecessary because upad64_t is
+     * always defined correctly regardless of the definition of the
+     * __STDC__ macro.  The first "mach" pattern matches up to
+     * solaris9.  The second "mach" pattern will not match any two (or
+     * more) digit solaris version, but it will match e.g. 2.5.1.
+     */
+    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1, {0}}%4\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+"
+                "(|/\*.*\*/[ \t]*\\\\\n[ \t]*)\\{.*)"
+                ",[ \t]*0\\}" "(|[ \t].*)$";
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
+    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
+    "#define	PTHREAD_MUTEX_INITIALIZER		/* = DEFAULTMUTEX */	\\\\\n"
+    "	{{0, 0, 0, DEFAULT_TYPE, _MUTEX_MAGIC}, {{{0}}}, 0}\n"
+    "#define	PTHREAD_COND_INITIALIZER		/* = DEFAULTCV */	\\\\\n"
+    "	{{{0, 0, 0, 0}, DEFAULT_TYPE, _COND_MAGIC}, 0}";
+};
+
+/*
+ * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
+ * structure.  As such, it need two levels of brackets, but only
+ * contains one.  Wrap the macro definition in an extra layer.
+ */
+fix = {
+    hackname = solaris_once_init_1;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris*';
+    c_fix = format;
+    c_fix_arg = "%1{%2}%3";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{)([^}]+)(\\})[ \t]*$";
+    test_text =
+    '#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"'"\n"
+    "#define PTHREAD_ONCE_INIT\t{0, 0, 0, PTHREAD_ONCE_NOTDONE}";
+};
+
+/*
+ * Sun Solaris defines PTHREAD_ONCE_INIT with a "0" for some
+ *  fields of the pthread_once_t structure, which are of type
+ *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
+ *  defined (e.g. by -ansi) it is a union. So change the initializer
+ *  to "{0}" instead.  This test relies on solaris_once_init_1.
+ */
+fix = {
+    hackname = solaris_once_init_2;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    /*
+     * On Solaris 10, this fix is unnecessary because upad64_t is
+     * always defined correctly regardless of the definition of the
+     * __STDC__ macro.  The first "mach" pattern matches up to
+     * solaris9.  The second "mach" pattern will not match any two (or
+     * more) digit solaris version, but it will match e.g. 2.5.1.
+     */
+    mach = '*-*-solaris2.[0-9]', '*-*-solaris2.[0-9][!0-9]*';
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1{0}, {0}, {0}, {%3}%4\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{\\{)"
+                "(0, 0, 0, )(PTHREAD_[A-Z_]+)(\\}\\})[ \t]*$";
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_ONCE_INIT\t{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}\n";
+};
+
+/*
  * Solaris 10+ <spawn.h> uses char *const argv[_RESTRICT_KYWD] in the
  * posix_spawn declarations, which doesn't work with C++.
  */
@@ -3631,6 +3696,49 @@ fix = {
     test_text =
     "char *const argv[_RESTRICT_KYWD],\n"
     "char *const envp[_RESTRICT_KYWD]);";
+};
+
+/*
+ *  The pow overloads with int were removed in C++ 2011 DR 550.
+ */
+fix = {
+    hackname  = solaris_pow_int_overload;
+    mach      = '*-*-solaris2*';
+    files     = "iso/math_iso.h";
+    select    = "^[ \t]*inline [a-z ]* pow\\([^()]*, int [^()]*\\)"
+		" *\\{[^{}]*\n[^{}]*\\}";
+    c_fix     = format;
+    c_fix_arg = "#if __cplusplus < 201103L\n%0\n#endif";
+
+    test_text =
+    "	inline long double pow(long double __X, int __Y) { return\n"
+    "		__powl(__X, (long double) (__Y)); }";
+};
+
+/*
+ * Sun Solaris defines PTHREAD_RWLOCK_INITIALIZER with a "0" for some
+ *  fields of the pthread_rwlock_t structure, which are of type
+ *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
+ *  defined (e.g. by -ansi) it is a union. So change the initializer
+ *  to "{0}" instead.
+ */
+fix = {
+    hackname = solaris_rwlock_init_1;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris*';
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1{0, 0, 0, {{0}, {0}, {0}}, {{0}, {0}}, {{0}, {0}}}\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_RWLOCK_INITIALIZER[ \t]+)"
+                "\\{0, 0, 0, \\{0, 0, 0\\}, \\{0, 0\\}, \\{0, 0\\}\\}[ \t]*$";
+
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_RWLOCK_INITIALIZER\t{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
 };
 
 /*
@@ -4076,7 +4184,7 @@ fix = {
     c_fix     = format;
     c_fix_arg = "unsigned int newev;";
 
-    test_text = "        unsigned int new;               /* New console (if changing) */";
+    test_text = "        unsigned int new;      /* New console (if changing) */";
 };
 
 /*
@@ -4240,7 +4348,7 @@ fix = {
 fix = {
     hackname  = thread_keyword;
     files     = "pthread.h";
-    files     = "bits/sigthread.h";
+    files     = bits/sigthread.h, '*/bits/sigthread.h';
     select    = "([* ])__thread([,)])";
     c_fix     = format;
     c_fix_arg = "%1__thr%2";
@@ -4326,6 +4434,41 @@ fix = {
 };
 
 /*
+ * On VMS, add missing braces around sigset_t constants.
+ */
+fix = {
+    hackname  = vms_add_missing_braces;
+    select    = "(_SIG_[A-Z]+_SET[ \t]+= \\{)(0x[0F]+, 0x[0F]+)";
+    mach      = "*-*-*vms*";
+    files     = "rtldef/signal.h";
+    c_fix     = format;
+
+    c_fix_arg = '%1 {%2} ';
+
+    test_text = "static const __sigset_t _SIG_EMPTY_SET  = "
+                "{0x00000000, 0x00000000},\n"
+                " _SIG_FULL_SET   = {0xFFFFFFFF, 0xFFFFFFFF};\n";
+};
+
+/*
+ * On VMS, some DEC-C builtins are directly used.
+ */
+fix = {
+    hackname  = vms_decc_builtin;
+    select    = "(__MEMSET|__MEMMOVE|__MEMCPY|__STRLEN|__STRCPY)";
+    mach      = "*-*-*vms*";
+    files     = rtldef/string.h, rtldef/time.h, rtldef/strings.h,
+                rtldef/socket.h;
+    sed       = "s@__MEMSET@memset@";
+    sed       = "s@__MEMMOVE@memmove@";
+    sed       = "s@__MEMCPY@memcpy@";
+    sed       = "s@__STRLEN@strlen@";
+    sed       = "s@__STRCPY@strcpy@";
+
+    test_text = "define FD_ZERO(__p) __MEMSET((__p), 0, sizeof(*(__p)))\n";
+};
+
+/*
  *  Define __CAN_USE_EXTERN_PREFIX on vms.
  */
 fix = {
@@ -4346,6 +4489,95 @@ fix = {
 		"#\tdefine __CAN_USE_EXTERN_PREFIX 1\n"
 		"#    endif\n"
 		"# endif\n";
+};
+
+/*
+ * On VMS, disable the use of dec-c string builtins
+ */
+fix = {
+    hackname  = vms_disable_decc_string_builtins;
+    select    = "#if !defined\\(__VAX\\)\n";
+    mach      = "*-*-*vms*";
+    files     = "rtldef/string.h";
+    c_fix     = format;
+
+    c_fix_arg = "#if !defined(__VAX) && !defined(__GNUC__)\n";
+
+    test_text = "#if !defined(__VAX)\n";
+};
+
+/*
+ * On VMS, fix incompatible redeclaration of hostalias.
+ */
+fix = {
+    hackname  = vms_do_not_redeclare_hostalias;
+    select    = "(void[ \t]+fp_nquery \\(const u_char \\*, int, FILE \\*\\);)\n"
+                "(__char_ptr32[ \t]+hostalias \\(const char \\*\\);)";
+    mach      = "*-*-*vms*";
+    files     = "rtldef/resolv.h";
+    c_fix     = format;
+
+    c_fix_arg = "%1\n"
+                "/* %2 */";
+
+    test_text = "void		fp_nquery (const u_char *, int, FILE *);\n"
+                "__char_ptr32	hostalias (const char *);\n";
+};
+
+/*
+ * On VMS, forward declare structure before referencing them in prototypes.
+ */
+fix = {
+    hackname  = vms_forward_declare_struct;
+    select    = "(/\\* forward decls for C\\+\\+ \\*/\n)"
+                "#ifdef __cplusplus\n";
+    mach      = "*-*-*vms*";
+    files     = rtldef/if.h;
+    c_fix     = format;
+
+    c_fix_arg = "%1"
+                "#if defined (__cplusplus) || defined (__GNUC__)\n";
+
+    test_text = "/* forward decls for C++ */\n"
+                "#ifdef __cplusplus\n"
+                "struct foo;\n"
+                "#endif\n";
+};
+
+/*
+ * On VMS, do not declare getopt and al if pointers are 64 bit.
+ */
+fix = {
+    hackname  = vms_no_64bit_getopt;
+    select    = "^[ \t]*(extern[ \t]*)?(int[ \t]*(getopt|optind|opterr|optopt)"
+                "|(char \\*optarg))([ \t]*\\(.*\\))?;\n";
+    mach      = "*-*-*vms*";
+    files     = rtldef/stdio.h, rtldef/unistd.h;
+    c_fix     = format;
+
+    c_fix_arg = <<- _EOArg_
+	#if __INITIAL_POINTER_SIZE != 64 /* getopt is short ptr only.  */
+	%0#endif
+
+	_EOArg_;
+
+    test_text = "int getopt (int, char * const [], const char *);";
+};
+
+/*
+ * On VMS, force the use of fast setjmp, as the normal setjmp uses conditions
+ * which is not yet fully supported by gcc.
+ */
+fix = {
+    hackname  = vms_use_fast_setjmp;
+    select    = "(#[ \t]*if[ \t]*defined\\(__FAST_SETJMP\\)[ \t]*\\|\\|)";
+    mach      = "*-*-*vms*";
+    files     = rtldef/setjmp.h;
+    c_fix     = format;
+
+    c_fix_arg = "%0 defined (__GNUC__) ||";
+
+    test_text = "#   if defined(__FAST_SETJMP) || defined(__UNIX_SETJMP)";
 };
 
 /*
@@ -4370,21 +4602,6 @@ fix = {
 };
 
 /*
- * On VMS, disable the use of dec-c string builtins
- */
-fix = {
-    hackname  = vms_disable_decc_string_builtins;
-    select    = "#if !defined\\(__VAX\\)\n";
-    mach      = "*-*-*vms*";
-    files     = "rtldef/string.h";
-    c_fix     = format;
-
-    c_fix_arg = "#if !defined(__VAX) && !defined(__GNUC__)\n";
-
-    test_text = "#if !defined(__VAX)\n";
-};
-
-/*
  * On VMS, change <resource.h> to <sys/resource.h> to avoid a
  * conflict while building gcc.  Likewise for <builtins.h>
  */
@@ -4398,115 +4615,6 @@ fix = {
     c_fix_arg = '%1<sys/%2.h>';
 
     test_text = "#   include <resource.h>";
-};
-
-/*
- * On VMS, add missing braces around sigset_t constants.
- */
-fix = {
-    hackname  = vms_add_missing_braces;
-    select    = "(_SIG_[A-Z]+_SET[ \t]+= \\{)(0x[0F]+, 0x[0F]+)";
-    mach      = "*-*-*vms*";
-    files     = "rtldef/signal.h";
-    c_fix     = format;
-
-    c_fix_arg = '%1 {%2} ';
-
-    test_text = "static const __sigset_t _SIG_EMPTY_SET  = "
-                "{0x00000000, 0x00000000},\n"
-                " _SIG_FULL_SET   = {0xFFFFFFFF, 0xFFFFFFFF};\n";
-};
-
-/*
- * On VMS, fix incompatible redeclaration of hostalias.
- */
-fix = {
-    hackname  = vms_do_not_redeclare_hostalias;
-    select    = "(void[ \t]+fp_nquery \\(const u_char \\*, int, FILE \\*\\);)\n"
-                "(__char_ptr32[ \t]+hostalias \\(const char \\*\\);)";
-    mach      = "*-*-*vms*";
-    files     = "rtldef/resolv.h";
-    c_fix     = format;
-
-    c_fix_arg = "%1\n"
-                "/* %2 */";
-
-    test_text = "void		fp_nquery (const u_char *, int, FILE *);\n"
-                "__char_ptr32	hostalias (const char *);\n";
-};
-
-/*
- * On VMS, some DEC-C builtins are directly used.
- */
-fix = {
-    hackname  = vms_decc_builtin;
-    select    = "(__MEMSET|__MEMMOVE|__MEMCPY|__STRLEN|__STRCPY)";
-    mach      = "*-*-*vms*";
-    files     = rtldef/string.h, rtldef/time.h, rtldef/strings.h,
-                rtldef/socket.h;
-    sed       = "s@__MEMSET@memset@";
-    sed       = "s@__MEMMOVE@memmove@";
-    sed       = "s@__MEMCPY@memcpy@";
-    sed       = "s@__STRLEN@strlen@";
-    sed       = "s@__STRCPY@strcpy@";
-
-    test_text = "define FD_ZERO(__p) __MEMSET((__p), 0, sizeof(*(__p)))\n";
-};
-
-/*
- * On VMS, do not declare getopt and al if pointers are 64 bit.
- */
-fix = {
-    hackname  = vms_no_64bit_getopt;
-    select    = "^[ \t]*(extern[ \t]*)?(int[ \t]*(getopt|optind|opterr|optopt)"
-                "|(char \\*optarg))([ \t]*\\(.*\\))?;\n";
-    mach      = "*-*-*vms*";
-    files     = rtldef/stdio.h, rtldef/unistd.h;
-    c_fix     = format;
-
-    c_fix_arg = <<- _EOArg_
-	#if __INITIAL_POINTER_SIZE != 64 /* getopt is short ptr only.  */
-	%0#endif
-
-	_EOArg_;
-
-    test_text = "int getopt (int, char * const [], const char *);";
-};
-
-/*
- * On VMS, forward declare structure before referencing them in prototypes.
- */
-fix = {
-    hackname  = vms_forward_declare_struct;
-    select    = "(/\\* forward decls for C\\+\\+ \\*/\n)"
-                "#ifdef __cplusplus\n";
-    mach      = "*-*-*vms*";
-    files     = rtldef/if.h;
-    c_fix     = format;
-
-    c_fix_arg = "%1"
-                "#if defined (__cplusplus) || defined (__GNUC__)\n";
-
-    test_text = "/* forward decls for C++ */\n"
-                "#ifdef __cplusplus\n"
-                "struct foo;\n"
-                "#endif\n";
-};
-
-/*
- * On VMS, force the use of fast setjmp, as the normal setjmp uses conditions
- * which is not yet fully supported by gcc.
- */
-fix = {
-    hackname  = vms_use_fast_setjmp;
-    select    = "(#[ \t]*if[ \t]*defined\\(__FAST_SETJMP\\)[ \t]*\\|\\|)";
-    mach      = "*-*-*vms*";
-    files     = rtldef/setjmp.h;
-    c_fix     = format;
-
-    c_fix_arg = "%0 defined (__GNUC__) ||";
-
-    test_text = "#   if defined(__FAST_SETJMP) || defined(__UNIX_SETJMP)";
 };
 
 /*
@@ -4773,73 +4881,4 @@ fix = {
 
     test_text = "extern char *\tsprintf();";
 };
-
-/*
- *  Incorrect feraiseexcept extern inline in bits/fenv.h on x86_64
- *  that fails when compiling for SSE-less 32-bit x86.
- */
-fix = {
-    hackname  = feraiseexcept_nosse_invalid;
-    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
-    files     = bits/fenv.h;
-    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %0, %0 *\" : "
-		": \"x\" \\(__f\\)\\);$";
-    bypass    = "\"fdiv .*; fwait\"";
-    
-    c_fix     = format;
-    c_fix_arg = <<- _EOText_
-	# ifdef __SSE_MATH__
-	%0
-	# else
-	%1__asm__ __volatile__ ("fdiv %%%%st, %%%%st(0); fwait"
-	%1			: "=t" (__f) : "0" (__f));
-	# endif
-	_EOText_;
-
-    test_text = <<- _EOText_
-	  __asm__ __volatile__ ("divss %0, %0" : : "x" (__f));
-	_EOText_;
-};
-
-/*
- *  Incorrect feraiseexcept extern inline in bits/fenv.h on x86_64
- *  that fails when compiling for SSE-less 32-bit x86.
- */
-fix = {
-    hackname  = feraiseexcept_nosse_divbyzero;
-    mach      = 'i[34567]86-*-linux*', 'x86*-linux*', 'amd64-*-linux*';
-    files     = bits/fenv.h;
-    select    = "^([\t ]*)__asm__ __volatile__ \\(\"divss %1, %0 *\" : "
-		": \"x\" \\(__f\\), \"x\" \\(__g\\)\\);$";
-    bypass    = "\"fdivp .*; fwait\"";
-    
-    c_fix     = format;
-    c_fix_arg = <<- _EOText_
-	# ifdef __SSE_MATH__
-	%0
-	# else
-	%1__asm__ __volatile__ ("fdivp %%%%st, %%%%st(1); fwait"
-	%1			: "=t" (__f) : "0" (__f), "u" (__g) : "st(1)");
-	# endif
-	_EOText_;
-
-    test_text = <<- _EOText_
-	  __asm__ __volatile__ ("divss %1, %0" : : "x" (__f), "x" (__g));
-	_EOText_;
-};
-
-/*
- *  Old Linux kernel's <compiler.h> header breaks Traditional CPP
- */
-fix = {
-    hackname  = complier_h_tradcpp;
-    files     = linux/compiler.h;
-
-    select    = "#define __builtin_warning\\(x, y\\.\\.\\.\\) \\(1\\)";
-    c_fix     = format;
-    c_fix_arg = "/* __builtin_warning(x, y...) is obsolete */";
-
-    test_text = "#define __builtin_warning(x, y...) (1)";
-};
-
 /*EOF*/
