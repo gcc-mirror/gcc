@@ -1,3 +1,105 @@
+2013-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/add_const/requirements/explicit_instantiation.cc:
+	New.
+	* testsuite/20_util/add_const/value.cc: Likewise.
+	* testsuite/20_util/add_cv/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/add_cv/value.cc: Likewise.
+	* testsuite/20_util/add_pointer/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/add_pointer/value.cc: Likewise.
+	* testsuite/20_util/add_volatile/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/add_volatile/value.cc: Likewise.
+	* testsuite/20_util/alignment_of/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/alignment_of/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/alignment_of/value.cc: Likewise.
+	* testsuite/20_util/extent/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/extent/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/extent/value.cc: Likewise.
+	* testsuite/20_util/has_virtual_destructor/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/has_virtual_destructor/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_virtual_destructor/value.cc: Likewise.
+	* testsuite/20_util/is_abstract/requirements/explicit_instantiation.cc:
+ 	Likewise.
+	* testsuite/20_util/is_abstract/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_abstract/value.cc: Likewise.
+	* testsuite/20_util/is_arithmetic/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_arithmetic/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_arithmetic/value.cc: Likewise.
+	* testsuite/20_util/is_array/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_array/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_array/value.cc: Likewise.
+	* testsuite/20_util/is_base_of/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_base_of/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_base_of/value.cc: Likewise.
+	* testsuite/20_util/is_class/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_class/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_class/value.cc: Likewise.
+	* testsuite/20_util/is_const/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_const/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_const/value.cc: Likewise.
+	* testsuite/20_util/is_empty/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_empty/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_empty/value.cc: Likewise.
+	* testsuite/20_util/is_enum/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_enum/requirements/typedefs.cc
+	* testsuite/20_util/is_enum/value.cc: Likewise.
+	* testsuite/20_util/is_pointer/requirements/explicit_instantiation.cc
+	* testsuite/20_util/is_pointer/value.cc: Likewise.
+	* testsuite/20_util/is_polymorphic/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_polymorphic/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_polymorphic/value.cc: Likewise.
+	* testsuite/20_util/is_same/requirements/explicit_instantiation.cc
+	* testsuite/20_util/is_same/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_same/value.cc: Likewise.
+	* testsuite/20_util/is_union/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_union/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_union/value.cc: Likewise.
+	* testsuite/20_util/is_void/requirements/explicit_instantiation.cc
+	* testsuite/20_util/is_void/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_void/value.cc: Likewise.
+	* testsuite/20_util/is_volatile/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/is_volatile/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_volatile/value.cc: Likewise.
+	* testsuite/20_util/rank/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/rank/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/rank/value.cc: Likewise.
+	* testsuite/20_util/remove_all_extents/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/remove_all_extents/value.cc: Likewise.
+	* testsuite/20_util/remove_const/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/remove_const/value.cc: Likewise.
+	* testsuite/20_util/remove_cv/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/remove_cv/value.cc: Likewise.
+	* testsuite/20_util/remove_extent/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/remove_extent/value.cc: Likewise.
+	* testsuite/20_util/remove_pointer/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/remove_pointer/value.cc: Likewise.
+	* testsuite/20_util/remove_volatile/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/remove_volatile/value.cc: Likewise.
+
 2013-12-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_tr1.h (test_category, test_property,
