@@ -1,3 +1,12 @@
+2013-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-12-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59405
+	* config/i386/i386.c (type_natural_mode): Properly handle
+	size 8 for !TARGET_64BIT.
+
 2013-12-07  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (microblaze*-*-rtems*): Add TARGET_BIG_ENDIAN_DEFAULT.
@@ -39,7 +48,7 @@
 	PR tree-optimization/59334
 	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Fix bug
 	in previous commit.
- 
+
 	2013-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59330
