@@ -1,3 +1,7 @@
+2013-12-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/async/async.cc: Fix race condition in test.
+
 2013-12-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/add_const/requirements/explicit_instantiation.cc:
