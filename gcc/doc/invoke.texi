@@ -959,7 +959,7 @@ See RS/6000 and PowerPC Options.
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols @gol
 -matomic-model=@var{atomic-model} @gol
--mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
+-mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch @gol
 -mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
 -mpretend-cmove -mtas}
 
@@ -20251,15 +20251,6 @@ Assume (do not assume) that zero displacement conditional branch instructions
 compiler will try to prefer zero displacement branch code sequences.  This is
 enabled by default when generating code for SH4 and SH4A.  It can be explicitly
 disabled by specifying @option{-mno-zdcbranch}.
-
-@item -mcbranchdi
-@opindex mcbranchdi
-Enable the @code{cbranchdi4} instruction pattern.
-
-@item -mcmpeqdi
-@opindex mcmpeqdi
-Emit the @code{cmpeqdi_t} instruction pattern even when @option{-mcbranchdi}
-is in effect.
 
 @item -mfused-madd
 @itemx -mno-fused-madd

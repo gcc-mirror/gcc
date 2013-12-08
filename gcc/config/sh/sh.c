@@ -771,6 +771,11 @@ sh_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
   if (optimize > 1 && !optimize_size)
     target_flags |= MASK_SAVE_ALL_TARGET_REGS;
+
+  /* Set default values of TARGET_CBRANCHDI4 and TARGET_CMPEQDI_T.  */
+  TARGET_CBRANCHDI4 = 1;
+  TARGET_CMPEQDI_T = 0;
+
   sh_cpu = PROCESSOR_SH1;
   assembler_dialect = 0;
   if (TARGET_SH2)

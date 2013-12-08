@@ -1,3 +1,9 @@
+2013-12-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52898
+	PR target/51697
+	* gcc.target/sh/pr51697.c: New.
+
 2013-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/macro-fusion-1.c: Cleanup sched2 rtl dump.

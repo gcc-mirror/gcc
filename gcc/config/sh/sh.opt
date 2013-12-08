@@ -233,11 +233,11 @@ Target Var(TARGET_ZDCBRANCH)
 Assume that zero displacement conditional branches are fast
 
 mcbranchdi
-Target Var(TARGET_CBRANCHDI4)
+Target Undocumented Var(TARGET_CBRANCHDI4) Warn(%qs is deprecated and has no effect)
 Enable cbranchdi4 pattern
 
 mcmpeqdi
-Target Var(TARGET_CMPEQDI_T)
+Target Undocumented Var(TARGET_CMPEQDI_T) Warn(%qs is deprecated and has no effect)
 Emit cmpeqdi_t pattern even when -mcbranchdi is in effect.
 
 mcut2-workaround

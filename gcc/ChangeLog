@@ -1,3 +1,15 @@
+2013-12-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52898
+	PR target/51697
+	* common/config/sh/sh-common.c (sh_option_optimization_table): Remove
+	OPT_mcbranchdi entry.
+	* config/sh/sh.opt (mcbranchdi, mcmpeqdi): Mark as undocumented and
+	emit a warning.
+	* config/sh/sh.c (sh_option_override): Initialize TARGET_CBRANCHDI4
+	and TARGET_CMPEQDI_T variables.
+	* doc/invoke.texi (SH options): Undocument -mcbranchdi and -mcmpeqdi.
+
 2013-12-07  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
 	* config/linux.h: Fix typo in a comment.
