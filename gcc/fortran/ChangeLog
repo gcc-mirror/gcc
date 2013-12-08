@@ -1,3 +1,15 @@
+2013-12-08  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58099
+	PR fortran/58676
+	PR fortran/41724
+	* resolve.c (gfc_resolve_intrinsic): Set elemental/pure.
+	(resolve_fl_procedure): Reject pure dummy procedures/procedure
+	pointers.
+	(gfc_explicit_interface_required): Don't require a
+	match of ELEMENTAL for intrinsics.
+
 2013-12-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59414

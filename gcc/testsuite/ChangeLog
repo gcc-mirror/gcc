@@ -1,3 +1,18 @@
+2013-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58099
+	PR fortran/58676
+	PR fortran/41724
+	* gfortran.dg/elemental_subroutine_8.f90: New.
+	* gfortran.dg/proc_decl_9.f90: Add ELEMENTAL to make valid.
+	* gfortran.dg/proc_ptr_11.f90: Ditto.
+	* gfortran.dg/proc_ptr_result_8.f90: Ditto.
+	* gfortran.dg/proc_ptr_32.f90: Update dg-error.
+	* gfortran.dg/proc_ptr_33.f90: Ditto.
+	* gfortran.dg/proc_ptr_result_1.f90: Add abstract interface
+	which is not elemental.
+	* gfortran.dg/proc_ptr_result_7.f90: Ditto.
+
 2013-12-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59414
