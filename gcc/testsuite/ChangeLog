@@ -1,3 +1,10 @@
+2013-12-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/macro-fusion-1.c: Cleanup sched2 rtl dump.
+	* gcc.dg/macro-fusion-2.c: Ditto.
+	* gcc.dg/vect/vect-simd-clone-10a.c: Cleanup vect tree dump.
+	* gcc.dg/vect/vect-simd-clone-12a.c: Ditto.
+
 2013-12-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58099
