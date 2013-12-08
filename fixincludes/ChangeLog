@@ -1,3 +1,14 @@
+2013-12-07  Bruce Korb  <bkorb@gnu.org>
+
+	* inclhack.def: many of the headers found under "bits/" are
+	often stashed under architecture directories.  Apply fixes
+	to those, too.  Also, re-ordered misordered fixes.
+	* tests/base/linux/vt.h: 80 columns in .def file limitation
+	* tests/base/iso/math_c99.h: adjust ordering
+	* tests/base/rtldef/string.h: likewise
+	* tests/base/bits/fenv.h: likewise
+	* tests/base/pthread.h: likewise
+
 2013-12-06  Richard Biener  <rguenther@suse.de>
 
 	* inclhack.def (suse_linux_vt_cxx): New fix for linux/vt.h
