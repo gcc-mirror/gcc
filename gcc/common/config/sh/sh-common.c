@@ -34,7 +34,6 @@ static const struct default_options sh_option_optimization_table[] =
     { OPT_LEVELS_1_PLUS_SPEED_ONLY, OPT_mdiv_, "inv:minlat", 1 },
     { OPT_LEVELS_SIZE, OPT_mdiv_, SH_DIV_STR_FOR_SIZE, 1 },
     { OPT_LEVELS_0_ONLY, OPT_mdiv_, "", 1 },
-    { OPT_LEVELS_SIZE, OPT_mcbranchdi, NULL, 0 },
     /* We can't meaningfully test TARGET_SHMEDIA here, because -m
        options haven't been parsed yet, hence we'd read only the
        default.  sh_target_reg_class will return NO_REGS if this is
