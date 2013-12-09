@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
@@ -19,36 +21,28 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_literal_type;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_literal_type, int>(true)) );
-  VERIFY( (test_category<is_literal_type, unsigned char>(true)) );
+  static_assert(test_category<is_literal_type, int>(true), "");
+  static_assert(test_category<is_literal_type, unsigned char>(true), "");
 
-  VERIFY( (test_category<is_literal_type, TType>(true)) );
-  VERIFY( (test_category<is_literal_type, PODType>(true)) );
+  static_assert(test_category<is_literal_type, TType>(true), "");
+  static_assert(test_category<is_literal_type, PODType>(true), "");
 
-  VERIFY( (test_category<is_literal_type, NType>(false)) );
-  VERIFY( (test_category<is_literal_type, SLType>(false)) );
+  static_assert(test_category<is_literal_type, NType>(false), "");
+  static_assert(test_category<is_literal_type, SLType>(false), "");
 
-  VERIFY( (test_category<is_literal_type, LType>(true)) );
-  VERIFY( (test_category<is_literal_type, LType[5]>(true)) );
+  static_assert(test_category<is_literal_type, LType>(true), "");
+  static_assert(test_category<is_literal_type, LType[5]>(true), "");
 
-  VERIFY( (test_category<is_literal_type, NLType>(false)) );
-  VERIFY( (test_category<is_literal_type, NLType[5]>(false)) );
+  static_assert(test_category<is_literal_type, NLType>(false), "");
+  static_assert(test_category<is_literal_type, NLType[5]>(false), "");
 
-  VERIFY( (test_category<is_literal_type, LTypeDerived>(true)) );
-  VERIFY( (test_category<is_literal_type, LTypeDerived[5]>(true)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_literal_type, LTypeDerived>(true), "");
+  static_assert(test_category<is_literal_type, LTypeDerived[5]>(true), "");
 }

@@ -77,7 +77,8 @@ namespace __sanitizer {
 uptr internal_mmap(void *addr, uptr length, int prot, int flags,
                     int fd, u64 offset) {
 #if SANITIZER_LINUX_USES_64BIT_SYSCALLS
-  return internal_syscall(__NR_mmap, (uptr)addr, length, prot, flags, fd, offset);
+  return internal_syscall(__NR_mmap, (uptr)addr, length, prot, flags, fd,
+                          offset);
 #else
   return internal_syscall(__NR_mmap2, addr, length, prot, flags, fd, offset);
 #endif
@@ -216,7 +217,8 @@ uptr GetTid() {
 }
 
 u64 NanoTime() {
-  kernel_timeval tv = {};
+  kernel_timeval tv;
+  internal_memset(&tv, 0, sizeof(tv));
   internal_syscall(__NR_gettimeofday, (uptr)&tv, 0);
   return (u64)tv.tv_sec * 1000*1000*1000 + tv.tv_usec * 1000;
 }
@@ -309,7 +311,8 @@ void PrepareForSandboxing() {
   MemoryMappingLayout::CacheMemoryMappings();
   // Same for /proc/self/exe in the symbolizer.
 #if !SANITIZER_GO
-  getSymbolizer()->PrepareForSandboxing();
+  if (Symbolizer *sym = Symbolizer::GetOrNull())
+    sym->PrepareForSandboxing();
 #endif
 }
 
@@ -572,7 +575,8 @@ uptr internal_ptrace(int request, int pid, void *addr, void *data) {
 }
 
 uptr internal_waitpid(int pid, int *status, int options) {
-  return internal_syscall(__NR_wait4, pid, (uptr)status, options, 0 /* rusage */);
+  return internal_syscall(__NR_wait4, pid, (uptr)status, options,
+                          0 /* rusage */);
 }
 
 uptr internal_getpid() {
@@ -598,6 +602,31 @@ uptr internal_prctl(int option, uptr arg2, uptr arg3, uptr arg4, uptr arg5) {
 uptr internal_sigaltstack(const struct sigaltstack *ss,
                          struct sigaltstack *oss) {
   return internal_syscall(__NR_sigaltstack, (uptr)ss, (uptr)oss);
+}
+
+uptr internal_sigaction(int signum, const __sanitizer_kernel_sigaction_t *act,
+    __sanitizer_kernel_sigaction_t *oldact) {
+  return internal_syscall(__NR_rt_sigaction, signum, act, oldact,
+      sizeof(__sanitizer_kernel_sigset_t));
+}
+
+uptr internal_sigprocmask(int how, __sanitizer_kernel_sigset_t *set,
+    __sanitizer_kernel_sigset_t *oldset) {
+  return internal_syscall(__NR_rt_sigprocmask, (uptr)how, &set->sig[0],
+      &oldset->sig[0], sizeof(__sanitizer_kernel_sigset_t));
+}
+
+void internal_sigfillset(__sanitizer_kernel_sigset_t *set) {
+  internal_memset(set, 0xff, sizeof(*set));
+}
+
+void internal_sigdelset(__sanitizer_kernel_sigset_t *set, int signum) {
+  signum -= 1;
+  CHECK_GE(signum, 0);
+  CHECK_LT(signum, sizeof(*set) * 8);
+  const uptr idx = signum / (sizeof(set->sig[0]) * 8);
+  const uptr bit = signum % (sizeof(set->sig[0]) * 8);
+  set->sig[idx] &= ~(1 << bit);
 }
 
 // ThreadLister implementation.
@@ -775,8 +804,8 @@ uptr internal_clone(int (*fn)(void *), void *child_stack, int flags, void *arg,
   child_stack = (char *)child_stack - 2 * sizeof(unsigned long long);
   ((unsigned long long *)child_stack)[0] = (uptr)fn;
   ((unsigned long long *)child_stack)[1] = (uptr)arg;
-  register void *r8 __asm__ ("r8") = newtls;
-  register int *r10 __asm__ ("r10") = child_tidptr;
+  register void *r8 __asm__("r8") = newtls;
+  register int *r10 __asm__("r10") = child_tidptr;
   __asm__ __volatile__(
                        /* %rax = syscall(%rax = __NR_clone,
                         *                %rdi = flags,

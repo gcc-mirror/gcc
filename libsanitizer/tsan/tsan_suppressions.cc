@@ -85,6 +85,11 @@ void InitializeSuppressions() {
 #endif
 }
 
+SuppressionContext *GetSuppressionContext() {
+  CHECK_NE(g_ctx, 0);
+  return g_ctx;
+}
+
 SuppressionType conv(ReportType typ) {
   if (typ == ReportTypeRace)
     return SuppressionRace;

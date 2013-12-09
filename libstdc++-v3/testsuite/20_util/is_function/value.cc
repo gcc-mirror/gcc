@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 //
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
@@ -18,38 +19,32 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_function;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_category<is_function, int (int)>(true)) );
-  VERIFY( (test_category<is_function, ClassType (ClassType)>(true)) );
-  VERIFY( (test_category<is_function, float (int, float, int[], int&)>(true)) );
-  VERIFY( (test_category<is_function, int (int, ...)>(true)) );
-  VERIFY( (test_category<is_function, bool (ClassType) const>(true)) );
-  VERIFY( (test_category<is_function, ClassType () &>(true)) );
-  VERIFY( (test_category<is_function, char (int, ClassType) const volatile &&>(true)) );
+  static_assert(test_category<is_function, int (int)>(true), "");
+  static_assert(test_category<is_function, ClassType (ClassType)>(true), "");
+  static_assert(test_category<is_function,
+		float (int, float, int[], int&)>(true), "");
+  static_assert(test_category<is_function, int (int, ...)>(true), "");
+  static_assert(test_category<is_function, bool (ClassType) const>(true), "");
+  static_assert(test_category<is_function, ClassType () &>(true), "");
+  static_assert(test_category<is_function,
+		char (int, ClassType) const volatile &&>(true), "");
 
   // Negative tests.
-  VERIFY( (test_category<is_function, int&>(false)) );
-  VERIFY( (test_category<is_function, void>(false)) );
-  VERIFY( (test_category<is_function, const void>(false)) );
+  static_assert(test_category<is_function, int&>(false), "");
+  static_assert(test_category<is_function, void>(false), "");
+  static_assert(test_category<is_function, const void>(false), "");
 
-  VERIFY( (test_category<is_function, AbstractClass>(false)) );
-  VERIFY( (test_category<is_function, int(&)(int)>(false)) );
+  static_assert(test_category<is_function, AbstractClass>(false), "");
+  static_assert(test_category<is_function, int(&)(int)>(false), "");
   
   // Sanity check.
-  VERIFY( (test_category<is_function, ClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_function, ClassType>(false), "");
 }

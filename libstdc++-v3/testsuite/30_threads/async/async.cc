@@ -29,23 +29,18 @@
 
 using namespace std;
 
-struct work {
-  typedef void result_type;
-  void operator()(mutex& m, condition_variable& cv)
-  {
-    unique_lock<mutex> l(m);
-    cv.notify_one();
-  }
-};
+void work(mutex& m)
+{
+  unique_lock<mutex> l(m);
+}
 
 void test01()
 {
   mutex m;
-  condition_variable cv;
   unique_lock<mutex> l(m);
-  future<void> f1 = async(launch::async, work(), ref(m), ref(cv));
-  cv.wait(l);
-  f1.get();
+  future<void> f1 = async(launch::async, &work, ref(m));
+  l.unlock();  // allow async thread to proceed
+  f1.get();    // wait for it to finish
 }
 
 void test02()
@@ -53,15 +48,15 @@ void test02()
   bool test __attribute__((unused)) = true;
 
   mutex m;
-  condition_variable cv;
   unique_lock<mutex> l(m);
-  future<void> f1 = async(launch::async, work(), ref(m), ref(cv));
+  future<void> f1 = async(launch::async, &work, ref(m));
   std::future_status status;
   status = f1.wait_for(std::chrono::milliseconds(1));
   VERIFY( status == std::future_status::timeout );
   status = f1.wait_until(std::chrono::system_clock::now());
   VERIFY( status == std::future_status::timeout );
-  cv.wait(l);
+  l.unlock();  // allow async thread to proceed
+  f1.wait();   // wait for it to finish
   status = f1.wait_for(std::chrono::milliseconds(0));
   VERIFY( status == std::future_status::ready );
   status = f1.wait_until(std::chrono::system_clock::now());

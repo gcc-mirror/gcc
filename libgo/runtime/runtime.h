@@ -453,7 +453,7 @@ enum {
 };
 void	runtime_hashinit(void);
 
-void	runtime_traceback();
+void	runtime_traceback(void);
 void	runtime_tracebackothers(G*);
 
 /*

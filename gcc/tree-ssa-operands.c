@@ -105,16 +105,14 @@ along with GCC; see the file COPYING3.  If not see
    VUSE for 'b'.  */
 #define opf_no_vops 	(1 << 1)
 
-/* Operand is an implicit reference.  This is used to distinguish
-   explicit assignments in the form of MODIFY_EXPR from
-   clobbering sites like function calls or ASM_EXPRs.  */
-#define opf_implicit	(1 << 2)
-
 /* Operand is in a place where address-taken does not imply addressable.  */
 #define opf_non_addressable (1 << 3)
 
 /* Operand is in a place where opf_non_addressable does not apply.  */
 #define opf_not_non_addressable (1 << 4)
+
+/* Operand is having its address taken.  */
+#define opf_address_taken (1 << 5)
 
 /* Array for building all the use operands.  */
 static vec<tree> build_uses;
@@ -597,8 +595,8 @@ mark_address_taken (tree ref)
    FLAGS is as in get_expr_operands.  */
 
 static void
-get_indirect_ref_operands (struct function *fn,
-			   gimple stmt, tree expr, int flags)
+get_mem_ref_operands (struct function *fn,
+		      gimple stmt, tree expr, int flags)
 {
   tree *pptr = &TREE_OPERAND (expr, 0);
 
@@ -664,7 +662,7 @@ maybe_add_call_vops (struct function *fn, gimple stmt)
 /* Scan operands in the ASM_EXPR stmt referred to in INFO.  */
 
 static void
-get_asm_expr_operands (struct function *fn, gimple stmt)
+get_asm_stmt_operands (struct function *fn, gimple stmt)
 {
   size_t i, noutputs;
   const char **oconstraints;
@@ -750,11 +748,6 @@ get_expr_operands (struct function *fn, gimple stmt, tree *expr_p, int flags)
 	  && !is_gimple_debug (stmt))
 	mark_address_taken (TREE_OPERAND (expr, 0));
 
-      /* If the address is invariant, there may be no interesting
-	 variable references inside.  */
-      if (is_gimple_min_invariant (expr))
-	return;
-
       /* Otherwise, there may be variables referenced inside but there
 	 should be no VUSEs created, since the referenced objects are
 	 not really accessed.  The only operands that we should find
@@ -762,14 +755,15 @@ get_expr_operands (struct function *fn, gimple stmt, tree *expr_p, int flags)
 	 (GIMPLE does not allow non-registers as array indices).  */
       flags |= opf_no_vops;
       get_expr_operands (fn, stmt, &TREE_OPERAND (expr, 0),
-			 flags | opf_not_non_addressable);
+			 flags | opf_not_non_addressable | opf_address_taken);
       return;
 
     case SSA_NAME:
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
-      add_stmt_operand (fn, expr_p, stmt, flags);
+      if (!(flags & opf_address_taken))
+	add_stmt_operand (fn, expr_p, stmt, flags);
       return;
 
     case DEBUG_EXPR_DECL:
@@ -777,7 +771,7 @@ get_expr_operands (struct function *fn, gimple stmt, tree *expr_p, int flags)
       return;
 
     case MEM_REF:
-      get_indirect_ref_operands (fn, stmt, expr, flags);
+      get_mem_ref_operands (fn, stmt, expr, flags);
       return;
 
     case TARGET_MEM_REF:
@@ -921,7 +915,7 @@ parse_ssa_operands (struct function *fn, gimple stmt)
   switch (code)
     {
     case GIMPLE_ASM:
-      get_asm_expr_operands (fn, stmt);
+      get_asm_stmt_operands (fn, stmt);
       break;
 
     case GIMPLE_TRANSACTION:

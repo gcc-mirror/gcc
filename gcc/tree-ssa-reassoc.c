@@ -2072,9 +2072,19 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 
   tem = fold_convert_loc (loc, optype, tem);
   gsi = gsi_for_stmt (stmt);
-  tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
-				  GSI_SAME_STMT);
-  for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
+  /* In rare cases range->exp can be equal to lhs of stmt.
+     In that case we have to insert after the stmt rather then before
+     it.  */
+  if (op == range->exp)
+    tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, false,
+				    GSI_CONTINUE_LINKING);
+  else
+    {
+      tem = force_gimple_operand_gsi (&gsi, tem, true, NULL_TREE, true,
+				      GSI_SAME_STMT);
+      gsi_prev (&gsi);
+    }
+  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
     if (gimple_uid (gsi_stmt (gsi)))
       break;
     else

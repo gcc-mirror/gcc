@@ -54,6 +54,7 @@ set tests [prune $tests $srcdir/$subdir/guality/*]
 set tests [prune $tests $srcdir/$subdir/simulate-thread/*]
 set tests [prune $tests $srcdir/$subdir/asan/*]
 set tests [prune $tests $srcdir/$subdir/ubsan/*]
+set tests [prune $tests $srcdir/$subdir/tsan/*]
 
 # Main loop.
 g++-dg-runtest $tests $DEFAULT_CXXFLAGS

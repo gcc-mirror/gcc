@@ -209,18 +209,6 @@ proc check_effective_target_lzcnt { } {
     } "-mlzcnt" ]
 }
 
-# Return 1 if avx2 instructions can be compiled.
-proc check_effective_target_avx2 { } {
-    return [check_no_compiler_messages avx2 object {
-	typedef long long __v4di __attribute__ ((__vector_size__ (32)));
-	__v4di
-	mm256_is32_andnotsi256  (__v4di __X, __v4di __Y)
-        {
-	   return __builtin_ia32_andnotsi256 (__X, __Y);
-	}
-    } "-O0 -mavx2" ]
-}
-
 # Return 1 if bmi instructions can be compiled.
 proc check_effective_target_bmi { } {
     return [check_no_compiler_messages bmi object {

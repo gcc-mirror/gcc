@@ -4320,8 +4320,8 @@ compute_all_dependences (vec<data_reference_p> datarefs,
 
 typedef struct data_ref_loc_d
 {
-  /* Position of the memory reference.  */
-  tree *pos;
+  /* The memory reference.  */
+  tree ref;
 
   /* True if the memory reference is read.  */
   bool is_read;
@@ -4336,7 +4336,7 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
 {
   bool clobbers_memory = false;
   data_ref_loc ref;
-  tree *op0, *op1;
+  tree op0, op1;
   enum gimple_code stmt_code = gimple_code (stmt);
 
   /* ASM_EXPR and CALL_EXPR may embed arbitrary side effects.
@@ -4369,15 +4369,15 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
   if (stmt_code == GIMPLE_ASSIGN)
     {
       tree base;
-      op0 = gimple_assign_lhs_ptr (stmt);
-      op1 = gimple_assign_rhs1_ptr (stmt);
+      op0 = gimple_assign_lhs (stmt);
+      op1 = gimple_assign_rhs1 (stmt);
 
-      if (DECL_P (*op1)
-	  || (REFERENCE_CLASS_P (*op1)
-	      && (base = get_base_address (*op1))
+      if (DECL_P (op1)
+	  || (REFERENCE_CLASS_P (op1)
+	      && (base = get_base_address (op1))
 	      && TREE_CODE (base) != SSA_NAME))
 	{
-	  ref.pos = op1;
+	  ref.ref = op1;
 	  ref.is_read = true;
 	  references->safe_push (ref);
 	}
@@ -4386,16 +4386,16 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
     {
       unsigned i, n;
 
-      op0 = gimple_call_lhs_ptr (stmt);
+      op0 = gimple_call_lhs (stmt);
       n = gimple_call_num_args (stmt);
       for (i = 0; i < n; i++)
 	{
-	  op1 = gimple_call_arg_ptr (stmt, i);
+	  op1 = gimple_call_arg (stmt, i);
 
-	  if (DECL_P (*op1)
-	      || (REFERENCE_CLASS_P (*op1) && get_base_address (*op1)))
+	  if (DECL_P (op1)
+	      || (REFERENCE_CLASS_P (op1) && get_base_address (op1)))
 	    {
-	      ref.pos = op1;
+	      ref.ref = op1;
 	      ref.is_read = true;
 	      references->safe_push (ref);
 	    }
@@ -4404,11 +4404,11 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_heap> *references)
   else
     return clobbers_memory;
 
-  if (*op0
-      && (DECL_P (*op0)
-	  || (REFERENCE_CLASS_P (*op0) && get_base_address (*op0))))
+  if (op0
+      && (DECL_P (op0)
+	  || (REFERENCE_CLASS_P (op0) && get_base_address (op0))))
     {
-      ref.pos = op0;
+      ref.ref = op0;
       ref.is_read = false;
       references->safe_push (ref);
     }
@@ -4435,7 +4435,7 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
   FOR_EACH_VEC_ELT (references, i, ref)
     {
       dr = create_data_ref (nest, loop_containing_stmt (stmt),
-			    *ref->pos, stmt, ref->is_read);
+			    ref->ref, stmt, ref->is_read);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
@@ -4464,7 +4464,7 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
-      dr = create_data_ref (nest, loop, *ref->pos, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop, ref->ref, stmt, ref->is_read);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }

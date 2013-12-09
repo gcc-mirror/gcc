@@ -28,66 +28,68 @@ namespace __gnu_test
 {
   // For tr1/type_traits.
   template<template<typename> class Category, typename Type>
+#if __cplusplus >= 201103L
+    constexpr
+#endif
     bool
     test_category(bool value)
     {
-      bool ret = true;
-      ret &= Category<Type>::value == value;
-      ret &= Category<const Type>::value == value;
-      ret &= Category<volatile Type>::value == value;
-      ret &= Category<const volatile Type>::value == value;
-      ret &= Category<Type>::type::value == value;
-      ret &= Category<const Type>::type::value == value;
-      ret &= Category<volatile Type>::type::value == value;
-      ret &= Category<const volatile Type>::type::value == value;
-      return ret;
+      return (Category<Type>::value == value
+	      && Category<const Type>::value == value
+	      && Category<volatile Type>::value == value
+	      && Category<const volatile Type>::value == value
+	      && Category<Type>::type::value == value
+	      && Category<const Type>::type::value == value
+	      && Category<volatile Type>::type::value == value
+	      && Category<const volatile Type>::type::value == value);
     }
 
   template<template<typename> class Property, typename Type>
+#if __cplusplus >= 201103L
+    constexpr
+#endif
     bool
     test_property(typename Property<Type>::value_type value)
     {
-      bool ret = true;
-      ret &= Property<Type>::value == value;
-      ret &= Property<Type>::type::value == value;
-      return ret;
+      return (Property<Type>::value == value
+	      && Property<Type>::type::value == value);
     }
 
   // For testing tr1/type_traits/extent, which has a second template
   // parameter.
   template<template<typename, unsigned> class Property,
 	   typename Type, unsigned Uint>
+#if __cplusplus >= 201103L
+    constexpr
+#endif
     bool
     test_property(typename Property<Type, Uint>::value_type value)
     {
-      bool ret = true;
-      ret &= Property<Type, Uint>::value == value;
-      ret &= Property<Type, Uint>::type::value == value;
-      return ret;
+      return (Property<Type, Uint>::value == value
+	      && Property<Type, Uint>::type::value == value);
     }
 
 #if __cplusplus >= 201103L
   template<template<typename...> class Property,
 	   typename Type1, typename... Types>
-    bool
+    constexpr bool
     test_property(typename Property<Type1, Types...>::value_type value)
     {
-      bool ret = true;
-      ret &= Property<Type1, Types...>::value == value;
-      ret &= Property<Type1, Types...>::type::value == value;
-      return ret;
+      return (Property<Type1, Types...>::value == value
+	      && Property<Type1, Types...>::type::value == value);
     }
 #endif
 
   template<template<typename, typename> class Relationship,
 	   typename Type1, typename Type2>
+#if __cplusplus >= 201103L
+    constexpr
+#endif
     bool
     test_relationship(bool value)
     {
-      bool ret = true;
-      ret &= Relationship<Type1, Type2>::value == value;
-      ret &= Relationship<Type1, Type2>::type::value == value;
-      return ret;
+      return (Relationship<Type1, Type2>::value == value
+	      && Relationship<Type1, Type2>::type::value == value);
     }
 
   // Test types.

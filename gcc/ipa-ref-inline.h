@@ -27,7 +27,7 @@ ipa_ref_node (struct ipa_ref *ref)
 
 /* Return varpool node REF is referring.  */
 
-static inline struct varpool_node *
+static inline varpool_node *
 ipa_ref_varpool_node (struct ipa_ref *ref)
 {
   return varpool (ref->referred);
@@ -43,7 +43,7 @@ ipa_ref_referring_node (struct ipa_ref *ref)
 
 /* Return varpool node REF is in.  */
 
-static inline struct varpool_node *
+static inline varpool_node *
 ipa_ref_referring_varpool_node (struct ipa_ref *ref)
 {
   return varpool (ref->referring);

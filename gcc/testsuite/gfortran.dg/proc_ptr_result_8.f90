@@ -26,7 +26,14 @@ type :: t
 end type
 type(t) :: x
 
-procedure(iabs), pointer :: pp
+! We cannot use iabs directly as it is elemental
+abstract interface
+  integer pure function interf_iabs(x)
+    integer, intent(in) :: x
+  end function interf_iabs
+end interface
+
+procedure(interf_iabs), pointer :: pp
 procedure(foo), pointer :: pp1
 
 x%p => a     ! ok
@@ -47,7 +54,7 @@ contains
 
   function a (c) result (b)
     integer, intent(in) :: c
-    procedure(iabs), pointer :: b
+    procedure(interf_iabs), pointer :: b
     if (c .eq. 1) then
       b => iabs
     else
@@ -55,7 +62,7 @@ contains
     end if
   end function
 
-  integer function foo (arg)
+  pure integer function foo (arg)
     integer, intent (in) :: arg
     foo = -iabs(arg)
   end function

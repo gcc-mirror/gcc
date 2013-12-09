@@ -102,6 +102,7 @@ s390 port		Andreas Krebbel		Andreas.Krebbel@de.ibm.com
 score port		Chen Liqin		liqin.gcc@gmail.com
 sh port			Alexandre Oliva		aoliva@redhat.com
 sh port			Kaz Kojima		kkojima@gcc.gnu.org
+sh port			Oleg Endo		olegendo@gcc.gnu.org
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Eric Botcazou		ebotcazou@libertysurf.fr
@@ -256,6 +257,7 @@ testsuite		Mike Stump		mikestump@comcast.net
 testsuite		Janis Johnson		janisjo@codesourcery.com
 register allocation	Vladimir Makarov	vmakarov@redhat.com
 gdbhooks.py		David Malcolm		dmalcolm@redhat.com
+SLSR			Bill Schmidt		wschmidt@linux.vnet.ibm.com
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
@@ -363,7 +365,6 @@ Michael Eager					eager@eagercon.com
 Bernd Edlinger					bernd.edlinger@hotmail.de
 Phil Edwards					pme@gcc.gnu.org
 Mohan Embar					gnustuff@thisiscool.com
-Oleg Endo					olegendo@gcc.gnu.org
 Revital Eres					eres@il.ibm.com
 Marc Espie					espie@cvs.openbsd.org
 Rafael Ávila de Espíndola			espindola@google.com

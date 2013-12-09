@@ -196,10 +196,15 @@ char *FindPathToBinary(const char *name) {
 }
 
 void MaybeOpenReportFile() {
-  if (!log_to_file || (report_fd_pid == internal_getpid())) return;
+  if (!log_to_file) return;
+  uptr pid = internal_getpid();
+  // If in tracer, use the parent's file.
+  if (pid == stoptheworld_tracer_pid)
+    pid = stoptheworld_tracer_ppid;
+  if (report_fd_pid == pid) return;
   InternalScopedBuffer<char> report_path_full(4096);
   internal_snprintf(report_path_full.data(), report_path_full.size(),
-                    "%s.%d", report_path_prefix, internal_getpid());
+                    "%s.%d", report_path_prefix, pid);
   uptr openrv = OpenFile(report_path_full.data(), true);
   if (internal_iserror(openrv)) {
     report_fd = kStderrFd;
@@ -212,7 +217,7 @@ void MaybeOpenReportFile() {
     internal_close(report_fd);
   }
   report_fd = openrv;
-  report_fd_pid = internal_getpid();
+  report_fd_pid = pid;
 }
 
 void RawWrite(const char *buffer) {
@@ -228,12 +233,11 @@ void RawWrite(const char *buffer) {
 
 bool GetCodeRangeForFile(const char *module, uptr *start, uptr *end) {
   uptr s, e, off, prot;
-  InternalMmapVector<char> fn(4096);
-  fn.push_back(0);
+  InternalScopedString buff(4096);
   MemoryMappingLayout proc_maps(/*cache_enabled*/false);
-  while (proc_maps.Next(&s, &e, &off, &fn[0], fn.capacity(), &prot)) {
+  while (proc_maps.Next(&s, &e, &off, buff.data(), buff.size(), &prot)) {
     if ((prot & MemoryMappingLayout::kProtectionExecute) != 0
-        && internal_strcmp(module, &fn[0]) == 0) {
+        && internal_strcmp(module, buff.data()) == 0) {
       *start = s;
       *end = e;
       return true;

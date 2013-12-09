@@ -30,9 +30,10 @@ proc ubsan_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
 
     if { $gccpath != "" } {
-      append flags " -B${gccpath}/libsanitizer/ubsan/ "
       if { [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.a"]
 	   || [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.${shlib_ext}"] } {
+	  append flags " -B${gccpath}/libsanitizer/ "
+	  append flags " -B${gccpath}/libsanitizer/ubsan/ "
 	  append flags " -L${gccpath}/libsanitizer/ubsan/.libs"
 	  append ld_library_path ":${gccpath}/libsanitizer/ubsan/.libs"
       }

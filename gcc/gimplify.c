@@ -1689,6 +1689,9 @@ gimplify_conversion (tree *expr_p)
 /* Nonlocal VLAs seen in the current function.  */
 static struct pointer_set_t *nonlocal_vlas;
 
+/* The VAR_DECLs created for nonlocal VLAs for debug info purposes.  */
+static tree nonlocal_vla_vars;
+
 /* Gimplify a VAR_DECL or PARM_DECL.  Return GS_OK if we expanded a
    DECL_VALUE_EXPR, and it's worth re-examining things.  */
 
@@ -1737,14 +1740,13 @@ gimplify_var_or_parm_decl (tree *expr_p)
 	    ctx = ctx->outer_context;
 	  if (!ctx && !pointer_set_insert (nonlocal_vlas, decl))
 	    {
-	      tree copy = copy_node (decl), block;
+	      tree copy = copy_node (decl);
 
 	      lang_hooks.dup_lang_specific_decl (copy);
 	      SET_DECL_RTL (copy, 0);
 	      TREE_USED (copy) = 1;
-	      block = DECL_INITIAL (current_function_decl);
-	      DECL_CHAIN (copy) = BLOCK_VARS (block);
-	      BLOCK_VARS (block) = copy;
+	      DECL_CHAIN (copy) = nonlocal_vla_vars;
+	      nonlocal_vla_vars = copy;
 	      SET_DECL_VALUE_EXPR (copy, unshare_expr (value_expr));
 	      DECL_HAS_VALUE_EXPR_P (copy) = 1;
 	    }
@@ -8562,6 +8564,21 @@ gimplify_body (tree fndecl, bool do_parms)
 
   if (nonlocal_vlas)
     {
+      if (nonlocal_vla_vars)
+	{
+	  /* tree-nested.c may later on call declare_vars (..., true);
+	     which relies on BLOCK_VARS chain to be the tail of the
+	     gimple_bind_vars chain.  Ensure we don't violate that
+	     assumption.  */
+	  if (gimple_bind_block (outer_bind)
+	      == DECL_INITIAL (current_function_decl))
+	    declare_vars (nonlocal_vla_vars, outer_bind, true);
+	  else
+	    BLOCK_VARS (DECL_INITIAL (current_function_decl))
+	      = chainon (BLOCK_VARS (DECL_INITIAL (current_function_decl)),
+			 nonlocal_vla_vars);
+	  nonlocal_vla_vars = NULL_TREE;
+	}
       pointer_set_destroy (nonlocal_vlas);
       nonlocal_vlas = NULL;
     }

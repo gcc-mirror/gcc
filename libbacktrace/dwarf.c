@@ -2535,19 +2535,23 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
   if (pfvec->count == 0)
     return;
 
-  addrs = (struct function_addrs *) pfvec->vec.base;
   addrs_count = pfvec->count;
 
   if (fvec == NULL)
     {
       if (!backtrace_vector_release (state, &lvec.vec, error_callback, data))
 	return;
+      addrs = (struct function_addrs *) pfvec->vec.base;
     }
   else
     {
       /* Finish this list of addresses, but leave the remaining space in
 	 the vector available for the next function unit.  */
-      backtrace_vector_finish (state, &fvec->vec);
+      addrs = ((struct function_addrs *)
+	       backtrace_vector_finish (state, &fvec->vec,
+					error_callback, data));
+      if (addrs == NULL)
+	return;
       fvec->count = 0;
     }
 

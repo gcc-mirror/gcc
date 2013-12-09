@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2007-06-02  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.
@@ -19,26 +21,18 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_rvalue_reference;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_rvalue_reference, int&&>(true)) );
-  VERIFY( (test_category<is_rvalue_reference, ClassType&&>(true)) );
-  VERIFY( (test_category<is_rvalue_reference, int(&&)(int)>(true)) );
+  static_assert(test_category<is_rvalue_reference, int&&>(true), "");
+  static_assert(test_category<is_rvalue_reference, ClassType&&>(true), "");
+  static_assert(test_category<is_rvalue_reference, int(&&)(int)>(true), "");
 
   // Sanity check.
-  VERIFY( (test_category<is_rvalue_reference, int&>(false)) );
-  VERIFY( (test_category<is_rvalue_reference, ClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_rvalue_reference, int&>(false), "");
+  static_assert(test_category<is_rvalue_reference, ClassType>(false), "");
 }

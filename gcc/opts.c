@@ -494,7 +494,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_sem_equality, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
 
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
@@ -1460,6 +1460,8 @@ common_handle_option (struct gcc_options *opts,
 	      { "vla-bound", SANITIZE_VLA, sizeof "vla-bound" - 1 },
 	      { "return", SANITIZE_RETURN, sizeof "return" - 1 },
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
+	      { "signed-integer-overflow", SANITIZE_SI_OVERFLOW,
+		sizeof "signed-integer-overflow" -1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;
@@ -1709,7 +1711,7 @@ common_handle_option (struct gcc_options *opts,
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
       /* Indirect call profiling should do all useful transformations
- 	 speculative devirutalization does.  */
+ 	 speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively
 	  && opts->x_flag_value_profile_transformations)
 	opts->x_flag_devirtualize_speculatively = false;

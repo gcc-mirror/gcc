@@ -56,17 +56,19 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libsanitizer_common_la_LIBADD =
 am__objects_1 = sanitizer_allocator.lo sanitizer_common.lo \
-	sanitizer_common_libcdep.lo sanitizer_flags.lo \
-	sanitizer_libc.lo sanitizer_linux.lo \
-	sanitizer_linux_libcdep.lo sanitizer_mac.lo \
+	sanitizer_common_libcdep.lo sanitizer_coverage.lo \
+	sanitizer_flags.lo sanitizer_libc.lo sanitizer_libignore.lo \
+	sanitizer_linux.lo sanitizer_linux_libcdep.lo sanitizer_mac.lo \
 	sanitizer_platform_limits_linux.lo \
-	sanitizer_platform_limits_posix.lo sanitizer_posix.lo \
-	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
-	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
+	sanitizer_platform_limits_posix.lo sanitizer_posix_libcdep.lo \
+	sanitizer_posix.lo sanitizer_printf.lo sanitizer_stackdepot.lo \
+	sanitizer_stacktrace.lo sanitizer_stacktrace_libcdep.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_suppressions.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
-	sanitizer_symbolizer_win.lo sanitizer_thread_registry.lo \
+	sanitizer_symbolizer_win.lo sanitizer_symbolizer.lo \
+	sanitizer_symbolizer_libbacktrace.lo \
+	sanitizer_symbolizer_libcdep.lo sanitizer_thread_registry.lo \
 	sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
@@ -235,22 +237,28 @@ sanitizer_common_files = \
 	sanitizer_allocator.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
+	sanitizer_coverage.cc \
 	sanitizer_flags.cc \
 	sanitizer_libc.cc \
+	sanitizer_libignore.cc \
 	sanitizer_linux.cc \
 	sanitizer_linux_libcdep.cc \
 	sanitizer_mac.cc \
 	sanitizer_platform_limits_linux.cc \
 	sanitizer_platform_limits_posix.cc \
-	sanitizer_posix.cc \
 	sanitizer_posix_libcdep.cc \
+	sanitizer_posix.cc \
 	sanitizer_printf.cc \
 	sanitizer_stackdepot.cc \
 	sanitizer_stacktrace.cc \
+	sanitizer_stacktrace_libcdep.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer_posix_libcdep.cc \
 	sanitizer_symbolizer_win.cc \
+	sanitizer_symbolizer.cc \
+	sanitizer_symbolizer_libbacktrace.cc \
+	sanitizer_symbolizer_libcdep.cc \
 	sanitizer_thread_registry.cc \
 	sanitizer_win.cc
 
@@ -350,8 +358,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_libc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_libignore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
@@ -362,8 +372,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_printf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_suppressions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libbacktrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_posix_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_registry.Plo@am__quote@

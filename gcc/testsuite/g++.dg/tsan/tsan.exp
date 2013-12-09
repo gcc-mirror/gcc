@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2013 Free Software Foundation, Inc.
+# Copyright (C) 2013 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,6 +16,25 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-linux-android.o: $(srcdir)/config/linux-android.c
-	  $(COMPILE) $<
-	  $(POSTCOMPILE)
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib g++-dg.exp
+load_lib tsan-dg.exp
+
+if ![check_effective_target_fthread_sanitizer] {
+  return
+}
+
+# Initialize `dg'.
+dg-init
+if [tsan_init] {
+
+# Main loop.
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c $srcdir/c-c++-common/tsan/*.c]] ""
+
+}
+
+# All done.
+tsan_finish
+dg-finish

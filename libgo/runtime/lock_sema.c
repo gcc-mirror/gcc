@@ -152,8 +152,12 @@ runtime_notesleep(Note *n)
 
 	m = runtime_m();
 
+  /* For gccgo it's OK to sleep in non-g0, and it happens in
+     stoptheworld because we have not implemented preemption.
+
 	if(runtime_g() != m->g0)
 		runtime_throw("notesleep not on g0");
+  */
 
 	if(m->waitsema == 0)
 		m->waitsema = runtime_semacreate();

@@ -1,3 +1,9 @@
+2013-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/52023
+	* objc-act.c (objc_synthesize_getter): Update calls to
+	c_sizeof_or_alignof_type.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc/objc-act.c: Add required include files from gimple.h.

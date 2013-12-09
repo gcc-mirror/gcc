@@ -3,7 +3,7 @@
 
 template<int> struct A
 {
-  friend int foo(); // { dg-error "14:new declaration" }
+  friend int foo(); // { dg-error "14:ambiguating new declaration" }
 };
 
-void foo() { A<0> a; } // { dg-error "6:ambiguates old declaration" } 
+void foo() { A<0> a; } // { dg-message "6:old declaration" } 

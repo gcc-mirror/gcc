@@ -5,8 +5,8 @@
 ! Contributed by James Van Buskirk
 
   implicit none
-  procedure(my_dcos), pointer :: f
-  f => my_dcos           ! { dg-error "invalid in procedure pointer assignment" }
+  procedure(my_dcos), pointer :: f ! { dg-error "Procedure pointer 'f' at .1. shall not be elemental" }
+  f => my_dcos           ! { dg-error "Nonintrinsic elemental procedure 'my_dcos' is invalid in procedure pointer assignment" }
 contains
   real elemental function my_dcos(x)
     real, intent(in) :: x

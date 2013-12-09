@@ -78,7 +78,7 @@ static void check_for_plus_in_loops_1 (struct object_size_info *, tree,
    the subobject (innermost array or field with address taken).
    object_sizes[2] is lower bound for number of bytes till the end of
    the object and object_sizes[3] lower bound for subobject.  */
-static unsigned HOST_WIDE_INT *object_sizes[4];
+static vec<unsigned HOST_WIDE_INT> object_sizes[4];
 
 /* Bitmaps what object sizes have been computed already.  */
 static bitmap computed[4];
@@ -506,7 +506,7 @@ compute_builtin_object_size (tree ptr, int object_size_type)
 
   if (TREE_CODE (ptr) == SSA_NAME
       && POINTER_TYPE_P (TREE_TYPE (ptr))
-      && object_sizes[object_size_type] != NULL)
+      && computed[object_size_type] != NULL)
     {
       if (!bitmap_bit_p (computed[object_size_type], SSA_NAME_VERSION (ptr)))
 	{
@@ -514,6 +514,8 @@ compute_builtin_object_size (tree ptr, int object_size_type)
 	  bitmap_iterator bi;
 	  unsigned int i;
 
+	  if (num_ssa_names > object_sizes[object_size_type].length ())
+	    object_sizes[object_size_type].safe_grow (num_ssa_names);
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Computing %s %sobject size for ",
@@ -1175,12 +1177,12 @@ init_object_sizes (void)
 {
   int object_size_type;
 
-  if (object_sizes[0])
+  if (computed[0])
     return;
 
   for (object_size_type = 0; object_size_type <= 3; object_size_type++)
     {
-      object_sizes[object_size_type] = XNEWVEC (unsigned HOST_WIDE_INT, num_ssa_names);
+      object_sizes[object_size_type].safe_grow (num_ssa_names);
       computed[object_size_type] = BITMAP_ALLOC (NULL);
     }
 
@@ -1197,9 +1199,8 @@ fini_object_sizes (void)
 
   for (object_size_type = 0; object_size_type <= 3; object_size_type++)
     {
-      free (object_sizes[object_size_type]);
+      object_sizes[object_size_type].release ();
       BITMAP_FREE (computed[object_size_type]);
-      object_sizes[object_size_type] = NULL;
     }
 }
 

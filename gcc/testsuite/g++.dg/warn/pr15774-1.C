@@ -1,6 +1,6 @@
 // { dg-do compile { target { { i?86-*-* x86_64-*-* } && ia32 } } }
 // Test that an new declartion with different attributes then old one fail.
-extern void foo (int); // { dg-error "ambiguates old declaration" }
+extern void foo (int); // { dg-message "old declaration" }
 
 void
 bar (void)

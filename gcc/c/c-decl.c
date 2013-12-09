@@ -4730,7 +4730,9 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
     {
       int failure = complete_array_type (&TREE_TYPE (decl),
 					 DECL_INITIAL (decl), true);
-      gcc_assert (!failure);
+      /* If complete_array_type returns 3, it means that the
+         initial value of the compound literal is empty.  Allow it.  */
+      gcc_assert (failure == 0 || failure == 3);
 
       type = TREE_TYPE (decl);
       TREE_TYPE (DECL_INITIAL (decl)) = type;
@@ -8153,7 +8155,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	   && old_decl != error_mark_node
 	   && TREE_PUBLIC (decl1)
 	   && !MAIN_NAME_P (DECL_NAME (decl1))
-	   && C_DECL_ISNT_PROTOTYPE (old_decl))
+	   && C_DECL_ISNT_PROTOTYPE (old_decl)
+	   && !DECL_DECLARED_INLINE_P (decl1))
     warning_at (loc, OPT_Wmissing_prototypes,
 		"no previous prototype for %qD", decl1);
   /* Optionally warn of any def with no previous prototype

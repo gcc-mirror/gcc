@@ -256,7 +256,7 @@ runtime_minit(void)
 	runtime_signalstack(m->gsignalstack, m->gsignalstacksize);
 	if (sigemptyset(&sigs) != 0)
 		runtime_throw("sigemptyset");
-	sigprocmask(SIG_SETMASK, &sigs, nil);
+	pthread_sigmask(SIG_SETMASK, &sigs, nil);
 }
 
 // Called from dropm to undo the effect of an minit.

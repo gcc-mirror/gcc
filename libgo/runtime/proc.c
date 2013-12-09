@@ -208,9 +208,9 @@ runtime_newosproc(M *mp)
 #endif
 
 	sigemptyset(&old);
-	sigprocmask(SIG_BLOCK, &clear, &old);
+	pthread_sigmask(SIG_BLOCK, &clear, &old);
 	ret = pthread_create(&tid, &attr, runtime_mstart, mp);
-	sigprocmask(SIG_SETMASK, &old, nil);
+	pthread_sigmask(SIG_SETMASK, &old, nil);
 
 	if (ret != 0)
 		runtime_throw("pthread_create");

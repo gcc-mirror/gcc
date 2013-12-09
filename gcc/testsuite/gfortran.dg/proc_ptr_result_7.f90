@@ -9,7 +9,14 @@ type :: t
 end type
 
 type(t) :: x
-procedure(iabs), pointer :: pp
+
+! We cannot use "iabs" directly as it is elemental.
+abstract interface
+  pure integer function interf_iabs(x)
+    integer, intent(in) :: x
+  end function interf_iabs
+end interface
+procedure(interf_iabs), pointer :: pp
 
 x%p => a
 
@@ -20,7 +27,7 @@ if (pp(-3) /= 3) call abort
 contains
 
   function a() result (b)
-    procedure(iabs), pointer :: b
+    procedure(interf_iabs), pointer :: b
     b => iabs
   end function
 

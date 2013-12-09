@@ -473,6 +473,28 @@ extern void clear_pending_stack_adjust (void);
 /* Pop any previously-pushed arguments that have not been popped yet.  */
 extern void do_pending_stack_adjust (void);
 
+/* Struct for saving/restoring of pending_stack_adjust/stack_pointer_delta
+   values.  */
+
+struct saved_pending_stack_adjust
+{
+  /* Saved value of pending_stack_adjust.  */
+  int x_pending_stack_adjust;
+
+  /* Saved value of stack_pointer_delta.  */
+  int x_stack_pointer_delta;
+};
+
+/* Remember pending_stack_adjust/stack_pointer_delta.
+   To be used around code that may call do_pending_stack_adjust (),
+   but the generated code could be discarded e.g. using delete_insns_since.  */
+
+extern void save_pending_stack_adjust (saved_pending_stack_adjust *);
+
+/* Restore the saved pending_stack_adjust/stack_pointer_delta.  */
+
+extern void restore_pending_stack_adjust (saved_pending_stack_adjust *);
+
 /* Return the tree node and offset if a given argument corresponds to
    a string constant.  */
 extern tree string_constant (tree, tree *);

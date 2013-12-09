@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2005-01-24  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2005-2013 Free Software Foundation, Inc.
@@ -19,52 +21,45 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_unsigned;
   using namespace __gnu_test;
-  
-  VERIFY( (test_category<is_unsigned, void>(false)) );
-  
-  VERIFY( (test_category<is_unsigned, char>(char(-1) > char(0))) );
-  VERIFY( (test_category<is_unsigned, signed char>(false)) );
-  VERIFY( (test_category<is_unsigned, unsigned char>(true)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
-  VERIFY( (test_category<is_unsigned, wchar_t>(wchar_t(-1) > wchar_t(0))) );
-#endif
-  VERIFY( (test_category<is_unsigned, short>(false)) );
-  VERIFY( (test_category<is_unsigned, unsigned short>(true)) );
-  VERIFY( (test_category<is_unsigned, int>(false)) );
-  VERIFY( (test_category<is_unsigned, unsigned int>(true)) );
-  VERIFY( (test_category<is_unsigned, long>(false)) );
-  VERIFY( (test_category<is_unsigned, unsigned long>(true)) );
-  VERIFY( (test_category<is_unsigned, long long>(false)) );
-  VERIFY( (test_category<is_unsigned, unsigned long long>(true)) );
 
-  VERIFY( (test_category<is_unsigned, float>(false)) );
-  VERIFY( (test_category<is_unsigned, double>(false)) );
-  VERIFY( (test_category<is_unsigned, long double>(false)) );
+  static_assert(test_category<is_unsigned, void>(false), "");
+  
+  static_assert(test_category<is_unsigned, char>(char(-1) > char(0)), "");
+  static_assert(test_category<is_unsigned, signed char>(false), "");
+  static_assert(test_category<is_unsigned, unsigned char>(true), "");
+#ifdef _GLIBCXX_USE_WCHAR_T
+  static_assert(test_category<is_unsigned, wchar_t>
+		(wchar_t(-1) > wchar_t(0)), "");
+#endif
+  static_assert(test_category<is_unsigned, short>(false), "");
+  static_assert(test_category<is_unsigned, unsigned short>(true), "");
+  static_assert(test_category<is_unsigned, int>(false), "");
+  static_assert(test_category<is_unsigned, unsigned int>(true), "");
+  static_assert(test_category<is_unsigned, long>(false), "");
+  static_assert(test_category<is_unsigned, unsigned long>(true), "");
+  static_assert(test_category<is_unsigned, long long>(false), "");
+  static_assert(test_category<is_unsigned, unsigned long long>(true), "");
+
+  static_assert(test_category<is_unsigned, float>(false), "");
+  static_assert(test_category<is_unsigned, double>(false), "");
+  static_assert(test_category<is_unsigned, long double>(false), "");
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
-  VERIFY( (test_category<is_unsigned, unsigned __int128>(true)) );
-  VERIFY( (test_category<is_unsigned, __int128>(false)) );
+  static_assert(test_category<is_unsigned, unsigned __int128>(true), "");
+  static_assert(test_category<is_unsigned, __int128>(false), "");
 #endif
 
 #ifdef _GLIBCXX_USE_FLOAT128
-  VERIFY( (test_category<is_unsigned, __float128>(false)) );
+  static_assert(test_category<is_unsigned, __float128>(false), "");
 #endif
 
   // Sanity check.
-  VERIFY( (test_category<is_unsigned, ClassType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_unsigned, ClassType>(false), "");
 }

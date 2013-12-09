@@ -1,3 +1,7 @@
+2013-12-09 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 205801 into gupc branch.
+
 2013-12-03 Meador Inge  <meadori@codesourcery.com>
 
 	* tree-core.h (tree_type_common): Change tree_type_common to use

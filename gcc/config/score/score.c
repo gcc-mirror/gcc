@@ -516,30 +516,6 @@ score_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
 }
 
-/* Copy VALUE to a register and return that register.  If new psuedos
-   are allowed, copy it into a new register, otherwise use DEST.  */
-static rtx
-score_force_temporary (rtx dest, rtx value)
-{
-  if (can_create_pseudo_p ())
-    return force_reg (Pmode, value);
-  else
-    {
-      emit_move_insn (copy_rtx (dest), value);
-      return dest;
-    }
-}
-
-/* Return a LO_SUM expression for ADDR.  TEMP is as for score_force_temporary
-   and is used to load the high part into a register.  */
-static rtx
-score_split_symbol (rtx temp, rtx addr)
-{
-  rtx high = score_force_temporary (temp,
-                                     gen_rtx_HIGH (Pmode, copy_rtx (addr)));
-  return gen_rtx_LO_SUM (Pmode, high, addr);
-}
-
 /* Fill INFO with information about a single argument.  CUM is the
    cumulative state for earlier arguments.  MODE is the mode of this
    argument and TYPE is its type (if known).  NAMED is true if this

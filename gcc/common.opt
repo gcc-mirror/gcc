@@ -2112,11 +2112,18 @@ foptimize-strlen
 Common Report Var(flag_optimize_strlen) Optimization
 Enable string length optimizations on trees
 
-fisolate-erroneous-paths
-Common Report Var(flag_isolate_erroneous_paths) Optimization
-Detect paths which trigger erroneous or undefined behaviour.  Isolate those
-paths from the main control flow and turn the statement with erroneous or
-undefined behaviour into a trap.
+fisolate-erroneous-paths-dereference
+Common Report Var(flag_isolate_erroneous_paths_dereference) Optimization
+Detect paths which trigger erroneous or undefined behaviour due to
+dereferencing a NULL pointer.  Isolate those paths from the main control
+flow and turn the statement with erroneous or undefined behaviour into a trap.
+
+fisolate-erroneous-paths-attribute
+Common Report Var(flag_isolate_erroneous_paths_attribute) Optimization
+Detect paths which trigger erroneous or undefined behaviour due a NULL value
+being used in a way which is forbidden by a returns_nonnull or nonnull
+attribute.  Isolate those paths from the main control flow and turn the
+statement with erroneous or undefined behaviour into a trap. 
 
 ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization

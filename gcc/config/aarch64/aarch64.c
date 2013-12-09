@@ -1703,7 +1703,7 @@ aarch64_frame_pointer_required (void)
   if (flag_omit_frame_pointer && !faked_omit_frame_pointer)
     return false;
   else if (flag_omit_leaf_frame_pointer)
-    return !crtl->is_leaf;
+    return !crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM);
   return true;
 }
 
@@ -4126,7 +4126,7 @@ aarch64_can_eliminate (const int from, const int to)
 	 of faked_omit_frame_pointer here (which is true when we always
 	 wish to keep non-leaf frame pointers but only wish to keep leaf frame
 	 pointers when LR is clobbered).  */
-      if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+      if (to == STACK_POINTER_REGNUM
 	  && df_regs_ever_live_p (LR_REGNUM)
 	  && faked_omit_frame_pointer)
 	return false;

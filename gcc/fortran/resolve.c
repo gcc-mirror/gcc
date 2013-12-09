@@ -1679,6 +1679,9 @@ gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
 
   gfc_copy_formal_args_intr (sym, isym);
 
+  sym->attr.pure = isym->pure;
+  sym->attr.elemental = isym->elemental;
+
   /* Check it is actually available in the standard settings.  */
   if (!gfc_check_intrinsic_standard (isym, &symstd, false, sym->declared_at))
     {
@@ -2314,7 +2317,7 @@ gfc_explicit_interface_required (gfc_symbol *sym, char *errmsg, int err_len)
 	}
     }
 
-  if (sym->attr.elemental)  /* (4)  */
+  if (sym->attr.elemental && !sym->attr.intrinsic)  /* (4)  */
     {
       strncpy (errmsg, _("elemental procedure"), err_len);
       return true;
@@ -2616,7 +2619,9 @@ found:
     expr->ts = sym->ts;
   expr->value.function.name = sym->name;
   expr->value.function.esym = sym;
-  if (sym->as != NULL)
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
+    expr->rank = CLASS_DATA (sym)->as->rank;
+  else if (sym->as != NULL)
     expr->rank = sym->as->rank;
 
   return MATCH_YES;
@@ -11090,6 +11095,23 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	gfc_notify_std (GFC_STD_F95_OBS,
 			"CHARACTER(*) function '%s' at %L",
 			sym->name, &sym->declared_at);
+    }
+
+  /* F2008, C1218.  */
+  if (sym->attr.elemental)
+    {
+      if (sym->attr.proc_pointer)
+	{
+	  gfc_error ("Procedure pointer '%s' at %L shall not be elemental",
+		     sym->name, &sym->declared_at);
+	  return false;
+	}
+      if (sym->attr.dummy)
+	{
+	  gfc_error ("Dummy procedure '%s' at %L shall not be elemental",
+		     sym->name, &sym->declared_at);
+	  return false;
+	}
     }
 
   if (sym->attr.is_bind_c && sym->attr.is_c_interop != 1)

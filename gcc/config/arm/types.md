@@ -152,6 +152,7 @@
 ; store2             store 2 words to memory from arm registers.
 ; store3             store 3 words to memory from arm registers.
 ; store4             store 4 (or more) words to memory from arm registers.
+; trap               cause a trap in the kernel.
 ; udiv               unsigned division.
 ; umaal              unsigned multiply accumulate accumulate long.
 ; umlal              unsigned multiply accumulate long.
@@ -645,6 +646,7 @@
   store2,\
   store3,\
   store4,\
+  trap,\
   udiv,\
   umaal,\
   umlal,\

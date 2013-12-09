@@ -54,6 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 
 
+static void lto_write_tree (struct output_block*, tree, bool);
+
 /* Clear the line info stored in DATA_IN.  */
 
 static void
@@ -252,6 +254,21 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
       lto_output_type_decl_index (ob->decl_state, ob->main_stream, expr);
       break;
 
+    case NAMELIST_DECL:
+      {
+	unsigned i;
+	tree value, tmp;
+
+	streamer_write_record_start (ob, LTO_namelist_decl_ref);
+	stream_write_tree (ob, DECL_NAME (expr), true);
+	tmp = NAMELIST_DECL_ASSOCIATED_DECL (expr);
+	gcc_assert (tmp != NULL_TREE);
+	streamer_write_uhwi (ob, CONSTRUCTOR_ELTS (tmp)->length());
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (tmp), i, value)
+	  lto_output_var_decl_index (ob->decl_state, ob->main_stream, value);
+	break;
+      }
+
     case NAMESPACE_DECL:
       streamer_write_record_start (ob, LTO_namespace_decl_ref);
       lto_output_namespace_decl_index (ob->decl_state, ob->main_stream, expr);
@@ -322,7 +339,7 @@ get_symbol_initial_value (struct output_block *ob, tree expr)
       && initial)
     {
       lto_symtab_encoder_t encoder;
-      struct varpool_node *vnode;
+      varpool_node *vnode;
 
       encoder = ob->decl_state->symtab_node_encoder;
       vnode = varpool_get_node (expr);

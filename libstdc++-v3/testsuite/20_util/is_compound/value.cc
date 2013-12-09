@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
@@ -18,43 +19,35 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_compound;
   using namespace __gnu_test;
-  
-  VERIFY( (test_category<is_compound, void>(false)) );
-  VERIFY( (test_category<is_compound, char>(false)) );
-  VERIFY( (test_category<is_compound, signed char>(false)) );
-  VERIFY( (test_category<is_compound, unsigned char>(false)) );
+
+  static_assert(test_category<is_compound, void>(false), "");
+  static_assert(test_category<is_compound, char>(false), "");
+  static_assert(test_category<is_compound, signed char>(false), "");
+  static_assert(test_category<is_compound, unsigned char>(false), "");
 #ifdef _GLIBCXX_USE_WCHAR_T
-  VERIFY( (test_category<is_compound, wchar_t>(false)) );
+  static_assert(test_category<is_compound, wchar_t>(false), "");
 #endif
-  VERIFY( (test_category<is_compound, short>(false)) );
-  VERIFY( (test_category<is_compound, unsigned short>(false)) );
-  VERIFY( (test_category<is_compound, int>(false)) );
-  VERIFY( (test_category<is_compound, unsigned int>(false)) );
-  VERIFY( (test_category<is_compound, long>(false)) );
-  VERIFY( (test_category<is_compound, unsigned long>(false)) );
-  VERIFY( (test_category<is_compound, long long>(false)) );
-  VERIFY( (test_category<is_compound, unsigned long long>(false)) );
-  VERIFY( (test_category<is_compound, float>(false)) );
-  VERIFY( (test_category<is_compound, double>(false)) );
-  VERIFY( (test_category<is_compound, long double>(false)) );
+  static_assert(test_category<is_compound, short>(false), "");
+  static_assert(test_category<is_compound, unsigned short>(false), "");
+  static_assert(test_category<is_compound, int>(false), "");
+  static_assert(test_category<is_compound, unsigned int>(false), "");
+  static_assert(test_category<is_compound, long>(false), "");
+  static_assert(test_category<is_compound, unsigned long>(false), "");
+  static_assert(test_category<is_compound, long long>(false), "");
+  static_assert(test_category<is_compound, unsigned long long>(false), "");
+  static_assert(test_category<is_compound, float>(false), "");
+  static_assert(test_category<is_compound, double>(false), "");
+  static_assert(test_category<is_compound, long double>(false), "");
 
   // libstdc++/56609
-  VERIFY( (test_category<is_compound, std::nullptr_t>(false)) );
+  static_assert(test_category<is_compound, std::nullptr_t>(false), "");
 
   // Sanity check.
-  VERIFY( (test_category<is_compound, ClassType>(true)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_compound, ClassType>(true), "");
 }
