@@ -1,3 +1,7 @@
+2013-12-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs.c (gen_int_libfunc): Do not compare modes directly.
+
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* basic-block.h (FOR_ALL_BB): Eliminate macro.
