@@ -5506,7 +5506,8 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
   if (maxsize < LONG_LONG_TYPE_SIZE)
     maxsize = LONG_LONG_TYPE_SIZE;
   if (GET_MODE_CLASS (mode) != MODE_INT
-      || mode < word_mode || GET_MODE_BITSIZE (mode) > maxsize)
+      || GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      || GET_MODE_BITSIZE (mode) > maxsize)
     return;
   gen_libfunc (optable, opname, suffix, mode);
 }
