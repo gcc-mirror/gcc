@@ -611,7 +611,7 @@ make_new_block (struct function *fn, unsigned int index)
 {
   basic_block bb = alloc_block ();
   bb->index = index;
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
+  SET_BASIC_BLOCK_FOR_FN (fn, index, bb);
   n_basic_blocks_for_fn (fn)++;
   return bb;
 }
@@ -638,8 +638,8 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   bb_count = streamer_read_uhwi (ib);
 
   last_basic_block_for_function (fn) = bb_count;
-  if (bb_count > basic_block_info_for_function (fn)->length ())
-    vec_safe_grow_cleared (basic_block_info_for_function (fn), bb_count);
+  if (bb_count > basic_block_info_for_fn (fn)->length ())
+    vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count);
 
   if (bb_count > label_to_block_map_for_function (fn)->length ())
     vec_safe_grow_cleared (label_to_block_map_for_function (fn), bb_count);
@@ -647,7 +647,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, index);
       unsigned int edge_count;
 
       if (bb == NULL)
@@ -671,7 +671,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
                                count_materialization_scale);
 	  edge_flags = streamer_read_uhwi (ib);
 
-	  dest = BASIC_BLOCK_FOR_FUNCTION (fn, dest_index);
+	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
 
 	  if (dest == NULL)
 	    dest = make_new_block (fn, dest_index);
@@ -688,7 +688,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, index);
       bb->prev_bb = p_bb;
       p_bb->next_bb = bb;
       p_bb = bb;
@@ -719,7 +719,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	}
 
       struct loop *loop = alloc_loop ();
-      loop->header = BASIC_BLOCK_FOR_FUNCTION (fn, header_index);
+      loop->header = BASIC_BLOCK_FOR_FN (fn, header_index);
       loop->header->loop_father = loop;
 
       /* Read everything copy_loop_info copies.  */

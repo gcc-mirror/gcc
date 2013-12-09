@@ -185,8 +185,8 @@ init_empty_tree_cfg_for_function (struct function *fn)
   profile_status_for_function (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
   last_basic_block_for_function (fn) = NUM_FIXED_BLOCKS;
-  vec_alloc (basic_block_info_for_function (fn), initial_cfg_capacity);
-  vec_safe_grow_cleared (basic_block_info_for_function (fn),
+  vec_alloc (basic_block_info_for_fn (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (basic_block_info_for_fn (fn),
 			 initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
@@ -194,10 +194,8 @@ init_empty_tree_cfg_for_function (struct function *fn)
   vec_safe_grow_cleared (label_to_block_map_for_function (fn),
 			 initial_cfg_capacity);
 
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, ENTRY_BLOCK,
-				ENTRY_BLOCK_PTR_FOR_FN (fn));
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, EXIT_BLOCK,
-		   EXIT_BLOCK_PTR_FOR_FN (fn));
+  SET_BASIC_BLOCK_FOR_FN (fn, ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (fn));
+  SET_BASIC_BLOCK_FOR_FN (fn, EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (fn));
 
   ENTRY_BLOCK_PTR_FOR_FN (fn)->next_bb
     = EXIT_BLOCK_PTR_FOR_FN (fn);
@@ -7046,7 +7044,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 
   if (fun && fun->decl == fndecl
       && fun->cfg
-      && basic_block_info_for_function (fun))
+      && basic_block_info_for_fn (fun))
     {
       /* If the CFG has been built, emit a CFG-based dump.  */
       if (!ignore_topmost_bind)
