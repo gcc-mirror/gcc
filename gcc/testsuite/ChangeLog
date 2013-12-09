@@ -1,3 +1,8 @@
+2013-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59415
+	* g++.dg/ubsan/pr59415.C: New test.
+
 2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52707

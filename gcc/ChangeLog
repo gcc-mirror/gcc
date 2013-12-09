@@ -1,3 +1,9 @@
+2013-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59415
+	* vtable-verify.c (verify_bb_vtables): Check the return value
+	of gimple_call_fn.  Use is_gimple_call instead of gimple_code.
+
 2013-12-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (generic_sched): Add cortexa12.
