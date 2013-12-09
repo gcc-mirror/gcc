@@ -327,7 +327,6 @@ struct GTY(()) control_flow_graph {
   ((*basic_block_info_for_fn (FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
-#define basic_block_info	(cfun->cfg->x_basic_block_info)
 #define last_basic_block	(cfun->cfg->x_last_basic_block)
 #define label_to_block_map	(cfun->cfg->x_label_to_block_map)
 #define profile_status		(cfun->cfg->x_profile_status)

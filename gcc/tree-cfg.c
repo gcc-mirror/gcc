@@ -242,8 +242,10 @@ build_gimple_cfg (gimple_seq seq)
     create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* Adjust the size of the array.  */
-  if (basic_block_info->length () < (size_t) n_basic_blocks_for_fn (cfun))
-    vec_safe_grow_cleared (basic_block_info, n_basic_blocks_for_fn (cfun));
+  if (basic_block_info_for_fn (cfun)->length ()
+      < (size_t) n_basic_blocks_for_fn (cfun))
+    vec_safe_grow_cleared (basic_block_info_for_fn (cfun),
+			   n_basic_blocks_for_fn (cfun));
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -603,10 +605,10 @@ create_bb (void *h, void *e, basic_block after)
   link_block (bb, after);
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block == basic_block_info->length ())
+  if ((size_t) last_basic_block == basic_block_info_for_fn (cfun)->length ())
     {
       size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      vec_safe_grow_cleared (basic_block_info, new_size);
+      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
     }
 
   /* Add the newly created block to the array.  */
