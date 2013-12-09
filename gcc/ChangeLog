@@ -1,5 +1,14 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (basic_block_info): Eliminate macro.
+
+	* cfgrtl.c (rtl_create_basic_block): Replace uses of
+	basic_block_info with basic_block_info_for_fn, making uses
+	of cfun be explicit.
+	* tree-cfg.c (build_gimple_cfg, create_bb): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (BASIC_BLOCK): Eliminate macro.
 
 	* alias.c (init_alias_analysis): Eliminate BASIC_BLOCK macro in
