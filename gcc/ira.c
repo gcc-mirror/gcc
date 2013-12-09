@@ -5443,7 +5443,7 @@ do_reload (void)
 	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	bb->loop_father = NULL;
       current_loops = NULL;
       
@@ -5492,7 +5492,7 @@ do_reload (void)
 	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	bb->loop_father = NULL;
       current_loops = NULL;
       

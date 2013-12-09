@@ -498,7 +498,7 @@ add_scope_conflicts (void)
 
      We then do a mostly classical bitmap liveness algorithm.  */
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->aux = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
   rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
@@ -525,7 +525,7 @@ add_scope_conflicts (void)
 
   free (rpo);
   BITMAP_FREE (work);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     BITMAP_FREE (bb->aux);
 }
 

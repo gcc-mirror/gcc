@@ -1,5 +1,50 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (FOR_ALL_BB): Eliminate macro.
+
+	* cfg.c (alloc_aux_for_blocks, clear_aux_for_blocks): Replace
+	uses of FOR_ALL_BB with FOR_ALL_BB_FN, making uses of cfun explicit.
+
+	* cfganal.c (inverted_post_order_compute): Likewise.
+	* cfgcleanup.c (try_optimize_cfg): Likewise.
+	* cfgexpand.c (add_scope_conflicts): Likewise.
+	* cfghooks.c (dump_flow_info, account_profile_record): Likewise.
+	* cfgrtl.c (relink_block_chain): Likewise.
+	* dce.c (mark_artificial_uses): Likewise.
+	* df-core.c (df_set_blocks, df_compute_cfg_image, df_dump): Likewise.
+	* df-problems.c (df_lr_verify_solution_start,
+	df_lr_verify_solution_end, df_lr_verify_transfer_functions,
+	df_live_verify_solution_start, df_live_verify_solution_end,
+	df_live_set_all_dirty, df_live_verify_transfer_functions,
+	df_md_local_comput): Likewise.
+	* df-scan.c (df_scan_free_internal, df_scan_alloc)
+	df_reorganize_refs_by_insn, df_scan_verify): Likewise.
+	* dominance.c (compute_dom_fast_query, calculate_dominance_info,
+	free_dominance_info): Likewise.
+	* dse.c (dse_step1, dse_step3, dse_step4, dse_step6): Likewise.
+	* graph.c (draw_cfg_edges): Likewise.
+	* graphite-scop-detection.c (print_graphite_scop_statistics,
+	dot_all_scops_1): Likewise.
+	* graphite.c (print_global_statistics,
+	print_graphite_scop_statistics): Likewise.
+	* ira.c (do_reload): Likewise.
+	* loop-init.c (loop_optimizer_finalize): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* lto-streamer-out.c (output_function): Likewise.
+	* mcf.c (adjust_cfg_counts): Likewise.
+	* predict.c (estimate_loops): Likewise.
+	* sched-rgn.c (haifa_find_rgns): Likewise.
+	* tree-cfg.c (split_critical_edges): Likewise.
+ 	* tree-dfa.c (renumber_gimple_stmt_uids): Likewise.
+	* tree-loop-distribution.c (tree_loop_distribution): Likewise.
+	* tree-ssa-pre.c (compute_antic, insert, init_pre): Likewise.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	* var-tracking.c (vt_initialize, vt_finalize): Likewise.
+	* vtable-verify.c (vtable_verify_main): Likewise.
+	* web.c (web_main): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (FOR_EACH_BB_REVERSE): Eliminate macro.
 
 	* cfghooks.c (verify_flow_info): Replace uses of FOR_EACH_BB_REVERSE

@@ -2444,7 +2444,7 @@ compute_antic (void)
   has_abnormal_preds = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (has_abnormal_preds);
 
-  FOR_ALL_BB (block)
+  FOR_ALL_BB_FN (block, cfun)
     {
       edge_iterator ei;
       edge e;
@@ -3659,7 +3659,7 @@ insert (void)
   basic_block bb;
   int num_iterations = 0;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     NEW_SETS (bb) = bitmap_set_new ();
 
   while (new_stuff)
@@ -3672,7 +3672,7 @@ insert (void)
       /* Clear the NEW sets before the next iteration.  We have already
          fully propagated its contents.  */
       if (new_stuff)
-	FOR_ALL_BB (bb)
+	FOR_ALL_BB_FN (bb, cfun)
 	  bitmap_set_free (NEW_SETS (bb));
     }
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
@@ -4671,7 +4671,7 @@ init_pre (void)
 				       sizeof (struct bitmap_set), 30);
   pre_expr_pool = create_alloc_pool ("pre_expr nodes",
 				     sizeof (struct pre_expr_d), 30);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       EXP_GEN (bb) = bitmap_set_new ();
       PHI_GEN (bb) = bitmap_set_new ();

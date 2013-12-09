@@ -624,7 +624,7 @@ compute_dom_fast_query (enum cdi_direction dir)
   if (dom_computed[dir_index] == DOM_OK)
     return;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       if (!bb->dom[dir_index]->father)
 	assign_dfs_numbers (bb->dom[dir_index], &num);
@@ -652,7 +652,7 @@ calculate_dominance_info (enum cdi_direction dir)
     {
       gcc_assert (!n_bbs_in_dom_tree[dir_index]);
 
-      FOR_ALL_BB (b)
+      FOR_ALL_BB_FN (b, cfun)
 	{
 	  b->dom[dir_index] = et_new_tree (b);
 	}
@@ -689,7 +689,7 @@ free_dominance_info (enum cdi_direction dir)
   if (!dom_info_available_p (dir))
     return;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       et_free_tree_force (bb->dom[dir_index]);
       bb->dom[dir_index] = NULL;

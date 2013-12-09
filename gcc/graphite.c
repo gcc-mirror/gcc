@@ -94,7 +94,7 @@ print_global_statistics (FILE* file)
 
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator psi;
 
@@ -150,7 +150,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator psi;
       loop_p loop = bb->loop_father;

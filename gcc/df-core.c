@@ -549,7 +549,7 @@ df_set_blocks (bitmap blocks)
 		    {
 		      basic_block bb;
 		      bitmap_initialize (&blocks_to_reset, &df_bitmap_obstack);
-		      FOR_ALL_BB (bb)
+		      FOR_ALL_BB_FN (bb, cfun)
 			{
 			  bitmap_set_bit (&blocks_to_reset, bb->index);
 			}
@@ -1720,7 +1720,7 @@ df_compute_cfg_image (void)
   int i;
   int * map;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       size += EDGE_COUNT (bb->succs);
     }
@@ -1728,7 +1728,7 @@ df_compute_cfg_image (void)
   map = XNEWVEC (int, size);
   map[0] = size;
   i = 1;
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       edge_iterator ei;
       edge e;
@@ -2021,7 +2021,7 @@ df_dump (FILE *file)
   basic_block bb;
   df_dump_start (file);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       df_print_bb_index (bb, file);
       df_dump_top (bb, file);

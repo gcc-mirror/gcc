@@ -509,7 +509,7 @@ ssa_prop_init (void)
 
   /* Initially assume that every edge in the CFG is not executable.
      (including the edges coming out of the entry block).  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator si;
 

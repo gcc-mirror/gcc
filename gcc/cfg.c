@@ -576,7 +576,7 @@ alloc_aux_for_blocks (int size)
     {
       basic_block bb;
 
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	alloc_aux_for_block (bb, size);
     }
 }
@@ -588,7 +588,7 @@ clear_aux_for_blocks (void)
 {
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->aux = NULL;
 }
 

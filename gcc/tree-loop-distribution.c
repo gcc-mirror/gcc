@@ -1677,7 +1677,7 @@ tree_loop_distribution (void)
   basic_block bb;
   control_dependences *cd = NULL;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

@@ -784,7 +784,7 @@ inverted_post_order_compute (int *post_order)
   bitmap_clear (visited);
 
   /* Put all blocks that have no successor into the initial work list.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     if (EDGE_COUNT (bb->succs) == 0)
       {
         /* Push the initial edge on to the stack.  */

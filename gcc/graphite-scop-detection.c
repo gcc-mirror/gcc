@@ -1114,7 +1114,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator psi;
       loop_p loop = bb->loop_father;
@@ -1450,7 +1450,7 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
 
   fprintf (file, "digraph all {\n");
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       int part_of_scop = false;
 
@@ -1557,7 +1557,7 @@ dot_all_scops_1 (FILE *file, vec<scop_p> scops)
       fprintf (file, "  </TABLE>>, shape=box, style=\"setlinewidth(0)\"]\n");
     }
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	      fprintf (file, "%d -> %d;\n", bb->index, e->dest->index);

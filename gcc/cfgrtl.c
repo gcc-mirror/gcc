@@ -3619,7 +3619,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb = prev_bb;
 
   /* Then, clean up the aux fields.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bb->aux = NULL;
       if (!stay_in_cfglayout_mode)

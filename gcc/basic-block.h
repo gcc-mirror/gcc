@@ -362,9 +362,6 @@ struct GTY(()) control_flow_graph {
 /* Cycles through _all_ basic blocks, even the fake ones (entry and
    exit block).  */
 
-#define FOR_ALL_BB(BB) \
-  for (BB = ENTRY_BLOCK_PTR_FOR_FN (cfun); BB; BB = BB->next_bb)
-
 #define FOR_ALL_BB_FN(BB, FN) \
   for (BB = ENTRY_BLOCK_PTR_FOR_FN (FN); BB; BB = BB->next_bb)
 

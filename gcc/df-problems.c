@@ -1176,7 +1176,7 @@ df_lr_verify_solution_start (void)
   problem_data->in = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   problem_data->out = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_initialize (&problem_data->in[bb->index], &problem_data->lr_bitmaps);
       bitmap_initialize (&problem_data->out[bb->index], &problem_data->lr_bitmaps);
@@ -1205,7 +1205,7 @@ df_lr_verify_solution_end (void)
        in df_lr_finalize for details.  */
     df_lr->solutions_dirty = false;
   else
-    FOR_ALL_BB (bb)
+    FOR_ALL_BB_FN (bb, cfun)
       {
 	if ((!bitmap_equal_p (&problem_data->in[bb->index], DF_LR_IN (bb)))
 	    || (!bitmap_equal_p (&problem_data->out[bb->index], DF_LR_OUT (bb))))
@@ -1217,7 +1217,7 @@ df_lr_verify_solution_end (void)
 
   /* Cannot delete them immediately because you may want to dump them
      if the comparison fails.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_clear (&problem_data->in[bb->index]);
       bitmap_clear (&problem_data->out[bb->index]);
@@ -1294,7 +1294,7 @@ df_lr_verify_transfer_functions (void)
   bitmap_initialize (&saved_use, &bitmap_default_obstack);
   bitmap_initialize (&all_blocks, &bitmap_default_obstack);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       struct df_lr_bb_info *bb_info = df_lr_get_bb_info (bb->index);
       bitmap_set_bit (&all_blocks, bb->index);
@@ -1713,7 +1713,7 @@ df_live_verify_solution_start (void)
   problem_data->in = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   problem_data->out = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_initialize (&problem_data->in[bb->index], &problem_data->live_bitmaps);
       bitmap_initialize (&problem_data->out[bb->index], &problem_data->live_bitmaps);
@@ -1736,7 +1736,7 @@ df_live_verify_solution_end (void)
   if (!problem_data->out)
     return;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       if ((!bitmap_equal_p (&problem_data->in[bb->index], DF_LIVE_IN (bb)))
 	  || (!bitmap_equal_p (&problem_data->out[bb->index], DF_LIVE_OUT (bb))))
@@ -1748,7 +1748,7 @@ df_live_verify_solution_end (void)
 
   /* Cannot delete them immediately because you may want to dump them
      if the comparison fails.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_clear (&problem_data->in[bb->index]);
       bitmap_clear (&problem_data->out[bb->index]);
@@ -1814,7 +1814,7 @@ void
 df_live_set_all_dirty (void)
 {
   basic_block bb;
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bitmap_set_bit (df_live->out_of_date_transfer_functions,
 		    bb->index);
 }
@@ -1840,7 +1840,7 @@ df_live_verify_transfer_functions (void)
 
   df_grow_insn_info ();
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       struct df_live_bb_info *bb_info = df_live_get_bb_info (bb->index);
       bitmap_set_bit (&all_blocks, bb->index);
@@ -4316,7 +4316,7 @@ df_md_local_compute (bitmap all_blocks)
   bitmap_clear (&seen_in_insn);
 
   frontiers = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bitmap_initialize (&frontiers[bb->index], &bitmap_default_obstack);
 
   compute_dominance_frontiers (frontiers);
@@ -4334,7 +4334,7 @@ df_md_local_compute (bitmap all_blocks)
 	}
     }
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bitmap_clear (&frontiers[bb->index]);
   free (frontiers);
 }

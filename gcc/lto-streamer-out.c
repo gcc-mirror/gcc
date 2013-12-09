@@ -1868,7 +1868,7 @@ output_function (struct cgraph_node *node)
 	 virtual PHIs get re-computed on-the-fly which would make numbers
 	 inconsistent.  */
       set_gimple_stmt_max_uid (cfun, 0);
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1887,7 +1887,7 @@ output_function (struct cgraph_node *node)
 	}
       /* To avoid keeping duplicate gimple IDs in the statements, renumber
 	 virtual phis now.  */
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

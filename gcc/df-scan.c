@@ -213,7 +213,7 @@ df_scan_free_internal (void)
 	}
     }
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       unsigned int bb_index = bb->index;
       struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb_index);
@@ -355,7 +355,7 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   df_grow_insn_info ();
   df_grow_bb_info (df_scan);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       unsigned int bb_index = bb->index;
       struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb_index);
@@ -1887,7 +1887,7 @@ df_reorganize_refs_by_insn (struct df_ref_info *ref_info,
     }
   else
     {
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	offset = df_reorganize_refs_by_insn_bb (bb, offset, ref_info,
 						include_defs, include_uses,
 						include_eq_uses);
@@ -4569,7 +4569,7 @@ df_scan_verify (void)
      clear a mark that has not been set as this means that the ref in
      the block or insn was not in the reg chain.  */
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     df_bb_verify (bb);
 
   /* (4) See if all reg chains are traversed a second time.  This time

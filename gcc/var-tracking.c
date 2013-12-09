@@ -9847,7 +9847,7 @@ vt_initialize (void)
   changed_variables.create (10);
 
   /* Init the IN and OUT sets.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       VTI (bb)->visited = false;
       VTI (bb)->flooded = false;
@@ -10186,7 +10186,7 @@ vt_finalize (void)
       VTI (bb)->mos.release ();
     }
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       dataflow_set_destroy (&VTI (bb)->in);
       dataflow_set_destroy (&VTI (bb)->out);

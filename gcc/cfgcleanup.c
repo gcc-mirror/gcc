@@ -2864,7 +2864,7 @@ try_optimize_cfg (int mode)
       while (changed);
     }
 
-  FOR_ALL_BB (b)
+  FOR_ALL_BB_FN (b, cfun)
     b->flags &= ~(BB_FORWARDER_BLOCK | BB_NONTHREADABLE_BLOCK);
 
   return changed_overall;

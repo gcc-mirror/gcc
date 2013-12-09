@@ -325,7 +325,7 @@ dump_flow_info (FILE *file, int flags)
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks_for_fn (cfun),
 	   n_edges_for_fn (cfun));
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     dump_bb (file, bb, 0, flags);
 
   putc ('\n', file);
@@ -1408,7 +1408,7 @@ account_profile_record (struct profile_record *record, int after_pass)
   int sum;
   gcov_type lsum;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
    {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
