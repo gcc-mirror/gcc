@@ -1,5 +1,15 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (label_to_block_map): Eliminate macro.
+
+	* gimple.c (gimple_set_bb): Replace uses of label_to_block_map
+	with uses of label_to_block_map_for_fn, making uses of cfun be
+	explicit.
+	* tree-cfg.c (delete_tree_cfg_annotations): Likewise.
+	(verify_gimple_label): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (basic_block_info): Eliminate macro.
 
 	* cfgrtl.c (rtl_create_basic_block): Replace uses of
