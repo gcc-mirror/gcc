@@ -711,8 +711,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		 "Giving up; number of basic block mismatch.\n");
       match = false;
     }
-  else if (last_basic_block_for_function (srccfun)
-	   != last_basic_block_for_function (dstcfun))
+  else if (last_basic_block_for_fn (srccfun)
+	   != last_basic_block_for_fn (dstcfun))
     {
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,

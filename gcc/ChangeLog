@@ -1,5 +1,18 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (last_basic_block_for_function): Rename to...
+	(last_basic_block_for_fn): ...this.
+
+	* ipa-utils.c (ipa_merge_profiles): Update for renaming of
+	last_basic_block_for_function to last_basic_block_for_fn.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* lto-streamer-out.c (output_cfg): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	* tree-sra.c (propagate_dereference_distances, ipa_early_sra):
+	Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (basic_block_info_for_function): Rename to...
 	(basic_block_info_for_fn): ...this.
 	(BASIC_BLOCK_FOR_FUNCTION): Rename to...

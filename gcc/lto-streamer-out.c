@@ -1633,7 +1633,7 @@ output_cfg (struct output_block *ob, struct function *fn)
 		       profile_status_for_function (fn));
 
   /* Output the number of the highest basic block.  */
-  streamer_write_uhwi (ob, last_basic_block_for_function (fn));
+  streamer_write_uhwi (ob, last_basic_block_for_fn (fn));
 
   FOR_ALL_BB_FN (bb, fn)
     {
