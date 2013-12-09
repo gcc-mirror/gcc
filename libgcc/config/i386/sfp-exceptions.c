@@ -47,7 +47,7 @@ __sfp_handle_exceptions (int _fex)
   if (_fex & FP_EX_INVALID)
     {
       float f = 0.0f;
-#ifdef __x86_64__
+#ifdef __SSE_MATH__
       volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%0, %d0|%d0, %0}" : "+x" (f));
       r = f; /* Needed to trigger exception.   */
@@ -67,7 +67,7 @@ __sfp_handle_exceptions (int _fex)
   if (_fex & FP_EX_DIVZERO)
     {
       float f = 1.0f, g = 0.0f;
-#ifdef __x86_64__
+#ifdef __SSE_MATH__
       volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
       r = f; /* Needed to trigger exception.   */
@@ -95,7 +95,7 @@ __sfp_handle_exceptions (int _fex)
   if (_fex & FP_EX_INEXACT)
     {
       float f = 1.0f, g = 3.0f;
-#ifdef __x86_64__
+#ifdef __SSE_MATH__
       volatile float r __attribute__ ((unused));
       asm volatile ("%vdivss\t{%1, %d0|%d0, %1}" : "+x" (f) : "xm" (g));
       r = f; /* Needed to trigger exception.   */
