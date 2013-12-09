@@ -256,7 +256,7 @@ tail_duplicate (void)
   branch_ratio_cutoff =
     (REG_BR_PROB_BASE / 100 * PARAM_VALUE (TRACER_MIN_BRANCH_RATIO));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int n = count_insns (bb);
       if (!ignore_bb_p (bb))

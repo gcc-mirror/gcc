@@ -239,7 +239,7 @@ lra_coalesce (void)
   mv_num = 0;
   /* Collect moves.  */
   coalesced_moves = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS_SAFE (bb, insn, next)
 	if (INSN_P (insn)
@@ -297,7 +297,7 @@ lra_coalesce (void)
 	}
     }
   bitmap_initialize (&used_pseudos_bitmap, &reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       update_live_info (df_get_live_in (bb));
       update_live_info (df_get_live_out (bb));

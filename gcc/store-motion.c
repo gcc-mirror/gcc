@@ -656,7 +656,7 @@ compute_store_table (void)
   already_set = XNEWVEC (int, max_gcse_regno);
 
   /* Find all the stores we care about.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* First compute the registers set in this block.  */
       FOR_BB_INSNS (bb, insn)
@@ -1061,7 +1061,7 @@ build_store_vectors (void)
   bitmap_vector_clear (st_transp, last_basic_block_for_fn (cfun));
   regs_set_in_block = XNEWVEC (int, max_gcse_regno);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       memset (regs_set_in_block, 0, sizeof (int) * max_gcse_regno);
 
@@ -1188,7 +1188,7 @@ one_store_motion_pass (void)
 
       /* Now we want to insert the new stores which are going to be needed.  */
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (bitmap_bit_p (st_delete_map[bb->index], ptr->index))
 	  {
 	    delete_store (ptr, bb);

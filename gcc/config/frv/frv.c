@@ -8070,11 +8070,11 @@ frv_optimize_membar (void)
   first_io = XCNEWVEC (struct frv_io, last_basic_block_for_fn (cfun));
   last_membar = XCNEWVEC (rtx, last_basic_block_for_fn (cfun));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     frv_optimize_membar_local (bb, &first_io[bb->index],
 			       &last_membar[bb->index]);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (last_membar[bb->index] != 0)
       frv_optimize_membar_global (bb, first_io, last_membar[bb->index]);
 

@@ -400,7 +400,7 @@ compute_hash_table_work (struct hash_table_d *table)
   /* Allocate vars to track sets of regs.  */
   reg_set_bitmap = ALLOC_REG_SET (NULL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 
@@ -649,7 +649,7 @@ compute_cprop_data (void)
      aren't recorded for the local pass so they cannot be propagated within
      their basic block by this pass and 2) the global pass would otherwise
      propagate them only in the successors of their basic block.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int index = implicit_set_indexes[bb->index];
       if (index != -1)
@@ -1234,7 +1234,7 @@ local_cprop_pass (void)
   unsigned i;
 
   cselib_init (0);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
 	{
@@ -1359,7 +1359,7 @@ find_implicit_sets (void)
 
   implicit_sets = XCNEWVEC (rtx, implicit_sets_size);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Check for more than one successor.  */
       if (EDGE_COUNT (bb->succs) <= 1)

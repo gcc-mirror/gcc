@@ -354,7 +354,7 @@ is_inconsistent (void)
 {
   basic_block bb;
   bool inconsistent = false;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       inconsistent |= is_edge_inconsistent (bb->preds);
       if (!dump_file && inconsistent)
@@ -692,7 +692,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   /* If the graph has been correctly solved, every block will have a
      succ and pred count of zero.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gcc_assert (!BB_INFO (bb)->succ_count && !BB_INFO (bb)->pred_count);
     }
@@ -1021,7 +1021,7 @@ branch_prob (void)
      We also add fake exit edges for each call and asm statement in the
      basic, since it may not return.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int need_exit_edge = 0, need_entry_edge = 0;
       int have_exit_edge = 0, have_entry_edge = 0;
@@ -1260,7 +1260,7 @@ branch_prob (void)
       /* Initialize the output.  */
       output_location (NULL, 0, NULL, NULL);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
 	  gcov_position_t offset = 0;

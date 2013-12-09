@@ -1070,7 +1070,7 @@ find_split_points (int overall_time, int overall_size)
         stack.pop ();
     }
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = NULL;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->aux = NULL;
   stack.release ();
   BITMAP_FREE (current.ssa_names_to_pass);
@@ -1595,7 +1595,7 @@ execute_split_functions (void)
   /* Compute local info about basic blocks and determine function size/time.  */
   bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   memset (&best_split_point, 0, sizeof (best_split_point));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int time = 0;
       int size = 0;

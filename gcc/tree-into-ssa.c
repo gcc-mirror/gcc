@@ -2320,7 +2320,7 @@ rewrite_into_ssa (void)
 
   /* Initialize dominance frontier.  */
   dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
 
   /* 1- Compute dominance frontiers.  */
@@ -2337,7 +2337,7 @@ rewrite_into_ssa (void)
   rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (cfun), REWRITE_ALL);
 
   /* Free allocated memory.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_clear (&dfs[bb->index]);
   free (dfs);
 
@@ -3270,7 +3270,7 @@ update_ssa (unsigned update_flags)
       /* If the caller requested PHI nodes to be added, compute
 	 dominance frontiers.  */
       dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
       compute_dominance_frontiers (dfs);
 
@@ -3296,7 +3296,7 @@ update_ssa (unsigned update_flags)
 	insert_updated_phi_nodes_for (sym, dfs, blocks_to_update,
 	                              update_flags);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bitmap_clear (&dfs[bb->index]);
       free (dfs);
 

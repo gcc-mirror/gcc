@@ -432,7 +432,7 @@ mark_loop_exit_edges (void)
   if (number_of_loops (cfun) <= 1)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge_iterator ei;
 

@@ -683,7 +683,7 @@ find_replaceable_exprs (var_map map)
 
   bitmap_obstack_initialize (&ter_bitmap_obstack);
   table = new_temp_expr_table (map);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       find_replaceable_in_bb (table, bb);
       gcc_checking_assert (bitmap_empty_p (table->partition_in_use));

@@ -159,7 +159,7 @@ find_unreachable_blocks (void)
 
   /* Clear all the reachability flags.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->flags &= ~BB_REACHABLE;
 
   /* Add our starting points to the worklist.  Almost always there will
@@ -554,7 +554,7 @@ add_noreturn_fake_exit_edges (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (EDGE_COUNT (bb->succs) == 0)
       make_single_succ_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 }
@@ -1236,7 +1236,7 @@ compute_dominance_frontiers_1 (bitmap_head *frontiers)
   edge p;
   edge_iterator ei;
   basic_block b;
-  FOR_EACH_BB (b)
+  FOR_EACH_BB_FN (b, cfun)
     {
       if (EDGE_COUNT (b->preds) >= 2)
 	{
@@ -1517,7 +1517,7 @@ single_pred_before_succ_order (void)
   bitmap_clear (visited);
 
   MARK_VISITED (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  FOR_EACH_BB (x)
+  FOR_EACH_BB_FN (x, cfun)
     {
       if (VISITED_P (x))
 	continue;

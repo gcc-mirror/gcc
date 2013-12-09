@@ -1631,7 +1631,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
      ahead and thread it, else ignore it.  */
   basic_block bb;
   edge e;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* If we do end up threading here, we can remove elements from
 	 BB->preds.  Thus we can not use the FOR_EACH_EDGE iterator.  */

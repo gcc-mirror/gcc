@@ -673,7 +673,7 @@ clear_unused_block_pointer (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	unsigned i;
@@ -791,7 +791,7 @@ remove_unused_locals (void)
   usedvars = BITMAP_ALLOC (NULL);
 
   /* Walk the CFG marking all referenced symbols.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       size_t i;
@@ -856,7 +856,7 @@ remove_unused_locals (void)
      ignores them, and the second pass (if there were any) tries to remove
      them.  */
   if (have_local_clobbers)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       {
 	gimple_stmt_iterator gsi;
 
@@ -963,11 +963,11 @@ new_tree_live_info (var_map map)
   live->num_blocks = last_basic_block_for_fn (cfun);
 
   live->livein = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&live->livein[bb->index], &liveness_bitmap_obstack);
 
   live->liveout = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&live->liveout[bb->index], &liveness_bitmap_obstack);
 
   live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
@@ -1149,11 +1149,11 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   edge_iterator ei;
 
   /* live on entry calculations used liveout vectors for defs, clear them.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_clear (&liveinfo->liveout[bb->index]);
 
   /* Set all the live-on-exit bits for uses in PHIs.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       size_t i;
@@ -1294,7 +1294,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 
   if ((flag & LIVEDUMP_ENTRY) && live->livein)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  fprintf (f, "\nLive on entry to BB%d : ", bb->index);
 	  EXECUTE_IF_SET_IN_BITMAP (&live->livein[bb->index], 0, i, bi)
@@ -1308,7 +1308,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 
   if ((flag & LIVEDUMP_EXIT) && live->liveout)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  fprintf (f, "\nLive on exit from BB%d : ", bb->index);
 	  EXECUTE_IF_SET_IN_BITMAP (&live->liveout[bb->index], 0, i, bi)

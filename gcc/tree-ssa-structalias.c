@@ -6764,7 +6764,7 @@ compute_points_to_sets (void)
   intra_create_variable_infos ();
 
   /* Now walk all statements and build the constraint set.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 
@@ -6811,7 +6811,7 @@ compute_points_to_sets (void)
     }
 
   /* Compute the call-used/clobbered sets.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 

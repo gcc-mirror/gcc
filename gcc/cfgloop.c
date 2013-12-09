@@ -50,7 +50,7 @@ flow_loops_cfg_dump (FILE *file)
   if (!file)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge succ;
       edge_iterator ei;
@@ -834,7 +834,7 @@ get_loop_body (const struct loop *loop)
       gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks_for_fn (cfun));
       body[tv++] = loop->header;
       body[tv++] = EXIT_BLOCK_PTR_FOR_FN (cfun);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	body[tv++] = bb;
     }
   else
@@ -1082,7 +1082,7 @@ record_loop_exits (void)
 					  loop_exit_hash, loop_exit_eq,
 					  loop_exit_free);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -1343,7 +1343,7 @@ verify_loop_structure (void)
     verify_dominators (CDI_DOMINATORS);
 
   /* Check the headers.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb_loop_header_p (bb))
       {
 	if (bb->loop_father->header == NULL)
@@ -1479,7 +1479,7 @@ verify_loop_structure (void)
     {
       /* Record old info.  */
       irreds = sbitmap_alloc (last_basic_block_for_fn (cfun));
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
@@ -1495,7 +1495,7 @@ verify_loop_structure (void)
       mark_irreducible_loops ();
 
       /* Compare.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 
@@ -1578,7 +1578,7 @@ verify_loop_structure (void)
 
       sizes = XCNEWVEC (unsigned, num);
       memset (sizes, 0, sizeof (unsigned) * num);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 	  if (bb->loop_father == current_loops->tree_root)

@@ -2295,7 +2295,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
   gimple_stmt_iterator psi;
   sese region = SCOP_REGION (scop);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
 	{
@@ -2489,7 +2489,7 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
   /* Create an extra empty BB after the scop.  */
   split_edge (SESE_EXIT (region));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
 	changed |= rewrite_cross_bb_scalar_deps (scop, &psi);

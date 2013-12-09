@@ -7458,7 +7458,7 @@ s390_regs_ever_clobbered (char regs_ever_clobbered[])
       if (!call_really_used_regs[i])
 	regs_ever_clobbered[i] = 1;
 
-  FOR_EACH_BB (cur_bb)
+  FOR_EACH_BB_FN (cur_bb, cfun)
     {
       FOR_BB_INSNS (cur_bb, cur_insn)
 	{

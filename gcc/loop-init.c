@@ -213,7 +213,7 @@ fix_loop_structure (bitmap changed_bbs)
   /* Remember the depth of the blocks in the loop hierarchy, so that we can
      recognize blocks whose loop nesting relationship has changed.  */
   if (changed_bbs)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       bb->aux = (void *) (size_t) loop_depth (bb->loop_father);
 
   /* Remove the dead loops from structures.  We start from the innermost
@@ -256,7 +256,7 @@ fix_loop_structure (bitmap changed_bbs)
   /* Mark the blocks whose loop has changed.  */
   if (changed_bbs)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  if ((void *) (size_t) loop_depth (bb->loop_father) != bb->aux)
 	    bitmap_set_bit (changed_bbs, bb->index);

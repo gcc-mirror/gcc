@@ -1420,7 +1420,7 @@ do_switchconv (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
   {
     const char *failure_reason;
     gimple stmt = last_stmt (bb);

@@ -754,7 +754,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 
   push_cfun (DECL_STRUCT_FUNCTION (decl));
 
-  FOR_EACH_BB (this_block)
+  FOR_EACH_BB_FN (this_block, cfun)
     {
       gimple_stmt_iterator gsi;
       struct walk_stmt_info wi;

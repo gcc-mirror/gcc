@@ -281,7 +281,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       *qin++ = bb;
       bb->aux = bb;
@@ -350,7 +350,7 @@ compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
   int x;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_and_compl (del[bb->index], antloc[bb->index],
 			laterin[bb->index]);
 
@@ -497,7 +497,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of AVOUT above.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       *qin++ = bb;
       bb->aux = bb;
@@ -638,7 +638,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
 
   /* Add all the blocks to the worklist.  This prevents an early exit
      from the loop given our optimistic initialization of NEARER.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       *tos++ = bb;
       bb->aux = bb;
@@ -695,7 +695,7 @@ compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *st_avloc,
   int x;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_and_compl (del[bb->index], st_avloc[bb->index],
 			nearerout[bb->index]);
 

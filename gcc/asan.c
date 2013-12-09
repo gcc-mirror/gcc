@@ -2043,7 +2043,7 @@ transform_statements (void)
   gimple_stmt_iterator i;
   int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       basic_block prev_bb = bb;
 
@@ -2557,7 +2557,7 @@ execute_sanopt (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

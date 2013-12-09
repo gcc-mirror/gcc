@@ -416,7 +416,7 @@ compute_bb_for_insn (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx end = BB_END (bb);
       rtx insn;
@@ -2275,7 +2275,7 @@ find_partition_fixes (bool flag_only)
   /* Callers check this.  */
   gcc_checking_assert (crtl->has_bb_partition);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if ((BB_PARTITION (bb) == BB_COLD_PARTITION))
       bbs_in_cold_partition.safe_push (bb);
 
@@ -2372,7 +2372,7 @@ verify_hot_cold_block_grouping (void)
       || current_ir_type () != IR_RTL_CFGRTL)
     return err;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (current_partition != BB_UNPARTITIONED
           && BB_PARTITION (bb) != current_partition)
@@ -3201,7 +3201,7 @@ purge_all_dead_edges (void)
   int purged = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool purged_here = purge_dead_edges (bb);
 
@@ -3226,7 +3226,7 @@ fixup_abnormal_edges (void)
   bool inserted = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -3449,7 +3449,7 @@ record_effective_endpoints (void)
     cfg_layout_function_header = NULL_RTX;
 
   next_insn = get_insns ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx end;
 
@@ -3479,7 +3479,7 @@ outof_cfg_layout_mode (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
 
@@ -3857,7 +3857,7 @@ fixup_reorder_chain (void)
   relink_block_chain (/*stay_in_cfglayout_mode=*/false);
 
   /* Annoying special case - jump around dead jumptables left in the code.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e = find_fallthru_edge (bb->succs);
 
@@ -3868,7 +3868,7 @@ fixup_reorder_chain (void)
   /* Ensure goto_locus from edges has some instructions with that locus
      in RTL.  */
   if (!optimize)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       {
         edge e;
         edge_iterator ei;
@@ -4047,7 +4047,7 @@ force_one_exit_fallthru (void)
 
   /* Fix up the chain of blocks -- make FORWARDER immediately precede the
      exit block.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->aux == NULL && bb != forwarder)
 	{
@@ -4258,7 +4258,7 @@ break_superblocks (void)
   superblocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (superblocks);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->flags & BB_SUPERBLOCK)
       {
 	bb->flags &= ~BB_SUPERBLOCK;

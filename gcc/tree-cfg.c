@@ -302,7 +302,7 @@ replace_loop_annotate ()
     }
 
   /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gsi = gsi_last_bb (bb);
       stmt = gsi_stmt (gsi);
@@ -456,7 +456,7 @@ factor_computed_gotos (void)
      Examine the last statement in each basic block to see if the block
      ends with a computed goto.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
       gimple last;
@@ -635,7 +635,7 @@ fold_cond_expr_cond (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
 
@@ -682,7 +682,7 @@ make_edges (void)
 	     EDGE_FALLTHRU);
 
   /* Traverse the basic block array placing edges.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple last = last_stmt (bb);
       bool fallthru;
@@ -836,7 +836,7 @@ assign_discriminators (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -1055,7 +1055,7 @@ make_abnormal_goto_edges (basic_block bb, bool for_call)
   basic_block target_bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (target_bb)
+  FOR_EACH_BB_FN (target_bb, cfun)
     {
       for (gsi = gsi_start_bb (target_bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -1235,7 +1235,7 @@ cleanup_dead_labels (void)
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -1271,7 +1271,7 @@ cleanup_dead_labels (void)
 
   /* Now redirect all jumps/branches to the selected label.
      First do so for each block ending in a control statement.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
       tree label, new_label;
@@ -1363,7 +1363,7 @@ cleanup_dead_labels (void)
   /* Finally, purge dead labels.  All user-defined labels and labels that
      can be the target of non-local gotos and labels which have their
      address taken are preserved.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
       tree label_for_this_bb = label_for_bb[bb->index].label;
@@ -1487,7 +1487,7 @@ group_case_labels (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
       if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
@@ -2160,7 +2160,7 @@ dump_cfg_stats (FILE *file)
 	   SCALE (size), LABEL (size));
 
   num_edges = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     num_edges += EDGE_COUNT (bb->succs);
   size = num_edges * sizeof (struct edge_def);
   total += size;
@@ -4894,7 +4894,7 @@ gimple_verify_flow_info (void)
 	err = 1;
       }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool found_ctrl_stmt = false;
 
@@ -7241,7 +7241,7 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   if (verbosity >= 1)
     {
       fprintf (file, "%s{\n", s_indent);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (bb->loop_father == loop)
 	  print_loops_bb (file, bb, indent, verbosity);
 
@@ -8331,7 +8331,7 @@ execute_fixup_cfg (void)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     e->count = apply_scale (e->count, count_scale);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bb->count = apply_scale (bb->count, count_scale);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

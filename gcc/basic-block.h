@@ -333,8 +333,6 @@ struct GTY(()) control_flow_graph {
 #define FOR_EACH_BB_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_entry_block_ptr->next_bb, (FN)->cfg->x_exit_block_ptr, next_bb)
 
-#define FOR_EACH_BB(BB) FOR_EACH_BB_FN (BB, cfun)
-
 #define FOR_EACH_BB_REVERSE_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
 

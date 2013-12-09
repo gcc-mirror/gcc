@@ -2135,7 +2135,7 @@ decrease_live_ranges_number (void)
   if (ira_dump_file)
     fprintf (ira_dump_file, "Starting decreasing number of live ranges...\n");
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	set = single_set (insn);
@@ -2358,7 +2358,7 @@ compute_regs_asm_clobbered (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       FOR_BB_INSNS_REVERSE (bb, insn)
@@ -2951,7 +2951,7 @@ mark_elimination (int from, int to)
   basic_block bb;
   bitmap r;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       r = DF_LR_IN (bb);
       if (bitmap_bit_p (r, from))
@@ -3473,7 +3473,7 @@ update_equiv_regs (void)
      paradoxical subreg. Don't set such reg sequivalent to a mem,
      because lra will not substitute such equiv memory in order to
      prevent access beyond allocated memory for paradoxical memory subreg.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
 	for_each_rtx (&insn, set_paradoxical_subreg, (void *) pdx_subregs);
@@ -3481,7 +3481,7 @@ update_equiv_regs (void)
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
      a register can be set below its use.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       loop_depth = bb_loop_depth (bb);
 
@@ -3905,7 +3905,7 @@ update_equiv_regs (void)
 
   if (!bitmap_empty_p (cleared_regs))
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
@@ -4532,7 +4532,7 @@ find_moveable_pseudos (void)
   bitmap_initialize (&used, 0);
   bitmap_initialize (&set, 0);
   bitmap_initialize (&unusable_as_input, 0);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       bitmap transp = bb_transp_live + bb->index;
@@ -4595,7 +4595,7 @@ find_moveable_pseudos (void)
   bitmap_clear (&used);
   bitmap_clear (&set);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap local = bb_local + bb->index;
       rtx insn;
@@ -4824,7 +4824,7 @@ find_moveable_pseudos (void)
 	}
     }
   
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap_clear (bb_local + bb->index);
       bitmap_clear (bb_transp_live + bb->index);
@@ -4921,7 +4921,7 @@ split_live_ranges_for_shrink_wrap (void)
   bitmap_initialize (&reachable, 0);
   queue.create (n_basic_blocks_for_fn (cfun));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (CALL_P (insn) && !SIBLING_CALL_P (insn))
 	{
@@ -5145,7 +5145,7 @@ allocate_initial_values (void)
 		     fixed regs are accepted.  */
 		  SET_REGNO (preg, new_regno);
 		  /* Update global register liveness information.  */
-		  FOR_EACH_BB (bb)
+		  FOR_EACH_BB_FN (bb, cfun)
 		    {
 		      if (REGNO_REG_SET_P (df_get_live_in (bb), regno))
 			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);

@@ -1097,7 +1097,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
       }
 
   /* Propagate into all uses and fold.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 

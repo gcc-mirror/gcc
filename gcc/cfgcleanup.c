@@ -2613,7 +2613,7 @@ try_optimize_cfg (int mode)
 
   crossjumps_occured = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     update_forwarder_flag (bb);
 
   if (! targetm.cannot_modify_jumps_p ())
@@ -2955,7 +2955,7 @@ delete_dead_jumptables (void)
 
   /* A dead jump table does not belong to any basic block.  Scan insns
      between two adjacent basic blocks.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn, next;
 

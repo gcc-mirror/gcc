@@ -662,7 +662,7 @@ calculate_dominance_info (enum cdi_direction dir)
       calc_dfs_tree (&di, reverse);
       calc_idoms (&di, reverse);
 
-      FOR_EACH_BB (b)
+      FOR_EACH_BB_FN (b, cfun)
 	{
 	  TBB d = di.dom[di.dfs_order[b->index]];
 
@@ -1025,7 +1025,7 @@ verify_dominators (enum cdi_direction dir)
   calc_dfs_tree (&di, reverse);
   calc_idoms (&di, reverse);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       imm_bb = get_immediate_dominator (dir, bb);
       if (!imm_bb)
@@ -1492,7 +1492,7 @@ DEBUG_FUNCTION void
 debug_dominance_info (enum cdi_direction dir)
 {
   basic_block bb, bb2;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if ((bb2 = get_immediate_dominator (dir, bb)))
       fprintf (stderr, "%i %i\n", bb->index, bb2->index);
 }

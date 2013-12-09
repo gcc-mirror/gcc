@@ -213,7 +213,7 @@ reload_cse_regs_1 (void)
   cselib_init (CSELIB_RECORD_MEMORY);
   init_alias_analysis ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	if (INSN_P (insn))

@@ -463,7 +463,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
     EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
       find_uses_to_rename_bb (BASIC_BLOCK_FOR_FN (cfun, index), use_blocks, need_phis);
   else
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       find_uses_to_rename_bb (bb, use_blocks, need_phis);
 }
 
@@ -602,7 +602,7 @@ verify_loop_closed_ssa (bool verify_ssa_p)
 
   timevar_push (TV_VERIFY_LOOP_CLOSED);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{

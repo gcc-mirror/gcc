@@ -65,7 +65,7 @@ associate_equivalences_with_edges (void)
 
   /* Walk over each block.  If the block ends with a control statement,
      then it might create a useful equivalence.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
       gimple stmt;
@@ -406,7 +406,7 @@ tree_ssa_uncprop (void)
   /* we just need to empty elements out of the hash table, and cleanup the
     AUX field on the edges.  */
   val_ssa_equiv.dispose ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;

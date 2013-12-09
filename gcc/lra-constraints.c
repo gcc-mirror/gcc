@@ -5302,7 +5302,7 @@ lra_inheritance (void)
   bitmap_initialize (&live_regs, &reg_obstack);
   bitmap_initialize (&temp_bitmap, &reg_obstack);
   bitmap_initialize (&ebb_global_regs, &reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       start_bb = bb;
       if (lra_dump_file != NULL)
@@ -5403,7 +5403,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
      because we need to marks insns affected by previous
      inheritance/split pass for processing by the subsequent
      constraint pass.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       fix_bb_live_info (df_get_live_in (bb), remove_pseudos);
       fix_bb_live_info (df_get_live_out (bb), remove_pseudos);
