@@ -288,9 +288,10 @@ proc asan-gtest { args } {
 		    if { "$status" == "fail" } {
 			pass "$testname execution test"
 			if { ![regexp $regexpr ${output}] } {
-			    fail "$testname output pattern test, should match $regexpr"
+			    fail "$testname output pattern test"
+			    send_log "Output should match: $regexpr\n"
 			} else {
-			    pass "$testname output pattern test, $regexpr"
+			    pass "$testname output pattern test"
 			}
 		    } elseif { "$status" == "pass" } {
 			fail "$testname execution test"

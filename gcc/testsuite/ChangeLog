@@ -1,3 +1,8 @@
+2013-12-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/asan-dg.exp (asan-gtest): Remove expected output from the
+	pass/fail line and add it to the log instead.
+
 2013-12-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52898
