@@ -15285,28 +15285,37 @@ operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
 }
 
 /* Helper for gen_operands_ldrd_strd.  Returns true iff the memory
-   operand ADDR is an immediate offset from the base register and is
-   not volatile, in which case it sets BASE and OFFSET
-   accordingly.  */
-bool
-mem_ok_for_ldrd_strd (rtx addr, rtx *base, rtx *offset)
+   operand MEM's address contains an immediate offset from the base
+   register and has no side effects, in which case it sets BASE and
+   OFFSET accordingly.  */
+static bool
+mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
 {
+  rtx addr;
+
+  gcc_assert (base != NULL && offset != NULL);
+
   /* TODO: Handle more general memory operand patterns, such as
      PRE_DEC and PRE_INC.  */
 
-  /* Convert a subreg of mem into mem itself.  */
-  if (GET_CODE (addr) == SUBREG)
-    addr = alter_subreg (&addr, true);
-
-  gcc_assert (MEM_P (addr));
-
-  /* Don't modify volatile memory accesses.  */
-  if (MEM_VOLATILE_P (addr))
+  if (side_effects_p (mem))
     return false;
+
+  /* Can't deal with subregs.  */
+  if (GET_CODE (mem) == SUBREG)
+    return false;
+
+  gcc_assert (MEM_P (mem));
 
   *offset = const0_rtx;
 
-  addr = XEXP (addr, 0);
+  addr = XEXP (mem, 0);
+
+  /* If addr isn't valid for DImode, then we can't handle it.  */
+  if (!arm_legitimate_address_p (DImode, addr,
+				 reload_in_progress || reload_completed))
+    return false;
+
   if (REG_P (addr))
     {
       *base = addr;

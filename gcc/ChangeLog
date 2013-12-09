@@ -1,3 +1,8 @@
+2013-12-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (mem_ok_for_ldrd_strd): Rename first argument as MEM.  Do
+	more address validation checks.
+
 2013-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59415
