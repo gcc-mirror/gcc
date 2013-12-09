@@ -212,7 +212,8 @@ LIBJAVA_CORE_EXTRA =
 endif
 
 if USE_LIBGCJ_BC
-toolexeclib_LTLIBRARIES += libgcj_bc.la
+toolexeclib_LTLIBRARIES += install/libgcj_bc.la
+noinst_LTLIBRARIES = libgcj_bc.la
 endif
 
 if XLIB_AWT
@@ -606,6 +607,7 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS) \
 ## This lets us have one soname in BC objects and another in C++ ABI objects.
 ## This library is not linked against libgcj.
 libgcj_bc_la_SOURCES = libgcj_bc.c
+install_libgcj_bc_la_SOURCES = $(libgcj_bc_la_SOURCES)
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 libgcj_bc_la_DEPENDENCIES = libgcj.la $(libgcj_bc_la_version_dep)
@@ -627,6 +629,11 @@ libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES)
 	-o .libs/libgcj_bc.so.1.0.0 -lgcj || exit; \
 	rm .libs/libgcj_bc.so.1; \
 	$(LN_S) libgcj_bc.so.1.0.0 .libs/libgcj_bc.so.1
+
+## This rule creates the libgcj_bc library that is actually installed.
+install/libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES) install/$(am__dirstamp)
+	$(libgcj_bc_la_LINK) $(am_libgcj_bc_la_rpath) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_LIBADD) $(LIBS)
 
 ## Note that property_files is defined in sources.am.
 propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))

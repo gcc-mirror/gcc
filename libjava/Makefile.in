@@ -40,7 +40,7 @@ host_triplet = @host@
 target_triplet = @target@
 @TESTSUBDIR_TRUE@am__append_1 = testsuite
 @BUILD_SUBLIBS_TRUE@am__append_2 = libgcj-noncore.la
-@USE_LIBGCJ_BC_TRUE@am__append_3 = libgcj_bc.la
+@USE_LIBGCJ_BC_TRUE@am__append_3 = install/libgcj_bc.la
 @XLIB_AWT_TRUE@am__append_4 = lib-gnu-awt-xlib.la
 @INSTALL_ECJ_JAR_TRUE@am__append_5 = $(ECJ_BUILD_JAR)
 @CREATE_GJDOC_TRUE@@NATIVE_TRUE@am__append_6 = gjdoc
@@ -156,9 +156,16 @@ am__installdirs = "$(DESTDIR)$(dbexecdir)" \
 	"$(DESTDIR)$(libexecsubdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" \
 	"$(DESTDIR)$(toolexecmainlibdir)"
-LTLIBRARIES = $(dbexec_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES = $(dbexec_LTLIBRARIES) $(noinst_LTLIBRARIES) \
+	$(toolexeclib_LTLIBRARIES)
+install_libgcj_bc_la_LIBADD =
+am__objects_1 = libgcj_bc.lo
+am_install_libgcj_bc_la_OBJECTS = $(am__objects_1)
+install_libgcj_bc_la_OBJECTS = $(am_install_libgcj_bc_la_OBJECTS)
+@USE_LIBGCJ_BC_TRUE@am_install_libgcj_bc_la_rpath = -rpath \
+@USE_LIBGCJ_BC_TRUE@	$(toolexeclibdir)
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
+am__objects_2 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo \
@@ -178,7 +185,7 @@ am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo
-am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1)
+am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_2)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
 am_libgcj_noncore_la_OBJECTS =
@@ -320,13 +327,13 @@ am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2) $(propertyo_files) \
 @BUILD_SUBLIBS_TRUE@am__DEPENDENCIES_4 =  \
 @BUILD_SUBLIBS_TRUE@	$(CORE_PACKAGE_SOURCE_FILES_LO)
 am__DEPENDENCIES_5 =
-@INTERPRETER_TRUE@am__objects_2 = jvmti.lo interpret.lo
-@INTERPRETER_TRUE@am__objects_3 = gnu/classpath/jdwp/natVMFrame.lo \
+@INTERPRETER_TRUE@am__objects_3 = jvmti.lo interpret.lo
+@INTERPRETER_TRUE@am__objects_4 = gnu/classpath/jdwp/natVMFrame.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/natVMMethod.lo \
 @INTERPRETER_TRUE@	gnu/classpath/jdwp/natVMVirtualMachine.lo
-@INTERPRETER_TRUE@am__objects_4 = gnu/gcj/jvmti/natBreakpoint.lo \
+@INTERPRETER_TRUE@am__objects_5 = gnu/gcj/jvmti/natBreakpoint.lo \
 @INTERPRETER_TRUE@	gnu/gcj/jvmti/natNormalBreakpoint.lo
-am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
+am__objects_6 = $(am__objects_4) gnu/classpath/natConfiguration.lo \
 	gnu/classpath/natSystemProperties.lo \
 	gnu/classpath/natVMStackWalker.lo gnu/gcj/natCore.lo \
 	gnu/gcj/convert/JIS0208_to_Unicode.lo \
@@ -337,7 +344,7 @@ am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
 	gnu/gcj/convert/natOutput_EUCJIS.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
-	$(am__objects_4) gnu/gcj/runtime/natFinalizerThread.lo \
+	$(am__objects_5) gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
 	gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/util/natDebug.lo \
@@ -384,24 +391,24 @@ am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
 	java/util/concurrent/atomic/natAtomicLong.lo \
 	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
 	java/util/zip/natInflater.lo sun/misc/natUnsafe.lo
-@USING_BOEHMGC_TRUE@am__objects_6 = boehm.lo
-@USING_NOGC_TRUE@am__objects_7 = nogc.lo
-@USING_POSIX_PLATFORM_TRUE@am__objects_8 = posix.lo
-@USING_WIN32_PLATFORM_TRUE@am__objects_9 = win32.lo
-@USING_DARWIN_CRT_TRUE@am__objects_10 = darwin.lo
-@USING_POSIX_THREADS_TRUE@am__objects_11 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_12 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_13 = no-threads.lo
+@USING_BOEHMGC_TRUE@am__objects_7 = boehm.lo
+@USING_NOGC_TRUE@am__objects_8 = nogc.lo
+@USING_POSIX_PLATFORM_TRUE@am__objects_9 = posix.lo
+@USING_WIN32_PLATFORM_TRUE@am__objects_10 = win32.lo
+@USING_DARWIN_CRT_TRUE@am__objects_11 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_12 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_13 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_14 = no-threads.lo
 am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
-	link.lo defineclass.lo verify.lo $(am__objects_2) \
-	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
-	$(am__objects_11) $(am__objects_12) $(am__objects_13)
+	link.lo defineclass.lo verify.lo $(am__objects_3) \
+	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
+	$(am__objects_9) $(am__objects_10) $(am__objects_11) \
+	$(am__objects_12) $(am__objects_13) $(am__objects_14)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcj_bc_la_LIBADD =
 am_libgcj_bc_la_OBJECTS = libgcj_bc.lo
 libgcj_bc_la_OBJECTS = $(am_libgcj_bc_la_OBJECTS)
-@USE_LIBGCJ_BC_TRUE@am_libgcj_bc_la_rpath = -rpath $(toolexeclibdir)
+@USE_LIBGCJ_BC_TRUE@am_libgcj_bc_la_rpath =
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
 am_libjvm_la_OBJECTS = jni-libjvm.lo
@@ -486,7 +493,8 @@ GCJCOMPILE = $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 LTGCJCOMPILE = $(LIBTOOL) --tag=GCJ $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 GCJLD = $(GCJ)
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_noncore_la_SOURCES) \
+SOURCES = $(install_libgcj_bc_la_SOURCES) \
+	$(lib_gnu_awt_xlib_la_SOURCES) $(libgcj_noncore_la_SOURCES) \
 	$(libgcj_tools_la_SOURCES) $(libgcj_la_SOURCES) \
 	$(EXTRA_libgcj_la_SOURCES) $(libgcj_bc_la_SOURCES) \
 	$(libgij_la_SOURCES) $(libjvm_la_SOURCES) $(ecjx_SOURCES) \
@@ -940,6 +948,7 @@ CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACK
 @BUILD_SUBLIBS_TRUE@LIBJAVA_LDFLAGS_NOUNDEF = $(LIBGCJ_SUBLIB_LTFLAGS)
 @BUILD_SUBLIBS_FALSE@LIBJAVA_CORE_EXTRA = 
 @BUILD_SUBLIBS_TRUE@LIBJAVA_CORE_EXTRA = @LIBGCJ_SUBLIB_CORE_EXTRA_DEPS@
+@USE_LIBGCJ_BC_TRUE@noinst_LTLIBRARIES = libgcj_bc.la
 dbexec_LTLIBRARIES = libjvm.la
 pkgconfigdir = $(toolexeclibdir)/pkgconfig
 jardir = $(datadir)/java
@@ -1147,6 +1156,7 @@ lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS) \
 	$(lib_gnu_awt_xlib_la_version_arg)
 
 libgcj_bc_la_SOURCES = libgcj_bc.c
+install_libgcj_bc_la_SOURCES = $(libgcj_bc_la_SOURCES)
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 
@@ -8821,6 +8831,15 @@ clean-dbexecLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
@@ -8852,6 +8871,9 @@ clean-toolexeclibLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+install/$(am__dirstamp):
+	@$(MKDIR_P) install
+	@: > install/$(am__dirstamp)
 gnu/gcj/xlib/$(am__dirstamp):
 	@$(MKDIR_P) gnu/gcj/xlib
 	@: > gnu/gcj/xlib/$(am__dirstamp)
@@ -10129,6 +10151,7 @@ clean-libtool:
 	-rm -rf gnu/java/nio/.libs gnu/java/nio/_libs
 	-rm -rf gnu/java/nio/channels/.libs gnu/java/nio/channels/_libs
 	-rm -rf gnu/java/security/jce/prng/.libs gnu/java/security/jce/prng/_libs
+	-rm -rf install/.libs install/_libs
 	-rm -rf java/io/.libs java/io/_libs
 	-rm -rf java/lang/.libs java/lang/_libs
 	-rm -rf java/lang/ref/.libs java/lang/ref/_libs
@@ -10408,6 +10431,7 @@ distclean-generic:
 	-rm -f gnu/java/nio/channels/$(am__dirstamp)
 	-rm -f gnu/java/security/jce/prng/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/security/jce/prng/$(am__dirstamp)
+	-rm -f install/$(am__dirstamp)
 	-rm -f java/io/$(DEPDIR)/$(am__dirstamp)
 	-rm -f java/io/$(am__dirstamp)
 	-rm -f java/lang/$(DEPDIR)/$(am__dirstamp)
@@ -10444,8 +10468,9 @@ maintainer-clean-generic:
 clean: clean-multi clean-recursive
 
 clean-am: clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
-	clean-libexecsubPROGRAMS clean-libtool clean-noinstPROGRAMS \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+	clean-libexecsubPROGRAMS clean-libtool clean-noinstLTLIBRARIES \
+	clean-noinstPROGRAMS clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -10532,12 +10557,13 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	all all-am all-multi am--refresh check check-am clean \
 	clean-binPROGRAMS clean-dbexecLTLIBRARIES clean-generic \
 	clean-libexecsubPROGRAMS clean-libtool clean-multi \
-	clean-noinstPROGRAMS clean-toolexeclibLTLIBRARIES ctags \
-	ctags-recursive distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-local distclean-multi \
-	distclean-tags dvi dvi-am html html-am info info-am install \
-	install-am install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-data-local install-dbexecDATA \
+	clean-noinstLTLIBRARIES clean-noinstPROGRAMS \
+	clean-toolexeclibLTLIBRARIES ctags ctags-recursive distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-local distclean-multi distclean-tags dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-binSCRIPTS install-data install-data-am \
+	install-data-local install-dbexecDATA \
 	install-dbexecLTLIBRARIES install-dvi install-dvi-am \
 	install-exec install-exec-am install-exec-hook install-html \
 	install-html-am install-info install-info-am install-jarDATA \
@@ -10574,6 +10600,10 @@ libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES)
 	-o .libs/libgcj_bc.so.1.0.0 -lgcj || exit; \
 	rm .libs/libgcj_bc.so.1; \
 	$(LN_S) libgcj_bc.so.1.0.0 .libs/libgcj_bc.so.1
+
+install/libgcj_bc.la: $(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_DEPENDENCIES) install/$(am__dirstamp)
+	$(libgcj_bc_la_LINK) $(am_libgcj_bc_la_rpath) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_OBJECTS) $(libgcj_bc_la_LIBADD) $(LIBS)
 
 $(propertyo_files): %.lo: classpath/resource/%
 	$(mkinstalldirs) `dirname $@`; \
