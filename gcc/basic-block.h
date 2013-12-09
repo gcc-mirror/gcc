@@ -314,17 +314,17 @@ struct GTY(()) control_flow_graph {
 /* Defines for accessing the fields of the CFG structure for function FN.  */
 #define ENTRY_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_entry_block_ptr)
 #define EXIT_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_exit_block_ptr)
-#define basic_block_info_for_function(FN)    ((FN)->cfg->x_basic_block_info)
+#define basic_block_info_for_fn(FN)	     ((FN)->cfg->x_basic_block_info)
 #define n_basic_blocks_for_fn(FN)	     ((FN)->cfg->x_n_basic_blocks)
 #define n_edges_for_fn(FN)		     ((FN)->cfg->x_n_edges)
 #define last_basic_block_for_function(FN)    ((FN)->cfg->x_last_basic_block)
 #define label_to_block_map_for_function(FN)  ((FN)->cfg->x_label_to_block_map)
 #define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
 
-#define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  ((*basic_block_info_for_function (FN))[(N)])
-#define SET_BASIC_BLOCK_FOR_FUNCTION(FN,N,BB) \
-  ((*basic_block_info_for_function (FN))[(N)] = (BB))
+#define BASIC_BLOCK_FOR_FN(FN,N) \
+  ((*basic_block_info_for_fn (FN))[(N)])
+#define SET_BASIC_BLOCK_FOR_FN(FN,N,BB) \
+  ((*basic_block_info_for_fn (FN))[(N)] = (BB))
 
 /* Defines for textual backward source compatibility.  */
 #define basic_block_info	(cfun->cfg->x_basic_block_info)

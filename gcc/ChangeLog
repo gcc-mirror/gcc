@@ -1,3 +1,22 @@
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* basic-block.h (basic_block_info_for_function): Rename to...
+	(basic_block_info_for_fn): ...this.
+	(BASIC_BLOCK_FOR_FUNCTION): Rename to...
+	(BASIC_BLOCK_FOR_FN): ...this.
+	(SET_BASIC_BLOCK_FOR_FUNCTION): Rename to...
+	(SET_BASIC_BLOCK_FOR_FN): ...this.
+
+	* gimple-streamer-in.c (input_phi, input_bb): Update for renaming
+	of BASIC_BLOCK_FOR_FUNCTION to BASIC_BLOCK_FOR_FN.
+	* ipa-utils.c (ipa_merge_profiles): Likewise.
+	* lto-streamer-in.c (make_new_block): Update for renaming of
+	SET_BASIC_BLOCK_FOR_FUNCTION to SET_BASIC_BLOCK_FOR_FN.
+	(input_cfg): Update for renamings.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	(dump_function_to_file): Update for renaming of
+	basic_block_info_for_function to basic_block_info_for_fn.
+
 2013-12-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/38474
