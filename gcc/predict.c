@@ -2757,7 +2757,7 @@ estimate_loops (void)
     estimate_loops_at_level (current_loops->tree_root->inner);
 
   /* Now propagate the frequencies through all the blocks.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_set_bit (tovisit, bb->index);
     }

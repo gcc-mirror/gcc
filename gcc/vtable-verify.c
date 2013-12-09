@@ -735,7 +735,7 @@ vtable_verify_main (void)
   unsigned int ret = 1;
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
       verify_bb_vtables (bb);
 
   return ret;

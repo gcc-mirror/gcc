@@ -169,7 +169,7 @@ loop_optimizer_finalize (void)
   ggc_free (current_loops);
   current_loops = NULL;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bb->loop_father = NULL;
     }

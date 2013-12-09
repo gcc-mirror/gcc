@@ -663,7 +663,7 @@ mark_artificial_uses (void)
   struct df_link *defs;
   df_ref *use_rec;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       for (use_rec = df_get_artificial_uses (bb->index);
 	   *use_rec; use_rec++)

@@ -2708,7 +2708,7 @@ dse_step1 (void)
   bitmap_set_bit (all_blocks, ENTRY_BLOCK);
   bitmap_set_bit (all_blocks, EXIT_BLOCK);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       insn_info_t ptr;
       bb_info_t bb_info = (bb_info_t) pool_alloc (bb_info_pool);
@@ -3290,7 +3290,7 @@ dse_step3 (bool for_spills)
 
   bitmap_ones (unreachable_blocks);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bb_info_t bb_info = bb_table[bb->index];
       if (bb_info->gen)
@@ -3469,7 +3469,7 @@ dse_step4 (void)
       basic_block bb;
 
       fprintf (dump_file, "\n\n*** Global dataflow info after analysis.\n");
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	{
 	  bb_info_t bb_info = bb_table[bb->index];
 
@@ -3617,7 +3617,7 @@ dse_step6 (void)
 {
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bb_info_t bb_info = bb_table[bb->index];
       insn_info_t insn_info = bb_info->last_insn;

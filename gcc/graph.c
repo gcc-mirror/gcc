@@ -255,7 +255,7 @@ draw_cfg_edges (pretty_printer *pp, struct function *fun)
 {
   basic_block bb;
   mark_dfs_back_edges ();
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     draw_cfg_node_succ_edges (pp, fun->funcdef_no, bb);
 
   /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */

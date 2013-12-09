@@ -976,7 +976,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   /* Fix up the call statements that are mentioned in the callgraph
      edges.  */
   set_gimple_stmt_max_uid (cfun, 0);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -991,7 +991,7 @@ input_function (tree fn_decl, struct data_in *data_in,
 	}
     }
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator bsi = gsi_start_phis (bb);
       while (!gsi_end_p (bsi))

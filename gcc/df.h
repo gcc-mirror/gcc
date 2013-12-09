@@ -176,7 +176,7 @@ enum df_ref_order
     DF_REF_ORDER_BY_REG_WITH_NOTES,
 
     /* Organize the refs in insn order.  The insns are ordered within a
-       block, and the blocks are ordered by FOR_ALL_BB.  */
+       block, and the blocks are ordered by FOR_ALL_BB_FN.  */
     DF_REF_ORDER_BY_INSN,
 
     /* For uses, the refs within eq notes may be added for

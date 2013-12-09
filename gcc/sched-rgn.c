@@ -745,7 +745,7 @@ haifa_find_rgns (void)
     }
 
   /* Reset ->aux field used by EDGE_PASSED.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       edge_iterator ei;
       edge e;

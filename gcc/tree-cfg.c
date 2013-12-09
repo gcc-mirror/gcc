@@ -7940,7 +7940,7 @@ split_critical_edges (void)
      expensive.  So we want to enable recording of edge to CASE_LABEL_EXPR
      mappings around the calls to split_edge.  */
   start_recording_case_labels ();
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
         {

@@ -1245,7 +1245,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 		     sum_edge_counts (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds);
 
   /* Compute edge probabilities.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       if (bb->count)
         {
