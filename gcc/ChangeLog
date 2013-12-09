@@ -1,3 +1,13 @@
+2013-12-09  Alan Modra  <amodra@gmail.com>
+
+	Apply from mainline
+	2013-12-05  Alan Modra  <amodra@gmail.com>
+	* configure.ac (BUILD_CXXFLAGS) Don't use ALL_CXXFLAGS for
+	build != host.
+	<recursive call for build != host>: Clear GMPINC.  Don't bother
+	saving CFLAGS.
+	* configure: Regenerate.
+
 2013-12-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
