@@ -1,3 +1,9 @@
+2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59435
+	* parser.c (cp_parser_cache_defarg): sizeof ... ( p ) can
+	occur in a default argument too.
+
 2013-12-06  Caroline Tice  <cmtice@google.com>
 
 	Submitting patch from Stephen Checkoway, s@cs.jhu.edu
