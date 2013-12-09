@@ -1,3 +1,7 @@
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* invoke.texi: Add -freal-4-real-16. Rearrange kind promotion options.
+
 2013-12-08  Tobias Burnus  <burnus@net-b.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 
