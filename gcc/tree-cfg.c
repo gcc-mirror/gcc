@@ -182,7 +182,7 @@ init_empty_tree_cfg_for_function (struct function *fn)
 {
   /* Initialize the basic block array.  */
   init_flow (fn);
-  profile_status_for_function (fn) = PROFILE_ABSENT;
+  profile_status_for_fn (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
   last_basic_block_for_fn (fn) = NUM_FIXED_BLOCKS;
   vec_alloc (basic_block_info_for_fn (fn), initial_cfg_capacity);

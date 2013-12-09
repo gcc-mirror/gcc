@@ -632,8 +632,8 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   init_empty_tree_cfg_for_function (fn);
   init_ssa_operands (fn);
 
-  profile_status_for_function (fn) = streamer_read_enum (ib, profile_status_d,
-							 PROFILE_LAST);
+  profile_status_for_fn (fn) = streamer_read_enum (ib, profile_status_d,
+						   PROFILE_LAST);
 
   bb_count = streamer_read_uhwi (ib);
 

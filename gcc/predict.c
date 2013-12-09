@@ -121,7 +121,7 @@ maybe_hot_frequency_p (struct function *fun, int freq)
       if (node->frequency == NODE_FREQUENCY_HOT)
         return true;
     }
-  if (profile_status_for_function (fun) == PROFILE_ABSENT)
+  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     return true;
   if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && freq < (ENTRY_BLOCK_PTR_FOR_FN (fun)->frequency * 2 / 3))
@@ -164,7 +164,7 @@ set_hot_bb_threshold (gcov_type min)
 static inline bool
 maybe_hot_count_p (struct function *fun, gcov_type count)
 {
-  if (fun && profile_status_for_function (fun) != PROFILE_READ)
+  if (fun && profile_status_for_fn (fun) != PROFILE_READ)
     return true;
   /* Code executed at most once is not hot.  */
   if (profile_info->runs >= count)
@@ -179,7 +179,7 @@ bool
 maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_function (fun) == PROFILE_READ)
+  if (profile_status_for_fn (fun) == PROFILE_READ)
     return maybe_hot_count_p (fun, bb->count);
   return maybe_hot_frequency_p (fun, bb->frequency);
 }
@@ -239,7 +239,7 @@ probably_never_executed (struct function *fun,
                          gcov_type count, int frequency)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_function (fun) == PROFILE_READ)
+  if (profile_status_for_fn (fun) == PROFILE_READ)
     {
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count * unlikely_count_fraction >= profile_info->runs)
@@ -2806,7 +2806,7 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
                  node->name (), node->order);
     }
 
-  profile_status_for_function (fn)
+  profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
   node->frequency
       = hot ? NODE_FREQUENCY_HOT : NODE_FREQUENCY_NORMAL;
@@ -2869,7 +2869,7 @@ handle_missing_profiles (void)
           if (callee->count > 0)
             continue;
           if (DECL_COMDAT (callee->decl) && fn && fn->cfg
-              && profile_status_for_function (fn) == PROFILE_READ)
+              && profile_status_for_fn (fn) == PROFILE_READ)
             {
               drop_profile (node, 0);
               worklist.safe_push (callee);

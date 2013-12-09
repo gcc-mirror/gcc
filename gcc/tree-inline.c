@@ -1792,7 +1792,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 			{
 			  edge->frequency = new_freq;
 			  if (dump_file
-			      && profile_status_for_function (cfun) != PROFILE_ABSENT
+			      && profile_status_for_fn (cfun) != PROFILE_ABSENT
 			      && (edge_freq > edge->frequency + 10
 				  || edge_freq < edge->frequency - 10))
 			    {
@@ -2208,7 +2208,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
 
   init_empty_tree_cfg ();
 
-  profile_status_for_function (cfun) = profile_status_for_function (src_cfun);
+  profile_status_for_fn (cfun) = profile_status_for_fn (src_cfun);
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count =
     (ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count * count_scale /
      REG_BR_PROB_BASE);
