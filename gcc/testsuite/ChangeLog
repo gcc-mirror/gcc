@@ -1,3 +1,11 @@
+2013-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/59428
+	PR fortran/58099
+	PR fortran/58676
+	PR fortran/41724
+	* gfortran.dg/proc_ptr_result_4.f90: Fix proc-ptr interface.
+
 2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59435
