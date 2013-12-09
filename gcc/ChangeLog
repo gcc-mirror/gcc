@@ -1,3 +1,15 @@
+2013-12-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (generic_sched): Add cortexa12.
+	(generic_vfp): Likewise.
+	* config/arm/arm.c (cortexa12_extra_costs): New cost table.
+	(arm_cortex_a12_tune): New tuning struct.
+	* config/arm/arm-cores.def: Add cortex-a12.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* config/arm/bpabi.h: Add cortex-a12.
+	* doc/invoke.texi: Document -mcpu=cortex-a12.
+
 2013-12-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* doc/install.texi (Prerequisites): Explicitly mention C library
