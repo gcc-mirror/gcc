@@ -586,10 +586,10 @@ verify_bb_vtables (basic_block bb)
       stmt = gsi_stmt (gsi_virtual_call);
 
       /* Count virtual calls.  */
-      if (gimple_code (stmt) == GIMPLE_CALL)
+      if (is_gimple_call (stmt))
         {
           tree fncall = gimple_call_fn (stmt);
-          if (TREE_CODE (fncall) == OBJ_TYPE_REF)
+          if (fncall && TREE_CODE (fncall) == OBJ_TYPE_REF)
             total_num_virtual_calls++;
         }
 
