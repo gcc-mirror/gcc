@@ -190,8 +190,8 @@ init_empty_tree_cfg_for_function (struct function *fn)
 			 initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
-  vec_alloc (label_to_block_map_for_function (fn), initial_cfg_capacity);
-  vec_safe_grow_cleared (label_to_block_map_for_function (fn),
+  vec_alloc (label_to_block_map_for_fn (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (label_to_block_map_for_fn (fn),
 			 initial_cfg_capacity);
 
   SET_BASIC_BLOCK_FOR_FN (fn, ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (fn));

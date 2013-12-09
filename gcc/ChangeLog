@@ -1,5 +1,13 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (label_to_block_map_for_function): Rename to...
+	(label_to_block_map_for_fn): ...this.
+
+	* lto-streamer-in.c (input_cfg): Update for renaming.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (last_basic_block_for_function): Rename to...
 	(last_basic_block_for_fn): ...this.
 
