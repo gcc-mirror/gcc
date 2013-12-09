@@ -328,7 +328,6 @@ struct GTY(()) control_flow_graph {
 
 /* Defines for textual backward source compatibility.  */
 #define last_basic_block	(cfun->cfg->x_last_basic_block)
-#define profile_status		(cfun->cfg->x_profile_status)
 
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \

@@ -7875,11 +7875,11 @@ gimple_account_profile_record (basic_block bb, int after_pass,
     {
       record->size[after_pass]
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (profile_status == PROFILE_READ)
+      if (profile_status_for_fn (cfun) == PROFILE_READ)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->count;
-      else if (profile_status == PROFILE_GUESSED)
+      else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->frequency;

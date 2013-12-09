@@ -797,7 +797,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	 give all abnormals frequency of 0, otherwise distribute the
 	 frequency over abnormals (this is the case of noreturn
 	 calls).  */
-      else if (profile_status == PROFILE_ABSENT)
+      else if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
 	{
 	  int total = 0;
 
@@ -825,7 +825,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	}
     }
   counts_to_freqs ();
-  profile_status = PROFILE_READ;
+  profile_status_for_fn (cfun) = PROFILE_READ;
   compute_function_frequency ();
 
   if (dump_file)

@@ -411,7 +411,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 a loop, enable splitting since inlining code skipping the loop
 	 is likely noticeable win.  */
       if (back_edge
-	  && profile_status != PROFILE_READ
+	  && profile_status_for_fn (cfun) != PROFILE_READ
 	  && incoming_freq < ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1585,7 +1585,7 @@ execute_split_functions (void)
 
   /* We enforce splitting after loop headers when profile info is not
      available.  */
-  if (profile_status != PROFILE_READ)
+  if (profile_status_for_fn (cfun) != PROFILE_READ)
     mark_dfs_back_edges ();
 
   /* Initialize bitmap to track forbidden calls.  */

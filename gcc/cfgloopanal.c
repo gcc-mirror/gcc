@@ -470,7 +470,7 @@ single_likely_exit (struct loop *loop)
 	 ruled out by this test.  The static branch prediction algorithm
          will not assign such a low probability to conditionals for usual
          reasons.  */
-      if (profile_status != PROFILE_ABSENT
+      if (profile_status_for_fn (cfun) != PROFILE_ABSENT
 	  && ex->probability < 5 && !ex->count)
 	continue;
       if (!found)
