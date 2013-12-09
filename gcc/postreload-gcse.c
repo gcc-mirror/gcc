@@ -266,7 +266,7 @@ alloc_mem (void)
   /* Find the largest UID and create a mapping from UIDs to CUIDs.  */
   uid_cuid = XCNEWVEC (int, get_max_uid () + 1);
   i = 1;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
         if (INSN_P (insn))
@@ -828,7 +828,7 @@ compute_hash_table (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 

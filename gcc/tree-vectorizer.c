@@ -157,7 +157,7 @@ adjust_simduid_builtins (hash_table <simduid_to_vf> &htab)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -265,7 +265,7 @@ note_simd_array_uses (hash_table <simd_array_to_simduid> *htab)
   wi.info = &ns;
   ns.htab = htab;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple stmt = gsi_stmt (gsi);
@@ -475,7 +475,7 @@ execute_vect_slp (void)
 
   init_stmt_vec_info_vec ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       vect_location = find_bb_location (bb);
 

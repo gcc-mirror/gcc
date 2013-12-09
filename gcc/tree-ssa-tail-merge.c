@@ -754,7 +754,7 @@ find_same_succ (void)
   same_succ same = same_succ_alloc ();
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       find_same_succ_bb (bb, &same);
       if (same == NULL)
@@ -1015,7 +1015,7 @@ reset_cluster_vectors (void)
   for (i = 0; i < all_clusters.length (); ++i)
     delete_cluster (all_clusters[i]);
   all_clusters.truncate (0);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     BB_CLUSTER (bb) = NULL;
 }
 

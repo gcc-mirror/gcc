@@ -10500,7 +10500,7 @@ ix86_finalize_stack_realign_flags (void)
       add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
       add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 			   HARD_FRAME_POINTER_REGNUM);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
         {
           rtx insn;
 	  FOR_BB_INSNS (bb, insn)

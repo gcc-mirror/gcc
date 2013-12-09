@@ -613,7 +613,7 @@ has_nonexceptional_receiver (void)
   /* First determine which blocks can reach exit via normal paths.  */
   tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->flags &= ~BB_REACHABLE;
 
   /* Place the exit block on our worklist.  */
@@ -641,7 +641,7 @@ has_nonexceptional_receiver (void)
 
   /* Now see if there's a reachable block with an exceptional incoming
      edge.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->flags & BB_REACHABLE && bb_has_abnormal_pred (bb))
       return true;
 
@@ -1048,7 +1048,7 @@ reload (rtx first, int global)
      pseudo.  */
 
   if (! frame_pointer_needed)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       bitmap_clear_bit (df_get_live_in (bb), HARD_FRAME_POINTER_REGNUM);
 
   /* Come here (with failure set nonzero) if we can't get enough spill
@@ -1592,7 +1592,7 @@ calculate_elim_costs_all_insns (void)
   set_initial_elim_offsets ();
   set_initial_label_offsets ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       elim_bb = bb;

@@ -176,7 +176,7 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
   gimple_stmt_iterator gsi;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool always_executed = dominated_by_p (CDI_POST_DOMINATORS,
 					     single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)), bb);
@@ -2130,7 +2130,7 @@ execute_late_warn_uninitialized (void)
   added_to_worklist = pointer_set_create ();
 
   /* Initialize worklist  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
         gimple phi = gsi_stmt (gsi);

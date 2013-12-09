@@ -637,7 +637,7 @@ schedule_ebbs (void)
   schedule_ebbs_init ();
 
   /* Schedule every region in the subroutine.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx head = BB_HEAD (bb);
 

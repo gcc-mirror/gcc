@@ -3386,7 +3386,7 @@ ssa_forward_propagate_and_combine (void)
 
   cfg_changed = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 

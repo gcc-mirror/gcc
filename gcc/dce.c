@@ -623,7 +623,7 @@ prescan_insns_for_dce (bool fast)
   if (!df_in_progress && ACCUMULATE_OUTGOING_ARGS)
     arg_stores = BITMAP_ALLOC (NULL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
 	if (NONDEBUG_INSN_P (insn))

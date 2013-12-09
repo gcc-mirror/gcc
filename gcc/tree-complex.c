@@ -207,7 +207,7 @@ init_dont_simulate_again (void)
   gimple phi;
   bool saw_a_complex_op = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -1637,7 +1637,7 @@ tree_lower_complex (void)
 
   /* ??? Ideally we'd traverse the blocks in breadth-first order.  */
   old_last_basic_block = last_basic_block_for_fn (cfun);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->index >= old_last_basic_block)
 	continue;

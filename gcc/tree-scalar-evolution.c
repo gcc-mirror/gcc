@@ -3276,7 +3276,7 @@ scev_const_prop (void)
   if (number_of_loops (cfun) <= 1)
     return 0;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       loop = bb->loop_father;
 

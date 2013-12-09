@@ -16395,7 +16395,7 @@ rs6000_alloc_sdmode_stack_slot (void)
   if (TARGET_NO_SDMODE_STACK)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	tree ret = walk_gimple_op (gsi_stmt (gsi), rs6000_check_sdmode, NULL);

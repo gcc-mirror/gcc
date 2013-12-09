@@ -3507,7 +3507,7 @@ static void
 dse_step5_nospill (void)
 {
   basic_block bb;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bb_info_t bb_info = bb_table[bb->index];
       insn_info_t insn_info = bb_info->last_insn;

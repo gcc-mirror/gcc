@@ -1960,7 +1960,7 @@ remove_scratches (void)
   scratches.create (get_max_uid ());
   bitmap_initialize (&scratch_bitmap, &reg_obstack);
   bitmap_initialize (&scratch_operand_bitmap, &reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
@@ -2049,7 +2049,7 @@ check_rtl (bool final_p)
   rtx insn;
 
   lra_assert (! final_p || reload_completed);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn)
 	&& GET_CODE (PATTERN (insn)) != USE
@@ -2090,7 +2090,7 @@ has_nonexceptional_receiver (void)
   /* First determine which blocks can reach exit via normal paths.  */
   tos = worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) + 1);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->flags &= ~BB_REACHABLE;
 
   /* Place the exit block on our worklist.  */
@@ -2165,7 +2165,7 @@ update_inc_notes (void)
   basic_block bb;
   rtx insn;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {

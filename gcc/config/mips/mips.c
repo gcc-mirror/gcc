@@ -15332,7 +15332,7 @@ mips_annotate_pic_calls (void)
   basic_block bb;
   rtx insn;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
     {
       rtx call, reg, symbol, second_call;

@@ -325,7 +325,7 @@ rename_ssa_copies (void)
 
   map = init_var_map (num_ssa_names);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Scan for real copies.  */
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -341,7 +341,7 @@ rename_ssa_copies (void)
 	}
     }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Treat PHI nodes as copies between the result and each argument.  */
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

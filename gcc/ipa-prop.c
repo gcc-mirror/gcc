@@ -4726,7 +4726,7 @@ ipcp_transform_function (struct cgraph_node *node)
   descriptors.safe_grow_cleared (param_count);
   ipa_populate_param_decls (node, descriptors);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	struct ipa_agg_replacement_value *v;

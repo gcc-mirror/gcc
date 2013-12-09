@@ -774,7 +774,7 @@ ccp_initialize (void)
   const_val = XCNEWVEC (prop_value_t, n_const_val);
 
   /* Initialize simulation flags for PHI nodes and statements.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -808,7 +808,7 @@ ccp_initialize (void)
   /* Now process PHI nodes.  We never clear the simulate_again flag on
      phi nodes, since we do not know which edges are executable yet,
      except for phi nodes for virtual operands when we do not do store ccp.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -2508,7 +2508,7 @@ execute_fold_all_builtins (void)
   basic_block bb;
   unsigned int todoflags = 0;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )

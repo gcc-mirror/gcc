@@ -1543,7 +1543,7 @@ df_compact_blocks (void)
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, EXIT_BLOCK);
 
 	  i = NUM_FIXED_BLOCKS;
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      if (bitmap_bit_p (&tmp, bb->index))
 		bitmap_set_bit (dflow->out_of_date_transfer_functions, i);
@@ -1564,7 +1564,7 @@ df_compact_blocks (void)
 	     place in the block_info vector.  Null out the copied
 	     item.  The entry and exit blocks never move.  */
 	  i = NUM_FIXED_BLOCKS;
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      df_set_bb_info (dflow, i,
 			      (char *)problem_temps
@@ -1590,7 +1590,7 @@ df_compact_blocks (void)
       bitmap_copy (&tmp, df->blocks_to_analyze);
       bitmap_clear (df->blocks_to_analyze);
       i = NUM_FIXED_BLOCKS;
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  if (bitmap_bit_p (&tmp, bb->index))
 	    bitmap_set_bit (df->blocks_to_analyze, i);
@@ -1601,7 +1601,7 @@ df_compact_blocks (void)
   bitmap_clear (&tmp);
 
   i = NUM_FIXED_BLOCKS;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
       bb->index = i;

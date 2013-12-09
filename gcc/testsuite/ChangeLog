@@ -1,3 +1,10 @@
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/selfassign.c (execute_warn_self_assign): Eliminate
+	use of FOR_EACH_BB in favor of FOR_EACH_BB_FN, to make use of cfun
+	explicit.
+	* gcc.dg/plugin/selfassign.c (execute_warn_self_assign): Likewise.
+
 2013-12-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/ldrd-strd-offset.c: New.

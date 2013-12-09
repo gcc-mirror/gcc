@@ -101,7 +101,7 @@ clear_edges (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	free_edge (e);
@@ -163,7 +163,7 @@ compact_blocks (void)
       basic_block bb;
 
       i = NUM_FIXED_BLOCKS;
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
 	  bb->index = i;
@@ -828,7 +828,7 @@ brief_dump_cfg (FILE *file, int flags)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       dump_bb_info (file, bb, 0,
 		    flags & (TDF_COMMENT | TDF_DETAILS),

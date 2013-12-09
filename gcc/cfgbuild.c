@@ -595,15 +595,15 @@ find_many_sub_basic_blocks (sbitmap blocks)
 {
   basic_block bb, min, max;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb,
 	       bitmap_bit_p (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (STATE (bb) == BLOCK_TO_SPLIT)
       find_bb_boundaries (bb);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (STATE (bb) != BLOCK_ORIGINAL)
       break;
 
@@ -640,6 +640,6 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	compute_outgoing_frequencies (bb);
       }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb, 0);
 }

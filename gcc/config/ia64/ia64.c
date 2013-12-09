@@ -9688,7 +9688,7 @@ ia64_reorg (void)
 
       /* We can't let modulo-sched prevent us from scheduling any bbs,
 	 since we need the final schedule to produce bundle information.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bb->flags &= ~BB_DISABLE_SCHEDULE;
 
       initiate_bundle_states ();

@@ -341,7 +341,7 @@ form_loop_tree (void)
   /* We can not use loop/bb node access macros because of potential
      checking and because the nodes are not initialized enough
      yet.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bb_node = &ira_bb_nodes[bb->index];
       bb_node->bb = bb;

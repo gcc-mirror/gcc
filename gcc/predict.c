@@ -1955,7 +1955,7 @@ strip_predict_hints (void)
   gimple ass_stmt;
   tree var;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator bi;
       for (bi = gsi_start_bb (bb); !gsi_end_p (bi);)
@@ -2226,7 +2226,7 @@ tree_bb_level_predictions (void)
 
   apply_return_prediction ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 
@@ -2400,10 +2400,10 @@ tree_estimate_probability (void)
   if (number_of_loops (cfun) > 1)
     predict_loops ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     tree_estimate_probability_bb (bb);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     combine_predictions_for_bb (bb);
 
 #ifdef ENABLE_CHECKING
@@ -2928,7 +2928,7 @@ expensive_function_p (int threshold)
 
   /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
   limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency * threshold;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 
@@ -2997,7 +2997,7 @@ estimate_bb_frequencies (bool force)
       estimate_loops ();
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (sreal_compare (&freq_max, &BLOCK_INFO (bb)->frequency) < 0)
 	  memcpy (&freq_max, &BLOCK_INFO (bb)->frequency, sizeof (freq_max));
 
@@ -3055,7 +3055,7 @@ compute_function_frequency (void)
      functions to unlikely and that is most of what we care about.  */
   if (!cfun->after_inlining)
     node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (maybe_hot_bb_p (cfun, bb))
 	{

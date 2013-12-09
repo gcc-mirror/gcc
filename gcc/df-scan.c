@@ -449,7 +449,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
 	fprintf (file, "} ");
       }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (INSN_P (insn))
 	{
@@ -673,7 +673,7 @@ df_scan_blocks (void)
   df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
 
   /* Regular blocks */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       unsigned int bb_index = bb->index;
       df_bb_refs_record (bb_index, true);
@@ -1415,7 +1415,7 @@ df_insn_rescan_all (void)
   bitmap_clear (&df->insns_to_rescan);
   bitmap_clear (&df->insns_to_notes_rescan);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       FOR_BB_INSNS (bb, insn)
@@ -4154,7 +4154,7 @@ df_update_entry_exit_and_calls (void)
 
   /* The call insns need to be rescanned because there may be changes
      in the set of registers clobbered across the call.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       FOR_BB_INSNS (bb, insn)

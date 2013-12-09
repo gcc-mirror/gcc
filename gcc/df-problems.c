@@ -2427,7 +2427,7 @@ df_word_lr_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 
   bitmap_obstack_initialize (&problem_data->word_lr_bitmaps);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_set_bit (df_word_lr->out_of_date_transfer_functions, bb->index);
 
   bitmap_set_bit (df_word_lr->out_of_date_transfer_functions, ENTRY_BLOCK);

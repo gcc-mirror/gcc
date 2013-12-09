@@ -1,5 +1,213 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (FOR_EACH_BB): Eliminate macro.
+
+	* asan.c (transform_statements, execute_sanopt): Eliminate
+	use of FOR_EACH_BB in favor of FOR_EACH_BB_FN, to make use of cfun
+	explicit.
+	* auto-inc-dec.c (rest_of_handle_auto_inc_dec): Likewise.
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges,
+	set_edge_can_fallthru_flag, fix_up_fall_thru_edges,
+	fix_crossing_unconditional_branches, add_reg_crossing_jump_notes,
+	insert_section_boundary_note, rest_of_handle_reorder_blocks,
+	duplicate_computed_gotos): Likewise.
+	* cfg.c (clear_edges, compact_blocks, brief_dump_cfg): Likewise.
+	* cfganal.c (find_unreachable_blocks, add_noreturn_fake_exit_edges,
+	compute_dominance_frontiers_1, single_pred_before_succ_order): Likewise.
+	* cfgbuild.c (find_many_sub_basic_blocks): Likewise.
+	* cfgcleanup.c (try_optimize_cfg, delete_dead_jumptables): Likewise.
+	* cfgexpand.c (add_scope_conflicts, discover_nonconstant_array_refs):
+	Likewise.
+	* cfgloop.c (flow_loops_cfg_dump, get_loop_body, record_loop_exits,
+	verify_loop_structure): Likewise.
+	* cfgloopanal.c (mark_loop_exit_edges): Likewise.
+	* cfgrtl.c (compute_bb_for_insn, find_partition_fixes,
+	verify_hot_cold_block_grouping, purge_all_dead_edges,
+	fixup_abnormal_edges, record_effective_endpoints,
+	outof_cfg_layout_mode, fixup_reorder_chain, force_one_exit_fallthru,
+	break_superblocks): Likewise.
+	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges,
+	cgraph_rebuild_references): Likewise.
+	* combine-stack-adj.c (combine_stack_adjustments): Likewise.
+	* combine.c (delete_noop_moves, create_log_links,
+	combine_instructions): Likewise.
+	* config/arm/arm.c (thumb1_reorg, thumb2_reorg): Likewise.
+	* config/bfin/bfin.c (bfin_gen_bundles, reorder_var_tracking_notes):
+	Likewise.
+	* config/c6x/c6x.c (c6x_gen_bundles, conditionalize_after_sched,
+	c6x_reorg): Likewise.
+	* config/epiphany/resolve-sw-modes.c (resolve_sw_modes): Likewise.
+	* config/frv/frv.c (frv_optimize_membar): Likewise.
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Likewise.
+	* config/ia64/ia64.c (ia64_reorg): Likewise.
+	* config/mips/mips.c (mips_annotate_pic_calls): Likewise.
+	* config/picochip/picochip.c (reorder_var_tracking_notes): Likewise.
+	* config/rs6000/rs6000.c (rs6000_alloc_sdmode_stack_slot): Likewise.
+	* config/s390/s390.c (s390_regs_ever_clobbered): Likewise.
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::execute): Likewise.
+	* config/spu/spu.c (spu_machine_dependent_reorg): Likewise.
+	* config/tilegx/tilegx.c (tilegx_gen_bundles,
+	reorder_var_tracking_notes): Likewise.
+	* config/tilepro/tilepro.c (tilepro_gen_bundles,
+	reorder_var_tracking_notes): Likewise.
+	* coverage.c (coverage_compute_cfg_checksum): Likewise.
+	* cprop.c (compute_hash_table_work, compute_cprop_data,
+	local_cprop_pass, find_implicit_sets): Likewise.
+	* cse.c (cse_condition_code_reg): Likewise.
+	* dce.c (prescan_insns_for_dce): Likewise.
+	* df-core.c (df_compact_blocks): Likewise.
+	* df-problems.c (df_word_lr_alloc): Likewise.
+	* df-scan.c (df_scan_start_dump, df_scan_blocks, df_insn_rescan_all,
+	df_update_entry_exit_and_calls): Likewise.
+	* dominance.c (calculate_dominance_info, verify_dominators,
+	debug_dominance_info): Likewise.
+	* dse.c (dse_step5_nospill): Likewise.
+	* except.c (finish_eh_generation): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns,
+	rest_of_match_asm_constraints): Likewise.
+	* gcse.c (compute_hash_table_work, prune_expressions,
+	compute_pre_data, compute_code_hoist_vbeinout, hoist_code,
+	calculate_bb_reg_pressure, compute_ld_motion_mems): Likewise.
+	* gimple-iterator.c (gsi_commit_edge_inserts): Likewise.
+	* gimple-ssa-isolate-paths.c (find_implicit_erroneous_behaviour,
+	find_explicit_erroneous_behaviour): Likewise.
+	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa,
+	rewrite_cross_bb_scalar_deps_out_of_ssa): Likewise.
+	* haifa-sched.c (haifa_sched_init): Likewise.
+	* hw-doloop.c (discover_loops, set_bb_indices, reorder_loops):
+	Likewise.
+	* ifcvt.c (if_convert): Likewise.
+	* init-regs.c (initialize_uninitialized_regs): Likewise.
+	* ipa-prop.c (ipcp_transform_function): Likewise.
+	* ipa-pure-const.c (analyze_function): Likewise.
+	* ipa-split.c (find_split_points, execute_split_functions): Likewise.
+	* ira-build.c (form_loop_tree): Likewise.
+	* ira-costs.c (find_costs_and_classes): Likewise.
+	* ira-emit.c (emit_moves, add_ranges_and_copies, ira_emit): Likewise.
+	* ira.c (decrease_live_ranges_number, compute_regs_asm_clobbered,
+	mark_elimination, update_equiv_regs, find_moveable_pseudos,
+	split_live_ranges_for_shrink_wrap, allocate_initial_values): Likewise.
+	* jump.c (mark_all_labels): Likewise.
+	* lcm.c (compute_laterin, compute_insert_delete, compute_available,
+	compute_nearerout, compute_rev_insert_delete): Likewise.
+	* loop-init.c (fix_loop_structure): Likewise.
+	* loop-invariant.c (calculate_loop_reg_pressure): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs,
+	decompose_multiword_subregs): Likewise.
+	* lra-assigns.c (assign_by_spills): Likewise.
+	* lra-coalesce.c (lra_coalesce): Likewise.
+	* lra-constraints.c (lra_inheritance, remove_inheritance_pseudos):
+	Likewise.
+	* lra-eliminations.c (lra_init_elimination): Likewise.
+	* lra-spills.c (assign_spill_hard_regs, spill_pseudos,
+	lra_final_code_change): Likewise.
+	* lra.c (remove_scratches, check_rtl, has_nonexceptional_receiver,
+	update_inc_notes): Likewise.
+	* mcf.c (adjust_cfg_counts): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	* modulo-sched.c (rest_of_handle_sms): Likewise.
+	* omp-low.c (optimize_omp_library_calls, expand_omp_taskreg,
+	expand_omp_target): Likewise.
+	* postreload-gcse.c (alloc_mem, compute_hash_table): Likewise.
+	* postreload.c (reload_cse_regs_1): Likewise.
+	* predict.c (strip_predict_hints, tree_bb_level_predictions,
+	tree_estimate_probability, expensive_function_p,
+	estimate_bb_frequencies, compute_function_frequency): Likewise.
+	* profile.c (is_inconsistent, compute_branch_probabilities,
+	branch_prob): Likewise.
+	* ree.c (find_removable_extensions): Likewise.
+	* reg-stack.c (compensate_edges, convert_regs, reg_to_stack): Likewise.
+	* regcprop.c (copyprop_hardreg_forward): Likewise.
+	* reginfo.c (init_subregs_of_mode): Likewise.
+	* regrename.c (regrename_analyze): Likewise.
+	* regstat.c (regstat_compute_ri, regstat_compute_calls_crossed):
+	Likewise.
+	* reload1.c (has_nonexceptional_receiver, reload,
+	calculate_elim_costs_all_insns): Likewise.
+	* resource.c (init_resource_info, free_resource_info): Likewise.
+	* sched-ebb.c (schedule_ebbs): Likewise.
+	* sched-rgn.c (is_cfg_nonregular, find_single_block_region,
+	haifa_find_rgns, sched_rgn_local_init): Likewise.
+	* sel-sched-dump.c (sel_dump_cfg_2): Likewise.
+	* sel-sched-ir.c (init_lv_sets, free_lv_sets,
+	make_regions_from_the_rest): Likewise.
+	* sese.c (build_sese_loop_nests, sese_build_liveouts): Likewise.
+	* stack-ptr-mod.c (notice_stack_pointer_modification): Likewise.
+	* store-motion.c (compute_store_table, build_store_vectors,
+	one_store_motion_pass): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* trans-mem.c (compute_transaction_bits): Likewise.
+	* tree-call-cdce.c (tree_call_cdce): Likewise.
+	* tree-cfg.c (replace_loop_annotate, factor_computed_gotos,
+	fold_cond_expr_cond, make_edges, assign_discriminators,
+	make_abnormal_goto_edges, cleanup_dead_labels, group_case_labels,
+	dump_cfg_stats, gimple_verify_flow_info, print_loop,
+	execute_fixup_cfg): Likewise.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_1, merge_phi_nodes): Likewise.
+	* tree-complex.c (init_dont_simulate_again, tree_lower_complex):
+	Likewise.
+	* tree-dfa.c (collect_dfa_stats, dump_enumerated_decls): Likewise.
+	* tree-eh.c (execute_lower_resx, execute_lower_eh_dispatch,
+	mark_reachable_handlers): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	* tree-if-conv.c (main_tree_if_conversion): Likewise.
+	* tree-inline.c (optimize_inline_calls): Likewise.
+	* tree-into-ssa.c (rewrite_into_ssa, update_ssa): Likewise.
+	* tree-nrv.c (tree_nrv, execute_return_slot_opt): Likewise.
+	* tree-object-size.c (compute_object_sizes): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis, rewrite_trees,
+	insert_backedge_copies, tree_profiling): Likewise.
+	* tree-scalar-evolution.c (scev_const_prop): Likewise.
+	* tree-sra.c (scan_function, sra_modify_function_body,
+	propagate_dereference_distances, ipa_sra_modify_function_body,
+	convert_callers): Likewise.
+	* tree-ssa-ccp.c (ccp_initialize, execute_fold_all_builtins): Likewise.
+	* tree-ssa-coalesce.c (build_ssa_conflict_graph): Likewise.
+	create_outofssa_var_map, coalesce_partitions): Likewise.
+	* tree-ssa-copy.c (init_copy_prop): Likewise.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts,
+	eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-dom.c (free_all_edge_infos, tree_ssa_dominator_optimize):
+	Likewise.
+	* tree-ssa-forwprop.c (ssa_forward_propagate_and_combine): Likewise.
+	* tree-ssa-live.c (clear_unused_block_pointer, remove_unused_locals,
+	new_tree_live_info, calculate_live_on_exit, dump_live_info,
+	analyze_memory_references, fill_always_executed_in,
+	tree_ssa_lim_finalize): Likewise.
+	* tree-ssa-loop-manip.c (find_uses_to_rename, verify_loop_closed_ssa):
+	Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals, execute_cse_sincos,
+	execute_optimize_bswap, execute_optimize_widening_mul): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+	* tree-ssa-structalias.c (compute_points_to_sets): Likewise.
+	* tree-ssa-tail-merge.c (find_same_succ, reset_cluster_vectors):
+	Likewise.
+	* tree-ssa-ter.c (find_replaceable_exprs): Likewise.
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges,
+	tree_ssa_uncprop): Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_vars,
+	execute_late_warn_uninitialized): Likewise.
+	* tree-ssa.c (verify_ssa, execute_update_addresses_taken): Likewise.
+	* tree-stdarg.c (check_all_va_list_escapes, execute_optimize_stdarg):
+	Likewise.
+	* tree-switch-conversion.c (do_switchconv): Likewise.
+	* tree-vect-generic.c (expand_vector_operations): Likewise.
+	* tree-vectorizer.c (adjust_simduid_builtins, note_simd_array_uses,
+	execute_vect_slp): Likewise.
+	* tree-vrp.c (check_all_array_refs, remove_range_assertions,
+	vrp_initialize, identify_jump_threads, instrument_memory_accesses):
+	Likewise.
+	* ubsan.c (ubsan_pass): Likewise.
+	* value-prof.c (verify_histograms, gimple_value_profile_transformations,
+	gimple_find_values_to_profile): Likewise.
+	* var-tracking.c (vt_find_locations, dump_dataflow_sets, vt_emit_notes,
+	vt_initialize, delete_debug_insns, vt_finalize): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (last_basic_block): Eliminate macro.
 
 	* asan.c (transform_statements): Eliminate use of last_basic_block

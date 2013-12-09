@@ -2645,7 +2645,7 @@ spu_machine_dependent_reorg (void)
     find_many_sub_basic_blocks (blocks);
 
   /* We have to schedule to make sure alignment is ok. */
-  FOR_EACH_BB (bb) bb->flags &= ~BB_DISABLE_SCHEDULE;
+  FOR_EACH_BB_FN (bb, cfun) bb->flags &= ~BB_DISABLE_SCHEDULE;
 
   /* The hints need to be scheduled, so call it again. */
   schedule_insns ();

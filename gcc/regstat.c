@@ -375,7 +375,7 @@ regstat_compute_ri (void)
   reg_info_p = XCNEWVEC (struct reg_info_t, max_regno);
   local_live_last_luid = XNEWVEC (int, max_regno);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       regstat_bb_compute_ri (bb->index, live, artificial_uses,
 			     local_live, local_processed,
@@ -522,7 +522,7 @@ regstat_compute_calls_crossed (void)
   reg_info_p_size = max_regno;
   reg_info_p = XCNEWVEC (struct reg_info_t, max_regno);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       regstat_bb_compute_calls_crossed (bb->index, live);
     }

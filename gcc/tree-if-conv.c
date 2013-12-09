@@ -1815,7 +1815,7 @@ main_tree_if_conversion (void)
 #ifdef ENABLE_CHECKING
   {
     basic_block bb;
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (!bb->aux);
   }
 #endif

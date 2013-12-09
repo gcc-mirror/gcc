@@ -1252,7 +1252,7 @@ scan_function (void)
   basic_block bb;
   bool ret = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3311,7 +3311,7 @@ sra_modify_function_body (void)
   bool cfg_changed = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_start_bb (bb);
       while (!gsi_end_p (gsi))
@@ -3795,7 +3795,7 @@ propagate_dereference_distances (void)
 
   auto_vec<basic_block> queue (last_basic_block_for_fn (cfun));
   queue.quick_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       queue.quick_push (bb);
       bb->aux = bb;
@@ -4572,7 +4572,7 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
   bool cfg_changed = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 
@@ -4811,7 +4811,7 @@ convert_callers (struct cgraph_node *node, tree old_decl,
   if (!encountered_recursive_call)
     return;
 
-  FOR_EACH_BB (this_block)
+  FOR_EACH_BB_FN (this_block, cfun)
     {
       gimple_stmt_iterator gsi;
 

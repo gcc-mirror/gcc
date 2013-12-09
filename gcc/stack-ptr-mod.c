@@ -58,7 +58,7 @@ notice_stack_pointer_modification (void)
      been used.  */
   crtl->sp_is_unchanging = !cfun->calls_alloca;
   if (crtl->sp_is_unchanging)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       FOR_BB_INSNS (bb, insn)
         {
 	  if (INSN_P (insn))

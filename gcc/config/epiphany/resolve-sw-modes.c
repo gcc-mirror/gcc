@@ -69,7 +69,7 @@ resolve_sw_modes (void)
       df_note_add_problem ();
       df_analyze ();
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	enum attr_fp_mode selected_mode;

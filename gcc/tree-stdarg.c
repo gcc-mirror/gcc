@@ -536,7 +536,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -703,7 +703,7 @@ execute_optimize_stdarg (void)
 			   || TREE_TYPE (cfun_va_list) == char_type_node);
   gcc_assert (is_gimple_reg_type (cfun_va_list) == va_list_simple_ptr);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -813,7 +813,7 @@ execute_optimize_stdarg (void)
   memset (&wi, 0, sizeof (wi));
   wi.info = si.va_list_vars;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 

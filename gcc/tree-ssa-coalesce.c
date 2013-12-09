@@ -821,7 +821,7 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 
   live = new_live_track (map);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 
@@ -929,7 +929,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 
   map = init_var_map (num_ssa_names);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       tree arg;
 
@@ -1183,7 +1183,7 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
      in the coalesce list because they do not need to be sorted, and simply
      consume extra memory/compilation time in large programs.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->flags & EDGE_ABNORMAL)

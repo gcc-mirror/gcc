@@ -317,7 +317,7 @@ build_cgraph_edges (void)
 
   /* Create the callgraph edges and record the nodes referenced by the function.
      body.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -451,7 +451,7 @@ rebuild_cgraph_edges (void)
 
   node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -505,7 +505,7 @@ cgraph_rebuild_references (void)
 
   node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	ipa_record_stmt_references (node, gsi_stmt (gsi));

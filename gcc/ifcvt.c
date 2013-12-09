@@ -4408,7 +4408,7 @@ if_convert (bool after_combine)
 	fprintf (dump_file, "\n\n========== Pass %d ==========\n", pass);
 #endif
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
           basic_block new_bb;
           while (!df_get_bb_dirty (bb)

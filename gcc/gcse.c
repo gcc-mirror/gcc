@@ -1559,7 +1559,7 @@ compute_hash_table_work (struct hash_table_d *table)
   for (i = 0; i < max_reg_num (); ++i)
     reg_avail_info[i].last_bb = NULL;
 
-  FOR_EACH_BB (current_bb)
+  FOR_EACH_BB_FN (current_bb, cfun)
     {
       rtx insn;
       unsigned int regno;
@@ -1899,7 +1899,7 @@ prune_expressions (bool pre_p)
 	}
     }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -2020,7 +2020,7 @@ compute_pre_data (void)
      ~(TRANSP | COMP)
   */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap_ior (ae_kill[bb->index], transp[bb->index], comp[bb->index]);
       bitmap_not (ae_kill[bb->index], ae_kill[bb->index]);
@@ -2855,7 +2855,7 @@ compute_code_hoist_vbeinout (void)
     {
       fprintf (dump_file, "hoisting vbeinout computation: %d passes\n", passes);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
         {
 	  fprintf (dump_file, "vbein (%d): ", bb->index);
 	  dump_bitmap_file (dump_file, hoist_vbein[bb->index]);
@@ -3169,7 +3169,7 @@ hoist_code (void)
   to_bb_head = XCNEWVEC (int, get_max_uid ());
   bb_size = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       int to_head;
@@ -3512,7 +3512,7 @@ calculate_bb_reg_pressure (void)
 
   ira_setup_eliminable_regset ();
   curr_regs_live = BITMAP_ALLOC (&reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       curr_bb = bb;
       BB_DATA (bb)->live_in = BITMAP_ALLOC (NULL);
@@ -3562,7 +3562,7 @@ calculate_bb_reg_pressure (void)
     return;
 
   fprintf (dump_file, "\nRegister Pressure: \n");
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       fprintf (dump_file, "  Basic block %d: \n", bb->index);
       for (i = 0; (int) i < ira_pressure_classes_num; i++)
@@ -3888,7 +3888,7 @@ compute_ld_motion_mems (void)
   pre_ldst_mems = NULL;
   pre_ldst_table.create (13);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
 	{

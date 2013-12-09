@@ -374,7 +374,7 @@ find_obviously_necessary_stmts (bool aggressive)
   gimple phi, stmt;
   int flags;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* PHI nodes are never inherently necessary.  */
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -404,7 +404,7 @@ find_obviously_necessary_stmts (bool aggressive)
       struct loop *loop;
       scev_initialize ();
       if (mark_irreducible_loops ())
-	FOR_EACH_BB (bb)
+	FOR_EACH_BB_FN (bb, cfun)
 	  {
 	    edge_iterator ei;
 	    FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1325,7 +1325,7 @@ eliminate_unnecessary_stmts (void)
 	    }
 	}
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Remove dead PHI nodes.  */
       something_changed |= remove_dead_phis (bb);

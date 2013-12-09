@@ -4321,7 +4321,7 @@ init_lv_sets (void)
   basic_block bb;
 
   /* Initialize of LV sets.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     init_lv_set (bb);
 
   /* Don't forget EXIT_BLOCK.  */
@@ -4349,7 +4349,7 @@ free_lv_sets (void)
   free_lv_set (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* Free LV sets.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (BB_LV_SET (bb))
       free_lv_set (bb);
 }
@@ -6155,7 +6155,7 @@ make_regions_from_the_rest (void)
   for (i = 0; i < last_basic_block_for_fn (cfun); i++)
     loop_hdr[i] = -1;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->loop_father && !bb->loop_father->num == 0
 	  && !(bb->flags & BB_IRREDUCIBLE_LOOP))
@@ -6165,7 +6165,7 @@ make_regions_from_the_rest (void)
   /* For each basic block degree is calculated as the number of incoming
      edges, that are going out of bbs that are not yet scheduled.
      The basic blocks that are scheduled have degree value of zero.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       degree[bb->index] = 0;
 
@@ -6183,7 +6183,7 @@ make_regions_from_the_rest (void)
 
   /* Any block that did not end up in a region is placed into a region
      by itself.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (degree[bb->index] >= 0)
       {
 	rgn_bb_table[cur_rgn_blocks] = bb->index;

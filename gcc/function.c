@@ -6043,7 +6043,7 @@ thread_prologue_and_epilogue_insns (void)
       max_grow_size = get_uncond_jump_length ();
       max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  rtx insn;
 	  unsigned size = 0;
@@ -6120,7 +6120,7 @@ thread_prologue_and_epilogue_insns (void)
 	 needing a prologue.  */
       bitmap_clear (&bb_on_list);
       bitmap_and_compl (&bb_antic_flags, &bb_flags, &bb_tail);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  if (!bitmap_bit_p (&bb_antic_flags, bb->index))
 	    continue;
@@ -6154,7 +6154,7 @@ thread_prologue_and_epilogue_insns (void)
       /* Find exactly one edge that leads to a block in ANTIC from
 	 a block that isn't.  */
       if (!bitmap_bit_p (&bb_antic_flags, entry_edge->dest->index))
-	FOR_EACH_BB (bb)
+	FOR_EACH_BB_FN (bb, cfun)
 	  {
 	    if (!bitmap_bit_p (&bb_antic_flags, bb->index))
 	      continue;
@@ -6202,7 +6202,7 @@ thread_prologue_and_epilogue_insns (void)
 	  /* Find tail blocks reachable from both blocks needing a
 	     prologue and blocks not needing a prologue.  */
 	  if (!bitmap_empty_p (&bb_tail))
-	    FOR_EACH_BB (bb)
+	    FOR_EACH_BB_FN (bb, cfun)
 	      {
 		bool some_pro, some_no_pro;
 		if (!bitmap_bit_p (&bb_tail, bb->index))
@@ -6480,7 +6480,7 @@ thread_prologue_and_epilogue_insns (void)
 	 we take advantage of cfg_layout_finalize using
 	 fixup_fallthru_exit_predecessor.  */
       cfg_layout_initialize (0);
-      FOR_EACH_BB (cur_bb)
+      FOR_EACH_BB_FN (cur_bb, cfun)
 	if (cur_bb->index >= NUM_FIXED_BLOCKS
 	    && cur_bb->next_bb->index >= NUM_FIXED_BLOCKS)
 	  cur_bb->aux = cur_bb->next_bb;
@@ -7192,7 +7192,7 @@ rest_of_match_asm_constraints (void)
     return 0;
 
   df_set_flags (DF_DEFER_INSN_RESCAN);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
 	{

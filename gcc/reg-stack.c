@@ -2846,7 +2846,7 @@ compensate_edges (void)
 
   starting_stack_p = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
       {
         edge e;
@@ -3153,7 +3153,7 @@ convert_regs (void)
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
-  FOR_EACH_BB (b)
+  FOR_EACH_BB_FN (b, cfun)
     {
       block_info bi = BLOCK_INFO (b);
 
@@ -3212,7 +3212,7 @@ reg_to_stack (void)
 
   /* Set up block info for each basic block.  */
   alloc_aux_for_blocks (sizeof (struct block_info_def));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       block_info bi = BLOCK_INFO (bb);
       edge_iterator ei;

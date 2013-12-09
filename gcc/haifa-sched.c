@@ -6709,7 +6709,7 @@ haifa_sched_init (void)
 
     sched_init_bbs ();
 
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       bbs.quick_push (bb);
     sched_init_luids (bbs);
     sched_deps_init (true);

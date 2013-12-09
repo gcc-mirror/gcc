@@ -674,7 +674,7 @@ regrename_analyze (bitmap bb_mask)
   /* Gather some information about the blocks in this function.  */
   rename_info = XCNEWVEC (struct bb_rename_info, n_basic_blocks_for_fn (cfun));
   i = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *ri = rename_info + i;
       ri->bb = bb;
@@ -778,7 +778,7 @@ regrename_analyze (bitmap bb_mask)
      We perform the analysis for both incoming and outgoing edges, but we
      only need to merge once (in the second part, after verifying outgoing
      edges).  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
       unsigned j;
@@ -843,7 +843,7 @@ regrename_analyze (bitmap bb_mask)
 	    }
 	}
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
       unsigned j;
@@ -920,7 +920,7 @@ regrename_analyze (bitmap bb_mask)
 
   free (rename_info);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->aux = NULL;
 }
 

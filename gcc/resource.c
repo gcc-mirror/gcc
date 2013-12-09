@@ -1219,7 +1219,7 @@ init_resource_info (rtx epilogue_insn)
   bb_ticks = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
   /* Set the BLOCK_FOR_INSN of each label that starts a basic block.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (LABEL_P (BB_HEAD (bb)))
       BLOCK_FOR_INSN (BB_HEAD (bb)) = bb;
 }
@@ -1258,7 +1258,7 @@ free_resource_info (void)
       bb_ticks = NULL;
     }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (LABEL_P (BB_HEAD (bb)))
       BLOCK_FOR_INSN (BB_HEAD (bb)) = NULL;
 }

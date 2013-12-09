@@ -3304,7 +3304,7 @@ execute_lower_resx (void)
 
   mnt_map = pointer_map_create ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple last = last_stmt (bb);
       if (last && is_gimple_resx (last))
@@ -3710,7 +3710,7 @@ execute_lower_eh_dispatch (void)
 
   assign_filter_values ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple last = last_stmt (bb);
       if (last == NULL)
@@ -3810,7 +3810,7 @@ mark_reachable_handlers (sbitmap *r_reachablep, sbitmap *lp_reachablep)
   else
     lp_reachable = NULL;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 

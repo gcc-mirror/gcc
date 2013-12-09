@@ -516,7 +516,7 @@ optimize_mode_switching (void)
       /* Determine what the first use (if any) need for a mode of entity E is.
 	 This will be the mode that is anticipatable for this block.
 	 Also compute the initial transparency settings.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  struct seginfo *ptr;
 	  int last_mode = no_mode;
@@ -624,7 +624,7 @@ optimize_mode_switching (void)
 	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
 	  struct bb_info *info = bb_info[j];
 
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      if (info[bb->index].seginfo->mode == m)
 		bitmap_set_bit (antic[bb->index], j);
@@ -637,7 +637,7 @@ optimize_mode_switching (void)
       /* Calculate the optimal locations for the
 	 placement mode switches to modes with priority I.  */
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bitmap_not (kill[bb->index], transp[bb->index]);
       edge_list = pre_edge_lcm (n_entities, transp, comp, antic,
 				kill, &insert, &del);
