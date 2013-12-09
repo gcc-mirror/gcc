@@ -1,3 +1,7 @@
+2013-12-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/ldrd-strd-offset.c: New.
+
 2013-12-09  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.c-torture/compile/pr39834.c: Remove optimization level option.
