@@ -255,6 +255,22 @@ may need to use @option{--disable-stage1-checking}, though
 bootstrapping the compiler with such earlier compilers is strongly
 discouraged.
 
+@item C standard library and headers
+
+In order to build GCC, the C standard library and headers must be present
+for all target variants for which target libraries will be built (and not
+only the variant of the host C++ compiler).
+
+This affects the popular @samp{x86_64-unknown-linux-gnu} platform (among
+other multilib targets), for which 64-bit (@samp{x86_64}) and 32-bit
+(@samp{i386}) libc headers are usually packaged separately. If you do a
+build of a native compiler on @samp{x86_64-unknown-linux-gnu}, make sure you
+either have the 32-bit libc developer package properly installed (the exact
+name of the package depends on your distro) or you must build GCC as a
+64-bit only compiler by configuring with the option
+@option{--disable-multilib}.  Otherwise, you may encounter an error such as
+@samp{fatal error: gnu/stubs-32.h: No such file}
+
 @item GNAT
 
 In order to build the Ada compiler (GNAT) you must already have GNAT
