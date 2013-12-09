@@ -153,8 +153,8 @@ compact_blocks (void)
 {
   int i;
 
-  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (cfun));
+  SET_BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  SET_BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   if (df)
     df_compact_blocks ();
@@ -165,14 +165,14 @@ compact_blocks (void)
       i = NUM_FIXED_BLOCKS;
       FOR_EACH_BB (bb)
 	{
-	  SET_BASIC_BLOCK (i, bb);
+	  SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
 	  bb->index = i;
 	  i++;
 	}
       gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
       for (; i < last_basic_block; i++)
-	SET_BASIC_BLOCK (i, NULL);
+	SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
     }
   last_basic_block = n_basic_blocks_for_fn (cfun);
 }
@@ -183,7 +183,7 @@ void
 expunge_block (basic_block b)
 {
   unlink_block (b);
-  SET_BASIC_BLOCK (b->index, NULL);
+  SET_BASIC_BLOCK_FOR_FN (cfun, b->index, NULL);
   n_basic_blocks_for_fn (cfun)--;
   /* We should be able to ggc_free here, but we are not.
      The dead SSA_NAMES are left pointing to dead statements that are pointing

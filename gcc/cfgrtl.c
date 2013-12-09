@@ -331,7 +331,7 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
   bb->index = last_basic_block++;
   bb->flags = BB_NEW | BB_RTL;
   link_block (bb, after);
-  SET_BASIC_BLOCK (bb->index, bb);
+  SET_BASIC_BLOCK_FOR_FN (cfun, bb->index, bb);
   df_bb_refs_record (bb->index, false);
   update_bb_for_insn (bb);
   BB_SET_PARTITION (bb, BB_UNPARTITIONED);
