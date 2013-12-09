@@ -202,7 +202,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {
-      basic_block use_bb = BASIC_BLOCK (i);
+      basic_block use_bb = BASIC_BLOCK_FOR_FN (cfun, i);
       struct loop *use_loop = use_bb->loop_father;
       gcc_checking_assert (def_loop != use_loop
 			   && ! flow_loop_nested_p (def_loop, use_loop));
@@ -325,7 +325,7 @@ add_exit_phis_var (tree var, bitmap use_blocks, bitmap *loop_exits)
 
   EXECUTE_IF_SET_IN_BITMAP (live_exits, 0, index, bi)
     {
-      add_exit_phi (BASIC_BLOCK (index), var);
+      add_exit_phi (BASIC_BLOCK_FOR_FN (cfun, index), var);
     }
 
   BITMAP_FREE (live_exits);
@@ -461,7 +461,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
 
   if (changed_bbs)
     EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
-      find_uses_to_rename_bb (BASIC_BLOCK (index), use_blocks, need_phis);
+      find_uses_to_rename_bb (BASIC_BLOCK_FOR_FN (cfun, index), use_blocks, need_phis);
   else
     FOR_EACH_BB (bb)
       find_uses_to_rename_bb (bb, use_blocks, need_phis);
@@ -729,13 +729,13 @@ copy_phi_node_args (unsigned first_new_block)
   unsigned i;
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    BASIC_BLOCK (i)->flags |= BB_DUPLICATED;
+    BASIC_BLOCK_FOR_FN (cfun, i)->flags |= BB_DUPLICATED;
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    add_phi_args_after_copy_bb (BASIC_BLOCK (i));
+    add_phi_args_after_copy_bb (BASIC_BLOCK_FOR_FN (cfun, i));
 
   for (i = first_new_block; i < (unsigned) last_basic_block; i++)
-    BASIC_BLOCK (i)->flags &= ~BB_DUPLICATED;
+    BASIC_BLOCK_FOR_FN (cfun, i)->flags &= ~BB_DUPLICATED;
 }
 
 

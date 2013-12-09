@@ -918,7 +918,8 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 	 information, we can get it from there unless the insn at the
 	 start of the basic block has been deleted.  */
       if (tinfo && tinfo->block != -1
-	  && ! INSN_DELETED_P (BB_HEAD (BASIC_BLOCK (tinfo->block))))
+	  && ! INSN_DELETED_P (BB_HEAD (BASIC_BLOCK_FOR_FN (cfun,
+							    tinfo->block))))
 	b = tinfo->block;
     }
 
@@ -958,7 +959,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
      to use the LR problem.  Otherwise, we must assume everything is live.  */
   if (b != -1)
     {
-      regset regs_live = DF_LR_IN (BASIC_BLOCK (b));
+      regset regs_live = DF_LR_IN (BASIC_BLOCK_FOR_FN (cfun, b));
       rtx start_insn, stop_insn;
 
       /* Compute hard regs live at start of block.  */
@@ -967,7 +968,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
       start_insn = (b == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index ?
-		    insns : BB_HEAD (BASIC_BLOCK (b)));
+		    insns : BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, b)));
       stop_insn = target;
 
       if (NONJUMP_INSN_P (start_insn)

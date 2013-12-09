@@ -3075,7 +3075,7 @@ sel_finish_global_and_expr (void)
     bbs.create (current_nr_blocks);
 
     for (i = 0; i < current_nr_blocks; i++)
-      bbs.quick_push (BASIC_BLOCK (BB_TO_BLOCK (i)));
+      bbs.quick_push (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i)));
 
     /* Clear AV_SETs and INSN_EXPRs.  */
     {
@@ -3627,7 +3627,7 @@ verify_backedges (void)
       edge_iterator ei;
 
       for (i = 0; i < current_nr_blocks; i++)
-        FOR_EACH_EDGE (e, ei, BASIC_BLOCK (BB_TO_BLOCK (i))->succs)
+        FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i))->succs)
           if (in_current_region_p (e->dest)
               && BLOCK_TO_BB (e->dest->index) < i)
             n++;
@@ -3897,7 +3897,7 @@ purge_empty_blocks (void)
   /* Do not attempt to delete the first basic block in the region.  */
   for (i = 1; i < current_nr_blocks; )
     {
-      basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
+      basic_block b = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
 
       if (maybe_tidy_empty_bb (b))
 	continue;
@@ -6346,7 +6346,7 @@ sel_remove_loop_preheader (void)
   /* Add blocks that aren't within the current loop to PREHEADER_BLOCKS.  */
   for (i = 0; i < RGN_NR_BLOCKS (cur_rgn); i++)
     {
-      bb = BASIC_BLOCK (BB_TO_BLOCK (i));
+      bb = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
 
       /* If the basic block belongs to region, but doesn't belong to
 	 corresponding loop, then it should be a preheader.  */

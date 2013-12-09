@@ -4831,7 +4831,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 
   for (i = NUM_FIXED_BLOCKS; i < last_bb; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       rtx insn;
       rtx prev_insn;
 

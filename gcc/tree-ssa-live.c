@@ -1057,7 +1057,7 @@ live_worklist (tree_live_info_p live)
   while (live->stack_top != live->work_stack)
     {
       b = *--(live->stack_top);
-      loe_visit_block (live, BASIC_BLOCK (b), visited, tmp);
+      loe_visit_block (live, BASIC_BLOCK_FOR_FN (cfun, b), visited, tmp);
     }
 
   BITMAP_FREE (tmp);

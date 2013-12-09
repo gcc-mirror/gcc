@@ -1065,7 +1065,7 @@ fast_dce (bool word_level)
       for (i = 0; i < n_blocks; i++)
 	{
 	  int index = postorder[i];
-	  basic_block bb = BASIC_BLOCK (index);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, index);
 	  bool local_changed;
 
 	  if (index < NUM_FIXED_BLOCKS)

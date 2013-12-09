@@ -3337,7 +3337,7 @@ hoist_code (void)
 		  data->max_reg_pressure[pressure_class] += nregs;
 		  EXECUTE_IF_SET_IN_BITMAP (hoisted_bbs, 0, k, bi)
 		    {
-		      data = BB_DATA (BASIC_BLOCK (k));
+		      data = BB_DATA (BASIC_BLOCK_FOR_FN (cfun, k));
 		      data->max_reg_pressure[pressure_class] += nregs;
 		    }
 		}
@@ -3348,7 +3348,7 @@ hoist_code (void)
 		     hoisted.  */
 		  EXECUTE_IF_SET_IN_BITMAP (hoisted_bbs, 0, k, bi)
 		    {
-		      data = BB_DATA (BASIC_BLOCK (k));
+		      data = BB_DATA (BASIC_BLOCK_FOR_FN (cfun, k));
 		      bitmap_copy (data->live_in, data->backup);
 		      data->max_reg_pressure[pressure_class]
 			  = data->old_pressure;

@@ -164,7 +164,7 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
   for (i = n_basic_blocks_for_fn (fun) - n;
        i < n_basic_blocks_for_fn (fun); i++)
     {
-      basic_block bb = BASIC_BLOCK (rpo[i]);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       draw_cfg_node (pp, fun->funcdef_no, bb);
       bitmap_set_bit (visited, bb->index);
     }

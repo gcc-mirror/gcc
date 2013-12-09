@@ -353,7 +353,7 @@ df_rd_bb_local_compute_process_def (struct df_rd_bb_info *bb_info,
 static void
 df_rd_bb_local_compute (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_rd_bb_info *bb_info = df_rd_get_bb_info (bb_index);
   rtx insn;
 
@@ -835,7 +835,7 @@ df_lr_reset (bitmap all_blocks)
 static void
 df_lr_bb_local_compute (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_lr_bb_info *bb_info = df_lr_get_bb_info (bb_index);
   rtx insn;
   df_ref *def_rec;
@@ -1462,7 +1462,7 @@ df_live_reset (bitmap all_blocks)
 static void
 df_live_bb_local_compute (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_live_bb_info *bb_info = df_live_get_bb_info (bb_index);
   rtx insn;
   df_ref *def_rec;
@@ -1987,7 +1987,7 @@ df_chain_remove_problem (void)
       rtx insn;
       df_ref *def_rec;
       df_ref *use_rec;
-      basic_block bb = BASIC_BLOCK (bb_index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 
       if (df_chain_problem_p (DF_DU_CHAIN))
 	for (def_rec = df_get_artificial_defs (bb->index); *def_rec; def_rec++)
@@ -2105,7 +2105,7 @@ df_chain_create_bb_process_use (bitmap local_rd,
 static void
 df_chain_create_bb (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_rd_bb_info *bb_info = df_rd_get_bb_info (bb_index);
   rtx insn;
   bitmap_head cpy;
@@ -2531,7 +2531,7 @@ df_word_lr_mark_ref (df_ref ref, bool is_set, regset live)
 static void
 df_word_lr_bb_local_compute (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_word_lr_bb_info *bb_info = df_word_lr_get_bb_info (bb_index);
   rtx insn;
   df_ref *def_rec;
@@ -3154,7 +3154,7 @@ static void
 df_note_bb_compute (unsigned int bb_index,
 		    bitmap live, bitmap do_not_gen, bitmap artificial_uses)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   rtx insn;
   df_ref *def_rec;
   df_ref *use_rec;
@@ -4271,7 +4271,7 @@ df_md_bb_local_compute_process_def (struct df_md_bb_info *bb_info,
 static void
 df_md_bb_local_compute (unsigned int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
   rtx insn;
 
@@ -4327,7 +4327,7 @@ df_md_local_compute (bitmap all_blocks)
       bitmap kill = &df_md_get_bb_info (bb_index)->kill;
       EXECUTE_IF_SET_IN_BITMAP (&frontiers[bb_index], 0, df_bb_index, bi2)
 	{
-	  basic_block bb = BASIC_BLOCK (df_bb_index);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, df_bb_index);
 	  if (bitmap_bit_p (all_blocks, df_bb_index))
 	    bitmap_ior_and_into (&df_md_get_bb_info (df_bb_index)->init, kill,
 				 df_get_live_in (bb));
@@ -4360,7 +4360,7 @@ df_md_reset (bitmap all_blocks)
 static bool
 df_md_transfer_function (int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   struct df_md_bb_info *bb_info = df_md_get_bb_info (bb_index);
   bitmap in = &bb_info->in;
   bitmap out = &bb_info->out;

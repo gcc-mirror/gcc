@@ -558,7 +558,7 @@ set_livein_block (tree var, basic_block bb)
 
       if (def_block_index == -1
 	  || ! dominated_by_p (CDI_DOMINATORS, bb,
-	                       BASIC_BLOCK (def_block_index)))
+	                       BASIC_BLOCK_FOR_FN (cfun, def_block_index)))
 	info->need_phi_state = NEED_PHI_STATE_MAYBE;
     }
   else
@@ -821,7 +821,7 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
   adef = 1;
   EXECUTE_IF_SET_IN_BITMAP (to_remove, 0, i, bi)
     {
-      def_bb = BASIC_BLOCK (i);
+      def_bb = BASIC_BLOCK_FOR_FN (cfun, i);
       defs[adef].bb_index = i;
       defs[adef].dfs_num = bb_dom_dfs_in (CDI_DOMINATORS, def_bb);
       defs[adef + 1].bb_index = i;
@@ -895,7 +895,8 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	p = b;
       else
 	{
-	  use_bb = get_immediate_dominator (CDI_DOMINATORS, BASIC_BLOCK (b));
+	  use_bb = get_immediate_dominator (CDI_DOMINATORS,
+					    BASIC_BLOCK_FOR_FN (cfun, b));
 	  p = find_dfsnum_interval (defs, n_defs,
 				    bb_dom_dfs_in (CDI_DOMINATORS, use_bb));
 	  if (!bitmap_bit_p (phis, p))
@@ -907,7 +908,7 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	continue;
 
       /* Add the new uses to the worklist.  */
-      def_bb = BASIC_BLOCK (p);
+      def_bb = BASIC_BLOCK_FOR_FN (cfun, p);
       FOR_EACH_EDGE (e, ei, def_bb->preds)
 	{
 	  u = e->src->index;
@@ -1004,7 +1005,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
   /* And insert the PHI nodes.  */
   EXECUTE_IF_SET_IN_BITMAP (phi_insertion_points, 0, bb_index, bi)
     {
-      bb = BASIC_BLOCK (bb_index);
+      bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       if (update_p)
 	mark_block_for_update (bb);
 
@@ -3021,8 +3022,9 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 						    db->def_blocks);
 	  if (entry != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    EXECUTE_IF_SET_IN_BITMAP (idf, 0, i, bi)
-	      if (BASIC_BLOCK (i) != entry
-		  && dominated_by_p (CDI_DOMINATORS, BASIC_BLOCK (i), entry))
+	      if (BASIC_BLOCK_FOR_FN (cfun, i) != entry
+		  && dominated_by_p (CDI_DOMINATORS,
+				     BASIC_BLOCK_FOR_FN (cfun, i), entry))
 		bitmap_set_bit (pruned_idf, i);
 	}
       else
@@ -3054,7 +3056,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 	{
 	  edge e;
 	  edge_iterator ei;
-	  basic_block bb = BASIC_BLOCK (i);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (e->src->index >= 0)

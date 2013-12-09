@@ -902,7 +902,7 @@ tree_ssa_dominator_optimize (void)
 	 iterator.  */
       EXECUTE_IF_SET_IN_BITMAP (need_eh_cleanup, 0, i, bi)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  if (bb == NULL)
 	    continue;
 	  while (single_succ_p (bb)

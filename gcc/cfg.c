@@ -690,7 +690,7 @@ debug_bb (basic_block bb)
 DEBUG_FUNCTION basic_block
 debug_bb_n (int n)
 {
-  basic_block bb = BASIC_BLOCK (n);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, n);
   debug_bb (bb);
   return bb;
 }
@@ -1139,7 +1139,7 @@ get_bb_original (basic_block bb)
   key.index1 = bb->index;
   entry = bb_original.find (&key);
   if (entry)
-    return BASIC_BLOCK (entry->index2);
+    return BASIC_BLOCK_FOR_FN (cfun, entry->index2);
   else
     return NULL;
 }
@@ -1164,7 +1164,7 @@ get_bb_copy (basic_block bb)
   key.index1 = bb->index;
   entry = bb_copy.find (&key);
   if (entry)
-    return BASIC_BLOCK (entry->index2);
+    return BASIC_BLOCK_FOR_FN (cfun, entry->index2);
   else
     return NULL;
 }

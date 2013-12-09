@@ -1,5 +1,89 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (BASIC_BLOCK): Eliminate macro.
+
+	* alias.c (init_alias_analysis): Eliminate BASIC_BLOCK macro in
+	favor of uses of BASIC_BLOCK_FOR_FN, making uses of cfun explicit.
+	* bt-load.c (compute_defs_uses_and_gen, compute_out, link_btr_uses,
+	block_at_edge_of_live_range_p, migrate_btr_defs): Likewise.
+	* caller-save.c (insert_one_insn): Likewise.
+	* cfg.c (debug_bb, get_bb_original, get_bb_copy): Likewise.
+	* cfgexpand.c (add_scope_conflicts): Likewise.
+	* cfghooks.c (verify_flow_info): Likewise.
+	* cfgloop.c (flow_loops_find): Likewise.
+	* cfgrtl.c (rtl_flow_call_edges_add): Likewise.
+	* config/mips/mips.c (r10k_insert_cache_barriers): Likewise.
+	* config/s390/s390.c (s390_optimize_nonescaping_tx): Likewise.
+	* config/spu/spu.c (spu_machine_dependent_reorg): Likewise.
+	* cse.c (cse_main): Likewise.
+	* dce.c (fast_dce): Likewise.
+	* df-core.c (df_set_blocks, df_worklist_propagate_forward,
+	df_worklist_propagate_backward, df_worklist_dataflow_doublequeue,
+	df_bb_replace, df_dump_region): Likewise.
+	* df-problems.c (df_rd_bb_local_compute, df_lr_bb_local_compute,
+	df_live_bb_local_compute, df_chain_remove_problem)
+	df_chain_create_bb, df_word_lr_bb_local_compute, df_note_bb_compute,
+	df_md_bb_local_compute, df_md_local_compute,
+	df_md_transfer_function): Likewise.
+	* df-scan.c (df_scan_blocks, df_reorganize_refs_by_reg_by_insn,
+	df_reorganize_refs_by_insn, df_bb_refs_collect,
+	df_record_entry_block_defs, df_update_entry_block_defs,
+	df_record_exit_block_uses): Likewise.
+	* dominance.c (nearest_common_dominator_for_set): Likewise.
+	* gcse.c (hoist_code): Likewise.
+	* graph.c (draw_cfg_nodes_no_loops): Likewise.
+	* ipa-inline-analysis.c (param_change_prob,
+	estimate_function_body_sizes): Likewise.
+	* ipa-split.c (dominated_by_forbidden): Likewise.
+	* loop-unroll.c (apply_opt_in_copies): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* lra-lives.c (lra_create_live_ranges): Likewise.
+	* predict.c (propagate_freq): Likewise.
+	* regrename.c (regrename_analyze): Likewise.
+	* regstat.c (regstat_bb_compute_ri,
+	regstat_bb_compute_calls_crossed): Likewise.
+	* resource.c (mark_target_live_regs): Likewise.
+	* sched-ebb.c (ebb_fix_recovery_cfg): Likewise.
+	* sched-int.h (EBB_FIRST_BB, EBB_LAST_BB): Likewise.
+	* sched-rgn.c (debug_region, dump_region_dot, too_large,
+	haifa_find_rgns, extend_rgns, compute_dom_prob_ps, update_live,
+	propagate_deps, sched_is_disabled_for_current_region_p): Likewise.
+	* sched-vis.c (debug_bb_n_slim): Likewise.
+	* sel-sched-ir.c (sel_finish_global_and_expr, verify_backedges,
+	purge_empty_blocks, sel_remove_loop_preheader): Likewise.
+	* sel-sched.c (remove_insns_that_need_bookkeeping)
+	(current_region_empty_p, sel_region_init,
+	simplify_changed_insns): Likewise.
+	* trans-mem.c (execute_tm_mark, execute_tm_edges,
+	tm_memopt_compute_antic, ipa_tm_scan_irr_function): Likewise.
+	* tree-cfg.c (make_edges, end_recording_case_labels,
+	label_to_block_fn, gimple_debug_bb, gimple_flow_call_edges_add,
+	remove_edge_and_dominated_blocks, remove_edge_and_dominated_blocks,
+	gimple_purge_all_dead_eh_edges,
+	gimple_purge_all_dead_abnormal_call_edges): Likewise.
+	* tree-cfgcleanup.c (fixup_noreturn_call,
+	split_bbs_on_noreturn_calls, cleanup_tree_cfg_1): Likewise.
+	* tree-inline.c (copy_cfg_body, fold_marked_statements): Likewise.
+	* tree-into-ssa.c (set_livein_block, prune_unused_phi_nodes,
+	insert_phi_nodes_for, insert_updated_phi_nodes_for): Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Likewise.
+	* tree-ssa-live.c (live_worklist): Likewise.
+	* tree-ssa-loop-manip.c (compute_live_loop_exits,
+	add_exit_phis_var, find_uses_to_rename, copy_phi_node_args): Likewise.
+	* tree-ssa-pre.c (compute_antic): Likewise.
+	* tree-ssa-reassoc.c (update_range_test, optimize_range_tests): Likewise.
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash, same_succ_def::equal,
+	same_succ_flush_bbs, update_worklist, set_cluster,
+	same_phi_alternatives, find_clusters_1, apply_clusters,
+	update_debug_stmts): Likewise.
+	* tree-ssa-threadupdate.c (mark_threaded_blocks,
+	thread_through_all_blocks): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-vrp.c (find_assert_locations): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (SET_BASIC_BLOCK): Eliminate macro.
 
 	* cfg.c (compact_blocks): Replace uses of SET_BASIC_BLOCK

@@ -696,7 +696,7 @@ regrename_analyze (bitmap bb_mask)
 
   for (i = 0; i < n_bbs; i++)
     {
-      basic_block bb1 = BASIC_BLOCK (inverse_postorder[i]);
+      basic_block bb1 = BASIC_BLOCK_FOR_FN (cfun, inverse_postorder[i]);
       struct bb_rename_info *this_info;
       bool success;
       edge e;

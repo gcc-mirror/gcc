@@ -873,7 +873,7 @@ extern void debug_bb_n_slim (int);
 DEBUG_FUNCTION void
 debug_bb_n_slim (int n)
 {
-  basic_block bb = BASIC_BLOCK (n);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, n);
   debug_bb_slim (bb);
 }
 

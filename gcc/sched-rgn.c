@@ -401,7 +401,8 @@ debug_region (int rgn)
 
   for (bb = 0; bb < rgn_table[rgn].rgn_nr_blocks; bb++)
     {
-      dump_bb (stderr, BASIC_BLOCK (rgn_bb_table[current_blocks + bb]),
+      dump_bb (stderr,
+	       BASIC_BLOCK_FOR_FN (cfun, rgn_bb_table[current_blocks + bb]),
 	       0, TDF_SLIM | TDF_BLOCKS);
       fprintf (stderr, "\n");
     }
@@ -440,7 +441,7 @@ dump_region_dot (FILE *f, int rgn)
       edge e;
       edge_iterator ei;
       int src_bb_num = rgn_bb_table[current_blocks + i];
-      basic_block bb = BASIC_BLOCK (src_bb_num);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, src_bb_num);
 
       FOR_EACH_EDGE (e, ei, bb->succs)
         if (bb_in_region_p (e->dest->index, rgn))
@@ -554,7 +555,7 @@ too_large (int block, int *num_bbs, int *num_insns)
 {
   (*num_bbs)++;
   (*num_insns) += (common_sched_info->estimate_number_of_insns
-                   (BASIC_BLOCK (block)));
+                   (BASIC_BLOCK_FOR_FN (cfun, block)));
 
   return ((*num_bbs > PARAM_VALUE (PARAM_MAX_SCHED_REGION_BLOCKS))
 	  || (*num_insns > PARAM_VALUE (PARAM_MAX_SCHED_REGION_INSNS)));
@@ -948,7 +949,8 @@ haifa_find_rgns (void)
 		  edge e;
 		  child = queue[++head];
 
-		  FOR_EACH_EDGE (e, ei, BASIC_BLOCK (child)->preds)
+		  FOR_EACH_EDGE (e, ei,
+				 BASIC_BLOCK_FOR_FN (cfun, child)->preds)
 		    {
 		      node = e->src->index;
 
@@ -1005,7 +1007,9 @@ haifa_find_rgns (void)
 			  CONTAINING_RGN (child) = nr_regions;
 			  queue[head] = queue[tail--];
 
-			  FOR_EACH_EDGE (e, ei, BASIC_BLOCK (child)->succs)
+			  FOR_EACH_EDGE (e, ei,
+					 BASIC_BLOCK_FOR_FN (cfun,
+							     child)->succs)
 			    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 			      --degree[e->dest->index];
 			}
@@ -1200,7 +1204,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	    {
 	      int hdr = -1;
 
-	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (bbn)->preds)
+	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, bbn)->preds)
 		{
 		  int predn = e->src->index;
 
@@ -1304,7 +1308,7 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 	      CONTAINING_RGN (bbn) = nr_regions;
 	      BLOCK_TO_BB (bbn) = 0;
 
-	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (bbn)->succs)
+	      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, bbn)->succs)
 		if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 		  degree[e->dest->index]--;
 
@@ -1361,7 +1365,8 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 
 		      idx++;
 
-		      FOR_EACH_EDGE (e, ei, BASIC_BLOCK (succn)->succs)
+		      FOR_EACH_EDGE (e, ei,
+				     BASIC_BLOCK_FOR_FN (cfun, succn)->succs)
 			if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 			  degree[e->dest->index]--;
 		    }
@@ -1420,7 +1425,8 @@ compute_dom_prob_ps (int bb)
   /* Initialize dom[bb] to '111..1'.  */
   bitmap_ones (dom[bb]);
 
-  FOR_EACH_EDGE (in_edge, in_ei, BASIC_BLOCK (BB_TO_BLOCK (bb))->preds)
+  FOR_EACH_EDGE (in_edge, in_ei,
+		 BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (bb))->preds)
     {
       int pred_bb;
       edge out_edge;
@@ -1838,7 +1844,8 @@ update_live (rtx insn, int src)
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
    || (bitmap_bit_p (ancestor_edges[bb_to],					\
-	 EDGE_TO_BIT (single_pred_edge (BASIC_BLOCK (BB_TO_BLOCK (bb_from)))))))
+	 EDGE_TO_BIT (single_pred_edge (BASIC_BLOCK_FOR_FN (cfun, \
+							    BB_TO_BLOCK (bb_from)))))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
@@ -2655,7 +2662,7 @@ deps_join (struct deps_desc *succ_deps, struct deps_desc *pred_deps)
 static void
 propagate_deps (int bb, struct deps_desc *pred_deps)
 {
-  basic_block block = BASIC_BLOCK (BB_TO_BLOCK (bb));
+  basic_block block = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (bb));
   edge_iterator ei;
   edge e;
 
@@ -2864,7 +2871,8 @@ sched_is_disabled_for_current_region_p (void)
   int bb;
 
   for (bb = 0; bb < current_nr_blocks; bb++)
-    if (!(BASIC_BLOCK (BB_TO_BLOCK (bb))->flags & BB_DISABLE_SCHEDULE))
+    if (!(BASIC_BLOCK_FOR_FN (cfun,
+			      BB_TO_BLOCK (bb))->flags & BB_DISABLE_SCHEDULE))
       return false;
 
   return true;
