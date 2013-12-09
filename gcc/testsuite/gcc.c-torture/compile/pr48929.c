@@ -1,4 +1,4 @@
-/*{ dg-options "-O  -findirect-inlining" }*/
+/*{ dg-options "-findirect-inlining" }*/
 void bar ();
 
 static void
