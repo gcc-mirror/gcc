@@ -1,4 +1,4 @@
-/* { dg-options "-O1 -Winline" } */
+/* { dg-options "-Winline" } */
 void quit_mined ();
 void bottom_line ();
 typedef enum { False, True } FLAG;

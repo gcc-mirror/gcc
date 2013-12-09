@@ -1,3 +1,12 @@
+2013-12-09  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.c-torture/compile/pr39834.c: Remove optimization level option.
+	* gcc.c-torture/compile/pr48929.c: Likewise.
+	* gcc.c-torture/compile/pr55569.c: Likewise.
+	* gcc.c-torture/compile/sra-1.c: Likewise.
+	* gcc.c-torture/compile/pr45085.c: Moved to...
+	* gcc.dg/tree-ssa/pr45085.c: ...here, added compile dg-do.
+
 2013-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59415
