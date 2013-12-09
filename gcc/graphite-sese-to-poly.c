@@ -423,7 +423,7 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb)
 static void
 build_scop_bbs (scop_p scop)
 {
-  sbitmap visited = sbitmap_alloc (last_basic_block);
+  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   sese region = SCOP_REGION (scop);
 
   bitmap_clear (visited);

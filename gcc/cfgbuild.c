@@ -209,7 +209,7 @@ make_edges (basic_block min, basic_block max, int update_p)
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
   if (forced_labels || cfun->cfg->max_jumptable_ents > 100)
-    edge_cache = sbitmap_alloc (last_basic_block);
+    edge_cache = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
      is always the entry.  */

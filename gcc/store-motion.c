@@ -844,7 +844,7 @@ remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
   edge_iterator *stack, ei;
   int sp;
   edge act;
-  sbitmap visited = sbitmap_alloc (last_basic_block);
+  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   rtx last, insn, note;
   rtx mem = smexpr->pattern;
 
@@ -1016,11 +1016,13 @@ build_store_vectors (void)
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
-  st_avloc = sbitmap_vector_alloc (last_basic_block, num_stores);
-  bitmap_vector_clear (st_avloc, last_basic_block);
+  st_avloc = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				   num_stores);
+  bitmap_vector_clear (st_avloc, last_basic_block_for_fn (cfun));
 
-  st_antloc = sbitmap_vector_alloc (last_basic_block, num_stores);
-  bitmap_vector_clear (st_antloc, last_basic_block);
+  st_antloc = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+				    num_stores);
+  bitmap_vector_clear (st_antloc, last_basic_block_for_fn (cfun));
 
   for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
@@ -1052,11 +1054,11 @@ build_store_vectors (void)
 	}
     }
 
-  st_kill = sbitmap_vector_alloc (last_basic_block, num_stores);
-  bitmap_vector_clear (st_kill, last_basic_block);
+  st_kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), num_stores);
+  bitmap_vector_clear (st_kill, last_basic_block_for_fn (cfun));
 
-  st_transp = sbitmap_vector_alloc (last_basic_block, num_stores);
-  bitmap_vector_clear (st_transp, last_basic_block);
+  st_transp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), num_stores);
+  bitmap_vector_clear (st_transp, last_basic_block_for_fn (cfun));
   regs_set_in_block = XNEWVEC (int, max_gcse_regno);
 
   FOR_EACH_BB (bb)
@@ -1095,10 +1097,14 @@ build_store_vectors (void)
 
   if (dump_file)
     {
-      dump_bitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
-      dump_bitmap_vector (dump_file, "st_kill", "", st_kill, last_basic_block);
-      dump_bitmap_vector (dump_file, "st_transp", "", st_transp, last_basic_block);
-      dump_bitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
+      dump_bitmap_vector (dump_file, "st_antloc", "", st_antloc,
+			  last_basic_block_for_fn (cfun));
+      dump_bitmap_vector (dump_file, "st_kill", "", st_kill,
+			  last_basic_block_for_fn (cfun));
+      dump_bitmap_vector (dump_file, "st_transp", "", st_transp,
+			  last_basic_block_for_fn (cfun));
+      dump_bitmap_vector (dump_file, "st_avloc", "", st_avloc,
+			  last_basic_block_for_fn (cfun));
     }
 }
 

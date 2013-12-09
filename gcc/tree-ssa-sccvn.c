@@ -3984,7 +3984,7 @@ init_scc_vn (void)
 
   shared_lookup_phiargs.create (0);
   shared_lookup_references.create (0);
-  rpo_numbers = XNEWVEC (int, last_basic_block);
+  rpo_numbers = XNEWVEC (int, last_basic_block_for_fn (cfun));
   rpo_numbers_temp =
     XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   pre_and_rev_post_order_compute (NULL, rpo_numbers_temp, false);

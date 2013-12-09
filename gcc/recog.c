@@ -2898,7 +2898,7 @@ split_all_insns (void)
   bool changed;
   basic_block bb;
 
-  blocks = sbitmap_alloc (last_basic_block);
+  blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (blocks);
   changed = false;
 

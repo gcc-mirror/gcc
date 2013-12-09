@@ -8067,8 +8067,8 @@ frv_optimize_membar (void)
   rtx *last_membar;
 
   compute_bb_for_insn ();
-  first_io = XCNEWVEC (struct frv_io, last_basic_block);
-  last_membar = XCNEWVEC (rtx, last_basic_block);
+  first_io = XCNEWVEC (struct frv_io, last_basic_block_for_fn (cfun));
+  last_membar = XCNEWVEC (rtx, last_basic_block_for_fn (cfun));
 
   FOR_EACH_BB (bb)
     frv_optimize_membar_local (bb, &first_io[bb->index],

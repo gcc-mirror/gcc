@@ -771,7 +771,7 @@ init_worklist (void)
 {
   alloc_aux_for_blocks (sizeof (struct aux_bb_info));
   same_succ_htab.create (n_basic_blocks_for_fn (cfun));
-  same_succ_edge_flags = XCNEWVEC (int, last_basic_block);
+  same_succ_edge_flags = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   deleted_bbs = BITMAP_ALLOC (NULL);
   deleted_bb_preds = BITMAP_ALLOC (NULL);
   worklist.create (n_basic_blocks_for_fn (cfun));

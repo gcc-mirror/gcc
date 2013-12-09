@@ -1216,7 +1216,7 @@ init_resource_info (rtx epilogue_insn)
 
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = XCNEWVEC (struct target_info *, TARGET_HASH_PRIME);
-  bb_ticks = XCNEWVEC (int, last_basic_block);
+  bb_ticks = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
   /* Set the BLOCK_FOR_INSN of each label that starts a basic block.  */
   FOR_EACH_BB (bb)

@@ -1,5 +1,107 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (last_basic_block): Eliminate macro.
+
+	* asan.c (transform_statements): Eliminate use of last_basic_block
+	in favor of last_basic_block_for_fn, in order to make use of cfun
+	explicit.
+	* bb-reorder.c (copy_bb, reorder_basic_blocks): Likewise.
+	* bt-load.c (compute_defs_uses_and_gen, compute_kill, compute_out,
+	link_btr_uses, build_btr_def_use_webs, migrate_btr_defs): Likewise.
+	* cfg.c (compact_blocks): Likewise.
+	* cfganal.c (mark_dfs_back_edges,
+	control_dependences::control_dependences, post_order_compute,
+	pre_and_rev_post_order_compute_fn, dfs_enumerate_from, compute_idf,
+	single_pred_before_succ_order): Likewise.
+	* cfgbuild.c (make_edges): Likewise.
+	* cfgexpand.c (add_scope_conflicts, gimple_expand_cfg): Likewise.
+	* cfghooks.c (verify_flow_info): Likewise.
+	* cfgloop.c (verify_loop_structure): Likewise.
+	* cfgloopanal.c (just_once_each_iteration_p,
+	mark_irreducible_loops): Likewise.
+	* cfgloopmanip.c (fix_bb_placements, remove_path,
+	update_dominators_in_loop): Likewise.
+	* cfgrtl.c (create_basic_block_structure, rtl_create_basic_block,
+	break_superblocks, rtl_flow_call_edges_add): Likewise.
+	* config/epiphany/resolve-sw-modes.c (resolve_sw_modes): Likewise.
+	* config/frv/frv.c (frv_optimize_membar): Likewise.
+	* config/mips/mips.c (r10k_insert_cache_barriers): Likewise.
+	* config/spu/spu.c (spu_machine_dependent_reorg): Likewise.
+	* cprop.c (compute_local_properties, find_implicit_sets,
+	bypass_conditional_jumps, one_cprop_pass): Likewise.
+	* cse.c (cse_main): Likewise.
+	* df-core.c (rest_of_handle_df_initialize, df_worklist_dataflow,
+	df_analyze, df_grow_bb_info, df_compact_blocks): Likewise.
+	* df-problems.c (df_lr_verify_solution_start,
+	df_live_verify_solution_start, df_md_local_compute): Likewise.
+	* dominance.c (init_dom_info, calc_dfs_tree_nonrec, calc_dfs_tree,
+	calc_idoms): Likewise.
+	* domwalk.c (dom_walker::walk): Likewise.
+	* dse.c (dse_step0, dse_step3): Likewise.
+	* function.c (epilogue_done): Likewise.
+	* gcse.c (alloc_gcse_mem, compute_local_properties,
+	prune_insertions_deletions, compute_pre_data,
+	pre_expr_reaches_here_p, one_pre_gcse_pass,
+	compute_code_hoist_vbeinout, should_hoist_expr_to_dom, hoist_code,
+	one_code_hoisting_pass): Likewise.
+	* graph.c (draw_cfg_nodes_no_loops): Likewise.
+	* graphite-sese-to-poly.c (build_scop_bbs): Likewise.
+	* haifa-sched.c (unlink_bb_notes): Likewise.
+	* ipa-split.c (execute_split_functions): Likewise.
+	* ira-build.c (create_loop_tree_nodes,
+	remove_unnecessary_regions): Likewise.
+	* ira-emit.c (ira_emit): Likewise.
+	* ira.c (find_moveable_pseudos, ira): Likewise.
+	* lcm.c (compute_antinout_edge, compute_laterin,
+	compute_insert_delete, pre_edge_lcm, compute_available,
+	compute_nearerout, compute_rev_insert_delete,
+	pre_edge_rev_lcm): Likewise.
+	* loop-unroll.c (opt_info_start_duplication,
+	apply_opt_in_copies): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* lra-lives.c (lra_create_live_ranges): Likewise.
+	* lra.c (lra): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	* recog.c (split_all_insns): Likewise.
+	* regcprop.c (copyprop_hardreg_forward): Likewise.
+	* regrename.c (regrename_analyze): Likewise.
+	* reload1.c (reload): Likewise.
+	* resource.c (init_resource_info): Likewise.
+	* sched-rgn.c (haifa_find_rgns, extend_rgns, compute_trg_info,
+	realloc_bb_state_array, schedule_region, extend_regions): Likewise.
+	* sel-sched-ir.c (sel_extend_global_bb_info, extend_region_bb_info,
+	recompute_rev_top_order, sel_init_pipelining,
+	make_regions_from_the_rest): Likewise.
+	* store-motion.c (remove_reachable_equiv_notes,build_store_vectors)
+	Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* trans-mem.c (tm_region_init, get_bb_regions_instrumented): Likewise.
+	* tree-cfg.c (create_bb, cleanup_dead_labels, gimple_dump_cfg,
+	gimple_flow_call_edges_add): Likewise.
+	* tree-cfgcleanup.c (split_bbs_on_noreturn_calls,
+	cleanup_tree_cfg_1): Likewise.
+	* tree-complex.c (tree_lower_complex): Likewise.
+	* tree-inline.c (copy_cfg_body): Likewise.
+	* tree-into-ssa.c (mark_phi_for_rewrite, rewrite_into_ssa,
+	prepare_def_site_for, update_ssa): Likewise.
+	* tree-ssa-dce.c (tree_dce_init, perform_tree_ssa_dce): Likewise.
+	* tree-ssa-dom.c (record_edge_info): Likewise.
+	* tree-ssa-live.c (new_tree_live_info, live_worklist): Likewise.
+	* tree-ssa-loop-im.c (fill_always_executed_in_1): Likewise.
+	* tree-ssa-loop-manip.c (copy_phi_node_args
+	gimple_duplicate_loop_to_header_edge): Likewise.
+	* tree-ssa-pre.c (compute_antic): Likewise.
+	* tree-ssa-propagate.c (ssa_prop_init): Likewise.
+	* tree-ssa-reassoc.c (init_reassoc): Likewise.
+	* tree-ssa-sccvn.c (init_scc_vn): Likewise.
+	* tree-ssa-tail-merge.c (init_worklist): Likewise.
+	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Likewise.
+	* tree-stdarg.c (reachable_at_most_once): Likewise.
+	* tree-vrp.c (find_assert_locations): Likewise.
+	* var-tracking.c (vt_find_locations): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (profile_status): Eliminate macro.
 
 	* cfgbuild.c (find_many_sub_basic_blocks): Eliminate use of

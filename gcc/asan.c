@@ -2041,7 +2041,7 @@ transform_statements (void)
 {
   basic_block bb, last_bb = NULL;
   gimple_stmt_iterator i;
-  int saved_last_basic_block = last_basic_block;
+  int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
   FOR_EACH_BB (bb)
     {

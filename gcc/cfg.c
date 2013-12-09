@@ -171,10 +171,10 @@ compact_blocks (void)
 	}
       gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
-      for (; i < last_basic_block; i++)
+      for (; i < last_basic_block_for_fn (cfun); i++)
 	SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
     }
-  last_basic_block = n_basic_blocks_for_fn (cfun);
+  last_basic_block_for_fn (cfun) = n_basic_blocks_for_fn (cfun);
 }
 
 /* Remove block B from the basic block array.  */

@@ -4574,7 +4574,7 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = XCNEWVEC (long, last_basic_block);
+  bb_rank = XCNEWVEC (long, last_basic_block_for_fn (cfun));
   operand_rank = pointer_map_create ();
 
   /* Give each default definition a distinct rank.  This includes

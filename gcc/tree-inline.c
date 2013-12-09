@@ -2488,7 +2488,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	new_bb->loop_father = entry_block_map->loop_father;
       }
 
-  last = last_basic_block;
+  last = last_basic_block_for_fn (cfun);
 
   /* Now that we've duplicated the blocks, duplicate their edges.  */
   bool can_make_abormal_goto
@@ -2544,7 +2544,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 
   /* Zero out AUX fields of newly created block during EH edge
      insertion. */
-  for (; last < last_basic_block; last++)
+  for (; last < last_basic_block_for_fn (cfun); last++)
     {
       if (need_debug_cleanup)
 	maybe_move_debug_stmts_to_successors (id,

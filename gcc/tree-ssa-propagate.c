@@ -495,10 +495,10 @@ ssa_prop_init (void)
   vec_alloc (interesting_ssa_edges, 20);
   vec_alloc (varying_ssa_edges, 20);
 
-  executable_blocks = sbitmap_alloc (last_basic_block);
+  executable_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (executable_blocks);
 
-  bb_in_list = sbitmap_alloc (last_basic_block);
+  bb_in_list = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (bb_in_list);
 
   if (dump_file && (dump_flags & TDF_DETAILS))

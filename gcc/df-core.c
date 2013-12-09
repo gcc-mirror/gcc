@@ -721,8 +721,8 @@ rest_of_handle_df_initialize (void)
   if (optimize > 1)
     df_live_add_problem ();
 
-  df->postorder = XNEWVEC (int, last_basic_block);
-  df->postorder_inverted = XNEWVEC (int, last_basic_block);
+  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
   df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
   gcc_assert (df->n_blocks == df->n_blocks_inverted);
@@ -1115,7 +1115,7 @@ df_worklist_dataflow (struct dataflow *dataflow,
                       int n_blocks)
 {
   bitmap pending = BITMAP_ALLOC (&df_bitmap_obstack);
-  sbitmap considered = sbitmap_alloc (last_basic_block);
+  sbitmap considered = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_iterator bi;
   unsigned int *bbindex_to_postorder;
   int i;
@@ -1125,11 +1125,12 @@ df_worklist_dataflow (struct dataflow *dataflow,
   gcc_assert (dir != DF_NONE);
 
   /* BBINDEX_TO_POSTORDER maps the bb->index to the reverse postorder.  */
-  bbindex_to_postorder = XNEWVEC (unsigned int, last_basic_block);
+  bbindex_to_postorder = XNEWVEC (unsigned int,
+				  last_basic_block_for_fn (cfun));
 
   /* Initialize the array to an out-of-bound value.  */
-  for (i = 0; i < last_basic_block; i++)
-    bbindex_to_postorder[i] = last_basic_block;
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
+    bbindex_to_postorder[i] = last_basic_block_for_fn (cfun);
 
   /* Initialize the considered map.  */
   bitmap_clear (considered);
@@ -1236,8 +1237,8 @@ df_analyze (void)
 
   free (df->postorder);
   free (df->postorder_inverted);
-  df->postorder = XNEWVEC (int, last_basic_block);
-  df->postorder_inverted = XNEWVEC (int, last_basic_block);
+  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
   df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
 
@@ -1481,7 +1482,7 @@ df_set_bb_dirty (basic_block bb)
 void
 df_grow_bb_info (struct dataflow *dflow)
 {
-  unsigned int new_size = last_basic_block + 1;
+  unsigned int new_size = last_basic_block_for_fn (cfun) + 1;
   if (dflow->block_info_size < new_size)
     {
       new_size += new_size / 4;
@@ -1553,7 +1554,8 @@ df_compact_blocks (void)
       /* Now shuffle the block info for the problem.  */
       if (dflow->problem->free_bb_fun)
 	{
-	  int size = last_basic_block * dflow->problem->block_info_elt_size;
+	  int size = (last_basic_block_for_fn (cfun)
+		      * dflow->problem->block_info_elt_size);
 	  problem_temps = XNEWVAR (char, size);
 	  df_grow_bb_info (dflow);
 	  memcpy (problem_temps, dflow->block_info, size);
@@ -1571,7 +1573,7 @@ df_compact_blocks (void)
 	    }
 	  memset ((char *)dflow->block_info
 		  + i * dflow->problem->block_info_elt_size, 0,
-		  (last_basic_block - i)
+		  (last_basic_block_for_fn (cfun) - i)
 		  * dflow->problem->block_info_elt_size);
 	  free (problem_temps);
 	}
@@ -1608,7 +1610,7 @@ df_compact_blocks (void)
 
   gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
-  for (; i < last_basic_block; i++)
+  for (; i < last_basic_block_for_fn (cfun); i++)
     SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
 
 #ifdef DF_DEBUG_CFG

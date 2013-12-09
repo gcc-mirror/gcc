@@ -826,12 +826,13 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 	     "Duplicated bb %d (created bb %d)\n",
 	     old_bb->index, new_bb->index);
 
-  if (new_bb->index >= array_size || last_basic_block > array_size)
+  if (new_bb->index >= array_size
+      || last_basic_block_for_fn (cfun) > array_size)
     {
       int i;
       int new_size;
 
-      new_size = MAX (last_basic_block, new_bb->index + 1);
+      new_size = MAX (last_basic_block_for_fn (cfun), new_bb->index + 1);
       new_size = GET_ARRAY_SIZE (new_size);
       bbd = XRESIZEVEC (bbro_basic_block_data, bbd, new_size);
       for (i = array_size; i < new_size; i++)
@@ -2234,7 +2235,7 @@ reorder_basic_blocks (void)
     uncond_jump_length = get_uncond_jump_length ();
 
   /* We need to know some information for each basic block.  */
-  array_size = GET_ARRAY_SIZE (last_basic_block);
+  array_size = GET_ARRAY_SIZE (last_basic_block_for_fn (cfun));
   bbd = XNEWVEC (bbro_basic_block_data, array_size);
   for (i = 0; i < array_size; i++)
     {

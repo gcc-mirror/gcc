@@ -964,7 +964,7 @@ mark_phi_for_rewrite (basic_block bb, gimple phi)
 
   bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
 
-  n = (unsigned) last_basic_block + 1;
+  n = (unsigned) last_basic_block_for_fn (cfun) + 1;
   if (phis_to_rewrite.length () < n)
     phis_to_rewrite.safe_grow_cleared (n);
 
@@ -2315,11 +2315,11 @@ rewrite_into_ssa (void)
   /* Initialize the set of interesting blocks.  The callback
      mark_def_sites will add to this set those blocks that the renamer
      should process.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block);
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (interesting_blocks);
 
   /* Initialize dominance frontier.  */
-  dfs = XNEWVEC (bitmap_head, last_basic_block);
+  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_EACH_BB (bb)
     bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
 
@@ -2635,7 +2635,7 @@ prepare_def_site_for (tree name, bool insert_phi_p)
   bb = gimple_bb (stmt);
   if (bb)
     {
-      gcc_checking_assert (bb->index < last_basic_block);
+      gcc_checking_assert (bb->index < last_basic_block_for_fn (cfun));
       mark_block_for_update (bb);
       mark_def_interesting (name, stmt, bb, insert_phi_p);
     }
@@ -3185,7 +3185,7 @@ update_ssa (unsigned update_flags)
 
   blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
   if (!phis_to_rewrite.exists ())
-    phis_to_rewrite.create (last_basic_block + 1);
+    phis_to_rewrite.create (last_basic_block_for_fn (cfun) + 1);
   blocks_to_update = BITMAP_ALLOC (NULL);
 
   /* Ensure that the dominance information is up-to-date.  */
@@ -3269,7 +3269,7 @@ update_ssa (unsigned update_flags)
 
       /* If the caller requested PHI nodes to be added, compute
 	 dominance frontiers.  */
-      dfs = XNEWVEC (bitmap_head, last_basic_block);
+      dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
       FOR_EACH_BB (bb)
 	bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
       compute_dominance_frontiers (dfs);
@@ -3317,7 +3317,7 @@ update_ssa (unsigned update_flags)
     get_var_info (sym)->info.current_def = NULL_TREE;
 
   /* Now start the renaming process at START_BB.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block);
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (interesting_blocks);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
     bitmap_set_bit (interesting_blocks, i);
@@ -3340,9 +3340,10 @@ update_ssa (unsigned update_flags)
       c = 0;
       EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
 	c++;
-      fprintf (dump_file, "Number of blocks in CFG: %d\n", last_basic_block);
+      fprintf (dump_file, "Number of blocks in CFG: %d\n",
+	       last_basic_block_for_fn (cfun));
       fprintf (dump_file, "Number of blocks to update: %d (%3.0f%%)\n",
-	       c, PERCENT (c, last_basic_block));
+	       c, PERCENT (c, last_basic_block_for_fn (cfun)));
 
       if (dump_flags & TDF_DETAILS)
 	{

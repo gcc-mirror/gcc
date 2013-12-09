@@ -480,7 +480,8 @@ optimize_mode_switching (void)
 	entry_exit_extra = 3;
 #endif
 	bb_info[n_entities]
-	  = XCNEWVEC (struct bb_info, last_basic_block + entry_exit_extra);
+	  = XCNEWVEC (struct bb_info,
+		      last_basic_block_for_fn (cfun) + entry_exit_extra);
 	entity_map[n_entities++] = e;
 	if (num_modes[e] > max_num_modes)
 	  max_num_modes = num_modes[e];
@@ -500,11 +501,11 @@ optimize_mode_switching (void)
 
   /* Create the bitmap vectors.  */
 
-  antic = sbitmap_vector_alloc (last_basic_block, n_entities);
-  transp = sbitmap_vector_alloc (last_basic_block, n_entities);
-  comp = sbitmap_vector_alloc (last_basic_block, n_entities);
+  antic = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_entities);
+  transp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_entities);
+  comp = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_entities);
 
-  bitmap_vector_ones (transp, last_basic_block);
+  bitmap_vector_ones (transp, last_basic_block_for_fn (cfun));
 
   for (j = n_entities - 1; j >= 0; j--)
     {
@@ -608,7 +609,7 @@ optimize_mode_switching (void)
 #endif /* NORMAL_MODE */
     }
 
-  kill = sbitmap_vector_alloc (last_basic_block, n_entities);
+  kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), n_entities);
   for (i = 0; i < max_num_modes; i++)
     {
       int current_mode[N_ENTITIES];
@@ -616,8 +617,8 @@ optimize_mode_switching (void)
       sbitmap *insert;
 
       /* Set the anticipatable and computing arrays.  */
-      bitmap_vector_clear (antic, last_basic_block);
-      bitmap_vector_clear (comp, last_basic_block);
+      bitmap_vector_clear (antic, last_basic_block_for_fn (cfun));
+      bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
       for (j = n_entities - 1; j >= 0; j--)
 	{
 	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);

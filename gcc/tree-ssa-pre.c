@@ -2441,7 +2441,7 @@ compute_antic (void)
 
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
-  has_abnormal_preds = sbitmap_alloc (last_basic_block);
+  has_abnormal_preds = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (has_abnormal_preds);
 
   FOR_ALL_BB (block)
@@ -2470,7 +2470,7 @@ compute_antic (void)
   /* At the exit block we anticipate nothing.  */
   BB_VISITED (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
 
-  changed_blocks = sbitmap_alloc (last_basic_block + 1);
+  changed_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
   bitmap_ones (changed_blocks);
   while (changed)
     {

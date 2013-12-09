@@ -642,23 +642,23 @@ haifa_find_rgns (void)
      STACK, SP and DFS_NR are only used during the first traversal.  */
 
   /* Allocate and initialize variables for the first traversal.  */
-  max_hdr = XNEWVEC (int, last_basic_block);
-  dfs_nr = XCNEWVEC (int, last_basic_block);
+  max_hdr = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  dfs_nr = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   stack = XNEWVEC (edge_iterator, n_edges_for_fn (cfun));
 
-  inner = sbitmap_alloc (last_basic_block);
+  inner = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_ones (inner);
 
-  header = sbitmap_alloc (last_basic_block);
+  header = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (header);
 
-  in_queue = sbitmap_alloc (last_basic_block);
+  in_queue = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_queue);
 
-  in_stack = sbitmap_alloc (last_basic_block);
+  in_stack = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_stack);
 
-  for (i = 0; i < last_basic_block; i++)
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
     max_hdr[i] = -1;
 
   #define EDGE_PASSED(E) (ei_end_p ((E)) || ei_edge ((E))->aux)
@@ -799,8 +799,9 @@ haifa_find_rgns (void)
       extend_regions_p = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS) > 0;
       if (extend_regions_p)
         {
-          degree1 = XNEWVEC (int, last_basic_block);
-          extended_rgn_header = sbitmap_alloc (last_basic_block);
+          degree1 = XNEWVEC (int, last_basic_block_for_fn (cfun));
+          extended_rgn_header =
+	    sbitmap_alloc (last_basic_block_for_fn (cfun));
           bitmap_clear (extended_rgn_header);
 	}
 
@@ -854,7 +855,8 @@ haifa_find_rgns (void)
                 /* We save degree in case when we meet a too_large region
 		   and cancel it.  We need a correct degree later when
                    calling extend_rgns.  */
-                memcpy (degree1, degree, last_basic_block * sizeof (int));
+                memcpy (degree1, degree,
+			last_basic_block_for_fn (cfun) * sizeof (int));
 
 	      /* Decrease degree of all I's successors for topological
 		 ordering.  */
@@ -1161,9 +1163,9 @@ extend_rgns (int *degree, int *idxp, sbitmap header, int *loop_hdr)
 
   max_iter = PARAM_VALUE (PARAM_MAX_SCHED_EXTEND_REGIONS_ITERS);
 
-  max_hdr = XNEWVEC (int, last_basic_block);
+  max_hdr = XNEWVEC (int, last_basic_block_for_fn (cfun));
 
-  order = XNEWVEC (int, last_basic_block);
+  order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   post_order_compute (order, false, false);
 
   for (i = nblocks - 1; i >= 0; i--)
@@ -1514,7 +1516,7 @@ compute_trg_info (int trg)
   sp->is_speculative = 0;
   sp->src_prob = REG_BR_PROB_BASE;
 
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   for (i = trg + 1; i < current_nr_blocks; i++)
     {
@@ -2936,11 +2938,11 @@ static void
 realloc_bb_state_array (int saved_last_basic_block)
 {
   char *old_bb_state_array = bb_state_array;
-  size_t lbb = (size_t) last_basic_block;
+  size_t lbb = (size_t) last_basic_block_for_fn (cfun);
   size_t slbb = (size_t) saved_last_basic_block;
 
   /* Nothing to do if nothing changed since the last time this was called.  */
-  if (saved_last_basic_block == last_basic_block)
+  if (saved_last_basic_block == last_basic_block_for_fn (cfun))
     return;
 
   /* The selective scheduler doesn't use the state arrays.  */
@@ -3060,7 +3062,7 @@ schedule_region (int rgn)
       if (dbg_cnt (sched_block))
         {
 	  edge f;
-	  int saved_last_basic_block = last_basic_block;
+	  int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
 	  schedule_block (&curr_bb, bb_state[first_bb->index]);
 	  gcc_assert (EBB_FIRST_BB (bb) == first_bb);
@@ -3430,9 +3432,12 @@ void
 extend_regions (void)
 {
   rgn_table = XRESIZEVEC (region, rgn_table, n_basic_blocks_for_fn (cfun));
-  rgn_bb_table = XRESIZEVEC (int, rgn_bb_table, n_basic_blocks_for_fn (cfun));
-  block_to_bb = XRESIZEVEC (int, block_to_bb, last_basic_block);
-  containing_rgn = XRESIZEVEC (int, containing_rgn, last_basic_block);
+  rgn_bb_table = XRESIZEVEC (int, rgn_bb_table,
+			     n_basic_blocks_for_fn (cfun));
+  block_to_bb = XRESIZEVEC (int, block_to_bb,
+			    last_basic_block_for_fn (cfun));
+  containing_rgn = XRESIZEVEC (int, containing_rgn,
+			       last_basic_block_for_fn (cfun));
 }
 
 void

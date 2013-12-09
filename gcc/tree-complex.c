@@ -1636,7 +1636,7 @@ tree_lower_complex (void)
   update_parameter_components ();
 
   /* ??? Ideally we'd traverse the blocks in breadth-first order.  */
-  old_last_basic_block = last_basic_block;
+  old_last_basic_block = last_basic_block_for_fn (cfun);
   FOR_EACH_BB (bb)
     {
       if (bb->index >= old_last_basic_block)

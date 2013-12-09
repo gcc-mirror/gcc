@@ -326,9 +326,6 @@ struct GTY(()) control_flow_graph {
 #define SET_BASIC_BLOCK_FOR_FN(FN,N,BB) \
   ((*basic_block_info_for_fn (FN))[(N)] = (BB))
 
-/* Defines for textual backward source compatibility.  */
-#define last_basic_block	(cfun->cfg->x_last_basic_block)
-
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
   for (BB = FROM; BB != TO; BB = BB->DIR)
