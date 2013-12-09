@@ -1,3 +1,7 @@
+2013-12-09  Renlin Li <Renlin.Li@arm.com>
+
+	* testsuite/20_util/hash/chi2_quality.cc: Change -DSAMPLES=30000.
+
 2013-12-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* testsuite/30_threads/async/async.cc: Fix race condition in test.
