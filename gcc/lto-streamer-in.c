@@ -641,8 +641,8 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   if (bb_count > basic_block_info_for_fn (fn)->length ())
     vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count);
 
-  if (bb_count > label_to_block_map_for_function (fn)->length ())
-    vec_safe_grow_cleared (label_to_block_map_for_function (fn), bb_count);
+  if (bb_count > label_to_block_map_for_fn (fn)->length ())
+    vec_safe_grow_cleared (label_to_block_map_for_fn (fn), bb_count);
 
   index = streamer_read_hwi (ib);
   while (index != -1)
