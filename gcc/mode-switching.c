@@ -692,7 +692,7 @@ optimize_mode_switching (void)
 	      insert_insn_on_edge (mode_set, eg);
 	    }
 
-	  FOR_EACH_BB_REVERSE (bb)
+	  FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	    if (bitmap_bit_p (del[bb->index], j))
 	      {
 		make_preds_opaque (bb, j);
@@ -712,7 +712,7 @@ optimize_mode_switching (void)
     {
       int no_mode = num_modes[entity_map[j]];
 
-      FOR_EACH_BB_REVERSE (bb)
+      FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	{
 	  struct seginfo *ptr, *next;
 	  for (ptr = bb_info[j][bb->index].seginfo; ptr; ptr = next)

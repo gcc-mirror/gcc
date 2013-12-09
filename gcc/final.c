@@ -1996,7 +1996,7 @@ final (rtx first, FILE *file, int optimize_p)
 
       /* There is no cfg for a thunk.  */
       if (!cfun->is_thunk)
-	FOR_EACH_BB_REVERSE (bb)
+	FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	  {
 	    start_to_bb[INSN_UID (BB_HEAD (bb))] = bb;
 	    end_to_bb[INSN_UID (BB_END (bb))] = bb;

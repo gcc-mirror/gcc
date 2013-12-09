@@ -357,7 +357,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
       basic_block b;
       bool saw_unconnected = false;
 
-      FOR_EACH_BB_REVERSE (b)
+      FOR_EACH_BB_REVERSE_FN (b, cfun)
 	{
 	  if (EDGE_COUNT (b->succs) > 0)
 	    {
@@ -376,7 +376,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 
       if (saw_unconnected)
 	{
-	  FOR_EACH_BB_REVERSE (b)
+	  FOR_EACH_BB_REVERSE_FN (b, cfun)
 	    {
 	      basic_block b2;
 	      if (di->dfs_order[b->index])

@@ -3772,7 +3772,7 @@ update_equiv_regs (void)
      within the same loop (or in an inner loop), then move the register
      initialization just before the use, so that they are in the same
      basic block.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       loop_depth = bb_loop_depth (bb);
       for (insn = BB_END (bb);
@@ -4127,7 +4127,7 @@ build_insn_chain (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (eliminable_regset, i))
       bitmap_set_bit (elim_regset, i);
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       bitmap_iterator bi;
       rtx insn;

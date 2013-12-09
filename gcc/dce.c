@@ -511,7 +511,7 @@ reset_unmarked_insns_debug_uses (void)
   basic_block bb;
   rtx insn, next;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (DEBUG_INSN_P (insn))
 	{
@@ -550,7 +550,7 @@ delete_unmarked_insns (void)
   rtx insn, next;
   bool must_clean = false;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (NONDEBUG_INSN_P (insn))
 	{
