@@ -3793,7 +3793,7 @@ propagate_dereference_distances (void)
 {
   basic_block bb;
 
-  auto_vec<basic_block> queue (last_basic_block_for_function (cfun));
+  auto_vec<basic_block> queue (last_basic_block_for_fn (cfun));
   queue.quick_push (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   FOR_EACH_BB (bb)
     {
@@ -4970,7 +4970,7 @@ ipa_early_sra (void)
 
   bb_dereferences = XCNEWVEC (HOST_WIDE_INT,
 				 func_param_count
-				 * last_basic_block_for_function (cfun));
+				 * last_basic_block_for_fn (cfun));
   final_bbs = BITMAP_ALLOC (NULL);
 
   scan_function ();

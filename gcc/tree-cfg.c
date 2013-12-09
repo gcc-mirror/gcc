@@ -184,7 +184,7 @@ init_empty_tree_cfg_for_function (struct function *fn)
   init_flow (fn);
   profile_status_for_function (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
-  last_basic_block_for_function (fn) = NUM_FIXED_BLOCKS;
+  last_basic_block_for_fn (fn) = NUM_FIXED_BLOCKS;
   vec_alloc (basic_block_info_for_fn (fn), initial_cfg_capacity);
   vec_safe_grow_cleared (basic_block_info_for_fn (fn),
 			 initial_cfg_capacity);

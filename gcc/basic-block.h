@@ -317,7 +317,7 @@ struct GTY(()) control_flow_graph {
 #define basic_block_info_for_fn(FN)	     ((FN)->cfg->x_basic_block_info)
 #define n_basic_blocks_for_fn(FN)	     ((FN)->cfg->x_n_basic_blocks)
 #define n_edges_for_fn(FN)		     ((FN)->cfg->x_n_edges)
-#define last_basic_block_for_function(FN)    ((FN)->cfg->x_last_basic_block)
+#define last_basic_block_for_fn(FN)	     ((FN)->cfg->x_last_basic_block)
 #define label_to_block_map_for_function(FN)  ((FN)->cfg->x_label_to_block_map)
 #define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
 

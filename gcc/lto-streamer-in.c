@@ -637,7 +637,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 
   bb_count = streamer_read_uhwi (ib);
 
-  last_basic_block_for_function (fn) = bb_count;
+  last_basic_block_for_fn (fn) = bb_count;
   if (bb_count > basic_block_info_for_fn (fn)->length ())
     vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count);
 
