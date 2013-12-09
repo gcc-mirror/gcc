@@ -1173,8 +1173,8 @@ df_lr_verify_solution_start (void)
   df_lr->solutions_dirty = true;
 
   problem_data = (struct df_lr_problem_data *)df_lr->problem_data;
-  problem_data->in = XNEWVEC (bitmap_head, last_basic_block);
-  problem_data->out = XNEWVEC (bitmap_head, last_basic_block);
+  problem_data->in = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  problem_data->out = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
 
   FOR_ALL_BB (bb)
     {
@@ -1710,8 +1710,8 @@ df_live_verify_solution_start (void)
   df_live->solutions_dirty = true;
 
   problem_data = (struct df_live_problem_data *)df_live->problem_data;
-  problem_data->in = XNEWVEC (bitmap_head, last_basic_block);
-  problem_data->out = XNEWVEC (bitmap_head, last_basic_block);
+  problem_data->in = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  problem_data->out = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
 
   FOR_ALL_BB (bb)
     {
@@ -4315,7 +4315,7 @@ df_md_local_compute (bitmap all_blocks)
 
   bitmap_clear (&seen_in_insn);
 
-  frontiers = XNEWVEC (bitmap_head, last_basic_block);
+  frontiers = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_ALL_BB (bb)
     bitmap_initialize (&frontiers[bb->index], &bitmap_default_obstack);
 

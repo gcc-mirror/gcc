@@ -457,8 +457,8 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
   btr_def_group all_btr_def_groups = NULL;
   defs_uses_info info;
 
-  bitmap_vector_clear (bb_gen, last_basic_block);
-  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+  bitmap_vector_clear (bb_gen, last_basic_block_for_fn (cfun));
+  for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       int reg;
@@ -618,8 +618,8 @@ compute_kill (sbitmap *bb_kill, sbitmap *btr_defset,
 
   /* For each basic block, form the set BB_KILL - the set
      of definitions that the block kills.  */
-  bitmap_vector_clear (bb_kill, last_basic_block);
-  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+  bitmap_vector_clear (bb_kill, last_basic_block_for_fn (cfun));
+  for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     {
       for (regno = first_btr; regno <= last_btr; regno++)
 	if (TEST_HARD_REG_BIT (all_btrs, regno)
@@ -642,14 +642,14 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
   int changed;
   sbitmap bb_in = sbitmap_alloc (max_uid);
 
-  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+  for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     bitmap_copy (bb_out[i], bb_gen[i]);
 
   changed = 1;
   while (changed)
     {
       changed = 0;
-      for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+      for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
 	{
 	  bitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK_FOR_FN (cfun, i));
 	  changed |= bitmap_ior_and_compl (bb_out[i], bb_gen[i],
@@ -668,7 +668,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 
   /* Link uses to the uses lists of all of their reaching defs.
      Count up the number of reaching defs of each use.  */
-  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+  for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       rtx insn;
@@ -780,8 +780,10 @@ build_btr_def_use_webs (fibheap_t all_btr_defs)
   btr_user *use_array   = XCNEWVEC (btr_user, max_uid);
   sbitmap *btr_defset   = sbitmap_vector_alloc (
 			   (last_btr - first_btr) + 1, max_uid);
-  sbitmap *bb_gen      = sbitmap_vector_alloc (last_basic_block, max_uid);
-  HARD_REG_SET *btrs_written = XCNEWVEC (HARD_REG_SET, last_basic_block);
+  sbitmap *bb_gen = sbitmap_vector_alloc (last_basic_block_for_fn (cfun),
+					  max_uid);
+  HARD_REG_SET *btrs_written = XCNEWVEC (HARD_REG_SET,
+					 last_basic_block_for_fn (cfun));
   sbitmap *bb_kill;
   sbitmap *bb_out;
 
@@ -790,11 +792,11 @@ build_btr_def_use_webs (fibheap_t all_btr_defs)
   compute_defs_uses_and_gen (all_btr_defs, def_array, use_array, btr_defset,
 			     bb_gen, btrs_written);
 
-  bb_kill = sbitmap_vector_alloc (last_basic_block, max_uid);
+  bb_kill = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), max_uid);
   compute_kill (bb_kill, btr_defset, btrs_written);
   free (btrs_written);
 
-  bb_out = sbitmap_vector_alloc (last_basic_block, max_uid);
+  bb_out = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), max_uid);
   compute_out (bb_out, bb_gen, bb_kill, max_uid);
 
   sbitmap_vector_free (bb_gen);
@@ -1405,7 +1407,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
     {
       int i;
 
-      for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+      for (i = NUM_FIXED_BLOCKS; i < last_basic_block_for_fn (cfun); i++)
 	{
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  fprintf (dump_file,
@@ -1428,8 +1430,8 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	  first_btr = reg;
       }
 
-  btrs_live = XCNEWVEC (HARD_REG_SET, last_basic_block);
-  btrs_live_at_end = XCNEWVEC (HARD_REG_SET, last_basic_block);
+  btrs_live = XCNEWVEC (HARD_REG_SET, last_basic_block_for_fn (cfun));
+  btrs_live_at_end = XCNEWVEC (HARD_REG_SET, last_basic_block_for_fn (cfun));
 
   build_btr_def_use_webs (all_btr_defs);
 

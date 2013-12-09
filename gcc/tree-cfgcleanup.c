@@ -585,7 +585,7 @@ split_bbs_on_noreturn_calls (void)
 	   BB is present in the cfg.  */
 	if (bb == NULL
 	    || bb->index < NUM_FIXED_BLOCKS
-	    || bb->index >= last_basic_block
+	    || bb->index >= last_basic_block_for_fn (cfun)
 	    || BASIC_BLOCK_FOR_FN (cfun, bb->index) != bb
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;
@@ -642,7 +642,7 @@ cleanup_tree_cfg_1 (void)
 
   /* Start by iterating over all basic blocks.  We cannot use FOR_EACH_BB,
      since the basic blocks may get removed.  */
-  n = last_basic_block;
+  n = last_basic_block_for_fn (cfun);
   for (i = NUM_FIXED_BLOCKS; i < n; i++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, i);

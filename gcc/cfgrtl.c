@@ -328,7 +328,7 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
 
   BB_HEAD (bb) = head;
   BB_END (bb) = end;
-  bb->index = last_basic_block++;
+  bb->index = last_basic_block_for_fn (cfun)++;
   bb->flags = BB_NEW | BB_RTL;
   link_block (bb, after);
   SET_BASIC_BLOCK_FOR_FN (cfun, bb->index, bb);
@@ -355,9 +355,12 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
   basic_block bb;
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block >= basic_block_info_for_fn (cfun)->length ())
+  if ((size_t) last_basic_block_for_fn (cfun)
+      >= basic_block_info_for_fn (cfun)->length ())
     {
-      size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
+      size_t new_size =
+	(last_basic_block_for_fn (cfun)
+	 + (last_basic_block_for_fn (cfun) + 3) / 4);
       vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
     }
 
@@ -4252,7 +4255,7 @@ break_superblocks (void)
   bool need = false;
   basic_block bb;
 
-  superblocks = sbitmap_alloc (last_basic_block);
+  superblocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (superblocks);
 
   FOR_EACH_BB (bb)
@@ -4778,7 +4781,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 {
   int i;
   int blocks_split = 0;
-  int last_bb = last_basic_block;
+  int last_bb = last_basic_block_for_fn (cfun);
   bool check_last_block = false;
 
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)

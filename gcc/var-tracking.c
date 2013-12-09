@@ -6928,7 +6928,7 @@ vt_find_locations (void)
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
   rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
-  bb_order = XNEWVEC (int, last_basic_block);
+  bb_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   pre_and_rev_post_order_compute (NULL, rc_order, false);
   for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
@@ -6936,9 +6936,9 @@ vt_find_locations (void)
 
   worklist = fibheap_new ();
   pending = fibheap_new ();
-  visited = sbitmap_alloc (last_basic_block);
-  in_worklist = sbitmap_alloc (last_basic_block);
-  in_pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
 
   FOR_EACH_BB (bb)

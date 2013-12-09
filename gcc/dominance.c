@@ -159,7 +159,8 @@ init_dom_info (struct dom_info *di, enum cdi_direction dir)
   init_ar (di->set_size, unsigned int, num, 1);
   init_ar (di->set_child, TBB, num, 0);
 
-  init_ar (di->dfs_order, TBB, (unsigned int) last_basic_block + 1, 0);
+  init_ar (di->dfs_order, TBB,
+	   (unsigned int) last_basic_block_for_fn (cfun) + 1, 0);
   init_ar (di->dfs_to_bb, basic_block, num, 0);
 
   di->dfsnum = 1;
@@ -296,7 +297,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, bool reverse)
 	  if (bb != en_block)
 	    my_i = di->dfs_order[bb->index];
 	  else
-	    my_i = di->dfs_order[last_basic_block];
+	    my_i = di->dfs_order[last_basic_block_for_fn (cfun)];
 	  child_i = di->dfs_order[bn->index] = di->dfsnum++;
 	  di->dfs_to_bb[child_i] = bn;
 	  di->dfs_parent[child_i] = my_i;
@@ -335,7 +336,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
   /* The first block is the ENTRY_BLOCK (or EXIT_BLOCK if REVERSE).  */
   basic_block begin = (reverse
 		       ? EXIT_BLOCK_PTR_FOR_FN (cfun) : ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  di->dfs_order[last_basic_block] = di->dfsnum;
+  di->dfs_order[last_basic_block_for_fn (cfun)] = di->dfsnum;
   di->dfs_to_bb[di->dfsnum] = begin;
   di->dfsnum++;
 
@@ -367,7 +368,8 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 	  bitmap_set_bit (di->fake_exit_edge, b->index);
 	  di->dfs_order[b->index] = di->dfsnum;
 	  di->dfs_to_bb[di->dfsnum] = b;
-	  di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
+	  di->dfs_parent[di->dfsnum] =
+	    di->dfs_order[last_basic_block_for_fn (cfun)];
 	  di->dfsnum++;
 	  calc_dfs_tree_nonrec (di, b, reverse);
 	}
@@ -384,7 +386,8 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 	      bitmap_set_bit (di->fake_exit_edge, b2->index);
 	      di->dfs_order[b2->index] = di->dfsnum;
 	      di->dfs_to_bb[di->dfsnum] = b2;
-	      di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
+	      di->dfs_parent[di->dfsnum] =
+		di->dfs_order[last_basic_block_for_fn (cfun)];
 	      di->dfsnum++;
 	      calc_dfs_tree_nonrec (di, b2, reverse);
 	      gcc_checking_assert (di->dfs_order[b->index]);
@@ -546,7 +549,7 @@ calc_idoms (struct dom_info *di, bool reverse)
 	  if (b == en_block)
 	    {
 	    do_fake_exit_edge:
-	      k1 = di->dfs_order[last_basic_block];
+	      k1 = di->dfs_order[last_basic_block_for_fn (cfun)];
 	    }
 	  else
 	    k1 = di->dfs_order[b->index];

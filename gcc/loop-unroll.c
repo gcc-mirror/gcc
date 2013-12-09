@@ -2007,7 +2007,7 @@ static void
 opt_info_start_duplication (struct opt_info *opt_info)
 {
   if (opt_info)
-    opt_info->first_new_block = last_basic_block;
+    opt_info->first_new_block = last_basic_block_for_fn (cfun);
 }
 
 /* Determine the number of iterations between initialization of the base
@@ -2368,7 +2368,9 @@ apply_opt_in_copies (struct opt_info *opt_info,
     for (ivts = opt_info->iv_to_split_head; ivts; ivts = ivts->next)
       allocate_basic_variable (ivts);
 
-  for (i = opt_info->first_new_block; i < (unsigned) last_basic_block; i++)
+  for (i = opt_info->first_new_block;
+       i < (unsigned) last_basic_block_for_fn (cfun);
+       i++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, i);
       orig_bb = get_bb_original (bb);
@@ -2444,7 +2446,9 @@ apply_opt_in_copies (struct opt_info *opt_info,
   /* Rewrite also the original loop body.  Find them as originals of the blocks
      in the last copied iteration, i.e. those that have
      get_bb_copy (get_bb_original (bb)) == bb.  */
-  for (i = opt_info->first_new_block; i < (unsigned) last_basic_block; i++)
+  for (i = opt_info->first_new_block;
+       i < (unsigned) last_basic_block_for_fn (cfun);
+       i++)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, i);
       orig_bb = get_bb_original (bb);

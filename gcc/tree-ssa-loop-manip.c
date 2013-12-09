@@ -728,13 +728,13 @@ copy_phi_node_args (unsigned first_new_block)
 {
   unsigned i;
 
-  for (i = first_new_block; i < (unsigned) last_basic_block; i++)
+  for (i = first_new_block; i < (unsigned) last_basic_block_for_fn (cfun); i++)
     BASIC_BLOCK_FOR_FN (cfun, i)->flags |= BB_DUPLICATED;
 
-  for (i = first_new_block; i < (unsigned) last_basic_block; i++)
+  for (i = first_new_block; i < (unsigned) last_basic_block_for_fn (cfun); i++)
     add_phi_args_after_copy_bb (BASIC_BLOCK_FOR_FN (cfun, i));
 
-  for (i = first_new_block; i < (unsigned) last_basic_block; i++)
+  for (i = first_new_block; i < (unsigned) last_basic_block_for_fn (cfun); i++)
     BASIC_BLOCK_FOR_FN (cfun, i)->flags &= ~BB_DUPLICATED;
 }
 
@@ -772,7 +772,7 @@ gimple_duplicate_loop_to_header_edge (struct loop *loop, edge e,
     verify_loop_closed_ssa (true);
 #endif
 
-  first_new_block = last_basic_block;
+  first_new_block = last_basic_block_for_fn (cfun);
   if (!duplicate_loop_to_header_edge (loop, e, ndupl, wont_exit,
 				      orig, to_remove, flags))
     return false;

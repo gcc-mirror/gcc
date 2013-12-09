@@ -595,8 +595,8 @@ compute_local_properties (sbitmap *kill, sbitmap *comp,
   unsigned int i;
 
   /* Initialize the bitmaps that were passed in.  */
-  bitmap_vector_clear (kill, last_basic_block);
-  bitmap_vector_clear (comp, last_basic_block);
+  bitmap_vector_clear (kill, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
 
   for (i = 0; i < table->size; i++)
     {
@@ -1355,7 +1355,7 @@ find_implicit_sets (void)
   rtx cond, new_rtx;
   unsigned int count = 0;
   bool edges_split = false;
-  size_t implicit_sets_size = last_basic_block + 10;
+  size_t implicit_sets_size = last_basic_block_for_fn (cfun) + 10;
 
   implicit_sets = XCNEWVEC (rtx, implicit_sets_size);
 
@@ -1667,7 +1667,7 @@ bypass_conditional_jumps (void)
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return 0;
 
-  bypass_last_basic_block = last_basic_block;
+  bypass_last_basic_block = last_basic_block_for_fn (cfun);
   mark_dfs_back_edges ();
 
   changed = 0;
@@ -1809,8 +1809,8 @@ one_cprop_pass (void)
     df_analyze ();
 
   /* Initialize implicit_set_indexes array.  */
-  implicit_set_indexes = XNEWVEC (int, last_basic_block);
-  for (i = 0; i < last_basic_block; i++)
+  implicit_set_indexes = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
     implicit_set_indexes[i] = -1;
 
   alloc_hash_table (&set_hash_table);
@@ -1827,7 +1827,8 @@ one_cprop_pass (void)
       basic_block bb;
       rtx insn;
 
-      alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
+      alloc_cprop_mem (last_basic_block_for_fn (cfun),
+		       set_hash_table.n_elems);
       compute_cprop_data ();
 
       free (implicit_set_indexes);

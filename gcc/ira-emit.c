@@ -1239,15 +1239,17 @@ ira_emit (bool loops_p)
   edge e;
   ira_allocno_t a;
   ira_allocno_iterator ai;
+  size_t sz;
 
   FOR_EACH_ALLOCNO (a, ai)
     ALLOCNO_EMIT_DATA (a)->reg = regno_reg_rtx[ALLOCNO_REGNO (a)];
   if (! loops_p)
     return;
-  at_bb_start = (move_t *) ira_allocate (sizeof (move_t) * last_basic_block);
-  memset (at_bb_start, 0, sizeof (move_t) * last_basic_block);
-  at_bb_end = (move_t *) ira_allocate (sizeof (move_t) * last_basic_block);
-  memset (at_bb_end, 0, sizeof (move_t) * last_basic_block);
+  sz = sizeof (move_t) * last_basic_block_for_fn (cfun);
+  at_bb_start = (move_t *) ira_allocate (sz);
+  memset (at_bb_start, 0, sz);
+  at_bb_end = (move_t *) ira_allocate (sz);
+  memset (at_bb_end, 0, sz);
   local_allocno_bitmap = ira_allocate_bitmap ();
   used_regno_bitmap = ira_allocate_bitmap ();
   renamed_regno_bitmap = ira_allocate_bitmap ();

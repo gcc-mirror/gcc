@@ -1364,9 +1364,9 @@ tree_dce_init (bool aggressive)
 
   if (aggressive)
     {
-      last_stmt_necessary = sbitmap_alloc (last_basic_block);
+      last_stmt_necessary = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (last_stmt_necessary);
-      bb_contains_live_stmts = sbitmap_alloc (last_basic_block);
+      bb_contains_live_stmts = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (bb_contains_live_stmts);
     }
 
@@ -1432,7 +1432,8 @@ perform_tree_ssa_dce (bool aggressive)
       calculate_dominance_info (CDI_POST_DOMINATORS);
       cd = new control_dependences (create_edge_list ());
 
-      visited_control_parents = sbitmap_alloc (last_basic_block);
+      visited_control_parents =
+	sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (visited_control_parents);
 
       mark_dfs_back_edges ();

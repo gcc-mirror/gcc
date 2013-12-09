@@ -633,8 +633,9 @@ alloc_gcse_mem (void)
      pre-processor limitation with template types in macro arguments.  */
   typedef vec<rtx> vec_rtx_heap;
   typedef vec<modify_pair> vec_modify_pair_heap;
-  modify_mem_list = GCNEWVEC (vec_rtx_heap, last_basic_block);
-  canon_modify_mem_list = GCNEWVEC (vec_modify_pair_heap, last_basic_block);
+  modify_mem_list = GCNEWVEC (vec_rtx_heap, last_basic_block_for_fn (cfun));
+  canon_modify_mem_list = GCNEWVEC (vec_modify_pair_heap,
+				    last_basic_block_for_fn (cfun));
   modify_mem_list_set = BITMAP_ALLOC (NULL);
   blocks_with_calls = BITMAP_ALLOC (NULL);
 }
@@ -685,13 +686,13 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
   /* Initialize any bitmaps that were passed in.  */
   if (transp)
     {
-      bitmap_vector_ones (transp, last_basic_block);
+      bitmap_vector_ones (transp, last_basic_block_for_fn (cfun));
     }
 
   if (comp)
-    bitmap_vector_clear (comp, last_basic_block);
+    bitmap_vector_clear (comp, last_basic_block_for_fn (cfun));
   if (antloc)
-    bitmap_vector_clear (antloc, last_basic_block);
+    bitmap_vector_clear (antloc, last_basic_block_for_fn (cfun));
 
   for (i = 0; i < table->size; i++)
     {
@@ -1972,7 +1973,7 @@ prune_insertions_deletions (int n_elems)
 
   /* Similarly for deletions, but those occur in blocks rather than on
      edges.  */
-  for (i = 0; i < (unsigned) last_basic_block; i++)
+  for (i = 0; i < (unsigned) last_basic_block_for_fn (cfun); i++)
     {
       EXECUTE_IF_SET_IN_BITMAP (pre_delete_map[i], 0, j, sbi)
 	deletions[j]++;
@@ -1993,7 +1994,7 @@ prune_insertions_deletions (int n_elems)
       for (i = 0; i < (unsigned) n_edges_for_fn (cfun); i++)
 	bitmap_clear_bit (pre_insert_map[i], j);
 
-      for (i = 0; i < (unsigned) last_basic_block; i++)
+      for (i = 0; i < (unsigned) last_basic_block_for_fn (cfun); i++)
 	bitmap_clear_bit (pre_delete_map[i], j);
     }
 
@@ -2012,7 +2013,7 @@ compute_pre_data (void)
 
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
   prune_expressions (true);
-  bitmap_vector_clear (ae_kill, last_basic_block);
+  bitmap_vector_clear (ae_kill, last_basic_block_for_fn (cfun));
 
   /* Compute ae_kill for each basic block using:
 
@@ -2103,7 +2104,7 @@ static int
 pre_expr_reaches_here_p (basic_block occr_bb, struct expr *expr, basic_block bb)
 {
   int rval;
-  char *visited = XCNEWVEC (char, last_basic_block);
+  char *visited = XCNEWVEC (char, last_basic_block_for_fn (cfun));
 
   rval = pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited);
 
@@ -2687,7 +2688,7 @@ one_pre_gcse_pass (void)
   if (expr_hash_table.n_elems > 0)
     {
       struct edge_list *edge_list;
-      alloc_pre_mem (last_basic_block, expr_hash_table.n_elems);
+      alloc_pre_mem (last_basic_block_for_fn (cfun), expr_hash_table.n_elems);
       edge_list = compute_pre_data ();
       changed |= pre_gcse (edge_list);
       free_edge_list (edge_list);
@@ -2816,8 +2817,8 @@ compute_code_hoist_vbeinout (void)
   int changed, passes;
   basic_block bb;
 
-  bitmap_vector_clear (hoist_vbeout, last_basic_block);
-  bitmap_vector_clear (hoist_vbein, last_basic_block);
+  bitmap_vector_clear (hoist_vbeout, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (hoist_vbein, last_basic_block_for_fn (cfun));
 
   passes = 0;
   changed = 1;
@@ -3033,7 +3034,7 @@ should_hoist_expr_to_dom (basic_block expr_bb, struct expr *expr,
   if (visited == NULL)
     {
       visited_allocated_locally = 1;
-      visited = sbitmap_alloc (last_basic_block);
+      visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (visited);
     }
 
@@ -3166,7 +3167,7 @@ hoist_code (void)
      data to restrict distance an expression can travel.  */
 
   to_bb_head = XCNEWVEC (int, get_max_uid ());
-  bb_size = XCNEWVEC (int, last_basic_block);
+  bb_size = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
   FOR_EACH_BB (bb)
     {
@@ -3622,7 +3623,8 @@ one_code_hoisting_pass (void)
 
   if (expr_hash_table.n_elems > 0)
     {
-      alloc_code_hoist_mem (last_basic_block, expr_hash_table.n_elems);
+      alloc_code_hoist_mem (last_basic_block_for_fn (cfun),
+			    expr_hash_table.n_elems);
       compute_code_hoist_data ();
       changed = hoist_code ();
       free_code_hoist_mem ();

@@ -597,7 +597,7 @@ create_bb (void *h, void *e, basic_block after)
      not have to clear the newly allocated basic block here.  */
   bb = alloc_block ();
 
-  bb->index = last_basic_block;
+  bb->index = last_basic_block_for_fn (cfun);
   bb->flags = BB_NEW;
   set_bb_seq (bb, h ? (gimple_seq) h : NULL);
 
@@ -605,17 +605,20 @@ create_bb (void *h, void *e, basic_block after)
   link_block (bb, after);
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block == basic_block_info_for_fn (cfun)->length ())
+  if ((size_t) last_basic_block_for_fn (cfun)
+      == basic_block_info_for_fn (cfun)->length ())
     {
-      size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
+      size_t new_size =
+	(last_basic_block_for_fn (cfun)
+	 + (last_basic_block_for_fn (cfun) + 3) / 4);
       vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
     }
 
   /* Add the newly created block to the array.  */
-  SET_BASIC_BLOCK_FOR_FN (cfun, last_basic_block, bb);
+  SET_BASIC_BLOCK_FOR_FN (cfun, last_basic_block_for_fn (cfun), bb);
 
   n_basic_blocks_for_fn (cfun)++;
-  last_basic_block++;
+  last_basic_block_for_fn (cfun)++;
 
   return bb;
 }
@@ -1228,7 +1231,7 @@ void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  label_for_bb = XCNEWVEC (struct label_record, last_basic_block);
+  label_for_bb = XCNEWVEC (struct label_record, last_basic_block_for_fn (cfun));
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
@@ -2116,7 +2119,7 @@ gimple_dump_cfg (FILE *file, int flags)
       dump_function_header (file, current_function_decl, flags);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
 	       n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
-	       last_basic_block);
+	       last_basic_block_for_fn (cfun));
 
       brief_dump_cfg (file, flags | TDF_COMMENT);
       fprintf (file, "\n");
@@ -7430,7 +7433,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
 {
   int i;
   int blocks_split = 0;
-  int last_bb = last_basic_block;
+  int last_bb = last_basic_block_for_fn (cfun);
   bool check_last_block = false;
 
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)

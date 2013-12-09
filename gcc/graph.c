@@ -157,7 +157,7 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
   int i, n;
   sbitmap visited;
 
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
 
   n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, true);

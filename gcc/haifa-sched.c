@@ -8075,7 +8075,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   if (first == last)
     return;
 
-  bb_header = XNEWVEC (rtx, last_basic_block);
+  bb_header = XNEWVEC (rtx, last_basic_block_for_fn (cfun));
 
   /* Make a sentinel.  */
   if (last->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))

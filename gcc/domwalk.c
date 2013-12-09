@@ -159,7 +159,7 @@ dom_walker::walk (basic_block bb)
     {
       postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
       postorder_num = inverted_post_order_compute (postorder);
-      bb_postorder = XNEWVEC (int, last_basic_block);
+      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
       for (int i = 0; i < postorder_num; ++i)
 	bb_postorder[postorder[i]] = i;
       free (postorder);

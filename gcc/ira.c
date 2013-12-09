@@ -4507,12 +4507,15 @@ find_moveable_pseudos (void)
   int *uid_luid = XNEWVEC (int, max_uid);
   rtx *closest_uses = XNEWVEC (rtx, max_regs);
   /* A set of registers which are live but not modified throughout a block.  */
-  bitmap_head *bb_transp_live = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_transp_live = XNEWVEC (bitmap_head,
+					 last_basic_block_for_fn (cfun));
   /* A set of registers which only exist in a given basic block.  */
-  bitmap_head *bb_local = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_local = XNEWVEC (bitmap_head,
+				   last_basic_block_for_fn (cfun));
   /* A set of registers which are set once, in an instruction that can be
      moved freely downwards, but are otherwise transparent to a block.  */
-  bitmap_head *bb_moveable_reg_sets = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_moveable_reg_sets = XNEWVEC (bitmap_head,
+					       last_basic_block_for_fn (cfun));
   bitmap_head live, used, set, interesting, unusable_as_input;
   bitmap_iterator bi;
   bitmap_initialize (&interesting, 0);
@@ -5187,7 +5190,8 @@ ira (FILE *f)
      pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
      use simplified and faster algorithms in LRA.  */
   lra_simple_p
-    = (ira_use_lra_p && max_reg_num () >= (1 << 26) / last_basic_block);
+    = (ira_use_lra_p
+       && max_reg_num () >= (1 << 26) / last_basic_block_for_fn (cfun));
   if (lra_simple_p)
     {
       /* It permits to skip live range splitting in LRA.  */

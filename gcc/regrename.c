@@ -668,7 +668,7 @@ regrename_analyze (bitmap bb_mask)
   int n_bbs;
   int *inverse_postorder;
 
-  inverse_postorder = XNEWVEC (int, last_basic_block);
+  inverse_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
   n_bbs = pre_and_rev_post_order_compute (NULL, inverse_postorder, false);
 
   /* Gather some information about the blocks in this function.  */

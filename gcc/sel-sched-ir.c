@@ -4095,14 +4095,14 @@ get_seqno_by_preds (rtx insn)
 void
 sel_extend_global_bb_info (void)
 {
-  sel_global_bb_info.safe_grow_cleared (last_basic_block);
+  sel_global_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
 }
 
 /* Extend region-scope data structures for basic blocks.  */
 static void
 extend_region_bb_info (void)
 {
-  sel_region_bb_info.safe_grow_cleared (last_basic_block);
+  sel_region_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
 }
 
 /* Extend all data structures to fit for all basic blocks.  */
@@ -4905,9 +4905,10 @@ recompute_rev_top_order (void)
   int *postorder;
   int n_blocks, i;
 
-  if (!rev_top_order_index || rev_top_order_index_len < last_basic_block)
+  if (!rev_top_order_index
+      || rev_top_order_index_len < last_basic_block_for_fn (cfun))
     {
-      rev_top_order_index_len = last_basic_block;
+      rev_top_order_index_len = last_basic_block_for_fn (cfun);
       rev_top_order_index = XRESIZEVEC (int, rev_top_order_index,
                                         rev_top_order_index_len);
     }
@@ -6079,7 +6080,7 @@ sel_init_pipelining (void)
 		       | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
   current_loop_nest = NULL;
 
-  bbs_in_loop_rgns = sbitmap_alloc (last_basic_block);
+  bbs_in_loop_rgns = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (bbs_in_loop_rgns);
 
   recompute_rev_top_order ();
@@ -6145,13 +6146,13 @@ make_regions_from_the_rest (void)
   /* LOOP_HDR[I] == -1 if I-th bb doesn't belong to any loop,
      LOOP_HDR[I] == LOOP_HDR[J] iff basic blocks I and J reside within the same
      loop.  */
-  loop_hdr = XNEWVEC (int, last_basic_block);
-  degree = XCNEWVEC (int, last_basic_block);
+  loop_hdr = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  degree = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
 
   /* For each basic block that belongs to some loop assign the number
      of innermost loop it belongs to.  */
-  for (i = 0; i < last_basic_block; i++)
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
     loop_hdr[i] = -1;
 
   FOR_EACH_BB (bb)

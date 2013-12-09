@@ -960,17 +960,17 @@ new_tree_live_info (var_map map)
 
   live = XNEW (struct tree_live_info_d);
   live->map = map;
-  live->num_blocks = last_basic_block;
+  live->num_blocks = last_basic_block_for_fn (cfun);
 
-  live->livein = XNEWVEC (bitmap_head, last_basic_block);
+  live->livein = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_EACH_BB (bb)
     bitmap_initialize (&live->livein[bb->index], &liveness_bitmap_obstack);
 
-  live->liveout = XNEWVEC (bitmap_head, last_basic_block);
+  live->liveout = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_EACH_BB (bb)
     bitmap_initialize (&live->liveout[bb->index], &liveness_bitmap_obstack);
 
-  live->work_stack = XNEWVEC (int, last_basic_block);
+  live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
   live->stack_top = live->work_stack;
 
   live->global = BITMAP_ALLOC (&liveness_bitmap_obstack);
@@ -1043,7 +1043,7 @@ live_worklist (tree_live_info_p live)
 {
   unsigned b;
   basic_block bb;
-  sbitmap visited = sbitmap_alloc (last_basic_block + 1);
+  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
   bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
   bitmap_clear (visited);
