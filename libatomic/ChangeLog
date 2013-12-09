@@ -1,7 +1,7 @@
 2013-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/fenv.c (__atomic_feraiseexcept): Emit SSE
-	instructions when __TARGET_SSE__ is defined.
+	instructions when __SSE_MATH__ is defined.
 
 2013-11-18  Joseph Myers  <joseph@codesourcery.com>
 
