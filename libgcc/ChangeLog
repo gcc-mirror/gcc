@@ -1,7 +1,7 @@
 2013-12-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
-	instructions when __TARGET_SSE__ is defined.
+	instructions when __SSE_MATH__ is defined.
 
 2013-12-06  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
