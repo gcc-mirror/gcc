@@ -408,7 +408,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
   memset ((void *) s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
-  if (profile_status_for_function (fun) == PROFILE_ABSENT)
+  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     return;
 
   if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))

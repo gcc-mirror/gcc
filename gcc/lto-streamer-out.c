@@ -1630,7 +1630,7 @@ output_cfg (struct output_block *ob, struct function *fn)
   ob->main_stream = ob->cfg_stream;
 
   streamer_write_enum (ob->main_stream, profile_status_d, PROFILE_LAST,
-		       profile_status_for_function (fn));
+		       profile_status_for_fn (fn));
 
   /* Output the number of the highest basic block.  */
   streamer_write_uhwi (ob, last_basic_block_for_fn (fn));

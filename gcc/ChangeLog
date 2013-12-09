@@ -1,5 +1,20 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (profile_status_for_function): Rename to...
+	(profile_status_for_fn): ...this.
+
+	* cfg.c (check_bb_profile): Update for renaming.
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Likewise.
+	* lto-streamer-in.c (input_cfg): Likewise.
+	* lto-streamer-out.c (output_cfg):  Likewise.
+	* predict.c (maybe_hot_frequency_p, maybe_hot_count_p,
+	maybe_hot_bb_p, probably_never_executed)
+	(handle_missing_profiles): Likewise.
+	* tree-cfg.c (init_empty_tree_cfg_for_function): Likewise.
+	* tree-inline.c (copy_bb, initialize_cfun): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (label_to_block_map_for_function): Rename to...
 	(label_to_block_map_for_fn): ...this.
 
