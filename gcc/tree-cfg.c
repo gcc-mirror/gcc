@@ -610,7 +610,7 @@ create_bb (void *h, void *e, basic_block after)
     }
 
   /* Add the newly created block to the array.  */
-  SET_BASIC_BLOCK (last_basic_block, bb);
+  SET_BASIC_BLOCK_FOR_FN (cfun, last_basic_block, bb);
 
   n_basic_blocks_for_fn (cfun)++;
   last_basic_block++;

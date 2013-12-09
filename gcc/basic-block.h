@@ -333,7 +333,6 @@ struct GTY(()) control_flow_graph {
 #define profile_status		(cfun->cfg->x_profile_status)
 
 #define BASIC_BLOCK(N)		((*basic_block_info)[(N)])
-#define SET_BASIC_BLOCK(N,BB)	((*basic_block_info)[(N)] = (BB))
 
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \

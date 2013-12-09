@@ -4663,8 +4663,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 	      new_bb->index = succ->index;
 	      succ->index = i;
 
-	      SET_BASIC_BLOCK (new_bb->index, new_bb);
-	      SET_BASIC_BLOCK (succ->index, succ);
+	      SET_BASIC_BLOCK_FOR_FN (cfun, new_bb->index, new_bb);
+	      SET_BASIC_BLOCK_FOR_FN (cfun, succ->index, succ);
 
 	      memcpy (&gbi, SEL_GLOBAL_BB_INFO (new_bb), sizeof (gbi));
 	      memcpy (SEL_GLOBAL_BB_INFO (new_bb), SEL_GLOBAL_BB_INFO (succ),

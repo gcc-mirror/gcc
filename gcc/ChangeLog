@@ -1,5 +1,17 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (SET_BASIC_BLOCK): Eliminate macro.
+
+	* cfg.c (compact_blocks): Replace uses of SET_BASIC_BLOCK
+	with SET_BASIC_BLOCK_FOR_FN, making use of cfun explicit.
+	(expunge_block): Likewise.
+	* cfgrtl.c (create_basic_block_structure): Likewise.
+	* df-core.c (df_compact_blocks, df_bb_replace): Likewise.
+	* sel-sched.c (create_block_for_bookkeeping): Likewise.
+	* tree-cfg.c (create_bb): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (profile_status_for_function): Rename to...
 	(profile_status_for_fn): ...this.
 

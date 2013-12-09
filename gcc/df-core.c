@@ -1601,7 +1601,7 @@ df_compact_blocks (void)
   i = NUM_FIXED_BLOCKS;
   FOR_EACH_BB (bb)
     {
-      SET_BASIC_BLOCK (i, bb);
+      SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
       bb->index = i;
       i++;
     }
@@ -1609,7 +1609,7 @@ df_compact_blocks (void)
   gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
   for (; i < last_basic_block; i++)
-    SET_BASIC_BLOCK (i, NULL);
+    SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
 
 #ifdef DF_DEBUG_CFG
   if (!df_lr->solutions_dirty)
@@ -1645,10 +1645,10 @@ df_bb_replace (int old_index, basic_block new_block)
     }
 
   df_clear_bb_dirty (new_block);
-  SET_BASIC_BLOCK (old_index, new_block);
+  SET_BASIC_BLOCK_FOR_FN (cfun, old_index, new_block);
   new_block->index = old_index;
   df_set_bb_dirty (BASIC_BLOCK (old_index));
-  SET_BASIC_BLOCK (new_block_index, NULL);
+  SET_BASIC_BLOCK_FOR_FN (cfun, new_block_index, NULL);
 }
 
 
