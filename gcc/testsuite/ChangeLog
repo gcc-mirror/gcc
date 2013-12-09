@@ -1,3 +1,7 @@
+2013-12-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/tree-ssa/loop-31.c: Update scan pattern.
+
 2013-12-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* lib/asan-dg.exp (asan-gtest): Remove expected output from the
