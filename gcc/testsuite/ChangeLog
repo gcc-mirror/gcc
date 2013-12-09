@@ -1,3 +1,8 @@
+2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59435
+	* g++.dg/cpp0x/variadic-sizeof3.C: New.
+
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/plugin/selfassign.c (execute_warn_self_assign): Eliminate
