@@ -2379,7 +2379,7 @@ stmt_ends_bb_p (gimple t)
 void
 delete_tree_cfg_annotations (void)
 {
-  vec_free (label_to_block_map);
+  vec_free (label_to_block_map_for_fn (cfun));
 }
 
 
@@ -4281,7 +4281,8 @@ verify_gimple_label (gimple stmt)
 
   uid = LABEL_DECL_UID (decl);
   if (cfun->cfg
-      && (uid == -1 || (*label_to_block_map)[uid] != gimple_bb (stmt)))
+      && (uid == -1
+	  || (*label_to_block_map_for_fn (cfun))[uid] != gimple_bb (stmt)))
     {
       error ("incorrect entry in label_to_block_map");
       err |= true;

@@ -328,7 +328,6 @@ struct GTY(()) control_flow_graph {
 
 /* Defines for textual backward source compatibility.  */
 #define last_basic_block	(cfun->cfg->x_last_basic_block)
-#define label_to_block_map	(cfun->cfg->x_label_to_block_map)
 #define profile_status		(cfun->cfg->x_profile_status)
 
 /* For iterating over basic blocks.  */
