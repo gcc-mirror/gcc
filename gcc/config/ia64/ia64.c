@@ -9613,7 +9613,7 @@ emit_predicate_relation_info (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int r;
       rtx head = BB_HEAD (bb);
@@ -9641,7 +9641,7 @@ emit_predicate_relation_info (void)
      relations around them.  Otherwise the assembler will assume the call
      returns, and complain about uses of call-clobbered predicates after
      the call.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx insn = BB_HEAD (bb);
 

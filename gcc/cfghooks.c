@@ -123,7 +123,7 @@ verify_flow_info (void)
     }
 
   /* Now check the basic blocks (boundaries etc.) */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int n_fallthru = 0;
       edge e;

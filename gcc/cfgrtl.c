@@ -2153,7 +2153,7 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
 
       if (flags & TDF_BLOCKS)
 	{
-	  FOR_EACH_BB_REVERSE (bb)
+	  FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	    {
 	      rtx x;
 
@@ -2408,7 +2408,7 @@ rtl_verify_edges (void)
   int err = 0;
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int n_fallthru = 0, n_branch = 0, n_abnormal_call = 0, n_sibcall = 0;
       int n_eh = 0, n_abnormal = 0;
@@ -2586,7 +2586,7 @@ rtl_verify_bb_insns (void)
   int err = 0;
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       /* Now check the header of basic
 	 block.  It ought to contain optional CODE_LABEL followed
@@ -2649,7 +2649,7 @@ rtl_verify_bb_pointers (void)
   basic_block bb;
 
   /* Check the general integrity of the basic blocks.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx insn;
 
@@ -2739,7 +2739,7 @@ rtl_verify_bb_insn_chain (void)
 
   bb_info = XCNEWVEC (basic_block, max_uid);
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx head = BB_HEAD (bb);
       rtx end = BB_END (bb);
@@ -2821,7 +2821,7 @@ rtl_verify_fallthru (void)
   basic_block bb;
   int err = 0;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       edge e;
 

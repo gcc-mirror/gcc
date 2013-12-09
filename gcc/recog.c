@@ -2902,7 +2902,7 @@ split_all_insns (void)
   bitmap_clear (blocks);
   changed = false;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx insn, next;
       bool finish = false;
@@ -3556,7 +3556,7 @@ peephole2_optimize (void)
   search_ofs = 0;
   live = BITMAP_ALLOC (&reg_obstack);
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       bool past_end = false;
       int pos;

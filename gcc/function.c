@@ -6236,7 +6236,7 @@ thread_prologue_and_epilogue_insns (void)
 	    }
 	  /* Now duplicate the tails.  */
 	  if (!bitmap_empty_p (&bb_tail))
-	    FOR_EACH_BB_REVERSE (bb)
+	    FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	      {
 		basic_block copy_bb, tbb;
 		rtx insert_point;

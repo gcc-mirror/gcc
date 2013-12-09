@@ -2829,7 +2829,7 @@ compute_code_hoist_vbeinout (void)
 
       /* We scan the blocks in the reverse order to speed up
 	 the convergence.  */
-      FOR_EACH_BB_REVERSE (bb)
+      FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	{
 	  if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	    {

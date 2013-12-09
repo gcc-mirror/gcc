@@ -1,5 +1,31 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (FOR_EACH_BB_REVERSE): Eliminate macro.
+
+	* cfghooks.c (verify_flow_info): Replace uses of FOR_EACH_BB_REVERSE
+	with FOR_EACH_BB_REVERSE_FN, making uses of cfun explicit.
+	* cfgrtl.c (print_rtl_with_bb, rtl_verify_edges,
+	rtl_verify_bb_insns, rtl_verify_bb_pointers,
+	rtl_verify_bb_insn_chain, rtl_verify_fallthru): Likewise.
+	* config/ia64/ia64.c (emit_predicate_relation_info): Likewise.
+	* config/sh/sh.c (sh_md_init_global): Likewise.
+	* config/sh/sh_optimize_sett_clrt.cc
+	(sh_optimize_sett_clrt::execute): Likewise.
+	* dce.c (reset_unmarked_insns_debug_uses, delete_unmarked_insns):
+	Likewise.
+	* dominance.c (calc_dfs_tree): Likewise.
+	* final.c (final): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* gcse.c (compute_code_hoist_vbeinout): Likewise.
+	* ira.c (update_equiv_regs, build_insn_chain): Likewise.
+	* lcm.c (compute_antinout_edge): Likewise.
+	* mode-switching.c (optimize_mode_switching): Likewise.
+	* postreload.c (reload_combine): Likewise.
+	* recog.c (split_all_insns, peephole2_optimize): Likewise.
+	* tree-ssa-live.c (live_worklist): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (FOR_EACH_BB): Eliminate macro.
 
 	* asan.c (transform_statements, execute_sanopt): Eliminate

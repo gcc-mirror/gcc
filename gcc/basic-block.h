@@ -336,8 +336,6 @@ struct GTY(()) control_flow_graph {
 #define FOR_EACH_BB_REVERSE_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
 
-#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN (BB, cfun)
-
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
   for ((INSN) = BB_HEAD (BB);			\

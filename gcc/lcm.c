@@ -109,7 +109,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       *qin++ = bb;
       bb->aux = bb;

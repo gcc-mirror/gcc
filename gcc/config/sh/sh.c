@@ -11115,7 +11115,7 @@ sh_md_init_global (FILE *dump ATTRIBUTE_UNUSED,
   regmode_weight[1] = (short *) xcalloc (old_max_uid, sizeof (short));
   r0_life_regions = 0;
 
-  FOR_EACH_BB_REVERSE (b)
+  FOR_EACH_BB_REVERSE_FN (b, cfun)
   {
     find_regmode_weight (b, SImode);
     find_regmode_weight (b, SFmode);

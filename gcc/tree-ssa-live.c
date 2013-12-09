@@ -1050,7 +1050,7 @@ live_worklist (tree_live_info_p live)
 
   /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     loe_visit_block (live, bb, visited, tmp);
 
   /* Process any blocks which require further iteration.  */
