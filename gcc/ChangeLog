@@ -1,3 +1,13 @@
+2013-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* tree-ssa-structalias.c (set_union_with_increment): Remove
+	unreachable code.
+	(do_complex_constraint): Call set_union_with_increment with
+	the solution delta, not the full solution.
+	(make_transitive_closure_constraints): Merge the two
+	constraints.
+
 2013-12-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (mem_ok_for_ldrd_strd): Rename first argument as MEM.  Do

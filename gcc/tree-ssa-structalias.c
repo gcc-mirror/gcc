@@ -962,10 +962,6 @@ set_union_with_increment  (bitmap to, bitmap from, HOST_WIDE_INT inc)
   if (bitmap_bit_p (from, anything_id))
     return bitmap_set_bit (to, anything_id);
 
-  /* For zero offset simply union the solution into the destination.  */
-  if (inc == 0)
-    return bitmap_ior_into (to, from);
-
   /* If the offset is unknown we have to expand the solution to
      all subfields.  */
   if (inc == UNKNOWN_OFFSET)
@@ -1788,14 +1784,13 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
   else
     {
       bitmap tmp;
-      bitmap solution;
       bool flag = false;
 
-      gcc_checking_assert (c->rhs.type == SCALAR && c->lhs.type == SCALAR);
-      solution = get_varinfo (c->rhs.var)->solution;
+      gcc_checking_assert (c->rhs.type == SCALAR && c->lhs.type == SCALAR
+			   && c->rhs.offset != 0 && c->lhs.offset == 0);
       tmp = get_varinfo (c->lhs.var)->solution;
 
-      flag = set_union_with_increment (tmp, solution, c->rhs.offset);
+      flag = set_union_with_increment (tmp, delta, c->rhs.offset);
 
       if (flag)
 	bitmap_set_bit (changed, c->lhs.var);
@@ -3711,15 +3706,6 @@ make_transitive_closure_constraints (varinfo_t vi)
   lhs.var = vi->id;
   lhs.offset = 0;
   rhs.type = DEREF;
-  rhs.var = vi->id;
-  rhs.offset = 0;
-  process_constraint (new_constraint (lhs, rhs));
-
-  /* VAR = VAR + UNKNOWN;  */
-  lhs.type = SCALAR;
-  lhs.var = vi->id;
-  lhs.offset = 0;
-  rhs.type = SCALAR;
   rhs.var = vi->id;
   rhs.offset = UNKNOWN_OFFSET;
   process_constraint (new_constraint (lhs, rhs));
