@@ -106,7 +106,7 @@ verify_flow_info (void)
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, NULL, next_bb)
     {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && bb != BASIC_BLOCK (bb->index))
+	  && bb != BASIC_BLOCK_FOR_FN (cfun, bb->index))
 	{
 	  error ("bb %d on wrong place", bb->index);
 	  err = 1;

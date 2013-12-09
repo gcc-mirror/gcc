@@ -1412,7 +1412,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
     {
       EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
 	{
-	  bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  if (EDGE_COUNT (bb->preds) > 1
 	      && !redirection_block_p (bb))
 	    {
@@ -1442,7 +1442,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
      by trimming off the end of the jump thread path.  */
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  if (e->aux)
@@ -1512,7 +1512,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
      we have to iterate on those rather than the threaded_edges vector.  */
   EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  if (e->aux)
@@ -1592,7 +1592,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
      loop structure.  */
   EXECUTE_IF_SET_IN_BITMAP (threaded_blocks, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       if (EDGE_COUNT (bb->preds) > 0)
 	retval |= thread_block (bb, true);

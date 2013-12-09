@@ -737,7 +737,7 @@ ebb_fix_recovery_cfg (int bbi ATTRIBUTE_UNUSED, int jump_bbi,
   gcc_assert (last_bb->index != bbi);
 
   if (jump_bb_nexti == last_bb->index)
-    last_bb = BASIC_BLOCK (jump_bbi);
+    last_bb = BASIC_BLOCK_FOR_FN (cfun, jump_bbi);
 }
 
 #endif /* INSN_SCHEDULING */

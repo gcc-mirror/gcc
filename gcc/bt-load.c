@@ -460,7 +460,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
   bitmap_vector_clear (bb_gen, last_basic_block);
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       int reg;
       btr_def defs_this_bb = NULL;
       rtx insn;
@@ -651,7 +651,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
       changed = 0;
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
-	  bitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
+	  bitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK_FOR_FN (cfun, i));
 	  changed |= bitmap_ior_and_compl (bb_out[i], bb_gen[i],
 					       bb_in, bb_kill[i]);
 	}
@@ -670,11 +670,11 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
      Count up the number of reaching defs of each use.  */
   for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       rtx insn;
       rtx last;
 
-      bitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
+      bitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK_FOR_FN (cfun, i));
       for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn))
@@ -814,13 +814,14 @@ build_btr_def_use_webs (fibheap_t all_btr_defs)
 static int
 block_at_edge_of_live_range_p (int bb, btr_def def)
 {
-  if (def->other_btr_uses_before_def && BASIC_BLOCK (bb) == def->bb)
+  if (def->other_btr_uses_before_def
+      && BASIC_BLOCK_FOR_FN (cfun, bb) == def->bb)
     return 1;
   else if (def->other_btr_uses_after_use)
     {
       btr_user user;
       for (user = def->uses; user != NULL; user = user->next)
-	if (BASIC_BLOCK (bb) == user->bb)
+	if (BASIC_BLOCK_FOR_FN (cfun, bb) == user->bb)
 	  return 1;
     }
   return 0;
@@ -1406,7 +1407,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
-	  basic_block bb = BASIC_BLOCK (i);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  fprintf (dump_file,
 		   "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
 		   " loop-depth = %d idom = %d\n",

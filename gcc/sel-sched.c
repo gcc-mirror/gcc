@@ -4903,7 +4903,8 @@ remove_insns_that_need_bookkeeping (fence_t fence, av_set_t *av_ptr)
 	  && (EXPR_SPEC (expr)
 	      || !EXPR_ORIG_BB_INDEX (expr)
 	      || !dominated_by_p (CDI_DOMINATORS,
-				  BASIC_BLOCK (EXPR_ORIG_BB_INDEX (expr)),
+				  BASIC_BLOCK_FOR_FN (cfun,
+						      EXPR_ORIG_BB_INDEX (expr)),
 				  BLOCK_FOR_INSN (FENCE_INSN (fence)))))
 	{
           if (sched_verbose >= 4)
@@ -6886,7 +6887,7 @@ current_region_empty_p (void)
 {
   int i;
   for (i = 0; i < current_nr_blocks; i++)
-    if (! sel_bb_empty_p (BASIC_BLOCK (BB_TO_BLOCK (i))))
+    if (! sel_bb_empty_p (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i))))
       return false;
 
   return true;
@@ -6945,7 +6946,7 @@ sel_region_init (int rgn)
   bbs.create (current_nr_blocks);
 
   for (i = 0; i < current_nr_blocks; i++)
-    bbs.quick_push (BASIC_BLOCK (BB_TO_BLOCK (i)));
+    bbs.quick_push (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i)));
 
   sel_init_bbs (bbs);
 
@@ -6980,13 +6981,14 @@ sel_region_init (int rgn)
      compute_live for the first insn of the loop.  */
   if (current_loop_nest)
     {
-      int header = (sel_is_loop_preheader_p (BASIC_BLOCK (BB_TO_BLOCK (0)))
-                    ? 1
-                    : 0);
+      int header =
+	(sel_is_loop_preheader_p (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (0)))
+	 ? 1
+	 : 0);
 
       if (current_nr_blocks == header + 1)
         update_liveness_on_insn
-          (sel_bb_head (BASIC_BLOCK (BB_TO_BLOCK (header))));
+          (sel_bb_head (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (header))));
     }
 
   /* Set hooks so that no newly generated insn will go out unnoticed.  */
@@ -7024,7 +7026,7 @@ simplify_changed_insns (void)
 
   for (i = 0; i < current_nr_blocks; i++)
     {
-      basic_block bb = BASIC_BLOCK (BB_TO_BLOCK (i));
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
       rtx insn;
 
       FOR_BB_INSNS (bb, insn)

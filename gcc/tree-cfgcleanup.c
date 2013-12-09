@@ -551,7 +551,7 @@ fixup_noreturn_call (gimple stmt)
 		  SET_USE (use_p, error_mark_node);
 	    }
 	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, bb_index, bi)
-	    delete_basic_block (BASIC_BLOCK (bb_index));
+	    delete_basic_block (BASIC_BLOCK_FOR_FN (cfun, bb_index));
 	  BITMAP_FREE (blocks);
 	  release_ssa_name (op);
 	}
@@ -586,7 +586,7 @@ split_bbs_on_noreturn_calls (void)
 	if (bb == NULL
 	    || bb->index < NUM_FIXED_BLOCKS
 	    || bb->index >= last_basic_block
-	    || BASIC_BLOCK (bb->index) != bb
+	    || BASIC_BLOCK_FOR_FN (cfun, bb->index) != bb
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;
 
@@ -645,7 +645,7 @@ cleanup_tree_cfg_1 (void)
   n = last_basic_block;
   for (i = NUM_FIXED_BLOCKS; i < n; i++)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
 	retval |= cleanup_tree_cfg_bb (bb);
     }
@@ -658,7 +658,7 @@ cleanup_tree_cfg_1 (void)
       if (i < NUM_FIXED_BLOCKS)
 	continue;
 
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (!bb)
 	continue;
 

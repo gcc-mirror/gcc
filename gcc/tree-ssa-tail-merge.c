@@ -454,7 +454,7 @@ same_succ_hash (const_same_succ e)
   int flags;
   unsigned int i;
   unsigned int first = bitmap_first_set_bit (e->bbs);
-  basic_block bb = BASIC_BLOCK (first);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, first);
   int size = 0;
   gimple_stmt_iterator gsi;
   gimple stmt;
@@ -502,8 +502,8 @@ same_succ_hash (const_same_succ e)
 
   EXECUTE_IF_SET_IN_BITMAP (e->succs, 0, s, bs)
     {
-      int n = find_edge (bb, BASIC_BLOCK (s))->dest_idx;
-      for (gsi = gsi_start_phis (BASIC_BLOCK (s)); !gsi_end_p (gsi);
+      int n = find_edge (bb, BASIC_BLOCK_FOR_FN (cfun, s))->dest_idx;
+      for (gsi = gsi_start_phis (BASIC_BLOCK_FOR_FN (cfun, s)); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
 	  gimple phi = gsi_stmt (gsi);
@@ -572,8 +572,8 @@ same_succ_def::equal (const value_type *e1, const compare_type *e2)
   first1 = bitmap_first_set_bit (e1->bbs);
   first2 = bitmap_first_set_bit (e2->bbs);
 
-  bb1 = BASIC_BLOCK (first1);
-  bb2 = BASIC_BLOCK (first2);
+  bb1 = BASIC_BLOCK_FOR_FN (cfun, first1);
+  bb2 = BASIC_BLOCK_FOR_FN (cfun, first2);
 
   if (BB_SIZE (bb1) != BB_SIZE (bb2))
     return 0;
@@ -834,7 +834,7 @@ same_succ_flush_bbs (bitmap bbs)
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (bbs, 0, i, bi)
-    same_succ_flush_bb (BASIC_BLOCK (i));
+    same_succ_flush_bb (BASIC_BLOCK_FOR_FN (cfun, i));
 }
 
 /* Release the last vdef in BB, either normal or phi result.  */
@@ -887,7 +887,7 @@ update_worklist (void)
   same = same_succ_alloc ();
   EXECUTE_IF_SET_IN_BITMAP (deleted_bb_preds, 0, i, bi)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       gcc_assert (bb != NULL);
       find_same_succ_bb (bb, &same);
       if (same == NULL)
@@ -1075,7 +1075,7 @@ set_cluster (basic_block bb1, basic_block bb2)
       merge = BB_CLUSTER (bb1);
       merge_clusters (merge, old);
       EXECUTE_IF_SET_IN_BITMAP (old->bbs, 0, i, bi)
-	BB_CLUSTER (BASIC_BLOCK (i)) = merge;
+	BB_CLUSTER (BASIC_BLOCK_FOR_FN (cfun, i)) = merge;
       all_clusters[old->index] = NULL;
       update_rep_bb (merge, old->rep_bb);
       delete_cluster (old);
@@ -1320,7 +1320,7 @@ same_phi_alternatives (same_succ same_succ, basic_block bb1, basic_block bb2)
 
   EXECUTE_IF_SET_IN_BITMAP (same_succ->succs, 0, s, bs)
     {
-      succ = BASIC_BLOCK (s);
+      succ = BASIC_BLOCK_FOR_FN (cfun, s);
       e1 = find_edge (bb1, succ);
       e2 = find_edge (bb2, succ);
       if (e1->flags & EDGE_COMPLEX
@@ -1406,7 +1406,7 @@ find_clusters_1 (same_succ same_succ)
 
   EXECUTE_IF_SET_IN_BITMAP (same_succ->bbs, 0, i, bi)
     {
-      bb1 = BASIC_BLOCK (i);
+      bb1 = BASIC_BLOCK_FOR_FN (cfun, i);
 
       /* TODO: handle blocks with phi-nodes.  We'll have to find corresponding
 	 phi-nodes in bb1 and bb2, with the same alternatives for the same
@@ -1417,7 +1417,7 @@ find_clusters_1 (same_succ same_succ)
       nr_comparisons = 0;
       EXECUTE_IF_SET_IN_BITMAP (same_succ->bbs, i + 1, j, bj)
 	{
-	  bb2 = BASIC_BLOCK (j);
+	  bb2 = BASIC_BLOCK_FOR_FN (cfun, j);
 
 	  if (bb_has_non_vop_phi (bb2))
 	    continue;
@@ -1573,7 +1573,7 @@ apply_clusters (void)
       bitmap_clear_bit (c->bbs, bb2->index);
       EXECUTE_IF_SET_IN_BITMAP (c->bbs, 0, j, bj)
 	{
-	  bb1 = BASIC_BLOCK (j);
+	  bb1 = BASIC_BLOCK_FOR_FN (cfun, j);
 	  bitmap_clear_bit (update_bbs, bb1->index);
 
 	  replace_block_by (bb1, bb2);
@@ -1633,7 +1633,7 @@ update_debug_stmts (void)
       gimple stmt;
       gimple_stmt_iterator gsi;
 
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  stmt = gsi_stmt (gsi);

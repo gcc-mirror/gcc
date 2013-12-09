@@ -512,7 +512,7 @@ add_scope_conflicts (void)
       for (i = 0; i < n_bbs; i++)
 	{
 	  bitmap active;
-	  bb = BASIC_BLOCK (rpo[i]);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  active = (bitmap)bb->aux;
 	  add_scope_conflicts_1 (bb, work, false);
 	  if (bitmap_ior_into (active, work))

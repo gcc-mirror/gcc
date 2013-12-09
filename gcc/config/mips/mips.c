@@ -15079,7 +15079,7 @@ r10k_insert_cache_barriers (void)
   n = pre_and_rev_post_order_compute (NULL, rev_post_order, false);
   for (i = 0; i < n; i++)
     {
-      bb = BASIC_BLOCK (rev_post_order[i]);
+      bb = BASIC_BLOCK_FOR_FN (cfun, rev_post_order[i]);
 
       /* If this block is only reached by unconditional edges, and if the
 	 source of every edge is protected, the beginning of the block is

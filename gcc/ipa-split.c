@@ -362,7 +362,8 @@ dominated_by_forbidden (basic_block bb)
 
   EXECUTE_IF_SET_IN_BITMAP (forbidden_dominators, 1, dom_bb, bi)
     {
-      if (dominated_by_p (CDI_DOMINATORS, bb, BASIC_BLOCK (dom_bb)))
+      if (dominated_by_p (CDI_DOMINATORS, bb,
+			  BASIC_BLOCK_FOR_FN (cfun, dom_bb)))
 	return true;
     }
 

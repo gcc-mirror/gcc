@@ -2547,12 +2547,13 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   for (; last < last_basic_block; last++)
     {
       if (need_debug_cleanup)
-	maybe_move_debug_stmts_to_successors (id, BASIC_BLOCK (last));
-      BASIC_BLOCK (last)->aux = NULL;
+	maybe_move_debug_stmts_to_successors (id,
+					      BASIC_BLOCK_FOR_FN (cfun, last));
+      BASIC_BLOCK_FOR_FN (cfun, last)->aux = NULL;
       /* Update call edge destinations.  This can not be done before loop
 	 info is updated, because we may split basic blocks.  */
       if (id->transform_call_graph_edges == CB_CGE_DUPLICATE)
-	redirect_all_calls (id, BASIC_BLOCK (last));
+	redirect_all_calls (id, BASIC_BLOCK_FOR_FN (cfun, last));
     }
   entry_block_map->aux = NULL;
   exit_block_map->aux = NULL;
@@ -4443,11 +4444,11 @@ static void
 fold_marked_statements (int first, struct pointer_set_t *statements)
 {
   for (; first < n_basic_blocks_for_fn (cfun); first++)
-    if (BASIC_BLOCK (first))
+    if (BASIC_BLOCK_FOR_FN (cfun, first))
       {
         gimple_stmt_iterator gsi;
 
-	for (gsi = gsi_start_bb (BASIC_BLOCK (first));
+	for (gsi = gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, first));
 	     !gsi_end_p (gsi);
 	     gsi_next (&gsi))
 	  if (pointer_set_contains (statements, gsi_stmt (gsi)))
@@ -4473,7 +4474,7 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 			  break;
 			}
 		      if (gsi_end_p (i2))
-			i2 = gsi_start_bb (BASIC_BLOCK (first));
+			i2 = gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, first));
 		      else
 			gsi_next (&i2);
 		      while (1)
@@ -4497,7 +4498,8 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 				 is mood anyway.  */
 			      if (maybe_clean_or_replace_eh_stmt (old_stmt,
 								  new_stmt))
-				gimple_purge_dead_eh_edges (BASIC_BLOCK (first));
+				gimple_purge_dead_eh_edges (
+				  BASIC_BLOCK_FOR_FN (cfun, first));
 			      break;
 			    }
 			  gsi_next (&i2);
@@ -4517,7 +4519,8 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 						       new_stmt);
 
 		  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
-		    gimple_purge_dead_eh_edges (BASIC_BLOCK (first));
+		    gimple_purge_dead_eh_edges (BASIC_BLOCK_FOR_FN (cfun,
+								    first));
 		}
 	    }
       }

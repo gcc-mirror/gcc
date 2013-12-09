@@ -669,8 +669,8 @@ df_scan_blocks (void)
   df_record_entry_block_defs (df->entry_block_defs);
   df_get_exit_block_use_set (df->exit_block_uses);
   df_record_exit_block_uses (df->exit_block_uses);
-  df_set_bb_dirty (BASIC_BLOCK (ENTRY_BLOCK));
-  df_set_bb_dirty (BASIC_BLOCK (EXIT_BLOCK));
+  df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK));
+  df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
 
   /* Regular blocks */
   FOR_EACH_BB (bb)
@@ -1637,7 +1637,7 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
 
   EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
     {
-      basic_block bb = BASIC_BLOCK (bb_index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       rtx insn;
       df_ref *ref_rec;
 
@@ -1691,7 +1691,7 @@ df_reorganize_refs_by_reg_by_insn (struct df_ref_info *ref_info,
 
   EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
     {
-      basic_block bb = BASIC_BLOCK (bb_index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       rtx insn;
       df_ref *ref_rec;
 
@@ -1876,7 +1876,9 @@ df_reorganize_refs_by_insn (struct df_ref_info *ref_info,
 
       EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, index, bi)
 	{
-	  offset = df_reorganize_refs_by_insn_bb (BASIC_BLOCK (index), offset, ref_info,
+	  offset = df_reorganize_refs_by_insn_bb (BASIC_BLOCK_FOR_FN (cfun,
+								      index),
+						  offset, ref_info,
 						  include_defs, include_uses,
 						  include_eq_uses);
 	}
@@ -3616,7 +3618,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 void
 df_bb_refs_record (int bb_index, bool scan_insns)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   rtx insn;
   int luid = 0;
 
@@ -3890,7 +3892,9 @@ df_record_entry_block_defs (bitmap entry_block_defs)
   df_entry_block_defs_collect (&collection_rec, entry_block_defs);
 
   /* Process bb_refs chain */
-  df_refs_add_to_chains (&collection_rec, BASIC_BLOCK (ENTRY_BLOCK), NULL,
+  df_refs_add_to_chains (&collection_rec,
+			 BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK),
+			 NULL,
 			 copy_defs);
 }
 
@@ -3929,7 +3933,7 @@ df_update_entry_block_defs (void)
     {
       df_record_entry_block_defs (&refs);
       bitmap_copy (df->entry_block_defs, &refs);
-      df_set_bb_dirty (BASIC_BLOCK (ENTRY_BLOCK));
+      df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK));
     }
   bitmap_clear (&refs);
 }
@@ -4061,7 +4065,9 @@ df_record_exit_block_uses (bitmap exit_block_uses)
   df_exit_block_uses_collect (&collection_rec, exit_block_uses);
 
   /* Process bb_refs chain */
-  df_refs_add_to_chains (&collection_rec, BASIC_BLOCK (EXIT_BLOCK), NULL,
+  df_refs_add_to_chains (&collection_rec,
+			 BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK),
+			 NULL,
 			 copy_uses);
 }
 
@@ -4100,7 +4106,7 @@ df_update_exit_block_uses (void)
     {
       df_record_exit_block_uses (&refs);
       bitmap_copy (df->exit_block_uses,& refs);
-      df_set_bb_dirty (BASIC_BLOCK (EXIT_BLOCK));
+      df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
     }
   bitmap_clear (&refs);
 }

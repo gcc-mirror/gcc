@@ -2152,7 +2152,7 @@ param_change_prob (gimple stmt, int i)
 	max = 1;
 
       EXECUTE_IF_SET_IN_BITMAP (info.bb_set, 0, index, bi)
-	max = MIN (max, BASIC_BLOCK (index)->frequency);
+	max = MIN (max, BASIC_BLOCK_FOR_FN (cfun, index)->frequency);
 
       BITMAP_FREE (info.bb_set);
       if (max < bb->frequency)
@@ -2408,7 +2408,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
   for (n = 0; n < nblocks; n++)
     {
-      bb = BASIC_BLOCK (order[n]);
+      bb = BASIC_BLOCK_FOR_FN (cfun, order[n]);
       freq = compute_call_stmt_bb_frequency (node->decl, bb);
 
       /* TODO: Obviously predicates can be propagated down across CFG.  */

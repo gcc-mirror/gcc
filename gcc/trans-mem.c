@@ -2993,7 +2993,7 @@ execute_tm_mark (void)
 		  && sub & GTMA_MAY_ENTER_IRREVOCABLE)
 		continue;
 	    }
-	  expand_block_tm (r, BASIC_BLOCK (i));
+	  expand_block_tm (r, BASIC_BLOCK_FOR_FN (cfun, i));
 	}
     }
 
@@ -3184,7 +3184,7 @@ execute_tm_edges (void)
 
   FOR_EACH_VEC_ELT (bb_regions, i, r)
     if (r != NULL)
-      expand_block_edges (r, BASIC_BLOCK (i));
+      expand_block_edges (r, BASIC_BLOCK_FOR_FN (cfun, i));
 
   bb_regions.release ();
 
@@ -3700,7 +3700,7 @@ tm_memopt_compute_antic (struct tm_region *region,
       unsigned int i;
       bitmap_iterator bi;
       EXECUTE_IF_SET_IN_BITMAP (region->exit_blocks, 0, i, bi)
-	BB_VISITED_P (BASIC_BLOCK (i)) = true;
+	BB_VISITED_P (BASIC_BLOCK_FOR_FN (cfun, i)) = true;
     }
 
   qin = worklist;
@@ -4572,7 +4572,8 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
       unsigned i;
 
       EXECUTE_IF_SET_IN_BITMAP (new_irr, 0, i, bmi)
-	ipa_tm_decrement_clone_counts (BASIC_BLOCK (i), for_clone);
+	ipa_tm_decrement_clone_counts (BASIC_BLOCK_FOR_FN (cfun, i),
+				       for_clone);
 
       if (old_irr)
 	{

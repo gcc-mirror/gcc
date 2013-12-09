@@ -7982,7 +7982,7 @@ s390_optimize_nonescaping_tx (void)
 
   for (bb_index = 0; bb_index < n_basic_blocks_for_fn (cfun); bb_index++)
     {
-      bb = BASIC_BLOCK (bb_index);
+      bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 
       if (!bb)
 	continue;

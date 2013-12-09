@@ -1647,7 +1647,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	  rtx insn, end;
 	  edge fallthru;
 
-	  bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  insn = BB_HEAD (bb);
 	  end = BB_END (bb);
 

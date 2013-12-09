@@ -672,7 +672,8 @@ make_edges (void)
 
   /* Create an edge from entry to the first block with executable
      statements in it.  */
-  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), BASIC_BLOCK (NUM_FIXED_BLOCKS),
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+	     BASIC_BLOCK_FOR_FN (cfun, NUM_FIXED_BLOCKS),
 	     EDGE_FALLTHRU);
 
   /* Traverse the basic block array placing edges.  */
@@ -943,7 +944,7 @@ end_recording_case_labels (void)
   edge_to_cases = NULL;
   EXECUTE_IF_SET_IN_BITMAP (touched_switch_bbs, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
 	{
 	  gimple stmt = last_stmt (bb);
@@ -1027,7 +1028,8 @@ label_to_block_fn (struct function *ifun, tree dest)
      and undefined variable warnings quite right.  */
   if (seen_error () && uid < 0)
     {
-      gimple_stmt_iterator gsi = gsi_start_bb (BASIC_BLOCK (NUM_FIXED_BLOCKS));
+      gimple_stmt_iterator gsi =
+	gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, NUM_FIXED_BLOCKS));
       gimple stmt;
 
       stmt = gimple_build_label (dest);
@@ -2082,8 +2084,8 @@ gimple_debug_bb (basic_block bb)
 basic_block
 gimple_debug_bb_n (int n)
 {
-  gimple_debug_bb (BASIC_BLOCK (n));
-  return BASIC_BLOCK (n);
+  gimple_debug_bb (BASIC_BLOCK_FOR_FN (cfun, n));
+  return BASIC_BLOCK_FOR_FN (cfun, n);
 }
 
 
@@ -7476,7 +7478,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
      return or not...  */
   for (i = 0; i < last_bb; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       gimple_stmt_iterator gsi;
       gimple stmt, last_stmt;
 
@@ -7605,7 +7607,7 @@ remove_edge_and_dominated_blocks (edge e)
 
       EXECUTE_IF_SET_IN_BITMAP (df, 0, i, bi)
 	{
-	  bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  bitmap_set_bit (df_idom,
 			  get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
@@ -7643,7 +7645,7 @@ remove_edge_and_dominated_blocks (edge e)
      the dominance frontier of E.  Therefore, Y belongs to DF_IDOM.  */
   EXECUTE_IF_SET_IN_BITMAP (df_idom, 0, i, bi)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       for (dbb = first_dom_son (CDI_DOMINATORS, bb);
 	   dbb;
 	   dbb = next_dom_son (CDI_DOMINATORS, dbb))
@@ -7696,7 +7698,7 @@ gimple_purge_all_dead_eh_edges (const_bitmap blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       /* Earlier gimple_purge_dead_eh_edges could have removed
 	 this basic block already.  */
@@ -7753,7 +7755,7 @@ gimple_purge_all_dead_abnormal_call_edges (const_bitmap blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       /* Earlier gimple_purge_dead_abnormal_call_edges could have removed
 	 this basic block already.  */

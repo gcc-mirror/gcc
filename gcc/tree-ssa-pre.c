@@ -2486,7 +2486,7 @@ compute_antic (void)
 	{
 	  if (bitmap_bit_p (changed_blocks, postorder[i]))
 	    {
-	      basic_block block = BASIC_BLOCK (postorder[i]);
+	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
 	      changed |= compute_antic_aux (block,
 					    bitmap_bit_p (has_abnormal_preds,
 						      block->index));
@@ -2515,7 +2515,7 @@ compute_antic (void)
 	    {
 	      if (bitmap_bit_p (changed_blocks, postorder[i]))
 		{
-		  basic_block block = BASIC_BLOCK (postorder[i]);
+		  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
 		  changed
 		    |= compute_partial_antic_aux (block,
 						  bitmap_bit_p (has_abnormal_preds,

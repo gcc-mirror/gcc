@@ -332,8 +332,6 @@ struct GTY(()) control_flow_graph {
 #define label_to_block_map	(cfun->cfg->x_label_to_block_map)
 #define profile_status		(cfun->cfg->x_profile_status)
 
-#define BASIC_BLOCK(N)		((*basic_block_info)[(N)])
-
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
   for (BB = FROM; BB != TO; BB = BB->DIR)

@@ -214,7 +214,8 @@ associate_equivalences_with_edges (void)
 		      equivalency = XNEW (struct edge_equivalency);
 		      equivalency->rhs = x;
 		      equivalency->lhs = cond;
-		      find_edge (bb, BASIC_BLOCK (i))->aux = equivalency;
+		      find_edge (bb, BASIC_BLOCK_FOR_FN (cfun, i))->aux =
+			equivalency;
 		    }
 		}
 	      free (info);

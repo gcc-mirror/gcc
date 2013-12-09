@@ -439,7 +439,7 @@ flow_loops_find (struct loops *loops)
   auto_vec<loop_p> larray (loops->larray->length ());
   for (b = 0; b < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; b++)
     {
-      basic_block header = BASIC_BLOCK (rc_order[b]);
+      basic_block header = BASIC_BLOCK_FOR_FN (cfun, rc_order[b]);
       if (bb_loop_header_p (header))
 	{
 	  struct loop *loop;

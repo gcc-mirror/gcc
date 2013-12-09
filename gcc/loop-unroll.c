@@ -2370,7 +2370,7 @@ apply_opt_in_copies (struct opt_info *opt_info,
 
   for (i = opt_info->first_new_block; i < (unsigned) last_basic_block; i++)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       orig_bb = get_bb_original (bb);
 
       /* bb->aux holds position in copy sequence initialized by
@@ -2446,7 +2446,7 @@ apply_opt_in_copies (struct opt_info *opt_info,
      get_bb_copy (get_bb_original (bb)) == bb.  */
   for (i = opt_info->first_new_block; i < (unsigned) last_basic_block; i++)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       orig_bb = get_bb_original (bb);
       if (get_bb_copy (orig_bb) != bb)
 	continue;
