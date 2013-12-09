@@ -1371,7 +1371,7 @@ decide_peel_simple (struct loop *loop, int flags)
      also branch from branch prediction POV (and probably better reason
      to not unroll/peel).  */
   if (num_loop_branches (loop) > 1
-      && profile_status != PROFILE_READ)
+      && profile_status_for_fn (cfun) != PROFILE_READ)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not peeling, contains branches\n");

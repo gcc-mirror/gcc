@@ -2420,7 +2420,7 @@ rtl_verify_edges (void)
 	  && any_condjump_p (BB_END (bb)))
 	{
 	  if (XINT (note, 0) != BRANCH_EDGE (bb)->probability
-	      && profile_status != PROFILE_ABSENT)
+	      && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	    {
 	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
 		     XINT (note, 0), BRANCH_EDGE (bb)->probability);
@@ -5011,10 +5011,10 @@ rtl_account_profile_record (basic_block bb, int after_pass,
       {
 	record->size[after_pass]
 	  += insn_rtx_cost (PATTERN (insn), false);
-	if (profile_status == PROFILE_READ)
+	if (profile_status_for_fn (cfun) == PROFILE_READ)
 	  record->time[after_pass]
 	    += insn_rtx_cost (PATTERN (insn), true) * bb->count;
-	else if (profile_status == PROFILE_GUESSED)
+	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
 	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
       }

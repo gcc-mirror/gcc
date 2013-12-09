@@ -194,7 +194,7 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
       if (maybe_expand_insn (icode, 4, ops))
 	{
 	  last = get_last_insn ();
-	  if (profile_status != PROFILE_ABSENT
+	  if (profile_status_for_fn (cfun) != PROFILE_ABSENT
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
@@ -285,7 +285,7 @@ ubsan_expand_si_overflow_neg_check (gimple stmt)
       if (maybe_expand_insn (icode, 3, ops))
 	{
 	  last = get_last_insn ();
-	  if (profile_status != PROFILE_ABSENT
+	  if (profile_status_for_fn (cfun) != PROFILE_ABSENT
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
@@ -364,7 +364,7 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
       if (maybe_expand_insn (icode, 4, ops))
 	{
 	  last = get_last_insn ();
-	  if (profile_status != PROFILE_ABSENT
+	  if (profile_status_for_fn (cfun) != PROFILE_ABSENT
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))

@@ -1,5 +1,30 @@
 2013-12-09  David Malcolm  <dmalcolm@redhat.com>
 
+	* basic-block.h (profile_status): Eliminate macro.
+
+	* cfgbuild.c (find_many_sub_basic_blocks): Eliminate use of
+	profile_status macro in favor of profile_status_for_fn, making
+	use of cfun explicit.
+	* cfghooks.c (account_profile_record): Likewise.
+	* cfgloopanal.c (single_likely_exit):
+	* cfgrtl.c (rtl_verify_edges, rtl_account_profile_record): Likewise.
+	* graphite.c (graphite_finalize):
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check,
+	ubsan_expand_si_overflow_neg_check,
+	ubsan_expand_si_overflow_mul_check): Likewise.
+	* ipa-split.c (consider_split, execute_split_functions):
+	* loop-unroll.c (decide_peel_simple):
+	* optabs.c (emit_cmp_and_jump_insn_1):
+	* predict.c (maybe_hot_edge_p, probably_never_executed,
+	predictable_edge_p, probability_reliable_p, gimple_predict_edge,
+	tree_estimate_probability_driver, estimate_bb_frequencies,
+	compute_function_frequency, rebuild_frequencies): Likewise.
+	* profile.c (compute_branch_probabilities): Likewise.
+	* tree-cfg.c (gimple_account_profile_record): Likewise.
+	* tree-inline.c (optimize_inline_calls): Likewise.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
 	* basic-block.h (label_to_block_map): Eliminate macro.
 
 	* gimple.c (gimple_set_bb): Replace uses of label_to_block_map

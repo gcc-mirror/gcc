@@ -1411,7 +1411,7 @@ account_profile_record (struct profile_record *record, int after_pass)
   FOR_ALL_BB (bb)
    {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && profile_status != PROFILE_ABSENT)
+	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
 	  sum = 0;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1426,7 +1426,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    record->num_mismatched_count_out[after_pass]++;
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	  && profile_status != PROFILE_ABSENT)
+	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
 	  sum = 0;
 	  FOR_EACH_EDGE (e, ei, bb->preds)

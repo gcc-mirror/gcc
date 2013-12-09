@@ -245,7 +245,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
     {
       scev_reset ();
       cleanup_tree_cfg ();
-      profile_status = PROFILE_ABSENT;
+      profile_status_for_fn (cfun) = PROFILE_ABSENT;
       release_recorded_exits ();
       tree_estimate_probability ();
     }
