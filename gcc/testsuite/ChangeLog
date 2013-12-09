@@ -1,3 +1,8 @@
+2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52707
+	* g++.dg/cpp0x/deleted2.C: New.
+
 2013-12-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/tree-ssa/loop-31.c: Update scan pattern.
