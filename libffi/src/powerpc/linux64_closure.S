@@ -30,7 +30,7 @@
 
 	.file	"linux64_closure.S"
 
-#ifdef __powerpc64__
+#ifdef POWERPC64
 	FFI_HIDDEN (ffi_closure_LINUX64)
 	.globl  ffi_closure_LINUX64
 # if _CALL_ELF == 2
@@ -60,13 +60,11 @@ ffi_closure_LINUX64:
 # endif
 
 # if _CALL_ELF == 2
-#  32 byte special reg save area + 64 byte parm save area and retval
-#  + 13*8 fpr save area + round to 16
-#  define STACKFRAME 208
+#  32 byte special reg save area + 64 byte parm save area
+#  + 64 byte retval area + 13*8 fpr save area + round to 16
+#  define STACKFRAME 272
 #  define PARMSAVE 32
-#  No parameter save area is needed for the call to ffi_closure_helper_LINUX64,
-#  so return value can start there.
-#  define RETVAL PARMSAVE
+#  define RETVAL PARMSAVE+64
 # else
 #  48 bytes special reg save area + 64 bytes parm save area
 #  + 16 bytes retval area + 13*8 bytes fpr save area + round to 16
@@ -85,8 +83,8 @@ ffi_closure_LINUX64:
 	bt	7, .Lparmsave
 	# Our caller has not allocated a parameter save area.
 	# We need to allocate one here and use it to pass gprs to
-	# ffi_closure_helper_LINUX64.  The return value area will do.
-	addi	%r12, %r1, -STACKFRAME+RETVAL
+	# ffi_closure_helper_LINUX64.
+	addi	%r12, %r1, -STACKFRAME+PARMSAVE
 .Lparmsave:
 	std	%r0, 16(%r1)
 	# Save general regs into parm save area
