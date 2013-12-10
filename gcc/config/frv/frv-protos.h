@@ -62,14 +62,14 @@ extern rtx frv_split_abs		(rtx *);
 extern void frv_split_double_load	(rtx, rtx);
 extern void frv_split_double_store	(rtx, rtx);
 #ifdef BB_HEAD
-extern void frv_ifcvt_init_extra_fields	(ce_if_block_t *);
-extern void frv_ifcvt_modify_tests	(ce_if_block_t *, rtx *, rtx *);
+extern void frv_ifcvt_init_extra_fields	(ce_if_block *);
+extern void frv_ifcvt_modify_tests	(ce_if_block *, rtx *, rtx *);
 extern void frv_ifcvt_modify_multiple_tests
-					(ce_if_block_t *, basic_block,
+					(ce_if_block *, basic_block,
 					 rtx *, rtx *);
-extern rtx frv_ifcvt_modify_insn	(ce_if_block_t *, rtx, rtx);
-extern void frv_ifcvt_modify_final	(ce_if_block_t *);
-extern void frv_ifcvt_modify_cancel	(ce_if_block_t *);
+extern rtx frv_ifcvt_modify_insn	(ce_if_block *, rtx, rtx);
+extern void frv_ifcvt_modify_final	(ce_if_block *);
+extern void frv_ifcvt_modify_cancel	(ce_if_block *);
 #endif
 extern enum reg_class frv_secondary_reload_class
 					(enum reg_class,

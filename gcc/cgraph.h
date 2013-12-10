@@ -502,25 +502,25 @@ typedef struct varpool_node_set_def *varpool_node_set;
 
 
 /* Iterator structure for cgraph node sets.  */
-typedef struct
+struct cgraph_node_set_iterator
 {
   cgraph_node_set set;
   unsigned index;
-} cgraph_node_set_iterator;
+};
 
 /* Iterator structure for varpool node sets.  */
-typedef struct
+struct varpool_node_set_iterator
 {
   varpool_node_set set;
   unsigned index;
-} varpool_node_set_iterator;
+};
 
 #define DEFCIFCODE(code, string)	CIF_ ## code,
 /* Reasons for inlining failures.  */
-typedef enum cgraph_inline_failed_enum {
+enum cgraph_inline_failed_t {
 #include "cif-code.def"
   CIF_N_REASONS
-} cgraph_inline_failed_t;
+};
 
 /* Structure containing additional information about an indirect call.  */
 
@@ -575,7 +575,7 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   PTR GTY ((skip (""))) aux;
   /* When equal to CIF_OK, inline this call.  Otherwise, points to the
      explanation why function was not inlined.  */
-  cgraph_inline_failed_t inline_failed;
+  enum cgraph_inline_failed_t inline_failed;
   /* The stmt_uid of call_stmt.  This is used by LTO to recover the call_stmt
      when the function is serialized in.  */
   unsigned int lto_stmt_uid;

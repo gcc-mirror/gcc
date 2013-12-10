@@ -488,7 +488,7 @@ hard_reg_set_empty_p (const HARD_REG_SET x)
 
 /* Iterator for hard register sets.  */
 
-typedef struct
+struct hard_reg_set_iterator
 {
   /* Pointer to the current element.  */
   HARD_REG_ELT_TYPE *pelt;
@@ -503,7 +503,7 @@ typedef struct
      it is shifted right, so that the actual bit is always the least
      significant bit of ACTUAL.  */
   HARD_REG_ELT_TYPE bits;
-} hard_reg_set_iterator;
+};
 
 #define HARD_REG_ELT_BITS UHOST_BITS_PER_WIDE_INT
 

@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Iterator object for GIMPLE statement sequences.  */
 
-typedef struct gimple_stmt_iterator_d
+struct gimple_stmt_iterator
 {
   /* Sequence node holding the current statement.  */
   gimple_seq_node ptr;
@@ -33,7 +33,7 @@ typedef struct gimple_stmt_iterator_d
      block/sequence is removed.  */
   gimple_seq *seq;
   basic_block bb;
-} gimple_stmt_iterator;
+};
  
 enum gsi_iterator_update
 {

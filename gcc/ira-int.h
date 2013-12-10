@@ -688,7 +688,7 @@ extern int ira_move_loops_num, ira_additional_jumps_num;
 #endif
 
 /* The iterator for min/max sets.  */
-typedef struct {
+struct minmax_set_iterator {
 
   /* Array containing the bit vector.  */
   IRA_INT_TYPE *vec;
@@ -707,7 +707,7 @@ typedef struct {
 
   /* The word of the bit vector currently visited.  */
   unsigned IRA_INT_TYPE word;
-} minmax_set_iterator;
+};
 
 /* Initialize the iterator I for bit vector VEC containing minimal and
    maximal values MIN and MAX.  */
@@ -1081,10 +1081,10 @@ ira_init_register_move_cost_if_necessary (enum machine_mode mode)
 
 
 /* The iterator for all allocnos.  */
-typedef struct {
+struct ira_allocno_iterator {
   /* The number of the current element in IRA_ALLOCNOS.  */
   int n;
-} ira_allocno_iterator;
+};
 
 /* Initialize the iterator I.  */
 static inline void
@@ -1118,10 +1118,10 @@ ira_allocno_iter_cond (ira_allocno_iterator *i, ira_allocno_t *a)
        ira_allocno_iter_cond (&(ITER), &(A));)
 
 /* The iterator for all objects.  */
-typedef struct {
+struct ira_object_iterator {
   /* The number of the current element in ira_object_id_map.  */
   int n;
-} ira_object_iterator;
+};
 
 /* Initialize the iterator I.  */
 static inline void
@@ -1155,10 +1155,10 @@ ira_object_iter_cond (ira_object_iterator *i, ira_object_t *obj)
        ira_object_iter_cond (&(ITER), &(OBJ));)
 
 /* The iterator for objects associated with an allocno.  */
-typedef struct {
+struct ira_allocno_object_iterator {
   /* The number of the element the allocno's object array.  */
   int n;
-} ira_allocno_object_iterator;
+};
 
 /* Initialize the iterator I.  */
 static inline void
@@ -1192,10 +1192,10 @@ ira_allocno_object_iter_cond (ira_allocno_object_iterator *i, ira_allocno_t a,
 
 
 /* The iterator for prefs.  */
-typedef struct {
+struct ira_pref_iterator {
   /* The number of the current element in IRA_PREFS.  */
   int n;
-} ira_pref_iterator;
+};
 
 /* Initialize the iterator I.  */
 static inline void
@@ -1230,10 +1230,10 @@ ira_pref_iter_cond (ira_pref_iterator *i, ira_pref_t *pref)
 
 
 /* The iterator for copies.  */
-typedef struct {
+struct ira_copy_iterator {
   /* The number of the current element in IRA_COPIES.  */
   int n;
-} ira_copy_iterator;
+};
 
 /* Initialize the iterator I.  */
 static inline void
@@ -1267,7 +1267,7 @@ ira_copy_iter_cond (ira_copy_iterator *i, ira_copy_t *cp)
        ira_copy_iter_cond (&(ITER), &(C));)
 
 /* The iterator for object conflicts.  */
-typedef struct {
+struct ira_object_conflict_iterator {
 
   /* TRUE if the conflicts are represented by vector of allocnos.  */
   bool conflict_vec_p;
@@ -1294,7 +1294,7 @@ typedef struct {
   /* The word of bit vector currently visited.  It is defined only if
      OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned IRA_INT_TYPE word;
-} ira_object_conflict_iterator;
+};
 
 /* Initialize the iterator I with ALLOCNO conflicts.  */
 static inline void

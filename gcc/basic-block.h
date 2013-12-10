@@ -418,7 +418,7 @@ extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
    needs to be in a public file in case the IFCVT macros call
    functions passing the ce_if_block data structure.  */
 
-typedef struct ce_if_block
+struct ce_if_block
 {
   basic_block test_bb;			/* First test block.  */
   basic_block then_bb;			/* THEN block.  */
@@ -433,7 +433,7 @@ typedef struct ce_if_block
   int num_then_insns;			/* # of insns in THEN block.  */
   int num_else_insns;			/* # of insns in ELSE block.  */
   int pass;				/* Pass number.  */
-} ce_if_block_t;
+};
 
 /* This structure maintains an edge list vector.  */
 /* FIXME: Make this a vec<edge>.  */
@@ -564,10 +564,10 @@ single_pred (const_basic_block bb)
 
 /* Iterator object for edges.  */
 
-typedef struct {
+struct edge_iterator {
   unsigned index;
   vec<edge, va_gc> **container;
-} edge_iterator;
+};
 
 static inline vec<edge, va_gc> *
 ei_container (edge_iterator i)
@@ -781,8 +781,8 @@ extern int pre_and_rev_post_order_compute (int *, int *, bool);
 extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(const_basic_block, const void *),
 			       basic_block *, int, const void *);
-extern void compute_dominance_frontiers (struct bitmap_head_def *);
-extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
+extern void compute_dominance_frontiers (struct bitmap_head *);
+extern bitmap compute_idf (bitmap, struct bitmap_head *);
 extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */
@@ -939,7 +939,7 @@ extern void rtl_profile_for_edge (edge);
 extern void default_rtl_profile (void);
 
 /* In profile.c.  */
-typedef struct gcov_working_set_info gcov_working_set_t;
+struct gcov_working_set_t;
 extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
 
 /* Check tha probability is sane.  */

@@ -91,16 +91,16 @@ static rtx last_active_insn (basic_block, int);
 static rtx find_active_insn_before (basic_block, rtx);
 static rtx find_active_insn_after (basic_block, rtx);
 static basic_block block_fallthru (basic_block);
-static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, int, int);
+static int cond_exec_process_insns (ce_if_block *, rtx, rtx, rtx, int, int);
 static rtx cond_exec_get_condition (rtx);
 static rtx noce_get_condition (rtx, rtx *, bool);
 static int noce_operand_ok (const_rtx);
-static void merge_if_block (ce_if_block_t *);
+static void merge_if_block (ce_if_block *);
 static int find_cond_trap (basic_block, edge, edge);
 static basic_block find_if_header (basic_block, int);
 static int block_jumps_and_fallthru_p (basic_block, basic_block);
 static int noce_find_if_block (basic_block, edge, edge, int);
-static int cond_exec_find_if_block (ce_if_block_t *);
+static int cond_exec_find_if_block (ce_if_block *);
 static int find_if_case_1 (basic_block, edge, edge);
 static int find_if_case_2 (basic_block, edge, edge);
 static int dead_or_predicable (basic_block, basic_block, basic_block,
@@ -312,7 +312,7 @@ block_fallthru (basic_block bb)
    insns were processed.  */
 
 static int
-cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
+cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 			 /* if block information */rtx start,
 			 /* first insn to look at */rtx end,
 			 /* last insn to look at */rtx test,
@@ -434,7 +434,7 @@ cond_exec_get_condition (rtx jump)
    converting the block.  */
 
 static int
-cond_exec_process_if_block (ce_if_block_t * ce_info,
+cond_exec_process_if_block (ce_if_block * ce_info,
 			    /* if block information */int do_multiple_p)
 {
   basic_block test_bb = ce_info->test_bb;	/* last test block */
@@ -3232,7 +3232,7 @@ merge_if_block (struct ce_if_block * ce_info)
 static basic_block
 find_if_header (basic_block test_bb, int pass)
 {
-  ce_if_block_t ce_info;
+  ce_if_block ce_info;
   edge then_edge;
   edge else_edge;
 

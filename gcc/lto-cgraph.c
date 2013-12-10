@@ -277,7 +277,7 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->decl)
 	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt) + 1);
-  bp_pack_enum (&bp, cgraph_inline_failed_enum,
+  bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
   bp_pack_var_len_unsigned (&bp, uid);
   bp_pack_var_len_unsigned (&bp, edge->frequency);
@@ -1225,7 +1225,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   count = streamer_read_gcov_count (ib);
 
   bp = streamer_read_bitpack (ib);
-  inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_enum, CIF_N_REASONS);
+  inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_t, CIF_N_REASONS);
   stmt_id = bp_unpack_var_len_unsigned (&bp);
   freq = (int) bp_unpack_var_len_unsigned (&bp);
 

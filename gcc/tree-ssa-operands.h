@@ -37,7 +37,7 @@ typedef ssa_use_operand_t *use_operand_p;
 struct use_optype_d
 {
   struct use_optype_d *next;
-  struct ssa_use_operand_d use_ptr;
+  struct ssa_use_operand_t use_ptr;
 };
 typedef struct use_optype_d *use_optype_p;
 

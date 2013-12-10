@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Structure for holding a simple real number.  */
-typedef struct sreal
+struct sreal
 {
 #if SREAL_PART_BITS < 32
   unsigned HOST_WIDE_INT sig_lo;	/* Significant (lower part).  */
@@ -50,7 +50,7 @@ typedef struct sreal
   unsigned HOST_WIDE_INT sig;		/* Significant.  */
 #endif
   signed int exp;			/* Exponent.  */
-} sreal;
+};
 
 extern void dump_sreal (FILE *, sreal *);
 extern void debug (sreal &ref);

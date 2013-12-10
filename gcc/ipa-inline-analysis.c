@@ -494,7 +494,7 @@ evaluate_predicate (struct predicate *p, clause_t possible_truths)
 static int
 predicate_probability (conditions conds,
 		       struct predicate *p, clause_t possible_truths,
-		       vec<inline_param_summary_t> inline_param_summary)
+		       vec<inline_param_summary> inline_param_summary)
 {
   int i;
   int combined_prob = REG_BR_PROB_BASE;
@@ -2983,7 +2983,7 @@ estimate_node_size_and_time (struct cgraph_node *node,
 			     vec<ipa_agg_jump_function_p> known_aggs,
 			     int *ret_size, int *ret_time,
 			     inline_hints *ret_hints,
-			     vec<inline_param_summary_t>
+			     vec<inline_param_summary>
 			     inline_param_summary)
 {
   struct inline_summary *info = inline_summary (node);

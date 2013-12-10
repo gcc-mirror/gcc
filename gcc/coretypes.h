@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef HOST_WIDEST_INT gcov_type;
 typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 
-struct bitmap_head_def;
-typedef struct bitmap_head_def *bitmap;
-typedef const struct bitmap_head_def *const_bitmap;
+struct bitmap_head;
+typedef struct bitmap_head *bitmap;
+typedef const struct bitmap_head *const_bitmap;
 struct simple_bitmap_def;
 typedef struct simple_bitmap_def *sbitmap;
 typedef const struct simple_bitmap_def *const_sbitmap;
@@ -64,8 +64,7 @@ typedef const union tree_node *const_tree;
 typedef struct gimple_statement_base *gimple;
 typedef const struct gimple_statement_base *const_gimple;
 typedef gimple gimple_seq;
-struct gimple_stmt_iterator_d;
-typedef struct gimple_stmt_iterator_d gimple_stmt_iterator;
+struct gimple_stmt_iterator;
 union section;
 typedef union section section;
 struct gcc_options;

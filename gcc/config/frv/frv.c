@@ -5272,7 +5272,7 @@ frv_ifcvt_add_insn (rtx pattern, rtx insn, int before_p)
    tests cannot be converted.  */
 
 void
-frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
+frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
 {
   basic_block test_bb = ce_info->test_bb;	/* test basic block */
   basic_block then_bb = ce_info->then_bb;	/* THEN */
@@ -5629,7 +5629,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 		    (const_int 0))) */
 
 void
-frv_ifcvt_modify_multiple_tests (ce_if_block_t *ce_info,
+frv_ifcvt_modify_multiple_tests (ce_if_block *ce_info,
                                  basic_block bb,
                                  rtx *p_true,
                                  rtx *p_false)
@@ -5923,7 +5923,7 @@ single_set_pattern (rtx pattern)
    insn cannot be converted to be executed conditionally.  */
 
 rtx
-frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
+frv_ifcvt_modify_insn (ce_if_block *ce_info,
                        rtx pattern,
                        rtx insn)
 {
@@ -6188,7 +6188,7 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
    conditional if information CE_INFO.  */
 
 void
-frv_ifcvt_modify_final (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
+frv_ifcvt_modify_final (ce_if_block *ce_info ATTRIBUTE_UNUSED)
 {
   rtx existing_insn;
   rtx check_insn;
@@ -6243,7 +6243,7 @@ frv_ifcvt_modify_final (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
    information CE_INFO.  */
 
 void
-frv_ifcvt_modify_cancel (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
+frv_ifcvt_modify_cancel (ce_if_block *ce_info ATTRIBUTE_UNUSED)
 {
   int i;
   rtx p = frv_ifcvt.added_insns_list;

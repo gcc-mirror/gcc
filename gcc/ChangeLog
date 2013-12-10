@@ -1,3 +1,117 @@
+2013-12-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc/cgraph.h (cgraph_node_set_iterator, varpool_node_set_iterator):
+	Remove typedef.
+	(cgraph_inline_failed_enum, cgraph_inline_failed_t): Remove typedef and
+	rename to cgraph_inline_failed_t.
+	* gcc/tree-ssa-alias.h (ao_ref_s, ao_ref): Remove typedef and rename
+	to ao_ref.
+	* gcc/reload.h (reg_equivs_s, reg_equivs_t): Remove typedef and rename
+	to reg_equivs_t.
+	* gcc/conditions.h (CC_STATUS): Remove typedef.
+	* gcc/bitmap.h (bitmap_obstack): Remove typedef.
+	(bitmap_element_def, bitmap_element): Remove typedef and rename to
+	bitmap_element.
+	(bitmap_head_def, bitmap_head): Remove typedef and rename to
+	bitmap_head.
+	(bitmap_iterator): Remove typedef.
+	* gcc/target.h (cumulative_args_t, print_switch_type,
+	secondary_reload_info): Remove typedef.
+	* gcc/dwarf2out.h (dw_cfi_oprnd_struct, dw_cfi_oprnd): Remove
+	dw_cfi_oprnd_struct alias.
+	(dw_cfi_struct, dw_cfi_node): Remove typedef and rename to dw_cfi_node.
+	(dw_fde_struct, dw_fde_node): Remove typedef and rename to dw_fde_node.
+	(cfa_loc, dw_cfa_location): Remove typedef and rename to
+	dw_cfa_location.
+	(dw_vec_struct, dw_vec_const): Remove typedef and rename to
+	dw_vec_const.
+	(dw_val_struct, dw_val_node): Remove typedef and rename to dw_val_node.
+	(dw_loc_descr_struct, dw_loc_descr_node): Remove typedef and rename to
+	dw_loc_descr_node.
+	* gcc/params.h (param_info, compiler_param): Remove typedef.
+	* gcc/opts.h (cl_deferred_param): Remove typedef.
+	* gcc/sreal.h (sreal): Remove typedef.
+	* gcc/ddg.h (dep_type, dep_data_type): Remove typedef.
+	* gcc/graphite-clast-to-gimple.h (cloog_prog_clast, bb_pbb_def): Remove
+	typedef.
+	* gcc/lto-streamer.h (lto_decl_stream_e_t, lto_encoder_entry,
+	lto_symtab_encoder_iterator, res_pair): Remove typedef.
+	* gcc/tree-affine.h (affine_tree_combination, aff_tree): Remove typedef
+	and rename to aff_tree.
+	* gcc/sched-int.h (region): Remove typedef.
+	* gcc/diagnostic.h (diagnostic_info,
+	diagnostic_classification_change_t): Remove typedef.
+	* gcc/tree-ssa-loop.h (affine_iv_d): Remove typedef and rename to
+	affine_iv.
+	* gcc/sbitmap.h (sbitmap_iterator): Remove typedef.
+	* gcc/ssa-iterators.h (immediate_use_iterator_d, imm_use_iterator):
+	Remove typedef and rename to imm_use_iterator.
+	(ssa_operand_iterator_d, ssa_op_iter): Remove typedef and rename to
+	ssa_op_iter.
+	* gcc/ggc-internal.h (ggc_statistics): Remove typedef.
+	* gcc/cselib.h (cselib_val_struct, cselib_val): Remove typedef and
+	rename to cselib_val.
+	* gcc/tree-core.h (alias_pair): Remove typedef.
+	(constructor_elt_d, constructor_elt): Remove typedef and rename to
+	constructor_elt.
+	(ssa_use_operand_d, ssa_use_operand_t): Remove typedef and rename to
+	ssa_use_operand_t.
+	* gcc/graphite-sese-to-poly.h (base_alias_pair): Remove typedef.
+	* gcc/tree-data-ref.h (conflict_function): Remove typedef.
+	* gcc/tree-inline.h (copy_body_data): Remove typedef.
+	* gcc/ipa-inline.h (condition, size_time_entry, inline_param_summary_t,
+	edge_growth_cache_entry): Remove typedef.
+	* gcc/regrename.h (operand_rr_info, insn_rr_info): Remove typedef.
+	* gcc/gimple-iterator.h (gimple_stmt_iterator_d, gimple_stmt_iterator):
+	Remove typedef and rename to gimple_stmt_iterator.
+	* gcc/basic-block.h (ce_if_block, ce_if_block_t): Remove typedef and
+	rename to ce_if_block.
+	(edge_iterator): Remove typedef.
+	* gcc/ipa-prop.h (ipa_agg_jf_item, ipa_agg_jf_item_t): Remove typedef
+	and rename to ipa_agg_jf_item.
+	(ipa_agg_jump_function_t, ipa_param_descriptor_t, ipa_node_params_t,
+	ipa_parm_adjustment_t): Remove typedef.
+	(ipa_jump_func, ipa_jump_func_t): Remove typedef and rename to
+	ipa_jump_func.
+	(ipa_edge_args, ipa_edge_args_t): Remove typedef and rename to
+	ipa_edge_args.
+	* gcc/gcov-io.h (gcov_bucket_type): Remove typedef.
+	(gcov_working_set_info, gcov_working_set_t): Remove typedef and rename
+	to gcov_working_set_t.
+	* gcc/ira-int.h (minmax_set_iterator, ira_allocno_iterator,
+	ira_object_iterator, ira_allocno_object_iterator, ira_pref_iterator,
+	ira_copy_iterator, ira_object_conflict_iterator): Remove typedef.
+	* gcc/tree-iterator.h (tree_stmt_iterator): Remove typedef.
+	* gcc/rtl.h (addr_diff_vec_flags, mem_attrs, reg_attrs,
+	replace_label_data): Remove typedef.
+	(rtunion_def, rtunion): Remove typedef and rename to rtunion.
+	* gcc/hard-reg-set.h (hard_reg_set_iterator): Remove typedef.
+	* gcc/sel-sched-ir.h (_list_iterator, sel_global_bb_info_def,
+	sel_region_bb_info_def, succ_iterator): Remove typedef.
+	(deps_where_def, deps_where_t): Remove typedef and rename to
+	deps_where_t.
+	* gcc/coretypes.h: Adapt forward declarations.
+	* gcc/tree-scalar-evolution.h: Likewise.
+	* gcc/tree-ssa-address.h: Likewise.
+	* gcc/tree-ssa-operands.h: Likewise.
+	* gcc/function.h: Likewise.
+	* gcc/config/frv/frv-protos.h: Likewise.
+	* gcc/targhooks.h: Likewise.
+	* gcc/basic_block.h: Likewise.
+	* gcc/rtl.def: Adapt documentation.
+	* gcc/doc/tm.texi: Likewise.
+	* gcc/ipa-cp.c: Adapt uses.
+	* gcc/bitmap.c: Likewise.
+	* gcc/dwarf2out.c: Likewise.
+	* gcc/target.def: Likewise.
+	* gcc/ipa-inline-analysis.c: Likewise.
+	* gcc/dwarf2cfi.c: Likewise.
+	* gcc/tree-ssa-loop-ivopts.c: Likewise.
+	* gcc/lto-cgraph.c: Likewise.
+	* gcc/config/frv/frv.c: Likewise.
+	* gcc/ifcvt.c: Likewise.
+	* gcc/ipa-prop.c: Likewise.
+
 2013-12-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56807
