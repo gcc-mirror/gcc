@@ -401,7 +401,7 @@ typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 /* Structured records.  */
 
 /* Structure used for each bucket of the log2 histogram of counter values.  */
-struct gcov_bucket_type
+typedef struct
 {
   /* Number of counters whose profile count falls within the bucket.  */
   gcov_unsigned_t num_counters;
@@ -409,7 +409,7 @@ struct gcov_bucket_type
   gcov_type min_value;
   /* Cumulative value of the profile counts in this bucket.  */
   gcov_type cum_value;
-};
+} gcov_bucket_type;
 
 /* For a log2 scale histogram with each range split into 4
    linear sub-ranges, there will be at most 64 (max gcov_type bit size) - 1 log2
@@ -634,13 +634,13 @@ GCOV_LINKAGE void gcov_write_length (gcov_position_t /*position*/);
 
 /* Working set size statistics for a given percentage of the entire
    profile (sum_all from the counter summary).  */
-struct gcov_working_set_t
+typedef struct gcov_working_set_info
 {
   /* Number of hot counters included in this working set.  */
   unsigned num_counters;
   /* Smallest counter included in this working set.  */
   gcov_type min_counter;
-};
+} gcov_working_set_t;
 
 GCOV_LINKAGE void compute_working_sets (const struct gcov_ctr_summary *summary,
                                         gcov_working_set_t *gcov_working_sets);

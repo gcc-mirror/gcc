@@ -1,3 +1,9 @@
+2013-12-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* basic-block.h (gcov_working_set_t): Put back typedef. 
+	* gcov-io.h (gcov_bucket_type): Likewise.
+	(gcov_working_set_info, gcov_working_set_t): Likewise.
+
 2013-12-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* cgraph.h (cgraph_node_set_iterator, varpool_node_set_iterator):
