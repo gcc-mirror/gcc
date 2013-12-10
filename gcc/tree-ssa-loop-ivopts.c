@@ -3021,7 +3021,7 @@ determine_common_wider_type (tree *a, tree *b)
 static bool
 get_computation_aff (struct loop *loop,
 		     struct iv_use *use, struct iv_cand *cand, gimple at,
-		     struct affine_tree_combination *aff)
+		     struct aff_tree *aff)
 {
   tree ubase = use->iv->base;
   tree ustep = use->iv->step;
@@ -4589,7 +4589,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
 			   struct tree_niter_desc *niter)
 {
   tree cand_type, a, b, mbz, nit_type = TREE_TYPE (niter->niter), offset;
-  struct affine_tree_combination nit, tmpa, tmpb;
+  struct aff_tree nit, tmpa, tmpb;
   enum tree_code comp;
   HOST_WIDE_INT step;
 

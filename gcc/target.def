@@ -2819,7 +2819,7 @@ DEFHOOK
   version of this hook assumes the system C library errno location\
   is either a declaration of type int or accessed by dereferencing\
   a pointer to int.",
- bool, (struct ao_ref_s *ref),
+ bool, (struct ao_ref *ref),
  default_ref_may_alias_errno)
 
 /* Support for named address spaces.  */

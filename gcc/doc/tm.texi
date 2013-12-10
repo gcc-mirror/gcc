@@ -4357,7 +4357,7 @@ with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_REF_MAY_ALIAS_ERRNO (struct ao_ref_s *@var{ref})
+@deftypefn {Target Hook} bool TARGET_REF_MAY_ALIAS_ERRNO (struct ao_ref *@var{ref})
 Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
 @end deftypefn
 

@@ -65,7 +65,7 @@ struct du_chain
 
 /* This struct describes data gathered during regrename_analyze about
    a single operand of an insn.  */
-typedef struct
+struct operand_rr_info
 {
   /* The number of chains recorded for this operand.  */
   int n_chains;
@@ -73,14 +73,14 @@ typedef struct
      a memory operand.  */
   struct du_chain *chains[MAX_REGS_PER_ADDRESS];
   struct du_head *heads[MAX_REGS_PER_ADDRESS];
-} operand_rr_info;
+};
 
 /* A struct to hold a vector of operand_rr_info structures describing the
    operands of an insn.  */
-typedef struct
+struct insn_rr_info
 {
   operand_rr_info *op_info;
-} insn_rr_info;
+};
 
 
 extern vec<insn_rr_info> insn_rr;

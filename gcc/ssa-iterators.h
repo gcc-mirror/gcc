@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Immediate use lists are used to directly access all uses for an SSA
    name and get pointers to the statement for each use.
 
-   The structure ssa_use_operand_d consists of PREV and NEXT pointers
+   The structure ssa_use_operand_t consists of PREV and NEXT pointers
    to maintain the list.  A USE pointer, which points to address where
    the use is located and a LOC pointer which can point to the
    statement where the use is located, or, in the case of the root
@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
    If iteration is halted early, the marker node must be removed from
    the list before continuing.  */
-typedef struct immediate_use_iterator_d
+struct imm_use_iterator
 {
   /* This is the current use the iterator is processing.  */
   ssa_use_operand_t *imm_use;
@@ -66,7 +66,7 @@ typedef struct immediate_use_iterator_d
   /* This is the next ssa_name to visit.  IMM_USE may get removed before
      the next one is traversed to, so it must be cached early.  */
   ssa_use_operand_t *next_imm_name;
-} imm_use_iterator;
+};
 
 
 /* Use this iterator when simply looking at stmts.  Adding, deleting or
@@ -131,7 +131,7 @@ enum ssa_op_iter_type {
    optimization, this structure is scalarized, and any unused fields are
    optimized away, resulting in little overhead.  */
 
-typedef struct ssa_operand_iterator_d
+struct ssa_op_iter
 {
   enum ssa_op_iter_type iter_type;
   bool done;
@@ -140,7 +140,7 @@ typedef struct ssa_operand_iterator_d
   unsigned numops;
   use_optype_p uses;
   gimple stmt;
-} ssa_op_iter;
+};
 
 /* These flags are used to determine which operands are returned during
    execution of the loop.  */

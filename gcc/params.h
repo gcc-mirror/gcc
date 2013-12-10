@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The information associated with each parameter.  */
 
-typedef struct param_info
+struct param_info
 {
   /* The name used with the `--param <name>=<value>' switch to set this
      value.  */
@@ -55,7 +55,7 @@ typedef struct param_info
 
   /* A short description of the option.  */
   const char *const help;
-} param_info;
+};
 
 /* An array containing the compiler parameters and their current
    values.  */
@@ -79,14 +79,14 @@ extern void set_param_value (const char *name, int value,
 
 /* The parameters in use by language-independent code.  */
 
-typedef enum compiler_param
+enum compiler_param
 {
 #define DEFPARAM(enumerator, option, msgid, default, min, max) \
   enumerator,
 #include "params.def"
 #undef DEFPARAM
   LAST_PARAM
-} compiler_param;
+};
 
 /* The value of the parameter given by ENUM.  Not an lvalue.  */
 #define PARAM_VALUE(ENUM) \

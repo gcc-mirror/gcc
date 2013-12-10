@@ -203,7 +203,7 @@ extern struct target_reload *this_target_reload;
   (this_target_reload->x_caller_save_initialized_p)
 
 /* Register equivalences.  Indexed by register number.  */
-typedef struct reg_equivs_s
+struct reg_equivs_t
 {
   /* The constant value to which pseudo reg N is equivalent,
      or zero if pseudo reg N is not equivalent to a constant.
@@ -238,7 +238,7 @@ typedef struct reg_equivs_s
   /* The list of insns that initialized reg N from its equivalent
      constant or memory slot.  */
   rtx init;
-} reg_equivs_t;
+};
 
 #define reg_equiv_constant(ELT) \
   (*reg_equivs)[(ELT)].constant

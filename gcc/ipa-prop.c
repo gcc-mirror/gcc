@@ -68,11 +68,11 @@ struct param_analysis_info
 };
 
 /* Vector where the parameter infos are actually stored. */
-vec<ipa_node_params_t> ipa_node_params_vector;
+vec<ipa_node_params> ipa_node_params_vector;
 /* Vector of known aggregate values in cloned nodes.  */
 vec<ipa_agg_replacement_value_p, va_gc> *ipa_node_agg_replacements;
 /* Vector where the parameter infos are actually stored. */
-vec<ipa_edge_args_t, va_gc> *ipa_edge_args_vector;
+vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 
 /* Holders of ipa cgraph hooks: */
 static struct cgraph_edge_hook_list *edge_removal_hook_holder;
@@ -116,7 +116,7 @@ ipa_func_spec_opts_forbid_analysis_p (struct cgraph_node *node)
    to INFO.  */
 
 static int
-ipa_get_param_decl_index_1 (vec<ipa_param_descriptor_t> descriptors, tree ptree)
+ipa_get_param_decl_index_1 (vec<ipa_param_descriptor> descriptors, tree ptree)
 {
   int i, count;
 
@@ -142,7 +142,7 @@ ipa_get_param_decl_index (struct ipa_node_params *info, tree ptree)
 
 static void
 ipa_populate_param_decls (struct cgraph_node *node,
-			  vec<ipa_param_descriptor_t> &descriptors)
+			  vec<ipa_param_descriptor> &descriptors)
 {
   tree fndecl;
   tree fnargs;
@@ -775,7 +775,7 @@ parm_preserved_before_stmt_p (struct param_analysis_info *parm_ainfo,
    modified.  Otherwise return -1.  */
 
 static int
-load_from_unmodified_param (vec<ipa_param_descriptor_t> descriptors,
+load_from_unmodified_param (vec<ipa_param_descriptor> descriptors,
 			    struct param_analysis_info *parms_ainfo,
 			    gimple stmt)
 {
@@ -863,7 +863,7 @@ parm_ref_data_pass_through_p (struct param_analysis_info *parm_ainfo,
    reference respectively.  */
 
 static bool
-ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor_t> descriptors,
+ipa_load_from_parm_agg_1 (vec<ipa_param_descriptor> descriptors,
 			  struct param_analysis_info *parms_ainfo, gimple stmt,
 			  tree op, int *index_p, HOST_WIDE_INT *offset_p,
 			  HOST_WIDE_INT *size_p, bool *by_ref_p)
@@ -4697,7 +4697,7 @@ adjust_agg_replacement_values (struct cgraph_node *node,
 unsigned int
 ipcp_transform_function (struct cgraph_node *node)
 {
-  vec<ipa_param_descriptor_t> descriptors = vNULL;
+  vec<ipa_param_descriptor> descriptors = vNULL;
   struct param_analysis_info *parms_ainfo;
   struct ipa_agg_replacement_value *aggval;
   gimple_stmt_iterator gsi;

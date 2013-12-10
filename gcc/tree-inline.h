@@ -36,7 +36,7 @@ enum copy_body_cge_which
 
 /* Data required for function body duplication.  */
 
-typedef struct copy_body_data
+struct copy_body_data
 {
   /* FUNCTION_DECL for function being inlined, or in general the
      source function providing the original trees.  */
@@ -135,7 +135,7 @@ typedef struct copy_body_data
   /* Cilk keywords currently need to replace some variables that
      ordinary nested functions do not.  */ 
   bool remap_var_for_cilk;
-} copy_body_data;
+};
 
 /* Weights of constructions for estimate_num_insns.  */
 
