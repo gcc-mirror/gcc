@@ -939,7 +939,7 @@ extern void rtl_profile_for_edge (edge);
 extern void default_rtl_profile (void);
 
 /* In profile.c.  */
-struct gcov_working_set_t;
+typedef struct gcov_working_set_info gcov_working_set_t;
 extern gcov_working_set_t *find_working_set (unsigned pct_times_10);
 
 /* Check tha probability is sane.  */
