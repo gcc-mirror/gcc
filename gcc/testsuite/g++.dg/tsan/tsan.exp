@@ -43,4 +43,5 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c $srcdir/c-c++-common
 
 # All done.
 tsan_finish
+torture-finish
 dg-finish
