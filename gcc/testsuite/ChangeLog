@@ -1,3 +1,8 @@
+2013-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* gcc.dg/ipa/ipa-pta-14.c: Un-XFAIL.
+
 2013-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/vect-cond-11.c: New test.

@@ -917,11 +917,16 @@ constraint_set_union (vec<constraint_t> *to,
 
 /* Expands the solution in SET to all sub-fields of variables included.  */
 
-static void
-solution_set_expand (bitmap set)
+static bitmap
+solution_set_expand (bitmap set, bitmap *expanded)
 {
   bitmap_iterator bi;
   unsigned j;
+
+  if (*expanded)
+    return *expanded;
+
+  *expanded = BITMAP_ALLOC (&iteration_obstack);
 
   /* In a first pass expand to the head of the variables we need to
      add all sub-fields off.  This avoids quadratic behavior.  */
@@ -931,51 +936,52 @@ solution_set_expand (bitmap set)
       if (v->is_artificial_var
 	  || v->is_full_var)
 	continue;
-      bitmap_set_bit (set, v->head);
+      bitmap_set_bit (*expanded, v->head);
     }
 
   /* In the second pass now expand all head variables with subfields.  */
-  EXECUTE_IF_SET_IN_BITMAP (set, 0, j, bi)
+  EXECUTE_IF_SET_IN_BITMAP (*expanded, 0, j, bi)
     {
       varinfo_t v = get_varinfo (j);
-      if (v->is_artificial_var
-	  || v->is_full_var
-	  || v->head != j)
+      if (v->head != j)
 	continue;
       for (v = vi_next (v); v != NULL; v = vi_next (v))
-	bitmap_set_bit (set, v->id);
+	bitmap_set_bit (*expanded, v->id);
     }
+
+  /* And finally set the rest of the bits from SET.  */
+  bitmap_ior_into (*expanded, set);
+
+  return *expanded;
 }
 
-/* Union solution sets TO and FROM, and add INC to each member of FROM in the
+/* Union solution sets TO and DELTA, and add INC to each member of DELTA in the
    process.  */
 
 static bool
-set_union_with_increment  (bitmap to, bitmap from, HOST_WIDE_INT inc)
+set_union_with_increment  (bitmap to, bitmap delta, HOST_WIDE_INT inc,
+			   bitmap *expanded_delta)
 {
   bool changed = false;
   bitmap_iterator bi;
   unsigned int i;
 
-  /* If the solution of FROM contains anything it is good enough to transfer
+  /* If the solution of DELTA contains anything it is good enough to transfer
      this to TO.  */
-  if (bitmap_bit_p (from, anything_id))
+  if (bitmap_bit_p (delta, anything_id))
     return bitmap_set_bit (to, anything_id);
 
   /* If the offset is unknown we have to expand the solution to
      all subfields.  */
   if (inc == UNKNOWN_OFFSET)
     {
-      bitmap tmp = BITMAP_ALLOC (&iteration_obstack);
-      bitmap_copy (tmp, from);
-      solution_set_expand (tmp);
-      changed |= bitmap_ior_into (to, tmp);
-      BITMAP_FREE (tmp);
+      delta = solution_set_expand (delta, expanded_delta);
+      changed |= bitmap_ior_into (to, delta);
       return changed;
     }
 
   /* For non-zero offset union the offsetted solution into the destination.  */
-  EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (delta, 0, i, bi)
     {
       varinfo_t vi = get_varinfo (i);
 
@@ -1576,7 +1582,7 @@ topo_visit (constraint_graph_t graph, struct topo_info *ti,
 
 static void
 do_sd_constraint (constraint_graph_t graph, constraint_t c,
-		  bitmap delta)
+		  bitmap delta, bitmap *expanded_delta)
 {
   unsigned int lhs = c->lhs.var;
   bool flag = false;
@@ -1601,7 +1607,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
      dereferenced at all valid offsets.  */
   if (roffset == UNKNOWN_OFFSET)
     {
-      solution_set_expand (delta);
+      delta = solution_set_expand (delta, expanded_delta);
       /* No further offset processing is necessary.  */
       roffset = 0;
     }
@@ -1663,7 +1669,7 @@ done:
    as the starting solution for x.  */
 
 static void
-do_ds_constraint (constraint_t c, bitmap delta)
+do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
 {
   unsigned int rhs = c->rhs.var;
   bitmap sol = get_varinfo (rhs)->solution;
@@ -1699,7 +1705,7 @@ do_ds_constraint (constraint_t c, bitmap delta)
      dereferenced at all valid offsets.  */
   if (loff == UNKNOWN_OFFSET)
     {
-      solution_set_expand (delta);
+      delta = solution_set_expand (delta, expanded_delta);
       loff = 0;
     }
 
@@ -1761,7 +1767,8 @@ do_ds_constraint (constraint_t c, bitmap delta)
    constraint (IE *x = &y, x = *y, *x = y, and x = y with offsets involved).  */
 
 static void
-do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
+do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta,
+		       bitmap *expanded_delta)
 {
   if (c->lhs.type == DEREF)
     {
@@ -1772,14 +1779,14 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
       else
 	{
 	  /* *x = y */
-	  do_ds_constraint (c, delta);
+	  do_ds_constraint (c, delta, expanded_delta);
 	}
     }
   else if (c->rhs.type == DEREF)
     {
       /* x = *y */
       if (!(get_varinfo (c->lhs.var)->is_special_var))
-	do_sd_constraint (graph, c, delta);
+	do_sd_constraint (graph, c, delta, expanded_delta);
     }
   else
     {
@@ -1790,7 +1797,8 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 			   && c->rhs.offset != 0 && c->lhs.offset == 0);
       tmp = get_varinfo (c->lhs.var)->solution;
 
-      flag = set_union_with_increment (tmp, delta, c->rhs.offset);
+      flag = set_union_with_increment (tmp, delta, c->rhs.offset,
+				       expanded_delta);
 
       if (flag)
 	bitmap_set_bit (changed, c->lhs.var);
@@ -2709,6 +2717,7 @@ solve_graph (constraint_graph_t graph)
 	      solution_empty = bitmap_empty_p (solution);
 
 	      /* Process the complex constraints */
+	      bitmap expanded_pts = NULL;
 	      FOR_EACH_VEC_ELT (complex, j, c)
 		{
 		  /* XXX: This is going to unsort the constraints in
@@ -2723,8 +2732,9 @@ solve_graph (constraint_graph_t graph)
 		     is a constraint where the lhs side is receiving
 		     some set from elsewhere.  */
 		  if (!solution_empty || c->lhs.type != DEREF)
-		    do_complex_constraint (graph, c, pts);
+		    do_complex_constraint (graph, c, pts, &expanded_pts);
 		}
+	      BITMAP_FREE (expanded_pts);
 
 	      solution_empty = bitmap_empty_p (solution);
 

@@ -21,9 +21,8 @@ int main()
   void *p;
   a.p = (void *)&c;
   p = foo(&a, &a);
-  /* { dg-final { scan-ipa-dump "foo.result = { NULL a\[^ \]* c\[^ \]* }" "pta" { xfail *-*-* } } } */
-  /* { dg-final { scan-ipa-dump "foo.result = { NULL a\[^ \]* a\[^ \]* c\[^ \]* }" "pta" { target { ! keeps_null_pointer_checks } } } } */
-  /* { dg-final { scan-ipa-dump "foo.result = { NONLOCAL a\[^ \]* a\[^ \]* c\[^ \]* }" "pta" { target { keeps_null_pointer_checks } } } } */
+  /* { dg-final { scan-ipa-dump "foo.result = { NULL a\[^ \]* c\[^ \]* }" "pta" { target { ! keeps_null_pointer_checks } } } } */
+  /* { dg-final { scan-ipa-dump "foo.result = { NONLOCAL a\[^ \]* c\[^ \]* }" "pta" { target { keeps_null_pointer_checks } } } } */
   ((struct X *)p)->p = (void *)0;
   if (a.p != (void *)0)
     abort ();
