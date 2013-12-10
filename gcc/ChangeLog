@@ -1,3 +1,8 @@
+2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Always return 0 for
+	the extraction of a bit-field of null size.
+
 2013-12-10  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59437
