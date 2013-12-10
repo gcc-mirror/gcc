@@ -47,6 +47,8 @@ void test01()
   using namespace __gnu_test;
 
   // Positive tests.
+  static_assert(test_relationship<is_base_of, volatile ClassType,
+		ClassType>(true), "");
   static_assert(test_relationship<is_base_of, AbstractClass,
 		AbstractClass>(true), "");
   static_assert(test_relationship<is_base_of, ClassType,
