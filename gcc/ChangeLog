@@ -1,3 +1,15 @@
+2013-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* tree-ssa-structalias.c (solution_set_expand): Expand into
+	a different possibly cached bitmap and return the result.
+	(set_union_with_increment): Pass in a shared expanded bitmap
+	and adjust.
+	(do_sd_constraint): Likewise.
+	(do_ds_constraint): Likewise.
+	(do_complex_constraint): Likewise.
+	(solve_graph): Manage the shared expanded bitmap.
+
 2013-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vectorizer.h (struct _loop_vec_info): Add scalar_loop field.
