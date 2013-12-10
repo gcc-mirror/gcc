@@ -21,6 +21,7 @@
 # Load support procs.
 load_lib g++-dg.exp
 load_lib tsan-dg.exp
+load_lib torture-options.exp
 
 if ![check_effective_target_fthread_sanitizer] {
   return
@@ -28,6 +29,11 @@ if ![check_effective_target_fthread_sanitizer] {
 
 # Initialize `dg'.
 dg-init
+torture-init
+set-torture-options [list \
+	{ -O0 } \
+	{ -O2 } ]
+
 if [tsan_init] {
 
 # Main loop.
