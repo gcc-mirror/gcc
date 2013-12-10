@@ -1,3 +1,10 @@
+2013-12-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59437
+	* vtable-verify.c (var_is_used_for_virtual_call_p): Check the
+	return value of gimple_call_fn.  Use is_gimple_call/is_gimple_assign
+	instead of gimple_code.
+
 2013-12-10  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
 	* config.gcc (mips*-mti-linux*, mips64*-*-linux*):
