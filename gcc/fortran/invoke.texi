@@ -329,16 +329,14 @@ on most systems, but with @option{-fno-range-check} the value will
 
 @item -fdefault-integer-8
 @opindex @code{fdefault-integer-8}
-Set the default integer and logical types to an 8 byte wide type.
-Do nothing if this is already the default.  This option also affects
-the kind of integer constants like @code{42}. Unlike
+Set the default integer and logical types to an 8 byte wide type.  This option
+also affects the kind of integer constants like @code{42}. Unlike
 @option{-finteger-4-integer-8}, it does not promote variables with explicit
 kind declaration.
 
 @item -fdefault-real-8
 @opindex @code{fdefault-real-8}
-Set the default real type to an 8 byte wide type.
-Do nothing if this is already the default.  This option also affects
+Set the default real type to an 8 byte wide type. This option also affects
 the kind of non-double real constants like @code{1.0}, and does promote
 the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
 @code{-fdefault-double-8} is given, too. Unlike @option{-freal-4-real-8},
@@ -346,12 +344,12 @@ it does not promote variables with explicit kind declaration.
 
 @item -fdefault-double-8
 @opindex @code{fdefault-double-8}
-Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.  If
-@option{-fdefault-real-8} is given, @code{DOUBLE PRECISION} would
-instead be promoted to 16 bytes if possible, and @option{-fdefault-double-8}
-can be used to prevent this.  The kind of real constants like @code{1.d0} will
-not be changed by @option{-fdefault-real-8} though, so also
-@option{-fdefault-double-8} does not affect it.
+Set the @code{DOUBLE PRECISION} type to an 8 byte wide type.  Do nothing if this
+is already the default.  If @option{-fdefault-real-8} is given,
+@code{DOUBLE PRECISION} would instead be promoted to 16 bytes if possible, and
+@option{-fdefault-double-8} can be used to prevent this.  The kind of real
+constants like @code{1.d0} will not be changed by @option{-fdefault-real-8}
+though, so also @option{-fdefault-double-8} does not affect it.
 
 @item -finteger-4-integer-8
 @opindex @code{finteger-4-integer-8}

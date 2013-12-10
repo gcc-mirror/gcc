@@ -1,5 +1,12 @@
 2013-12-10  Janus Weil  <janus@gcc.gnu.org>
 
+	* gfortran.texi: Add possible kind values (and default) for
+	DOUBLE PRECISION.
+	* invoke.texi: Correct documentation of -fdefault-integer-8,
+	-fdefault-real-8 and -fdefault-double-8.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
 	* gfortran.texi: Modify documentation of kind type parameters.
 	* invoke.texi: Extend documentation of -fdefault-integer-8 and
 	-fdefault-real-8.
