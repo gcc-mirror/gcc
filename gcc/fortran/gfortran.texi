@@ -1145,6 +1145,9 @@ data types are:
 @item COMPLEX
 4, 8, 10*, 16*, default: 4***
 
+@item DOUBLE PRECISION
+4, 8, 10*, 16*, default: 8***
+
 @item CHARACTER
 1, 4, default: 1
 
