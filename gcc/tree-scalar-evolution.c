@@ -280,6 +280,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
+#include "pointer-set.h"
+#include "tree-affine.h"
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
 #include "params.h"
@@ -1380,6 +1382,66 @@ follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
 }
 
 
+/* Pointer map used when simplifying PEELED_CHREC into POLYNOMIAL_CHREC.  */
+static pointer_map_t *peeled_chrec_map;
+
+/* Simplify PEELED_CHREC represented by (init_cond, arg) in LOOP.
+   Handle below case and return the corresponding POLYNOMIAL_CHREC:
+
+   # i_17 = PHI <i_13(5), 0(3)>
+   # _20 = PHI <_5(5), start_4(D)(3)>
+   ...
+   i_13 = i_17 + 1;
+   _5 = start_4(D) + i_13;
+
+   Though variable _20 appears as a PEELED_CHREC in the form of
+   (start_4, _5)_LOOP, it's a POLYNOMIAL_CHREC like {start_4, 1}_LOOP.
+
+   See PR41488.  */
+
+static tree
+simplify_peeled_chrec (struct loop *loop, tree arg, tree init_cond)
+{
+  aff_tree aff1, aff2;
+  tree ev, left, right, type, step_val;
+
+  ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, arg));
+  if (ev == NULL_TREE || TREE_CODE (ev) != POLYNOMIAL_CHREC)
+    return chrec_dont_know;
+
+  left = CHREC_LEFT (ev);
+  right = CHREC_RIGHT (ev);
+  type = TREE_TYPE (left);
+  step_val = chrec_fold_plus (type, init_cond, right);
+
+  /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
+     if "left" equals to "init + right".  */
+  if (operand_equal_p (left, step_val, 0))
+    {
+      if (dump_file && (dump_flags & TDF_SCEV))
+	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");
+
+      return build_polynomial_chrec (loop->num, init_cond, right);
+    }
+
+  /* Try harder to check if they are equal.  */
+  tree_to_aff_combination_expand (left, type, &aff1, &peeled_chrec_map);
+  tree_to_aff_combination_expand (step_val, type, &aff2, &peeled_chrec_map);
+  aff_combination_scale (&aff2, double_int_minus_one);
+  aff_combination_add (&aff1, &aff2);
+  left = fold_convert (type, aff_combination_to_tree (&aff1));
+
+  /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
+     if "left" equals to "init + right".  */
+  if (operand_equal_p (left, integer_zero_node, 0))
+    {
+      if (dump_file && (dump_flags & TDF_SCEV))
+	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");
+
+      return build_polynomial_chrec (loop->num, init_cond, right);
+    }
+  return chrec_dont_know;
+}
 
 /* Given a LOOP_PHI_NODE, this function determines the evolution
    function from LOOP_PHI_NODE to LOOP_PHI_NODE in the loop.  */
@@ -1392,6 +1454,7 @@ analyze_evolution_in_loop (gimple loop_phi_node,
   tree evolution_function = chrec_not_analyzed_yet;
   struct loop *loop = loop_containing_stmt (loop_phi_node);
   basic_block bb;
+  static bool simplify_peeled_chrec_p = true;
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -1442,7 +1505,19 @@ analyze_evolution_in_loop (gimple loop_phi_node,
 	 all the other iterations it has the value of ARG.
 	 For the moment, PEELED_CHREC nodes are not built.  */
       if (res != t_true)
-	ev_fn = chrec_dont_know;
+	{
+	  ev_fn = chrec_dont_know;
+	  /* Try to recognize POLYNOMIAL_CHREC which appears in
+	     the form of PEELED_CHREC, but guard the process with
+	     a bool variable to keep the analyzer from infinite
+	     recurrence for real PEELED_RECs.  */
+	  if (simplify_peeled_chrec_p && TREE_CODE (arg) == SSA_NAME)
+	    {
+	      simplify_peeled_chrec_p = false;
+	      ev_fn = simplify_peeled_chrec (loop, arg, init_cond);
+	      simplify_peeled_chrec_p = true;
+	    }
+	}
 
       /* When there are multiple back edges of the loop (which in fact never
 	 happens currently, but nevertheless), merge their evolutions.  */
@@ -3086,6 +3161,8 @@ scev_initialize (void)
 
   initialize_scalar_evolutions_analyzer ();
 
+  peeled_chrec_map = pointer_map_create ();
+
   FOR_EACH_LOOP (loop, 0)
     {
       loop->nb_iterations = NULL_TREE;
@@ -3121,6 +3198,12 @@ scev_reset (void)
   struct loop *loop;
 
   scev_reset_htab ();
+
+  if (peeled_chrec_map)
+    {
+      pointer_map_destroy (peeled_chrec_map);
+      peeled_chrec_map = NULL;
+    }
 
   if (!current_loops)
     return;
@@ -3209,6 +3292,11 @@ scev_finalize (void)
     return;
   htab_delete (scalar_evolution_info);
   scalar_evolution_info = NULL;
+  if (peeled_chrec_map)
+    {
+      pointer_map_destroy (peeled_chrec_map);
+      peeled_chrec_map = NULL;
+    }
 }
 
 /* Returns true if the expression EXPR is considered to be too expensive
