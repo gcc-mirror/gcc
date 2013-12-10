@@ -513,10 +513,10 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
     {
       gimple stmt2 = USE_STMT (use_p);
 
-      if (gimple_code (stmt2) == GIMPLE_CALL)
+      if (is_gimple_call (stmt2))
         {
           tree fncall = gimple_call_fn (stmt2);
-          if (TREE_CODE (fncall) == OBJ_TYPE_REF)
+          if (fncall && TREE_CODE (fncall) == OBJ_TYPE_REF)
             found_vcall = true;
 	  else
 	    return false;
@@ -527,7 +527,7 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
 	                                            (gimple_phi_result (stmt2),
 	                                             mem_ref_depth);
         }
-      else if (gimple_code (stmt2) == GIMPLE_ASSIGN)
+      else if (is_gimple_assign (stmt2))
         {
 	  tree rhs = gimple_assign_rhs1 (stmt2);
 	  if (TREE_CODE (rhs) == ADDR_EXPR

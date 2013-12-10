@@ -1,3 +1,8 @@
+2013-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59437
+	* g++.dg/ubsan/pr59437.C: New test.
+
 2013-12-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/tsan/thread_leak2.c: `dg-skip-if' removed.
