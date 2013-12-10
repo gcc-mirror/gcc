@@ -1,3 +1,9 @@
+2013-12-10  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	* config.gcc (mips*-mti-linux*, mips64*-*-linux*):
+	Add android definitions.
+	(s390x-*-linux*): Use linux-protos.h.
+
 2013-12-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/41488

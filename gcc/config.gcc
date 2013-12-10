@@ -1918,14 +1918,16 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips*-mti-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h mips/mti-linux.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h mips/mti-linux.h"
+	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-mti-linux"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
 	gnu_ld=yes
 	gas=yes
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
-	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h"
+	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} mips/t-linux64"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
@@ -2387,7 +2389,7 @@ s390-*-linux*)
 s390x-*-linux*)
 	default_gnu_indirect_function=yes
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
-	tm_p_file=s390/s390-protos.h
+	tm_p_file="linux-protos.h s390/s390-protos.h"
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
 	out_file=s390/s390.c
