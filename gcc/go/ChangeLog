@@ -1,3 +1,8 @@
+2013-12-10  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (check_go_parallelize): Test go-test.exp r* tests
+	separately.
+
 2013-12-05  Ian Lance Taylor  <iant@google.com>
 
 	Revert this change; no longer required.
