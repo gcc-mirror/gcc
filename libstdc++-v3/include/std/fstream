@@ -396,8 +396,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_set_buffer(streamsize __off)
       {
- 	const bool __testin = _M_mode & ios_base::in;
- 	const bool __testout = (_M_mode & ios_base::out
+	const bool __testin = _M_mode & ios_base::in;
+	const bool __testout = (_M_mode & ios_base::out
 				|| _M_mode & ios_base::app);
 
 	if (__testin && __off > 0)
