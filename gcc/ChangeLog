@@ -1,3 +1,9 @@
+2013-12-10   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59458
+	* config/i386/i386.md (*movsf_internal): Set mode to SI for
+	alternative 13.
+
 2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/58295
