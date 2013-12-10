@@ -6916,6 +6916,45 @@ expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
 
   return expand_vec_perm (mode, m1, m2, perm, target);
 }
+
+/* Return true if target supports vector masked load/store for mode.  */
+bool
+can_vec_mask_load_store_p (enum machine_mode mode, bool is_load)
+{
+  optab op = is_load ? maskload_optab : maskstore_optab;
+  enum machine_mode vmode;
+  unsigned int vector_sizes;
+
+  /* If mode is vector mode, check it directly.  */
+  if (VECTOR_MODE_P (mode))
+    return optab_handler (op, mode) != CODE_FOR_nothing;
+
+  /* Otherwise, return true if there is some vector mode with
+     the mask load/store supported.  */
+
+  /* See if there is any chance the mask load or store might be
+     vectorized.  If not, punt.  */
+  vmode = targetm.vectorize.preferred_simd_mode (mode);
+  if (!VECTOR_MODE_P (vmode))
+    return false;
+
+  if (optab_handler (op, vmode) != CODE_FOR_nothing)
+    return true;
+
+  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+  while (vector_sizes != 0)
+    {
+      unsigned int cur = 1 << floor_log2 (vector_sizes);
+      vector_sizes &= ~cur;
+      if (cur <= GET_MODE_SIZE (mode))
+	continue;
+      vmode = mode_for_vector (mode, cur / GET_MODE_SIZE (mode));
+      if (VECTOR_MODE_P (vmode)
+	  && optab_handler (op, vmode) != CODE_FOR_nothing)
+	return true;
+    }
+  return false;
+}
 
 /* Return true if there is a compare_and_swap pattern.  */
 

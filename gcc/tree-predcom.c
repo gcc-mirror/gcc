@@ -732,6 +732,9 @@ split_data_refs_to_components (struct loop *loop,
 	     just fail.  */
 	  goto end;
 	}
+      /* predcom pass isn't prepared to handle calls with data references.  */
+      if (is_gimple_call (DR_STMT (dr)))
+	goto end;
       dr->aux = (void *) (size_t) i;
       comp_father[i] = i;
       comp_size[i] = 1;

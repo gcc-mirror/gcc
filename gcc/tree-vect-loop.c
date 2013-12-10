@@ -374,7 +374,11 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		analyze_pattern_stmt = false;
 	    }
 
-	  if (gimple_get_lhs (stmt) == NULL_TREE)
+	  if (gimple_get_lhs (stmt) == NULL_TREE
+	      /* MASK_STORE has no lhs, but is ok.  */
+	      && (!is_gimple_call (stmt)
+		  || !gimple_call_internal_p (stmt)
+		  || gimple_call_internal_fn (stmt) != IFN_MASK_STORE))
 	    {
 	      if (is_gimple_call (stmt))
 		{
@@ -426,7 +430,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  else
 	    {
 	      gcc_assert (!STMT_VINFO_DATA_REF (stmt_info));
-	      scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
+	      if (is_gimple_call (stmt)
+		  && gimple_call_internal_p (stmt)
+		  && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+		scalar_type = TREE_TYPE (gimple_call_arg (stmt, 3));
+	      else
+		scalar_type = TREE_TYPE (gimple_get_lhs (stmt));
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_NOTE, vect_location,

@@ -1,3 +1,102 @@
+2013-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vectorizer.h (struct _loop_vec_info): Add scalar_loop field.
+	(LOOP_VINFO_SCALAR_LOOP): Define.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Add scalar_loop argument.
+	* config/i386/sse.md (maskload<mode>, maskstore<mode>): New expanders.
+	* tree-data-ref.c (get_references_in_stmt): Handle MASK_LOAD and
+	MASK_STORE.
+	* internal-fn.def (LOOP_VECTORIZED, MASK_LOAD, MASK_STORE): New
+	internal fns.
+	* tree-if-conv.c: Include expr.h, optabs.h, tree-ssa-loop-ivopts.h and
+	tree-ssa-address.h.
+	(release_bb_predicate): New function.
+	(free_bb_predicate): Use it.
+	(reset_bb_predicate): Likewise.  Don't unallocate bb->aux
+	just to immediately allocate it again.
+	(add_to_predicate_list): Add loop argument.  If basic blocks that
+	dominate loop->latch don't insert any predicate.
+	(add_to_dst_predicate_list): Adjust caller.
+	(if_convertible_phi_p): Add any_mask_load_store argument, if true,
+	handle it like flag_tree_loop_if_convert_stores.
+	(insert_gimplified_predicates): Likewise.
+	(ifcvt_can_use_mask_load_store): New function.
+	(if_convertible_gimple_assign_stmt_p): Add any_mask_load_store
+	argument, check if some conditional loads or stores can't be
+	converted into MASK_LOAD or MASK_STORE.
+	(if_convertible_stmt_p): Add any_mask_load_store argument,
+	pass it down to if_convertible_gimple_assign_stmt_p.
+	(predicate_bbs): Don't return bool, only check if the last stmt
+	of a basic block is GIMPLE_COND and handle that.  Adjust
+	add_to_predicate_list caller.
+	(if_convertible_loop_p_1): Only call predicate_bbs if
+	flag_tree_loop_if_convert_stores and free_bb_predicate in that case
+	afterwards, check gimple_code of stmts here.  Replace is_predicated
+	check with dominance check.  Add any_mask_load_store argument,
+	pass it down to if_convertible_stmt_p and if_convertible_phi_p,
+	call if_convertible_phi_p only after all if_convertible_stmt_p
+	calls.
+	(if_convertible_loop_p): Add any_mask_load_store argument,
+	pass it down to if_convertible_loop_p_1.
+	(predicate_mem_writes): Emit MASK_LOAD and/or MASK_STORE calls.
+	(combine_blocks): Add any_mask_load_store argument, pass
+	it down to insert_gimplified_predicates and call predicate_mem_writes
+	if it is set.  Call predicate_bbs.
+	(version_loop_for_if_conversion): New function.
+	(tree_if_conversion): Adjust if_convertible_loop_p and combine_blocks
+	calls.  Return todo flags instead of bool, call
+	version_loop_for_if_conversion if if-conversion should be just
+	for the vectorized loops and nothing else.
+	(main_tree_if_conversion): Adjust caller.  Don't call
+	tree_if_conversion for dont_vectorize loops if if-conversion
+	isn't explicitly enabled.
+	* tree-vect-data-refs.c (vect_check_gather): Handle
+	MASK_LOAD/MASK_STORE.
+	(vect_analyze_data_refs, vect_supportable_dr_alignment): Likewise.
+	* gimple.h (gimple_expr_type): Handle MASK_STORE.
+	* internal-fn.c (expand_LOOP_VECTORIZED, expand_MASK_LOAD,
+	expand_MASK_STORE): New functions.
+	* tree-vectorizer.c: Include tree-cfg.h and gimple-fold.h.
+	(vect_loop_vectorized_call, fold_loop_vectorized_call): New functions.
+	(vectorize_loops): Don't try to vectorize loops with
+	loop->dont_vectorize set.  Set LOOP_VINFO_SCALAR_LOOP for if-converted
+	loops, fold LOOP_VECTORIZED internal call depending on if loop
+	has been vectorized or not.
+	* tree-vect-loop-manip.c (slpeel_duplicate_current_defs_from_edges):
+	New function.
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Add scalar_loop argument.
+	If non-NULL, copy basic blocks from scalar_loop instead of loop, but
+	still to loop's entry or exit edge.
+	(slpeel_tree_peel_loop_to_edge): Add scalar_loop argument, pass it
+	down to slpeel_tree_duplicate_loop_to_edge_cfg.
+	(vect_do_peeling_for_loop_bound, vect_do_peeling_for_loop_alignment):
+	Adjust callers.
+	(vect_loop_versioning): If LOOP_VINFO_SCALAR_LOOP, perform loop
+	versioning from that loop instead of LOOP_VINFO_LOOP, move it to the
+	right place in the CFG afterwards.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Handle
+	MASK_STORE.
+	* cfgloop.h (struct loop): Add dont_vectorize field.
+	* tree-loop-distribution.c (copy_loop_before): Adjust
+	slpeel_tree_duplicate_loop_to_edge_cfg caller.
+	* optabs.def (maskload_optab, maskstore_optab): New optabs.
+	* passes.def: Add a note that pass_vectorize must immediately follow
+	pass_if_conversion.
+	* tree-predcom.c (split_data_refs_to_components): Give up if
+	DR_STMT is a call.
+	* tree-vect-stmts.c (vect_mark_relevant): Don't crash if lhs
+	is NULL.
+	(exist_non_indexing_operands_for_use_p): Handle MASK_LOAD
+	and MASK_STORE.
+	(vectorizable_mask_load_store): New function.
+	(vectorizable_call): Call it for MASK_LOAD or MASK_STORE.
+	(vect_transform_stmt): Handle MASK_STORE.
+	* tree-ssa-phiopt.c (cond_if_else_store_replacement): Ignore
+	DR_STMT where lhs is NULL.
+	* optabs.h (can_vec_perm_p): Fix up comment typo.
+	(can_vec_mask_load_store_p): New prototype.
+	* optabs.c (can_vec_mask_load_store_p): New function.
+
 2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <normal_inner_ref>: Always return 0 for
