@@ -1,3 +1,36 @@
+2013-12-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/tilegx/tilegx.md (insn_ld_add<bitsuffix>): Use
+	register_operand rather than pointer_operand.  Add modes to the
+	operands.
+	(insn_ldna_add<bitsuffix>): Likewise.
+	(insn_ld<I124MODE:n><s>_add<I48MODE:bitsuffix>): Likewise.
+	(insn_ldnt_add<bitsuffix>): Likewise.
+	(insn_ldnt<I124MODE:n><s>_add<I48MODE:bitsuffix>): Likewise.
+	(insn_ld_add_L2<bitsuffix>): Likewise.
+	(insn_ldna_add_L2<bitsuffix>): Likewise.
+	(insn_ld<I124MODE:n><s>_add_L2<I48MODE:bitsuffix>): Likewise.
+	(insn_ldnt_add_L2<bitsuffix>): Likewise.
+	(insn_ldnt<I124MODE:n><s>_add_L2<I48MODE:bitsuffix>): Likewise.
+	(insn_ld_add_miss<bitsuffix>): Likewise.
+	(insn_ldna_add_miss<bitsuffix>): Likewise.
+	(insn_ld<I124MODE:n><s>_add_miss<I48MODE:bitsuffix>): Likewise.
+	(insn_ldnt_add_miss<bitsuffix>): Likewise.
+	(insn_ldnt<I124MODE:n><s>_add_miss<I48MODE:bitsuffix>): Likewise.
+	(insn_st_add<bitsuffix>): Likewise.
+	(insn_st<I124MODE:n>_add<I48MODE:bitsuffix>): Likewise.
+	(*insn_st<I124MODE:n>_add<I48MODE:bitsuffix>): Likewise.
+	(insn_stnt_add<bitsuffix>): Likewise.
+	(insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>): Likewise.
+	(*insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>): Likewise.
+	(vec_pack_<pack_optab>_v4hi): Use register_operand rather than
+	reg_or_0_operand for operand 0.
+	(insn_v2<pack_insn>): Likewise.
+	(vec_pack_hipart_v4hi): Likewise.
+	(insn_v2packh): Likewise.
+	(vec_pack_ssat_v2si): Likewise.
+	(insn_v4packsc): Likewise.
+
 2013-12-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* basic-block.h (gcov_working_set_t): Put back typedef. 
