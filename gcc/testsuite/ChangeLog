@@ -1,3 +1,8 @@
+2013-12-10  Yury Gribov  <y.gribov@samsung.com>
+
+	* gcc-dg/tsan/tsan.exp: Added missing call to torture-finish.
+	* g++-dg/tsan/tsan.exp: Likewise.
+
 2013-12-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/38474
