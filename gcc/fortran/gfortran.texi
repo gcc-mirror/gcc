@@ -1134,16 +1134,16 @@ data types are:
 @table @code
 
 @item INTEGER
-1, 2, 4, 8*, 16*, default: 4 (1)
+1, 2, 4, 8*, 16*, default: 4**
 
 @item LOGICAL
-1, 2, 4, 8*, 16*, default: 4 (1)
+1, 2, 4, 8*, 16*, default: 4**
 
 @item REAL
-4, 8, 10*, 16*, default: 4 (2)
+4, 8, 10*, 16*, default: 4***
 
 @item COMPLEX
-4, 8, 10*, 16*, default: 4 (2)
+4, 8, 10*, 16*, default: 4***
 
 @item CHARACTER
 1, 4, default: 1
@@ -1151,23 +1151,22 @@ data types are:
 @end table
 
 @noindent
-* = not available on all systems @*
-(1) Unless -fdefault-integer-8 is used @*
-(2) Unless -fdefault-real-8 is used
+* not available on all systems @*
+** unless @option{-fdefault-integer-8} is used @*
+*** unless @option{-fdefault-real-8} is used (see @ref{Fortran Dialect Options})
 
 @noindent
 The @code{KIND} value matches the storage size in bytes, except for
 @code{COMPLEX} where the storage size is twice as much (or both real and
 imaginary part are a real value of the given size).  It is recommended to use
-the @code{SELECTED_CHAR_KIND}, @code{SELECTED_INT_KIND} and
-@code{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
+the @ref{SELECTED_CHAR_KIND}, @ref{SELECTED_INT_KIND} and
+@ref{SELECTED_REAL_KIND} intrinsics or the @code{INT8}, @code{INT16},
 @code{INT32}, @code{INT64}, @code{REAL32}, @code{REAL64}, and @code{REAL128}
 parameters of the @code{ISO_FORTRAN_ENV} module instead of the concrete values.
 The available kind parameters can be found in the constant arrays
 @code{CHARACTER_KINDS}, @code{INTEGER_KINDS}, @code{LOGICAL_KINDS} and
-@code{REAL_KINDS} in the @code{ISO_FORTRAN_ENV} module
-(see @ref{ISO_FORTRAN_ENV}).  For C interoperability, the kind parameters of
-the @code{ISO_C_BINDING} module should be used (see @ref{ISO_C_BINDING}).
+@code{REAL_KINDS} in the @ref{ISO_FORTRAN_ENV} module.  For C interoperability,
+the kind parameters of the @ref{ISO_C_BINDING} module should be used.
 
 
 @node Internal representation of LOGICAL variables
