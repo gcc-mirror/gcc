@@ -290,7 +290,7 @@ default_cxx_get_cookie_size (tree type)
 
   sizetype_size = size_in_bytes (sizetype);
   type_align = size_int (TYPE_ALIGN_UNIT (type));
-  if (INT_CST_LT (type_align, sizetype_size))
+  if (tree_int_cst_lt (type_align, sizetype_size))
     cookie_size = sizetype_size;
   else
     cookie_size = type_align;

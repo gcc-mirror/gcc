@@ -4123,10 +4123,10 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  maxval = convert (*restype_ptr, maxval);
 	}
 
-      min_gt = INT_CST_LT (primop1, minval);
-      max_gt = INT_CST_LT (primop1, maxval);
-      min_lt = INT_CST_LT (minval, primop1);
-      max_lt = INT_CST_LT (maxval, primop1);
+      min_gt = tree_int_cst_lt (primop1, minval);
+      max_gt = tree_int_cst_lt (primop1, maxval);
+      min_lt = tree_int_cst_lt (minval, primop1);
+      max_lt = tree_int_cst_lt (maxval, primop1);
 
       val = 0;
       /* This used to be a switch, but Genix compiler can't handle that.  */

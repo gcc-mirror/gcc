@@ -6951,23 +6951,6 @@ tree_int_cst_equal (const_tree t1, const_tree t2)
   return 0;
 }
 
-/* Nonzero if integer constants T1 and T2 represent values that satisfy <.
-   The precise way of comparison depends on their data type.  */
-
-int
-tree_int_cst_lt (const_tree t1, const_tree t2)
-{
-  return INT_CST_LT (t1, t2);
-}
-
-/* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  */
-
-int
-tree_int_cst_compare (const_tree t1, const_tree t2)
-{
-  return wi::cmps (wi::to_widest (t1), wi::to_widest (t2));
-}
-
 /* Return true if T is an INTEGER_CST whose numerical value (extended
    according to TYPE_UNSIGNED) fits in a signed HOST_WIDE_INT.  */
 
@@ -8557,7 +8540,7 @@ retry:
   /* Check if c >= type_low_bound.  */
   if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
-      if (INT_CST_LT (c, type_low_bound))
+      if (tree_int_cst_lt (c, type_low_bound))
 	return false;
       ok_for_low_bound = true;
     }
@@ -8567,7 +8550,7 @@ retry:
   /* Check if c <= type_high_bound.  */
   if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
     {
-      if (INT_CST_LT (type_high_bound, c))
+      if (tree_int_cst_lt (type_high_bound, c))
 	return false;
       ok_for_high_bound = true;
     }

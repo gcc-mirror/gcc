@@ -250,7 +250,7 @@
 	tree_int_cst_min_precision and real_from_integer.
 	(fold_negate_const): Use wide-int interfaces.
 	(fold_abs_const): Likewise.
-	(fold_relational_const): Remove dead INT_CST_LT_UNSIGNED.
+	(fold_relational_const): Use tree_int_cst_lt.
 	(round_up_loc): Use wide-int interfaces.
 	* genemit.c
 	(gen_exp): Add CONST_WIDE_INT case.
@@ -487,7 +487,7 @@
 	* targhooks.h (can_use_doloop_if_innermost): Take widest_ints rather
 	than double_ints.
 	* targhooks.c
-	(default_cxx_get_cookie_size): Uses INT_CST_LT rather than
+	(default_cxx_get_cookie_size): Use tree_int_cst_lt rather than
 	INT_CST_LT_UNSIGNED.
 	(can_use_doloop_if_innermost): Take widest_ints rather than
 	double_ints.
@@ -562,9 +562,9 @@
 	(build_type_attribute_qual_variant): Use wide_int interfaces.
 	(type_hash_eq): Likewise
 	(tree_int_cst_equal): Likewise.
-	(tree_int_cst_lt): Likewise.
+	(tree_int_cst_lt): Delete.
 	(tree_int_cst_compare): Likewise.
-	(tree_fits_shwi_p): Likewise.
+	(tree_fits_shwi_p): Use wide_int interfaces.
 	(tree_fits_uhwi_p): Likewise.
 	(tree_int_cst_sign_bit): Likewise.
 	(tree_int_cst_sgn): Likewise.
@@ -572,8 +572,9 @@
 	(simple_cst_equal): Use wide_int interfaces.
 	(compare_tree_int): Likewise.
 	(iterative_hash_expr): Likewise.
-	(int_fits_type_p): Likewise.
-	(get_type_static_bounds): Likewise.
+	(int_fits_type_p): Likewise.  Use tree_int_cst_lt rather than
+	INT_CST_LT.
+	(get_type_static_bounds): Use wide_int interfaces.
 	(tree_int_cst_elt_check_failed): New.
 	(build_common_tree_nodes): Reordered to set prec before filling in
 	value.
@@ -619,8 +620,7 @@
 	(TREE_INT_CST_EXT_NUNITS): Likewise.
 	(TREE_INT_CST_OFFSET_NUNITS): Likewise.
 	(TREE_INT_CST_ELT): Likewise.
-	(INT_CST_LT): Use wide-int interfaces.
-	(INT_CST_LE): New.
+	(INT_CST_LT): Delete.
 	(tree_int_cst_elt_check): New (two forms).
 	(type_code_size): Update comment.
 	(make_int_cst_stat, make_int_cst): New.
@@ -629,6 +629,9 @@
 	(force_fit_type_double): Delete.
 	(build_int_cstu): Replace with out-of-line function.
 	(build_int_cst_wide): Delete.
+	(tree_int_cst_lt): Define inline.
+	(tree_int_cst_le): New.
+	(tree_int_cst_compare): Define inline.
 	(tree_int_cst_min_precision): Take a signop rather than a bool.
 	(wi::int_traits <const_tree>): New.
 	(wi::int_traits <tree>): New.
@@ -801,7 +804,8 @@
 	* tree-ssa-structalias.c
 	(get_constraint_for_ptr_offset): Use wide-int interfaces.
 	* tree-ssa-uninit.c
-	(is_value_included_in): Use wide-int interfaces.
+	(is_value_included_in): Use wide-int interfaces, tree_int_cst_lt
+	and tree_int_cst_le.
 	* tree-streamer-in.c
 	(unpack_ts_base_value_fields): Use wide-int interfaces.
 	(streamer_alloc_tree): Likewise.
@@ -827,8 +831,8 @@
 	* tree-vect-patterns.c
 	(vect_recog_divmod_pattern): Use wide-int interfaces.
 	* tree-vrp.c: Include wide-int.h.
-	(operand_less_p): Use wide-int interfaces.
-	(extract_range_from_assert): Likewise.
+	(operand_less_p): Use wide-int interfaces and tree_int_cst_lt.
+	(extract_range_from_assert): Use wide-int interfaces.
 	(vrp_int_const_binop): Likewise.
 	(zero_nonzero_bits_from_vr): Take wide_int pointers rather than
 	double_int pointers.
@@ -900,8 +904,8 @@ c-family:
 	(ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX): Remove.
 	(dump_generic_ada_node): Use wide-int interfaces.
 	* c-common.c: Include wide-int-print.h.
-	(shorten_compare): Use wide-int interfaces.
-	(pointer_int_sum): Likewise.
+	(shorten_compare): Use wide-int interfaces and tree_int_cst_lt.
+	(pointer_int_sum): Use wide-int interfaces.
 	(c_common_nodes_and_builtins): Use make_int_cst.
 	(match_case_to_enum_1): Use tree_fits_uhwi_p and tree_fits_shwi_p.
 	(handle_alloc_size_attribute): Use wide-int interfaces.
@@ -917,21 +921,24 @@ c-family:
 	* c-pretty-print.c: Include wide-int.h.
 	(pp_c_integer_constant): Use wide-int interfaces.
 	* cilk.c
-	(declare_one_free_variable): Use INT_CST_LT instead of
+	(declare_one_free_variable): Use tree_int_cst_lt instead of
 	INT_CST_LT_UNSIGNED.
 
 
 cp:
 	* call.c: Include wide-int.h.
-	(type_passed_as): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
+	(type_passed_as): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
 	(convert_for_arg_passing): Likewise.
 	* class.c: Include wide-int.h.
-	(end_of_class): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
+	(walk_subobject_offsets): Use tree_int_cst_lt instead of INT_CST_LT.
+	(end_of_class): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
 	(include_empty_classes): Likewise
+	(layout_class_type): Use tree_int_cst_lt instead of INT_CST_LT.
 	* cvt.c: Include wide-int.h.
 	(ignore_overflows): Use wide_int_to_tree.
 	* decl.c: Include wide-int.h.
 	(check_array_designated_initializer): Use wide-int interfaces.
+	(compute_array_index_type): Use tree_int_cst_lt instead of INT_CST_LT.
 	(finish_enum_value_list): Use signop.
 	(build_enumerator): Use wide-int interfaces.
 	* init.c: Include wide-int.h.
@@ -982,7 +989,7 @@ java:
 	* expr.c: Include wide-int.h.
 	(build_newarray): Remove bogus "== INTEGER_CST".
 	(expand_java_pushc): Use real_from_integer.
-	(build_field_ref): Use INT_CST_LT instead of INT_CST_LT_UNSIGNED.
+	(build_field_ref): Use tree_int_cst_lt instead of INT_CST_LT_UNSIGNED.
 	* jcf-parse.c: Include wide-int.h.
 	(get_constant): Use wide-int interfaces.
 

@@ -895,9 +895,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_INT_CST_LOW(NODE) \
   ((unsigned HOST_WIDE_INT) TREE_INT_CST_ELT (NODE, 0))
 
-#define INT_CST_LT(A, B) (wi::lts_p (wi::to_widest (A), wi::to_widest (B)))
-#define INT_CST_LE(A, B) (wi::les_p (wi::to_widest (A), wi::to_widest (B)))
-
 #define TREE_REAL_CST_PTR(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst_ptr)
 #define TREE_REAL_CST(NODE) (*TREE_REAL_CST_PTR (NODE))
 
@@ -3642,8 +3639,7 @@ extern tree chain_index (int, tree);
 extern int attribute_list_equal (const_tree, const_tree);
 extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
-extern int tree_int_cst_lt (const_tree, const_tree);
-extern int tree_int_cst_compare (const_tree, const_tree);
+
 extern bool tree_fits_shwi_p (const_tree)
 #ifndef ENABLE_TREE_CHECKING
   ATTRIBUTE_PURE /* tree_fits_shwi_p is pure only when checking is disabled.  */
@@ -4652,6 +4648,34 @@ inline wide_int
 wi::max_value (const_tree type)
 {
   return max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+/* Return true if INTEGER_CST T1 is less than INTEGER_CST T2,
+   extending both according to their respective TYPE_SIGNs.  */
+
+inline bool
+tree_int_cst_lt (const_tree t1, const_tree t2)
+{
+  return wi::lts_p (wi::to_widest (t1), wi::to_widest (t2));
+}
+
+/* Return true if INTEGER_CST T1 is less than or equal to INTEGER_CST T2,
+   extending both according to their respective TYPE_SIGNs.  */
+
+inline bool
+tree_int_cst_le (const_tree t1, const_tree t2)
+{
+  return wi::les_p (wi::to_widest (t1), wi::to_widest (t2));
+}
+
+/* Returns -1 if T1 < T2, 0 if T1 == T2, and 1 if T1 > T2.  T1 and T2
+   are both INTEGER_CSTs and their values are extended according to their
+   respective TYPE_SIGNs.  */
+
+inline int
+tree_int_cst_compare (const_tree t1, const_tree t2)
+{
+  return wi::cmps (wi::to_widest (t1), wi::to_widest (t2));
 }
 
 /* FIXME - These declarations belong in builtins.h, expr.h and emit-rtl.h,

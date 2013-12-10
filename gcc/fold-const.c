@@ -16409,7 +16409,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
       if (code == EQ_EXPR)
 	result = tree_int_cst_equal (op0, op1);
       else
-	result = INT_CST_LT (op0, op1);
+	result = tree_int_cst_lt (op0, op1);
     }
   else
     return NULL_TREE;
