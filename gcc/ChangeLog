@@ -1,3 +1,8 @@
+2013-12-09  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/t-aarch64 (MULTILIB_OPTIONS): Fix definition so
+	that options are conflicting ones.
+
 2013-12-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* optabs.c (gen_int_libfunc): Do not compare modes directly.
