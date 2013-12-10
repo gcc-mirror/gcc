@@ -1,5 +1,11 @@
 2013-12-10  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/35831
+	* interface.c (check_dummy_characteristics): Add checks for several
+	attributes.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
 	* gfortran.texi: Add possible kind values (and default) for
 	DOUBLE PRECISION.
 	* invoke.texi: Correct documentation of -fdefault-integer-8,
