@@ -1706,7 +1706,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
         == chrec_dont_know)
       || !then_datarefs.length ()
       || (find_data_references_in_bb (NULL, else_bb, &else_datarefs)
-        == chrec_dont_know)
+	  == chrec_dont_know)
       || !else_datarefs.length ())
     {
       free_data_refs (then_datarefs);
@@ -1723,6 +1723,8 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
       then_store = DR_STMT (then_dr);
       then_lhs = gimple_get_lhs (then_store);
+      if (then_lhs == NULL_TREE)
+	continue;
       found = false;
 
       FOR_EACH_VEC_ELT (else_datarefs, j, else_dr)
@@ -1732,6 +1734,8 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
           else_store = DR_STMT (else_dr);
           else_lhs = gimple_get_lhs (else_store);
+	  if (else_lhs == NULL_TREE)
+	    continue;
 
           if (operand_equal_p (then_lhs, else_lhs, 0))
             {

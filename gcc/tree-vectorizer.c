@@ -75,11 +75,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
+#include "gimple-fold.h"
 
 /* Loop or bb location.  */
 source_location vect_location;
@@ -317,6 +319,60 @@ vect_destroy_datarefs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 }
 
 
+/* If LOOP has been versioned during ifcvt, return the internal call
+   guarding it.  */
+
+static gimple
+vect_loop_vectorized_call (struct loop *loop)
+{
+  basic_block bb = loop_preheader_edge (loop)->src;
+  gimple g;
+  do
+    {
+      g = last_stmt (bb);
+      if (g)
+	break;
+      if (!single_pred_p (bb))
+	break;
+      bb = single_pred (bb);
+    }
+  while (1);
+  if (g && gimple_code (g) == GIMPLE_COND)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (g);
+      gsi_prev (&gsi);
+      if (!gsi_end_p (gsi))
+	{
+	  g = gsi_stmt (gsi);
+	  if (is_gimple_call (g)
+	      && gimple_call_internal_p (g)
+	      && gimple_call_internal_fn (g) == IFN_LOOP_VECTORIZED
+	      && (tree_to_shwi (gimple_call_arg (g, 0)) == loop->num
+		  || tree_to_shwi (gimple_call_arg (g, 1)) == loop->num))
+	    return g;
+	}
+    }
+  return NULL;
+}
+
+/* Fold LOOP_VECTORIZED internal call G to VALUE and
+   update any immediate uses of it's LHS.  */
+
+static void
+fold_loop_vectorized_call (gimple g, tree value)
+{
+  tree lhs = gimple_call_lhs (g);
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  gimple use_stmt;
+  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+
+  update_call_from_tree (&gsi, value);
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+      SET_USE (use_p, value);
+}
+
 /* Function vectorize_loops.
 
    Entry point to loop vectorization phase.  */
@@ -330,6 +386,8 @@ vectorize_loops (void)
   struct loop *loop;
   hash_table <simduid_to_vf> simduid_to_vf_htab;
   hash_table <simd_array_to_simduid> simd_array_to_simduid_htab;
+  bool any_ifcvt_loops = false;
+  unsigned ret = 0;
 
   vect_loops_num = number_of_loops (cfun);
 
@@ -352,8 +410,11 @@ vectorize_loops (void)
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (loop, 0)
-    if ((flag_tree_loop_vectorize && optimize_loop_nest_for_speed_p (loop))
-	|| loop->force_vect)
+    if (loop->dont_vectorize)
+      any_ifcvt_loops = true;
+    else if ((flag_tree_loop_vectorize
+	      && optimize_loop_nest_for_speed_p (loop))
+	     || loop->force_vect)
       {
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
@@ -371,6 +432,39 @@ vectorize_loops (void)
 
         if (!dbg_cnt (vect_loop))
 	  break;
+
+	gimple loop_vectorized_call = vect_loop_vectorized_call (loop);
+	if (loop_vectorized_call)
+	  {
+	    tree arg = gimple_call_arg (loop_vectorized_call, 1);
+	    basic_block *bbs;
+	    unsigned int i;
+	    struct loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+
+	    LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
+	    gcc_checking_assert (vect_loop_vectorized_call
+					(LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
+				 == loop_vectorized_call);
+	    bbs = get_loop_body (scalar_loop);
+	    for (i = 0; i < scalar_loop->num_nodes; i++)
+	      {
+		basic_block bb = bbs[i];
+		gimple_stmt_iterator gsi;
+		for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+		     gsi_next (&gsi))
+		  {
+		    gimple phi = gsi_stmt (gsi);
+		    gimple_set_uid (phi, 0);
+		  }
+		for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+		     gsi_next (&gsi))
+		  {
+		    gimple stmt = gsi_stmt (gsi);
+		    gimple_set_uid (stmt, 0);
+		  }
+	      }
+	    free (bbs);
+	  }
 
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
 	    && dump_enabled_p ())
@@ -392,6 +486,12 @@ vectorize_loops (void)
 	    *simduid_to_vf_htab.find_slot (simduid_to_vf_data, INSERT)
 	      = simduid_to_vf_data;
 	  }
+
+	if (loop_vectorized_call)
+	  {
+	    fold_loop_vectorized_call (loop_vectorized_call, boolean_true_node);
+	    ret |= TODO_cleanup_cfg;
+	  }
       }
 
   vect_location = UNKNOWN_LOCATION;
@@ -404,6 +504,21 @@ vectorize_loops (void)
                      num_vectorized_loops);
 
   /*  ----------- Finalize. -----------  */
+
+  if (any_ifcvt_loops)
+    for (i = 1; i < vect_loops_num; i++)
+      {
+	loop = get_loop (cfun, i);
+	if (loop && loop->dont_vectorize)
+	  {
+	    gimple g = vect_loop_vectorized_call (loop);
+	    if (g)
+	      {
+		fold_loop_vectorized_call (g, boolean_false_node);
+		ret |= TODO_cleanup_cfg;
+	      }
+	  }
+      }
 
   for (i = 1; i < vect_loops_num; i++)
     {
@@ -462,7 +577,7 @@ vectorize_loops (void)
       return TODO_cleanup_cfg;
     }
 
-  return 0;
+  return ret;
 }
 
 

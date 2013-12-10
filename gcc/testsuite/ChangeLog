@@ -1,3 +1,12 @@
+2013-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-cond-11.c: New test.
+	* gcc.target/i386/vect-cond-1.c: New test.
+	* gcc.target/i386/avx2-gather-5.c: New test.
+	* gcc.target/i386/avx2-gather-6.c: New test.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: New test.
+	* gcc.dg/vect/vect-mask-load-1.c: New test.
+
 2013-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59437

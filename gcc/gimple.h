@@ -5624,7 +5624,13 @@ gimple_expr_type (const_gimple stmt)
 	 useless conversion involved.  That means returning the
 	 original RHS type as far as we can reconstruct it.  */
       if (code == GIMPLE_CALL)
-	type = gimple_call_return_type (stmt);
+	{
+	  if (gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	    type = TREE_TYPE (gimple_call_arg (stmt, 3));
+	  else
+	    type = gimple_call_return_type (stmt);
+	}
       else
 	switch (gimple_assign_rhs_code (stmt))
 	  {

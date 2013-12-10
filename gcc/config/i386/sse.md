@@ -14253,6 +14253,23 @@
    (set_attr "btver2_decode" "vector") 
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_expand "maskload<mode>"
+  [(set (match_operand:V48_AVX2 0 "register_operand")
+	(unspec:V48_AVX2
+	  [(match_operand:<sseintvecmode> 2 "register_operand")
+	   (match_operand:V48_AVX2 1 "memory_operand")]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX")
+
+(define_expand "maskstore<mode>"
+  [(set (match_operand:V48_AVX2 0 "memory_operand")
+	(unspec:V48_AVX2
+	  [(match_operand:<sseintvecmode> 2 "register_operand")
+	   (match_operand:V48_AVX2 1 "register_operand")
+	   (match_dup 0)]
+	  UNSPEC_MASKMOV))]
+  "TARGET_AVX")
+
 (define_insn_and_split "avx_<castmode><avxsizesuffix>_<castmode>"
   [(set (match_operand:AVX256MODE2P 0 "nonimmediate_operand" "=x,m")
 	(unspec:AVX256MODE2P

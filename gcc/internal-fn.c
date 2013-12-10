@@ -461,6 +461,60 @@ expand_UBSAN_CHECK_MUL (gimple stmt)
   ubsan_expand_si_overflow_mul_check (stmt);
 }
 
+/* This should get folded in tree-vectorizer.c.  */
+
+static void
+expand_LOOP_VECTORIZED (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+static void
+expand_MASK_LOAD (gimple stmt)
+{
+  struct expand_operand ops[3];
+  tree type, lhs, rhs, maskt;
+  rtx mem, target, mask;
+
+  maskt = gimple_call_arg (stmt, 2);
+  lhs = gimple_call_lhs (stmt);
+  type = TREE_TYPE (lhs);
+  rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
+		     gimple_call_arg (stmt, 1));
+
+  mem = expand_expr (rhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  gcc_assert (MEM_P (mem));
+  mask = expand_normal (maskt);
+  target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], target, TYPE_MODE (type));
+  create_fixed_operand (&ops[1], mem);
+  create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+  expand_insn (optab_handler (maskload_optab, TYPE_MODE (type)), 3, ops);
+}
+
+static void
+expand_MASK_STORE (gimple stmt)
+{
+  struct expand_operand ops[3];
+  tree type, lhs, rhs, maskt;
+  rtx mem, reg, mask;
+
+  maskt = gimple_call_arg (stmt, 2);
+  rhs = gimple_call_arg (stmt, 3);
+  type = TREE_TYPE (rhs);
+  lhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
+		     gimple_call_arg (stmt, 1));
+
+  mem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  gcc_assert (MEM_P (mem));
+  mask = expand_normal (maskt);
+  reg = expand_normal (rhs);
+  create_fixed_operand (&ops[0], mem);
+  create_input_operand (&ops[1], reg, TYPE_MODE (type));
+  create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+  expand_insn (optab_handler (maskstore_optab, TYPE_MODE (type)), 3, ops);
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 
