@@ -223,7 +223,7 @@
 }")
 
 (define_insn "*movsi"
-  [(set (match_operand:SI 0 "general_operand" "=r,r,r,W,A,r,r,B,r")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,W,A,r,r,B,r")
 	(match_operand:SI 1 "moxie_general_movsrc_operand" "O,r,i,r,r,W,A,r,B"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)"
@@ -251,7 +251,7 @@
 }")
 
 (define_insn "*movqi"
-  [(set (match_operand:QI 0 "general_operand" "=r,r,r,W,A,r,r,B,r")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,W,A,r,r,B,r")
 	(match_operand:QI 1 "moxie_general_movsrc_operand" "O,r,i,r,r,W,A,r,B"))]
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)"
@@ -279,7 +279,7 @@
 }")
 
 (define_insn "*movhi"
-  [(set (match_operand:HI 0 "general_operand" "=r,r,r,W,A,r,r,B,r")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,W,A,r,r,B,r")
 	(match_operand:HI 1 "moxie_general_movsrc_operand" "O,r,i,r,r,W,A,r,B"))]
   "(register_operand (operands[0], HImode)
     || register_operand (operands[1], HImode))"
