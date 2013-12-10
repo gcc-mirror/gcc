@@ -1,3 +1,8 @@
+2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vect/pr58508.c: XFAIL for vect_no_align.
+	* gcc.dg/vect/vect-reduc-pattern-3.c: Require vect_int_mult.
+
 2013-12-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/41488
