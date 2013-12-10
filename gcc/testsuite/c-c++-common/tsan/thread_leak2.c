@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-shouldfail "tsan" } */
-/* { dg-skip-if "" { *-*-* }  { "-O3 -funroll-loops" "-O3 -funroll-all-loops" } { "" } } */
 
 #include <pthread.h>
 #include <unistd.h>

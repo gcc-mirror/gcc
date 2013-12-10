@@ -1,3 +1,9 @@
+2013-12-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/tsan/thread_leak2.c: `dg-skip-if' removed.
+	* gcc-dg/tsan/tsan.exp: Run only with '-O0' and '-O2' options.
+	* g++-dg/tsan/tsan.exp: Likewise.
+
 2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/vect/pr58508.c: XFAIL for vect_no_align.
