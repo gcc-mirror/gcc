@@ -1,5 +1,21 @@
 2013-12-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* genrecog.c (validate_pattern): Treat all messages except missing
+	modes as errors.
+	* config/epiphany/epiphany.md: Remove constraints from
+	define_peephole2s.
+	* config/h8300/h8300.md: Remove constraints from define_splits.
+	* config/msp430/msp430.md: Likewise.
+	* config/mcore/mcore.md (movdi_i, movsf_i, movdf_k): Use
+	nonimmediate_operand rather than general_operand for operand 0.
+	* config/moxie/moxie.md (*movsi, *movqi, *movhi): Likewise.
+	* config/pdp11/predicates.md (float_operand, float_nonimm_operand):
+	Use match_operator rather than match_test to invoke general_operand.
+	* config/v850/v850.md (*movqi_internal, *movhi_internal)
+	(*movsi_internal_v850e, *movsi_internal, *movsf_internal): Likewise.
+
+2013-12-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/tilegx/tilegx.md (insn_ld_add<bitsuffix>): Use
 	register_operand rather than pointer_operand.  Add modes to the
 	operands.
