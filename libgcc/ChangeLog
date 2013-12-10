@@ -1,3 +1,8 @@
+2013-12-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
+	instructions when __SSE_MATH__ is defined.
+
 2013-12-06  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.host (microblaze-*-rtems*): New.
@@ -173,7 +178,7 @@
 	* config/mips/crtn.S (fini, init): New labels.
 
 2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
-	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000 
+	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000
 	as dividend.
 
 2013-02-16  Alan Modra  <amodra@gmail.com>
