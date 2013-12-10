@@ -1,3 +1,9 @@
+2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/58295
+	* simplify-rtx.c (simplify_truncation): Restrict the distribution for
+	WORD_REGISTER_OPERATIONS targets.
+
 2013-12-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56807
