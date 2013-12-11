@@ -173,7 +173,15 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		{
 		  minv = minv.max (minc, TYPE_UNSIGNED (type));
 		  maxv = maxv.min (maxc, TYPE_UNSIGNED (type));
-		  gcc_assert (minv.cmp (maxv, TYPE_UNSIGNED (type)) <= 0);
+		  /* If the PHI result range are inconsistent with
+		     the VAR range, give up on looking at the PHI
+		     results.  This can happen if VR_UNDEFINED is
+		     involved.  */
+		  if (minv.cmp (maxv, TYPE_UNSIGNED (type)) > 0)
+		    {
+		      rtype = get_range_info (var, &minv, &maxv);
+		      break;
+		    }
 		}
 	    }
 	}

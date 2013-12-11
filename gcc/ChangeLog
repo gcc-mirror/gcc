@@ -1,5 +1,13 @@
 2013-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59417
+	* tree-ssa-copy.c (fini_copy_prop): If copy_of[i].value is defined
+	in a different bb rhan var, only duplicate points-to info and
+	not alignment info and don't duplicate range info.
+	* tree-ssa-loop-niter.c (determine_value_range): Instead of
+	assertion failure handle inconsistencies in range info by only
+	using var's range info and not PHI result range infos.
+
 	PR tree-optimization/59386
 	* tree-inline.c (remap_gimple_stmt): If not id->do_not_unshare,
 	unshare_expr (id->retval) before passing it to gimple_build_assign.

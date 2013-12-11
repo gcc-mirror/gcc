@@ -567,14 +567,28 @@ fini_copy_prop (void)
       if (copy_of[i].value != var
 	  && TREE_CODE (copy_of[i].value) == SSA_NAME)
 	{
+	  basic_block copy_of_bb
+	    = gimple_bb (SSA_NAME_DEF_STMT (copy_of[i].value));
+	  basic_block var_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
 	  if (POINTER_TYPE_P (TREE_TYPE (var))
 	      && SSA_NAME_PTR_INFO (var)
 	      && !SSA_NAME_PTR_INFO (copy_of[i].value))
-	    duplicate_ssa_name_ptr_info (copy_of[i].value,
-					 SSA_NAME_PTR_INFO (var));
+	    {
+	      duplicate_ssa_name_ptr_info (copy_of[i].value,
+					   SSA_NAME_PTR_INFO (var));
+	      /* Points-to information is cfg insensitive,
+		 but alignment info might be cfg sensitive, if it
+		 e.g. is derived from VRP derived non-zero bits.
+		 So, do not copy alignment info if the two SSA_NAMEs
+		 aren't defined in the same basic block.  */
+	      if (var_bb != copy_of_bb)
+		mark_ptr_info_alignment_unknown
+				(SSA_NAME_PTR_INFO (copy_of[i].value));
+	    }
 	  else if (!POINTER_TYPE_P (TREE_TYPE (var))
 		   && SSA_NAME_RANGE_INFO (var)
-		   && !SSA_NAME_RANGE_INFO (copy_of[i].value))
+		   && !SSA_NAME_RANGE_INFO (copy_of[i].value)
+		   && var_bb == copy_of_bb)
 	    duplicate_ssa_name_range_info (copy_of[i].value,
 					   SSA_NAME_RANGE_TYPE (var),
 					   SSA_NAME_RANGE_INFO (var));

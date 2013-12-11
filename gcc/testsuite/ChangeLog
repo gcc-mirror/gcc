@@ -1,5 +1,8 @@
 2013-12-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59417
+	* gcc.c-torture/compile/pr59417.c: New test.
+
 	PR tree-optimization/59386
 	* gcc.c-torture/compile/pr59386.c: New test.
 
