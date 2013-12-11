@@ -1,3 +1,9 @@
+2013-12-11  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/59446
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Properly
+	test for crossing a loop header.
+
 2013-12-11  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/59390
