@@ -539,6 +539,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	d.__arg = (void*)-1;
 	d.__panic = g->panic;
 	d.__retaddr = nil;
+	d.__makefunc_can_recover = 0;
 	d.__frame = &frame;
 	g->defer = &d;
 

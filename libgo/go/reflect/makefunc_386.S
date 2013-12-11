@@ -48,6 +48,15 @@ reflect.makeFuncStub:
 	leal	8(%ebp), %eax	/* Set esp field in struct.  */
 	movl	%eax, -24(%ebp)
 
+	/* For MakeFunc functions that call recover.  */
+	movl	4(%ebp), %eax
+	movl	%eax, (%esp)
+#ifdef __PIC__
+	call	__go_makefunc_can_recover@PLT
+#else
+	call	__go_makefunc_can_recover
+#endif
+
 #ifdef __PIC__
 	call	__go_get_closure@PLT
 #else
@@ -63,6 +72,13 @@ reflect.makeFuncStub:
 	call	reflect.MakeFuncStubGo@PLT
 #else
 	call	reflect.MakeFuncStubGo
+#endif
+
+	/* MakeFunc functions can no longer call recover.  */
+#ifdef __PIC__
+	call __go_makefunc_returning@PLT
+#else
+	call __go_makefunc_returning
 #endif
 
 	/* Set return registers.  */

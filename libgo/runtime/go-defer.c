@@ -27,6 +27,7 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
   n->__pfn = pfn;
   n->__arg = arg;
   n->__retaddr = NULL;
+  n->__makefunc_can_recover = 0;
   g->defer = n;
 }
 
