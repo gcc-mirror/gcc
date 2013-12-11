@@ -1,3 +1,12 @@
+2013-12-11  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/59390
+	* config/i386/i386.c (get_builtin): New function.
+	(ix86_builtin_vectorized_function): Replace all instances of
+	ix86_builtins[...] with get_builtin(...).
+	(ix86_builtin_reciprocal): Ditto.
+
+
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* langhooks.h (lang_hooks_for_decls): Remove lang_hooks_for_cilkplus.
