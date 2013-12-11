@@ -10431,15 +10431,15 @@ ix86_expand_prologue (void)
 
       if (r10_live && eax_live)
         {
-	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
+	  t = plus_constant (stack_pointer_rtx, allocate);
 	  emit_move_insn (r10, gen_frame_mem (Pmode, t));
-	  t = plus_constant (Pmode, stack_pointer_rtx,
+	  t = plus_constant (stack_pointer_rtx,
 			     allocate - UNITS_PER_WORD);
 	  emit_move_insn (eax, gen_frame_mem (Pmode, t));
 	}
       else if (eax_live || r10_live)
 	{
-	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
+	  t = plus_constant (stack_pointer_rtx, allocate);
 	  emit_move_insn ((eax_live ? eax : r10), gen_frame_mem (Pmode, t));
 	}
     }

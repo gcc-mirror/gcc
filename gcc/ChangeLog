@@ -1,3 +1,9 @@
+2013-12-11  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56807
+	* config/i386/i386.c (ix86_expand_prologue): plus_constant
+	takes no mode-argument.
+
 2013-12-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56807
