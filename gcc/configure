@@ -23932,6 +23932,60 @@ _ACEOF
 $as_echo "$gcc_cv_lto_plugin" >&6; }
 
 case "$target" in
+  aarch64*-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mabi option" >&5
+$as_echo_n "checking assembler for -mabi option... " >&6; }
+if test "${gcc_cv_as_aarch64_mabi+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_aarch64_mabi=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mabi=lp64 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_aarch64_mabi=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_aarch64_mabi" >&5
+$as_echo "$gcc_cv_as_aarch64_mabi" >&6; }
+
+    if test x$gcc_cv_as_aarch64_mabi = xyes; then
+
+$as_echo "#define HAVE_AS_MABI_OPTION 1" >>confdefs.h
+
+    else
+      if test x$with_abi = xilp32; then
+        as_fn_error "Assembler does not support -mabi=ilp32.\
+                     Upgrade the Assembler." "$LINENO" 5
+      fi
+      if test x"$with_multilib_list" = xdefault; then
+        TM_MULTILIB_CONFIG=lp64
+      else
+        aarch64_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
+        for aarch64_multilib in ${aarch64_multilibs}; do
+          case ${aarch64_multilib} in
+            ilp32)
+              as_fn_error "Assembler does not support -mabi=ilp32.\
+                            Upgrade the Assembler." "$LINENO" 5
+              ;;
+            *)
+              ;;
+          esac
+        done
+      fi
+    fi
+    ;;
+
   # All TARGET_ABI_OSF targets.
   alpha*-*-linux* | alpha*-*-*bsd*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support" >&5
