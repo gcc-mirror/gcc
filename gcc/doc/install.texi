@@ -3751,6 +3751,15 @@ removed and the system libunwind library will always be used.
 
 @html
 <hr />
+@end html
+@anchor{aarch64-x-x}
+@heading aarch64*-*-*
+Pre 2.24 binutils does not have support for selecting -mabi and does not
+support ILP32.  If GCC 4.9 or later is built with pre 2.24, GCC will not
+support option -mabi=ilp32.
+
+@html
+<hr />
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
 @anchor{x-ibm-aix}

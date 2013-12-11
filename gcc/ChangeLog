@@ -1,3 +1,15 @@
+2013-12-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* configure.ac: Add check for aarch64 assembler -mabi support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/aarch64/aarch64-elf.h (ASM_MABI_SPEC): New define.
+	(ASM_SPEC): Update to substitute -mabi with ASM_MABI_SPEC.
+	* config/aarch64/aarch64.h (aarch64_override_options): Issue error
+	if assembler does not support -mabi and option ilp32 is selected.
+	* doc/install.texi: Added note that building gcc 4.9 and after
+	with pre 2.24 binutils will not support -mabi=ilp32.
+
 2013-12-11  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59399
