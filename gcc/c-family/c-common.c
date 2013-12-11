@@ -121,11 +121,6 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
 	tree char_array_type_node;
 
-   Type `int[SOMENUMBER]' or something like it.
-   Used when an array of int needed and the size is irrelevant.
-
-	tree int_array_type_node;
-
    Type `wchar_t[SOMENUMBER]' or something like it.
    Used when a wide string literal is created.
 
@@ -5518,10 +5513,6 @@ c_common_nodes_and_builtins (void)
      array type.  */
   char_array_type_node
     = build_array_type (char_type_node, array_domain_type);
-
-  /* Likewise for arrays of ints.  */
-  int_array_type_node
-    = build_array_type (integer_type_node, array_domain_type);
 
   string_type_node = build_pointer_type (char_type_node);
   const_string_type_node
