@@ -48,6 +48,9 @@ static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   rtx);
+static void store_fixed_bit_field_1 (rtx, unsigned HOST_WIDE_INT,
+				     unsigned HOST_WIDE_INT,
+				     rtx);
 static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -948,10 +951,16 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  emit_move_insn (str_rtx, value);
 	}
       else
-	/* Explicitly override the C/C++ memory model; ignore the
-	   bit range so that we can do the access in the mode mandated
-	   by -fstrict-volatile-bitfields instead.  */
-	store_fixed_bit_field (str_rtx, bitsize, bitnum, 0, 0, value);
+	{
+	  str_rtx = narrow_bit_field_mem (str_rtx, fieldmode, bitsize, bitnum,
+					  &bitnum);
+	  /* Explicitly override the C/C++ memory model; ignore the
+	     bit range so that we can do the access in the mode mandated
+	     by -fstrict-volatile-bitfields instead.  */
+	  store_fixed_bit_field_1 (str_rtx, bitsize, bitnum,
+				   value);
+	}
+
       return;
     }
 
@@ -994,9 +1003,6 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 		       rtx value)
 {
   enum machine_mode mode;
-  rtx temp;
-  int all_zero = 0;
-  int all_one = 0;
 
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
@@ -1025,6 +1031,23 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
       op0 = narrow_bit_field_mem (op0, mode, bitsize, bitnum, &bitnum);
     }
+
+  store_fixed_bit_field_1 (op0, bitsize, bitnum, value);
+  return;
+}
+
+/* Helper function for store_fixed_bit_field, stores
+   the bit field always using the MODE of OP0.  */
+
+static void
+store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
+		         unsigned HOST_WIDE_INT bitnum,
+		         rtx value)
+{
+  enum machine_mode mode;
+  rtx temp;
+  int all_zero = 0;
+  int all_one = 0;
 
   mode = GET_MODE (op0);
   gcc_assert (SCALAR_INT_MODE_P (mode));
@@ -1133,6 +1156,12 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
     unit = BITS_PER_WORD;
   else
     unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
+
+  /* If OP0 is a memory with a mode, then UNIT must not be larger than
+     OP0's mode as well.  Otherwise, store_fixed_bit_field will call us
+     again, and we will mutually recurse forever.  */
+  if (MEM_P (op0) && GET_MODE_BITSIZE (GET_MODE (op0)) > 0)
+    unit = MIN (unit, GET_MODE_BITSIZE (GET_MODE (op0)));
 
   /* If VALUE is a constant other than a CONST_INT, get it into a register in
      WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
