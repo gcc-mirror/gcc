@@ -2526,19 +2526,11 @@ add_old_iv_candidates (struct ivopts_data *data, struct iv *iv)
       /* Additionally record the possibility of leaving the original iv
 	 untouched.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (data->current_loop));
-      /* Don't add candidate if it's from another PHI node because
-	  it's an affine iv appearing in the form of PEELED_CHREC.  */
-      phi = SSA_NAME_DEF_STMT (def);
-      if (gimple_code (phi) != GIMPLE_PHI)
-	{
-	  cand = add_candidate_1 (data,
-				  iv->base, iv->step, true, IP_ORIGINAL, NULL,
-				  SSA_NAME_DEF_STMT (def));
-	  cand->var_before = iv->ssa_name;
-	  cand->var_after = def;
-	}
-      else
-	gcc_assert (gimple_bb (phi) == data->current_loop->header);
+      cand = add_candidate_1 (data,
+			      iv->base, iv->step, true, IP_ORIGINAL, NULL,
+			      SSA_NAME_DEF_STMT (def));
+      cand->var_before = iv->ssa_name;
+      cand->var_after = def;
     }
 }
 

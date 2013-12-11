@@ -1,3 +1,11 @@
+2013-12-11  Bin Cheng  <bin.cheng@arm.com>
+
+	Reverted:
+	2013-12-10  Bin Cheng  <bin.cheng@arm.com>
+	PR tree-optimization/41488
+	* gcc.dg/tree-ssa/scev-7.c: New test.
+	* gcc.dg/pr41488.c: New test.
+
 2013-12-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831
