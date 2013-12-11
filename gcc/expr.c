@@ -4838,13 +4838,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-      /* If the bitfield is volatile, we want to access it in the
+      /* If the field has a mode, we want to access it in the
 	 field's mode, not the computed mode.
 	 If a MEM has VOIDmode (external with incomplete type),
 	 use BLKmode for it instead.  */
       if (MEM_P (to_rtx))
 	{
-	  if (volatilep && flag_strict_volatile_bitfields > 0)
+	  if (mode1 != VOIDmode)
 	    to_rtx = adjust_address (to_rtx, mode1, 0);
 	  else if (GET_MODE (to_rtx) == VOIDmode)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
@@ -9970,13 +9970,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			 VOIDmode,
 			 modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier);
 
-	/* If the bitfield is volatile, we want to access it in the
+	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
 	   If a MEM has VOIDmode (external with incomplete type),
 	   use BLKmode for it instead.  */
 	if (MEM_P (op0))
 	  {
-	    if (volatilep && flag_strict_volatile_bitfields > 0)
+	    if (mode1 != VOIDmode)
 	      op0 = adjust_address (op0, mode1, 0);
 	    else if (GET_MODE (op0) == VOIDmode)
 	      op0 = adjust_address (op0, BLKmode, 0);
@@ -10108,17 +10108,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		&& modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_INITIALIZER
 		&& modifier != EXPAND_MEMORY)
-	    /* If the field is volatile, we always want an aligned
-	       access.  Do this in following two situations:
-	       1. the access is not already naturally
-	       aligned, otherwise "normal" (non-bitfield) volatile fields
-	       become non-addressable.
-	       2. the bitsize is narrower than the access size. Need
-	       to extract bitfields from the access.  */
-	    || (volatilep && flag_strict_volatile_bitfields > 0
-		&& (bitpos % GET_MODE_ALIGNMENT (mode) != 0 
-		    || (mode1 != BLKmode
-		        && bitsize < GET_MODE_SIZE (mode1) * BITS_PER_UNIT)))
+	    /* If the bitfield is volatile and the bitsize
+	       is narrower than the access size of the bitfield,
+	       we need to extract bitfields from the access.  */
+	    || (volatilep && TREE_CODE (exp) == COMPONENT_REF
+		&& DECL_BIT_FIELD_TYPE (TREE_OPERAND (exp, 1))
+		&& mode1 != BLKmode
+		&& bitsize < GET_MODE_SIZE (mode1) * BITS_PER_UNIT)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
