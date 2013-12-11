@@ -1449,44 +1449,32 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	    {
 	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
-	      /* Basically we're looking for a situation where we can see
-	  	 3 or more loop structures on a jump threading path.  */
-
-	      struct loop *first_father = (*path)[0]->e->src->loop_father;
-	      struct loop *second_father = NULL;
-	      for (unsigned int i = 0; i < path->length (); i++)
+	      for (unsigned int i = 0, crossed_headers = 0;
+		   i < path->length ();
+		   i++)
 		{
-		  /* See if this is a loop father we have not seen before.  */
-		  if ((*path)[i]->e->dest->loop_father != first_father
-		      && (*path)[i]->e->dest->loop_father != second_father)
+		  basic_block dest = (*path)[i]->e->dest;
+		  crossed_headers += (dest == dest->loop_father->header);
+		  if (crossed_headers > 1)
 		    {
-		      /* We've already seen two loop fathers, so we
-			 need to trim this jump threading path.  */
-		      if (second_father != NULL)
-			{
-			  /* Trim from entry I onwards.  */
-			  for (unsigned int j = i; j < path->length (); j++)
-			    delete (*path)[j];
-			  path->truncate (i);
+		      /* Trim from entry I onwards.  */
+		      for (unsigned int j = i; j < path->length (); j++)
+			delete (*path)[j];
+		      path->truncate (i);
 
-			  /* Now that we've truncated the path, make sure
-			     what's left is still valid.   We need at least
-			     two edges on the path and the last edge can not
-			     be a joiner.  This should never happen, but let's
-			     be safe.  */
-			  if (path->length () < 2
-			      || (path->last ()->type
-				  == EDGE_COPY_SRC_JOINER_BLOCK))
-			    {
-			      delete_jump_thread_path (path);
-			      e->aux = NULL;
-			    }
-			  break;
-			}
-		      else
+		      /* Now that we've truncated the path, make sure
+			 what's left is still valid.   We need at least
+			 two edges on the path and the last edge can not
+			 be a joiner.  This should never happen, but let's
+			 be safe.  */
+		      if (path->length () < 2
+			  || (path->last ()->type
+			      == EDGE_COPY_SRC_JOINER_BLOCK))
 			{
-			  second_father = (*path)[i]->e->dest->loop_father;
+			  delete_jump_thread_path (path);
+			  e->aux = NULL;
 			}
+		      break;
 		    }
 		}
 	    }
