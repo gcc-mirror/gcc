@@ -1,5 +1,7 @@
 2013-12-11  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* c-common.c (c_fully_fold_internal): Handle ADDR_SPACE_CONVERT_EXPR.
+
 	* c-common.h (enum c_tree_index): Remove CTI_INT_ARRAY_TYPE.
 	(int_array_type_node): Remove.
 	* c-common.c (c_common_nodes_and_builtins): Don't build it.
