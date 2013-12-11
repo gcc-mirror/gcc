@@ -1,3 +1,9 @@
+2013-12-11  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59399
+	* expr.c (expand_expr_real_1): Remove assert dealing with
+	internal calls and turn that into a condition instead.
+
 2013-12-11  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm.opt (mlra): Enable LRA by default.
