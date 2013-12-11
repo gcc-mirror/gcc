@@ -1,3 +1,22 @@
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23623
+	PR middle-end/48784
+	PR middle-end/56341
+	PR middle-end/56997
+	* expmed.c (strict_volatile_bitfield_p): Add bitregion_start
+	and bitregion_end parameters.  Test for compliance with C++
+	memory model.
+	(store_bit_field): Adjust call to strict_volatile_bitfield_p.
+	Add fallback logic for cases where -fstrict-volatile-bitfields
+	is supposed to apply, but cannot.
+	(extract_bit_field): Likewise. Use narrow_bit_field_mem and
+	extract_fixed_bit_field_1 to do the extraction.
+	(extract_fixed_bit_field): Revert to previous mode selection algorithm.
+	Call extract_fixed_bit_field_1 to do the real work.
+	(extract_fixed_bit_field_1): New function.
+
 2013-12-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/23623
