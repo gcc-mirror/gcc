@@ -1,3 +1,18 @@
+2013-12-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23623
+	PR middle-end/48784
+	PR middle-end/56341
+	PR middle-end/56997
+	* gcc.dg/pr23623.c: New test.
+	* gcc.dg/pr48784-1.c: New test.
+	* gcc.dg/pr48784-2.c: New test.
+	* gcc.dg/pr56341-1.c: New test.
+	* gcc.dg/pr56341-2.c: New test.
+	* gcc.dg/pr56997-1.c: New test.
+	* gcc.dg/pr56997-2.c: New test.
+	* gcc.dg/pr56997-3.c: New test.
+
 2013-12-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58916
