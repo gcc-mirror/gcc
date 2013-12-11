@@ -4545,7 +4545,7 @@ namespace wi
     static const unsigned int precision = N;
   };
 
-  generic_wide_int <extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
+  generic_wide_int <extended_tree <WIDE_INT_MAX_PRECISION> >
   to_widest (const_tree);
 
   generic_wide_int <extended_tree <ADDR_MAX_PRECISION> > to_offset (const_tree);
@@ -4566,7 +4566,7 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 			  precision);
 }
 
-inline generic_wide_int <wi::extended_tree <MAX_BITSIZE_MODE_ANY_INT> >
+inline generic_wide_int <wi::extended_tree <WIDE_INT_MAX_PRECISION> >
 wi::to_widest (const_tree t)
 {
   return t;
@@ -4605,7 +4605,7 @@ wi::extended_tree <N>::get_len () const
 {
   if (N == ADDR_MAX_PRECISION)
     return TREE_INT_CST_OFFSET_NUNITS (m_t);
-  else if (N == MAX_BITSIZE_MODE_ANY_INT)
+  else if (N >= WIDE_INT_MAX_PRECISION)
     return TREE_INT_CST_EXT_NUNITS (m_t);
   else
     /* This class is designed to be used for specific output precisions

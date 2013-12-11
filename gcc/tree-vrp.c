@@ -2620,23 +2620,24 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
       signop sign = TYPE_SIGN (expr_type);
       unsigned int prec = TYPE_PRECISION (expr_type);
-      unsigned int prec2 = (prec * 2) + (sign == UNSIGNED ? 2 : 0);
 
       if (range_int_cst_p (&vr0)
 	  && range_int_cst_p (&vr1)
 	  && TYPE_OVERFLOW_WRAPS (expr_type))
 	{
-	  wide_int sizem1 = wi::mask (prec, false, prec2);
-	  wide_int size = sizem1 + 1;
+	  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) vrp_int;
+	  typedef generic_wide_int
+             <wi::extended_tree <WIDE_INT_MAX_PRECISION * 2> > vrp_int_cst;
+	  vrp_int sizem1 = wi::mask <vrp_int> (prec, false);
+	  vrp_int size = sizem1 + 1;
 
 	  /* Extend the values using the sign of the result to PREC2.
 	     From here on out, everthing is just signed math no matter
 	     what the input types were.  */
-	  wide_int min0 = wide_int::from (vr0.min, prec2, sign);
-	  wide_int max0 = wide_int::from (vr0.max, prec2, sign);
-	  wide_int min1 = wide_int::from (vr1.min, prec2, sign);
-	  wide_int max1 = wide_int::from (vr1.max, prec2, sign);
-
+          vrp_int min0 = vrp_int_cst (vr0.min);
+          vrp_int max0 = vrp_int_cst (vr0.max);
+          vrp_int min1 = vrp_int_cst (vr1.min);
+          vrp_int max1 = vrp_int_cst (vr1.max);
 	  /* Canonicalize the intervals.  */
 	  if (sign == UNSIGNED)
 	    {
@@ -2653,17 +2654,17 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		}
 	    }
 
-	  wide_int prod0 = min0 * min1;
-	  wide_int prod1 = min0 * max1;
-	  wide_int prod2 = max0 * min1;
-	  wide_int prod3 = max0 * max1;
+	  vrp_int prod0 = min0 * min1;
+	  vrp_int prod1 = min0 * max1;
+	  vrp_int prod2 = max0 * min1;
+	  vrp_int prod3 = max0 * max1;
 
 	  /* Sort the 4 products so that min is in prod0 and max is in
 	     prod3.  */
 	  /* min0min1 > max0max1 */
 	  if (wi::gts_p (prod0, prod3))
 	    {
-	      wide_int tmp = prod3;
+	      vrp_int tmp = prod3;
 	      prod3 = prod0;
 	      prod0 = tmp;
 	    }
@@ -2671,21 +2672,21 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  /* min0max1 > max0min1 */
 	  if (wi::gts_p (prod1, prod2))
 	    {
-	      wide_int tmp = prod2;
+	      vrp_int tmp = prod2;
 	      prod2 = prod1;
 	      prod1 = tmp;
 	    }
 
 	  if (wi::gts_p (prod0, prod1))
 	    {
-	      wide_int tmp = prod1;
+	      vrp_int tmp = prod1;
 	      prod1 = prod0;
 	      prod0 = tmp;
 	    }
 
 	  if (wi::gts_p (prod2, prod3))
 	    {
-	      wide_int tmp = prod3;
+	      vrp_int tmp = prod3;
 	      prod3 = prod2;
 	      prod2 = tmp;
 	    }
