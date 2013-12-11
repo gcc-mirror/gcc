@@ -1,3 +1,10 @@
+2013-12-11  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/59390
+	* gcc.target/i386/pr59390.c: New test.
+	* gcc.target/i386/pr59390_1.c: New test.
+	* gcc.target/i386/pr59390_2.c: New test.
+
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* g++.dg/cilk-plus/CK/catch_exc.cc: New test case.
