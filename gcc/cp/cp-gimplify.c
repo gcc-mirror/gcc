@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "target.h"
 #include "c-family/c-ubsan.h"
+#include "cilk.h"
 
 /* Forward declarations.  */
 
@@ -584,12 +585,21 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 LHS of an assignment might also be involved in the RHS, as in bug
 	 25979.  */
     case INIT_EXPR:
+      if (fn_contains_cilk_spawn_p (cfun)
+	  && cilk_detect_spawn_and_unwrap (expr_p)
+	  && !seen_error ())
+	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
       cp_gimplify_init_expr (expr_p);
       if (TREE_CODE (*expr_p) != INIT_EXPR)
 	return GS_OK;
       /* Otherwise fall through.  */
     case MODIFY_EXPR:
       {
+	if (fn_contains_cilk_spawn_p (cfun)
+	    && cilk_detect_spawn_and_unwrap (expr_p)
+	    && !seen_error ())
+	  return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+
 	/* If the back end isn't clever enough to know that the lhs and rhs
 	   types are the same, add an explicit conversion.  */
 	tree op0 = TREE_OPERAND (*expr_p, 0);
@@ -697,6 +707,21 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	ret = GS_OK;
       }
       break;
+
+    case CILK_SPAWN_STMT:
+      gcc_assert 
+	(fn_contains_cilk_spawn_p (cfun) 
+	 && cilk_detect_spawn_and_unwrap (expr_p));
+
+      /* If errors are seen, then just process it as a CALL_EXPR.  */
+      if (!seen_error ())
+	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
+      
+    case CALL_EXPR:
+      if (fn_contains_cilk_spawn_p (cfun)
+	  && cilk_detect_spawn_and_unwrap (expr_p)
+	  && !seen_error ())
+	return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 
     default:
       ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);

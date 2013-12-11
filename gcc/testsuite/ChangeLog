@@ -1,3 +1,15 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: New test case.
+	* g++.dg/cilk-plus/CK/const_spawn.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-opr-overload.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-tplt.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/cilk-plus.exp: Added support to run Cilk Keywords
+	test stored in c-c++-common.  Also, added the Cilk runtime's library
+	to the ld_library_path.
+	
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/59134

@@ -6166,6 +6166,17 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
 
+  if (flag_enable_cilkplus
+      && (TREE_CODE (lhs) == CILK_SPAWN_STMT
+	  || TREE_CODE (rhs) == CILK_SPAWN_STMT))
+    {
+      location_t loc = (EXPR_HAS_LOCATION (lhs) ? EXPR_LOCATION (lhs)
+			: EXPR_LOCATION (rhs));
+      error_at (loc,
+		"spawned function call cannot be part of a comma expression");
+      return error_mark_node;
+    }
+
   if (TREE_CODE (rhs) == TARGET_EXPR)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound
@@ -8289,6 +8300,13 @@ check_return_expr (tree retval, bool *no_warning)
   bool named_return_value_okay_p;
 
   *no_warning = false;
+
+  if (flag_enable_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+    {
+      error_at (EXPR_LOCATION (retval), "use of %<_Cilk_spawn%> in a return "
+		"statement is not allowed");
+      return NULL_TREE;
+    }
 
   /* A `volatile' function is one that isn't supposed to return, ever.
      (This is a G++ extension, used to get better code for functions

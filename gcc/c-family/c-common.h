@@ -1376,8 +1376,8 @@ extern vec <tree, va_gc> *fix_sec_implicit_args
 /* In cilk.c.  */
 extern tree insert_cilk_frame (tree);
 extern void cilk_init_builtins (void);
-extern int gimplify_cilk_spawn (tree *, gimple_seq *, gimple_seq *);
-extern void c_cilk_install_body_w_frame_cleanup (tree, tree);
+extern int gimplify_cilk_spawn (tree *);
+extern void cilk_install_body_with_frame_cleanup (tree, tree, void *);
 extern bool cilk_detect_spawn_and_unwrap (tree *);
 extern bool cilk_set_spawn_marker (location_t, tree);
 extern tree build_cilk_sync (void);
@@ -1385,5 +1385,5 @@ extern tree build_cilk_spawn (location_t, tree);
 extern tree make_cilk_frame (tree);
 extern tree create_cilk_function_exit (tree, bool, bool);
 extern tree cilk_install_body_pedigree_operations (tree);
-
+extern void cilk_outline (tree, tree *, void *);
 #endif /* ! GCC_C_COMMON_H */

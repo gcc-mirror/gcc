@@ -153,5 +153,4 @@ extern void cp_common_init_ts (void);
 
 #undef LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS
 #define LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS cp_protect_cleanup_actions
-
 #endif /* GCC_CP_OBJCP_COMMON */

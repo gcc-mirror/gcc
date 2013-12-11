@@ -13762,6 +13762,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       error ("use %<...%> to expand argument pack");
       RETURN (error_mark_node);
 
+    case CILK_SPAWN_STMT:
+      cfun->calls_cilk_spawn = 1;
+      RETURN (build_cilk_spawn (EXPR_LOCATION (t), RECUR (CILK_SPAWN_FN (t))));
+
+    case CILK_SYNC_STMT:
+      RETURN (build_cilk_sync ());
+
     case COMPOUND_EXPR:
       tmp = RECUR (TREE_OPERAND (t, 0));
       if (tmp == NULL_TREE)
