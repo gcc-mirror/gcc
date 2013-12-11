@@ -1,4 +1,10 @@
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/59134
+	* gcc.c-torture/compile/pr59134.c: New test.
+	* gnat.dg/misaligned_volatile.adb: New test.
+
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/pr23623.c: Update to test interaction with C++

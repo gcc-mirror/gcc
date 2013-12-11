@@ -1,4 +1,15 @@
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/59134
+	* expmed.c (store_bit_field): Use narrow_bit_field_mem and
+	store_fixed_bit_field_1 for -fstrict-volatile-bitfields.
+	(store_fixed_bit_field): Split up.  Call store_fixed_bit_field_1
+	to do the real work.
+	(store_fixed_bit_field_1): New function.
+	(store_split_bit_field): Limit the unit size to the memory mode size,
+	to prevent recursion.
+
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/23623
