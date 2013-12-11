@@ -1,5 +1,12 @@
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* expr.c (expand_assignment): Remove dependency on
+	flag_strict_volatile_bitfields. Always set the memory 
+	access mode.
+	(expand_expr_real_1): Likewise.
+
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	PR middle-end/59134
 	* expmed.c (store_bit_field): Use narrow_bit_field_mem and
 	store_fixed_bit_field_1 for -fstrict-volatile-bitfields.
