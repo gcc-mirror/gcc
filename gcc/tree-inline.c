@@ -1273,7 +1273,9 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 		  || ! SSA_NAME_VAR (retval)
 		  || TREE_CODE (SSA_NAME_VAR (retval)) != RESULT_DECL)))
         {
-	  copy = gimple_build_assign (id->retvar, retval);
+	  copy = gimple_build_assign (id->do_not_unshare
+				      ? id->retvar : unshare_expr (id->retvar),
+				      retval);
 	  /* id->retvar is already substituted.  Skip it on later remapping.  */
 	  skip_first = true;
 	}
