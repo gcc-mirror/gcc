@@ -61,6 +61,14 @@ reflect.makeFuncStub:
 	movdqa	%xmm6, 0xa0(%rsp)
 	movdqa	%xmm7, 0xb0(%rsp)
 
+	/* For MakeFunc functions that call recover.  */
+	movq	8(%rbp), %rdi
+#ifdef __PIC__
+	call	__go_makefunc_can_recover@PLT
+#else
+	call	__go_makefunc_can_recover
+#endif
+
 	# Get function type.
 #ifdef __PIC__
 	call	__go_get_closure@PLT
@@ -75,6 +83,13 @@ reflect.makeFuncStub:
 	call	reflect.MakeFuncStubGo@PLT
 #else
 	call	reflect.MakeFuncStubGo
+#endif
+
+	/* MakeFunc functions can no longer call recover.  */
+#ifdef __PIC__
+	call __go_makefunc_returning@PLT
+#else
+	call __go_makefunc_returning
 #endif
 
 	# The structure will be updated with any return values.  Load
