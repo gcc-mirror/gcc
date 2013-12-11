@@ -1,3 +1,10 @@
+2013-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58916
+	* resolve.c (conformable_arrays): Treat scalar 'e2'.
+	(resolve_allocate_expr): Check rank also for unlimited-polymorphic
+	variables.
+
 2013-12-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831
