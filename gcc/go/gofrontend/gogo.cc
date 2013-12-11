@@ -2822,7 +2822,10 @@ Build_recover_thunks::function(Named_object* orig_no)
   if (orig_fntype->is_varargs())
     new_fntype->set_is_varargs();
 
-  std::string name = orig_no->name() + "$recover";
+  std::string name = orig_no->name();
+  if (orig_fntype->is_method())
+    name += "$" + orig_fntype->receiver()->type()->mangled_name(gogo);
+  name += "$recover";
   Named_object *new_no = gogo->start_function(name, new_fntype, false,
 					      location);
   Function *new_func = new_no->func_value();
@@ -2916,7 +2919,25 @@ Build_recover_thunks::function(Named_object* orig_no)
 		 && !orig_rec_no->var_value()->is_receiver());
       orig_rec_no->var_value()->set_is_receiver();
 
-      const std::string& new_receiver_name(orig_fntype->receiver()->name());
+      std::string new_receiver_name(orig_fntype->receiver()->name());
+      if (new_receiver_name.empty())
+	{
+	  // Find the receiver.  It was named "r.NNN" in
+	  // Gogo::start_function.
+	  for (Bindings::const_definitions_iterator p =
+		 new_bindings->begin_definitions();
+	       p != new_bindings->end_definitions();
+	       ++p)
+	    {
+	      const std::string& pname((*p)->name());
+	      if (pname[0] == 'r' && pname[1] == '.')
+		{
+		  new_receiver_name = pname;
+		  break;
+		}
+	    }
+	  go_assert(!new_receiver_name.empty());
+	}
       Named_object* new_rec_no = new_bindings->lookup_local(new_receiver_name);
       if (new_rec_no == NULL)
 	go_assert(saw_errors());
