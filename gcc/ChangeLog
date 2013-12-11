@@ -1,3 +1,24 @@
+2013-12-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23623
+	PR middle-end/48784
+	PR middle-end/56341
+	PR middle-end/56997
+	* expmed.c (strict_volatile_bitfield_p): New function.
+	(store_bit_field_1): Don't special-case strict volatile
+	bitfields here.
+	(store_bit_field): Handle strict volatile bitfields here instead.
+	(store_fixed_bit_field): Don't special-case strict volatile
+	bitfields here.
+	(extract_bit_field_1): Don't special-case strict volatile
+	bitfields here.
+	(extract_bit_field): Handle strict volatile bitfields here instead.
+	(extract_fixed_bit_field): Don't special-case strict volatile
+	bitfields here.  Simplify surrounding code to resemble that in
+	store_fixed_bit_field.
+	* doc/invoke.texi (Code Gen Options): Update
+	-fstrict-volatile-bitfields description.
+
 2013-12-11  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* configure.ac: Add check for aarch64 assembler -mabi support.
