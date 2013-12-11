@@ -5187,6 +5187,13 @@ aarch64_override_options (void)
       aarch64_parse_tune ();
     }
 
+#ifndef HAVE_AS_MABI_OPTION
+  /* The compiler may have been configured with 2.23.* binutils, which does
+     not have support for ILP32.  */
+  if (TARGET_ILP32)
+    error ("Assembler does not support -mabi=ilp32");
+#endif
+
   initialize_aarch64_code_model ();
 
   aarch64_build_bitmask_table ();

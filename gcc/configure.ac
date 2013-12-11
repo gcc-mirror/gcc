@@ -3494,6 +3494,35 @@ AC_DEFINE_UNQUOTED(HAVE_LTO_PLUGIN, $gcc_cv_lto_plugin,
 AC_MSG_RESULT($gcc_cv_lto_plugin)
 
 case "$target" in
+  aarch64*-*-*)
+    gcc_GAS_CHECK_FEATURE([-mabi option], gcc_cv_as_aarch64_mabi,,
+                          [-mabi=lp64], [.text],,,)
+    if test x$gcc_cv_as_aarch64_mabi = xyes; then
+      AC_DEFINE(HAVE_AS_MABI_OPTION, 1,
+                [Define if your assembler supports the -mabi option.])
+    else
+      if test x$with_abi = xilp32; then
+        AC_MSG_ERROR([Assembler does not support -mabi=ilp32.\
+                     Upgrade the Assembler.])
+      fi
+      if test x"$with_multilib_list" = xdefault; then
+        TM_MULTILIB_CONFIG=lp64
+      else
+        aarch64_multilibs=`echo $with_multilib_list | sed -e 's/,/ /g'`
+        for aarch64_multilib in ${aarch64_multilibs}; do
+          case ${aarch64_multilib} in
+            ilp32)
+              AC_MSG_ERROR([Assembler does not support -mabi=ilp32.\
+                            Upgrade the Assembler.])
+              ;;
+            *)
+              ;;
+          esac
+        done
+      fi
+    fi
+    ;;
+
   # All TARGET_ABI_OSF targets.
   alpha*-*-linux* | alpha*-*-*bsd*)
     gcc_GAS_CHECK_FEATURE([explicit relocation support],
