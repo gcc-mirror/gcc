@@ -1,3 +1,9 @@
+2013-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59386
+	* tree-inline.c (remap_gimple_stmt): If not id->do_not_unshare,
+	unshare_expr (id->retval) before passing it to gimple_build_assign.
+
 2013-12-11  Bin Cheng  <bin.cheng@arm.com>
 
 	Reverted:
