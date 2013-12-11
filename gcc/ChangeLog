@@ -1,3 +1,18 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* langhooks.h (lang_hooks_for_decls): Remove lang_hooks_for_cilkplus.
+	(lang_hooks_for_cilkplus): Remove.
+	* langhooks.c (lhd_cilk_detect_spawn): Likewise.
+	(lhd_install_body_with_frame_cleanup): Likewise.
+	* langhooks-def.h (LANG_HOOKS_CILKPLUS_FRAME_CLEANUP): Likewise.
+	(LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP): Likewise.
+	(LANG_HOOKS_CILKPLUS_CILKPLUS_GIMPLIFY_SPAWN): Likewise.
+	(LANG_HOOKS_CILKPLUS): Likewise.
+	(LANG_HOOKS_DECLS): Remove LANG_HOOKS_CILKPLUS.
+	* gimplify.c (gimplify_expr): Removed CILK_SPAWN_STMT case.
+	(gimplify_modify_expr): Removed handling of _Cilk_spawn in expr.
+	(gimplify_call_expr): Likewise.
+
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* expr.c (expand_assignment): Remove dependency on

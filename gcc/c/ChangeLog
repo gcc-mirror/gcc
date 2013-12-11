@@ -1,3 +1,10 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-objc-common.h (LANG_HOOKS_CILKPLUS_FRAME_CLEANUP): Remove.
+	(LANG_HOOKS_CILKPLUS_DETECT_SPAWN_AND_UNWRAP): Likewise.
+	(LANG_HOOKS_CILKPLUS_CILKPLUS_GIMPLIFY_SPAWN): Likewise.
+	* c-typeck.c (cilk_install_body_with_frame_cleanup): New function.
+
 2013-12-04  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/52023

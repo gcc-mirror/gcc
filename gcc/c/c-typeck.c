@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
+#include "cilk.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -12437,4 +12438,32 @@ c_tree_equal (tree t1, tree t2)
     }
   /* We can get here with --disable-checking.  */
   return false;
+}
+
+/* Inserts "cleanup" functions after the function-body of FNDECL.  FNDECL is a 
+   spawn-helper and BODY is the newly created body for FNDECL.  */
+
+void
+cilk_install_body_with_frame_cleanup (tree fndecl, tree body, void *w)
+{
+  tree list = alloc_stmt_list ();
+  tree frame = make_cilk_frame (fndecl);
+  tree dtor = create_cilk_function_exit (frame, false, true);
+  add_local_decl (cfun, frame);
+  
+  DECL_SAVED_TREE (fndecl) = list;
+  tree frame_ptr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (frame)), 
+			   frame);
+  tree body_list = cilk_install_body_pedigree_operations (frame_ptr);
+  gcc_assert (TREE_CODE (body_list) == STATEMENT_LIST);
+  
+  tree detach_expr = build_call_expr (cilk_detach_fndecl, 1, frame_ptr); 
+  append_to_statement_list (detach_expr, &body_list);
+
+  cilk_outline (fndecl, &body, (struct wrapper_data *) w);
+  body = fold_build_cleanup_point_expr (void_type_node, body);
+
+  append_to_statement_list (body, &body_list);
+  append_to_statement_list (build_stmt (EXPR_LOCATION (body), TRY_FINALLY_EXPR,
+				       	body_list, dtor), &list);
 }

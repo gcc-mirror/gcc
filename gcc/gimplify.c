@@ -2204,12 +2204,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   if (! EXPR_HAS_LOCATION (*expr_p))
     SET_EXPR_LOCATION (*expr_p, input_location);
 
-  if (fn_contains_cilk_spawn_p (cfun)
-      && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p) 
-      && !seen_error ())
-    return (enum gimplify_status) 
-      lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p, NULL);
-
   /* This may be a call to a builtin function.
 
      Builtin function calls may be transformed into different
@@ -4427,12 +4421,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
-  
-  if (fn_contains_cilk_spawn_p (cfun)
-      && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p) 
-      && !seen_error ())
-    return (enum gimplify_status) 
-      lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p, post_p);
 
   /* Trying to simplify a clobber using normal logic doesn't work,
      so handle it here.  */
@@ -7382,19 +7370,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      ret = GS_OK;
 	    }
 	  break;
-
-	case CILK_SPAWN_STMT:
-	  gcc_assert 
-	    (fn_contains_cilk_spawn_p (cfun) 
-	     && lang_hooks.cilkplus.cilk_detect_spawn_and_unwrap (expr_p));
-	  if (!seen_error ())
-	    {
-	      ret = (enum gimplify_status)
-		lang_hooks.cilkplus.gimplify_cilk_spawn (expr_p, pre_p,
-							 post_p);
-	      break;
-	    }
-	  /* If errors are seen, then just process it as a CALL_EXPR.  */
 
 	case CALL_EXPR:
 	  ret = gimplify_call_expr (expr_p, pre_p, fallback != fb_none);

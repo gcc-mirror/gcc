@@ -5627,6 +5627,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
   cp_id_kind idk = CP_ID_KIND_NONE;
   tree postfix_expression = NULL_TREE;
   bool is_member_access = false;
+  int saved_in_statement = -1;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -5769,6 +5770,66 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 						    /*is_declaration=*/false);
 	postfix_expression = cp_parser_functional_cast (parser, type);
       }
+      break;
+
+    case RID_CILK_SPAWN:
+      {
+	cp_lexer_consume_token (parser->lexer);
+	token = cp_lexer_peek_token (parser->lexer);
+	if (token->type == CPP_SEMICOLON)
+	  {
+	    error_at (token->location, "%<_Cilk_spawn%> must be followed by "
+		      "an expression");
+	    postfix_expression = error_mark_node;
+	    break;
+	  }
+	else if (!current_function_decl)
+	  {
+	    error_at (token->location, "%<_Cilk_spawn%> may only be used "
+		      "inside a function");
+	    postfix_expression = error_mark_node;
+	    break;
+	  }
+	else
+	  {
+	    /* Consecutive _Cilk_spawns are not allowed in a statement.  */
+	    saved_in_statement = parser->in_statement;
+	    parser->in_statement |= IN_CILK_SPAWN;
+	  }
+	cfun->calls_cilk_spawn = 1;
+	postfix_expression = 
+	  cp_parser_postfix_expression (parser, false, false, 
+					false, false, &idk);
+	if (saved_in_statement & IN_CILK_SPAWN)
+	  {
+	    error_at (token->location, "consecutive %<_Cilk_spawn%> keywords "
+		      "are not permitted");
+	    postfix_expression = error_mark_node;
+	    cfun->calls_cilk_spawn = 0; 
+	  }
+	else
+	  {
+	    postfix_expression = build_cilk_spawn (token->location, 
+						   postfix_expression);
+	    if (postfix_expression != error_mark_node) 
+	      SET_EXPR_LOCATION (postfix_expression, input_location);
+	    parser->in_statement = parser->in_statement & ~IN_CILK_SPAWN;
+	  }
+	break;
+      }
+      
+    case RID_CILK_SYNC:
+      if (flag_enable_cilkplus)
+	{ 
+	  tree sync_expr = build_cilk_sync ();
+	  SET_EXPR_LOCATION (sync_expr, 
+			     cp_lexer_peek_token (parser->lexer)->location);
+	  finish_expr_stmt (sync_expr);
+	}
+      else
+	error_at (input_location, "_Cilk_sync cannot be used without enabling "
+		  "Cilk Plus");
+      cp_lexer_consume_token (parser->lexer);
       break;
 
     case RID_BUILTIN_SHUFFLE:

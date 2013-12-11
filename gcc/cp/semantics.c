@@ -10429,6 +10429,8 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 	  return false;
       return true;
 
+    case CILK_SYNC_STMT:
+    case CILK_SPAWN_STMT:
     case ARRAY_NOTATION_REF:
       return false;
 

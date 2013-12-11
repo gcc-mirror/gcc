@@ -1,3 +1,26 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cp-tree.h (cilk_valid_spawn): New prototype.
+	(gimplify_cilk_spawn): Likewise.
+	(create_try_catch_expr): Likewise.
+	* decl.c (finish_function): Insert Cilk function-calls when a
+	_Cilk_spawn is used in a function.
+	* parser.c (cp_parser_postfix_expression): Added RID_CILK_SPAWN and
+	RID_CILK_SYNC cases.
+	* cp-cilkplus.c (set_cilk_except_flag): New function.
+	(set_cilk_except_data): Likewise.
+	(cilk_install_body_with_frame_cleanup): Likewise.
+	* except.c (create_try_catch_expr): Likewise.
+	* parser.h (IN_CILK_SPAWN): New #define.
+	* pt.c (tsubst_expr): Added CILK_SPAWN_STMT and CILK_SYNC_STMT cases.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* typeck.c (cp_build_compound_expr): Reject a spawned function in a
+	compound expression.
+	(check_return_expr): Reject a spawned function in a return expression.
+	* cp-gimplify.c (cp_gimplify_expr): Added a CILK_SPAWN_STMT and
+	CALL_EXPR case.  Added handling of spawned function in MODIFY_EXPR
+	and INIT_EXPR.
+	
 2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59435

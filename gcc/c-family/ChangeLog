@@ -1,3 +1,16 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cilk.c (cilk_outline): Made this function non-static.
+	(gimplify_cilk_spawn): Removed pre_p and post_p arguments.
+	(create_cilk_wrapper): Added a new parameter: a function pointer.
+	(c_install_body_w_frame_cleanup): Remove
+	(extract_free_variables): Added VEC_INIT_EXPR and CONSTRUCTOR case.
+	* c-common.h (cilk_outline): New prototype.
+	(gimplify_cilk_spawn): Removed two parameters.
+	(cilk_install_body_with_frame_cleanup): New prototype.
+	* c-gimplify.c (c_gimplify_expr): Added MODIFY_EXPR, CALL_EXPR and
+	CILK_SPAWN_STMT case.
+
 2013-12-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* c-common.c (c_fully_fold_internal): Handle ADDR_SPACE_CONVERT_EXPR.
