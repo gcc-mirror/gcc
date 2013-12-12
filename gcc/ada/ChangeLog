@@ -1,5 +1,5 @@
-2013-12-13  Eric Botcazou  <ebotcazou@adacore.com>
-	    Iain Sandoe <iain@codesourcery.com>
+2013-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe  <iain@codesourcery.com>
 
 	PR ada/55946
 	* gcc-interface/Make-lang.in (ada/doctools/xgnatugn): Use gnatmake.
