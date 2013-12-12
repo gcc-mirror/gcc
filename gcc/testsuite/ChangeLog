@@ -1,3 +1,8 @@
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59470
+	* g++.dg/opt/pr59470.C: New test.
+
 2013-12-12  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/tsan/free_race2.c: New file.
@@ -6,7 +11,7 @@
 	* c-c++-common/tsan/race_on_mutex2.c: Likewise.
 	* c-c++-common/tsan/simple_race.c: Likewise.
 	* c-c++-common/tsan/simple_stack.c: Likewise.
-	* g++.dg/tsan/aligned_vs_unaligned_race.C: Likewise. Test applies only on x86_64-linux targets. 
+	* g++.dg/tsan/aligned_vs_unaligned_race.C: Likewise.
 	* g++.dg/tsan/atomic_free.C: Likewise.
 	* g++.dg/tsan/atomic_free2.C: Likewise.
 	* g++.dg/tsan/benign_race.C: Likewise.
