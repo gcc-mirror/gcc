@@ -2415,7 +2415,7 @@ TOOLS_FLAGS_TO_PASS=		\
 	"GNATLINK=$(GNATLINK)"	\
 	"GNATBIND=$(GNATBIND)"
 
-GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
+GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES) $(LDFLAGS)
 
 # Build directory for the tools. Let's copy the target-dependent
 # sources using the same mechanism as for gnatlib. The other sources are
@@ -2537,12 +2537,10 @@ gnatlink-re: ../stamp-tools gnatmake-re
 
 # Likewise for the tools
 ../../gnatmake$(exeext): $(P) b_gnatm.o $(GNATMAKE_OBJS)
-	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
-		    $(TOOLS_LIBS)
+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) $(TOOLS_LIBS)
 
 ../../gnatlink$(exeext): $(P) b_gnatl.o $(GNATLINK_OBJS)
-	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
-		    $(TOOLS_LIBS)
+	+$(GCC_LINK) $(ALL_CFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) $(TOOLS_LIBS)
 
 ../stamp-gnatlib-$(RTSDIR):
 	@if [ ! -f stamp-gnatlib-$(RTSDIR) ] ; \

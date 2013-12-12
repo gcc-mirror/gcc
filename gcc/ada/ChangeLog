@@ -1,3 +1,12 @@
+2013-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe <iain@codesourcery.com>
+
+	PR ada/55946
+	* gcc-interface/Make-lang.in (ada/doctools/xgnatugn): Use gnatmake.
+	* gcc-interface/Makefile.in (GCC_LINK): Add LDFLAGS.
+	(../../gnatmake): Remove LDFLAGS.
+	(../../gnatlink): Likewise.
+
 2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/59382
