@@ -37,7 +37,7 @@ set-torture-options [list \
 if [tsan_init] {
 
 # Main loop.
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c $srcdir/c-c++-common/tsan/*.c]] ""
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C $srcdir/c-c++-common/tsan/*.c]] ""
 
 }
 
