@@ -17,6 +17,11 @@ type makeFuncImpl struct {
 	code uintptr
 	typ  *funcType
 	fn   func([]Value) []Value
+
+	// For gccgo we use the same entry point for functions and for
+	// method values.
+	method int
+	rcvr   Value
 }
 
 // MakeFunc returns a new function of the given Type
@@ -61,7 +66,7 @@ func MakeFunc(typ Type, fn func(args []Value) (results []Value)) Value {
 	dummy := makeFuncStub
 	code := **(**uintptr)(unsafe.Pointer(&dummy))
 
-	impl := &makeFuncImpl{code: code, typ: ftyp, fn: fn}
+	impl := &makeFuncImpl{code: code, typ: ftyp, fn: fn, method: -1}
 
 	return Value{t, unsafe.Pointer(&impl), flag(Func<<flagKindShift) | flagIndir}
 }
@@ -85,15 +90,94 @@ func makeMethodValue(op string, v Value) Value {
 		panic("reflect: internal error: invalid use of makePartialFunc")
 	}
 
+	switch runtime.GOARCH {
+	case "amd64", "386":
+	default:
+		panic("reflect.makeMethodValue not implemented for " + runtime.GOARCH)
+	}
+
 	// Ignoring the flagMethod bit, v describes the receiver, not the method type.
 	fl := v.flag & (flagRO | flagAddr | flagIndir)
 	fl |= flag(v.typ.Kind()) << flagKindShift
 	rcvr := Value{v.typ, v.val, fl}
 
+	// v.Type returns the actual type of the method value.
+	ft := v.Type().(*rtype)
+
+	// Indirect Go func value (dummy) to obtain
+	// actual code address. (A Go func value is a pointer
+	// to a C function pointer. http://golang.org/s/go11func.)
+	dummy := makeFuncStub
+	code := **(**uintptr)(unsafe.Pointer(&dummy))
+
 	// Cause panic if method is not appropriate.
 	// The panic would still happen during the call if we omit this,
 	// but we want Interface() and other operations to fail early.
-	methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
+	t, _, _ := methodReceiver(op, rcvr, int(v.flag)>>flagMethodShift)
 
-	panic("reflect makeMethodValue not implemented")
+	fv := &makeFuncImpl{
+		code:   code,
+		typ:    (*funcType)(unsafe.Pointer(t)),
+		method: int(v.flag) >> flagMethodShift,
+		rcvr:   rcvr,
+	}
+
+	return Value{ft, unsafe.Pointer(&fv), v.flag&flagRO | flag(Func)<<flagKindShift | flagIndir}
+}
+
+// makeValueMethod takes a method function and returns a function that
+// takes a value receiver and calls the real method with a pointer to
+// it.
+func makeValueMethod(v Value) Value {
+	typ := v.typ
+	if typ.Kind() != Func {
+		panic("reflect: call of makeValueMethod with non-Func type")
+	}
+	if v.flag&flagMethodFn == 0 {
+		panic("reflect: call of makeValueMethod with non-MethodFn")
+	}
+
+	switch runtime.GOARCH {
+	case "amd64", "386":
+	default:
+		panic("reflect.makeValueMethod not implemented for " + runtime.GOARCH)
+	}
+
+	t := typ.common()
+	ftyp := (*funcType)(unsafe.Pointer(t))
+
+	// Indirect Go func value (dummy) to obtain
+	// actual code address. (A Go func value is a pointer
+	// to a C function pointer. http://golang.org/s/go11func.)
+	dummy := makeFuncStub
+	code := **(**uintptr)(unsafe.Pointer(&dummy))
+
+	impl := &makeFuncImpl{
+		code:   code,
+		typ:    ftyp,
+		method: -2,
+		rcvr:   v,
+	}
+
+	return Value{t, unsafe.Pointer(&impl), flag(Func<<flagKindShift) | flagIndir}
+}
+
+// Call the function represented by a makeFuncImpl.
+func (c *makeFuncImpl) call(in []Value) []Value {
+	if c.method == -1 {
+		return c.fn(in)
+	} else if c.method == -2 {
+		if c.typ.IsVariadic() {
+			return c.rcvr.CallSlice(in)
+		} else {
+			return c.rcvr.Call(in)
+		}
+	} else {
+		m := c.rcvr.Method(c.method)
+		if c.typ.IsVariadic() {
+			return m.CallSlice(in)
+		} else {
+			return m.Call(in)
+		}
+	}
 }

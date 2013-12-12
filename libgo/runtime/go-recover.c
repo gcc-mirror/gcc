@@ -84,6 +84,11 @@ __go_can_recover (const void *retaddr)
   if (name[0] == 'f' && name[1] == 'f' && name[2] == 'i' && name[3] == '_')
     return 1;
 
+  /* We may also be called by reflect.makeFuncImpl.call, for a
+     function created by reflect.MakeFunc.  */
+  if (__builtin_strstr ((const char *) name, "makeFuncImpl") != NULL)
+    return 1;
+
   return 0;
 }
 

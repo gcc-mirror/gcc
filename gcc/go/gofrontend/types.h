@@ -1797,6 +1797,12 @@ class Function_type : public Type
   Function_type*
   copy_with_receiver(Type*) const;
 
+  // Return a copy of this type with the receiver treated as the first
+  // parameter.  If WANT_POINTER_RECEIVER is true, the receiver is
+  // forced to be a pointer.
+  Function_type*
+  copy_with_receiver_as_param(bool want_pointer_receiver) const;
+
   // Return a copy of this type ignoring any receiver and using dummy
   // names for all parameters.  This is used for thunks for method
   // values.
