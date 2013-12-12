@@ -40,4 +40,8 @@ struct __go_defer_stack
      function will be somewhere in libffi, so __retaddr is not
      useful.  */
   _Bool __makefunc_can_recover;
+
+  /* Set to true if this defer stack entry should be freed when
+     done.  */
+  _Bool __free;
 };

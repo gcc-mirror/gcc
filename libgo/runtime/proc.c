@@ -541,6 +541,7 @@ runtime_main(void* dummy __attribute__((unused)))
 	d.__retaddr = nil;
 	d.__makefunc_can_recover = 0;
 	d.__frame = &frame;
+	d.__free = 0;
 	g->defer = &d;
 
 	if(m != &runtime_m0)
