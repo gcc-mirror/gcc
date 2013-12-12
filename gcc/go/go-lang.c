@@ -270,6 +270,10 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
+  /* Tail call optimizations can confuse uses of runtime.Callers.  */
+  if (!global_options_set.x_flag_optimize_sibling_calls)
+    global_options.x_flag_optimize_sibling_calls = 0;
+
   /* Returning false means that the backend should be used.  */
   return false;
 }

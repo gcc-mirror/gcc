@@ -1,3 +1,8 @@
+2013-12-11  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_post_options): Disable sibling calls by
+	default.
+
 2013-12-10  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (check_go_parallelize): Test go-test.exp r* tests
