@@ -1,3 +1,14 @@
+2013-12-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-12-12  Ryan Mansfield  <rmansfield@qnx.com>
+
+	PR testsuite/59442
+	* gcc.target/i386/sse2-movapd-1.c: Fix alignment attributes.
+	* gcc.target/i386/sse2-movapd-2.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-1.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-2.c: Likewise.
+
 2013-12-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59351
