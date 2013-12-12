@@ -1,3 +1,17 @@
+2013-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe <iain@codesourcery.com>
+
+	PR ada/55946
+	* Makefile.in (host): Define.
+	(host_alias): Likewise.
+	(TOOLS_FLAGS_TO_PASS_RE): Add LDFLAGS.
+	(GNATMAKE_FOR_HOST): Define.
+	(GNATLINK_FOR_HOST): Likewise.
+	(GNATBIND_FOR_HOST): Likewise.
+	(GNATLS_FOR_HOST): Likewise.
+	(RTS_DIR): Move around and use GNATLS_FOR_HOST.
+	(TOOLS_FLAGS_TO_PASS_CROSS): Use the other *_HOST variables.
+
 2013-12-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/59382
