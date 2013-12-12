@@ -1,3 +1,9 @@
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/59467
+	* testsuite/libgomp.fortran/crayptr2.f90: Add private (d) clause to
+	!$omp parallel.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
