@@ -15,7 +15,7 @@ void static
 avx_test (void)
 {
   union256d u;
-  double e [4] __attribute__ ((aligned (8)))  = {41124.234,2344.2354,8653.65635,856.43576};
+  double e [4] __attribute__ ((aligned (32)))  = {41124.234,2344.2354,8653.65635,856.43576};
 
   u.x = test (e);
 
