@@ -10259,6 +10259,14 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     {
       Expression* deref = Expression::make_unary(OPERATOR_MULT, left,
 						 location);
+
+      // For an ordinary index into the array, the pointer will be
+      // dereferenced.  For a slice it will not--the resulting slice
+      // will simply reuse the pointer, which is incorrect if that
+      // pointer is nil.
+      if (end != NULL || cap != NULL)
+	deref->issue_nil_check();
+
       return Expression::make_array_index(deref, start, end, cap, location);
     }
   else if (type->is_string_type())
