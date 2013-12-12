@@ -348,10 +348,10 @@ arm*-*-linux*)			# ARM GNU/Linux with ELF
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
 	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	tmake_file="${tmake_file} arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi-lib.h"
 	unwind_header=config/arm/unwind-arm.h
-	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
