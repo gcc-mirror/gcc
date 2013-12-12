@@ -1,3 +1,9 @@
+2013-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	Backport from trunk r205917.
+	2013-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+	* config.host (arm*-*-uclinux*): Move t-arm before t-bpabi.
+
 2013-12-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
