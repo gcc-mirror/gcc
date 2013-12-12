@@ -1,3 +1,8 @@
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58627
+	* call.c (add_template_candidate_real): Don't call ggc_free on targs.
+
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* cp-tree.h (cilk_valid_spawn): New prototype.

@@ -7475,8 +7475,6 @@ resolve_address_of_overloaded_function (tree target_type,
 	  /* See if there's a match.  */
 	  if (same_type_p (target_fn_type, static_fn_type (instantiation)))
 	    matches = tree_cons (instantiation, fn, matches);
-
-	  ggc_free (targs);
 	}
 
       /* Now, remove all but the most specialized of the matches.  */
