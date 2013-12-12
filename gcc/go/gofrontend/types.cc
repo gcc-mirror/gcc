@@ -2261,26 +2261,9 @@ Type::method_constructor(Gogo*, Type* method_type,
 
   ++p;
   go_assert(p->is_field_name("typ"));
-  if (!only_value_methods && m->is_value_method())
-    {
-      // This is a value method on a pointer type.  Change the type of
-      // the method to use a pointer receiver.  The implementation
-      // always uses a pointer receiver anyhow.
-      Type* rtype = mtype->receiver()->type();
-      Type* prtype = Type::make_pointer_type(rtype);
-      Typed_identifier* receiver =
-	new Typed_identifier(mtype->receiver()->name(), prtype,
-			     mtype->receiver()->location());
-      mtype = Type::make_function_type(receiver,
-				       (mtype->parameters() == NULL
-					? NULL
-					: mtype->parameters()->copy()),
-				       (mtype->results() == NULL
-					? NULL
-					: mtype->results()->copy()),
-				       mtype->location());
-    }
-  vals->push_back(Expression::make_type_descriptor(mtype, bloc));
+  bool want_pointer_receiver = !only_value_methods && m->is_value_method();
+  nonmethod_type = mtype->copy_with_receiver_as_param(want_pointer_receiver);
+  vals->push_back(Expression::make_type_descriptor(nonmethod_type, bloc));
 
   ++p;
   go_assert(p->is_field_name("tfn"));
@@ -4006,6 +3989,32 @@ Function_type::copy_with_receiver(Type* receiver_type) const
   if (this->is_varargs_)
     ret->set_is_varargs();
   return ret;
+}
+
+// Make a copy of a function type with the receiver as the first
+// parameter.
+
+Function_type*
+Function_type::copy_with_receiver_as_param(bool want_pointer_receiver) const
+{
+  go_assert(this->is_method());
+  Typed_identifier_list* new_params = new Typed_identifier_list();
+  Type* rtype = this->receiver_->type();
+  if (want_pointer_receiver)
+    rtype = Type::make_pointer_type(rtype);
+  Typed_identifier receiver(this->receiver_->name(), rtype,
+			    this->receiver_->location());
+  new_params->push_back(receiver);
+  const Typed_identifier_list* orig_params = this->parameters_;
+  if (orig_params != NULL && !orig_params->empty())
+    {
+      for (Typed_identifier_list::const_iterator p = orig_params->begin();
+	   p != orig_params->end();
+	   ++p)
+	new_params->push_back(*p);
+    }
+  return Type::make_function_type(NULL, new_params, this->results_,
+				  this->location_);
 }
 
 // Make a copy of a function type ignoring any receiver and adding a

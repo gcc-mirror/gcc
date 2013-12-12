@@ -80,7 +80,7 @@ func MakeFuncStubGo(regs *i386Regs, c *makeFuncImpl) {
 
 	// Call the real function.
 
-	out := c.fn(in)
+	out := c.call(in)
 
 	if len(out) != len(ftyp.out) {
 		panic("reflect: wrong return count from function created by MakeFunc")
