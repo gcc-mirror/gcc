@@ -20,7 +20,6 @@
 	ix86_builtins[...] with get_builtin(...).
 	(ix86_builtin_reciprocal): Ditto.
 
-
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* langhooks.h (lang_hooks_for_decls): Remove lang_hooks_for_cilkplus.
@@ -1388,7 +1387,7 @@
 	(ix86_expand_builtin): Expand them.
 	* config/i386/ia32intrin.h (__readeflags): New.
 	(__writeeflags): Ditto.
-	* gcc/config/i386/i386.md (*pushfl<mode>): Ditto.
+	* config/i386/i386.md (*pushfl<mode>): Ditto.
 	(*popfl<mode>1): Ditto.
 
 2013-12-05  Richard Biener  <rguenther@suse.de>
@@ -3866,7 +3865,7 @@
 
 2013-11-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* gcc/config/aarch64/aarch64-builtins.c
+	* config/aarch64/aarch64-builtins.c
 	(aarch64_simd_itype): Remove.
 	(aarch64_simd_builtin_datum): Remove itype, add qualifiers pointer.
 	(VAR1): Use qualifiers.
