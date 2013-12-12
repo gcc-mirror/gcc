@@ -1,3 +1,9 @@
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/59467
+	* gfortran.dg/gomp/pr59467.f90: New test.
+	* c-c++-common/gomp/pr59467.c: New test.
+
 2013-12-12  Ryan Mansfield  <rmansfield@qnx.com>
 
 	PR testsuite/59442
