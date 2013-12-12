@@ -1,3 +1,9 @@
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/59467
+	* testsuite/libgomp.fortran/crayptr2.f90: Add private (d) clause to
+	!$omp parallel.
+
 2013-11-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Don't add -fopenmp to
