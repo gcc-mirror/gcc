@@ -575,9 +575,6 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	       p != fields->end();
 	       ++p)
 	    {
-	      if (Gogo::is_sink_name(p->field_name()))
-		continue;
-
 	      if (!p->type()->is_comparable())
 		{
 		  if (reason != NULL)
