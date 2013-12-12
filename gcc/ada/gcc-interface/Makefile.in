@@ -1903,7 +1903,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
 endif
 
 # ARM linux, GNU eabi
-ifeq ($(strip $(filter-out arm% linux-gnueabi,$(target_cpu) $(target_os))),)
+ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \

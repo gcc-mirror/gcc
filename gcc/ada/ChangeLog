@@ -1,4 +1,8 @@
 2013-12-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (ARM linux, GNU eabi): Tweak regexp.
+
+2013-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
 	PR ada/55946
