@@ -25,8 +25,9 @@ reflect.makeFuncStub:
 	   struct {
 	     esp uint32		// 0x0
 	     eax uint32		// 0x4
-	     st0 uint64		// 0x8
-	     sr  int32		// 0x10
+	     st0 float64	// 0x8
+	     sr  bool		// 0x10
+	     sf  bool		// 0x11
 	   }
 	   The sr field is set by the function to a non-zero value if
 	   the function takes a struct hidden pointer that must be
@@ -84,6 +85,10 @@ reflect.makeFuncStub:
 	/* Set return registers.  */
 
 	movl	-20(%ebp), %eax
+
+	cmpb	$0, -7(%ebp)
+	je	2f
+
 	fldl	-16(%ebp)
 
 #ifdef __SSE2__
@@ -92,7 +97,8 @@ reflect.makeFuncStub:
 	movsd	-16(%ebp), %xmm0
 #endif
 
-	movl	-8(%ebp), %edx
+2:
+	movb	-8(%ebp), %dl
 
 	addl	$36, %esp
 	popl	%ebx
@@ -100,7 +106,7 @@ reflect.makeFuncStub:
 	popl	%ebp
 .LCFI4:
 
-	testl	%edx,%edx
+	testb	%dl,%dl
 	jne	1f
 	ret
 1:
