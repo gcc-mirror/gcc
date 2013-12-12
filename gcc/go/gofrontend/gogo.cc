@@ -440,6 +440,9 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
+  if (local_name == "init")
+    error_at(location, "cannot import package as init");
+
   if (filename == "unsafe")
     {
       this->import_unsafe(local_name, is_local_name_exported, location);
