@@ -1631,9 +1631,13 @@ func TestMethod(t *testing.T) {
 	}
 }
 
-/* Not yet implemented for gccgo
-
 func TestMethodValue(t *testing.T) {
+	switch runtime.GOARCH {
+	case "amd64", "386":
+	default:
+		t.Skip("reflect method values not implemented for " + runtime.GOARCH)
+	}
+
 	p := Point{3, 4}
 	var i int64
 
@@ -1721,8 +1725,6 @@ func TestMethodValue(t *testing.T) {
 	}
 }
 
-*/
-
 // Reflect version of $GOROOT/test/method5.go
 
 // Concrete types implementing M method.
@@ -1807,14 +1809,18 @@ type Tm4 struct {
 func (t4 Tm4) M(x int, b byte) (byte, int) { return b, x + 40 }
 
 func TestMethod5(t *testing.T) {
-	/* Not yet used for gccgo
+	switch runtime.GOARCH {
+	case "amd64", "386":
+	default:
+		t.Skip("reflect method values not implemented for " + runtime.GOARCH)
+	}
+
 	CheckF := func(name string, f func(int, byte) (byte, int), inc int) {
 		b, x := f(1000, 99)
 		if b != 99 || x != 1000+inc {
 			t.Errorf("%s(1000, 99) = %v, %v, want 99, %v", name, b, x, 1000+inc)
 		}
 	}
-	*/
 
 	CheckV := func(name string, i Value, inc int) {
 		bx := i.Method(0).Call([]Value{ValueOf(1000), ValueOf(byte(99))})
@@ -1824,9 +1830,7 @@ func TestMethod5(t *testing.T) {
 			t.Errorf("direct %s.M(1000, 99) = %v, %v, want 99, %v", name, b, x, 1000+inc)
 		}
 
-		/* Not yet implemented for gccgo
 		CheckF(name+".M", i.Method(0).Interface().(func(int, byte) (byte, int)), inc)
-		*/
 	}
 
 	var TinterType = TypeOf(new(Tinter)).Elem()

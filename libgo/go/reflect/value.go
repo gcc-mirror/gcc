@@ -98,6 +98,7 @@ const (
 	flagIndir
 	flagAddr
 	flagMethod
+	flagMethodFn         // gccgo: first fn parameter is always pointer
 	flagKindShift        = iota
 	flagKindWidth        = 5 // there are 27 kinds
 	flagKindMask    flag = 1<<flagKindWidth - 1
@@ -433,7 +434,7 @@ func (v Value) call(op string, in []Value) []Value {
 	if v.flag&flagMethod != 0 {
 		nin++
 	}
-	firstPointer := len(in) > 0 && t.In(0).Kind() != Ptr && v.flag&flagMethod == 0 && isMethod(v.typ)
+	firstPointer := len(in) > 0 && t.In(0).Kind() != Ptr && v.flag&flagMethodFn != 0
 	params := make([]unsafe.Pointer, nin)
 	off := 0
 	if v.flag&flagMethod != 0 {
@@ -482,33 +483,6 @@ func (v Value) call(op string, in []Value) []Value {
 	call(t, fn, v.flag&flagMethod != 0, firstPointer, pp, pr)
 
 	return ret
-}
-
-// gccgo specific test to see if typ is a method.  We can tell by
-// looking at the string to see if there is a receiver.  We need this
-// because for gccgo all methods take pointer receivers.
-func isMethod(t *rtype) bool {
-	if Kind(t.kind) != Func {
-		return false
-	}
-	s := *t.string
-	parens := 0
-	params := 0
-	sawRet := false
-	for i, c := range s {
-		if c == '(' {
-			if parens == 0 {
-				params++
-			}
-			parens++
-		} else if c == ')' {
-			parens--
-		} else if parens == 0 && c == ' ' && s[i+1] != '(' && !sawRet {
-			params++
-			sawRet = true
-		}
-	}
-	return params > 2
 }
 
 // methodReceiver returns information about the receiver
@@ -873,6 +847,16 @@ func valueInterface(v Value, safe bool) interface{} {
 		v = makeMethodValue("Interface", v)
 	}
 
+	if v.flag&flagMethodFn != 0 {
+		if v.typ.Kind() != Func {
+			panic("reflect: MethodFn of non-Func")
+		}
+		ft := (*funcType)(unsafe.Pointer(v.typ))
+		if ft.in[0].Kind() != Ptr {
+			v = makeValueMethod(v)
+		}
+	}
+
 	k := v.kind()
 	if k == Interface {
 		// Special case: return the element inside the interface.
@@ -1187,8 +1171,7 @@ func (v Value) Pointer() uintptr {
 			// created via reflect have the same underlying code pointer,
 			// so their Pointers are equal. The function used here must
 			// match the one used in makeMethodValue.
-			// This is not properly implemented for gccgo.
-			f := Zero
+			f := makeFuncStub
 			return **(**uintptr)(unsafe.Pointer(&f))
 		}
 		p := v.val
