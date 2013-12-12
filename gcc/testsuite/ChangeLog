@@ -1,3 +1,11 @@
+2013-12-12  Ryan Mansfield  <rmansfield@qnx.com>
+
+	PR testsuite/59442
+	* gcc.target/i386/sse2-movapd-1.c: Fix alignment attributes.
+	* gcc.target/i386/sse2-movapd-2.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-1.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-2.c: Likewise.
+
 2013-12-11  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/59390
@@ -16,7 +24,7 @@
 	* g++.dg/cilk-plus/cilk-plus.exp: Added support to run Cilk Keywords
 	test stored in c-c++-common.  Also, added the Cilk runtime's library
 	to the ld_library_path.
-	
+
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/59134
@@ -26,8 +34,7 @@
 2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	* gcc.dg/pr23623.c: Update to test interaction with C++
-	memory model.
+	* gcc.dg/pr23623.c: Update to test interaction with C++ memory model.
 
 2013-12-11  Sandra Loosemore  <sandra@codesourcery.com>
 
