@@ -221,9 +221,12 @@ lra_coalesce (void)
   basic_block bb;
   rtx mv, set, insn, next, *sorted_moves;
   int i, mv_num, sregno, dregno;
+  unsigned int regno;
   int coalesced_moves;
   int max_regno = max_reg_num ();
   bitmap_head involved_insns_bitmap;
+  bitmap_head result_pseudo_vals_bitmap;
+  bitmap_iterator bi;
 
   timevar_push (TV_LRA_COALESCE);
 
@@ -318,6 +321,34 @@ lra_coalesce (void)
 	      }
 	  }
     }
+  /* If we have situation after inheritance pass:
+
+     r1 <- ...  insn originally setting p1
+     i1 <- r1   setting inheritance i1 from reload r1
+       ...
+     ... <- ... p2 ... dead p2
+     ..
+     p1 <- i1
+     r2 <- i1
+     ...<- ... r2 ...
+
+     And we are coalescing p1 and p2 using p1.  In this case i1 and p1
+     should have different values, otherwise they can get the same
+     hard reg and this is wrong for insn using p2 before coalescing.
+     So invalidate such inheritance pseudo values.  */
+  bitmap_initialize (&result_pseudo_vals_bitmap, &reg_obstack);
+  EXECUTE_IF_SET_IN_BITMAP (&coalesced_pseudos_bitmap, 0, regno, bi)
+    bitmap_set_bit (&result_pseudo_vals_bitmap,
+		    lra_reg_info[first_coalesced_pseudo[regno]].val);
+  EXECUTE_IF_SET_IN_BITMAP (&lra_inheritance_pseudos, 0, regno, bi)
+    if (bitmap_bit_p (&result_pseudo_vals_bitmap, lra_reg_info[regno].val))
+      {
+	lra_set_regno_unique_value (regno);
+	if (lra_dump_file != NULL)
+	  fprintf (lra_dump_file,
+		   "	 Make unique value for inheritance r%d\n", regno);
+      }
+  bitmap_clear (&result_pseudo_vals_bitmap);
   bitmap_clear (&used_pseudos_bitmap);
   bitmap_clear (&involved_insns_bitmap);
   bitmap_clear (&coalesced_pseudos_bitmap);
