@@ -1,3 +1,7 @@
+2013-12-13  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* genmodes.c (emit_max_int): Fixed missing parens.
+	
 2013-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/59149
