@@ -653,7 +653,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
       if (!flag_ltrans && anonymous)
 	{
 	  tree vtable = BINFO_VTABLE (inner_binfo);
-	  struct varpool_node *vnode;
+	  varpool_node *vnode;
 
 	  if (TREE_CODE (vtable) == POINTER_PLUS_EXPR)
 	    vtable = TREE_OPERAND (TREE_OPERAND (vtable, 0), 0);
@@ -1144,7 +1144,7 @@ record_targets_from_bases (tree otr_type,
 /* When virtual table is removed, we may need to flush the cache.  */
 
 static void
-devirt_variable_node_removal_hook (struct varpool_node *n,
+devirt_variable_node_removal_hook (varpool_node *n,
 				   void *d ATTRIBUTE_UNUSED)
 {
   if (cached_polymorphic_call_targets

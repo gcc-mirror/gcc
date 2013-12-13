@@ -206,7 +206,7 @@ sh_optimize_sett_clrt::execute (void)
   // Look for insns that set the ccreg to a constant value and see if it can
   // be optimized.
   basic_block bb;
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     for (rtx next_i, i = NEXT_INSN (BB_HEAD (bb));
 	 i != NULL_RTX && i != BB_END (bb); i = next_i)
       {

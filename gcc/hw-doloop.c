@@ -357,7 +357,7 @@ discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
   /* Find all the possible loop tails.  This means searching for every
      loop_end instruction.  For each one found, create a hwloop_info
      structure and add the head block to the work list. */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx tail = BB_END (bb);
       rtx insn, reg;
@@ -480,7 +480,7 @@ set_bb_indices (void)
   intptr_t index;
 
   index = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->aux = (void *) index++;
 }
 
@@ -537,7 +537,7 @@ reorder_loops (hwloop_info loops)
       loops = loops->next;
     }
   
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	bb->aux = bb->next_bb;

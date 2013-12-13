@@ -31,7 +31,7 @@
 
 	.file   "ppc_closure.S"
 
-#ifndef __powerpc64__
+#ifndef POWERPC64
 
 ENTRY(ffi_closure_SYSV)
 .LFB1:
@@ -378,8 +378,7 @@ END(ffi_closure_SYSV)
 	.align 2
 .LEFDE1:
 
-#endif
-
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits
+#endif
 #endif

@@ -2348,12 +2348,17 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	    }
 	}
 
-      /* Push a binding level here in case variables are declared as we want
-	 them to be local to this set of statements instead of to the block
-	 containing the Case statement.  */
+      /* This construct doesn't define a scope so we shouldn't push a binding
+	 level around the statement list.  Except that we have always done so
+	 historically and this makes it possible to reduce stack usage.  As a
+	 compromise, we keep doing it for case statements, for which this has
+	 never been problematic, but not for case expressions in Ada 2012.  */
       if (choices_added_p)
 	{
-	  tree group = build_stmt_group (Statements (gnat_when), true);
+	  const bool is_case_expression
+	    = (Nkind (Parent (gnat_node)) == N_Expression_With_Actions);
+	  tree group
+	    = build_stmt_group (Statements (gnat_when), !is_case_expression);
 	  bool group_may_fallthru = block_may_fallthru (group);
 	  add_stmt (group);
 	  if (group_may_fallthru)
@@ -7002,8 +7007,8 @@ gnat_to_gnu (Node_Id gnat_node)
     /****************/
 
     case N_Expression_With_Actions:
-      /* This construct doesn't define a scope so we don't wrap the statement
-	 list in a BIND_EXPR; however, we wrap it in a SAVE_EXPR to protect it
+      /* This construct doesn't define a scope so we don't push a binding level
+	 around the statement list; but we wrap it in a SAVE_EXPR to protect it
 	 from unsharing.  */
       gnu_result = build_stmt_group (Actions (gnat_node), false);
       gnu_result = build1 (SAVE_EXPR, void_type_node, gnu_result);

@@ -1,3 +1,12 @@
+2013-12-09  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.am (toolexeclib_LTLIBRARIES) [USE_LIBGCJ_BC]: Use
+	install/libgcj_bc.la instead of libgcj_bc.la.
+	(noinst_LTLIBRARIES) [USE_LIBGCJ_BC]: Define.
+	(install_libgcj_bc_la_SOURCES): Define.
+	(install/libgcj_bc.la): New rule.
+	* Makefile.in: Regenerate.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

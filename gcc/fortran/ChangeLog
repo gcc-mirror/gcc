@@ -1,3 +1,64 @@
+2013-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/59440
+	* trans-decl.c (generate_namelist_decl): Ensure debug DIE
+	is created by setting DECL_IGNORED_P to 0.
+
+2013-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58916
+	* resolve.c (conformable_arrays): Treat scalar 'e2'.
+	(resolve_allocate_expr): Check rank also for unlimited-polymorphic
+	variables.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_dummy_characteristics): Add checks for several
+	attributes.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.texi: Add possible kind values (and default) for
+	DOUBLE PRECISION.
+	* invoke.texi: Correct documentation of -fdefault-integer-8,
+	-fdefault-real-8 and -fdefault-double-8.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.texi: Modify documentation of kind type parameters.
+	* invoke.texi: Extend documentation of -fdefault-integer-8 and
+	-fdefault-real-8.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* invoke.texi: Add -freal-4-real-16. Rearrange kind promotion options.
+
+2013-12-08  Tobias Burnus  <burnus@net-b.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58099
+	PR fortran/58676
+	PR fortran/41724
+	* resolve.c (gfc_resolve_intrinsic): Set elemental/pure.
+	(resolve_fl_procedure): Reject pure dummy procedures/procedure
+	pointers.
+	(gfc_explicit_interface_required): Don't require a
+	match of ELEMENTAL for intrinsics.
+
+2013-12-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59414
+	* resolve.c (resolve_specific_f0): Handle CLASS-valued functions.
+
+2013-12-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR debug/37132
+	* trans-decl.c (generate_namelist_decl, create_module_nml_decl):
+	New static functions.
+	(gfc_generate_module_vars, generate_local_vars): Call them.
+	(gfc_trans_use_stmts): Handle namelists for debug genertion.
+
 2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57354

@@ -374,7 +374,7 @@ find_obviously_necessary_stmts (bool aggressive)
   gimple phi, stmt;
   int flags;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* PHI nodes are never inherently necessary.  */
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -404,7 +404,7 @@ find_obviously_necessary_stmts (bool aggressive)
       struct loop *loop;
       scev_initialize ();
       if (mark_irreducible_loops ())
-	FOR_EACH_BB (bb)
+	FOR_EACH_BB_FN (bb, cfun)
 	  {
 	    edge_iterator ei;
 	    FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1325,7 +1325,7 @@ eliminate_unnecessary_stmts (void)
 	    }
 	}
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Remove dead PHI nodes.  */
       something_changed |= remove_dead_phis (bb);
@@ -1364,9 +1364,9 @@ tree_dce_init (bool aggressive)
 
   if (aggressive)
     {
-      last_stmt_necessary = sbitmap_alloc (last_basic_block);
+      last_stmt_necessary = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (last_stmt_necessary);
-      bb_contains_live_stmts = sbitmap_alloc (last_basic_block);
+      bb_contains_live_stmts = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (bb_contains_live_stmts);
     }
 
@@ -1432,7 +1432,8 @@ perform_tree_ssa_dce (bool aggressive)
       calculate_dominance_info (CDI_POST_DOMINATORS);
       cd = new control_dependences (create_edge_list ());
 
-      visited_control_parents = sbitmap_alloc (last_basic_block);
+      visited_control_parents =
+	sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (visited_control_parents);
 
       mark_dfs_back_edges ();

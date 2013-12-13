@@ -406,3 +406,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef SUN_INTEGER_MULTIPLY_64
 #define SUN_INTEGER_MULTIPLY_64 1
+
+#undef SPARC_LOW_FE_EXCEPT_VALUES
+#define SPARC_LOW_FE_EXCEPT_VALUES 1

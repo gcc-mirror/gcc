@@ -42,7 +42,7 @@
 		(ior 
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == LOAD_FPU_REGS")
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == NO_LOAD_FPU_REGS"))
-		(match_test "general_operand (op, mode)")))
+		(match_operand 0 "general_operand")))
 
 ;; Accept anything nonimmediate_operand accepts, except that registers must
 ;; be FPU registers.
@@ -51,4 +51,4 @@
 		(ior 
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == LOAD_FPU_REGS")
 		 (match_test "REGNO_REG_CLASS (REGNO (op)) == NO_LOAD_FPU_REGS"))
-		(match_test "nonimmediate_operand (op, mode)")))
+		(match_operand 0 "nonimmediate_operand")))

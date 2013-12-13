@@ -1,3 +1,4 @@
+/* { dg-do compile } */
 /* { dg-options "-O2  -Wuninitialized" } */
 struct S { char *s1; long s2; };
 struct T { int t1; long t2; long t3; };

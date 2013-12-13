@@ -6709,7 +6709,7 @@ haifa_sched_init (void)
 
     sched_init_bbs ();
 
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       bbs.quick_push (bb);
     sched_init_luids (bbs);
     sched_deps_init (true);
@@ -8075,7 +8075,7 @@ unlink_bb_notes (basic_block first, basic_block last)
   if (first == last)
     return;
 
-  bb_header = XNEWVEC (rtx, last_basic_block);
+  bb_header = XNEWVEC (rtx, last_basic_block_for_fn (cfun));
 
   /* Make a sentinel.  */
   if (last->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))

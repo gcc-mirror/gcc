@@ -102,7 +102,7 @@ __go_panic (struct __go_empty_interface arg)
 	 have a memory context.  Don't try to free anything in that
 	 case--the GC will release it later.  */
       m = runtime_m ();
-      if (m != NULL && m->mcache != NULL)
+      if (m != NULL && m->mcache != NULL && d->__free)
 	__go_free (d);
     }
 

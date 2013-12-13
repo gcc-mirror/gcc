@@ -138,9 +138,10 @@ create_loop_tree_nodes (void)
 
   ira_bb_nodes
     = ((struct ira_loop_tree_node *)
-       ira_allocate (sizeof (struct ira_loop_tree_node) * last_basic_block));
-  last_basic_block_before_change = last_basic_block;
-  for (i = 0; i < (unsigned int) last_basic_block; i++)
+       ira_allocate (sizeof (struct ira_loop_tree_node)
+		     * last_basic_block_for_fn (cfun)));
+  last_basic_block_before_change = last_basic_block_for_fn (cfun);
+  for (i = 0; i < (unsigned int) last_basic_block_for_fn (cfun); i++)
     {
       ira_bb_nodes[i].regno_allocno_map = NULL;
       memset (ira_bb_nodes[i].reg_pressure, 0,
@@ -340,7 +341,7 @@ form_loop_tree (void)
   /* We can not use loop/bb node access macros because of potential
      checking and because the nodes are not initialized enough
      yet.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bb_node = &ira_bb_nodes[bb->index];
       bb_node->bb = bb;
@@ -2605,8 +2606,10 @@ remove_unnecessary_regions (bool all_p)
     mark_all_loops_for_removal ();
   else
     mark_loops_for_removal ();
-  children_vec.create (last_basic_block + number_of_loops (cfun));
-  removed_loop_vec.create (last_basic_block + number_of_loops (cfun));
+  children_vec.create (last_basic_block_for_fn (cfun)
+		       + number_of_loops (cfun));
+  removed_loop_vec.create (last_basic_block_for_fn (cfun)
+			   + number_of_loops (cfun));
   remove_uneccesary_loop_nodes_from_loop_tree (ira_loop_tree_root);
   children_vec.release ();
   if (all_p)

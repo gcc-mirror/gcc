@@ -59,7 +59,7 @@ initialize_uninitialized_regs (void)
 
   df_analyze ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       bitmap lr = DF_LR_IN (bb);

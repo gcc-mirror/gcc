@@ -43,7 +43,7 @@ FakeStack *FakeStack::Create(uptr stack_size_log) {
   FakeStack *res = reinterpret_cast<FakeStack *>(
       MmapOrDie(RequiredSize(stack_size_log), "FakeStack"));
   res->stack_size_log_ = stack_size_log;
-  if (flags()->verbosity) {
+  if (common_flags()->verbosity) {
     u8 *p = reinterpret_cast<u8 *>(res);
     Report("T%d: FakeStack created: %p -- %p stack_size_log: %zd \n",
            GetCurrentTidOrInvalid(), p,
@@ -130,6 +130,20 @@ NOINLINE void FakeStack::GC(uptr real_stack) {
     }
   }
   needs_gc_ = false;
+}
+
+void FakeStack::ForEachFakeFrame(RangeIteratorCallback callback, void *arg) {
+  for (uptr class_id = 0; class_id < kNumberOfSizeClasses; class_id++) {
+    u8 *flags = GetFlags(stack_size_log(), class_id);
+    for (uptr i = 0, n = NumberOfFrames(stack_size_log(), class_id); i < n;
+         i++) {
+      if (flags[i] == 0) continue;  // not allocated.
+      FakeFrame *ff = reinterpret_cast<FakeFrame *>(
+          GetFrame(stack_size_log(), class_id, i));
+      uptr begin = reinterpret_cast<uptr>(ff);
+      callback(begin, begin + FakeStack::BytesInSizeClass(class_id), arg);
+    }
+  }
 }
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID

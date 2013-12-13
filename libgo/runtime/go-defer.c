@@ -27,6 +27,8 @@ __go_defer (_Bool *frame, void (*pfn) (void *), void *arg)
   n->__pfn = pfn;
   n->__arg = arg;
   n->__retaddr = NULL;
+  n->__makefunc_can_recover = 0;
+  n->__free = 1;
   g->defer = n;
 }
 
@@ -58,7 +60,7 @@ __go_undefer (_Bool *frame)
 	 have a memory context.  Don't try to free anything in that
 	 case--the GC will release it later.  */
       m = runtime_m ();
-      if (m != NULL && m->mcache != NULL)
+      if (m != NULL && m->mcache != NULL && d->__free)
 	__go_free (d);
 
       /* Since we are executing a defer function here, we know we are

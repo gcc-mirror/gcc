@@ -250,8 +250,11 @@ typedef struct _loop_vec_info {
   /* The loop basic blocks.  */
   basic_block *bbs;
 
+  /* Number of latch executions.  */
+  tree num_itersm1;
   /* Number of iterations.  */
   tree num_iters;
+  /* Number of iterations of the original loop.  */
   tree num_iters_unchanged;
 
   /* Minimum number of iterations below which vectorization is expected to
@@ -344,14 +347,20 @@ typedef struct _loop_vec_info {
      fix it up.  */
   bool operands_swapped;
 
+  /* If if-conversion versioned this loop before conversion, this is the
+     loop version without if-conversion.  */
+  struct loop *scalar_loop;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)                 (L)->loop
 #define LOOP_VINFO_BBS(L)                  (L)->bbs
+#define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
 #define LOOP_VINFO_NITERS(L)               (L)->num_iters
-/* Since LOOP_VINFO_NITERS can change after prologue peeling
-   retain total unchanged scalar loop iterations for cost model.  */
+/* Since LOOP_VINFO_NITERS and LOOP_VINFO_NITERSM1 can change after
+   prologue peeling retain total unchanged scalar loop iterations for
+   cost model.  */
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L) (L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
@@ -376,6 +385,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_OPERANDS_SWAPPED(L)     (L)->operands_swapped
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
+#define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
   (L)->may_misalign_stmts.length () > 0
@@ -934,7 +944,8 @@ extern source_location vect_location;
    in tree-vect-loop-manip.c.  */
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
-struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *, edge);
+struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
+						     struct loop *, edge);
 extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
 extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree, tree,
 					    unsigned int, bool);

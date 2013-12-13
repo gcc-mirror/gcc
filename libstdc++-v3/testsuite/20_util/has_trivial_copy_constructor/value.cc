@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2004-12-30  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004-2013 Free Software Foundation, Inc.
@@ -21,38 +23,38 @@
 // 4.5.3 Type properties
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::has_trivial_copy_constructor;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_category<has_trivial_copy_constructor, int>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, float>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, EnumType>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int*>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int(*)(int)>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int (ClassType::*)>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int[2]>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, float[][3]>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, EnumType[2][3][4]>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int*[3]>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int(*[][2])(int)>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor, int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_category<has_trivial_copy_constructor,
-	   int (ClassType::*[][2][3]) (int)>(true)) );
+  static_assert(test_category<has_trivial_copy_constructor, int>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor, float>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		EnumType>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor, int*>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int(*)(int)>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int (ClassType::*)>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int (ClassType::*) (int)>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor, int[2]>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		float[][3]>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		EnumType[2][3][4]>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor, int*[3]>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int(*[][2])(int)>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int (ClassType::*[2][3])>(true), "");
+  static_assert(test_category<has_trivial_copy_constructor,
+		int (ClassType::*[][2][3]) (int)>(true), "");
 
   // Negative tests.  
-  VERIFY( (test_category<has_trivial_copy_constructor, void>(false)) );  
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<has_trivial_copy_constructor, void>(false), "");  
 }

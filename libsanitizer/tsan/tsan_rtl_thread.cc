@@ -39,8 +39,7 @@ void ThreadContext::OnDead() {
 
 void ThreadContext::OnJoined(void *arg) {
   ThreadState *caller_thr = static_cast<ThreadState *>(arg);
-  caller_thr->clock.acquire(&sync);
-  StatInc(caller_thr, StatSyncAcquire);
+  AcquireImpl(caller_thr, 0, &sync);
   sync.Reset();
 }
 
@@ -57,10 +56,7 @@ void ThreadContext::OnCreated(void *arg) {
   args->thr->fast_state.IncrementEpoch();
   // Can't increment epoch w/o writing to the trace as well.
   TraceAddEvent(args->thr, args->thr->fast_state, EventTypeMop, 0);
-  args->thr->clock.set(args->thr->tid, args->thr->fast_state.epoch());
-  args->thr->fast_synch_epoch = args->thr->fast_state.epoch();
-  args->thr->clock.release(&sync);
-  StatInc(args->thr, StatSyncRelease);
+  ReleaseImpl(args->thr, 0, &sync);
 #ifdef TSAN_GO
   creation_stack.ObtainCurrent(args->thr, args->pc);
 #else
@@ -93,21 +89,23 @@ void ThreadContext::OnStarted(void *arg) {
   epoch1 = (u64)-1;
   new(thr) ThreadState(CTX(), tid, unique_id,
       epoch0, args->stk_addr, args->stk_size, args->tls_addr, args->tls_size);
-#ifdef TSAN_GO
+#ifndef TSAN_GO
+  thr->shadow_stack = &ThreadTrace(thr->tid)->shadow_stack[0];
+  thr->shadow_stack_pos = thr->shadow_stack;
+  thr->shadow_stack_end = thr->shadow_stack + kShadowStackSize;
+#else
   // Setup dynamic shadow stack.
   const int kInitStackSize = 8;
-  args->thr->shadow_stack = (uptr*)internal_alloc(MBlockShadowStack,
+  thr->shadow_stack = (uptr*)internal_alloc(MBlockShadowStack,
       kInitStackSize * sizeof(uptr));
-  args->thr->shadow_stack_pos = thr->shadow_stack;
-  args->thr->shadow_stack_end = thr->shadow_stack + kInitStackSize;
+  thr->shadow_stack_pos = thr->shadow_stack;
+  thr->shadow_stack_end = thr->shadow_stack + kInitStackSize;
 #endif
 #ifndef TSAN_GO
-  AllocatorThreadStart(args->thr);
+  AllocatorThreadStart(thr);
 #endif
-  thr = args->thr;
   thr->fast_synch_epoch = epoch0;
-  thr->clock.set(tid, epoch0);
-  thr->clock.acquire(&sync);
+  AcquireImpl(thr, 0, &sync);
   thr->fast_state.SetHistorySize(flags()->history_size);
   const uptr trace = (epoch0 / kTracePartSize) % TraceParts();
   Trace *thr_trace = ThreadTrace(thr->tid);
@@ -126,10 +124,7 @@ void ThreadContext::OnFinished() {
     thr->fast_state.IncrementEpoch();
     // Can't increment epoch w/o writing to the trace as well.
     TraceAddEvent(thr, thr->fast_state, EventTypeMop, 0);
-    thr->clock.set(thr->tid, thr->fast_state.epoch());
-    thr->fast_synch_epoch = thr->fast_state.epoch();
-    thr->clock.release(&sync);
-    StatInc(thr, StatSyncRelease);
+    ReleaseImpl(thr, 0, &sync);
   }
   epoch1 = thr->fast_state.epoch();
 
@@ -163,12 +158,33 @@ static void MaybeReportThreadLeak(ThreadContextBase *tctx_base, void *arg) {
 }
 #endif
 
-static void ThreadCheckIgnore(ThreadState *thr) {
-  if (thr->ignore_reads_and_writes) {
-    Printf("ThreadSanitizer: thread T%d finished with ignores enabled.\n",
-           thr->tid);
+#ifndef TSAN_GO
+static void ReportIgnoresEnabled(ThreadContext *tctx, IgnoreSet *set) {
+  if (tctx->tid == 0) {
+    Printf("ThreadSanitizer: main thread finished with ignores enabled\n");
+  } else {
+    Printf("ThreadSanitizer: thread T%d %s finished with ignores enabled,"
+      " created at:\n", tctx->tid, tctx->name);
+    PrintStack(SymbolizeStackId(tctx->creation_stack_id));
   }
+  Printf("  One of the following ignores was not ended"
+      " (in order of probability)\n");
+  for (uptr i = 0; i < set->Size(); i++) {
+    Printf("  Ignore was enabled at:\n");
+    PrintStack(SymbolizeStackId(set->At(i)));
+  }
+  Die();
 }
+
+static void ThreadCheckIgnore(ThreadState *thr) {
+  if (thr->ignore_reads_and_writes)
+    ReportIgnoresEnabled(thr->tctx, &thr->mop_ignore_set);
+  if (thr->ignore_sync)
+    ReportIgnoresEnabled(thr->tctx, &thr->sync_ignore_set);
+}
+#else
+static void ThreadCheckIgnore(ThreadState *thr) {}
+#endif
 
 void ThreadFinalize(ThreadState *thr) {
   CHECK_GT(thr->in_rtl, 0);
@@ -209,6 +225,7 @@ int ThreadCreate(ThreadState *thr, uptr pc, uptr uid, bool detached) {
 }
 
 void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
+  Context *ctx = CTX();
   CHECK_GT(thr->in_rtl, 0);
   uptr stk_addr = 0;
   uptr stk_size = 0;
@@ -235,8 +252,13 @@ void ThreadStart(ThreadState *thr, int tid, uptr os_id) {
     }
   }
 
+  ThreadRegistry *tr = ctx->thread_registry;
   OnStartedArgs args = { thr, stk_addr, stk_size, tls_addr, tls_size };
-  CTX()->thread_registry->StartThread(tid, os_id, &args);
+  tr->StartThread(tid, os_id, &args);
+
+  tr->Lock();
+  thr->tctx = (ThreadContext*)tr->GetThreadLocked(tid);
+  tr->Unlock();
 }
 
 void ThreadFinish(ThreadState *thr) {

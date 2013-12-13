@@ -460,9 +460,9 @@ update_row_reg_save (dw_cfi_row *row, unsigned column, dw_cfi_ref cfi)
    descriptor sequence.  */
 
 static void
-get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_struct *loc)
+get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 {
-  struct dw_loc_descr_struct *ptr;
+  struct dw_loc_descr_node *ptr;
   cfa->offset = 0;
   cfa->base_offset = 0;
   cfa->indirect = 0;
@@ -755,7 +755,7 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
       /* Construct a DW_CFA_def_cfa_expression instruction to
 	 calculate the CFA using a full location expression since no
 	 register-offset pair is available.  */
-      struct dw_loc_descr_struct *loc_list;
+      struct dw_loc_descr_node *loc_list;
 
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
       loc_list = build_cfa_loc (new_cfa, 0);

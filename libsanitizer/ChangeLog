@@ -1,3 +1,41 @@
+2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* sanitizer_common/sanitizer_platform_limits_posix.h
+	(__sanitizer_shmid_ds): Use u64 on time fields for x32.
+	(__sanitizer_clock_t): Use long long for x32.
+
+2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* sanitizer_common/sanitizer_platform_limits_linux.cc: Include
+	<sys/stat.h>, instead of <asm/stat.h>, if __x86_64__ is defined.
+	(struct___old_kernel_stat_sz): Don't check if __x86_64__ is defined.
+
+2013-12-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (link_sanitizer_common): Add -lm.
+	* configure: Regenerated.
+
+2013-12-05  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r196489.
+	* merge.sh: Add *.S to the list of merged files.
+
+2013-12-05  Yury Gribov  <y.gribov@samsung.com>
+
+	PR sanitizer/59368
+	* Makefile.am (gcc_version): Added gcc_version.
+	* Makefile.in: Regenerate.
+
+2013-12-05  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r196090.
+	* tsan/Makefile.am (tsan_files): Added new files.
+	* tsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am (sanitizer_common_files): Added new fles.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* lsan/Makefile.am (lsan_files): Added new files.
+	* lsan/Makefile.in: Regenerate.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 

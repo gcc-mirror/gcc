@@ -82,7 +82,7 @@ DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", RTX_EXTRA)
 
 /* Used in the cselib routines to describe a value.  Objects of this
    kind are only allocated in cselib.c, in an alloc pool instead of in
-   GC memory.  The only operand of a VALUE is a cselib_val_struct.
+   GC memory.  The only operand of a VALUE is a cselib_val.
    var-tracking requires this to have a distinct integral value from
    DECL codes in trees.  */
 DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)

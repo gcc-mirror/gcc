@@ -184,22 +184,20 @@ init_empty_tree_cfg_for_function (struct function *fn)
 {
   /* Initialize the basic block array.  */
   init_flow (fn);
-  profile_status_for_function (fn) = PROFILE_ABSENT;
+  profile_status_for_fn (fn) = PROFILE_ABSENT;
   n_basic_blocks_for_fn (fn) = NUM_FIXED_BLOCKS;
-  last_basic_block_for_function (fn) = NUM_FIXED_BLOCKS;
-  vec_alloc (basic_block_info_for_function (fn), initial_cfg_capacity);
-  vec_safe_grow_cleared (basic_block_info_for_function (fn),
+  last_basic_block_for_fn (fn) = NUM_FIXED_BLOCKS;
+  vec_alloc (basic_block_info_for_fn (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (basic_block_info_for_fn (fn),
 			 initial_cfg_capacity);
 
   /* Build a mapping of labels to their associated blocks.  */
-  vec_alloc (label_to_block_map_for_function (fn), initial_cfg_capacity);
-  vec_safe_grow_cleared (label_to_block_map_for_function (fn),
+  vec_alloc (label_to_block_map_for_fn (fn), initial_cfg_capacity);
+  vec_safe_grow_cleared (label_to_block_map_for_fn (fn),
 			 initial_cfg_capacity);
 
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, ENTRY_BLOCK,
-				ENTRY_BLOCK_PTR_FOR_FN (fn));
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, EXIT_BLOCK,
-		   EXIT_BLOCK_PTR_FOR_FN (fn));
+  SET_BASIC_BLOCK_FOR_FN (fn, ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (fn));
+  SET_BASIC_BLOCK_FOR_FN (fn, EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (fn));
 
   ENTRY_BLOCK_PTR_FOR_FN (fn)->next_bb
     = EXIT_BLOCK_PTR_FOR_FN (fn);
@@ -246,8 +244,10 @@ build_gimple_cfg (gimple_seq seq)
     create_empty_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   /* Adjust the size of the array.  */
-  if (basic_block_info->length () < (size_t) n_basic_blocks_for_fn (cfun))
-    vec_safe_grow_cleared (basic_block_info, n_basic_blocks_for_fn (cfun));
+  if (basic_block_info_for_fn (cfun)->length ()
+      < (size_t) n_basic_blocks_for_fn (cfun))
+    vec_safe_grow_cleared (basic_block_info_for_fn (cfun),
+			   n_basic_blocks_for_fn (cfun));
 
   /* To speed up statement iterator walks, we first purge dead labels.  */
   cleanup_dead_labels ();
@@ -304,7 +304,7 @@ replace_loop_annotate ()
     }
 
   /* Remove IFN_ANNOTATE. Safeguard for the case loop->latch == NULL.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gsi = gsi_last_bb (bb);
       stmt = gsi_stmt (gsi);
@@ -458,7 +458,7 @@ factor_computed_gotos (void)
      Examine the last statement in each basic block to see if the block
      ends with a computed goto.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
       gimple last;
@@ -599,7 +599,7 @@ create_bb (void *h, void *e, basic_block after)
      not have to clear the newly allocated basic block here.  */
   bb = alloc_block ();
 
-  bb->index = last_basic_block;
+  bb->index = last_basic_block_for_fn (cfun);
   bb->flags = BB_NEW;
   set_bb_seq (bb, h ? (gimple_seq) h : NULL);
 
@@ -607,17 +607,20 @@ create_bb (void *h, void *e, basic_block after)
   link_block (bb, after);
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block == basic_block_info->length ())
+  if ((size_t) last_basic_block_for_fn (cfun)
+      == basic_block_info_for_fn (cfun)->length ())
     {
-      size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      vec_safe_grow_cleared (basic_block_info, new_size);
+      size_t new_size =
+	(last_basic_block_for_fn (cfun)
+	 + (last_basic_block_for_fn (cfun) + 3) / 4);
+      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
     }
 
   /* Add the newly created block to the array.  */
-  SET_BASIC_BLOCK (last_basic_block, bb);
+  SET_BASIC_BLOCK_FOR_FN (cfun, last_basic_block_for_fn (cfun), bb);
 
   n_basic_blocks_for_fn (cfun)++;
-  last_basic_block++;
+  last_basic_block_for_fn (cfun)++;
 
   return bb;
 }
@@ -634,7 +637,7 @@ fold_cond_expr_cond (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
 
@@ -676,11 +679,12 @@ make_edges (void)
 
   /* Create an edge from entry to the first block with executable
      statements in it.  */
-  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), BASIC_BLOCK (NUM_FIXED_BLOCKS),
+  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+	     BASIC_BLOCK_FOR_FN (cfun, NUM_FIXED_BLOCKS),
 	     EDGE_FALLTHRU);
 
   /* Traverse the basic block array placing edges.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple last = last_stmt (bb);
       bool fallthru;
@@ -834,7 +838,7 @@ assign_discriminators (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -947,7 +951,7 @@ end_recording_case_labels (void)
   edge_to_cases = NULL;
   EXECUTE_IF_SET_IN_BITMAP (touched_switch_bbs, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
 	{
 	  gimple stmt = last_stmt (bb);
@@ -1031,7 +1035,8 @@ label_to_block_fn (struct function *ifun, tree dest)
      and undefined variable warnings quite right.  */
   if (seen_error () && uid < 0)
     {
-      gimple_stmt_iterator gsi = gsi_start_bb (BASIC_BLOCK (NUM_FIXED_BLOCKS));
+      gimple_stmt_iterator gsi =
+	gsi_start_bb (BASIC_BLOCK_FOR_FN (cfun, NUM_FIXED_BLOCKS));
       gimple stmt;
 
       stmt = gimple_build_label (dest);
@@ -1052,7 +1057,7 @@ make_abnormal_goto_edges (basic_block bb, bool for_call)
   basic_block target_bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (target_bb)
+  FOR_EACH_BB_FN (target_bb, cfun)
     {
       for (gsi = gsi_start_bb (target_bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -1228,11 +1233,11 @@ void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  label_for_bb = XCNEWVEC (struct label_record, last_basic_block);
+  label_for_bb = XCNEWVEC (struct label_record, last_basic_block_for_fn (cfun));
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
 
@@ -1268,7 +1273,7 @@ cleanup_dead_labels (void)
 
   /* Now redirect all jumps/branches to the selected label.
      First do so for each block ending in a control statement.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
       tree label, new_label;
@@ -1360,7 +1365,7 @@ cleanup_dead_labels (void)
   /* Finally, purge dead labels.  All user-defined labels and labels that
      can be the target of non-local gotos and labels which have their
      address taken are preserved.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator i;
       tree label_for_this_bb = label_for_bb[bb->index].label;
@@ -1484,7 +1489,7 @@ group_case_labels (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple stmt = last_stmt (bb);
       if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
@@ -2086,8 +2091,8 @@ gimple_debug_bb (basic_block bb)
 basic_block
 gimple_debug_bb_n (int n)
 {
-  gimple_debug_bb (BASIC_BLOCK (n));
-  return BASIC_BLOCK (n);
+  gimple_debug_bb (BASIC_BLOCK_FOR_FN (cfun, n));
+  return BASIC_BLOCK_FOR_FN (cfun, n);
 }
 
 
@@ -2116,7 +2121,7 @@ gimple_dump_cfg (FILE *file, int flags)
       dump_function_header (file, current_function_decl, flags);
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
 	       n_basic_blocks_for_fn (cfun), n_edges_for_fn (cfun),
-	       last_basic_block);
+	       last_basic_block_for_fn (cfun));
 
       brief_dump_cfg (file, flags | TDF_COMMENT);
       fprintf (file, "\n");
@@ -2157,7 +2162,7 @@ dump_cfg_stats (FILE *file)
 	   SCALE (size), LABEL (size));
 
   num_edges = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     num_edges += EDGE_COUNT (bb->succs);
   size = num_edges * sizeof (struct edge_def);
   total += size;
@@ -2379,7 +2384,7 @@ stmt_ends_bb_p (gimple t)
 void
 delete_tree_cfg_annotations (void)
 {
-  vec_free (label_to_block_map);
+  vec_free (label_to_block_map_for_fn (cfun));
 }
 
 
@@ -4281,7 +4286,8 @@ verify_gimple_label (gimple stmt)
 
   uid = LABEL_DECL_UID (decl);
   if (cfun->cfg
-      && (uid == -1 || (*label_to_block_map)[uid] != gimple_bb (stmt)))
+      && (uid == -1
+	  || (*label_to_block_map_for_fn (cfun))[uid] != gimple_bb (stmt)))
     {
       error ("incorrect entry in label_to_block_map");
       err |= true;
@@ -4890,7 +4896,7 @@ gimple_verify_flow_info (void)
 	err = 1;
       }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool found_ctrl_stmt = false;
 
@@ -7048,7 +7054,7 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
 
   if (fun && fun->decl == fndecl
       && fun->cfg
-      && basic_block_info_for_function (fun))
+      && basic_block_info_for_fn (fun))
     {
       /* If the CFG has been built, emit a CFG-based dump.  */
       if (!ignore_topmost_bind)
@@ -7237,7 +7243,7 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   if (verbosity >= 1)
     {
       fprintf (file, "%s{\n", s_indent);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (bb->loop_father == loop)
 	  print_loops_bb (file, bb, indent, verbosity);
 
@@ -7429,7 +7435,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
 {
   int i;
   int blocks_split = 0;
-  int last_bb = last_basic_block;
+  int last_bb = last_basic_block_for_fn (cfun);
   bool check_last_block = false;
 
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
@@ -7480,7 +7486,7 @@ gimple_flow_call_edges_add (sbitmap blocks)
      return or not...  */
   for (i = 0; i < last_bb; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       gimple_stmt_iterator gsi;
       gimple stmt, last_stmt;
 
@@ -7609,7 +7615,7 @@ remove_edge_and_dominated_blocks (edge e)
 
       EXECUTE_IF_SET_IN_BITMAP (df, 0, i, bi)
 	{
-	  bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  bitmap_set_bit (df_idom,
 			  get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
@@ -7647,7 +7653,7 @@ remove_edge_and_dominated_blocks (edge e)
      the dominance frontier of E.  Therefore, Y belongs to DF_IDOM.  */
   EXECUTE_IF_SET_IN_BITMAP (df_idom, 0, i, bi)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       for (dbb = first_dom_son (CDI_DOMINATORS, bb);
 	   dbb;
 	   dbb = next_dom_son (CDI_DOMINATORS, dbb))
@@ -7700,7 +7706,7 @@ gimple_purge_all_dead_eh_edges (const_bitmap blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       /* Earlier gimple_purge_dead_eh_edges could have removed
 	 this basic block already.  */
@@ -7757,7 +7763,7 @@ gimple_purge_all_dead_abnormal_call_edges (const_bitmap blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       /* Earlier gimple_purge_dead_abnormal_call_edges could have removed
 	 this basic block already.  */
@@ -7874,11 +7880,11 @@ gimple_account_profile_record (basic_block bb, int after_pass,
     {
       record->size[after_pass]
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (profile_status == PROFILE_READ)
+      if (profile_status_for_fn (cfun) == PROFILE_READ)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->count;
-      else if (profile_status == PROFILE_GUESSED)
+      else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	record->time[after_pass]
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->frequency;
@@ -7936,7 +7942,7 @@ split_critical_edges (void)
      expensive.  So we want to enable recording of edge to CASE_LABEL_EXPR
      mappings around the calls to split_edge.  */
   start_recording_case_labels ();
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
         {
@@ -8327,7 +8333,7 @@ execute_fixup_cfg (void)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs)
     e->count = apply_scale (e->count, count_scale);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bb->count = apply_scale (bb->count, count_scale);
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

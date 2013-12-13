@@ -14,22 +14,28 @@ sanitizer_common_files = \
 	sanitizer_allocator.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
+	sanitizer_coverage.cc \
 	sanitizer_flags.cc \
 	sanitizer_libc.cc \
+	sanitizer_libignore.cc \
 	sanitizer_linux.cc \
 	sanitizer_linux_libcdep.cc \
 	sanitizer_mac.cc \
 	sanitizer_platform_limits_linux.cc \
 	sanitizer_platform_limits_posix.cc \
-	sanitizer_posix.cc \
 	sanitizer_posix_libcdep.cc \
+	sanitizer_posix.cc \
 	sanitizer_printf.cc \
 	sanitizer_stackdepot.cc \
 	sanitizer_stacktrace.cc \
+	sanitizer_stacktrace_libcdep.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
 	sanitizer_suppressions.cc \
 	sanitizer_symbolizer_posix_libcdep.cc \
 	sanitizer_symbolizer_win.cc \
+	sanitizer_symbolizer.cc \
+	sanitizer_symbolizer_libbacktrace.cc \
+	sanitizer_symbolizer_libcdep.cc \
 	sanitizer_thread_registry.cc \
 	sanitizer_win.cc
 

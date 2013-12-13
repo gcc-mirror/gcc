@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-isolate-paths -fdump-tree-phicprop1" } */
+/* { dg-options "-O2 -fisolate-erroneous-paths-attribute -fdump-tree-isolate-paths -fdump-tree-phicprop1" } */
 
 
 int z;

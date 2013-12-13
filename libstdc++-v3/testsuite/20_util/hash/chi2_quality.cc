@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 
 // Use smaller statistics when running on simulators, so it takes less time.
-// { dg-options "-std=gnu++0x -DSAMPLES=10000" { target simulator } }
+// { dg-options "-std=gnu++0x -DSAMPLES=30000" { target simulator } }
 
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //

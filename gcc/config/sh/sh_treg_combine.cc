@@ -1469,7 +1469,7 @@ sh_treg_combine::execute (void)
   // Look for basic blocks that end with a conditional branch and try to
   // optimize them.
   basic_block bb;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx i = BB_END (bb);
       if (any_condjump_p (i) && onlyjump_p (i))

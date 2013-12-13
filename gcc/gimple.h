@@ -1259,7 +1259,7 @@ extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
 extern void dump_decl_set (FILE *, bitmap);
 extern bool nonfreeing_call_p (gimple);
-extern bool infer_nonnull_range (gimple, tree);
+extern bool infer_nonnull_range (gimple, tree, bool, bool);
 extern void sort_case_labels (vec<tree> );
 extern void preprocess_case_label_vec_for_gimple (vec<tree> , tree, tree *);
 extern void gimple_seq_set_location (gimple_seq , location_t);
@@ -5624,7 +5624,13 @@ gimple_expr_type (const_gimple stmt)
 	 useless conversion involved.  That means returning the
 	 original RHS type as far as we can reconstruct it.  */
       if (code == GIMPLE_CALL)
-	type = gimple_call_return_type (stmt);
+	{
+	  if (gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+	    type = TREE_TYPE (gimple_call_arg (stmt, 3));
+	  else
+	    type = gimple_call_return_type (stmt);
+	}
       else
 	switch (gimple_assign_rhs_code (stmt))
 	  {

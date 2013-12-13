@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2010-02-21  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
@@ -19,40 +21,33 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_pod;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_pod, int>(true)) );
-  VERIFY( (test_category<is_pod, float>(true)) );
-  VERIFY( (test_category<is_pod, EnumType>(true)) );
-  VERIFY( (test_category<is_pod, int*>(true)) );
-  VERIFY( (test_category<is_pod, int(*)(int)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*) (int)>(true)) );
-  VERIFY( (test_category<is_pod, int[2]>(true)) );
-  VERIFY( (test_category<is_pod, float[][3]>(true)) );
-  VERIFY( (test_category<is_pod, EnumType[2][3][4]>(true)) );
-  VERIFY( (test_category<is_pod, int*[3]>(true)) );
-  VERIFY( (test_category<is_pod, int(*[][2])(int)>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*[2][3])>(true)) );
-  VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
-  VERIFY( (test_category<is_pod, ClassType>(true)) );
-  VERIFY( (test_category<is_pod, PODType>(true)) );
+  static_assert(test_category<is_pod, int>(true), "");
+  static_assert(test_category<is_pod, float>(true), "");
+  static_assert(test_category<is_pod, EnumType>(true), "");
+  static_assert(test_category<is_pod, int*>(true), "");
+  static_assert(test_category<is_pod, int(*)(int)>(true), "");
+  static_assert(test_category<is_pod, int (ClassType::*)>(true), "");
+  static_assert(test_category<is_pod, int (ClassType::*) (int)>(true), "");
+  static_assert(test_category<is_pod, int[2]>(true), "");
+  static_assert(test_category<is_pod, float[][3]>(true), "");
+  static_assert(test_category<is_pod, EnumType[2][3][4]>(true), "");
+  static_assert(test_category<is_pod, int*[3]>(true), "");
+  static_assert(test_category<is_pod, int(*[][2])(int)>(true), "");
+  static_assert(test_category<is_pod, int (ClassType::*[2][3])>(true), "");
+  static_assert(test_category<is_pod,
+		int (ClassType::*[][2][3]) (int)>(true), "");
+  static_assert(test_category<is_pod, ClassType>(true), "");
+  static_assert(test_category<is_pod, PODType>(true), "");
 
-  VERIFY( (test_category<is_pod, void>(false)) );
-  VERIFY( (test_category<is_pod, NType>(false)) );
-  VERIFY( (test_category<is_pod, TType>(false)) );
-  VERIFY( (test_category<is_pod, SLType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_pod, void>(false), "");
+  static_assert(test_category<is_pod, NType>(false), "");
+  static_assert(test_category<is_pod, TType>(false), "");
+  static_assert(test_category<is_pod, SLType>(false), "");
 }

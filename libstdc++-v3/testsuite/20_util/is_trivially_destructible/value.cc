@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++11" }
+// { dg-do compile }
 //
 // 2012-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -20,25 +21,17 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_trivially_destructible;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_trivially_destructible, int>(true)) );
-  VERIFY( (test_category<is_trivially_destructible, TType>(true)) );
-  VERIFY( (test_category<is_trivially_destructible, PODType>(true)) );
+  static_assert(test_category<is_trivially_destructible, int>(true), "");
+  static_assert(test_category<is_trivially_destructible, TType>(true), "");
+  static_assert(test_category<is_trivially_destructible, PODType>(true), "");
 
-  VERIFY( (test_category<is_trivially_destructible, NType>(false)) );
-  VERIFY( (test_category<is_trivially_destructible, SLType>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_category<is_trivially_destructible, NType>(false), "");
+  static_assert(test_category<is_trivially_destructible, SLType>(false), "");
 }

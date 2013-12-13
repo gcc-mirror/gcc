@@ -74,14 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 	     real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
-/* Random guesstimation given names.
-   PROV_VERY_UNLIKELY should be small enough so basic block predicted
-   by it gets below HOT_BB_FREQUENCY_FRACTION.  */
-#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
-#define PROB_EVEN		(REG_BR_PROB_BASE / 2)
-#define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
-#define PROB_ALWAYS		(REG_BR_PROB_BASE)
-
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, enum br_predictor, enum prediction);
@@ -129,7 +121,7 @@ maybe_hot_frequency_p (struct function *fun, int freq)
       if (node->frequency == NODE_FREQUENCY_HOT)
         return true;
     }
-  if (profile_status_for_function (fun) == PROFILE_ABSENT)
+  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     return true;
   if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
       && freq < (ENTRY_BLOCK_PTR_FOR_FN (fun)->frequency * 2 / 3))
@@ -172,7 +164,7 @@ set_hot_bb_threshold (gcov_type min)
 static inline bool
 maybe_hot_count_p (struct function *fun, gcov_type count)
 {
-  if (fun && profile_status_for_function (fun) != PROFILE_READ)
+  if (fun && profile_status_for_fn (fun) != PROFILE_READ)
     return true;
   /* Code executed at most once is not hot.  */
   if (profile_info->runs >= count)
@@ -187,7 +179,7 @@ bool
 maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_function (fun) == PROFILE_READ)
+  if (profile_status_for_fn (fun) == PROFILE_READ)
     return maybe_hot_count_p (fun, bb->count);
   return maybe_hot_frequency_p (fun, bb->frequency);
 }
@@ -232,7 +224,7 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
 bool
 maybe_hot_edge_p (edge e)
 {
-  if (profile_status == PROFILE_READ)
+  if (profile_status_for_fn (cfun) == PROFILE_READ)
     return maybe_hot_count_p (cfun, e->count);
   return maybe_hot_frequency_p (cfun, EDGE_FREQUENCY (e));
 }
@@ -247,7 +239,7 @@ probably_never_executed (struct function *fun,
                          gcov_type count, int frequency)
 {
   gcc_checking_assert (fun);
-  if (profile_status_for_function (fun) == PROFILE_READ)
+  if (profile_status_for_fn (cfun) == PROFILE_READ)
     {
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count * unlikely_count_fraction >= profile_info->runs)
@@ -446,7 +438,7 @@ optimize_loop_nest_for_size_p (struct loop *loop)
 bool
 predictable_edge_p (edge e)
 {
-  if (profile_status == PROFILE_ABSENT)
+  if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
     return false;
   if ((e->probability
        <= PARAM_VALUE (PARAM_PREDICTABLE_BRANCH_OUTCOME) * REG_BR_PROB_BASE / 100)
@@ -547,8 +539,8 @@ gimple_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 static bool
 probability_reliable_p (int prob)
 {
-  return (profile_status == PROFILE_READ
-	  || (profile_status == PROFILE_GUESSED
+  return (profile_status_for_fn (cfun) == PROFILE_READ
+	  || (profile_status_for_fn (cfun) == PROFILE_GUESSED
 	      && (prob <= HITRATE (1) || prob >= HITRATE (99))));
 }
 
@@ -618,7 +610,7 @@ rtl_predict_edge (edge e, enum br_predictor predictor, int probability)
 void
 gimple_predict_edge (edge e, enum br_predictor predictor, int probability)
 {
-  gcc_assert (profile_status != PROFILE_GUESSED);
+  gcc_assert (profile_status_for_fn (cfun) != PROFILE_GUESSED);
   if ((e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun) && EDGE_COUNT (e->src->succs) >
        1)
       && flag_guess_branch_prob && optimize)
@@ -1945,7 +1937,7 @@ strip_predict_hints (void)
   gimple ass_stmt;
   tree var;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator bi;
       for (bi = gsi_start_bb (bb); !gsi_end_p (bi);)
@@ -2216,7 +2208,7 @@ tree_bb_level_predictions (void)
 
   apply_return_prediction ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
 
@@ -2390,10 +2382,10 @@ tree_estimate_probability (void)
   if (number_of_loops (cfun) > 1)
     predict_loops ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     tree_estimate_probability_bb (bb);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     combine_predictions_for_bb (bb);
 
 #ifdef ENABLE_CHECKING
@@ -2433,8 +2425,8 @@ tree_estimate_probability_driver (void)
   loop_optimizer_finalize ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     gimple_dump_cfg (dump_file, dump_flags);
-  if (profile_status == PROFILE_ABSENT)
-    profile_status = PROFILE_GUESSED;
+  if (profile_status_for_fn (cfun) == PROFILE_ABSENT)
+    profile_status_for_fn (cfun) = PROFILE_GUESSED;
   return 0;
 }
 
@@ -2586,7 +2578,7 @@ propagate_freq (basic_block head, bitmap tovisit)
       edge_iterator ei;
       int count = 0;
 
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -2747,7 +2739,7 @@ estimate_loops (void)
     estimate_loops_at_level (current_loops->tree_root->inner);
 
   /* Now propagate the frequencies through all the blocks.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bitmap_set_bit (tovisit, bb->index);
     }
@@ -2796,7 +2788,7 @@ drop_profile (struct cgraph_node *node, gcov_type call_count)
                  node->name (), node->order);
     }
 
-  profile_status_for_function (fn)
+  profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
   node->frequency
       = hot ? NODE_FREQUENCY_HOT : NODE_FREQUENCY_NORMAL;
@@ -2859,7 +2851,7 @@ handle_missing_profiles (void)
           if (callee->count > 0)
             continue;
           if (DECL_COMDAT (callee->decl) && fn && fn->cfg
-              && profile_status_for_function (fn) == PROFILE_READ)
+              && profile_status_for_fn (fn) == PROFILE_READ)
             {
               drop_profile (node, 0);
               worklist.safe_push (callee);
@@ -2918,7 +2910,7 @@ expensive_function_p (int threshold)
 
   /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
   limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency * threshold;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 
@@ -2944,7 +2936,7 @@ estimate_bb_frequencies (bool force)
   basic_block bb;
   sreal freq_max;
 
-  if (force || profile_status != PROFILE_READ || !counts_to_freqs ())
+  if (force || profile_status_for_fn (cfun) != PROFILE_READ || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 
@@ -2987,7 +2979,7 @@ estimate_bb_frequencies (bool force)
       estimate_loops ();
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (sreal_compare (&freq_max, &BLOCK_INFO (bb)->frequency) < 0)
 	  memcpy (&freq_max, &BLOCK_INFO (bb)->frequency, sizeof (freq_max));
 
@@ -3020,7 +3012,7 @@ compute_function_frequency (void)
   if (DECL_STATIC_DESTRUCTOR (current_function_decl))
     node->only_called_at_exit = true;
 
-  if (profile_status != PROFILE_READ)
+  if (profile_status_for_fn (cfun) != PROFILE_READ)
     {
       int flags = flags_from_decl_or_type (current_function_decl);
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
@@ -3045,7 +3037,7 @@ compute_function_frequency (void)
      functions to unlikely and that is most of what we care about.  */
   if (!cfun->after_inlining)
     node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (maybe_hot_bb_p (cfun, bb))
 	{
@@ -3179,8 +3171,8 @@ rebuild_frequencies (void)
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     count_max = MAX (bb->count, count_max);
 
-  if (profile_status == PROFILE_GUESSED
-      || (profile_status == PROFILE_READ && count_max < REG_BR_PROB_BASE/10))
+  if (profile_status_for_fn (cfun) == PROFILE_GUESSED
+      || (profile_status_for_fn (cfun) == PROFILE_READ && count_max < REG_BR_PROB_BASE/10))
     {
       loop_optimizer_init (0);
       add_noreturn_fake_exit_edges ();
@@ -3190,7 +3182,7 @@ rebuild_frequencies (void)
       remove_fake_exit_edges ();
       loop_optimizer_finalize ();
     }
-  else if (profile_status == PROFILE_READ)
+  else if (profile_status_for_fn (cfun) == PROFILE_READ)
     counts_to_freqs ();
   else
     gcc_unreachable ();

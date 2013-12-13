@@ -558,7 +558,7 @@ set_livein_block (tree var, basic_block bb)
 
       if (def_block_index == -1
 	  || ! dominated_by_p (CDI_DOMINATORS, bb,
-	                       BASIC_BLOCK (def_block_index)))
+	                       BASIC_BLOCK_FOR_FN (cfun, def_block_index)))
 	info->need_phi_state = NEED_PHI_STATE_MAYBE;
     }
   else
@@ -821,7 +821,7 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
   adef = 1;
   EXECUTE_IF_SET_IN_BITMAP (to_remove, 0, i, bi)
     {
-      def_bb = BASIC_BLOCK (i);
+      def_bb = BASIC_BLOCK_FOR_FN (cfun, i);
       defs[adef].bb_index = i;
       defs[adef].dfs_num = bb_dom_dfs_in (CDI_DOMINATORS, def_bb);
       defs[adef + 1].bb_index = i;
@@ -895,7 +895,8 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	p = b;
       else
 	{
-	  use_bb = get_immediate_dominator (CDI_DOMINATORS, BASIC_BLOCK (b));
+	  use_bb = get_immediate_dominator (CDI_DOMINATORS,
+					    BASIC_BLOCK_FOR_FN (cfun, b));
 	  p = find_dfsnum_interval (defs, n_defs,
 				    bb_dom_dfs_in (CDI_DOMINATORS, use_bb));
 	  if (!bitmap_bit_p (phis, p))
@@ -907,7 +908,7 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	continue;
 
       /* Add the new uses to the worklist.  */
-      def_bb = BASIC_BLOCK (p);
+      def_bb = BASIC_BLOCK_FOR_FN (cfun, p);
       FOR_EACH_EDGE (e, ei, def_bb->preds)
 	{
 	  u = e->src->index;
@@ -963,7 +964,7 @@ mark_phi_for_rewrite (basic_block bb, gimple phi)
 
   bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
 
-  n = (unsigned) last_basic_block + 1;
+  n = (unsigned) last_basic_block_for_fn (cfun) + 1;
   if (phis_to_rewrite.length () < n)
     phis_to_rewrite.safe_grow_cleared (n);
 
@@ -1004,7 +1005,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
   /* And insert the PHI nodes.  */
   EXECUTE_IF_SET_IN_BITMAP (phi_insertion_points, 0, bb_index, bi)
     {
-      bb = BASIC_BLOCK (bb_index);
+      bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
       if (update_p)
 	mark_block_for_update (bb);
 
@@ -2314,12 +2315,12 @@ rewrite_into_ssa (void)
   /* Initialize the set of interesting blocks.  The callback
      mark_def_sites will add to this set those blocks that the renamer
      should process.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block);
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (interesting_blocks);
 
   /* Initialize dominance frontier.  */
-  dfs = XNEWVEC (bitmap_head, last_basic_block);
-  FOR_EACH_BB (bb)
+  dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
 
   /* 1- Compute dominance frontiers.  */
@@ -2336,7 +2337,7 @@ rewrite_into_ssa (void)
   rewrite_blocks (ENTRY_BLOCK_PTR_FOR_FN (cfun), REWRITE_ALL);
 
   /* Free allocated memory.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_clear (&dfs[bb->index]);
   free (dfs);
 
@@ -2634,7 +2635,7 @@ prepare_def_site_for (tree name, bool insert_phi_p)
   bb = gimple_bb (stmt);
   if (bb)
     {
-      gcc_checking_assert (bb->index < last_basic_block);
+      gcc_checking_assert (bb->index < last_basic_block_for_fn (cfun));
       mark_block_for_update (bb);
       mark_def_interesting (name, stmt, bb, insert_phi_p);
     }
@@ -3021,8 +3022,9 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 						    db->def_blocks);
 	  if (entry != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	    EXECUTE_IF_SET_IN_BITMAP (idf, 0, i, bi)
-	      if (BASIC_BLOCK (i) != entry
-		  && dominated_by_p (CDI_DOMINATORS, BASIC_BLOCK (i), entry))
+	      if (BASIC_BLOCK_FOR_FN (cfun, i) != entry
+		  && dominated_by_p (CDI_DOMINATORS,
+				     BASIC_BLOCK_FOR_FN (cfun, i), entry))
 		bitmap_set_bit (pruned_idf, i);
 	}
       else
@@ -3054,7 +3056,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 	{
 	  edge e;
 	  edge_iterator ei;
-	  basic_block bb = BASIC_BLOCK (i);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (e->src->index >= 0)
@@ -3183,7 +3185,7 @@ update_ssa (unsigned update_flags)
 
   blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
   if (!phis_to_rewrite.exists ())
-    phis_to_rewrite.create (last_basic_block + 1);
+    phis_to_rewrite.create (last_basic_block_for_fn (cfun) + 1);
   blocks_to_update = BITMAP_ALLOC (NULL);
 
   /* Ensure that the dominance information is up-to-date.  */
@@ -3267,8 +3269,8 @@ update_ssa (unsigned update_flags)
 
       /* If the caller requested PHI nodes to be added, compute
 	 dominance frontiers.  */
-      dfs = XNEWVEC (bitmap_head, last_basic_block);
-      FOR_EACH_BB (bb)
+      dfs = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+      FOR_EACH_BB_FN (bb, cfun)
 	bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
       compute_dominance_frontiers (dfs);
 
@@ -3294,7 +3296,7 @@ update_ssa (unsigned update_flags)
 	insert_updated_phi_nodes_for (sym, dfs, blocks_to_update,
 	                              update_flags);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bitmap_clear (&dfs[bb->index]);
       free (dfs);
 
@@ -3315,7 +3317,7 @@ update_ssa (unsigned update_flags)
     get_var_info (sym)->info.current_def = NULL_TREE;
 
   /* Now start the renaming process at START_BB.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block);
+  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (interesting_blocks);
   EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
     bitmap_set_bit (interesting_blocks, i);
@@ -3338,9 +3340,10 @@ update_ssa (unsigned update_flags)
       c = 0;
       EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
 	c++;
-      fprintf (dump_file, "Number of blocks in CFG: %d\n", last_basic_block);
+      fprintf (dump_file, "Number of blocks in CFG: %d\n",
+	       last_basic_block_for_fn (cfun));
       fprintf (dump_file, "Number of blocks to update: %d (%3.0f%%)\n",
-	       c, PERCENT (c, last_basic_block));
+	       c, PERCENT (c, last_basic_block_for_fn (cfun)));
 
       if (dump_flags & TDF_DETAILS)
 	{

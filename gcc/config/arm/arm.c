@@ -1164,6 +1164,106 @@ const struct cpu_cost_table cortexa7_extra_costs =
   }
 };
 
+const struct cpu_cost_table cortexa12_extra_costs =
+{
+  /* ALU */
+  {
+    0,			/* Arith.  */
+    0,			/* Logical.  */
+    0,			/* Shift.  */
+    COSTS_N_INSNS (1),	/* Shift_reg.  */
+    COSTS_N_INSNS (1),	/* Arith_shift.  */
+    COSTS_N_INSNS (1),	/* Arith_shift_reg.  */
+    COSTS_N_INSNS (1),	/* Log_shift.  */
+    COSTS_N_INSNS (1),	/* Log_shift_reg.  */
+    0,			/* Extend.  */
+    COSTS_N_INSNS (1),	/* Extend_arith.  */
+    0,			/* Bfi.  */
+    COSTS_N_INSNS (1),	/* Bfx.  */
+    COSTS_N_INSNS (1),	/* Clz.  */
+    0,			/* non_exec.  */
+    true		/* non_exec_costs_exec.  */
+  },
+  /* MULT SImode */
+  {
+    {
+      COSTS_N_INSNS (2),	/* Simple.  */
+      COSTS_N_INSNS (3),	/* Flag_setting.  */
+      COSTS_N_INSNS (2),	/* Extend.  */
+      COSTS_N_INSNS (3),	/* Add.  */
+      COSTS_N_INSNS (2),	/* Extend_add.  */
+      COSTS_N_INSNS (18)	/* Idiv.  */
+    },
+    /* MULT DImode */
+    {
+      0,			/* Simple (N/A).  */
+      0,			/* Flag_setting (N/A).  */
+      COSTS_N_INSNS (3),	/* Extend.  */
+      0,			/* Add (N/A).  */
+      COSTS_N_INSNS (3),	/* Extend_add.  */
+      0				/* Idiv (N/A).  */
+    }
+  },
+  /* LD/ST */
+  {
+    COSTS_N_INSNS (3),	/* Load.  */
+    COSTS_N_INSNS (3),	/* Load_sign_extend.  */
+    COSTS_N_INSNS (3),	/* Ldrd.  */
+    COSTS_N_INSNS (3),	/* Ldm_1st.  */
+    1,			/* Ldm_regs_per_insn_1st.  */
+    2,			/* Ldm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (3),	/* Loadf.  */
+    COSTS_N_INSNS (3),	/* Loadd.  */
+    0,			/* Load_unaligned.  */
+    0,			/* Store.  */
+    0,			/* Strd.  */
+    0,			/* Stm_1st.  */
+    1,			/* Stm_regs_per_insn_1st.  */
+    2,			/* Stm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (2),	/* Storef.  */
+    COSTS_N_INSNS (2),	/* Stored.  */
+    0			/* Store_unaligned.  */
+  },
+  {
+    /* FP SFmode */
+    {
+      COSTS_N_INSNS (17),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub. */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst. */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (2),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
+    },
+    /* FP DFmode */
+    {
+      COSTS_N_INSNS (31),	/* Div.  */
+      COSTS_N_INSNS (4),	/* Mult.  */
+      COSTS_N_INSNS (8),	/* Mult_addsub.  */
+      COSTS_N_INSNS (8),	/* Fma.  */
+      COSTS_N_INSNS (4),	/* Addsub.  */
+      COSTS_N_INSNS (2),	/* Fpconst.  */
+      COSTS_N_INSNS (2),	/* Neg.  */
+      COSTS_N_INSNS (2),	/* Compare.  */
+      COSTS_N_INSNS (4),	/* Widen.  */
+      COSTS_N_INSNS (4),	/* Narrow.  */
+      COSTS_N_INSNS (4),	/* Toint.  */
+      COSTS_N_INSNS (4),	/* Fromint.  */
+      COSTS_N_INSNS (4)		/* Roundint.  */
+    }
+  },
+  /* Vector */
+  {
+    COSTS_N_INSNS (1)	/* Alu.  */
+  }
+};
+
 const struct cpu_cost_table cortexa15_extra_costs =
 {
   /* ALU */
@@ -1558,6 +1658,22 @@ const struct tune_params arm_cortex_a9_tune =
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
   false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
+  &arm_default_vec_cost,                        /* Vectorizer costs.  */
+  false                                         /* Prefer Neon for 64-bits bitops.  */
+};
+
+const struct tune_params arm_cortex_a12_tune =
+{
+  arm_9e_rtx_costs,
+  &cortexa12_extra_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_BENEFICIAL(4,32,32),
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost,
+  true,						/* Prefer LDRD/STRD.  */
   {true, true},					/* Prefer non short circuit.  */
   &arm_default_vec_cost,                        /* Vectorizer costs.  */
   false                                         /* Prefer Neon for 64-bits bitops.  */
@@ -15169,28 +15285,37 @@ operands_ok_ldrd_strd (rtx rt, rtx rt2, rtx rn, HOST_WIDE_INT offset,
 }
 
 /* Helper for gen_operands_ldrd_strd.  Returns true iff the memory
-   operand ADDR is an immediate offset from the base register and is
-   not volatile, in which case it sets BASE and OFFSET
-   accordingly.  */
-bool
-mem_ok_for_ldrd_strd (rtx addr, rtx *base, rtx *offset)
+   operand MEM's address contains an immediate offset from the base
+   register and has no side effects, in which case it sets BASE and
+   OFFSET accordingly.  */
+static bool
+mem_ok_for_ldrd_strd (rtx mem, rtx *base, rtx *offset)
 {
+  rtx addr;
+
+  gcc_assert (base != NULL && offset != NULL);
+
   /* TODO: Handle more general memory operand patterns, such as
      PRE_DEC and PRE_INC.  */
 
-  /* Convert a subreg of mem into mem itself.  */
-  if (GET_CODE (addr) == SUBREG)
-    addr = alter_subreg (&addr, true);
-
-  gcc_assert (MEM_P (addr));
-
-  /* Don't modify volatile memory accesses.  */
-  if (MEM_VOLATILE_P (addr))
+  if (side_effects_p (mem))
     return false;
+
+  /* Can't deal with subregs.  */
+  if (GET_CODE (mem) == SUBREG)
+    return false;
+
+  gcc_assert (MEM_P (mem));
 
   *offset = const0_rtx;
 
-  addr = XEXP (addr, 0);
+  addr = XEXP (mem, 0);
+
+  /* If addr isn't valid for DImode, then we can't handle it.  */
+  if (!arm_legitimate_address_p (DImode, addr,
+				 reload_in_progress || reload_completed))
+    return false;
+
   if (REG_P (addr))
     {
       *base = addr;
@@ -16548,7 +16673,7 @@ thumb1_reorg (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx dest, src;
       rtx pat, op0, set = NULL;
@@ -16626,7 +16751,7 @@ thumb2_reorg (void)
   compute_bb_for_insn ();
   df_analyze ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 

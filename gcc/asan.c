@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-builder.h"
 #include "ubsan.h"
+#include "predict.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -1311,9 +1312,6 @@ report_error_func (bool is_store, int size_in_bytes)
   return builtin_decl_implicit (report[is_store][exact_log2 (size_in_bytes)]);
 }
 
-#define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 2000 - 1)
-#define PROB_ALWAYS		(REG_BR_PROB_BASE)
-
 /* Split the current basic block and create a condition statement
    insertion point right before or after the statement pointed to by
    ITER.  Return an iterator to the point at which the caller might
@@ -1634,7 +1632,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	{
 	  /* For static vars if they are known not to be dynamically
 	     initialized, they will be always accessible.  */
-	  struct varpool_node *vnode = varpool_get_node (inner);
+	  varpool_node *vnode = varpool_get_node (inner);
 	  if (vnode && !vnode->dynamically_initialized)
 	    return;
 	}
@@ -2043,9 +2041,9 @@ transform_statements (void)
 {
   basic_block bb, last_bb = NULL;
   gimple_stmt_iterator i;
-  int saved_last_basic_block = last_basic_block;
+  int saved_last_basic_block = last_basic_block_for_fn (cfun);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       basic_block prev_bb = bb;
 
@@ -2214,7 +2212,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 			  fold_convert (const_ptr_type_node, str_cst));
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  fold_convert (const_ptr_type_node, module_name_cst));
-  struct varpool_node *vnode = varpool_get_node (decl);
+  varpool_node *vnode = varpool_get_node (decl);
   int has_dynamic_init = vnode ? vnode->dynamically_initialized : 0;
   CONSTRUCTOR_APPEND_ELT (vinner, NULL_TREE,
 			  build_int_cst (uptr, has_dynamic_init));
@@ -2380,7 +2378,7 @@ static GTY(()) tree asan_ctor_statements;
 void
 asan_finish_file (void)
 {
-  struct varpool_node *vnode;
+  varpool_node *vnode;
   unsigned HOST_WIDE_INT gcount = 0;
 
   if (shadow_ptr_types[0] == NULL_TREE)
@@ -2559,7 +2557,7 @@ execute_sanopt (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

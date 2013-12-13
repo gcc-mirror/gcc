@@ -1,5 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O1" } */
 /* Let gimple verifier check what SRA does to unions and single-field
    strucutres . */
 

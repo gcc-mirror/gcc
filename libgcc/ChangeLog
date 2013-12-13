@@ -1,3 +1,22 @@
+2013-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* config.host (arm*-*-uclinux*): Move t-arm before t-bpabi.
+
+2013-12-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sfp-exceptions.c (__sfp_handle_exceptions): Emit SSE
+	instructions when __SSE_MATH__ is defined.
+
+2013-12-06  Ralf Corsépius  <ralf.corsepius@rtems.org>
+
+	* config.host (microblaze-*-rtems*): New.
+
+2013-12-04  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/bpapi-lib.h (TARGET_HAS_NO_HW_DIVIDE): Define for
+	architectures that do not have hardware divide instruction.
+	i.e. architectures that do not define __ARM_ARCH_EXT_IDIV__.
+
 2013-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* longlong.h: Delete (moved to include/).

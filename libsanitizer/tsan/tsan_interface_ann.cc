@@ -53,11 +53,11 @@ class ScopedAnnotation {
     if (!flags()->enable_annotations) \
       return; \
     ThreadState *thr = cur_thread(); \
-    const uptr pc = (uptr)__builtin_return_address(0); \
+    const uptr caller_pc = (uptr)__builtin_return_address(0); \
     StatInc(thr, StatAnnotation); \
     StatInc(thr, Stat##typ); \
-    ScopedAnnotation sa(thr, __FUNCTION__, f, l, \
-        (uptr)__builtin_return_address(0)); \
+    ScopedAnnotation sa(thr, __FUNCTION__, f, l, caller_pc); \
+    const uptr pc = __sanitizer::StackTrace::GetCurrentPc(); \
     (void)pc; \
 /**/
 
@@ -381,22 +381,32 @@ void INTERFACE_ATTRIBUTE AnnotateBenignRace(
 
 void INTERFACE_ATTRIBUTE AnnotateIgnoreReadsBegin(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreReadsBegin);
-  ThreadIgnoreBegin(thr);
+  ThreadIgnoreBegin(thr, pc);
 }
 
 void INTERFACE_ATTRIBUTE AnnotateIgnoreReadsEnd(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreReadsEnd);
-  ThreadIgnoreEnd(thr);
+  ThreadIgnoreEnd(thr, pc);
 }
 
 void INTERFACE_ATTRIBUTE AnnotateIgnoreWritesBegin(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreWritesBegin);
-  ThreadIgnoreBegin(thr);
+  ThreadIgnoreBegin(thr, pc);
 }
 
 void INTERFACE_ATTRIBUTE AnnotateIgnoreWritesEnd(char *f, int l) {
   SCOPED_ANNOTATION(AnnotateIgnoreWritesEnd);
-  ThreadIgnoreEnd(thr);
+  ThreadIgnoreEnd(thr, pc);
+}
+
+void INTERFACE_ATTRIBUTE AnnotateIgnoreSyncBegin(char *f, int l) {
+  SCOPED_ANNOTATION(AnnotateIgnoreSyncBegin);
+  ThreadIgnoreSyncBegin(thr, pc);
+}
+
+void INTERFACE_ATTRIBUTE AnnotateIgnoreSyncEnd(char *f, int l) {
+  SCOPED_ANNOTATION(AnnotateIgnoreSyncEnd);
+  ThreadIgnoreSyncEnd(thr, pc);
 }
 
 void INTERFACE_ATTRIBUTE AnnotatePublishMemoryRange(
@@ -429,7 +439,7 @@ void INTERFACE_ATTRIBUTE WTFAnnotateHappensAfter(char *f, int l, uptr addr) {
 void INTERFACE_ATTRIBUTE WTFAnnotateBenignRaceSized(
     char *f, int l, uptr mem, uptr sz, char *desc) {
   SCOPED_ANNOTATION(AnnotateBenignRaceSized);
-  BenignRaceImpl(f, l, mem, 1, desc);
+  BenignRaceImpl(f, l, mem, sz, desc);
 }
 
 int INTERFACE_ATTRIBUTE RunningOnValgrind() {

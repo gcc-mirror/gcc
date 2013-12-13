@@ -30,7 +30,7 @@
 #include <ffi.h>
 #include <powerpc/asm.h>
 
-#ifndef __powerpc64__
+#ifndef POWERPC64
 	.globl ffi_prep_args_SYSV
 ENTRY(ffi_call_SYSV)
 .LFB1:
@@ -213,8 +213,8 @@ END(ffi_call_SYSV)
       .uleb128  0x1c
       .align 2
 .LEFDE1:
-#endif
 
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits
+#endif
 #endif

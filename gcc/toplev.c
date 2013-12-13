@@ -390,7 +390,7 @@ wrapup_global_declaration_2 (tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
     {
-      struct varpool_node *node;
+      varpool_node *node;
       bool needed = true;
       node = varpool_get_node (decl);
 

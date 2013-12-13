@@ -5,7 +5,7 @@ inline void
 bar (const float s[5], float z[3][5])
 {
   float a = s[0], b = s[1], c = s[2], d = s[3], e = s[4];
-  float f = 1.0f / a;
+  float f = a;
   float u = f * b, v = f * c, w = f * d;
   float p = 0.4f * (e - 0.5f * (b * u + c * v + d * w));
   z[0][3] = b * w;

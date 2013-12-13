@@ -7310,7 +7310,11 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 	Type* slice_type = args->front()->type();
 	if (!slice_type->is_slice_type())
 	  {
-	    error_at(args->front()->location(), "argument 1 must be a slice");
+	    if (slice_type->is_nil_type())
+	      error_at(args->front()->location(), "use of untyped nil");
+	    else
+	      error_at(args->front()->location(),
+		       "argument 1 must be a slice");
 	    this->set_is_error();
 	    return this;
 	  }
@@ -8008,7 +8012,10 @@ Builtin_call_expression::do_type()
 	const Expression_list* args = this->args();
 	if (args == NULL || args->empty())
 	  return Type::make_error_type();
-	return args->front()->type();
+	Type *ret = args->front()->type();
+	if (!ret->is_slice_type())
+	  return Type::make_error_type();
+	return ret;
       }
 
     case BUILTIN_REAL:
@@ -10252,6 +10259,14 @@ Index_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
     {
       Expression* deref = Expression::make_unary(OPERATOR_MULT, left,
 						 location);
+
+      // For an ordinary index into the array, the pointer will be
+      // dereferenced.  For a slice it will not--the resulting slice
+      // will simply reuse the pointer, which is incorrect if that
+      // pointer is nil.
+      if (end != NULL || cap != NULL)
+	deref->issue_nil_check();
+
       return Expression::make_array_index(deref, start, end, cap, location);
     }
   else if (type->is_string_type())

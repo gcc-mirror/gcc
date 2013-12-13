@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "tree-ssa-alias.h"
+#include "tree-pretty-print.h"
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "gimple.h"
@@ -40,9 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ubsan.h"
 #include "c-family/c-common.h"
-
-/* From trans-mem.c.  */
-#define PROB_VERY_UNLIKELY      (REG_BR_PROB_BASE / 2000 - 1)
+#include "rtl.h"
+#include "expr.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -105,45 +105,53 @@ decl_for_type_insert (tree type, tree decl)
 
 /* Helper routine, which encodes a value in the pointer_sized_int_node.
    Arguments with precision <= POINTER_SIZE are passed directly,
-   the rest is passed by reference.  T is a value we are to encode.  */
+   the rest is passed by reference.  T is a value we are to encode.
+   IN_EXPAND_P is true if this function is called during expansion.  */
 
 tree
-ubsan_encode_value (tree t)
+ubsan_encode_value (tree t, bool in_expand_p)
 {
   tree type = TREE_TYPE (t);
-  switch (TREE_CODE (type))
-    {
-    case INTEGER_TYPE:
-      if (TYPE_PRECISION (type) <= POINTER_SIZE)
+  const unsigned int bitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  if (bitsize <= POINTER_SIZE)
+    switch (TREE_CODE (type))
+      {
+      case BOOLEAN_TYPE:
+      case ENUMERAL_TYPE:
+      case INTEGER_TYPE:
 	return fold_build1 (NOP_EXPR, pointer_sized_int_node, t);
+      case REAL_TYPE:
+	{
+	  tree itype = build_nonstandard_integer_type (bitsize, true);
+	  t = fold_build1 (VIEW_CONVERT_EXPR, itype, t);
+	  return fold_convert (pointer_sized_int_node, t);
+	}
+      default:
+	gcc_unreachable ();
+      }
+  else
+    {
+      if (!DECL_P (t) || !TREE_ADDRESSABLE (t))
+	{
+	  /* The reason for this is that we don't want to pessimize
+	     code by making vars unnecessarily addressable.  */
+	  tree var = create_tmp_var (type, NULL);
+	  tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
+	  if (in_expand_p)
+	    {
+	      rtx mem
+		= assign_stack_temp_for_type (TYPE_MODE (type),
+					      GET_MODE_SIZE (TYPE_MODE (type)),
+					      type);
+	      SET_DECL_RTL (var, mem);
+	      expand_assignment (var, t, false);
+	      return build_fold_addr_expr (var);
+	    }
+	  t = build_fold_addr_expr (var);
+	  return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
+	}
       else
 	return build_fold_addr_expr (t);
-    case REAL_TYPE:
-      {
-	unsigned int bitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
-	if (bitsize <= POINTER_SIZE)
-	  {
-	    tree itype = build_nonstandard_integer_type (bitsize, true);
-	    t = fold_build1 (VIEW_CONVERT_EXPR, itype, t);
-	    return fold_convert (pointer_sized_int_node, t);
-	  }
-	else
-	  {
-	    if (!TREE_ADDRESSABLE (t))
-	      {
-		/* The reason for this is that we don't want to pessimize
-		   code by making vars unnecessarily addressable.  */
-		tree var = create_tmp_var (TREE_TYPE (t), NULL);
-		tree tem = build2 (MODIFY_EXPR, void_type_node, var, t);
-		t = build_fold_addr_expr (var);
-		return build2 (COMPOUND_EXPR, TREE_TYPE (t), tem, t);
-	      }
-	    else
-	      return build_fold_addr_expr (t);
-	  }
-      }
-    default:
-      gcc_unreachable ();
     }
 }
 
@@ -632,6 +640,99 @@ instrument_null (gimple_stmt_iterator gsi, bool is_lhs)
     instrument_member_call (&gsi);
 }
 
+/* Build an ubsan builtin call for the signed-integer-overflow
+   sanitization.  CODE says what kind of builtin are we building,
+   LOC is a location, LHSTYPE is the type of LHS, OP0 and OP1
+   are operands of the binary operation.  */
+
+tree
+ubsan_build_overflow_builtin (tree_code code, location_t loc, tree lhstype,
+			      tree op0, tree op1)
+{
+  tree data = ubsan_create_data ("__ubsan_overflow_data", loc, NULL,
+				 ubsan_type_descriptor (lhstype, false),
+				 NULL_TREE);
+  enum built_in_function fn_code;
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+      fn_code = BUILT_IN_UBSAN_HANDLE_ADD_OVERFLOW;
+      break;
+    case MINUS_EXPR:
+      fn_code = BUILT_IN_UBSAN_HANDLE_SUB_OVERFLOW;
+      break;
+    case MULT_EXPR:
+      fn_code = BUILT_IN_UBSAN_HANDLE_MUL_OVERFLOW;
+      break;
+    case NEGATE_EXPR:
+      fn_code = BUILT_IN_UBSAN_HANDLE_NEGATE_OVERFLOW;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  tree fn = builtin_decl_explicit (fn_code);
+  return build_call_expr_loc (loc, fn, 2 + (code != NEGATE_EXPR),
+			      build_fold_addr_expr_loc (loc, data),
+			      ubsan_encode_value (op0, true),
+			      op1 ? ubsan_encode_value (op1, true)
+				  : NULL_TREE);
+}
+
+/* Perform the signed integer instrumentation.  GSI is the iterator
+   pointing at statement we are trying to instrument.  */
+
+static void
+instrument_si_overflow (gimple_stmt_iterator gsi)
+{
+  gimple stmt = gsi_stmt (gsi);
+  tree_code code = gimple_assign_rhs_code (stmt);
+  tree lhs = gimple_assign_lhs (stmt);
+  tree lhstype = TREE_TYPE (lhs);
+  tree a, b;
+  gimple g;
+
+  /* If this is not a signed operation, don't instrument anything here.
+     Also punt on bit-fields.  */
+  if (!INTEGRAL_TYPE_P (lhstype)
+      || TYPE_OVERFLOW_WRAPS (lhstype)
+      || GET_MODE_BITSIZE (TYPE_MODE (lhstype)) != TYPE_PRECISION (lhstype))
+    return;
+
+  switch (code)
+    {
+    case MINUS_EXPR:
+    case PLUS_EXPR:
+    case MULT_EXPR:
+      /* Transform
+	 i = u {+,-,*} 5;
+	 into
+	 i = UBSAN_CHECK_{ADD,SUB,MUL} (u, 5);  */
+      a = gimple_assign_rhs1 (stmt);
+      b = gimple_assign_rhs2 (stmt);
+      g = gimple_build_call_internal (code == PLUS_EXPR
+				      ? IFN_UBSAN_CHECK_ADD
+				      : code == MINUS_EXPR
+				      ? IFN_UBSAN_CHECK_SUB
+				      : IFN_UBSAN_CHECK_MUL, 2, a, b);
+      gimple_call_set_lhs (g, lhs);
+      gsi_replace (&gsi, g, false);
+      break;
+    case NEGATE_EXPR:
+      /* Represent i = -u;
+	 as
+	 i = UBSAN_CHECK_SUB (0, u);  */
+      a = build_int_cst (lhstype, 0);
+      b = gimple_assign_rhs1 (stmt);
+      g = gimple_build_call_internal (IFN_UBSAN_CHECK_SUB, 2, a, b);
+      gimple_call_set_lhs (g, lhs);
+      gsi_replace (&gsi, g, false);
+      break;
+    default:
+      break;
+    }
+}
+
 /* Gate and execute functions for ubsan pass.  */
 
 static unsigned int
@@ -640,7 +741,7 @@ ubsan_pass (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
@@ -650,6 +751,10 @@ ubsan_pass (void)
 	      gsi_next (&gsi);
 	      continue;
 	    }
+
+	  if ((flag_sanitize & SANITIZE_SI_OVERFLOW)
+	      && is_gimple_assign (stmt))
+	    instrument_si_overflow (gsi);
 
 	  if (flag_sanitize & SANITIZE_NULL)
 	    {
@@ -668,7 +773,7 @@ ubsan_pass (void)
 static bool
 gate_ubsan (void)
 {
-  return flag_sanitize & SANITIZE_NULL;
+  return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW);
 }
 
 namespace {

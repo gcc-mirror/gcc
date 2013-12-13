@@ -50,7 +50,7 @@ flow_loops_cfg_dump (FILE *file)
   if (!file)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge succ;
       edge_iterator ei;
@@ -440,7 +440,7 @@ flow_loops_find (struct loops *loops)
   auto_vec<loop_p> larray (loops->larray->length ());
   for (b = 0; b < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; b++)
     {
-      basic_block header = BASIC_BLOCK (rc_order[b]);
+      basic_block header = BASIC_BLOCK_FOR_FN (cfun, rc_order[b]);
       if (bb_loop_header_p (header))
 	{
 	  struct loop *loop;
@@ -835,7 +835,7 @@ get_loop_body (const struct loop *loop)
       gcc_assert (loop->num_nodes == (unsigned) n_basic_blocks_for_fn (cfun));
       body[tv++] = loop->header;
       body[tv++] = EXIT_BLOCK_PTR_FOR_FN (cfun);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	body[tv++] = bb;
     }
   else
@@ -1083,7 +1083,7 @@ record_loop_exits (void)
 					  loop_exit_hash, loop_exit_eq,
 					  loop_exit_free);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
@@ -1344,7 +1344,7 @@ verify_loop_structure (void)
     verify_dominators (CDI_DOMINATORS);
 
   /* Check the headers.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb_loop_header_p (bb))
       {
 	if (bb->loop_father->header == NULL)
@@ -1365,7 +1365,7 @@ verify_loop_structure (void)
       }
 
   /* Check the recorded loop father and sizes of loops.  */
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
@@ -1479,8 +1479,8 @@ verify_loop_structure (void)
   if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     {
       /* Record old info.  */
-      irreds = sbitmap_alloc (last_basic_block);
-      FOR_EACH_BB (bb)
+      irreds = sbitmap_alloc (last_basic_block_for_fn (cfun));
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
@@ -1496,7 +1496,7 @@ verify_loop_structure (void)
       mark_irreducible_loops ();
 
       /* Compare.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 
@@ -1579,7 +1579,7 @@ verify_loop_structure (void)
 
       sizes = XCNEWVEC (unsigned, num);
       memset (sizes, 0, sizeof (unsigned) * num);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 	  if (bb->loop_father == current_loops->tree_root)

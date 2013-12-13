@@ -1,3 +1,9 @@
+2013-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/55715
+	* expr.c (num_binary_op): Implement subtraction directly rather
+	than with negation and falling through into addition case.
+
 2013-11-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* lex.c (search_line_fast): Correct for little endian.

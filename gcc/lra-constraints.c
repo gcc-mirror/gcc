@@ -271,9 +271,11 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
 	 where other reload pseudos are no longer allocatable.  */
       || (INSN_UID (curr_insn) >= new_insn_uid_start
 	  && curr_insn_set != NULL
-	  && (OBJECT_P (SET_SRC (curr_insn_set))
+	  && ((OBJECT_P (SET_SRC (curr_insn_set))
+	       && ! CONSTANT_P (SET_SRC (curr_insn_set)))
 	      || (GET_CODE (SET_SRC (curr_insn_set)) == SUBREG
-		  && OBJECT_P (SUBREG_REG (SET_SRC (curr_insn_set)))))))
+		  && OBJECT_P (SUBREG_REG (SET_SRC (curr_insn_set)))
+		  && ! CONSTANT_P (SUBREG_REG (SET_SRC (curr_insn_set)))))))
     /* When we don't know what class will be used finally for reload
        pseudos, we use ALL_REGS.  */
     return ((regno >= new_regno_start && rclass == ALL_REGS)
@@ -5300,7 +5302,7 @@ lra_inheritance (void)
   bitmap_initialize (&live_regs, &reg_obstack);
   bitmap_initialize (&temp_bitmap, &reg_obstack);
   bitmap_initialize (&ebb_global_regs, &reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       start_bb = bb;
       if (lra_dump_file != NULL)
@@ -5401,7 +5403,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
      because we need to marks insns affected by previous
      inheritance/split pass for processing by the subsequent
      constraint pass.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       fix_bb_live_info (df_get_live_in (bb), remove_pseudos);
       fix_bb_live_info (df_get_live_out (bb), remove_pseudos);

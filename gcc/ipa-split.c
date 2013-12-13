@@ -362,7 +362,8 @@ dominated_by_forbidden (basic_block bb)
 
   EXECUTE_IF_SET_IN_BITMAP (forbidden_dominators, 1, dom_bb, bi)
     {
-      if (dominated_by_p (CDI_DOMINATORS, bb, BASIC_BLOCK (dom_bb)))
+      if (dominated_by_p (CDI_DOMINATORS, bb,
+			  BASIC_BLOCK_FOR_FN (cfun, dom_bb)))
 	return true;
     }
 
@@ -410,7 +411,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	 a loop, enable splitting since inlining code skipping the loop
 	 is likely noticeable win.  */
       if (back_edge
-	  && profile_status != PROFILE_READ
+	  && profile_status_for_fn (cfun) != PROFILE_READ
 	  && incoming_freq < ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1069,7 +1070,7 @@ find_split_points (int overall_time, int overall_size)
         stack.pop ();
     }
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = NULL;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->aux = NULL;
   stack.release ();
   BITMAP_FREE (current.ssa_names_to_pass);
@@ -1584,7 +1585,7 @@ execute_split_functions (void)
 
   /* We enforce splitting after loop headers when profile info is not
      available.  */
-  if (profile_status != PROFILE_READ)
+  if (profile_status_for_fn (cfun) != PROFILE_READ)
     mark_dfs_back_edges ();
 
   /* Initialize bitmap to track forbidden calls.  */
@@ -1592,9 +1593,9 @@ execute_split_functions (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Compute local info about basic blocks and determine function size/time.  */
-  bb_info_vec.safe_grow_cleared (last_basic_block + 1);
+  bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   memset (&best_split_point, 0, sizeof (best_split_point));
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int time = 0;
       int size = 0;

@@ -1777,3 +1777,6 @@ extern int sparc_indent_opcode;
 #ifndef SUBTARGET_DEFAULT_MEMORY_MODEL
 #define SUBTARGET_DEFAULT_MEMORY_MODEL	SMM_DEFAULT
 #endif
+
+/* Define this to 1 if the FE_EXCEPT values defined in fenv.h start at 1.  */
+#define SPARC_LOW_FE_EXCEPT_VALUES 0

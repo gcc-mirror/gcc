@@ -6945,7 +6945,7 @@ vt_find_locations (void)
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
   rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
-  bb_order = XNEWVEC (int, last_basic_block);
+  bb_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   pre_and_rev_post_order_compute (NULL, rc_order, false);
   for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
@@ -6953,12 +6953,12 @@ vt_find_locations (void)
 
   worklist = fibheap_new ();
   pending = fibheap_new ();
-  visited = sbitmap_alloc (last_basic_block);
-  in_worklist = sbitmap_alloc (last_basic_block);
-  in_pending = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  in_worklist = sbitmap_alloc (last_basic_block_for_fn (cfun));
+  in_pending = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (in_worklist);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     fibheap_insert (pending, bb_order[bb->index], bb);
   bitmap_ones (in_pending);
 
@@ -7118,7 +7118,7 @@ vt_find_locations (void)
     }
 
   if (success && MAY_HAVE_DEBUG_INSNS)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (VTI (bb)->flooded);
 
   free (bb_order);
@@ -7246,7 +7246,7 @@ dump_dataflow_sets (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       fprintf (dump_file, "\nBasic block %d:\n", bb->index);
       fprintf (dump_file, "IN:\n");
@@ -9419,7 +9419,7 @@ vt_emit_notes (void)
 
   /* Free memory occupied by the out hash tables, as they aren't used
      anymore.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     dataflow_set_clear (&VTI (bb)->out);
 
   /* Enable emitting notes by functions (mainly by set_variable_part and
@@ -9435,7 +9435,7 @@ vt_emit_notes (void)
 
   dataflow_set_init (&cur);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* Emit the notes for changes of variable locations between two
 	 subsequent basic blocks.  */
@@ -9864,7 +9864,7 @@ vt_initialize (void)
   changed_variables.create (10);
 
   /* Init the IN and OUT sets.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       VTI (bb)->visited = false;
       VTI (bb)->flooded = false;
@@ -10012,7 +10012,7 @@ vt_initialize (void)
 
   vt_add_function_parameters ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       HOST_WIDE_INT pre, post = 0;
@@ -10155,7 +10155,7 @@ delete_debug_insns (void)
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS_SAFE (bb, insn, next)
 	if (DEBUG_INSN_P (insn))
@@ -10198,12 +10198,12 @@ vt_finalize (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       VTI (bb)->mos.release ();
     }
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       dataflow_set_destroy (&VTI (bb)->in);
       dataflow_set_destroy (&VTI (bb)->out);

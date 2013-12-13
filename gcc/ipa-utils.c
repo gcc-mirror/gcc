@@ -527,7 +527,7 @@ varpool_node_set_new (void)
 /* Add varpool_node NODE to varpool_node_set SET.  */
 
 void
-varpool_node_set_add (varpool_node_set set, struct varpool_node *node)
+varpool_node_set_add (varpool_node_set set, varpool_node *node)
 {
   void **slot;
 
@@ -551,11 +551,11 @@ varpool_node_set_add (varpool_node_set set, struct varpool_node *node)
 /* Remove varpool_node NODE from varpool_node_set SET.  */
 
 void
-varpool_node_set_remove (varpool_node_set set, struct varpool_node *node)
+varpool_node_set_remove (varpool_node_set set, varpool_node *node)
 {
   void **slot, **last_slot;
   int index;
-  struct varpool_node *last_node;
+  varpool_node *last_node;
 
   slot = pointer_map_contains (set->map, node);
   if (slot == NULL || !*slot)
@@ -587,7 +587,7 @@ varpool_node_set_remove (varpool_node_set set, struct varpool_node *node)
    is returned if NODE is not in SET.  */
 
 varpool_node_set_iterator
-varpool_node_set_find (varpool_node_set set, struct varpool_node *node)
+varpool_node_set_find (varpool_node_set set, varpool_node *node)
 {
   void **slot;
   varpool_node_set_iterator vsi;
@@ -612,7 +612,7 @@ dump_varpool_node_set (FILE *f, varpool_node_set set)
 
   for (iter = vsi_start (set); !vsi_end_p (iter); vsi_next (&iter))
     {
-      struct varpool_node *node = vsi_node (iter);
+      varpool_node *node = vsi_node (iter);
       fprintf (f, " %s", node->name ());
     }
   fprintf (f, "\n");
@@ -711,8 +711,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		 "Giving up; number of basic block mismatch.\n");
       match = false;
     }
-  else if (last_basic_block_for_function (srccfun)
-	   != last_basic_block_for_function (dstcfun))
+  else if (last_basic_block_for_fn (srccfun)
+	   != last_basic_block_for_fn (dstcfun))
     {
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,
@@ -727,7 +727,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  unsigned int i;
 
-	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 	  if (dstbb == NULL)
 	    {
 	      if (cgraph_dump_file)
@@ -772,7 +772,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  unsigned int i;
 
-	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 	  dstbb->count += srcbb->count;
 	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 	    {

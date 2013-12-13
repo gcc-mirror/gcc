@@ -1414,8 +1414,8 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 		     &new_chain->live_throughout);
 
       CLEAR_REG_SET (&new_chain->dead_or_set);
-      if (chain->insn == BB_HEAD (BASIC_BLOCK (chain->block)))
-	BB_HEAD (BASIC_BLOCK (chain->block)) = new_chain->insn;
+      if (chain->insn == BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
+	BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   else
     {
@@ -1434,8 +1434,8 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
       note_stores (PATTERN (chain->insn), add_stored_regs,
 		   &new_chain->live_throughout);
       CLEAR_REG_SET (&new_chain->dead_or_set);
-      if (chain->insn == BB_END (BASIC_BLOCK (chain->block)))
-	BB_END (BASIC_BLOCK (chain->block)) = new_chain->insn;
+      if (chain->insn == BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)))
+	BB_END (BASIC_BLOCK_FOR_FN (cfun, chain->block)) = new_chain->insn;
     }
   new_chain->block = chain->block;
   new_chain->is_caller_save_insn = 1;

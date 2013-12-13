@@ -552,6 +552,8 @@ initialize_tree_contains_struct (void)
   gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_MINIMAL]);
   gcc_assert (tree_contains_struct[IMPORTED_DECL][TS_DECL_COMMON]);
+  gcc_assert (tree_contains_struct[NAMELIST_DECL][TS_DECL_MINIMAL]);
+  gcc_assert (tree_contains_struct[NAMELIST_DECL][TS_DECL_COMMON]);
 }
 
 
@@ -5490,7 +5492,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
    NAMESPACE_DECLs, etc).  */
 
 static void
-find_decls_types_in_var (struct varpool_node *v, struct free_lang_data_d *fld)
+find_decls_types_in_var (varpool_node *v, struct free_lang_data_d *fld)
 {
   find_decls_types (v->decl, fld);
 }
@@ -5544,7 +5546,7 @@ static void
 free_lang_data_in_cgraph (void)
 {
   struct cgraph_node *n;
-  struct varpool_node *v;
+  varpool_node *v;
   struct free_lang_data_d fld;
   tree t;
   unsigned i;

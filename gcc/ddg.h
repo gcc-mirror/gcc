@@ -33,9 +33,8 @@ typedef struct ddg *ddg_ptr;
 typedef struct ddg_scc *ddg_scc_ptr;
 typedef struct ddg_all_sccs *ddg_all_sccs_ptr;
 
-typedef enum {TRUE_DEP, OUTPUT_DEP, ANTI_DEP} dep_type;
-typedef enum {REG_OR_MEM_DEP, REG_DEP, MEM_DEP, REG_AND_MEM_DEP}
-	     dep_data_type;
+enum dep_type {TRUE_DEP, OUTPUT_DEP, ANTI_DEP};
+enum dep_data_type {REG_OR_MEM_DEP, REG_DEP, MEM_DEP, REG_AND_MEM_DEP};
 
 /* The following two macros enables direct access to the successors and
    predecessors bitmaps held in each ddg_node.  Do not make changes to

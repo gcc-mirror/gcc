@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2007-06-02  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.
@@ -19,34 +21,35 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::add_rvalue_reference;
   using std::is_same;
   using namespace __gnu_test;
 
-  VERIFY( (is_same<add_rvalue_reference<int>::type, int&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<int&&>::type, int&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<int&>::type, int&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<const int>::type, const int&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<int*>::type, int*&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<ClassType&&>::type, ClassType&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<ClassType>::type, ClassType&&>::value) );
-  VERIFY( (is_same<add_rvalue_reference<int(int)>::type, int(&&)(int)>::value) );
-  VERIFY( (is_same<add_rvalue_reference<void>::type, void>::value) );
-  VERIFY( (is_same<add_rvalue_reference<const void>::type, const void>::value) );  
-  VERIFY( (is_same<add_rvalue_reference<bool(int) const>::type, bool(int) const>::value) );  
-  VERIFY( (is_same<add_rvalue_reference<bool(int) &>::type, bool(int) &>::value) );  
-  VERIFY( (is_same<add_rvalue_reference<bool(int) const &&>::type, bool(int) const &&>::value) );  
-  VERIFY( (is_same<add_rvalue_reference<bool(int)>::type, bool(&&)(int)>::value) );  
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(is_same<add_rvalue_reference<int>::type, int&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<int&&>::type, int&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<int&>::type, int&>::value, "");
+  static_assert(is_same<add_rvalue_reference<const int>::type,
+		const int&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<int*>::type, int*&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<ClassType&&>::type,
+		ClassType&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<ClassType>::type,
+		ClassType&&>::value, "");
+  static_assert(is_same<add_rvalue_reference<int(int)>::type,
+		int(&&)(int)>::value, "");
+  static_assert(is_same<add_rvalue_reference<void>::type, void>::value, "");
+  static_assert(is_same<add_rvalue_reference<const void>::type,
+		const void>::value, "");  
+  static_assert(is_same<add_rvalue_reference<bool(int) const>::type,
+		bool(int) const>::value, "");  
+  static_assert(is_same<add_rvalue_reference<bool(int) &>::type,
+		bool(int) &>::value, "");  
+  static_assert(is_same<add_rvalue_reference<bool(int) const &&>::type,
+		bool(int) const &&>::value, "");  
+  static_assert(is_same<add_rvalue_reference<bool(int)>::type,
+		bool(&&)(int)>::value, "");  
 }

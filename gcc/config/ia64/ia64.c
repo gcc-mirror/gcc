@@ -7159,7 +7159,9 @@ ia64_single_set (rtx insn)
   switch (recog_memoized (insn))
     {
     case CODE_FOR_prologue_allocate_stack:
+    case CODE_FOR_prologue_allocate_stack_pr:
     case CODE_FOR_epilogue_deallocate_stack:
+    case CODE_FOR_epilogue_deallocate_stack_pr:
       ret = XVECEXP (x, 0, 0);
       break;
 
@@ -9611,7 +9613,7 @@ emit_predicate_relation_info (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int r;
       rtx head = BB_HEAD (bb);
@@ -9639,7 +9641,7 @@ emit_predicate_relation_info (void)
      relations around them.  Otherwise the assembler will assume the call
      returns, and complain about uses of call-clobbered predicates after
      the call.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx insn = BB_HEAD (bb);
 
@@ -9686,7 +9688,7 @@ ia64_reorg (void)
 
       /* We can't let modulo-sched prevent us from scheduling any bbs,
 	 since we need the final schedule to produce bundle information.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	bb->flags &= ~BB_DISABLE_SCHEDULE;
 
       initiate_bundle_states ();

@@ -275,7 +275,7 @@ mark_all_labels (rtx f)
   if (current_ir_type () == IR_RTL_CFGLAYOUT)
     {
       basic_block bb;
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  /* In cfglayout mode, we don't bother with trivial next-insn
 	     propagation of LABEL_REFs into JUMP_LABEL.  This will be

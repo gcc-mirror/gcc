@@ -6932,6 +6932,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
   tree gnu_rep_list = NULL_TREE;
   tree gnu_var_list = NULL_TREE;
   tree gnu_self_list = NULL_TREE;
+  tree gnu_zero_list = NULL_TREE;
 
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
@@ -7262,6 +7263,10 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
      to do this in a separate pass since we want to handle the discriminants
      but can't play with them until we've used them in debugging data above.
 
+     Similarly, pull out the fields with zero size and no rep clause, as they
+     would otherwise modify the layout and thus very likely run afoul of the
+     Ada semantics, which are different from those of C here.
+
      ??? If we reorder them, debugging information will be wrong but there is
      nothing that can be done about this at the moment.  */
   gnu_last = NULL_TREE;
@@ -7297,6 +7302,19 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       if (reorder && field_has_variable_size (gnu_field))
 	{
 	  MOVE_FROM_FIELD_LIST_TO (gnu_var_list);
+	  continue;
+	}
+
+      if (DECL_SIZE (gnu_field) && integer_zerop (DECL_SIZE (gnu_field)))
+	{
+	  DECL_FIELD_OFFSET (gnu_field) = size_zero_node;
+	  SET_DECL_OFFSET_ALIGN (gnu_field, BIGGEST_ALIGNMENT);
+	  DECL_FIELD_BIT_OFFSET (gnu_field) = bitsize_zero_node;
+	  if (field_is_aliased (gnu_field))
+	    TYPE_ALIGN (gnu_record_type)
+	      = MAX (TYPE_ALIGN (gnu_record_type),
+		     TYPE_ALIGN (TREE_TYPE (gnu_field)));
+	  MOVE_FROM_FIELD_LIST_TO (gnu_zero_list);
 	  continue;
 	}
 
@@ -7391,6 +7409,11 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
   finish_record_type (gnu_record_type, gnu_field_list, layout_with_rep ? 1 : 0,
 		      debug_info && !maybe_unused);
+
+  /* Chain the fields with zero size at the beginning of the field list.  */
+  if (gnu_zero_list)
+    TYPE_FIELDS (gnu_record_type)
+      = chainon (gnu_zero_list, TYPE_FIELDS (gnu_record_type));
 
   return (gnu_rep_list && !p_gnu_rep_list) || variants_have_rep;
 }

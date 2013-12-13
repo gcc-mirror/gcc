@@ -96,13 +96,19 @@
 
 (define_c_enum "unspecv" [
   UNSPECV_BLOCKAGE
-  UNSPECV_FLUSHW
-  UNSPECV_FLUSH
-  UNSPECV_SAVEW
-  UNSPECV_CAS
-  UNSPECV_SWAP
-  UNSPECV_LDSTUB
   UNSPECV_PROBE_STACK_RANGE
+
+  UNSPECV_FLUSHW
+  UNSPECV_SAVEW
+
+  UNSPECV_FLUSH
+
+  UNSPECV_LDSTUB
+  UNSPECV_SWAP
+  UNSPECV_CAS
+
+  UNSPECV_LDFSR
+  UNSPECV_STFSR
 ])
 
 (define_constants
@@ -6783,22 +6789,26 @@
 
 ;; Special pattern for the FLUSH instruction.
 
-; We do SImode and DImode versions of this to quiet down genrecog's complaints
-; of the define_insn otherwise missing a mode.  We make "flush", aka
-; gen_flush, the default one since sparc_initialize_trampoline uses
-; it on SImode mem values.
-
-(define_insn "flush"
-  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] UNSPECV_FLUSH)]
+(define_insn "flush<P:mode>"
+  [(unspec_volatile [(match_operand:P 0 "memory_operand" "m")] UNSPECV_FLUSH)]
   ""
   { return TARGET_V9 ? "flush\t%f0" : "iflush\t%f0"; }
   [(set_attr "type" "iflush")])
 
-(define_insn "flushdi"
-  [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] UNSPECV_FLUSH)]
-  ""
-  { return TARGET_V9 ? "flush\t%f0" : "iflush\t%f0"; }
-  [(set_attr "type" "iflush")])
+;; Special insns to load and store the 32-bit FP Status Register.
+
+(define_insn "ldfsr"
+  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] UNSPECV_LDFSR)]
+  "TARGET_FPU"
+  "ld\t%0, %%fsr"
+  [(set_attr "type" "load")])
+
+(define_insn "stfsr"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+        (unspec_volatile:SI [(const_int 0)] UNSPECV_STFSR))]
+  "TARGET_FPU"
+  "st\t%%fsr, %0"
+  [(set_attr "type" "store")])
 
 
 ;; Find first set instructions.

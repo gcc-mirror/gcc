@@ -1066,9 +1066,9 @@ copyprop_hardreg_forward (void)
   sbitmap visited;
   bool analyze_called = false;
 
-  all_vd = XNEWVEC (struct value_data, last_basic_block);
+  all_vd = XNEWVEC (struct value_data, last_basic_block_for_fn (cfun));
 
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (visited);
 
   if (MAY_HAVE_DEBUG_INSNS)
@@ -1076,7 +1076,7 @@ copyprop_hardreg_forward (void)
       = create_alloc_pool ("debug insn changes pool",
 			   sizeof (struct queued_debug_insn_change), 256);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap_set_bit (visited, bb->index);
 
@@ -1112,7 +1112,7 @@ copyprop_hardreg_forward (void)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	if (bitmap_bit_p (visited, bb->index)
 	    && all_vd[bb->index].n_debug_insn_changes)
 	  {

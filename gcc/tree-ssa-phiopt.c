@@ -69,6 +69,8 @@ static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, gimple, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, gimple, tree, tree);
+static bool neg_replacement (basic_block, basic_block,
+			     edge, edge, gimple, tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    struct pointer_set_t *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
@@ -336,6 +338,23 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
     /* Calculate the set of non-trapping memory accesses.  */
     nontrap = get_non_trapping ();
 
+  /* The replacement of conditional negation with a non-branching
+     sequence is really only a win when optimizing for speed and we
+     can avoid transformations by gimple if-conversion that result
+     in poor RTL generation.
+
+     Ideally either gimple if-conversion or the RTL expanders will
+     be improved and the code to emit branchless conditional negation
+     can be removed.  */
+  bool replace_conditional_negation = false;
+  if (!do_store_elim)
+    replace_conditional_negation
+      = ((!optimize_size && optimize >= 2)
+	 || (((flag_tree_loop_vectorize || cfun->has_force_vect_loops)
+	      && flag_tree_loop_if_convert != 0)
+	     || flag_tree_loop_if_convert == 1
+	     || flag_tree_loop_if_convert_stores == 1));
+
   /* Search every basic block for COND_EXPR we may be able to optimize.
 
      We walk the blocks in order that guarantees that a block with
@@ -488,6 +507,9 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	  if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (replace_conditional_negation
+		   && neg_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -1285,6 +1307,143 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
+/*  The function neg_replacement replaces conditional negation with
+    equivalent straight line code.  Returns TRUE if replacement is done,
+    otherwise returns FALSE.
+
+    COND_BB branches around negation occuring in MIDDLE_BB.
+
+    E0 and E1 are edges out of COND_BB.  E0 reaches MIDDLE_BB and
+    E1 reaches the other successor which should contain PHI with
+    arguments ARG0 and ARG1.
+
+    Assuming negation is to occur when the condition is true,
+    then the non-branching sequence is:
+
+       result = (rhs ^ -cond) + cond
+
+    Inverting the condition or its result gives us negation
+    when the original condition is false.  */
+
+static bool
+neg_replacement (basic_block cond_bb, basic_block middle_bb,
+		 edge e0 ATTRIBUTE_UNUSED, edge e1,
+		 gimple phi, tree arg0, tree arg1)
+{
+  gimple new_stmt, cond;
+  gimple_stmt_iterator gsi;
+  gimple assign;
+  edge true_edge, false_edge;
+  tree rhs, lhs;
+  enum tree_code cond_code;
+  bool invert = false;
+
+  /* This transformation performs logical operations on the
+     incoming arguments.  So force them to be integral types.   */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+    return false;
+
+  /* OTHER_BLOCK must have only one executable statement which must have the
+     form arg0 = -arg1 or arg1 = -arg0.  */
+
+  assign = last_and_only_stmt (middle_bb);
+  /* If we did not find the proper negation assignment, then we can not
+     optimize.  */
+  if (assign == NULL)
+    return false;
+
+  /* If we got here, then we have found the only executable statement
+     in OTHER_BLOCK.  If it is anything other than arg0 = -arg1 or
+     arg1 = -arg0, then we can not optimize.  */
+  if (gimple_code (assign) != GIMPLE_ASSIGN)
+    return false;
+
+  lhs = gimple_assign_lhs (assign);
+
+  if (gimple_assign_rhs_code (assign) != NEGATE_EXPR)
+    return false;
+
+  rhs = gimple_assign_rhs1 (assign);
+
+  /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
+  if (!(lhs == arg0 && rhs == arg1)
+      && !(lhs == arg1 && rhs == arg0))
+    return false;
+
+  /* The basic sequence assumes we negate when the condition is true.
+     If we need the opposite, then we will either need to invert the
+     condition or its result.  */
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+  invert = false_edge->dest == middle_bb;
+
+  /* Unlike abs_replacement, we can handle arbitrary conditionals here.  */
+  cond = last_stmt (cond_bb);
+  cond_code = gimple_cond_code (cond);
+
+  /* If inversion is needed, first try to invert the test since
+     that's cheapest.  */
+  if (invert)
+    {
+      bool honor_nans
+	= HONOR_NANS (TYPE_MODE (TREE_TYPE (gimple_cond_lhs (cond))));
+      enum tree_code new_code = invert_tree_comparison (cond_code, honor_nans);
+
+      /* If invert_tree_comparison was successful, then use its return
+	 value as the new code and note that inversion is no longer
+	 needed.  */
+      if (new_code != ERROR_MARK)
+	{
+	  cond_code = new_code;
+	  invert = false;
+	}
+    }
+
+  tree cond_val = make_ssa_name (boolean_type_node, NULL);
+  new_stmt = gimple_build_assign_with_ops (cond_code, cond_val,
+					   gimple_cond_lhs (cond),
+					   gimple_cond_rhs (cond));
+  gsi = gsi_last_bb (cond_bb);
+  gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
+
+  /* If we still need inversion, then invert the result of the
+     condition.  */
+  if (invert)
+    {
+      tree tmp = make_ssa_name (boolean_type_node, NULL);
+      new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
+					       cond_val, boolean_true_node);
+      gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
+      cond_val = tmp;
+    }
+
+  /* Get the condition in the right type so that we can perform
+     logical and arithmetic operations on it.  */
+  tree cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  new_stmt = gimple_build_assign_with_ops (NOP_EXPR, cond_val_converted,
+					   cond_val, NULL_TREE);
+  gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
+
+  tree neg_cond_val_converted = make_ssa_name (TREE_TYPE (rhs), NULL);
+  new_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, neg_cond_val_converted,
+					   cond_val_converted, NULL_TREE);
+  gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
+
+  tree tmp = make_ssa_name (TREE_TYPE (rhs), NULL);
+  new_stmt = gimple_build_assign_with_ops (BIT_XOR_EXPR, tmp,
+					   rhs, neg_cond_val_converted);
+  gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
+
+  tree new_lhs = make_ssa_name (TREE_TYPE (rhs), NULL);
+  new_stmt = gimple_build_assign_with_ops (PLUS_EXPR, new_lhs,
+					   tmp, cond_val_converted);
+  gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
+
+  replace_phi_edge_with_variable (cond_bb, e1, phi, new_lhs);
+
+  /* Note that we optimized this PHI.  */
+  return true;
+}
+
 /* Auxiliary functions to determine the set of memory accesses which
    can't trap because they are preceded by accesses to the same memory
    portion.  We do that for MEM_REFs, so we only need to track
@@ -1706,7 +1865,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
         == chrec_dont_know)
       || !then_datarefs.length ()
       || (find_data_references_in_bb (NULL, else_bb, &else_datarefs)
-        == chrec_dont_know)
+	  == chrec_dont_know)
       || !else_datarefs.length ())
     {
       free_data_refs (then_datarefs);
@@ -1723,6 +1882,8 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
       then_store = DR_STMT (then_dr);
       then_lhs = gimple_get_lhs (then_store);
+      if (then_lhs == NULL_TREE)
+	continue;
       found = false;
 
       FOR_EACH_VEC_ELT (else_datarefs, j, else_dr)
@@ -1732,6 +1893,8 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 
           else_store = DR_STMT (else_dr);
           else_lhs = gimple_get_lhs (else_store);
+	  if (else_lhs == NULL_TREE)
+	    continue;
 
           if (operand_equal_p (then_lhs, else_lhs, 0))
             {

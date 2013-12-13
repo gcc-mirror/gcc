@@ -551,7 +551,7 @@ fixup_noreturn_call (gimple stmt)
 		  SET_USE (use_p, error_mark_node);
 	    }
 	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, bb_index, bi)
-	    delete_basic_block (BASIC_BLOCK (bb_index));
+	    delete_basic_block (BASIC_BLOCK_FOR_FN (cfun, bb_index));
 	  BITMAP_FREE (blocks);
 	  release_ssa_name (op);
 	}
@@ -585,8 +585,8 @@ split_bbs_on_noreturn_calls (void)
 	   BB is present in the cfg.  */
 	if (bb == NULL
 	    || bb->index < NUM_FIXED_BLOCKS
-	    || bb->index >= last_basic_block
-	    || BASIC_BLOCK (bb->index) != bb
+	    || bb->index >= last_basic_block_for_fn (cfun)
+	    || BASIC_BLOCK_FOR_FN (cfun, bb->index) != bb
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;
 
@@ -640,12 +640,12 @@ cleanup_tree_cfg_1 (void)
      recording of edge to CASE_LABEL_EXPR.  */
   start_recording_case_labels ();
 
-  /* Start by iterating over all basic blocks.  We cannot use FOR_EACH_BB,
+  /* Start by iterating over all basic blocks.  We cannot use FOR_EACH_BB_FN,
      since the basic blocks may get removed.  */
-  n = last_basic_block;
+  n = last_basic_block_for_fn (cfun);
   for (i = NUM_FIXED_BLOCKS; i < n; i++)
     {
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
 	retval |= cleanup_tree_cfg_bb (bb);
     }
@@ -658,7 +658,7 @@ cleanup_tree_cfg_1 (void)
       if (i < NUM_FIXED_BLOCKS)
 	continue;
 
-      bb = BASIC_BLOCK (i);
+      bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (!bb)
 	continue;
 
@@ -918,7 +918,7 @@ merge_phi_nodes (void)
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Find all PHI nodes that we may be able to merge.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       basic_block dest;
 

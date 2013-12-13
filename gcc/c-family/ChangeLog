@@ -1,3 +1,44 @@
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cilk.c (cilk_outline): Made this function non-static.
+	(gimplify_cilk_spawn): Removed pre_p and post_p arguments.
+	(create_cilk_wrapper): Added a new parameter: a function pointer.
+	(c_install_body_w_frame_cleanup): Remove
+	(extract_free_variables): Added VEC_INIT_EXPR and CONSTRUCTOR case.
+	* c-common.h (cilk_outline): New prototype.
+	(gimplify_cilk_spawn): Removed two parameters.
+	(cilk_install_body_with_frame_cleanup): New prototype.
+	* c-gimplify.c (c_gimplify_expr): Added MODIFY_EXPR, CALL_EXPR and
+	CILK_SPAWN_STMT case.
+
+2013-12-11  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* c-common.c (c_fully_fold_internal): Handle ADDR_SPACE_CONVERT_EXPR.
+
+	* c-common.h (enum c_tree_index): Remove CTI_INT_ARRAY_TYPE.
+	(int_array_type_node): Remove.
+	* c-common.c (c_common_nodes_and_builtins): Don't build it.
+
+2013-12-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/52023
+	* c-common.c (c_sizeof_or_alignof_type): Move a declaration into
+	[ADJUST_FIELD_ALIGN].
+
+2013-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/52023
+	* c-common.c (c_sizeof_or_alignof_type): Add parameter min_alignof
+	and check field alignment if set.
+	* c-common.h (c_sizeof_or_alignof_type): Update prototype.
+	(c_sizeof, c_alignof): Update calls to c_sizeof_or_alignof_type.
+
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>  
+	    Marek Polacek  <polacek@redhat.com>
+
+	* c-gimplify.c (c_gimplify_expr): If doing the integer-overflow
+	sanitization, call unsigned_type_for only when !TYPE_OVERFLOW_WRAPS.
+
 2013-11-29   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/59309

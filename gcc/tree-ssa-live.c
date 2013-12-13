@@ -673,7 +673,7 @@ clear_unused_block_pointer (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	unsigned i;
@@ -791,7 +791,7 @@ remove_unused_locals (void)
   usedvars = BITMAP_ALLOC (NULL);
 
   /* Walk the CFG marking all referenced symbols.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       size_t i;
@@ -856,7 +856,7 @@ remove_unused_locals (void)
      ignores them, and the second pass (if there were any) tries to remove
      them.  */
   if (have_local_clobbers)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       {
 	gimple_stmt_iterator gsi;
 
@@ -960,17 +960,17 @@ new_tree_live_info (var_map map)
 
   live = XNEW (struct tree_live_info_d);
   live->map = map;
-  live->num_blocks = last_basic_block;
+  live->num_blocks = last_basic_block_for_fn (cfun);
 
-  live->livein = XNEWVEC (bitmap_head, last_basic_block);
-  FOR_EACH_BB (bb)
+  live->livein = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&live->livein[bb->index], &liveness_bitmap_obstack);
 
-  live->liveout = XNEWVEC (bitmap_head, last_basic_block);
-  FOR_EACH_BB (bb)
+  live->liveout = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_initialize (&live->liveout[bb->index], &liveness_bitmap_obstack);
 
-  live->work_stack = XNEWVEC (int, last_basic_block);
+  live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
   live->stack_top = live->work_stack;
 
   live->global = BITMAP_ALLOC (&liveness_bitmap_obstack);
@@ -1043,21 +1043,21 @@ live_worklist (tree_live_info_p live)
 {
   unsigned b;
   basic_block bb;
-  sbitmap visited = sbitmap_alloc (last_basic_block + 1);
+  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
   bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
   bitmap_clear (visited);
 
   /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     loe_visit_block (live, bb, visited, tmp);
 
   /* Process any blocks which require further iteration.  */
   while (live->stack_top != live->work_stack)
     {
       b = *--(live->stack_top);
-      loe_visit_block (live, BASIC_BLOCK (b), visited, tmp);
+      loe_visit_block (live, BASIC_BLOCK_FOR_FN (cfun, b), visited, tmp);
     }
 
   BITMAP_FREE (tmp);
@@ -1149,11 +1149,11 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   edge_iterator ei;
 
   /* live on entry calculations used liveout vectors for defs, clear them.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bitmap_clear (&liveinfo->liveout[bb->index]);
 
   /* Set all the live-on-exit bits for uses in PHIs.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       size_t i;
@@ -1294,7 +1294,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 
   if ((flag & LIVEDUMP_ENTRY) && live->livein)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  fprintf (f, "\nLive on entry to BB%d : ", bb->index);
 	  EXECUTE_IF_SET_IN_BITMAP (&live->livein[bb->index], 0, i, bi)
@@ -1308,7 +1308,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 
   if ((flag & LIVEDUMP_EXIT) && live->liveout)
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  fprintf (f, "\nLive on exit from BB%d : ", bb->index);
 	  EXECUTE_IF_SET_IN_BITMAP (&live->liveout[bb->index], 0, i, bi)

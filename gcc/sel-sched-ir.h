@@ -407,7 +407,7 @@ _list_clear (_list_t *l)
 
 
 /* List iterator backend.  */
-typedef struct
+struct _list_iterator
 {
   /* The list we're iterating.  */
   _list_t *lp;
@@ -417,7 +417,7 @@ typedef struct
 
   /* True when we've actually removed something.  */
   bool removed_p;
-} _list_iterator;
+};
 
 static inline void
 _list_iter_start (_list_iterator *ip, _list_t *lp, bool can_remove_p)
@@ -850,18 +850,17 @@ extern bitmap blocks_to_reschedule;
 
 /* A variable to track which part of rtx we are scanning in
    sched-deps.c: sched_analyze_insn ().  */
-enum deps_where_def
-  {
-    DEPS_IN_INSN,
-    DEPS_IN_LHS,
-    DEPS_IN_RHS,
-    DEPS_IN_NOWHERE
-  };
-typedef enum deps_where_def deps_where_t;
+enum deps_where_t
+{
+  DEPS_IN_INSN,
+  DEPS_IN_LHS,
+  DEPS_IN_RHS,
+  DEPS_IN_NOWHERE
+};
 
 
 /* Per basic block data for the whole CFG.  */
-typedef struct
+struct sel_global_bb_info_def
 {
   /* For each bb header this field contains a set of live registers.
      For all other insns this field has a NULL.
@@ -873,7 +872,7 @@ typedef struct
      true - block has usable LV_SET.
      false - block's LV_SET should be recomputed.  */
   bool lv_set_valid_p;
-} sel_global_bb_info_def;
+};
 
 typedef sel_global_bb_info_def *sel_global_bb_info_t;
 
@@ -893,7 +892,7 @@ extern void sel_finish_global_bb_info (void);
 #define BB_LV_SET_VALID_P(BB) (SEL_GLOBAL_BB_INFO (BB)->lv_set_valid_p)
 
 /* Per basic block data for the region.  */
-typedef struct
+struct sel_region_bb_info_def
 {
   /* This insn stream is constructed in such a way that it should be
      traversed by PREV_INSN field - (*not* NEXT_INSN).  */
@@ -905,7 +904,7 @@ typedef struct
 
   /* If (AV_LEVEL == GLOBAL_LEVEL) then AV is valid.  */
   int av_level;
-} sel_region_bb_info_def;
+};
 
 typedef sel_region_bb_info_def *sel_region_bb_info_t;
 
@@ -951,7 +950,7 @@ extern regset sel_all_regs;
 
 
 /* Successor iterator backend.  */
-typedef struct
+struct succ_iterator
 {
   /* True if we're at BB end.  */
   bool bb_end;
@@ -979,7 +978,7 @@ typedef struct
   /* If skip to loop exits, save here information about loop exits.  */
   int current_exit;
   vec<edge> loop_exits;
-} succ_iterator;
+};
 
 /* A structure returning all successor's information.  */
 struct succs_info

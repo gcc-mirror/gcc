@@ -511,7 +511,7 @@ reset_unmarked_insns_debug_uses (void)
   basic_block bb;
   rtx insn, next;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (DEBUG_INSN_P (insn))
 	{
@@ -550,7 +550,7 @@ delete_unmarked_insns (void)
   rtx insn, next;
   bool must_clean = false;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE_SAFE (bb, insn, next)
       if (NONDEBUG_INSN_P (insn))
 	{
@@ -623,7 +623,7 @@ prescan_insns_for_dce (bool fast)
   if (!df_in_progress && ACCUMULATE_OUTGOING_ARGS)
     arg_stores = BITMAP_ALLOC (NULL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
 	if (NONDEBUG_INSN_P (insn))
@@ -663,7 +663,7 @@ mark_artificial_uses (void)
   struct df_link *defs;
   df_ref *use_rec;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       for (use_rec = df_get_artificial_uses (bb->index);
 	   *use_rec; use_rec++)
@@ -1065,7 +1065,7 @@ fast_dce (bool word_level)
       for (i = 0; i < n_blocks; i++)
 	{
 	  int index = postorder[i];
-	  basic_block bb = BASIC_BLOCK (index);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, index);
 	  bool local_changed;
 
 	  if (index < NUM_FIXED_BLOCKS)

@@ -826,12 +826,13 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 	     "Duplicated bb %d (created bb %d)\n",
 	     old_bb->index, new_bb->index);
 
-  if (new_bb->index >= array_size || last_basic_block > array_size)
+  if (new_bb->index >= array_size
+      || last_basic_block_for_fn (cfun) > array_size)
     {
       int i;
       int new_size;
 
-      new_size = MAX (last_basic_block, new_bb->index + 1);
+      new_size = MAX (last_basic_block_for_fn (cfun), new_bb->index + 1);
       new_size = GET_ARRAY_SIZE (new_size);
       bbd = XRESIZEVEC (bbro_basic_block_data, bbd, new_size);
       for (i = array_size; i < new_size; i++)
@@ -1565,7 +1566,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   vec<basic_block> bbs_in_hot_partition = vNULL;
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool cold_bb = false;
 
@@ -1657,7 +1658,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
 
   /* Mark every edge that crosses between sections.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
 	unsigned int flags = e->flags;
@@ -1690,7 +1691,7 @@ set_edge_can_fallthru_flag (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -1791,7 +1792,7 @@ fix_up_fall_thru_edges (void)
   rtx old_jump;
   rtx fall_thru_label;
 
-  FOR_EACH_BB (cur_bb)
+  FOR_EACH_BB_FN (cur_bb, cfun)
     {
       fall_thru = NULL;
       if (EDGE_COUNT (cur_bb->succs) > 0)
@@ -1991,7 +1992,7 @@ fix_crossing_conditional_branches (void)
   rtx old_label = NULL_RTX;
   rtx new_label;
 
-  FOR_EACH_BB (cur_bb)
+  FOR_EACH_BB_FN (cur_bb, cfun)
     {
       crossing_edge = NULL;
       if (EDGE_COUNT (cur_bb->succs) > 0)
@@ -2122,7 +2123,7 @@ fix_crossing_unconditional_branches (void)
   rtx cur_insn;
   edge succ;
 
-  FOR_EACH_BB (cur_bb)
+  FOR_EACH_BB_FN (cur_bb, cfun)
     {
       last_insn = BB_END (cur_bb);
 
@@ -2200,7 +2201,7 @@ add_reg_crossing_jump_notes (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_EACH_EDGE (e, ei, bb->succs)
       if ((e->flags & EDGE_CROSSING)
 	  && JUMP_P (BB_END (e->src))
@@ -2234,7 +2235,7 @@ reorder_basic_blocks (void)
     uncond_jump_length = get_uncond_jump_length ();
 
   /* We need to know some information for each basic block.  */
-  array_size = GET_ARRAY_SIZE (last_basic_block);
+  array_size = GET_ARRAY_SIZE (last_basic_block_for_fn (cfun));
   bbd = XNEWVEC (bbro_basic_block_data, array_size);
   for (i = 0; i < array_size; i++)
     {
@@ -2285,7 +2286,7 @@ insert_section_boundary_note (void)
   if (!crtl->has_bb_partition)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (!current_partition)
 	current_partition = BB_PARTITION (bb);
@@ -2320,7 +2321,7 @@ rest_of_handle_reorder_blocks (void)
   reorder_basic_blocks ();
   cleanup_cfg (CLEANUP_EXPENSIVE);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
   cfg_layout_finalize ();
@@ -2409,7 +2410,7 @@ duplicate_computed_gotos (void)
   /* Look for blocks that end in a computed jump, and see if such blocks
      are suitable for unfactoring.  If a block is a candidate for unfactoring,
      mark it in the candidates.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       edge e;
@@ -2456,7 +2457,7 @@ duplicate_computed_gotos (void)
     goto done;
 
   /* Duplicate computed gotos.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->flags & BB_VISITED)
 	continue;

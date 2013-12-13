@@ -2,6 +2,6 @@
 
 namespace N
 {
-  namespace M = N;  // { dg-error "previous declaration" }
+  namespace M = N;  // { dg-message "previous declaration" }
   namespace M {}    // { dg-error "declaration of namespace" }
 }

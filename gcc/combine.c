@@ -960,7 +960,7 @@ delete_noop_moves (void)
   rtx insn, next;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb)); insn = next)
 	{
@@ -997,7 +997,7 @@ create_log_links (void)
      usage -- these are taken from original flow.c did. Don't ask me why it is
      done this way; I don't know and if it works, I don't want to know.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS_REVERSE (bb, insn)
         {
@@ -1160,7 +1160,7 @@ combine_instructions (rtx f, unsigned int nregs)
   last_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   create_log_links ();
-  FOR_EACH_BB (this_basic_block)
+  FOR_EACH_BB_FN (this_basic_block, cfun)
     {
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
@@ -1211,7 +1211,7 @@ combine_instructions (rtx f, unsigned int nregs)
   setup_incoming_promotions (first);
   last_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
-  FOR_EACH_BB (this_basic_block)
+  FOR_EACH_BB_FN (this_basic_block, cfun)
     {
       rtx last_combined_insn = NULL_RTX;
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
@@ -8022,7 +8022,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
   if (code == CALL || code == ASM_OPERANDS || code == CLOBBER)
     return x;
 
-  /* We want to perform the operation is its present mode unless we know
+  /* We want to perform the operation in its present mode unless we know
      that the operation is valid in MODE, in which case we do the operation
      in MODE.  */
   op_mode = ((GET_MODE_CLASS (mode) == GET_MODE_CLASS (GET_MODE (x))
@@ -8453,9 +8453,10 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 					    gen_int_mode (mask, GET_MODE (x)),
 					    XEXP (x, 1));
 	  if (temp && CONST_INT_P (temp))
-	    SUBST (XEXP (x, 0),
-		   force_to_mode (XEXP (x, 0), GET_MODE (x),
-				  INTVAL (temp), next_select));
+	    x = simplify_gen_binary (code, GET_MODE (x),
+				     force_to_mode (XEXP (x, 0), GET_MODE (x),
+						    INTVAL (temp), next_select),
+				     XEXP (x, 1));
 	}
       break;
 
@@ -8523,14 +8524,16 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       /* We have no way of knowing if the IF_THEN_ELSE can itself be
 	 written in a narrower mode.  We play it safe and do not do so.  */
 
-      SUBST (XEXP (x, 1),
-	     gen_lowpart_or_truncate (GET_MODE (x),
-				      force_to_mode (XEXP (x, 1), mode,
-						     mask, next_select)));
-      SUBST (XEXP (x, 2),
-	     gen_lowpart_or_truncate (GET_MODE (x),
-				      force_to_mode (XEXP (x, 2), mode,
-						     mask, next_select)));
+      op0 = gen_lowpart_or_truncate (GET_MODE (x),
+				     force_to_mode (XEXP (x, 1), mode,
+						    mask, next_select));
+      op1 = gen_lowpart_or_truncate (GET_MODE (x),
+				     force_to_mode (XEXP (x, 2), mode,
+						    mask, next_select));
+      if (op0 != XEXP (x, 1) || op1 != XEXP (x, 2))
+	x = simplify_gen_ternary (IF_THEN_ELSE, GET_MODE (x),
+				  GET_MODE (XEXP (x, 0)), XEXP (x, 0),
+				  op0, op1);
       break;
 
     default:

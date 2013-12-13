@@ -54,7 +54,7 @@
 
 #ifdef ENABLE_CHECKING
 
-typedef struct { void *magic; void *p; } cumulative_args_t;
+struct cumulative_args_t { void *magic; void *p; };
 
 #else /* !ENABLE_CHECKING */
 
@@ -64,20 +64,19 @@ typedef struct { void *magic; void *p; } cumulative_args_t;
    efficient way of argument passing otherwise.  However, that would come
    at the cost of less type-safe !ENABLE_CHECKING compilation.  */
 
-typedef union { void *p; } cumulative_args_t;
+union cumulative_args_t { void *p; };
 
 #endif /* !ENABLE_CHECKING */
 
 /* Types used by the record_gcc_switches() target function.  */
-typedef enum
+enum print_switch_type
 {
   SWITCH_TYPE_PASSED,		/* A switch passed on the command line.  */
   SWITCH_TYPE_ENABLED,		/* An option that is currently enabled.  */
   SWITCH_TYPE_DESCRIPTIVE,	/* Descriptive text, not a switch or option.  */
   SWITCH_TYPE_LINE_START,	/* Please emit any necessary text at the start of a line.  */
   SWITCH_TYPE_LINE_END		/* Please emit a line terminator.  */
-}
-print_switch_type;
+};
 
 typedef int (* print_switch_fn_type) (print_switch_type, const char *);
 
@@ -97,7 +96,7 @@ struct cgraph_node;
 struct cgraph_simd_clone;
 
 /* The struct used by the secondary_reload target hook.  */
-typedef struct secondary_reload_info
+struct secondary_reload_info
 {
   /* icode is actually an enum insn_code, but we don't want to force every
      file that includes target.h to include optabs.h .  */
@@ -108,7 +107,7 @@ typedef struct secondary_reload_info
      compatibility hook.  */
   struct secondary_reload_info *prev_sri;
   int t_icode; /* Actually an enum insn_code - see above.  */
-} secondary_reload_info;
+};
 
 /* This is defined in sched-int.h .  */
 struct _dep;
@@ -120,7 +119,7 @@ struct ddg;
 struct loop;
 
 /* This is defined in tree-ssa-alias.h.  */
-struct ao_ref_s;
+struct ao_ref;
 
 /* This is defined in tree-vectorizer.h.  */
 struct _stmt_vec_info;

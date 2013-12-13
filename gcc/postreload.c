@@ -213,7 +213,7 @@ reload_cse_regs_1 (void)
   cselib_init (CSELIB_RECORD_MEMORY);
   init_alias_analysis ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	if (INSN_P (insn))
@@ -1281,7 +1281,7 @@ reload_combine (void)
   label_live = XNEWVEC (HARD_REG_SET, n_labels);
   CLEAR_HARD_REG_SET (ever_live_at_start);
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       insn = BB_HEAD (bb);
       if (LABEL_P (insn))

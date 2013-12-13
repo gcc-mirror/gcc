@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++0x -funsigned-char -fshort-enums" }
 // { dg-options "-std=gnu++0x -funsigned-char -fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux-* } }
+// { dg-do compile }
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
@@ -21,53 +22,46 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 
 // Ensure that this enum has "short" as its underlying type.
 enum test_enum { first_selection = ((unsigned char)-1) + 1 };
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::make_signed;
   using std::is_same;
 
   // Positive tests.
   typedef make_signed<const int>::type  	test2_type;
-  VERIFY( (is_same<test2_type, const int>::value) );
+  static_assert(is_same<test2_type, const int>::value, "");
 
   typedef make_signed<const unsigned int>::type  	test21c_type;
-  VERIFY( (is_same<test21c_type, const signed int>::value) );
+  static_assert(is_same<test21c_type, const signed int>::value, "");
 
   typedef make_signed<volatile unsigned int>::type  	test21v_type;
-  VERIFY( (is_same<test21v_type, volatile signed int>::value) );
+  static_assert(is_same<test21v_type, volatile signed int>::value, "");
 
   typedef make_signed<const volatile unsigned int>::type  	test21cv_type;
-  VERIFY( (is_same<test21cv_type, const volatile signed int>::value) );
+  static_assert(is_same<test21cv_type,
+		const volatile signed int>::value, "");
 
   typedef make_signed<const char>::type  	test22_type;
-  VERIFY( (is_same<test22_type, const signed char>::value) );
+  static_assert(is_same<test22_type, const signed char>::value, "");
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_signed<volatile wchar_t>::type  	test23_type;
-  VERIFY( (is_same<test23_type, volatile signed wchar_t>::value) );
+  static_assert(is_same<test23_type, volatile signed wchar_t>::value, "");
 #endif
 
   typedef make_signed<test_enum>::type  	test24_type;
-  VERIFY( (is_same<test24_type, short>::value) );
+  static_assert(is_same<test24_type, short>::value, "");
 
   // GNU Extensions.
 #ifdef _GLIBCXX_USE_INT128
   typedef make_signed<unsigned __int128>::type  test25_type;
-  VERIFY( (is_same<test25_type, __int128>::value) );
+  static_assert(is_same<test25_type, __int128>::value, "");
 
   typedef make_signed<__int128>::type  	        test26_type;
-  VERIFY( (is_same<test26_type, __int128>::value) );
+  static_assert(is_same<test26_type, __int128>::value, "");
 #endif
-}
-
-int main()
-{
-  test01();
-  return 0;
 }

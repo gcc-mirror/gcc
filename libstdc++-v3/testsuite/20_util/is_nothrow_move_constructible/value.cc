@@ -1,4 +1,5 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 //
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //
@@ -18,64 +19,62 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_nothrow_move_constructible;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_category<is_nothrow_move_constructible, int>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, float>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, EnumType>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, int*>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, int(*)(int)>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   int (ClassType::*)>(true)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   int (ClassType::*) (int)>(true)) );
+  static_assert(test_category<is_nothrow_move_constructible, int>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible, float>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		EnumType>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible, int*>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int(*)(int)>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int (ClassType::*)>(true), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int (ClassType::*) (int)>(true), "");
 
-  VERIFY( (test_property<is_nothrow_move_constructible,
-	   NoexceptMoveConsClass>(true)) );
+  static_assert(test_property<is_nothrow_move_constructible,
+		NoexceptMoveConsClass>(true), "");
 
   // Negative tests.
-  VERIFY( (test_category<is_nothrow_move_constructible, void>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, int[2]>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, int[]>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, float[][3]>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   EnumType[2][3][4]>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, int*[3]>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   int(*[][2])(int)>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   int (ClassType::*[2][3])>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible,
-	   int (ClassType::*[][2][3]) (int)>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, 
-       ClassType(unsigned) const &>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, 
-       bool(ClassType) const>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, 
-       bool(...) &&>(false)) );
-  VERIFY( (test_category<is_nothrow_move_constructible, 
-       EnumType(int, ...)>(false)) );
+  static_assert(test_category<is_nothrow_move_constructible, void>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int[2]>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int[]>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		float[][3]>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		EnumType[2][3][4]>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int*[3]>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int(*[][2])(int)>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int (ClassType::*[2][3])>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible,
+		int (ClassType::*[][2][3]) (int)>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible, 
+		ClassType(unsigned) const &>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible, 
+		bool(ClassType) const>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible, 
+		bool(...) &&>(false), "");
+  static_assert(test_category<is_nothrow_move_constructible, 
+		EnumType(int, ...)>(false), "");
 
-  VERIFY( (test_property<is_nothrow_move_constructible,
-	   const NoexceptMoveConsClass>(false)) );
-  VERIFY( (test_property<is_nothrow_move_constructible,
-	   volatile NoexceptMoveConsClass>(false)) );
-  VERIFY( (test_property<is_nothrow_move_constructible,
-	   ThrowMoveConsClass>(false)) );
-  VERIFY( (test_property<is_nothrow_move_constructible,
-	   ExceptMoveConsClass>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_property<is_nothrow_move_constructible,
+		const NoexceptMoveConsClass>(false), "");
+  static_assert(test_property<is_nothrow_move_constructible,
+		volatile NoexceptMoveConsClass>(false), "");
+  static_assert(test_property<is_nothrow_move_constructible,
+		ThrowMoveConsClass>(false), "");
+  static_assert(test_property<is_nothrow_move_constructible,
+		ExceptMoveConsClass>(false), "");
 }

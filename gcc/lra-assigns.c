@@ -1302,7 +1302,7 @@ assign_by_spills (void)
 
       /* FIXME: Look up the changed insns in the cached LRA insn data using
 	 an EXECUTE_IF_SET_IN_BITMAP over changed_insns.  */
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	FOR_BB_INSNS (bb, insn)
 	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
 	  {

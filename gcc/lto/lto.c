@@ -3314,7 +3314,7 @@ lto_main (void)
 	do_whole_program_analysis ();
       else
 	{
-	  struct varpool_node *vnode;
+	  varpool_node *vnode;
 
 	  timevar_start (TV_PHASE_OPT_GEN);
 

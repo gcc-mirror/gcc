@@ -63,12 +63,12 @@ int y = f4 <S> ();
 
 namespace N1
 {
-  #pragma omp declare reduction (+: ::S: omp_out.s *= omp_in.s)		// { dg-error "previous" }
+  #pragma omp declare reduction (+: ::S: omp_out.s *= omp_in.s)		// { dg-message "previous" }
   #pragma omp declare reduction (+: S: omp_out.s += omp_in.s)		// { dg-error "redeclaration of" }
   void
   f5 ()
   {
-    #pragma omp declare reduction (f5: S: omp_out.s *= omp_in.s)	// { dg-error "previous" }
+    #pragma omp declare reduction (f5: S: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (f5: ::S: omp_out.s += omp_in.s)	// { dg-error "redeclaration of" }
   }
 }
@@ -84,10 +84,10 @@ namespace N2
 
 namespace N3
 {
-  #pragma omp declare reduction (+: ::S: omp_out.s *= omp_in.s)		// { dg-error "previous" }
+  #pragma omp declare reduction (+: ::S: omp_out.s *= omp_in.s)		// { dg-message "previous" }
   #pragma omp declare reduction (+: T: omp_out.t += omp_in.t)
   #pragma omp declare reduction (+: S: omp_out.s += omp_in.s)		// { dg-error "redeclaration of" }
-  #pragma omp declare reduction (n3: long: omp_out += omp_in)		// { dg-error "previous" }
+  #pragma omp declare reduction (n3: long: omp_out += omp_in)		// { dg-message "previous" }
   #pragma omp declare reduction (n3: long int: omp_out += omp_in)	// { dg-error "redeclaration of" }
   #pragma omp declare reduction (n3: short unsigned: omp_out += omp_in)
   #pragma omp declare reduction (n3: short int: omp_out += omp_in)
@@ -95,9 +95,9 @@ namespace N3
   f6 ()
   {
     #pragma omp declare reduction (f6: T: omp_out.t += omp_in.t)
-    #pragma omp declare reduction (f6: S: omp_out.s *= omp_in.s)	// { dg-error "previous" }
+    #pragma omp declare reduction (f6: S: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (f6: ::S: omp_out.s += omp_in.s)	// { dg-error "redeclaration of" }
-    #pragma omp declare reduction (f6: long: omp_out += omp_in)		// { dg-error "previous" }
+    #pragma omp declare reduction (f6: long: omp_out += omp_in)		// { dg-message "previous" }
     #pragma omp declare reduction (f6: long int: omp_out += omp_in)	// { dg-error "redeclaration of" }
     #pragma omp declare reduction (f6: short unsigned: omp_out += omp_in)
     #pragma omp declare reduction (f6: short int: omp_out += omp_in)
@@ -124,7 +124,7 @@ namespace N5
   int
   f7 ()
   {
-    #pragma omp declare reduction (f7: T: omp_out.s *= omp_in.s)	// { dg-error "previous" }
+    #pragma omp declare reduction (f7: T: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (f7: T: omp_out.s += omp_in.s)	// { dg-error "redeclaration of" }
     return 0;
   }
@@ -145,9 +145,9 @@ namespace N6
   f8 ()
   {
     #pragma omp declare reduction (f8: T: omp_out.t += omp_in.t)
-    #pragma omp declare reduction (f8: U: omp_out.s *= omp_in.s)	// { dg-error "previous" }
+    #pragma omp declare reduction (f8: U: omp_out.s *= omp_in.s)	// { dg-message "previous" }
     #pragma omp declare reduction (f8: ::S: omp_out.s += omp_in.s)	// { dg-error "redeclaration of" }
-    #pragma omp declare reduction (f8: long: omp_out += omp_in)		// { dg-error "previous" }
+    #pragma omp declare reduction (f8: long: omp_out += omp_in)		// { dg-message "previous" }
     #pragma omp declare reduction (f8: long int: omp_out += omp_in)	// { dg-error "redeclaration of" }
     #pragma omp declare reduction (f8: short unsigned: omp_out += omp_in)
     #pragma omp declare reduction (f8: short int: omp_out += omp_in)

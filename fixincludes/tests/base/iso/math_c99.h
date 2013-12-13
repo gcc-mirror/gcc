@@ -20,6 +20,13 @@
 #endif  /* SOLARIS_MATH_1_CHECK */
 
 
+#if defined( SOLARIS_MATH_10_CHECK )
+#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"
+#undef	isinf
+#define	isinf(x) __builtin_isinf(x)
+#endif  /* SOLARIS_MATH_10_CHECK */
+
+
 #if defined( SOLARIS_MATH_2_CHECK )
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	INFINITY
@@ -68,10 +75,3 @@
 #undef	isunordered
 #define	isunordered(x, y)	__builtin_isunordered(x, y)
 #endif  /* SOLARIS_MATH_9_CHECK */
-
-
-#if defined( SOLARIS_MATH_10_CHECK )
-#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"
-#undef	isinf
-#define	isinf(x) __builtin_isinf(x)
-#endif  /* SOLARIS_MATH_10_CHECK */

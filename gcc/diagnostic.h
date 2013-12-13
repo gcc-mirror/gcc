@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
    list in diagnostic.def.  */
-typedef struct diagnostic_info
+struct diagnostic_info
 {
   text_info message;
   location_t location;
@@ -38,17 +38,17 @@ typedef struct diagnostic_info
   diagnostic_t kind;
   /* Which OPT_* directly controls this diagnostic.  */
   int option_index;
-} diagnostic_info;
+};
 
 /* Each time a diagnostic's classification is changed with a pragma,
    we record the change and the location of the change in an array of
    these structs.  */
-typedef struct diagnostic_classification_change_t
+struct diagnostic_classification_change_t
 {
   location_t location;
   int option;
   diagnostic_t kind;
-} diagnostic_classification_change_t;
+};
 
 /*  Forward declarations.  */
 typedef void (*diagnostic_starter_fn) (diagnostic_context *,

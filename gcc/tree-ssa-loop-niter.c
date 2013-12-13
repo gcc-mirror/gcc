@@ -171,7 +171,15 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		{
 		  minv = wi::max (minv, minc, sgn);
 		  maxv = wi::min (maxv, maxc, sgn);
-		  gcc_assert (wi::le_p (minv, maxv, sgn));
+		  /* If the PHI result range are inconsistent with
+		     the VAR range, give up on looking at the PHI
+		     results.  This can happen if VR_UNDEFINED is
+		     involved.  */
+		  if (wi::gt_p (minv, maxv))
+		    {
+		      rtype = get_range_info (var, &minv, &maxv);
+		      break;
+		    }
 		}
 	    }
 	}

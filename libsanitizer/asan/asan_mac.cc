@@ -172,7 +172,7 @@ void MaybeReexec() {
       // Set DYLD_INSERT_LIBRARIES equal to the runtime dylib name.
       setenv(kDyldInsertLibraries, info.dli_fname, /*overwrite*/0);
     }
-    if (flags()->verbosity >= 1) {
+    if (common_flags()->verbosity >= 1) {
       Report("exec()-ing the program with\n");
       Report("%s=%s\n", kDyldInsertLibraries, new_env);
       Report("to enable ASan wrappers.\n");
@@ -309,7 +309,7 @@ extern "C"
 void asan_dispatch_call_block_and_release(void *block) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *context = (asan_block_context_t*)block;
-  if (flags()->verbosity >= 2) {
+  if (common_flags()->verbosity >= 2) {
     Report("asan_dispatch_call_block_and_release(): "
            "context: %p, pthread_self: %p\n",
            block, pthread_self());
@@ -344,7 +344,7 @@ asan_block_context_t *alloc_asan_context(void *ctxt, dispatch_function_t func,
                                   dispatch_function_t func) {                 \
     GET_STACK_TRACE_THREAD;                                                   \
     asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack); \
-    if (flags()->verbosity >= 2) {                                            \
+    if (common_flags()->verbosity >= 2) {                                     \
       Report(#dispatch_x_f "(): context: %p, pthread_self: %p\n",             \
              asan_ctxt, pthread_self());                                      \
        PRINT_CURRENT_STACK();                                                 \
@@ -362,7 +362,7 @@ INTERCEPTOR(void, dispatch_after_f, dispatch_time_t when,
                                     dispatch_function_t func) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack);
-  if (flags()->verbosity >= 2) {
+  if (common_flags()->verbosity >= 2) {
     Report("dispatch_after_f: %p\n", asan_ctxt);
     PRINT_CURRENT_STACK();
   }
@@ -375,7 +375,7 @@ INTERCEPTOR(void, dispatch_group_async_f, dispatch_group_t group,
                                           dispatch_function_t func) {
   GET_STACK_TRACE_THREAD;
   asan_block_context_t *asan_ctxt = alloc_asan_context(ctxt, func, &stack);
-  if (flags()->verbosity >= 2) {
+  if (common_flags()->verbosity >= 2) {
     Report("dispatch_group_async_f(): context: %p, pthread_self: %p\n",
            asan_ctxt, pthread_self());
     PRINT_CURRENT_STACK();

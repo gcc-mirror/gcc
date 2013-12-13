@@ -193,7 +193,6 @@ extern enum pipeline_type microblaze_pipe;
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 #define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
-#define BITS_PER_UNIT           8
 #define BITS_PER_WORD           32
 #define UNITS_PER_WORD          4
 #define MIN_UNITS_PER_WORD      4

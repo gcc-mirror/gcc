@@ -1475,17 +1475,19 @@ gimple_set_bb (gimple stmt, basic_block bb)
       uid = LABEL_DECL_UID (t);
       if (uid == -1)
 	{
-	  unsigned old_len = vec_safe_length (label_to_block_map);
+	  unsigned old_len =
+	    vec_safe_length (label_to_block_map_for_fn (cfun));
 	  LABEL_DECL_UID (t) = uid = cfun->cfg->last_label_uid++;
 	  if (old_len <= (unsigned) uid)
 	    {
 	      unsigned new_len = 3 * uid / 2 + 1;
 
-	      vec_safe_grow_cleared (label_to_block_map, new_len);
+	      vec_safe_grow_cleared (label_to_block_map_for_fn (cfun),
+				     new_len);
 	    }
 	}
 
-      (*label_to_block_map)[uid] = bb;
+      (*label_to_block_map_for_fn (cfun))[uid] = bb;
     }
 }
 
@@ -2502,10 +2504,16 @@ check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
   return false;
 }
 
-/* If OP can be inferred to be non-zero after STMT executes, return true.  */
+/* If OP can be inferred to be non-NULL after STMT executes, return true.
+
+   DEREFERENCE is TRUE if we can use a pointer dereference to infer a
+   non-NULL range, FALSE otherwise.
+
+   ATTRIBUTE is TRUE if we can use attributes to infer a non-NULL range
+   for function arguments and return values.  FALSE otherwise.  */
 
 bool
-infer_nonnull_range (gimple stmt, tree op)
+infer_nonnull_range (gimple stmt, tree op, bool dereference, bool attribute)
 {
   /* We can only assume that a pointer dereference will yield
      non-NULL if -fdelete-null-pointer-checks is enabled.  */
@@ -2514,11 +2522,13 @@ infer_nonnull_range (gimple stmt, tree op)
       || gimple_code (stmt) == GIMPLE_ASM)
     return false;
 
-  if (walk_stmt_load_store_ops (stmt, (void *)op,
-				check_loadstore, check_loadstore))
+  if (dereference
+      && walk_stmt_load_store_ops (stmt, (void *)op,
+				   check_loadstore, check_loadstore))
     return true;
 
-  if (is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
+  if (attribute
+      && is_gimple_call (stmt) && !gimple_call_internal_p (stmt))
     {
       tree fntype = gimple_call_fntype (stmt);
       tree attrs = TYPE_ATTRIBUTES (fntype);
@@ -2557,7 +2567,8 @@ infer_nonnull_range (gimple stmt, tree op)
 
   /* If this function is marked as returning non-null, then we can
      infer OP is non-null if it is used in the return statement.  */
-  if (gimple_code (stmt) == GIMPLE_RETURN
+  if (attribute
+      && gimple_code (stmt) == GIMPLE_RETURN
       && gimple_return_retval (stmt)
       && operand_equal_p (gimple_return_retval (stmt), op, 0)
       && lookup_attribute ("returns_nonnull",

@@ -152,14 +152,14 @@ struct GTY(()) ipa_ancestor_jf_data
    different, all unlisted parts are assumed to be unknown and all values must
    fulfill is_gimple_ip_invariant.  */
 
-typedef struct GTY(()) ipa_agg_jf_item
+struct GTY(()) ipa_agg_jf_item
 {
   /* The offset at which the known value is located within the aggregate.  */
   HOST_WIDE_INT offset;
 
   /* The known constant or type if this is a clobber.  */
   tree value;
-} ipa_agg_jf_item_t;
+};
 
 
 /* Aggregate jump function - i.e. description of contents of aggregates passed
@@ -168,18 +168,17 @@ typedef struct GTY(()) ipa_agg_jf_item
 struct GTY(()) ipa_agg_jump_function
 {
   /* Description of the individual items.  */
-  vec<ipa_agg_jf_item_t, va_gc> *items;
+  vec<ipa_agg_jf_item, va_gc> *items;
   /* True if the data was passed by reference (as opposed to by value). */
   bool by_ref;
 };
 
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
-typedef struct ipa_agg_jump_function ipa_agg_jump_function_t;
 
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. See enum jump_func_type for the various
    types of jump functions supported.  */
-typedef struct GTY (()) ipa_jump_func
+struct GTY (()) ipa_jump_func
 {
   /* Aggregate contants description.  See struct ipa_agg_jump_function and its
      description.  */
@@ -196,7 +195,7 @@ typedef struct GTY (()) ipa_jump_func
     struct ipa_pass_through_data GTY ((tag ("IPA_JF_PASS_THROUGH"))) pass_through;
     struct ipa_ancestor_jf_data GTY ((tag ("IPA_JF_ANCESTOR"))) ancestor;
   } GTY ((desc ("%1.type"))) value;
-} ipa_jump_func_t;
+};
 
 
 /* Return the offset of the component that is described by a known type jump
@@ -350,7 +349,6 @@ struct ipa_param_descriptor
   unsigned used : 1;
 };
 
-typedef struct ipa_param_descriptor ipa_param_descriptor_t;
 struct ipcp_lattice;
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -361,7 +359,7 @@ struct ipa_node_params
 {
   /* Information about individual formal parameters that are gathered when
      summaries are generated. */
-  vec<ipa_param_descriptor_t> descriptors;
+  vec<ipa_param_descriptor> descriptors;
   /* Pointer to an array of structures describing individual formal
      parameters.  */
   struct ipcp_param_lattices *lattices;
@@ -474,11 +472,11 @@ void ipa_set_node_agg_value_chain (struct cgraph_node *node,
 
 /* ipa_edge_args stores information related to a callsite and particularly its
    arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
-typedef struct GTY(()) ipa_edge_args
+struct GTY(()) ipa_edge_args
 {
   /* Vector of the callsite's jump function of each parameter.  */
-  vec<ipa_jump_func_t, va_gc> *jump_functions;
-} ipa_edge_args_t;
+  vec<ipa_jump_func, va_gc> *jump_functions;
+};
 
 /* ipa_edge_args access functions.  Please use these to access fields that
    are or will be shared among various passes.  */
@@ -501,17 +499,14 @@ ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
   return &(*args->jump_functions)[i];
 }
 
-/* Vectors need to have typedefs of structures.  */
-typedef struct ipa_node_params ipa_node_params_t;
-
 /* Types of vectors holding the infos.  */
 
 /* Vector where the parameter infos are actually stored. */
-extern vec<ipa_node_params_t> ipa_node_params_vector;
+extern vec<ipa_node_params> ipa_node_params_vector;
 /* Vector of known aggregate values in cloned nodes.  */
 extern GTY(()) vec<ipa_agg_replacement_value_p, va_gc> *ipa_node_agg_replacements;
 /* Vector where the parameter infos are actually stored. */
-extern GTY(()) vec<ipa_edge_args_t, va_gc> *ipa_edge_args_vector;
+extern GTY(()) vec<ipa_edge_args, va_gc> *ipa_edge_args_vector;
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
@@ -685,9 +680,7 @@ struct ipa_parm_adjustment
   unsigned by_ref : 1;
 };
 
-typedef struct ipa_parm_adjustment ipa_parm_adjustment_t;
-
-typedef vec<ipa_parm_adjustment_t> ipa_parm_adjustment_vec;
+typedef vec<ipa_parm_adjustment> ipa_parm_adjustment_vec;
 
 vec<tree> ipa_get_vector_of_formal_parms (tree fndecl);
 vec<tree> ipa_get_vector_of_formal_parm_types (tree fntype);

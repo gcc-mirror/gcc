@@ -280,7 +280,7 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
 	  add_to_hard_reg_set (&reserved_hard_regs[p],
 			       lra_reg_info[i].biggest_mode, hard_regno);
   bitmap_initialize (&ok_insn_bitmap, &reg_obstack);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (DEBUG_INSN_P (insn)
 	  || ((set = single_set (insn)) != NULL_RTX
@@ -478,7 +478,7 @@ spill_pseudos (void)
 	  bitmap_ior_into (&changed_insns, &lra_reg_info[i].insn_bitmap);
 	}
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
 	if (bitmap_bit_p (&changed_insns, INSN_UID (insn)))
@@ -686,7 +686,7 @@ lra_final_code_change (void)
     if (lra_reg_info[i].nrefs != 0
 	&& (hard_regno = lra_get_regno_hard_regno (i)) >= 0)
       SET_REGNO (regno_reg_rtx[i], hard_regno);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS_SAFE (bb, insn, curr)
       if (INSN_P (insn))
 	{

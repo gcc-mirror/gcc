@@ -1,4 +1,6 @@
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 // 2011-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 //
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
@@ -19,40 +21,37 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <type_traits>
-#include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
   using std::is_nothrow_assignable;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_relationship<is_nothrow_assignable, int&, int>(true)) );
-  VERIFY( (test_relationship<is_nothrow_assignable, int&, const int>(true)) );
+  static_assert(test_relationship<is_nothrow_assignable, int&, int>(true), "");
+  static_assert(test_relationship<is_nothrow_assignable, int&,
+		const int>(true), "");
 
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   NoexceptCopyAssignClass&, const NoexceptCopyAssignClass&>(true)) );
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   NoexceptMoveAssignClass&, NoexceptMoveAssignClass&&>(true)) );
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   NoexceptCopyAssignClass&, NoexceptCopyAssignClass&&>(true)) );
+  static_assert(test_relationship<is_nothrow_assignable,
+		NoexceptCopyAssignClass&,
+		const NoexceptCopyAssignClass&>(true), "");
+  static_assert(test_relationship<is_nothrow_assignable,
+		NoexceptMoveAssignClass&, NoexceptMoveAssignClass&&>(true), "");
+  static_assert(test_relationship<is_nothrow_assignable,
+		NoexceptCopyAssignClass&, NoexceptCopyAssignClass&&>(true), "");
 
   // Negative tests.
-  VERIFY( (test_relationship<is_nothrow_assignable, int, int>(false)) );
-  VERIFY( (test_relationship<is_nothrow_assignable, int, const int>(false)) );
+  static_assert(test_relationship<is_nothrow_assignable, int, int>(false), "");
+  static_assert(test_relationship<is_nothrow_assignable, int,
+		const int>(false), "");
 
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   ExceptCopyAssignClass&, const ExceptCopyAssignClass&>(false)) );
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   ExceptMoveAssignClass&, ExceptMoveAssignClass&&>(false)) );
-  VERIFY( (test_relationship<is_nothrow_assignable,
-	   NoexceptMoveAssignClass&, const NoexceptMoveAssignClass&>(false)) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  static_assert(test_relationship<is_nothrow_assignable,
+		ExceptCopyAssignClass&,
+		const ExceptCopyAssignClass&>(false), "");
+  static_assert(test_relationship<is_nothrow_assignable,
+		ExceptMoveAssignClass&, ExceptMoveAssignClass&&>(false), "");
+  static_assert(test_relationship<is_nothrow_assignable,
+		NoexceptMoveAssignClass&,
+		const NoexceptMoveAssignClass&>(false), "");
 }

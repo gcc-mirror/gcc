@@ -314,26 +314,17 @@ struct GTY(()) control_flow_graph {
 /* Defines for accessing the fields of the CFG structure for function FN.  */
 #define ENTRY_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_entry_block_ptr)
 #define EXIT_BLOCK_PTR_FOR_FN(FN)	     ((FN)->cfg->x_exit_block_ptr)
-#define basic_block_info_for_function(FN)    ((FN)->cfg->x_basic_block_info)
+#define basic_block_info_for_fn(FN)	     ((FN)->cfg->x_basic_block_info)
 #define n_basic_blocks_for_fn(FN)	     ((FN)->cfg->x_n_basic_blocks)
 #define n_edges_for_fn(FN)		     ((FN)->cfg->x_n_edges)
-#define last_basic_block_for_function(FN)    ((FN)->cfg->x_last_basic_block)
-#define label_to_block_map_for_function(FN)  ((FN)->cfg->x_label_to_block_map)
-#define profile_status_for_function(FN)	     ((FN)->cfg->x_profile_status)
+#define last_basic_block_for_fn(FN)	     ((FN)->cfg->x_last_basic_block)
+#define label_to_block_map_for_fn(FN)	     ((FN)->cfg->x_label_to_block_map)
+#define profile_status_for_fn(FN)	     ((FN)->cfg->x_profile_status)
 
-#define BASIC_BLOCK_FOR_FUNCTION(FN,N) \
-  ((*basic_block_info_for_function (FN))[(N)])
-#define SET_BASIC_BLOCK_FOR_FUNCTION(FN,N,BB) \
-  ((*basic_block_info_for_function (FN))[(N)] = (BB))
-
-/* Defines for textual backward source compatibility.  */
-#define basic_block_info	(cfun->cfg->x_basic_block_info)
-#define last_basic_block	(cfun->cfg->x_last_basic_block)
-#define label_to_block_map	(cfun->cfg->x_label_to_block_map)
-#define profile_status		(cfun->cfg->x_profile_status)
-
-#define BASIC_BLOCK(N)		((*basic_block_info)[(N)])
-#define SET_BASIC_BLOCK(N,BB)	((*basic_block_info)[(N)] = (BB))
+#define BASIC_BLOCK_FOR_FN(FN,N) \
+  ((*basic_block_info_for_fn (FN))[(N)])
+#define SET_BASIC_BLOCK_FOR_FN(FN,N,BB) \
+  ((*basic_block_info_for_fn (FN))[(N)] = (BB))
 
 /* For iterating over basic blocks.  */
 #define FOR_BB_BETWEEN(BB, FROM, TO, DIR) \
@@ -342,12 +333,8 @@ struct GTY(()) control_flow_graph {
 #define FOR_EACH_BB_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_entry_block_ptr->next_bb, (FN)->cfg->x_exit_block_ptr, next_bb)
 
-#define FOR_EACH_BB(BB) FOR_EACH_BB_FN (BB, cfun)
-
 #define FOR_EACH_BB_REVERSE_FN(BB, FN) \
   FOR_BB_BETWEEN (BB, (FN)->cfg->x_exit_block_ptr->prev_bb, (FN)->cfg->x_entry_block_ptr, prev_bb)
-
-#define FOR_EACH_BB_REVERSE(BB) FOR_EACH_BB_REVERSE_FN (BB, cfun)
 
 /* For iterating over insns in basic block.  */
 #define FOR_BB_INSNS(BB, INSN)			\
@@ -374,9 +361,6 @@ struct GTY(()) control_flow_graph {
 
 /* Cycles through _all_ basic blocks, even the fake ones (entry and
    exit block).  */
-
-#define FOR_ALL_BB(BB) \
-  for (BB = ENTRY_BLOCK_PTR_FOR_FN (cfun); BB; BB = BB->next_bb)
 
 #define FOR_ALL_BB_FN(BB, FN) \
   for (BB = ENTRY_BLOCK_PTR_FOR_FN (FN); BB; BB = BB->next_bb)
@@ -434,7 +418,7 @@ extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
    needs to be in a public file in case the IFCVT macros call
    functions passing the ce_if_block data structure.  */
 
-typedef struct ce_if_block
+struct ce_if_block
 {
   basic_block test_bb;			/* First test block.  */
   basic_block then_bb;			/* THEN block.  */
@@ -449,7 +433,7 @@ typedef struct ce_if_block
   int num_then_insns;			/* # of insns in THEN block.  */
   int num_else_insns;			/* # of insns in ELSE block.  */
   int pass;				/* Pass number.  */
-} ce_if_block_t;
+};
 
 /* This structure maintains an edge list vector.  */
 /* FIXME: Make this a vec<edge>.  */
@@ -580,10 +564,10 @@ single_pred (const_basic_block bb)
 
 /* Iterator object for edges.  */
 
-typedef struct {
+struct edge_iterator {
   unsigned index;
   vec<edge, va_gc> **container;
-} edge_iterator;
+};
 
 static inline vec<edge, va_gc> *
 ei_container (edge_iterator i)
@@ -797,8 +781,8 @@ extern int pre_and_rev_post_order_compute (int *, int *, bool);
 extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(const_basic_block, const void *),
 			       basic_block *, int, const void *);
-extern void compute_dominance_frontiers (struct bitmap_head_def *);
-extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
+extern void compute_dominance_frontiers (struct bitmap_head *);
+extern bitmap compute_idf (bitmap, struct bitmap_head *);
 extern basic_block * single_pred_before_succ_order (void);
 
 /* In cfgrtl.c  */

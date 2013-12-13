@@ -159,7 +159,8 @@ init_dom_info (struct dom_info *di, enum cdi_direction dir)
   init_ar (di->set_size, unsigned int, num, 1);
   init_ar (di->set_child, TBB, num, 0);
 
-  init_ar (di->dfs_order, TBB, (unsigned int) last_basic_block + 1, 0);
+  init_ar (di->dfs_order, TBB,
+	   (unsigned int) last_basic_block_for_fn (cfun) + 1, 0);
   init_ar (di->dfs_to_bb, basic_block, num, 0);
 
   di->dfsnum = 1;
@@ -296,7 +297,7 @@ calc_dfs_tree_nonrec (struct dom_info *di, basic_block bb, bool reverse)
 	  if (bb != en_block)
 	    my_i = di->dfs_order[bb->index];
 	  else
-	    my_i = di->dfs_order[last_basic_block];
+	    my_i = di->dfs_order[last_basic_block_for_fn (cfun)];
 	  child_i = di->dfs_order[bn->index] = di->dfsnum++;
 	  di->dfs_to_bb[child_i] = bn;
 	  di->dfs_parent[child_i] = my_i;
@@ -335,7 +336,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
   /* The first block is the ENTRY_BLOCK (or EXIT_BLOCK if REVERSE).  */
   basic_block begin = (reverse
 		       ? EXIT_BLOCK_PTR_FOR_FN (cfun) : ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  di->dfs_order[last_basic_block] = di->dfsnum;
+  di->dfs_order[last_basic_block_for_fn (cfun)] = di->dfsnum;
   di->dfs_to_bb[di->dfsnum] = begin;
   di->dfsnum++;
 
@@ -356,7 +357,7 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
       basic_block b;
       bool saw_unconnected = false;
 
-      FOR_EACH_BB_REVERSE (b)
+      FOR_EACH_BB_REVERSE_FN (b, cfun)
 	{
 	  if (EDGE_COUNT (b->succs) > 0)
 	    {
@@ -367,14 +368,15 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 	  bitmap_set_bit (di->fake_exit_edge, b->index);
 	  di->dfs_order[b->index] = di->dfsnum;
 	  di->dfs_to_bb[di->dfsnum] = b;
-	  di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
+	  di->dfs_parent[di->dfsnum] =
+	    di->dfs_order[last_basic_block_for_fn (cfun)];
 	  di->dfsnum++;
 	  calc_dfs_tree_nonrec (di, b, reverse);
 	}
 
       if (saw_unconnected)
 	{
-	  FOR_EACH_BB_REVERSE (b)
+	  FOR_EACH_BB_REVERSE_FN (b, cfun)
 	    {
 	      basic_block b2;
 	      if (di->dfs_order[b->index])
@@ -384,7 +386,8 @@ calc_dfs_tree (struct dom_info *di, bool reverse)
 	      bitmap_set_bit (di->fake_exit_edge, b2->index);
 	      di->dfs_order[b2->index] = di->dfsnum;
 	      di->dfs_to_bb[di->dfsnum] = b2;
-	      di->dfs_parent[di->dfsnum] = di->dfs_order[last_basic_block];
+	      di->dfs_parent[di->dfsnum] =
+		di->dfs_order[last_basic_block_for_fn (cfun)];
 	      di->dfsnum++;
 	      calc_dfs_tree_nonrec (di, b2, reverse);
 	      gcc_checking_assert (di->dfs_order[b->index]);
@@ -546,7 +549,7 @@ calc_idoms (struct dom_info *di, bool reverse)
 	  if (b == en_block)
 	    {
 	    do_fake_exit_edge:
-	      k1 = di->dfs_order[last_basic_block];
+	      k1 = di->dfs_order[last_basic_block_for_fn (cfun)];
 	    }
 	  else
 	    k1 = di->dfs_order[b->index];
@@ -621,7 +624,7 @@ compute_dom_fast_query (enum cdi_direction dir)
   if (dom_computed[dir_index] == DOM_OK)
     return;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       if (!bb->dom[dir_index]->father)
 	assign_dfs_numbers (bb->dom[dir_index], &num);
@@ -649,7 +652,7 @@ calculate_dominance_info (enum cdi_direction dir)
     {
       gcc_assert (!n_bbs_in_dom_tree[dir_index]);
 
-      FOR_ALL_BB (b)
+      FOR_ALL_BB_FN (b, cfun)
 	{
 	  b->dom[dir_index] = et_new_tree (b);
 	}
@@ -659,7 +662,7 @@ calculate_dominance_info (enum cdi_direction dir)
       calc_dfs_tree (&di, reverse);
       calc_idoms (&di, reverse);
 
-      FOR_EACH_BB (b)
+      FOR_EACH_BB_FN (b, cfun)
 	{
 	  TBB d = di.dom[di.dfs_order[b->index]];
 
@@ -686,7 +689,7 @@ free_dominance_info (enum cdi_direction dir)
   if (!dom_info_available_p (dir))
     return;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       et_free_tree_force (bb->dom[dir_index]);
       bb->dom[dir_index] = NULL;
@@ -884,10 +887,10 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
   basic_block dom;
 
   first = bitmap_first_set_bit (blocks);
-  dom = BASIC_BLOCK (first);
+  dom = BASIC_BLOCK_FOR_FN (cfun, first);
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)
-    if (dom != BASIC_BLOCK (i))
-      dom = nearest_common_dominator (dir, dom, BASIC_BLOCK (i));
+    if (dom != BASIC_BLOCK_FOR_FN (cfun, i))
+      dom = nearest_common_dominator (dir, dom, BASIC_BLOCK_FOR_FN (cfun, i));
 
   return dom;
 }
@@ -1022,7 +1025,7 @@ verify_dominators (enum cdi_direction dir)
   calc_dfs_tree (&di, reverse);
   calc_idoms (&di, reverse);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       imm_bb = get_immediate_dominator (dir, bb);
       if (!imm_bb)
@@ -1489,7 +1492,7 @@ DEBUG_FUNCTION void
 debug_dominance_info (enum cdi_direction dir)
 {
   basic_block bb, bb2;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if ((bb2 = get_immediate_dominator (dir, bb)))
       fprintf (stderr, "%i %i\n", bb->index, bb2->index);
 }

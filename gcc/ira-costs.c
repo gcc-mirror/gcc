@@ -1585,7 +1585,7 @@ find_costs_and_classes (FILE *dump_file)
 	{
 	  basic_block bb;
 
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    process_bb_for_costs (bb);
 	}
 

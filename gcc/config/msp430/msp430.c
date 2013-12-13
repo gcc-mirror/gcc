@@ -188,7 +188,7 @@ msp430_mcu_name (void)
 	mcu_name[i] = TOUPPER (mcu_name[i]);
       return mcu_name;
     }
-  
+
   return msp430x ? "__MSP430XGENERIC__" : "__MSP430GENERIC__";
 }
 
@@ -966,6 +966,12 @@ msp430_is_interrupt_func (void)
   return is_attr_func ("interrupt");
 }
 
+static bool
+is_wakeup_func (void)
+{
+  return msp430_is_interrupt_func () && is_attr_func ("wakeup");
+}
+
 static inline bool
 is_naked_func (void)
 {
@@ -1005,6 +1011,8 @@ msp430_start_function (FILE *outfile, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
 	fprintf (outfile, "reentrant ");
       if (is_critical_func ())
 	fprintf (outfile, "critical ");
+      if (is_wakeup_func ())
+	fprintf (outfile, "wakeup ");
       fprintf (outfile, "\n");
     }
 
@@ -1131,6 +1139,7 @@ const struct attribute_spec msp430_attribute_table[] =
   { "naked",          0, 0, true,  false, false, msp430_attr, false },
   { "reentrant",      0, 0, true,  false, false, msp430_attr, false },
   { "critical",       0, 0, true,  false, false, msp430_attr, false },
+  { "wakeup",         0, 0, true,  false, false, msp430_attr, false },
   { NULL,             0, 0, false, false, false, NULL,        false }
 };
 
@@ -1408,6 +1417,14 @@ msp430_expand_epilogue (int is_eh)
     }
 
   emit_insn (gen_epilogue_start_marker ());
+
+  if (is_wakeup_func ())
+    /* Clear the SCG1, SCG0, OSCOFF and CPUOFF bits in the saved copy of the
+       status register current residing on the stack.  When this function
+       executes its RETI instruction the SR will be updated with this saved
+       value, thus ensuring that the processor is woken up from any low power
+       state in which it may be residing.  */
+    emit_insn (gen_bic_SR (GEN_INT (0xf0)));
 
   fs = cfun->machine->framesize_locals + cfun->machine->framesize_outgoing;
 
@@ -1828,7 +1845,7 @@ msp430_output_labelref (FILE *file, const char *name)
 static void
 msp430_print_operand_raw (FILE * file, rtx op)
 {
-  int i;
+  HOST_WIDE_INT i;
 
   switch (GET_CODE (op))
     {
@@ -1839,9 +1856,9 @@ msp430_print_operand_raw (FILE * file, rtx op)
     case CONST_INT:
       i = INTVAL (op);
       if (TARGET_ASM_HEX)
-	fprintf (file, "%#x", i);
+	fprintf (file, "%#" HOST_WIDE_INT_PRINT "x", i);
       else
-	fprintf (file, "%d", i);
+	fprintf (file, "%" HOST_WIDE_INT_PRINT "d", i);
       break;
 
     case CONST:

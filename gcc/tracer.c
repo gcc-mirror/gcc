@@ -230,9 +230,9 @@ find_trace (basic_block bb, basic_block *trace)
 static bool
 tail_duplicate (void)
 {
-  fibnode_t *blocks = XCNEWVEC (fibnode_t, last_basic_block);
+  fibnode_t *blocks = XCNEWVEC (fibnode_t, last_basic_block_for_fn (cfun));
   basic_block *trace = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
-  int *counts = XNEWVEC (int, last_basic_block);
+  int *counts = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int ninsns = 0, nduplicated = 0;
   gcov_type weighted_insns = 0, traced_insns = 0;
   fibheap_t heap = fibheap_new ();
@@ -243,7 +243,7 @@ tail_duplicate (void)
 
   /* Create an oversized sbitmap to reduce the chance that we need to
      resize it.  */
-  bb_seen = sbitmap_alloc (last_basic_block * 2);
+  bb_seen = sbitmap_alloc (last_basic_block_for_fn (cfun) * 2);
   bitmap_clear (bb_seen);
   initialize_original_copy_tables ();
 
@@ -256,7 +256,7 @@ tail_duplicate (void)
   branch_ratio_cutoff =
     (REG_BR_PROB_BASE / 100 * PARAM_VALUE (TRACER_MIN_BRANCH_RATIO));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       int n = count_insns (bb);
       if (!ignore_bb_p (bb))

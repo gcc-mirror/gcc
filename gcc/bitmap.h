@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
    This sparse set representation is suitable for sparse sets with an
    unknown (a priori) universe.  The set is represented as a double-linked
-   list of container nodes (struct bitmap_element_def).  Each node consists
+   list of container nodes (struct bitmap_element).  Each node consists
    of an index for the first member that could be held in the container,
    a small array of integers that represent the members in the container,
    and pointers to the next and previous element in the linked list.  The
@@ -149,11 +149,11 @@ typedef unsigned long BITMAP_WORD;
 #define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
 /* Obstack for allocating bitmaps and elements from.  */
-typedef struct GTY (()) bitmap_obstack {
-  struct bitmap_element_def *elements;
-  struct bitmap_head_def *heads;
+struct GTY (()) bitmap_obstack {
+  struct bitmap_element *elements;
+  struct bitmap_head *heads;
   struct obstack GTY ((skip)) obstack;
-} bitmap_obstack;
+};
 
 /* Bitmap set element.  We use a linked list to hold only the bits that
    are set.  This allows for use to grow the bitset dynamically without
@@ -167,17 +167,17 @@ typedef struct GTY (()) bitmap_obstack {
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-typedef struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element_def {
-  struct bitmap_element_def *next;	/* Next element.  */
-  struct bitmap_element_def *prev;	/* Previous element.  */
+struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element {
+  struct bitmap_element *next;	/* Next element.  */
+  struct bitmap_element *prev;	/* Previous element.  */
   unsigned int indx;			/* regno/BITMAP_ELEMENT_ALL_BITS.  */
   BITMAP_WORD bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
-} bitmap_element;
+};
 
 /* Head of bitmap linked list.  The 'current' member points to something
    already pointed to by the chain started by first, so GTY((skip)) it.  */
 
-typedef struct GTY(()) bitmap_head_def {
+struct GTY(()) bitmap_head {
   unsigned int indx;			/* Index of last element looked at.  */
   unsigned int descriptor_id;		/* Unique identifier for the allocation
 					   site of this bitmap, for detailed
@@ -186,7 +186,7 @@ typedef struct GTY(()) bitmap_head_def {
   bitmap_element * GTY((skip(""))) current; /* Last element looked at.  */
   bitmap_obstack *obstack;		/* Obstack to allocate elements from.
 					   If NULL, then use GGC allocation.  */
-} bitmap_head;
+};
 
 /* Global data */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
@@ -293,8 +293,8 @@ inline void dump_bitmap (FILE *file, const_bitmap map)
 {
   bitmap_print (file, map, "", "\n");
 }
-extern void debug (const bitmap_head_def &ref);
-extern void debug (const bitmap_head_def *ptr);
+extern void debug (const bitmap_head &ref);
+extern void debug (const bitmap_head *ptr);
 
 extern unsigned bitmap_first_set_bit (const_bitmap);
 extern unsigned bitmap_last_set_bit (const_bitmap);
@@ -314,7 +314,7 @@ extern hashval_t bitmap_hash (const_bitmap);
 
 /* Iterator for bitmaps.  */
 
-typedef struct
+struct bitmap_iterator
 {
   /* Pointer to the current bitmap element.  */
   bitmap_element *elt1;
@@ -329,7 +329,7 @@ typedef struct
      it is shifted right, so that the actual bit is always the least
      significant bit of ACTUAL.  */
   BITMAP_WORD bits;
-} bitmap_iterator;
+};
 
 /* Initialize a single bitmap iterator.  START_BIT is the first bit to
    iterate from.  */

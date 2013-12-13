@@ -90,6 +90,7 @@ extern tree cilk_dot (tree, int, bool);
 extern void cilk_init_builtins (void);
 extern void gimplify_cilk_sync (tree *, gimple_seq *);
 extern tree cilk_call_setjmp (tree);
+
 /* Returns true if Cilk Plus is enabled and if F->cilk_frame_decl is not
    NULL_TREE.  */
 
@@ -99,4 +100,5 @@ fn_contains_cilk_spawn_p (function *f)
   return (flag_enable_cilkplus 
 	  && (f->calls_cilk_spawn || f->cilk_frame_decl != NULL_TREE));
 }
+
 #endif

@@ -1136,6 +1136,7 @@ func foo126() {
 			px = &i // ERROR "&i escapes"
 		}()
 	}
+	_ = px
 }
 
 var px *int
@@ -1325,3 +1326,34 @@ func foo142() {
 	t := new(Tm) // ERROR "escapes to heap"
 	gf = t.M // ERROR "t.M escapes to heap"
 }
+
+// issue 3888.
+func foo143() {
+	for i := 0; i < 1000; i++ {
+		func() { // ERROR "func literal does not escape"
+			for i := 0; i < 1; i++ {
+				var t Tm
+				t.M() // ERROR "t does not escape"
+			}
+		}()
+	}
+}
+
+// issue 5773
+// Check that annotations take effect regardless of whether they
+// are before or after the use in the source code.
+
+//go:noescape
+
+func foo144a(*int)
+
+func foo144() {
+	var x int
+	foo144a(&x) // ERROR "&x does not escape"
+	var y int
+	foo144b(&y) // ERROR "&y does not escape"
+}
+
+//go:noescape
+
+func foo144b(*int)

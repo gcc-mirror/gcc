@@ -29,7 +29,7 @@
 #include <fficonfig.h>
 #include <ffi.h>
 
-#ifdef __powerpc64__
+#ifdef POWERPC64
 	.hidden	ffi_call_LINUX64
 	.globl	ffi_call_LINUX64
 # if _CALL_ELF == 2

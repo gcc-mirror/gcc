@@ -23,6 +23,7 @@ enum SuppressionType {
   SuppressionThread,
   SuppressionSignal,
   SuppressionLeak,
+  SuppressionLib,
   SuppressionTypeCount
 };
 
@@ -38,7 +39,8 @@ class SuppressionContext {
   SuppressionContext() : suppressions_(1), can_parse_(true) {}
   void Parse(const char *str);
   bool Match(const char* str, SuppressionType type, Suppression **s);
-  uptr SuppressionCount();
+  uptr SuppressionCount() const;
+  const Suppression *SuppressionAt(uptr i) const;
   void GetMatched(InternalMmapVector<Suppression *> *matched);
 
  private:
@@ -50,7 +52,6 @@ class SuppressionContext {
 
 const char *SuppressionTypeString(SuppressionType t);
 
-// Exposed for testing.
 bool TemplateMatch(char *templ, const char *str);
 
 }  // namespace __sanitizer

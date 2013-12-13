@@ -1,3 +1,75 @@
+2013-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58954
+	* pt.c (resolve_overloaded_unification): Use instantiate_template.
+
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58627
+	* call.c (add_template_candidate_real): Don't call ggc_free on targs.
+
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cp-tree.h (cilk_valid_spawn): New prototype.
+	(gimplify_cilk_spawn): Likewise.
+	(create_try_catch_expr): Likewise.
+	* decl.c (finish_function): Insert Cilk function-calls when a
+	_Cilk_spawn is used in a function.
+	* parser.c (cp_parser_postfix_expression): Added RID_CILK_SPAWN and
+	RID_CILK_SYNC cases.
+	* cp-cilkplus.c (set_cilk_except_flag): New function.
+	(set_cilk_except_data): Likewise.
+	(cilk_install_body_with_frame_cleanup): Likewise.
+	* except.c (create_try_catch_expr): Likewise.
+	* parser.h (IN_CILK_SPAWN): New #define.
+	* pt.c (tsubst_expr): Added CILK_SPAWN_STMT and CILK_SYNC_STMT cases.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* typeck.c (cp_build_compound_expr): Reject a spawned function in a
+	compound expression.
+	(check_return_expr): Reject a spawned function in a return expression.
+	* cp-gimplify.c (cp_gimplify_expr): Added a CILK_SPAWN_STMT and
+	CALL_EXPR case.  Added handling of spawned function in MODIFY_EXPR
+	and INIT_EXPR.
+	
+2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59435
+	* parser.c (cp_parser_cache_defarg): sizeof ... ( p ) can
+	occur in a default argument too.
+
+2013-12-06  Caroline Tice  <cmtice@google.com>
+
+	Submitting patch from Stephen Checkoway, s@cs.jhu.edu
+	* vtable-class-hierarchy.c (init_functions): Make the libvtv
+	function decls externally visible.
+
+2013-12-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* decl2.c: Remove struct tags when referring to class varpool_node.
+
+2013-12-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59044
+	PR c++/59052
+	* pt.c (most_specialized_class): Use the partially instantiated
+	template for deduction.  Drop the TMPL parameter.
+
+2013-12-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls): Replace pairs of errors and permerrors
+	with error + inform (permerror + inform, respectively).
+
+2013-12-04  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/52023
+	* typeck.c (cxx_sizeof_or_alignof_type): Update call to
+	c_sizeof_or_alignof_type.
+
+2013-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59268
+	* pt.c (tsubst_copy_and_build): Handle POINTER_PLUS_EXPR.
+
 2013-11-29  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59331

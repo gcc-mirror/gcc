@@ -61,15 +61,15 @@ resolve_sw_modes (void)
   bool need_commit = false;
   bool finalize_fp_sets = (MACHINE_FUNCTION (cfun)->unknown_mode_sets == 0);
 
-  todo.create (last_basic_block);
-  pushed = sbitmap_alloc (last_basic_block);
+  todo.create (last_basic_block_for_fn (cfun));
+  pushed = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (pushed);
   if (!finalize_fp_sets)
     {
       df_note_add_problem ();
       df_analyze ();
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	enum attr_fp_mode selected_mode;

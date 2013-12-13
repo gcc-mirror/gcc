@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_SESE_TO_POLY_H
 #define GCC_GRAPHITE_SESE_TO_POLY_H
 
-typedef struct base_alias_pair base_alias_pair;
 struct base_alias_pair
 {
   int base_obj_set;

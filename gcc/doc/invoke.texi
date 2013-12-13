@@ -378,7 +378,7 @@ Objective-C and Objective-C++ Dialects}.
 -fira-region=@var{region} -fira-hoist-pressure @gol
 -fira-loop-pressure -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots -fira-verbose=@var{n} @gol
--fisolate-erroneous-paths
+-fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute
 -fivopts -fkeep-inline-functions -fkeep-static-consts -flive-range-shrinkage @gol
 -floop-block -floop-interchange -floop-strip-mine -floop-nest-optimize @gol
 -floop-parallelize-all -flto -flto-compression-level @gol
@@ -959,7 +959,7 @@ See RS/6000 and PowerPC Options.
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols @gol
 -matomic-model=@var{atomic-model} @gol
--mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
+-mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch @gol
 -mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
 -mpretend-cmove -mtas}
 
@@ -5363,6 +5363,19 @@ built with this option turned on will issue an error message
 when the end of a non-void function is reached without actually
 returning a value.  This option works in C++ only.
 
+@item -fsanitize=signed-integer-overflow
+@opindex fsanitize=signed-integer-overflow
+
+This option enables signed integer overflow checking.  We check that
+the result of @code{+}, @code{*}, and both unary and binary @code{-}
+does not overflow in the signed arithmetics.  Note, integer promotion
+rules must be taken into account.  That is, the following is not an
+overflow:
+@smallexample
+signed char a = SCHAR_MAX;
+a++;
+@end smallexample
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -6848,7 +6861,7 @@ also turns on the following optimization flags:
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-sra @gol
--fisolate-erroneous-paths @gol
+-fisolate-erroneous-paths-dereference @gol
 -foptimize-sibling-calls @gol
 -fpartial-inlining @gol
 -fpeephole2 @gol
@@ -7742,10 +7755,17 @@ it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
 
-@item -fisolate-erroneous-paths
-Detect paths which trigger erroneous or undefined behaviour.  Isolate those
-paths from the main control flow and turn the statement with erroneous or
-undefined behaviour into a trap.
+@item -fisolate-erroneous-paths-dereference
+Detect paths which trigger erroneous or undefined behaviour due to
+dereferencing a NULL pointer.  Isolate those paths from the main control
+flow and turn the statement with erroneous or undefined behaviour into a trap.
+
+@item -fisolate-erroneous-paths-attribute
+Detect paths which trigger erroneous or undefined behaviour due a NULL value
+being used in a way which is forbidden by a @code{returns_nonnull} or @code{nonnull}
+attribute.  Isolate those paths from the main control flow and turn the
+statement with erroneous or undefined behaviour into a trap.  This is not
+currently enabled, but may be enabled by @code{-O2} in the future.
 
 @item -ftree-sink
 @opindex ftree-sink
@@ -12136,9 +12156,10 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm10e}, @samp{arm1020e}, @samp{arm1022e},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
-@samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9}, 
-@samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-r4}, @samp{cortex-r4f},
-@samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m4}, @samp{cortex-m3},
+@samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9},
+@samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-r4},
+@samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m4},
+@samp{cortex-m3},
 @samp{cortex-m1},
 @samp{cortex-m0},
 @samp{cortex-m0plus},
@@ -14736,7 +14757,7 @@ then @option{-mtune=pentium4} generates code that is tuned for Pentium 4
 but still runs on i686 machines.
 
 The choices for @var{cpu-type} are the same as for @option{-march}.
-In addition, @option{-mtune} supports an extra choice for @var{cpu-type}:
+In addition, @option{-mtune} supports 2 extra choices for @var{cpu-type}:
 
 @table @samp
 @item generic
@@ -14755,6 +14776,26 @@ that are most common at the time that version of GCC is released.
 There is no @option{-march=generic} option because @option{-march}
 indicates the instruction set the compiler can use, and there is no
 generic instruction set applicable to all processors.  In contrast,
+@option{-mtune} indicates the processor (or, in this case, collection of
+processors) for which the code is optimized.
+
+@item intel
+Produce code optimized for the most current Intel processors, which are
+Haswell and Silvermont for this version of GCC.  If you know the CPU
+on which your code will run, then you should use the corresponding
+@option{-mtune} or @option{-march} option instead of @option{-mtune=intel}.
+But, if you want your application performs better on both Haswell and
+Silvermont, then you should use this option.
+
+As new Intel processors are deployed in the marketplace, the behavior of
+this option will change.  Therefore, if you upgrade to a newer version of
+GCC, code generation controlled by this option will change to reflect
+the most current Intel processors at the time that version of GCC is
+released.
+
+There is no @option{-march=intel} option because @option{-march} indicates
+the instruction set the compiler can use, and there is no common
+instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of
 processors) for which the code is optimized.
 @end table
@@ -20212,15 +20253,6 @@ compiler will try to prefer zero displacement branch code sequences.  This is
 enabled by default when generating code for SH4 and SH4A.  It can be explicitly
 disabled by specifying @option{-mno-zdcbranch}.
 
-@item -mcbranchdi
-@opindex mcbranchdi
-Enable the @code{cbranchdi4} instruction pattern.
-
-@item -mcmpeqdi
-@opindex mcmpeqdi
-Emit the @code{cmpeqdi_t} instruction pattern even when @option{-mcbranchdi}
-is in effect.
-
 @item -mfused-madd
 @itemx -mno-fused-madd
 @opindex mfused-madd
@@ -21968,6 +22000,12 @@ instruction.  In the previous example, that might be a 32-bit load
 instruction, even though that accesses bytes that do not contain
 any portion of the bit-field, or memory-mapped registers unrelated to
 the one being updated.
+
+In some cases, such as when the @code{packed} attribute is applied to a 
+structure field, it may not be possible to access the field with a single
+read or write that is correctly aligned for the target machine.  In this
+case GCC falls back to generating multiple accesses rather than code that 
+will fault or truncate the result at run time.
 
 The default value of this option is determined by the application binary
 interface for the target processor.

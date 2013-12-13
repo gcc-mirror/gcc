@@ -2135,7 +2135,7 @@ decrease_live_ranges_number (void)
   if (ira_dump_file)
     fprintf (ira_dump_file, "Starting decreasing number of live ranges...\n");
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	set = single_set (insn);
@@ -2358,7 +2358,7 @@ compute_regs_asm_clobbered (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       FOR_BB_INSNS_REVERSE (bb, insn)
@@ -2951,7 +2951,7 @@ mark_elimination (int from, int to)
   basic_block bb;
   bitmap r;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       r = DF_LR_IN (bb);
       if (bitmap_bit_p (r, from))
@@ -3473,7 +3473,7 @@ update_equiv_regs (void)
      paradoxical subreg. Don't set such reg sequivalent to a mem,
      because lra will not substitute such equiv memory in order to
      prevent access beyond allocated memory for paradoxical memory subreg.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (NONDEBUG_INSN_P (insn))
 	for_each_rtx (&insn, set_paradoxical_subreg, (void *) pdx_subregs);
@@ -3481,7 +3481,7 @@ update_equiv_regs (void)
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
      a register can be set below its use.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       loop_depth = bb_loop_depth (bb);
 
@@ -3772,7 +3772,7 @@ update_equiv_regs (void)
      within the same loop (or in an inner loop), then move the register
      initialization just before the use, so that they are in the same
      basic block.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       loop_depth = bb_loop_depth (bb);
       for (insn = BB_END (bb);
@@ -3905,7 +3905,7 @@ update_equiv_regs (void)
 
   if (!bitmap_empty_p (cleared_regs))
     {
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
 	  bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
@@ -4127,7 +4127,7 @@ build_insn_chain (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (eliminable_regset, i))
       bitmap_set_bit (elim_regset, i);
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       bitmap_iterator bi;
       rtx insn;
@@ -4507,12 +4507,15 @@ find_moveable_pseudos (void)
   int *uid_luid = XNEWVEC (int, max_uid);
   rtx *closest_uses = XNEWVEC (rtx, max_regs);
   /* A set of registers which are live but not modified throughout a block.  */
-  bitmap_head *bb_transp_live = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_transp_live = XNEWVEC (bitmap_head,
+					 last_basic_block_for_fn (cfun));
   /* A set of registers which only exist in a given basic block.  */
-  bitmap_head *bb_local = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_local = XNEWVEC (bitmap_head,
+				   last_basic_block_for_fn (cfun));
   /* A set of registers which are set once, in an instruction that can be
      moved freely downwards, but are otherwise transparent to a block.  */
-  bitmap_head *bb_moveable_reg_sets = XNEWVEC (bitmap_head, last_basic_block);
+  bitmap_head *bb_moveable_reg_sets = XNEWVEC (bitmap_head,
+					       last_basic_block_for_fn (cfun));
   bitmap_head live, used, set, interesting, unusable_as_input;
   bitmap_iterator bi;
   bitmap_initialize (&interesting, 0);
@@ -4529,7 +4532,7 @@ find_moveable_pseudos (void)
   bitmap_initialize (&used, 0);
   bitmap_initialize (&set, 0);
   bitmap_initialize (&unusable_as_input, 0);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
       bitmap transp = bb_transp_live + bb->index;
@@ -4592,7 +4595,7 @@ find_moveable_pseudos (void)
   bitmap_clear (&used);
   bitmap_clear (&set);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap local = bb_local + bb->index;
       rtx insn;
@@ -4821,7 +4824,7 @@ find_moveable_pseudos (void)
 	}
     }
   
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bitmap_clear (bb_local + bb->index);
       bitmap_clear (bb_transp_live + bb->index);
@@ -4918,7 +4921,7 @@ split_live_ranges_for_shrink_wrap (void)
   bitmap_initialize (&reachable, 0);
   queue.create (n_basic_blocks_for_fn (cfun));
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       if (CALL_P (insn) && !SIBLING_CALL_P (insn))
 	{
@@ -5142,7 +5145,7 @@ allocate_initial_values (void)
 		     fixed regs are accepted.  */
 		  SET_REGNO (preg, new_regno);
 		  /* Update global register liveness information.  */
-		  FOR_EACH_BB (bb)
+		  FOR_EACH_BB_FN (bb, cfun)
 		    {
 		      if (REGNO_REG_SET_P (df_get_live_in (bb), regno))
 			SET_REGNO_REG_SET (df_get_live_in (bb), new_regno);
@@ -5187,7 +5190,8 @@ ira (FILE *f)
      pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
      use simplified and faster algorithms in LRA.  */
   lra_simple_p
-    = (ira_use_lra_p && max_reg_num () >= (1 << 26) / last_basic_block);
+    = (ira_use_lra_p
+       && max_reg_num () >= (1 << 26) / last_basic_block_for_fn (cfun));
   if (lra_simple_p)
     {
       /* It permits to skip live range splitting in LRA.  */
@@ -5439,7 +5443,7 @@ do_reload (void)
 	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	bb->loop_father = NULL;
       current_loops = NULL;
       
@@ -5488,7 +5492,7 @@ do_reload (void)
 	  loop_optimizer_finalize ();
 	  free_dominance_info (CDI_DOMINATORS);
 	}
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	bb->loop_father = NULL;
       current_loops = NULL;
       

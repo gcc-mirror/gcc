@@ -986,7 +986,7 @@ emit_moves (void)
   edge e;
   rtx insns, tmp;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (at_bb_start[bb->index] != NULL)
 	{
@@ -1203,7 +1203,7 @@ add_ranges_and_copies (void)
   bitmap live_through;
 
   live_through = ira_allocate_bitmap ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       /* It does not matter what loop_tree_node (of source or
 	 destination block) to use for searching allocnos by their
@@ -1239,15 +1239,17 @@ ira_emit (bool loops_p)
   edge e;
   ira_allocno_t a;
   ira_allocno_iterator ai;
+  size_t sz;
 
   FOR_EACH_ALLOCNO (a, ai)
     ALLOCNO_EMIT_DATA (a)->reg = regno_reg_rtx[ALLOCNO_REGNO (a)];
   if (! loops_p)
     return;
-  at_bb_start = (move_t *) ira_allocate (sizeof (move_t) * last_basic_block);
-  memset (at_bb_start, 0, sizeof (move_t) * last_basic_block);
-  at_bb_end = (move_t *) ira_allocate (sizeof (move_t) * last_basic_block);
-  memset (at_bb_end, 0, sizeof (move_t) * last_basic_block);
+  sz = sizeof (move_t) * last_basic_block_for_fn (cfun);
+  at_bb_start = (move_t *) ira_allocate (sz);
+  memset (at_bb_start, 0, sz);
+  at_bb_end = (move_t *) ira_allocate (sz);
+  memset (at_bb_end, 0, sz);
   local_allocno_bitmap = ira_allocate_bitmap ();
   used_regno_bitmap = ira_allocate_bitmap ();
   renamed_regno_bitmap = ira_allocate_bitmap ();
@@ -1258,7 +1260,7 @@ ira_emit (bool loops_p)
   ira_free_bitmap (renamed_regno_bitmap);
   ira_free_bitmap (local_allocno_bitmap);
   setup_entered_from_non_parent_p ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       at_bb_start[bb->index] = NULL;
       at_bb_end[bb->index] = NULL;
@@ -1273,15 +1275,15 @@ ira_emit (bool loops_p)
   memset (allocno_last_set_check, 0, sizeof (int) * max_reg_num ());
   memset (hard_regno_last_set_check, 0, sizeof (hard_regno_last_set_check));
   curr_tick = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     unify_moves (bb, true);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     unify_moves (bb, false);
   move_vec.create (ira_allocnos_num);
   emit_moves ();
   add_ranges_and_copies ();
   /* Clean up: */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       free_move_list (at_bb_start[bb->index]);
       free_move_list (at_bb_end[bb->index]);
@@ -1299,7 +1301,7 @@ ira_emit (bool loops_p)
      reload assumes initial insn codes defined.  The insn codes can be
      invalidated by CFG infrastructure for example in jump
      redirection.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS_REVERSE (bb, insn)
       if (INSN_P (insn))
 	recog_memoized (insn);

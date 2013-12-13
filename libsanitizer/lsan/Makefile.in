@@ -83,7 +83,7 @@ liblsan_la_DEPENDENCIES =  \
 	$(am__DEPENDENCIES_1)
 am__objects_1 = lsan_common.lo lsan_common_linux.lo
 am__objects_2 = $(am__objects_1) lsan.lo lsan_allocator.lo \
-	lsan_interceptors.lo lsan_thread.lo
+	lsan_interceptors.lo lsan_preinit.lo lsan_thread.lo
 am_liblsan_la_OBJECTS = $(am__objects_2)
 liblsan_la_OBJECTS = $(am_liblsan_la_OBJECTS)
 liblsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -264,6 +264,7 @@ lsan_files = \
 	lsan.cc \
 	lsan_allocator.cc \
 	lsan_interceptors.cc \
+	lsan_preinit.cc \
 	lsan_thread.cc
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
@@ -400,6 +401,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_common_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_interceptors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_preinit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_thread.Plo@am__quote@
 
 .cc.o:

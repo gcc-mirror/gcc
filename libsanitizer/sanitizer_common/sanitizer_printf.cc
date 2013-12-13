@@ -193,17 +193,22 @@ void SetPrintfAndReportCallback(void (*callback)(const char *)) {
   PrintfAndReportCallback = callback;
 }
 
-#if SANITIZER_SUPPORTS_WEAK_HOOKS
 // Can be overriden in frontend.
+#if SANITIZER_SUPPORTS_WEAK_HOOKS
 SANITIZER_INTERFACE_ATTRIBUTE SANITIZER_WEAK_ATTRIBUTE
+void OnPrint(const char *str) {
+  (void)str;
+}
+#elif defined(SANITIZER_GO) && defined(TSAN_EXTERNAL_HOOKS)
 void OnPrint(const char *str);
+#else
+void OnPrint(const char *str) {
+  (void)str;
+}
 #endif
 
 static void CallPrintfAndReportCallback(const char *str) {
-#if SANITIZER_SUPPORTS_WEAK_HOOKS
-  if (&OnPrint != NULL)
-    OnPrint(str);
-#endif
+  OnPrint(str);
   if (PrintfAndReportCallback)
     PrintfAndReportCallback(str);
 }
@@ -285,6 +290,15 @@ int internal_snprintf(char *buffer, uptr length, const char *format, ...) {
   int needed_length = VSNPrintf(buffer, length, format, args);
   va_end(args);
   return needed_length;
+}
+
+void InternalScopedString::append(const char *format, ...) {
+  CHECK_LT(length_, size());
+  va_list args;
+  va_start(args, format);
+  VSNPrintf(data() + length_, size() - length_, format, args);
+  va_end(args);
+  length_ += internal_strlen(data() + length_);
 }
 
 }  // namespace __sanitizer

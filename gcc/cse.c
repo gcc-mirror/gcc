@@ -6531,7 +6531,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 {
   struct cse_basic_block_data ebb_data;
   basic_block bb;
-  int *rc_order = XNEWVEC (int, last_basic_block);
+  int *rc_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
   int i, n_blocks;
 
   df_set_flags (DF_LR_RUN_DCE);
@@ -6560,7 +6560,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   reg_eqv_table = XNEWVEC (struct reg_eqv_elem, nregs);
 
   /* Set up the table of already visited basic blocks.  */
-  cse_visited_basic_blocks = sbitmap_alloc (last_basic_block);
+  cse_visited_basic_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (cse_visited_basic_blocks);
 
   /* Loop over basic blocks in reverse completion order (RPO),
@@ -6573,7 +6573,7 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
 	 processed before.  */
       do
 	{
-	  bb = BASIC_BLOCK (rc_order[i++]);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, rc_order[i++]);
 	}
       while (bitmap_bit_p (cse_visited_basic_blocks, bb->index)
 	     && i < n_blocks);
@@ -7344,7 +7344,7 @@ cse_condition_code_reg (void)
   else
     cc_reg_2 = NULL_RTX;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx last_insn;
       rtx cc_reg;

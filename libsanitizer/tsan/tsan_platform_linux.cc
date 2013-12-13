@@ -17,6 +17,7 @@
 #include "sanitizer_common/sanitizer_common.h"
 #include "sanitizer_common/sanitizer_libc.h"
 #include "sanitizer_common/sanitizer_procmaps.h"
+#include "sanitizer_common/sanitizer_stoptheworld.h"
 #include "tsan_platform.h"
 #include "tsan_rtl.h"
 #include "tsan_flags.h"
@@ -31,6 +32,7 @@
 #include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/resource.h>
@@ -42,6 +44,14 @@
 #define __need_res_state
 #include <resolv.h>
 #include <malloc.h>
+
+#ifdef sa_handler
+# undef sa_handler
+#endif
+
+#ifdef sa_sigaction
+# undef sa_sigaction
+#endif
 
 extern "C" struct mallinfo __libc_mallinfo();
 
@@ -104,8 +114,21 @@ void WriteMemoryProfile(char *buf, uptr buf_size) {
       mi.arena >> 20, mi.hblkhd >> 20, mi.fordblks >> 20, mi.keepcost >> 20);
 }
 
-void FlushShadowMemory() {
+uptr GetRSS() {
+  uptr mem[7] = {};
+  __sanitizer::GetMemoryProfile(FillProfileCallback, mem, 7);
+  return mem[6];
+}
+
+
+void FlushShadowMemoryCallback(
+    const SuspendedThreadsList &suspended_threads_list,
+    void *argument) {
   FlushUnneededShadowMemory(kLinuxShadowBeg, kLinuxShadowEnd - kLinuxShadowBeg);
+}
+
+void FlushShadowMemory() {
+  StopTheWorld(FlushShadowMemoryCallback, 0);
 }
 
 #ifndef TSAN_GO
@@ -323,6 +346,9 @@ bool IsGlobalVar(uptr addr) {
 }
 
 #ifndef TSAN_GO
+// Extract file descriptors passed to glibc internal __res_iclose function.
+// This is required to properly "close" the fds, because we do not see internal
+// closes within glibc. The code is a pure hack.
 int ExtractResolvFDs(void *state, int *fds, int nfd) {
   int cnt = 0;
   __res_state *statp = (__res_state*)state;
@@ -331,6 +357,26 @@ int ExtractResolvFDs(void *state, int *fds, int nfd) {
       fds[cnt++] = statp->_u._ext.nssocks[i];
   }
   return cnt;
+}
+
+// Extract file descriptors passed via UNIX domain sockets.
+// This is requried to properly handle "open" of these fds.
+// see 'man recvmsg' and 'man 3 cmsg'.
+int ExtractRecvmsgFDs(void *msgp, int *fds, int nfd) {
+  int res = 0;
+  msghdr *msg = (msghdr*)msgp;
+  struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
+  for (; cmsg; cmsg = CMSG_NXTHDR(msg, cmsg)) {
+    if (cmsg->cmsg_level != SOL_SOCKET || cmsg->cmsg_type != SCM_RIGHTS)
+      continue;
+    int n = (cmsg->cmsg_len - CMSG_LEN(0)) / sizeof(fds[0]);
+    for (int i = 0; i < n; i++) {
+      fds[res++] = ((int*)CMSG_DATA(cmsg))[i];
+      if (res == nfd)
+        return res;
+    }
+  }
+  return res;
 }
 #endif
 

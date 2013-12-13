@@ -51,7 +51,7 @@ public:
   pass_manager (context *ctxt);
 
   void register_pass (struct register_pass_info *pass_info);
-  void register_one_dump_file (struct opt_pass *pass);
+  void register_one_dump_file (opt_pass *pass);
 
   opt_pass *get_pass_for_id (int id) const;
 
@@ -91,8 +91,8 @@ public:
 
 private:
   void set_pass_for_id (int id, opt_pass *pass);
-  int register_dump_files_1 (struct opt_pass *pass, int properties);
-  void register_dump_files (struct opt_pass *pass, int properties);
+  int register_dump_files_1 (opt_pass *pass, int properties);
+  void register_dump_files (opt_pass *pass, int properties);
 
 private:
   context *m_ctxt;

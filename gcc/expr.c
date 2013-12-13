@@ -4808,13 +4808,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-      /* If the bitfield is volatile, we want to access it in the
+      /* If the field has a mode, we want to access it in the
 	 field's mode, not the computed mode.
 	 If a MEM has VOIDmode (external with incomplete type),
 	 use BLKmode for it instead.  */
       if (MEM_P (to_rtx))
 	{
-	  if (volatilep && flag_strict_volatile_bitfields > 0)
+	  if (mode1 != VOIDmode)
 	    to_rtx = adjust_address (to_rtx, mode1, 0);
 	  else if (GET_MODE (to_rtx) == VOIDmode)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
@@ -4839,8 +4839,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  if (GET_MODE (offset_rtx) != address_mode)
 	    offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
 
-	  /* A constant address in TO_RTX can have VOIDmode, we must not try
-	     to call force_reg for that case.  Avoid that case.  */
+	  /* The check for a constant address in TO_RTX not having VOIDmode
+	     is probably no longer necessary.  */
 	  if (MEM_P (to_rtx)
 	      && GET_MODE (to_rtx) == BLKmode
 	      && GET_MODE (XEXP (to_rtx, 0)) != VOIDmode
@@ -4850,6 +4850,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      && MEM_ALIGN (to_rtx) == GET_MODE_ALIGNMENT (mode1))
 	    {
 	      to_rtx = adjust_address (to_rtx, mode1, bitpos / BITS_PER_UNIT);
+	      bitregion_start = 0;
+	      if (bitregion_end >= (unsigned HOST_WIDE_INT) bitpos)
+		bitregion_end -= bitpos;
 	      bitpos = 0;
 	    }
 
@@ -9457,13 +9460,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	     the same mode we got when the variable was declared.  */
 	  if (code == SSA_NAME
 	      && (g = SSA_NAME_DEF_STMT (ssa_name))
-	      && gimple_code (g) == GIMPLE_CALL)
-	    {
-	      gcc_assert (!gimple_call_internal_p (g));
-	      pmode = promote_function_mode (type, mode, &unsignedp,
-					     gimple_call_fntype (g),
-					     2);
-	    }
+	      && gimple_code (g) == GIMPLE_CALL
+	      && !gimple_call_internal_p (g))
+	    pmode = promote_function_mode (type, mode, &unsignedp,
+					   gimple_call_fntype (g),
+					   2);
 	  else
 	    pmode = promote_decl_mode (exp, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
@@ -9954,13 +9955,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			 VOIDmode,
 			 modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier);
 
-	/* If the bitfield is volatile, we want to access it in the
+	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
 	   If a MEM has VOIDmode (external with incomplete type),
 	   use BLKmode for it instead.  */
 	if (MEM_P (op0))
 	  {
-	    if (volatilep && flag_strict_volatile_bitfields > 0)
+	    if (mode1 != VOIDmode)
 	      op0 = adjust_address (op0, mode1, 0);
 	    else if (GET_MODE (op0) == VOIDmode)
 	      op0 = adjust_address (op0, BLKmode, 0);
@@ -10047,8 +10048,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
 
 	    if (GET_MODE (op0) == BLKmode
-		/* A constant address in OP0 can have VOIDmode, we must
-		   not try to call force_reg in that case.  */
+		/* The check for a constant address in OP0 not having VOIDmode
+		   is probably no longer necessary.  */
 		&& GET_MODE (XEXP (op0, 0)) != VOIDmode
 		&& bitsize != 0
 		&& (bitpos % bitsize) == 0
@@ -10092,17 +10093,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		&& modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_INITIALIZER
 		&& modifier != EXPAND_MEMORY)
-	    /* If the field is volatile, we always want an aligned
-	       access.  Do this in following two situations:
-	       1. the access is not already naturally
-	       aligned, otherwise "normal" (non-bitfield) volatile fields
-	       become non-addressable.
-	       2. the bitsize is narrower than the access size. Need
-	       to extract bitfields from the access.  */
-	    || (volatilep && flag_strict_volatile_bitfields > 0
-		&& (bitpos % GET_MODE_ALIGNMENT (mode) != 0 
-		    || (mode1 != BLKmode
-		        && bitsize < GET_MODE_SIZE (mode1) * BITS_PER_UNIT)))
+	    /* If the bitfield is volatile and the bitsize
+	       is narrower than the access size of the bitfield,
+	       we need to extract bitfields from the access.  */
+	    || (volatilep && TREE_CODE (exp) == COMPONENT_REF
+		&& DECL_BIT_FIELD_TYPE (TREE_OPERAND (exp, 1))
+		&& mode1 != BLKmode
+		&& bitsize < GET_MODE_SIZE (mode1) * BITS_PER_UNIT)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
@@ -10139,6 +10136,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		if (target == 0)
 		  target = assign_temp (type, 1, 1);
 
+		/* ??? Unlike the similar test a few lines below, this one is
+		   very likely obsolete.  */
 		if (bitsize == 0)
 		  return target;
 
@@ -10158,6 +10157,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 		return target;
 	      }
+
+	    /* If we have nothing to extract, the result will be 0 for targets
+	       with SHIFT_COUNT_TRUNCATED == 0 and garbage otherwise.  Always
+	       return 0 for the sake of consistency, as reading a zero-sized
+	       bitfield is valid in Ada and the value is fully specified.  */
+	    if (bitsize == 0)
+	      return const0_rtx;
 
 	    op0 = validize_mem (op0);
 

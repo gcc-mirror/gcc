@@ -7,16 +7,23 @@
 
 program bsp
   implicit none   
-
+  intrinsic :: isign, iabs
   abstract interface
     subroutine up()
     end subroutine up
+    ! As intrinsics but not elemental
+    pure integer function isign_interf(a, b)
+       integer, intent(in) :: a, b
+    end function isign_interf
+    pure integer function iabs_interf(x)
+       integer, intent(in) :: x
+    end function iabs_interf
   end interface
 
   procedure( up ) , pointer :: pptr
-  procedure(isign), pointer :: q
+  procedure(isign_interf), pointer :: q
 
-  procedure(iabs),pointer :: p1
+  procedure(iabs_interf),pointer :: p1
   procedure(f), pointer :: p2
 
   pointer :: p3
@@ -48,13 +55,13 @@ program bsp
 
   contains
 
-    function add( a, b )
+    pure function add( a, b )
       integer               :: add
       integer, intent( in ) :: a, b
       add = a + b
     end function add
 
-    integer function f(x)
+    pure integer function f(x)
       integer,intent(in) :: x
       f = 317 + x
     end function
