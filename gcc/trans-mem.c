@@ -677,7 +677,8 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      }
 	    else if (direct_call_p)
 	      {
-		if (flags_from_decl_or_type (fn) & ECF_TM_BUILTIN)
+		if (IS_TYPE_OR_DECL_P (fn)
+		    && flags_from_decl_or_type (fn) & ECF_TM_BUILTIN)
 		  is_safe = true;
 		else if (replacement)
 		  {
