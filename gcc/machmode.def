@@ -229,9 +229,6 @@ UACCUM_MODE (USA, 4, 16, 16); /* 16.16 */
 UACCUM_MODE (UDA, 8, 32, 32); /* 32.32 */
 UACCUM_MODE (UTA, 16, 64, 64); /* 64.64 */
 
-/* Should be overridden by EXTRA_MODES_FILE if wrong.  */
-#define MAX_BITS_PER_UNIT 8
-
 /* Allow the target to specify additional modes of various kinds.  */
 #if HAVE_EXTRA_MODES
 # include EXTRA_MODES_FILE
