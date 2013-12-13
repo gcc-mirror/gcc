@@ -1,3 +1,9 @@
+2013-12-13  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* Makefile.am (GENERAL_FLAGS): Removed undefining of Cilk keywords.
+	* Makefile.in: Reconfigure.
+	* runtime/symbol_test.c: Added a #define to clear out _Cilk_for.
+
 2013-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (GCC_LIBSTDCXX_RAW_CXX_FLAGS): Remove.

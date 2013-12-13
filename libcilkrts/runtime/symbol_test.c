@@ -41,6 +41,7 @@
  * will cause a linker error.
  */
 
+#define _Cilk_for for
 extern void* __cilkrts_global_state;
 void *volatile p;
 
