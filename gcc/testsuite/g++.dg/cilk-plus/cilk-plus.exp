@@ -25,10 +25,11 @@ if { ![check_effective_target_cilkplus] } {
 verbose "$tool $libdir" 1
 set library_var "[get_multilibs]"
 # Pointing the ld_library_path to the Cilk Runtime library binaries.
-set ld_library_path "$[get_multilibs]/libcilkrts/.libs"
+append ld_library_path ":${library_var}/libcilkrts/.libs"
+set_ld_library_path_env_vars
 
-set ALWAYS_CFLAGS ""
-lappend ALWAYS_CFLAGS "-L${library_var}/libcilkrts/.libs"
+global TEST_EXTRA_LIBS
+set TEST_EXTRA_LIBS "-L${library_var}/libcilkrts/.libs"
 
 dg-init
 # Run the tests that are shared with C.
@@ -72,22 +73,22 @@ dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O3 -ft
 dg-finish
 
 dg-init
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O1 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O2 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O3 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -O2 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -O3 -fcilkplus $ALWAYS_CFLAGS" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O2 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -O3 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -O2 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/CK/*.cc]] " -g -O3 -fcilkplus" " "
 dg-finish
 
 dg-init
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O1 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -fcilkplus $ALWAYS_CFLAGS" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O2 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g -fcilkplus" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g -O2 -fcilkplus $ALWAYS_CFLAGS" " "
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g -O3 -fcilkplus $ALWAYS_CFLAGS" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g -O2 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -g -O3 -fcilkplus" " "
 dg-finish
 unset TEST_EXTRA_LIBS

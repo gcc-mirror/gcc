@@ -1,3 +1,8 @@
+2013-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cilk-plus/cilk-plus.exp: Properly set ld_library_path.
+	Use TEST_EXTRA_LIBS instead of ALWAYS_CFLAGS.
+
 2013-12-03  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/45685
