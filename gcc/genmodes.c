@@ -711,10 +711,27 @@ make_vector_mode (enum mode_class bclass,
 #define ADJUST_IBIT(M, X)  _ADD_ADJUST (ibit, M, X, ACCUM, UACCUM)
 #define ADJUST_FBIT(M, X)  _ADD_ADJUST (fbit, M, X, FRACT, UACCUM)
 
+static int bits_per_unit;
+static int max_bitsize_mode_any_int;
+
 static void
 create_modes (void)
 {
 #include "machmode.def"
+
+  /* So put the default value unless the target needs a non standard
+     value. */
+#ifdef BITS_PER_UNIT
+  bits_per_unit = BITS_PER_UNIT;
+#else
+  bits_per_unit = 8;
+#endif
+
+#ifdef MAX_BITSIZE_MODE_ANY_INT
+  max_bitsize_mode_any_int = MAX_BITSIZE_MODE_ANY_INT;
+#else
+  max_bitsize_mode_any_int = 0;
+#endif
 }
 
 /* Processing.  */
@@ -860,16 +877,24 @@ emit_max_int (void)
   int j;
 
   puts ("");
-  for (max = 1, i = modes[MODE_INT]; i; i = i->next)
-    if (max < i->bytesize)
-	max = i->bytesize;
-  mmax = max;
-  for (max = 1, i = modes[MODE_PARTIAL_INT]; i; i = i->next)
-    if (max < i->bytesize)
-	max = i->bytesize;
-  if (max > mmax)
-    mmax = max;
-  printf ("#define MAX_BITSIZE_MODE_ANY_INT %d*BITS_PER_UNIT\n", mmax);
+
+  printf ("#define BITS_PER_UNIT (%d)\n", bits_per_unit); 
+ 
+  if (max_bitsize_mode_any_int == 0)
+    {
+      for (max = 1, i = modes[MODE_INT]; i; i = i->next)
+	if (max < i->bytesize)
+	  max = i->bytesize;
+      mmax = max;
+      for (max = 1, i = modes[MODE_PARTIAL_INT]; i; i = i->next)
+	if (max < i->bytesize)
+	  max = i->bytesize;
+      if (max > mmax)
+	mmax = max;
+      printf ("#define MAX_BITSIZE_MODE_ANY_INT %d*BITS_PER_UNIT\n", mmax);
+    }
+  else
+    printf ("#define MAX_BITSIZE_MODE_ANY_INT %d\n", max_bitsize_mode_any_int);
 
   mmax = 0;
   for (j = 0; j < MAX_MODE_CLASS; j++)

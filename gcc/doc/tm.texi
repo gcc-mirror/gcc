@@ -879,11 +879,6 @@ You need not define this macro if the ordering is the same as for
 multi-word integers.
 @end defmac
 
-@defmac BITS_PER_UNIT
-Define this macro to be the number of bits in an addressable storage
-unit (byte).  If you do not define this macro the default is 8.
-@end defmac
-
 @defmac BITS_PER_WORD
 Number of bits in a word.  If you do not define this macro, the default
 is @code{BITS_PER_UNIT * UNITS_PER_WORD}.
