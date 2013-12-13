@@ -1,3 +1,10 @@
+2013-12-13  Kai Tietz  <kitetz@redhat.com>
+
+	PR c++/57897
+	* config/i386/i386.c (ix86_option_override_internal): Set for
+	x64 target flag_unwind_tables, if flag_asynchronous_unwind_tables
+	was explicit set.
+
 2013-12-12  Jeff Law  <law@redhat.com>
 
 	* i386.md (simple LEA peephole2): Add missing mode to zero_extend
