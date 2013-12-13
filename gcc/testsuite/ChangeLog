@@ -1,3 +1,11 @@
+2013-12-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/58296
+	PR tree-optimization/41488
+	* gcc.dg/tree-ssa/scev-7.c: New test.
+	* gcc.dg/pr41488.c: New test.
+	* g++.dg/pr59445.C: New test.
+
 2013-12-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/59440

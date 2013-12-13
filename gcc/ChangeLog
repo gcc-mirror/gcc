@@ -1,3 +1,15 @@
+2013-12-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/58296
+	PR tree-optimization/41488
+	* tree-scalar-evolution.c: Include necessary header files.
+	(simplify_peeled_chrec): New function.
+	(analyze_evolution_in_loop): New static variable.
+	Call simplify_peeled_chrec.
+	* tree-ssa-loop-ivopts.c (mark_bivs): Don't mark peeled IV as biv.
+	(add_old_iv_candidates): Don't add candidate for peeled IV.
+	* tree-affine.h (aff_combination_zero_p): New function.
+
 2013-12-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (is_wakeup_func): New function.  Returns
