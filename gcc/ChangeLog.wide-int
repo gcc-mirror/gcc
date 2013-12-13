@@ -267,9 +267,6 @@
 	(require_template_declaration): Handle constant template arguments
 	and nested templates.
 	* gengtype-state.c: Don't include "double-int.h".
-	* genmodes.c
-	(emit_max_int): Define MAX_BITSIZE_MODE_ANY_INT and
-	MAX_BITSIZE_MODE_ANY_MODE.
 	* genpreds.c
 	(write_one_predicate_function): Update comment.
 	(write_tm_constrs_h): Add check for hval and lval use in
