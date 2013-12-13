@@ -1,3 +1,7 @@
+2013-12-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (slm_cost): Fix imul cost for HI.
+
 2013-12-13  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/58296
