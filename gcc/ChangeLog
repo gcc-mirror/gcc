@@ -1,3 +1,9 @@
+2013-12-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/45685
+	* tree-ssa-phiopt.c (neg_replacement): New function.
+	(tree_ssa_phiopt_worker): Call it.
+
 2013-12-13  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (slm_cost): Fix imul cost for HI.
