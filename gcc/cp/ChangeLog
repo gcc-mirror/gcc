@@ -1,3 +1,8 @@
+2013-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58954
+	* pt.c (resolve_overloaded_unification): Discard access checks.
+
 2013-12-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59044
