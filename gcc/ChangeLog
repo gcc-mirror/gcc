@@ -1,3 +1,15 @@
+2013-12-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (is_wakeup_func): New function.  Returns
+	true if the current function has the wakeup attribute.
+	(msp430_start_function): Note if the function has the wakeup
+	attribute.
+	(msp430_attribute_table): Add wakeup attribute.
+	(msp430_expand_epilogue): Add support for wakeup functions.
+	* config/msp430/msp430.md (disable_interrupts): Emit a NOP after
+	the DINT instruction.
+	* doc/extend.texi: Document the wakeup attribute.
+
 2013-12-13  Kai Tietz  <kitetz@redhat.com>
 
 	PR c++/57897

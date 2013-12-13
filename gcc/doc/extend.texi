@@ -2919,6 +2919,13 @@ upon exit.  Reentrant functions cannot also have the @code{naked}
 or @code{critical} attributes.  They can have the @code{interrupt}
 attribute.
 
+@item wakeup
+@cindex @code{wakeup} attribute
+This attribute only applies to interrupt functions.  It is silently
+ignored if applied to a non-interrupt function.  A wakeup interrupt
+function will rouse the processor from any low-power state that it
+might be in when the function exits.
+
 @end table
 
 On Epiphany targets one or more optional parameters can be added like this:
