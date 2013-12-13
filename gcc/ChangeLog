@@ -1,3 +1,22 @@
+2013-12-13  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (movqi): replace general_operand with
+	msp_general_operand and nonimmediate_operand with
+	msp_nonimmediate_operand to allow volatile operands.
+	(movhi): Likewise.
+	(movpsi): Likewise.
+	(addpsi3): Likewise.
+	(addhi3): Likewise.
+	(addhi3_cy): Likewise.
+	(addchi4_cy): Likewise.
+	(xor<mode>3): Likewise.
+	(ome_cmpl<mode>2): Likewise.
+	(extendqihi2): Likewise.
+	(zero_extendqihi2): Likewise.
+	(zero_extendhipsi2): Likewise.
+	(truncpsihi2): Likewise.
+	(srai_1): Likewise.
+
 2013-12-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.h (struct ira_reg_equiv): Rename to ira_reg_equiv_s.
