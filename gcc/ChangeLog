@@ -1,3 +1,14 @@
+2013-12-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.h (struct ira_reg_equiv): Rename to ira_reg_equiv_s.
+	* ira.c: Ditto.
+	* lra-int.h (lra_init_equiv): New prototype.
+	* lra-constraints.c (lra_init_equiv, update_equiv): New functions.
+	(loc_equivalence_callback): Use the 3rd arg.
+	(lra_constraints): Update equivalences.  Pass curr_insn to
+	simplify_replace_fn_rtx.
+	* lra.c (lra): Call lra_init_equiv.
+
 2013-12-13  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* genmodes.c (emit_max_int): Fixed missing parens.

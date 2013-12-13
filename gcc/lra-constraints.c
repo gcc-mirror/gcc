@@ -317,6 +317,44 @@ in_mem_p (int regno)
   return get_reg_class (regno) == NO_REGS;
 }
 
+/* Initiate equivalences for LRA.  As we keep original equivalences
+   before any elimination, we need to make copies otherwise any change
+   in insns might change the equivalences.  */
+void
+lra_init_equiv (void)
+{
+  ira_expand_reg_equiv ();
+  for (int i = FIRST_PSEUDO_REGISTER; i < max_reg_num (); i++)
+    {
+      rtx res;
+
+      if ((res = ira_reg_equiv[i].memory) != NULL_RTX)
+	ira_reg_equiv[i].memory = copy_rtx (res);
+      if ((res = ira_reg_equiv[i].invariant) != NULL_RTX)
+	ira_reg_equiv[i].invariant = copy_rtx (res);
+    }
+}
+
+static rtx loc_equivalence_callback (rtx, const_rtx, void *);
+
+/* Update equivalence for REGNO.  We need to this as the equivalence
+   might contain other pseudos which are changed by their
+   equivalences.  */
+static void
+update_equiv (int regno)
+{
+  rtx x;
+  
+  if ((x = ira_reg_equiv[regno].memory) != NULL_RTX)
+    ira_reg_equiv[regno].memory
+      = simplify_replace_fn_rtx (x, NULL_RTX, loc_equivalence_callback,
+				 NULL_RTX);
+  if ((x = ira_reg_equiv[regno].invariant) != NULL_RTX)
+    ira_reg_equiv[regno].invariant
+      = simplify_replace_fn_rtx (x, NULL_RTX, loc_equivalence_callback,
+				 NULL_RTX);
+}
+
 /* If we have decided to substitute X with another value, return that
    value, otherwise return X.  */
 static rtx
@@ -3694,14 +3732,16 @@ loc_equivalence_change_p (rtx *loc)
 }
 
 /* Similar to loc_equivalence_change_p, but for use as
-   simplify_replace_fn_rtx callback.  */
+   simplify_replace_fn_rtx callback.  DATA is insn for which the
+   elimination is done.  If it null we don't do the elimination.  */
 static rtx
-loc_equivalence_callback (rtx loc, const_rtx, void *)
+loc_equivalence_callback (rtx loc, const_rtx, void *data)
 {
   if (!REG_P (loc))
     return NULL_RTX;
 
-  rtx subst = get_equiv_with_elimination (loc, curr_insn);
+  rtx subst = (data == NULL
+	       ? get_equiv (loc) : get_equiv_with_elimination (loc, (rtx) data));
   if (subst != loc)
     return subst;
 
@@ -3946,6 +3986,8 @@ lra_constraints (bool first_p)
 	      bitmap_ior_into (&equiv_insn_bitmap, &lra_reg_info[i].insn_bitmap);
 	  }
       }
+  for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
+    update_equiv (i);
   /* We should add all insns containing pseudos which should be
      substituted by their equivalences.  */
   EXECUTE_IF_SET_IN_BITMAP (&equiv_insn_bitmap, 0, uid, bi)
@@ -3984,7 +4026,7 @@ lra_constraints (bool first_p)
 	      rtx old = *curr_id->operand_loc[0];
 	      *curr_id->operand_loc[0]
 		= simplify_replace_fn_rtx (old, NULL_RTX,
-					   loc_equivalence_callback, NULL);
+					   loc_equivalence_callback, curr_insn);
 	      if (old != *curr_id->operand_loc[0])
 		{
 		  lra_update_insn_regno_info (curr_insn);

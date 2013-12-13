@@ -319,6 +319,7 @@ extern int lra_constraint_new_insn_uid_start;
 
 /* lra-constraints.c: */
 
+extern void lra_init_equiv (void);
 extern int lra_constraint_offset (int, enum machine_mode);
 
 extern int lra_constraint_iter;
