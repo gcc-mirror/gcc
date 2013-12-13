@@ -1,3 +1,24 @@
+2013-12-13  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* config/arc/arc.h (BITS_PER_UNIT): Removed.
+	* config/bfin/bfin.h (BITS_PER_UNIT): Removed.
+	* config/lm32/lm32.h (BITS_PER_UNIT): Removed.
+	* config/m32c/m32c.h (BITS_PER_UNIT): Removed.
+	* config/microblaze/microblaze.h (BITS_PER_UNIT): Removed.
+	* config/picochip/picochip.h (BITS_PER_UNIT): Removed.
+	* config/spu/spu.h (BITS_PER_UNIT): Removed.
+	* defaults.h (BITS_PER_UNIT): Removed.
+	* config/i386/i386-modes.def (MAX_BITSIZE_MODE_ANY_INT): New.
+	* doc/rtl (BITS_PER_UNIT): Moved from tm.texi.
+	(MAX_BITSIZE_MODE_ANY_INT): Updated.
+	* doc/tm.texi (BITS_PER_UNIT): Removed.
+	* doc/tm.texi.in (BITS_PER_UNIT): Removed.
+	* genmodes.c (bits_per_unit, max_bitsize_mode_any_int): New.
+	(create_modes): Added code to set bits_per_unit and
+	max_bitsize_mode_any_int.
+	(emit_max_int): Changed code generation.
+	* mkconfig.sh: Added insn-modes.h.
+
 2013-12-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/45685

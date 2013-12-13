@@ -97,6 +97,9 @@ case $output in
 #if defined IN_GCC && !defined GENERATOR_FILE && !defined USED_FOR_TARGET
 # include "insn-flags.h"
 #endif
+#if defined IN_GCC && !defined GENERATOR_FILE
+# include "insn-modes.h"
+#endif
 EOF
     ;;
 esac

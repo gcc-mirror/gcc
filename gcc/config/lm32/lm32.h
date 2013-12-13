@@ -73,7 +73,6 @@
 #define BYTES_BIG_ENDIAN 1
 #define WORDS_BIG_ENDIAN 1
 
-#define BITS_PER_UNIT 8
 #define BITS_PER_WORD 32
 #define UNITS_PER_WORD 4
 

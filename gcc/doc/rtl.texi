@@ -1462,14 +1462,25 @@ Returns the number of units contained in a mode, i.e.,
 Returns the narrowest mode in mode class @var{c}.
 @end table
 
-The following 4 variables are defined on every target.   They can be
+The following 3 variables are defined on every target.   They can be
 used to allocate buffers that are guaranteed to be large enough to
-hold any value that can be represented on the target.   
+hold any value that can be represented on the target.   The first two
+can be overridden by defining them in the target's mode.def file,
+however, the value must be a constant that can determined very early
+in the compilation process.   The third symbol cannot be overridden.
 
 @table @code
+@findex BITS_PER_UNIT
+@item BITS_PER_UNIT
+The number of bits in an addressable storage unit (byte).  If you do
+not define this, the default is 8.
+
 @findex MAX_BITSIZE_MODE_ANY_INT
 @item MAX_BITSIZE_MODE_ANY_INT
-The maximum of MAX_BITSIZE_MODE_INT and MAX_BITSIZE_MODE_PARTIAL_INT.
+The maximum bitsize of any mode that is used in integer math.  This
+should be overridden by the target if it uses large integers as
+containers for larger vectors but otherwise never uses the contents to
+compute integer values.
 
 @findex MAX_BITSIZE_MODE_ANY_MODE
 @item MAX_BITSIZE_MODE_ANY_MODE

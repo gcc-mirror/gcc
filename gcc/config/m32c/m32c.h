@@ -140,7 +140,6 @@ machine_function;
    matches "int".  Pointers are 16 bits for R8C/M16C (when TARGET_A16
    is true) and 24 bits for M32CM/M32C (when TARGET_A24 is true), but
    24-bit pointers are stored in 32-bit words.  */
-#define BITS_PER_UNIT 8
 #define UNITS_PER_WORD 2
 #define POINTER_SIZE (TARGET_A16 ? 16 : 32)
 #define POINTERS_EXTEND_UNSIGNED 1
