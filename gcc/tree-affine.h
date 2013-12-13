@@ -80,3 +80,16 @@ bool aff_comb_cannot_overlap_p (aff_tree *, double_int, double_int);
 
 /* Debugging functions.  */
 void debug_aff (aff_tree *);
+
+/* Return true if AFF is actually ZERO.  */
+static inline bool
+aff_combination_zero_p (aff_tree *aff)
+{
+  if (!aff)
+    return true;
+
+  if (aff->n == 0 && aff->offset.is_zero ())
+    return true;
+
+  return false;
+}

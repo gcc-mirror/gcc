@@ -1074,7 +1074,7 @@ find_bivs (struct ivopts_data *data)
 static void
 mark_bivs (struct ivopts_data *data)
 {
-  gimple phi;
+  gimple phi, def;
   tree var;
   struct iv *iv, *incr_iv;
   struct loop *loop = data->current_loop;
@@ -1090,6 +1090,13 @@ mark_bivs (struct ivopts_data *data)
 	continue;
 
       var = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));
+      def = SSA_NAME_DEF_STMT (var);
+      /* Don't mark iv peeled from other one as biv.  */
+      if (def
+	  && gimple_code (def) == GIMPLE_PHI
+	  && gimple_bb (def) == loop->header)
+	continue;
+
       incr_iv = get_iv (data, var);
       if (!incr_iv)
 	continue;
@@ -2526,11 +2533,19 @@ add_old_iv_candidates (struct ivopts_data *data, struct iv *iv)
       /* Additionally record the possibility of leaving the original iv
 	 untouched.  */
       def = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (data->current_loop));
-      cand = add_candidate_1 (data,
-			      iv->base, iv->step, true, IP_ORIGINAL, NULL,
-			      SSA_NAME_DEF_STMT (def));
-      cand->var_before = iv->ssa_name;
-      cand->var_after = def;
+      /* Don't add candidate if it's from another PHI node because
+	 it's an affine iv appearing in the form of PEELED_CHREC.  */
+      phi = SSA_NAME_DEF_STMT (def);
+      if (gimple_code (phi) != GIMPLE_PHI)
+	{
+	  cand = add_candidate_1 (data,
+				  iv->base, iv->step, true, IP_ORIGINAL, NULL,
+				  SSA_NAME_DEF_STMT (def));
+	  cand->var_before = iv->ssa_name;
+	  cand->var_after = def;
+	}
+      else
+	gcc_assert (gimple_bb (phi) == data->current_loop->header);
     }
 }
 
