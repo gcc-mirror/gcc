@@ -175,7 +175,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		     the VAR range, give up on looking at the PHI
 		     results.  This can happen if VR_UNDEFINED is
 		     involved.  */
-		  if (wi::gt_p (minv, maxv))
+		  if (wi::gt_p (minv, maxv, sgn))
 		    {
 		      rtype = get_range_info (var, &minv, &maxv);
 		      break;

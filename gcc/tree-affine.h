@@ -91,7 +91,7 @@ aff_combination_zero_p (aff_tree *aff)
   if (!aff)
     return true;
 
-  if (aff->n == 0 && aff->offset.is_zero ())
+  if (aff->n == 0 && aff->offset == 0)
     return true;
 
   return false;

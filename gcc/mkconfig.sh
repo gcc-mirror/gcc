@@ -100,6 +100,9 @@ case $output in
 #if defined IN_GCC && !defined GENERATOR_FILE
 # include "insn-modes.h"
 #endif
+#if defined IN_GCC && defined GENERATOR_FILE
+# define BITS_PER_UNIT 8
+#endif
 EOF
     ;;
 esac

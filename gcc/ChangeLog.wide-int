@@ -524,6 +524,7 @@
 	(aff_combination_constant_multiple_p): Likewise.
 	(get_inner_reference_aff): Likewise.
 	(aff_comb_cannot_overlap_p): Likewise.
+	(aff_combination_zero_p): Use wide-int interfaces.
 	* tree.c: Include tree.h.
 	(init_ttree): Use make_int_cst.
 	(tree_code_size): Removed code for INTEGER_CST case.
@@ -768,6 +769,8 @@
 	(scev_probably_wraps_p): Likewise.
 	* tree-ssa-math-opts.c
 	(gimple_expand_builtin_pow): Update calls to real_to_integer.
+	* tree-scalar-evolution.c:
+	(simplify_peeled_chrec): Use wide-int interfaces.
 	* tree-ssanames.c
 	(set_range_info): Use wide_int_refs rather than double_ints.
 	Adjust for trailing_wide_ints <3> representation.
@@ -866,6 +869,7 @@
 	(output_constructor_bitfield): Likewise.
 	* var-tracking.c
 	(loc_cmp): Handle CONST_WIDE_INT.
+	* mkconfig.sh: Define BITS_PER_UNIT for GENERATOR_FILEs.
 	* wide-int.cc: New.
 	* wide-int.h: New.
 	* wide-int-print.cc: New.
