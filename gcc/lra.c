@@ -2321,6 +2321,7 @@ lra (FILE *f)
        may be a part of the offset computation for register
        elimination.  */
     assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
+  lra_init_equiv ();
   for (;;)
     {
       for (;;)

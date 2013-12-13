@@ -154,7 +154,7 @@ extern struct target_ira *this_target_ira;
   (this_target_ira->x_ira_no_alloc_regs)
 
 /* Major structure describing equivalence info for a pseudo.  */
-struct ira_reg_equiv
+struct ira_reg_equiv_s
 {
   /* True if we can use this equivalence.  */
   bool defined_p;
@@ -173,7 +173,7 @@ struct ira_reg_equiv
 extern int ira_reg_equiv_len;
 
 /* Info about equiv. info for each register.  */
-extern struct ira_reg_equiv *ira_reg_equiv;
+extern struct ira_reg_equiv_s *ira_reg_equiv;
 
 extern void ira_init_once (void);
 extern void ira_init (void);
