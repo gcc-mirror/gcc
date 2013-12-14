@@ -1,6 +1,11 @@
 2013-12-14   Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58477
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58477
 	* cgraphclones.c (cgraph_clone_edge): Do not resolve speculative edges.
 
 2013-12-14   H.J. Lu  <hongjiu.lu@intel.com>
