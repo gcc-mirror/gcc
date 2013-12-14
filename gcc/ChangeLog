@@ -1,3 +1,7 @@
+2013-12-14  Tom de Vries  <tom@codesourcery.com>
+
+	* calls.c (expand_call): Fix REG_PARM_STACK_SPACE comparison.
+
 2013-12-13  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-expand.md (one_cmplqi2): Make constant signed.

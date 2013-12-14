@@ -2595,7 +2595,7 @@ expand_call (tree exp, rtx target, int ignore)
       /* If outgoing reg parm stack space changes, we can not do sibcall.  */
       || (OUTGOING_REG_PARM_STACK_SPACE (funtype)
 	  != OUTGOING_REG_PARM_STACK_SPACE (TREE_TYPE (current_function_decl)))
-      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (fndecl))
+      || (reg_parm_stack_space != REG_PARM_STACK_SPACE (current_function_decl))
 #endif
       /* Check whether the target is able to optimize the call
 	 into a sibcall.  */
