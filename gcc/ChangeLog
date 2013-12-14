@@ -1,5 +1,7 @@
 2013-12-13  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/rl78-expand.md (one_cmplqi2): Make constant signed.
+
 	* config/msp430/msp430.md (movqi): replace general_operand with
 	msp_general_operand and nonimmediate_operand with
 	msp_nonimmediate_operand to allow volatile operands.
