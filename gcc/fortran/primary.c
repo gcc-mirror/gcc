@@ -2039,9 +2039,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  if (m != MATCH_YES)
 	    return m;
 	}
-      else if (component->ts.type == BT_CLASS
-	       && CLASS_DATA (component)->as != NULL
-	       && !component->attr.proc_pointer)
+      else if (component->ts.type == BT_CLASS && component->attr.class_ok
+	       && CLASS_DATA (component)->as && !component->attr.proc_pointer)
 	{
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;

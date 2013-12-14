@@ -1,5 +1,10 @@
 2013-12-14  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/59502
+	* primary.c (gfc_match_varspec): Check for 'class_ok'.
+
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/59450
 	* module.c (mio_expr): Handle type-bound function expressions.
 

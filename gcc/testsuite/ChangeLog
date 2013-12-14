@@ -1,3 +1,8 @@
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59502
+	* gfortran.dg/class_57.f90: New.
+
 2013-12-14   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59492
