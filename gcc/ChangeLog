@@ -1,3 +1,9 @@
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59503
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Call
+	expand_binop with correct optab depending on code.
+
 2013-12-14  Tom de Vries  <tom@codesourcery.com>
 
 	* calls.c (expand_call): Fix REG_PARM_STACK_SPACE comparison.
