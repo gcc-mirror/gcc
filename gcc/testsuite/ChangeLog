@@ -1,3 +1,7 @@
+2013-12-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cilk-plus/cilk-plus.exp: Fix last change.
+
 2013-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (add_stores): Fix oversight in latest commit.
