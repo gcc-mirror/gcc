@@ -1,3 +1,8 @@
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59450
+	* module.c (mio_expr): Handle type-bound function expressions.
+
 2013-12-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/59440
