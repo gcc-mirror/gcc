@@ -1,5 +1,10 @@
 2013-12-14  Marek Polacek  <polacek@redhat.com>
 
+	* c-c++-common/ubsan/overflow-1.c: New test.
+	* c-c++-common/ubsan/overflow-2.c: New test.
+
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/59503
 	* c-c++-common/ubsan/pr59503.c: New test.
 
