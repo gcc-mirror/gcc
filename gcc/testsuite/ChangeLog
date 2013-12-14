@@ -1,3 +1,8 @@
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59450
+	* gfortran.dg/typebound_proc_31.f90: New.
+
 2013-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cilk-plus/cilk-plus.exp: Properly set ld_library_path.
