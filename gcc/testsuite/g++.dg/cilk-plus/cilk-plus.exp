@@ -22,8 +22,7 @@ if { ![check_effective_target_cilkplus] } {
     return;
 }
 
-verbose "$tool $libdir" 1
-set library_var "[get_multilibs]"
+set library_var [get_multilibs]
 # Pointing the ld_library_path to the Cilk Runtime library binaries.
 append ld_library_path ":${library_var}/libcilkrts/.libs"
 set_ld_library_path_env_vars
@@ -37,14 +36,6 @@ g++-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] 
 # Run the C++ only tests.
 g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] ""
 dg-finish
-
-set library_var [get_multilibs]
-# Pointing the ld_library_path to the Cilk Runtime library binaries. 
-append ld_library_path ":${library_var}/libcilkrts/.libs"
-set_ld_library_path_env_vars
-
-global TEST_EXTRA_LIBS
-set TEST_EXTRA_LIBS "-L${library_var}/libcilkrts/.libs"
 
 dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
