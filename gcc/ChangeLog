@@ -1,3 +1,9 @@
+2013-12-14   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59492
+	* config/i386/i386.c (ix86_function_specific_restore): Don't
+	change -fPIC.
+
 2013-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* var-tracking.c (add_stores): Fix oversight in latest commit.
