@@ -5938,6 +5938,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
       && REG_EXPR (loc)
       && TREE_CODE (REG_EXPR (loc)) == PARM_DECL
       && DECL_MODE (REG_EXPR (loc)) != BLKmode
+      && TREE_CODE (TREE_TYPE (REG_EXPR (loc))) != UNION_TYPE
       && ((MEM_P (DECL_INCOMING_RTL (REG_EXPR (loc)))
 	   && XEXP (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) != arg_pointer_rtx)
           || (GET_CODE (DECL_INCOMING_RTL (REG_EXPR (loc))) == PARALLEL
