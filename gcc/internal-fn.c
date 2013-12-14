@@ -214,14 +214,14 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
 
       /* Compute the operation.  On RTL level, the addition is always
 	 unsigned.  */
-      res = expand_binop (mode, add_optab, op0, op1,
-			  NULL_RTX, false, OPTAB_LIB_WIDEN);
+      res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
+			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
       /* If the op1 is negative, we have to use a different check.  */
       emit_cmp_and_jump_insns (op1, const0_rtx, LT, NULL_RTX, mode,
 			       false, sub_check, PROB_EVEN);
 
-      /* Compare the result of the addition with one of the operands.  */
+      /* Compare the result of the operation with one of the operands.  */
       emit_cmp_and_jump_insns (res, op0, code == PLUS_EXPR ? GE : LE,
 			       NULL_RTX, mode, false, done_label,
 			       PROB_VERY_LIKELY);
