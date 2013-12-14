@@ -1,3 +1,8 @@
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58477
+	* g++.dg/ipa/devirt-19.C: New testcase.
+
 2013-12-14  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/overflow-negate-1.c: Add more testing.  Don't
