@@ -1,5 +1,12 @@
 2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/vect/vect-nop-move.c (foo32x2_be): Call
+	__builtin_ia32_emms for 32bit x86 targets.
+	(foo32x2_le): Ditto.
+	(main): Reorder function calls.
+
+2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr57756.c (dg-options): Add -mno-sse3.
 
 2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
