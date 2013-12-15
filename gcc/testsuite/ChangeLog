@@ -1,5 +1,6 @@
 2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR testsuite/58630
 	* gcc.target/i386/pr43662.c (dg-options):
 	Add -maccumulate-outgoing-args.
 	* gcc.target/i386/pr43869.c (dg-options): Ditto.
