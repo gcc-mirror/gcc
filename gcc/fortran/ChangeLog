@@ -1,3 +1,8 @@
+2013-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59493
+	* class.c (gfc_find_intrinsic_vtab): Handle BT_CLASS.
+
 2013-12-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59502

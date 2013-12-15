@@ -2424,7 +2424,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
     return NULL;
 
   /* Sometimes the typespec is passed from a single call.  */
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
     return gfc_find_derived_vtab (ts->u.derived);
 
   /* Find the top-level namespace.  */
