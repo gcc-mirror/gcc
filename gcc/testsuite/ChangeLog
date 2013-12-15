@@ -1,3 +1,8 @@
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59265
+	g++.dg/torture/pr59265.C: New testcase.
+
 2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-nop-move.c (foo32x2_be): Call

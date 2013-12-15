@@ -2024,8 +2024,17 @@ ipa_analyze_call_uses (struct cgraph_node *node,
 		       struct param_analysis_info *parms_ainfo, gimple call)
 {
   tree target = gimple_call_fn (call);
+  struct cgraph_edge *cs;
 
-  if (!target)
+  if (!target
+      || (TREE_CODE (target) != SSA_NAME
+          && !virtual_method_call_p (target)))
+    return;
+
+  /* If we previously turned the call into a direct call, there is
+     no need to analyze.  */
+  cs = cgraph_edge (node, call);
+  if (cs && !cs->indirect_unknown_callee)
     return;
   if (TREE_CODE (target) == SSA_NAME)
     ipa_analyze_indirect_call_uses (node, info, parms_ainfo, call, target);
