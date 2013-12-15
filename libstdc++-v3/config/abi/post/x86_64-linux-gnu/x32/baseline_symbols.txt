@@ -403,6 +403,7 @@ FUNC:_ZNKSt15basic_streambufIwSt11char_traitsIwEE5pbaseEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_streambufIwSt11char_traitsIwEE6getlocEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_stringbufIcSt11char_traitsIcESaIcEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv@@GLIBCXX_3.4
+FUNC:_ZNKSt17bad_function_call4whatEv@@GLIBCXX_3.4.18
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE5rdbufEv@@GLIBCXX_3.4
 FUNC:_ZNKSt18basic_stringstreamIwSt11char_traitsIwESaIwEE3strEv@@GLIBCXX_3.4
@@ -590,6 +591,8 @@ FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewm@@GLIBCXX_3.4
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewx@@GLIBCXX_3.4
 FUNC:_ZNKSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE6do_putES3_RSt8ios_basewy@@GLIBCXX_3.4
+FUNC:_ZNKSt8__detail20_Prime_rehash_policy11_M_next_bktEj@@GLIBCXX_3.4.18
+FUNC:_ZNKSt8__detail20_Prime_rehash_policy14_M_need_rehashEjjj@@GLIBCXX_3.4.18
 FUNC:_ZNKSt8bad_cast4whatEv@@GLIBCXX_3.4.9
 FUNC:_ZNKSt8ios_base7failure4whatEv@@GLIBCXX_3.4
 FUNC:_ZNKSt8messagesIcE18_M_convert_to_charERKSs@@GLIBCXX_3.4
@@ -1207,6 +1210,7 @@ FUNC:_ZNSt11range_errorD2Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD0Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD1Ev@@GLIBCXX_3.4.15
 FUNC:_ZNSt11regex_errorD2Ev@@GLIBCXX_3.4.15
+FUNC:_ZNSt11this_thread11__sleep_forENSt6chrono8durationIxSt5ratioILx1ELx1EEEENS1_IxS2_ILx1ELx1000000000EEEE@@GLIBCXX_3.4.18
 FUNC:_ZNSt12__basic_fileIcE2fdEv@@GLIBCXX_3.4
 FUNC:_ZNSt12__basic_fileIcE4fileEv@@GLIBCXX_3.4.1
 FUNC:_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei@@GLIBCXX_3.4
@@ -1485,6 +1489,11 @@ FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEs@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEt@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEx@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEy@@GLIBCXX_3.4
+FUNC:_ZNSt13random_device14_M_init_pretr1ERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device16_M_getval_pretr1Ev@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device7_M_finiEv@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device7_M_initERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device9_M_getvalEv@@GLIBCXX_3.4.18
 FUNC:_ZNSt13runtime_errorC1ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorC2ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorD0Ev@@GLIBCXX_3.4
@@ -1929,6 +1938,8 @@ FUNC:_ZNSt6__norm15_List_node_base7reverseEv@@GLIBCXX_3.4.9
 FUNC:_ZNSt6__norm15_List_node_base8transferEPS0_S1_@@GLIBCXX_3.4.9
 FUNC:_ZNSt6__norm15_List_node_base9_M_unhookEv@@GLIBCXX_3.4.14
 FUNC:_ZNSt6chrono12system_clock3nowEv@@GLIBCXX_3.4.11
+FUNC:_ZNSt6chrono3_V212steady_clock3nowEv@@GLIBCXX_3.4.19
+FUNC:_ZNSt6chrono3_V212system_clock3nowEv@@GLIBCXX_3.4.19
 FUNC:_ZNSt6gslice8_IndexerC1EjRKSt8valarrayIjES4_@@GLIBCXX_3.4
 FUNC:_ZNSt6gslice8_IndexerC2EjRKSt8valarrayIjES4_@@GLIBCXX_3.4
 FUNC:_ZNSt6locale11_M_coalesceERKS_S1_i@@GLIBCXX_3.4
@@ -2467,6 +2478,7 @@ FUNC:__cxa_guard_acquire@@CXXABI_1.3
 FUNC:__cxa_guard_release@@CXXABI_1.3
 FUNC:__cxa_pure_virtual@@CXXABI_1.3
 FUNC:__cxa_rethrow@@CXXABI_1.3
+FUNC:__cxa_thread_atexit@@CXXABI_1.3.7
 FUNC:__cxa_throw@@CXXABI_1.3
 FUNC:__cxa_tm_cleanup@@CXXABI_TM_1
 FUNC:__cxa_vec_cctor@@CXXABI_1.3
@@ -2491,6 +2503,7 @@ OBJECT:0:CXXABI_1.3.3
 OBJECT:0:CXXABI_1.3.4
 OBJECT:0:CXXABI_1.3.5
 OBJECT:0:CXXABI_1.3.6
+OBJECT:0:CXXABI_1.3.7
 OBJECT:0:CXXABI_TM_1
 OBJECT:0:GLIBCXX_3.4
 OBJECT:0:GLIBCXX_3.4.1
@@ -2502,6 +2515,8 @@ OBJECT:0:GLIBCXX_3.4.14
 OBJECT:0:GLIBCXX_3.4.15
 OBJECT:0:GLIBCXX_3.4.16
 OBJECT:0:GLIBCXX_3.4.17
+OBJECT:0:GLIBCXX_3.4.18
+OBJECT:0:GLIBCXX_3.4.19
 OBJECT:0:GLIBCXX_3.4.2
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4
@@ -3033,6 +3048,8 @@ OBJECT:1:_ZNSt21__numeric_limits_base9is_iec559E@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_moduloE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_signedE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt6chrono12system_clock12is_monotonicE@@GLIBCXX_3.4.11
+OBJECT:1:_ZNSt6chrono3_V212steady_clock9is_steadyE@@GLIBCXX_3.4.19
+OBJECT:1:_ZNSt6chrono3_V212system_clock9is_steadyE@@GLIBCXX_3.4.19
 OBJECT:1:_ZSt10adopt_lock@@GLIBCXX_3.4.11
 OBJECT:1:_ZSt10defer_lock@@GLIBCXX_3.4.11
 OBJECT:1:_ZSt11try_to_lock@@GLIBCXX_3.4.11

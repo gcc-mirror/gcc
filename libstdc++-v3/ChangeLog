@@ -1,3 +1,7 @@
+2013-12-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.
+
 2013-11-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* acinclude.m4 (libtool_VERSION): Bump.
