@@ -1,3 +1,8 @@
+2013-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59493
+	* gfortran.dg/unlimited_polymorphic_15.f90: New.
+
 2013-12-14   Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58477
