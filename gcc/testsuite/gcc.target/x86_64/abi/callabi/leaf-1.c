@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mabi=sysv" } */
+/* { dg-options "-O2 -mabi=sysv -maccumulate-outgoing-args" } */
 
 __attribute__ ((ms_abi))
 int foo (void)

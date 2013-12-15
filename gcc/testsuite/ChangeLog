@@ -1,3 +1,32 @@
+2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/58630
+	* gcc.target/i386/pr43662.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/i386/pr43869.c (dg-options): Ditto.
+	* gcc.target/i386/pr57003.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-options):
+	Remove -mtune=generic and add -maccumulate-outgoing-args instead.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-1.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/x86_64/abi/callabi/func-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/pr38891.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5b.c (dg-options): Ditto.
+
 2013-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59470
@@ -301,7 +330,7 @@
 
 2013-11-10  Wei Mi  <wmi@google.com>
 
-	* testsuite/gcc.dg/pr57518.c: Backport regex fix from r200720.
+	* gcc.dg/pr57518.c: Backport regex fix from r200720.
 
 2013-11-07  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -315,7 +344,7 @@
 2013-11-06  Wei Mi  <wmi@google.com>
 
 	PR regression/58985
-	* testsuite/gcc.dg/pr57518.c: Add subreg in regexp pattern.
+	* gcc.dg/pr57518.c: Add subreg in regexp pattern.
 
 2013-11-05  Steven G. Kargl <kargl@gcc.gnu.org>
 
@@ -913,7 +942,7 @@
 	2013-06-19  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57518
-	* testsuite/gcc.dg/pr57518.c: New test.
+	* gcc.dg/pr57518.c: New test.
 
 2013-06-11  Tobias Burnus  <burnus@net-b.de>
 
@@ -1521,7 +1550,7 @@
 	2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
-	* testsuite/gfortran.dg/fmt_cache_3.f90: New.
+	* gfortran.dg/fmt_cache_3.f90: New.
 
 2013-04-02  Richard Biener  <rguenther@suse.de>
 
@@ -2055,7 +2084,7 @@
 2013-02-20  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/56265
-	* testsuite/g++.dg/ipa/devirt-11.C: New testcase.
+	* g++.dg/ipa/devirt-11.C: New testcase.
 
 2013-02-20  Richard Biener  <rguenther@suse.de>
 
@@ -2242,11 +2271,9 @@
 
 	Avoid instrumenting duplicated memory access in the same basic block
 	* c-c++-common/asan/no-redundant-instrumentation-1.c: New test.
-	* testsuite/c-c++-common/asan/no-redundant-instrumentation-2.c:
-	Likewise.
-	* testsuite/c-c++-common/asan/no-redundant-instrumentation-3.c:
-	Likewise.
-	* testsuite/c-c++-common/asan/inc.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-2.c: Likewise.
+	* c-c++-common/asan/no-redundant-instrumentation-3.c: Likewise.
+	* c-c++-common/asan/inc.c: Likewise.
 
 2013-02-12  Vladimir Makarov  <vmakarov@redhat.com>
 

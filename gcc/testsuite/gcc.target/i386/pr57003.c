@@ -1,6 +1,6 @@
 /* PR rtl-optimization/57003 */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -maccumulate-outgoing-args" } */
 
 #define N 2001
 unsigned short *b, *c, *d;

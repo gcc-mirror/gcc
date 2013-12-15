@@ -1,6 +1,6 @@
 /* Test for cross x86_64<->w64 abi va_list calls.  */
 /* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
-/* { dg-options "-O2 -mabi=ms -std=gnu99 -fno-builtin" } */
+/* { dg-options "-O2 -mabi=ms -std=gnu99 -fno-builtin -maccumulate-outgoing-args" } */
 /* { dg-additional-sources "vaarg-4b.c" } */
 
 extern __SIZE_TYPE__ __attribute__ ((sysv_abi)) strlen (const char *);

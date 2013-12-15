@@ -1,5 +1,5 @@
 /* Test for cross x86_64<->w64 abi standard calls via variable.  */
-/* { dg-options "-O2 -mabi=ms -std=gnu99 -ffast-math -fno-builtin" } */
+/* { dg-options "-O2 -mabi=ms -std=gnu99 -ffast-math -fno-builtin -maccumulate-outgoing-args" } */
 
 typedef int (*func)(void *, char *, char *, short, long long);
 

@@ -1,5 +1,5 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-O0 -mavx -mabi=ms -mtune=generic -dp" } */
+/* { dg-options "-O0 -mavx -mabi=ms -maccumulate-outgoing-args -dp" } */
 
 typedef float __m256 __attribute__ ((__vector_size__ (32), __may_alias__));
 
