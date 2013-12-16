@@ -436,6 +436,8 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
   if (icode == CODE_FOR_nothing)
     {
       struct separate_ops ops;
+      enum machine_mode hmode
+	= mode_for_size (GET_MODE_PRECISION (mode) / 2, MODE_INT, 1);
       ops.op0 = arg0;
       ops.op1 = arg1;
       ops.op2 = NULL_TREE;
@@ -462,10 +464,295 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	  emit_cmp_and_jump_insns (signbit, hipart, EQ, NULL_RTX, mode,
 				   false, done_label, PROB_VERY_LIKELY);
 	}
+      else if (hmode != BLKmode
+	       && 2 * GET_MODE_PRECISION (hmode) == GET_MODE_PRECISION (mode))
+	{
+	  rtx large_op0 = gen_label_rtx ();
+	  rtx small_op0_large_op1 = gen_label_rtx ();
+	  rtx one_small_one_large = gen_label_rtx ();
+	  rtx both_ops_large = gen_label_rtx ();
+	  rtx after_hipart_neg = gen_label_rtx ();
+	  rtx after_lopart_neg = gen_label_rtx ();
+	  rtx do_overflow = gen_label_rtx ();
+	  rtx hipart_different = gen_label_rtx ();
+
+	  int hprec = GET_MODE_PRECISION (hmode);
+	  rtx hipart0 = expand_shift (RSHIFT_EXPR, mode, op0, hprec,
+				      NULL_RTX, 0);
+	  hipart0 = gen_lowpart (hmode, hipart0);
+	  rtx lopart0 = gen_lowpart (hmode, op0);
+	  rtx signbit0 = expand_shift (RSHIFT_EXPR, hmode, lopart0, hprec - 1,
+				       NULL_RTX, 0);
+	  rtx hipart1 = expand_shift (RSHIFT_EXPR, mode, op1, hprec,
+				      NULL_RTX, 0);
+	  hipart1 = gen_lowpart (hmode, hipart1);
+	  rtx lopart1 = gen_lowpart (hmode, op1);
+	  rtx signbit1 = expand_shift (RSHIFT_EXPR, hmode, lopart1, hprec - 1,
+				       NULL_RTX, 0);
+
+	  res = gen_reg_rtx (mode);
+
+	  /* True if op0 resp. op1 are known to be in the range of
+	     halfstype.  */
+	  bool op0_small_p = false;
+	  bool op1_small_p = false;
+	  /* True if op0 resp. op1 are known to have all zeros or all ones
+	     in the upper half of bits, but are not known to be
+	     op{0,1}_small_p.  */
+	  bool op0_medium_p = false;
+	  bool op1_medium_p = false;
+	  /* -1 if op{0,1} is known to be negative, 0 if it is known to be
+	     nonnegative, 1 if unknown.  */
+	  int op0_sign = 1;
+	  int op1_sign = 1;
+
+	  if (TREE_CODE (arg0) == SSA_NAME)
+	    {
+	      double_int arg0_min, arg0_max;
+	      if (get_range_info (arg0, &arg0_min, &arg0_max) == VR_RANGE)
+		{
+		  if (arg0_max.sle (double_int::max_value (hprec, false))
+		      && double_int::min_value (hprec, false).sle (arg0_min))
+		    op0_small_p = true;
+		  else if (arg0_max.sle (double_int::max_value (hprec, true))
+			   && (~double_int::max_value (hprec,
+						       true)).sle (arg0_min))
+		    op0_medium_p = true;
+		  if (!arg0_min.is_negative ())
+		    op0_sign = 0;
+		  else if (arg0_max.is_negative ())
+		    op0_sign = -1;
+		}
+	    }
+	  if (TREE_CODE (arg1) == SSA_NAME)
+	    {
+	      double_int arg1_min, arg1_max;
+	      if (get_range_info (arg1, &arg1_min, &arg1_max) == VR_RANGE)
+		{
+		  if (arg1_max.sle (double_int::max_value (hprec, false))
+		      && double_int::min_value (hprec, false).sle (arg1_min))
+		    op1_small_p = true;
+		  else if (arg1_max.sle (double_int::max_value (hprec, true))
+			   && (~double_int::max_value (hprec,
+						       true)).sle (arg1_min))
+		    op1_medium_p = true;
+		  if (!arg1_min.is_negative ())
+		    op1_sign = 0;
+		  else if (arg1_max.is_negative ())
+		    op1_sign = -1;
+		}
+	    }
+
+	  int smaller_sign = 1;
+	  int larger_sign = 1;
+	  if (op0_small_p)
+	    {
+	      smaller_sign = op0_sign;
+	      larger_sign = op1_sign;
+	    }
+	  else if (op1_small_p)
+	    {
+	      smaller_sign = op1_sign;
+	      larger_sign = op0_sign;
+	    }
+	  else if (op0_sign == op1_sign)
+	    {
+	      smaller_sign = op0_sign;
+	      larger_sign = op0_sign;
+	    }
+
+	  if (!op0_small_p)
+	    emit_cmp_and_jump_insns (signbit0, hipart0, NE, NULL_RTX, hmode,
+				     false, large_op0, PROB_UNLIKELY);
+
+	  if (!op1_small_p)
+	    emit_cmp_and_jump_insns (signbit1, hipart1, NE, NULL_RTX, hmode,
+				     false, small_op0_large_op1,
+				     PROB_UNLIKELY);
+
+	  /* If both op0 and op1 are sign extended from hmode to mode,
+	     the multiplication will never overflow.  We can do just one
+	     hmode x hmode => mode widening multiplication.  */
+	  if (GET_CODE (lopart0) == SUBREG)
+	    {
+	      SUBREG_PROMOTED_VAR_P (lopart0) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_SET (lopart0, 0);
+	    }
+	  if (GET_CODE (lopart1) == SUBREG)
+	    {
+	      SUBREG_PROMOTED_VAR_P (lopart1) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_SET (lopart1, 0);
+	    }
+	  tree halfstype = build_nonstandard_integer_type (hprec, 0);
+	  ops.op0 = make_tree (halfstype, lopart0);
+	  ops.op1 = make_tree (halfstype, lopart1);
+	  ops.code = WIDEN_MULT_EXPR;
+	  ops.type = TREE_TYPE (arg0);
+	  rtx thisres
+	    = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  emit_move_insn (res, thisres);
+	  emit_jump (done_label);
+
+	  emit_label (small_op0_large_op1);
+
+	  /* If op0 is sign extended from hmode to mode, but op1 is not,
+	     just swap the arguments and handle it as op1 sign extended,
+	     op0 not.  */
+	  rtx larger = gen_reg_rtx (mode);
+	  rtx hipart = gen_reg_rtx (hmode);
+	  rtx lopart = gen_reg_rtx (hmode);
+	  emit_move_insn (larger, op1);
+	  emit_move_insn (hipart, hipart1);
+	  emit_move_insn (lopart, lopart0);
+	  emit_jump (one_small_one_large);
+
+	  emit_label (large_op0);
+
+	  if (!op1_small_p)
+	    emit_cmp_and_jump_insns (signbit1, hipart1, NE, NULL_RTX, hmode,
+				     false, both_ops_large, PROB_UNLIKELY);
+
+	  /* If op1 is sign extended from hmode to mode, but op0 is not,
+	     prepare larger, hipart and lopart pseudos and handle it together
+	     with small_op0_large_op1.  */
+	  emit_move_insn (larger, op0);
+	  emit_move_insn (hipart, hipart0);
+	  emit_move_insn (lopart, lopart1);
+
+	  emit_label (one_small_one_large);
+
+	  /* lopart is the low part of the operand that is sign extended
+	     to mode, larger is the the other operand, hipart is the
+	     high part of larger and lopart0 and lopart1 are the low parts
+	     of both operands.
+	     We perform lopart0 * lopart1 and lopart * hipart widening
+	     multiplications.  */
+	  tree halfutype = build_nonstandard_integer_type (hprec, 1);
+	  ops.op0 = make_tree (halfutype, lopart0);
+	  ops.op1 = make_tree (halfutype, lopart1);
+	  rtx lo0xlo1
+	    = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+
+	  ops.op0 = make_tree (halfutype, lopart);
+	  ops.op1 = make_tree (halfutype, hipart);
+	  rtx loxhi = gen_reg_rtx (mode);
+	  rtx tem = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  emit_move_insn (loxhi, tem);
+
+	  /* if (hipart < 0) loxhi -= lopart << (bitsize / 2);  */
+	  if (larger_sign == 0)
+	    emit_jump (after_hipart_neg);
+	  else if (larger_sign != -1)
+	    emit_cmp_and_jump_insns (hipart, const0_rtx, GE, NULL_RTX, hmode,
+				     false, after_hipart_neg, PROB_EVEN);
+
+	  tem = expand_shift (LSHIFT_EXPR, mode, lopart, hprec, NULL_RTX, 1);
+	  tem = expand_simple_binop (mode, MINUS, loxhi, tem, NULL_RTX,
+				     1, OPTAB_DIRECT);
+	  emit_move_insn (loxhi, tem);
+
+	  emit_label (after_hipart_neg);
+
+	  /* if (lopart < 0) loxhi -= larger;  */
+	  if (smaller_sign == 0)
+	    emit_jump (after_lopart_neg);
+	  else if (smaller_sign != -1)
+	    emit_cmp_and_jump_insns (lopart, const0_rtx, GE, NULL_RTX, hmode,
+				     false, after_lopart_neg, PROB_EVEN);
+
+	  tem = expand_simple_binop (mode, MINUS, loxhi, larger, NULL_RTX,
+				     1, OPTAB_DIRECT);
+	  emit_move_insn (loxhi, tem);
+
+	  emit_label (after_lopart_neg);
+
+	  /* loxhi += (uns) lo0xlo1 >> (bitsize / 2);  */
+	  tem = expand_shift (RSHIFT_EXPR, mode, lo0xlo1, hprec, NULL_RTX, 1);
+	  tem = expand_simple_binop (mode, PLUS, loxhi, tem, NULL_RTX,
+				     1, OPTAB_DIRECT);
+	  emit_move_insn (loxhi, tem);
+
+	  /* if (loxhi >> (bitsize / 2)
+		 == (hmode) loxhi >> (bitsize / 2 - 1))  */
+	  rtx hipartloxhi = expand_shift (RSHIFT_EXPR, mode, loxhi, hprec,
+					  NULL_RTX, 0);
+	  hipartloxhi = gen_lowpart (hmode, hipartloxhi);
+	  rtx lopartloxhi = gen_lowpart (hmode, loxhi);
+	  rtx signbitloxhi = expand_shift (RSHIFT_EXPR, hmode, lopartloxhi,
+					   hprec - 1, NULL_RTX, 0);
+
+	  emit_cmp_and_jump_insns (signbitloxhi, hipartloxhi, NE, NULL_RTX,
+				   hmode, false, do_overflow,
+				   PROB_VERY_UNLIKELY);
+
+	  /* res = (loxhi << (bitsize / 2)) | (hmode) lo0xlo1;  */
+	  rtx loxhishifted = expand_shift (LSHIFT_EXPR, mode, loxhi, hprec,
+					   NULL_RTX, 1);
+	  tem = convert_modes (mode, hmode, gen_lowpart (hmode, lo0xlo1), 1);
+
+	  tem = expand_simple_binop (mode, IOR, loxhishifted, tem, res,
+				     1, OPTAB_DIRECT);
+	  if (tem != res)
+	    emit_move_insn (res, tem);
+	  emit_jump (done_label);
+
+	  emit_label (both_ops_large);
+
+	  /* If both operands are large (not sign extended from hmode),
+	     then perform the full multiplication which will be the result
+	     of the operation.  The only cases which don't overflow are
+	     some cases where both hipart0 and highpart1 are 0 or -1.  */
+	  ops.code = MULT_EXPR;
+	  ops.op0 = make_tree (TREE_TYPE (arg0), op0);
+	  ops.op1 = make_tree (TREE_TYPE (arg0), op1);
+	  tem = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  emit_move_insn (res, tem);
+
+	  if (!op0_medium_p)
+	    {
+	      tem = expand_simple_binop (hmode, PLUS, hipart0, const1_rtx,
+					 NULL_RTX, 1, OPTAB_DIRECT);
+	      emit_cmp_and_jump_insns (tem, const1_rtx, GTU, NULL_RTX, hmode,
+				       true, do_error, PROB_VERY_UNLIKELY);
+	    }
+
+	  if (!op1_medium_p)
+	    {
+	      tem = expand_simple_binop (hmode, PLUS, hipart1, const1_rtx,
+					 NULL_RTX, 1, OPTAB_DIRECT);
+	      emit_cmp_and_jump_insns (tem, const1_rtx, GTU, NULL_RTX, hmode,
+				       true, do_error, PROB_VERY_UNLIKELY);
+	    }
+
+	  /* At this point hipart{0,1} are both in [-1, 0].  If they are the
+	     same, overflow happened if res is negative, if they are different,
+	     overflow happened if res is positive.  */
+	  if (op0_sign != 1 && op1_sign != 1 && op0_sign != op1_sign)
+	    emit_jump (hipart_different);
+	  else if (op0_sign == 1 || op1_sign == 1)
+	    emit_cmp_and_jump_insns (hipart0, hipart1, NE, NULL_RTX, hmode,
+				     true, hipart_different, PROB_EVEN);
+
+	  emit_cmp_and_jump_insns (res, const0_rtx, LT, NULL_RTX, mode, false,
+				   do_error, PROB_VERY_UNLIKELY);
+	  emit_jump (done_label);
+
+	  emit_label (hipart_different);
+
+	  emit_cmp_and_jump_insns (res, const0_rtx, GE, NULL_RTX, mode, false,
+				   do_error, PROB_VERY_UNLIKELY);
+	  emit_jump (done_label);
+
+	  emit_label (do_overflow);
+
+	  /* Overflow, do full multiplication and fallthru into do_error.  */
+	  ops.op0 = make_tree (TREE_TYPE (arg0), op0);
+	  ops.op1 = make_tree (TREE_TYPE (arg0), op1);
+	  tem = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  emit_move_insn (res, tem);
+	}
       else
 	{
-	  /* For now we don't instrument this.  See __mulvDI3 in libgcc2.c
-	     for what could be done.  */
 	  ops.code = MULT_EXPR;
 	  ops.type = TREE_TYPE (arg0);
 	  res = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
