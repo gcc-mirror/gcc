@@ -1607,7 +1607,7 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*				 HI */
+   COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
    COSTS_N_INSNS (2)},			/*			      other */
