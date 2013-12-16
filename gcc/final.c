@@ -700,14 +700,14 @@ compute_alignments (void)
       flow_loops_dump (dump_file, NULL, 1);
     }
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->frequency > freq_max)
       freq_max = bb->frequency;
   freq_threshold = freq_max / PARAM_VALUE (PARAM_ALIGN_THRESHOLD);
 
   if (dump_file)
     fprintf (dump_file, "freq_max: %i\n",freq_max);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx label = BB_HEAD (bb);
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
@@ -1996,7 +1996,7 @@ final (rtx first, FILE *file, int optimize_p)
 
       /* There is no cfg for a thunk.  */
       if (!cfun->is_thunk)
-	FOR_EACH_BB_REVERSE (bb)
+	FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	  {
 	    start_to_bb[INSN_UID (BB_HEAD (bb))] = bb;
 	    end_to_bb[INSN_UID (BB_END (bb))] = bb;

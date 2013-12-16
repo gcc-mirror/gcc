@@ -3358,12 +3358,24 @@ mio_expr (gfc_expr **ep)
 	{
 	  e->value.function.name
 	    = mio_allocated_string (e->value.function.name);
-	  flag = e->value.function.esym != NULL;
-	  mio_integer (&flag);
-	  if (flag)
-	    mio_symbol_ref (&e->value.function.esym);
+	  if (e->value.function.esym)
+	    flag = 1;
+	  else if (e->ref)
+	    flag = 2;
 	  else
-	    write_atom (ATOM_STRING, e->value.function.isym->name);
+	    flag = 0;
+	  mio_integer (&flag);
+	  switch (flag)
+	    {
+	    case 1:
+	      mio_symbol_ref (&e->value.function.esym);
+	      break;
+	    case 2:
+	      mio_ref_list (&e->ref);
+	      break;
+	    default:
+	      write_atom (ATOM_STRING, e->value.function.isym->name);
+	    }
 	}
       else
 	{
@@ -3372,10 +3384,15 @@ mio_expr (gfc_expr **ep)
 	  free (atom_string);
 
 	  mio_integer (&flag);
-	  if (flag)
-	    mio_symbol_ref (&e->value.function.esym);
-	  else
+	  switch (flag)
 	    {
+	    case 1:
+	      mio_symbol_ref (&e->value.function.esym);
+	      break;
+	    case 2:
+	      mio_ref_list (&e->ref);
+	      break;
+	    default:
 	      require_atom (ATOM_STRING);
 	      e->value.function.isym = gfc_find_function (atom_string);
 	      free (atom_string);

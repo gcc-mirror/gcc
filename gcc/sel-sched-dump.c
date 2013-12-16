@@ -750,7 +750,7 @@ sel_dump_cfg_2 (FILE *f, int flags)
   if (flags & SEL_DUMP_CFG_FUNCTION_NAME)
     fprintf (f, "function [label = \"%s\"];\n", current_function_name ());
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       insn_t insn = BB_HEAD (bb);
       insn_t next_tail = NEXT_INSN (BB_END (bb));

@@ -41,5 +41,5 @@ aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
 		$(srcdir)/config/arm/aarch-common.c
 
 comma=,
-MULTILIB_OPTIONS    = $(patsubst %, mabi=%, $(subst $(comma), ,$(TM_MULTILIB_CONFIG)))
+MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
 MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))

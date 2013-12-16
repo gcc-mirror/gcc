@@ -112,7 +112,7 @@ extern const unsigned char rtx_next[NUM_RTX_CODE];
 
 /* The flags and bitfields of an ADDR_DIFF_VEC.  BASE is the base label
    relative to which the offsets are calculated, as explained in rtl.def.  */
-typedef struct
+struct addr_diff_vec_flags
 {
   /* Set at the start of shorten_branches - ONLY WHEN OPTIMIZING - : */
   unsigned min_align: 8;
@@ -130,12 +130,12 @@ typedef struct
   unsigned offset_unsigned: 1; /* offsets have to be treated as unsigned.  */
   unsigned : 2;
   unsigned scale : 8;
-} addr_diff_vec_flags;
+};
 
 /* Structure used to describe the attributes of a MEM.  These are hashed
    so MEMs that the same attributes share a data structure.  This means
    they cannot be modified in place.  */
-typedef struct GTY(()) mem_attrs
+struct GTY(()) mem_attrs
 {
   /* The expression that the MEM accesses, or null if not known.
      This expression might be larger than the memory reference itself.
@@ -166,7 +166,7 @@ typedef struct GTY(()) mem_attrs
 
   /* True if SIZE is known.  */
   bool size_known_p;
-} mem_attrs;
+};
 
 /* Structure used to describe the attributes of a REG in similar way as
    mem_attrs does for MEM above.  Note that the OFFSET field is calculated
@@ -175,14 +175,14 @@ typedef struct GTY(()) mem_attrs
    object in the low part of a 4-byte register, the OFFSET field
    will be -3 rather than 0.  */
 
-typedef struct GTY(()) reg_attrs {
+struct GTY(()) reg_attrs {
   tree decl;			/* decl corresponding to REG.  */
   HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
-} reg_attrs;
+};
 
 /* Common union for an element of an rtx.  */
 
-union rtunion_def
+union rtunion
 {
   int rt_int;
   unsigned int rt_uint;
@@ -191,15 +191,14 @@ union rtunion_def
   rtvec rt_rtvec;
   enum machine_mode rt_type;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
-  struct cselib_val_struct *rt_cselib;
+  struct cselib_val *rt_cselib;
   tree rt_tree;
   basic_block rt_bb;
   mem_attrs *rt_mem;
   reg_attrs *rt_reg;
   struct constant_descriptor_rtx *rt_constant;
-  struct dw_cfi_struct *rt_cfi;
+  struct dw_cfi_node *rt_cfi;
 };
-typedef union rtunion_def rtunion;
 
 /* This structure remembers the position of a SYMBOL_REF within an
    object_block structure.  A SYMBOL_REF only provides this information
@@ -893,7 +892,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS (RTX, 4)
 
 /* In a VALUE, the value cselib has assigned to RTX.
-   This is a "struct cselib_val_struct", see cselib.h.  */
+   This is a "struct cselib_val", see cselib.h.  */
 #define CSELIB_VAL_PTR(RTX) X0CSELIB (RTX, 0)
 
 /* Holds a list of notes on what this insn does to various REGs.
@@ -2002,12 +2001,12 @@ extern void set_insn_deleted (rtx);
 #define single_set_1(I) single_set_2 (I, PATTERN (I))
 
 /* Structure used for passing data to REPLACE_LABEL.  */
-typedef struct replace_label_data
+struct replace_label_data
 {
   rtx r1;
   rtx r2;
   bool update_label_nuses;
-} replace_label_data;
+};
 
 extern enum machine_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);

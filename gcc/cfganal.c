@@ -72,15 +72,15 @@ mark_dfs_back_edges (void)
   bool found = false;
 
   /* Allocate the preorder and postorder number arrays.  */
-  pre = XCNEWVEC (int, last_basic_block);
-  post = XCNEWVEC (int, last_basic_block);
+  pre = XCNEWVEC (int, last_basic_block_for_fn (cfun));
+  post = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, n_basic_blocks_for_fn (cfun) + 1);
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -159,7 +159,7 @@ find_unreachable_blocks (void)
 
   /* Clear all the reachability flags.  */
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->flags &= ~BB_REACHABLE;
 
   /* Add our starting points to the worklist.  Almost always there will
@@ -428,8 +428,8 @@ control_dependences::control_dependences (struct edge_list *edges)
   : m_el (edges)
 {
   timevar_push (TV_CONTROL_DEPENDENCES);
-  control_dependence_map.create (last_basic_block);
-  for (int i = 0; i < last_basic_block; ++i)
+  control_dependence_map.create (last_basic_block_for_fn (cfun));
+  for (int i = 0; i < last_basic_block_for_fn (cfun); ++i)
     control_dependence_map.quick_push (BITMAP_ALLOC (NULL));
   for (int i = 0; i < NUM_EDGES (m_el); ++i)
     find_control_dependence (i);
@@ -554,7 +554,7 @@ add_noreturn_fake_exit_edges (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (EDGE_COUNT (bb->succs) == 0)
       make_single_succ_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), EDGE_FAKE);
 }
@@ -622,7 +622,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -778,13 +778,13 @@ inverted_post_order_compute (int *post_order)
   sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
 
   /* Put all blocks that have no successor into the initial work list.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     if (EDGE_COUNT (bb->succs) == 0)
       {
         /* Push the initial edge on to the stack.  */
@@ -931,7 +931,7 @@ pre_and_rev_post_order_compute_fn (struct function *fn,
     rev_post_order_num -= NUM_FIXED_BLOCKS;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  visited = sbitmap_alloc (last_basic_block);
+  visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (visited);
@@ -1062,7 +1062,7 @@ flow_dfs_compute_reverse_init (depth_first_search_ds data)
   data->sp = 0;
 
   /* Allocate bitmap to track nodes that have been visited.  */
-  data->visited_blocks = sbitmap_alloc (last_basic_block);
+  data->visited_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* None of the nodes in the CFG have been visited yet.  */
   bitmap_clear (data->visited_blocks);
@@ -1147,7 +1147,7 @@ dfs_enumerate_from (basic_block bb, int reverse,
 #define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
 
   /* Resize the VISITED sbitmap if necessary.  */
-  size = last_basic_block;
+  size = last_basic_block_for_fn (cfun);
   if (size < 10)
     size = 10;
 
@@ -1236,7 +1236,7 @@ compute_dominance_frontiers_1 (bitmap_head *frontiers)
   edge p;
   edge_iterator ei;
   basic_block b;
-  FOR_EACH_BB (b)
+  FOR_EACH_BB_FN (b, cfun)
     {
       if (EDGE_COUNT (b->preds) >= 2)
 	{
@@ -1313,7 +1313,8 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 	 form, the basic blocks where new and/or old names are defined
 	 may have disappeared by CFG cleanup calls.  In this case,
 	 we may pull a non-existing block from the work stack.  */
-      gcc_checking_assert (bb_index < (unsigned) last_basic_block);
+      gcc_checking_assert (bb_index
+			   < (unsigned) last_basic_block_for_fn (cfun));
 
       EXECUTE_IF_AND_COMPL_IN_BITMAP (&dfs[bb_index], phi_insertion_points,
 	                              0, i, bi)
@@ -1508,7 +1509,7 @@ single_pred_before_succ_order (void)
   basic_block *order = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
   unsigned n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
   unsigned np, i;
-  sbitmap visited = sbitmap_alloc (last_basic_block);
+  sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
 #define MARK_VISITED(BB) (bitmap_set_bit (visited, (BB)->index))
 #define VISITED_P(BB) (bitmap_bit_p (visited, (BB)->index))
@@ -1516,7 +1517,7 @@ single_pred_before_succ_order (void)
   bitmap_clear (visited);
 
   MARK_VISITED (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  FOR_EACH_BB (x)
+  FOR_EACH_BB_FN (x, cfun)
     {
       if (VISITED_P (x))
 	continue;

@@ -177,7 +177,7 @@
 (define_expand "one_cmplqi2"
   [(set (match_operand:QI         0 "nonimmediate_operand")
 	(xor:QI (match_operand:QI 1 "general_operand")
-		(const_int 255)))
+		(const_int -1)))
    ]
   ""
   "if (rl78_force_nonfar_2 (operands, gen_one_cmplqi2))

@@ -1381,7 +1381,7 @@ extern void schedule_ebbs_finish (void);
 /* A region is the main entity for interblock scheduling: insns
    are allowed to move between blocks in the same region, along
    control flow graph edges, in the 'up' direction.  */
-typedef struct
+struct region
 {
   /* Number of extended basic blocks in region.  */
   int rgn_nr_blocks;
@@ -1392,8 +1392,7 @@ typedef struct
   unsigned int dont_calc_deps : 1;
   /* This region has at least one non-trivial ebb.  */
   unsigned int has_real_ebb : 1;
-}
-region;
+};
 
 extern int nr_regions;
 extern region *rgn_table;
@@ -1416,8 +1415,9 @@ extern int *containing_rgn;
 /* The mapping from ebb to block.  */
 extern int *ebb_head;
 #define BB_TO_BLOCK(ebb) (rgn_bb_table[ebb_head[ebb]])
-#define EBB_FIRST_BB(ebb) BASIC_BLOCK (BB_TO_BLOCK (ebb))
-#define EBB_LAST_BB(ebb) BASIC_BLOCK (rgn_bb_table[ebb_head[ebb + 1] - 1])
+#define EBB_FIRST_BB(ebb) BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (ebb))
+#define EBB_LAST_BB(ebb) \
+  BASIC_BLOCK_FOR_FN (cfun, rgn_bb_table[ebb_head[ebb + 1] - 1])
 #define INSN_BB(INSN) (BLOCK_TO_BB (BLOCK_NUM (INSN)))
 
 extern int current_nr_blocks;

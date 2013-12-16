@@ -1511,7 +1511,7 @@ finish_eh_generation (void)
     commit_edge_insertions ();
 
   /* Redirect all EH edges from the post_landing_pad to the landing pad.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       eh_landing_pad lp;
       edge_iterator ei;

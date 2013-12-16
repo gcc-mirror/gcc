@@ -839,7 +839,7 @@ gsi_commit_edge_inserts (void)
   gsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			      NULL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_EACH_EDGE (e, ei, bb->succs)
       gsi_commit_one_edge_insert (e, NULL);
 }

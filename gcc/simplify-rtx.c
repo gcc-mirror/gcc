@@ -640,11 +640,16 @@ simplify_truncation (enum machine_mode mode, rtx op,
 				   XEXP (op, 0), origmode);
     }
 
-  /* Simplify (truncate:SI (op:DI (x:DI) (y:DI)))
-     to (op:SI (truncate:SI (x:DI)) (truncate:SI (x:DI))).  */
-  if (GET_CODE (op) == PLUS
-      || GET_CODE (op) == MINUS
-      || GET_CODE (op) == MULT)
+  /* If the machine can perform operations in the truncated mode, distribute
+     the truncation, i.e. simplify (truncate:QI (op:SI (x:SI) (y:SI))) into
+     (op:QI (truncate:QI (x:SI)) (truncate:QI (y:SI))).  */
+  if (1
+#ifdef WORD_REGISTER_OPERATIONS
+      && precision >= BITS_PER_WORD
+#endif
+      && (GET_CODE (op) == PLUS
+	  || GET_CODE (op) == MINUS
+	  || GET_CODE (op) == MULT))
     {
       rtx op0 = simplify_gen_unary (TRUNCATE, mode, XEXP (op, 0), op_mode);
       if (op0)

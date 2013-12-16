@@ -638,7 +638,7 @@ lower_emutls_function_body (struct cgraph_node *node)
      create a node for it.  */
   d.builtin_node = cgraph_get_create_node (d.builtin_decl);
 
-  FOR_EACH_BB (d.bb)
+  FOR_EACH_BB_FN (d.bb, cfun)
     {
       gimple_stmt_iterator gsi;
       unsigned int i, nedge;

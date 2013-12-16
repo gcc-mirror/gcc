@@ -1,3 +1,320 @@
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58956
+	PR middle-end/59470
+	* gcc.target/i386/pr59470.c: New test.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59265
+	g++.dg/torture/pr59265.C: New testcase.
+
+2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-nop-move.c (foo32x2_be): Call
+	__builtin_ia32_emms for 32bit x86 targets.
+	(foo32x2_le): Ditto.
+	(main): Reorder function calls.
+
+2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr57756.c (dg-options): Add -mno-sse3.
+
+2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/58630
+	* gcc.target/i386/pr43662.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/i386/pr43869.c (dg-options): Ditto.
+	* gcc.target/i386/pr57003.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-options):
+	Remove -mtune=generic and add -maccumulate-outgoing-args instead.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-1.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/x86_64/abi/callabi/func-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/pr38891.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5b.c (dg-options): Ditto.
+
+2013-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59493
+	* gfortran.dg/unlimited_polymorphic_15.f90: New.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58477
+	* g++.dg/ipa/devirt-19.C: New testcase.
+
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/overflow-negate-1.c: Add more testing.  Don't
+	require int128 target.
+	* c-c++-common/ubsan/overflow-negate-2.c: New test.
+
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59502
+	* gfortran.dg/class_57.f90: New.
+
+2013-12-14   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59492
+	* g++.dg/other/pr59492.C: New file.
+
+2013-12-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cilk-plus/cilk-plus.exp: Fix last change.
+
+2013-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr59350.c: New test.
+
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/overflow-1.c: New test.
+	* c-c++-common/ubsan/overflow-2.c: New test.
+
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59503
+	* c-c++-common/ubsan/pr59503.c: New test.
+
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59450
+	* gfortran.dg/typebound_proc_31.f90: New.
+
+2013-12-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cilk-plus/cilk-plus.exp: Properly set ld_library_path.
+	Use TEST_EXTRA_LIBS instead of ALWAYS_CFLAGS.
+
+2013-12-03  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/45685
+	* gcc.dg/tree-ssa/pr45685.c: New test.
+
+2013-12-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/58296
+	PR tree-optimization/41488
+	* gcc.dg/tree-ssa/scev-7.c: New test.
+	* gcc.dg/pr41488.c: New test.
+	* g++.dg/pr59445.C: New test.
+
+2013-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/59440
+	* gfortran.dg/namelist_83.f90: New.
+	* gfortran.dg/namelist_83_2.f90: New.
+
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59470
+	* g++.dg/opt/pr59470.C: New test.
+
+2013-12-12  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/tsan/free_race2.c: New file.
+	* c-c++-common/tsan/race_on_barrier2.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex2.c: Likewise.
+	* c-c++-common/tsan/simple_race.c: Likewise.
+	* c-c++-common/tsan/simple_stack.c: Likewise.
+	* g++.dg/tsan/aligned_vs_unaligned_race.C: Likewise.
+	* g++.dg/tsan/atomic_free.C: Likewise.
+	* g++.dg/tsan/atomic_free2.C: Likewise.
+	* g++.dg/tsan/benign_race.C: Likewise.
+	* g++.dg/tsan/cond_race.C: Likewise.
+	* g++.dg/tsan/default_options.C: Likewise.
+	* g++.dg/tsan/fd_close_norace.C: Likewise.
+	* g++.dg/tsan/fd_close_norace2.C: Likewise.
+	* g++-dg/tsan/tsan.exp: Modified to run additional C++ tests.
+
+2013-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/59467
+	* gfortran.dg/gomp/pr59467.f90: New test.
+	* c-c++-common/gomp/pr59467.c: New test.
+
+2013-12-12  Ryan Mansfield  <rmansfield@qnx.com>
+
+	PR testsuite/59442
+	* gcc.target/i386/sse2-movapd-1.c: Fix alignment attributes.
+	* gcc.target/i386/sse2-movapd-2.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-1.c: Likewise.
+	* gcc.target/i386/avx-vmovapd-256-2.c: Likewise.
+
+2013-12-11  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/59390
+	* gcc.target/i386/pr59390.c: New test.
+	* gcc.target/i386/pr59390_1.c: New test.
+	* gcc.target/i386/pr59390_2.c: New test.
+
+2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: New test case.
+	* g++.dg/cilk-plus/CK/const_spawn.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-opr-overload.cc: Likewise.
+	* g++.dg/cilk-plus/CK/fib-tplt.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns.cc: Likewise.
+	* g++.dg/cilk-plus/CK/lambda_spawns_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/cilk-plus.exp: Added support to run Cilk Keywords
+	test stored in c-c++-common.  Also, added the Cilk runtime's library
+	to the ld_library_path.
+
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/59134
+	* gcc.c-torture/compile/pr59134.c: New test.
+	* gnat.dg/misaligned_volatile.adb: New test.
+
+2013-12-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/pr23623.c: Update to test interaction with C++ memory model.
+
+2013-12-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23623
+	PR middle-end/48784
+	PR middle-end/56341
+	PR middle-end/56997
+	* gcc.dg/pr23623.c: New test.
+	* gcc.dg/pr48784-1.c: New test.
+	* gcc.dg/pr48784-2.c: New test.
+	* gcc.dg/pr56341-1.c: New test.
+	* gcc.dg/pr56341-2.c: New test.
+	* gcc.dg/pr56997-1.c: New test.
+	* gcc.dg/pr56997-2.c: New test.
+	* gcc.dg/pr56997-3.c: New test.
+
+2013-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58916
+	* gfortran.dg/allocate_with_source_4.f90: New.
+
+2013-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59417
+	* gcc.c-torture/compile/pr59417.c: New test.
+
+	PR tree-optimization/59386
+	* gcc.c-torture/compile/pr59386.c: New test.
+
+2013-12-11  Bin Cheng  <bin.cheng@arm.com>
+
+	Reverted:
+	2013-12-10  Bin Cheng  <bin.cheng@arm.com>
+	PR tree-optimization/41488
+	* gcc.dg/tree-ssa/scev-7.c: New test.
+	* gcc.dg/pr41488.c: New test.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* gfortran.dg/c_by_val_5.f90: Modified.
+	* gfortran.dg/dummy_procedure_10.f90: New.
+
+2013-12-10  Yury Gribov  <y.gribov@samsung.com>
+
+	* gcc-dg/tsan/tsan.exp: Added missing call to torture-finish.
+	* g++-dg/tsan/tsan.exp: Likewise.
+
+2013-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* gcc.dg/ipa/ipa-pta-14.c: Un-XFAIL.
+
+2013-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-cond-11.c: New test.
+	* gcc.target/i386/vect-cond-1.c: New test.
+	* gcc.target/i386/avx2-gather-5.c: New test.
+	* gcc.target/i386/avx2-gather-6.c: New test.
+	* gcc.dg/vect/vect-mask-loadstore-1.c: New test.
+	* gcc.dg/vect/vect-mask-load-1.c: New test.
+
+2013-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59437
+	* g++.dg/ubsan/pr59437.C: New test.
+
+2013-12-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/tsan/thread_leak2.c: `dg-skip-if' removed.
+	* gcc-dg/tsan/tsan.exp: Run only with '-O0' and '-O2' options.
+	* g++-dg/tsan/tsan.exp: Likewise.
+
+2013-12-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vect/pr58508.c: XFAIL for vect_no_align.
+	* gcc.dg/vect/vect-reduc-pattern-3.c: Require vect_int_mult.
+
+2013-12-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/41488
+	* gcc.dg/tree-ssa/scev-7.c: New test.
+	* gcc.dg/pr41488.c: New test.
+
+2013-12-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/55715
+	* gcc.dg/cpp/expr-overflow-1.c: New test.
+
+2013-12-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/59428
+	PR fortran/58099
+	PR fortran/58676
+	PR fortran/41724
+	* gfortran.dg/proc_ptr_result_4.f90: Fix proc-ptr interface.
+
+2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59435
+	* g++.dg/cpp0x/variadic-sizeof3.C: New.
+
+2013-12-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/selfassign.c (execute_warn_self_assign): Eliminate
+	use of FOR_EACH_BB in favor of FOR_EACH_BB_FN, to make use of cfun
+	explicit.
+	* gcc.dg/plugin/selfassign.c (execute_warn_self_assign): Likewise.
+
+2013-12-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/ldrd-strd-offset.c: New.
+
+2013-12-09  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.c-torture/compile/pr39834.c: Remove optimization level option.
+	* gcc.c-torture/compile/pr48929.c: Likewise.
+	* gcc.c-torture/compile/pr55569.c: Likewise.
+	* gcc.c-torture/compile/sra-1.c: Likewise.
+	* gcc.c-torture/compile/pr45085.c: Moved to...
+	* gcc.dg/tree-ssa/pr45085.c: ...here, added compile dg-do.
+
+2013-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59415
+	* g++.dg/ubsan/pr59415.C: New test.
+
 2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52707
@@ -92,7 +409,7 @@
 2013-12-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59317
-	* testsuite/gcc.target/mips/pr59317.c: New.
+	* gcc.target/mips/pr59317.c: New.
 
 2013-12-05  Marek Polacek  <polacek@redhat.com>
 
@@ -237,9 +554,9 @@
 2013-12-03  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/59020
-	* testsuite/gcc.dg/pr59020.c: New.
-	* testsuite/gcc.dg/macro-fusion-1.c: New.
-	* testsuite/gcc.dg/macro-fusion-2.c: New.
+	* gcc.dg/pr59020.c: New.
+	* gcc.dg/macro-fusion-1.c: New.
+	* gcc.dg/macro-fusion-2.c: New.
 
 2013-12-03  Yury Gribov  <y.gribov@samsung.com>
 
@@ -298,7 +615,7 @@
 2013-12-02  Sriraman Tallam  <tmsriram@google.com>
 
 	PR target/58944
-	* testsuite/gcc.target/i386/pr58944.c: New test.
+	* gcc.target/i386/pr58944.c: New test.
 
 2013-12-02  Joseph Myers  <joseph@codesourcery.com>
 
@@ -800,8 +1117,7 @@
 2013-11-20  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/htm-1.c: Rename to ...
-	* gcc/testsuite/gcc.target/s390/htm-builtins-compile-1.c: ... this
-	one.
+	* gcc.target/s390/htm-builtins-compile-1.c: ... this one.
 	* gcc.target/s390/htm-xl-intrin-1.c: Rename to ...
 	* gcc.target/s390/htm-builtins-compile-3.c: ... this one.
 	* gcc.target/s390/htm-builtins-compile-2.c: New testcase.
@@ -1118,8 +1434,8 @@
 
 2013-11-13  Andrew MacLeod  <amacleod@redhat.com>
 
-	* testsuite/g++.dg/plugin/selfassign.c: Include gimple-iterator.h.
-	* testsuite/gcc.dg/plugin/selfassign.c: Likewise.
+	* g++.dg/plugin/selfassign.c: Include gimple-iterator.h.
+	* gcc.dg/plugin/selfassign.c: Likewise.
 
 2013-11-13  Jeff Law  <law@redhat.com>
 
@@ -1587,7 +1903,7 @@
 2013-11-05  Wei Mi  <wmi@google.com>
 
 	PR regression/58985
-	* testsuite/gcc.dg/pr57518.c: Add subreg in regexp pattern.
+	* gcc.dg/pr57518.c: Add subreg in regexp pattern.
 
 2013-11-05  Tobias Burnus  <burnus@net-b.de>
 
@@ -2051,7 +2367,7 @@
 
 	* g++.dg/vect/pr33426-ivdep.cc: Use dg-options.
 	* gfortran.dg/vect/vect-do-concurrent-1.f90: Ditto.
-	* testsuite/gcc.dg/vect/vect-ivdep-1.c: Ditto.
+	* gcc.dg/vect/vect-ivdep-1.c: Ditto.
 
 2013-10-25  Yufeng Zhang  <yufeng.zhang@arm.com>
 
@@ -2127,8 +2443,8 @@
 2013-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
-	* testsuite/gcc.dg/ivdep.c: New.
-	* testsuite/gcc.dg/vect/vect-ivdep-1.c: New.
+	* gcc.dg/ivdep.c: New.
+	* gcc.dg/vect/vect-ivdep-1.c: New.
 
 2013-10-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -2338,7 +2654,7 @@
 
 2013-10-17  Michael Hudson-Doyle  <michael.hudson@linaro.org>
 
-	* gcc/testsuite/lib/target-supports.exp
+	* lib/target-supports.exp
 	(check_effective_target_sync_long_long): AArch64 supports
 	atomic operations on "long long".
 	(check_effective_target_sync_long_long_runtime): AArch64 can
@@ -2815,7 +3131,7 @@
 
 2013-09-30  Teresa Johnson  <tejohnson@google.com>
 
-	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-3.c (expand_one_var):
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c (expand_one_var):
 	Update for additional dump message.
 
 2013-09-30  Richard Biener  <rguenther@suse.de>
@@ -3313,10 +3629,10 @@
 
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
-	* testsuite/g++.dg/ipa/devirt-11.C: Update template.
-	* testsuite/g++.dg/ipa/devirt-16.C: New testcase.
-	* testsuite/g++.dg/ipa/devirt-17.C: New testcase.
-	* testsuite/g++.dg/ipa/devirt-18.C: New testcase.
+	* g++.dg/ipa/devirt-11.C: Update template.
+	* g++.dg/ipa/devirt-16.C: New testcase.
+	* g++.dg/ipa/devirt-17.C: New testcase.
+	* g++.dg/ipa/devirt-18.C: New testcase.
 
 2013-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -3370,12 +3686,12 @@
 	    Vineet Gupta  <Vineet.Gupta@synopsys.com>
 
 	* gcc.c-torture/execute/20101011-1.c [__arc__] (DO_TEST): Define as 0.
-	* testsuite/gcc.target/arc: New directory.
+	* gcc.target/arc: New directory.
 	* gcc.dg/torture/pr37868.c: Also skip for arc*-*-*.
 	* gcc.dg/stack-usage-1.c [__arc__] (SIZE): Define.
-	* testsuite/gcc.dg/torture/stackalign/builtin-apply-2.c
+	* gcc.dg/torture/stackalign/builtin-apply-2.c
 	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
-	* testsuite/gcc.dg/builtin-apply2.c
+	* gcc.dg/builtin-apply2.c
 	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
 
 2013-09-04  Jan Hubicka  <jh@suse.cz>
@@ -5270,7 +5586,7 @@
 	* g++.dg/cilk-plus/AN/preincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/cilk-plus.exp: New script.
-	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests
+	* g++.dg/dg.exp: Included Cilk Plus C++ tests
 	in the list.
 
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
@@ -5314,7 +5630,7 @@
 2013-06-19  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57518
-	* testsuite/gcc.dg/pr57518.c: New test.
+	* gcc.dg/pr57518.c: New test.
 
 2013-06-19  Igor Zamyatin  <igor.zamyatin@intel.com>
 
@@ -5708,7 +6024,7 @@
 2013-06-07  Sriraman Tallam  <tmsriram@google.com>
 
 	PR c++/57548
-	* testsuite/g++.dg/ext/pr57548.C: New test.
+	* g++.dg/ext/pr57548.C: New test.
 
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
@@ -6184,7 +6500,7 @@
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57435
-	* testsuite/gfortran.dg/use_29.f90: New.
+	* gfortran.dg/use_29.f90: New.
 
 2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -8018,7 +8334,7 @@
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/56737
-	* testsuite/gfortran.dg/fmt_cache_3.f90: New.
+	* gfortran.dg/fmt_cache_3.f90: New.
 
 2013-03-29  Tobias Burnus  <burnus@net-b.de>
 

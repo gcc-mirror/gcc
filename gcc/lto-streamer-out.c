@@ -1630,10 +1630,10 @@ output_cfg (struct output_block *ob, struct function *fn)
   ob->main_stream = ob->cfg_stream;
 
   streamer_write_enum (ob->main_stream, profile_status_d, PROFILE_LAST,
-		       profile_status_for_function (fn));
+		       profile_status_for_fn (fn));
 
   /* Output the number of the highest basic block.  */
-  streamer_write_uhwi (ob, last_basic_block_for_function (fn));
+  streamer_write_uhwi (ob, last_basic_block_for_fn (fn));
 
   FOR_ALL_BB_FN (bb, fn)
     {
@@ -1868,7 +1868,7 @@ output_function (struct cgraph_node *node)
 	 virtual PHIs get re-computed on-the-fly which would make numbers
 	 inconsistent.  */
       set_gimple_stmt_max_uid (cfun, 0);
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -1887,7 +1887,7 @@ output_function (struct cgraph_node *node)
 	}
       /* To avoid keeping duplicate gimple IDs in the statements, renumber
 	 virtual phis now.  */
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	{
 	  gimple_stmt_iterator gsi;
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

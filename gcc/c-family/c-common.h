@@ -289,7 +289,6 @@ enum c_tree_index
     CTI_CHAR16_ARRAY_TYPE,
     CTI_CHAR32_ARRAY_TYPE,
     CTI_WCHAR_ARRAY_TYPE,
-    CTI_INT_ARRAY_TYPE,
     CTI_STRING_TYPE,
     CTI_CONST_STRING_TYPE,
 
@@ -430,7 +429,6 @@ extern const unsigned int num_c_common_reswords;
 #define char16_array_type_node		c_global_trees[CTI_CHAR16_ARRAY_TYPE]
 #define char32_array_type_node		c_global_trees[CTI_CHAR32_ARRAY_TYPE]
 #define wchar_array_type_node		c_global_trees[CTI_WCHAR_ARRAY_TYPE]
-#define int_array_type_node		c_global_trees[CTI_INT_ARRAY_TYPE]
 #define string_type_node		c_global_trees[CTI_STRING_TYPE]
 #define const_string_type_node		c_global_trees[CTI_CONST_STRING_TYPE]
 
@@ -1423,8 +1421,8 @@ extern vec <tree, va_gc> *fix_sec_implicit_args
 /* In cilk.c.  */
 extern tree insert_cilk_frame (tree);
 extern void cilk_init_builtins (void);
-extern int gimplify_cilk_spawn (tree *, gimple_seq *, gimple_seq *);
-extern void c_cilk_install_body_w_frame_cleanup (tree, tree);
+extern int gimplify_cilk_spawn (tree *);
+extern void cilk_install_body_with_frame_cleanup (tree, tree, void *);
 extern bool cilk_detect_spawn_and_unwrap (tree *);
 extern bool cilk_set_spawn_marker (location_t, tree);
 extern tree build_cilk_sync (void);
@@ -1432,5 +1430,5 @@ extern tree build_cilk_spawn (location_t, tree);
 extern tree make_cilk_frame (tree);
 extern tree create_cilk_function_exit (tree, bool, bool);
 extern tree cilk_install_body_pedigree_operations (tree);
-
+extern void cilk_outline (tree, tree *, void *);
 #endif /* ! GCC_C_COMMON_H */

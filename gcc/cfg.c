@@ -101,7 +101,7 @@ clear_edges (void)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	free_edge (e);
@@ -153,8 +153,8 @@ compact_blocks (void)
 {
   int i;
 
-  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (cfun));
+  SET_BASIC_BLOCK_FOR_FN (cfun, ENTRY_BLOCK, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  SET_BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK, EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   if (df)
     df_compact_blocks ();
@@ -163,18 +163,18 @@ compact_blocks (void)
       basic_block bb;
 
       i = NUM_FIXED_BLOCKS;
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
-	  SET_BASIC_BLOCK (i, bb);
+	  SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
 	  bb->index = i;
 	  i++;
 	}
       gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
-      for (; i < last_basic_block; i++)
-	SET_BASIC_BLOCK (i, NULL);
+      for (; i < last_basic_block_for_fn (cfun); i++)
+	SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
     }
-  last_basic_block = n_basic_blocks_for_fn (cfun);
+  last_basic_block_for_fn (cfun) = n_basic_blocks_for_fn (cfun);
 }
 
 /* Remove block B from the basic block array.  */
@@ -183,7 +183,7 @@ void
 expunge_block (basic_block b)
 {
   unlink_block (b);
-  SET_BASIC_BLOCK (b->index, NULL);
+  SET_BASIC_BLOCK_FOR_FN (cfun, b->index, NULL);
   n_basic_blocks_for_fn (cfun)--;
   /* We should be able to ggc_free here, but we are not.
      The dead SSA_NAMES are left pointing to dead statements that are pointing
@@ -408,7 +408,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
   memset ((void *) s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
-  if (profile_status_for_function (fun) == PROFILE_ABSENT)
+  if (profile_status_for_fn (fun) == PROFILE_ABSENT)
     return;
 
   if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
@@ -576,7 +576,7 @@ alloc_aux_for_blocks (int size)
     {
       basic_block bb;
 
-      FOR_ALL_BB (bb)
+      FOR_ALL_BB_FN (bb, cfun)
 	alloc_aux_for_block (bb, size);
     }
 }
@@ -588,7 +588,7 @@ clear_aux_for_blocks (void)
 {
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->aux = NULL;
 }
 
@@ -690,7 +690,7 @@ debug_bb (basic_block bb)
 DEBUG_FUNCTION basic_block
 debug_bb_n (int n)
 {
-  basic_block bb = BASIC_BLOCK (n);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, n);
   debug_bb (bb);
   return bb;
 }
@@ -828,7 +828,7 @@ brief_dump_cfg (FILE *file, int flags)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       dump_bb_info (file, bb, 0,
 		    flags & (TDF_COMMENT | TDF_DETAILS),
@@ -1139,7 +1139,7 @@ get_bb_original (basic_block bb)
   key.index1 = bb->index;
   entry = bb_original.find (&key);
   if (entry)
-    return BASIC_BLOCK (entry->index2);
+    return BASIC_BLOCK_FOR_FN (cfun, entry->index2);
   else
     return NULL;
 }
@@ -1164,7 +1164,7 @@ get_bb_copy (basic_block bb)
   key.index1 = bb->index;
   entry = bb_copy.find (&key);
   if (entry)
-    return BASIC_BLOCK (entry->index2);
+    return BASIC_BLOCK_FOR_FN (cfun, entry->index2);
   else
     return NULL;
 }

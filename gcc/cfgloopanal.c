@@ -64,7 +64,7 @@ just_once_each_iteration_p (const struct loop *loop, const_basic_block bb)
 
    LOOPS is the loop tree.  */
 
-#define LOOP_REPR(LOOP) ((LOOP)->num + last_basic_block)
+#define LOOP_REPR(LOOP) ((LOOP)->num + last_basic_block_for_fn (cfun))
 #define BB_REPR(BB) ((BB)->index + 1)
 
 bool
@@ -94,7 +94,7 @@ mark_irreducible_loops (void)
     }
 
   /* Create the edge lists.  */
-  g = new_graph (last_basic_block + num);
+  g = new_graph (last_basic_block_for_fn (cfun) + num);
 
   FOR_BB_BETWEEN (act, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -432,7 +432,7 @@ mark_loop_exit_edges (void)
   if (number_of_loops (cfun) <= 1)
     return;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge_iterator ei;
 
@@ -470,7 +470,7 @@ single_likely_exit (struct loop *loop)
 	 ruled out by this test.  The static branch prediction algorithm
          will not assign such a low probability to conditionals for usual
          reasons.  */
-      if (profile_status != PROFILE_ABSENT
+      if (profile_status_for_fn (cfun) != PROFILE_ABSENT
 	  && ex->probability < 5 && !ex->count)
 	continue;
       if (!found)

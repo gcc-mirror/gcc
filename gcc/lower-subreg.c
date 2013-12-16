@@ -1463,7 +1463,7 @@ decompose_multiword_subregs (bool decompose_copies)
   memset (reg_copy_graph.address (), 0, sizeof (bitmap) * max);
 
   speed_p = optimize_function_for_speed_p (cfun);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx insn;
 
@@ -1537,13 +1537,13 @@ decompose_multiword_subregs (bool decompose_copies)
 
       propagate_pseudo_copies ();
 
-      sub_blocks = sbitmap_alloc (last_basic_block);
+      sub_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (sub_blocks);
 
       EXECUTE_IF_SET_IN_BITMAP (decomposable_context, 0, regno, iter)
 	decompose_register (regno);
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  rtx insn;
 
@@ -1647,7 +1647,7 @@ decompose_multiword_subregs (bool decompose_copies)
 	  rtx insn, end;
 	  edge fallthru;
 
-	  bb = BASIC_BLOCK (i);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
 	  insn = BB_HEAD (bb);
 	  end = BB_END (bb);
 

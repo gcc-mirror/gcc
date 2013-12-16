@@ -542,7 +542,7 @@ verify_histograms (void)
 
   error_found = false;
   visited_hists = pointer_set_create ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple stmt = gsi_stmt (gsi);
@@ -648,7 +648,7 @@ gimple_value_profile_transformations (void)
   gimple_stmt_iterator gsi;
   bool changed = false;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -1944,7 +1944,7 @@ gimple_find_values_to_profile (histogram_values *values)
   histogram_value hist = NULL;
   values->create (0);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       gimple_values_to_profile (gsi_stmt (gsi), values);
 

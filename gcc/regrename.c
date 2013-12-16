@@ -668,13 +668,13 @@ regrename_analyze (bitmap bb_mask)
   int n_bbs;
   int *inverse_postorder;
 
-  inverse_postorder = XNEWVEC (int, last_basic_block);
+  inverse_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
   n_bbs = pre_and_rev_post_order_compute (NULL, inverse_postorder, false);
 
   /* Gather some information about the blocks in this function.  */
   rename_info = XCNEWVEC (struct bb_rename_info, n_basic_blocks_for_fn (cfun));
   i = 0;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *ri = rename_info + i;
       ri->bb = bb;
@@ -696,7 +696,7 @@ regrename_analyze (bitmap bb_mask)
 
   for (i = 0; i < n_bbs; i++)
     {
-      basic_block bb1 = BASIC_BLOCK (inverse_postorder[i]);
+      basic_block bb1 = BASIC_BLOCK_FOR_FN (cfun, inverse_postorder[i]);
       struct bb_rename_info *this_info;
       bool success;
       edge e;
@@ -778,7 +778,7 @@ regrename_analyze (bitmap bb_mask)
      We perform the analysis for both incoming and outgoing edges, but we
      only need to merge once (in the second part, after verifying outgoing
      edges).  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
       unsigned j;
@@ -843,7 +843,7 @@ regrename_analyze (bitmap bb_mask)
 	    }
 	}
     }
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       struct bb_rename_info *bb_ri = (struct bb_rename_info *) bb->aux;
       unsigned j;
@@ -920,7 +920,7 @@ regrename_analyze (bitmap bb_mask)
 
   free (rename_info);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->aux = NULL;
 }
 

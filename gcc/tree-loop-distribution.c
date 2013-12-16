@@ -588,7 +588,7 @@ copy_loop_before (struct loop *loop)
   edge preheader = loop_preheader_edge (loop);
 
   initialize_original_copy_tables ();
-  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, preheader);
+  res = slpeel_tree_duplicate_loop_to_edge_cfg (loop, NULL, preheader);
   gcc_assert (res != NULL);
   free_original_copy_tables ();
   delete_update_ssa ();
@@ -1677,7 +1677,7 @@ tree_loop_distribution (void)
   basic_block bb;
   control_dependences *cd = NULL;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))

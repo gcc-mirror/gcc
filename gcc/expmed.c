@@ -48,6 +48,9 @@ static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   rtx);
+static void store_fixed_bit_field_1 (rtx, unsigned HOST_WIDE_INT,
+				     unsigned HOST_WIDE_INT,
+				     rtx);
 static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -56,6 +59,9 @@ static void store_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 static rtx extract_fixed_bit_field (enum machine_mode, rtx,
 				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, rtx, int);
+static rtx extract_fixed_bit_field_1 (enum machine_mode, rtx,
+				      unsigned HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT, rtx, int);
 static rtx mask_rtx (enum machine_mode, int, int, int);
 static rtx lshift_value (enum machine_mode, unsigned HOST_WIDE_INT, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
@@ -414,6 +420,53 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
 		|| (bitnum + bitsize) % BITS_PER_WORD == 0));
   else
     return bitnum % BITS_PER_WORD == 0;
+}
+
+/* Return true if -fstrict-volatile-bitfields applies an access of OP0
+   containing BITSIZE bits starting at BITNUM, with field mode FIELDMODE.
+   Return false if the access would touch memory outside the range
+   BITREGION_START to BITREGION_END for conformance to the C++ memory
+   model.  */
+
+static bool
+strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
+			    unsigned HOST_WIDE_INT bitnum,
+			    enum machine_mode fieldmode,
+			    unsigned HOST_WIDE_INT bitregion_start,
+			    unsigned HOST_WIDE_INT bitregion_end)
+{
+  unsigned HOST_WIDE_INT modesize = GET_MODE_BITSIZE (fieldmode);
+
+  /* -fstrict-volatile-bitfields must be enabled and we must have a
+     volatile MEM.  */
+  if (!MEM_P (op0)
+      || !MEM_VOLATILE_P (op0)
+      || flag_strict_volatile_bitfields <= 0)
+    return false;
+
+  /* Non-integral modes likely only happen with packed structures.
+     Punt.  */
+  if (!SCALAR_INT_MODE_P (fieldmode))
+    return false;
+
+  /* The bit size must not be larger than the field mode, and
+     the field mode must not be larger than a word.  */
+  if (bitsize > modesize || modesize > BITS_PER_WORD)
+    return false;
+
+  /* Check for cases of unaligned fields that must be split.  */
+  if (bitnum % BITS_PER_UNIT + bitsize > modesize
+      || (STRICT_ALIGNMENT
+	  && bitnum % GET_MODE_ALIGNMENT (fieldmode) + bitsize > modesize))
+    return false;
+
+  /* Check for cases where the C++ memory model applies.  */
+  if (bitregion_end != 0
+      && (bitnum - bitnum % modesize < bitregion_start
+	  || bitnum - bitnum % modesize + modesize > bitregion_end))
+    return false;
+
+  return true;
 }
 
 /* Return true if OP is a memory and if a bitfield of size BITSIZE at
@@ -829,12 +882,8 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      cheap register alternative is available.  */
   if (MEM_P (op0))
     {
-      /* Do not use unaligned memory insvs for volatile bitfields when
-	 -fstrict-volatile-bitfields is in effect.  */
-      if (!(MEM_VOLATILE_P (op0)
-	    && flag_strict_volatile_bitfields > 0)
-	  && get_best_mem_extraction_insn (&insv, EP_insv, bitsize, bitnum,
-					   fieldmode)
+      if (get_best_mem_extraction_insn (&insv, EP_insv, bitsize, bitnum,
+					fieldmode)
 	  && store_bit_field_using_insv (&insv, op0, bitsize, bitnum, value))
 	return true;
 
@@ -887,6 +936,34 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 enum machine_mode fieldmode,
 		 rtx value)
 {
+  /* Handle -fstrict-volatile-bitfields in the cases where it applies.  */
+  if (strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, fieldmode,
+				  bitregion_start, bitregion_end))
+    {
+
+      /* Storing any naturally aligned field can be done with a simple
+	 store.  For targets that support fast unaligned memory, any
+	 naturally sized, unit aligned field can be done directly.  */
+      if (simple_mem_bitfield_p (str_rtx, bitsize, bitnum, fieldmode))
+	{
+	  str_rtx = adjust_bitfield_address (str_rtx, fieldmode,
+					     bitnum / BITS_PER_UNIT);
+	  emit_move_insn (str_rtx, value);
+	}
+      else
+	{
+	  str_rtx = narrow_bit_field_mem (str_rtx, fieldmode, bitsize, bitnum,
+					  &bitnum);
+	  /* Explicitly override the C/C++ memory model; ignore the
+	     bit range so that we can do the access in the mode mandated
+	     by -fstrict-volatile-bitfields instead.  */
+	  store_fixed_bit_field_1 (str_rtx, bitsize, bitnum,
+				   value);
+	}
+
+      return;
+    }
+
   /* Under the C++0x memory model, we must not touch bits outside the
      bit region.  Adjust the address to start at the beginning of the
      bit region.  */
@@ -926,9 +1003,6 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 		       rtx value)
 {
   enum machine_mode mode;
-  rtx temp;
-  int all_zero = 0;
-  int all_one = 0;
 
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
@@ -939,29 +1013,12 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   if (MEM_P (op0))
     {
-      unsigned HOST_WIDE_INT maxbits = MAX_FIXED_MODE_SIZE;
-
-      if (bitregion_end)
-	maxbits = bitregion_end - bitregion_start + 1;
-
-      /* Get the proper mode to use for this field.  We want a mode that
-	 includes the entire field.  If such a mode would be larger than
-	 a word, we won't be doing the extraction the normal way.
-	 We don't want a mode bigger than the destination.  */
-
       mode = GET_MODE (op0);
       if (GET_MODE_BITSIZE (mode) == 0
 	  || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
 	mode = word_mode;
-
-      if (MEM_VOLATILE_P (op0)
-          && GET_MODE_BITSIZE (GET_MODE (op0)) > 0
-	  && GET_MODE_BITSIZE (GET_MODE (op0)) <= maxbits
-	  && flag_strict_volatile_bitfields > 0)
-	mode = GET_MODE (op0);
-      else
-	mode = get_best_mode (bitsize, bitnum, bitregion_start, bitregion_end,
-			      MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
+      mode = get_best_mode (bitsize, bitnum, bitregion_start, bitregion_end,
+			    MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	{
@@ -974,6 +1031,23 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
       op0 = narrow_bit_field_mem (op0, mode, bitsize, bitnum, &bitnum);
     }
+
+  store_fixed_bit_field_1 (op0, bitsize, bitnum, value);
+  return;
+}
+
+/* Helper function for store_fixed_bit_field, stores
+   the bit field always using the MODE of OP0.  */
+
+static void
+store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
+		         unsigned HOST_WIDE_INT bitnum,
+		         rtx value)
+{
+  enum machine_mode mode;
+  rtx temp;
+  int all_zero = 0;
+  int all_one = 0;
 
   mode = GET_MODE (op0);
   gcc_assert (SCALAR_INT_MODE_P (mode));
@@ -1082,6 +1156,12 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
     unit = BITS_PER_WORD;
   else
     unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
+
+  /* If OP0 is a memory with a mode, then UNIT must not be larger than
+     OP0's mode as well.  Otherwise, store_fixed_bit_field will call us
+     again, and we will mutually recurse forever.  */
+  if (MEM_P (op0) && GET_MODE_BITSIZE (GET_MODE (op0)) > 0)
+    unit = MIN (unit, GET_MODE_BITSIZE (GET_MODE (op0)));
 
   /* If VALUE is a constant other than a CONST_INT, get it into a register in
      WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
@@ -1445,19 +1525,8 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      If that's wrong, the solution is to test for it and set TARGET to 0
      if needed.  */
 
-  /* If the bitfield is volatile, we need to make sure the access
-     remains on a type-aligned boundary.  */
-  if (GET_CODE (op0) == MEM
-      && MEM_VOLATILE_P (op0)
-      && GET_MODE_BITSIZE (GET_MODE (op0)) > 0
-      && flag_strict_volatile_bitfields > 0)
-    goto no_subreg_mode_swap;
-
-  /* Only scalar integer modes can be converted via subregs.  There is an
-     additional problem for FP modes here in that they can have a precision
-     which is different from the size.  mode_for_size uses precision, but
-     we want a mode based on the size, so we must avoid calling it for FP
-     modes.  */
+  /* Get the mode of the field to use for atomic access or subreg
+     conversion.  */
   mode1 = mode;
   if (SCALAR_INT_MODE_P (tmode))
     {
@@ -1489,8 +1558,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       op0 = adjust_bitfield_address (op0, mode1, bitnum / BITS_PER_UNIT);
       return convert_extracted_bit_field (op0, mode, tmode, unsignedp);
     }
-
- no_subreg_mode_swap:
 
   /* Handle fields bigger than a word.  */
 
@@ -1611,11 +1678,8 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      cheap register alternative is available.  */
   if (MEM_P (op0))
     {
-      /* Do not use extv/extzv for volatile bitfields when
-         -fstrict-volatile-bitfields is in effect.  */
-      if (!(MEM_VOLATILE_P (op0) && flag_strict_volatile_bitfields > 0)
-	  && get_best_mem_extraction_insn (&extv, pattern, bitsize, bitnum,
-					   tmode))
+      if (get_best_mem_extraction_insn (&extv, pattern, bitsize, bitnum,
+					tmode))
 	{
 	  rtx result = extract_bit_field_using_extv (&extv, op0, bitsize,
 						     bitnum, unsignedp,
@@ -1681,6 +1745,36 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		   unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
 		   enum machine_mode mode, enum machine_mode tmode)
 {
+  enum machine_mode mode1;
+
+  /* Handle -fstrict-volatile-bitfields in the cases where it applies.  */
+  if (GET_MODE_BITSIZE (GET_MODE (str_rtx)) > 0)
+    mode1 = GET_MODE (str_rtx);
+  else if (target && GET_MODE_BITSIZE (GET_MODE (target)) > 0)
+    mode1 = GET_MODE (target);
+  else
+    mode1 = tmode;
+
+  if (strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, mode1, 0, 0))
+    {
+      rtx result;
+
+      /* Extraction of a full MODE1 value can be done with a load as long as
+	 the field is on a byte boundary and is sufficiently aligned.  */
+      if (simple_mem_bitfield_p (str_rtx, bitsize, bitnum, mode1))
+	result = adjust_bitfield_address (str_rtx, mode1,
+					  bitnum / BITS_PER_UNIT);
+      else
+	{
+	  str_rtx = narrow_bit_field_mem (str_rtx, mode1, bitsize, bitnum,
+					  &bitnum);
+	  result = extract_fixed_bit_field_1 (mode, str_rtx, bitsize, bitnum,
+					      target, unsignedp);
+	}
+
+      return convert_extracted_bit_field (result, mode, tmode, unsignedp);
+    }
+  
   return extract_bit_field_1 (str_rtx, bitsize, bitnum, unsignedp,
 			      target, mode, tmode, true);
 }
@@ -1703,50 +1797,31 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 
   if (MEM_P (op0))
     {
-      /* Get the proper mode to use for this field.  We want a mode that
-	 includes the entire field.  If such a mode would be larger than
-	 a word, we won't be doing the extraction the normal way.  */
-
-      if (MEM_VOLATILE_P (op0)
-	  && flag_strict_volatile_bitfields > 0)
-	{
-	  if (GET_MODE_BITSIZE (GET_MODE (op0)) > 0)
-	    mode = GET_MODE (op0);
-	  else if (target && GET_MODE_BITSIZE (GET_MODE (target)) > 0)
-	    mode = GET_MODE (target);
-	  else
-	    mode = tmode;
-	}
-      else
-	mode = get_best_mode (bitsize, bitnum, 0, 0,
-			      MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
+      mode = get_best_mode (bitsize, bitnum, 0, 0,
+			    MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	/* The only way this should occur is if the field spans word
 	   boundaries.  */
 	return extract_split_bit_field (op0, bitsize, bitnum, unsignedp);
 
-      unsigned int total_bits = GET_MODE_BITSIZE (mode);
-      HOST_WIDE_INT bit_offset = bitnum - bitnum % total_bits;
-
-      /* If we're accessing a volatile MEM, we can't apply BIT_OFFSET
-	 if it results in a multi-word access where we otherwise wouldn't
-	 have one.  So, check for that case here.  */
-      if (MEM_P (op0)
-	  && MEM_VOLATILE_P (op0)
-	  && flag_strict_volatile_bitfields > 0
-	  && bitnum % BITS_PER_UNIT + bitsize <= total_bits
-	  && bitnum % GET_MODE_BITSIZE (mode) + bitsize > total_bits)
-	{
-	  /* If the target doesn't support unaligned access, give up and
-	     split the access into two.  */
-	  if (STRICT_ALIGNMENT)
-	    return extract_split_bit_field (op0, bitsize, bitnum, unsignedp);
-	  bit_offset = bitnum - bitnum % BITS_PER_UNIT;
-	}
-      op0 = adjust_bitfield_address (op0, mode, bit_offset / BITS_PER_UNIT);
-      bitnum -= bit_offset;
+      op0 = narrow_bit_field_mem (op0, mode, bitsize, bitnum, &bitnum);
     }
+
+  return extract_fixed_bit_field_1 (tmode, op0, bitsize, bitnum,
+				    target, unsignedp);
+}
+
+/* Helper function for extract_fixed_bit_field, extracts
+   the bit field always using the MODE of OP0.  */
+
+static rtx
+extract_fixed_bit_field_1 (enum machine_mode tmode, rtx op0,
+			   unsigned HOST_WIDE_INT bitsize,
+			   unsigned HOST_WIDE_INT bitnum, rtx target,
+			   int unsignedp)
+{
+  enum machine_mode mode;
 
   mode = GET_MODE (op0);
   gcc_assert (SCALAR_INT_MODE_P (mode));

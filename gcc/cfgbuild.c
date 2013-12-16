@@ -209,7 +209,7 @@ make_edges (basic_block min, basic_block max, int update_p)
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
   if (forced_labels || cfun->cfg->max_jumptable_ents > 100)
-    edge_cache = sbitmap_alloc (last_basic_block);
+    edge_cache = sbitmap_alloc (last_basic_block_for_fn (cfun));
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
      is always the entry.  */
@@ -595,15 +595,15 @@ find_many_sub_basic_blocks (sbitmap blocks)
 {
   basic_block bb, min, max;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb,
 	       bitmap_bit_p (blocks, bb->index) ? BLOCK_TO_SPLIT : BLOCK_ORIGINAL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (STATE (bb) == BLOCK_TO_SPLIT)
       find_bb_boundaries (bb);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (STATE (bb) != BLOCK_ORIGINAL)
       break;
 
@@ -618,7 +618,7 @@ find_many_sub_basic_blocks (sbitmap blocks)
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
-  if (profile_status != PROFILE_ABSENT)
+  if (profile_status_for_fn (cfun) != PROFILE_ABSENT)
     FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
       {
 	edge e;
@@ -640,6 +640,6 @@ find_many_sub_basic_blocks (sbitmap blocks)
 	compute_outgoing_frequencies (bb);
       }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     SET_STATE (bb, 0);
 }

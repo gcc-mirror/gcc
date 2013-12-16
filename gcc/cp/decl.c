@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "plugin.h"
 #include "cgraph.h"
+#include "cilk.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -13888,6 +13889,9 @@ finish_function (int flags)
 
   /* If we're saving up tree structure, tie off the function now.  */
   DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
+
+  if (fn_contains_cilk_spawn_p (cfun) && !processing_template_decl)
+    cfun->cilk_frame_decl = insert_cilk_frame (fndecl);
 
   finish_fname_decls ();
 

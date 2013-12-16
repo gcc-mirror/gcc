@@ -261,7 +261,7 @@ execute_warn_self_assign (void)
   gimple_stmt_iterator gsi;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         warn_self_assign (gsi_stmt (gsi));

@@ -1601,7 +1601,7 @@ analyze_memory_references (void)
      loops postorder.  */
   i = 0;
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->loop_father != current_loops->tree_root)
       bbs[i++] = bb;
   n = i;
@@ -2401,12 +2401,12 @@ fill_always_executed_in_1 (struct loop *loop, sbitmap contains_call)
 static void
 fill_always_executed_in (void)
 {
-  sbitmap contains_call = sbitmap_alloc (last_basic_block);
+  sbitmap contains_call = sbitmap_alloc (last_basic_block_for_fn (cfun));
   basic_block bb;
   struct loop *loop;
 
   bitmap_clear (contains_call);
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2478,7 +2478,7 @@ tree_ssa_lim_finalize (void)
 
   free_aux_for_edges ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     SET_ALWAYS_EXECUTED_IN (bb, NULL);
 
   bitmap_obstack_release (&lim_bitmap_obstack);

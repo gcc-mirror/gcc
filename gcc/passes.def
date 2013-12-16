@@ -217,6 +217,8 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops);
 	  NEXT_PASS (pass_if_conversion);
+	  /* pass_vectorize must immediately follow pass_if_conversion.
+	     Please do not add any other passes in between.  */
 	  NEXT_PASS (pass_vectorize);
           PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
 	      NEXT_PASS (pass_dce_loop);

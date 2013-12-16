@@ -5356,6 +5356,7 @@ extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
 extern tree cp_protect_cleanup_actions		(void);
+extern tree create_try_catch_expr               (tree, tree);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);
@@ -6185,6 +6186,9 @@ extern bool cpp_validate_cilk_plus_loop		(tree);
 extern tree expand_array_notation_exprs         (tree);
 bool cilkplus_an_triplet_types_ok_p             (location_t, tree, tree, tree,
 						 tree);
+/* In c-family/cilk.c */
+extern bool cilk_valid_spawn                    (tree);
+
 /* -- end of C++ */
 
 #endif /* ! GCC_CP_TREE_H */

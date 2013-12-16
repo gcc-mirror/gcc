@@ -65,7 +65,7 @@ associate_equivalences_with_edges (void)
 
   /* Walk over each block.  If the block ends with a control statement,
      then it might create a useful equivalence.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi = gsi_last_bb (bb);
       gimple stmt;
@@ -179,7 +179,7 @@ associate_equivalences_with_edges (void)
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
 	      int i, n_labels = gimple_switch_num_labels (stmt);
-	      tree *info = XCNEWVEC (tree, last_basic_block);
+	      tree *info = XCNEWVEC (tree, last_basic_block_for_fn (cfun));
 
 	      /* Walk over the case label vector.  Record blocks
 		 which are reached by a single case label which represents
@@ -214,7 +214,8 @@ associate_equivalences_with_edges (void)
 		      equivalency = XNEW (struct edge_equivalency);
 		      equivalency->rhs = x;
 		      equivalency->lhs = cond;
-		      find_edge (bb, BASIC_BLOCK (i))->aux = equivalency;
+		      find_edge (bb, BASIC_BLOCK_FOR_FN (cfun, i))->aux =
+			equivalency;
 		    }
 		}
 	      free (info);
@@ -405,7 +406,7 @@ tree_ssa_uncprop (void)
   /* we just need to empty elements out of the hash table, and cleanup the
     AUX field on the edges.  */
   val_ssa_equiv.dispose ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;

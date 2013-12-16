@@ -365,7 +365,7 @@ stack_var_conflict_p (size_t x, size_t y)
    enter its partition number into bitmap DATA.  */
 
 static bool
-visit_op (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+visit_op (gimple, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -385,7 +385,7 @@ visit_op (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
    from bitmap DATA.  */
 
 static bool
-visit_conflict (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+visit_conflict (gimple, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
@@ -419,7 +419,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
   edge e;
   edge_iterator ei;
   gimple_stmt_iterator gsi;
-  bool (*visit)(gimple, tree, void *);
+  walk_stmt_load_store_addr_fn visit;
 
   bitmap_clear (work);
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -498,10 +498,10 @@ add_scope_conflicts (void)
 
      We then do a mostly classical bitmap liveness algorithm.  */
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     bb->aux = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
-  rpo = XNEWVEC (int, last_basic_block);
+  rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
   n_bbs = pre_and_rev_post_order_compute (NULL, rpo, false);
 
   changed = true;
@@ -512,7 +512,7 @@ add_scope_conflicts (void)
       for (i = 0; i < n_bbs; i++)
 	{
 	  bitmap active;
-	  bb = BASIC_BLOCK (rpo[i]);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  active = (bitmap)bb->aux;
 	  add_scope_conflicts_1 (bb, work, false);
 	  if (bitmap_ior_into (active, work))
@@ -520,12 +520,12 @@ add_scope_conflicts (void)
 	}
     }
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     add_scope_conflicts_1 (bb, work, true);
 
   free (rpo);
   BITMAP_FREE (work);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     BITMAP_FREE (bb->aux);
 }
 
@@ -5378,7 +5378,7 @@ discover_nonconstant_array_refs (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple stmt = gsi_stmt (gsi);
@@ -5809,7 +5809,7 @@ gimple_expand_cfg (void)
 	}
     }
 
-  blocks = sbitmap_alloc (last_basic_block);
+  blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_ones (blocks);
   find_many_sub_basic_blocks (blocks);
   sbitmap_free (blocks);

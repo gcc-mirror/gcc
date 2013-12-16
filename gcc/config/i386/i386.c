@@ -1607,7 +1607,7 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
    COSTS_N_INSNS (2)},			/*			      other */
@@ -1684,7 +1684,7 @@ struct processor_costs slm_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
    COSTS_N_INSNS (4),			/*				 DI */
    COSTS_N_INSNS (2)},			/*			      other */
@@ -3698,6 +3698,10 @@ ix86_option_override_internal (bool main_args_p,
     {
       if (opts->x_optimize >= 1 && !opts_set->x_flag_omit_frame_pointer)
 	opts->x_flag_omit_frame_pointer = !USE_X86_64_FRAME_POINTER;
+      if (opts->x_flag_asynchronous_unwind_tables
+	  && !opts_set->x_flag_unwind_tables
+	  && TARGET_64BIT_MS_ABI)
+	opts->x_flag_unwind_tables = 1;
       if (opts->x_flag_asynchronous_unwind_tables == 2)
 	opts->x_flag_unwind_tables
 	  = opts->x_flag_asynchronous_unwind_tables = 1;
@@ -4332,6 +4336,9 @@ ix86_function_specific_restore (struct gcc_options *opts,
   enum processor_type old_arch = ix86_arch;
   unsigned int ix86_arch_mask;
   int i;
+
+  /* We don't change -fPIC.  */
+  opts->x_flag_pic = flag_pic;
 
   ix86_arch = (enum processor_type) ptr->arch;
   ix86_schedule = (enum attr_cpu) ptr->schedule;
@@ -10515,7 +10522,7 @@ ix86_finalize_stack_realign_flags (void)
       add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
       add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 			   HARD_FRAME_POINTER_REGNUM);
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
         {
           rtx insn;
 	  FOR_BB_INSNS (bb, insn)
@@ -10961,18 +10968,21 @@ ix86_expand_prologue (void)
 	}
       m->fs.sp_offset += allocate;
 
+      /* Use stack_pointer_rtx for relative addressing so that code
+	 works for realigned stack, too.  */
       if (r10_live && eax_live)
         {
-	  t = choose_baseaddr (m->fs.sp_offset - allocate);
+	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
 	  emit_move_insn (gen_rtx_REG (word_mode, R10_REG),
 			  gen_frame_mem (word_mode, t));
-	  t = choose_baseaddr (m->fs.sp_offset - allocate - UNITS_PER_WORD);
+	  t = plus_constant (Pmode, stack_pointer_rtx,
+			     allocate - UNITS_PER_WORD);
 	  emit_move_insn (gen_rtx_REG (word_mode, AX_REG),
 			  gen_frame_mem (word_mode, t));
 	}
       else if (eax_live || r10_live)
 	{
-	  t = choose_baseaddr (m->fs.sp_offset - allocate);
+	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
 	  emit_move_insn (gen_rtx_REG (word_mode,
 				       (eax_live ? AX_REG : R10_REG)),
 			  gen_frame_mem (word_mode, t));
@@ -33789,6 +33799,31 @@ addcarryx:
   gcc_unreachable ();
 }
 
+/* This returns the target-specific builtin with code CODE if
+   current_function_decl has visibility on this builtin, which is checked
+   using isa flags.  Returns NULL_TREE otherwise.  */
+
+static tree ix86_get_builtin (enum ix86_builtins code)
+{
+  struct cl_target_option *opts;
+  tree target_tree = NULL_TREE;
+
+  /* Determine the isa flags of current_function_decl.  */
+
+  if (current_function_decl)
+    target_tree = DECL_FUNCTION_SPECIFIC_TARGET (current_function_decl);
+
+  if (target_tree == NULL)
+    target_tree = target_option_default_node;
+
+  opts = TREE_TARGET_OPTION (target_tree);
+
+  if (ix86_builtins_isa[(int) code].isa & opts->x_ix86_isa_flags)
+    return ix86_builtin_decl (code, true);
+  else
+    return NULL_TREE;
+}
+
 /* Returns a function decl for a vectorized version of the builtin function
    with builtin function code FN and the result vector type TYPE, or NULL_TREE
    if it is not available.  */
@@ -33817,9 +33852,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_SQRTPD];
+	    return ix86_get_builtin (IX86_BUILTIN_SQRTPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_SQRTPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_SQRTPD256);
 	}
       break;
 
@@ -33827,9 +33862,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_SQRTPS_NR];
+	    return ix86_get_builtin (IX86_BUILTIN_SQRTPS_NR);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_SQRTPS_NR256];
+	    return ix86_get_builtin (IX86_BUILTIN_SQRTPS_NR256);
 	}
       break;
 
@@ -33843,9 +33878,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX);
 	  else if (out_n == 8 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX256);
 	}
       break;
 
@@ -33859,9 +33894,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPS_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS_SFIX);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPS_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS_SFIX256);
 	}
       break;
 
@@ -33875,9 +33910,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_CEILPD_VEC_PACK_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPD_VEC_PACK_SFIX);
 	  else if (out_n == 8 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CEILPD_VEC_PACK_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPD_VEC_PACK_SFIX256);
 	}
       break;
 
@@ -33891,9 +33926,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CEILPS_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPS_SFIX);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_CEILPS_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPS_SFIX256);
 	}
       break;
 
@@ -33903,9 +33938,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_VEC_PACK_SFIX);
 	  else if (out_n == 8 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_VEC_PACK_SFIX256);
 	}
       break;
 
@@ -33915,9 +33950,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CVTPS2DQ];
+	    return ix86_get_builtin (IX86_BUILTIN_CVTPS2DQ);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_CVTPS2DQ256];
+	    return ix86_get_builtin (IX86_BUILTIN_CVTPS2DQ256);
 	}
       break;
 
@@ -33931,9 +33966,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == DFmode)
 	{
 	  if (out_n == 4 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX);
 	  else if (out_n == 8 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX256);
 	}
       break;
 
@@ -33947,9 +33982,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SImode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ_SFIX];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ_SFIX);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ_SFIX256];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ_SFIX256);
 	}
       break;
 
@@ -33957,9 +33992,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_CPYSGNPD];
+	    return ix86_get_builtin (IX86_BUILTIN_CPYSGNPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CPYSGNPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_CPYSGNPD256);
 	}
       break;
 
@@ -33967,9 +34002,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CPYSGNPS];
+	    return ix86_get_builtin (IX86_BUILTIN_CPYSGNPS);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_CPYSGNPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_CPYSGNPS256);
 	}
       break;
 
@@ -33981,9 +34016,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPD];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPD256);
 	}
       break;
 
@@ -33995,9 +34030,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPS];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_FLOORPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS256);
 	}
       break;
 
@@ -34009,9 +34044,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_CEILPD];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CEILPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPD256);
 	}
       break;
 
@@ -34023,9 +34058,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_CEILPS];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPS);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_CEILPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPS256);
 	}
       break;
 
@@ -34037,9 +34072,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_TRUNCPD];
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_TRUNCPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPD256);
 	}
       break;
 
@@ -34051,9 +34086,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_TRUNCPS];
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_TRUNCPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS256);
 	}
       break;
 
@@ -34065,9 +34100,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_RINTPD];
+	    return ix86_get_builtin (IX86_BUILTIN_RINTPD);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_RINTPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_RINTPD256);
 	}
       break;
 
@@ -34079,9 +34114,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_RINTPS];
+	    return ix86_get_builtin (IX86_BUILTIN_RINTPS);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_RINTPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_RINTPS256);
 	}
       break;
 
@@ -34093,9 +34128,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ);
 	  else if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPD_AZ256];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPD_AZ256);
 	}
       break;
 
@@ -34107,9 +34142,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ);
 	  else if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_ROUNDPS_AZ256];
+	    return ix86_get_builtin (IX86_BUILTIN_ROUNDPS_AZ256);
 	}
       break;
 
@@ -34117,9 +34152,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == DFmode && in_mode == DFmode)
 	{
 	  if (out_n == 2 && in_n == 2)
-	    return ix86_builtins[IX86_BUILTIN_VFMADDPD];
+	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPD);
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_VFMADDPD256];
+	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPD256);
 	}
       break;
 
@@ -34127,9 +34162,9 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
       if (out_mode == SFmode && in_mode == SFmode)
 	{
 	  if (out_n == 4 && in_n == 4)
-	    return ix86_builtins[IX86_BUILTIN_VFMADDPS];
+	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPS);
 	  if (out_n == 8 && in_n == 8)
-	    return ix86_builtins[IX86_BUILTIN_VFMADDPS256];
+	    return ix86_get_builtin (IX86_BUILTIN_VFMADDPS256);
 	}
       break;
 
@@ -34409,7 +34444,7 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
       return NULL_TREE;
     }
 
-  return ix86_builtins[code];
+  return ix86_get_builtin (code);
 }
 
 /* Returns a code for a target-specific builtin that implements
@@ -34430,10 +34465,10 @@ ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
       {
 	/* Vectorized version of sqrt to rsqrt conversion.  */
       case IX86_BUILTIN_SQRTPS_NR:
-	return ix86_builtins[IX86_BUILTIN_RSQRTPS_NR];
+	return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR);
 
       case IX86_BUILTIN_SQRTPS_NR256:
-	return ix86_builtins[IX86_BUILTIN_RSQRTPS_NR256];
+	return ix86_get_builtin (IX86_BUILTIN_RSQRTPS_NR256);
 
       default:
 	return NULL_TREE;
@@ -34444,7 +34479,7 @@ ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
       {
 	/* Sqrt to rsqrt conversion.  */
       case BUILT_IN_SQRTF:
-	return ix86_builtins[IX86_BUILTIN_RSQRTF];
+	return ix86_get_builtin (IX86_BUILTIN_RSQRTF);
 
       default:
 	return NULL_TREE;

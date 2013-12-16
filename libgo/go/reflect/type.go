@@ -517,7 +517,7 @@ func (t *uncommonType) Method(i int) (m Method) {
 	m.Type = toType(mt)
 	x := new(unsafe.Pointer)
 	*x = unsafe.Pointer(&p.tfn)
-	m.Func = Value{mt, unsafe.Pointer(x), fl | flagIndir}
+	m.Func = Value{mt, unsafe.Pointer(x), fl | flagIndir | flagMethodFn}
 	m.Index = i
 	return
 }

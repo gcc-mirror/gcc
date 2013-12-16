@@ -5934,13 +5934,13 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 static bool
 find_assert_locations (void)
 {
-  int *rpo = XNEWVEC (int, last_basic_block);
-  int *bb_rpo = XNEWVEC (int, last_basic_block);
-  int *last_rpo = XCNEWVEC (int, last_basic_block);
+  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *bb_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *last_rpo = XCNEWVEC (int, last_basic_block_for_fn (cfun));
   int rpo_cnt, i;
   bool need_asserts;
 
-  live = XCNEWVEC (sbitmap, last_basic_block);
+  live = XCNEWVEC (sbitmap, last_basic_block_for_fn (cfun));
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
@@ -5975,7 +5975,7 @@ find_assert_locations (void)
   need_asserts = false;
   for (i = rpo_cnt - 1; i >= 0; --i)
     {
-      basic_block bb = BASIC_BLOCK (rpo[i]);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       edge e;
       edge_iterator ei;
 
@@ -6034,7 +6034,7 @@ find_assert_locations (void)
   XDELETEVEC (rpo);
   XDELETEVEC (bb_rpo);
   XDELETEVEC (last_rpo);
-  for (i = 0; i < last_basic_block; ++i)
+  for (i = 0; i < last_basic_block_for_fn (cfun); ++i)
     if (live[i])
       sbitmap_free (live[i]);
   XDELETEVEC (live);
@@ -6431,7 +6431,7 @@ check_all_array_refs (void)
   basic_block bb;
   gimple_stmt_iterator si;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge_iterator ei;
       edge e;
@@ -6593,7 +6593,7 @@ remove_range_assertions (void)
   /* Note that the BSI iterator bump happens at the bottom of the
      loop and no bump is necessary if we're removing the statement
      referenced by the current BSI.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (si = gsi_after_labels (bb), is_unreachable = -1; !gsi_end_p (si);)
       {
 	gimple stmt = gsi_stmt (si);
@@ -6708,7 +6708,7 @@ vrp_initialize (void)
   vr_value = XCNEWVEC (value_range_t *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator si;
 
@@ -9543,7 +9543,7 @@ identify_jump_threads (void)
      I doubt it's worth the effort for the classes of jump
      threading opportunities we are trying to identify at this
      point in compilation.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       gimple last;
 

@@ -12,7 +12,7 @@
   b = 2
   c = 3
   l = .false.
-!$omp parallel num_threads (3) reduction (.or.:l)
+!$omp parallel num_threads (3) reduction (.or.:l) private (d)
   if (omp_get_thread_num () .eq. 0) then
     ip = loc (a)
   elseif (omp_get_thread_num () .eq. 1) then

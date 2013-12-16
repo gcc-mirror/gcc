@@ -94,7 +94,7 @@ print_global_statistics (FILE* file)
 
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator psi;
 
@@ -150,7 +150,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
 
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator psi;
       loop_p loop = bb->loop_father;
@@ -245,7 +245,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
     {
       scev_reset ();
       cleanup_tree_cfg ();
-      profile_status = PROFILE_ABSENT;
+      profile_status_for_fn (cfun) = PROFILE_ABSENT;
       release_recorded_exits ();
       tree_estimate_probability ();
     }

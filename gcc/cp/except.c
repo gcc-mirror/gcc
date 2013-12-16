@@ -1342,4 +1342,22 @@ build_noexcept_spec (tree expr, int complain)
     }
 }
 
+/* Returns a TRY_CATCH_EXPR that will put TRY_LIST and CATCH_LIST in the
+   TRY and CATCH locations.  CATCH_LIST must be a STATEMENT_LIST */
+
+tree
+create_try_catch_expr (tree try_expr, tree catch_list)
+{
+  location_t loc = EXPR_LOCATION (try_expr);
+ 
+  append_to_statement_list (do_begin_catch (), &catch_list);
+  append_to_statement_list (build_throw (NULL_TREE), &catch_list);
+  tree catch_tf_expr = build_stmt (loc, TRY_FINALLY_EXPR, catch_list, 
+				   do_end_catch (NULL_TREE));
+  catch_list = build2 (CATCH_EXPR, void_type_node, NULL_TREE,
+		       catch_tf_expr);
+  tree try_catch_expr = build_stmt (loc, TRY_CATCH_EXPR, try_expr, catch_list);
+  return try_catch_expr;
+}
+
 #include "gt-cp-except.h"

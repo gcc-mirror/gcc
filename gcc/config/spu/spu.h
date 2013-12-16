@@ -54,8 +54,6 @@ extern GTY(()) int spu_tune;
 
 #define WORDS_BIG_ENDIAN 1
 
-#define BITS_PER_UNIT 8
-
 /* GCC uses word_mode in many places, assuming that it is the fastest
    integer mode.  That is not the case for SPU though.  We can't use
    32 here because (of some reason I can't remember.) */

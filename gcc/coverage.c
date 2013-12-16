@@ -588,7 +588,7 @@ coverage_compute_cfg_checksum (void)
   basic_block bb;
   unsigned chksum = n_basic_blocks_for_fn (cfun);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;

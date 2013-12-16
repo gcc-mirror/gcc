@@ -13762,6 +13762,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       error ("use %<...%> to expand argument pack");
       RETURN (error_mark_node);
 
+    case CILK_SPAWN_STMT:
+      cfun->calls_cilk_spawn = 1;
+      RETURN (build_cilk_spawn (EXPR_LOCATION (t), RECUR (CILK_SPAWN_FN (t))));
+
+    case CILK_SYNC_STMT:
+      RETURN (build_cilk_sync ());
+
     case COMPOUND_EXPR:
       tmp = RECUR (TREE_OPERAND (t, 0));
       if (tmp == NULL_TREE)
@@ -15415,9 +15422,9 @@ pack_deducible_p (tree parm, tree fn)
    it.  TARGS is a vector into which the deduced template arguments
    are placed.
 
-   Return zero for success, 2 for an incomplete match that doesn't resolve
-   all the types, and 1 for complete failure.  An error message will be
-   printed only for an incomplete match.
+   Returns either a FUNCTION_DECL for the matching specialization of FN or
+   NULL_TREE if no suitable specialization can be found.  If EXPLAIN_P is
+   true, diagnostics will be printed to explain why it failed.
 
    If FN is a conversion operator, or we are trying to produce a specific
    specialization, RETURN_TYPE is the return type desired.
@@ -16400,7 +16407,7 @@ resolve_overloaded_unification (tree tparms,
 	  if (subargs != error_mark_node
 	      && !any_dependent_template_arguments_p (subargs))
 	    {
-	      elem = tsubst (TREE_TYPE (fn), subargs, tf_none, NULL_TREE);
+	      elem = TREE_TYPE (instantiate_template (fn, subargs, tf_none));
 	      if (try_one_overload (tparms, targs, tempargs, parm,
 				    elem, strict, sub_strict, addr_p, explain_p)
 		  && (!goodfn || !same_type_p (goodfn, elem)))

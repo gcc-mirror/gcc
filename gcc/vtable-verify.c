@@ -513,10 +513,10 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
     {
       gimple stmt2 = USE_STMT (use_p);
 
-      if (gimple_code (stmt2) == GIMPLE_CALL)
+      if (is_gimple_call (stmt2))
         {
           tree fncall = gimple_call_fn (stmt2);
-          if (TREE_CODE (fncall) == OBJ_TYPE_REF)
+          if (fncall && TREE_CODE (fncall) == OBJ_TYPE_REF)
             found_vcall = true;
 	  else
 	    return false;
@@ -527,7 +527,7 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth)
 	                                            (gimple_phi_result (stmt2),
 	                                             mem_ref_depth);
         }
-      else if (gimple_code (stmt2) == GIMPLE_ASSIGN)
+      else if (is_gimple_assign (stmt2))
         {
 	  tree rhs = gimple_assign_rhs1 (stmt2);
 	  if (TREE_CODE (rhs) == ADDR_EXPR
@@ -586,10 +586,10 @@ verify_bb_vtables (basic_block bb)
       stmt = gsi_stmt (gsi_virtual_call);
 
       /* Count virtual calls.  */
-      if (gimple_code (stmt) == GIMPLE_CALL)
+      if (is_gimple_call (stmt))
         {
           tree fncall = gimple_call_fn (stmt);
-          if (TREE_CODE (fncall) == OBJ_TYPE_REF)
+          if (fncall && TREE_CODE (fncall) == OBJ_TYPE_REF)
             total_num_virtual_calls++;
         }
 
@@ -735,7 +735,7 @@ vtable_verify_main (void)
   unsigned int ret = 1;
   basic_block bb;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
       verify_bb_vtables (bb);
 
   return ret;

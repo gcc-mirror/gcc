@@ -677,7 +677,8 @@ diagnose_tm_1 (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      }
 	    else if (direct_call_p)
 	      {
-		if (flags_from_decl_or_type (fn) & ECF_TM_BUILTIN)
+		if (IS_TYPE_OR_DECL_P (fn)
+		    && flags_from_decl_or_type (fn) & ECF_TM_BUILTIN)
 		  is_safe = true;
 		else if (replacement)
 		  {
@@ -1956,7 +1957,7 @@ tm_region_init (struct tm_region *region)
   /* We could store this information in bb->aux, but we may get called
      through get_all_tm_blocks() from another pass that may be already
      using bb->aux.  */
-  bb_regions.safe_grow_cleared (last_basic_block);
+  bb_regions.safe_grow_cleared (last_basic_block_for_fn (cfun));
 
   queue.safe_push (bb);
   bb_regions[bb->index] = region;
@@ -2628,7 +2629,7 @@ static vec<tm_region_p>
 get_bb_regions_instrumented (bool traverse_clones,
 			     bool include_uninstrumented_p)
 {
-  unsigned n = last_basic_block;
+  unsigned n = last_basic_block_for_fn (cfun);
   struct bb2reg_stuff stuff;
   vec<tm_region_p> ret;
 
@@ -2656,7 +2657,7 @@ compute_transaction_bits (void)
      certainly don't need it to calculate CDI_DOMINATOR info.  */
   gate_tm_init ();
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     bb->flags &= ~BB_IN_TRANSACTION;
 
   for (region = all_tm_regions; region; region = region->next)
@@ -2993,7 +2994,7 @@ execute_tm_mark (void)
 		  && sub & GTMA_MAY_ENTER_IRREVOCABLE)
 		continue;
 	    }
-	  expand_block_tm (r, BASIC_BLOCK (i));
+	  expand_block_tm (r, BASIC_BLOCK_FOR_FN (cfun, i));
 	}
     }
 
@@ -3184,7 +3185,7 @@ execute_tm_edges (void)
 
   FOR_EACH_VEC_ELT (bb_regions, i, r)
     if (r != NULL)
-      expand_block_edges (r, BASIC_BLOCK (i));
+      expand_block_edges (r, BASIC_BLOCK_FOR_FN (cfun, i));
 
   bb_regions.release ();
 
@@ -3700,7 +3701,7 @@ tm_memopt_compute_antic (struct tm_region *region,
       unsigned int i;
       bitmap_iterator bi;
       EXECUTE_IF_SET_IN_BITMAP (region->exit_blocks, 0, i, bi)
-	BB_VISITED_P (BASIC_BLOCK (i)) = true;
+	BB_VISITED_P (BASIC_BLOCK_FOR_FN (cfun, i)) = true;
     }
 
   qin = worklist;
@@ -4572,7 +4573,8 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
       unsigned i;
 
       EXECUTE_IF_SET_IN_BITMAP (new_irr, 0, i, bmi)
-	ipa_tm_decrement_clone_counts (BASIC_BLOCK (i), for_clone);
+	ipa_tm_decrement_clone_counts (BASIC_BLOCK_FOR_FN (cfun, i),
+				       for_clone);
 
       if (old_irr)
 	{

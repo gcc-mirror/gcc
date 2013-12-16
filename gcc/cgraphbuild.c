@@ -208,7 +208,7 @@ compute_call_stmt_bb_frequency (tree decl, basic_block bb)
   		     (DECL_STRUCT_FUNCTION (decl))->frequency;
   int freq = bb->frequency;
 
-  if (profile_status_for_function (DECL_STRUCT_FUNCTION (decl)) == PROFILE_ABSENT)
+  if (profile_status_for_fn (DECL_STRUCT_FUNCTION (decl)) == PROFILE_ABSENT)
     return CGRAPH_FREQ_BASE;
 
   if (!entry_freq)
@@ -224,7 +224,7 @@ compute_call_stmt_bb_frequency (tree decl, basic_block bb)
 /* Mark address taken in STMT.  */
 
 static bool
-mark_address (gimple stmt, tree addr, void *data)
+mark_address (gimple stmt, tree addr, tree, void *data)
 {
   addr = get_base_address (addr);
   if (TREE_CODE (addr) == FUNCTION_DECL)
@@ -251,7 +251,7 @@ mark_address (gimple stmt, tree addr, void *data)
 /* Mark load of T.  */
 
 static bool
-mark_load (gimple stmt, tree t, void *data)
+mark_load (gimple stmt, tree t, tree, void *data)
 {
   t = get_base_address (t);
   if (t && TREE_CODE (t) == FUNCTION_DECL)
@@ -279,7 +279,7 @@ mark_load (gimple stmt, tree t, void *data)
 /* Mark store of T.  */
 
 static bool
-mark_store (gimple stmt, tree t, void *data)
+mark_store (gimple stmt, tree t, tree, void *data)
 {
   t = get_base_address (t);
   if (t && TREE_CODE (t) == VAR_DECL
@@ -317,7 +317,7 @@ build_cgraph_edges (void)
 
   /* Create the callgraph edges and record the nodes referenced by the function.
      body.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -451,7 +451,7 @@ rebuild_cgraph_edges (void)
 
   node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -505,7 +505,7 @@ cgraph_rebuild_references (void)
 
   node->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	ipa_record_stmt_references (node, gsi_stmt (gsi));

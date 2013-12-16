@@ -1284,7 +1284,7 @@ init_elimination (void)
   struct elim_table *ep;
 
   init_elim_table ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       curr_sp_change = 0;
       stop_to_sp_elimination_p = false;

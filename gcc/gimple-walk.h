@@ -89,11 +89,12 @@ extern gimple walk_gimple_seq (gimple_seq, walk_stmt_fn, walk_tree_fn,
 extern tree walk_gimple_op (gimple, walk_tree_fn, struct walk_stmt_info *);
 extern tree walk_gimple_stmt (gimple_stmt_iterator *, walk_stmt_fn,
 			      walk_tree_fn, struct walk_stmt_info *);
+typedef bool (*walk_stmt_load_store_addr_fn) (gimple, tree, tree, void *);
 extern bool walk_stmt_load_store_addr_ops (gimple, void *,
-					   bool (*)(gimple, tree, void *),
-					   bool (*)(gimple, tree, void *),
-					   bool (*)(gimple, tree, void *));
+					   walk_stmt_load_store_addr_fn,
+					   walk_stmt_load_store_addr_fn,
+					   walk_stmt_load_store_addr_fn);
 extern bool walk_stmt_load_store_ops (gimple, void *,
-				      bool (*)(gimple, tree, void *),
-				      bool (*)(gimple, tree, void *));
+				      walk_stmt_load_store_addr_fn,
+				      walk_stmt_load_store_addr_fn);
 #endif /* GCC_GIMPLE_WALK_H */

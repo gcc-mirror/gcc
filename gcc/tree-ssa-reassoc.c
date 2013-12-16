@@ -2028,7 +2028,8 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 {
   operand_entry_t oe = (*ops)[range->idx];
   tree op = oe->op;
-  gimple stmt = op ? SSA_NAME_DEF_STMT (op) : last_stmt (BASIC_BLOCK (oe->id));
+  gimple stmt = op ? SSA_NAME_DEF_STMT (op) :
+    last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
   location_t loc = gimple_location (stmt);
   tree optype = op ? TREE_TYPE (op) : boolean_type_node;
   tree tem = build_range_check (loc, optype, exp, in_p, low, high);
@@ -2291,7 +2292,8 @@ optimize_range_tests (enum tree_code opcode,
       oe = (*ops)[i];
       ranges[i].idx = i;
       init_range_entry (ranges + i, oe->op,
-			oe->op ? NULL : last_stmt (BASIC_BLOCK (oe->id)));
+			oe->op ? NULL :
+			  last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id)));
       /* For | invert it now, we will invert it again before emitting
 	 the optimized expression.  */
       if (opcode == BIT_IOR_EXPR
@@ -4572,7 +4574,7 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = XCNEWVEC (long, last_basic_block);
+  bb_rank = XCNEWVEC (long, last_basic_block_for_fn (cfun));
   operand_rank = pointer_map_create ();
 
   /* Give each default definition a distinct rank.  This includes

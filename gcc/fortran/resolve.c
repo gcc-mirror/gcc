@@ -6597,7 +6597,8 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
   for (tail = e2->ref; tail && tail->next; tail = tail->next);
 
   /* First compare rank.  */
-  if (tail && e1->rank != tail->u.ar.as->rank)
+  if ((tail && e1->rank != tail->u.ar.as->rank)
+      || (!tail && e1->rank != e2->rank))
     {
       gfc_error ("Source-expr at %L must be scalar or have the "
 		 "same rank as the allocate-object at %L",
@@ -6794,8 +6795,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
 
       /* Check F03:C632 and restriction following Note 6.18.  */
-      if (code->expr3->rank > 0 && !unlimited
-	  && !conformable_arrays (code->expr3, e))
+      if (code->expr3->rank > 0 && !conformable_arrays (code->expr3, e))
 	goto failure;
 
       /* Check F03:C633.  */

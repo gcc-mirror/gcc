@@ -1787,14 +1787,14 @@
 
 (define_peephole2
   [(parallel
-    [(set (match_operand:SI 0 "gpr_operand" "=r")
-	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
-			 (match_operand:SI 2 "gpr_operand" "%r")))
+    [(set (match_operand:SI 0 "gpr_operand")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand")
+			 (match_operand:SI 2 "gpr_operand")))
      (clobber (reg:CC CC_REGNUM))])
    (parallel
     [(set (reg:CC CC_REGNUM)
 	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
-     (set (match_operand:SI 3 "gpr_operand" "=r")
+     (set (match_operand:SI 3 "gpr_operand")
 	  (and:SI (match_dup 0) (match_dup 0)))])]
   "peep2_reg_dead_p (2, operands[0])"
   [(parallel
@@ -1805,14 +1805,14 @@
 
 (define_peephole2
   [(parallel
-    [(set (match_operand:SI 0 "gpr_operand" "=r")
-	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
-			 (match_operand:SI 2 "gpr_operand" "%r")))
+    [(set (match_operand:SI 0 "gpr_operand")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand")
+			 (match_operand:SI 2 "gpr_operand")))
      (clobber (reg:CC CC_REGNUM))])
    (parallel
     [(set (reg:CC CC_REGNUM)
 	  (compare:CC (and:SI (match_dup 0) (match_dup 0)) (const_int 0)))
-     (set (match_operand:SI 3 "gpr_operand" "=r")
+     (set (match_operand:SI 3 "gpr_operand")
 	  (and:SI (match_dup 0) (match_dup 0)))])]
   "peep2_reg_dead_p (2, operands[3])"
   [(parallel
@@ -1823,14 +1823,14 @@
 
 (define_peephole2
   [(parallel
-    [(set (match_operand:SI 0 "gpr_operand" "=r")
-	  (logical_op:SI (match_operand:SI 1 "gpr_operand"  "r")
-			 (match_operand:SI 2 "gpr_operand" "%r")))
+    [(set (match_operand:SI 0 "gpr_operand")
+	  (logical_op:SI (match_operand:SI 1 "gpr_operand")
+			 (match_operand:SI 2 "gpr_operand")))
      (clobber (reg:CC CC_REGNUM))])
    (parallel
     [(set (reg:CC CC_REGNUM)
 	  (compare:CC (match_dup 0) (const_int 0)))
-     (clobber (match_operand:SI 3 "gpr_operand" "=r"))])]
+     (clobber (match_operand:SI 3 "gpr_operand"))])]
   ""
   [(parallel
     [(set (reg:CC CC_REGNUM)

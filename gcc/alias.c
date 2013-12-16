@@ -2989,7 +2989,7 @@ init_alias_analysis (void)
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (i = 0; i < rpo_cnt; i++)
 	{
-	  basic_block bb = BASIC_BLOCK (rpo[i]);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (NONDEBUG_INSN_P (insn))

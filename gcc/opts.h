@@ -249,14 +249,14 @@ struct cl_decoded_option
 /* Structure describing an option deferred for handling after the main
    option handlers.  */
 
-typedef struct
+struct cl_deferred_option
 {
   /* Elements from struct cl_decoded_option used for deferred
      options.  */
   size_t opt_index;
   const char *arg;
   int value;
-} cl_deferred_option;
+};
 
 /* Structure describing a single option-handling callback.  */
 

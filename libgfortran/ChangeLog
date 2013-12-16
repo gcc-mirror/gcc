@@ -1,3 +1,8 @@
+2013-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	* config/fpu-387.h (sigill_hdlr, get_fpu_rounding_mode): Emit SSE
+	instructions when __SSE_MATH__ is defined.
+
 2013-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* intrinsics/erfc_scaled.c (_M_2_SQRTPI): Define if missing.

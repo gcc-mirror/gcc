@@ -64,7 +64,7 @@ struct GTY(()) pt_solution
 /* Simplified and cached information about a memory reference tree.
    Used by the alias-oracle internally and externally in alternate
    interfaces.  */
-typedef struct ao_ref_s
+struct ao_ref
 {
   /* The original full memory reference tree or NULL_TREE if that is
      not available.  */
@@ -90,7 +90,7 @@ typedef struct ao_ref_s
 
   /* Whether the memory is considered a volatile access.  */
   bool volatile_p;
-} ao_ref;
+};
 
 
 /* In tree-ssa-alias.c  */

@@ -3075,7 +3075,7 @@ sel_finish_global_and_expr (void)
     bbs.create (current_nr_blocks);
 
     for (i = 0; i < current_nr_blocks; i++)
-      bbs.quick_push (BASIC_BLOCK (BB_TO_BLOCK (i)));
+      bbs.quick_push (BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i)));
 
     /* Clear AV_SETs and INSN_EXPRs.  */
     {
@@ -3627,7 +3627,7 @@ verify_backedges (void)
       edge_iterator ei;
 
       for (i = 0; i < current_nr_blocks; i++)
-        FOR_EACH_EDGE (e, ei, BASIC_BLOCK (BB_TO_BLOCK (i))->succs)
+        FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i))->succs)
           if (in_current_region_p (e->dest)
               && BLOCK_TO_BB (e->dest->index) < i)
             n++;
@@ -3897,7 +3897,7 @@ purge_empty_blocks (void)
   /* Do not attempt to delete the first basic block in the region.  */
   for (i = 1; i < current_nr_blocks; )
     {
-      basic_block b = BASIC_BLOCK (BB_TO_BLOCK (i));
+      basic_block b = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
 
       if (maybe_tidy_empty_bb (b))
 	continue;
@@ -4095,14 +4095,14 @@ get_seqno_by_preds (rtx insn)
 void
 sel_extend_global_bb_info (void)
 {
-  sel_global_bb_info.safe_grow_cleared (last_basic_block);
+  sel_global_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
 }
 
 /* Extend region-scope data structures for basic blocks.  */
 static void
 extend_region_bb_info (void)
 {
-  sel_region_bb_info.safe_grow_cleared (last_basic_block);
+  sel_region_bb_info.safe_grow_cleared (last_basic_block_for_fn (cfun));
 }
 
 /* Extend all data structures to fit for all basic blocks.  */
@@ -4321,7 +4321,7 @@ init_lv_sets (void)
   basic_block bb;
 
   /* Initialize of LV sets.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     init_lv_set (bb);
 
   /* Don't forget EXIT_BLOCK.  */
@@ -4349,7 +4349,7 @@ free_lv_sets (void)
   free_lv_set (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
   /* Free LV sets.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (BB_LV_SET (bb))
       free_lv_set (bb);
 }
@@ -4905,9 +4905,10 @@ recompute_rev_top_order (void)
   int *postorder;
   int n_blocks, i;
 
-  if (!rev_top_order_index || rev_top_order_index_len < last_basic_block)
+  if (!rev_top_order_index
+      || rev_top_order_index_len < last_basic_block_for_fn (cfun))
     {
-      rev_top_order_index_len = last_basic_block;
+      rev_top_order_index_len = last_basic_block_for_fn (cfun);
       rev_top_order_index = XRESIZEVEC (int, rev_top_order_index,
                                         rev_top_order_index_len);
     }
@@ -6079,7 +6080,7 @@ sel_init_pipelining (void)
 		       | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
   current_loop_nest = NULL;
 
-  bbs_in_loop_rgns = sbitmap_alloc (last_basic_block);
+  bbs_in_loop_rgns = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (bbs_in_loop_rgns);
 
   recompute_rev_top_order ();
@@ -6145,16 +6146,16 @@ make_regions_from_the_rest (void)
   /* LOOP_HDR[I] == -1 if I-th bb doesn't belong to any loop,
      LOOP_HDR[I] == LOOP_HDR[J] iff basic blocks I and J reside within the same
      loop.  */
-  loop_hdr = XNEWVEC (int, last_basic_block);
-  degree = XCNEWVEC (int, last_basic_block);
+  loop_hdr = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  degree = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
 
   /* For each basic block that belongs to some loop assign the number
      of innermost loop it belongs to.  */
-  for (i = 0; i < last_basic_block; i++)
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
     loop_hdr[i] = -1;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->loop_father && !bb->loop_father->num == 0
 	  && !(bb->flags & BB_IRREDUCIBLE_LOOP))
@@ -6164,7 +6165,7 @@ make_regions_from_the_rest (void)
   /* For each basic block degree is calculated as the number of incoming
      edges, that are going out of bbs that are not yet scheduled.
      The basic blocks that are scheduled have degree value of zero.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       degree[bb->index] = 0;
 
@@ -6182,7 +6183,7 @@ make_regions_from_the_rest (void)
 
   /* Any block that did not end up in a region is placed into a region
      by itself.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (degree[bb->index] >= 0)
       {
 	rgn_bb_table[cur_rgn_blocks] = bb->index;
@@ -6346,7 +6347,7 @@ sel_remove_loop_preheader (void)
   /* Add blocks that aren't within the current loop to PREHEADER_BLOCKS.  */
   for (i = 0; i < RGN_NR_BLOCKS (cur_rgn); i++)
     {
-      bb = BASIC_BLOCK (BB_TO_BLOCK (i));
+      bb = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (i));
 
       /* If the basic block belongs to region, but doesn't belong to
 	 corresponding loop, then it should be a preheader.  */

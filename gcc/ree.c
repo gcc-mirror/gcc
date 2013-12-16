@@ -835,7 +835,7 @@ find_removable_extensions (void)
   rtx insn, set;
   unsigned *def_map = XCNEWVEC (unsigned, max_insn_uid);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     FOR_BB_INSNS (bb, insn)
       {
 	if (!NONDEBUG_INSN_P (insn))

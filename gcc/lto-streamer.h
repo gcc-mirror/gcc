@@ -257,7 +257,7 @@ enum lto_section_type
 };
 
 /* Indices to the various function, type and symbol streams. */
-typedef enum
+enum lto_decl_stream_e_t
 {
   LTO_DECL_STREAM_TYPE = 0,		/* Must be first. */
   LTO_DECL_STREAM_FIELD_DECL,
@@ -267,7 +267,7 @@ typedef enum
   LTO_DECL_STREAM_NAMESPACE_DECL,
   LTO_DECL_STREAM_LABEL_DECL,
   LTO_N_DECL_STREAMS
-} lto_decl_stream_e_t;
+};
 
 typedef enum ld_plugin_symbol_resolution ld_plugin_symbol_resolution_t;
 
@@ -429,7 +429,7 @@ struct lto_stats_d
 };
 
 /* Entry of LTO symtab encoder.  */
-typedef struct
+struct lto_encoder_entry
 {
   symtab_node *node;
   /* Is the node in this partition (i.e. ltrans of this partition will
@@ -441,7 +441,7 @@ typedef struct
      For example the readonly variable initializers are encoded to aid
      constant folding even if they are not in the partition.  */
   unsigned int initializer:1;
-} lto_encoder_entry;
+};
 
 
 /* Encoder data structure used to stream callgraph nodes.  */
@@ -454,11 +454,11 @@ struct lto_symtab_encoder_d
 typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
 
 /* Iterator structure for cgraph node sets.  */
-typedef struct
+struct lto_symtab_encoder_iterator
 {
   lto_symtab_encoder_t encoder;
   unsigned index;
-} lto_symtab_encoder_iterator;
+};
 
 
 
@@ -523,7 +523,6 @@ struct res_pair
   ld_plugin_symbol_resolution_t res;
   unsigned index;
 };
-typedef struct res_pair res_pair;
 
 
 /* One of these is allocated for each object file that being compiled

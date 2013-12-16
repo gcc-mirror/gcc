@@ -328,10 +328,10 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
 
   BB_HEAD (bb) = head;
   BB_END (bb) = end;
-  bb->index = last_basic_block++;
+  bb->index = last_basic_block_for_fn (cfun)++;
   bb->flags = BB_NEW | BB_RTL;
   link_block (bb, after);
-  SET_BASIC_BLOCK (bb->index, bb);
+  SET_BASIC_BLOCK_FOR_FN (cfun, bb->index, bb);
   df_bb_refs_record (bb->index, false);
   update_bb_for_insn (bb);
   BB_SET_PARTITION (bb, BB_UNPARTITIONED);
@@ -355,10 +355,13 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
   basic_block bb;
 
   /* Grow the basic block array if needed.  */
-  if ((size_t) last_basic_block >= basic_block_info->length ())
+  if ((size_t) last_basic_block_for_fn (cfun)
+      >= basic_block_info_for_fn (cfun)->length ())
     {
-      size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
-      vec_safe_grow_cleared (basic_block_info, new_size);
+      size_t new_size =
+	(last_basic_block_for_fn (cfun)
+	 + (last_basic_block_for_fn (cfun) + 3) / 4);
+      vec_safe_grow_cleared (basic_block_info_for_fn (cfun), new_size);
     }
 
   n_basic_blocks_for_fn (cfun)++;
@@ -413,7 +416,7 @@ compute_bb_for_insn (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx end = BB_END (bb);
       rtx insn;
@@ -2150,7 +2153,7 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
 
       if (flags & TDF_BLOCKS)
 	{
-	  FOR_EACH_BB_REVERSE (bb)
+	  FOR_EACH_BB_REVERSE_FN (bb, cfun)
 	    {
 	      rtx x;
 
@@ -2272,7 +2275,7 @@ find_partition_fixes (bool flag_only)
   /* Callers check this.  */
   gcc_checking_assert (crtl->has_bb_partition);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if ((BB_PARTITION (bb) == BB_COLD_PARTITION))
       bbs_in_cold_partition.safe_push (bb);
 
@@ -2369,7 +2372,7 @@ verify_hot_cold_block_grouping (void)
       || current_ir_type () != IR_RTL_CFGRTL)
     return err;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (current_partition != BB_UNPARTITIONED
           && BB_PARTITION (bb) != current_partition)
@@ -2405,7 +2408,7 @@ rtl_verify_edges (void)
   int err = 0;
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int n_fallthru = 0, n_branch = 0, n_abnormal_call = 0, n_sibcall = 0;
       int n_eh = 0, n_abnormal = 0;
@@ -2420,7 +2423,7 @@ rtl_verify_edges (void)
 	  && any_condjump_p (BB_END (bb)))
 	{
 	  if (XINT (note, 0) != BRANCH_EDGE (bb)->probability
-	      && profile_status != PROFILE_ABSENT)
+	      && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	    {
 	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
 		     XINT (note, 0), BRANCH_EDGE (bb)->probability);
@@ -2583,7 +2586,7 @@ rtl_verify_bb_insns (void)
   int err = 0;
   basic_block bb;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       /* Now check the header of basic
 	 block.  It ought to contain optional CODE_LABEL followed
@@ -2646,7 +2649,7 @@ rtl_verify_bb_pointers (void)
   basic_block bb;
 
   /* Check the general integrity of the basic blocks.  */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx insn;
 
@@ -2736,7 +2739,7 @@ rtl_verify_bb_insn_chain (void)
 
   bb_info = XCNEWVEC (basic_block, max_uid);
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       rtx head = BB_HEAD (bb);
       rtx end = BB_END (bb);
@@ -2818,7 +2821,7 @@ rtl_verify_fallthru (void)
   basic_block bb;
   int err = 0;
 
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       edge e;
 
@@ -3198,7 +3201,7 @@ purge_all_dead_edges (void)
   int purged = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       bool purged_here = purge_dead_edges (bb);
 
@@ -3223,7 +3226,7 @@ fixup_abnormal_edges (void)
   bool inserted = false;
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e;
       edge_iterator ei;
@@ -3446,7 +3449,7 @@ record_effective_endpoints (void)
     cfg_layout_function_header = NULL_RTX;
 
   next_insn = get_insns ();
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       rtx end;
 
@@ -3476,7 +3479,7 @@ outof_cfg_layout_mode (void)
 {
   basic_block bb;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
 
@@ -3616,7 +3619,7 @@ relink_block_chain (bool stay_in_cfglayout_mode)
   EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb = prev_bb;
 
   /* Then, clean up the aux fields.  */
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       bb->aux = NULL;
       if (!stay_in_cfglayout_mode)
@@ -3854,7 +3857,7 @@ fixup_reorder_chain (void)
   relink_block_chain (/*stay_in_cfglayout_mode=*/false);
 
   /* Annoying special case - jump around dead jumptables left in the code.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       edge e = find_fallthru_edge (bb->succs);
 
@@ -3865,7 +3868,7 @@ fixup_reorder_chain (void)
   /* Ensure goto_locus from edges has some instructions with that locus
      in RTL.  */
   if (!optimize)
-    FOR_EACH_BB (bb)
+    FOR_EACH_BB_FN (bb, cfun)
       {
         edge e;
         edge_iterator ei;
@@ -4044,7 +4047,7 @@ force_one_exit_fallthru (void)
 
   /* Fix up the chain of blocks -- make FORWARDER immediately precede the
      exit block.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->aux == NULL && bb != forwarder)
 	{
@@ -4252,10 +4255,10 @@ break_superblocks (void)
   bool need = false;
   basic_block bb;
 
-  superblocks = sbitmap_alloc (last_basic_block);
+  superblocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (superblocks);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->flags & BB_SUPERBLOCK)
       {
 	bb->flags &= ~BB_SUPERBLOCK;
@@ -4778,7 +4781,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 {
   int i;
   int blocks_split = 0;
-  int last_bb = last_basic_block;
+  int last_bb = last_basic_block_for_fn (cfun);
   bool check_last_block = false;
 
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
@@ -4831,7 +4834,7 @@ rtl_flow_call_edges_add (sbitmap blocks)
 
   for (i = NUM_FIXED_BLOCKS; i < last_bb; i++)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       rtx insn;
       rtx prev_insn;
 
@@ -5011,10 +5014,10 @@ rtl_account_profile_record (basic_block bb, int after_pass,
       {
 	record->size[after_pass]
 	  += insn_rtx_cost (PATTERN (insn), false);
-	if (profile_status == PROFILE_READ)
+	if (profile_status_for_fn (cfun) == PROFILE_READ)
 	  record->time[after_pass]
 	    += insn_rtx_cost (PATTERN (insn), true) * bb->count;
-	else if (profile_status == PROFILE_GUESSED)
+	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
 	  record->time[after_pass]
 	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
       }

@@ -236,7 +236,7 @@ extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 /* Generate code for VEC_LSHIFT_EXPR and VEC_RSHIFT_EXPR.  */
 extern rtx expand_vec_shift_expr (sepops, rtx);
 
-/* Return tree if target supports vector operations for VEC_PERM_EXPR.  */
+/* Return true if target supports vector operations for VEC_PERM_EXPR.  */
 extern bool can_vec_perm_p (enum machine_mode, bool, const unsigned char *);
 
 /* Generate code for VEC_PERM_EXPR.  */
@@ -247,6 +247,9 @@ extern int can_mult_highpart_p (enum machine_mode, bool);
 
 /* Generate code for MULT_HIGHPART_EXPR.  */
 extern rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, bool);
+
+/* Return true if target supports vector masked load/store for mode.  */
+extern bool can_vec_mask_load_store_p (enum machine_mode, bool);
 
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */

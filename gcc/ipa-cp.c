@@ -1688,10 +1688,10 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 /* Return all context independent values from aggregate lattices in PLATS in a
    vector.  Return NULL if there are none.  */
 
-static vec<ipa_agg_jf_item_t, va_gc> *
+static vec<ipa_agg_jf_item, va_gc> *
 context_independent_aggregate_values (struct ipcp_param_lattices *plats)
 {
-  vec<ipa_agg_jf_item_t, va_gc> *res = NULL;
+  vec<ipa_agg_jf_item, va_gc> *res = NULL;
 
   if (plats->aggs_bottom
       || plats->aggs_contain_variable
@@ -1720,7 +1720,7 @@ static bool
 gather_context_independent_values (struct ipa_node_params *info,
 			       vec<tree> *known_csts,
 			       vec<tree> *known_binfos,
-			       vec<ipa_agg_jump_function_t> *known_aggs,
+			       vec<ipa_agg_jump_function> *known_aggs,
 			       int *removable_params_cost)
 {
   int i, count = ipa_get_param_count (info);
@@ -1771,7 +1771,7 @@ gather_context_independent_values (struct ipa_node_params *info,
 
       if (known_aggs)
 	{
-	  vec<ipa_agg_jf_item_t, va_gc> *agg_items;
+	  vec<ipa_agg_jf_item, va_gc> *agg_items;
 	  struct ipa_agg_jump_function *ajf;
 
 	  agg_items = context_independent_aggregate_values (plats);
@@ -1793,7 +1793,7 @@ gather_context_independent_values (struct ipa_node_params *info,
    issue.  */
 
 static vec<ipa_agg_jump_function_p>
-agg_jmp_p_vec_for_t_vec (vec<ipa_agg_jump_function_t> known_aggs)
+agg_jmp_p_vec_for_t_vec (vec<ipa_agg_jump_function> known_aggs)
 {
   vec<ipa_agg_jump_function_p> ret;
   struct ipa_agg_jump_function *ajf;
@@ -1814,7 +1814,7 @@ estimate_local_effects (struct cgraph_node *node)
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int i, count = ipa_get_param_count (info);
   vec<tree> known_csts, known_binfos;
-  vec<ipa_agg_jump_function_t> known_aggs;
+  vec<ipa_agg_jump_function> known_aggs;
   vec<ipa_agg_jump_function_p> known_aggs_ptrs;
   bool always_const;
   int base_time = inline_summary (node)->time;
@@ -2772,10 +2772,10 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 /* Go through PLATS and create a vector of values consisting of values and
    offsets (minus OFFSET) of lattices that contain only a single value.  */
 
-static vec<ipa_agg_jf_item_t>
+static vec<ipa_agg_jf_item>
 copy_plats_to_inter (struct ipcp_param_lattices *plats, HOST_WIDE_INT offset)
 {
-  vec<ipa_agg_jf_item_t> res = vNULL;
+  vec<ipa_agg_jf_item> res = vNULL;
 
   if (!plats->aggs || plats->aggs_contain_variable || plats->aggs_bottom)
     return vNULL;
@@ -2796,7 +2796,7 @@ copy_plats_to_inter (struct ipcp_param_lattices *plats, HOST_WIDE_INT offset)
 
 static void
 intersect_with_plats (struct ipcp_param_lattices *plats,
-		      vec<ipa_agg_jf_item_t> *inter,
+		      vec<ipa_agg_jf_item> *inter,
 		      HOST_WIDE_INT offset)
 {
   struct ipcp_agg_lattice *aglat;
@@ -2836,12 +2836,12 @@ intersect_with_plats (struct ipcp_param_lattices *plats,
 /* Copy agggregate replacement values of NODE (which is an IPA-CP clone) to the
    vector result while subtracting OFFSET from the individual value offsets.  */
 
-static vec<ipa_agg_jf_item_t>
+static vec<ipa_agg_jf_item>
 agg_replacements_to_vector (struct cgraph_node *node, int index,
 			    HOST_WIDE_INT offset)
 {
   struct ipa_agg_replacement_value *av;
-  vec<ipa_agg_jf_item_t> res = vNULL;
+  vec<ipa_agg_jf_item> res = vNULL;
 
   for (av = ipa_get_agg_replacements_for_node (node); av; av = av->next)
     if (av->index == index
@@ -2863,7 +2863,7 @@ agg_replacements_to_vector (struct cgraph_node *node, int index,
 
 static void
 intersect_with_agg_replacements (struct cgraph_node *node, int index,
-				 vec<ipa_agg_jf_item_t> *inter,
+				 vec<ipa_agg_jf_item> *inter,
 				 HOST_WIDE_INT offset)
 {
   struct ipa_agg_replacement_value *srcvals;
@@ -2904,9 +2904,9 @@ intersect_with_agg_replacements (struct cgraph_node *node, int index,
    copy all incoming values to it.  If we determine we ended up with no values
    whatsoever, return a released vector.  */
 
-static vec<ipa_agg_jf_item_t>
+static vec<ipa_agg_jf_item>
 intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
-				vec<ipa_agg_jf_item_t> inter)
+				vec<ipa_agg_jf_item> inter)
 {
   struct ipa_jump_func *jfunc;
   jfunc = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), index);
@@ -3015,7 +3015,7 @@ intersect_aggregates_with_edge (struct cgraph_edge *cs, int index,
   else
     {
       inter.release ();
-      return vec<ipa_agg_jf_item_t>();
+      return vec<ipa_agg_jf_item>();
     }
   return inter;
 }
@@ -3042,7 +3042,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
   for (i = 0; i < count ; i++)
     {
       struct cgraph_edge *cs;
-      vec<ipa_agg_jf_item_t> inter = vNULL;
+      vec<ipa_agg_jf_item> inter = vNULL;
       struct ipa_agg_jf_item *item;
       struct ipcp_param_lattices *plats = ipa_get_parm_lattices (dest_info, i);
       int j;
@@ -3086,7 +3086,7 @@ find_aggregate_values_for_callers_subset (struct cgraph_node *node,
 /* Turn KNOWN_AGGS into a list of aggreate replacement values.  */
 
 static struct ipa_agg_replacement_value *
-known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function_t> known_aggs)
+known_aggs_to_agg_replacement_list (vec<ipa_agg_jump_function> known_aggs)
 {
   struct ipa_agg_replacement_value *res = NULL;
   struct ipa_agg_jump_function *aggjf;
@@ -3168,7 +3168,7 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 
   for (i = 0; i < count; i++)
     {
-      static vec<ipa_agg_jf_item_t> values = vec<ipa_agg_jf_item_t>();
+      static vec<ipa_agg_jf_item> values = vec<ipa_agg_jf_item>();
       struct ipcp_param_lattices *plats;
       bool interesting = false;
       for (struct ipa_agg_replacement_value *av = aggval; av; av = av->next)
@@ -3379,7 +3379,7 @@ decide_whether_version_node (struct cgraph_node *node)
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int i, count = ipa_get_param_count (info);
   vec<tree> known_csts, known_binfos;
-  vec<ipa_agg_jump_function_t> known_aggs = vNULL;
+  vec<ipa_agg_jump_function> known_aggs = vNULL;
   bool ret = false;
 
   if (count == 0)

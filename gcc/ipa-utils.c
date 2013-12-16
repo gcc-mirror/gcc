@@ -711,8 +711,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		 "Giving up; number of basic block mismatch.\n");
       match = false;
     }
-  else if (last_basic_block_for_function (srccfun)
-	   != last_basic_block_for_function (dstcfun))
+  else if (last_basic_block_for_fn (srccfun)
+	   != last_basic_block_for_fn (dstcfun))
     {
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,
@@ -727,7 +727,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  unsigned int i;
 
-	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 	  if (dstbb == NULL)
 	    {
 	      if (cgraph_dump_file)
@@ -772,7 +772,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 	{
 	  unsigned int i;
 
-	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  dstbb = BASIC_BLOCK_FOR_FN (dstcfun, srcbb->index);
 	  dstbb->count += srcbb->count;
 	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 	    {

@@ -4545,7 +4545,7 @@ optimize_omp_library_calls (gimple entry_stmt)
 		      && find_omp_clause (gimple_omp_task_clauses (entry_stmt),
 					  OMP_CLAUSE_UNTIED) != NULL);
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple call = gsi_stmt (gsi);
@@ -4849,7 +4849,7 @@ expand_omp_taskreg (struct omp_region *region)
 	  basic_block bb;
 	  bool changed = false;
 
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    changed |= gimple_purge_dead_eh_edges (bb);
 	  if (changed)
 	    cleanup_tree_cfg ();
@@ -7939,7 +7939,7 @@ expand_omp_target (struct omp_region *region)
 	  basic_block bb;
 	  bool changed = false;
 
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    changed |= gimple_purge_dead_eh_edges (bb);
 	  if (changed)
 	    cleanup_tree_cfg ();

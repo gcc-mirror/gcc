@@ -98,15 +98,15 @@ verify_flow_info (void)
   basic_block *last_visited;
 
   timevar_push (TV_CFG_VERIFY);
-  last_visited = XCNEWVEC (basic_block, last_basic_block);
-  edge_checksum = XCNEWVEC (size_t, last_basic_block);
+  last_visited = XCNEWVEC (basic_block, last_basic_block_for_fn (cfun));
+  edge_checksum = XCNEWVEC (size_t, last_basic_block_for_fn (cfun));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb, NULL, next_bb)
     {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && bb != BASIC_BLOCK (bb->index))
+	  && bb != BASIC_BLOCK_FOR_FN (cfun, bb->index))
 	{
 	  error ("bb %d on wrong place", bb->index);
 	  err = 1;
@@ -123,7 +123,7 @@ verify_flow_info (void)
     }
 
   /* Now check the basic blocks (boundaries etc.) */
-  FOR_EACH_BB_REVERSE (bb)
+  FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
       int n_fallthru = 0;
       edge e;
@@ -325,7 +325,7 @@ dump_flow_info (FILE *file, int flags)
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks_for_fn (cfun),
 	   n_edges_for_fn (cfun));
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     dump_bb (file, bb, 0, flags);
 
   putc ('\n', file);
@@ -1408,10 +1408,10 @@ account_profile_record (struct profile_record *record, int after_pass)
   int sum;
   gcov_type lsum;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
    {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && profile_status != PROFILE_ABSENT)
+	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
 	  sum = 0;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1426,7 +1426,7 @@ account_profile_record (struct profile_record *record, int after_pass)
 	    record->num_mismatched_count_out[after_pass]++;
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	  && profile_status != PROFILE_ABSENT)
+	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
 	  sum = 0;
 	  FOR_EACH_EDGE (e, ei, bb->preds)

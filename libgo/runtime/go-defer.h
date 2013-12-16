@@ -34,4 +34,14 @@ struct __go_defer_stack
      set by __go_set_defer_retaddr which is called by the thunks
      created by defer statements.  */
   const void *__retaddr;
+
+  /* Set to true if a function created by reflect.MakeFunc is
+     permitted to recover.  The return address of such a function
+     function will be somewhere in libffi, so __retaddr is not
+     useful.  */
+  _Bool __makefunc_can_recover;
+
+  /* Set to true if this defer stack entry should be freed when
+     done.  */
+  _Bool __free;
 };

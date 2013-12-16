@@ -520,7 +520,7 @@ df_set_blocks (bitmap blocks)
 
 		  EXECUTE_IF_SET_IN_BITMAP (&diff, 0, bb_index, bi)
 		    {
-		      basic_block bb = BASIC_BLOCK (bb_index);
+		      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 		      if (bb)
 			{
 			  void *bb_info = df_get_bb_info (dflow, bb_index);
@@ -549,7 +549,7 @@ df_set_blocks (bitmap blocks)
 		    {
 		      basic_block bb;
 		      bitmap_initialize (&blocks_to_reset, &df_bitmap_obstack);
-		      FOR_ALL_BB (bb)
+		      FOR_ALL_BB_FN (bb, cfun)
 			{
 			  bitmap_set_bit (&blocks_to_reset, bb->index);
 			}
@@ -721,8 +721,8 @@ rest_of_handle_df_initialize (void)
   if (optimize > 1)
     df_live_add_problem ();
 
-  df->postorder = XNEWVEC (int, last_basic_block);
-  df->postorder_inverted = XNEWVEC (int, last_basic_block);
+  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
   df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
   gcc_assert (df->n_blocks == df->n_blocks_inverted);
@@ -933,7 +933,7 @@ df_worklist_propagate_forward (struct dataflow *dataflow,
 {
   edge e;
   edge_iterator ei;
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   bool changed = !age;
 
   /*  Calculate <conf_op> of incoming edges.  */
@@ -978,7 +978,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
 {
   edge e;
   edge_iterator ei;
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   bool changed = !age;
 
   /*  Calculate <conf_op> of incoming edges.  */
@@ -1067,7 +1067,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
 
 	  bitmap_clear_bit (pending, index);
 	  bb_index = blocks_in_postorder[index];
-	  bb = BASIC_BLOCK (bb_index);
+	  bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 	  prev_age = last_visit_age[index];
 	  if (dir == DF_FORWARD)
 	    changed = df_worklist_propagate_forward (dataflow, bb_index,
@@ -1086,7 +1086,7 @@ df_worklist_dataflow_doublequeue (struct dataflow *dataflow,
       bitmap_clear (worklist);
     }
   for (i = 0; i < n_blocks; i++)
-    BASIC_BLOCK (blocks_in_postorder[i])->aux = NULL;
+    BASIC_BLOCK_FOR_FN (cfun, blocks_in_postorder[i])->aux = NULL;
 
   BITMAP_FREE (worklist);
   BITMAP_FREE (pending);
@@ -1115,7 +1115,7 @@ df_worklist_dataflow (struct dataflow *dataflow,
                       int n_blocks)
 {
   bitmap pending = BITMAP_ALLOC (&df_bitmap_obstack);
-  sbitmap considered = sbitmap_alloc (last_basic_block);
+  sbitmap considered = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_iterator bi;
   unsigned int *bbindex_to_postorder;
   int i;
@@ -1125,11 +1125,12 @@ df_worklist_dataflow (struct dataflow *dataflow,
   gcc_assert (dir != DF_NONE);
 
   /* BBINDEX_TO_POSTORDER maps the bb->index to the reverse postorder.  */
-  bbindex_to_postorder = XNEWVEC (unsigned int, last_basic_block);
+  bbindex_to_postorder = XNEWVEC (unsigned int,
+				  last_basic_block_for_fn (cfun));
 
   /* Initialize the array to an out-of-bound value.  */
-  for (i = 0; i < last_basic_block; i++)
-    bbindex_to_postorder[i] = last_basic_block;
+  for (i = 0; i < last_basic_block_for_fn (cfun); i++)
+    bbindex_to_postorder[i] = last_basic_block_for_fn (cfun);
 
   /* Initialize the considered map.  */
   bitmap_clear (considered);
@@ -1236,8 +1237,8 @@ df_analyze (void)
 
   free (df->postorder);
   free (df->postorder_inverted);
-  df->postorder = XNEWVEC (int, last_basic_block);
-  df->postorder_inverted = XNEWVEC (int, last_basic_block);
+  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  df->postorder_inverted = XNEWVEC (int, last_basic_block_for_fn (cfun));
   df->n_blocks = post_order_compute (df->postorder, true, true);
   df->n_blocks_inverted = inverted_post_order_compute (df->postorder_inverted);
 
@@ -1481,7 +1482,7 @@ df_set_bb_dirty (basic_block bb)
 void
 df_grow_bb_info (struct dataflow *dflow)
 {
-  unsigned int new_size = last_basic_block + 1;
+  unsigned int new_size = last_basic_block_for_fn (cfun) + 1;
   if (dflow->block_info_size < new_size)
     {
       new_size += new_size / 4;
@@ -1542,7 +1543,7 @@ df_compact_blocks (void)
 	    bitmap_set_bit (dflow->out_of_date_transfer_functions, EXIT_BLOCK);
 
 	  i = NUM_FIXED_BLOCKS;
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      if (bitmap_bit_p (&tmp, bb->index))
 		bitmap_set_bit (dflow->out_of_date_transfer_functions, i);
@@ -1553,7 +1554,8 @@ df_compact_blocks (void)
       /* Now shuffle the block info for the problem.  */
       if (dflow->problem->free_bb_fun)
 	{
-	  int size = last_basic_block * dflow->problem->block_info_elt_size;
+	  int size = (last_basic_block_for_fn (cfun)
+		      * dflow->problem->block_info_elt_size);
 	  problem_temps = XNEWVAR (char, size);
 	  df_grow_bb_info (dflow);
 	  memcpy (problem_temps, dflow->block_info, size);
@@ -1562,7 +1564,7 @@ df_compact_blocks (void)
 	     place in the block_info vector.  Null out the copied
 	     item.  The entry and exit blocks never move.  */
 	  i = NUM_FIXED_BLOCKS;
-	  FOR_EACH_BB (bb)
+	  FOR_EACH_BB_FN (bb, cfun)
 	    {
 	      df_set_bb_info (dflow, i,
 			      (char *)problem_temps
@@ -1571,7 +1573,7 @@ df_compact_blocks (void)
 	    }
 	  memset ((char *)dflow->block_info
 		  + i * dflow->problem->block_info_elt_size, 0,
-		  (last_basic_block - i)
+		  (last_basic_block_for_fn (cfun) - i)
 		  * dflow->problem->block_info_elt_size);
 	  free (problem_temps);
 	}
@@ -1588,7 +1590,7 @@ df_compact_blocks (void)
       bitmap_copy (&tmp, df->blocks_to_analyze);
       bitmap_clear (df->blocks_to_analyze);
       i = NUM_FIXED_BLOCKS;
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, cfun)
 	{
 	  if (bitmap_bit_p (&tmp, bb->index))
 	    bitmap_set_bit (df->blocks_to_analyze, i);
@@ -1599,17 +1601,17 @@ df_compact_blocks (void)
   bitmap_clear (&tmp);
 
   i = NUM_FIXED_BLOCKS;
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     {
-      SET_BASIC_BLOCK (i, bb);
+      SET_BASIC_BLOCK_FOR_FN (cfun, i, bb);
       bb->index = i;
       i++;
     }
 
   gcc_assert (i == n_basic_blocks_for_fn (cfun));
 
-  for (; i < last_basic_block; i++)
-    SET_BASIC_BLOCK (i, NULL);
+  for (; i < last_basic_block_for_fn (cfun); i++)
+    SET_BASIC_BLOCK_FOR_FN (cfun, i, NULL);
 
 #ifdef DF_DEBUG_CFG
   if (!df_lr->solutions_dirty)
@@ -1631,7 +1633,7 @@ df_bb_replace (int old_index, basic_block new_block)
     fprintf (dump_file, "shoving block %d into %d\n", new_block_index, old_index);
 
   gcc_assert (df);
-  gcc_assert (BASIC_BLOCK (old_index) == NULL);
+  gcc_assert (BASIC_BLOCK_FOR_FN (cfun, old_index) == NULL);
 
   for (p = 0; p < df->num_problems_defined; p++)
     {
@@ -1645,10 +1647,10 @@ df_bb_replace (int old_index, basic_block new_block)
     }
 
   df_clear_bb_dirty (new_block);
-  SET_BASIC_BLOCK (old_index, new_block);
+  SET_BASIC_BLOCK_FOR_FN (cfun, old_index, new_block);
   new_block->index = old_index;
-  df_set_bb_dirty (BASIC_BLOCK (old_index));
-  SET_BASIC_BLOCK (new_block_index, NULL);
+  df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, old_index));
+  SET_BASIC_BLOCK_FOR_FN (cfun, new_block_index, NULL);
 }
 
 
@@ -1659,7 +1661,7 @@ df_bb_replace (int old_index, basic_block new_block)
 void
 df_bb_delete (int bb_index)
 {
-  basic_block bb = BASIC_BLOCK (bb_index);
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
   int i;
 
   if (!df)
@@ -1718,7 +1720,7 @@ df_compute_cfg_image (void)
   int i;
   int * map;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       size += EDGE_COUNT (bb->succs);
     }
@@ -1726,7 +1728,7 @@ df_compute_cfg_image (void)
   map = XNEWVEC (int, size);
   map[0] = size;
   i = 1;
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       edge_iterator ei;
       edge e;
@@ -2019,7 +2021,7 @@ df_dump (FILE *file)
   basic_block bb;
   df_dump_start (file);
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       df_print_bb_index (bb, file);
       df_dump_top (bb, file);
@@ -2045,7 +2047,7 @@ df_dump_region (FILE *file)
 
       EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
 	{
-	  basic_block bb = BASIC_BLOCK (bb_index);
+	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, bb_index);
 	  dump_bb (file, bb, 0, TDF_DETAILS);
 	}
       fprintf (file, "\n");

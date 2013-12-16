@@ -1,3 +1,54 @@
+2013-12-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59493
+	* class.c (gfc_find_intrinsic_vtab): Handle BT_CLASS.
+
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59502
+	* primary.c (gfc_match_varspec): Check for 'class_ok'.
+
+2013-12-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59450
+	* module.c (mio_expr): Handle type-bound function expressions.
+
+2013-12-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/59440
+	* trans-decl.c (generate_namelist_decl): Ensure debug DIE
+	is created by setting DECL_IGNORED_P to 0.
+
+2013-12-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58916
+	* resolve.c (conformable_arrays): Treat scalar 'e2'.
+	(resolve_allocate_expr): Check rank also for unlimited-polymorphic
+	variables.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_dummy_characteristics): Add checks for several
+	attributes.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.texi: Add possible kind values (and default) for
+	DOUBLE PRECISION.
+	* invoke.texi: Correct documentation of -fdefault-integer-8,
+	-fdefault-real-8 and -fdefault-double-8.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.texi: Modify documentation of kind type parameters.
+	* invoke.texi: Extend documentation of -fdefault-integer-8 and
+	-fdefault-real-8.
+
+2013-12-10  Janus Weil  <janus@gcc.gnu.org>
+
+	* invoke.texi: Add -freal-4-real-16. Rearrange kind promotion options.
+
 2013-12-08  Tobias Burnus  <burnus@net-b.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 

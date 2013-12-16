@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Describe a value.  */
-typedef struct cselib_val_struct {
+struct cselib_val {
   /* The hash value.  */
   unsigned int hash;
 
@@ -36,8 +36,8 @@ typedef struct cselib_val_struct {
      use it as an address in a MEM.  */
   struct elt_list *addr_list;
 
-  struct cselib_val_struct *next_containing_mem;
-} cselib_val;
+  struct cselib_val *next_containing_mem;
+};
 
 /* A list of rtl expressions that hold the same value.  */
 struct elt_loc_list {

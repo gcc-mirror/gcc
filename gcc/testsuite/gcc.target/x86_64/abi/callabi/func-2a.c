@@ -1,6 +1,6 @@
 /* Test for cross x86_64<->w64 abi standard calls.  */
 /* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
-/* { dg-options "-O2 -mabi=ms -std=gnu99 -ffast-math -fno-builtin" } */
+/* { dg-options "-O2 -mabi=ms -std=gnu99 -ffast-math -fno-builtin -maccumulate-outgoing-args" } */
 /* { dg-additional-sources "func-2b.c" } */
 
 extern void __attribute__ ((sysv_abi)) abort (void);

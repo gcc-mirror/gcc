@@ -611,7 +611,7 @@ make_new_block (struct function *fn, unsigned int index)
 {
   basic_block bb = alloc_block ();
   bb->index = index;
-  SET_BASIC_BLOCK_FOR_FUNCTION (fn, index, bb);
+  SET_BASIC_BLOCK_FOR_FN (fn, index, bb);
   n_basic_blocks_for_fn (fn)++;
   return bb;
 }
@@ -632,22 +632,22 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   init_empty_tree_cfg_for_function (fn);
   init_ssa_operands (fn);
 
-  profile_status_for_function (fn) = streamer_read_enum (ib, profile_status_d,
-							 PROFILE_LAST);
+  profile_status_for_fn (fn) = streamer_read_enum (ib, profile_status_d,
+						   PROFILE_LAST);
 
   bb_count = streamer_read_uhwi (ib);
 
-  last_basic_block_for_function (fn) = bb_count;
-  if (bb_count > basic_block_info_for_function (fn)->length ())
-    vec_safe_grow_cleared (basic_block_info_for_function (fn), bb_count);
+  last_basic_block_for_fn (fn) = bb_count;
+  if (bb_count > basic_block_info_for_fn (fn)->length ())
+    vec_safe_grow_cleared (basic_block_info_for_fn (fn), bb_count);
 
-  if (bb_count > label_to_block_map_for_function (fn)->length ())
-    vec_safe_grow_cleared (label_to_block_map_for_function (fn), bb_count);
+  if (bb_count > label_to_block_map_for_fn (fn)->length ())
+    vec_safe_grow_cleared (label_to_block_map_for_fn (fn), bb_count);
 
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, index);
       unsigned int edge_count;
 
       if (bb == NULL)
@@ -671,7 +671,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
                                count_materialization_scale);
 	  edge_flags = streamer_read_uhwi (ib);
 
-	  dest = BASIC_BLOCK_FOR_FUNCTION (fn, dest_index);
+	  dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
 
 	  if (dest == NULL)
 	    dest = make_new_block (fn, dest_index);
@@ -688,7 +688,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
   index = streamer_read_hwi (ib);
   while (index != -1)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FUNCTION (fn, index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, index);
       bb->prev_bb = p_bb;
       p_bb->next_bb = bb;
       p_bb = bb;
@@ -719,7 +719,7 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
 	}
 
       struct loop *loop = alloc_loop ();
-      loop->header = BASIC_BLOCK_FOR_FUNCTION (fn, header_index);
+      loop->header = BASIC_BLOCK_FOR_FN (fn, header_index);
       loop->header->loop_father = loop;
 
       /* Read everything copy_loop_info copies.  */
@@ -976,7 +976,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   /* Fix up the call statements that are mentioned in the callgraph
      edges.  */
   set_gimple_stmt_max_uid (cfun, 0);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -991,7 +991,7 @@ input_function (tree fn_decl, struct data_in *data_in,
 	}
     }
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       gimple_stmt_iterator bsi = gsi_start_phis (bb);
       while (!gsi_end_p (bsi))

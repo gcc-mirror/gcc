@@ -2441,10 +2441,10 @@ compute_antic (void)
 
   /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
      We pre-build the map of blocks with incoming abnormal edges here.  */
-  has_abnormal_preds = sbitmap_alloc (last_basic_block);
+  has_abnormal_preds = sbitmap_alloc (last_basic_block_for_fn (cfun));
   bitmap_clear (has_abnormal_preds);
 
-  FOR_ALL_BB (block)
+  FOR_ALL_BB_FN (block, cfun)
     {
       edge_iterator ei;
       edge e;
@@ -2470,7 +2470,7 @@ compute_antic (void)
   /* At the exit block we anticipate nothing.  */
   BB_VISITED (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
 
-  changed_blocks = sbitmap_alloc (last_basic_block + 1);
+  changed_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
   bitmap_ones (changed_blocks);
   while (changed)
     {
@@ -2486,7 +2486,7 @@ compute_antic (void)
 	{
 	  if (bitmap_bit_p (changed_blocks, postorder[i]))
 	    {
-	      basic_block block = BASIC_BLOCK (postorder[i]);
+	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
 	      changed |= compute_antic_aux (block,
 					    bitmap_bit_p (has_abnormal_preds,
 						      block->index));
@@ -2515,7 +2515,7 @@ compute_antic (void)
 	    {
 	      if (bitmap_bit_p (changed_blocks, postorder[i]))
 		{
-		  basic_block block = BASIC_BLOCK (postorder[i]);
+		  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
 		  changed
 		    |= compute_partial_antic_aux (block,
 						  bitmap_bit_p (has_abnormal_preds,
@@ -3659,7 +3659,7 @@ insert (void)
   basic_block bb;
   int num_iterations = 0;
 
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     NEW_SETS (bb) = bitmap_set_new ();
 
   while (new_stuff)
@@ -3672,7 +3672,7 @@ insert (void)
       /* Clear the NEW sets before the next iteration.  We have already
          fully propagated its contents.  */
       if (new_stuff)
-	FOR_ALL_BB (bb)
+	FOR_ALL_BB_FN (bb, cfun)
 	  bitmap_set_free (NEW_SETS (bb));
     }
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
@@ -4671,7 +4671,7 @@ init_pre (void)
 				       sizeof (struct bitmap_set), 30);
   pre_expr_pool = create_alloc_pool ("pre_expr nodes",
 				     sizeof (struct pre_expr_d), 30);
-  FOR_ALL_BB (bb)
+  FOR_ALL_BB_FN (bb, cfun)
     {
       EXP_GEN (bb) = bitmap_set_new ();
       PHI_GEN (bb) = bitmap_set_new ();

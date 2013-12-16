@@ -27,21 +27,21 @@ along with GCC; see the file COPYING3.  If not see
    vector.  They are of simple for  function_param OP VAL, where VAL is
    IPA invariant.  The conditions are then referred by predicates.  */
 
-typedef struct GTY(()) condition
-  {
-    /* If agg_contents is set, this is the offset from which the used data was
-       loaded.  */
-    HOST_WIDE_INT offset;
-    tree val;
-    int operand_num;
-    ENUM_BITFIELD(tree_code) code : 16;
-    /* Set if the used data were loaded from an aggregate parameter or from
-       data received by reference.  */
-    unsigned agg_contents : 1;
-    /* If agg_contents is set, this differentiates between loads from data
-       passed by reference and by value.  */
-    unsigned by_ref : 1;
-  } condition;
+struct GTY(()) condition
+{
+  /* If agg_contents is set, this is the offset from which the used data was
+     loaded.  */
+  HOST_WIDE_INT offset;
+  tree val;
+  int operand_num;
+  ENUM_BITFIELD(tree_code) code : 16;
+  /* Set if the used data were loaded from an aggregate parameter or from
+     data received by reference.  */
+  unsigned agg_contents : 1;
+  /* If agg_contents is set, this differentiates between loads from data
+     passed by reference and by value.  */
+  unsigned by_ref : 1;
+};
 
 /* Inline hints are reasons why inline heuristics should preffer inlining given
    function.  They are represtented as bitmap of the following values.  */
@@ -99,12 +99,12 @@ struct GTY(()) predicate
    accounted.  */
 #define INLINE_SIZE_SCALE 2
 #define INLINE_TIME_SCALE (CGRAPH_FREQ_BASE * 2)
-typedef struct GTY(()) size_time_entry
+struct GTY(()) size_time_entry
 {
   struct predicate predicate;
   int size;
   int time;
-} size_time_entry;
+};
 
 /* Function inlining information.  */
 struct GTY(()) inline_summary
@@ -156,7 +156,8 @@ struct GTY(()) inline_summary
   int scc_no;
 };
 
-
+/* Need a typedef for inline_summary because of inline function
+   'inline_summary' below.  */
 typedef struct inline_summary inline_summary_t;
 extern GTY(()) vec<inline_summary_t, va_gc> *inline_summary_vec;
 
@@ -172,7 +173,6 @@ struct inline_param_summary
      Value 0 is reserved for compile time invariants. */
   int change_prob;
 };
-typedef struct inline_param_summary inline_param_summary_t;
 
 /* Information kept about callgraph edges.  */
 struct inline_edge_summary
@@ -186,17 +186,19 @@ struct inline_edge_summary
   /* Array indexed by parameters.
      0 means that parameter change all the time, REG_BR_PROB_BASE means
      that parameter is constant.  */
-  vec<inline_param_summary_t> param;
+  vec<inline_param_summary> param;
 };
 
+/* Need a typedef for inline_edge_summary because of inline function
+   'inline_edge_summary' below.  */
 typedef struct inline_edge_summary inline_edge_summary_t;
 extern vec<inline_edge_summary_t> inline_edge_summary_vec;
 
-typedef struct edge_growth_cache_entry
+struct edge_growth_cache_entry
 {
   int time, size;
   inline_hints hints;
-} edge_growth_cache_entry;
+};
 
 extern vec<int> node_growth_cache;
 extern vec<edge_growth_cache_entry> edge_growth_cache;

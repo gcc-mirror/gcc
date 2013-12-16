@@ -2308,10 +2308,10 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
    dw_cfa_location, adding the given OFFSET to the result of the
    expression.  */
 
-struct dw_loc_descr_struct *
+struct dw_loc_descr_node *
 build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 {
-  struct dw_loc_descr_struct *head, *tmp;
+  struct dw_loc_descr_node *head, *tmp;
 
   offset += cfa->offset;
 
@@ -2338,11 +2338,11 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
    the address at OFFSET from the CFA when stack is aligned to
    ALIGNMENT byte.  */
 
-struct dw_loc_descr_struct *
+struct dw_loc_descr_node *
 build_cfa_aligned_loc (dw_cfa_location *cfa,
 		       HOST_WIDE_INT offset, HOST_WIDE_INT alignment)
 {
-  struct dw_loc_descr_struct *head;
+  struct dw_loc_descr_node *head;
   unsigned int dwarf_fp
     = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 

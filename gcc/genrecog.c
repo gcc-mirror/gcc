@@ -457,9 +457,8 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	  {
 	    pred = lookup_predicate (pred_name);
 	    if (!pred)
-	      message_with_line (pattern_lineno,
-				 "warning: unknown predicate '%s'",
-				 pred_name);
+	      error_with_line (pattern_lineno, "unknown predicate '%s'",
+			       pred_name);
 	  }
 	else
 	  pred = 0;
@@ -477,9 +476,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 		|| GET_CODE (insn) == DEFINE_PEEPHOLE2)
 	      {
 		if (constraints0)
-		  message_with_line (pattern_lineno,
-				     "warning: constraints not supported in %s",
-				     rtx_name[GET_CODE (insn)]);
+		  error_with_line (pattern_lineno,
+				   "constraints not supported in %s",
+				   rtx_name[GET_CODE (insn)]);
 	      }
 
 	    /* A MATCH_OPERAND that is a SET should have an output reload.  */
@@ -510,10 +509,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	   while not likely to occur at runtime, results in less efficient
 	   code from insn-recog.c.  */
 	if (set && pred && pred->allows_non_lvalue)
-	  message_with_line (pattern_lineno,
-			     "warning: destination operand %d "
-			     "allows non-lvalue",
-			     XINT (pattern, 0));
+	  error_with_line (pattern_lineno,
+			   "destination operand %d allows non-lvalue",
+			   XINT (pattern, 0));
 
 	/* A modeless MATCH_OPERAND can be handy when we can check for
 	   multiple modes in the c_test.  In most other cases, it is a
@@ -781,16 +779,16 @@ add_to_sequence (rtx pattern, struct decision_head *last,
 		allows_const_int = pred->codes[CONST_INT];
 		if (was_code == MATCH_PARALLEL
 		    && pred->singleton != PARALLEL)
-		  message_with_line (pattern_lineno,
-			"predicate '%s' used in match_parallel "
-			"does not allow only PARALLEL", pred->name);
+		  error_with_line (pattern_lineno,
+				   "predicate '%s' used in match_parallel "
+				   "does not allow only PARALLEL", pred->name);
 		else
 		  code = pred->singleton;
 	      }
 	    else
-	      message_with_line (pattern_lineno,
-			"warning: unknown predicate '%s' in '%s' expression",
-			pred_name, GET_RTX_NAME (was_code));
+	      error_with_line (pattern_lineno,
+			       "unknown predicate '%s' in '%s' expression",
+			       pred_name, GET_RTX_NAME (was_code));
 	  }
 
 	/* Can't enforce a mode if we allow const_int.  */

@@ -3343,7 +3343,7 @@ rest_of_handle_sms (void)
   max_regno = max_reg_num ();
 
   /* Finalize layout changes.  */
-  FOR_EACH_BB (bb)
+  FOR_EACH_BB_FN (bb, cfun)
     if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))
       bb->aux = bb->next_bb;
   free_dominance_info (CDI_DOMINATORS);

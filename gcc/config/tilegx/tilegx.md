@@ -3284,9 +3284,9 @@
   "")
 
 (define_insn "insn_ld_add<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (match_dup 3)))]
   ""
@@ -3302,9 +3302,9 @@
   [(set_attr "type" "X1_2cycle")])
 
 (define_insn "insn_ldna_add<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (and:DI (match_dup 3) (const_int -8))))]
   ""
@@ -3318,9 +3318,9 @@
   "")
 
 (define_insn "insn_ld<I124MODE:n><s>_add<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI (mem:I124MODE (match_dup 3))))]
   ""
@@ -3338,9 +3338,9 @@
   [(set_attr "type" "X1_2cycle")])
 
 (define_insn "insn_ldnt_add<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(mem:DI (match_dup 3))]
                    UNSPEC_NON_TEMPORAL))]
@@ -3359,9 +3359,9 @@
   [(set_attr "type" "X1_2cycle")])
 
 (define_insn "insn_ldnt<I124MODE:n><s>_add<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI (unspec:I124MODE [(mem:I124MODE (match_dup 3))]
 					UNSPEC_NON_TEMPORAL)))]
@@ -3380,9 +3380,9 @@
   [(set_attr "type" "Y2_L2")])
 
 (define_insn "insn_ld_add_L2<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(mem:DI (match_dup 3))]
 		   UNSPEC_LATENCY_L2))]
@@ -3400,9 +3400,9 @@
   [(set_attr "type" "X1_L2")])
 
 (define_insn "insn_ldna_add_L2<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(mem:DI (and:DI (match_dup 3) (const_int -8)))]
 		   UNSPEC_LATENCY_L2))]
@@ -3421,9 +3421,9 @@
   [(set_attr "type" "Y2_L2")])
 
 (define_insn "insn_ld<I124MODE:n><s>_add_L2<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI (unspec:I124MODE [(mem:I124MODE (match_dup 3))]
 					UNSPEC_LATENCY_L2)))]
@@ -3444,9 +3444,9 @@
   [(set_attr "type" "X1_L2")])
 
 (define_insn "insn_ldnt_add_L2<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(unspec:DI
                      [(mem:DI (match_dup 3))]
@@ -3469,9 +3469,9 @@
   [(set_attr "type" "X1_L2")])
 
 (define_insn "insn_ldnt<I124MODE:n><s>_add_L2<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI
 	 (unspec:I124MODE [(unspec:I124MODE
@@ -3493,9 +3493,9 @@
   [(set_attr "type" "Y2_miss")])
 
 (define_insn "insn_ld_add_miss<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(mem:DI (match_dup 3))]
 		   UNSPEC_LATENCY_MISS))]
@@ -3513,9 +3513,9 @@
   [(set_attr "type" "X1_miss")])
 
 (define_insn "insn_ldna_add_miss<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(mem:DI (and:DI (match_dup 3) (const_int -8)))]
 		   UNSPEC_LATENCY_MISS))]
@@ -3534,9 +3534,9 @@
   [(set_attr "type" "Y2_miss")])
 
 (define_insn "insn_ld<I124MODE:n><s>_add_miss<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI (unspec:I124MODE [(mem:I124MODE (match_dup 3))]
 					UNSPEC_LATENCY_MISS)))]
@@ -3557,9 +3557,9 @@
   [(set_attr "type" "X1_miss")])
 
 (define_insn "insn_ldnt_add_miss<bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(unspec:DI
                      [(mem:DI (match_dup 3))]
@@ -3582,9 +3582,9 @@
   [(set_attr "type" "X1_miss")])
 
 (define_insn "insn_ldnt<I124MODE:n><s>_add_miss<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 1 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "1")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 1 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "1")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (match_operand:DI 0 "register_operand" "=r")
         (any_extend:DI
 	 (unspec:I124MODE [(unspec:I124MODE
@@ -3969,9 +3969,9 @@
   "")
 
 (define_insn "insn_st_add<bitsuffix>"
-  [(set (match_operand:I48MODE 0 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "0")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "0")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (mem:DI (match_dup 3))
         (match_operand:DI 1 "reg_or_0_operand" "rO"))]
   ""
@@ -3988,9 +3988,9 @@
 
 (define_expand "insn_st<I124MODE:n>_add<I48MODE:bitsuffix>"
   [(parallel
-    [(set (match_operand:I48MODE 0 "pointer_operand" "")
-	  (plus:I48MODE (match_operand 3 "pointer_operand" "")
-			(match_operand 2 "s8bit_cint_operand" "")))
+    [(set (match_operand:I48MODE 0 "register_operand" "")
+	  (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "")
+			(match_operand:I48MODE 2 "s8bit_cint_operand" "")))
      (set (mem:I124MODE (match_dup 3))
 	  (match_operand:DI 1 "reg_or_0_operand" ""))])]
   ""
@@ -4000,9 +4000,9 @@
 })
 
 (define_insn "*insn_st<I124MODE:n>_add<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 0 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "0")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "0")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (mem:I124MODE (match_dup 3))
         (match_operand:I124MODE 1 "reg_or_0_operand" "rO"))]
   ""
@@ -4020,9 +4020,9 @@
   [(set_attr "type" "X1")])
 
 (define_insn "insn_stnt_add<bitsuffix>"
-  [(set (match_operand:I48MODE 0 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "0")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "0")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (mem:DI (unspec:I48MODE [(match_dup 3)] UNSPEC_NON_TEMPORAL))
         (match_operand:DI 1 "reg_or_0_operand" "rO"))]
   ""
@@ -4048,9 +4048,9 @@
 
 (define_expand "insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>"
   [(parallel
-    [(set (match_operand:I48MODE 0 "pointer_operand" "")
-	  (plus:I48MODE (match_operand 3 "pointer_operand" "")
-			(match_operand 2 "s8bit_cint_operand" "")))
+    [(set (match_operand:I48MODE 0 "register_operand" "")
+	  (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "")
+			(match_operand:I48MODE 2 "s8bit_cint_operand" "")))
      (set (mem:I124MODE (unspec:I48MODE [(match_dup 3)] UNSPEC_NON_TEMPORAL))
 	  (match_operand:DI 1 "reg_or_0_operand" "rO"))])]
   ""
@@ -4060,9 +4060,9 @@
 })
 
 (define_insn "*insn_stnt<I124MODE:n>_add<I48MODE:bitsuffix>"
-  [(set (match_operand:I48MODE 0 "pointer_operand" "=r")
-        (plus:I48MODE (match_operand 3 "pointer_operand" "0")
-		      (match_operand 2 "s8bit_cint_operand" "i")))
+  [(set (match_operand:I48MODE 0 "register_operand" "=r")
+        (plus:I48MODE (match_operand:I48MODE 3 "register_operand" "0")
+		      (match_operand:I48MODE 2 "s8bit_cint_operand" "i")))
    (set (mem:I124MODE (unspec:I48MODE [(match_dup 3)] UNSPEC_NON_TEMPORAL))
         (match_operand:I124MODE 1 "reg_or_0_operand" "rO"))]
   ""
@@ -4828,7 +4828,7 @@
 ;;    {B3,B2,B1,B0} {A3,A2,A1,A0}
 ;; => {A3,A2,A1,A0,B3,B2,B1,B0}
 (define_insn "vec_pack_<pack_optab>_v4hi"
-  [(set (match_operand:V8QI 0 "reg_or_0_operand" "=r")
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
 	(vec_concat:V8QI
 	 (v2pack:V4QI (match_operand:V4HI 1 "reg_or_0_operand" "rO"))
 	 (v2pack:V4QI (match_operand:V4HI 2 "reg_or_0_operand" "rO"))))]
@@ -4837,7 +4837,7 @@
   [(set_attr "type" "X01")])
 
 (define_expand "insn_v2<pack_insn>"
-  [(set (match_operand:DI 0 "reg_or_0_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "")
 	(vec_concat:V8QI
 	 (v2pack:V4QI (match_operand:DI 2 "reg_or_0_operand" ""))
 	 (v2pack:V4QI (match_operand:DI 1 "reg_or_0_operand" ""))))]
@@ -4855,7 +4855,7 @@
 ;;    {B3,B2,B1,B0} {A3,A2,A1,A0}
 ;; => {A3_hi,A2_hi,A1_hi,A0_hi,B3_hi,B2_hi,B1_hi,B0_hi}
 (define_insn "vec_pack_hipart_v4hi"
-  [(set (match_operand:V8QI 0 "reg_or_0_operand" "=r")
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
 	(vec_concat:V8QI
 	 (truncate:V4QI
 	  (ashiftrt:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rO")
@@ -4868,7 +4868,7 @@
   [(set_attr "type" "X01")])
 
 (define_expand "insn_v2packh"
-  [(set (match_operand:DI 0 "reg_or_0_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "")
 	(vec_concat:V8QI
 	 (truncate:V4QI
 	  (ashiftrt:V4HI (match_operand:DI 2 "reg_or_0_operand" "")
@@ -4890,7 +4890,7 @@
 ;;    {B1,B0} {A1,A0}
 ;; => {A1,A0,B1,B0}
 (define_insn "vec_pack_ssat_v2si"
-  [(set (match_operand:V4HI 0 "reg_or_0_operand" "=r")
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
 	(vec_concat:V4HI
 	 (us_truncate:V2HI (match_operand:V2SI 1 "reg_or_0_operand" "rO"))
 	 (us_truncate:V2HI (match_operand:V2SI 2 "reg_or_0_operand" "rO"))))]
@@ -4899,7 +4899,7 @@
   [(set_attr "type" "X01")])
 
 (define_expand "insn_v4packsc"
-  [(set (match_operand:DI 0 "reg_or_0_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "")
 	(vec_concat:V4HI
 	 (us_truncate:V2HI (match_operand:DI 2 "reg_or_0_operand" ""))
 	 (us_truncate:V2HI (match_operand:DI 1 "reg_or_0_operand" ""))))]
