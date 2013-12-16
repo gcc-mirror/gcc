@@ -1,3 +1,9 @@
+2013-12-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54949
+	* symbol.c (check_conflict): Forbid abstract procedure pointers.
+	(gfc_add_abstract): Check for attribute conflicts.
+
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/59337
