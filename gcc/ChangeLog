@@ -28,10 +28,6 @@
 	GOMP_SIMD* internal calls, also perform the reduction operation
 	on the outer var rather than simple assignment.
 
-2013-12-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
-
-	* config/i386/i386.c (slm_cost): Fix imul cost for HI.
-
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58956
