@@ -1279,7 +1279,7 @@ resolve_omp_atomic (gfc_code *code)
 	  alt_op = INTRINSIC_EQV;
 	  break;
 	default:
-	  gfc_error ("!$OMP ATOMIC assignment operator must be "
+	  gfc_error ("!$OMP ATOMIC assignment operator must be binary "
 		     "+, *, -, /, .AND., .OR., .EQV. or .NEQV. at %L",
 		     &expr2->where);
 	  return;
