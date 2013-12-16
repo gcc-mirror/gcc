@@ -1,5 +1,10 @@
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* predict.h (PROB_LIKELY): Fix the value.
+	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Add support
+	for overflow checking for modes without 2xwider supported mode,
+	if the mode has 2xnarrower mode.
+
 	* internal-fn.c: Include stringpool.h and tree-ssanames.h.
 	(ubsan_expand_si_overflow_addsub_check): In the generic expansion,
 	try to improve generated code if one of the arguments is constant

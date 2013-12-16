@@ -1,5 +1,8 @@
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/ubsan/overflow-mul-3.c: New test.
+	* c-c++-common/ubsan/overflow-mul-4.c: New test.
+
 	PR libgomp/59337
 	* gfortran.dg/gomp/pr59337.f90: New test.
 
