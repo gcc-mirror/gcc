@@ -4338,6 +4338,9 @@ ix86_function_specific_restore (struct gcc_options *opts,
   unsigned int ix86_arch_mask;
   int i;
 
+  /* We don't change -fPIC.  */
+  opts->x_flag_pic = flag_pic;
+
   ix86_arch = (enum processor_type) ptr->arch;
   ix86_schedule = (enum attr_cpu) ptr->schedule;
   ix86_tune = (enum processor_type) ptr->tune;

@@ -560,6 +560,8 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
 {
   if (is_gimple_call (stmt))
     return false;
+  else if (gimple_clobber_p (stmt))
+    return false;
   else if (is_gimple_assign (stmt))
     {
       tree lhs = gimple_assign_lhs (stmt);
@@ -2022,8 +2024,17 @@ ipa_analyze_call_uses (struct cgraph_node *node,
 		       struct param_analysis_info *parms_ainfo, gimple call)
 {
   tree target = gimple_call_fn (call);
+  struct cgraph_edge *cs;
 
-  if (!target)
+  if (!target
+      || (TREE_CODE (target) != SSA_NAME
+          && !virtual_method_call_p (target)))
+    return;
+
+  /* If we previously turned the call into a direct call, there is
+     no need to analyze.  */
+  cs = cgraph_edge (node, call);
+  if (cs && !cs->indirect_unknown_callee)
     return;
   if (TREE_CODE (target) == SSA_NAME)
     ipa_analyze_indirect_call_uses (node, info, parms_ainfo, call, target);
@@ -2050,8 +2061,7 @@ ipa_analyze_stmt_uses (struct cgraph_node *node, struct ipa_node_params *info,
    passed in DATA.  */
 
 static bool
-visit_ref_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
-			     tree op, void *data)
+visit_ref_for_mod_analysis (gimple, tree op, tree, void *data)
 {
   struct ipa_node_params *info = (struct ipa_node_params *) data;
 

@@ -848,6 +848,10 @@ get_class_context (ipa_polymorphic_call_context *context,
       if (TREE_CODE (type) == TREE_CODE (expected_type)
 	  && types_same_for_odr (type, expected_type))
 	{
+	  /* Type can not contain itself on an non-zero offset.  In that case
+	     just give up.  */
+	  if (offset != 0)
+	    goto give_up;
 	  gcc_assert (offset == 0);
 	  return true;
 	}

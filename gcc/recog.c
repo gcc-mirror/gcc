@@ -1021,8 +1021,12 @@ general_operand (rtx op, enum machine_mode mode)
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
 
-      /* Use the mem's mode, since it will be reloaded thus.  */
-      if (memory_address_addr_space_p (GET_MODE (op), y, MEM_ADDR_SPACE (op)))
+      /* Use the mem's mode, since it will be reloaded thus.  LRA can
+	 generate move insn with invalid addresses which is made valid
+	 and efficiently calculated by LRA through further numerous
+	 transformations.  */
+      if (lra_in_progress
+	  || memory_address_addr_space_p (GET_MODE (op), y, MEM_ADDR_SPACE (op)))
 	return 1;
     }
 

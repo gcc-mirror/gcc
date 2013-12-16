@@ -2976,7 +2976,7 @@ mark_elimination (int from, int to)
 int ira_reg_equiv_len;
 
 /* Info about equiv. info for each register.  */
-struct ira_reg_equiv *ira_reg_equiv;
+struct ira_reg_equiv_s *ira_reg_equiv;
 
 /* Expand ira_reg_equiv if necessary.  */
 void
@@ -2988,12 +2988,12 @@ ira_expand_reg_equiv (void)
     return;
   ira_reg_equiv_len = max_reg_num () * 3 / 2 + 1;
   ira_reg_equiv
-    = (struct ira_reg_equiv *) xrealloc (ira_reg_equiv,
+    = (struct ira_reg_equiv_s *) xrealloc (ira_reg_equiv,
 					 ira_reg_equiv_len
-					 * sizeof (struct ira_reg_equiv));
+					 * sizeof (struct ira_reg_equiv_s));
   gcc_assert (old < ira_reg_equiv_len);
   memset (ira_reg_equiv + old, 0,
-	  sizeof (struct ira_reg_equiv) * (ira_reg_equiv_len - old));
+	  sizeof (struct ira_reg_equiv_s) * (ira_reg_equiv_len - old));
 }
 
 static void

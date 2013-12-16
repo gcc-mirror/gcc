@@ -1,3 +1,171 @@
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* predict.h (PROB_LIKELY): Fix the value.
+	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Add support
+	for overflow checking for modes without 2xwider supported mode,
+	if the mode has 2xnarrower mode.
+
+	* internal-fn.c: Include stringpool.h and tree-ssanames.h.
+	(ubsan_expand_si_overflow_addsub_check): In the generic expansion,
+	try to improve generated code if one of the arguments is constant
+	or get_range_info says that one of the argument is always
+	negative or always non-negative.
+	* tree-vrp.c (simplify_internal_call_using_ranges): New function.
+	(simplify_stmt_using_ranges): Call it.
+
+2013-12-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59466
+	* emit-rtl.c (change_address_1): Don't validate address for LRA.
+	* recog.c (general_operand): Accept any memory for LRA.
+	* lra.c (lra_set_insn_recog_data): Add an assert.
+
+2013-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Add cortex-a12 entry.
+
+2013-12-14  Jan Hubicka  <jh@suse.cz>
+	    Markus Trippelsdorf <octoploid@yandex.com>
+
+	PR ipa/59265
+	* ipa-profile.c (ipa_profile_generate_summary): Do not ICE when
+	call is already devirtualized.
+	
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (version.o): Restore dependencies on
+	$(REVISION), $(DATESTAMP), $(BASEVER) and $(DEVPHASE).
+
+2013-12-14  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59473
+	* ipa-devirt.c (get_class_context): Do not ICE when type is found
+	at wrong offset.
+
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/58756
+	* omp-low.c (lower_rec_input_clauses) <case OMP_CLAUSE_REDUCTION>: For
+	reductions without placeholder if is_simd, but when not using
+	GOMP_SIMD* internal calls, also perform the reduction operation
+	on the outer var rather than simple assignment.
+
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58956
+	PR middle-end/59470
+	* gimple-walk.h (walk_stmt_load_store_addr_fn): New typedef.
+	(walk_stmt_load_store_addr_ops, walk_stmt_load_store_ops): Use it
+	for callback params.
+	* gimple-walk.c (walk_stmt_load_store_ops): Likewise.
+	(walk_stmt_load_store_addr_ops): Likewise.  Adjust all callback
+	calls to supply the gimple operand containing the base tree
+	as an extra argument.
+	* tree-ssa-ter.c: Include gimple-walk.h.
+	(find_ssaname, find_ssaname_in_store): New helper functions.
+	(find_replaceable_in_bb): For calls or GIMPLE_ASM, only set
+	same_root_var if USE is used somewhere in the stores of the stmt.
+	* ipa-prop.c (visit_ref_for_mod_analysis): Remove name of the stmt
+	argument and ATTRIBUTE_UNUSED, add another unnamed tree argument.
+	* ipa-pure-const.c (check_load, check_store, check_ipa_load,
+	check_ipa_store): Likewise.
+	* gimple.c (gimple_ior_addresses_taken_1, check_loadstore): Likewise.
+	* ipa-split.c (test_nonssa_use, mark_nonssa_use): Likewise.
+	(verify_non_ssa_vars, visit_bb): Adjust their callers.
+	* cfgexpand.c (add_scope_conflicts_1): Use
+	walk_stmt_load_store_addr_fn type for visit variable.
+	(visit_op, visit_conflict): Remove name of the stmt
+	argument and ATTRIBUTE_UNUSED, add another unnamed tree argument.
+	* tree-sra.c (asm_visit_addr): Likewise.  Remove name of the data
+	argument and ATTRIBUTE_UNUSED.
+	* cgraphbuild.c (mark_address, mark_load, mark_store): Add another
+	unnamed tree argument.
+	* gimple-ssa-isolate-paths.c (check_loadstore): Likewise.  Remove
+	ATTRIBUTE_UNUSED from stmt parameter.
+
+2013-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* opts-common.c (integral_argument): Add support for
+	hexadecimal command option integer arguments. Update comments.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59265
+	* ipa-prop.c (ipa_analyze_call_uses): Skip already
+	devirtualized calls.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+	PR middle-end/58477
+	* ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
+
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58477
+	* cgraphclones.c (cgraph_clone_edge): Do not resolve speculative edges.
+
+2013-12-14   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59492
+	* config/i386/i386.c (ix86_function_specific_restore): Don't
+	change -fPIC.
+
+2013-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* var-tracking.c (add_stores): Fix oversight in latest commit.
+
+2013-12-14  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59503
+	* internal-fn.c (ubsan_expand_si_overflow_addsub_check): Call
+	expand_binop with correct optab depending on code.
+
+2013-12-14  Tom de Vries  <tom@codesourcery.com>
+
+	* calls.c (expand_call): Fix REG_PARM_STACK_SPACE comparison.
+
+2013-12-13  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-expand.md (one_cmplqi2): Make constant signed.
+
+	* config/msp430/msp430.md (movqi): replace general_operand with
+	msp_general_operand and nonimmediate_operand with
+	msp_nonimmediate_operand to allow volatile operands.
+	(movhi): Likewise.
+	(movpsi): Likewise.
+	(addpsi3): Likewise.
+	(addhi3): Likewise.
+	(addhi3_cy): Likewise.
+	(addchi4_cy): Likewise.
+	(xor<mode>3): Likewise.
+	(ome_cmpl<mode>2): Likewise.
+	(extendqihi2): Likewise.
+	(zero_extendqihi2): Likewise.
+	(zero_extendhipsi2): Likewise.
+	(truncpsihi2): Likewise.
+	(srai_1): Likewise.
+
+2013-12-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.h (struct ira_reg_equiv): Rename to ira_reg_equiv_s.
+	* ira.c: Ditto.
+	* lra-int.h (lra_init_equiv): New prototype.
+	* lra-constraints.c (lra_init_equiv, update_equiv): New functions.
+	(loc_equivalence_callback): Use the 3rd arg.
+	(lra_constraints): Update equivalences.  Pass curr_insn to
+	simplify_replace_fn_rtx.
+	* lra.c (lra): Call lra_init_equiv.
+
+2013-12-13  Kenneth Zadeck  <zadeck@naturalbridge.com>
+
+	* genmodes.c (emit_max_int): Fixed missing parens.
+	
+2013-12-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/59149
+	* calls.c (flags_from_decl_or_type): Fail on non decl or type.
+	* trans-mem.c (diagnose_tm_1): Do not call flags_from_decl_or_type
+	if no type or decl.
+
 2013-12-13  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* config/arc/arc.h (BITS_PER_UNIT): Removed.

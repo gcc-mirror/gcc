@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #define PROB_VERY_LIKELY	(REG_BR_PROB_BASE - PROB_VERY_UNLIKELY)
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 #define PROB_UNLIKELY           (REG_BR_PROB_BASE / 5 - 1)
-#define PROB_LIKELY             (PROB_ALWAYS - PROB_VERY_LIKELY)
+#define PROB_LIKELY             (REG_BR_PROB_BASE - PROB_UNLIKELY)
 
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) ENUM,
 enum br_predictor
