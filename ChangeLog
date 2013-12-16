@@ -1,3 +1,7 @@
+2013-12-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2013-12-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* configure.ac: Add user-friendly check for native x86_64-linux
