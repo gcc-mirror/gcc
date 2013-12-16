@@ -340,6 +340,9 @@
 	* hooks.c
 	(hook_bool_dint_dint_uint_bool_true): Removed.
 	(hook_bool_wint_wint_uint_bool_true): New.
+	* internal-fn.c
+	(ubsan_expand_si_overflow_addsub_check): Use wide-int interfaces.
+	(ubsan_expand_si_overflow_mul_check): Likewise.
 	* ipa-devirt.c
 	(get_polymorphic_call_info): Use wide-int interfaces.
 	* ipa-prop.c
