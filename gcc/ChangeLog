@@ -1,3 +1,7 @@
+2013-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Add cortex-a12 entry.
+
 2013-12-14  Jan Hubicka  <jh@suse.cz>
 	    Markus Trippelsdorf <octoploid@yandex.com>
 
