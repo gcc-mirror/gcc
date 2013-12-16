@@ -1,4 +1,9 @@
-2013-12-14   Jan Hubicka  <jh@suse.cz>
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (version.o): Restore dependencies on
+	$(REVISION), $(DATESTAMP), $(BASEVER) and $(DEVPHASE).
+
+2013-12-14  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59473
 	* ipa-devirt.c (get_class_context): Do not ICE when type is found

@@ -1983,6 +1983,7 @@ CFLAGS-version.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
 	-DBUGURL=$(BUGURL_s)
+version.o: $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-lto-compress.o += $(ZLIBINC)
