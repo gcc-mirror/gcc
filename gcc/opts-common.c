@@ -147,7 +147,7 @@ find_opt (const char *input, unsigned int lang_mask)
   return match_wrong_lang;
 }
 
-/* If ARG is a non-negative integer made up solely of digits, return its
+/* If ARG is a non-negative decimal or hexadecimal integer, return its
    value, otherwise return -1.  */
 
 int
@@ -160,6 +160,17 @@ integral_argument (const char *arg)
 
   if (*p == '\0')
     return atoi (arg);
+
+  /* It wasn't a decimal number - try hexadecimal.  */
+  if (arg[0] == '0' && (arg[1] == 'x' || arg[1] == 'X'))
+    {
+      p = arg + 2;
+      while (*p && ISXDIGIT (*p))
+	p++;
+
+      if (p != arg + 2 && *p == '\0')
+	return strtol (arg, NULL, 16);
+    }
 
   return -1;
 }

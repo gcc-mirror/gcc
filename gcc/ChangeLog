@@ -1,3 +1,8 @@
+2013-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* opts-common.c (integral_argument): Add support for
+	hexadecimal command option integer arguments. Update comments.
+
 2013-12-14   Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59265
