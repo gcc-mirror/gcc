@@ -2326,8 +2326,7 @@ gimple_get_alias_set (tree t)
 /* Helper for gimple_ior_addresses_taken_1.  */
 
 static bool
-gimple_ior_addresses_taken_1 (gimple stmt ATTRIBUTE_UNUSED,
-			      tree addr, void *data)
+gimple_ior_addresses_taken_1 (gimple, tree addr, tree, void *data)
 {
   bitmap addresses_taken = (bitmap)data;
   addr = get_base_address (addr);
@@ -2496,7 +2495,7 @@ nonfreeing_call_p (gimple call)
    This routine only makes a superficial check for a dereference.  Thus
    it must only be used if it is safe to return a false negative.  */
 static bool
-check_loadstore (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+check_loadstore (gimple, tree op, tree, void *data)
 {
   if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
       && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))

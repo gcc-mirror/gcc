@@ -589,7 +589,7 @@ check_call (funct_state local, gimple call, bool ipa)
 /* Wrapper around check_decl for loads in local more.  */
 
 static bool
-check_load (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+check_load (gimple, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, false);
@@ -601,7 +601,7 @@ check_load (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
 /* Wrapper around check_decl for stores in local more.  */
 
 static bool
-check_store (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+check_store (gimple, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, false);
@@ -613,7 +613,7 @@ check_store (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
 /* Wrapper around check_decl for loads in ipa mode.  */
 
 static bool
-check_ipa_load (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+check_ipa_load (gimple, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, false, true);
@@ -625,7 +625,7 @@ check_ipa_load (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
 /* Wrapper around check_decl for stores in ipa mode.  */
 
 static bool
-check_ipa_store (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+check_ipa_store (gimple, tree op, tree, void *data)
 {
   if (DECL_P (op))
     check_decl ((funct_state)data, op, true, true);

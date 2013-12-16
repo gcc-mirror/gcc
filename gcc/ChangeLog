@@ -1,3 +1,36 @@
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58956
+	PR middle-end/59470
+	* gimple-walk.h (walk_stmt_load_store_addr_fn): New typedef.
+	(walk_stmt_load_store_addr_ops, walk_stmt_load_store_ops): Use it
+	for callback params.
+	* gimple-walk.c (walk_stmt_load_store_ops): Likewise.
+	(walk_stmt_load_store_addr_ops): Likewise.  Adjust all callback
+	calls to supply the gimple operand containing the base tree
+	as an extra argument.
+	* tree-ssa-ter.c: Include gimple-walk.h.
+	(find_ssaname, find_ssaname_in_store): New helper functions.
+	(find_replaceable_in_bb): For calls or GIMPLE_ASM, only set
+	same_root_var if USE is used somewhere in the stores of the stmt.
+	* ipa-prop.c (visit_ref_for_mod_analysis): Remove name of the stmt
+	argument and ATTRIBUTE_UNUSED, add another unnamed tree argument.
+	* ipa-pure-const.c (check_load, check_store, check_ipa_load,
+	check_ipa_store): Likewise.
+	* gimple.c (gimple_ior_addresses_taken_1, check_loadstore): Likewise.
+	* ipa-split.c (test_nonssa_use, mark_nonssa_use): Likewise.
+	(verify_non_ssa_vars, visit_bb): Adjust their callers.
+	* cfgexpand.c (add_scope_conflicts_1): Use
+	walk_stmt_load_store_addr_fn type for visit variable.
+	(visit_op, visit_conflict): Remove name of the stmt
+	argument and ATTRIBUTE_UNUSED, add another unnamed tree argument.
+	* tree-sra.c (asm_visit_addr): Likewise.  Remove name of the data
+	argument and ATTRIBUTE_UNUSED.
+	* cgraphbuild.c (mark_address, mark_load, mark_store): Add another
+	unnamed tree argument.
+	* gimple-ssa-isolate-paths.c (check_loadstore): Likewise.  Remove
+	ATTRIBUTE_UNUSED from stmt parameter.
+
 2013-12-16  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* opts-common.c (integral_argument): Add support for
