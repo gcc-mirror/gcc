@@ -649,42 +649,46 @@ get_base_loadstore (tree op)
 
 /* For the statement STMT call the callbacks VISIT_LOAD, VISIT_STORE and
    VISIT_ADDR if non-NULL on loads, store and address-taken operands
-   passing the STMT, the base of the operand and DATA to it.  The base
-   will be either a decl, an indirect reference (including TARGET_MEM_REF)
-   or the argument of an address expression.
+   passing the STMT, the base of the operand, the operand itself containing
+   the base and DATA to it.  The base will be either a decl, an indirect
+   reference (including TARGET_MEM_REF) or the argument of an address
+   expression.
    Returns the results of these callbacks or'ed.  */
 
 bool
 walk_stmt_load_store_addr_ops (gimple stmt, void *data,
-			       bool (*visit_load)(gimple, tree, void *),
-			       bool (*visit_store)(gimple, tree, void *),
-			       bool (*visit_addr)(gimple, tree, void *))
+			       walk_stmt_load_store_addr_fn visit_load,
+			       walk_stmt_load_store_addr_fn visit_store,
+			       walk_stmt_load_store_addr_fn visit_addr)
 {
   bool ret = false;
   unsigned i;
   if (gimple_assign_single_p (stmt))
     {
-      tree lhs, rhs;
+      tree lhs, rhs, arg;
       if (visit_store)
 	{
-	  lhs = get_base_loadstore (gimple_assign_lhs (stmt));
+	  arg = gimple_assign_lhs (stmt);
+	  lhs = get_base_loadstore (arg);
 	  if (lhs)
-	    ret |= visit_store (stmt, lhs, data);
+	    ret |= visit_store (stmt, lhs, arg, data);
 	}
-      rhs = gimple_assign_rhs1 (stmt);
+      arg = gimple_assign_rhs1 (stmt);
+      rhs = arg;
       while (handled_component_p (rhs))
 	rhs = TREE_OPERAND (rhs, 0);
       if (visit_addr)
 	{
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), arg, data);
 	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
 		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), arg,
+			       data);
 	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
 		   && TREE_CODE (OBJ_TYPE_REF_OBJECT (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (OBJ_TYPE_REF_OBJECT (rhs),
-						   0), data);
+						   0), arg, data);
 	  else if (TREE_CODE (rhs) == CONSTRUCTOR)
 	    {
 	      unsigned int ix;
@@ -692,23 +696,23 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 
 	      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), ix, val)
 		if (TREE_CODE (val) == ADDR_EXPR)
-		  ret |= visit_addr (stmt, TREE_OPERAND (val, 0), data);
+		  ret |= visit_addr (stmt, TREE_OPERAND (val, 0), arg, data);
 		else if (TREE_CODE (val) == OBJ_TYPE_REF
 			 && TREE_CODE (OBJ_TYPE_REF_OBJECT (val)) == ADDR_EXPR)
 		  ret |= visit_addr (stmt,
 				     TREE_OPERAND (OBJ_TYPE_REF_OBJECT (val),
-						   0), data);
+						   0), arg, data);
 	    }
           lhs = gimple_assign_lhs (stmt);
 	  if (TREE_CODE (lhs) == TARGET_MEM_REF
               && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)
-            ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), lhs, data);
 	}
       if (visit_load)
 	{
 	  rhs = get_base_loadstore (rhs);
 	  if (rhs)
-	    ret |= visit_load (stmt, rhs, data);
+	    ret |= visit_load (stmt, rhs, arg, data);
 	}
     }
   else if (visit_addr
@@ -721,17 +725,17 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  if (op == NULL_TREE)
 	    ;
 	  else if (TREE_CODE (op) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
 	  /* COND_EXPR and VCOND_EXPR rhs1 argument is a comparison
 	     tree with two operands.  */
 	  else if (i == 1 && COMPARISON_CLASS_P (op))
 	    {
 	      if (TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR)
 		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 0),
-						       0), data);
+						       0), op, data);
 	      if (TREE_CODE (TREE_OPERAND (op, 1)) == ADDR_EXPR)
 		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 1),
-						       0), data);
+						       0), op, data);
 	    }
 	}
     }
@@ -739,38 +743,39 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
     {
       if (visit_store)
 	{
-	  tree lhs = gimple_call_lhs (stmt);
-	  if (lhs)
+	  tree arg = gimple_call_lhs (stmt);
+	  if (arg)
 	    {
-	      lhs = get_base_loadstore (lhs);
+	      tree lhs = get_base_loadstore (arg);
 	      if (lhs)
-		ret |= visit_store (stmt, lhs, data);
+		ret |= visit_store (stmt, lhs, arg, data);
 	    }
 	}
       if (visit_load || visit_addr)
 	for (i = 0; i < gimple_call_num_args (stmt); ++i)
 	  {
-	    tree rhs = gimple_call_arg (stmt, i);
+	    tree arg = gimple_call_arg (stmt, i);
 	    if (visit_addr
-		&& TREE_CODE (rhs) == ADDR_EXPR)
-	      ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
+		&& TREE_CODE (arg) == ADDR_EXPR)
+	      ret |= visit_addr (stmt, TREE_OPERAND (arg, 0), arg, data);
 	    else if (visit_load)
 	      {
-		rhs = get_base_loadstore (rhs);
+		tree rhs = get_base_loadstore (arg);
 		if (rhs)
-		  ret |= visit_load (stmt, rhs, data);
+		  ret |= visit_load (stmt, rhs, arg, data);
 	      }
 	  }
       if (visit_addr
 	  && gimple_call_chain (stmt)
 	  && TREE_CODE (gimple_call_chain (stmt)) == ADDR_EXPR)
 	ret |= visit_addr (stmt, TREE_OPERAND (gimple_call_chain (stmt), 0),
-			   data);
+			   gimple_call_chain (stmt), data);
       if (visit_addr
 	  && gimple_call_return_slot_opt_p (stmt)
 	  && gimple_call_lhs (stmt) != NULL_TREE
 	  && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
-	ret |= visit_addr (stmt, gimple_call_lhs (stmt), data);
+	ret |= visit_addr (stmt, gimple_call_lhs (stmt),
+			   gimple_call_lhs (stmt), data);
     }
   else if (gimple_code (stmt) == GIMPLE_ASM)
     {
@@ -786,7 +791,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	    tree link = gimple_asm_output_op (stmt, i);
 	    tree op = get_base_loadstore (TREE_VALUE (link));
 	    if (op && visit_store)
-	      ret |= visit_store (stmt, op, data);
+	      ret |= visit_store (stmt, op, TREE_VALUE (link), data);
 	    if (visit_addr)
 	      {
 		constraint = TREE_STRING_POINTER
@@ -795,7 +800,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 		parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
 					 &allows_reg, &is_inout);
 		if (op && !allows_reg && allows_mem)
-		  ret |= visit_addr (stmt, op, data);
+		  ret |= visit_addr (stmt, op, TREE_VALUE (link), data);
 	      }
 	  }
       if (visit_load || visit_addr)
@@ -805,14 +810,14 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	    tree op = TREE_VALUE (link);
 	    if (visit_addr
 		&& TREE_CODE (op) == ADDR_EXPR)
-	      ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	      ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
 	    else if (visit_load || visit_addr)
 	      {
 		op = get_base_loadstore (op);
 		if (op)
 		  {
 		    if (visit_load)
-		      ret |= visit_load (stmt, op, data);
+		      ret |= visit_load (stmt, op, TREE_VALUE (link), data);
 		    if (visit_addr)
 		      {
 			constraint = TREE_STRING_POINTER
@@ -821,7 +826,8 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 						0, oconstraints,
 						&allows_mem, &allows_reg);
 			if (!allows_reg && allows_mem)
-			  ret |= visit_addr (stmt, op, data);
+			  ret |= visit_addr (stmt, op, TREE_VALUE (link),
+					     data);
 		      }
 		  }
 	      }
@@ -834,12 +840,12 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	{
 	  if (visit_addr
 	      && TREE_CODE (op) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
 	  else if (visit_load)
 	    {
-	      op = get_base_loadstore (op);
-	      if (op)
-		ret |= visit_load (stmt, op, data);
+	      tree base = get_base_loadstore (op);
+	      if (base)
+		ret |= visit_load (stmt, base, op, data);
 	    }
 	}
     }
@@ -850,7 +856,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	{
 	  tree op = gimple_phi_arg_def (stmt, i);
 	  if (TREE_CODE (op) == ADDR_EXPR)
-	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
 	}
     }
   else if (visit_addr
@@ -858,7 +864,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
     {
       tree op = gimple_goto_dest (stmt);
       if (TREE_CODE (op) == ADDR_EXPR)
-	ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
     }
 
   return ret;
@@ -869,8 +875,8 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 
 bool
 walk_stmt_load_store_ops (gimple stmt, void *data,
-			  bool (*visit_load)(gimple, tree, void *),
-			  bool (*visit_store)(gimple, tree, void *))
+			  walk_stmt_load_store_addr_fn visit_load,
+			  walk_stmt_load_store_addr_fn visit_store)
 {
   return walk_stmt_load_store_addr_ops (stmt, data,
 					visit_load, visit_store, NULL);

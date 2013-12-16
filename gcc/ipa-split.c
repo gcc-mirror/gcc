@@ -156,7 +156,7 @@ static tree find_retval (basic_block return_bb);
    variable, check it if it is present in bitmap passed via DATA.  */
 
 static bool
-test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
+test_nonssa_use (gimple, tree t, tree, void *data)
 {
   t = get_base_address (t);
 
@@ -249,7 +249,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	    }
 	  if (gimple_code (stmt) == GIMPLE_LABEL
 	      && test_nonssa_use (stmt, gimple_label_label (stmt),
-				  non_ssa_vars))
+				  NULL_TREE, non_ssa_vars))
 	  {
 	    ok = false;
 	    goto done;
@@ -278,7 +278,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	      if (virtual_operand_p (gimple_phi_result (stmt)))
 		continue;
 	      if (TREE_CODE (op) != SSA_NAME
-		  && test_nonssa_use (stmt, op, non_ssa_vars))
+		  && test_nonssa_use (stmt, op, op, non_ssa_vars))
 		{
 		  ok = false;
 		  goto done;
@@ -714,7 +714,7 @@ find_retval (basic_block return_bb)
    Return true when access to T prevents splitting the function.  */
 
 static bool
-mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
+mark_nonssa_use (gimple, tree t, tree, void *data)
 {
   t = get_base_address (t);
 
@@ -874,7 +874,7 @@ visit_bb (basic_block bb, basic_block return_bb,
 	    if (TREE_CODE (op) == SSA_NAME)
 	      bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
 	    else
-	      can_split &= !mark_nonssa_use (stmt, op, non_ssa_vars);
+	      can_split &= !mark_nonssa_use (stmt, op, op, non_ssa_vars);
 	  }
       }
   return can_split;

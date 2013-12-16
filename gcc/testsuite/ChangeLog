@@ -1,3 +1,9 @@
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58956
+	PR middle-end/59470
+	* gcc.target/i386/pr59470.c: New test.
+
 2013-12-14   Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59265

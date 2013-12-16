@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ter.h"
 #include "tree-outof-ssa.h"
 #include "flags.h"
+#include "gimple-walk.h"
 
 
 /* Temporary Expression Replacement (TER)
@@ -554,6 +555,30 @@ mark_replaceable (temp_expr_table_p tab, tree var, bool more_replacing)
 }
 
 
+/* Helper function for find_ssaname_in_stores.  Called via walk_tree to
+   find a SSA_NAME DATA somewhere in *TP.  */
+
+static tree
+find_ssaname (tree *tp, int *walk_subtrees, void *data)
+{
+  tree var = (tree) data;
+  if (*tp == var)
+    return var;
+  else if (IS_TYPE_OR_DECL_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Helper function for find_replaceable_in_bb.  Return true if SSA_NAME DATA
+   is used somewhere in T, which is a store in the statement.  Called via
+   walk_stmt_load_store_addr_ops.  */
+
+static bool
+find_ssaname_in_store (gimple, tree, tree t, void *data)
+{
+  return walk_tree (&t, find_ssaname, data, NULL) != NULL_TREE;
+}
+
 /* This function processes basic block BB, and looks for variables which can
    be replaced by their expressions.  Results are stored in the table TAB.  */
 
@@ -618,7 +643,27 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		      && gimple_assign_single_p (def_stmt)
 		      && stmt_may_clobber_ref_p (stmt,
 						 gimple_assign_rhs1 (def_stmt)))
-		    same_root_var = true;
+		    {
+		      /* For calls, it is not a problem if USE is among
+			 call's arguments or say OBJ_TYPE_REF argument,
+			 all those necessarily need to be evaluated before
+			 the call that may clobber the memory.  But if
+			 LHS of the call refers to USE, expansion might
+			 evaluate it after the call, prevent TER in that
+			 case.
+			 For inline asm, allow TER of loads into input
+			 arguments, but disallow TER for USEs that occur
+			 somewhere in outputs.  */
+		      if (is_gimple_call (stmt)
+			  || gimple_code (stmt) == GIMPLE_ASM)
+			{
+			  if (walk_stmt_load_store_ops (stmt, use, NULL,
+							find_ssaname_in_store))
+			    same_root_var = true;
+			}
+		      else
+			same_root_var = true;
+		    }
 		}
 
 	      /* Mark expression as replaceable unless stmt is volatile, or the
