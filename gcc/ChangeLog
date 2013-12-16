@@ -1,3 +1,10 @@
+2013-12-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59466
+	* emit-rtl.c (change_address_1): Don't validate address for LRA.
+	* recog.c (general_operand): Accept any memory for LRA.
+	* lra.c (lra_set_insn_recog_data): Add an assert.
+
 2013-12-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/driver-arm.c (arm_cpu_table): Add cortex-a12 entry.
