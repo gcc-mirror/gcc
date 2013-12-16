@@ -1,3 +1,9 @@
+2013-12-14   Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59473
+	* ipa-devirt.c (get_class_context): Do not ICE when type is found
+	at wrong offset.
+
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/58756
