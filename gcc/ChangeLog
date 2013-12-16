@@ -1,3 +1,10 @@
+2013-12-14  Jan Hubicka  <jh@suse.cz>
+	    Markus Trippelsdorf <octoploid@yandex.com>
+
+	PR ipa/59265
+	* ipa-profile.c (ipa_profile_generate_summary): Do not ICE when
+	call is already devirtualized.
+	
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (version.o): Restore dependencies on
