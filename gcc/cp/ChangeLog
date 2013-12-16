@@ -6,7 +6,7 @@
 2013-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58627
-	* call.c (resolve_address_of_overloaded_function): Don't call ggc_free
+	* class.c (resolve_address_of_overloaded_function): Don't call ggc_free
 	on targs.
 
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
