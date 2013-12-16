@@ -11539,28 +11539,12 @@ Field_reference_expression::do_check_types(Gogo*)
 tree
 Field_reference_expression::do_get_tree(Translate_context* context)
 {
-  tree struct_tree = this->expr_->get_tree(context);
-  if (struct_tree == error_mark_node
-      || TREE_TYPE(struct_tree) == error_mark_node)
-    return error_mark_node;
-  go_assert(TREE_CODE(TREE_TYPE(struct_tree)) == RECORD_TYPE);
-  tree field = TYPE_FIELDS(TREE_TYPE(struct_tree));
-  if (field == NULL_TREE)
-    {
-      // This can happen for a type which refers to itself indirectly
-      // and then turns out to be erroneous.
-      go_assert(saw_errors());
-      return error_mark_node;
-    }
-  for (unsigned int i = this->field_index_; i > 0; --i)
-    {
-      field = DECL_CHAIN(field);
-      go_assert(field != NULL_TREE);
-    }
-  if (TREE_TYPE(field) == error_mark_node)
-    return error_mark_node;
-  return build3(COMPONENT_REF, TREE_TYPE(field), struct_tree, field,
-		NULL_TREE);
+  Bexpression* bstruct = tree_to_expr(this->expr_->get_tree(context));
+  Bexpression* ret =
+      context->gogo()->backend()->struct_field_expression(bstruct,
+                                                          this->field_index_,
+                                                          this->location());
+  return expr_to_tree(ret);
 }
 
 // Dump ast representation for a field reference expression.

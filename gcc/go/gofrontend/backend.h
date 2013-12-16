@@ -280,6 +280,10 @@ class Backend
   virtual Bexpression*
   address_expression(Bexpression*, Location) = 0;
 
+  // Return an expression for the field at INDEX in BSTRUCT.
+  virtual Bexpression*
+  struct_field_expression(Bexpression* bstruct, size_t index, Location) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should
