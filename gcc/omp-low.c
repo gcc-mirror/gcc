@@ -3565,19 +3565,20 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		{
 		  x = omp_reduction_init (c, TREE_TYPE (new_var));
 		  gcc_assert (TREE_CODE (TREE_TYPE (new_var)) != ARRAY_TYPE);
+		  enum tree_code code = OMP_CLAUSE_REDUCTION_CODE (c);
+
+		  /* reduction(-:var) sums up the partial results, so it
+		     acts identically to reduction(+:var).  */
+		  if (code == MINUS_EXPR)
+		    code = PLUS_EXPR;
+
 		  if (is_simd
 		      && lower_rec_simd_input_clauses (new_var, ctx, max_vf,
 						       idx, lane, ivar, lvar))
 		    {
-		      enum tree_code code = OMP_CLAUSE_REDUCTION_CODE (c);
 		      tree ref = build_outer_var_ref (var, ctx);
 
 		      gimplify_assign (unshare_expr (ivar), x, &llist[0]);
-
-		      /* reduction(-:var) sums up the partial results, so it
-			 acts identically to reduction(+:var).  */
-		      if (code == MINUS_EXPR)
-			code = PLUS_EXPR;
 
 		      x = build2 (code, TREE_TYPE (ref), ref, ivar);
 		      ref = build_outer_var_ref (var, ctx);
@@ -3587,8 +3588,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    {
 		      gimplify_assign (new_var, x, ilist);
 		      if (is_simd)
-			gimplify_assign (build_outer_var_ref (var, ctx),
-					 new_var, dlist);
+			{
+			  tree ref = build_outer_var_ref (var, ctx);
+
+			  x = build2 (code, TREE_TYPE (ref), ref, new_var);
+			  ref = build_outer_var_ref (var, ctx);
+			  gimplify_assign (ref, x, dlist);
+			}
 		    }
 		}
 	      break;
