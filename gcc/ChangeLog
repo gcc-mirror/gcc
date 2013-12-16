@@ -1,3 +1,13 @@
+2013-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.c: Include stringpool.h and tree-ssanames.h.
+	(ubsan_expand_si_overflow_addsub_check): In the generic expansion,
+	try to improve generated code if one of the arguments is constant
+	or get_range_info says that one of the argument is always
+	negative or always non-negative.
+	* tree-vrp.c (simplify_internal_call_using_ranges): New function.
+	(simplify_stmt_using_ranges): Call it.
+
 2013-12-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59466

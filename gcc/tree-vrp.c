@@ -9299,6 +9299,68 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   return true;
 }
 
+/* Simplify an internal fn call using ranges if possible.  */
+
+static bool
+simplify_internal_call_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
+{
+  enum tree_code subcode;
+  switch (gimple_call_internal_fn (stmt))
+    {
+    case IFN_UBSAN_CHECK_ADD:
+      subcode = PLUS_EXPR;
+      break;
+    case IFN_UBSAN_CHECK_SUB:
+      subcode = MINUS_EXPR;
+      break;
+    case IFN_UBSAN_CHECK_MUL:
+      subcode = MULT_EXPR;
+      break;
+    default:
+      return false;
+    }
+
+  value_range_t vr0 = VR_INITIALIZER;
+  value_range_t vr1 = VR_INITIALIZER;
+  tree op0 = gimple_call_arg (stmt, 0);
+  tree op1 = gimple_call_arg (stmt, 1);
+
+  if (TREE_CODE (op0) == SSA_NAME)
+    vr0 = *get_value_range (op0);
+  else if (TREE_CODE (op0) == INTEGER_CST)
+    set_value_range_to_value (&vr0, op0, NULL);
+  else
+    return false;
+
+  if (TREE_CODE (op1) == SSA_NAME)
+    vr1 = *get_value_range (op1);
+  else if (TREE_CODE (op1) == INTEGER_CST)
+    set_value_range_to_value (&vr1, op1, NULL);
+  else
+    return false;
+
+  if (!range_int_cst_p (&vr0) || !range_int_cst_p (&vr1))
+    return false;
+
+  tree r1 = int_const_binop (subcode, vr0.min, vr1.min);
+  tree r2 = int_const_binop (subcode, vr0.max, vr1.max);
+  if (r1 == NULL_TREE || TREE_OVERFLOW (r1)
+      || r2 == NULL_TREE || TREE_OVERFLOW (r2))
+    return false;
+  if (subcode == MULT_EXPR)
+    {
+      tree r3 = int_const_binop (subcode, vr0.min, vr1.max);
+      tree r4 = int_const_binop (subcode, vr0.max, vr1.min);
+      if (r3 == NULL_TREE || TREE_OVERFLOW (r3)
+	  || r4 == NULL_TREE || TREE_OVERFLOW (r4))
+	return false;
+    }
+  gimple g = gimple_build_assign_with_ops (subcode, gimple_call_lhs (stmt),
+					   op0, op1);
+  gsi_replace (gsi, g, false);
+  return true;
+}
+
 /* Simplify STMT using ranges if possible.  */
 
 static bool
@@ -9367,6 +9429,9 @@ simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
     return simplify_cond_using_ranges (stmt);
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
     return simplify_switch_using_ranges (stmt);
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    return simplify_internal_call_using_ranges (gsi, stmt);
 
   return false;
 }

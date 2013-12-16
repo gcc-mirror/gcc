@@ -34,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "target.h"
 #include "predict.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -211,28 +213,81 @@ ubsan_expand_si_overflow_addsub_check (tree_code code, gimple stmt)
   if (icode == CODE_FOR_nothing)
     {
       rtx sub_check = gen_label_rtx ();
+      int pos_neg = 3;
 
       /* Compute the operation.  On RTL level, the addition is always
 	 unsigned.  */
       res = expand_binop (mode, code == PLUS_EXPR ? add_optab : sub_optab,
 			  op0, op1, NULL_RTX, false, OPTAB_LIB_WIDEN);
 
+      /* If we can prove one of the arguments is always non-negative
+	 or always negative, we can do just one comparison and
+	 conditional jump instead of 2 at runtime, 3 present in the
+	 emitted code.  If one of the arguments is CONST_INT, all we
+	 need is to make sure it is op1, then the first
+	 emit_cmp_and_jump_insns will be just folded.  Otherwise try
+	 to use range info if available.  */
+      if (CONST_INT_P (op0))
+	{
+	  rtx tem = op0;
+	  op0 = op1;
+	  op1 = tem;
+	}
+      else if (CONST_INT_P (op1))
+	;
+      else if (TREE_CODE (arg0) == SSA_NAME)
+	{
+	  double_int arg0_min, arg0_max;
+	  if (get_range_info (arg0, &arg0_min, &arg0_max) == VR_RANGE)
+	    {
+	      if (!arg0_min.is_negative ())
+		pos_neg = 1;
+	      else if (arg0_max.is_negative ())
+		pos_neg = 2;
+	    }
+	  if (pos_neg != 3)
+	    {
+	      rtx tem = op0;
+	      op0 = op1;
+	      op1 = tem;
+	    }
+	}
+      if (pos_neg == 3 && !CONST_INT_P (op1) && TREE_CODE (arg1) == SSA_NAME)
+	{
+	  double_int arg1_min, arg1_max;
+	  if (get_range_info (arg1, &arg1_min, &arg1_max) == VR_RANGE)
+	    {
+	      if (!arg1_min.is_negative ())
+		pos_neg = 1;
+	      else if (arg1_max.is_negative ())
+		pos_neg = 2;
+	    }
+	}
+
       /* If the op1 is negative, we have to use a different check.  */
-      emit_cmp_and_jump_insns (op1, const0_rtx, LT, NULL_RTX, mode,
-			       false, sub_check, PROB_EVEN);
+      if (pos_neg == 3)
+	emit_cmp_and_jump_insns (op1, const0_rtx, LT, NULL_RTX, mode,
+				 false, sub_check, PROB_EVEN);
 
       /* Compare the result of the operation with one of the operands.  */
-      emit_cmp_and_jump_insns (res, op0, code == PLUS_EXPR ? GE : LE,
-			       NULL_RTX, mode, false, done_label,
-			       PROB_VERY_LIKELY);
-      /* If we get here, we have to print the error.  */
-      emit_jump (do_error);
+      if (pos_neg & 1)
+	emit_cmp_and_jump_insns (res, op0, code == PLUS_EXPR ? GE : LE,
+				 NULL_RTX, mode, false, done_label,
+				 PROB_VERY_LIKELY);
 
-      emit_label (sub_check);
+      /* If we get here, we have to print the error.  */
+      if (pos_neg == 3)
+	{
+	  emit_jump (do_error);
+
+	  emit_label (sub_check);
+	}
+
       /* We have k = a + b for b < 0 here.  k <= a must hold.  */
-      emit_cmp_and_jump_insns (res, op0, code == PLUS_EXPR ? LE : GE,
-			       NULL_RTX, mode, false, done_label,
-			       PROB_VERY_LIKELY);
+      if (pos_neg & 2)
+	emit_cmp_and_jump_insns (res, op0, code == PLUS_EXPR ? LE : GE,
+				 NULL_RTX, mode, false, done_label,
+				 PROB_VERY_LIKELY);
     }
 
   emit_label (do_error);
