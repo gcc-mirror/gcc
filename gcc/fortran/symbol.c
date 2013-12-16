@@ -363,6 +363,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *cray_pointee = "CRAY POINTEE", *data = "DATA", *value = "VALUE",
     *volatile_ = "VOLATILE", *is_protected = "PROTECTED",
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
+    *proc_pointer = "PROCEDURE POINTER", *abstract = "ABSTRACT",
     *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
     *contiguous = "CONTIGUOUS", *generic = "GENERIC";
   static const char *threadprivate = "THREADPRIVATE";
@@ -592,6 +593,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (procedure, volatile_)
   conf (procedure, asynchronous)
   conf (procedure, entry)
+
+  conf (proc_pointer, abstract)
 
   a1 = gfc_code2string (flavors, attr->flavor);
 
@@ -1440,7 +1443,8 @@ gfc_add_abstract (symbol_attribute* attr, locus* where)
     }
 
   attr->abstract = 1;
-  return true;
+
+  return check_conflict (attr, NULL, where);
 }
 
 
