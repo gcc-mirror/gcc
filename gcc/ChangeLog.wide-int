@@ -869,7 +869,9 @@
 	(output_constructor_bitfield): Likewise.
 	* var-tracking.c
 	(loc_cmp): Handle CONST_WIDE_INT.
-	* mkconfig.sh: Define BITS_PER_UNIT for GENERATOR_FILEs.
+	* mkconfig.sh: Include machmode.h to pick up BITS_PER_UNIT for
+	GENERATOR_FILEs.
+	* gencheck.c: Define BITS_PER_UNIT.
 	* wide-int.cc: New.
 	* wide-int.h: New.
 	* wide-int-print.cc: New.
