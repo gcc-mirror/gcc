@@ -1,3 +1,9 @@
+2013-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59523
+	* tree-vectorizer.c (fold_loop_vectorized_call): Call update_stmt
+	on updated stmts.
+
 2013-12-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* ipa-inline.c (gate_ipa_inline): Remove.

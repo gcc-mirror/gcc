@@ -369,8 +369,11 @@ fold_loop_vectorized_call (gimple g, tree value)
 
   update_call_from_tree (&gsi, value);
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-      SET_USE (use_p, value);
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	SET_USE (use_p, value);
+      update_stmt (use_stmt);
+    }
 }
 
 /* Function vectorize_loops.
