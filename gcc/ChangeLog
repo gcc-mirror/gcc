@@ -1,3 +1,9 @@
+2013-12-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cores.def (cortex-a12): Use cortexa15 scheduling.
+	* config/arm/arm.c (arm_issue_rate): Handle cortexa12.
+	* config/arm/arm.md (generic_vfp): Remove cortexa12.
+
 2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a57.cortex-a53): New.
