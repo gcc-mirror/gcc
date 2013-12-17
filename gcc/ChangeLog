@@ -1,3 +1,9 @@
+2013-12-17  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/59527
+	* cfgrtl.c (fixup_reorder_chain): Handle a region-crossing
+	branch, which can't be eliminated.
+
 2013-12-18  Martin Liska  <marxin.liska@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
