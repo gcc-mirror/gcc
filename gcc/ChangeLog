@@ -1,3 +1,9 @@
+2013-12-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-inline.c (gate_ipa_inline): Remove.
+	(const pass_data pass_data_ipa_inline): Unset has_gate.
+	(class pass_ipa_inline): Remove gate() method.
+
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (get_polymorphic_call_info): Fix offset calculatoin
