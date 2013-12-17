@@ -232,6 +232,15 @@ EnumValue
 Enum(processor_type) String(arm1156t2f-s) Value(arm1156t2fs)
 
 EnumValue
+Enum(processor_type) String(cortex-m1) Value(cortexm1)
+
+EnumValue
+Enum(processor_type) String(cortex-m0) Value(cortexm0)
+
+EnumValue
+Enum(processor_type) String(cortex-m0plus) Value(cortexm0plus)
+
+EnumValue
 Enum(processor_type) String(generic-armv7-a) Value(genericv7a)
 
 EnumValue
@@ -253,9 +262,6 @@ EnumValue
 Enum(processor_type) String(cortex-a15) Value(cortexa15)
 
 EnumValue
-Enum(processor_type) String(cortex-a53) Value(cortexa53)
-
-EnumValue
 Enum(processor_type) String(cortex-r4) Value(cortexr4)
 
 EnumValue
@@ -274,16 +280,10 @@ EnumValue
 Enum(processor_type) String(cortex-m3) Value(cortexm3)
 
 EnumValue
-Enum(processor_type) String(cortex-m1) Value(cortexm1)
-
-EnumValue
-Enum(processor_type) String(cortex-m0) Value(cortexm0)
-
-EnumValue
-Enum(processor_type) String(cortex-m0plus) Value(cortexm0plus)
-
-EnumValue
 Enum(processor_type) String(marvell-pj4) Value(marvell_pj4)
+
+EnumValue
+Enum(processor_type) String(cortex-a53) Value(cortexa53)
 
 Enum
 Name(arm_arch) Type(int)

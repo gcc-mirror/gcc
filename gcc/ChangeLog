@@ -1,5 +1,17 @@
 2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm-cores.def: Add new column for TUNE_IDENT.
+	* config/arm/genopt.sh: Improve layout.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-opts.h (ARM_CORE): Modify macro for TUNE_IDENT.
+	* config/arm/arm.c (ARM_CORE): Modify macro for TUNE_IDENT.
+	(arm_option_override): When a CPU is chosen, that should also
+	form the tune target.
+	* config/arm/arm.h (ARM_CORE): Modify macro for TUNE_IDENT.
+
+2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* common/config/arm/arm-common.c (arm_rewrite_selected_cpu): New.
 	(arm_rewrite_mcpu): Likewise.
 	* config/arm/arm-protos.h (arm_rewrite_selected_cpu): New.
