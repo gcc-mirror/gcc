@@ -208,6 +208,7 @@ semantic checks), it should return @code{GS_ERROR}.
 
 The pass manager is located in @file{passes.c}, @file{tree-optimize.c}
 and @file{tree-pass.h}.
+It processes passes as described in @file{passes.def}.
 Its job is to run all of the individual passes in the correct order,
 and take care of standard bookkeeping that applies to every pass.
 

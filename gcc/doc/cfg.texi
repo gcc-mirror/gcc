@@ -23,7 +23,7 @@ used to represent the control flow graph are defined in
 
 In GCC, the representation of control flow is maintained throughout
 the compilation process, from constructing the CFG early in 
-@code{pass_build_cfg} to @code{pass_free_cfg} (see @file{passes.c}).
+@code{pass_build_cfg} to @code{pass_free_cfg} (see @file{passes.def}).
 The CFG takes various different modes and may undergo extensive
 manipulations, but the graph is always valid between its construction
 and its release.  This way, transfer of information such as data flow,
