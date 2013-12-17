@@ -1,3 +1,8 @@
+2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (get_polymorphic_call_info): Fix offset calculatoin
+	in contains_type_p query.
+
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* omp-low.c (tmp_ompfn_id_num): Remove leftover variable
