@@ -1,3 +1,13 @@
+2013-12-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (lowpart_bit_field_p): Fix comment.
+	(store_bit_field_using_insv): Fix formatting.
+	(store_bit_field): Likewise.
+	(store_fixed_bit_field): More declaration and remove return.
+	(store_fixed_bit_field_1): Fix formatting.
+	(extract_fixed_bit_field): Move declaration.
+	(extract_fixed_bit_field_1): Simplify.
+
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (possible_polymorphic_call_targets): Determine context of
