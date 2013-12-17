@@ -143,12 +143,12 @@ Additional tutorial information is linked to from
 @include sourcebuild.texi
 @include options.texi
 @include passes.texi
-@include rtl.texi
 @include generic.texi
 @include gimple.texi
 @include tree-ssa.texi
-@include loop.texi
+@include rtl.texi
 @include cfg.texi
+@include loop.texi
 @include md.texi
 @include tm.texi
 @include hostconfig.texi
