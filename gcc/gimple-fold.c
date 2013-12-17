@@ -1153,26 +1153,20 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
-      else if (virtual_method_call_p (callee))
+      else if (flag_devirtualize && virtual_method_call_p (callee))
 	{
-	  tree obj = OBJ_TYPE_REF_OBJECT (callee);
-	  tree binfo = gimple_extract_devirt_binfo_from_cst
-		 (obj, obj_type_ref_class (callee));
-	  if (binfo)
+	  bool final;
+	  vec <cgraph_node *>targets
+	    = possible_polymorphic_call_targets (callee, &final);
+	  if (final && targets.length () <= 1)
 	    {
-	      HOST_WIDE_INT token
-		= TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-	      tree fndecl = gimple_get_virt_method_for_binfo (token, binfo);
-	      if (fndecl)
-		{
-#ifdef ENABLE_CHECKING
-		  gcc_assert (possible_polymorphic_call_target_p
-				 (callee, cgraph_get_node (fndecl)));
-
-#endif
-		  gimple_call_set_fndecl (stmt, fndecl);
-		  changed = true;
-		}
+	      tree fndecl;
+	      if (targets.length () == 1)
+		fndecl = targets[0]->decl;
+	      else
+		fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	      gimple_call_set_fndecl (stmt, fndecl);
+	      changed = true;
 	    }
 	}
     }

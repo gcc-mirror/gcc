@@ -121,10 +121,17 @@ possible_polymorphic_call_targets (tree call,
 				   bool *final = NULL,
 				   void **cache_token = NULL)
 {
+  tree otr_type;
+  HOST_WIDE_INT otr_token;
+  ipa_polymorphic_call_context context;
+
+  get_polymorphic_call_info (current_function_decl,
+			     call,
+			     &otr_type, &otr_token, &context);
   return possible_polymorphic_call_targets (obj_type_ref_class (call),
 					    tree_to_uhwi
 					      (OBJ_TYPE_REF_TOKEN (call)),
-					    ipa_dummy_polymorphic_call_context,
+					    context,
 					    final, cache_token);
 }
 
