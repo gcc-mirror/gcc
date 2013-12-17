@@ -29512,12 +29512,16 @@ cp_parser_omp_sections (cp_parser *parser, cp_token *pragma_tok,
 }
 
 /* OpenMP 2.5:
-   # pragma parallel parallel-clause new-line
-   # pragma parallel for parallel-for-clause new-line
-   # pragma parallel sections parallel-sections-clause new-line
+   # pragma omp parallel parallel-clause[optseq] new-line
+     structured-block
+   # pragma omp parallel for parallel-for-clause[optseq] new-line
+     structured-block
+   # pragma omp parallel sections parallel-sections-clause[optseq] new-line
+     structured-block
 
    OpenMP 4.0:
-   # pragma parallel for simd parallel-for-simd-clause new-line */
+   # pragma omp parallel for simd parallel-for-simd-clause[optseq] new-line
+     structured-block */
 
 #define OMP_PARALLEL_CLAUSE_MASK				\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
