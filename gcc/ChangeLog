@@ -1,5 +1,8 @@
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* tree-pass.h (make_pass_expand_omp_ssa): Remove leftover function
+	declaration.
+
 	* omp-low.c: Remove leftover comment.
 
 	* omp-low.c (check_combined_parallel): Reflect reality in comment.
