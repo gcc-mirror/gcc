@@ -1,3 +1,9 @@
+2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.h (possible_polymorphic_call_targets): Determine context of
+	the call.
+	* gimple-fold.c (gimple_fold_call): Use ipa-devirt to devirtualize.
+
 2013-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (convert_modes): For SUBREG_PROMOTED_VAR_P use SUBREG_REG (x)

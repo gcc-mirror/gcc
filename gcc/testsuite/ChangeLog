@@ -1,3 +1,7 @@
+2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-13.C: Update template.
+
 2013-12-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54949
