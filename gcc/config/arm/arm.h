@@ -162,8 +162,8 @@ extern char arm_arch_name[];
 
 enum target_cpus
 {
-#define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
-  TARGET_CPU_##IDENT,
+#define ARM_CORE(NAME, INTERNAL_IDENT, IDENT, ARCH, FLAGS, COSTS) \
+  TARGET_CPU_##INTERNAL_IDENT,
 #include "arm-cores.def"
 #undef ARM_CORE
   TARGET_CPU_generic

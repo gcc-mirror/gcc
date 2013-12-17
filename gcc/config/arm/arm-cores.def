@@ -20,10 +20,13 @@
 
 /* Before using #include to read this file, define a macro:
 
-      ARM_CORE(CORE_NAME, CORE_IDENT, ARCH, FLAGS, COSTS)
+      ARM_CORE(CORE_NAME, INTERNAL_IDENT, TUNE_IDENT, ARCH, FLAGS, COSTS)
 
    The CORE_NAME is the name of the core, represented as a string constant.
-   The CORE_IDENT is the name of the core, represented as an identifier.
+   The INTERNAL_IDENT is the name of the core represented as an identifier.
+   This must be unique for each entry in this table.
+   The TUNE_IDENT is the name of the core for which scheduling decisions
+   should be made, represented as an identifier.
    ARCH is the architecture revision implemented by the chip.
    FLAGS are the bitwise-or of the traits that apply to that core.
    This need not include flags implied by the architecture.
@@ -35,109 +38,115 @@
    Some tools assume no whitespace up to the first "," in each entry.  */
 
 /* V2/V2A Architecture Processors */
-ARM_CORE("arm2",   arm2,	2,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm250", arm250,	2,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm3",   arm3,	2,	FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm2", 	arm2, arm2,	2, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm250", 	arm250, arm250,	2, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm3",	arm3, arm3,	2, FL_CO_PROC | FL_MODE26, slowmul)
 
 /* V3 Architecture Processors */
-ARM_CORE("arm6",          arm6,		3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm60",         arm60,	3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm600",        arm600,	3,	FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm610",        arm610,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm620",        arm620,	3,	FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm7",          arm7,		3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm7d",         arm7d,	3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm7di",        arm7di,	3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm70",         arm70,	3,	FL_CO_PROC | FL_MODE26, slowmul)
-ARM_CORE("arm700",        arm700,	3,	FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm700i",       arm700i,	3,	FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm710",        arm710,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm720",        arm720,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm710c",       arm710c,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm7100",       arm7100,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-ARM_CORE("arm7500",       arm7500,	3,	             FL_MODE26 | FL_WBUF, slowmul)
-/* Doesn't have an external co-proc, but does have embedded fpa.  */
-ARM_CORE("arm7500fe",     arm7500fe,	3,	FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm6",	arm6, arm6,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm60",	arm60, arm60,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm600",	arm600, arm600,		3, FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm610",	arm610, arm610,		3, FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm620",	arm620, arm620,		3, FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm7",	arm7, arm7,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm7d",	arm7d, arm7d,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm7di",	arm7di, arm7di,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm70",	arm70, arm70,		3, FL_CO_PROC | FL_MODE26, slowmul)
+ARM_CORE("arm700",	arm700, arm700,		3, FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm700i",	arm700i, arm700i,	3, FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm710",	arm710, arm710,		3, FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm720",	arm720, arm720,		3, FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm710c",	arm710c, arm710c,	3, FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm7100",	arm7100, arm7100,	3, FL_MODE26 | FL_WBUF, slowmul)
+ARM_CORE("arm7500",	arm7500, arm7500,	3, FL_MODE26 | FL_WBUF, slowmul)
+/* Doesn't have an external co-proc, but does have embedded fpa. */
+ARM_CORE("arm7500fe", arm7500fe, arm7500fe,	3, FL_CO_PROC | FL_MODE26 | FL_WBUF, slowmul)
 
 /* V3M Architecture Processors */
 /* arm7m doesn't exist on its own, but only with D, ("and", and I), but
    those don't alter the code, so arm7m is sometimes used.  */
-ARM_CORE("arm7m",         arm7m,	3M,	FL_CO_PROC | FL_MODE26, fastmul)
-ARM_CORE("arm7dm",        arm7dm,	3M,	FL_CO_PROC | FL_MODE26, fastmul)
-ARM_CORE("arm7dmi",       arm7dmi,	3M,	FL_CO_PROC | FL_MODE26, fastmul)
+ARM_CORE("arm7m",   arm7m, arm7m,	3M, FL_CO_PROC | FL_MODE26, fastmul)
+ARM_CORE("arm7dm",  arm7dm, arm7dm,	3M, FL_CO_PROC | FL_MODE26, fastmul)
+ARM_CORE("arm7dmi", arm7dmi, arm7dmi,	3M, FL_CO_PROC | FL_MODE26, fastmul)
 
 /* V4 Architecture Processors */
-ARM_CORE("arm8",          arm8,		4,	             FL_MODE26 | FL_LDSCHED, fastmul)
-ARM_CORE("arm810",        arm810,	4,	             FL_MODE26 | FL_LDSCHED, fastmul)
-ARM_CORE("strongarm",     strongarm,	4,	             FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
-ARM_CORE("strongarm110",  strongarm110,	4,	             FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
-ARM_CORE("strongarm1100", strongarm1100, 4,	             FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
-ARM_CORE("strongarm1110", strongarm1110, 4,	             FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
-ARM_CORE("fa526",         fa526,        4,                               FL_LDSCHED, fastmul)
-ARM_CORE("fa626",         fa626,        4,                               FL_LDSCHED, fastmul)
+ARM_CORE("arm8",          arm8, arm8,			4, FL_MODE26 | FL_LDSCHED, fastmul)
+ARM_CORE("arm810",        arm810, arm810,		4, FL_MODE26 | FL_LDSCHED, fastmul)
+ARM_CORE("strongarm",     strongarm, strongarm,		4, FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
+ARM_CORE("strongarm110",  strongarm110, strongarm110,	4, FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
+ARM_CORE("strongarm1100", strongarm1100, strongarm1100, 4, FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
+ARM_CORE("strongarm1110", strongarm1110, strongarm1110, 4, FL_MODE26 | FL_LDSCHED | FL_STRONG, strongarm)
+ARM_CORE("fa526",         fa526, fa526,			4, FL_LDSCHED, fastmul)
+ARM_CORE("fa626",         fa626, fa626,			4, FL_LDSCHED, fastmul)
 
 /* V4T Architecture Processors */
-ARM_CORE("arm7tdmi",      arm7tdmi,	4T,	FL_CO_PROC          , fastmul)
-ARM_CORE("arm7tdmi-s",    arm7tdmis,	4T,	FL_CO_PROC          , fastmul)
-ARM_CORE("arm710t",       arm710t,	4T,	             FL_WBUF, fastmul)
-ARM_CORE("arm720t",       arm720t,	4T,	             FL_WBUF, fastmul)
-ARM_CORE("arm740t",       arm740t,	4T,	             FL_WBUF, fastmul)
-ARM_CORE("arm9",          arm9,		4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm9tdmi",      arm9tdmi,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm920",        arm920,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm920t",       arm920t,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm922t",       arm922t,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm940t",       arm940t,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("ep9312",        ep9312,	4T,	                         FL_LDSCHED, fastmul)
+ARM_CORE("arm7tdmi",	arm7tdmi, arm7tdmi,	4T, FL_CO_PROC, fastmul)
+ARM_CORE("arm7tdmi-s",	arm7tdmis, arm7tdmis,	4T, FL_CO_PROC, fastmul)
+ARM_CORE("arm710t",	arm710t, arm710t,	4T, FL_WBUF,    fastmul)
+ARM_CORE("arm720t",	arm720t, arm720t,	4T, FL_WBUF,    fastmul)
+ARM_CORE("arm740t",	arm740t, arm740t,	4T, FL_WBUF,    fastmul)
+ARM_CORE("arm9",	arm9, arm9,		4T, FL_LDSCHED, fastmul)
+ARM_CORE("arm9tdmi",	arm9tdmi, arm9tdmi,	4T, FL_LDSCHED, fastmul)
+ARM_CORE("arm920",	arm920, arm920,		4T, FL_LDSCHED, fastmul)
+ARM_CORE("arm920t",	arm920t, arm920t,	4T, FL_LDSCHED, fastmul)
+ARM_CORE("arm922t",	arm922t, arm922t,	4T, FL_LDSCHED, fastmul)
+ARM_CORE("arm940t",	arm940t, arm940t,	4T, FL_LDSCHED, fastmul)
+ARM_CORE("ep9312",	ep9312, ep9312,		4T, FL_LDSCHED, fastmul)
 
 /* V5T Architecture Processors */
-ARM_CORE("arm10tdmi",     arm10tdmi,	5T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("arm1020t",      arm1020t,	5T,	                         FL_LDSCHED, fastmul)
+ARM_CORE("arm10tdmi",	arm10tdmi, arm10tdmi,	5T, FL_LDSCHED, fastmul)
+ARM_CORE("arm1020t",	arm1020t, arm1020t,	5T, FL_LDSCHED, fastmul)
 
 /* V5TE Architecture Processors */
-ARM_CORE("arm9e",         arm9e,	5TE,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm946e-s",     arm946es,	5TE,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm966e-s",     arm966es,	5TE,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm968e-s",     arm968es,	5TE,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm10e",        arm10e,	5TE,				 FL_LDSCHED, fastmul)
-ARM_CORE("arm1020e",      arm1020e,	5TE,				 FL_LDSCHED, fastmul)
-ARM_CORE("arm1022e",      arm1022e,	5TE,				 FL_LDSCHED, fastmul)
-ARM_CORE("xscale",        xscale,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE, xscale)
-ARM_CORE("iwmmxt",        iwmmxt,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
-ARM_CORE("iwmmxt2",       iwmmxt2,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT | FL_IWMMXT2, xscale)
-ARM_CORE("fa606te",       fa606te,      5TE,                             FL_LDSCHED, 9e)
-ARM_CORE("fa626te",       fa626te,      5TE,                             FL_LDSCHED, 9e)
-ARM_CORE("fmp626",        fmp626,       5TE,                             FL_LDSCHED, 9e)
-ARM_CORE("fa726te",       fa726te,      5TE,                             FL_LDSCHED, fa726te)
+ARM_CORE("arm9e",	arm9e, arm9e,		5TE, FL_LDSCHED, 9e)
+ARM_CORE("arm946e-s",	arm946es, arm946es,	5TE, FL_LDSCHED, 9e)
+ARM_CORE("arm966e-s",	arm966es, arm966es,	5TE, FL_LDSCHED, 9e)
+ARM_CORE("arm968e-s",	arm968es, arm968es,	5TE, FL_LDSCHED, 9e)
+ARM_CORE("arm10e",	arm10e, arm10e,		5TE, FL_LDSCHED, fastmul)
+ARM_CORE("arm1020e",	arm1020e, arm1020e,	5TE, FL_LDSCHED, fastmul)
+ARM_CORE("arm1022e",	arm1022e, arm1022e,	5TE, FL_LDSCHED, fastmul)
+ARM_CORE("xscale",	xscale, xscale,		5TE, FL_LDSCHED | FL_STRONG | FL_XSCALE, xscale)
+ARM_CORE("iwmmxt",	iwmmxt, iwmmxt,		5TE, FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
+ARM_CORE("iwmmxt2",	iwmmxt2, iwmmxt2,	5TE, FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT | FL_IWMMXT2, xscale)
+ARM_CORE("fa606te",	fa606te, fa606te,	5TE, FL_LDSCHED, 9e)
+ARM_CORE("fa626te",	fa626te, fa626te,	5TE, FL_LDSCHED, 9e)
+ARM_CORE("fmp626",	fmp626, fmp626,		5TE, FL_LDSCHED, 9e)
+ARM_CORE("fa726te",	fa726te, fa726te,	5TE, FL_LDSCHED, fa726te)
 
 /* V5TEJ Architecture Processors */
-ARM_CORE("arm926ej-s",    arm926ejs,	5TEJ,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm1026ej-s",   arm1026ejs,	5TEJ,	                         FL_LDSCHED, 9e)
+ARM_CORE("arm926ej-s",	arm926ejs, arm926ejs,	5TEJ, FL_LDSCHED, 9e)
+ARM_CORE("arm1026ej-s",	arm1026ejs, arm1026ejs,	5TEJ, FL_LDSCHED, 9e)
 
 /* V6 Architecture Processors */
-ARM_CORE("arm1136j-s",    arm1136js,	6J,	                         FL_LDSCHED, 9e)
-ARM_CORE("arm1136jf-s",   arm1136jfs,	6J,	                         FL_LDSCHED | FL_VFPV2, 9e)
-ARM_CORE("arm1176jz-s",	  arm1176jzs,	6ZK,				 FL_LDSCHED, 9e)
-ARM_CORE("arm1176jzf-s",  arm1176jzfs,	6ZK,				 FL_LDSCHED | FL_VFPV2, 9e)
-ARM_CORE("mpcorenovfp",	  mpcorenovfp,	6K,				 FL_LDSCHED, 9e)
-ARM_CORE("mpcore",	  mpcore,	6K,				 FL_LDSCHED | FL_VFPV2, 9e)
-ARM_CORE("arm1156t2-s",	  arm1156t2s,	6T2,				 FL_LDSCHED, v6t2)
-ARM_CORE("arm1156t2f-s",  arm1156t2fs,  6T2,				 FL_LDSCHED | FL_VFPV2, v6t2)
-ARM_CORE("generic-armv7-a", genericv7a,	7A,				 FL_LDSCHED, cortex)
-ARM_CORE("cortex-a5",	  cortexa5,	7A,				 FL_LDSCHED, cortex_a5)
-ARM_CORE("cortex-a7",	  cortexa7,	7A,				 FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a7)
-ARM_CORE("cortex-a8",	  cortexa8,	7A,				 FL_LDSCHED, cortex)
-ARM_CORE("cortex-a9",	  cortexa9,	7A,				 FL_LDSCHED, cortex_a9)
-ARM_CORE("cortex-a12",	  cortexa12,	7A,				 FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a12)
-ARM_CORE("cortex-a15",	  cortexa15,	7A,				 FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a15)
-ARM_CORE("cortex-a53",	  cortexa53,	8A,				 FL_LDSCHED, cortex_a53)
-ARM_CORE("cortex-r4",	  cortexr4,	7R,				 FL_LDSCHED, cortex)
-ARM_CORE("cortex-r4f",	  cortexr4f,	7R,				 FL_LDSCHED, cortex)
-ARM_CORE("cortex-r5",	  cortexr5,	7R,				 FL_LDSCHED | FL_ARM_DIV, cortex)
-ARM_CORE("cortex-r7",	  cortexr7,	7R,				 FL_LDSCHED | FL_ARM_DIV, cortex)
-ARM_CORE("cortex-m4",	  cortexm4,	7EM,				 FL_LDSCHED, v7m)
-ARM_CORE("cortex-m3",	  cortexm3,	7M,				 FL_LDSCHED, v7m)
-ARM_CORE("cortex-m1",	  cortexm1,	6M,				 FL_LDSCHED, v6m)
-ARM_CORE("cortex-m0",	  cortexm0,	6M,				 FL_LDSCHED, v6m)
-ARM_CORE("cortex-m0plus", cortexm0plus,	6M,				 FL_LDSCHED, v6m)
-ARM_CORE("marvell-pj4",   marvell_pj4,  7A,                              FL_LDSCHED, 9e)
+ARM_CORE("arm1136j-s",		arm1136js, arm1136js,		6J,  FL_LDSCHED, 9e)
+ARM_CORE("arm1136jf-s",		arm1136jfs, arm1136jfs,		6J,  FL_LDSCHED | FL_VFPV2, 9e)
+ARM_CORE("arm1176jz-s",		arm1176jzs, arm1176jzs,		6ZK, FL_LDSCHED, 9e)
+ARM_CORE("arm1176jzf-s",	arm1176jzfs, arm1176jzfs,	6ZK, FL_LDSCHED | FL_VFPV2, 9e)
+ARM_CORE("mpcorenovfp",		mpcorenovfp, mpcorenovfp,	6K,  FL_LDSCHED, 9e)
+ARM_CORE("mpcore",		mpcore, mpcore,			6K,  FL_LDSCHED | FL_VFPV2, 9e)
+ARM_CORE("arm1156t2-s",		arm1156t2s, arm1156t2s,		6T2, FL_LDSCHED, v6t2)
+ARM_CORE("arm1156t2f-s",	arm1156t2fs, arm1156t2fs,	6T2, FL_LDSCHED | FL_VFPV2, v6t2)
+
+/* V6M Architecture Processors */
+ARM_CORE("cortex-m1",		cortexm1, cortexm1,		6M, FL_LDSCHED, v6m)
+ARM_CORE("cortex-m0",		cortexm0, cortexm0,		6M, FL_LDSCHED, v6m)
+ARM_CORE("cortex-m0plus",	cortexm0plus, cortexm0plus,	6M, FL_LDSCHED, v6m)
+
+/* V7 Architecture Processors */
+ARM_CORE("generic-armv7-a",	genericv7a, genericv7a,		7A,  FL_LDSCHED, cortex)
+ARM_CORE("cortex-a5",		cortexa5, cortexa5,		7A,  FL_LDSCHED, cortex_a5)
+ARM_CORE("cortex-a7",		cortexa7, cortexa7,		7A,  FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a7)
+ARM_CORE("cortex-a8",		cortexa8, cortexa8,		7A,  FL_LDSCHED, cortex)
+ARM_CORE("cortex-a9",		cortexa9, cortexa9,		7A,  FL_LDSCHED, cortex_a9)
+ARM_CORE("cortex-a12",	  	cortexa12, cortexa12,		7A,  FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a12)
+ARM_CORE("cortex-a15",		cortexa15, cortexa15,		7A,  FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a15)
+ARM_CORE("cortex-r4",		cortexr4, cortexr4,		7R,  FL_LDSCHED, cortex)
+ARM_CORE("cortex-r4f",		cortexr4f, cortexr4f,		7R,  FL_LDSCHED, cortex)
+ARM_CORE("cortex-r5",		cortexr5, cortexr5,		7R,  FL_LDSCHED | FL_ARM_DIV, cortex)
+ARM_CORE("cortex-r7",		cortexr7, cortexr7,		7R,  FL_LDSCHED | FL_ARM_DIV, cortex)
+ARM_CORE("cortex-m4",		cortexm4, cortexm4,		7EM, FL_LDSCHED, v7m)
+ARM_CORE("cortex-m3",		cortexm3, cortexm3,		7M,  FL_LDSCHED, v7m)
+ARM_CORE("marvell-pj4",		marvell_pj4, marvell_pj4,	7A,  FL_LDSCHED, 9e)
+
+/* V8 Architecture Processors */
+ARM_CORE("cortex-a53",	cortexa53, cortexa53,	8A, FL_LDSCHED, cortex_a53)

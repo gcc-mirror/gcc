@@ -25,5 +25,5 @@ echo ";; Generated automatically by gentune.sh from arm-cores.def"
 allcores=`awk -F'[(, 	]+' '/^ARM_CORE/ { cores = cores$3"," } END { print cores } ' $1`
 
 echo "(define_attr \"tune\""
-echo "	\"$allcores\"" | sed -e 's/,"$/"/'
+echo "	\"$allcores\"" | sed -e 's/,"$/"/' | sed -e 's/\([a-z0-9_]\+,[a-z0-9_]\+,[a-z0-9_]\+,\)/\1\n\t/g'
 echo "	(const (symbol_ref \"((enum attr_tune) arm_tune)\")))"
