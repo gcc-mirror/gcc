@@ -394,7 +394,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
--fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
+-fprofile-use -fprofile-use=@var{path} -fprofile-values -fprofile-reorder-functions @gol
 -freciprocal-math -free -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
@@ -9070,6 +9070,14 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions for usage in optimizations.
 
 Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
+
+@item -fprofile-reoder-functions
+@opindex fprofile-reorder-functions
+Function reordering based on profile instrumentation collects
+first time of execution of a function and orders these functions
+in ascending order.
+
+Enabled with @option{-fprofile-use}.
 
 @item -fvpt
 @opindex fvpt

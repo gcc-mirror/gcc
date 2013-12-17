@@ -2839,12 +2839,24 @@ handle_missing_profiles (void)
     {
       struct cgraph_edge *e;
       gcov_type call_count = 0;
+      gcov_type max_tp_first_run = 0;
       struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
       if (node->count)
         continue;
       for (e = node->callers; e; e = e->next_caller)
+      {
         call_count += e->count;
+
+	if (e->caller->tp_first_run > max_tp_first_run)
+	  max_tp_first_run = e->caller->tp_first_run;
+      }
+
+      /* If time profile is missing, let assign the maximum that comes from
+	 caller functions.  */
+      if (!node->tp_first_run && max_tp_first_run)
+	node->tp_first_run = max_tp_first_run + 1;
+
       if (call_count
           && fn && fn->cfg
           && (call_count * unlikely_count_fraction >= profile_info->runs))

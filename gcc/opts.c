@@ -1710,6 +1710,8 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
+      if (!opts_set->x_flag_profile_reorder_functions)
+	opts->x_flag_profile_reorder_functions = value;
       /* Indirect call profiling should do all useful transformations
  	 speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively

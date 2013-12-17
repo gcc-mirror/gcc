@@ -3621,9 +3621,16 @@ darwin_function_section (tree decl, enum node_frequency freq,
      unlikely executed (this happens especially with function splitting
      where we can split away unnecessary parts of static constructors).  */
   if (startup && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return (weak)
-	    ? darwin_sections[text_startup_coal_section]
-	    : darwin_sections[text_startup_section];
+  {
+    /* If we do have a profile or(and) LTO phase is executed, we do not need
+       these ELF section.  */
+    if (!in_lto_p || !flag_profile_values)
+      return (weak)
+	      ? darwin_sections[text_startup_coal_section]
+	      : darwin_sections[text_startup_section];
+    else
+      return text_section;
+  }
 
   /* Similarly for exit.  */
   if (exit && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -3640,10 +3647,15 @@ darwin_function_section (tree decl, enum node_frequency freq,
 		: darwin_sections[text_cold_section];
 	break;
       case NODE_FREQUENCY_HOT:
-	return (weak)
-		? darwin_sections[text_hot_coal_section]
-		: darwin_sections[text_hot_section];
-	break;
+      {
+        /* If we do have a profile or(and) LTO phase is executed, we do not need
+           these ELF section.  */
+        if (!in_lto_p || !flag_profile_values)
+          return (weak)
+                  ? darwin_sections[text_hot_coal_section]
+                  : darwin_sections[text_hot_section];
+        break;
+      }
       default:
 	return (weak)
 		? darwin_sections[text_coal_section]
