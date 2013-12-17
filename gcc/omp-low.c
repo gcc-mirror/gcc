@@ -1820,8 +1820,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 
 /* Create a new name for omp child function.  Returns an identifier.  */
 
-static GTY(()) unsigned int tmp_ompfn_id_num;
-
 static tree
 create_omp_child_function_name (bool task_copy)
 {
