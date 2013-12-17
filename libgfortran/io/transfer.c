@@ -2490,14 +2490,18 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
   if ((cf & IOPARM_DT_HAS_NAMELIST_NAME) != 0 && dtp->u.p.ionml != NULL)
      {
 	if ((cf & IOPARM_DT_HAS_FORMAT) != 0)
-	   generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
-		    "A format cannot be specified with a namelist");
+	  {
+	    generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
+			"A format cannot be specified with a namelist");
+	    return;
+	  }
      }
   else if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED &&
 	   !(cf & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT)))
     {
       generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
 		      "Missing format for FORMATTED data transfer");
+      return;
     }
 
   if (is_internal_unit (dtp)
