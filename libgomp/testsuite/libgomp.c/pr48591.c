@@ -1,5 +1,5 @@
 /* PR middle-end/48591 */
-/* { dg-do run { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* ia64-*-linux* } } */
+/* { dg-do run { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* ia64-*-linux* x86_64-*-freebsd* } } */
 /* { dg-options "-fopenmp" } */
 
 extern void abort (void);
