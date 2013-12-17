@@ -1,3 +1,7 @@
+2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/gccint.texi (Top): Fix inclusion order.
+
 2013-12-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cores.def (cortex-a12): Use cortexa15 scheduling.
