@@ -1,3 +1,7 @@
+2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/dfp/wtr-conversion-1.c (testfunc1): Fix typo.
+
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-13.C: Update template.
