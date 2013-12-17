@@ -1,5 +1,9 @@
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* doc/cfg.texi (Control Flow): Refer to passes.def instead of
+	passes.c.
+	* doc/passes.texi (Pass manager): Refer to passes.def.
+
 	* doc/gccint.texi (Top): Fix inclusion order.
 
 2013-12-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
