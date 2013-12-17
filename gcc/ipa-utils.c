@@ -655,6 +655,11 @@ ipa_merge_profiles (struct cgraph_node *dst,
     return;
   if (src->frequency < dst->frequency)
     src->frequency = dst->frequency;
+
+  /* Time profiles are merged.  */
+  if (dst->tp_first_run > src->tp_first_run && src->tp_first_run)
+    dst->tp_first_run = src->tp_first_run;
+
   if (!dst->count)
     return;
   if (cgraph_dump_file)

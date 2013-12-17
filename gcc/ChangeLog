@@ -1,3 +1,14 @@
+2013-12-18  Martin Liska  <marxin.liska@gmail.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (node_cmp): New function.
+	(expand_all_functions): Function ordering added.
+	* common.opt: New profile based function reordering flag introduced.
+	* lto-partition.c: Support for time profile added.
+	* lto.c: Likewise.
+	* predict.c (handle_missing_profiles): Time profile handled in
+	  missing profiles.
+
 2013-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59523

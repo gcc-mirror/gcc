@@ -1234,6 +1234,10 @@ split_function (struct split_point *split_point)
 				     !split_part_return_p,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "part");
+
+  /* Let's take a time profile for splitted function.  */
+  node->tp_first_run = cur_node->tp_first_run + 1;
+
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */

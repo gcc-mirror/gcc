@@ -2503,9 +2503,12 @@ lto_wpa_write_files (void)
   /* Sort partitions by size so small ones are compiled last.
      FIXME: Even when not reordering we may want to output one list for parallel make
      and other for final link command.  */
-  ltrans_partitions.qsort (flag_toplevel_reorder
+
+  if (!flag_profile_reorder_functions || !flag_profile_use)
+    ltrans_partitions.qsort (flag_toplevel_reorder
 			   ? cmp_partitions_size
 			   : cmp_partitions_order);
+
   for (i = 0; i < n_sets; i++)
     {
       size_t len;

@@ -552,7 +552,14 @@ default_function_section (tree decl, enum node_frequency freq,
      unlikely executed (this happens especially with function splitting
      where we can split away unnecessary parts of static constructors.  */
   if (startup && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return get_named_text_section (decl, ".text.startup", NULL);
+  {
+    /* If we do have a profile or(and) LTO phase is executed, we do not need
+       these ELF section.  */
+    if (!in_lto_p || !flag_profile_values)
+      return get_named_text_section (decl, ".text.startup", NULL);
+    else
+      return NULL;
+  }
 
   /* Similarly for exit.  */
   if (exit && freq != NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -564,7 +571,10 @@ default_function_section (tree decl, enum node_frequency freq,
       case NODE_FREQUENCY_UNLIKELY_EXECUTED:
 	return get_named_text_section (decl, ".text.unlikely", NULL);
       case NODE_FREQUENCY_HOT:
-	return get_named_text_section (decl, ".text.hot", NULL);
+        /* If we do have a profile or(and) LTO phase is executed, we do not need
+           these ELF section.  */
+        if (!in_lto_p || !flag_profile_values)
+          return get_named_text_section (decl, ".text.hot", NULL);
       default:
 	return NULL;
     }
