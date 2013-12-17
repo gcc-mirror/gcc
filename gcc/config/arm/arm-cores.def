@@ -154,3 +154,6 @@ ARM_CORE("cortex-a15.cortex-a7", cortexa15cortexa7, cortexa7,	7A,  FL_LDSCHED | 
 /* V8 Architecture Processors */
 ARM_CORE("cortex-a53",	cortexa53, cortexa53,	8A, FL_LDSCHED, cortex_a53)
 ARM_CORE("cortex-a57",	cortexa57, cortexa15,	8A, FL_LDSCHED, cortex_a15)
+
+/* V8 big.LITTLE implementations */
+ARM_CORE("cortex-a57.cortex-a53", cortexa57cortexa53, cortexa53, 8A,  FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a15)
