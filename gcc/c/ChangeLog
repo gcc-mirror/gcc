@@ -1,3 +1,7 @@
+2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_parallel): Fix description.
+
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-objc-common.h (LANG_HOOKS_CILKPLUS_FRAME_CLEANUP): Remove.
