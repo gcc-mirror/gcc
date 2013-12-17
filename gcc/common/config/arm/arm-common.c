@@ -63,6 +63,41 @@ arm_except_unwind_info (struct gcc_options *opts)
   return UI_SJLJ;
 }
 
+#define ARM_CPU_NAME_LENGTH 20
+
+/* Truncate NAME at the first '.' character seen, or return
+   NAME unmodified.  */
+
+const char *
+arm_rewrite_selected_cpu (const char *name)
+{
+  static char output_buf[ARM_CPU_NAME_LENGTH + 1] = {0};
+  char *arg_pos;
+
+  strncpy (output_buf, name, ARM_CPU_NAME_LENGTH);
+  arg_pos = strchr (output_buf, '.');
+
+  /* If we found a '.' truncate the entry at that point.  */
+  if (arg_pos)
+    *arg_pos = '\0';
+
+  return output_buf;
+}
+
+/* Called by the driver to rewrite a name passed to the -mcpu
+   argument in preparation to be passed to the assembler.  The
+   name will be in ARGV[0], ARGC should always be 1.  */
+
+const char *
+arm_rewrite_mcpu (int argc, const char **argv)
+{
+  gcc_assert (argc == 1);
+  return arm_rewrite_selected_cpu (argv[0]);
+}
+
+#undef ARM_CPU_NAME_LENGTH
+
+
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | MASK_SCHED_PROLOG)
 

@@ -2343,16 +2343,25 @@ extern int making_const_table;
    instruction.  */
 #define MAX_LDM_STM_OPS 4
 
+#define BIG_LITTLE_SPEC \
+   " %{mcpu=*:%<mcpu=* -mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}" \
+
+extern const char *arm_rewrite_mcpu (int argc, const char **argv);
+#define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
+  { "rewrite_mcpu", arm_rewrite_mcpu },
+
 #define ASM_CPU_SPEC \
    " %{mcpu=generic-*:-march=%*;"				\
-   "   :%{mcpu=*:-mcpu=%*} %{march=*:-march=%*}}"
+   "   :%{march=*:-march=%*}}"					\
+   BIG_LITTLE_SPEC
 
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define EXTRA_SPEC_FUNCTIONS						\
-  { "local_cpu_detect", host_detect_local_cpu },
+  { "local_cpu_detect", host_detect_local_cpu },			\
+  BIG_LITTLE_CPU_SPEC_FUNCTIONS
 
 # define MCPU_MTUNE_NATIVE_SPECS					\
    " %{march=native:%<march=native %:local_cpu_detect(arch)}"		\
@@ -2360,6 +2369,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    " %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
 #else
 # define MCPU_MTUNE_NATIVE_SPECS ""
+# define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
 #endif
 
 #define DRIVER_SELF_SPECS MCPU_MTUNE_NATIVE_SPECS
