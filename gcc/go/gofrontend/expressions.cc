@@ -4305,8 +4305,9 @@ Unary_expression::do_get_tree(Translate_context* context)
 					       expr,
 					       fold_convert(TREE_TYPE(expr),
 							    null_pointer_node));
-		tree crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-						 loc);
+		Expression* crash_expr =
+		    gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+		tree crash = crash_expr->get_tree(context);
 		expr = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
 				       TREE_TYPE(expr), build3(COND_EXPR,
 							       void_type_node,
@@ -6183,9 +6184,9 @@ Binary_expression::do_get_tree(Translate_context* context)
 
 	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO), 0
 	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
+	  Expression* crash = gogo->runtime_error(errcode, this->location());
 	  tree panic = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
-				       gogo->runtime_error(errcode,
-							   this->location()),
+				       crash->get_tree(context),
 				       fold_convert_loc(gccloc, TREE_TYPE(ret),
 							integer_zero_node));
 
@@ -6975,8 +6976,9 @@ Bound_method_expression::do_get_tree(Translate_context* context)
   if (nil_check != NULL)
     {
       tree nil_check_tree = nil_check->get_tree(context);
-      tree crash =
+      Expression* crash_expr =
 	context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+      tree crash = crash_expr->get_tree(context);
       if (ret_tree == error_mark_node
 	  || nil_check_tree == error_mark_node
 	  || crash == error_mark_node)
@@ -10715,7 +10717,7 @@ Array_index_expression::do_get_tree(Translate_context* context)
 	      : (this->end_ == NULL
 		 ? RUNTIME_ERROR_SLICE_INDEX_OUT_OF_BOUNDS
 		 : RUNTIME_ERROR_SLICE_SLICE_OUT_OF_BOUNDS));
-  tree crash = gogo->runtime_error(code, loc);
+  tree crash = gogo->runtime_error(code, loc)->get_tree(context);
 
   if (this->end_ == NULL)
     {
@@ -11089,7 +11091,7 @@ String_index_expression::do_get_tree(Translate_context* context)
   int code = (this->end_ == NULL
 	      ? RUNTIME_ERROR_STRING_INDEX_OUT_OF_BOUNDS
 	      : RUNTIME_ERROR_STRING_SLICE_OUT_OF_BOUNDS);
-  tree crash = context->gogo()->runtime_error(code, loc);
+  tree crash = context->gogo()->runtime_error(code, loc)->get_tree(context);
 
   if (this->end_ == NULL)
     {
@@ -11879,8 +11881,9 @@ Interface_field_reference_expression::do_get_tree(Translate_context* context)
 						    this->expr_,
 						    Expression::make_nil(loc),
 						    loc);
-  tree crash = context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-					      loc);
+  Expression* crash_expr =
+      context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+  tree crash = crash_expr->get_tree(context);
   if (closure_tree == error_mark_node
       || nil_check_tree == error_mark_node
       || crash == error_mark_node)
