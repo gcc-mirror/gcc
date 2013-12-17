@@ -1,3 +1,8 @@
+2013-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (convert_modes): For SUBREG_PROMOTED_VAR_P use SUBREG_REG (x)
+	instead of x as last gen_lowpart argument.
+
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* predict.h (PROB_LIKELY): Fix the value.
