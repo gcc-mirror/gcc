@@ -1,3 +1,14 @@
+2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common/config/arm/arm-common.c (arm_rewrite_selected_cpu): New.
+	(arm_rewrite_mcpu): Likewise.
+	* config/arm/arm-protos.h (arm_rewrite_selected_cpu): New.
+	* config/arm/arm.h (BIG_LITTLE_SPEC): New.
+	(BIG_LITTLE_SPEC_FUNCTIONS): Likewise.
+	(EXTRA_SPEC_FUNCTIONS): Include BIG_LITTLE_SPEC_FUNCTIONS.
+	(ASM_CPU_SPEC): Include BIG_LITTLE_SPEC.
+	* config/arm/arm.c (arm_file_start): Rewrite arm_selecetd_cpu values.
+
 2013-12-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (lowpart_bit_field_p): Fix comment.
