@@ -3060,6 +3060,19 @@ Gogo::build_recover_thunks()
   this->traverse(&build_recover_thunks);
 }
 
+// Build a call to the runtime error function.
+
+Expression*
+Gogo::runtime_error(int code, Location location)
+{
+  Type* int32_type = Type::lookup_integer_type("int32");
+  mpz_t val;
+  mpz_init_set_ui(val, code);
+  Expression* code_expr = Expression::make_integer(&val, int32_type, location);
+  mpz_clear(val);
+  return Runtime::make_call(Runtime::RUNTIME_ERROR, location, 1, code_expr);
+}
+
 // Look for named types to see whether we need to create an interface
 // method table.
 

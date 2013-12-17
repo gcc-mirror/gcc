@@ -576,7 +576,7 @@ class Gogo
 	       tree rettype, ...);
 
   // Build a call to the runtime error function.
-  tree
+  Expression*
   runtime_error(int code, Location);
 
   // Build a builtin struct with a list of fields.
