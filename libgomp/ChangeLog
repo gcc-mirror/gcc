@@ -1,3 +1,9 @@
+2013-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/59534
+	* testsuite/libgomp.fortran/retval1.f90 (e5): Avoid non-shortcircuited
+	comparisons.
+
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/58756
