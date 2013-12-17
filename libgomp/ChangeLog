@@ -1,3 +1,11 @@
+2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* testsuite/libgomp.c/affinity-1.c: Remove alloca.h inlcude. Replace
+	alloca () with __builtin_alloca ().
+	* testsuite/libgomp.c/icv-2.c: Add FreeBSD coverage.
+	* testsuite/libgomp.c/lock-3.c: Likewise.
+	* testsuite/libgomp.c/pr48591.c: Likewise.
+
 2013-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/59534
