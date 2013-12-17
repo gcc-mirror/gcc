@@ -9052,7 +9052,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 }
 
 /* Callback for walk_stmts.  Check if the current statement only contains
-   GIMPLE_OMP_FOR or GIMPLE_OMP_PARALLEL.  */
+   GIMPLE_OMP_FOR or GIMPLE_OMP_SECTIONS.  */
 
 static tree
 check_combined_parallel (gimple_stmt_iterator *gsi_p,

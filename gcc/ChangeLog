@@ -1,5 +1,7 @@
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* omp-low.c (check_combined_parallel): Reflect reality in comment.
+
 	* doc/cfg.texi (Control Flow): Refer to passes.def instead of
 	passes.c.
 	* doc/passes.texi (Pass manager): Refer to passes.def.
