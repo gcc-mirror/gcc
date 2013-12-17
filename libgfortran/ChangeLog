@@ -1,3 +1,13 @@
+2013-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/59419
+	* io/file_pos.c (st_rewind): Do proper return after
+	generate_error.
+	* io/open.c (edit_modes): Move action code inside block that
+	checks for library ok. (new_unit): Do cleanup after error.
+	(st_open): Do proper return after error.
+	* io/transfer.c (data_transfer_init): Likewise.
+	
 2013-12-11  Tobias Burnus  <burnus@net-b.de>
 
 	* config/fpu-387.h (sigill_hdlr, get_fpu_rounding_mode): Emit SSE

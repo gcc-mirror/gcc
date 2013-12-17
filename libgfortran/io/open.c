@@ -265,39 +265,39 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 	u->flags.round = flags->round;
       if (flags->sign != SIGN_UNSPECIFIED)
 	u->flags.sign = flags->sign;
-    }
 
-  /* Reposition the file if necessary.  */
-
-  switch (flags->position)
-    {
-    case POSITION_UNSPECIFIED:
-    case POSITION_ASIS:
-      break;
-
-    case POSITION_REWIND:
-      if (sseek (u->s, 0, SEEK_SET) != 0)
-	goto seek_error;
-
-      u->current_record = 0;
-      u->last_record = 0;
-
-      test_endfile (u);
-      break;
-
-    case POSITION_APPEND:
-      if (sseek (u->s, 0, SEEK_END) < 0)
-	goto seek_error;
-
-      if (flags->access != ACCESS_STREAM)
-	u->current_record = 0;
-
-      u->endfile = AT_ENDFILE;	/* We are at the end.  */
-      break;
-
-    seek_error:
-      generate_error (&opp->common, LIBERROR_OS, NULL);
-      break;
+      /* Reposition the file if necessary.  */
+    
+      switch (flags->position)
+	{
+	case POSITION_UNSPECIFIED:
+	case POSITION_ASIS:
+	  break;
+    
+	case POSITION_REWIND:
+	  if (sseek (u->s, 0, SEEK_SET) != 0)
+	    goto seek_error;
+    
+	  u->current_record = 0;
+	  u->last_record = 0;
+    
+	  test_endfile (u);
+	  break;
+    
+	case POSITION_APPEND:
+	  if (sseek (u->s, 0, SEEK_END) < 0)
+	    goto seek_error;
+    
+	  if (flags->access != ACCESS_STREAM)
+	    u->current_record = 0;
+    
+	  u->endfile = AT_ENDFILE;	/* We are at the end.  */
+	  break;
+    
+	seek_error:
+	  generate_error (&opp->common, LIBERROR_OS, NULL);
+	  break;
+	}
     }
 
   unlock_unit (u);
@@ -562,7 +562,10 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   if (flags->position == POSITION_APPEND)
     {
       if (sseek (u->s, 0, SEEK_END) < 0)
-	generate_error (&opp->common, LIBERROR_OS, NULL);
+	{
+	  generate_error (&opp->common, LIBERROR_OS, NULL);
+	  goto cleanup;
+	}
       u->endfile = AT_ENDFILE;
     }
 
@@ -852,8 +855,12 @@ st_open (st_parameter_open *opp)
 	{
 	  u = find_unit (opp->common.unit);
 	  if (u == NULL) /* Negative unit and no NEWUNIT-created unit found.  */
-	    generate_error (&opp->common, LIBERROR_BAD_OPTION,
-			    "Bad unit number in OPEN statement");
+	    {
+	      generate_error (&opp->common, LIBERROR_BAD_OPTION,
+			      "Bad unit number in OPEN statement");
+	      library_end ();
+	      return;
+	    }
 	}
 
       if (u == NULL)
