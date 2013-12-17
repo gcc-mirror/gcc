@@ -1,3 +1,8 @@
+2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/35535
+	* tree-vrp.c (extract_range_from_unary_expr_1): Handle OBJ_TYPE_REF.
+
 2013-12-17  Teresa Johnson  <tejohnson@google.com>
 
 	PR gcov-profile/59527

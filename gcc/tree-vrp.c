@@ -3202,9 +3202,9 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
     }
 
   /* Handle operations that we express in terms of others.  */
-  if (code == PAREN_EXPR)
+  if (code == PAREN_EXPR || code == OBJ_TYPE_REF)
     {
-      /* PAREN_EXPR is a simple copy.  */
+      /* PAREN_EXPR and OBJ_TYPE_REF are simple copies.  */
       copy_value_range (vr, &vr0);
       return;
     }
