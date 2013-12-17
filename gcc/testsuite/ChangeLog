@@ -1,3 +1,8 @@
+2013-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/58290
+	* gfortran.dg/pr58290.f90: New test.
+
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc.dg/dfp/wtr-conversion-1.c (testfunc1): Fix typo.
