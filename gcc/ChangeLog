@@ -1,5 +1,14 @@
 2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/arm-cores.def (cortex-a15.cortex-a7): New.
+	* doc/invoke.texi: Document -mcpu=cortex-a15.cortex-a7.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/bpabi.h
+	(BE8_LINK_SPEC): Handle -mcpu=cortex-a5.cortex-a7.
+
+2013-12-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/arm-cores.def: Add new column for TUNE_IDENT.
 	* config/arm/genopt.sh: Improve layout.
 	* config/arm/arm-tune.md: Regenerate.

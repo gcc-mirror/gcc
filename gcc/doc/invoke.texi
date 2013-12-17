@@ -12168,6 +12168,9 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+Additionally, this option can specify that GCC should tune the performance
+of the code for a big.LITTLE system.  The only permissible name is:
+@samp{cortex-a15.cortex-a7}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
