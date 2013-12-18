@@ -1,3 +1,8 @@
+2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* parser.c (cp_parser_cilk_simd_clause_name): Changed cilk_clause_name
+	to omp_clause_name.	
+
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* parser.c (cp_parser_omp_parallel): Fix description.
