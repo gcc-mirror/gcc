@@ -1,3 +1,7 @@
+2013-12-18  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/pr32912-2.c: Fix for 16-bit targets.
+
 2013-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr59418.c: New test.
