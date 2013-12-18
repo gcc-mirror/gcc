@@ -36,3 +36,7 @@
 
 AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD, cortexa53)
 AARCH64_CORE("cortex-a57",  cortexa15, cortexa15, 8,  AARCH64_FL_FPSIMD, generic)
+
+/* V8 big.LITTLE implementations.  */
+
+AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD, generic)

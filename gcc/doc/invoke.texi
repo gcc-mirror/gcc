@@ -11334,6 +11334,9 @@ possible values for @var{cpu} are @samp{generic}, @samp{cortex-a53},
 @samp{cortex-a57}.  The possible values for @var{feature} are documented
 in the sub-section below.
 
+Additionally, this option can specify that the target is a big.LITTLE system.
+The only possible value is @samp{cortex-a57.cortex-a53}.
+
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
 
