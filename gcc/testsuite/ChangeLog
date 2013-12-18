@@ -1,3 +1,7 @@
+2013-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr59418.c: New test.
+
 2013-12-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59523
