@@ -57,14 +57,14 @@
 
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR middle-end/35535
+	PR middle-end/35545
 	* gimple-fold.c (fold_gimple_assign): Attempt to devirtualize
 	OBJ_TYPE_REF.
 	(gimple_fold_stmt_to_constant_1): Bypass OBJ_TYPE_REF wrappers.
 
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR middle-end/35535
+	PR middle-end/35545
 	* tree-vrp.c (extract_range_from_unary_expr_1): Handle OBJ_TYPE_REF.
 
 2013-12-17  Teresa Johnson  <tejohnson@google.com>
