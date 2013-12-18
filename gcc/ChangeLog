@@ -1,5 +1,17 @@
 2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-cores.def: Add new column for
+	SCHEDULER_IDENT.
+	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Handle
+	SCHEDULER_IDENT.
+	* config/aarch64/aarch64.c (AARCH64_CORE): Handle
+	SCHEDULER_IDENT.
+	(aarch64_parse_cpu): mcpu implies a default value for mtune.
+	* config/aarch64/aarch64.h (AARCH64_CORE): Handle
+	SCHEDULER_IDENT.
+
+2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* common/config/aarch64/aarch64-common.c
 	(aarch64_rewrite_selected_cpu): New.
 	(aarch64_rewrite_mcpu): New.
