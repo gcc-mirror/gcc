@@ -21,18 +21,18 @@
 
    Before using #include to read this file, define a macro:
 
-      AARCH64_CORE(CORE_NAME, CORE_IDENT, ARCH, FLAGS, COSTS)
+      AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHEDULER_IDENT, ARCH, FLAGS, COSTS)
 
    The CORE_NAME is the name of the core, represented as a string constant.
    The CORE_IDENT is the name of the core, represented as an identifier.
+   The SCHEDULER_IDENT is the name of the core for which scheduling decisions
+   will be made, represented as an identifier.
    ARCH is the architecture revision implemented by the chip.
    FLAGS are the bitwise-or of the traits that apply to that core.
    This need not include flags implied by the architecture.
    COSTS is the name of the rtx_costs routine to use.  */
 
-/* V8 Architecture Processors.
-   This list currently contains example CPUs that implement AArch64, and
-   therefore serves as a template for adding more CPUs in the future.  */
+/* V8 Architecture Processors.  */
 
-AARCH64_CORE("cortex-a53",	  cortexa53,	     8,  AARCH64_FL_FPSIMD,    cortexa53)
-AARCH64_CORE("cortex-a57",	  cortexa15,	     8,  AARCH64_FL_FPSIMD,    generic)
+AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD, cortexa53)
+AARCH64_CORE("cortex-a57",  cortexa15, cortexa15, 8,  AARCH64_FL_FPSIMD, generic)
