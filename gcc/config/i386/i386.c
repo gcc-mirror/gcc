@@ -43860,7 +43860,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || (clonei->simdlen & (clonei->simdlen - 1)) != 0))
     {
       warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %d\n", clonei->simdlen);
+		  "unsupported simdlen %d", clonei->simdlen);
       return 0;
     }
 

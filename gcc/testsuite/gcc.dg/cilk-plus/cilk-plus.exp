@@ -60,6 +60,10 @@ if { [check_effective_target_lto] } {
     dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/CK/*.c]] " -O3 -flto -g -fcilkplus" " "
 }
 
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -g" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -std=c99" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/SE/*.c]] " -O3 -g" " "
+
 dg-finish
 
 unset TEST_EXTRA_LIBS
