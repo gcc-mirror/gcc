@@ -3618,11 +3618,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return false;
     }
 
-    /* Make sure the vtab is present.  */
-  if (lvalue->ts.type == BT_CLASS && rvalue->ts.type == BT_DERIVED)
-    gfc_find_derived_vtab (rvalue->ts.u.derived);
-  else if (UNLIMITED_POLY (lvalue) && !UNLIMITED_POLY (rvalue))
-    gfc_find_intrinsic_vtab (&rvalue->ts);
+  /* Make sure the vtab is present.  */
+  if (lvalue->ts.type == BT_CLASS && !UNLIMITED_POLY (rvalue))
+    gfc_find_vtab (&rvalue->ts);
 
   /* Check rank remapping.  */
   if (rank_remap)

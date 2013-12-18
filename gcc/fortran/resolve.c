@@ -6930,10 +6930,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
       gcc_assert (ts);
 
-      if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
-        gfc_find_derived_vtab (ts->u.derived);
-      else
-        gfc_find_intrinsic_vtab (ts);
+      gfc_find_vtab (ts);
 
       if (dimension)
 	e = gfc_expr_to_initialize (e);
@@ -8054,7 +8051,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  gfc_symbol *ivtab;
 	  gfc_expr *e;
 
-	  ivtab = gfc_find_intrinsic_vtab (&c->ts);
+	  ivtab = gfc_find_vtab (&c->ts);
 	  gcc_assert (ivtab && CLASS_DATA (ivtab)->initializer);
 	  e = CLASS_DATA (ivtab)->initializer;
 	  c->low = c->high = gfc_copy_expr (e);

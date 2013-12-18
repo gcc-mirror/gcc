@@ -423,18 +423,11 @@ gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
   gfc_expr *init;
   gfc_component *comp;
   gfc_symbol *vtab = NULL;
-  bool is_unlimited_polymorphic;
 
-  is_unlimited_polymorphic = ts->u.derived
-      && ts->u.derived->components->ts.u.derived
-      && ts->u.derived->components->ts.u.derived->attr.unlimited_polymorphic;
-
-  if (is_unlimited_polymorphic && init_expr)
-    vtab = gfc_find_intrinsic_vtab (&ts->u.derived->components->ts);
-  else if (init_expr && init_expr->expr_type != EXPR_NULL)
-    vtab = gfc_find_derived_vtab (init_expr->ts.u.derived);
+  if (init_expr && init_expr->expr_type != EXPR_NULL)
+    vtab = gfc_find_vtab (&init_expr->ts);
   else
-    vtab = gfc_find_derived_vtab (ts->u.derived);
+    vtab = gfc_find_vtab (ts);
 
   init = gfc_get_structure_constructor_expr (ts->type, ts->kind,
 					     &ts->u.derived->declared_at);
@@ -2403,38 +2396,33 @@ yes:
 
 
 /* Find (or generate) the symbol for an intrinsic type's vtab.  This is
-   need to support unlimited polymorphism.  */
+   needed to support unlimited polymorphism.  */
 
-gfc_symbol *
-gfc_find_intrinsic_vtab (gfc_typespec *ts)
+static gfc_symbol *
+find_intrinsic_vtab (gfc_typespec *ts)
 {
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
   gfc_symbol *copy = NULL, *src = NULL, *dst = NULL;
   int charlen = 0;
 
-  if (ts->type == BT_CHARACTER && ts->deferred)
+  if (ts->type == BT_CHARACTER)
     {
-      gfc_error ("TODO: Deferred character length variable at %C cannot "
-		 "yet be associated with unlimited polymorphic entities");
-      return NULL;
+      if (ts->deferred)
+	{
+	  gfc_error ("TODO: Deferred character length variable at %C cannot "
+		     "yet be associated with unlimited polymorphic entities");
+	  return NULL;
+	}
+      else if (ts->u.cl && ts->u.cl->length
+	       && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+	charlen = mpz_get_si (ts->u.cl->length->value.integer);
     }
-
-  if (ts->type == BT_UNKNOWN)
-    return NULL;
-
-  /* Sometimes the typespec is passed from a single call.  */
-  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
-    return gfc_find_derived_vtab (ts->u.derived);
 
   /* Find the top-level namespace.  */
   for (ns = gfc_current_ns; ns; ns = ns->parent)
     if (!ns->parent)
       break;
-
-  if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length
-      && ts->u.cl->length->expr_type == EXPR_CONSTANT)
-    charlen = mpz_get_si (ts->u.cl->length->value.integer);
 
   if (ns)
     {
@@ -2633,6 +2621,25 @@ cleanup:
     gfc_undo_symbols ();
 
   return found_sym;
+}
+
+
+/*  Find (or generate) a vtab for an arbitrary type (derived or intrinsic).  */
+
+gfc_symbol *
+gfc_find_vtab (gfc_typespec *ts)
+{
+  switch (ts->type)
+    {
+    case BT_UNKNOWN:
+      return NULL;
+    case BT_DERIVED:
+      return gfc_find_derived_vtab (ts->u.derived);
+    case BT_CLASS:
+      return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
+    default:
+      return find_intrinsic_vtab (ts);
+    }
 }
 
 
