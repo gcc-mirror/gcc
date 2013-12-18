@@ -5144,10 +5144,7 @@ gfc_trans_allocate (gfc_code * code)
 
 	      if (ts->type == BT_DERIVED || UNLIMITED_POLY (e))
 		{
-		  if (ts->type == BT_DERIVED)
-		  vtab = gfc_find_derived_vtab (ts->u.derived);
-		  else
-		    vtab = gfc_find_intrinsic_vtab (ts);
+		  vtab = gfc_find_vtab (ts);
 		  gcc_assert (vtab);
 		  gfc_init_se (&lse, NULL);
 		  lse.want_pointer = 1;
@@ -5232,12 +5229,8 @@ gfc_trans_allocate (gfc_code * code)
 		  ppc = gfc_copy_expr (rhs);
 		  gfc_add_vptr_component (ppc);
 		}
-	      else if (rhs->ts.type == BT_DERIVED)
-		ppc = gfc_lval_expr_from_sym
-				(gfc_find_derived_vtab (rhs->ts.u.derived));
 	      else
-		ppc = gfc_lval_expr_from_sym
-				(gfc_find_intrinsic_vtab (&rhs->ts));
+		ppc = gfc_lval_expr_from_sym (gfc_find_vtab (&rhs->ts));
 	      gfc_add_component_ref (ppc, "_copy");
 
 	      ppc_code = gfc_get_code (EXEC_CALL);

@@ -1,3 +1,21 @@
+2013-12-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59493
+	* gfortran.h (gfc_find_intrinsic_vtab): Removed prototype.
+	(gfc_find_vtab): New prototype.
+	* class.c (gfc_find_intrinsic_vtab): Rename to 'find_intrinsic_vtab' and
+	make static. Minor modifications.
+	(gfc_find_vtab): New function.
+	(gfc_class_initializer): Use new function 'gfc_find_vtab'.
+	* check.c (gfc_check_move_alloc): Ditto.
+	* expr.c (gfc_check_pointer_assign): Ditto.
+	* interface.c (compare_actual_formal): Ditto.
+	* resolve.c (resolve_allocate_expr, resolve_select_type): Ditto.
+	* trans-expr.c (gfc_conv_intrinsic_to_class, gfc_trans_class_assign):
+	Ditto.
+	* trans-intrinsic.c (conv_intrinsic_move_alloc): Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
 2013-12-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54949
