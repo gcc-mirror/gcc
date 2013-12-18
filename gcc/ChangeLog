@@ -1,3 +1,25 @@
+2013-11-13  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (avx512f_cmp<mode>3): Extend to support masking.
+	(avx512f_ucmp<mode>3): Ditto.
+	(avx512f_eq<mode>3): Ditto.
+	(avx512f_gt<mode>3): Ditto.
+	(avx512f_testm<mode>3): Ditto.
+	(avx512f_testnm<mode>3): Ditto.
+	* config/i386/subst.md (SUBST_S): New.
+	(mask_scalar_merge_name): Ditto.
+	(mask_scalar_merge_operand3): Ditto.
+	(mask_scalar_merge_operand4): Ditto.
+	(mask_scalar_merge): Ditto.
+
 2013-12-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/35535
