@@ -1,3 +1,11 @@
+2013-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/tree-ssa.texi (SSA Operands): Remove reference to
+	SSA_OP_VMAYUSE.
+	Synchronize SSA_OP* definitions with source.
+	* ssa-iterators.h: Fix comment for FOR_EACH_IMM_USE_STMT.
+	Add not to SSA_OP* macro definitions.
+
 2013-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59539
