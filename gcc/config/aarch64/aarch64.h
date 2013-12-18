@@ -857,4 +857,19 @@ extern enum aarch64_code_model aarch64_cmodel;
 #define ENDIAN_LANE_N(mode, n)  \
   (BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 - n : n)
 
+#define BIG_LITTLE_SPEC \
+   " %{mcpu=*:%<mcpu=* -mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
+
+extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
+#define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
+  { "rewrite_mcpu", aarch64_rewrite_mcpu },
+
+#define ASM_CPU_SPEC \
+   BIG_LITTLE_SPEC
+
+#define EXTRA_SPEC_FUNCTIONS BIG_LITTLE_CPU_SPEC_FUNCTIONS
+
+#define EXTRA_SPECS						\
+  { "asm_cpu_spec",		ASM_CPU_SPEC }
+
 #endif /* GCC_AARCH64_H */

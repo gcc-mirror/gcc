@@ -7437,7 +7437,9 @@ aarch64_start_file (void)
     }
   else if (selected_cpu)
     {
-      asm_fprintf (asm_out_file, "\t.cpu %s", selected_cpu->name);
+      const char *truncated_name
+	    = aarch64_rewrite_selected_cpu (selected_cpu->name);
+      asm_fprintf (asm_out_file, "\t.cpu %s", truncated_name);
       aarch64_print_extension ();
     }
   default_file_start();

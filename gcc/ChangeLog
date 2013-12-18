@@ -1,3 +1,19 @@
+2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_rewrite_selected_cpu): New.
+	(aarch64_rewrite_mcpu): New.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_rewrite_selected_cpu): New.
+	* config/aarch64/aarch64.h (BIG_LITTLE_SPEC): New.
+	(BIG_LITTLE_SPEC_FUNCTIONS): Likewise.
+	(ASM_CPU_SPEC): Likewise.
+	(EXTRA_SPEC_FUNCTIONS): Likewise.
+	(EXTRA_SPECS): Likewise.
+	(ASM_SPEC): Likewise.
+	* config/aarch64/aarch64.c (aarch64_start_file): Rewrite target
+	CPU name.
+
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* omp-low.c (simd_clone_clauses_extract): Replaced the string
