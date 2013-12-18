@@ -1,5 +1,12 @@
 2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-cores.def: Add support for
+	-mcpu=cortex-a57.cortex-a53.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document -mcpu=cortex-a57.cortex-a53.
+
+2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-cores.def: Add new column for
 	SCHEDULER_IDENT.
 	* config/aarch64/aarch64-opts.h (AARCH64_CORE): Handle
