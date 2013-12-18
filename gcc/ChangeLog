@@ -1,4 +1,39 @@
-2013-11-13  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+2013-12-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/sse.md (*fma_fmadd_<mode>): Extend to support masking.
+	(*fma_fmsub_<mode>): Ditto.
+	(*fma_fnmadd_<mode>): Ditto.
+	(*fma_fnmsub_<mode>): Ditto.
+	(*fma_fmaddsub_<mode>): Ditto.
+	(*fma_fmsubadd_<mode>): Ditto.
+	(avx512f_vternlog<mode>): Ditto.
+	(avx512f_fixupimm<mode>): Ditto.
+	(avx512f_sfixupimm<mode>): Ditto.
+	(avx512f_vpermi2var<mode>3): Ditto.
+	(avx512f_vpermt2var<mode>3): Ditto.
+	(avx512f_fmaddsub_<mode>_maskz): New.
+	(avx512f_vternlog<mode>_maskz): Ditto.
+	(avx512f_fixupimm<mode>_maskz): Ditto.
+	(avx512f_sfixupimm<mode>_maskz): Ditto.
+	(avx512f_vpermi2var<mode>3_maskz): Ditto.
+	(avx512f_vpermt2var<mode>3_maskz): Ditto.
+	(avx512f_expand<mode>_maskz): Ditto.
+	* config/i386/subst.md (sd_maskz_name): Ditto.
+	(sd_mask_op4): Ditto.
+	(sd_mask_op5): Ditto.
+	(sd_mask_codefor): Ditto.
+	(sd_mask_mode512bit_condition): Ditto.
+	(sd): Ditto.
+
+2013-12-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
 	    Anna Tikhonova  <anna.tikhonova@intel.com>
