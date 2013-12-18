@@ -1,5 +1,13 @@
 2013-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
+	* passes.c (execute_function_dump): Set graph_dump_initialized
+	appropriately.
+	(pass_init_dump_file): Similarly.
+	(execute_one_pass): Pass new argument to do_per_function.
+	* tree-pass.h (class opt_pass): New field graph_dump_initialized.
+
+2013-12-18  Aldy Hernandez  <aldyh@redhat.com>
+
 	* doc/tree-ssa.texi (SSA Operands): Remove reference to
 	SSA_OP_VMAYUSE.
 	Synchronize SSA_OP* definitions with source.

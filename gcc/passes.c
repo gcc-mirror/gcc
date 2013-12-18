@@ -1640,8 +1640,10 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
 /* Helper function to perform function body dump.  */
 
 static void
-execute_function_dump (void *data ATTRIBUTE_UNUSED)
+execute_function_dump (void *data)
 {
+  opt_pass *pass = (opt_pass *)data;
+
   if (dump_file && current_function_decl)
     {
       if (cfun->curr_properties & PROP_trees)
@@ -1655,7 +1657,14 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
 
       if ((cfun->curr_properties & PROP_cfg)
 	  && (dump_flags & TDF_GRAPH))
-	print_graph_cfg (dump_file_name, cfun);
+	{
+	  if (!pass->graph_dump_initialized)
+	    {
+	      clean_graph_dump_file (dump_file_name);
+	      pass->graph_dump_initialized = true;
+	    }
+	  print_graph_cfg (dump_file_name, cfun);
+	}
     }
 }
 
@@ -1936,6 +1945,7 @@ verify_curr_properties (void *data)
 bool
 pass_init_dump_file (opt_pass *pass)
 {
+  pass->graph_dump_initialized = false;
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
@@ -1950,7 +1960,10 @@ pass_init_dump_file (opt_pass *pass)
       if (initializing_dump
 	  && dump_file && (dump_flags & TDF_GRAPH)
 	  && cfun && (cfun->curr_properties & PROP_cfg))
-	clean_graph_dump_file (dump_file_name);
+	{
+	  clean_graph_dump_file (dump_file_name);
+	  pass->graph_dump_initialized = true;
+	}
       timevar_pop (TV_DUMP);
       return initializing_dump;
     }
@@ -2230,7 +2243,7 @@ execute_one_pass (opt_pass *pass)
 
   verify_interpass_invariants ();
   if (dump_file)
-    do_per_function (execute_function_dump, NULL);
+    do_per_function (execute_function_dump, pass);
   if (pass->type == IPA_PASS)
     {
       struct cgraph_node *node;
