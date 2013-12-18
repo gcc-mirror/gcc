@@ -1,3 +1,10 @@
+2013-12-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/59418
+	* dwarf2cfi.c (dwarf2out_frame_debug_cfa_offset): Fix comment and tidy.
+	(dwarf2out_frame_debug_cfa_restore): Handle TARGET_DWARF_REGISTER_SPAN.
+	(dwarf2out_frame_debug_expr): Tidy.
+
 2013-12-18  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
