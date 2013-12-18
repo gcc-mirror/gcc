@@ -83,8 +83,11 @@ MULTILIB_EXCEPTIONS    += *mcpu=cortex-a7/*mfpu=neon-fp-armv8*
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a8
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a9
 MULTILIB_MATCHES       += march?armv7-a=mcpu?cortex-a5
-MULTILIB_MATCHES       += mcpu?cortex-a7=mcpu?cortex-a15
+MULTILIB_MATCHES       += mcpu?cortex-a7=mcpu?cortex-a15=mcpu?cortex-a12
+MULTILIB_MATCHES       += mcpu?cortex-a7=mcpu?cortex-a15.cortex-a7
 MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a53
+MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57
+MULTILIB_MATCHES       += march?armv8-a=mcpu?cortex-a57.cortex-a53
 
 # FPU matches
 MULTILIB_MATCHES       += mfpu?vfpv3-d16=mfpu?vfpv3

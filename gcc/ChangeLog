@@ -1,3 +1,9 @@
+2013-12-18  James Greenhalgh  <james.greenhalgh@arm.com>
+              Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/t-aprofile: Add cortex-a15.cortex-a7, cortex-a12,
+	cortex-a57, cortex-a57.cortex-a53.
+
 2013-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/59418
