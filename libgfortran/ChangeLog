@@ -1,3 +1,7 @@
+2013-12-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* io/read.c (read_f): Convert assert to runtime error.
+
 2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* io/unix.c (tempfile_open): Only use the needed flag O_CLOEXEC.
