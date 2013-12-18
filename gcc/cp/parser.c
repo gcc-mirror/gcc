@@ -31478,10 +31478,10 @@ cp_parser_cilk_simd_linear (cp_parser *parser, tree clauses)
    token is not consumed.  Otherwise, the appropriate enum from the
    pragma_simd_clause is returned and the token is consumed.  */
 
-static pragma_cilk_clause
+static pragma_omp_clause
 cp_parser_cilk_simd_clause_name (cp_parser *parser)
 {
-  pragma_cilk_clause clause_type;
+  pragma_omp_clause clause_type;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   if (token->keyword == RID_PRIVATE)
@@ -31515,7 +31515,7 @@ cp_parser_cilk_simd_all_clauses (cp_parser *parser, cp_token *pragma_token)
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL)
 	 && clauses != error_mark_node)
     {
-      pragma_cilk_clause c_kind;
+      pragma_omp_clause c_kind;
       c_kind = cp_parser_cilk_simd_clause_name (parser);
       if (c_kind == PRAGMA_CILK_CLAUSE_VECTORLENGTH)
 	clauses = cp_parser_cilk_simd_vectorlength (parser, clauses);

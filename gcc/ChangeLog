@@ -1,3 +1,10 @@
+2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* omp-low.c (simd_clone_clauses_extract): Replaced the string
+	"cilk simd elemental" with "cilk simd function."
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen): 
+	Removed a carriage-return from a warning string.
+	
 2013-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* passes.c (execute_function_dump): Set graph_dump_initialized

@@ -10688,7 +10688,7 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
      declare simd".  */
   bool cilk_clone
     = (flag_enable_cilkplus
-       && lookup_attribute ("cilk plus elemental",
+       && lookup_attribute ("cilk simd function",
 			    DECL_ATTRIBUTES (node->decl)));
 
   /* Allocate one more than needed just in case this is an in-branch

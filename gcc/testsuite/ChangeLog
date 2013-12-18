@@ -1,3 +1,13 @@
+2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/SE/ef_test.c: New test.
+	* c-c++-common/cilk-plus/SE/ef_test2.c: Likewise.
+	* c-c++-common/cilk-plus/SE/vlength_errors.c: Likewise.
+	* c-c++-common/cilk-plus/SE/ef_error.c: Likewise.
+	* c-c++-common/cilk-plus/SE/ef_error2.c: Likewise.
+	* c-c++-common/cilk-plus/SE/ef_error3.c: Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: Added calls for the above tests.
+	
 2013-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59539
