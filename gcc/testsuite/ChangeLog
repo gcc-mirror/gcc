@@ -1,3 +1,9 @@
+2013-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59539
+	* gcc.target/i386/pr59539-1.c: New test.
+	* gcc.target/i386/pr59539-2.c: New test.
+
 2013-12-18  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/pr32912-2.c: Fix for 16-bit targets.

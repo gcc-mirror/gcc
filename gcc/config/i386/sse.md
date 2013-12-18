@@ -912,7 +912,28 @@
   DONE;
 })
 
-(define_insn "<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>"
+(define_expand "<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>"
+  [(set (match_operand:VF 0 "register_operand")
+	(unspec:VF [(match_operand:VF 1 "nonimmediate_operand")]
+	  UNSPEC_LOADU))]
+  "TARGET_SSE && <mask_mode512bit_condition>"
+{
+  /* For AVX, normal *mov<mode>_internal pattern will handle unaligned loads
+     just fine if misaligned_operand is true, and without the UNSPEC it can
+     be combined with arithmetic instructions.  If misaligned_operand is
+     false, still emit UNSPEC_LOADU insn to honor user's request for
+     misaligned load.  */
+  if (TARGET_AVX
+      && misaligned_operand (operands[1], <MODE>mode)
+      /* FIXME: Revisit after AVX512F merge is completed.  */
+      && !<mask_applied>)
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+      DONE;
+    }
+})
+
+(define_insn "*<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>"
   [(set (match_operand:VF 0 "register_operand" "=v")
 	(unspec:VF
 	  [(match_operand:VF 1 "nonimmediate_operand" "vm")]
@@ -999,7 +1020,29 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+(define_expand "<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
+  [(set (match_operand:VI_UNALIGNED_LOADSTORE 0 "register_operand")
+	(unspec:VI_UNALIGNED_LOADSTORE
+	  [(match_operand:VI_UNALIGNED_LOADSTORE 1 "nonimmediate_operand")]
+	  UNSPEC_LOADU))]
+  "TARGET_SSE2 && <mask_mode512bit_condition>"
+{
+  /* For AVX, normal *mov<mode>_internal pattern will handle unaligned loads
+     just fine if misaligned_operand is true, and without the UNSPEC it can
+     be combined with arithmetic instructions.  If misaligned_operand is
+     false, still emit UNSPEC_LOADU insn to honor user's request for
+     misaligned load.  */
+  if (TARGET_AVX
+      && misaligned_operand (operands[1], <MODE>mode)
+      /* FIXME: Revisit after AVX512F merge is completed.  */
+      && !<mask_applied>)
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+      DONE;
+    }
+})
+
+(define_insn "*<sse2_avx_avx512f>_loaddqu<mode><mask_name>"
   [(set (match_operand:VI_UNALIGNED_LOADSTORE 0 "register_operand" "=v")
 	(unspec:VI_UNALIGNED_LOADSTORE
 	  [(match_operand:VI_UNALIGNED_LOADSTORE 1 "nonimmediate_operand" "vm")]

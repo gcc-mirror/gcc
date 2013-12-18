@@ -1,3 +1,11 @@
+2013-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59539
+	* config/i386/sse.md
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>,
+	<sse2_avx_avx512f>_loaddqu<mode><mask_name>): New expanders,
+	prefix existing define_insn names with *.
+
 2013-12-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_expand_epilogue_apcs_frame): Fix thinko.
