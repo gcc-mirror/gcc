@@ -1,3 +1,8 @@
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_CRYPTO): New.
+	(__ARM_FEATURE_CRYPTO): Define if TARGET_CRYPTO is true.
+
 2013-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
