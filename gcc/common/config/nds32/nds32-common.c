@@ -86,14 +86,23 @@ static const struct default_options nds32_option_optimization_table[] =
 
 /* Run-time Target Specification.  */
 
-/* Default enable
+/* The default target flags consist of
+   TARGET_CPU_DEFAULT and other MASK_XXX flags.
+
+   The value of TARGET_CPU_DEFAULT is set by
+   the process of 'configure' and 'make' stage.
+   Please check gcc/config.gcc for more implementation detail.
+
+   Other MASK_XXX flags are set individually.
+   By default we enable
      TARGET_GP_DIRECT: Generate gp-imply instruction.
      TARGET_16_BIT   : Generate 16/32 bit mixed length instruction.
      TARGET_PERF_EXT : Generate performance extention instrcution.
      TARGET_CMOV     : Generate conditional move instruction.  */
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
-  (MASK_GP_DIRECT				\
+  (TARGET_CPU_DEFAULT				\
+   | MASK_GP_DIRECT				\
    | MASK_16_BIT				\
    | MASK_PERF_EXT				\
    | MASK_CMOV)
