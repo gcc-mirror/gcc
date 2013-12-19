@@ -1,3 +1,8 @@
+2013-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.dg/long-long-compare-1.c: Don't use deprecated -mcbranchdi option
+	for target sh4-*-*.
+
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* gcc.target/aarch64/pmull_1.c: New.
