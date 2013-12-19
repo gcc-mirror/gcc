@@ -277,6 +277,10 @@
     UNSPEC_SHA1H        ; Used in aarch64-simd.md.
     UNSPEC_SHA1SU0      ; Used in aarch64-simd.md.
     UNSPEC_SHA1SU1      ; Used in aarch64-simd.md.
+    UNSPEC_SHA256H      ; Used in aarch64-simd.md.
+    UNSPEC_SHA256H2     ; Used in aarch64-simd.md.
+    UNSPEC_SHA256SU0    ; Used in aarch64-simd.md.
+    UNSPEC_SHA256SU1    ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
@@ -863,6 +867,8 @@
 
 (define_int_iterator CRYPTO_SHA1 [UNSPEC_SHA1C UNSPEC_SHA1M UNSPEC_SHA1P])
 
+(define_int_iterator CRYPTO_SHA256 [UNSPEC_SHA256H UNSPEC_SHA256H2])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -985,3 +991,5 @@
 
 (define_int_attr sha1_op [(UNSPEC_SHA1C "c") (UNSPEC_SHA1P "p")
 			  (UNSPEC_SHA1M "m")])
+
+(define_int_attr sha256_op [(UNSPEC_SHA256H "") (UNSPEC_SHA256H2 "2")])

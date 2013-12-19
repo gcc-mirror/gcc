@@ -1,6 +1,18 @@
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Update builtins table.
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_sha256h<sha256_op>v4si,
+	aarch64_crypto_sha256su0v4si, aarch64_crypto_sha256su1v4si): New.
+	* config/aarch64/arm_neon.h (vsha256hq_u32, vsha256h2q_u32,
+	vsha256su0q_u32, vsha256su1q_u32): New.
+	* config/aarch64/iterators.md (UNSPEC_SHA256H<2>, UNSPEC_SHA256SU<01>):
+	New.
+	(CRYPTO_SHA256): New int iterator.
+	(sha256_op): New int attribute.
+
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Update builtins table.
 	* config/aarch64/aarch64-builtins.c (aarch64_types_ternopu_qualifiers,
 	TYPES_TERNOPU): New.
 	* config/aarch64/aarch64-simd.md (aarch64_crypto_sha1hsi,
