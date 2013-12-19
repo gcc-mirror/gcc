@@ -1,5 +1,9 @@
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/neon-testgen.ml (effective_target): Handle "CRYPTO".
+
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	 * config/arm/arm.c (enum arm_builtins): Add crypto builtins.
 	 (arm_init_neon_builtins): Handle crypto builtins.
 	 (bdesc_2arg): Likewise.

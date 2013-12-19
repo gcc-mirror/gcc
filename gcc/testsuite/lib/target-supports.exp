@@ -2299,6 +2299,30 @@ proc check_effective_target_arm_unaligned { } {
     }]
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=crypto-neon-fp-armv8
+# -mfloat-abi=softfp.
+proc check_effective_target_arm_crypto_ok {} {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_crypto_ok object {
+	  int foo (void)
+	  {
+	     __asm__ volatile ("aese.8 q0, q0");
+	     return 0;
+	  }
+	} "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
+# Add options for crypto extensions.
+proc add_options_for_arm_crypto { flags } {
+    if { ! [check_effective_target_arm_crypto_ok] } {
+        return "$flags"
+    }
+    return "$flags -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"
+}
+
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
 # or -mfloat-abi=hard, but if one is already specified by the
 # multilib, use it.  Similarly, if a -mfpu option already enables
