@@ -1,3 +1,9 @@
+2013-12-19  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/59542
+	* bb-reorder.c (duplicate_computed_gotos): Invoke fixup_partitions
+	if we have made any changes.
+
 2013-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/59545
