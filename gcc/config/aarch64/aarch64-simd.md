@@ -4173,3 +4173,25 @@
   "sha256su1\\t%0.4s, %2.4s, %3.4s"
   [(set_attr "type" "crypto_sha256_slow")]
 )
+
+;; pmull
+
+(define_insn "aarch64_crypto_pmulldi"
+  [(set (match_operand:TI 0 "register_operand" "=w")
+        (unspec:TI  [(match_operand:DI 1 "register_operand" "w")
+		     (match_operand:DI 2 "register_operand" "w")]
+		    UNSPEC_PMULL))]
+ "TARGET_SIMD && TARGET_CRYPTO"
+ "pmull\\t%0.1q, %1.1d, %2.1d"
+  [(set_attr "type" "neon_mul_d_long")]
+)
+
+(define_insn "aarch64_crypto_pmullv2di"
+ [(set (match_operand:TI 0 "register_operand" "=w")
+       (unspec:TI [(match_operand:V2DI 1 "register_operand" "w")
+		   (match_operand:V2DI 2 "register_operand" "w")]
+		  UNSPEC_PMULL2))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "pmull2\\t%0.1q, %1.2d, %2.2d"
+  [(set_attr "type" "neon_mul_d_long")]
+)

@@ -75,6 +75,8 @@ typedef __builtin_aarch64_simd_poly8 poly8x16_t
   __attribute__ ((__vector_size__ (16)));
 typedef __builtin_aarch64_simd_poly16 poly16x8_t
   __attribute__ ((__vector_size__ (16)));
+typedef __builtin_aarch64_simd_poly64 poly64x2_t
+  __attribute__ ((__vector_size__ (16)));
 typedef __builtin_aarch64_simd_uqi uint8x16_t
   __attribute__ ((__vector_size__ (16)));
 typedef __builtin_aarch64_simd_uhi uint16x8_t
@@ -88,6 +90,8 @@ typedef float float32_t;
 typedef double float64_t;
 typedef __builtin_aarch64_simd_poly8 poly8_t;
 typedef __builtin_aarch64_simd_poly16 poly16_t;
+typedef __builtin_aarch64_simd_poly64 poly64_t;
+typedef __builtin_aarch64_simd_poly128 poly128_t;
 
 typedef struct int8x8x2_t
 {
@@ -23012,6 +23016,19 @@ static __inline uint32x4_t
 vsha256su1q_u32 (uint32x4_t tw0_3, uint32x4_t w8_11, uint32x4_t w12_15)
 {
   return __builtin_aarch64_crypto_sha256su1v4si_uuuu (tw0_3, w8_11, w12_15);
+}
+
+static __inline poly128_t
+vmull_p64 (poly64_t a, poly64_t b)
+{
+  return
+    __builtin_aarch64_crypto_pmulldi_ppp (a, b);
+}
+
+static __inline poly128_t
+vmull_high_p64 (poly64x2_t a, poly64x2_t b)
+{
+  return __builtin_aarch64_crypto_pmullv2di_ppp (a, b);
 }
 
 #endif

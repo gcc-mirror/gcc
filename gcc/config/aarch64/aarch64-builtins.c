@@ -157,6 +157,11 @@ aarch64_types_binopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
 #define TYPES_BINOPU (aarch64_types_binopu_qualifiers)
 static enum aarch64_type_qualifiers
+aarch64_types_binopp_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_poly, qualifier_poly, qualifier_poly };
+#define TYPES_BINOPP (aarch64_types_binopp_qualifiers)
+
+static enum aarch64_type_qualifiers
 aarch64_types_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };
 #define TYPES_TERNOP (aarch64_types_ternop_qualifiers)
@@ -574,6 +579,8 @@ aarch64_init_simd_builtins (void)
   /* Poly scalar type nodes.  */
   tree aarch64_simd_polyQI_type_node = aarch64_build_poly_type (QImode);
   tree aarch64_simd_polyHI_type_node = aarch64_build_poly_type (HImode);
+  tree aarch64_simd_polyDI_type_node = aarch64_build_poly_type (DImode);
+  tree aarch64_simd_polyTI_type_node = aarch64_build_poly_type (TImode);
 
   /* Float type nodes.  */
   tree aarch64_simd_float_type_node = aarch64_build_signed_type (SFmode);
@@ -598,6 +605,10 @@ aarch64_init_simd_builtins (void)
 					     "__builtin_aarch64_simd_poly8");
   (*lang_hooks.types.register_builtin_type) (aarch64_simd_polyHI_type_node,
 					     "__builtin_aarch64_simd_poly16");
+  (*lang_hooks.types.register_builtin_type) (aarch64_simd_polyDI_type_node,
+					     "__builtin_aarch64_simd_poly64");
+  (*lang_hooks.types.register_builtin_type) (aarch64_simd_polyTI_type_node,
+					     "__builtin_aarch64_simd_poly128");
   (*lang_hooks.types.register_builtin_type) (aarch64_simd_intTI_type_node,
 					     "__builtin_aarch64_simd_ti");
   (*lang_hooks.types.register_builtin_type) (aarch64_simd_intEI_type_node,

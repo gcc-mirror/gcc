@@ -6387,6 +6387,7 @@ static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
   { V2DFmode,  "__builtin_aarch64_simd_df",     "13__Float64x2_t" },
   { V16QImode, "__builtin_aarch64_simd_poly8",  "12__Poly8x16_t" },
   { V8HImode,  "__builtin_aarch64_simd_poly16", "12__Poly16x8_t" },
+  { V2DImode,  "__builtin_aarch64_simd_poly64", "12__Poly64x2_t" },
   { VOIDmode, NULL, NULL }
 };
 

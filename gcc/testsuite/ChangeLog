@@ -1,5 +1,9 @@
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* gcc.target/aarch64/pmull_1.c: New.
+
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* gcc.target/aarch64/sha256_1.c: New.
 
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>

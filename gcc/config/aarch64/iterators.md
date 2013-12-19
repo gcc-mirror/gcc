@@ -281,6 +281,8 @@
     UNSPEC_SHA256H2     ; Used in aarch64-simd.md.
     UNSPEC_SHA256SU0    ; Used in aarch64-simd.md.
     UNSPEC_SHA256SU1    ; Used in aarch64-simd.md.
+    UNSPEC_PMULL        ; Used in aarch64-simd.md.
+    UNSPEC_PMULL2       ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
