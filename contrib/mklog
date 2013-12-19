@@ -34,6 +34,10 @@ $name = @n[1]; chop($name);
 $addr = $username . "\@my.domain.org";
 $date = `date +%Y-%m-%d`; chop ($date);
 
+$gcc_root = $0;
+$gcc_root =~ s/[^\\\/]+$/../;
+chdir $gcc_root;
+
 
 #-----------------------------------------------------------------------------
 # Program starts here. You should not need to edit anything below this
@@ -50,16 +54,28 @@ if ( $#ARGV != 0 ) {
 $diff = $ARGV[0];
 $dir = `dirname $diff`; chop ($dir);
 $basename = `basename $diff`; chop ($basename);
-$cl = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($cl);
 $hdrline = "$date  $name  <$addr>";
 
-open (CLFILE, ">$cl") or die "Could not open file $cl for writing";
+my %cl_entries;
 
-print CLFILE "$hdrline\n\n";
+sub get_clname($) {
+	my $dirname = $_[0];
+	while ($dirname) {
+		my $clname = "$dirname/ChangeLog";
+		if (-f $clname) {
+			my $filename_rel = substr ($_[0], length ($dirname) + 1);
+			return ($filename_rel, $clname);
+		} else {
+			$dirname =~ s/[\/\\]?[^\/\\]*$//;
+		} 
+	}
+	return ($_[0], 'Unknown Changelog');
+}
 
 # For every file in the .diff print all the function names in ChangeLog
 # format.
 $bof = 0;
+$clname = get_clname('');
 open (DFILE, $diff) or die "Could not open file $diff for reading";
 while (<DFILE>) {
     # Check if we found a new file.
@@ -68,10 +84,11 @@ while (<DFILE>) {
 	# $bof == 1), we just write out a ':' before starting the next
 	# file.
 	if ($bof == 1) {
-	    print CLFILE ":\n";
+		$cl_entries{$clname} .= ":\n";
 	}
 	$filename = $2;
-	print CLFILE "\t* $filename";
+	($filename_rel, $clname) = get_clname ($filename);
+	$cl_entries{$clname} .= "\t* $filename_rel";
 	$bof = 1;
     }
 
@@ -122,13 +139,13 @@ while (<DFILE>) {
 	    # to the filename, so we need an extra space before the opening
 	    # brace.
 	    if ($bof) {
-		print CLFILE " ";
+		$cl_entries{$clname} .= " ";
 		$bof = 0;
 	    } else {
-		print CLFILE "\t";
+		$cl_entries{$clname} .= "\t";
 	    }
 
-	    print CLFILE "($fn):\n";
+		$cl_entries{$clname} .= "($fn):\n";
 	    $seen_names{$fn} = 1;
 	}
     }
@@ -138,14 +155,20 @@ while (<DFILE>) {
 # write out a ':'. This happens when there is only one file with no
 # functions.
 if ($bof == 1) {
-    print CLFILE ":\n";
+	$cl_entries{$clname} .= ":\n";
 }
 
-print CLFILE "\n";
+$temp = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($temp);
+open (CLFILE, ">$temp") or die "Could not open file $temp for writing";
+
+foreach my $clname (keys %cl_entries) {
+	print CLFILE "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
+}
+
 close (DFILE);
 
 # Concatenate the ChangeLog template and the original .diff file.
-system ("cat $diff >>$cl && mv $cl $diff") == 0
+system ("cat $diff >>$temp && mv $temp $diff") == 0
     or die "Could not add the ChangeLog entry to $diff";
 
 exit 0;

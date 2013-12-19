@@ -1,3 +1,7 @@
+2013-12-19  Yury Gribov  <y.gribov@samsung.com>
+
+	* mklog: Split generated message in parts.
+
 2013-10-31  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config-list.mk (nds32le-elf, nds32be-elf): Add nds32 target.
