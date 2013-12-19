@@ -1,3 +1,7 @@
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/cilk-plus/SE/ef_error.c: Use -fopen-simd.
+
 2013-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.dg/long-long-compare-1.c: Don't use deprecated -mcbranchdi option
