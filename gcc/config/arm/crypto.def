@@ -1,0 +1,35 @@
+/* Cryptographic instruction builtin definitions.
+   Copyright (C) 2013
+   Free Software Foundation, Inc.
+   Contributed by ARM Ltd.
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+CRYPTO2 (aesd, AESD, v16uqi, v16uqi, v16uqi)
+CRYPTO2 (aese, AESE, v16uqi, v16uqi, v16uqi)
+CRYPTO1 (aesimc, AESIMC, v16uqi, v16uqi)
+CRYPTO1 (aesmc, AESMC, v16uqi, v16uqi)
+CRYPTO1 (sha1h, SHA1H, v4usi, v4usi)
+CRYPTO2 (sha1su1, SHA1SU1, v4usi, v4usi, v4usi)
+CRYPTO2 (sha256su0, SHA256SU0, v4usi, v4usi, v4usi)
+CRYPTO3 (sha1c, SHA1C, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha1m, SHA1M, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha1p, SHA1P, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha1su0, SHA1SU0, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha256h, SHA256H, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha256h2, SHA256H2, v4usi, v4usi, v4usi, v4usi)
+CRYPTO3 (sha256su1, SHA256SU1, v4usi, v4usi, v4usi, v4usi)
+CRYPTO2 (vmullp64, VMULLP64, uti, udi, udi)
