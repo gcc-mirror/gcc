@@ -2856,7 +2856,6 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
   do
     {
       int maxs;
-      stringop_alg alg;
       char alg_name[128];
       char align[16];
       next_range_str = strchr (curr_range_str, ',');
@@ -2879,13 +2878,8 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
         }
 
       for (i = 0; i < last_alg; i++)
-        {
-          if (!strcmp (alg_name, stringop_alg_names[i]))
-            {
-              alg = (stringop_alg) i;
-              break;
-            }
-        }
+	if (!strcmp (alg_name, stringop_alg_names[i]))
+	  break;
 
       if (i == last_alg)
         {
@@ -2896,7 +2890,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
         }
 
       input_ranges[n].max = maxs;
-      input_ranges[n].alg = alg;
+      input_ranges[n].alg = (stringop_alg) i;
       if (!strcmp (align, "align"))
         input_ranges[n].noalign = false;
       else if (!strcmp (align, "noalign"))
