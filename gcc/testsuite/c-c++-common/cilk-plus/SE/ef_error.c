@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fcilkplus -fopenmp" } */
+/* { dg-require-effective-target fopenmp } */
 
 #pragma omp declare simd linear(y:1) simdlen(4) 
 __attribute__((vector (linear (y:1), vectorlength(4))))
