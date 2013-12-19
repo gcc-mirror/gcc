@@ -1,5 +1,10 @@
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/neon-docgen.ml: Add crypto intrinsics documentation.
+	* doc/arm-neon-intrinsics.texi: Regenerate.
+
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/neon-testgen.ml (effective_target): Handle "CRYPTO".
 
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
