@@ -53,7 +53,7 @@
   (ior (match_operand 0 "imm_for_neon_logic_operand")
        (match_operand 0 "s_register_operand")))
 
-;; Any hard register.
+;; Any general register.
 (define_predicate "arm_hard_general_register_operand"
   (match_code "reg")
 {
