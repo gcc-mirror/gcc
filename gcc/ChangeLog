@@ -1,3 +1,8 @@
+2013-12-19  Marek Polacek  <polacek@redhat.com>
+
+	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Remove
+	variable alg.  Use index variable i directly.
+
 2013-12-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* print-tree.c (print_node) <case tcc_type>: Print no_force_blk_flag
