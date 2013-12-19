@@ -950,7 +950,9 @@ find_split_points (int overall_time, int overall_size)
   first.earliest = INT_MAX;
   first.set_ssa_names = 0;
   first.used_ssa_names = 0;
+  first.non_ssa_vars = 0;
   first.bbs_visited = 0;
+  first.can_split = false;
   stack.safe_push (first);
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = (void *)(intptr_t)-1;
 

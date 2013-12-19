@@ -1766,7 +1766,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
   rtx pat = PATTERN (insn);
   rtx src = SET_SRC (pat);
   int regno = REGNO (reg);
-  rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[regno],
+  rtx new_src = gen_int_mode (UINTVAL (off) - reg_offset[regno],
 			      GET_MODE (reg));
   bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
   bool changed = false;
@@ -1866,7 +1866,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
 	&& reg_symbol_ref[i] != NULL_RTX
 	&& rtx_equal_p (sym, reg_symbol_ref[i]))
       {
-	rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[i],
+	rtx new_src = gen_int_mode (UINTVAL (off) - reg_offset[i],
 				    GET_MODE (reg));
 	/* (set (reg) (plus (reg) (const_int 0))) is not canonical;
 	   use (set (reg) (reg)) instead.
@@ -1901,7 +1901,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
       tem = gen_rtx_REG (GET_MODE (reg), min_regno);
       if (i != min_regno)
 	{
-	  rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[min_regno],
+	  rtx new_src = gen_int_mode (UINTVAL (off) - reg_offset[min_regno],
 				      GET_MODE (reg));
 	  tem = gen_rtx_PLUS (GET_MODE (reg), tem, new_src);
 	}
@@ -2010,7 +2010,7 @@ reload_cse_move2add (rtx first)
 		      && CONST_INT_P (XEXP (SET_SRC (set), 1)))
 		    {
 		      rtx src3 = XEXP (SET_SRC (set), 1);
-		      HOST_WIDE_INT added_offset = INTVAL (src3);
+		      unsigned HOST_WIDE_INT added_offset = UINTVAL (src3);
 		      HOST_WIDE_INT base_offset = reg_offset[REGNO (src)];
 		      HOST_WIDE_INT regno_offset = reg_offset[regno];
 		      rtx new_src =
@@ -2224,7 +2224,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
     {
       rtx src = SET_SRC (set);
       rtx base_reg;
-      HOST_WIDE_INT offset;
+      unsigned HOST_WIDE_INT offset;
       int base_regno;
 
       switch (GET_CODE (src))
@@ -2235,7 +2235,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	      base_reg = XEXP (src, 0);
 
 	      if (CONST_INT_P (XEXP (src, 1)))
-		offset = INTVAL (XEXP (src, 1));
+		offset = UINTVAL (XEXP (src, 1));
 	      else if (REG_P (XEXP (src, 1))
 		       && move2add_valid_value_p (REGNO (XEXP (src, 1)), mode))
 		{

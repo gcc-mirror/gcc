@@ -1,3 +1,9 @@
+2013-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/59545
+	* class.c (hashUtf8String): Compute hash in unsigned type.
+	* javaop.h (WORD_TO_INT): Avoid signed integer overflow.
+
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* java-gimplify.c: Add required include files from gimple.h.
