@@ -23151,6 +23151,23 @@ enum arm_builtins
   ARM_BUILTIN_CRC32CH,
   ARM_BUILTIN_CRC32CW,
 
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
+
+#define CRYPTO1(L, U, M1, M2) \
+  ARM_BUILTIN_CRYPTO_##U,
+#define CRYPTO2(L, U, M1, M2, M3) \
+  ARM_BUILTIN_CRYPTO_##U,
+#define CRYPTO3(L, U, M1, M2, M3, M4) \
+  ARM_BUILTIN_CRYPTO_##U,
+
+#include "crypto.def"
+
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
+
 #include "arm_neon_builtins.def"
 
   ,ARM_BUILTIN_MAX
@@ -23172,6 +23189,9 @@ enum arm_builtins
 
 static GTY(()) tree arm_builtin_decls[ARM_BUILTIN_MAX];
 
+#define NUM_DREG_TYPES 5
+#define NUM_QREG_TYPES 6
+
 static void
 arm_init_neon_builtins (void)
 {
@@ -23185,6 +23205,7 @@ arm_init_neon_builtins (void)
   tree neon_polyHI_type_node;
   tree neon_intSI_type_node;
   tree neon_intDI_type_node;
+  tree neon_intUTI_type_node;
   tree neon_float_type_node;
 
   tree intQI_pointer_node;
@@ -23247,9 +23268,9 @@ arm_init_neon_builtins (void)
   tree void_ftype_pv4sf_v4sf_v4sf;
   tree void_ftype_pv2di_v2di_v2di;
 
-  tree reinterp_ftype_dreg[5][5];
-  tree reinterp_ftype_qreg[5][5];
-  tree dreg_types[5], qreg_types[5];
+  tree reinterp_ftype_dreg[NUM_DREG_TYPES][NUM_DREG_TYPES];
+  tree reinterp_ftype_qreg[NUM_QREG_TYPES][NUM_QREG_TYPES];
+  tree dreg_types[NUM_DREG_TYPES], qreg_types[NUM_QREG_TYPES];
 
   /* Create distinguished type nodes for NEON vector element types,
      and pointers to values of such types, so we can detect them later.  */
@@ -23339,6 +23360,8 @@ arm_init_neon_builtins (void)
   intUHI_type_node = make_unsigned_type (GET_MODE_PRECISION (HImode));
   intUSI_type_node = make_unsigned_type (GET_MODE_PRECISION (SImode));
   intUDI_type_node = make_unsigned_type (GET_MODE_PRECISION (DImode));
+  neon_intUTI_type_node = make_unsigned_type (GET_MODE_PRECISION (TImode));
+
 
   (*lang_hooks.types.register_builtin_type) (intUQI_type_node,
 					     "__builtin_neon_uqi");
@@ -23348,6 +23371,10 @@ arm_init_neon_builtins (void)
 					     "__builtin_neon_usi");
   (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
 					     "__builtin_neon_udi");
+  (*lang_hooks.types.register_builtin_type) (intUDI_type_node,
+					     "__builtin_neon_poly64");
+  (*lang_hooks.types.register_builtin_type) (neon_intUTI_type_node,
+					     "__builtin_neon_poly128");
 
   /* Opaque integer types for structures of vectors.  */
   intEI_type_node = make_signed_type (GET_MODE_PRECISION (EImode));
@@ -23409,6 +23436,80 @@ arm_init_neon_builtins (void)
     build_function_type_list (void_type_node, V2DI_pointer_node, V2DI_type_node,
 			      V2DI_type_node, NULL);
 
+  if (TARGET_CRYPTO && TARGET_HARD_FLOAT)
+  {
+    tree V4USI_type_node =
+      build_vector_type_for_mode (intUSI_type_node, V4SImode);
+
+    tree V16UQI_type_node =
+      build_vector_type_for_mode (intUQI_type_node, V16QImode);
+
+    tree v16uqi_ftype_v16uqi
+      = build_function_type_list (V16UQI_type_node, V16UQI_type_node, NULL_TREE);
+
+    tree v16uqi_ftype_v16uqi_v16uqi
+      = build_function_type_list (V16UQI_type_node, V16UQI_type_node,
+                                  V16UQI_type_node, NULL_TREE);
+
+    tree v4usi_ftype_v4usi
+      = build_function_type_list (V4USI_type_node, V4USI_type_node, NULL_TREE);
+
+    tree v4usi_ftype_v4usi_v4usi
+      = build_function_type_list (V4USI_type_node, V4USI_type_node,
+                                  V4USI_type_node, NULL_TREE);
+
+    tree v4usi_ftype_v4usi_v4usi_v4usi
+      = build_function_type_list (V4USI_type_node, V4USI_type_node,
+                                  V4USI_type_node, V4USI_type_node, NULL_TREE);
+
+    tree uti_ftype_udi_udi
+      = build_function_type_list (neon_intUTI_type_node, intUDI_type_node,
+                                  intUDI_type_node, NULL_TREE);
+
+    #undef CRYPTO1
+    #undef CRYPTO2
+    #undef CRYPTO3
+    #undef C
+    #undef N
+    #undef CF
+    #undef FT1
+    #undef FT2
+    #undef FT3
+
+    #define C(U) \
+      ARM_BUILTIN_CRYPTO_##U
+    #define N(L) \
+      "__builtin_arm_crypto_"#L
+    #define FT1(R, A) \
+      R##_ftype_##A
+    #define FT2(R, A1, A2) \
+      R##_ftype_##A1##_##A2
+    #define FT3(R, A1, A2, A3) \
+      R##_ftype_##A1##_##A2##_##A3
+    #define CRYPTO1(L, U, R, A) \
+      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT1 (R, A), \
+                                                       C (U), BUILT_IN_MD, \
+                                                       NULL, NULL_TREE);
+    #define CRYPTO2(L, U, R, A1, A2) \
+      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT2 (R, A1, A2), \
+                                                       C (U), BUILT_IN_MD, \
+                                                       NULL, NULL_TREE);
+
+    #define CRYPTO3(L, U, R, A1, A2, A3) \
+      arm_builtin_decls[C (U)] = add_builtin_function (N (L), FT3 (R, A1, A2, A3), \
+                                                       C (U), BUILT_IN_MD, \
+                                                       NULL, NULL_TREE);
+    #include "crypto.def"
+
+    #undef CRYPTO1
+    #undef CRYPTO2
+    #undef CRYPTO3
+    #undef C
+    #undef N
+    #undef FT1
+    #undef FT2
+    #undef FT3
+  }
   dreg_types[0] = V8QI_type_node;
   dreg_types[1] = V4HI_type_node;
   dreg_types[2] = V2SI_type_node;
@@ -23420,14 +23521,17 @@ arm_init_neon_builtins (void)
   qreg_types[2] = V4SI_type_node;
   qreg_types[3] = V4SF_type_node;
   qreg_types[4] = V2DI_type_node;
+  qreg_types[5] = neon_intUTI_type_node;
 
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < NUM_QREG_TYPES; i++)
     {
       int j;
-      for (j = 0; j < 5; j++)
+      for (j = 0; j < NUM_QREG_TYPES; j++)
         {
-          reinterp_ftype_dreg[i][j]
-            = build_function_type_list (dreg_types[i], dreg_types[j], NULL);
+          if (i < NUM_DREG_TYPES && j < NUM_DREG_TYPES)
+            reinterp_ftype_dreg[i][j]
+              = build_function_type_list (dreg_types[i], dreg_types[j], NULL);
+
           reinterp_ftype_qreg[i][j]
             = build_function_type_list (qreg_types[i], qreg_types[j], NULL);
         }
@@ -23642,10 +23746,14 @@ arm_init_neon_builtins (void)
 
 	case NEON_REINTERP:
 	  {
-	    /* We iterate over 5 doubleword types, then 5 quadword
-	       types. V4HF is not a type used in reinterpret, so we translate
+	    /* We iterate over NUM_DREG_TYPES doubleword types,
+	       then NUM_QREG_TYPES quadword  types.
+	       V4HF is not a type used in reinterpret, so we translate
 	       d->mode to the correct index in reinterp_ftype_dreg.  */
-	    int rhs = (d->mode - ((d->mode > T_V4HF) ? 1 : 0)) % 5;
+	    bool qreg_p
+	      = GET_MODE_SIZE (insn_data[d->code].operand[0].mode) > 8;
+	    int rhs = (d->mode - ((!qreg_p && (d->mode > T_V4HF)) ? 1 : 0))
+	              % NUM_QREG_TYPES;
 	    switch (insn_data[d->code].operand[0].mode)
 	      {
 	      case V8QImode: ftype = reinterp_ftype_dreg[0][rhs]; break;
@@ -23658,6 +23766,7 @@ arm_init_neon_builtins (void)
 	      case V4SImode: ftype = reinterp_ftype_qreg[2][rhs]; break;
 	      case V4SFmode: ftype = reinterp_ftype_qreg[3][rhs]; break;
 	      case V2DImode: ftype = reinterp_ftype_qreg[4][rhs]; break;
+	      case TImode: ftype = reinterp_ftype_qreg[5][rhs]; break;
 	      default: gcc_unreachable ();
 	      }
 	  }
@@ -23707,6 +23816,9 @@ arm_init_neon_builtins (void)
       arm_builtin_decls[fcode] = decl;
     }
 }
+
+#undef NUM_DREG_TYPES
+#undef NUM_QREG_TYPES
 
 #define def_mbuiltin(MASK, NAME, TYPE, CODE)				\
   do									\
@@ -23847,6 +23959,22 @@ static const struct builtin_description bdesc_2arg[] =
    CRC32_BUILTIN (crc32ch, CRC32CH)
    CRC32_BUILTIN (crc32cw, CRC32CW)
 #undef CRC32_BUILTIN
+
+
+#define CRYPTO_BUILTIN(L, U) \
+  {0, CODE_FOR_crypto_##L, "__builtin_arm_crypto_"#L, ARM_BUILTIN_CRYPTO_##U, \
+   UNKNOWN, 0},
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
+#define CRYPTO2(L, U, R, A1, A2) CRYPTO_BUILTIN (L, U)
+#define CRYPTO1(L, U, R, A)
+#define CRYPTO3(L, U, R, A1, A2, A3)
+#include "crypto.def"
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
+
 };
 
 static const struct builtin_description bdesc_1arg[] =
@@ -23875,7 +24003,27 @@ static const struct builtin_description bdesc_1arg[] =
   IWMMXT_BUILTIN (tbcstv8qi, "tbcstb", TBCSTB)
   IWMMXT_BUILTIN (tbcstv4hi, "tbcsth", TBCSTH)
   IWMMXT_BUILTIN (tbcstv2si, "tbcstw", TBCSTW)
+
+#define CRYPTO1(L, U, R, A) CRYPTO_BUILTIN (L, U)
+#define CRYPTO2(L, U, R, A1, A2)
+#define CRYPTO3(L, U, R, A1, A2, A3)
+#include "crypto.def"
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
 };
+
+static const struct builtin_description bdesc_3arg[] =
+{
+#define CRYPTO3(L, U, R, A1, A2, A3) CRYPTO_BUILTIN (L, U)
+#define CRYPTO1(L, U, R, A)
+#define CRYPTO2(L, U, R, A1, A2)
+#include "crypto.def"
+#undef CRYPTO1
+#undef CRYPTO2
+#undef CRYPTO3
+ };
+#undef CRYPTO_BUILTIN
 
 /* Set up all the iWMMXt builtins.  This is not called if
    TARGET_IWMMXT is zero.  */
@@ -24408,6 +24556,73 @@ safe_vector_operand (rtx x, enum machine_mode mode)
   return x;
 }
 
+/* Function to expand ternary builtins.  */
+static rtx
+arm_expand_ternop_builtin (enum insn_code icode,
+                           tree exp, rtx target)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  tree arg2 = CALL_EXPR_ARG (exp, 2);
+
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  rtx op3 = NULL_RTX;
+
+  /* The sha1c, sha1p, sha1m crypto builtins require a different vec_select
+     lane operand depending on endianness.  */
+  bool builtin_sha1cpm_p = false;
+
+  if (insn_data[icode].n_operands == 5)
+    {
+      gcc_assert (icode == CODE_FOR_crypto_sha1c
+                  || icode == CODE_FOR_crypto_sha1p
+                  || icode == CODE_FOR_crypto_sha1m);
+      builtin_sha1cpm_p = true;
+    }
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
+
+
+  if (VECTOR_MODE_P (mode0))
+    op0 = safe_vector_operand (op0, mode0);
+  if (VECTOR_MODE_P (mode1))
+    op1 = safe_vector_operand (op1, mode1);
+  if (VECTOR_MODE_P (mode2))
+    op2 = safe_vector_operand (op2, mode2);
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  gcc_assert ((GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
+	      && (GET_MODE (op1) == mode1 || GET_MODE (op1) == VOIDmode)
+	      && (GET_MODE (op2) == mode2 || GET_MODE (op2) == VOIDmode));
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
+    op2 = copy_to_mode_reg (mode2, op2);
+  if (builtin_sha1cpm_p)
+    op3 = GEN_INT (TARGET_BIG_END ? 1 : 0);
+
+  if (builtin_sha1cpm_p)
+    pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
+  else
+    pat = GEN_FCN (icode) (target, op0, op1, op2);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
 /* Subroutine of arm_expand_builtin to take care of binop insns.  */
 
 static rtx
@@ -24457,8 +24672,16 @@ arm_expand_unop_builtin (enum insn_code icode,
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_normal (arg0);
+  rtx op1 = NULL_RTX;
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  bool builtin_sha1h_p = false;
+
+  if (insn_data[icode].n_operands == 3)
+    {
+      gcc_assert (icode == CODE_FOR_crypto_sha1h);
+      builtin_sha1h_p = true;
+    }
 
   if (! target
       || GET_MODE (target) != tmode
@@ -24474,8 +24697,13 @@ arm_expand_unop_builtin (enum insn_code icode,
       if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
     }
+  if (builtin_sha1h_p)
+    op1 = GEN_INT (TARGET_BIG_END ? 1 : 0);
 
-  pat = GEN_FCN (icode) (target, op0);
+  if (builtin_sha1h_p)
+    pat = GEN_FCN (icode) (target, op0, op1);
+  else
+    pat = GEN_FCN (icode) (target, op0);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -25432,6 +25660,10 @@ arm_expand_builtin (tree exp,
   for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == (const enum arm_builtins) fcode)
       return arm_expand_unop_builtin (d->icode, exp, target, 0);
+
+  for (i = 0, d = bdesc_3arg; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
+    if (d->code == (const enum arm_builtins) fcode)
+      return arm_expand_ternop_builtin (d->icode, exp, target);
 
   /* @@@ Should really do something sensible here.  */
   return NULL_RTX;
@@ -29096,6 +29328,7 @@ static arm_mangle_map_entry arm_mangle_map[] = {
   { V2SFmode,  "__builtin_neon_sf",     "18__simd64_float32_t" },
   { V8QImode,  "__builtin_neon_poly8",  "16__simd64_poly8_t" },
   { V4HImode,  "__builtin_neon_poly16", "17__simd64_poly16_t" },
+
   /* 128-bit containerized types.  */
   { V16QImode, "__builtin_neon_qi",     "16__simd128_int8_t" },
   { V16QImode, "__builtin_neon_uqi",    "17__simd128_uint8_t" },

@@ -22,7 +22,7 @@
 
 (* Shorthand types for vector elements.  *)
 type elts = S8 | S16 | S32 | S64 | F16 | F32 | U8 | U16 | U32 | U64 | P8 | P16
-          | I8 | I16 | I32 | I64 | B8 | B16 | B32 | B64 | Conv of elts * elts
+          | P64 | P128 | I8 | I16 | I32 | I64 | B8 | B16 | B32 | B64 | Conv of elts * elts
           | Cast of elts * elts | NoElts
 
 type eltclass = Signed | Unsigned | Float | Poly | Int | Bits
@@ -47,13 +47,15 @@ type vectype = T_int8x8    | T_int8x16
              | T_uint8     | T_uint16
              | T_uint32    | T_uint64
              | T_poly8     | T_poly16
+             | T_poly64    | T_poly64x1
+             | T_poly64x2  | T_poly128
              | T_float16   | T_float32
              | T_arrayof of int * vectype
              | T_ptrto of vectype | T_const of vectype
              | T_void      | T_intQI
              | T_intHI     | T_intSI
-             | T_intDI     | T_floatHF
-             | T_floatSF
+             | T_intDI     | T_intTI
+             | T_floatHF   | T_floatSF
 
 (* The meanings of the following are:
      TImode : "Tetra", two registers (four words).
@@ -96,7 +98,7 @@ type arity = Arity0 of vectype
            | Arity4 of vectype * vectype * vectype * vectype * vectype
 
 type vecmode = V8QI | V4HI | V4HF |V2SI | V2SF | DI
-             | V16QI | V8HI | V4SI | V4SF | V2DI
+             | V16QI | V8HI | V4SI | V4SF | V2DI | TI
              | QI | HI | SI | SF
 
 type opcode =
@@ -299,7 +301,8 @@ let rec elt_width = function
     S8 | U8 | P8 | I8 | B8 -> 8
   | S16 | U16 | P16 | I16 | B16 | F16 -> 16
   | S32 | F32 | U32 | I32 | B32 -> 32
-  | S64 | U64 | I64 | B64 -> 64
+  | S64 | U64 | P64 | I64 | B64 -> 64
+  | P128 -> 128
   | Conv (a, b) ->
       let wa = elt_width a and wb = elt_width b in
       if wa = wb then wa else raise (MixedMode (a, b))
@@ -309,7 +312,7 @@ let rec elt_width = function
 let rec elt_class = function
     S8 | S16 | S32 | S64 -> Signed
   | U8 | U16 | U32 | U64 -> Unsigned
-  | P8 | P16 -> Poly
+  | P8 | P16 | P64 | P128 -> Poly
   | F16 | F32 -> Float
   | I8 | I16 | I32 | I64 -> Int
   | B8 | B16 | B32 | B64 -> Bits
@@ -330,6 +333,8 @@ let elt_of_class_width c w =
   | Unsigned, 64 -> U64
   | Poly, 8 -> P8
   | Poly, 16 -> P16
+  | Poly, 64 -> P64
+  | Poly, 128 -> P128
   | Int, 8 -> I8
   | Int, 16 -> I16
   | Int, 32 -> I32
@@ -402,7 +407,7 @@ let rec mode_of_elt ?argpos elt shape =
     Float | ConvClass(_, Float) -> true | _ -> false in
   let idx =
     match elt_width elt with
-      8 -> 0 | 16 -> 1 | 32 -> 2 | 64 -> 3
+      8 -> 0 | 16 -> 1 | 32 -> 2 | 64 -> 3 | 128 -> 4
     | _ -> failwith "Bad element width"
   in match shape with
     All (_, Dreg) | By_scalar Dreg | Pair_result Dreg | Unary_scalar Dreg
@@ -413,7 +418,7 @@ let rec mode_of_elt ?argpos elt shape =
         [| V8QI; V4HI; V2SI; DI |].(idx)
   | All (_, Qreg) | By_scalar Qreg | Pair_result Qreg | Unary_scalar Qreg
   | Binary_imm Qreg | Long_noreg Qreg | Wide_noreg Qreg ->
-      [| V16QI; V8HI; if flt then V4SF else V4SI; V2DI |].(idx)
+      [| V16QI; V8HI; if flt then V4SF else V4SI; V2DI; TI|].(idx)
   | All (_, (Corereg | PtrTo _ | CstPtrTo _)) ->
       [| QI; HI; if flt then SF else SI; DI |].(idx)
   | Long | Wide | Wide_lane | Wide_scalar
@@ -474,6 +479,8 @@ let type_for_elt shape elt no =
         | U16 -> T_uint16x4
         | U32 -> T_uint32x2
         | U64 -> T_uint64x1
+        | P64 -> T_poly64x1
+        | P128 -> T_poly128
         | F16 -> T_float16x4
         | F32 -> T_float32x2
         | P8 -> T_poly8x8
@@ -493,6 +500,8 @@ let type_for_elt shape elt no =
         | F32 -> T_float32x4
         | P8 -> T_poly8x16
         | P16 -> T_poly16x8
+        | P64 -> T_poly64x2
+        | P128 -> T_poly128
         | _ -> failwith "Bad elt type for Qreg"
         end
     | Corereg ->
@@ -507,6 +516,8 @@ let type_for_elt shape elt no =
         | U64 -> T_uint64
         | P8 -> T_poly8
         | P16 -> T_poly16
+        | P64 -> T_poly64
+        | P128 -> T_poly128
         | F32 -> T_float32
         | _ -> failwith "Bad elt type for Corereg"
         end
@@ -527,10 +538,10 @@ let type_for_elt shape elt no =
 let vectype_size = function
     T_int8x8 | T_int16x4 | T_int32x2 | T_int64x1
   | T_uint8x8 | T_uint16x4 | T_uint32x2 | T_uint64x1
-  | T_float32x2 | T_poly8x8 | T_poly16x4 | T_float16x4 -> 64
+  | T_float32x2 | T_poly8x8 | T_poly64x1 | T_poly16x4 | T_float16x4 -> 64
   | T_int8x16 | T_int16x8 | T_int32x4 | T_int64x2
   | T_uint8x16 | T_uint16x8  | T_uint32x4  | T_uint64x2
-  | T_float32x4 | T_poly8x16 | T_poly16x8 -> 128
+  | T_float32x4 | T_poly8x16 | T_poly64x2 | T_poly16x8 -> 128
   | _ -> raise Not_found
 
 let inttype_for_array num elttype =
@@ -1041,14 +1052,22 @@ let ops =
       "vRsraQ_n", shift_right_acc, su_8_64;
 
     (* Vector shift right and insert.  *)
+    Vsri, [Requires_feature "CRYPTO"], Use_operands [| Dreg; Dreg; Immed |], "vsri_n", shift_insert,
+      [P64];
     Vsri, [], Use_operands [| Dreg; Dreg; Immed |], "vsri_n", shift_insert,
       P8 :: P16 :: su_8_64;
+    Vsri, [Requires_feature "CRYPTO"], Use_operands [| Qreg; Qreg; Immed |], "vsriQ_n", shift_insert,
+      [P64];
     Vsri, [], Use_operands [| Qreg; Qreg; Immed |], "vsriQ_n", shift_insert,
       P8 :: P16 :: su_8_64;
 
     (* Vector shift left and insert.  *)
+    Vsli, [Requires_feature "CRYPTO"], Use_operands [| Dreg; Dreg; Immed |], "vsli_n", shift_insert,
+      [P64];
     Vsli, [], Use_operands [| Dreg; Dreg; Immed |], "vsli_n", shift_insert,
       P8 :: P16 :: su_8_64;
+    Vsli, [Requires_feature "CRYPTO"], Use_operands [| Qreg; Qreg; Immed |], "vsliQ_n", shift_insert,
+      [P64];
     Vsli, [], Use_operands [| Qreg; Qreg; Immed |], "vsliQ_n", shift_insert,
       P8 :: P16 :: su_8_64;
 
@@ -1135,6 +1154,11 @@ let ops =
 
     (* Create vector from literal bit pattern.  *)
     Vcreate,
+      [Requires_feature "CRYPTO"; No_op], (* Not really, but it can yield various things that are too
+                                   hard for the test generator at this time.  *)
+      Use_operands [| Dreg; Corereg |], "vcreate", create_vector,
+      [P64];
+    Vcreate,
       [No_op], (* Not really, but it can yield various things that are too
                   hard for the test generator at this time.  *)
       Use_operands [| Dreg; Corereg |], "vcreate", create_vector,
@@ -1148,11 +1172,24 @@ let ops =
       Use_operands [| Dreg; Corereg |], "vdup_n", bits_1,
       pf_su_8_32;
     Vdup_n,
+      [No_op; Requires_feature "CRYPTO";
+       Instruction_name ["vmov"];
+       Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
+      Use_operands [| Dreg; Corereg |], "vdup_n", notype_1,
+      [P64];
+    Vdup_n,
       [No_op;
        Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |], "vdup_n", notype_1,
       [S64; U64];
+    Vdup_n,
+      [No_op; Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| Qreg;
+                                        Alternatives [ Corereg;
+                                                       Element_of_dreg ] |]]],
+      Use_operands [| Qreg; Corereg |], "vdupQ_n", bits_1,
+      [P64];
     Vdup_n,
       [Disassembles_as [Use_operands [| Qreg;
                                         Alternatives [ Corereg;
@@ -1206,21 +1243,33 @@ let ops =
       [Disassembles_as [Use_operands [| Dreg; Element_of_dreg |]]],
       Unary_scalar Dreg, "vdup_lane", bits_2, pf_su_8_32;
     Vdup_lane,
+      [No_op; Requires_feature "CRYPTO"; Const_valuator (fun _ -> 0)],
+      Unary_scalar Dreg, "vdup_lane", bits_2, [P64];
+    Vdup_lane,
       [No_op; Const_valuator (fun _ -> 0)],
       Unary_scalar Dreg, "vdup_lane", bits_2, [S64; U64];
     Vdup_lane,
       [Disassembles_as [Use_operands [| Qreg; Element_of_dreg |]]],
       Unary_scalar Qreg, "vdupQ_lane", bits_2, pf_su_8_32;
     Vdup_lane,
+      [No_op; Requires_feature "CRYPTO"; Const_valuator (fun _ -> 0)],
+      Unary_scalar Qreg, "vdupQ_lane", bits_2, [P64];
+    Vdup_lane,
       [No_op; Const_valuator (fun _ -> 0)],
       Unary_scalar Qreg, "vdupQ_lane", bits_2, [S64; U64];
 
     (* Combining vectors.  *)
+    Vcombine, [Requires_feature "CRYPTO"; No_op],
+      Use_operands [| Qreg; Dreg; Dreg |], "vcombine", notype_2,
+      [P64];
     Vcombine, [No_op],
       Use_operands [| Qreg; Dreg; Dreg |], "vcombine", notype_2,
       pf_su_8_64;
 
     (* Splitting vectors.  *)
+    Vget_high, [Requires_feature "CRYPTO"; No_op],
+      Use_operands [| Dreg; Qreg |], "vget_high",
+      notype_1, [P64];
     Vget_high, [No_op],
       Use_operands [| Dreg; Qreg |], "vget_high",
       notype_1, pf_su_8_64;
@@ -1229,7 +1278,10 @@ let ops =
 	       Fixed_vector_reg],
       Use_operands [| Dreg; Qreg |], "vget_low",
       notype_1, pf_su_8_32;
-     Vget_low, [No_op],
+    Vget_low, [Requires_feature "CRYPTO"; No_op],
+      Use_operands [| Dreg; Qreg |], "vget_low",
+      notype_1, [P64];
+    Vget_low, [No_op],
       Use_operands [| Dreg; Qreg |], "vget_low",
       notype_1, [S64; U64];
 
@@ -1412,9 +1464,15 @@ let ops =
       [S16; S32];
 
     (* Vector extract.  *)
+    Vext, [Requires_feature "CRYPTO"; Const_valuator (fun _ -> 0)],
+      Use_operands [| Dreg; Dreg; Dreg; Immed |], "vext", extend,
+      [P64];
     Vext, [Const_valuator (fun _ -> 0)],
       Use_operands [| Dreg; Dreg; Dreg; Immed |], "vext", extend,
       pf_su_8_64;
+    Vext, [Requires_feature "CRYPTO"; Const_valuator (fun _ -> 0)],
+      Use_operands [| Qreg; Qreg; Qreg; Immed |], "vextQ", extend,
+      [P64];
     Vext, [Const_valuator (fun _ -> 0)],
       Use_operands [| Qreg; Qreg; Qreg; Immed |], "vextQ", extend,
       pf_su_8_64;
@@ -1435,10 +1493,20 @@ let ops =
 
     (* Bit selection.  *)
     Vbsl,
+      [Requires_feature "CRYPTO"; Instruction_name ["vbsl"; "vbit"; "vbif"];
+       Disassembles_as [Use_operands [| Dreg; Dreg; Dreg |]]],
+      Use_operands [| Dreg; Dreg; Dreg; Dreg |], "vbsl", bit_select,
+      [P64];
+    Vbsl,
       [Instruction_name ["vbsl"; "vbit"; "vbif"];
        Disassembles_as [Use_operands [| Dreg; Dreg; Dreg |]]],
       Use_operands [| Dreg; Dreg; Dreg; Dreg |], "vbsl", bit_select,
       pf_su_8_64;
+    Vbsl,
+      [Requires_feature "CRYPTO"; Instruction_name ["vbsl"; "vbit"; "vbif"];
+       Disassembles_as [Use_operands [| Qreg; Qreg; Qreg |]]],
+      Use_operands [| Qreg; Qreg; Qreg; Qreg |], "vbslQ", bit_select,
+      [P64];
     Vbsl,
       [Instruction_name ["vbsl"; "vbit"; "vbif"];
        Disassembles_as [Use_operands [| Qreg; Qreg; Qreg |]]],
@@ -1461,10 +1529,21 @@ let ops =
 
     (* Element/structure loads.  VLD1 variants.  *)
     Vldx 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]]],
+      Use_operands [| Dreg; CstPtrTo Corereg |], "vld1", bits_1,
+      [P64];
+    Vldx 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
       Use_operands [| Dreg; CstPtrTo Corereg |], "vld1", bits_1,
       pf_su_8_64;
+    Vldx 1, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (2, Dreg);
+					      CstPtrTo Corereg |]]],
+      Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q", bits_1,
+      [P64];
     Vldx 1, [Disassembles_as [Use_operands [| VecArray (2, Dreg);
 					      CstPtrTo Corereg |]]],
       Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q", bits_1,
@@ -1475,6 +1554,13 @@ let ops =
                                         CstPtrTo Corereg |]]],
       Use_operands [| Dreg; CstPtrTo Corereg; Dreg; Immed |],
       "vld1_lane", bits_3, pf_su_8_32;
+    Vldx_lane 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]];
+       Const_valuator (fun _ -> 0)],
+      Use_operands [| Dreg; CstPtrTo Corereg; Dreg; Immed |],
+      "vld1_lane", bits_3, [P64];
     Vldx_lane 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]];
@@ -1487,6 +1573,12 @@ let ops =
       Use_operands [| Qreg; CstPtrTo Corereg; Qreg; Immed |],
       "vld1Q_lane", bits_3, pf_su_8_32;
     Vldx_lane 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]]],
+      Use_operands [| Qreg; CstPtrTo Corereg; Qreg; Immed |],
+      "vld1Q_lane", bits_3, [P64];
+    Vldx_lane 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
       Use_operands [| Qreg; CstPtrTo Corereg; Qreg; Immed |],
@@ -1497,6 +1589,12 @@ let ops =
                                         CstPtrTo Corereg |]]],
       Use_operands [| Dreg; CstPtrTo Corereg |], "vld1_dup",
       bits_1, pf_su_8_32;
+    Vldx_dup 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]]],
+      Use_operands [| Dreg; CstPtrTo Corereg |], "vld1_dup",
+      bits_1, [P64];
     Vldx_dup 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
@@ -1510,16 +1608,32 @@ let ops =
     (* Treated identically to vld1_dup above as we now
        do a single load followed by a duplicate.  *)
     Vldx_dup 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]]],
+      Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q_dup",
+      bits_1, [P64];
+    Vldx_dup 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
       Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q_dup",
       bits_1, [S64; U64];
 
     (* VST1 variants.  *)
+    Vstx 1, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                              PtrTo Corereg |]]],
+      Use_operands [| PtrTo Corereg; Dreg |], "vst1",
+      store_1, [P64];
     Vstx 1, [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                               PtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; Dreg |], "vst1",
       store_1, pf_su_8_64;
+    Vstx 1, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (2, Dreg);
+					      PtrTo Corereg |]]],
+      Use_operands [| PtrTo Corereg; Qreg |], "vst1Q",
+      store_1, [P64];
     Vstx 1, [Disassembles_as [Use_operands [| VecArray (2, Dreg);
 					      PtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; Qreg |], "vst1Q",
@@ -1530,6 +1644,13 @@ let ops =
                                         CstPtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; Dreg; Immed |],
       "vst1_lane", store_3, pf_su_8_32;
+    Vstx_lane 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]];
+       Const_valuator (fun _ -> 0)],
+      Use_operands [| PtrTo Corereg; Dreg; Immed |],
+      "vst1_lane", store_3, [P64];
     Vstx_lane 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]];
@@ -1542,6 +1663,12 @@ let ops =
       Use_operands [| PtrTo Corereg; Qreg; Immed |],
       "vst1Q_lane", store_3, pf_su_8_32;
     Vstx_lane 1,
+      [Requires_feature "CRYPTO";
+       Disassembles_as [Use_operands [| VecArray (1, Dreg);
+                                        CstPtrTo Corereg |]]],
+      Use_operands [| PtrTo Corereg; Qreg; Immed |],
+      "vst1Q_lane", store_3, [P64];
+    Vstx_lane 1,
       [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; Qreg; Immed |],
@@ -1550,6 +1677,9 @@ let ops =
     (* VLD2 variants.  *)
     Vldx 2, [], Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
       "vld2", bits_1, pf_su_8_32;
+    Vldx 2, [Requires_feature "CRYPTO"; Instruction_name ["vld1"]],
+       Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
+      "vld2", bits_1, [P64];
     Vldx 2, [Instruction_name ["vld1"]],
        Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
       "vld2", bits_1, [S64; U64];
@@ -1581,6 +1711,12 @@ let ops =
       Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
       "vld2_dup", bits_1, pf_su_8_32;
     Vldx_dup 2,
+      [Requires_feature "CRYPTO";
+       Instruction_name ["vld1"]; Disassembles_as [Use_operands
+        [| VecArray (2, Dreg); CstPtrTo Corereg |]]],
+      Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
+      "vld2_dup", bits_1, [P64];
+    Vldx_dup 2,
       [Instruction_name ["vld1"]; Disassembles_as [Use_operands
         [| VecArray (2, Dreg); CstPtrTo Corereg |]]],
       Use_operands [| VecArray (2, Dreg); CstPtrTo Corereg |],
@@ -1591,6 +1727,12 @@ let ops =
                                               PtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; VecArray (2, Dreg) |], "vst2",
       store_1, pf_su_8_32;
+    Vstx 2, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (2, Dreg);
+                                              PtrTo Corereg |]];
+             Instruction_name ["vst1"]],
+      Use_operands [| PtrTo Corereg; VecArray (2, Dreg) |], "vst2",
+      store_1, [P64];
     Vstx 2, [Disassembles_as [Use_operands [| VecArray (2, Dreg);
                                               PtrTo Corereg |]];
              Instruction_name ["vst1"]],
@@ -1619,6 +1761,9 @@ let ops =
     (* VLD3 variants.  *)
     Vldx 3, [], Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
       "vld3", bits_1, pf_su_8_32;
+    Vldx 3, [Requires_feature "CRYPTO"; Instruction_name ["vld1"]],
+      Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
+      "vld3", bits_1, [P64];
     Vldx 3, [Instruction_name ["vld1"]],
       Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
       "vld3", bits_1, [S64; U64];
@@ -1650,6 +1795,12 @@ let ops =
       Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
       "vld3_dup", bits_1, pf_su_8_32;
     Vldx_dup 3,
+      [Requires_feature "CRYPTO";
+       Instruction_name ["vld1"]; Disassembles_as [Use_operands
+        [| VecArray (3, Dreg); CstPtrTo Corereg |]]],
+      Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
+      "vld3_dup", bits_1, [P64];
+    Vldx_dup 3,
       [Instruction_name ["vld1"]; Disassembles_as [Use_operands
         [| VecArray (3, Dreg); CstPtrTo Corereg |]]],
       Use_operands [| VecArray (3, Dreg); CstPtrTo Corereg |],
@@ -1660,6 +1811,12 @@ let ops =
                                               PtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; VecArray (3, Dreg) |], "vst3",
       store_1, pf_su_8_32;
+    Vstx 3, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (4, Dreg);
+                                              PtrTo Corereg |]];
+             Instruction_name ["vst1"]],
+      Use_operands [| PtrTo Corereg; VecArray (3, Dreg) |], "vst3",
+      store_1, [P64];
     Vstx 3, [Disassembles_as [Use_operands [| VecArray (4, Dreg);
                                               PtrTo Corereg |]];
              Instruction_name ["vst1"]],
@@ -1688,6 +1845,9 @@ let ops =
     (* VLD4/VST4 variants.  *)
     Vldx 4, [], Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
       "vld4", bits_1, pf_su_8_32;
+    Vldx 4, [Requires_feature "CRYPTO"; Instruction_name ["vld1"]],
+      Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
+      "vld4", bits_1, [P64];
     Vldx 4, [Instruction_name ["vld1"]],
       Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
       "vld4", bits_1, [S64; U64];
@@ -1719,6 +1879,12 @@ let ops =
       Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
       "vld4_dup", bits_1, pf_su_8_32;
     Vldx_dup 4,
+      [Requires_feature "CRYPTO";
+       Instruction_name ["vld1"]; Disassembles_as [Use_operands
+        [| VecArray (4, Dreg); CstPtrTo Corereg |]]],
+      Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
+      "vld4_dup", bits_1, [P64];
+    Vldx_dup 4,
       [Instruction_name ["vld1"]; Disassembles_as [Use_operands
         [| VecArray (4, Dreg); CstPtrTo Corereg |]]],
       Use_operands [| VecArray (4, Dreg); CstPtrTo Corereg |],
@@ -1728,6 +1894,12 @@ let ops =
                                               PtrTo Corereg |]]],
       Use_operands [| PtrTo Corereg; VecArray (4, Dreg) |], "vst4",
       store_1, pf_su_8_32;
+    Vstx 4, [Requires_feature "CRYPTO";
+             Disassembles_as [Use_operands [| VecArray (4, Dreg);
+                                              PtrTo Corereg |]];
+             Instruction_name ["vst1"]],
+      Use_operands [| PtrTo Corereg; VecArray (4, Dreg) |], "vst4",
+      store_1, [P64];
     Vstx 4, [Disassembles_as [Use_operands [| VecArray (4, Dreg);
                                               PtrTo Corereg |]];
              Instruction_name ["vst1"]],
@@ -1779,26 +1951,32 @@ let ops =
     Vorn, [], All (3, Qreg), "vornQ", notype_2, su_8_64;
   ]
 
+let type_in_crypto_only t
+  = (t == P64) or (t == P128)
+
+let cross_product s1 s2
+  = List.filter (fun (e, e') -> e <> e')
+                (List.concat (List.map (fun e1 -> List.map (fun e2 -> (e1,e2)) s1) s2))
+
 let reinterp =
-  let elems = P8 :: P16 :: F32 :: su_8_64 in
-  List.fold_right
-    (fun convto acc ->
-      let types = List.fold_right
-        (fun convfrom acc ->
-          if convfrom <> convto then
-            Cast (convto, convfrom) :: acc
-          else
-            acc)
-        elems
-        []
-      in
-        let dconv = Vreinterp, [No_op], Use_operands [| Dreg; Dreg |],
-                      "vreinterpret", conv_1, types
-        and qconv = Vreinterp, [No_op], Use_operands [| Qreg; Qreg |],
-		      "vreinterpretQ", conv_1, types in
-        dconv :: qconv :: acc)
-    elems
-    []
+  let elems = P8 :: P16 :: F32 :: P64 :: su_8_64 in
+  let casts = cross_product elems elems in
+  List.map
+    (fun (convto, convfrom) ->
+       Vreinterp, (if (type_in_crypto_only convto) or (type_in_crypto_only convfrom)
+                   then [Requires_feature "CRYPTO"] else []) @ [No_op], Use_operands [| Dreg; Dreg |],
+                   "vreinterpret", conv_1, [Cast (convto, convfrom)])
+    casts
+
+let reinterpq =
+  let elems = P8 :: P16 :: F32 :: P64 :: P128 :: su_8_64 in
+  let casts = cross_product elems elems in
+  List.map
+    (fun (convto, convfrom) ->
+       Vreinterp, (if (type_in_crypto_only convto) or (type_in_crypto_only convfrom)
+                   then [Requires_feature "CRYPTO"] else []) @ [No_op], Use_operands [| Qreg; Qreg |],
+                   "vreinterpretQ", conv_1, [Cast (convto, convfrom)])
+    casts
 
 (* Output routines.  *)
 
@@ -1808,6 +1986,7 @@ let rec string_of_elt = function
   | I8 -> "i8" | I16 -> "i16" | I32 -> "i32" | I64 -> "i64"
   | B8 -> "8" | B16 -> "16" | B32 -> "32" | B64 -> "64"
   | F16 -> "f16" | F32 -> "f32" | P8 -> "p8" | P16 -> "p16"
+  | P64 -> "p64" | P128 -> "p128"
   | Conv (a, b) | Cast (a, b) -> string_of_elt a ^ "_" ^ string_of_elt b
   | NoElts -> failwith "No elts"
 
@@ -1851,6 +2030,10 @@ let string_of_vectype vt =
   | T_uint64 -> affix "uint64"
   | T_poly8 -> affix "poly8"
   | T_poly16 -> affix "poly16"
+  | T_poly64 -> affix "poly64"
+  | T_poly64x1 -> affix "poly64x1"
+  | T_poly64x2 -> affix "poly64x2"
+  | T_poly128 -> affix "poly128"
   | T_float16 -> affix "float16"
   | T_float32 -> affix "float32"
   | T_immediate _ -> "const int"
@@ -1859,6 +2042,7 @@ let string_of_vectype vt =
   | T_intHI -> "__builtin_neon_hi"
   | T_intSI -> "__builtin_neon_si"
   | T_intDI -> "__builtin_neon_di"
+  | T_intTI -> "__builtin_neon_ti"
   | T_floatHF -> "__builtin_neon_hf"
   | T_floatSF -> "__builtin_neon_sf"
   | T_arrayof (num, base) ->
@@ -1884,7 +2068,7 @@ let string_of_mode = function
     V8QI -> "v8qi" | V4HI -> "v4hi" | V4HF  -> "v4hf"  | V2SI -> "v2si"
   | V2SF -> "v2sf" | DI   -> "di"   | V16QI -> "v16qi" | V8HI -> "v8hi"
   | V4SI -> "v4si" | V4SF -> "v4sf" | V2DI  -> "v2di"  | QI   -> "qi"
-  | HI -> "hi" | SI -> "si" | SF -> "sf"
+  | HI -> "hi" | SI -> "si" | SF -> "sf" | TI -> "ti"
 
 (* Use uppercase chars for letters which form part of the intrinsic name, but
    should be omitted from the builtin name (the info is passed in an extra
@@ -1991,3 +2175,146 @@ let analyze_all_shapes features shape f =
     | _ -> assert false
   with Not_found -> [f shape]
 
+(* The crypto intrinsics have unconventional shapes and are not that
+   numerous to be worth the trouble of encoding here.  We implement them
+   explicitly here.  *)
+let crypto_intrinsics =
+"
+#ifdef __ARM_FEATURE_CRYPTO
+
+__extension__ static __inline poly128_t __attribute__ ((__always_inline__))
+vldrq_p128 (poly128_t const * __ptr)
+{
+#ifdef __ARM_BIG_ENDIAN
+  poly64_t* __ptmp = (poly64_t*) __ptr;
+  poly64_t __d0 = vld1_p64 (__ptmp);
+  poly64_t __d1 = vld1_p64 (__ptmp + 1);
+  return vreinterpretq_p128_p64 (vcombine_p64 (__d1, __d0));
+#else
+  return vreinterpretq_p128_p64 (vld1q_p64 ((poly64_t*) __ptr));
+#endif
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+vstrq_p128 (poly128_t * __ptr, poly128_t __val)
+{
+#ifdef __ARM_BIG_ENDIAN
+  poly64x2_t __tmp = vreinterpretq_p64_p128 (__val);
+  poly64_t __d0 = vget_high_p64 (__tmp);
+  poly64_t __d1 = vget_low_p64 (__tmp);
+  vst1q_p64 ((poly64_t*) __ptr, vcombine_p64 (__d0, __d1));
+#else
+  vst1q_p64 ((poly64_t*) __ptr, vreinterpretq_p64_p128 (__val));
+#endif
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vaeseq_u8 (uint8x16_t __data, uint8x16_t __key)
+{
+  return __builtin_arm_crypto_aese (__data, __key);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vaesdq_u8 (uint8x16_t __data, uint8x16_t __key)
+{
+  return __builtin_arm_crypto_aesd (__data, __key);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vaesmcq_u8 (uint8x16_t __data)
+{
+  return __builtin_arm_crypto_aesmc (__data);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vaesimcq_u8 (uint8x16_t __data)
+{
+  return __builtin_arm_crypto_aesimc (__data);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vsha1h_u32 (uint32_t __hash_e)
+{
+  uint32x4_t __t = vdupq_n_u32 (0);
+  __t = vsetq_lane_u32 (__hash_e, __t, 0);
+  __t = __builtin_arm_crypto_sha1h (__t);
+  return vgetq_lane_u32 (__t, 0);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha1cq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
+{
+  uint32x4_t __t = vdupq_n_u32 (0);
+  __t = vsetq_lane_u32 (__hash_e, __t, 0);
+  return __builtin_arm_crypto_sha1c (__hash_abcd, __t, __wk);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha1pq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
+{
+  uint32x4_t __t = vdupq_n_u32 (0);
+  __t = vsetq_lane_u32 (__hash_e, __t, 0);
+  return __builtin_arm_crypto_sha1p (__hash_abcd, __t, __wk);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha1mq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
+{
+  uint32x4_t __t = vdupq_n_u32 (0);
+  __t = vsetq_lane_u32 (__hash_e, __t, 0);
+  return __builtin_arm_crypto_sha1m (__hash_abcd, __t, __wk);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha1su0q_u32 (uint32x4_t __w0_3, uint32x4_t __w4_7, uint32x4_t __w8_11)
+{
+  return __builtin_arm_crypto_sha1su0 (__w0_3, __w4_7, __w8_11);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha1su1q_u32 (uint32x4_t __tw0_3, uint32x4_t __w12_15)
+{
+  return __builtin_arm_crypto_sha1su1 (__tw0_3, __w12_15);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha256hq_u32 (uint32x4_t __hash_abcd, uint32x4_t __hash_efgh, uint32x4_t __wk)
+{
+  return __builtin_arm_crypto_sha256h (__hash_abcd, __hash_efgh, __wk);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha256h2q_u32 (uint32x4_t __hash_abcd, uint32x4_t __hash_efgh, uint32x4_t __wk)
+{
+  return __builtin_arm_crypto_sha256h2 (__hash_abcd, __hash_efgh, __wk);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha256su0q_u32 (uint32x4_t __w0_3, uint32x4_t __w4_7)
+{
+  return __builtin_arm_crypto_sha256su0 (__w0_3, __w4_7);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vsha256su1q_u32 (uint32x4_t __tw0_3, uint32x4_t __w8_11, uint32x4_t __w12_15)
+{
+  return __builtin_arm_crypto_sha256su1 (__tw0_3, __w8_11, __w12_15);
+}
+
+__extension__ static __inline poly128_t __attribute__ ((__always_inline__))
+vmull_p64 (poly64_t __a, poly64_t __b)
+{
+  return (poly128_t) __builtin_arm_crypto_vmullp64 ((uint64_t) __a, (uint64_t) __b);
+}
+
+__extension__ static __inline poly128_t __attribute__ ((__always_inline__))
+vmull_high_p64 (poly64x2_t __a, poly64x2_t __b)
+{
+  poly64_t __t1 = vget_high_p64 (__a);
+  poly64_t __t2 = vget_high_p64 (__b);
+
+  return (poly128_t) __builtin_arm_crypto_vmullp64 ((uint64_t) __t1, (uint64_t) __t2);
+}
+
+#endif
+"

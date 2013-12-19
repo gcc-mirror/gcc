@@ -293,7 +293,7 @@
           neon_ext, neon_ext_q, neon_rbit, neon_rbit_q,\
           neon_rev, neon_rev_q, neon_mul_b, neon_mul_b_q, neon_mul_h,\
           neon_mul_h_q, neon_mul_s, neon_mul_s_q, neon_mul_b_long,\
-          neon_mul_h_long, neon_mul_s_long, neon_mul_h_scalar,\
+          neon_mul_h_long, neon_mul_s_long, neon_mul_d_long, neon_mul_h_scalar,\
           neon_mul_h_scalar_q, neon_mul_s_scalar, neon_mul_s_scalar_q,\
           neon_mul_h_scalar_long, neon_mul_s_scalar_long, neon_sat_mul_b,\
           neon_sat_mul_b_q, neon_sat_mul_h, neon_sat_mul_h_q,\
@@ -355,7 +355,9 @@
           neon_fp_mla_s_scalar, neon_fp_mla_s_scalar_q, neon_fp_mla_d,\
           neon_fp_mla_d_q, neon_fp_mla_d_scalar_q, neon_fp_sqrt_s,\
           neon_fp_sqrt_s_q, neon_fp_sqrt_d, neon_fp_sqrt_d_q,\
-          neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q")
+          neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q, crypto_aes,\
+          crypto_sha1_xor, crypto_sha1_fast, crypto_sha1_slow, crypto_sha256_fast,\
+          crypto_sha256_slow")
         (const_string "yes")
         (const_string "no")))
 
@@ -12918,6 +12920,8 @@
 (include "thumb2.md")
 ;; Neon patterns
 (include "neon.md")
+;; Crypto patterns
+(include "crypto.md")
 ;; Synchronization Primitives
 (include "sync.md")
 ;; Fixed-point patterns

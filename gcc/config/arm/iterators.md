@@ -204,6 +204,17 @@
 (define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
                           UNSPEC_CRC32CB UNSPEC_CRC32CH UNSPEC_CRC32CW])
 
+(define_int_iterator CRYPTO_UNARY [UNSPEC_AESMC UNSPEC_AESIMC])
+
+(define_int_iterator CRYPTO_BINARY [UNSPEC_AESD UNSPEC_AESE
+                                    UNSPEC_SHA1SU1 UNSPEC_SHA256SU0])
+
+(define_int_iterator CRYPTO_TERNARY [UNSPEC_SHA1SU0 UNSPEC_SHA256H
+                                     UNSPEC_SHA256H2 UNSPEC_SHA256SU1])
+
+(define_int_iterator CRYPTO_SELECTING [UNSPEC_SHA1C UNSPEC_SHA1M
+                                       UNSPEC_SHA1P])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -529,6 +540,40 @@
 (define_int_attr crc_mode [(UNSPEC_CRC32B "QI") (UNSPEC_CRC32H "HI")
                         (UNSPEC_CRC32W "SI") (UNSPEC_CRC32CB "QI")
                         (UNSPEC_CRC32CH "HI") (UNSPEC_CRC32CW "SI")])
+
+(define_int_attr crypto_pattern [(UNSPEC_SHA1H "sha1h") (UNSPEC_AESMC "aesmc")
+                          (UNSPEC_AESIMC "aesimc") (UNSPEC_AESD "aesd")
+                          (UNSPEC_AESE "aese") (UNSPEC_SHA1SU1 "sha1su1")
+                          (UNSPEC_SHA256SU0 "sha256su0") (UNSPEC_SHA1C "sha1c")
+                          (UNSPEC_SHA1M "sha1m") (UNSPEC_SHA1P "sha1p")
+                          (UNSPEC_SHA1SU0 "sha1su0") (UNSPEC_SHA256H "sha256h")
+                          (UNSPEC_SHA256H2 "sha256h2")
+                          (UNSPEC_SHA256SU1 "sha256su1")])
+
+(define_int_attr crypto_type
+ [(UNSPEC_AESE "crypto_aes") (UNSPEC_AESD "crypto_aes")
+ (UNSPEC_AESMC "crypto_aes") (UNSPEC_AESIMC "crypto_aes")
+ (UNSPEC_SHA1C "crypto_sha1_slow") (UNSPEC_SHA1P "crypto_sha1_slow")
+ (UNSPEC_SHA1M "crypto_sha1_slow") (UNSPEC_SHA1SU1 "crypto_sha1_fast")
+ (UNSPEC_SHA1SU0 "crypto_sha1_xor") (UNSPEC_SHA256H "crypto_sha256_slow")
+ (UNSPEC_SHA256H2 "crypto_sha256_slow") (UNSPEC_SHA256SU0 "crypto_sha256_fast")
+ (UNSPEC_SHA256SU1 "crypto_sha256_slow")])
+
+(define_int_attr crypto_size_sfx [(UNSPEC_SHA1H "32") (UNSPEC_AESMC "8")
+                          (UNSPEC_AESIMC "8") (UNSPEC_AESD "8")
+                          (UNSPEC_AESE "8") (UNSPEC_SHA1SU1 "32")
+                          (UNSPEC_SHA256SU0 "32") (UNSPEC_SHA1C "32")
+                          (UNSPEC_SHA1M "32") (UNSPEC_SHA1P "32")
+                          (UNSPEC_SHA1SU0 "32") (UNSPEC_SHA256H "32")
+                          (UNSPEC_SHA256H2 "32") (UNSPEC_SHA256SU1 "32")])
+
+(define_int_attr crypto_mode [(UNSPEC_SHA1H "V4SI") (UNSPEC_AESMC "V16QI")
+                          (UNSPEC_AESIMC "V16QI") (UNSPEC_AESD "V16QI")
+                          (UNSPEC_AESE "V16QI") (UNSPEC_SHA1SU1 "V4SI")
+                          (UNSPEC_SHA256SU0 "V4SI") (UNSPEC_SHA1C "V4SI")
+                          (UNSPEC_SHA1M "V4SI") (UNSPEC_SHA1P "V4SI")
+                          (UNSPEC_SHA1SU0 "V4SI") (UNSPEC_SHA256H "V4SI")
+                          (UNSPEC_SHA256H2 "V4SI") (UNSPEC_SHA256SU1 "V4SI")])
 
 ;; Both kinds of return insn.
 (define_code_iterator returns [return simple_return])

@@ -1,3 +1,44 @@
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	 * config/arm/arm.c (enum arm_builtins): Add crypto builtins.
+	 (arm_init_neon_builtins): Handle crypto builtins.
+	 (bdesc_2arg): Likewise.
+	 (bdesc_1arg): Likewise.
+	 (bdesc_3arg): New table.
+	 (arm_expand_ternop_builtin): New function.
+	 (arm_expand_unop_builtin): Handle sha1h explicitly.
+	 (arm_expand_builtin): Handle ternary builtins.
+	 * config/arm/arm.h (TARGET_CPU_CPP_BUILTINS):
+	 Define __ARM_FEATURE_CRYPTO.
+	 * config/arm/arm.md: Include crypto.md.
+	 (is_neon_type): Add crypto types.
+	 * config/arm/arm_neon_builtins.def: Add TImode reinterprets.
+	 * config/arm/crypto.def: New.
+	 * config/arm/crypto.md: Likewise.
+	 * config/arm/iterators.md (CRYPTO_UNARY): New int iterator.
+	 (CRYPTO_BINARY): Likewise.
+	 (CRYPTO_TERNARY): Likewise.
+	 (CRYPTO_SELECTING): Likewise.
+	 (crypto_pattern): New int attribute.
+	 (crypto_size_sfx): Likewise.
+	 (crypto_mode): Likewise.
+	 (crypto_type): Likewise.
+	 * config/arm/neon-gen.ml: Handle poly64_t and poly128_t types.
+	 Handle crypto intrinsics.
+	 * config/arm/neon.ml: Add support for poly64 and polt128 types
+	 and intrinsics. Define crypto intrinsics.
+	 * config/arm/neon.md (neon_vreinterpretti<mode>): New pattern.
+	 (neon_vreinterpretv16qi<mode>): Use VQXMOV mode iterator.
+	 (neon_vreinterpretv8hi<mode>): Likewise.
+	 (neon_vreinterpretv4si<mode>): Likewise.
+	 (neon_vreinterpretv4sf<mode>): Likewise.
+	 (neon_vreinterpretv2di<mode>): Likewise.
+	 * config/arm/unspecs.md (UNSPEC_AESD, UNSPEC_AESE, UNSPEC_AESIMC,
+	 UNSPEC_AESMC, UNSPEC_SHA1C, UNSPEC_SHA1M, UNSPEC_SHA1P, UNSPEC_SHA1H,
+	 UNSPEC_SHA1SU0, UNSPEC_SHA1SU1, UNSPEC_SHA256H, UNSPEC_SHA256H2,
+	 UNSPEC_SHA256SU0, UNSPEC_SHA256SU1, VMULLP64): Define.
+	 * config/arm/arm_neon.h: Regenerate.
+
 2013-12-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/59321
