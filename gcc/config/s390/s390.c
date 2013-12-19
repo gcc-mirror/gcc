@@ -434,6 +434,65 @@ struct GTY(()) machine_function
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
+static const int s390_hotpatch_trampoline_halfwords_default = 12;
+static const int s390_hotpatch_trampoline_halfwords_max = 1000000;
+static int s390_hotpatch_trampoline_halfwords = -1;
+
+/* Return the argument of the given hotpatch attribute or the default value if
+   no argument is present.  */
+
+static inline int
+get_hotpatch_attribute (tree hotpatch_attr)
+{
+  const_tree args;
+
+  args = TREE_VALUE (hotpatch_attr);
+
+  return (args) ?
+    TREE_INT_CST_LOW (TREE_VALUE (args)):
+    s390_hotpatch_trampoline_halfwords_default;
+}
+
+/* Check whether the hotpatch attribute is applied to a function and, if it has
+   an argument, the argument is valid.  */
+
+static tree
+s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
+				int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+    }
+  else if (args)
+    {
+      tree expr = TREE_VALUE (args);
+
+      if (TREE_CODE (expr) != INTEGER_CST
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (expr))
+	  || TREE_INT_CST_HIGH (expr) != 0
+	  || TREE_INT_CST_LOW (expr) > (unsigned int)
+	  s390_hotpatch_trampoline_halfwords_max)
+	{
+	  error ("requested %qE attribute is not a non-negative integer"
+		 " constant or too large (max. %d)", name,
+		 s390_hotpatch_trampoline_halfwords_max);
+	  *no_add_attrs = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+static const struct attribute_spec s390_attribute_table[] = {
+  { "hotpatch", 0, 1, true, false, false, s390_handle_hotpatch_attribute, false
+  },
+  /* End element.  */
+  { NULL,        0, 0, false, false, false, NULL, false }
+};
+
 /* Return the alignment for LABEL.  We default to the -falign-labels
    value except for the literal pool base label.  */
 int
@@ -1622,6 +1681,46 @@ s390_init_machine_status (void)
 static void
 s390_option_override (void)
 {
+  unsigned int i;
+  cl_deferred_option *opt;
+  vec<cl_deferred_option> *v =
+    (vec<cl_deferred_option> *) s390_deferred_options;
+
+  if (v)
+    FOR_EACH_VEC_ELT (*v, i, opt)
+      {
+	switch (opt->opt_index)
+	  {
+	  case OPT_mhotpatch:
+	    s390_hotpatch_trampoline_halfwords = (opt->value) ?
+	      s390_hotpatch_trampoline_halfwords_default : -1;
+	    break;
+	  case OPT_mhotpatch_:
+	    {
+	      int val;
+
+	      val = integral_argument (opt->arg);
+	      if (val == -1)
+		{
+		  /* argument is not a plain number */
+		  error ("argument to %qs should be a non-negative integer",
+			 "-mhotpatch=");
+		  break;
+		}
+	      else if (val > s390_hotpatch_trampoline_halfwords_max)
+		{
+		  error ("argument to %qs is too large (max. %d)",
+			 "-mhotpatch=", s390_hotpatch_trampoline_halfwords_max);
+		  break;
+		}
+	      s390_hotpatch_trampoline_halfwords = val;
+	      break;
+	    }
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
+
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
 
@@ -5345,6 +5444,102 @@ get_some_local_dynamic_name (void)
       return cfun->machine->some_ld_name;
 
   gcc_unreachable ();
+}
+
+/* Returns -1 if the function should not be made hotpatchable.  Otherwise it
+   returns a number >= 0 that is the desired size of the hotpatch trampoline
+   in halfwords. */
+
+static int s390_function_num_hotpatch_trampoline_halfwords (tree decl,
+							    bool do_warn)
+{
+  tree attr;
+
+  if (DECL_DECLARED_INLINE_P (decl)
+      || DECL_ARTIFICIAL (decl)
+      || MAIN_NAME_P (DECL_NAME (decl)))
+    {
+      /* - Explicitly inlined functions cannot be hotpatched.
+	 - Artificial functions need not be hotpatched.
+	 - Making the main function hotpatchable is useless. */
+      return -1;
+    }
+  attr = lookup_attribute ("hotpatch", DECL_ATTRIBUTES (decl));
+  if (attr || s390_hotpatch_trampoline_halfwords >= 0)
+    {
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl)))
+	{
+	  if (do_warn)
+	    warning (OPT_Wattributes, "function %qE with the %qs attribute"
+		     " is not hotpatchable", DECL_NAME (decl), "always_inline");
+	  return -1;
+	}
+      else
+	{
+	  return (attr) ?
+	    get_hotpatch_attribute (attr) : s390_hotpatch_trampoline_halfwords;
+	}
+    }
+
+  return -1;
+}
+
+/* Hook to determine if one function can safely inline another.  */
+
+static bool
+s390_can_inline_p (tree caller, tree callee)
+{
+  if (s390_function_num_hotpatch_trampoline_halfwords (callee, false) >= 0)
+    return false;
+
+  return default_target_can_inline_p (caller, callee);
+}
+
+/* Write the extra assembler code needed to declare a function properly.  */
+
+void
+s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
+				tree decl)
+{
+  int hotpatch_trampoline_halfwords = -1;
+
+  if (decl)
+    {
+      hotpatch_trampoline_halfwords =
+	s390_function_num_hotpatch_trampoline_halfwords (decl, true);
+      if (hotpatch_trampoline_halfwords >= 0
+	  && decl_function_context (decl) != NULL_TREE)
+	{
+	  warning_at (0, DECL_SOURCE_LOCATION (decl),
+		      "hotpatch_prologue is not compatible with nested"
+		      " function");
+	  hotpatch_trampoline_halfwords = -1;
+	}
+    }
+
+  if (hotpatch_trampoline_halfwords > 0)
+    {
+      int i;
+
+      /* Add a trampoline code area before the function label and initialize it
+	 with two-byte nop instructions.  This area can be overwritten with code
+	 that jumps to a patched version of the function.  */
+      for (i = 0; i < hotpatch_trampoline_halfwords; i++)
+	asm_fprintf (asm_out_file, "\tnopr\t%%r7\n");
+      /* Note:  The function label must be aligned so that (a) the bytes of the
+	 following nop do not cross a cacheline boundary, and (b) a jump address
+	 (eight bytes for 64 bit targets, 4 bytes for 32 bit targets) can be
+	 stored directly before the label without crossing a cacheline
+	 boundary.  All this is necessary to make sure the trampoline code can
+	 be changed atomically.  */
+    }
+
+  ASM_OUTPUT_LABEL (asm_out_file, fname);
+
+  /* Output a four-byte nop if hotpatching is enabled.  This can be overwritten
+     atomically with a relative backwards jump to the trampoline area.  */
+  if (hotpatch_trampoline_halfwords >= 0)
+    asm_fprintf (asm_out_file, "\tnop\t0\n");
 }
 
 /* Output machine-dependent UNSPECs occurring in address constant X
@@ -11919,6 +12114,12 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK s390_hard_regno_scratch_ok
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE s390_attribute_table
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P s390_can_inline_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

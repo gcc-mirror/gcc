@@ -1,3 +1,30 @@
+2013-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_hotpatch_trampoline_halfwords_default): New
+	constant
+	(s390_hotpatch_trampoline_halfwords_max): New constant
+	(s390_hotpatch_trampoline_halfwords): New static variable
+	(get_hotpatch_attribute): New function
+	(s390_handle_hotpatch_attribute): New function
+	(s390_attribute_table): New target specific attribute table to implement
+	the hotpatch attribute
+	(s390_option_override): Parse hotpatch options
+	(s390_function_num_hotpatch_trampoline_halfwords): New function
+	(s390_can_inline_p): Implement target hook to
+	suppress hotpatching for explicitly inlined functions
+	(s390_asm_output_function_label): Generate hotpatch prologue
+	(TARGET_ATTRIBUTE_TABLE): Define to implement target attribute table
+	(TARGET_CAN_INLINE_P): Define to implement target hook
+	* config/s390/s390.opt (mhotpatch): New options -mhotpatch, -mhotpatch=
+	* config/s390/s390-protos.h (s390_asm_output_function_label): Add
+	prototype
+	* config/s390/s390.h (ASM_OUTPUT_FUNCTION_LABEL): Target specific
+	function label generation for hotpatching
+	(FUNCTION_BOUNDARY): Align functions to eight bytes
+	* doc/extend.texi: Document hotpatch attribute
+	* doc/invoke.texi: Document -mhotpatch option
+
 2013-12-19  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c: Include cfgloop.h. 
