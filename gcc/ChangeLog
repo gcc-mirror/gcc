@@ -1,3 +1,15 @@
+2013-12-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/59321
+	* collect2.c (main): Check -fuse-ld=[bfd|gold] when
+	DEFAULT_LINKER is defined.
+	* common.opt (fuse-ld=bfd): Add Driver.
+	(fuse-ld=gold): Likewise.
+	* gcc.c (use_ld): New variable.
+	(driver_handle_option): Set use_ld for OPT_fuse_ld_bfd and
+	OPT_fuse_ld_gold.
+	(main): Check -fuse-ld=[bfd|gold] for -print-prog-name=ld.
+
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* Makefile.in (TEXI_GCC_FILES): Add arm-acle-intrinsics.texi.
