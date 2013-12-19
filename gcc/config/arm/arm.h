@@ -51,6 +51,10 @@ extern char arm_arch_name[];
            builtin_define ("__ARM_FEATURE_SAT");	\
 	if (unaligned_access)				\
 	  builtin_define ("__ARM_FEATURE_UNALIGNED");	\
+	if (TARGET_CRC32)				\
+	  builtin_define ("__ARM_FEATURE_CRC32");	\
+	if (TARGET_32BIT)				\
+	  builtin_define ("__ARM_32BIT_STATE");		\
 	if (TARGET_ARM_FEATURE_LDREX)				\
 	  builtin_define_with_int_value (			\
 	    "__ARM_FEATURE_LDREX", TARGET_ARM_FEATURE_LDREX);	\
@@ -273,6 +277,8 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 
 #define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN \
                                          && !TARGET_THUMB1)
+
+#define TARGET_CRC32			(arm_arch_crc)
 
 /* The following two macros concern the ability to execute coprocessor
    instructions for VFPv3 or NEON.  TARGET_VFP3/TARGET_VFPD32 are currently
@@ -560,6 +566,9 @@ extern int prefer_neon_for_64bits;
 #ifndef USED_FOR_TARGET
 extern bool arm_disable_literal_pool;
 #endif
+
+/* Nonzero if chip supports the ARMv8 CRC instructions.  */
+extern int arm_arch_crc;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  (MASK_APCS_FRAME)

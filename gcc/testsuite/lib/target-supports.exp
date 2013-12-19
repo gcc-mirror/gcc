@@ -2327,6 +2327,14 @@ proc add_options_for_arm_v8_neon { flags } {
     return "$flags $et_arm_v8_neon_flags -march=armv8-a"
 }
 
+proc add_options_for_arm_crc { flags } {
+    if { ! [check_effective_target_arm_crc_ok] } {
+        return "$flags"
+    }
+    global et_arm_crc_flags
+    return "$flags $et_arm_crc_flags"
+}
+
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
 # or -mfloat-abi=hard, but if one is already specified by the
 # multilib, use it.  Similarly, if a -mfpu option already enables
@@ -2366,6 +2374,21 @@ proc check_effective_target_arm_neon_ok_nocache { } {
 proc check_effective_target_arm_neon_ok { } {
     return [check_cached_effective_target arm_neon_ok \
 		check_effective_target_arm_neon_ok_nocache]
+}
+
+proc check_effective_target_arm_crc_ok_nocache { } {
+    global et_arm_crc_flags
+    set et_arm_crc_flags "-march=armv8-a+crc"
+    return [check_no_compiler_messages_nocache arm_crc_ok object {
+	#if !defined (__ARM_FEATURE_CRC32)
+	#error FOO
+	#endif
+    } "$et_arm_crc_flags"]
+}
+
+proc check_effective_target_arm_crc_ok { } {
+    return [check_cached_effective_target arm_crc_ok \
+		check_effective_target_arm_crc_ok_nocache]
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=neon-fp16
