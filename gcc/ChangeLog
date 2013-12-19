@@ -1,3 +1,8 @@
+2013-12-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* print-tree.c (print_node) <case tcc_type>: Print no_force_blk_flag
+	for all types.
+
 2013-12-19  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* common/config/nds32/nds32-common.c (TARGET_DEFAULT_TARGET_FLAGS):

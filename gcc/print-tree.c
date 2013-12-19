@@ -583,16 +583,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TYPE_UNSIGNED (node))
 	fputs (" unsigned", file);
 
-      /* The no-force-blk flag is used for different things in
-	 different types.  */
-      if ((code == RECORD_TYPE
-	   || code == UNION_TYPE
-	   || code == QUAL_UNION_TYPE)
-	  && TYPE_NO_FORCE_BLK (node))
+      if (TYPE_NO_FORCE_BLK (node))
 	fputs (" no-force-blk", file);
 
       if (TYPE_STRING_FLAG (node))
 	fputs (" string-flag", file);
+
       if (TYPE_NEEDS_CONSTRUCTING (node))
 	fputs (" needs-constructing", file);
 
