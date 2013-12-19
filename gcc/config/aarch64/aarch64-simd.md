@@ -4096,3 +4096,46 @@
   [(set_attr "type" "crypto_aes")]
 )
 
+;; sha1
+
+(define_insn "aarch64_crypto_sha1hsi"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+        (unspec:SI [(match_operand:SI 1
+                       "register_operand" "w")]
+         UNSPEC_SHA1H))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1h\\t%s0, %s1"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
+(define_insn "aarch64_crypto_sha1su1v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")]
+         UNSPEC_SHA1SU1))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1su1\\t%0.4s, %2.4s"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
+(define_insn "aarch64_crypto_sha1<sha1_op>v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         CRYPTO_SHA1))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1<sha1_op>\\t%q0, %s2, %3.4s"
+  [(set_attr "type" "crypto_sha1_slow")]
+)
+
+(define_insn "aarch64_crypto_sha1su0v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         UNSPEC_SHA1SU0))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1su0\\t%0.4s, %2.4s, %3.4s"
+  [(set_attr "type" "crypto_sha1_xor")]
+)

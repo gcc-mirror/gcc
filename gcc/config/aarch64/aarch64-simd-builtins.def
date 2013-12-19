@@ -372,3 +372,11 @@
   VAR1 (BINOPU, crypto_aesd, 0, v16qi)
   VAR1 (UNOPU, crypto_aesmc, 0, v16qi)
   VAR1 (UNOPU, crypto_aesimc, 0, v16qi)
+
+  /* Implemented by aarch64_crypto_sha1<op><mode>.  */
+  VAR1 (UNOPU, crypto_sha1h, 0, si)
+  VAR1 (BINOPU, crypto_sha1su1, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1c, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1m, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1p, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1su0, 0, v4si)

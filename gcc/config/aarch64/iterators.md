@@ -271,6 +271,12 @@
     UNSPEC_AESD         ; Used in aarch64-simd.md.
     UNSPEC_AESMC        ; Used in aarch64-simd.md.
     UNSPEC_AESIMC       ; Used in aarch64-simd.md.
+    UNSPEC_SHA1C	; Used in aarch64-simd.md.
+    UNSPEC_SHA1M        ; Used in aarch64-simd.md.
+    UNSPEC_SHA1P        ; Used in aarch64-simd.md.
+    UNSPEC_SHA1H        ; Used in aarch64-simd.md.
+    UNSPEC_SHA1SU0      ; Used in aarch64-simd.md.
+    UNSPEC_SHA1SU1      ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
@@ -855,6 +861,8 @@
 (define_int_iterator CRYPTO_AES [UNSPEC_AESE UNSPEC_AESD])
 (define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
 
+(define_int_iterator CRYPTO_SHA1 [UNSPEC_SHA1C UNSPEC_SHA1M UNSPEC_SHA1P])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -974,3 +982,6 @@
 
 (define_int_attr aes_op [(UNSPEC_AESE "e") (UNSPEC_AESD "d")])
 (define_int_attr aesmc_op [(UNSPEC_AESMC "mc") (UNSPEC_AESIMC "imc")])
+
+(define_int_attr sha1_op [(UNSPEC_SHA1C "c") (UNSPEC_SHA1P "p")
+			  (UNSPEC_SHA1M "m")])
