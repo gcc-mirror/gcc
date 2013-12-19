@@ -42,15 +42,15 @@
 
 (define_insn "*thumb_ldm4_ia"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+    [(set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_operand:SI 5 "s_register_operand" "l")))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 4))))
-     (set (match_operand:SI 3 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 3 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 8))))
-     (set (match_operand:SI 4 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 4 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 12))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 4"
@@ -82,15 +82,15 @@
   [(match_parallel 0 "load_multiple_operation"
     [(set (match_operand:SI 5 "s_register_operand" "+&l")
           (plus:SI (match_dup 5) (const_int 16)))
-     (set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_dup 5)))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 4))))
-     (set (match_operand:SI 3 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 3 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 8))))
-     (set (match_operand:SI 4 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 4 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 5)
                   (const_int 12))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 5"
@@ -136,13 +136,13 @@
     [(set (match_operand:SI 5 "s_register_operand" "+&l")
           (plus:SI (match_dup 5) (const_int 16)))
      (set (mem:SI (match_dup 5))
-          (match_operand:SI 1 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 1 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 5) (const_int 4)))
-          (match_operand:SI 2 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 2 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 5) (const_int 8)))
-          (match_operand:SI 3 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 3 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 5) (const_int 12)))
-          (match_operand:SI 4 "arm_hard_general_register_operand" ""))])]
+          (match_operand:SI 4 "low_register_operand" ""))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 5"
   "stm%(ia%)\t%5!, {%1, %2, %3, %4}"
   [(set_attr "type" "store4")])
@@ -490,12 +490,12 @@
 
 (define_insn "*thumb_ldm3_ia"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+    [(set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_operand:SI 4 "s_register_operand" "l")))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 4)
                   (const_int 4))))
-     (set (match_operand:SI 3 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 3 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 4)
                   (const_int 8))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 3"
@@ -524,12 +524,12 @@
   [(match_parallel 0 "load_multiple_operation"
     [(set (match_operand:SI 4 "s_register_operand" "+&l")
           (plus:SI (match_dup 4) (const_int 12)))
-     (set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_dup 4)))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 4)
                   (const_int 4))))
-     (set (match_operand:SI 3 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 3 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 4)
                   (const_int 8))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 4"
@@ -571,11 +571,11 @@
     [(set (match_operand:SI 4 "s_register_operand" "+&l")
           (plus:SI (match_dup 4) (const_int 12)))
      (set (mem:SI (match_dup 4))
-          (match_operand:SI 1 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 1 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 4) (const_int 4)))
-          (match_operand:SI 2 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 2 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 4) (const_int 8)))
-          (match_operand:SI 3 "arm_hard_general_register_operand" ""))])]
+          (match_operand:SI 3 "low_register_operand" ""))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 4"
   "stm%(ia%)\t%4!, {%1, %2, %3}"
   [(set_attr "type" "store3")])
@@ -876,9 +876,9 @@
 
 (define_insn "*thumb_ldm2_ia"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+    [(set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_operand:SI 3 "s_register_operand" "l")))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 3)
                   (const_int 4))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 2"
@@ -904,9 +904,9 @@
   [(match_parallel 0 "load_multiple_operation"
     [(set (match_operand:SI 3 "s_register_operand" "+&l")
           (plus:SI (match_dup 3) (const_int 8)))
-     (set (match_operand:SI 1 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 1 "low_register_operand" "")
           (mem:SI (match_dup 3)))
-     (set (match_operand:SI 2 "arm_hard_general_register_operand" "")
+     (set (match_operand:SI 2 "low_register_operand" "")
           (mem:SI (plus:SI (match_dup 3)
                   (const_int 4))))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 3"
@@ -944,9 +944,9 @@
     [(set (match_operand:SI 3 "s_register_operand" "+&l")
           (plus:SI (match_dup 3) (const_int 8)))
      (set (mem:SI (match_dup 3))
-          (match_operand:SI 1 "arm_hard_general_register_operand" ""))
+          (match_operand:SI 1 "low_register_operand" ""))
      (set (mem:SI (plus:SI (match_dup 3) (const_int 4)))
-          (match_operand:SI 2 "arm_hard_general_register_operand" ""))])]
+          (match_operand:SI 2 "low_register_operand" ""))])]
   "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 3"
   "stm%(ia%)\t%3!, {%1, %2}"
   [(set_attr "type" "store2")])
