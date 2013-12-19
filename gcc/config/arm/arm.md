@@ -12870,6 +12870,17 @@
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
+;; ARMv8 CRC32 instructions.
+(define_insn "<crc_variant>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "s_register_operand" "r")
+                    (match_operand:<crc_mode> 2 "s_register_operand" "r")]
+         CRC))]
+  "TARGET_CRC32"
+  "<crc_variant>\\t%0, %1, %2"
+  [(set_attr "type" "crc")
+   (set_attr "conds" "unconditional")]
+)
 
 ;; Load the load/store double peephole optimizations.
 (include "ldrdstrd.md")

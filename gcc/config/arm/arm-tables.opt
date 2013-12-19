@@ -371,10 +371,13 @@ EnumValue
 Enum(arm_arch) String(armv8-a) Value(23)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(24)
+Enum(arm_arch) String(armv8-a+crc) Value(24)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(25)
+Enum(arm_arch) String(iwmmxt) Value(25)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(26)
 
 Enum
 Name(arm_fpu) Type(int)

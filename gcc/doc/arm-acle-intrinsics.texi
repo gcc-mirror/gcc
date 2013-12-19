@@ -1,0 +1,55 @@
+@c Copyright (C) 2013 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@subsubsection CRC32 intrinsics
+
+@itemize @bullet
+@item uint32_t __crc32b (uint32_t, uint8_t)
+@*@emph{Form of expected instruction(s):} @code{crc32b @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32h (uint32_t, uint16_t)
+@*@emph{Form of expected instruction(s):} @code{crc32h @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32w (uint32_t, uint32_t)
+@*@emph{Form of expected instruction(s):} @code{crc32w @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32d (uint32_t, uint64_t)
+@*@emph{Form of expected instruction(s):} Two @code{crc32w @var{r0}, @var{r0}, @var{r0}}
+instructions for AArch32. One @code{crc32w @var{w0}, @var{w0}, @var{x0}} instruction for
+AArch64.
+@end itemize
+
+@itemize @bullet
+@item uint32_t __crc32cb (uint32_t, uint8_t)
+@*@emph{Form of expected instruction(s):} @code{crc32cb @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32ch (uint32_t, uint16_t)
+@*@emph{Form of expected instruction(s):} @code{crc32ch @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32cw (uint32_t, uint32_t)
+@*@emph{Form of expected instruction(s):} @code{crc32cw @var{r0}, @var{r0}, @var{r0}}
+@end itemize
+
+
+@itemize @bullet
+@item uint32_t __crc32cd (uint32_t, uint64_t)
+@*@emph{Form of expected instruction(s):} Two @code{crc32cw @var{r0}, @var{r0}, @var{r0}}
+instructions for AArch32. One @code{crc32cw @var{w0}, @var{w0}, @var{x0}} instruction for
+AArch64.
+@end itemize

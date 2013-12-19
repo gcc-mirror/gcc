@@ -12228,8 +12228,11 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
-@samp{armv8-a},
+@samp{armv8-a}, @samp{armv8-a+crc},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=armv8-a+crc} enables code generation for the ARMv8-A
+architecture together with the optional CRC32 extensions.
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on

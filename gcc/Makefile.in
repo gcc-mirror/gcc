@@ -2794,7 +2794,8 @@ TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
 	 gcov.texi trouble.texi bugreport.texi service.texi		\
 	 contribute.texi compat.texi funding.texi gnu.texi gpl_v3.texi	\
 	 fdl.texi contrib.texi cppenv.texi cppopts.texi avr-mmcu.texi	\
-	 implement-c.texi implement-cxx.texi arm-neon-intrinsics.texi
+	 implement-c.texi implement-cxx.texi arm-neon-intrinsics.texi	\
+	 arm-acle-intrinsics.texi
 
 # we explicitly use $(srcdir)/doc/tm.texi here to avoid confusion with
 # the generated tm.texi; the latter might have a more recent timestamp,

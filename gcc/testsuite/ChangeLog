@@ -1,5 +1,21 @@
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* lib/target-supports.exp (add_options_for_arm_crc): New procedure.
+	(check_effective_target_arm_crc_ok_nocache): Likewise.
+	(check_effective_target_arm_crc_ok): Likewise.
+	* gcc.target/arm/acle/: New directory.
+	* gcc.target/arm/acle/acle.exp: New.
+	* gcc.target/arm/acle/crc32b.c: New test.
+	* gcc.target/arm/acle/crc32h.c: Likewise.
+	* gcc.target/arm/acle/crc32w.c: Likewise.
+	* gcc.target/arm/acle/crc32d.c: Likewise.
+	* gcc.target/arm/acle/crc32cb.c: Likewise.
+	* gcc.target/arm/acle/crc32ch.c: Likewise.
+	* gcc.target/arm/acle/crc32cw.c: Likewise.
+	* gcc.target/arm/acle/crc32cd.c: Likewise.
+
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* c-c++-common/cilk-plus/SE/ef_error.c: Use -fopen-simd.
 
 2013-12-19  Oleg Endo  <olegendo@gcc.gnu.org>

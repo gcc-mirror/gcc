@@ -1,3 +1,30 @@
+2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* Makefile.in (TEXI_GCC_FILES): Add arm-acle-intrinsics.texi.
+	* config.gcc (extra_headers): Add arm_acle.h.
+	* config/arm/arm.c (FL_CRC32): Define.
+	(arm_have_crc): Likewise.
+	(arm_option_override): Set arm_have_crc.
+	(arm_builtins): Add CRC32 builtins.
+	(bdesc_2arg): Likewise.
+	(arm_init_crc32_builtins): New function.
+	(arm_init_builtins): Initialise CRC32 builtins.
+	(arm_file_start): Handle architecture extensions.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_FEATURE_CRC32.
+	Define __ARM_32BIT_STATE.
+	(TARGET_CRC32): Define.
+	* config/arm/arm-arches.def: Add armv8-a+crc.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm.md (type): Add crc.
+	(<crc_variant>): New insn.
+	* config/arm/arm_acle.h: New file.
+	* config/arm/iterators.md (CRC): New int iterator.
+	(crc_variant, crc_mode): New int attributes.
+	* confg/arm/unspecs.md (UNSPEC_CRC32B, UNSPEC_CRC32H, UNSPEC_CRC32W,
+	UNSPEC_CRC32CB, UNSPEC_CRC32CH, UNSPEC_CRC32CW): New unspecs.
+	* doc/invoke.texi: Document -march=armv8-a+crc option.
+	* doc/extend.texi: Document ACLE intrinsics.
+
 2013-12-19  Charles Baylis  <charles.baylis@linaro.org>
 
 	PR target/59142
