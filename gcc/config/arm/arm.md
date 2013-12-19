@@ -12253,7 +12253,7 @@
     [(set (match_operand:SI 1 "s_register_operand" "+rk")
           (plus:SI (match_dup 1)
                    (match_operand:SI 2 "const_int_operand" "I")))
-     (set (match_operand:DF 3 "arm_hard_register_operand" "")
+     (set (match_operand:DF 3 "vfp_hard_register_operand" "")
           (mem:DF (match_dup 1)))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "*
