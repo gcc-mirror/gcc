@@ -1,3 +1,9 @@
+2013-12-19  Kostya Serebryany  <kcc@google.com>
+
+        * sanitizer_common/sanitizer_platform_limits_posix.cc:
+	workaround for missing definition of EOWNERDEAD, backport
+	from upstream r196779.
+
 2013-12-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* sanitizer_common/sanitizer_platform_limits_posix.h
