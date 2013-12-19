@@ -503,3 +503,9 @@ DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", ~0)
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", 0)
+
+/* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
+   on hardware capabilities. Bdver3 hardware has a loop buffer which makes
+   unrolling small loop less important. For, such architectures we adjust
+   the unroll factor so that the unrolled loop fits the loop buffer.  */
+DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)

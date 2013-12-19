@@ -1,3 +1,14 @@
+2013-12-19  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c: Include cfgloop.h. 
+	(ix86_loop_memcount): New function.
+	(ix86_loop_unroll_adjust): New function.
+	(TARGET_LOOP_UNROLL_ADJUST): Define.
+	* config/i386/i386.h
+	(TARGET_ADJUST_UNROLL): Define.
+	* config/i386/x86-tune.def
+	(X86_TUNE_ADJUST_UNROLL): Define.
+
 2013-12-19  Marek Polacek  <polacek@redhat.com>
 
 	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Remove
