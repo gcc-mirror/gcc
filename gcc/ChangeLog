@@ -1,3 +1,17 @@
+o2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_init_simd_builtins):
+	Define builtin types for poly64_t poly128_t.
+	(TYPES_BINOPP, aarch64_types_binopp_qualifiers): New.
+	* aarch64/aarch64-simd-builtins.def: Update builtins table.
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_pmulldi,
+	aarch64_crypto_pmullv2di): New.
+	* config/aarch64/aarch64.c (aarch64_simd_mangle_map): Update table for
+	poly64x2_t mangler.
+	* config/aarch64/arm_neon.h (poly64x2_t, poly64_t, poly128_t): Define.
+	(vmull_p64, vmull_high_p64): New.
+	* config/aarch64/iterators.md (UNSPEC_PMULL<2>): New.
+
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Update builtins table.
