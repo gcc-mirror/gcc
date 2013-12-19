@@ -142,12 +142,20 @@ static enum aarch64_type_qualifiers
 aarch64_types_unop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none };
 #define TYPES_UNOP (aarch64_types_unop_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_unopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned };
+#define TYPES_UNOPU (aarch64_types_unopu_qualifiers)
 #define TYPES_CREATE (aarch64_types_unop_qualifiers)
 #define TYPES_REINTERP (aarch64_types_unop_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_binop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_maybe_immediate };
 #define TYPES_BINOP (aarch64_types_binop_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_binopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned };
+#define TYPES_BINOPU (aarch64_types_binopu_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_ternop_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_none };

@@ -15575,6 +15575,36 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_simd_bslv2di_uuuu (__a, __b, __c);
 }
 
+#ifdef __ARM_FEATURE_CRYPTO
+
+/* vaes  */
+
+static __inline uint8x16_t
+vaeseq_u8 (uint8x16_t data, uint8x16_t key)
+{
+  return __builtin_aarch64_crypto_aesev16qi_uuu (data, key);
+}
+
+static __inline uint8x16_t
+vaesdq_u8 (uint8x16_t data, uint8x16_t key)
+{
+  return __builtin_aarch64_crypto_aesdv16qi_uuu (data, key);
+}
+
+static __inline uint8x16_t
+vaesmcq_u8 (uint8x16_t data)
+{
+  return __builtin_aarch64_crypto_aesmcv16qi_uu (data);
+}
+
+static __inline uint8x16_t
+vaesimcq_u8 (uint8x16_t data)
+{
+  return __builtin_aarch64_crypto_aesimcv16qi_uu (data);
+}
+
+#endif
+
 /* vcage  */
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))

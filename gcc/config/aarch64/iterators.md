@@ -267,6 +267,10 @@
     UNSPEC_UZP2		; Used in vector permute patterns.
     UNSPEC_TRN1		; Used in vector permute patterns.
     UNSPEC_TRN2		; Used in vector permute patterns.
+    UNSPEC_AESE		; Used in aarch64-simd.md.
+    UNSPEC_AESD         ; Used in aarch64-simd.md.
+    UNSPEC_AESMC        ; Used in aarch64-simd.md.
+    UNSPEC_AESIMC       ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
@@ -848,6 +852,9 @@
 
 (define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
 
+(define_int_iterator CRYPTO_AES [UNSPEC_AESE UNSPEC_AESD])
+(define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
 ;; -------------------------------------------------------------------
@@ -964,3 +971,6 @@
 			    (UNSPEC_UZP1 "1") (UNSPEC_UZP2 "2")])
 
 (define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
+
+(define_int_attr aes_op [(UNSPEC_AESE "e") (UNSPEC_AESD "d")])
+(define_int_attr aesmc_op [(UNSPEC_AESMC "mc") (UNSPEC_AESIMC "imc")])

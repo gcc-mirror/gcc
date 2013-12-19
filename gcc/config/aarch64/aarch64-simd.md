@@ -4074,3 +4074,25 @@
       (gen_aarch64_get_lane<mode> (operands[0], operands[1], operands[2]));
     DONE;
 })
+
+;; aes
+
+(define_insn "aarch64_crypto_aes<aes_op>v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+		       (match_operand:V16QI 2 "register_operand" "w")]
+         CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aes")]
+)
+
+(define_insn "aarch64_crypto_aes<aesmc_op>v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "w")]
+	 CRYPTO_AESMC))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "aes<aesmc_op>\\t%0.16b, %1.16b"
+  [(set_attr "type" "crypto_aes")]
+)
+
