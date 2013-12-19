@@ -138,7 +138,7 @@ neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
   if (l1 == 0)
     {
       *lv = 0;
-      *hv = - h1;
+      *hv = - (unsigned HOST_WIDE_INT) h1;
       return (*hv & h1) < 0;
     }
   else

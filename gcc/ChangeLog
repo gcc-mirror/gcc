@@ -1,3 +1,27 @@
+2013-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/59545
+	* genattrtab.c (struct attr_hash): Change hashcode type to unsigned.
+	(attr_hash_add_rtx, attr_hash_add_string): Change hashcode parameter
+	to unsigned.
+	(attr_rtx_1): Change hashcode variable to unsigned.
+	(attr_string): Likewise.  Perform first multiplication in unsigned
+	type.
+	* ifcvt.c (noce_try_store_flag_constants): Avoid signed integer
+	overflows.
+	* double-int.c (neg_double): Likewise.
+	* stor-layout.c (set_min_and_max_values_for_integral_type): Likewise.
+	* combine.c (force_to_mode): Likewise.
+	* postreload.c (move2add_use_add2_insn, move2add_use_add3_insn,
+	reload_cse_move2add, move2add_note_store): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Likewise.
+	* ipa-split.c (find_split_points): Initialize first.can_split
+	and first.non_ssa_vars.
+	* gengtype-state.c (read_state_files_list): Fix up check.
+	* genautomata.c (reserv_sets_hash_value): Use portable rotation
+	idiom.
+
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon-docgen.ml: Add crypto intrinsics documentation.

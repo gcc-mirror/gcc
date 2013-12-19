@@ -1647,7 +1647,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case NEG:
-	  val = - arg0;
+	  val = - (unsigned HOST_WIDE_INT) arg0;
 	  break;
 
 	case ABS:
@@ -4117,15 +4117,15 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       switch (code)
 	{
 	case PLUS:
-	  val = arg0s + arg1s;
+	  val = (unsigned HOST_WIDE_INT) arg0s + arg1s;
 	  break;
 
 	case MINUS:
-	  val = arg0s - arg1s;
+	  val = (unsigned HOST_WIDE_INT) arg0s - arg1s;
 	  break;
 
 	case MULT:
-	  val = arg0s * arg1s;
+	  val = (unsigned HOST_WIDE_INT) arg0s * arg1s;
 	  break;
 
 	case DIV:

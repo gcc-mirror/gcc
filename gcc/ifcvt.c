@@ -1112,12 +1112,13 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       ifalse = INTVAL (if_info->a);
       itrue = INTVAL (if_info->b);
 
+      diff = (unsigned HOST_WIDE_INT) itrue - ifalse;
       /* Make sure we can represent the difference between the two values.  */
-      if ((itrue - ifalse > 0)
+      if ((diff > 0)
 	  != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
 	return FALSE;
 
-      diff = trunc_int_for_mode (itrue - ifalse, mode);
+      diff = trunc_int_for_mode (diff, mode);
 
       can_reverse = (reversed_comparison_code (if_info->cond, if_info->jump)
 		     != UNKNOWN);
@@ -1148,7 +1149,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       if (reversep)
 	{
 	  tmp = itrue; itrue = ifalse; ifalse = tmp;
-	  diff = trunc_int_for_mode (-diff, mode);
+	  diff = trunc_int_for_mode (-(unsigned HOST_WIDE_INT) diff, mode);
 	}
 
       start_sequence ();
