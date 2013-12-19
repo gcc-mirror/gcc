@@ -22952,6 +22952,46 @@ vrsrad_n_u64 (uint64x1_t __a, uint64x1_t __b, const int __c)
   return (uint64x1_t) __builtin_aarch64_ursra_ndi (__a, __b, __c);
 }
 
+#ifdef __ARM_FEATURE_CRYPTO
+
+/* vsha1  */
+
+static __inline uint32x4_t
+vsha1cq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
+{
+  return __builtin_aarch64_crypto_sha1cv4si_uuuu (hash_abcd, hash_e, wk);
+}
+static __inline uint32x4_t
+vsha1mq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
+{
+  return __builtin_aarch64_crypto_sha1mv4si_uuuu (hash_abcd, hash_e, wk);
+}
+static __inline uint32x4_t
+vsha1pq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
+{
+  return __builtin_aarch64_crypto_sha1pv4si_uuuu (hash_abcd, hash_e, wk);
+}
+
+static __inline uint32_t
+vsha1h_u32 (uint32_t hash_e)
+{
+  return __builtin_aarch64_crypto_sha1hsi_uu (hash_e);
+}
+
+static __inline uint32x4_t
+vsha1su0q_u32 (uint32x4_t w0_3, uint32x4_t w4_7, uint32x4_t w8_11)
+{
+  return __builtin_aarch64_crypto_sha1su0v4si_uuuu (w0_3, w4_7, w8_11);
+}
+
+static __inline uint32x4_t
+vsha1su1q_u32 (uint32x4_t tw0_3, uint32x4_t w12_15)
+{
+  return __builtin_aarch64_crypto_sha1su1v4si_uuu (tw0_3, w12_15);
+}
+
+#endif
+
 /* vshl */
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
