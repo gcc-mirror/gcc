@@ -380,3 +380,9 @@
   VAR1 (TERNOPU, crypto_sha1m, 0, v4si)
   VAR1 (TERNOPU, crypto_sha1p, 0, v4si)
   VAR1 (TERNOPU, crypto_sha1su0, 0, v4si)
+
+  /* Implemented by aarch64_crypto_sha256<op><mode>.  */
+  VAR1 (TERNOPU, crypto_sha256h, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha256h2, 0, v4si)
+  VAR1 (BINOPU, crypto_sha256su0, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha256su1, 0, v4si)

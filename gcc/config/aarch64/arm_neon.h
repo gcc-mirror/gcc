@@ -22990,6 +22990,30 @@ vsha1su1q_u32 (uint32x4_t tw0_3, uint32x4_t w12_15)
   return __builtin_aarch64_crypto_sha1su1v4si_uuu (tw0_3, w12_15);
 }
 
+static __inline uint32x4_t
+vsha256hq_u32 (uint32x4_t hash_abcd, uint32x4_t hash_efgh, uint32x4_t wk)
+{
+  return __builtin_aarch64_crypto_sha256hv4si_uuuu (hash_abcd, hash_efgh, wk);
+}
+
+static __inline uint32x4_t
+vsha256h2q_u32 (uint32x4_t hash_efgh, uint32x4_t hash_abcd, uint32x4_t wk)
+{
+  return __builtin_aarch64_crypto_sha256h2v4si_uuuu (hash_efgh, hash_abcd, wk);
+}
+
+static __inline uint32x4_t
+vsha256su0q_u32 (uint32x4_t w0_3, uint32x4_t w4_7)
+{
+  return __builtin_aarch64_crypto_sha256su0v4si_uuu (w0_3, w4_7);
+}
+
+static __inline uint32x4_t
+vsha256su1q_u32 (uint32x4_t tw0_3, uint32x4_t w8_11, uint32x4_t w12_15)
+{
+  return __builtin_aarch64_crypto_sha256su1v4si_uuuu (tw0_3, w8_11, w12_15);
+}
+
 #endif
 
 /* vshl */
