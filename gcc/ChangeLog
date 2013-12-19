@@ -1,5 +1,11 @@
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* config/arm/types.md (neon_mul_d_long, crypto_aes, crypto_sha1_xor,
+	crypto_sha1_fast, crypto_sha1_slow, crypto_sha256_fast,
+	crypto_sha256_slow): New.
+
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/aarch64/aarch64.h (TARGET_CRYPTO): New.
 	(__ARM_FEATURE_CRYPTO): Define if TARGET_CRYPTO is true.
 
