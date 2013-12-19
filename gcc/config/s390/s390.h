@@ -217,7 +217,7 @@ enum processor_flags
 #define STACK_BOUNDARY 64
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 32
+#define FUNCTION_BOUNDARY 64
 
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 64
@@ -878,6 +878,9 @@ do {									\
   fputc ('\n', (FILE));							\
 } while (0)
 
+#undef ASM_OUTPUT_FUNCTION_LABEL
+#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
+  s390_asm_output_function_label (FILE, NAME, DECL)
 
 /* Miscellaneous parameters.  */
 
