@@ -443,6 +443,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE]
 #define TARGET_SPLIT_MEM_OPND_FOR_FP_CONVERTS \
 	ix86_tune_features[X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS]
+#define TARGET_ADJUST_UNROLL \
+    ix86_tune_features[X86_TUNE_ADJUST_UNROLL]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
