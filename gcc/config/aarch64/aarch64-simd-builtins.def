@@ -367,3 +367,8 @@
   BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0)
   BUILTIN_VALLDIF (BSL_S, simd_bsl, 0)
 
+  /* Implemented by aarch64_crypto_aes<op><mode>.  */
+  VAR1 (BINOPU, crypto_aese, 0, v16qi)
+  VAR1 (BINOPU, crypto_aesd, 0, v16qi)
+  VAR1 (UNOPU, crypto_aesmc, 0, v16qi)
+  VAR1 (UNOPU, crypto_aesimc, 0, v16qi)

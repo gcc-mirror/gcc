@@ -1,3 +1,7 @@
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/aes_1.c: New.
+
 2013-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 

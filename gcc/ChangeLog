@@ -1,5 +1,19 @@
 2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def: Update builtins table.
+	* config/aarch64/aarch64-builtins.c (aarch64_types_binopu_qualifiers,
+	TYPES_BINOPU): New.
+	* config/aarch64/aarch64-simd.md (aarch64_crypto_aes<aes_op>v16qi,
+	aarch64_crypto_aes<aesmc_op>v16qi): New.
+	* config/aarch64/arm_neon.h (vaeseq_u8, vaesdq_u8, vaesmcq_u8,
+	vaesimcq_u8): New.
+	* config/aarch64/iterators.md (UNSPEC_AESE, UNSPEC_AESD, UNSPEC_AESMC,
+	UNSPEC_AESIMC): New.
+	(CRYPTO_AES, CRYPTO_AESMC): New int iterators.
+	(aes_op, aesmc_op): New int attributes.
+
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+
 	* config/arm/types.md (neon_mul_d_long, crypto_aes, crypto_sha1_xor,
 	crypto_sha1_fast, crypto_sha1_slow, crypto_sha256_fast,
 	crypto_sha256_slow): New.
