@@ -22,25 +22,25 @@
 2013-12-19  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 	    Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc/testsuite/gcc.target/s390/hotpatch-1.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-2.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-3.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-4.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-5.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-6.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-7.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-8.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-9.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-10.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-11.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-12.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-1.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-2.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-3.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-4.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-5.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-6.c: New test
-	* gcc/testsuite/gcc.target/s390/hotpatch-compile-7.c: New test
+	* gcc.target/s390/hotpatch-1.c: New test
+	* gcc.target/s390/hotpatch-2.c: New test
+	* gcc.target/s390/hotpatch-3.c: New test
+	* gcc.target/s390/hotpatch-4.c: New test
+	* gcc.target/s390/hotpatch-5.c: New test
+	* gcc.target/s390/hotpatch-6.c: New test
+	* gcc.target/s390/hotpatch-7.c: New test
+	* gcc.target/s390/hotpatch-8.c: New test
+	* gcc.target/s390/hotpatch-9.c: New test
+	* gcc.target/s390/hotpatch-10.c: New test
+	* gcc.target/s390/hotpatch-11.c: New test
+	* gcc.target/s390/hotpatch-12.c: New test
+	* gcc.target/s390/hotpatch-compile-1.c: New test
+	* gcc.target/s390/hotpatch-compile-2.c: New test
+	* gcc.target/s390/hotpatch-compile-3.c: New test
+	* gcc.target/s390/hotpatch-compile-4.c: New test
+	* gcc.target/s390/hotpatch-compile-5.c: New test
+	* gcc.target/s390/hotpatch-compile-6.c: New test
+	* gcc.target/s390/hotpatch-compile-7.c: New test
 
 2013-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
