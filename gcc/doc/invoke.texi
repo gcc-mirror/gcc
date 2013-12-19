@@ -933,7 +933,8 @@ See RS/6000 and PowerPC Options.
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
--mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard}
+-mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard @gol
+-mhotpatch[=@var{halfwords}] -mno-hotpatch}
 
 @emph{Score Options}
 @gccoptlist{-meb -mel @gol
@@ -19777,6 +19778,21 @@ values have to be exact powers of 2 and @var{stack-size} has to be greater than
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
 The @var{stack-guard} option can only be used in conjunction with @var{stack-size}.
+
+@item -mhotpatch[=@var{halfwords}]
+@itemx -mno-hotpatch
+@opindex mhotpatch
+If the hotpatch option is enabled, a ``hot-patching'' function
+prologue is generated for all functions in the compilation unit.
+The funtion label is prepended with the given number of two-byte
+Nop instructions (@var{halfwords}, maximum 1000000) or 12 Nop
+instructions if no argument is present.  Functions with a
+hot-patching prologue are never inlined automatically, and a
+hot-patching prologue is never generated for functions functions
+that are explicitly inline.
+
+This option can be overridden for individual functions with the
+@code{hotpatch} attribute.
 @end table
 
 @node Score Options
