@@ -1121,7 +1121,35 @@ main (int argc, char **argv)
   /* Maybe we know the right file to use (if not cross).  */
   ld_file_name = 0;
 #ifdef DEFAULT_LINKER
-  if (access (DEFAULT_LINKER, X_OK) == 0)
+  if (selected_linker == USE_BFD_LD || selected_linker == USE_GOLD_LD)
+    {
+      char *linker_name;
+# ifdef HOST_EXECUTABLE_SUFFIX
+      int len = (sizeof (DEFAULT_LINKER)
+		 - sizeof (HOST_EXECUTABLE_SUFFIX));
+      linker_name = NULL;
+      if (len > 0)
+	{
+	  char *default_linker = xstrdup (DEFAULT_LINKER);
+	  /* Strip HOST_EXECUTABLE_SUFFIX if DEFAULT_LINKER contains
+	     HOST_EXECUTABLE_SUFFIX.  */
+	  if (! strcmp (&default_linker[len], HOST_EXECUTABLE_SUFFIX))
+	    {
+	      default_linker[len] = '\0';
+	      linker_name = concat (default_linker,
+				    &ld_suffixes[selected_linker][2],
+				    HOST_EXECUTABLE_SUFFIX, NULL);
+	    }
+	}
+      if (linker_name == NULL)
+# endif
+      linker_name = concat (DEFAULT_LINKER,
+			    &ld_suffixes[selected_linker][2],
+			    NULL);
+      if (access (linker_name, X_OK) == 0)
+	ld_file_name = linker_name;
+    }
+  if (ld_file_name == 0 && access (DEFAULT_LINKER, X_OK) == 0)
     ld_file_name = DEFAULT_LINKER;
   if (ld_file_name == 0)
 #endif
