@@ -1,4 +1,11 @@
-o2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
+2013-12-19  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/59142
+	* config/arm/predicates.md (vfp_hard_register_operand): New predicate.
+	* config/arm/arm.md (vfp_pop_multiple_with_writeback): Use
+	vfp_hard_register_operand.
+
+2013-12-19  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_init_simd_builtins):
 	Define builtin types for poly64_t poly128_t.

@@ -98,6 +98,12 @@
 		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
 })
 
+(define_predicate "vfp_hard_register_operand"
+  (match_code "reg")
+{
+  return (IS_VFP_REGNUM (REGNO (op)));
+})
+
 (define_predicate "zero_operand"
   (and (match_code "const_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
