@@ -1,3 +1,9 @@
+2013-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_expand_prologue): In a nested APCS frame with
+	arguments to push onto the stack and no varargs, save ip into the last
+	stack slot if r3 isn't available on entry.
+
 2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.ml (crypto_intrinsics): Add vceq_64 and vtst_p64.
