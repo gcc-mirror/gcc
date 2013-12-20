@@ -1,3 +1,7 @@
+2013-12-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/nested-apcs.c: New test.
+
 2013-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59255
