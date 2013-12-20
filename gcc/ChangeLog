@@ -1,3 +1,8 @@
+2013-12-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/arm/arm.h (THUMB_SECONDARY_OUTPUT_RELOAD_CLASS): Return NO_REGS
+	for LRA.
+
 2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm_acle.h: Add underscores before variables.
