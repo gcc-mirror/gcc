@@ -179,18 +179,16 @@ check : all
 
 install : all
 	-rm -rf $(DESTDIR)$(itoolsdir)
-	$(mkinstalldirs) $(DESTDIR)$(itoolsdir) 
+	$(mkinstalldirs) $(DESTDIR)$(itoolsdir)
 	$(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include
 	$(INSTALL_DATA) $(srcdir)/README-fixinc \
 	  $(DESTDIR)$(itoolsdatadir)/include/README
 	$(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh
-	$(INSTALL_PROGRAM) fixincl@EXEEXT@ \
-	  $(DESTDIR)$(itoolsdir)/fixincl@EXEEXT@
+	$(INSTALL_PROGRAM) $(FI) $(DESTDIR)$(itoolsdir)/$(FI)
 	$(INSTALL_SCRIPT) mkheaders $(DESTDIR)$(itoolsdir)/mkheaders
 
 install-strip: install
-	test -z '$(STRIP)' \
-	  || $(STRIP) $(DESTDIR)$(itoolsdir)/fixincl@EXEEXT@
+	test -z '$(STRIP)' || $(STRIP) $(DESTDIR)$(itoolsdir)/$(FI)
 
 .PHONY: all check install install-strip
 .PHONY: dvi pdf info html install-pdf install-info install-html
