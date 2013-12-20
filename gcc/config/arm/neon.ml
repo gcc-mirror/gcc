@@ -2208,6 +2208,41 @@ vstrq_p128 (poly128_t * __ptr, poly128_t __val)
 #endif
 }
 
+/* The vceq_p64 intrinsic does not map to a single instruction.
+   Instead we emulate it by performing a 32-bit variant of the vceq
+   and applying a pairwise min reduction to the result.
+   vceq_u32 will produce two 32-bit halves, each of which will contain either
+   all ones or all zeros depending on whether the corresponding 32-bit
+   halves of the poly64_t were equal.  The whole poly64_t values are equal
+   if and only if both halves are equal, i.e. vceq_u32 returns all ones.
+   If the result is all zeroes for any half then the whole result is zeroes.
+   This is what the pairwise min reduction achieves.  */
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vceq_p64 (poly64x1_t __a, poly64x1_t __b)
+{
+  uint32x2_t __t_a = vreinterpret_u32_p64 (__a);
+  uint32x2_t __t_b = vreinterpret_u32_p64 (__b);
+  uint32x2_t __c = vceq_u32 (__t_a, __t_b);
+  uint32x2_t __m = vpmin_u32 (__c, __c);
+  return vreinterpret_u64_u32 (__m);
+}
+
+/* The vtst_p64 intrinsic does not map to a single instruction.
+   We emulate it in way similar to vceq_p64 above but here we do
+   a reduction with max since if any two corresponding bits
+   in the two poly64_t's match, then the whole result must be all ones.  */
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vtst_p64 (poly64x1_t __a, poly64x1_t __b)
+{
+  uint32x2_t __t_a = vreinterpret_u32_p64 (__a);
+  uint32x2_t __t_b = vreinterpret_u32_p64 (__b);
+  uint32x2_t __c = vtst_u32 (__t_a, __t_b);
+  uint32x2_t __m = vpmax_u32 (__c, __c);
+  return vreinterpret_u64_u32 (__m);
+}
+
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vaeseq_u8 (uint8x16_t __data, uint8x16_t __key)
 {
