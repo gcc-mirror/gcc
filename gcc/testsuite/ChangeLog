@@ -1,3 +1,8 @@
+2013-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59255
+	* g++.dg/tree-prof/pr59255.C: New test.
+
 2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/neon-vceq_p64.c: New test.
