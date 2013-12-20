@@ -1,3 +1,7 @@
+2013-12-20  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	Makefile.in: Use $(FI) instead of fixincl@EXEEXT@.
+
 2013-12-07  Bruce Korb  <bkorb@gnu.org>
 
 	* inclhack.def: many of the headers found under "bits/" are
