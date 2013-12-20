@@ -34,60 +34,60 @@ extern "C" {
 
 #ifdef __ARM_FEATURE_CRC32
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32b (uint32_t a, uint8_t b)
+__crc32b (uint32_t __a, uint8_t __b)
 {
-  return __builtin_arm_crc32b (a, b);
+  return __builtin_arm_crc32b (__a, __b);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32h (uint32_t a, uint16_t b)
+__crc32h (uint32_t __a, uint16_t __b)
 {
-  return __builtin_arm_crc32h (a, b);
+  return __builtin_arm_crc32h (__a, __b);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32w (uint32_t a, uint32_t b)
+__crc32w (uint32_t __a, uint32_t __b)
 {
-  return __builtin_arm_crc32w (a, b);
+  return __builtin_arm_crc32w (__a, __b);
 }
 
 #ifdef __ARM_32BIT_STATE
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32d (uint32_t a, uint64_t b)
+__crc32d (uint32_t __a, uint64_t __b)
 {
-  uint32_t d;
+  uint32_t __d;
 
-  d = __crc32w (__crc32w (a, b & 0xffffffffULL), b >> 32);
-  return d;
+  __d = __crc32w (__crc32w (__a, __b & 0xffffffffULL), __b >> 32);
+  return __d;
 }
 #endif
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32cb (uint32_t a, uint8_t b)
+__crc32cb (uint32_t __a, uint8_t __b)
 {
-  return __builtin_arm_crc32cb (a, b);
+  return __builtin_arm_crc32cb (__a, __b);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32ch (uint32_t a, uint16_t b)
+__crc32ch (uint32_t __a, uint16_t __b)
 {
-  return __builtin_arm_crc32ch (a, b);
+  return __builtin_arm_crc32ch (__a, __b);
 }
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32cw (uint32_t a, uint32_t b)
+__crc32cw (uint32_t __a, uint32_t __b)
 {
-  return __builtin_arm_crc32cw (a, b);
+  return __builtin_arm_crc32cw (__a, __b);
 }
 
 #ifdef __ARM_32BIT_STATE
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
-__crc32cd (uint32_t a, uint64_t b)
+__crc32cd (uint32_t __a, uint64_t __b)
 {
-  uint32_t d;
+  uint32_t __d;
 
-  d = __crc32cw (__crc32cw (a, b & 0xffffffffULL), b >> 32);
-  return d;
+  __d = __crc32cw (__crc32cw (__a, __b & 0xffffffffULL), __b >> 32);
+  return __d;
 }
 #endif
 
