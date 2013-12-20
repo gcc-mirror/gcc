@@ -1,3 +1,8 @@
+2013-12-19  Jeff Law  <law@redhat.com>
+
+	* doc/invoke.texi: (dump-rtl-ree): Fix typo and clarify ree
+	handles both zero and sign extension.
+
 2013-12-19  Teresa Johnson  <tejohnson@google.com>
 
 	PR gcov-profile/59542

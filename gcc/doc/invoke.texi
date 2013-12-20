@@ -5978,9 +5978,9 @@ Dump after generating the function prologues and epilogues.
 @option{-fdump-rtl-sched1} and @option{-fdump-rtl-sched2} enable dumping
 after the basic block scheduling passes.
 
-@item -fdump-rtl-see
-@opindex fdump-rtl-see
-Dump after sign extension elimination.
+@item -fdump-rtl-ree
+@opindex fdump-rtl-ree
+Dump after sign/zero extension elimination.
 
 @item -fdump-rtl-seqabstr
 @opindex fdump-rtl-seqabstr
