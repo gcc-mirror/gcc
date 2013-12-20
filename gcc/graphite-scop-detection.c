@@ -481,7 +481,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 
     case GBB_LOOP_SING_EXIT_HEADER:
       {
-	stack_vec<sd_region, 3> regions;
+	auto_vec<sd_region, 3> regions;
 	struct scopdet_info sinfo;
 	edge exit_e = single_exit (loop);
 
@@ -546,7 +546,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
       {
         /* XXX: For now we just do not join loops with multiple exits.  If the
            exits lead to the same bb it may be possible to join the loop.  */
-        stack_vec<sd_region, 3> regions;
+        auto_vec<sd_region, 3> regions;
         vec<edge> exits = get_loop_exit_edges (loop);
         edge e;
         int i;
@@ -589,7 +589,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
       }
     case GBB_COND_HEADER:
       {
-	stack_vec<sd_region, 3> regions;
+	auto_vec<sd_region, 3> regions;
 	struct scopdet_info sinfo;
 	vec<basic_block> dominated;
 	int i;
@@ -1192,7 +1192,7 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 static void
 limit_scops (vec<scop_p> *scops)
 {
-  stack_vec<sd_region, 3> regions;
+  auto_vec<sd_region, 3> regions;
 
   int i;
   scop_p scop;
@@ -1404,7 +1404,7 @@ void
 build_scops (vec<scop_p> *scops)
 {
   struct loop *loop = current_loops->tree_root;
-  stack_vec<sd_region, 3> regions;
+  auto_vec<sd_region, 3> regions;
 
   canonicalize_loop_closed_ssa_form ();
   build_scops_1 (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
@@ -1595,7 +1595,7 @@ dot_all_scops (vec<scop_p> scops)
 DEBUG_FUNCTION void
 dot_scop (scop_p scop)
 {
-  stack_vec<scop_p, 1> scops;
+  auto_vec<scop_p, 1> scops;
 
   if (scop)
     scops.safe_push (scop);

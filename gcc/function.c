@@ -4114,7 +4114,7 @@ reorder_blocks (void)
   if (block == NULL_TREE)
     return;
 
-  stack_vec<tree, 10> block_stack;
+  auto_vec<tree, 10> block_stack;
 
   /* Reset the TREE_ASM_WRITTEN bit for all blocks.  */
   clear_block_marks (block);

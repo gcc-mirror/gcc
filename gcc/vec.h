@@ -1184,25 +1184,17 @@ public:
 };
 
 
-/* auto_vec is a sub class of vec whose storage is released when it is
-  destroyed. */
-template<typename T>
+/* auto_vec is a subclass of vec that automatically manages creating and
+   releasing the internal vector. If N is non zero then it has N elements of
+   internal storage.  The default is no internal storage, and you probably only
+   want to ask for internal storage for vectors on the stack because if the
+   size of the vector is larger than the internal storage that space is wasted.
+   */
+template<typename T, size_t N = 0>
 class auto_vec : public vec<T, va_heap>
 {
 public:
-  auto_vec () { this->m_vec = NULL; }
-  auto_vec (size_t n) { this->create (n); }
-  ~auto_vec () { this->release (); }
-};
-
-/* stack_vec is a subclass of vec containing N elements of internal storage.
-  You probably only want to allocate this on the stack because if the array
-  ends up being larger or much smaller than N it will be wasting space. */
-template<typename T, size_t N>
-class stack_vec : public vec<T, va_heap>
-{
-public:
-  stack_vec ()
+  auto_vec ()
   {
     m_header.m_alloc = N;
     m_header.m_has_auto_buf = 1;
@@ -1210,7 +1202,7 @@ public:
     this->m_vec = reinterpret_cast<vec<T, va_heap, vl_embed> *> (&m_header);
   }
 
-  ~stack_vec ()
+  ~auto_vec ()
   {
     this->release ();
   }
@@ -1220,6 +1212,17 @@ private:
 
   vec_prefix m_header;
   T m_data[N];
+};
+
+/* auto_vec is a sub class of vec whose storage is released when it is
+  destroyed. */
+template<typename T>
+class auto_vec<T, 0> : public vec<T, va_heap>
+{
+public:
+  auto_vec () { this->m_vec = NULL; }
+  auto_vec (size_t n) { this->create (n); }
+  ~auto_vec () { this->release (); }
 };
 
 
@@ -1421,7 +1424,7 @@ vec<T, va_heap, vl_ptr>::release (void)
 
   if (using_auto_storage ())
     {
-      static_cast<stack_vec<T, 1> *> (this)->m_header.m_num = 0;
+      static_cast<auto_vec<T, 1> *> (this)->m_header.m_num = 0;
       return;
     }
 
@@ -1654,7 +1657,7 @@ vec<T, va_heap, vl_ptr>::using_auto_storage () const
     return false;
 
   const vec_prefix *auto_header
-    = &static_cast<const stack_vec<T, 1> *> (this)->m_header;
+    = &static_cast<const auto_vec<T, 1> *> (this)->m_header;
   return reinterpret_cast<vec_prefix *> (m_vec) == auto_header;
 }
 

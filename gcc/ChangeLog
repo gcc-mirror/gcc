@@ -1,3 +1,17 @@
+2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
+
+	* vec.h (stack_vec): Convert to a templaate specialization of
+	auto_vec.
+	* config/i386/i386.c, df-scan.c, function.c, genautomata.c,
+	gimplify.c, graphite-clast-to-gimple.c, graphite-dependences.c,
+	graphite-scop-detection.c, graphite-sese-to-poly.c, hw-doloop.c,
+	trans-mem.c, tree-call-cdce.c, tree-data-ref.c, tree-dfa.c,
+	tree-if-conv.c, tree-inline.c, tree-loop-distribution.c,
+	tree-parloops.c, tree-predcom.c, tree-ssa-alias.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-phiopt.c, tree-ssa-threadedge.c,
+	tree-ssa-uncprop.c, tree-vect-loop.c, tree-vect-patterns.c,
+	tree-vect-slp.c, tree-vect-stmts.c, var-tracking.c: Adjust.
+
 2013-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_expand_prologue): In a nested APCS frame with
