@@ -593,7 +593,7 @@ loop_is_parallel_p (loop_p loop, bb_pbb_htab_type bb_pbb_mapping, int depth)
   scop_p scop;
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
-  stack_vec<poly_bb_p, 3> body;
+  auto_vec<poly_bb_p, 3> body;
   scop = get_loop_body_pbbs (loop, bb_pbb_mapping, &body);
   dependences = loop_level_carries_dependences (scop, body, depth);
   timevar_pop (TV_GRAPHITE_DATA_DEPS);

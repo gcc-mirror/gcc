@@ -629,7 +629,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
                      "=== vect_mark_stmts_to_be_vectorized ===\n");
 
-  stack_vec<gimple, 64> worklist;
+  auto_vec<gimple, 64> worklist;
 
   /* 1. Init worklist.  */
   for (i = 0; i < nbbs; i++)
@@ -6605,8 +6605,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	{
           if (slp_node)
             {
-              stack_vec<tree, 4> ops;
-	      stack_vec<vec<tree>, 4> vec_defs;
+              auto_vec<tree, 4> ops;
+	      auto_vec<vec<tree>, 4> vec_defs;
 
               ops.safe_push (TREE_OPERAND (cond_expr, 0));
               ops.safe_push (TREE_OPERAND (cond_expr, 1));

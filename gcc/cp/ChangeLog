@@ -1,3 +1,8 @@
+2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
+
+	* semantics.c (build_anon_member_initialization): Replace
+	stack_vec<T, N> with auto_vec<T, N>.
+
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* parser.c (cp_parser_cilk_simd_clause_name): Changed cilk_clause_name

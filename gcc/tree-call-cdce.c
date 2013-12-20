@@ -727,7 +727,7 @@ shrink_wrap_one_built_in_call (gimple bi_call)
   tree bi_call_label_decl;
   gimple bi_call_label;
 
-  stack_vec<gimple, 12> conds;
+  auto_vec<gimple, 12> conds;
   gen_shrink_wrap_conditions (bi_call, conds, &nconds);
 
   /* This can happen if the condition generator decides

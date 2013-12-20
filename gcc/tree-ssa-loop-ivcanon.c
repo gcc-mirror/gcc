@@ -1171,7 +1171,7 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
 unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
-  stack_vec<loop_p, 16> father_stack;
+  auto_vec<loop_p, 16> father_stack;
   bool changed;
   int iteration = 0;
   bool irred_invalidated = false;

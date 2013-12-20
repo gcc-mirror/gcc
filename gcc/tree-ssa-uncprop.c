@@ -380,7 +380,7 @@ private:
      leading to this block.  If no such edge equivalency exists, then we
      record NULL.  These equivalences are live until we leave the dominator
      subtree rooted at the block where we record the equivalency.  */
-  stack_vec<tree, 2> m_equiv_stack;
+  auto_vec<tree, 2> m_equiv_stack;
 };
 
 /* Main driver for un-cprop.  */
