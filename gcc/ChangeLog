@@ -1,3 +1,10 @@
+2013-12-20  Tocar Ilya  <ilya.tocar@intel.com>
+
+	* config.gcc: Support march=broadwell.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect Broadwell.
+	* config/i386/i386.c (ix86_option_override_internal): Add broadwell.
+	* doc/invoke.texi: Document march=broadwell.
+
 2013-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* ubsan.c: Include tree-ssanames.h, asan.h and gimplify-me.h.

@@ -3676,7 +3676,7 @@ case "${target}" in
 			| opteron-sse3 | athlon-fx | bdver4 | bdver3 | bdver2 \
 			| bdver1 | btver2 |  btver1 | amdfam10 | barcelona \
 			| nocona | core2 | corei7 | corei7-avx | core-avx-i \
-			| core-avx2 | atom | slm)
+			| core-avx2 | broadwell | atom | slm)
 				# OK
 				;;
 			*)
