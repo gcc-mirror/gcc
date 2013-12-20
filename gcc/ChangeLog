@@ -1,3 +1,7 @@
+2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm_acle.h: Add underscores before variables.
+
 2013-12-20  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR tree-optimization/59544
