@@ -1,3 +1,8 @@
+2013-12-20  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR tree-optimization/59544
+	* gcc.target/i386/pr59544.c: New test.
+
 2013-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59413

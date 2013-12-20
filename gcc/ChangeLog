@@ -1,3 +1,10 @@
+2013-12-20  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR tree-optimization/59544
+	* tree-vect-stmts.c (perm_mask_for_reverse): Move before
+	vectorizable_store. 
+	(vectorizable_store): Handle negative step.
+
 2013-12-20  Tocar Ilya  <ilya.tocar@intel.com>
 
 	* config.gcc: Support march=broadwell.
