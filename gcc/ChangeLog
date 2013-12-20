@@ -1,3 +1,12 @@
+2013-12-20  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (NDS32_MODE_TYPE_ALIGN): New macro.
+	(NDS32_AVAILABLE_REGNUM_FOR_ARG): Use more accurate alignment checking
+	to determine available register number.
+	* config/nds32/nds32.c (nds32_needs_double_word_align): Use new
+	macro NDS32_MODE_TYPE_ALIGN.
+	(nds32_function_arg): Refine code layout.
+
 2013-12-19  Jeff Law  <law@redhat.com>
 
 	* doc/invoke.texi: (dump-rtl-ree): Fix typo and clarify ree

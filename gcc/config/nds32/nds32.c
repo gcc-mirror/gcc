@@ -1438,8 +1438,8 @@ nds32_needs_double_word_align (enum machine_mode mode, const_tree type)
 {
   unsigned int align;
 
-  /* When 'type' is nonnull, there is no need to look at 'mode'.  */
-  align = (type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode));
+  /* Pick up the alignment according to the mode or type.  */
+  align = NDS32_MODE_TYPE_ALIGN (mode, type);
 
   return (align > PARM_BOUNDARY);
 }
@@ -1853,10 +1853,10 @@ nds32_function_arg (cumulative_args_t ca, enum machine_mode mode,
   if (NDS32_ARG_PASS_IN_REG_P (cum->reg_offset, mode, type))
     {
       /* Pick up the next available register number.  */
-      return gen_rtx_REG (mode,
-			  NDS32_AVAILABLE_REGNUM_FOR_ARG (cum->reg_offset,
-							  mode,
-							  type));
+      unsigned int regno;
+
+      regno = NDS32_AVAILABLE_REGNUM_FOR_ARG (cum->reg_offset, mode, type);
+      return gen_rtx_REG (mode, regno);
     }
   else
     {
