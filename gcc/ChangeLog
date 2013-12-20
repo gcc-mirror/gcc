@@ -1,3 +1,11 @@
+2013-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/59255
+	Backported from mainline
+	2013-08-19  Dehao Chen  <dehao@google.com>
+
+	* value-prof.c (gimple_ic): Fix the bug of adding EH edge.
+
 2013-12-19  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from Mainline.
