@@ -1,3 +1,7 @@
+2013-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/load-bool-enum.c: New test.
+
 2013-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	 * lib/target-supports.exp (check_effective_target_arm_crypto_ok):

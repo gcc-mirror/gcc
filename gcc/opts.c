@@ -1462,6 +1462,8 @@ common_handle_option (struct gcc_options *opts,
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
 	      { "signed-integer-overflow", SANITIZE_SI_OVERFLOW,
 		sizeof "signed-integer-overflow" -1 },
+	      { "bool", SANITIZE_BOOL, sizeof "bool" - 1 },
+	      { "enum", SANITIZE_ENUM, sizeof "enum" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;

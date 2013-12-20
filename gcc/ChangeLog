@@ -1,3 +1,22 @@
+2013-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* ubsan.c: Include tree-ssanames.h, asan.h and gimplify-me.h.
+	(ubsan_type_descriptor): Handle BOOLEAN_TYPE and ENUMERAL_TYPE
+	like INTEGER_TYPE.
+	(instrument_bool_enum_load): New function.
+	(ubsan_pass): Call it.
+	(gate_ubsan): Also enable for SANITIZE_BOOL or SANITIZE_ENUM.
+	* asan.c (create_cond_insert_point): No longer static.
+	* asan.h (create_cond_insert_point): Declare.
+	* sanitizer.def (BUILT_IN_UBSAN_HANDLE_LOAD_INVALID_VALUE): New
+	built-in.
+	* opts.c (common_handle_option): Handle -fsanitize=bool and
+	-fsanitize=enum.
+	* builtins.c (fold_builtin_memory_op): When sanitizing bool
+	and enum loads, don't use enum or bool types for memcpy folding.
+	* flag-types.h (SANITIZE_BOOL, SANITIZE_ENUM): New.
+	(SANITIZE_UNDEFINED): Or these in.
+
 2013-12-20  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (NDS32_MODE_TYPE_ALIGN): New macro.

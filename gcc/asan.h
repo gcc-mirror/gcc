@@ -29,6 +29,9 @@ extern bool asan_protect_global (tree);
 extern void initialize_sanitizer_builtins (void);
 extern tree asan_dynamic_init_call (bool);
 
+extern gimple_stmt_iterator create_cond_insert_point
+     (gimple_stmt_iterator *, bool, bool, bool, basic_block *, basic_block *);
+
 /* Alias set for accessing the shadow memory.  */
 extern alias_set_type asan_shadow_set;
 
