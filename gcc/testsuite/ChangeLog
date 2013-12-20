@@ -1,5 +1,8 @@
 2013-12-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59413
+	* gcc.c-torture/execute/pr59413.c: New test.
+
 	* c-c++-common/ubsan/load-bool-enum.c: New test.
 
 2013-12-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
