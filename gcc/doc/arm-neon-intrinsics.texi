@@ -11939,6 +11939,14 @@
 @end itemize
 
 @itemize @bullet
+@item uint64x1_t vceq_p64 (poly64x1_t, poly64x1_t)
+@end itemize
+
+@itemize @bullet
+@item uint64x1_t vtst_p64 (poly64x1_t, poly64x1_t)
+@end itemize
+
+@itemize @bullet
 @item uint32_t vsha1h_u32 (uint32_t)
 @*@emph{Form of expected instruction(s):} @code{sha1h.32 @var{q0}, @var{q1}}
 @end itemize

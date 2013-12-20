@@ -1,3 +1,10 @@
+2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.ml (crypto_intrinsics): Add vceq_64 and vtst_p64.
+	* config/arm/arm_neon.h: Regenerate.
+	* config/arm/neon-docgen.ml: Add vceq_p64 and vtst_p64.
+	* doc/arm-neon-intrinsics.texi: Regenerate.
+
 2013-12-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/arm/arm.h (THUMB_SECONDARY_OUTPUT_RELOAD_CLASS): Return NO_REGS

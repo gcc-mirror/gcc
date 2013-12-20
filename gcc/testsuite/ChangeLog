@@ -1,3 +1,8 @@
+2013-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/neon-vceq_p64.c: New test.
+	* gcc.target/arm/neon-vtst_p64.c: Likewise.
+
 2013-12-20  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR tree-optimization/59544
