@@ -689,7 +689,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
-	      if (has_avx2)
+	      if (has_adx)
+		cpu = "broadwell";
+	      else if (has_avx2)
 		/* Assume Haswell.  */
 		cpu = "core-avx2";
 	      else if (has_avx)
