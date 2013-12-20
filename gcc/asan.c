@@ -1337,7 +1337,7 @@ report_error_func (bool is_store, int size_in_bytes)
     same as what ITER was pointing to prior to calling this function,
     if BEFORE_P is true; otherwise, it is its following statement.  */
 
-static gimple_stmt_iterator
+gimple_stmt_iterator
 create_cond_insert_point (gimple_stmt_iterator *iter,
 			  bool before_p,
 			  bool then_more_likely_p,
