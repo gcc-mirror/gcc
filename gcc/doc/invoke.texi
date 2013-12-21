@@ -6507,7 +6507,7 @@ gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
 Here the two output filenames @file{vec.miss} and @file{loop.opt} are
 in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
-ignored. Thus only the @file{vec.miss} is produced which cotaints
+ignored. Thus only the @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
 @item -frandom-seed=@var{string}

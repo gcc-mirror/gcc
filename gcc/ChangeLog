@@ -1,3 +1,10 @@
+2013-12-20  Sharad Singhai  <singhai@google.com>
+
+	* Makefile.in: Add optinfo.texi.
+	* doc/invoke.texi: Fix typo.
+	* doc/optinfo.texi: New documentation for optimization info.
+	* doc/passes.texi: Add new node.
+
 2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
 
 	* vec.h (stack_vec): Convert to a templaate specialization of

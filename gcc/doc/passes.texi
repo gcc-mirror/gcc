@@ -9,6 +9,7 @@
 @cindex passes and files of the compiler
 @cindex files and passes of the compiler
 @cindex compiler passes and files
+@cindex pass dumps
 
 This chapter is dedicated to giving an overview of the optimization and
 code generation passes of the compiler.  In the process, it describes
@@ -22,6 +23,7 @@ where near complete.
 * Pass manager::         Sequencing the optimization passes.
 * Tree SSA passes::      Optimizations on a high-level representation.
 * RTL passes::           Optimizations on a low-level representation.
+* Optimization info::    Dumping optimization information from passes.
 @end menu
 
 @node Parsing pass
@@ -975,3 +977,7 @@ symbol table format, and @file{vmsdbgout.c} for VMS debug symbol table
 format.
 
 @end itemize
+
+@node Optimization info
+@section Optimization info
+@include optinfo.texi

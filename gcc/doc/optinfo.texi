@@ -1,0 +1,228 @@
+@c Copyright (C) 2013 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@cindex optimization dumps
+
+This section is describes dump infrastructure which is common to both
+pass dumps as well as optimization dumps. The goal for this
+infrastructure is to provide both gcc developers and users detailed
+information about various compiler transformations and optimizations.
+
+@menu
+* Dump setup::                         Setup of optimization dumps.
+* Optimization groups::                Groups made up of optimization passes.
+* Dump output verbosity::              How much information to dump.
+* Dump files and streams::             Dump output file names and streams.
+* Dump types::                         Various types of dump functions.
+* Dump examples::                      Sample usage.
+@end menu
+
+@node Dump setup
+@subsection Dump setup
+@cindex dump setup
+
+A dump_manager class is defined in @file{dumpfile.h}. Various passes
+register dumping pass-specific information via @code{dump_register} in
+@file{passes.c}. During the registration, an optimization pass can
+select its optimization group (@pxref{Optimization groups}). After
+that optimization information corresponding to the entire group
+(presumably from multiple passes) can be output via command-line
+switches. Note that if a pass does not fit into any of the pre-defined
+groups, it can select @code{OPTGROUP_NONE}.
+
+Note that in general, a pass need not know its dump output file name,
+whether certain flags are enabled, etc. However, for legacy reasons,
+passes could also call @code{dump_begin} which returns a stream in
+case the particular pass has optimization dumps enabled. A pass could
+call @code{dump_end} when the dump has ended. These methods should go
+away once all the passes are converted to use the new dump
+infrastructure.
+
+The recommended way to setup the dump output is via @code{dump_start}
+and @code{dump_end}.
+
+@node Optimization groups
+@subsection Optimization groups
+@cindex optimization groups
+The optimization passes are grouped into several categories. Currently
+defined categories in @file{dumpfile.h} are
+
+@ftable @code
+
+@item OPTGROUP_IPA
+IPA optimization passes. Enabled by @option{-ipa}
+
+@item OPTGROUP_LOOP
+Loop optimization passes. Enabled by @option{-loop}.
+
+@item OPTGROUP_INLINE
+Inlining passes. Enabled by @option{-inline}.
+
+@item OPTGROUP_VEC
+Vectorization passes. Enabled by @option{-vec}.
+
+@item OPTGROUP_OTHER
+All other optimization passes which do not fall into one of the above.
+
+@item OPTGROUP_ALL
+All optimization passes. Enabled by @option{-all}.
+
+@end ftable
+
+By using groups a user could selectively enable optimization
+information only for a group of passes. By default, the optimization
+information for all the passes is dumped.
+
+@node Dump files and streams
+@subsection Dump files and streams
+@cindex optimization info file names
+
+There are two separate output streams available for outputting
+optimization information from passes. Note that both these streams
+accept @code{stderr} and @code{stdout} as valid streams and thus it is
+possible to dump output to standard output or error. This is specially
+handy for outputting all available information in a single file by
+redirecting @code{stderr}.
+
+@table @code
+@item @code{pstream}
+This stream is for pass-specific dump output. For example,
+@option{-fdump-tree-vect=foo.v} dumps tree vectorization pass output
+into the given file name @file{foo.v}. If the file name is not provided,
+the default file name is based on the source file and pass number. Note
+that one could also use special file names @code{stdout} and
+@code{stderr} for dumping to standard output and standard error
+respectively.
+
+@item @code{alt_stream}
+This steam is used for printing optimization specific output in
+response to the @option{-fopt-info}. Again a file name can be given. If
+the file name is not given, it defaults to @code{stderr}.
+@end table
+
+@node Dump output verbosity
+@subsection Dump output verbosity
+@cindex dump verbosity
+
+The dump verbosity has the following options
+
+@table @samp
+@item optimized
+Print information when an optimization is successfully applied. It is
+up to a pass to decide which information is relevant. For example, the
+vectorizer passes print the source location of loops which got
+successfully vectorized.
+
+@item missed
+Print information about missed optimizations. Individual passes
+control which information to include in the output. For example,
+
+@smallexample
+gcc -O2 -ftree-vectorize -fopt-info-vec-missed
+@end smallexample
+
+will print information about missed optimization opportunities from
+vectorization passes on stderr.
+
+@item note
+Print verbose information about optimizations, such as certain
+transformations, more detailed messages about decisions etc.
+
+@item all
+Print detailed optimization information. This includes
+@var{optimized}, @var{missed}, and @var{note}.
+@end table
+
+@node Dump types
+@subsection Dump types
+@cindex dump types
+
+@ftable @code
+
+@item dump_printf
+
+This is a generic method for doing formatted output. It takes an
+additional argument @code{dump_kind} which signifies the type of
+dump. This method outputs information only when the dumps are enabled
+for this particular @code{dump_kind}. Note that the caller doesn't
+need to know if the particular dump is enabled or not, or even the
+file name. The caller only needs to decide which dump output
+information is relevant, and under what conditions. This determines
+the associated flags.
+
+Consider the following example from @file{loop-unroll.c} where an
+informative message about a loop (along with its location) is printed
+when any of the following flags is enabled
+@itemize @minus
+
+@item optimization messages
+@item RTL dumps
+@item detailed dumps
+
+@end itemize
+
+@example
+int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
+dump_printf_loc (report_flags, locus,
+                 "loop turned into non-loop; it never loops.\n");
+@end example
+
+@item dump_basic_block
+Output basic block.
+@item dump_generic_expr
+Output generic expression.
+@item dump_gimple_stmt
+Output gimple statement.
+
+Note that the above methods also have variants prefixed with
+@code{_loc}, such as @code{dump_printf_loc}, which are similar except
+they also output the source location information.
+
+@end ftable
+
+@node Dump examples
+@subsection Dump examples
+@cindex dump examples
+
+@smallexample
+gcc -O3 -fopt-info-missed=missed.all
+@end smallexample
+
+outputs missed optimization report from all the passes into
+@file{missed.all}.
+
+As another example,
+@smallexample
+gcc -O3 -fopt-info-inline-optimized-missed=inline.txt
+@end smallexample
+
+will output information about missed optimizations as well as
+optimized locations from all the inlining passes into
+@file{inline.txt}.
+
+If the @var{filename} is provided, then the dumps from all the
+applicable optimizations are concatenated into the @file{filename}.
+Otherwise the dump is output onto @file{stderr}. If @var{options} is
+omitted, it defaults to @option{all-all}, which means dump all
+available optimization info from all the passes. In the following
+example, all optimization info is output on to @file{stderr}.
+
+@smallexample
+gcc -O3 -fopt-info
+@end smallexample
+
+Note that @option{-fopt-info-vec-missed} behaves the same as
+@option{-fopt-info-missed-vec}.
+
+As another example, consider
+
+@smallexample
+gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
+@end smallexample
+
+Here the two output file names @file{vec.miss} and @file{loop.opt} are
+in conflict since only one output file is allowed. In this case, only
+the first option takes effect and the subsequent options are
+ignored. Thus only the @file{vec.miss} is produced which containts
+dumps from the vectorizer about missed opportunities.
