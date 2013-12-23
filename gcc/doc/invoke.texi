@@ -7339,6 +7339,18 @@ branch-less equivalents.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
+@item -fdeclone-ctor-dtor
+@opindex fdeclone-ctor-dtor
+The C++ ABI requires multiple entry points for constructors and
+destructors: one for a base subobject, one for a complete object, and
+one for a virtual destructor that calls operator delete afterwards.
+For a hierarchy with virtual bases, the base and complete variants are
+clones, which means two copies of the function.  With this option, the
+base and complete variants are changed to be thunks that call a common
+implementation.
+
+Enabled by @option{-Os}.
+
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
 Assume that programs cannot safely dereference null pointers, and that

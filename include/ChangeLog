@@ -1,3 +1,10 @@
+2013-12-23  Bill Maddox  <maddox@google.com>
+
+	* demangle.h (enum gnu_v3_ctor_kinds):
+	Added literal gnu_v3_unified_ctor.
+	(enum gnu_v3_ctor_kinds):
+	Added literal gnu_v3_unified_dtor.
+
 2013-12-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* longlong.h: New file.

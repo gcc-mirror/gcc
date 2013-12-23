@@ -362,14 +362,17 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	      enqueue_node (origin_node, &first, reachable);
 	    }
 	  /* If any symbol in a comdat group is reachable, force
-	     all other in the same comdat group to be also reachable.  */
+	     all externally visible symbols in the same comdat
+	     group to be reachable as well.  Comdat-local symbols
+	     can be discarded if all uses were inlined.  */
 	  if (node->same_comdat_group)
 	    {
 	      symtab_node *next;
 	      for (next = node->same_comdat_group;
 		   next != node;
 		   next = next->same_comdat_group)
-		if (!pointer_set_insert (reachable, next))
+		if (!symtab_comdat_local_p (next)
+		    && !pointer_set_insert (reachable, next))
 		  enqueue_node (next, &first, reachable);
 	    }
 	  /* Mark references as reachable.  */
@@ -969,14 +972,14 @@ function_and_variable_visibility (bool whole_program)
 	  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
 				      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 				      && TREE_PUBLIC (node->decl));
-	  symtab_make_decl_local (node->decl);
 	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
-	  if (node->same_comdat_group)
+	  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
 	    /* cgraph_externally_visible_p has already checked all other nodes
 	       in the group and they will all be made local.  We need to
 	       dissolve the group at once so that the predicate does not
 	       segfault though. */
 	    symtab_dissolve_same_comdat_group_list (node);
+	  symtab_make_decl_local (node->decl);
 	}
 
       if (node->thunk.thunk_p

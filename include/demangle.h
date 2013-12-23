@@ -173,6 +173,10 @@ enum gnu_v3_ctor_kinds {
   gnu_v3_complete_object_ctor = 1,
   gnu_v3_base_object_ctor,
   gnu_v3_complete_object_allocating_ctor,
+  /* These are not part of the V3 ABI.  Unified constructors are generated
+     as a speed-for-space optimization when the -fdeclone-ctor-dtor option
+     is used, and are always internal symbols.  */
+  gnu_v3_unified_ctor,
   gnu_v3_object_ctor_group
 };
 
@@ -188,6 +192,10 @@ enum gnu_v3_dtor_kinds {
   gnu_v3_deleting_dtor = 1,
   gnu_v3_complete_object_dtor,
   gnu_v3_base_object_dtor,
+  /* These are not part of the V3 ABI.  Unified destructors are generated
+     as a speed-for-space optimization when the -fdeclone-ctor-dtor option
+     is used, and are always internal symbols.  */
+  gnu_v3_unified_dtor,
   gnu_v3_object_dtor_group
 };
 

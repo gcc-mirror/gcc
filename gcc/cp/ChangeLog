@@ -1,3 +1,19 @@
+2013-12-23  Stuart Hastings <stuart@apple.com>
+	    Bill Maddox  <maddox@google.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/41090
+	* optimize.c (can_alias_cdtor, populate_clone_array): Split out
+	from maybe_clone_body.
+	(maybe_thunk_body): New function.
+	(maybe_clone_body): Call it.
+	* mangle.c (write_mangled_name): Remove code to suppress
+	writing of mangled name for cloned constructor or destructor.
+	(write_special_name_constructor): Handle decloned constructor.
+	(write_special_name_destructor): Handle decloned destructor.
+	* method.c (trivial_fn_p): Handle decloning.
+	* semantics.c (expand_or_defer_fn_1): Clone after setting linkage.
+
 2013-12-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/59111

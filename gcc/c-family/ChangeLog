@@ -1,3 +1,10 @@
+2013-12-23  Stuart Hastings <stuart@apple.com>
+	    Bill Maddox  <maddox@google.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fdeclone-ctor-dtor.
+	* c-opts.c (c_common_post_options): Default to on iff -Os.
+
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.c (c_common_attribute_table): Added "cilk simd function"

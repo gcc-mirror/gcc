@@ -272,6 +272,18 @@ inline_call (struct cgraph_edge *e, bool update_original,
    inline_update_overall_summary (to);
   new_size = inline_summary (to)->size;
 
+  if (callee->calls_comdat_local)
+    to->calls_comdat_local = true;
+  else if (to->calls_comdat_local && symtab_comdat_local_p (callee))
+    {
+      struct cgraph_edge *se = to->callees;
+      for (; se; se = se->next_callee)
+	if (se->inline_failed && symtab_comdat_local_p (se->callee))
+	  break;
+      if (se == NULL)
+	to->calls_comdat_local = false;
+    }
+
 #ifdef ENABLE_CHECKING
   /* Verify that estimated growth match real growth.  Allow off-by-one
      error due to INLINE_SIZE_SCALE roudoff errors.  */
@@ -369,7 +381,6 @@ save_inline_function_body (struct cgraph_node *node)
   /* The function will be short lived and removed after we inline all the clones,
      but make it internal so we won't confuse ourself.  */
   DECL_EXTERNAL (first_clone->decl) = 0;
-  DECL_COMDAT_GROUP (first_clone->decl) = NULL_TREE;
   TREE_PUBLIC (first_clone->decl) = 0;
   DECL_COMDAT (first_clone->decl) = 0;
   first_clone->ipa_transforms_to_apply.release ();
