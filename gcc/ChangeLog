@@ -1,3 +1,9 @@
+2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR middle-end/59569
+	* tree-vect-stmts.c (vectorizable_store): Skip permutation for
+	consant/external operand, and add a few missing \n.
+
 2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
 	     Tocar Ilya  <ilya.tocar@intel.com> 
 

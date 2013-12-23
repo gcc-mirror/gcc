@@ -1,3 +1,9 @@
+2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR middle-end/59569
+	* gcc.c-torture/compile/pr59569-1.c: New test.
+	* gcc.c-torture/compile/pr59569-2.c: Ditto.
+
 2013-12-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/59111

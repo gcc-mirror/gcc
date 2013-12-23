@@ -5005,7 +5005,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "multiple types with negative step.");
+			 "multiple types with negative step.\n");
       return false;
     }
 
@@ -5018,14 +5018,16 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "negative step but alignment required.");
+			     "negative step but alignment required.\n");
 	  return false;
 	}
-      if (!perm_mask_for_reverse (vectype))
+      if (dt != vect_constant_def 
+	  && dt != vect_external_def
+	  && !perm_mask_for_reverse (vectype))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "negative step and reversing not supported.");
+			     "negative step and reversing not supported.\n");
 	  return false;
 	}
     }
@@ -5353,7 +5355,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 					misalign);
 
-	      if (negative)
+	      if (negative
+		  && dt != vect_constant_def 
+		  && dt != vect_external_def)
 		{
 		  tree perm_mask = perm_mask_for_reverse (vectype);
 		  tree perm_dest 
