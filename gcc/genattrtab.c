@@ -320,7 +320,7 @@ static FILE *attr_file, *dfa_file, *latency_file;
 struct attr_hash
 {
   struct attr_hash *next;	/* Next structure in the bucket.  */
-  int hashcode;			/* Hash code of this rtx or string.  */
+  unsigned int hashcode;	/* Hash code of this rtx or string.  */
   union
     {
       char *str;		/* The string (negative hash codes) */
@@ -345,7 +345,7 @@ static struct attr_hash *attr_hash_table[RTL_HASH_SIZE];
 /* Add an entry to the hash table for RTL with hash code HASHCODE.  */
 
 static void
-attr_hash_add_rtx (int hashcode, rtx rtl)
+attr_hash_add_rtx (unsigned int hashcode, rtx rtl)
 {
   struct attr_hash *h;
 
@@ -359,7 +359,7 @@ attr_hash_add_rtx (int hashcode, rtx rtl)
 /* Add an entry to the hash table for STRING with hash code HASHCODE.  */
 
 static void
-attr_hash_add_string (int hashcode, char *str)
+attr_hash_add_string (unsigned int hashcode, char *str)
 {
   struct attr_hash *h;
 
@@ -384,7 +384,7 @@ static rtx
 attr_rtx_1 (enum rtx_code code, va_list p)
 {
   rtx rt_val = NULL_RTX;/* RTX to return to caller...		*/
-  int hashcode;
+  unsigned int hashcode;
   struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;
 
@@ -612,15 +612,15 @@ static char *
 attr_string (const char *str, int len)
 {
   struct attr_hash *h;
-  int hashcode;
+  unsigned int hashcode;
   int i;
   char *new_str;
 
   /* Compute the hash code.  */
-  hashcode = (len + 1) * 613 + (unsigned) str[0];
+  hashcode = (len + 1) * 613U + (unsigned) str[0];
   for (i = 1; i < len; i += 2)
     hashcode = ((hashcode * 613) + (unsigned) str[i]);
-  if (hashcode < 0)
+  if ((int) hashcode < 0)
     hashcode = -hashcode;
 
   /* Search the table for the string.  */

@@ -448,7 +448,7 @@ build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
   vec<data_reference_p> datarefs;
 
   /* Create the RDG vertices from the stmts of the loop nest.  */
-  stack_vec<gimple, 10> stmts;
+  auto_vec<gimple, 10> stmts;
   stmts_from_loop (loop_nest[0], &stmts);
   rdg = new_graph (stmts.length ());
   datarefs.create (10);
@@ -964,7 +964,7 @@ static partition_t
 build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
   partition_t partition = partition_alloc (NULL, NULL);
-  stack_vec<int, 3> nodes;
+  auto_vec<int, 3> nodes;
   unsigned i;
   int x;
 
@@ -1418,7 +1418,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
   int num_sccs = 1;
 
   *nb_calls = 0;
-  stack_vec<loop_p, 3> loop_nest;
+  auto_vec<loop_p, 3> loop_nest;
   if (!find_loop_nest (loop, &loop_nest))
     return 0;
 
@@ -1436,7 +1436,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_rdg (dump_file, rdg);
 
-  stack_vec<partition_t, 3> partitions;
+  auto_vec<partition_t, 3> partitions;
   rdg_build_partitions (rdg, stmts, &partitions);
 
   any_builtin = false;

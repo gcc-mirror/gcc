@@ -126,6 +126,11 @@ enum nds32_16bit_address_type
 #define NDS32_SINGLE_WORD_ALIGN_P(value) (((value) & 0x03) == 0)
 #define NDS32_DOUBLE_WORD_ALIGN_P(value) (((value) & 0x07) == 0)
 
+/* Get alignment according to mode or type information.
+   When 'type' is nonnull, there is no need to look at 'mode'.  */
+#define NDS32_MODE_TYPE_ALIGN(mode, type) \
+  (type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode))
+
 /* Round X up to the nearest double word.  */
 #define NDS32_ROUND_UP_DOUBLE_WORD(value)  (((value) + 7) & ~7)
 
@@ -142,12 +147,18 @@ enum nds32_16bit_address_type
 /* This macro is used to return the register number for passing argument.
    We need to obey the following rules:
      1. If it is required MORE THAN one register,
-        make sure the register number is a even value.
+        we need to further check if it really needs to be
+        aligned on double words.
+          a) If double word alignment is necessary,
+             the register number must be even value.
+          b) Otherwise, the register number can be odd or even value.
      2. If it is required ONLY one register,
         the register number can be odd or even value.  */
-#define NDS32_AVAILABLE_REGNUM_FOR_ARG(reg_offset, mode, type) \
-  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                \
-   ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)    \
+#define NDS32_AVAILABLE_REGNUM_FOR_ARG(reg_offset, mode, type)  \
+  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                 \
+   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)      \
+      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)  \
+      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))            \
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers

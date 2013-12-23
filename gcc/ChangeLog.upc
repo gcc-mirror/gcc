@@ -1,3 +1,7 @@
+2013-12-23 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 206179 into gupc branch.
+
 2013-12-22 Gary Funck  <gary@intrepid.com>
 
 	* upc/upc-act.c (upc_cpp_builtins): Bump UPC_VERSION

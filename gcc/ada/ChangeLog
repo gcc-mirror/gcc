@@ -1,3 +1,8 @@
+2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
+
+	* gcc-interface/decl.c (components_to_record): Replace stack_vec with
+	auto_vec.
+
 2013-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (ARM linux, GNU eabi): Tweak regexp.

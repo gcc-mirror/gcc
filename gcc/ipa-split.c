@@ -950,7 +950,9 @@ find_split_points (int overall_time, int overall_size)
   first.earliest = INT_MAX;
   first.set_ssa_names = 0;
   first.used_ssa_names = 0;
+  first.non_ssa_vars = 0;
   first.bbs_visited = 0;
+  first.can_split = false;
   stack.safe_push (first);
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->aux = (void *)(intptr_t)-1;
 
@@ -1234,6 +1236,10 @@ split_function (struct split_point *split_point)
 				     !split_part_return_p,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "part");
+
+  /* Let's take a time profile for splitted function.  */
+  node->tp_first_run = cur_node->tp_first_run + 1;
+
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */

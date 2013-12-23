@@ -1,3 +1,9 @@
+2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (processor_subtypes): Replace INTEL_ATOM,
+	INTEL_SLM with INTEL_BONNELL, INTEL_SILVERMONT.
+	(get_intel_cpu): Updated.
+
 2013-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* config.host (arm*-*-uclinux*): Move t-arm before t-bpabi.

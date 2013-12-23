@@ -3213,7 +3213,7 @@ vect_pattern_recog (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   gimple_stmt_iterator si;
   unsigned int i, j;
   vect_recog_func_ptr vect_recog_func;
-  stack_vec<gimple, 1> stmts_to_replace;
+  auto_vec<gimple, 1> stmts_to_replace;
   gimple stmt;
 
   if (dump_enabled_p ())

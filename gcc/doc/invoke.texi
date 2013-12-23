@@ -394,7 +394,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
--fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
+-fprofile-use -fprofile-use=@var{path} -fprofile-values -fprofile-reorder-functions @gol
 -freciprocal-math -free -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
@@ -933,7 +933,8 @@ See RS/6000 and PowerPC Options.
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
--mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard}
+-mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard @gol
+-mhotpatch[=@var{halfwords}] -mno-hotpatch}
 
 @emph{Score Options}
 @gccoptlist{-meb -mel @gol
@@ -5977,9 +5978,9 @@ Dump after generating the function prologues and epilogues.
 @option{-fdump-rtl-sched1} and @option{-fdump-rtl-sched2} enable dumping
 after the basic block scheduling passes.
 
-@item -fdump-rtl-see
-@opindex fdump-rtl-see
-Dump after sign extension elimination.
+@item -fdump-rtl-ree
+@opindex fdump-rtl-ree
+Dump after sign/zero extension elimination.
 
 @item -fdump-rtl-seqabstr
 @opindex fdump-rtl-seqabstr
@@ -6506,7 +6507,7 @@ gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
 Here the two output filenames @file{vec.miss} and @file{loop.opt} are
 in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
-ignored. Thus only the @file{vec.miss} is produced which cotaints
+ignored. Thus only the @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
 @item -frandom-seed=@var{string}
@@ -9071,6 +9072,14 @@ from profiling values of expressions for usage in optimizations.
 
 Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 
+@item -fprofile-reoder-functions
+@opindex fprofile-reorder-functions
+Function reordering based on profile instrumentation collects
+first time of execution of a function and orders these functions
+in ascending order.
+
+Enabled with @option{-fprofile-use}.
+
 @item -fvpt
 @opindex fvpt
 If combined with @option{-fprofile-arcs}, this option instructs the compiler
@@ -11326,6 +11335,9 @@ possible values for @var{cpu} are @samp{generic}, @samp{cortex-a53},
 @samp{cortex-a57}.  The possible values for @var{feature} are documented
 in the sub-section below.
 
+Additionally, this option can specify that the target is a big.LITTLE system.
+The only possible value is @samp{cortex-a57.cortex-a53}.
+
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
 
@@ -12157,7 +12169,8 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9},
-@samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-r4},
+@samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-a57},
+@samp{cortex-r4},
 @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m4},
 @samp{cortex-m3},
 @samp{cortex-m1},
@@ -12168,6 +12181,9 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+Additionally, this option can specify that GCC should tune the performance
+of the code for a big.LITTLE system.  Permissible names are:
+@samp{cortex-a15.cortex-a7}, @samp{cortex-a57.cortex-a53}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
@@ -12212,8 +12228,11 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
-@samp{armv8-a},
+@samp{armv8-a}, @samp{armv8-a+crc},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=armv8-a+crc} enables code generation for the ARMv8-A
+architecture together with the optional CRC32 extensions.
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
@@ -14629,29 +14648,38 @@ SSE2 and SSE3 instruction set support.
 Intel Core 2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
-@item corei7
-Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item nehalem
+Intel Nehalem CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2 and POPCNT instruction set support.
 
-@item corei7-avx
-Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item westmere
+Intel Westmere CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AES and PCLMUL instruction set support.
+
+@item sandybridge
+Intel Sandy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AES and PCLMUL instruction set support.
 
-@item core-avx-i
-Intel Core CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item ivybridge
+Intel Ivy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C
 instruction set support.
 
-@item core-avx2
-Intel Core CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+@item haswell
+Intel Haswell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2 and F16C instruction set support.
 
-@item atom
-Intel Atom CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
+@item broadwell
+Intel Broadwell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+BMI, BMI2, F16C, RDSEED, ADCX and PREFETCHW instruction set support.
+
+@item bonnell
+Intel Bonnell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
-@item slm
+@item silvermont
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
@@ -19762,6 +19790,21 @@ values have to be exact powers of 2 and @var{stack-size} has to be greater than
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
 The @var{stack-guard} option can only be used in conjunction with @var{stack-size}.
+
+@item -mhotpatch[=@var{halfwords}]
+@itemx -mno-hotpatch
+@opindex mhotpatch
+If the hotpatch option is enabled, a ``hot-patching'' function
+prologue is generated for all functions in the compilation unit.
+The funtion label is prepended with the given number of two-byte
+Nop instructions (@var{halfwords}, maximum 1000000) or 12 Nop
+instructions if no argument is present.  Functions with a
+hot-patching prologue are never inlined automatically, and a
+hot-patching prologue is never generated for functions functions
+that are explicitly inline.
+
+This option can be overridden for individual functions with the
+@code{hotpatch} attribute.
 @end table
 
 @node Score Options

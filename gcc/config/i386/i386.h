@@ -301,9 +301,11 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_ATHLON_K8 (TARGET_K8 || TARGET_ATHLON)
 #define TARGET_NOCONA (ix86_tune == PROCESSOR_NOCONA)
 #define TARGET_CORE2 (ix86_tune == PROCESSOR_CORE2)
-#define TARGET_COREI7 (ix86_tune == PROCESSOR_COREI7)
-#define TARGET_COREI7_AVX (ix86_tune == PROCESSOR_COREI7_AVX)
+#define TARGET_NEHALEM (ix86_tune == PROCESSOR_NEHALEM)
+#define TARGET_SANDYBRIDGE (ix86_tune == PROCESSOR_SANDYBRIDGE)
 #define TARGET_HASWELL (ix86_tune == PROCESSOR_HASWELL)
+#define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
+#define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
 #define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
@@ -312,8 +314,6 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BDVER4 (ix86_tune == PROCESSOR_BDVER4)
 #define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
 #define TARGET_BTVER2 (ix86_tune == PROCESSOR_BTVER2)
-#define TARGET_ATOM (ix86_tune == PROCESSOR_ATOM)
-#define TARGET_SLM (ix86_tune == PROCESSOR_SLM)
 
 /* Feature tests against the various tunings.  */
 enum ix86_tune_indices {
@@ -443,6 +443,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE]
 #define TARGET_SPLIT_MEM_OPND_FOR_FP_CONVERTS \
 	ix86_tune_features[X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS]
+#define TARGET_ADJUST_UNROLL \
+    ix86_tune_features[X86_TUNE_ADJUST_UNROLL]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -623,9 +625,17 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_core2,
   TARGET_CPU_DEFAULT_corei7,
   TARGET_CPU_DEFAULT_corei7_avx,
-  TARGET_CPU_DEFAULT_haswell,
+  TARGET_CPU_DEFAULT_core_avx2,
   TARGET_CPU_DEFAULT_atom,
   TARGET_CPU_DEFAULT_slm,
+  TARGET_CPU_DEFAULT_nehalem,
+  TARGET_CPU_DEFAULT_westmere,
+  TARGET_CPU_DEFAULT_sandybridge,
+  TARGET_CPU_DEFAULT_ivybridge,
+  TARGET_CPU_DEFAULT_haswell,
+  TARGET_CPU_DEFAULT_broadwell,
+  TARGET_CPU_DEFAULT_bonnell,
+  TARGET_CPU_DEFAULT_silvermont,
   TARGET_CPU_DEFAULT_intel,
 
   TARGET_CPU_DEFAULT_geode,
@@ -2218,9 +2228,11 @@ enum processor_type
   PROCESSOR_K8,
   PROCESSOR_NOCONA,
   PROCESSOR_CORE2,
-  PROCESSOR_COREI7,
-  PROCESSOR_COREI7_AVX,
+  PROCESSOR_NEHALEM,
+  PROCESSOR_SANDYBRIDGE,
   PROCESSOR_HASWELL,
+  PROCESSOR_BONNELL,
+  PROCESSOR_SILVERMONT,
   PROCESSOR_GENERIC,
   PROCESSOR_AMDFAM10,
   PROCESSOR_BDVER1,
@@ -2229,8 +2241,6 @@ enum processor_type
   PROCESSOR_BDVER4,
   PROCESSOR_BTVER1,
   PROCESSOR_BTVER2,
-  PROCESSOR_ATOM,
-  PROCESSOR_SLM,
   PROCESSOR_max
 };
 

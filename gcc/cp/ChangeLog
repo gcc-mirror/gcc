@@ -1,3 +1,22 @@
+2013-12-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59111
+	* search.c (lookup_conversions): Return NULL_TREE if !CLASS_TYPE_P.
+
+2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
+
+	* semantics.c (build_anon_member_initialization): Replace
+	stack_vec<T, N> with auto_vec<T, N>.
+
+2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* parser.c (cp_parser_cilk_simd_clause_name): Changed cilk_clause_name
+	to omp_clause_name.	
+
+2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_omp_parallel): Fix description.
+
 2013-12-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58954
@@ -6,7 +25,8 @@
 2013-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58627
-	* call.c (add_template_candidate_real): Don't call ggc_free on targs.
+	* class.c (resolve_address_of_overloaded_function): Don't call ggc_free
+	on targs.
 
 2013-12-11  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 

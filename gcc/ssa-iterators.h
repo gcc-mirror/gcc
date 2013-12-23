@@ -98,7 +98,7 @@ struct imm_use_iterator
    get access to each occurrence of ssavar on the stmt returned by
    that iterator..  for instance:
 
-     FOR_EACH_IMM_USE_STMT (stmt, iter, var)
+     FOR_EACH_IMM_USE_STMT (stmt, iter, ssavar)
        {
          FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 	   {
@@ -142,13 +142,13 @@ struct ssa_op_iter
   gimple stmt;
 };
 
+/* NOTE: Keep these in sync with doc/tree-ssa.texi.  */
 /* These flags are used to determine which operands are returned during
    execution of the loop.  */
 #define SSA_OP_USE		0x01	/* Real USE operands.  */
 #define SSA_OP_DEF		0x02	/* Real DEF operands.  */
 #define SSA_OP_VUSE		0x04	/* VUSE operands.  */
 #define SSA_OP_VDEF		0x08	/* VDEF operands.  */
-
 /* These are commonly grouped operand flags.  */
 #define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE)
 #define SSA_OP_VIRTUAL_DEFS	(SSA_OP_VDEF)

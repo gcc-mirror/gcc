@@ -293,7 +293,7 @@
           neon_ext, neon_ext_q, neon_rbit, neon_rbit_q,\
           neon_rev, neon_rev_q, neon_mul_b, neon_mul_b_q, neon_mul_h,\
           neon_mul_h_q, neon_mul_s, neon_mul_s_q, neon_mul_b_long,\
-          neon_mul_h_long, neon_mul_s_long, neon_mul_h_scalar,\
+          neon_mul_h_long, neon_mul_s_long, neon_mul_d_long, neon_mul_h_scalar,\
           neon_mul_h_scalar_q, neon_mul_s_scalar, neon_mul_s_scalar_q,\
           neon_mul_h_scalar_long, neon_mul_s_scalar_long, neon_sat_mul_b,\
           neon_sat_mul_b_q, neon_sat_mul_h, neon_sat_mul_h_q,\
@@ -355,7 +355,9 @@
           neon_fp_mla_s_scalar, neon_fp_mla_s_scalar_q, neon_fp_mla_d,\
           neon_fp_mla_d_q, neon_fp_mla_d_scalar_q, neon_fp_sqrt_s,\
           neon_fp_sqrt_s_q, neon_fp_sqrt_d, neon_fp_sqrt_d_q,\
-          neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q")
+          neon_fp_div_s, neon_fp_div_s_q, neon_fp_div_d, neon_fp_div_d_q, crypto_aes,\
+          crypto_sha1_xor, crypto_sha1_fast, crypto_sha1_slow, crypto_sha256_fast,\
+          crypto_sha256_slow")
         (const_string "yes")
         (const_string "no")))
 
@@ -477,7 +479,7 @@
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexa12,cortexa53,cortexm4,marvell_pj4")
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,cortexa8,cortexa9,cortexa53,cortexm4,marvell_pj4")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -12253,7 +12255,7 @@
     [(set (match_operand:SI 1 "s_register_operand" "+rk")
           (plus:SI (match_dup 1)
                    (match_operand:SI 2 "const_int_operand" "I")))
-     (set (match_operand:DF 3 "arm_hard_register_operand" "")
+     (set (match_operand:DF 3 "vfp_hard_register_operand" "")
           (mem:DF (match_dup 1)))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "*
@@ -12870,6 +12872,17 @@
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
+;; ARMv8 CRC32 instructions.
+(define_insn "<crc_variant>"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+        (unspec:SI [(match_operand:SI 1 "s_register_operand" "r")
+                    (match_operand:<crc_mode> 2 "s_register_operand" "r")]
+         CRC))]
+  "TARGET_CRC32"
+  "<crc_variant>\\t%0, %1, %2"
+  [(set_attr "type" "crc")
+   (set_attr "conds" "unconditional")]
+)
 
 ;; Load the load/store double peephole optimizations.
 (include "ldrdstrd.md")
@@ -12907,6 +12920,8 @@
 (include "thumb2.md")
 ;; Neon patterns
 (include "neon.md")
+;; Crypto patterns
+(include "crypto.md")
 ;; Synchronization Primitives
 (include "sync.md")
 ;; Fixed-point patterns

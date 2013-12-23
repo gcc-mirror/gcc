@@ -2029,7 +2029,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   /* Calculate scalar cost.  */
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
-      stack_vec<bool, 20> life;
+      auto_vec<bool, 20> life;
       life.safe_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
       scalar_cost += vect_bb_slp_scalar_cost (BB_VINFO_BB (bb_vinfo),
 					      SLP_INSTANCE_TREE (instance),

@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "rtl.h"
 #include "expr.h"
+#include "tree-ssanames.h"
+#include "asan.h"
+#include "gimplify-me.h"
 
 /* Map from a tree to a VAR_DECL tree.  */
 
@@ -344,6 +347,8 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
 
   switch (TREE_CODE (type))
     {
+    case BOOLEAN_TYPE:
+    case ENUMERAL_TYPE:
     case INTEGER_TYPE:
       tkind = 0x0000;
       break;
@@ -733,6 +738,104 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
     }
 }
 
+/* Instrument loads from (non-bitfield) bool and C++ enum values
+   to check if the memory value is outside of the range of the valid
+   type values.  */
+
+static void
+instrument_bool_enum_load (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree rhs = gimple_assign_rhs1 (stmt);
+  tree type = TREE_TYPE (rhs);
+  tree minv = NULL_TREE, maxv = NULL_TREE;
+
+  if (TREE_CODE (type) == BOOLEAN_TYPE && (flag_sanitize & SANITIZE_BOOL))
+    {
+      minv = boolean_false_node;
+      maxv = boolean_true_node;
+    }
+  else if (TREE_CODE (type) == ENUMERAL_TYPE
+	   && (flag_sanitize & SANITIZE_ENUM)
+	   && TREE_TYPE (type) != NULL_TREE
+	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
+	   && (TYPE_PRECISION (TREE_TYPE (type))
+	       < GET_MODE_PRECISION (TYPE_MODE (type))))
+    {
+      minv = TYPE_MIN_VALUE (TREE_TYPE (type));
+      maxv = TYPE_MAX_VALUE (TREE_TYPE (type));
+    }
+  else
+    return;
+
+  int modebitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  HOST_WIDE_INT bitsize, bitpos;
+  tree offset;
+  enum machine_mode mode;
+  int volatilep = 0, unsignedp = 0;
+  tree base = get_inner_reference (rhs, &bitsize, &bitpos, &offset, &mode,
+				   &unsignedp, &volatilep, false);
+  tree utype = build_nonstandard_integer_type (modebitsize, 1);
+
+  if ((TREE_CODE (base) == VAR_DECL && DECL_HARD_REGISTER (base))
+      || (bitpos % modebitsize) != 0
+      || bitsize != modebitsize
+      || GET_MODE_BITSIZE (TYPE_MODE (utype)) != modebitsize
+      || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
+    return;
+
+  location_t loc = gimple_location (stmt);
+  tree ptype = build_pointer_type (TREE_TYPE (rhs));
+  tree atype = reference_alias_ptr_type (rhs);
+  gimple g = gimple_build_assign (make_ssa_name (ptype, NULL),
+				  build_fold_addr_expr (rhs));
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  tree mem = build2 (MEM_REF, utype, gimple_assign_lhs (g),
+		     build_int_cst (atype, 0));
+  tree urhs = make_ssa_name (utype, NULL);
+  g = gimple_build_assign (urhs, mem);
+  gimple_set_location (g, loc);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  minv = fold_convert (utype, minv);
+  maxv = fold_convert (utype, maxv);
+  if (!integer_zerop (minv))
+    {
+      g = gimple_build_assign_with_ops (MINUS_EXPR,
+					make_ssa_name (utype, NULL),
+					urhs, minv);
+      gimple_set_location (g, loc);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+    }
+
+  gimple_stmt_iterator gsi2 = *gsi;
+  basic_block then_bb, fallthru_bb;
+  *gsi = create_cond_insert_point (gsi, true, false, true,
+				   &then_bb, &fallthru_bb);
+  g = gimple_build_cond (GT_EXPR, gimple_assign_lhs (g),
+			 int_const_binop (MINUS_EXPR, maxv, minv),
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+  gsi_insert_after (gsi, g, GSI_NEW_STMT);
+
+  gimple_assign_set_rhs_with_ops (&gsi2, NOP_EXPR, urhs, NULL_TREE);
+  update_stmt (stmt);
+
+  tree data = ubsan_create_data ("__ubsan_invalid_value_data",
+				 loc, NULL,
+				 ubsan_type_descriptor (type, false),
+				 NULL_TREE);
+  data = build_fold_addr_expr_loc (loc, data);
+  tree fn = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_LOAD_INVALID_VALUE);
+
+  gsi2 = gsi_after_labels (then_bb);
+  tree val = force_gimple_operand_gsi (&gsi2, ubsan_encode_value (urhs),
+				       true, NULL_TREE, true, GSI_SAME_STMT);
+  g = gimple_build_call (fn, 2, data, val);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
+}
+
 /* Gate and execute functions for ubsan pass.  */
 
 static unsigned int
@@ -764,6 +867,10 @@ ubsan_pass (void)
 		instrument_null (gsi, false);
 	    }
 
+	  if (flag_sanitize & (SANITIZE_BOOL | SANITIZE_ENUM)
+	      && gimple_assign_load_p (stmt))
+	    instrument_bool_enum_load (&gsi);
+
 	  gsi_next (&gsi);
 	}
     }
@@ -773,7 +880,8 @@ ubsan_pass (void)
 static bool
 gate_ubsan (void)
 {
-  return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW);
+  return flag_sanitize & (SANITIZE_NULL | SANITIZE_SI_OVERFLOW
+			  | SANITIZE_BOOL | SANITIZE_ENUM);
 }
 
 namespace {

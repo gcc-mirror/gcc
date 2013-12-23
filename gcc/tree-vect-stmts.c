@@ -629,7 +629,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
     dump_printf_loc (MSG_NOTE, vect_location,
                      "=== vect_mark_stmts_to_be_vectorized ===\n");
 
-  stack_vec<gimple, 64> worklist;
+  auto_vec<gimple, 64> worklist;
 
   /* 1. Init worklist.  */
   for (i = 0; i < nbbs; i++)
@@ -4859,6 +4859,25 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
 }
 
 
+/* Given a vector type VECTYPE returns the VECTOR_CST mask that implements
+   reversal of the vector elements.  If that is impossible to do,
+   returns NULL.  */
+
+static tree
+perm_mask_for_reverse (tree vectype)
+{
+  int i, nunits;
+  unsigned char *sel;
+
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  sel = XALLOCAVEC (unsigned char, nunits);
+
+  for (i = 0; i < nunits; ++i)
+    sel[i] = nunits - 1 - i;
+
+  return vect_gen_perm_mask (vectype, sel);
+}
+
 /* Function vectorizable_store.
 
    Check if STMT defines a non scalar data-ref (array/pointer/structure) that
@@ -4902,6 +4921,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   vec<tree> oprnds = vNULL;
   vec<tree> result_chain = vNULL;
   bool inv_p;
+  bool negative = false;
+  tree offset = NULL_TREE;
   vec<tree> vec_oprnds = vNULL;
   bool slp = (slp_node != NULL);
   unsigned int vec_num;
@@ -4976,14 +4997,39 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
-  if (tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
-			    ? STMT_VINFO_DR_STEP (stmt_info) : DR_STEP (dr),
-			    size_zero_node) < 0)
+  negative = 
+    tree_int_cst_compare (loop && nested_in_vect_loop_p (loop, stmt)
+			  ? STMT_VINFO_DR_STEP (stmt_info) : DR_STEP (dr),
+			  size_zero_node) < 0;
+  if (negative && ncopies > 1)
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "negative step for store.\n");
+			 "multiple types with negative step.\n");
       return false;
+    }
+
+  if (negative)
+    {
+      gcc_assert (!grouped_store);
+      alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+      if (alignment_support_scheme != dr_aligned
+	  && alignment_support_scheme != dr_unaligned_supported)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "negative step but alignment required.\n");
+	  return false;
+	}
+      if (dt != vect_constant_def 
+	  && dt != vect_external_def
+	  && !perm_mask_for_reverse (vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "negative step and reversing not supported.\n");
+	  return false;
+	}
     }
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -5089,6 +5135,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   gcc_assert (!store_lanes_p
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
+
+  if (negative)
+    offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
   if (store_lanes_p)
     aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
@@ -5200,7 +5249,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (first_stmt, aggr_type,
 					  simd_lane_access_p ? loop : NULL,
-					  NULL_TREE, &dummy, gsi, &ptr_incr,
+					  offset, &dummy, gsi, &ptr_incr,
 					  simd_lane_access_p, &inv_p);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
@@ -5306,6 +5355,27 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 					misalign);
 
+	      if (negative
+		  && dt != vect_constant_def 
+		  && dt != vect_external_def)
+		{
+		  tree perm_mask = perm_mask_for_reverse (vectype);
+		  tree perm_dest 
+		    = vect_create_destination_var (gimple_assign_rhs1 (stmt),
+						   vectype);
+		  tree new_temp = make_ssa_name (perm_dest, NULL);
+
+		  /* Generate the permute statement.  */
+		  gimple perm_stmt 
+		    = gimple_build_assign_with_ops (VEC_PERM_EXPR, new_temp,
+						    vec_oprnd, vec_oprnd,
+						    perm_mask);
+		  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
+
+		  perm_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  vec_oprnd = new_temp;
+		}
+
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      new_stmt = gimple_build_assign (data_ref, vec_oprnd);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -5361,25 +5431,6 @@ vect_gen_perm_mask (tree vectype, unsigned char *sel)
   mask_vec = build_vector (mask_type, mask_elts);
 
   return mask_vec;
-}
-
-/* Given a vector type VECTYPE returns the VECTOR_CST mask that implements
-   reversal of the vector elements.  If that is impossible to do,
-   returns NULL.  */
-
-static tree
-perm_mask_for_reverse (tree vectype)
-{
-  int i, nunits;
-  unsigned char *sel;
-
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  sel = XALLOCAVEC (unsigned char, nunits);
-
-  for (i = 0; i < nunits; ++i)
-    sel[i] = nunits - 1 - i;
-
-  return vect_gen_perm_mask (vectype, sel);
 }
 
 /* Given a vector variable X and Y, that was generated for the scalar
@@ -6558,8 +6609,8 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
 	{
           if (slp_node)
             {
-              stack_vec<tree, 4> ops;
-	      stack_vec<vec<tree>, 4> vec_defs;
+              auto_vec<tree, 4> ops;
+	      auto_vec<vec<tree>, 4> vec_defs;
 
               ops.safe_push (TREE_OPERAND (cond_expr, 0));
               ops.safe_push (TREE_OPERAND (cond_expr, 1));

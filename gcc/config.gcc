@@ -329,8 +329,8 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_headers="mmintrin.h arm_neon.h"
 	extra_objs="aarch-common.o"
+	extra_headers="mmintrin.h arm_neon.h arm_acle.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
@@ -3676,7 +3676,7 @@ case "${target}" in
 			| opteron-sse3 | athlon-fx | bdver4 | bdver3 | bdver2 \
 			| bdver1 | btver2 |  btver1 | amdfam10 | barcelona \
 			| nocona | core2 | corei7 | corei7-avx | core-avx-i \
-			| core-avx2 | atom | slm)
+			| core-avx2 | broadwell | atom | slm)
 				# OK
 				;;
 			*)

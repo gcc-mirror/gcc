@@ -424,7 +424,7 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 
   /* Check for problems with dependences.  If the loop can be reversed,
      the iterations are independent.  */
-  stack_vec<loop_p, 3> loop_nest;
+  auto_vec<loop_p, 3> loop_nest;
   datarefs.create (10);
   dependence_relations.create (100);
   if (! compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,
@@ -752,7 +752,7 @@ static void
 eliminate_local_variables (edge entry, edge exit)
 {
   basic_block bb;
-  stack_vec<basic_block, 3> body;
+  auto_vec<basic_block, 3> body;
   unsigned i;
   gimple_stmt_iterator gsi;
   bool has_debug_stmt = false;
@@ -1303,7 +1303,7 @@ separate_decls_in_region (edge entry, edge exit,
   tree type, type_name, nvar;
   gimple_stmt_iterator gsi;
   struct clsn_data clsn_data;
-  stack_vec<basic_block, 3> body;
+  auto_vec<basic_block, 3> body;
   basic_block bb;
   basic_block entry_bb = bb1;
   basic_block exit_bb = exit->dest;

@@ -2339,19 +2339,6 @@ make_pass_early_inline (gcc::context *ctxt)
   return new pass_early_inline (ctxt);
 }
 
-
-/* When to run IPA inlining.  Inlining of always-inline functions
-   happens during early inlining.
-
-   Enable inlining unconditoinally, because callgraph redirection
-   happens here.   */
-
-static bool
-gate_ipa_inline (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_inline =
@@ -2359,7 +2346,7 @@ const pass_data pass_data_ipa_inline =
   IPA_PASS, /* type */
   "inline", /* name */
   OPTGROUP_INLINE, /* optinfo_flags */
-  true, /* has_gate */
+  false, /* has_gate */
   true, /* has_execute */
   TV_IPA_INLINING, /* tv_id */
   0, /* properties_required */
@@ -2386,7 +2373,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_inline (); }
   unsigned int execute () { return ipa_inline (); }
 
 }; // class pass_ipa_inline

@@ -53,11 +53,11 @@
   (ior (match_operand 0 "imm_for_neon_logic_operand")
        (match_operand 0 "s_register_operand")))
 
-;; Any hard register.
-(define_predicate "arm_hard_register_operand"
+;; Any general register.
+(define_predicate "arm_hard_general_register_operand"
   (match_code "reg")
 {
-  return REGNO (op) < FIRST_PSEUDO_REGISTER;
+  return REGNO (op) <= LAST_ARM_REGNUM;
 })
 
 ;; A low register.
@@ -96,6 +96,12 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
 	      || (TARGET_VFPD32
 		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
+})
+
+(define_predicate "vfp_hard_register_operand"
+  (match_code "reg")
+{
+  return (IS_VFP_REGNUM (REGNO (op)));
 })
 
 (define_predicate "zero_operand"

@@ -690,7 +690,7 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
       i++;
     }
 
-  stack_vec<tree, alloc_count> fewvars;
+  auto_vec<tree, alloc_count> fewvars;
   pointer_set_t *vars = NULL;
 
   /* If we're already starting with 3/4 of alloc_count, go for a

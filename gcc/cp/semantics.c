@@ -7439,7 +7439,7 @@ build_anon_member_initialization (tree member, tree init,
      to build up the initializer from the outside in so that we can reuse
      previously built CONSTRUCTORs if this is, say, the second field in an
      anonymous struct.  So we use a vec as a stack.  */
-  stack_vec<tree, 2> fields;
+  auto_vec<tree, 2> fields;
   do
     {
       fields.safe_push (TREE_OPERAND (member, 1));

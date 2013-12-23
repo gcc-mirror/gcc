@@ -1951,7 +1951,9 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
       && (!validate || memory_address_addr_space_p (mode, addr, as)))
     return memref;
 
-  if (validate)
+  /* Don't validate address for LRA.  LRA can make the address valid
+     by itself in most efficient way.  */
+  if (validate && !lra_in_progress)
     {
       if (reload_in_progress || reload_completed)
 	gcc_assert (memory_address_addr_space_p (mode, addr, as));

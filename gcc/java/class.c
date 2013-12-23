@@ -920,7 +920,7 @@ hashUtf8String (const char *str, int len)
 {
   const unsigned char* ptr = (const unsigned char*) str;
   const unsigned char *limit = ptr + len;
-  int32 hash = 0;
+  uint32 hash = 0;
   for (; ptr < limit;)
     {
       int ch = UTF8_GET (ptr, limit);

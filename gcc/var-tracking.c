@@ -7931,7 +7931,7 @@ struct expand_loc_callback_data
 
   /* Stack of values and debug_exprs under expansion, and their
      children.  */
-  stack_vec<rtx, 4> expanding;
+  auto_vec<rtx, 4> expanding;
 
   /* Stack of values and debug_exprs whose expansion hit recursion
      cycles.  They will have VALUE_RECURSED_INTO marked when added to
@@ -7939,7 +7939,7 @@ struct expand_loc_callback_data
      resolves to a valid location.  So, if the flag remains set at the
      end of the search, we know no valid location for this one can
      possibly exist.  */
-  stack_vec<rtx, 4> pending;
+  auto_vec<rtx, 4> pending;
 
   /* The maximum depth among the sub-expressions under expansion.
      Zero indicates no expansion so far.  */
@@ -8886,7 +8886,7 @@ process_changed_values (variable_table_type htab)
 {
   int i, n;
   rtx val;
-  stack_vec<rtx, 20> changed_values_stack;
+  auto_vec<rtx, 20> changed_values_stack;
 
   /* Move values from changed_variables to changed_values_stack.  */
   changed_variables

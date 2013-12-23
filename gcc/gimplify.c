@@ -1846,7 +1846,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* Create a stack of the subexpressions so later we can walk them in
      order from inner to outer.  */
-  stack_vec<tree, 10> expr_stack;
+  auto_vec<tree, 10> expr_stack;
 
   /* We can handle anything that get_inner_reference can deal with.  */
   for (p = expr_p; ; p = &TREE_OPERAND (*p, 0))

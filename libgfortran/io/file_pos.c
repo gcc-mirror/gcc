@@ -410,7 +410,11 @@ st_rewind (st_parameter_filepos *fpp)
 	  u->last_record = 0;
 
 	  if (sseek (u->s, 0, SEEK_SET) < 0)
-	    generate_error (&fpp->common, LIBERROR_OS, NULL);
+	    {
+	      generate_error (&fpp->common, LIBERROR_OS, NULL);
+	      library_end ();
+	      return;
+	    }
 
 	  /* Set this for compatibilty with g77 for /dev/null.  */
 	  if (ssize (u->s) == 0)

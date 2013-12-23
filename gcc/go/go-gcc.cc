@@ -243,6 +243,9 @@ class Gcc_backend : public Backend
   Bexpression*
   address_expression(Bexpression*, Location);
 
+  Bexpression*
+  struct_field_expression(Bexpression*, size_t, Location);
+
   // Statements.
 
   Bstatement*
@@ -996,6 +999,39 @@ Gcc_backend::address_expression(Bexpression* bexpr, Location location)
 
   tree ret = build_fold_addr_expr_loc(location.gcc_location(), expr);
   return this->make_expression(ret);
+}
+
+// Return an expression for the field at INDEX in BSTRUCT.
+
+Bexpression*
+Gcc_backend::struct_field_expression(Bexpression* bstruct, size_t index,
+                                     Location location)
+{
+  tree struct_tree = bstruct->get_tree();
+  if (struct_tree == error_mark_node
+      || TREE_TYPE(struct_tree) == error_mark_node)
+    return this->error_expression();
+  gcc_assert(TREE_CODE(TREE_TYPE(struct_tree)) == RECORD_TYPE);
+  tree field = TYPE_FIELDS(TREE_TYPE(struct_tree));
+  if (field == NULL_TREE)
+  {
+    // This can happen for a type which refers to itself indirectly
+    // and then turns out to be erroneous.
+    return this->error_expression();
+  }
+  for (unsigned int i = index; i > 0; --i)
+  {
+    field = DECL_CHAIN(field);
+    gcc_assert(field != NULL_TREE);
+  }
+  if (TREE_TYPE(field) == error_mark_node)
+    return this->error_expression();
+  tree ret = fold_build3_loc(location.gcc_location(), COMPONENT_REF,
+                             TREE_TYPE(field), struct_tree, field,
+                             NULL_TREE);
+  if (TREE_CONSTANT(struct_tree))
+    TREE_CONSTANT(ret) = 1;
+  return tree_to_expr(ret);
 }
 
 // An expression as a statement.

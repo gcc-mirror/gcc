@@ -1220,8 +1220,6 @@ omp_copy_decl (tree var, copy_body_data *cb)
 }
 
 
-/* Return the parallel region associated with STMT.  */
-
 /* Debugging dumps for parallel regions.  */
 void dump_omp_region (FILE *, struct omp_region *, int);
 void debug_omp_region (struct omp_region *);
@@ -1821,8 +1819,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 }
 
 /* Create a new name for omp child function.  Returns an identifier.  */
-
-static GTY(()) unsigned int tmp_ompfn_id_num;
 
 static tree
 create_omp_child_function_name (bool task_copy)
@@ -3565,19 +3561,20 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		{
 		  x = omp_reduction_init (c, TREE_TYPE (new_var));
 		  gcc_assert (TREE_CODE (TREE_TYPE (new_var)) != ARRAY_TYPE);
+		  enum tree_code code = OMP_CLAUSE_REDUCTION_CODE (c);
+
+		  /* reduction(-:var) sums up the partial results, so it
+		     acts identically to reduction(+:var).  */
+		  if (code == MINUS_EXPR)
+		    code = PLUS_EXPR;
+
 		  if (is_simd
 		      && lower_rec_simd_input_clauses (new_var, ctx, max_vf,
 						       idx, lane, ivar, lvar))
 		    {
-		      enum tree_code code = OMP_CLAUSE_REDUCTION_CODE (c);
 		      tree ref = build_outer_var_ref (var, ctx);
 
 		      gimplify_assign (unshare_expr (ivar), x, &llist[0]);
-
-		      /* reduction(-:var) sums up the partial results, so it
-			 acts identically to reduction(+:var).  */
-		      if (code == MINUS_EXPR)
-			code = PLUS_EXPR;
 
 		      x = build2 (code, TREE_TYPE (ref), ref, ivar);
 		      ref = build_outer_var_ref (var, ctx);
@@ -3587,8 +3584,13 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    {
 		      gimplify_assign (new_var, x, ilist);
 		      if (is_simd)
-			gimplify_assign (build_outer_var_ref (var, ctx),
-					 new_var, dlist);
+			{
+			  tree ref = build_outer_var_ref (var, ctx);
+
+			  x = build2 (code, TREE_TYPE (ref), ref, new_var);
+			  ref = build_outer_var_ref (var, ctx);
+			  gimplify_assign (ref, x, dlist);
+			}
 		    }
 		}
 	      break;
@@ -9046,7 +9048,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 }
 
 /* Callback for walk_stmts.  Check if the current statement only contains
-   GIMPLE_OMP_FOR or GIMPLE_OMP_PARALLEL.  */
+   GIMPLE_OMP_FOR or GIMPLE_OMP_SECTIONS.  */
 
 static tree
 check_combined_parallel (gimple_stmt_iterator *gsi_p,
@@ -10686,7 +10688,7 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
      declare simd".  */
   bool cilk_clone
     = (flag_enable_cilkplus
-       && lookup_attribute ("cilk plus elemental",
+       && lookup_attribute ("cilk simd function",
 			    DECL_ATTRIBUTES (node->decl)));
 
   /* Allocate one more than needed just in case this is an in-branch

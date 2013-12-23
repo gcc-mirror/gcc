@@ -848,6 +848,10 @@ get_class_context (ipa_polymorphic_call_context *context,
       if (TREE_CODE (type) == TREE_CODE (expected_type)
 	  && types_same_for_odr (type, expected_type))
 	{
+	  /* Type can not contain itself on an non-zero offset.  In that case
+	     just give up.  */
+	  if (offset != 0)
+	    goto give_up;
 	  gcc_assert (offset == 0);
 	  return true;
 	}
@@ -978,23 +982,22 @@ get_polymorphic_call_info (tree fndecl,
 		 is known.  */
 	      else if (DECL_P (base))
 		{
-		  context->outer_type = TREE_TYPE (base);
-		  gcc_assert (!POINTER_TYPE_P (context->outer_type));
+		  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (base)));
 
 		  /* Only type inconsistent programs can have otr_type that is
 		     not part of outer type.  */
-		  if (!contains_type_p (context->outer_type,
-					context->offset, *otr_type))
+		  if (!contains_type_p (TREE_TYPE (base),
+					context->offset + offset2, *otr_type))
 		    return base_pointer;
+		  context->outer_type = TREE_TYPE (base);
 		  context->offset += offset2;
-		  base_pointer = NULL;
 		  /* Make very conservative assumption that all objects
 		     may be in construction. 
 		     TODO: ipa-prop already contains code to tell better. 
 		     merge it later.  */
 		  context->maybe_in_construction = true;
 		  context->maybe_derived_type = false;
-		  return base_pointer;
+		  return NULL;
 		}
 	      else
 		break;

@@ -7010,7 +7010,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       tree gnu_union_type, gnu_union_name;
       tree this_first_free_pos, gnu_variant_list = NULL_TREE;
       bool union_field_needs_strict_alignment = false;
-      stack_vec <vinfo_t, 16> variant_types;
+      auto_vec <vinfo_t, 16> variant_types;
       vinfo_t *gnu_variant;
       unsigned int variants_align = 0;
       unsigned int i;

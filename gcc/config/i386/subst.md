@@ -27,6 +27,9 @@
    V16SF V8SF  V4SF
    V8DF  V4DF  V2DF])
 
+(define_mode_iterator SUBST_S
+  [QI HI SI DI])
+
 (define_subst_attr "mask_name" "mask" "" "_mask")
 (define_subst_attr "mask_applied" "mask" "false" "true")
 (define_subst_attr "mask_operand2" "mask" "" "%{%3%}%N2")
@@ -54,3 +57,33 @@
 	  (match_dup 1)
 	  (match_operand:SUBST_V 2 "vector_move_operand" "0C")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "k")))])
+
+(define_subst_attr "mask_scalar_merge_name" "mask_scalar_merge" "" "_mask")
+(define_subst_attr "mask_scalar_merge_operand3" "mask_scalar_merge" "" "%{%3%}")
+(define_subst_attr "mask_scalar_merge_operand4" "mask_scalar_merge" "" "%{%4%}")
+
+(define_subst "mask_scalar_merge"
+  [(set (match_operand:SUBST_S 0)
+        (match_operand:SUBST_S 1))]
+  "TARGET_AVX512F"
+  [(set (match_dup 0)
+        (and:SUBST_S
+	  (match_dup 1)
+	  (match_operand:SUBST_S 3 "register_operand" "k")))])
+
+(define_subst_attr "sd_maskz_name" "sd" "" "_maskz_1")
+(define_subst_attr "sd_mask_op4" "sd" "" "%{%5%}%N4")
+(define_subst_attr "sd_mask_op5" "sd" "" "%{%6%}%N5")
+(define_subst_attr "sd_mask_codefor" "sd" "*" "")
+(define_subst_attr "sd_mask_mode512bit_condition" "sd" "1" "(GET_MODE_SIZE (GET_MODE (operands[0])) == 64)")
+
+(define_subst "sd"
+ [(set (match_operand:SUBST_V 0)
+       (match_operand:SUBST_V 1))]
+ ""
+ [(set (match_dup 0)
+       (vec_merge:SUBST_V
+	 (match_dup 1)
+	 (match_operand:SUBST_V 2 "const0_operand" "C")
+	 (match_operand:<avx512fmaskmode> 3 "register_operand" "k")))
+])

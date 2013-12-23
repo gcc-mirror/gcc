@@ -558,7 +558,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   /* Set the vptr.  */
   ctree =  gfc_class_vptr_get (var);
 
-  vtab = gfc_find_intrinsic_vtab (&e->ts);
+  vtab = gfc_find_vtab (&e->ts);
   gcc_assert (vtab);
   tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
   gfc_add_modify (&parmse->pre, ctree,
@@ -1015,12 +1015,10 @@ gfc_trans_class_assign (gfc_expr *expr1, gfc_expr *expr2, gfc_exec_op op)
  	  goto assign_vptr;
 	}
 
-      if (expr2->ts.type == BT_DERIVED)
-	vtab = gfc_find_derived_vtab (expr2->ts.u.derived);
-      else if (expr2->expr_type == EXPR_NULL)
-	vtab = gfc_find_derived_vtab (expr1->ts.u.derived);
+      if (expr2->expr_type == EXPR_NULL)
+	vtab = gfc_find_vtab (&expr1->ts);
       else
-	vtab = gfc_find_intrinsic_vtab (&expr2->ts);
+	vtab = gfc_find_vtab (&expr2->ts);
       gcc_assert (vtab);
 
       rhs = gfc_get_expr ();

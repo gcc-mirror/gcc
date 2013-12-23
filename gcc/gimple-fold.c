@@ -374,6 +374,30 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	if (REFERENCE_CLASS_P (rhs))
 	  return maybe_fold_reference (rhs, false);
 
+	else if (TREE_CODE (rhs) == OBJ_TYPE_REF)
+	  {
+	    tree val = OBJ_TYPE_REF_EXPR (rhs);
+	    if (is_gimple_min_invariant (val))
+	      return val;
+	    else if (flag_devirtualize && virtual_method_call_p (val))
+	      {
+		bool final;
+		vec <cgraph_node *>targets
+		  = possible_polymorphic_call_targets (val, &final);
+		if (final && targets.length () <= 1)
+		  {
+		    tree fndecl;
+		    if (targets.length () == 1)
+		      fndecl = targets[0]->decl;
+		    else
+		      fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		    val = fold_convert (TREE_TYPE (val), fndecl);
+		    STRIP_USELESS_TYPE_CONVERSION (val);
+		    return val;
+		  }
+	      }
+
+	  }
 	else if (TREE_CODE (rhs) == ADDR_EXPR)
 	  {
 	    tree ref = TREE_OPERAND (rhs, 0);
@@ -1153,26 +1177,20 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
-      else if (virtual_method_call_p (callee))
+      else if (flag_devirtualize && virtual_method_call_p (callee))
 	{
-	  tree obj = OBJ_TYPE_REF_OBJECT (callee);
-	  tree binfo = gimple_extract_devirt_binfo_from_cst
-		 (obj, obj_type_ref_class (callee));
-	  if (binfo)
+	  bool final;
+	  vec <cgraph_node *>targets
+	    = possible_polymorphic_call_targets (callee, &final);
+	  if (final && targets.length () <= 1)
 	    {
-	      HOST_WIDE_INT token
-		= TREE_INT_CST_LOW (OBJ_TYPE_REF_TOKEN (callee));
-	      tree fndecl = gimple_get_virt_method_for_binfo (token, binfo);
-	      if (fndecl)
-		{
-#ifdef ENABLE_CHECKING
-		  gcc_assert (possible_polymorphic_call_target_p
-				 (callee, cgraph_get_node (fndecl)));
-
-#endif
-		  gimple_call_set_fndecl (stmt, fndecl);
-		  changed = true;
-		}
+	      tree fndecl;
+	      if (targets.length () == 1)
+		fndecl = targets[0]->decl;
+	      else
+		fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	      gimple_call_set_fndecl (stmt, fndecl);
+	      changed = true;
 	    }
 	}
     }
@@ -2530,6 +2548,13 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 		    }
 
 		  return build_vector (TREE_TYPE (rhs), vec);
+		}
+	      if (subcode == OBJ_TYPE_REF)
+		{
+		  tree val = (*valueize) (OBJ_TYPE_REF_EXPR (rhs));
+		  /* If callee is constant, we can fold away the wrapper.  */
+		  if (is_gimple_min_invariant (val))
+		    return val;
 		}
 
               if (kind == tcc_reference)

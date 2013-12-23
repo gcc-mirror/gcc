@@ -23,7 +23,6 @@
 #define _GNU_SOURCE
 #endif
 #include "config.h"
-#include <alloca.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,7 +116,7 @@ print_affinity (struct place p)
 	    size = sizeof (cpu_set_t);
 	}
     }
-  cpu_set_t *cpusetp = (cpu_set_t *) alloca (size);
+  cpu_set_t *cpusetp = (cpu_set_t *) __builtin_alloca (size);
   if (pthread_getaffinity_np (pthread_self (), size, cpusetp) == 0)
     {
       unsigned long i, len, max = 8 * size;

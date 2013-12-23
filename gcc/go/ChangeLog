@@ -1,3 +1,7 @@
+2013-12-16  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_field_expression): New function.
+
 2013-12-11  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_post_options): Disable sibling calls by

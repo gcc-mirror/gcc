@@ -114,6 +114,11 @@ public:
   /* Static pass number, used as a fragment of the dump file name.  */
   int static_pass_number;
 
+  /* When a given dump file is being initialized, this flag is set to
+     true if the corresponding TDF_graph dump file has also been
+     initialized.  */
+  bool graph_dump_initialized;
+
 protected:
   gcc::context *m_ctxt;
 };
@@ -400,7 +405,6 @@ extern gimple_opt_pass *make_pass_lower_vector_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_lower_omp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_diagnose_omp_blocks (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_expand_omp (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_expand_omp_ssa (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_object_sizes (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_strlen (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fold_builtins (gcc::context *ctxt);

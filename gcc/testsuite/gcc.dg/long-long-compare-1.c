@@ -1,8 +1,6 @@
-/* Problem only noticed on SH for -mcbranchdi DImode comparison with constants.
- * Target dependent failure but test valid for alls.  */
+/* Problem noticed on SH for DImode comparison with constants.
 /* { dg-do run } */
 /* { dg-options "-O0" } */
-/* { dg-options "-O0 -mcbranchdi" { target sh4-*-* } } */
 
 extern void abort(void);
 extern void exit(int);

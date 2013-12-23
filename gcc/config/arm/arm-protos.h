@@ -289,4 +289,7 @@ extern bool arm_autoinc_modes_ok_p (enum machine_mode, enum arm_auto_incmodes);
 
 extern void arm_emit_eabi_attribute (const char *, int, int);
 
+/* Defined in gcc/common/config/arm-common.c.  */
+extern const char *arm_rewrite_selected_cpu (const char *name);
+
 #endif /* ! GCC_ARM_PROTOS_H */

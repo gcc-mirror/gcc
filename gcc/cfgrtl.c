@@ -3736,7 +3736,8 @@ fixup_reorder_chain (void)
 	      if (!e_fall)
 		{
 		  gcc_assert (!onlyjump_p (bb_end_insn)
-			      || returnjump_p (bb_end_insn));
+			      || returnjump_p (bb_end_insn)
+                              || (e_taken->flags & EDGE_CROSSING));
 		  emit_barrier_after (bb_end_insn);
 		  continue;
 		}

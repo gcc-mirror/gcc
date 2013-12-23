@@ -1124,7 +1124,7 @@ tempfile_open (const char *tempdir, char **fname)
 #endif
 
 #if defined(HAVE_MKOSTEMP) && defined(O_CLOEXEC)
-  fd = mkostemp (template, O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
+  fd = mkostemp (template, O_CLOEXEC);
 #else
   fd = mkstemp (template);
   set_close_on_exec (fd);

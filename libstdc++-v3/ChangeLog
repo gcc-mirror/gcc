@@ -1,3 +1,15 @@
+2013-12-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/20_util/hash/chi2_quality.h: Break out from
+	chi2_quality.cc.
+	* testsuite/20_util/hash/chi2_q_bit_flip_set.cc: Ditto.
+	* testsuite/20_util/hash/chi2_q_document_words.cc: Ditto.
+	* testsuite/20_util/hash/chi2_q_bit_string_set.cc: Ditto.  Increase
+	SAMPLES to 35000 for simulator targets.
+	* testsuite/20_util/hash/chi2_q_numeric_pattern_set.cc: Ditto.
+	* testsuite/20_util/hash/chi2_q_uniform_random.cc: Ditto.
+	* testsuite/20_util/hash/chi2_quality.cc: Remove.
+
 2013-12-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/20_util/is_base_of/value.cc: Add test.

@@ -1,3 +1,7 @@
+2013-12-21  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* include/private/gcconfig.h: Add FreeBSD powerpc64 defines.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

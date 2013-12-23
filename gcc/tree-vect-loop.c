@@ -621,7 +621,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   basic_block bb = loop->header;
   tree init, step;
-  stack_vec<gimple, 64> worklist;
+  auto_vec<gimple, 64> worklist;
   gimple_stmt_iterator gsi;
   bool double_reduc;
 

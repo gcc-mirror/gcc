@@ -91,8 +91,8 @@ entry e5 (is_f5)
   l = .false.
 !$omp parallel firstprivate (f5, e5) shared (is_f5) num_threads (2) &
 !$omp reduction (.or.:l)
-  l = .not. is_f5 .and. e5 .ne. 8
-  l = l .or. (is_f5 .and. f5 .ne. 6.5)
+  if (.not. is_f5) l = l .or. e5 .ne. 8
+  if (is_f5) l = l .or. f5 .ne. 6.5
   if (omp_get_thread_num () .eq. 0) e5 = 8
   if (omp_get_thread_num () .eq. 1) e5 = 14
   f5 = e5 - 4.5

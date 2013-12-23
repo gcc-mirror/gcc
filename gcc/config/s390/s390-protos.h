@@ -110,5 +110,6 @@ extern bool s390_decompose_shift_count (rtx, rtx *, HOST_WIDE_INT *);
 extern int s390_branch_condition_mask (rtx);
 extern int s390_compare_and_branch_condition_mask (rtx);
 extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
+extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
 #endif /* RTX_CODE */
