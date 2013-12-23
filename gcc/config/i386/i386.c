@@ -2397,12 +2397,16 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&nocona_cost, 0, 0, 0, 0, 0},
   /* Core 2  */
   {&core_cost, 16, 10, 16, 10, 16},
-  /* Core i7  */
+  /* Nehalem  */
   {&core_cost, 16, 10, 16, 10, 16},
-  /* Core i7 avx  */
+  /* Sandy Bridge  */
   {&core_cost, 16, 10, 16, 10, 16},
-  /* Core avx2  */
+  /* Haswell  */
   {&core_cost, 16, 10, 16, 10, 16},
+  /* Bonnell  */
+  {&atom_cost, 16, 15, 16, 7, 16},
+  /* Silvermont  */
+  {&slm_cost, 16, 15, 16, 7, 16},
   {&generic_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
   {&bdver1_cost, 16, 10, 16, 7, 11},
@@ -2410,9 +2414,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&bdver3_cost, 16, 10, 16, 7, 11},
   {&bdver4_cost, 16, 10, 16, 7, 11},
   {&btver1_cost, 16, 10, 16, 7, 11},
-  {&btver2_cost, 16, 10, 16, 7, 11},
-  {&atom_cost, 16, 15, 16, 7, 16},
-  {&slm_cost, 16, 15, 16, 7, 16}
+  {&btver2_cost, 16, 10, 16, 7, 11}
 };
 
 static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =

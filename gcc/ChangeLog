@@ -1,3 +1,8 @@
+2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (processor_target_table): Move Bonnell and
+	Silvermont entries before generic.
+
 2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR middle-end/59569
