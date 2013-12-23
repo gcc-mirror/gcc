@@ -56,12 +56,12 @@ enum processor_vendor
 
 enum processor_types
 {
-  INTEL_ATOM = 1,
+  INTEL_BONNELL = 1,
   INTEL_CORE2,
   INTEL_COREI7,
   AMDFAM10H,
   AMDFAM15H,
-  INTEL_SLM,
+  INTEL_SILVERMONT,
   CPU_TYPE_MAX
 };
 
@@ -167,13 +167,13 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	    {
 	    case 0x1c:
 	    case 0x26:
-	      /* Atom.  */
-	      __cpu_model.__cpu_type = INTEL_ATOM;
+	      /* Bonnell.  */
+	      __cpu_model.__cpu_type = INTEL_BONNELL;
 	      break;
 	    case 0x37:
 	    case 0x4d:
 	      /* Silvermont.  */
-	      __cpu_model.__cpu_type = INTEL_SLM;
+	      __cpu_model.__cpu_type = INTEL_SILVERMONT;
 	      break;
 	    case 0x1a:
 	    case 0x1e:

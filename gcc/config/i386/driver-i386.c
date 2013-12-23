@@ -643,13 +643,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	{
 	case 0x1c:
 	case 0x26:
-	  /* Atom.  */
-	  cpu = "atom";
+	  /* Bonnell.  */
+	  cpu = "bonnell";
 	  break;
 	case 0x37:
 	case 0x4d:
 	  /* Silvermont.  */
-	  cpu = "slm";
+	  cpu = "silvermont";
 	  break;
 	case 0x0f:
 	  /* Merom.  */
@@ -663,27 +663,29 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 0x1f:
 	case 0x2e:
 	  /* Nehalem.  */
+	  cpu = "nehalem";
+	  break;
 	case 0x25:
 	case 0x2c:
 	case 0x2f:
 	  /* Westmere.  */
-	  cpu = "corei7";
+	  cpu = "westmere";
 	  break;
 	case 0x2a:
 	case 0x2d:
 	  /* Sandy Bridge.  */
-	  cpu = "corei7-avx";
+	  cpu = "sandybridge";
 	  break;
 	case 0x3a:
 	case 0x3e:
 	  /* Ivy Bridge.  */
-	  cpu = "core-avx-i";
+	  cpu = "ivybridge";
 	  break;
 	case 0x3c:
 	case 0x45:
 	case 0x46:
 	  /* Haswell.  */
-	  cpu = "core-avx2";
+	  cpu = "haswell";
 	  break;
 	default:
 	  if (arch)
@@ -693,24 +695,24 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		cpu = "broadwell";
 	      else if (has_avx2)
 		/* Assume Haswell.  */
-		cpu = "core-avx2";
+		cpu = "haswell";
 	      else if (has_avx)
 		/* Assume Sandy Bridge.  */
-		cpu = "corei7-avx";
+		cpu = "sandybridge";
 	      else if (has_sse4_2)
 		{
 		  if (has_movbe)
-		    /* Assume SLM.  */
-		    cpu = "slm";
+		    /* Assume Silvermont.  */
+		    cpu = "silvermont";
 		  else
-		    /* Assume Core i7.  */
-		    cpu = "corei7";
+		    /* Assume Nehalem.  */
+		    cpu = "nehalem";
 		}
 	      else if (has_ssse3)
 		{
 		  if (has_movbe)
-		    /* Assume Atom.  */
-		    cpu = "atom";
+		    /* Assume Bonnell.  */
+		    cpu = "bonnell";
 		  else
 		    /* Assume Core 2.  */
 		    cpu = "core2";
