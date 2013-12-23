@@ -2506,7 +2506,7 @@ lookup_conversions (tree type)
   tree list = NULL_TREE;
 
   complete_type (type);
-  if (!TYPE_BINFO (type))
+  if (!CLASS_TYPE_P (type) || !TYPE_BINFO (type))
     return NULL_TREE;
 
   lookup_conversions_r (TYPE_BINFO (type), 0, 0,

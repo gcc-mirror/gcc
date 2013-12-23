@@ -1,3 +1,8 @@
+2013-12-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59111
+	* search.c (lookup_conversions): Return NULL_TREE if !CLASS_TYPE_P.
+
 2013-12-20  Trevor saunders  <tsaunders@mozilla.com>
 
 	* semantics.c (build_anon_member_initialization): Replace
