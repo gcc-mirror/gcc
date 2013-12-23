@@ -1,6 +1,12 @@
 2013-12-23  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/57422
+	* sel-sched.c (fill_vec_av_set): Assert that the fence insn
+	can always be scheduled in its current form.
+
+2013-12-23  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57422
 	* sel-sched.c (mark_unavailable_hard_regs): Fix typo when calling
 	add_to_hard_reg_set.
 
