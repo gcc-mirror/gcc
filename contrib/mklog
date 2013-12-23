@@ -43,7 +43,7 @@ chdir $gcc_root;
 # Program starts here. You should not need to edit anything below this
 # line.
 #-----------------------------------------------------------------------------
-if ( $#ARGV != 0 ) {
+if ($#ARGV != 0) {
     $prog = `basename $0`; chop ($prog);
     print "usage: $prog file.diff\n\n";
     print "Adds a ChangeLog template to the start of file.diff\n";
@@ -56,46 +56,98 @@ $dir = `dirname $diff`; chop ($dir);
 $basename = `basename $diff`; chop ($basename);
 $hdrline = "$date  $name  <$addr>";
 
-my %cl_entries;
+sub get_clname ($) {
+	return ('ChangeLog', $_[0]) if ($_[0] !~ /[\/\\]/);
 
-sub get_clname($) {
 	my $dirname = $_[0];
 	while ($dirname) {
 		my $clname = "$dirname/ChangeLog";
 		if (-f $clname) {
-			my $filename_rel = substr ($_[0], length ($dirname) + 1);
-			return ($filename_rel, $clname);
+			my $relname = substr ($_[0], length ($dirname) + 1);
+			return ($clname, $relname);
 		} else {
 			$dirname =~ s/[\/\\]?[^\/\\]*$//;
 		} 
 	}
-	return ($_[0], 'Unknown Changelog');
+
+	return ('Unknown ChangeLog', $_[0]);
+}
+
+sub remove_suffixes ($) {
+	my $filename = $_[0];
+	$filename =~ s/^[ab]\///;
+	$filename =~ s/\.jj$//;
+	return $filename;
 }
 
 # For every file in the .diff print all the function names in ChangeLog
 # format.
-$bof = 0;
+%cl_entries = ();
+$change_msg = undef;
+$look_for_funs = 0;
 $clname = get_clname('');
 open (DFILE, $diff) or die "Could not open file $diff for reading";
 while (<DFILE>) {
-    # Check if we found a new file.
-    if (/^\+\+\+ (b\/)?(\S+)/) {
-	# If we have not seen any function names in the previous file (ie,
-	# $bof == 1), we just write out a ':' before starting the next
-	# file.
-	if ($bof == 1) {
-		$cl_entries{$clname} .= ":\n";
+    # Stop processing functions if we found a new file
+	# Remember both left and right names because one may be /dev/null.
+    if (/^[+*][+*][+*] +(\S+)/) {
+		$left = remove_suffixes ($1);
+		$look_for_funs = 0;
 	}
-	$filename = $2;
-	($filename_rel, $clname) = get_clname ($filename);
-	$cl_entries{$clname} .= "\t* $filename_rel";
-	$bof = 1;
+    if (/^--- +(\S+)?/) {
+		$right = remove_suffixes ($1);
+		$look_for_funs = 0;
+	}
+
+	# Check if the body of diff started.
+	# We should now have both left and right name,
+	# so we can decide filename.
+
+    if ($left && (/^\*{15}$/ || /^@@ /)) {
+	# If we have not seen any function names in the previous file (ie,
+	# $change_msg is empty), we just write out a ':' before starting the next
+	# file.
+	if ($clname) {
+		$cl_entries{$clname} .= $change_msg ? "$change_msg" : ":\n";
+	}
+
+	if ($left eq $right) {
+		$filename = $left;
+	} elsif($left eq '/dev/null') {
+		$filename = $right;
+	} elsif($right eq '/dev/null') {
+		$filename = $left;
+	} else {
+		print STDERR "Error: failed to parse diff for $left and $right\n";
+		exit 1;
+	}
+	$left = $right = undef;
+	($clname, $relname) = get_clname ($filename);
+	$cl_entries{$clname} .= "\t* $relname";
+	$change_msg = '';
+	$look_for_funs = $filename =~ '\.(c|cpp|C|cc|h|inc|def)$';
     }
 
     # Remember the last line in a unified diff block that might start
     # a new function.
     if (/^[-+ ]([a-zA-Z0-9_].*)/) {
         $save_fn = $1;
+    }
+
+    # Check if file is newly added.
+    # Two patterns: for context and unified diff.
+    if (/^\*\*\* 0 \*\*\*\*/
+        || /^@@ -0,0 \+1.* @@/) {
+        $change_msg = $filename =~ /testsuite.*(?<!\.exp)$/ ? ": New test.\n" : ": New file.\n";
+        $look_for_funs = 0;
+    }
+
+    # Check if file was removed.
+    # Two patterns: for context and unified diff.
+    if (/^--- 0 ----/
+        || /^@@ -1.* \+0,0 @@/) {
+        $change_msg = ": Remove.\n";
+        $look_for_funs = 0;
     }
 
     # If we find a new function, print it in brackets.  Special case if
@@ -110,10 +162,11 @@ while (<DFILE>) {
     # The fourth pattern looks for the starts of functions or classes
     # within a unified diff block.
 
-    if (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
+    if ($look_for_funs
+        && (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
         || /^[\-\+\!] ([a-zA-Z0-9_]+)[ \t]*\(.*/
 	|| /^@@ .* @@ ([a-zA-Z0-9_].*)/
-	|| /^[-+ ](\{)/)
+	|| /^[-+ ](\{)/))
       {
 	$_ = $1;
 	my $fn;
@@ -138,25 +191,24 @@ while (<DFILE>) {
 	    # If this is the first function in the file, we display it next
 	    # to the filename, so we need an extra space before the opening
 	    # brace.
-	    if ($bof) {
-		$cl_entries{$clname} .= " ";
-		$bof = 0;
+	    if (!$change_msg) {
+		$change_msg .= " ";
 	    } else {
-		$cl_entries{$clname} .= "\t";
+		$change_msg .= "\t";
 	    }
 
-		$cl_entries{$clname} .= "($fn):\n";
+		$change_msg .= "($fn):\n";
 	    $seen_names{$fn} = 1;
 	}
     }
 }
 
-# If we have not seen any function names (ie, $bof == 1), we just
+close (DFILE);
+
+# If we have not seen any function names (ie, $change_msg is empty), we just
 # write out a ':'. This happens when there is only one file with no
 # functions.
-if ($bof == 1) {
-	$cl_entries{$clname} .= ":\n";
-}
+$cl_entries{$clname} .= $change_msg ? ": $change_msg\n" : ":\n";
 
 $temp = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($temp);
 open (CLFILE, ">$temp") or die "Could not open file $temp for writing";
@@ -164,8 +216,6 @@ open (CLFILE, ">$temp") or die "Could not open file $temp for writing";
 foreach my $clname (keys %cl_entries) {
 	print CLFILE "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
 }
-
-close (DFILE);
 
 # Concatenate the ChangeLog template and the original .diff file.
 system ("cat $diff >>$temp && mv $temp $diff") == 0
