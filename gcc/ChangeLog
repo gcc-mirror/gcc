@@ -1,3 +1,12 @@
+2013-12-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/59584
+	* config/cris/predicates.md (cris_nonsp_register_operand):
+	New define_predicate.
+	* config/cris/cris.md: Replace register_operand with
+	cris_nonsp_register_operand for destinations in all
+	define_splits where a register is set more than once.
+
 2013-12-23  Jason Merrill  <jason@redhat.com>
 
 	* gdbinit.in (input_line, input_filename): Define.
