@@ -689,13 +689,6 @@ write_mangled_name (const tree decl, bool top_level)
     mangled_name:;
       write_string ("_Z");
       write_encoding (decl);
-      if (DECL_LANG_SPECIFIC (decl)
-	  && (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
-	      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)))
-	/* We need a distinct mangled name for these entities, but
-	   we should never actually output it.  So, we append some
-	   characters the assembler won't like.  */
-	write_string (" *INTERNAL* ");
     }
 }
 
@@ -1653,25 +1646,21 @@ write_identifier (const char *identifier)
 		    ::= C2   # base object constructor
 		    ::= C3   # complete object allocating constructor
 
-   Currently, allocating constructors are never used.
-
-   We also need to provide mangled names for the maybe-in-charge
-   constructor, so we treat it here too.  mangle_decl_string will
-   append *INTERNAL* to that, to make sure we never emit it.  */
+   Currently, allocating constructors are never used.  */
 
 static void
 write_special_name_constructor (const tree ctor)
 {
   if (DECL_BASE_CONSTRUCTOR_P (ctor))
     write_string ("C2");
+  /* This is the old-style "[unified]" constructor.
+     In some cases, we may emit this function and call
+     it from the clones in order to share code and save space.  */
+  else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor))
+    write_string ("C4");
   else
     {
-      gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (ctor)
-		  /* Even though we don't ever emit a definition of
-		     the old-style destructor, we still have to
-		     consider entities (like static variables) nested
-		     inside it.  */
-		  || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor));
+      gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (ctor));
       write_string ("C1");
     }
 }
@@ -1681,11 +1670,7 @@ write_special_name_constructor (const tree ctor)
 
      <special-name> ::= D0 # deleting (in-charge) destructor
 		    ::= D1 # complete object (in-charge) destructor
-		    ::= D2 # base object (not-in-charge) destructor
-
-   We also need to provide mangled names for the maybe-incharge
-   destructor, so we treat it here too.  mangle_decl_string will
-   append *INTERNAL* to that, to make sure we never emit it.  */
+		    ::= D2 # base object (not-in-charge) destructor  */
 
 static void
 write_special_name_destructor (const tree dtor)
@@ -1694,14 +1679,14 @@ write_special_name_destructor (const tree dtor)
     write_string ("D0");
   else if (DECL_BASE_DESTRUCTOR_P (dtor))
     write_string ("D2");
+  else if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor))
+    /* This is the old-style "[unified]" destructor.
+       In some cases, we may emit this function and call
+       it from the clones in order to share code and save space.  */
+    write_string ("D4");
   else
     {
-      gcc_assert (DECL_COMPLETE_DESTRUCTOR_P (dtor)
-		  /* Even though we don't ever emit a definition of
-		     the old-style destructor, we still have to
-		     consider entities (like static variables) nested
-		     inside it.  */
-		  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor));
+      gcc_assert (DECL_COMPLETE_DESTRUCTOR_P (dtor));
       write_string ("D1");
     }
 }

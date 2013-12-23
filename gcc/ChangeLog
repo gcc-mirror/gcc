@@ -1,3 +1,25 @@
+2013-12-23  Jason Merrill  <jason@redhat.com>
+
+	* cgraph.h (struct cgraph_node): Add calls_comdat_local.
+	(symtab_comdat_local_p, symtab_in_same_comdat_p): New.
+	* cif-code.def: Add USES_COMDAT_LOCAL.
+	* symtab.c (verify_symtab_base): Make sure we don't refer to a
+	comdat-local symbol from outside its comdat.
+	* cgraph.c (verify_cgraph_node): Likewise.
+	* cgraphunit.c (mark_functions_to_output): Don't mark comdat-locals.
+	* ipa.c (symtab_remove_unreachable_nodes): Likewise.
+	(function_and_variable_visibility): Handle comdat-local fns.
+	* ipa-cp.c (determine_versionability): Don't clone comdat-locals.
+	* ipa-inline-analysis.c (compute_inline_parameters): Update
+	calls_comdat_local.
+	* ipa-inline-transform.c (inline_call): Likewise.
+	(save_inline_function_body): Don't clear DECL_COMDAT_GROUP.
+	* ipa-inline.c (can_inline_edge_p): Check calls_comdat_local.
+	* lto-cgraph.c (input_overwrite_node): Read calls_comdat_local.
+	(lto_output_node): Write it.
+	* symtab.c (symtab_dissolve_same_comdat_group_list): Clear
+	DECL_COMDAT_GROUP for comdat-locals.
+
 2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (processor_target_table): Move Bonnell and

@@ -428,6 +428,9 @@ public:
   unsigned tm_clone : 1;
   /* True if this decl is a dispatcher for function versions.  */
   unsigned dispatcher_function : 1;
+  /* True if this decl calls a COMDAT-local function.  This is set up in
+     compute_inline_parameters and inline_call.  */
+  unsigned calls_comdat_local : 1;
 };
 
 
@@ -1489,5 +1492,23 @@ symtab_can_be_discarded (symtab_node *node)
 	      && node->resolution != LDPR_PREVAILING_DEF
 	      && node->resolution != LDPR_PREVAILING_DEF_IRONLY
 	      && node->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP));
+}
+
+/* Return true if NODE is local to a particular COMDAT group, and must not
+   be named from outside the COMDAT.  This is used for C++ decloned
+   constructors.  */
+
+static inline bool
+symtab_comdat_local_p (symtab_node *node)
+{
+  return (node->same_comdat_group && !TREE_PUBLIC (node->decl));
+}
+
+/* Return true if ONE and TWO are part of the same COMDAT group.  */
+
+static inline bool
+symtab_in_same_comdat_p (symtab_node *one, symtab_node *two)
+{
+  return DECL_COMDAT_GROUP (one->decl) == DECL_COMDAT_GROUP (two->decl);
 }
 #endif  /* GCC_CGRAPH_H  */
