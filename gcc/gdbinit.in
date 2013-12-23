@@ -195,6 +195,8 @@ macro define __FILE__ "gdb"
 macro define __LINE__ 1
 macro define __FUNCTION__ "gdb"
 macro define __null 0
+macro define input_line expand_location(input_location).line
+macro define input_filename expand_location(input_location).file
 
 # Gracefully handle aborts in functions used from gdb.
 set unwindonsignal on

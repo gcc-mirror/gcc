@@ -1,5 +1,7 @@
 2013-12-23  Jason Merrill  <jason@redhat.com>
 
+	* gdbinit.in (input_line, input_filename): Define.
+
 	* cgraph.h (struct cgraph_node): Add calls_comdat_local.
 	(symtab_comdat_local_p, symtab_in_same_comdat_p): New.
 	* cif-code.def: Add USES_COMDAT_LOCAL.
