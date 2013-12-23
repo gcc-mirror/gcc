@@ -1,3 +1,9 @@
+2013-12-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59111
+	* g++.dg/cpp0x/pr59111.C: New test.
+	* g++.dg/cpp1y/pr59110.C: New test.
+
 2013-12-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/x86_64/abi/callabi/func-2a.c (dg-do): Remove
