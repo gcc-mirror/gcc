@@ -1,3 +1,83 @@
+2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
+	     Tocar Ilya  <ilya.tocar@intel.com> 
+
+	* config/i386/core2.md: Replace corei7 with nehalem.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Use nehalem,
+	westmere, sandybridge, ivybridge, haswell, bonnell, silvermont
+	for cpu names.
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Replace
+	PROCESSOR_COREI7, PROCESSOR_COREI7_AVX, PROCESSOR_ATOM,
+	PROCESSOR_SLM with PROCESSOR_NEHALEM, PROCESSOR_SANDYBRIDGE,
+	PROCESSOR_BONNELL, PROCESSOR_SILVERMONT.  Define
+	__nehalem/__nehalem__, __sandybridge/__sandybridge__,
+	__haswell/__haswell__, __tune_nehalem__, __tune_sandybridge__,
+	__tune_haswell__, __bonnell/__bonnell__,
+	__silvermont/__silvermont__, __tune_bonnell__,
+	__tune_silvermont__.
+
+	* config/i386/i386.c (m_COREI7): Renamed to ...
+	(m_NEHALEM): This.
+	(m_COREI7_AVX): Renamed to ...
+	(m_SANDYBRIDGE): This.
+	(m_ATOM): Renamed to ...
+	(m_BONNELL): This.
+	(m_SLM): Renamed to ...
+	(m_SILVERMONT): This.
+	(m_CORE_ALL): Updated.
+	(cpu_names): Add "nehalem", "westmere", "sandybridge",
+	"ivybridge", "haswell", "broadwell", "bonnell", "silvermont".
+	(PTA_CORE2): New.
+	(PTA_NEHALEM): Likewise.
+	(PTA_WESTMERE): Likewise.
+	(PTA_SANDYBRIDGE): Likewise.
+	(PTA_IVYBRIDGE): Likewise.
+	(PTA_HASWELL): Likewise.
+	(PTA_BROADWELL): Likewise.
+	(PTA_BONNELL): Likewise.
+	(PTA_SILVERMONT): Likewise.
+	(ix86_option_override_internal): Use new PTA_XXX.  Add nehalem,
+	westmere, sandybridge, ivybridge, haswell, bonnell, silvermont.
+	(ix86_lea_outperforms): Updated.
+	(ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	(do_reorder_for_imul): Likewise.
+	(swap_top_of_ready_list): Likewise.
+	(ix86_sched_reorder): Likewise.
+	(ix86_sched_init_global): Likewise.
+	(get_builtin_code_for_version): Likewise.
+	(processor_model): Replace M_INTEL_ATOM, M_INTEL_SLM with
+	M_INTEL_BONNELL, M_INTEL_SILVERMONT.
+	(arch_names_table): Updated.
+
+	* config/i386/i386.h (TARGET_COREI7): Removed.
+	(TARGET_COREI7_AVX): Likewise.
+	(TARGET_ATOM): Likewise.
+	(TARGET_SLM): Likewise.
+	(TARGET_NEHALEM): New.
+	(TARGET_SANDYBRIDGE): Likewise.
+	(TARGET_BONNELL): Likewise.
+	(TARGET_SILVERMONT): Likewise.
+	(target_cpu_default): Add TARGET_CPU_DEFAULT_core_avx2,
+	TARGET_CPU_DEFAULT_nehalem, TARGET_CPU_DEFAULT_westmere,
+	TARGET_CPU_DEFAULT_sandybridge, TARGET_CPU_DEFAULT_ivybridge,
+	TARGET_CPU_DEFAULT_broadwell, TARGET_CPU_DEFAULT_bonnell,
+	TARGET_CPU_DEFAULT_silvermont.  Move TARGET_CPU_DEFAULT_haswell
+	before TARGET_CPU_DEFAULT_broadwell.
+	(processor_type): Replace PROCESSOR_COREI7, PROCESSOR_COREI7_AVX,
+	PROCESSOR_ATOM, PROCESSOR_SLM with PROCESSOR_NEHALEM,
+	PROCESSOR_SANDYBRIDGE, PROCESSOR_BONNELL, PROCESSOR_SILVERMONT.
+
+	* config/i386/i386.md (cpu): Replace corei7 with nehalem.
+
+	* config/i386/x86-tune.def: Updated.
+
+	* doc/invoke.texi: Replace corei7, corei7-avx, core-avx-i,
+	core-avx2, atom, slm with nehalem, sandybridge, ivybridge,
+	haswell, bonnel, silvermont.  Add westmere.
+
 2013-12-23  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/57422
