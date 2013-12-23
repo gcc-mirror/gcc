@@ -1,5 +1,9 @@
 2013-12-23  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/59203
+	* config/cris/cris.c (cris_pic_symbol_type_of): Fix typo,
+	checking t1 twice instead of t1 and t2 respectively.
+
 	PR middle-end/59584
 	* config/cris/predicates.md (cris_nonsp_register_operand):
 	New define_predicate.
