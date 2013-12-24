@@ -21594,7 +21594,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 
     case 'v':
 	gcc_assert (CONST_DOUBLE_P (x));
-	fprintf (stream, "#%d", vfp3_const_double_for_fract_bits (x));
+	int result;
+	result = vfp3_const_double_for_fract_bits (x);
+	if (result == 0)
+	  result = vfp3_const_double_for_bits (x);
+	fprintf (stream, "#%d", result);
 	return;
 
     /* Register specifier for vld1.16/vst1.16.  Translate the S register
@@ -29705,6 +29709,26 @@ vfp3_const_double_for_fract_bits (rtx operand)
 	    return int_log2 (value);
 	}
     }
+  return 0;
+}
+
+int
+vfp3_const_double_for_bits (rtx operand)
+{
+  REAL_VALUE_TYPE r0;
+
+  if (!CONST_DOUBLE_P (operand))
+    return 0;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r0, operand);
+  if (exact_real_truncate (DFmode, &r0))
+    {
+      HOST_WIDE_INT value = real_to_integer (&r0);
+      value = value & 0xffffffff;
+      if ((value != 0) && ( (value & (value - 1)) == 0))
+	return int_log2 (value);
+    }
+
   return 0;
 }
 

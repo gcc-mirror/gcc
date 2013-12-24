@@ -1,3 +1,7 @@
+2013-12-24  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: New test case.
+
 2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
 
 	* gcc.dg/vect/vect-neg-store-1.c: New test.
