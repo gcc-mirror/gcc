@@ -1,3 +1,8 @@
+2013-12-24   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Check
+	opts->x_ix86_arch_string instead of ix86_arch_string.
+
 2013-12-24  Renlin Li  <Renlin.Li@arm.com>
 
 	* config/arm/arm-protos.h (vfp_const_double_for_bits): Declare.
