@@ -3645,7 +3645,7 @@ ix86_option_override_internal (bool main_args_p,
   if (!strcmp (opts->x_ix86_arch_string, "generic"))
     error ("generic CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
-  else if (!strcmp (ix86_arch_string, "intel"))
+  else if (!strcmp (opts->x_ix86_arch_string, "intel"))
     error ("intel CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
   else if (!strncmp (opts->x_ix86_arch_string, "generic", 7) || i == pta_size)
