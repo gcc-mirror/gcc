@@ -1,5 +1,8 @@
 2013-12-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59271
+	* lambda.c (build_capture_proxy): Use build_cplus_array_type.
+
 	PR c++/59349
 	* parser.c (cp_parser_lambda_introducer): Handle empty init.
 
