@@ -8898,6 +8898,11 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  capture_init_expr = cp_parser_initializer (parser, &direct,
 						     &non_constant);
 	  explicit_init_p = true;
+	  if (capture_init_expr == NULL_TREE)
+	    {
+	      error ("empty initializer for lambda init-capture");
+	      capture_init_expr = error_mark_node;
+	    }
 	}
       else
 	{
