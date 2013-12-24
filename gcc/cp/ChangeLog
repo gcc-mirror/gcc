@@ -1,3 +1,8 @@
+2013-12-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59349
+	* parser.c (cp_parser_lambda_introducer): Handle empty init.
+
 2013-12-23  Stuart Hastings <stuart@apple.com>
 	    Bill Maddox  <maddox@google.com>
 	    Jason Merrill  <jason@redhat.com>
