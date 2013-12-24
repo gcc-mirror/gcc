@@ -1,3 +1,13 @@
+2013-12-24  Renlin Li  <Renlin.Li@arm.com>
+
+	* config/arm/arm-protos.h (vfp_const_double_for_bits): Declare.
+	* config/arm/constraints.md (Dp): Define new constraint.
+	* config/arm/predicates.md (const_double_vcvt_power_of_two): Define
+	new predicate.
+	* config/arm/arm.c (arm_print_operand): Add print for new fucntion.
+	(vfp3_const_double_for_bits): New function.
+	* config/arm/vfp.md (combine_vcvtf2i): Define new instruction.
+
 2013-12-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/59203
