@@ -247,10 +247,10 @@ extern const struct processor_costs ix86_size_cost;
 
 /* Macros used in the machine description to test the flags.  */
 
-/* configure can arrange to make this 2, to force a 486.  */
+/* configure can arrange to change it.  */
 
 #ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT_generic
+#define TARGET_CPU_DEFAULT PROCESSOR_GENERIC
 #endif
 
 #ifndef TARGET_FPMATH_DEFAULT
@@ -606,55 +606,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
-
-enum target_cpu_default
-{
-  TARGET_CPU_DEFAULT_generic = 0,
-
-  TARGET_CPU_DEFAULT_i386,
-  TARGET_CPU_DEFAULT_i486,
-  TARGET_CPU_DEFAULT_pentium,
-  TARGET_CPU_DEFAULT_pentium_mmx,
-  TARGET_CPU_DEFAULT_pentiumpro,
-  TARGET_CPU_DEFAULT_pentium2,
-  TARGET_CPU_DEFAULT_pentium3,
-  TARGET_CPU_DEFAULT_pentium4,
-  TARGET_CPU_DEFAULT_pentium_m,
-  TARGET_CPU_DEFAULT_prescott,
-  TARGET_CPU_DEFAULT_nocona,
-  TARGET_CPU_DEFAULT_core2,
-  TARGET_CPU_DEFAULT_corei7,
-  TARGET_CPU_DEFAULT_corei7_avx,
-  TARGET_CPU_DEFAULT_core_avx2,
-  TARGET_CPU_DEFAULT_atom,
-  TARGET_CPU_DEFAULT_slm,
-  TARGET_CPU_DEFAULT_nehalem,
-  TARGET_CPU_DEFAULT_westmere,
-  TARGET_CPU_DEFAULT_sandybridge,
-  TARGET_CPU_DEFAULT_ivybridge,
-  TARGET_CPU_DEFAULT_haswell,
-  TARGET_CPU_DEFAULT_broadwell,
-  TARGET_CPU_DEFAULT_bonnell,
-  TARGET_CPU_DEFAULT_silvermont,
-  TARGET_CPU_DEFAULT_intel,
-
-  TARGET_CPU_DEFAULT_geode,
-  TARGET_CPU_DEFAULT_k6,
-  TARGET_CPU_DEFAULT_k6_2,
-  TARGET_CPU_DEFAULT_k6_3,
-  TARGET_CPU_DEFAULT_athlon,
-  TARGET_CPU_DEFAULT_athlon_sse,
-  TARGET_CPU_DEFAULT_k8,
-  TARGET_CPU_DEFAULT_amdfam10,
-  TARGET_CPU_DEFAULT_bdver1,
-  TARGET_CPU_DEFAULT_bdver2,
-  TARGET_CPU_DEFAULT_bdver3,
-  TARGET_CPU_DEFAULT_bdver4,
-  TARGET_CPU_DEFAULT_btver1,
-  TARGET_CPU_DEFAULT_btver2,
-
-  TARGET_CPU_DEFAULT_max
-};
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -2213,19 +2164,17 @@ do {									\
    with x86-64 medium memory model */
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
-/* Which processor to tune code generation for.  */
+/* Which processor to tune code generation for.  These must be in sync
+   with processor_target_table in i386.c.  */ 
 
 enum processor_type
 {
-  PROCESSOR_I386 = 0,			/* 80386 */
+  PROCESSOR_GENERIC = 0,
+  PROCESSOR_I386,			/* 80386 */
   PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
   PROCESSOR_PENTIUM,
   PROCESSOR_PENTIUMPRO,
-  PROCESSOR_GEODE,
-  PROCESSOR_K6,
-  PROCESSOR_ATHLON,
   PROCESSOR_PENTIUM4,
-  PROCESSOR_K8,
   PROCESSOR_NOCONA,
   PROCESSOR_CORE2,
   PROCESSOR_NEHALEM,
@@ -2233,7 +2182,10 @@ enum processor_type
   PROCESSOR_HASWELL,
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
-  PROCESSOR_GENERIC,
+  PROCESSOR_GEODE,
+  PROCESSOR_K6,
+  PROCESSOR_ATHLON,
+  PROCESSOR_K8,
   PROCESSOR_AMDFAM10,
   PROCESSOR_BDVER1,
   PROCESSOR_BDVER2,
