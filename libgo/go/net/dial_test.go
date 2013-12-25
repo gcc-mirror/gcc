@@ -147,7 +147,7 @@ func TestSelfConnect(t *testing.T) {
 		n = 100
 	}
 	for i := 0; i < n; i++ {
-		c, err := DialTimeout("tcp", addr, time.Millisecond)
+		c, err := Dial("tcp", addr)
 		if err == nil {
 			c.Close()
 			t.Errorf("#%d: Dial %q succeeded", i, addr)
