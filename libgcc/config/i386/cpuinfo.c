@@ -62,6 +62,8 @@ enum processor_types
   AMDFAM10H,
   AMDFAM15H,
   INTEL_SILVERMONT,
+  AMD_BOBCAT,
+  AMD_JAGUAR,  
   CPU_TYPE_MAX
 };
 
@@ -75,6 +77,10 @@ enum processor_subtypes
   AMDFAM10H_ISTANBUL,
   AMDFAM15H_BDVER1,
   AMDFAM15H_BDVER2,
+  AMDFAM15H_BDVER3,
+  AMDFAM15H_BDVER4,
+  INTEL_COREI7_IVYBRIDGE,
+  INTEL_COREI7_HASWELL,
   CPU_SUBTYPE_MAX
 };
 
@@ -92,7 +98,11 @@ enum processor_features
   FEATURE_SSE4_1,
   FEATURE_SSE4_2,
   FEATURE_AVX,
-  FEATURE_AVX2
+  FEATURE_AVX2,
+  FEATURE_SSE4_A,
+  FEATURE_FMA4,
+  FEATURE_XOP,
+  FEATURE_FMA
 };
 
 struct __processor_model
@@ -113,36 +123,45 @@ get_amd_cpu (unsigned int family, unsigned int model)
     {
     /* AMD Family 10h.  */
     case 0x10:
+      __cpu_model.__cpu_type = AMDFAM10H;
       switch (model)
 	{
 	case 0x2:
 	  /* Barcelona.  */
-	  __cpu_model.__cpu_type = AMDFAM10H;
 	  __cpu_model.__cpu_subtype = AMDFAM10H_BARCELONA;
 	  break;
 	case 0x4:
 	  /* Shanghai.  */
-	  __cpu_model.__cpu_type = AMDFAM10H;
 	  __cpu_model.__cpu_subtype = AMDFAM10H_SHANGHAI;
 	  break;
 	case 0x8:
 	  /* Istanbul.  */
-	  __cpu_model.__cpu_type = AMDFAM10H;
 	  __cpu_model.__cpu_subtype = AMDFAM10H_ISTANBUL;
 	  break;
 	default:
 	  break;
 	}
       break;
-    /* AMD Family 15h.  */
+    /* AMD Family 14h "Bobcat". */
+    case 0x14:
+      __cpu_model.__cpu_type = AMD_BOBCAT;
+      break;
+    /* AMD Family 15h "Bulldozer".  */
     case 0x15:
       __cpu_model.__cpu_type = AMDFAM15H;
       /* Bulldozer version 1.  */
       if ( model <= 0xf)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER1;
-      /* Bulldozer version 2.  */
-      if (model >= 0x10 && model <= 0x1f)
-	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER2;
+      /* Bulldozer version 2 "Piledriver" */
+      if (model >= 0x10 && model <= 0x2f)
+	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER2;      
+      /* Bulldozer version 3 "Steamroller"  */
+      if (model >= 0x30 && model <= 0x4f)
+	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER3;
+      break;
+    /* AMD Family 16h "Jaguar". */
+    case 0x16:
+      __cpu_model.__cpu_type = AMD_JAGUAR;
       break;
     default:
       break;
@@ -196,6 +215,20 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_type = INTEL_COREI7;
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SANDYBRIDGE;
 	      break;
+	    case 0x3a:
+	    case 0x3e:
+	      /* Ivy Bridge.  */
+	      __cpu_model.__cpu_type = INTEL_COREI7;
+	      __cpu_model.__cpu_subtype = INTEL_COREI7_IVYBRIDGE;
+	      break;
+	    case 0x3c:
+	    case 0x3f:
+	    case 0x45:
+	    case 0x46:
+	      /* Haswell.  */
+	      __cpu_model.__cpu_type = INTEL_COREI7;
+	      __cpu_model.__cpu_subtype = INTEL_COREI7_HASWELL;
+	      break;
 	    case 0x17:
 	    case 0x1d:
 	      /* Penryn.  */
@@ -242,6 +275,8 @@ get_available_features (unsigned int ecx, unsigned int edx,
     features |= (1 << FEATURE_SSE4_2);
   if (ecx & bit_AVX)
     features |= (1 << FEATURE_AVX);
+  if (ecx & bit_FMA)
+    features |= (1 << FEATURE_FMA);
 
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0). */
   if (max_cpuid_level >= 7)
@@ -252,6 +287,23 @@ get_available_features (unsigned int ecx, unsigned int edx,
 	features |= (1 << FEATURE_AVX2);
     }
 
+  unsigned int ext_level;
+  unsigned int eax, ebx;
+  /* Check cpuid level of extended features.  */
+  __cpuid (0x80000000, ext_level, ebx, ecx, edx);
+
+  if (ext_level > 0x80000000)
+    {
+      __cpuid (0x80000001, eax, ebx, ecx, edx);
+
+      if (ecx & bit_SSE4a)
+	features |= (1 << FEATURE_SSE4_A);
+      if (ecx & bit_FMA4)
+	features |= (1 << FEATURE_FMA4);
+      if (ecx & bit_XOP)
+	features |= (1 << FEATURE_XOP);
+    }
+    
   __cpu_model.__cpu_features[0] = features;
 }
 

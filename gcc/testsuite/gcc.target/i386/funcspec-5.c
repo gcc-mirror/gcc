@@ -17,7 +17,9 @@ extern void test_sse4 (void)			__attribute__((__target__("sse4")));
 extern void test_sse4_1 (void)			__attribute__((__target__("sse4.1")));
 extern void test_sse4_2 (void)			__attribute__((__target__("sse4.2")));
 extern void test_sse4a (void)			__attribute__((__target__("sse4a")));
+extern void test_fma (void)			__attribute__((__target__("fma")));
 extern void test_fma4 (void)			__attribute__((__target__("fma4")));
+extern void test_xop (void)			__attribute__((__target__("xop")));
 extern void test_ssse3 (void)			__attribute__((__target__("ssse3")));
 extern void test_tbm (void)			__attribute__((__target__("tbm")));
 extern void test_avx (void)			__attribute__((__target__("avx")));
@@ -37,7 +39,9 @@ extern void test_no_sse4 (void)			__attribute__((__target__("no-sse4")));
 extern void test_no_sse4_1 (void)		__attribute__((__target__("no-sse4.1")));
 extern void test_no_sse4_2 (void)		__attribute__((__target__("no-sse4.2")));
 extern void test_no_sse4a (void)		__attribute__((__target__("no-sse4a")));
+extern void test_no_fma (void)			__attribute__((__target__("no-fma")));
 extern void test_no_fma4 (void)			__attribute__((__target__("no-fma4")));
+extern void test_no_xop (void)			__attribute__((__target__("no-xop")));
 extern void test_no_ssse3 (void)		__attribute__((__target__("no-ssse3")));
 extern void test_no_tbm (void)			__attribute__((__target__("no-tbm")));
 extern void test_no_avx (void)			__attribute__((__target__("no-avx")));
@@ -63,6 +67,9 @@ extern void test_arch_pentium4m (void)		__attribute__((__target__("arch=pentium4
 extern void test_arch_prescott (void)		__attribute__((__target__("arch=prescott")));
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
+extern void test_arch_corei7 (void)		__attribute__((__target__("arch=corei7")));
+extern void test_arch_corei7_avx (void)		__attribute__((__target__("arch=corei7-avx")));
+extern void test_arch_core_avx2 (void)		__attribute__((__target__("arch=core-avx2")));
 extern void test_arch_geode (void)		__attribute__((__target__("arch=geode")));
 extern void test_arch_k6 (void)			__attribute__((__target__("arch=k6")));
 extern void test_arch_k6_2 (void)		__attribute__((__target__("arch=k6-2")));
@@ -81,6 +88,9 @@ extern void test_arch_athlon64_sse3 (void)	__attribute__((__target__("arch=athlo
 extern void test_arch_athlon_fx (void)		__attribute__((__target__("arch=athlon-fx")));
 extern void test_arch_amdfam10 (void)		__attribute__((__target__("arch=amdfam10")));
 extern void test_arch_barcelona (void)		__attribute__((__target__("arch=barcelona")));
+extern void test_arch_bdver1 (void)		__attribute__((__target__("arch=bdver1")));
+extern void test_arch_bdver2 (void)		__attribute__((__target__("arch=bdver2")));
+extern void test_arch_bdver3 (void)		__attribute__((__target__("arch=bdver3")));
 extern void test_arch_foo (void)		__attribute__((__target__("arch=foo"))); /* { dg-error "bad value" } */
 
 extern void test_tune_i386 (void)		__attribute__((__target__("tune=i386")));
@@ -103,6 +113,9 @@ extern void test_tune_pentium4m (void)		__attribute__((__target__("tune=pentium4
 extern void test_tune_prescott (void)		__attribute__((__target__("tune=prescott")));
 extern void test_tune_nocona (void)		__attribute__((__target__("tune=nocona")));
 extern void test_tune_core2 (void)		__attribute__((__target__("tune=core2")));
+extern void test_tune_corei7 (void)		__attribute__((__target__("tune=corei7")));
+extern void test_tune_corei7_avx (void)		__attribute__((__target__("tune=corei7-avx")));
+extern void test_tune_core_avx2 (void)		__attribute__((__target__("tune=core-avx2")));
 extern void test_tune_geode (void)		__attribute__((__target__("tune=geode")));
 extern void test_tune_k6 (void)			__attribute__((__target__("tune=k6")));
 extern void test_tune_k6_2 (void)		__attribute__((__target__("tune=k6-2")));
@@ -121,6 +134,9 @@ extern void test_tune_athlon64_sse3 (void)	__attribute__((__target__("tune=athlo
 extern void test_tune_athlon_fx (void)		__attribute__((__target__("tune=athlon-fx")));
 extern void test_tune_amdfam10 (void)		__attribute__((__target__("tune=amdfam10")));
 extern void test_tune_barcelona (void)		__attribute__((__target__("tune=barcelona")));
+extern void test_tune_bdver1 (void)		__attribute__((__target__("tune=bdver1")));
+extern void test_tune_bdver2 (void)		__attribute__((__target__("tune=bdver2")));
+extern void test_tune_bdver3 (void)		__attribute__((__target__("tune=bdver3")));
 extern void test_tune_generic (void)		__attribute__((__target__("tune=generic")));
 extern void test_tune_foo (void)		__attribute__((__target__("tune=foo"))); /* { dg-error "bad value" } */
 

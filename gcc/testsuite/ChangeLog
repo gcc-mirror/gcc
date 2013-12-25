@@ -1,3 +1,13 @@
+2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	PR target/59422
+	* gcc.target/i386/funcspec-5.c (test_fma, test_xop, test_no_fma,
+	test_no_xop, test_arch_corei7, test_arch_corei7_avx,
+	test_arch_core_avx2, test_arch_bdver1, test_arch_bdver2,
+	test_arch_bdver3, test_tune_corei7, test_tune_corei7_avx,
+	test_tune_core_avx2, test_tune_bdver1, test_tune_bdver2 and
+	test_tune_bdver3): New function prototypes.
+
 2013-12-24  Renlin Li  <Renlin.Li@arm.com>
 
 	* gcc.target/arm/fixed_float_conversion.c: New test case.
