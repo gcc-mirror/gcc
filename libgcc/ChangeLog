@@ -6,8 +6,8 @@
 2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
-        PR target/59422
-        * config/i386/cpuinfo.c (enum processor_types):  Add AMD_BOBCAT
+	PR target/59422
+	* config/i386/cpuinfo.c (enum processor_types):  Add AMD_BOBCAT
 	and AMD_JAGUAR.
 	(enum processor_subtypes): Add AMDFAM15H_BDVER3, AMDFAM15H_BDVER4,
 	INTEL_COREI7_IVYBRIDGE and INTEL_COREI7_HASWELL.
@@ -16,7 +16,7 @@
 	(get_amd_cpu): Handle AMD_BOBCAT, AMD_JAGUAR, AMDFAM15H_BDVER2 and
 	AMDFAM15H_BDVER3.
 	(get_intel_cpu): Handle INTEL_COREI7 and INTEL_COREI7_HASWELL.
-        (get_available_features): Handle FEATURE_FMA, FEATURE_SSE4_A,
+	(get_available_features): Handle FEATURE_FMA, FEATURE_SSE4_A,
 	FEATURE_FMA4 and FEATURE_XOP.
 
 2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
