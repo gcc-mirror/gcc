@@ -30034,11 +30034,11 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSE4_A;
 	      break;
 	    case PROCESSOR_BTVER1:
-	      arg_str = "bobcat";
+	      arg_str = "btver1";
 	      priority = P_PROC_SSE4_A;
 	      break;
 	    case PROCESSOR_BTVER2:
-	      arg_str = "jaguar";
+	      arg_str = "btver2";
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_BDVER1:
@@ -30942,8 +30942,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM10H,
     M_AMDFAM15H,
     M_INTEL_SILVERMONT,
-    M_AMD_BOBCAT,
-    M_AMD_JAGUAR,    
+    M_AMD_BTVER1,
+    M_AMD_BTVER2,    
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -30983,13 +30983,13 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},
       {"istanbul", M_AMDFAM10H_ISTANBUL},
-      {"bobcat", M_AMD_BOBCAT},      
+      {"btver1", M_AMD_BTVER1},      
       {"amdfam15h", M_AMDFAM15H},
       {"bdver1", M_AMDFAM15H_BDVER1},
       {"bdver2", M_AMDFAM15H_BDVER2},
       {"bdver3", M_AMDFAM15H_BDVER3},
       {"bdver4", M_AMDFAM15H_BDVER4},
-      {"jaguar", M_AMD_JAGUAR},      
+      {"btver2", M_AMD_BTVER2},      
     };
 
   static struct _isa_names_table
