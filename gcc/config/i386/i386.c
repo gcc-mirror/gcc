@@ -3283,23 +3283,13 @@ ix86_option_override_internal (bool main_args_p,
   /* Need to check -mtune=generic first.  */
   if (opts->x_ix86_tune_string)
     {
-      if (!strcmp (opts->x_ix86_tune_string, "generic")
-	  || !strcmp (opts->x_ix86_tune_string, "i686")
-	  /* As special support for cross compilers we read -mtune=native
+      /* As special support for cross compilers we read -mtune=native
 	     as -mtune=generic.  With native compilers we won't see the
 	     -mtune=native, as it was changed by the driver.  */
-	  || !strcmp (opts->x_ix86_tune_string, "native"))
+      if (!strcmp (opts->x_ix86_tune_string, "native"))
 	{
 	  opts->x_ix86_tune_string = "generic";
 	}
-      /* If this call is for setting the option attribute, allow the
-	 generic that was previously set.  */
-      else if (!main_args_p
-	       && !strcmp (opts->x_ix86_tune_string, "generic"))
-	;
-      else if (!strncmp (opts->x_ix86_tune_string, "generic", 7))
-        error ("bad value (%s) for %stune=%s %s",
-	       opts->x_ix86_tune_string, prefix, suffix, sw);
       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
         warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated; use "
                  "%stune=k8%s or %stune=generic%s instead as appropriate",
@@ -3318,9 +3308,7 @@ ix86_option_override_internal (bool main_args_p,
 
       /* opts->x_ix86_tune_string is set to opts->x_ix86_arch_string
 	 or defaulted.  We need to use a sensible tune option.  */
-      if (!strcmp (opts->x_ix86_tune_string, "generic")
-	  || !strcmp (opts->x_ix86_tune_string, "x86-64")
-	  || !strcmp (opts->x_ix86_tune_string, "i686"))
+      if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
 	{
 	  opts->x_ix86_tune_string = "generic";
 	}
@@ -3600,7 +3588,7 @@ ix86_option_override_internal (bool main_args_p,
   else if (!strcmp (opts->x_ix86_arch_string, "intel"))
     error ("intel CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
-  else if (!strncmp (opts->x_ix86_arch_string, "generic", 7) || i == pta_size)
+  else if (i == pta_size)
     error ("bad value (%s) for %sarch=%s %s",
 	   opts->x_ix86_arch_string, prefix, suffix, sw);
 
