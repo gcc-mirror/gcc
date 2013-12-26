@@ -1,3 +1,7 @@
+2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (decode_caches_intel): Add missing entries.
+
 2013-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59255
