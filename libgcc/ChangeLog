@@ -1,3 +1,8 @@
+2013-12-25   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Remove model 0x3f from
+	Haswell.
+
 2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
