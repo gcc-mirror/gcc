@@ -1,10 +1,16 @@
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59601
+	* config/i386/i386.c (get_builtin_code_for_version): Map
+	PROCESSOR_NEHALEM to "corei7".
+
 2013-12-26  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-        * config/i386/i386.c (get_builtin_code_for_version): Rename AMD 
-        CPU names M_AMD_BOBCAT to M_AMD_BTVER1 and M_AMD_JAGUAR 
-        to M_AMD_BTVER2.
-        (processor_model): Likewise.
-        (arch_names_table): Likewise.
+	* config/i386/i386.c (get_builtin_code_for_version): Rename AMD 
+	CPU names M_AMD_BOBCAT to M_AMD_BTVER1 and M_AMD_JAGUAR 
+	to M_AMD_BTVER2.
+	(processor_model): Likewise.
+	(arch_names_table): Likewise.
 
 2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
 

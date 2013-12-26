@@ -30010,7 +30010,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      arg_str = "nehalem";
+	      /* We translate "arch=corei7" and "arch=nehelam" to
+		 "corei7" so that it will be mapped to M_INTEL_COREI7
+		 as cpu type to cover all M_INTEL_COREI7_XXXs.  */
+	      arg_str = "corei7";
 	      priority = P_PROC_SSE4_2;
 	      break;
 	    case PROCESSOR_SANDYBRIDGE:
