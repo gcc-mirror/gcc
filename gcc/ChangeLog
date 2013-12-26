@@ -1,16 +1,18 @@
+2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (decode_caches_intel): Add missing entries.
+
 2013-12-25   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59587
-	* config/i386/i386.c (struct ptt): Add a field for processor
-	name.
-	(processor_target_table): Sync with processor_type.  Add
-	processor names.
+	* config/i386/i386.c (struct ptt): Add a field for processor name.
+	(processor_target_table): Sync with processor_type.
+	Add processor names.
 	(cpu_names): Removed.
 	(ix86_option_override_internal): Default x_ix86_tune_string
 	to processor_target_table[TARGET_CPU_DEFAULT].name.
-	(ix86_function_specific_print): Assert arch and tune <
-	PROCESSOR_max.  Use processor_target_table to print arch and
-	tune names.
+	(ix86_function_specific_print): Assert arch and tune < PROCESSOR_max.
+	Use processor_target_table to print arch and tune names.
 	* config/i386/i386.h (TARGET_CPU_DEFAULT): Default to
 	PROCESSOR_GENERIC.
 	(target_cpu_default): Removed.

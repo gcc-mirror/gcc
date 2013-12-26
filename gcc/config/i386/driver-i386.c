@@ -126,6 +126,18 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
       case 0x0c:
 	level1->sizekb = 16; level1->assoc = 4; level1->line = 32;
 	break;
+      case 0x0d:
+	level1->sizekb = 16; level1->assoc = 4; level1->line = 64;
+	break;
+      case 0x0e:
+	level1->sizekb = 24; level1->assoc = 6; level1->line = 64;
+	break;
+      case 0x21:
+	level2->sizekb = 256; level2->assoc = 8; level2->line = 64;
+	break;
+      case 0x24:
+	level2->sizekb = 1024; level2->assoc = 16; level2->line = 64;
+	break;
       case 0x2c:
 	level1->sizekb = 32; level1->assoc = 8; level1->line = 64;
 	break;
@@ -161,6 +173,9 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
 	break;
       case 0x45:
 	level2->sizekb = 2048; level2->assoc = 4; level2->line = 32;
+	break;
+      case 0x48:
+	level2->sizekb = 3072; level2->assoc = 12; level2->line = 64;
 	break;
       case 0x49:
 	if (xeon_mp)
@@ -202,6 +217,9 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
 	break;
       case 0x7f:
 	level2->sizekb = 512; level2->assoc = 2; level2->line = 64;
+	break;
+      case 0x80:
+	level2->sizekb = 512; level2->assoc = 8; level2->line = 64;
 	break;
       case 0x82:
 	level2->sizekb = 256; level2->assoc = 8; level2->line = 32;
