@@ -1,3 +1,9 @@
+2013-12-26  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+        * config/i386/cpuinfo.c (processor_types): Rename AMD cpu names
+	AMD_BOBCAT to AMD_BTVER1 and AMD_JAGUAR to AMD_BTVER2.
+	(get_amd_cpu): Likewise.
+
 2013-12-25   H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cpuinfo.c (get_intel_cpu): Remove model 0x3f from

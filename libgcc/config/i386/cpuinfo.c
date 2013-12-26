@@ -62,8 +62,8 @@ enum processor_types
   AMDFAM10H,
   AMDFAM15H,
   INTEL_SILVERMONT,
-  AMD_BOBCAT,
-  AMD_JAGUAR,  
+  AMD_BTVER1,
+  AMD_BTVER2,  
   CPU_TYPE_MAX
 };
 
@@ -142,9 +142,9 @@ get_amd_cpu (unsigned int family, unsigned int model)
 	  break;
 	}
       break;
-    /* AMD Family 14h "Bobcat". */
+    /* AMD Family 14h "btver1". */
     case 0x14:
-      __cpu_model.__cpu_type = AMD_BOBCAT;
+      __cpu_model.__cpu_type = AMD_BTVER1;
       break;
     /* AMD Family 15h "Bulldozer".  */
     case 0x15:
@@ -159,9 +159,9 @@ get_amd_cpu (unsigned int family, unsigned int model)
       if (model >= 0x30 && model <= 0x4f)
 	__cpu_model.__cpu_subtype = AMDFAM15H_BDVER3;
       break;
-    /* AMD Family 16h "Jaguar". */
+    /* AMD Family 16h "btver2" */
     case 0x16:
-      __cpu_model.__cpu_type = AMD_JAGUAR;
+      __cpu_model.__cpu_type = AMD_BTVER2;
       break;
     default:
       break;
