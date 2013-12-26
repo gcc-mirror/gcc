@@ -222,7 +222,6 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_IVYBRIDGE;
 	      break;
 	    case 0x3c:
-	    case 0x3f:
 	    case 0x45:
 	    case 0x46:
 	      /* Haswell.  */
