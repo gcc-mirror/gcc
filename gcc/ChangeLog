@@ -1,5 +1,11 @@
 2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/59588
+	* config/i386/i386.c (ix86_option_override_internal): Don't
+	check generic tuning.  Don't change i686 tuning.
+
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/59601
 	* config/i386/i386.c (get_builtin_code_for_version): Map
 	PROCESSOR_NEHALEM to "corei7".
