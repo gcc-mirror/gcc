@@ -1,5 +1,10 @@
 2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/andor-2.c (dg-options): Replace -mtune=i686
+	with -mtune=generic.
+
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/59588
 	* gcc.target/i386/pr59588-1.c: New file.
 	* gcc.target/i386/pr59588-2.c: Likewise.
