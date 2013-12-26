@@ -1,3 +1,9 @@
+2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuinfo.c (enum vendor_signatures): Remove.
+	(__cpu_indicator_init): Use signature_INTEL_ebx and signature_AMD_ebx
+	from cpuid.h to check vendor signatures.
+
 2013-12-26  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
         * config/i386/cpuinfo.c (processor_types): Rename AMD cpu names

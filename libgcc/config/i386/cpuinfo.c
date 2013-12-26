@@ -36,12 +36,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 int __cpu_indicator_init (void)
   __attribute__ ((constructor CONSTRUCTOR_PRIORITY));
 
-enum vendor_signatures
-{
-  SIG_INTEL =	0x756e6547 /* Genu */,
-  SIG_AMD =	0x68747541 /* Auth */
-};
-
 /* Processor Vendor and Models. */
 
 enum processor_vendor
@@ -368,7 +362,7 @@ __cpu_indicator_init (void)
   extended_model = (eax >> 12) & 0xf0;
   extended_family = (eax >> 20) & 0xff;
 
-  if (vendor == SIG_INTEL)
+  if (vendor == signature_INTEL_ebx)
     {
       /* Adjust model and family for Intel CPUS. */
       if (family == 0x0f)
@@ -385,7 +379,7 @@ __cpu_indicator_init (void)
       get_available_features (ecx, edx, max_level);
       __cpu_model.__cpu_vendor = VENDOR_INTEL;
     }
-  else if (vendor == SIG_AMD)
+  else if (vendor == signature_AMD_ebx)
     {
       /* Adjust model and family for AMD CPUS. */
       if (family == 0x0f)
