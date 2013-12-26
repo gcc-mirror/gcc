@@ -1,3 +1,10 @@
+2013-12-26   Uros Bizjak  <ubizjak@gmail.com>
+	     H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59601
+	* g++.dg/ext/mv14.C: New tests.
+	* g++.dg/ext/mv15.C: Likewise.
+
 2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
 
 	PR target/59422
