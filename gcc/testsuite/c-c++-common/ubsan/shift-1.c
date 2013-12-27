@@ -28,4 +28,4 @@ main (void)
 /* { dg-output "\[^\n\r]*shift exponent 154 is too large for \[^\n\r]*-bit type 'int'(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*shift exponent 524 is too large for \[^\n\r]*-bit type 'long long unsigned int'(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*shift exponent 370 is too large for \[^\n\r]*-bit type 'int'(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*shift exponent 402 is too large for \[^\n\r]*-bit type 'long int'(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*shift exponent 402 is too large for \[^\n\r]*-bit type 'long int'" } */
