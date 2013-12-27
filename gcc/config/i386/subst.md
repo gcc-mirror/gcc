@@ -30,6 +30,16 @@
 (define_mode_iterator SUBST_S
   [QI HI SI DI])
 
+(define_mode_iterator SUBST_A
+  [V16QI
+   V16HI V8HI
+   V16SI V8SI  V4SI
+   V8DI  V4DI  V2DI
+   V16SF V8SF  V4SF
+   V8DF  V4DF  V2DF
+   QI HI SI DI SF DF
+   CCFP CCFPU])
+
 (define_subst_attr "mask_name" "mask" "" "_mask")
 (define_subst_attr "mask_applied" "mask" "false" "true")
 (define_subst_attr "mask_operand2" "mask" "" "%{%3%}%N2")
@@ -87,3 +97,35 @@
 	 (match_operand:SUBST_V 2 "const0_operand" "C")
 	 (match_operand:<avx512fmaskmode> 3 "register_operand" "k")))
 ])
+
+(define_subst_attr "round_name" "round" "" "_round")
+(define_subst_attr "round_mask_operand2" "mask" "%R2" "%R4")
+(define_subst_attr "round_mask_operand3" "mask" "%R3" "%R5")
+(define_subst_attr "round_mask_scalar_operand3" "mask_scalar" "%R3" "%R5")
+(define_subst_attr "round_sd_mask_operand4" "sd" "%R4" "%R6")
+(define_subst_attr "round_op2" "round" "" "%R2")
+(define_subst_attr "round_op3" "round" "" "%R3")
+(define_subst_attr "round_op4" "round" "" "%R4")
+(define_subst_attr "round_op5" "round" "" "%R5")
+(define_subst_attr "round_op6" "round" "" "%R6")
+(define_subst_attr "round_mask_op2" "round" "" "<round_mask_operand2>")
+(define_subst_attr "round_mask_op3" "round" "" "<round_mask_operand3>")
+(define_subst_attr "round_mask_scalar_op3" "round" "" "<round_mask_scalar_operand3>")
+(define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
+(define_subst_attr "round_constraint" "round" "vm" "v")
+(define_subst_attr "round_constraint2" "round" "m" "v")
+(define_subst_attr "round_constraint3" "round" "rm" "r")
+(define_subst_attr "round_nimm_predicate" "round" "nonimmediate_operand" "register_operand")
+(define_subst_attr "round_mode512bit_condition" "round" "1" "(GET_MODE (operands[0]) == V16SFmode || GET_MODE (operands[0]) == V8DFmode)")
+(define_subst_attr "round_modev4sf_condition" "round" "1" "(GET_MODE (operands[0]) == V4SFmode)")
+(define_subst_attr "round_codefor" "round" "*" "")
+(define_subst_attr "round_opnum" "round" "5" "6")
+
+(define_subst "round"
+  [(set (match_operand:SUBST_A 0)
+        (match_operand:SUBST_A 1))]
+  "TARGET_AVX512F"
+  [(parallel[
+     (set (match_dup 0)
+          (match_dup 1))
+     (unspec [(match_operand:SI 2 "const_0_to_4_operand")] UNSPEC_EMBEDDED_ROUNDING)])])
