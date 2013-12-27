@@ -1,3 +1,21 @@
+2013-12-27  Yury Gribov  <y.gribov@samsung.com>
+
+	PR target/59585
+	* c-c++-common/ubsan/div-by-zero-1.c: Fixed pattern.
+	* c-c++-common/ubsan/div-by-zero-2.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-3.c: Likewise.
+	* c-c++-common/ubsan/load-bool-enum.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-4.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-2.c: Likewise.
+	* c-c++-common/ubsan/pr59333.c: Likewise.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/shift-2.c: Likewise.
+	* c-c++-common/ubsan/shift-4.c: Likewise.
+	* c-c++-common/ubsan/vla-1.c: Likewise.
+
 2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.old-deja/g++.other/store-expr1.C (dg-options): Replace

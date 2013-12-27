@@ -11,4 +11,4 @@ main ()
   return 0;
 }
 
-/* { dg-output "shift exponent 120 is too large\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "shift exponent 120 is too large\[^\n\r]*" } */

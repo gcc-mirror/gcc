@@ -20,4 +20,4 @@ main (void)
 /* { dg-output "\[^\n\r]*shift exponent -4 is negative(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*shift exponent -5 is negative(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*shift exponent -6 is negative(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*shift exponent -11 is negative(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*shift exponent -11 is negative" } */
