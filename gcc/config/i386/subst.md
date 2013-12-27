@@ -178,3 +178,23 @@
    (match_dup 3)
    (match_dup 4)
    (unspec [(match_operand:SI 5 "const_0_to_4_operand")] UNSPEC_EMBEDDED_ROUNDING)])
+
+(define_subst_attr "round_saeonly_expand_name" "round_saeonly_expand" "" "_round")
+(define_subst_attr "round_saeonly_expand_nimm_predicate" "round_saeonly_expand" "nonimmediate_operand" "register_operand")
+(define_subst_attr "round_saeonly_expand_operand6" "round_saeonly_expand" "" ", operands[6]")
+
+(define_subst "round_saeonly_expand"
+ [(match_operand:SUBST_V 0)
+  (match_operand:SUBST_V 1)
+  (match_operand:SUBST_V 2)
+  (match_operand:SUBST_A 3)
+  (match_operand:SI 4)
+  (match_operand:SUBST_S 5)]
+  "TARGET_AVX512F"
+  [(match_dup 0)
+   (match_dup 1)
+   (match_dup 2)
+   (match_dup 3)
+   (match_dup 4)
+   (match_dup 5)
+   (unspec [(match_operand:SI 6 "const_4_to_5_operand")] UNSPEC_EMBEDDED_ROUNDING)])
