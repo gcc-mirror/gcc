@@ -8,6 +8,67 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/sse.md (<code><mode>3<mask_name>): Extend to support
+	EVEX's SAE mode.
+	(*<code><mode>3_finite<mask_name>): Ditto.
+	(*<code><mode>3<mask_name>): Ditto.
+	(avx512f_cmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(avx512f_vmcmp<mode>3): Ditto.
+	(avx512f_vmcmp<mode>3_mask): Ditto.
+	(<sse>_comi): Ditto.
+	(<sse>_ucomi): Ditto.
+	(sse_cvttss2si): Ditto.
+	(sse_cvttss2siq): Ditto.
+	(<fixsuffix>fix_truncv16sfv16si2<mask_name>): Ditto.
+	(avx512f_vcvttss2usi): Ditto.
+	(avx512f_vcvttss2usiq): Ditto.
+	(avx512f_vcvttsd2usi): Ditto.
+	(avx512f_vcvttsd2usiq): Ditto.
+	(sse2_cvttsd2si): Ditto.
+	(sse2_cvttsd2siq): Ditto.
+	(<fixsuffix>fix_truncv8dfv8si2<mask_name>): Ditto.
+	(<sse2_avx_avx512f>_cvtps2pd<avxsizesuffix><mask_name>): Ditto.
+	(avx512f_getexp<mode><mask_name>): Ditto.
+	(avx512f_fixupimm<mode><sd_maskz_name>): Ditto.
+	(avx512f_fixupimm<mode>_mask): Ditto.
+	(avx512f_sfixupimm<mode><sd_maskz_name>): Ditto.
+	(avx512f_sfixupimm<mode>_mask): Ditto.
+	(avx512f_rndscale<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512f_vcvtph2ps512<mask_name>): Ditto.
+	(avx512f_getmant<mode><mask_name>): Ditto.
+	* config/i386/subst.md (round_saeonly_name): New.
+	(round_saeonly_mask_operand2): Ditto.
+	(round_saeonly_mask_operand3): Ditto.
+	(round_saeonly_mask_scalar_operand3): Ditto.
+	(round_saeonly_mask_scalar_operand4): Ditto.
+	(round_saeonly_mask_scalar_merge_operand4): Ditto.
+	(round_saeonly_sd_mask_operand5): Ditto.
+	(round_saeonly_op2): Ditto.
+	(round_saeonly_op4): Ditto.
+	(round_saeonly_op5): Ditto.
+	(round_saeonly_op6): Ditto.
+	(round_saeonly_mask_op2): Ditto.
+	(round_saeonly_mask_op3): Ditto.
+	(round_saeonly_mask_scalar_op3): Ditto.
+	(round_saeonly_mask_scalar_op4): Ditto.
+	(round_saeonly_mask_scalar_merge_op4): Ditto.
+	(round_saeonly_sd_mask_op5): Ditto.
+	(round_saeonly_constraint): Ditto.
+	(round_saeonly_constraint2): Ditto.
+	(round_saeonly_nimm_predicate): Ditto.
+	(round_saeonly_mode512bit_condition): Ditto.
+	(round_saeonly): Ditto.
+
+2013-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config/i386/i386.c (ix86_print_operand): Print EVEX's RC modifiers.
 	* config/i386/i386.md (define_constants): Define EVEx's RC constants.
 	* gcc/config/i386/sse.md (<plusminus_insn><mode>3<mask_name>): Extend
