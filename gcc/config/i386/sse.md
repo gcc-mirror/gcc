@@ -2741,17 +2741,17 @@
 	  (match_operand:FMAMODE 3 "nonimmediate_operand")))]
   "")
 
-(define_expand "avx512f_fmadd_<mode>_maskz"
+(define_expand "avx512f_fmadd_<mode>_maskz<round_expand_name>"
   [(match_operand:VF_512 0 "register_operand")
-   (match_operand:VF_512 1 "nonimmediate_operand")
-   (match_operand:VF_512 2 "nonimmediate_operand")
-   (match_operand:VF_512 3 "nonimmediate_operand")
+   (match_operand:VF_512 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_512 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_512 3 "<round_expand_nimm_predicate>")
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512F"
 {
-  emit_insn (gen_fma_fmadd_<mode>_maskz_1 (
+  emit_insn (gen_fma_fmadd_<mode>_maskz_1<round_expand_name> (
     operands[0], operands[1], operands[2], operands[3],
-    CONST0_RTX (<MODE>mode), operands[4]));
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
   DONE;
 })
 
@@ -2983,17 +2983,17 @@
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F")
 
-(define_expand "avx512f_fmaddsub_<mode>_maskz"
+(define_expand "avx512f_fmaddsub_<mode>_maskz<round_expand_name>"
   [(match_operand:VF_512 0 "register_operand")
-   (match_operand:VF_512 1 "nonimmediate_operand")
-   (match_operand:VF_512 2 "nonimmediate_operand")
-   (match_operand:VF_512 3 "nonimmediate_operand")
+   (match_operand:VF_512 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_512 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_512 3 "<round_expand_nimm_predicate>")
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512F"
 {
-  emit_insn (gen_fma_fmaddsub_<mode>_maskz_1 (
+  emit_insn (gen_fma_fmaddsub_<mode>_maskz_1<round_expand_name> (
     operands[0], operands[1], operands[2], operands[3],
-    CONST0_RTX (<MODE>mode), operands[4]));
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
   DONE;
 })
 
