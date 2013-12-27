@@ -1,3 +1,97 @@
+2013-12-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (ix86_print_operand): Print EVEX's RC modifiers.
+	* config/i386/i386.md (define_constants): Define EVEx's RC constants.
+	* gcc/config/i386/sse.md (<plusminus_insn><mode>3<mask_name>): Extend
+	to support EVEX's rounding control.
+	(*<plusminus_insn><mode>3<mask_name>): Ditto.
+	(mul<mode>3<mask_name>): Ditto.
+	(*mul<mode>3<mask_name>): Ditto.
+	(<sse>_div<mode>3<mask_name>): Ditto.
+	(<sse>_sqrt<mode>2<mask_name>): Ditto.
+	(<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fmadd_<mode>_mask): Ditto.
+	(avx512f_fmadd_<mode>_mask3): Ditto.
+	(<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fmsub_<mode>_mask): Ditto.
+	(avx512f_fmsub_<mode>_mask3): Ditto.
+	(<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fnmadd_<mode>_mask): Ditto.
+	(avx512f_fnmadd_<mode>_mask3): Ditto.
+	(<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fnmsub_<mode>_mask): Ditto.
+	(avx512f_fnmsub_<mode>_mask3): Ditto.
+	(<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fmaddsub_<mode>_mask): Ditto.
+	(avx512f_fmaddsub_<mode>_mask3): Ditto.
+	(<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name>): Ditto.
+	(avx512f_fmsubadd_<mode>_mask): Ditto.
+	(avx512f_fmsubadd_<mode>_mask3): Ditto.
+	(fmai_vmfmadd_<mode>): Ditto.
+	(*fmai_fmadd_<mode>): Ditto.
+	(*fmai_fmsub_<mode>): Ditto.
+	(*fmai_fnmadd_<mode>): Ditto.
+	(*fmai_fnmsub_<mode>): Ditto.
+	(sse_cvtsi2ss): Ditto.
+	(sse_cvtsi2ssq): Ditto.
+	(sse_cvtss2si): Ditto.
+	(sse_cvtss2siq): Ditto.
+	(cvtusi2<ssescalarmodesuffix>32): Ditto.
+	(cvtusi2<ssescalarmodesuffix>64): Ditto.
+	(float<sseintvecmodelower><mode>2<mask_name>): Ditto.
+	(ufloatv16siv16sf2<mask_name>): Ditto.
+	(<mask_codefor>avx512f_fix_notruncv16sfv16si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_ufix_notruncv16sfv16si<mask_name>): Ditto.
+	(sse2_cvtsi2sdq): Ditto.
+	(avx512f_vcvtss2usi): Ditto.
+	(avx512f_vcvtss2usiq): Ditto.
+	(avx512f_vcvtsd2usi): Ditto.
+	(avx512f_vcvtsd2usiq): Ditto.
+	(sse2_cvtsd2si): Ditto.
+	(sse2_cvtsd2siq): Ditto.
+	(<mask_codefor>avx512f_cvtpd2dq512<mask_name>): Ditto.
+	(avx512f_ufix_notruncv8dfv8si<mask_name>): Ditto.
+	(<mask_codefor>avx512f_cvtpd2ps512<mask_name>): Ditto.
+	(avx512f_scalef<mode><mask_name>): Ditto.
+	(<code><mode>3<mask_name>): Ditto.
+	(*avx2_<code><mode>3<mask_name>): Ditto.
+	(avx512er_exp2<mode><mask_name): Ditto.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name>): Ditto.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name>): Ditto.
+	(avx512f_fmadd_<mode>_maskz): New.
+	* config/i386/subst.md (SUBST_A): New.
+	(round_name): Ditto.
+	(round_mask_operand2): Ditto.
+	(round_mask_operand3): Ditto.
+	(round_mask_scalar_operand3): Ditto.
+	(round_sd_mask_operand4): Ditto.
+	(round_op2): Ditto.
+	(round_op3): Ditto.
+	(round_op4): Ditto.
+	(round_op5): Ditto.
+	(round_op6): Ditto.
+	(round_mask_op2): Ditto.
+	(round_mask_op3): Ditto.
+	(round_mask_scalar_op3): Ditto.
+	(round_sd_mask_op4): Ditto.
+	(round_constraint): Ditto.
+	(round_constraint2): Ditto.
+	(round_constraint3): Ditto.
+	(round_nimm_predicate): Ditto.
+	(round_mode512bit_condition): Ditto.
+	(round_modev4sf_condition): Ditto.
+	(round_codefor): Ditto.
+	(round_opnum): Ditto.
+	(round): Ditto.
+
 2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59588

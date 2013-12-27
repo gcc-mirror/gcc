@@ -14990,6 +14990,38 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    fputs ("{z}", file);
 	  return;
 
+	case 'R':
+	  gcc_assert (CONST_INT_P (x));
+
+	  if (ASSEMBLER_DIALECT == ASM_INTEL)
+	    fputs (", ", file);
+
+	  switch (INTVAL (x))
+	    {
+	    case ROUND_NEAREST_INT:
+	      fputs ("{rn-sae}", file);
+	      break;
+	    case ROUND_NEG_INF:
+	      fputs ("{rd-sae}", file);
+	      break;
+	    case ROUND_POS_INF:
+	      fputs ("{ru-sae}", file);
+	      break;
+	    case ROUND_ZERO:
+	      fputs ("{rz-sae}", file);
+	      break;
+	    case ROUND_SAE:
+	      fputs ("{sae}", file);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    fputs (", ", file);
+
+	  return;
+
 	case '*':
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('*', file);
