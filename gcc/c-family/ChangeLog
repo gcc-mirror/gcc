@@ -1,3 +1,9 @@
+2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_constructor): New function.
+	(print_destructor): Retrieve the origin of the destructor.
+	(print_ada_declaration): Revamp handling of constructors/destructors.
+
 2013-12-23  Stuart Hastings <stuart@apple.com>
 	    Bill Maddox  <maddox@google.com>
 	    Jason Merrill  <jason@redhat.com>
