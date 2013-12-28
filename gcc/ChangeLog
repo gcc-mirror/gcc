@@ -1,3 +1,7 @@
+2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (output file options): Document -fada-spec-parent.
+
 2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/driver-i386.c (decode_caches_intel): Add missing entries.
