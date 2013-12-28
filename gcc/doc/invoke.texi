@@ -161,7 +161,7 @@ in the following sections.
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
--fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{arg} -fdump-go-spec=@var{file}}
+-fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{unit} -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -1518,9 +1518,14 @@ for the plugin called @var{name}.
 
 @item -fdump-ada-spec@r{[}-slim@r{]}
 @opindex fdump-ada-spec
-For C and C++ source and include files, generate corresponding Ada
-specs. @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
+For C and C++ source and include files, generate corresponding Ada specs.
+@xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
 GNAT User's Guide}, which provides detailed documentation on this feature.
+
+@item -fada-spec-parent=@var{unit}
+@opindex fada-spec-parent
+In conjunction with @option{-fdump-ada-spec@r{[}-slim@r{]}} above, generate
+Ada specs as child units of parent @var{unit}.
 
 @item -fdump-go-spec=@var{file}
 @opindex fdump-go-spec
