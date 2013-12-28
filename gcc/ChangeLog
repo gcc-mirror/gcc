@@ -1,3 +1,7 @@
+2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (output file options): Add missing markers.
+
 2013-12-11  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56807

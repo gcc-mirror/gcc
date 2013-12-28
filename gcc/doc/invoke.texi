@@ -1429,11 +1429,13 @@ Define an argument called @var{key} with a value of @var{value}
 for the plugin called @var{name}.
 
 @item -fdump-ada-spec@r{[}-slim@r{]}
-For C and C++ source and include files, generate corresponding Ada
-specs. @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
+@opindex fdump-ada-spec
+For C and C++ source and include files, generate corresponding Ada specs.
+@xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
 GNAT User's Guide}, which provides detailed documentation on this feature.
 
 @item -fdump-go-spec=@var{file}
+@opindex fdump-go-spec
 For input files in any language, generate corresponding Go
 declarations in @var{file}.  This generates Go @code{const},
 @code{type}, @code{var}, and @code{func} declarations which may be a
