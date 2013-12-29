@@ -1,3 +1,8 @@
+2013-12-29  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Merge from trunk:
+	* include/private/gcconfig.h: Add FreeBSD powerpc64 defines.
+
 2013-10-16  Release Manager
 
 	* GCC 4.8.2 released.
