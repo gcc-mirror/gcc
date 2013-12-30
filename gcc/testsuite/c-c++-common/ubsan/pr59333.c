@@ -16,4 +16,4 @@ main (void)
   return 0;
 }
 
-/* { dg-output "signed integer overflow: 2 \\+ 9223372036854775807 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
+/* { dg-output "signed integer overflow: 2 \\+ 9223372036854775807 cannot be represented in type 'long long int'" } */

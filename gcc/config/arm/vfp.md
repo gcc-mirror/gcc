@@ -1253,6 +1253,20 @@
    (set_attr "length" "8")]
 )
 
+(define_insn "*combine_vcvtf2i"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(fix:SI (fix:SF (mult:SF (match_operand:SF 1 "s_register_operand" "t")
+				 (match_operand 2
+				 "const_double_vcvt_power_of_two" "Dp")))))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP3 && !flag_rounding_math"
+  "vcvt%?.s32.f32\\t%1, %1, %v2\;vmov%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "ce_count" "2")
+   (set_attr "type" "f_cvtf2i")
+   (set_attr "length" "8")]
+ )
+
 ;; Store multiple insn used in function prologue.
 (define_insn "*push_multi_vfp"
   [(match_parallel 2 "multi_register_push"

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune=i686" } */
+/* { dg-options "-O2 -mtune=generic" } */
 
 int h(int x, int y)
 {

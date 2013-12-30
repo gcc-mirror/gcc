@@ -1,3 +1,36 @@
+2013-12-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuinfo.c (enum vendor_signatures): Remove.
+	(__cpu_indicator_init): Use signature_INTEL_ebx and signature_AMD_ebx
+	from cpuid.h to check vendor signatures.
+
+2013-12-26  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+        * config/i386/cpuinfo.c (processor_types): Rename AMD cpu names
+	AMD_BOBCAT to AMD_BTVER1 and AMD_JAGUAR to AMD_BTVER2.
+	(get_amd_cpu): Likewise.
+
+2013-12-25   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Remove model 0x3f from
+	Haswell.
+
+2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59422
+	* config/i386/cpuinfo.c (enum processor_types):  Add AMD_BOBCAT
+	and AMD_JAGUAR.
+	(enum processor_subtypes): Add AMDFAM15H_BDVER3, AMDFAM15H_BDVER4,
+	INTEL_COREI7_IVYBRIDGE and INTEL_COREI7_HASWELL.
+	(enum processor_features): Add  FEATURE_SSE4_A, FEATURE_FMA4,
+	FEATURE_XOP and FEATURE_FMA.
+	(get_amd_cpu): Handle AMD_BOBCAT, AMD_JAGUAR, AMDFAM15H_BDVER2 and
+	AMDFAM15H_BDVER3.
+	(get_intel_cpu): Handle INTEL_COREI7 and INTEL_COREI7_HASWELL.
+	(get_available_features): Handle FEATURE_FMA, FEATURE_SSE4_A,
+	FEATURE_FMA4 and FEATURE_XOP.
+
 2013-12-23   H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cpuinfo.c (processor_subtypes): Replace INTEL_ATOM,

@@ -2107,6 +2107,9 @@ d_ctor_dtor_name (struct d_info *di)
 	  case '3':
 	    kind = gnu_v3_complete_object_allocating_ctor;
 	    break;
+          case '4':
+	    kind = gnu_v3_unified_ctor;
+	    break;
 	  case '5':
 	    kind = gnu_v3_object_ctor_group;
 	    break;
@@ -2131,6 +2134,10 @@ d_ctor_dtor_name (struct d_info *di)
 	    break;
 	  case '2':
 	    kind = gnu_v3_base_object_dtor;
+	    break;
+          /*  digit '3' is not used */
+	  case '4':
+	    kind = gnu_v3_unified_dtor;
 	    break;
 	  case '5':
 	    kind = gnu_v3_object_dtor_group;

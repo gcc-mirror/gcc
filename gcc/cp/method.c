@@ -477,7 +477,8 @@ trivial_fn_p (tree fn)
     return false;
 
   /* If fn is a clone, get the primary variant.  */
-  fn = DECL_ORIGIN (fn);
+  if (tree prim = DECL_CLONED_FUNCTION (fn))
+    fn = prim;
   return type_has_trivial_fn (DECL_CONTEXT (fn), special_function_p (fn));
 }
 

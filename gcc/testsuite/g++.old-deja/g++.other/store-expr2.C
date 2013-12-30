@@ -1,6 +1,6 @@
 // { dg-do run { target i?86-*-* x86_64-*-*} }
 // { dg-require-effective-target ilp32 }
-// { dg-options "-mtune=i686 -O2" }
+// { dg-options "-mtune=generic -O2" }
 class G {};
 
 struct N {

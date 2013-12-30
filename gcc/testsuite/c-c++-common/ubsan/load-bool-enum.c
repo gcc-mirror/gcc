@@ -10,8 +10,8 @@ bool b;
 __attribute__((noinline, noclone)) enum A
 foo (bool *p)
 {
-  *p = b;   /* { dg-output "load-bool-enum.c:13:\[^\n\r]*runtime error: load of value 4, which is not a valid value for type '(_B|b)ool'(\n|\r\n|\r)" } */
-  return a; /* { dg-output "\[^\n\r]*load-bool-enum.c:14:\[^\n\r]*runtime error: load of value 9, which is not a valid value for type 'A'(\n|\r\n|\r)" { target c++ } } */
+  *p = b;   /* { dg-output "load-bool-enum.c:13:\[^\n\r]*runtime error: load of value 4, which is not a valid value for type '(_B|b)ool'(\n|\r\n|\r)*" } */
+  return a; /* { dg-output "\[^\n\r]*load-bool-enum.c:14:\[^\n\r]*runtime error: load of value 9, which is not a valid value for type 'A'(\n|\r\n|\r)*" { target c++ } } */
 }
 
 int

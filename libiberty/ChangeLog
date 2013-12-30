@@ -1,3 +1,9 @@
+2013-12-23  Bill Maddox  <maddox@google.com>
+
+	* cp-demangle.c (cplus_demangle_fill_ctor,cplus_demangle_fill_dtor):
+	Handle unified ctor/dtor.
+	(d_ctor_dtor_name): Handle unified ctor/dtor.
+
 2013-11-22  Cary Coutant  <ccoutant@google.com>
     
 	PR other/59195

@@ -1,3 +1,83 @@
+2013-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59501
+	* gcc.target/i386/pr59501-1.c: New test.
+	* gcc.target/i386/pr59501-1a.c: New test.
+	* gcc.target/i386/pr59501-2.c: New test.
+	* gcc.target/i386/pr59501-2a.c: New test.
+	* gcc.target/i386/pr59501-3.c: New test.
+	* gcc.target/i386/pr59501-3a.c: New test.
+	* gcc.target/i386/pr59501-4.c: New test.
+	* gcc.target/i386/pr59501-4a.c: New test.
+	* gcc.target/i386/pr59501-5.c: New test.
+	* gcc.target/i386/pr59501-6.c: New test.
+
+2013-12-30   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59605
+	* gcc.dg/pr59605.c: New test.
+
+2013-12-27  Yury Gribov  <y.gribov@samsung.com>
+
+	PR target/59585
+	* c-c++-common/ubsan/div-by-zero-1.c: Fixed pattern.
+	* c-c++-common/ubsan/div-by-zero-2.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-3.c: Likewise.
+	* c-c++-common/ubsan/load-bool-enum.c: Likewise.
+	* c-c++-common/ubsan/overflow-add-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-2.c: Likewise.
+	* c-c++-common/ubsan/overflow-mul-4.c: Likewise.
+	* c-c++-common/ubsan/overflow-negate-1.c: Likewise.
+	* c-c++-common/ubsan/overflow-sub-2.c: Likewise.
+	* c-c++-common/ubsan/pr59333.c: Likewise.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/shift-2.c: Likewise.
+	* c-c++-common/ubsan/shift-4.c: Likewise.
+	* c-c++-common/ubsan/vla-1.c: Likewise.
+
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.old-deja/g++.other/store-expr1.C (dg-options): Replace
+	-mtune=i686 with -mtune=generic.
+	* g++.old-deja/g++.other/store-expr2.C (dg-options): Likewise.
+
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/andor-2.c (dg-options): Replace -mtune=i686
+	with -mtune=generic.
+
+2013-12-26   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59588
+	* gcc.target/i386/pr59588-1.c: New file.
+	* gcc.target/i386/pr59588-2.c: Likewise.
+
+2013-12-26   Uros Bizjak  <ubizjak@gmail.com>
+	     H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59601
+	* g++.dg/ext/mv14.C: New tests.
+	* g++.dg/ext/mv15.C: Likewise.
+
+2013-12-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	PR target/59422
+	* gcc.target/i386/funcspec-5.c (test_fma, test_xop, test_no_fma,
+	test_no_xop, test_arch_corei7, test_arch_corei7_avx,
+	test_arch_core_avx2, test_arch_bdver1, test_arch_bdver2,
+	test_arch_bdver3, test_tune_corei7, test_tune_corei7_avx,
+	test_tune_core_avx2, test_tune_bdver1, test_tune_bdver2 and
+	test_tune_bdver3): New function prototypes.
+
+2013-12-24  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: New test case.
+
+2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
+
+	* gcc.dg/vect/vect-neg-store-1.c: New test.
+	* gcc.dg/vect/vect-neg-store-2.c: Ditto.
+
 2013-12-23  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR middle-end/59569

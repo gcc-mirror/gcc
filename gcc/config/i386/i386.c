@@ -2375,6 +2375,7 @@ static tree ix86_veclibabi_acml (enum built_in_function, tree, tree);
 /* Processor target table, indexed by processor number */
 struct ptt
 {
+  const char *const name;			/* processor name  */
   const struct processor_costs *cost;		/* Processor costs */
   const int align_loop;				/* Default alignments.  */
   const int align_loop_max_skip;
@@ -2383,81 +2384,33 @@ struct ptt
   const int align_func;
 };
 
+/* This table must be in sync with enum processor_type in i386.h.  */ 
 static const struct ptt processor_target_table[PROCESSOR_max] =
 {
-  {&i386_cost, 4, 3, 4, 3, 4},
-  {&i486_cost, 16, 15, 16, 15, 16},
-  {&pentium_cost, 16, 7, 16, 7, 16},
-  {&pentiumpro_cost, 16, 15, 16, 10, 16},
-  {&geode_cost, 0, 0, 0, 0, 0},
-  {&k6_cost, 32, 7, 32, 7, 32},
-  {&athlon_cost, 16, 7, 16, 7, 16},
-  {&pentium4_cost, 0, 0, 0, 0, 0},
-  {&k8_cost, 16, 7, 16, 7, 16},
-  {&nocona_cost, 0, 0, 0, 0, 0},
-  /* Core 2  */
-  {&core_cost, 16, 10, 16, 10, 16},
-  /* Core i7  */
-  {&core_cost, 16, 10, 16, 10, 16},
-  /* Core i7 avx  */
-  {&core_cost, 16, 10, 16, 10, 16},
-  /* Core avx2  */
-  {&core_cost, 16, 10, 16, 10, 16},
-  {&generic_cost, 16, 10, 16, 10, 16},
-  {&amdfam10_cost, 32, 24, 32, 7, 32},
-  {&bdver1_cost, 16, 10, 16, 7, 11},
-  {&bdver2_cost, 16, 10, 16, 7, 11},
-  {&bdver3_cost, 16, 10, 16, 7, 11},
-  {&bdver4_cost, 16, 10, 16, 7, 11},
-  {&btver1_cost, 16, 10, 16, 7, 11},
-  {&btver2_cost, 16, 10, 16, 7, 11},
-  {&atom_cost, 16, 15, 16, 7, 16},
-  {&slm_cost, 16, 15, 16, 7, 16}
-};
-
-static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
-{
-  "generic",
-  "i386",
-  "i486",
-  "pentium",
-  "pentium-mmx",
-  "pentiumpro",
-  "pentium2",
-  "pentium3",
-  "pentium4",
-  "pentium-m",
-  "prescott",
-  "nocona",
-  "core2",
-  "corei7",
-  "corei7-avx",
-  "core-avx2",
-  "atom",
-  "slm",
-  "nehalem",
-  "westmere",
-  "sandybridge",
-  "ivybridge",
-  "haswell",
-  "broadwell",
-  "bonnell",
-  "silvermont",
-  "intel",
-  "geode",
-  "k6",
-  "k6-2",
-  "k6-3",
-  "athlon",
-  "athlon-4",
-  "k8",
-  "amdfam10",
-  "bdver1",
-  "bdver2",
-  "bdver3",
-  "bdver4",
-  "btver1",
-  "btver2"
+  {"generic", &generic_cost, 16, 10, 16, 10, 16},
+  {"i386", &i386_cost, 4, 3, 4, 3, 4},
+  {"i486", &i486_cost, 16, 15, 16, 15, 16},
+  {"pentium", &pentium_cost, 16, 7, 16, 7, 16},
+  {"pentiumpro", &pentiumpro_cost, 16, 15, 16, 10, 16},
+  {"pentium4", &pentium4_cost, 0, 0, 0, 0, 0},
+  {"nocona", &nocona_cost, 0, 0, 0, 0, 0},
+  {"core2", &core_cost, 16, 10, 16, 10, 16},
+  {"nehalem", &core_cost, 16, 10, 16, 10, 16},
+  {"sandybridge", &core_cost, 16, 10, 16, 10, 16},
+  {"haswell", &core_cost, 16, 10, 16, 10, 16},
+  {"bonnell", &atom_cost, 16, 15, 16, 7, 16},
+  {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
+  {"geode", &geode_cost, 0, 0, 0, 0, 0},
+  {"k6", &k6_cost, 32, 7, 32, 7, 32},
+  {"athlon", &athlon_cost, 16, 7, 16, 7, 16},
+  {"k8", &k8_cost, 16, 7, 16, 7, 16},
+  {"amdfam10", &amdfam10_cost, 32, 24, 32, 7, 32},
+  {"bdver1", &bdver1_cost, 16, 10, 16, 7, 11},
+  {"bdver2", &bdver2_cost, 16, 10, 16, 7, 11},
+  {"bdver3", &bdver3_cost, 16, 10, 16, 7, 11},
+  {"bdver4", &bdver4_cost, 16, 10, 16, 7, 11},
+  {"btver1", &btver1_cost, 16, 10, 16, 7, 11},
+  {"btver2", &btver2_cost, 16, 10, 16, 7, 11}
 };
 
 static bool
@@ -3330,23 +3283,13 @@ ix86_option_override_internal (bool main_args_p,
   /* Need to check -mtune=generic first.  */
   if (opts->x_ix86_tune_string)
     {
-      if (!strcmp (opts->x_ix86_tune_string, "generic")
-	  || !strcmp (opts->x_ix86_tune_string, "i686")
-	  /* As special support for cross compilers we read -mtune=native
+      /* As special support for cross compilers we read -mtune=native
 	     as -mtune=generic.  With native compilers we won't see the
 	     -mtune=native, as it was changed by the driver.  */
-	  || !strcmp (opts->x_ix86_tune_string, "native"))
+      if (!strcmp (opts->x_ix86_tune_string, "native"))
 	{
 	  opts->x_ix86_tune_string = "generic";
 	}
-      /* If this call is for setting the option attribute, allow the
-	 generic that was previously set.  */
-      else if (!main_args_p
-	       && !strcmp (opts->x_ix86_tune_string, "generic"))
-	;
-      else if (!strncmp (opts->x_ix86_tune_string, "generic", 7))
-        error ("bad value (%s) for %stune=%s %s",
-	       opts->x_ix86_tune_string, prefix, suffix, sw);
       else if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
         warning (OPT_Wdeprecated, "%stune=x86-64%s is deprecated; use "
                  "%stune=k8%s or %stune=generic%s instead as appropriate",
@@ -3358,15 +3301,14 @@ ix86_option_override_internal (bool main_args_p,
 	opts->x_ix86_tune_string = opts->x_ix86_arch_string;
       if (!opts->x_ix86_tune_string)
 	{
-	  opts->x_ix86_tune_string = cpu_names[TARGET_CPU_DEFAULT];
+	  opts->x_ix86_tune_string
+	    = processor_target_table[TARGET_CPU_DEFAULT].name;
 	  ix86_tune_defaulted = 1;
 	}
 
       /* opts->x_ix86_tune_string is set to opts->x_ix86_arch_string
 	 or defaulted.  We need to use a sensible tune option.  */
-      if (!strcmp (opts->x_ix86_tune_string, "generic")
-	  || !strcmp (opts->x_ix86_tune_string, "x86-64")
-	  || !strcmp (opts->x_ix86_tune_string, "i686"))
+      if (!strcmp (opts->x_ix86_tune_string, "x86-64"))
 	{
 	  opts->x_ix86_tune_string = "generic";
 	}
@@ -3643,10 +3585,10 @@ ix86_option_override_internal (bool main_args_p,
   if (!strcmp (opts->x_ix86_arch_string, "generic"))
     error ("generic CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
-  else if (!strcmp (ix86_arch_string, "intel"))
+  else if (!strcmp (opts->x_ix86_arch_string, "intel"))
     error ("intel CPU can be used only for %stune=%s %s",
 	   prefix, suffix, sw);
-  else if (!strncmp (opts->x_ix86_arch_string, "generic", 7) || i == pta_size)
+  else if (i == pta_size)
     error ("bad value (%s) for %sarch=%s %s",
 	   opts->x_ix86_arch_string, prefix, suffix, sw);
 
@@ -4409,19 +4351,15 @@ ix86_function_specific_print (FILE *file, int indent,
     = ix86_target_string (ptr->x_ix86_isa_flags, ptr->x_target_flags,
 			  NULL, NULL, ptr->x_ix86_fpmath, false);
 
+  gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
 	   indent, "",
-	   ptr->arch,
-	   ((ptr->arch < TARGET_CPU_DEFAULT_max)
-	    ? cpu_names[ptr->arch]
-	    : "<unknown>"));
+	   ptr->arch, processor_target_table[ptr->arch].name);
 
+  gcc_assert (ptr->tune < PROCESSOR_max);
   fprintf (file, "%*stune = %d (%s)\n",
 	   indent, "",
-	   ptr->tune,
-	   ((ptr->tune < TARGET_CPU_DEFAULT_max)
-	    ? cpu_names[ptr->tune]
-	    : "<unknown>"));
+	   ptr->tune, processor_target_table[ptr->tune].name);
 
   fprintf (file, "%*sbranch_cost = %d\n", indent, "", ptr->branch_cost);
 
@@ -9266,7 +9204,9 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 	}
     }
 
-  if (crtl->drap_reg && regno == REGNO (crtl->drap_reg))
+  if (crtl->drap_reg
+      && regno == REGNO (crtl->drap_reg)
+      && crtl->stack_realign_needed)
     return true;
 
   return (df_regs_ever_live_p (regno)
@@ -10504,12 +10444,23 @@ ix86_finalize_stack_realign_flags (void)
       return;
     }
 
+  /* If drap has been set, but it actually isn't live at the start
+     of the function and !stack_realign, there is no reason to set it up.  */
+  if (crtl->drap_reg && !stack_realign)
+    {
+      basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+      if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
+	{
+	  crtl->drap_reg = NULL_RTX;
+	  crtl->need_drap = false;
+	}
+    }
+
   /* If the only reason for frame_pointer_needed is that we conservatively
      assumed stack realignment might be needed, but in the end nothing that
      needed the stack alignment had been spilled, clear frame_pointer_needed
      and say we don't need stack realignment.  */
   if (stack_realign
-      && !crtl->need_drap
       && frame_pointer_needed
       && crtl->is_leaf
       && flag_omit_frame_pointer
@@ -10545,6 +10496,18 @@ ix86_finalize_stack_realign_flags (void)
 		crtl->stack_realign_finalized = true;
 		return;
 	      }
+	}
+
+      /* If drap has been set, but it actually isn't live at the start
+	 of the function, there is no reason to set it up.  */
+      if (crtl->drap_reg)
+	{
+	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	  if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
+	    {
+	      crtl->drap_reg = NULL_RTX;
+	      crtl->need_drap = false;
+	    }
 	}
 
       frame_pointer_needed = false;
@@ -15065,6 +15028,38 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case 'N':
 	  if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
 	    fputs ("{z}", file);
+	  return;
+
+	case 'R':
+	  gcc_assert (CONST_INT_P (x));
+
+	  if (ASSEMBLER_DIALECT == ASM_INTEL)
+	    fputs (", ", file);
+
+	  switch (INTVAL (x))
+	    {
+	    case ROUND_NEAREST_INT:
+	      fputs ("{rn-sae}", file);
+	      break;
+	    case ROUND_NEG_INF:
+	      fputs ("{rd-sae}", file);
+	      break;
+	    case ROUND_POS_INF:
+	      fputs ("{ru-sae}", file);
+	      break;
+	    case ROUND_ZERO:
+	      fputs ("{rz-sae}", file);
+	      break;
+	    case ROUND_SAE:
+	      fputs ("{sae}", file);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    fputs (", ", file);
+
 	  return;
 
 	case '*':
@@ -24092,7 +24087,8 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       else
 	{
 	  rtx hot_label = gen_label_rtx ();
-	  jump_around_label = gen_label_rtx ();
+	  if (jump_around_label == NULL_RTX)
+	    jump_around_label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (count_exp, GEN_INT (dynamic_check - 1),
 				   LEU, 0, GET_MODE (count_exp), 1, hot_label);
 	  predict_jump (REG_BR_PROB_BASE * 90 / 100);
@@ -29985,16 +29981,21 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_SSE3,
     P_SSSE3,
     P_PROC_SSSE3,
-    P_SSE4_a,
-    P_PROC_SSE4_a,
+    P_SSE4_A,
+    P_PROC_SSE4_A,
     P_SSE4_1,
     P_SSE4_2,
     P_PROC_SSE4_2,
     P_POPCNT,
     P_AVX,
+    P_PROC_AVX,
+    P_FMA4,
+    P_XOP,
+    P_PROC_XOP,
+    P_FMA,    
+    P_PROC_FMA,
     P_AVX2,
-    P_FMA,
-    P_PROC_FMA
+    P_PROC_AVX2
   };
 
  enum feature_priority priority = P_ZERO;
@@ -30013,11 +30014,15 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       {"sse", P_SSE},
       {"sse2", P_SSE2},
       {"sse3", P_SSE3},
+      {"sse4a", P_SSE4_A},
       {"ssse3", P_SSSE3},
       {"sse4.1", P_SSE4_1},
       {"sse4.2", P_SSE4_2},
       {"popcnt", P_POPCNT},
       {"avx", P_AVX},
+      {"fma4", P_FMA4},
+      {"xop", P_XOP},
+      {"fma", P_FMA},
       {"avx2", P_AVX2}
     };
 
@@ -30066,28 +30071,55 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      arg_str = "nehalem";
+	      /* We translate "arch=corei7" and "arch=nehelam" to
+		 "corei7" so that it will be mapped to M_INTEL_COREI7
+		 as cpu type to cover all M_INTEL_COREI7_XXXs.  */
+	      arg_str = "corei7";
 	      priority = P_PROC_SSE4_2;
 	      break;
-            case PROCESSOR_SANDYBRIDGE:
-              arg_str = "sandybridge";
-              priority = P_PROC_SSE4_2;
-              break;
+	    case PROCESSOR_SANDYBRIDGE:
+	      arg_str = "sandybridge";
+	      priority = P_PROC_AVX;
+	      break;
+	    case PROCESSOR_HASWELL:
+	      arg_str = "haswell";
+	      priority = P_PROC_AVX2;
+	      break;
 	    case PROCESSOR_BONNELL:
 	      arg_str = "bonnell";
 	      priority = P_PROC_SSSE3;
 	      break;
+	    case PROCESSOR_SILVERMONT:
+	      arg_str = "silvermont";
+	      priority = P_PROC_SSE4_2;
+	      break;
 	    case PROCESSOR_AMDFAM10:
 	      arg_str = "amdfam10h";
-	      priority = P_PROC_SSE4_a;
+	      priority = P_PROC_SSE4_A;
+	      break;
+	    case PROCESSOR_BTVER1:
+	      arg_str = "btver1";
+	      priority = P_PROC_SSE4_A;
+	      break;
+	    case PROCESSOR_BTVER2:
+	      arg_str = "btver2";
+	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_BDVER1:
 	      arg_str = "bdver1";
-	      priority = P_PROC_FMA;
+	      priority = P_PROC_XOP;
 	      break;
 	    case PROCESSOR_BDVER2:
 	      arg_str = "bdver2";
 	      priority = P_PROC_FMA;
+	      break;
+	    case PROCESSOR_BDVER3:
+	      arg_str = "bdver3";
+	      priority = P_PROC_FMA;
+	      break;
+	    case PROCESSOR_BDVER4:
+	      arg_str = "bdver4";
+	      priority = P_PROC_AVX2;
 	      break;
 	    }  
 	}    
@@ -30953,6 +30985,10 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_SSE4_2,
     F_AVX,
     F_AVX2,
+    F_SSE4_A,
+    F_FMA4,
+    F_XOP,
+    F_FMA,
     F_MAX
   };
 
@@ -30970,6 +31006,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM10H,
     M_AMDFAM15H,
     M_INTEL_SILVERMONT,
+    M_AMD_BTVER1,
+    M_AMD_BTVER2,    
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -30980,7 +31018,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMDFAM15H_BDVER1,
     M_AMDFAM15H_BDVER2,
     M_AMDFAM15H_BDVER3,
-    M_AMDFAM15H_BDVER4
+    M_AMDFAM15H_BDVER4,
+    M_INTEL_COREI7_IVYBRIDGE,
+    M_INTEL_COREI7_HASWELL
   };
 
   static struct _arch_names_table
@@ -30999,15 +31039,21 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"nehalem", M_INTEL_COREI7_NEHALEM},
       {"westmere", M_INTEL_COREI7_WESTMERE},
       {"sandybridge", M_INTEL_COREI7_SANDYBRIDGE},
+      {"ivybridge", M_INTEL_COREI7_IVYBRIDGE},
+      {"haswell", M_INTEL_COREI7_HASWELL},
+      {"bonnell", M_INTEL_BONNELL},
+      {"silvermont", M_INTEL_SILVERMONT},
       {"amdfam10h", M_AMDFAM10H},
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},
       {"istanbul", M_AMDFAM10H_ISTANBUL},
+      {"btver1", M_AMD_BTVER1},      
       {"amdfam15h", M_AMDFAM15H},
       {"bdver1", M_AMDFAM15H_BDVER1},
       {"bdver2", M_AMDFAM15H_BDVER2},
       {"bdver3", M_AMDFAM15H_BDVER3},
       {"bdver4", M_AMDFAM15H_BDVER4},
+      {"btver2", M_AMD_BTVER2},      
     };
 
   static struct _isa_names_table
@@ -31024,9 +31070,13 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"sse2",   F_SSE2},
       {"sse3",   F_SSE3},
       {"ssse3",  F_SSSE3},
+      {"sse4a",  F_SSE4_A},
       {"sse4.1", F_SSE4_1},
       {"sse4.2", F_SSE4_2},
       {"avx",    F_AVX},
+      {"fma4",   F_FMA4},
+      {"xop",    F_XOP},
+      {"fma",    F_FMA},
       {"avx2",   F_AVX2}
     };
 

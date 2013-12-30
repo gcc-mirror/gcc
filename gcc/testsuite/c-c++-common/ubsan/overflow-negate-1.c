@@ -36,4 +36,4 @@ main (void)
 /* { dg-output "\[^\n\r]*negation of -\[^\n\r]* cannot be represented in type 'long int'; cast to an unsigned type to negate this value to itself(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*negation of -9223372036854775808 cannot be represented in type 'long long int'; cast to an unsigned type to negate this value to itself(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*negation of -9223372036854775808 cannot be represented in type 'long long int'; cast to an unsigned type to negate this value to itself(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*negation of -9223372036854775808 cannot be represented in type 'long long int'; cast to an unsigned type to negate this value to itself(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*negation of -9223372036854775808 cannot be represented in type 'long long int'; cast to an unsigned type to negate this value to itself" } */

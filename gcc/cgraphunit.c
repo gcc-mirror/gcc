@@ -1244,7 +1244,8 @@ mark_functions_to_output (void)
 	      for (next = cgraph (node->same_comdat_group);
 		   next != node;
 		   next = cgraph (next->same_comdat_group))
-		if (!next->thunk.thunk_p && !next->alias)
+		if (!next->thunk.thunk_p && !next->alias
+		    && !symtab_comdat_local_p (next))
 		  next->process = 1;
 	    }
 	}
