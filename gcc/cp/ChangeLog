@@ -35,7 +35,7 @@
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* parser.c (cp_parser_cilk_simd_clause_name): Changed cilk_clause_name
-	to omp_clause_name.	
+	to omp_clause_name.
 
 2013-12-17  Thomas Schwinge  <thomas@codesourcery.com>
 
@@ -74,7 +74,7 @@
 	* cp-gimplify.c (cp_gimplify_expr): Added a CILK_SPAWN_STMT and
 	CALL_EXPR case.  Added handling of spawned function in MODIFY_EXPR
 	and INIT_EXPR.
-	
+
 2013-12-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59435
@@ -2176,19 +2176,19 @@
 	ARRAY_NOTATION_REF case.
 	* cp-gimplify.c (cp_genericize): Added expansion of array notation
 	expressions here.
-	* cp-array-notation.c (make_triplet_val_inv): Removed loc and cry 
+	* cp-array-notation.c (make_triplet_val_inv): Removed loc and cry
 	parameters.  Replaced build_decls with get_temp_regvar with type as
 	ptrdiff.
 	(create_array_refs): Made the type-casting to ptrdiff_type.
-	(replace_invariant_var): Added a check for void return type before 
+	(replace_invariant_var): Added a check for void return type before
 	creating new var.  Replaced build_decl and build_min_nt_loc with
 	get_temp_regvar.
-	(expand_an_in_modify_expr): Ditto.  Replaced body of redundant else 
-	with gcc_unreachable.  Removed few unwanted checks.  Made induction 
-	variable type as ptrdiff_type.  Removed loc and complain arguments 
-	passed into make_triplet_val_inv.  Replaced all modify expression's 
-	code from NOP EXPR to INIT EXPR.  Replaced all forceful appending 
-	into stmt. list with the non-forceful one.  Replaced some integer 
+	(expand_an_in_modify_expr): Ditto.  Replaced body of redundant else
+	with gcc_unreachable.  Removed few unwanted checks.  Made induction
+	variable type as ptrdiff_type.  Removed loc and complain arguments
+	passed into make_triplet_val_inv.  Replaced all modify expression's
+	code from NOP EXPR to INIT EXPR.  Replaced all forceful appending
+	into stmt. list with the non-forceful one.  Replaced some integer
 	conversion and equality-checking to using tree_int_cst_equal.
 	(expand_sec_reduce_builtin): All changes mentioned in above function
 	expand_an_in_modify_expr.  Made the new variable type of
