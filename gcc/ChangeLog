@@ -7,6 +7,13 @@
 	gimple_assign_lhs.
 
 2013-12-30  Nick Clifton  <nickc@redhat.com>
+	    Peter Bigot  <bigotp@acm.org>
+
+	PR target/59631
+	* stor-layout.c (get_mode_bounds): Use GET_MODE_PRECISION instead
+	of GET_MODE_BITSIZE.
+
+2013-12-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_print_operand): Rename %B to %b
 	and %A to %Q.  Add %A, %B, %C and %D as selectors for 16-bit parts
