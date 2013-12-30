@@ -1,3 +1,8 @@
+2013-12-30  Mike Stump  <mikestump@comcast.net>
+
+	PR c++/41090
+	* g++.dg/ext/label13.C: Update to not expect failures.
+
 2013-12-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58998
