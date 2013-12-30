@@ -1855,13 +1855,23 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
       tree vec_oprnd0 = NULL_TREE, op;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
-      tree ptr, vec_mask = NULL_TREE, mask_op, var, scale;
+      tree ptr, vec_mask = NULL_TREE, mask_op = NULL_TREE, var, scale;
       tree perm_mask = NULL_TREE, prev_res = NULL_TREE;
+      tree mask_perm_mask = NULL_TREE;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
       int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gather_off_vectype);
+
+      rettype = TREE_TYPE (TREE_TYPE (gather_decl));
+      srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
+      scaletype = TREE_VALUE (arglist);
+      gcc_checking_assert (types_compatible_p (srctype, rettype)
+			   && types_compatible_p (srctype, masktype));
 
       if (nunits == gather_off_nunits)
 	modifier = NONE;
@@ -1888,18 +1898,13 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
 	  perm_mask = vect_gen_perm_mask (vectype, sel);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
+	  for (i = 0; i < nunits; ++i)
+	    sel[i] = i | gather_off_nunits;
+	  mask_perm_mask = vect_gen_perm_mask (masktype, sel);
+	  gcc_assert (mask_perm_mask != NULL_TREE);
 	}
       else
 	gcc_unreachable ();
-
-      rettype = TREE_TYPE (TREE_TYPE (gather_decl));
-      srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
-      ptrtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
-      idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
-      masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
-      scaletype = TREE_VALUE (arglist);
-      gcc_checking_assert (types_compatible_p (srctype, rettype)
-			   && types_compatible_p (srctype, masktype));
 
       vec_dest = vect_create_destination_var (gimple_call_lhs (stmt), vectype);
 
@@ -1940,28 +1945,35 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
 	      op = var;
 	    }
 
-	  if (j == 0)
-	    vec_mask = vect_get_vec_def_for_operand (mask, stmt, NULL);
+	  if (mask_perm_mask && (j & 1))
+	    mask_op = permute_vec_elements (mask_op, mask_op,
+					    mask_perm_mask, stmt, gsi);
 	  else
 	    {
-	      vect_is_simple_use (vec_mask, NULL, loop_vinfo, NULL, &def_stmt,
-				  &def, &dt);
-	      vec_mask = vect_get_vec_def_for_stmt_copy (dt, vec_mask);
-	    }
+	      if (j == 0)
+		vec_mask = vect_get_vec_def_for_operand (mask, stmt, NULL);
+	      else
+		{
+		  vect_is_simple_use (vec_mask, NULL, loop_vinfo, NULL,
+				      &def_stmt, &def, &dt);
+		  vec_mask = vect_get_vec_def_for_stmt_copy (dt, vec_mask);
+		}
 
-	  mask_op = vec_mask;
-	  if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
-	    {
-	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op))
-			  == TYPE_VECTOR_SUBPARTS (masktype));
-	      var = vect_get_new_vect_var (masktype, vect_simple_var, NULL);
-	      var = make_ssa_name (var, NULL);
-	      mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
-	      new_stmt
-		= gimple_build_assign_with_ops (VIEW_CONVERT_EXPR, var,
-						mask_op, NULL_TREE);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	      mask_op = var;
+	      mask_op = vec_mask;
+	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
+		{
+		  gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask_op))
+			      == TYPE_VECTOR_SUBPARTS (masktype));
+		  var = vect_get_new_vect_var (masktype, vect_simple_var,
+					       NULL);
+		  var = make_ssa_name (var, NULL);
+		  mask_op = build1 (VIEW_CONVERT_EXPR, masktype, mask_op);
+		  new_stmt
+		    = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR, var,
+						    mask_op, NULL_TREE);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  mask_op = var;
+		}
 	    }
 
 	  new_stmt
@@ -5446,7 +5458,7 @@ permute_vec_elements (tree x, tree y, tree mask_vec, gimple stmt,
   tree perm_dest, data_ref;
   gimple perm_stmt;
 
-  perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
+  perm_dest = vect_create_destination_var (gimple_get_lhs (stmt), vectype);
   data_ref = make_ssa_name (perm_dest, NULL);
 
   /* Generate the permute statement.  */
