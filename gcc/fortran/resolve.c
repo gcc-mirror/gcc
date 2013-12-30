@@ -12732,7 +12732,8 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.flavor == FL_UNKNOWN
       || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic
 	  && !sym->attr.generic && !sym->attr.external
-	  && sym->attr.if_source == IFSRC_UNKNOWN))
+	  && sym->attr.if_source == IFSRC_UNKNOWN
+	  && sym->ts.type == BT_UNKNOWN))
     {
 
     /* If we find that a flavorless symbol is an interface in one of the
