@@ -1,5 +1,11 @@
 2013-12-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59591
+	* gcc.dg/vect/pr59591-1.c: New test.
+	* gcc.dg/vect/pr59591-2.c: New test.
+	* gcc.target/i386/pr59591-1.c: New test.
+	* gcc.target/i386/pr59591-2.c: New test.
+
 	PR target/59501
 	* gcc.target/i386/pr59501-1.c: New test.
 	* gcc.target/i386/pr59501-1a.c: New test.

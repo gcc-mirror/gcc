@@ -1,3 +1,11 @@
+2013-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59591
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Fix up handling
+	of modifier = NARROW masked gathers.
+	(permute_vec_elements): Use gimple_get_lhs instead of
+	gimple_assign_lhs.
+
 2013-12-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_print_operand): Rename %B to %b
