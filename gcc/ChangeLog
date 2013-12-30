@@ -1,3 +1,11 @@
+2013-12-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_print_operand): Rename %B to %b
+	and %A to %Q.  Add %A, %B, %C and %D as selectors for 16-bit parts
+	of a 64-bit operand.
+	* config/msp430/msp430.md: Replace uses of %B with %b and uses of
+	%A with %q.
+
 2013-12-30  Felix Yang  <felix.yang@huawei.com>
 
 	* ira-costs.c (cost_classes_hasher::equal): Check equality of
