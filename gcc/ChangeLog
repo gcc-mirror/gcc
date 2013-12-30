@@ -1,3 +1,13 @@
+2013-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59501
+	* config/i386/i386.c (ix86_save_reg): Don't return true for drap_reg
+	if !crtl->stack_realign_needed.
+	(ix86_finalize_stack_realign_flags): If drap_reg isn't live on entry
+	and stack_realign_needed will be false, clear drap_reg and need_drap.
+	Optimize leaf functions that don't need stack frame even if
+	crtl->need_drap.
+
 2013-12-30   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59605
