@@ -1,3 +1,8 @@
+2013-12-30   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59605
+	* gcc.dg/pr59605.c: New test.
+
 2013-12-27  Yury Gribov  <y.gribov@samsung.com>
 
 	PR target/59585

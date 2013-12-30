@@ -1,3 +1,9 @@
+2013-12-30   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59605
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Create
+	jump_around_label only if it doesn't exist.
+
 2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (output file options): Document -fada-spec-parent.
