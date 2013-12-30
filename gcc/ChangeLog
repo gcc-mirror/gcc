@@ -1,3 +1,8 @@
+2013-12-30  Felix Yang  <felix.yang@huawei.com>
+
+	* ira-costs.c (cost_classes_hasher::equal): Check equality of
+	memcmp and 0 if no difference exists for HV1 and HV2.
+
 2013-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59501

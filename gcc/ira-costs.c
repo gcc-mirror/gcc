@@ -154,8 +154,9 @@ cost_classes_hasher::hash (const value_type *hv)
 inline bool
 cost_classes_hasher::equal (const value_type *hv1, const compare_type *hv2)
 {
-  return hv1->num == hv2->num && memcmp (hv1->classes, hv2->classes,
-					 sizeof (enum reg_class) * hv1->num);
+  return (hv1->num == hv2->num
+	  && memcmp (hv1->classes, hv2->classes,
+		     sizeof (enum reg_class) * hv1->num) == 0);
 }
 
 /* Delete cost classes info V from the hash table.  */
