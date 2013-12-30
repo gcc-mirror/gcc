@@ -1,3 +1,8 @@
+2013-12-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58998
+	* gfortran.dg/generic_28.f90: New.
+
 2013-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59591

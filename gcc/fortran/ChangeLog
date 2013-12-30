@@ -1,3 +1,9 @@
+2013-12-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58998
+	* resolve.c (resolve_symbol): Check that symbol is not only flavorless
+	but also untyped.
+
 2013-12-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59612
