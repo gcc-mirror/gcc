@@ -1,3 +1,17 @@
+2013-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59501
+	* gcc.target/i386/pr59501-1.c: New test.
+	* gcc.target/i386/pr59501-1a.c: New test.
+	* gcc.target/i386/pr59501-2.c: New test.
+	* gcc.target/i386/pr59501-2a.c: New test.
+	* gcc.target/i386/pr59501-3.c: New test.
+	* gcc.target/i386/pr59501-3a.c: New test.
+	* gcc.target/i386/pr59501-4.c: New test.
+	* gcc.target/i386/pr59501-4a.c: New test.
+	* gcc.target/i386/pr59501-5.c: New test.
+	* gcc.target/i386/pr59501-6.c: New test.
+
 2013-12-30   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59605
