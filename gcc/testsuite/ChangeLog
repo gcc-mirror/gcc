@@ -1,12 +1,26 @@
 2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
-	Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
-	Sergey Lega  <sergey.s.lega@intel.com>
-	Anna Tikhonova  <anna.tikhonova@intel.com>
-	Ilya Tocar  <ilya.tocar@intel.com>
-	Andrey Turetskiy  <andrey.turetskiy@intel.com>
-	Ilya Verbin  <ilya.verbin@intel.com>
-	Kirill Yukhin  <kirill.yukhin@intel.com>
-	Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.target/i386/avx-1.c: Extend to AVX-512.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* gcc.target/i386/pr49002-2.c: allow vmovapd generation.
 
