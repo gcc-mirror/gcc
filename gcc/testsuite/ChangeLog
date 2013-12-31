@@ -8,6 +8,1154 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* gcc.target/i386/avx512cd-check.h: New file.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vpbroadcastmw2d-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictd-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictd-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictq-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vpconflictq-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntd-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntd-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntq-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vplzcntq-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vptestnmd-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vptestnmd-2.c: Ditto.
+	* gcc.target/i386/avx512cd-vptestnmq-1.c: Ditto.
+	* gcc.target/i386/avx512cd-vptestnmq-2.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-broadcast-gpr-1.c: Ditto.
+	* gcc.target/i386/avx512f-broadcast-gpr-2.c: Ditto.
+	* gcc.target/i386/avx512f-ceil-sfix-vec-1.c: Ditto.
+	* gcc.target/i386/avx512f-ceil-sfix-vec-2.c: Ditto.
+	* gcc.target/i386/avx512f-dummy.c: Ditto.
+	* gcc.target/i386/avx512f-floor-sfix-vec-1.c: Ditto.
+	* gcc.target/i386/avx512f-floor-sfix-vec-2.c: Ditto.
+	* gcc.target/i386/avx512f-gather-1.c: Ditto.
+	* gcc.target/i386/avx512f-gather-2.c: Ditto.
+	* gcc.target/i386/avx512f-gather-3.c: Ditto.
+	* gcc.target/i386/avx512f-gather-4.c: Ditto.
+	* gcc.target/i386/avx512f-gather-5.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherpd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherpd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherps512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherps512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32gatherq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterpd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterpd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterps512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterps512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i32scatterq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherpd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherpd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherps512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherps512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64gatherq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterpd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterpd512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterps512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterps512-2.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-i64scatterq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-inline-asm.c: Ditto.
+	* gcc.target/i386/avx512f-kandnw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kandw-1.c: Ditto.
+	* gcc.target/i386/avx512f-klogic-2.c: Ditto.
+	* gcc.target/i386/avx512f-knotw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kortestw-2.c: Ditto.
+	* gcc.target/i386/avx512f-korw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kunpckbw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxnorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-kxorw-1.c: Ditto.
+	* gcc.target/i386/avx512f-rounding.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16sf-1.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16sf-2.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16sf-3.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16sf-4.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16sf-5.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16si-1.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16si-2.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16si-3.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16si-4.c: Ditto.
+	* gcc.target/i386/avx512f-set-v16si-5.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8df-1.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8df-2.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8df-3.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8df-4.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8df-5.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8di-1.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8di-2.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8di-3.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8di-4.c: Ditto.
+	* gcc.target/i386/avx512f-set-v8di-5.c: Ditto.
+	* gcc.target/i386/avx512f-setzero-pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-setzero-ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-setzero-si512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vaddpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vaddpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vaddps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vaddps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vaddsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vaddsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vaddss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vaddss-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignd-1.c: Ditto.
+	* gcc.target/i386/avx512f-valignd-2.c: Ditto.
+	* gcc.target/i386/avx512f-valignq-1.c: Ditto.
+	* gcc.target/i386/avx512f-valignq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vblendmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastf64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcasti64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vbroadcastss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmppd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcmpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcomisd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcomiss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcompresspd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcompresspd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcompressps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcompressps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtdq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2dq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2udq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtpd2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtph2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtph2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2dq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2ph-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2ph-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2udq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtps2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2usi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2usi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2usi64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2usi64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2sd64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsi2ss64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2usi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2usi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2usi64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2usi64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2dq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2udq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttpd2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2dq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2dq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2udq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttps2udq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2si64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2usi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2usi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2usi64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttsd2usi64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2si-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2si-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2si64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2si64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2usi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2usi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2usi64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvttss2usi64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtudq2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2sd64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2sd64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2ss64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtusi2ss64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vdivss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vec-init.c: Ditto.
+	* gcc.target/i386/avx512f-vec-unpack.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexppd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexppd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vinsertf64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti64x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vinserti64x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vminss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovapd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovaps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovddup-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovddup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqa64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovshdup-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovshdup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsldup-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovsldup-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovupd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovupd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovups-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovups-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmulss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsd512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpabsq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpaddq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpandnq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpandq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpblendmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpbroadcastq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcompressq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermi2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpdi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpsi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermilpsi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpdi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermpdi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-imm-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-imm-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2d-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpermt2q-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpexpandq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmaxuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpminsq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminud-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpminud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpminuq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpminuq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovsxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusdw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqb-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqb-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovusqw-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxbq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmovzxwq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuldq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmulld-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmulld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuludq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpmuludq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpord-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vporq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vporq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprold-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprold-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprolq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprolvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprord-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vprorvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpshufd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpshufd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpslldi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpslldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllqi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsllvq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsradi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsradi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraqi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsraqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsravq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrldi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrldi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlqi-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlqi-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq512-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrlvq512-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsubq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vptestmq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhqdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckhqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckldq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpckldq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpcklqdq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpunpcklqdq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxord-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpxord-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpxorq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpxorq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14pd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14pd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff64x2-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshuff64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi32x4-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi64x2-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshufi64x2-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshufpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vshufps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vshufps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vucomisd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vucomiss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vunpckhps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklpd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vunpcklps-2.c: Ditto.
+	* gcc.target/i386/avx512f_cond_move.c: Ditto.
+	* gcc.target/i386/avx512f_evex_reg_asm-1.c: Ditto.
+	* gcc.target/i386/avx512f_evex_reg_asm-2.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qps-1.c: Ditto.
+	* gcc.target/i386/sse-12.c: Updated options.
+	* gcc.target/i386/sse-13.c: Updated options, added defines for
+	__builtin_ia32_addpd512_mask, __builtin_ia32_addps512_mask,
+	__builtin_ia32_addsd_mask, __builtin_ia32_addss_mask,
+	__builtin_ia32_alignd512_mask, __builtin_ia32_alignq512_mask,
+	__builtin_ia32_cmpd512_mask, __builtin_ia32_cmppd512_mask,
+	__builtin_ia32_cmpps512_mask, __builtin_ia32_cmpq512_mask,
+	__builtin_ia32_cmpsd_mask, __builtin_ia32_cmpss_mask,
+	__builtin_ia32_cvtdq2ps512_mask, __builtin_ia32_cvtpd2dq512_mask,
+	__builtin_ia32_cvtpd2ps512_mask, __builtin_ia32_cvtpd2udq512_mask,
+	__builtin_ia32_cvtps2dq512_mask, __builtin_ia32_cvtps2pd512_mask,
+	__builtin_ia32_cvtps2udq512_mask, __builtin_ia32_cvtsd2ss_mask,
+	__builtin_ia32_cvtsi2sd64, __builtin_ia32_cvtsi2ss32,
+	__builtin_ia32_cvtsi2ss64, __builtin_ia32_cvtss2sd_mask,
+	__builtin_ia32_cvttpd2dq512_mask, __builtin_ia32_cvttpd2udq512_mask,
+	__builtin_ia32_cvttps2dq512_mask, __builtin_ia32_cvttps2udq512_mask,
+	__builtin_ia32_cvtudq2ps512_mask, __builtin_ia32_cvtusi2sd64,
+	__builtin_ia32_cvtusi2ss32, __builtin_ia32_cvtusi2ss64,
+	__builtin_ia32_divpd512_mask, __builtin_ia32_divps512_mask,
+	__builtin_ia32_divsd_mask, __builtin_ia32_divss_mask,
+	__builtin_ia32_extractf32x4_mask, __builtin_ia32_extractf64x4_mask,
+	__builtin_ia32_extracti32x4_mask, __builtin_ia32_extracti64x4_mask,
+	__builtin_ia32_fixupimmpd512_mask, __builtin_ia32_fixupimmpd512_maskz,
+	__builtin_ia32_fixupimmps512_mask, __builtin_ia32_fixupimmps512_maskz,
+	__builtin_ia32_fixupimmsd_mask, __builtin_ia32_fixupimmsd_maskz,
+	__builtin_ia32_fixupimmss_mask, __builtin_ia32_fixupimmss_maskz,
+	__builtin_ia32_gatherdiv8df, __builtin_ia32_gatherdiv8di,
+	__builtin_ia32_gatherdiv16sf, __builtin_ia32_gatherdiv16si,
+	__builtin_ia32_gathersiv16sf, __builtin_ia32_gathersiv16si,
+	__builtin_ia32_gathersiv8df, __builtin_ia32_gathersiv8di,
+	__builtin_ia32_getexppd512_mask, __builtin_ia32_getexpps512_mask,
+	__builtin_ia32_getexpsd128_mask, __builtin_ia32_getexpss128_mask,
+	__builtin_ia32_getmantpd512_mask, __builtin_ia32_getmantps512_mask,
+	__builtin_ia32_getmantsd_mask, __builtin_ia32_getmantss_mask,
+	__builtin_ia32_insertf32x4_mask, __builtin_ia32_insertf64x4_mask,
+	__builtin_ia32_inserti32x4_mask, __builtin_ia32_inserti64x4_mask,
+	__builtin_ia32_maxpd512_mask, __builtin_ia32_maxps512_mask,
+	__builtin_ia32_maxsd_mask, __builtin_ia32_maxss_mask,
+	__builtin_ia32_minpd512_mask, __builtin_ia32_minps512_mask,
+	__builtin_ia32_minsd_mask, __builtin_ia32_minss_mask,
+	__builtin_ia32_mulpd512_mask, __builtin_ia32_mulps512_mask,
+	__builtin_ia32_mulsd_mask, __builtin_ia32_mulss_mask,
+	__builtin_ia32_permdf512_mask, __builtin_ia32_permdi512_mask,
+	__builtin_ia32_prold512_mask, __builtin_ia32_prolq512_mask,
+	__builtin_ia32_prord512_mask, __builtin_ia32_prorq512_mask,
+	__builtin_ia32_pshufd512_mask, __builtin_ia32_pslldi512_mask,
+	__builtin_ia32_psllqi512_mask, __builtin_ia32_psradi512_mask,
+	__builtin_ia32_psraqi512_mask, __builtin_ia32_psrldi512_mask,
+	__builtin_ia32_psrlqi512_mask, __builtin_ia32_pternlogd512_mask,
+	__builtin_ia32_pternlogd512_maskz, __builtin_ia32_pternlogq512_mask,
+	__builtin_ia32_pternlogq512_maskz, __builtin_ia32_rndscalepd_mask,
+	__builtin_ia32_rndscaleps_mask, __builtin_ia32_rndscalesd_mask,
+	__builtin_ia32_rndscaless_mask, __builtin_ia32_scalefpd512_mask,
+	__builtin_ia32_scalefps512_mask, __builtin_ia32_scalefsd_mask,
+	__builtin_ia32_scalefss_mask, __builtin_ia32_scatterdiv8df,
+	__builtin_ia32_scatterdiv8di, __builtin_ia32_scatterdiv16sf,
+	__builtin_ia32_scatterdiv16si, __builtin_ia32_scattersiv16sf,
+	__builtin_ia32_scattersiv16si, __builtin_ia32_scattersiv8df,
+	__builtin_ia32_scattersiv8di, __builtin_ia32_shuf_f32x4_mask,
+	__builtin_ia32_shuf_f64x2_mask, __builtin_ia32_shuf_i32x4_mask,
+	__builtin_ia32_shuf_i64x2_mask, __builtin_ia32_shufpd512_mask,
+	__builtin_ia32_shufps512_mask, __builtin_ia32_sqrtpd512_mask,
+	__builtin_ia32_sqrtps512_mask, __builtin_ia32_sqrtsd_mask,
+	__builtin_ia32_sqrtss_mask, __builtin_ia32_subpd512_mask,
+	__builtin_ia32_subps512_mask, __builtin_ia32_subsd_mask,
+	__builtin_ia32_subss_mask, __builtin_ia32_ucmpd512_mask,
+	__builtin_ia32_ucmpq512_mask, __builtin_ia32_vcomisd,
+	__builtin_ia32_vcomiss, __builtin_ia32_vcvtph2ps512_mask,
+	__builtin_ia32_vcvtps2ph512_mask, __builtin_ia32_vcvtsd2si32,
+	__builtin_ia32_vcvtsd2si64, __builtin_ia32_vcvtsd2usi32,
+	__builtin_ia32_vcvtsd2usi64, __builtin_ia32_vcvtss2si32,
+	__builtin_ia32_vcvtss2si64, __builtin_ia32_vcvtss2usi32,
+	__builtin_ia32_vcvtss2usi64, __builtin_ia32_vcvttsd2si32,
+	__builtin_ia32_vcvttsd2si64, __builtin_ia32_vcvttsd2usi32,
+	__builtin_ia32_vcvttsd2usi64, __builtin_ia32_vcvttss2si32,
+	__builtin_ia32_vcvttss2si64, __builtin_ia32_vcvttss2usi32,
+	__builtin_ia32_vcvttss2usi64, __builtin_ia32_vfmaddpd512_mask,
+	__builtin_ia32_vfmaddpd512_mask3, __builtin_ia32_vfmaddpd512_maskz,
+	__builtin_ia32_vfmaddps512_mask, __builtin_ia32_vfmaddps512_mask3,
+	__builtin_ia32_vfmaddps512_maskz, __builtin_ia32_vfmaddsd3_mask,
+	__builtin_ia32_vfmaddsd3_mask3, __builtin_ia32_vfmaddsd3_maskz,
+	__builtin_ia32_vfmaddss3_mask, __builtin_ia32_vfmaddss3_mask3,
+	__builtin_ia32_vfmaddss3_maskz, __builtin_ia32_vfmaddsubpd512_mask,
+	__builtin_ia32_vfmaddsubpd512_mask3,
+	__builtin_ia32_vfmaddsubpd512_maskz,
+	__builtin_ia32_vfmaddsubps512_mask,
+	__builtin_ia32_vfmaddsubps512_mask3,
+	__builtin_ia32_vfmaddsubps512_maskz,
+	__builtin_ia32_vfmsubaddpd512_mask3,
+	__builtin_ia32_vfmsubaddps512_mask3, __builtin_ia32_vfmsubpd512_mask3,
+	__builtin_ia32_vfmsubps512_mask3, __builtin_ia32_vfmsubsd3_mask3,
+	__builtin_ia32_vfmsubss3_mask3, __builtin_ia32_vfnmaddpd512_mask,
+	__builtin_ia32_vfnmaddps512_mask, __builtin_ia32_vfnmsubpd512_mask,
+	__builtin_ia32_vfnmsubpd512_mask3, __builtin_ia32_vfnmsubps512_mask,
+	__builtin_ia32_vfnmsubps512_mask3, __builtin_ia32_vpermilpd512_mask,
+	__builtin_ia32_vpermilps512_mask, __builtin_ia32_exp2ps_mask,
+	__builtin_ia32_exp2pd_mask, __builtin_ia32_exp2ps_mask,
+	__builtin_ia32_exp2pd_mask, __builtin_ia32_rsqrt28ps_mask,
+	__builtin_ia32_rsqrt28pd_mask, __builtin_ia32_gatherpfdps,
+	__builtin_ia32_gatherpfqps, __builtin_ia32_scatterpfdps,
+	__builtin_ia32_scatterpfqps, __builtin_ia32_addpd512_mask,
+	__builtin_ia32_addps512_mask, __builtin_ia32_addsd_mask,
+	__builtin_ia32_addss_mask, __builtin_ia32_alignd512_mask,
+	__builtin_ia32_alignq512_mask, __builtin_ia32_cmpd512_mask,
+	__builtin_ia32_cmppd512_mask, __builtin_ia32_cmpps512_mask,
+	__builtin_ia32_cmpq512_mask, __builtin_ia32_cmpsd_mask,
+	__builtin_ia32_cmpss_mask, __builtin_ia32_cvtdq2ps512_mask,
+	__builtin_ia32_cvtpd2dq512_mask, __builtin_ia32_cvtpd2ps512_mask,
+	__builtin_ia32_cvtpd2udq512_mask, __builtin_ia32_cvtps2dq512_mask,
+	__builtin_ia32_cvtps2pd512_mask, __builtin_ia32_cvtps2udq512_mask,
+	__builtin_ia32_cvtsd2ss_mask, __builtin_ia32_cvtsi2sd64,
+	__builtin_ia32_cvtsi2ss32, __builtin_ia32_cvtsi2ss64,
+	__builtin_ia32_cvtss2sd_mask, __builtin_ia32_cvttpd2dq512_mask,
+	__builtin_ia32_cvttpd2udq512_mask, __builtin_ia32_cvttps2dq512_mask,
+	__builtin_ia32_cvttps2udq512_mask, __builtin_ia32_cvtudq2ps512_mask,
+	__builtin_ia32_cvtusi2sd64, __builtin_ia32_cvtusi2ss32,
+	__builtin_ia32_cvtusi2ss64, __builtin_ia32_divpd512_mask,
+	__builtin_ia32_divps512_mask, __builtin_ia32_divsd_mask,
+	__builtin_ia32_divss_mask, __builtin_ia32_extractf32x4_mask,
+	__builtin_ia32_extractf64x4_mask, __builtin_ia32_extracti32x4_mask,
+	__builtin_ia32_extracti64x4_mask, __builtin_ia32_fixupimmpd512_mask,
+	__builtin_ia32_fixupimmpd512_maskz, __builtin_ia32_fixupimmps512_mask,
+	__builtin_ia32_fixupimmps512_maskz, __builtin_ia32_fixupimmsd_mask,
+	__builtin_ia32_fixupimmsd_maskz, __builtin_ia32_fixupimmss_mask,
+	__builtin_ia32_fixupimmss_maskz, __builtin_ia32_gatherdiv8df,
+	__builtin_ia32_gatherdiv8di, __builtin_ia32_gatherdiv16sf,
+	__builtin_ia32_gatherdiv16si, __builtin_ia32_gathersiv16sf,
+	__builtin_ia32_gathersiv16si, __builtin_ia32_gathersiv8df,
+	__builtin_ia32_gathersiv8di, __builtin_ia32_getexppd512_mask,
+	__builtin_ia32_getexpps512_mask, __builtin_ia32_getexpsd128_mask,
+	__builtin_ia32_getexpss128_mask, __builtin_ia32_getmantpd512_mask,
+	__builtin_ia32_getmantps512_mask, __builtin_ia32_getmantsd_mask,
+	__builtin_ia32_getmantss_mask, __builtin_ia32_insertf32x4_mask,
+	__builtin_ia32_insertf64x4_mask, __builtin_ia32_inserti32x4_mask,
+	__builtin_ia32_inserti64x4_mask, __builtin_ia32_maxpd512_mask,
+	__builtin_ia32_maxps512_mask, __builtin_ia32_maxsd_mask,
+	__builtin_ia32_maxss_mask, __builtin_ia32_minpd512_mask,
+	__builtin_ia32_minps512_mask, __builtin_ia32_minsd_mask,
+	__builtin_ia32_minss_mask, __builtin_ia32_mulpd512_mask,
+	__builtin_ia32_mulps512_mask, __builtin_ia32_mulsd_mask,
+	__builtin_ia32_mulss_mask, __builtin_ia32_permdf512_mask,
+	__builtin_ia32_permdi512_mask, __builtin_ia32_prold512_mask,
+	__builtin_ia32_prolq512_mask, __builtin_ia32_prord512_mask,
+	__builtin_ia32_prorq512_mask, __builtin_ia32_pshufd512_mask,
+	__builtin_ia32_pslldi512_mask, __builtin_ia32_psllqi512_mask,
+	__builtin_ia32_psradi512_mask, __builtin_ia32_psraqi512_mask,
+	__builtin_ia32_psrldi512_mask, __builtin_ia32_psrlqi512_mask,
+	__builtin_ia32_pternlogd512_mask, __builtin_ia32_pternlogd512_maskz,
+	__builtin_ia32_pternlogq512_mask, __builtin_ia32_pternlogq512_maskz,
+	__builtin_ia32_rndscalepd_mask, __builtin_ia32_rndscaleps_mask,
+	__builtin_ia32_rndscalesd_mask, __builtin_ia32_rndscaless_mask,
+	__builtin_ia32_scalefpd512_mask, __builtin_ia32_scalefps512_mask,
+	__builtin_ia32_scalefsd_mask, __builtin_ia32_scalefss_mask,
+	__builtin_ia32_scatterdiv8df, __builtin_ia32_scatterdiv8di,
+	__builtin_ia32_scatterdiv16sf, __builtin_ia32_scatterdiv16si,
+	__builtin_ia32_scattersiv16sf, __builtin_ia32_scattersiv16si,
+	__builtin_ia32_scattersiv8df, __builtin_ia32_scattersiv8di,
+	__builtin_ia32_shuf_f32x4_mask, __builtin_ia32_shuf_f64x2_mask,
+	__builtin_ia32_shuf_i32x4_mask, __builtin_ia32_shuf_i64x2_mask,
+	__builtin_ia32_shufpd512_mask, __builtin_ia32_shufps512_mask,
+	__builtin_ia32_sqrtpd512_mask, __builtin_ia32_sqrtps512_mask,
+	__builtin_ia32_sqrtsd_mask, __builtin_ia32_sqrtss_mask,
+	__builtin_ia32_subpd512_mask, __builtin_ia32_subps512_mask,
+	__builtin_ia32_subsd_mask, __builtin_ia32_subss_mask,
+	__builtin_ia32_ucmpd512_mask, __builtin_ia32_ucmpq512_mask,
+	__builtin_ia32_vcomisd, __builtin_ia32_vcomiss,
+	__builtin_ia32_vcvtph2ps512_mask, __builtin_ia32_vcvtps2ph512_mask,
+	__builtin_ia32_vcvtsd2si32, __builtin_ia32_vcvtsd2si64,
+	__builtin_ia32_vcvtsd2usi32, __builtin_ia32_vcvtsd2usi64,
+	__builtin_ia32_vcvtss2si32, __builtin_ia32_vcvtss2si64,
+	__builtin_ia32_vcvtss2usi32, __builtin_ia32_vcvtss2usi64,
+	__builtin_ia32_vcvttsd2si32, __builtin_ia32_vcvttsd2si64,
+	__builtin_ia32_vcvttsd2usi32, __builtin_ia32_vcvttsd2usi64,
+	__builtin_ia32_vcvttss2si32, __builtin_ia32_vcvttss2si64,
+	__builtin_ia32_vcvttss2usi32, __builtin_ia32_vcvttss2usi64,
+	__builtin_ia32_vfmaddpd512_mask, __builtin_ia32_vfmaddpd512_mask3,
+	__builtin_ia32_vfmaddpd512_maskz, __builtin_ia32_vfmaddps512_mask,
+	__builtin_ia32_vfmaddps512_mask3, __builtin_ia32_vfmaddps512_maskz,
+	__builtin_ia32_vfmaddsd3_mask, __builtin_ia32_vfmaddsd3_mask3,
+	__builtin_ia32_vfmaddsd3_maskz, __builtin_ia32_vfmaddss3_mask,
+	__builtin_ia32_vfmaddss3_mask3, __builtin_ia32_vfmaddss3_maskz,
+	__builtin_ia32_vfmaddsubpd512_mask,
+	__builtin_ia32_vfmaddsubpd512_mask3,
+	__builtin_ia32_vfmaddsubpd512_maskz,
+	__builtin_ia32_vfmaddsubps512_mask,
+	__builtin_ia32_vfmaddsubps512_mask3,
+	__builtin_ia32_vfmaddsubps512_maskz,
+	__builtin_ia32_vfmsubaddpd512_mask3,
+	__builtin_ia32_vfmsubaddps512_mask3, __builtin_ia32_vfmsubpd512_mask3,
+	__builtin_ia32_vfmsubps512_mask3, __builtin_ia32_vfmsubsd3_mask3,
+	__builtin_ia32_vfmsubss3_mask3, __builtin_ia32_vfnmaddpd512_mask,
+	__builtin_ia32_vfnmaddps512_mask, __builtin_ia32_vfnmsubpd512_mask,
+	__builtin_ia32_vfnmsubpd512_mask3, __builtin_ia32_vfnmsubps512_mask,
+	__builtin_ia32_vfnmsubps512_mask3, __builtin_ia32_vpermilpd512_mask,
+	__builtin_ia32_vpermilps512_mask, __builtin_ia32_gatherpfdps,
+	__builtin_ia32_gatherpfqps, __builtin_ia32_scatterpfdps,
+	__builtin_ia32_scatterpfqps, __builtin_ia32_exp2pd_mask,
+	__builtin_ia32_exp2ps_mask, __builtin_ia32_rcp28pd_mask,
+	__builtin_ia32_rcp28ps_mask, __builtin_ia32_rsqrt28pd_mask,
+	__builtin_ia32_rsqrt28ps_mask.
+	* gcc.target/i386/sse-14.c (test_1y): New.
+	(test_2y): Ditto.
+	(test_2vx): Ditto.
+	(test_3x): Ditto.
+	(test_3v): Ditto.
+	(test_3vx): Ditto.
+	(test_4x): Ditto.
+	(test_4y): Ditto.
+	(test_4v): Ditto.
+	(pragma GCC target): Add avx512f, avx512er, avx512cd, avx512pf.
+	(tests): Add  _mm512_cvt_roundepi32_ps, _mm512_cvt_roundepu32_ps,
+	_mm512_cvt_roundpd_epi32, _mm512_cvt_roundpd_epu32,
+	_mm512_cvt_roundpd_ps, _mm512_cvt_roundph_ps,
+	_mm512_cvt_roundps_epi32, _mm512_cvt_roundps_epu32,
+	_mm512_cvt_roundps_pd, _mm512_cvtps_ph, _mm512_cvtt_roundpd_epi32,
+	_mm512_cvtt_roundpd_epu32, _mm512_cvtt_roundps_epi32,
+	_mm512_cvtt_roundps_epu32, _mm512_extractf32x4_ps,
+	_mm512_extractf64x4_pd, _mm512_extracti32x4_epi32,
+	_mm512_extracti64x4_epi64, _mm512_getexp_round_pd,
+	_mm512_getexp_round_ps, _mm512_getmant_round_pd,
+	_mm512_getmant_round_ps, _mm512_permute_pd, _mm512_permute_ps,
+	_mm512_permutex_epi64, _mm512_permutex_pd, _mm512_rol_epi32,
+	_mm512_rol_epi64, _mm512_ror_epi32, _mm512_ror_epi64,
+	_mm512_shuffle_epi32, _mm512_slli_epi32, _mm512_slli_epi64,
+	_mm512_sqrt_round_pd, _mm512_sqrt_round_ps, _mm512_srai_epi32,
+	_mm512_srai_epi64, _mm512_srli_epi32, _mm512_srli_epi64,
+	_mm_cvt_roundsd_i32, _mm_cvt_roundsd_u32, _mm_cvt_roundss_i32,
+	_mm_cvt_roundss_u32, _mm_cvtt_roundsd_i32, _mm_cvtt_roundsd_u32,
+	_mm_cvtt_roundss_i32, _mm_cvtt_roundss_u32, _mm512_getmant_pd,
+	_mm512_getmant_ps, _mm_cvt_roundi32_ss, _mm512_add_round_pd,
+	_mm512_add_round_ps, _mm512_alignr_epi32, _mm512_alignr_epi64,
+	_mm512_cmp_epi32_mask, _mm512_cmp_epi64_mask, _mm512_cmp_epu32_mask,
+	_mm512_cmp_epu64_mask, _mm512_cmp_pd_mask, _mm512_cmp_ps_mask,
+	_mm512_div_round_pd, _mm512_div_round_ps, _mm512_i32gather_epi32,
+	_mm512_i32gather_epi64, _mm512_i32gather_pd, _mm512_i32gather_ps,
+	_mm512_i64gather_epi32, _mm512_i64gather_epi64, _mm512_i64gather_pd,
+	_mm512_i64gather_ps, _mm512_insertf32x4, _mm512_insertf64x4,
+	_mm512_inserti32x4, _mm512_inserti64x4,
+	_mm512_maskz_cvt_roundepi32_ps, _mm512_maskz_cvt_roundepu32_ps,
+	_mm512_maskz_cvt_roundpd_epi32, _mm512_maskz_cvt_roundpd_epu32,
+	_mm512_maskz_cvt_roundpd_ps, _mm512_maskz_cvt_roundph_ps,
+	_mm512_maskz_cvt_roundps_epi32, _mm512_maskz_cvt_roundps_epu32,
+	_mm512_maskz_cvt_roundps_pd, _mm512_maskz_cvtps_ph,
+	_mm512_maskz_cvtt_roundpd_epi32, _mm512_maskz_cvtt_roundpd_epu32,
+	_mm512_maskz_cvtt_roundps_epi32, _mm512_maskz_cvtt_roundps_epu32,
+	_mm512_maskz_extractf32x4_ps, _mm512_maskz_extractf64x4_pd,
+	_mm512_maskz_extracti32x4_epi32, _mm512_maskz_extracti64x4_epi64,
+	_mm512_maskz_getexp_round_pd, _mm512_maskz_getexp_round_ps,
+	_mm512_maskz_getmant_round_pd, _mm512_maskz_getmant_round_ps,
+	_mm512_maskz_permute_pd, _mm512_maskz_permute_ps,
+	_mm512_maskz_permutex_epi64, _mm512_maskz_permutex_pd,
+	_mm512_maskz_rol_epi32, _mm512_maskz_rol_epi64,
+	_mm512_maskz_ror_epi32, _mm512_maskz_ror_epi64,
+	_mm512_maskz_shuffle_epi32, _mm512_maskz_slli_epi32,
+	_mm512_maskz_slli_epi64, _mm512_maskz_sqrt_round_pd,
+	_mm512_maskz_sqrt_round_ps, _mm512_maskz_srai_epi32,
+	_mm512_maskz_srai_epi64, _mm512_maskz_srli_epi32,
+	_mm512_maskz_srli_epi64, _mm512_max_round_pd, _mm512_max_round_ps,
+	_mm512_min_round_pd, _mm512_min_round_ps, _mm512_mul_round_pd,
+	_mm512_mul_round_ps, _mm512_scalef_round_pd, _mm512_scalef_round_ps,
+	_mm512_shuffle_f32x4, _mm512_shuffle_f64x2, _mm512_shuffle_i32x4,
+	_mm512_shuffle_i64x2, _mm512_shuffle_pd, _mm512_shuffle_ps,
+	_mm512_sub_round_pd, _mm512_sub_round_ps, _mm_add_round_sd,
+	_mm_add_round_ss, _mm_cmp_sd_mask, _mm_cmp_ss_mask,
+	_mm_cvt_roundi64_sd, _mm_cvt_roundi64_ss, _mm_cvt_roundsd_ss,
+	_mm_cvt_roundss_sd, _mm_cvt_roundu32_ss, _mm_cvt_roundu64_sd,
+	_mm_cvt_roundu64_ss, _mm_div_round_sd, _mm_div_round_ss,
+	_mm_getexp_round_sd, _mm_getexp_round_ss, _mm_getmant_round_sd,
+	_mm_getmant_round_ss, _mm_mul_round_sd, _mm_mul_round_ss,
+	_mm_scalef_round_sd, _mm_scalef_round_ss, _mm_sqrt_round_sd,
+	_mm_sqrt_round_ss, _mm_sub_round_sd, _mm_sub_round_ss,
+	_mm512_cmp_round_pd_mask, _mm512_cmp_round_ps_mask,
+	_mm512_maskz_roundscale_round_pd, _mm512_maskz_roundscale_round_ps,
+	_mm_cmp_round_sd_mask, _mm_cmp_round_ss_mask, _mm_comi_round_sd,
+	_mm_comi_round_ss, _mm_roundscale_round_sd, _mm_roundscale_round_ss,
+	_mm512_fmadd_round_pd, _mm512_fmadd_round_ps,
+	_mm512_fmaddsub_round_pd, _mm512_fmaddsub_round_ps,
+	_mm512_fmsub_round_pd, _mm512_fmsub_round_ps,
+	_mm512_fmsubadd_round_pd, _mm512_fmsubadd_round_ps,
+	_mm512_fnmadd_round_pd, _mm512_fnmadd_round_ps,
+	_mm512_fnmsub_round_pd, _mm512_fnmsub_round_ps,
+	_mm512_mask_cmp_epi32_mask, _mm512_mask_cmp_epi64_mask,
+	_mm512_mask_cmp_epu32_mask, _mm512_mask_cmp_epu64_mask,
+	_mm512_mask_cmp_pd_mask, _mm512_mask_cmp_ps_mask,
+	_mm512_mask_cvt_roundepi32_ps, _mm512_mask_cvt_roundepu32_ps,
+	_mm512_mask_cvt_roundpd_epi32, _mm512_mask_cvt_roundpd_epu32,
+	_mm512_mask_cvt_roundpd_ps, _mm512_mask_cvt_roundph_ps,
+	_mm512_mask_cvt_roundps_epi32, _mm512_mask_cvt_roundps_epu32,
+	_mm512_mask_cvt_roundps_pd, _mm512_mask_cvtps_ph,
+	_mm512_mask_cvtt_roundpd_epi32, _mm512_mask_cvtt_roundpd_epu32,
+	_mm512_mask_cvtt_roundps_epi32, _mm512_mask_cvtt_roundps_epu32,
+	_mm512_mask_extractf32x4_ps, _mm512_mask_extractf64x4_pd,
+	_mm512_mask_extracti32x4_epi32, _mm512_mask_extracti64x4_epi64,
+	_mm512_mask_getexp_round_pd, _mm512_mask_getexp_round_ps,
+	_mm512_mask_getmant_round_pd, _mm512_mask_getmant_round_ps,
+	_mm512_mask_permute_pd, _mm512_mask_permute_ps,
+	_mm512_mask_permutex_epi64, _mm512_mask_permutex_pd,
+	_mm512_mask_rol_epi32, _mm512_mask_rol_epi64, _mm512_mask_ror_epi32,
+	_mm512_mask_ror_epi64, _mm512_mask_shuffle_epi32,
+	_mm512_mask_slli_epi32, _mm512_mask_slli_epi64,
+	_mm512_mask_sqrt_round_pd, _mm512_mask_sqrt_round_ps,
+	_mm512_mask_srai_epi32, _mm512_mask_srai_epi64,
+	_mm512_mask_srli_epi32, _mm512_mask_srli_epi64,
+	_mm512_maskz_add_round_pd, _mm512_maskz_add_round_ps,
+	_mm512_maskz_alignr_epi32, _mm512_maskz_alignr_epi64,
+	_mm512_maskz_div_round_pd, _mm512_maskz_div_round_ps,
+	_mm512_maskz_insertf32x4, _mm512_maskz_insertf64x4,
+	_mm512_maskz_inserti32x4, _mm512_maskz_inserti64x4,
+	_mm512_maskz_max_round_pd, _mm512_maskz_max_round_ps,
+	_mm512_maskz_min_round_pd, _mm512_maskz_min_round_ps,
+	_mm512_maskz_mul_round_pd, _mm512_maskz_mul_round_ps,
+	_mm512_maskz_scalef_round_pd, _mm512_maskz_scalef_round_ps,
+	_mm512_maskz_shuffle_f32x4, _mm512_maskz_shuffle_f64x2,
+	_mm512_maskz_shuffle_i32x4, _mm512_maskz_shuffle_i64x2,
+	_mm512_maskz_shuffle_pd, _mm512_maskz_shuffle_ps,
+	_mm512_maskz_sub_round_pd, _mm512_maskz_sub_round_ps,
+	_mm512_ternarylogic_epi32, _mm512_ternarylogic_epi64,
+	_mm_fmadd_round_sd, _mm_fmadd_round_ss, _mm_fmsub_round_sd,
+	_mm_fmsub_round_ss, _mm_fnmadd_round_sd, _mm_fnmadd_round_ss,
+	_mm_fnmsub_round_sd, _mm_fnmsub_round_ss, _mm_mask_cmp_sd_mask,
+	_mm_mask_cmp_ss_mask, _mm_maskz_add_round_sd, _mm_maskz_add_round_ss,
+	_mm_maskz_cvt_roundsd_ss, _mm_maskz_cvt_roundss_sd,
+	_mm_maskz_div_round_sd, _mm_maskz_div_round_ss,
+	_mm_maskz_getexp_round_sd, _mm_maskz_getexp_round_ss,
+	_mm_maskz_getmant_round_sd, _mm_maskz_getmant_round_ss,
+	_mm_maskz_mul_round_sd, _mm_maskz_mul_round_ss,
+	_mm_maskz_scalef_round_sd, _mm_maskz_scalef_round_ss,
+	_mm_maskz_sqrt_round_sd, _mm_maskz_sqrt_round_ss,
+	_mm_maskz_sub_round_sd, _mm_maskz_sub_round_ss,
+	_mm512_i32scatter_epi32, _mm512_i32scatter_epi64,
+	_mm512_i32scatter_pd, _mm512_i32scatter_ps, _mm512_i64scatter_epi32,
+	_mm512_i64scatter_epi64, _mm512_i64scatter_pd, _mm512_i64scatter_ps,
+	_mm512_mask_roundscale_round_pd, _mm512_mask_roundscale_round_ps,
+	_mm512_mask_cmp_round_pd_mask, _mm512_mask_cmp_round_ps_mask,
+	_mm_fixupimm_round_sd, _mm_fixupimm_round_ss,
+	_mm_mask_cmp_round_sd_mask, _mm_mask_cmp_round_ss_mask,
+	_mm_maskz_roundscale_round_sd, _mm_maskz_roundscale_round_ss,
+	_mm512_mask3_fmadd_round_pd, _mm512_mask3_fmadd_round_ps,
+	_mm512_mask3_fmaddsub_round_pd, _mm512_mask3_fmaddsub_round_ps,
+	_mm512_mask3_fmsub_round_pd, _mm512_mask3_fmsub_round_ps,
+	_mm512_mask3_fmsubadd_round_pd, _mm512_mask3_fmsubadd_round_ps,
+	_mm512_mask3_fnmadd_round_pd, _mm512_mask3_fnmadd_round_ps,
+	_mm512_mask3_fnmsub_round_pd, _mm512_mask3_fnmsub_round_ps,
+	_mm512_mask_add_round_pd, _mm512_mask_add_round_ps,
+	_mm512_mask_alignr_epi32, _mm512_mask_alignr_epi64,
+	_mm512_mask_div_round_pd, _mm512_mask_div_round_ps,
+	_mm512_mask_fmadd_round_pd, _mm512_mask_fmadd_round_ps,
+	_mm512_mask_fmaddsub_round_pd, _mm512_mask_fmaddsub_round_ps,
+	_mm512_mask_fmsub_round_pd, _mm512_mask_fmsub_round_ps,
+	_mm512_mask_fmsubadd_round_pd, _mm512_mask_fmsubadd_round_ps,
+	_mm512_mask_fnmadd_round_pd, _mm512_mask_fnmadd_round_ps,
+	_mm512_mask_fnmsub_round_pd, _mm512_mask_fnmsub_round_ps,
+	_mm512_mask_i32gather_epi32, _mm512_mask_i32gather_epi64,
+	_mm512_mask_i32gather_pd, _mm512_mask_i32gather_ps,
+	_mm512_mask_i64gather_epi32, _mm512_mask_i64gather_epi64,
+	_mm512_mask_i64gather_pd, _mm512_mask_i64gather_ps,
+	_mm512_mask_insertf32x4, _mm512_mask_insertf64x4,
+	_mm512_mask_inserti32x4, _mm512_mask_inserti64x4,
+	_mm512_mask_max_round_pd, _mm512_mask_max_round_ps,
+	_mm512_mask_min_round_pd, _mm512_mask_min_round_ps,
+	_mm512_mask_mul_round_pd, _mm512_mask_mul_round_ps,
+	_mm512_mask_scalef_round_pd, _mm512_mask_scalef_round_ps,
+	_mm512_mask_shuffle_f32x4, _mm512_mask_shuffle_f64x2,
+	_mm512_mask_shuffle_i32x4, _mm512_mask_shuffle_i64x2,
+	_mm512_mask_shuffle_pd, _mm512_mask_shuffle_ps,
+	_mm512_mask_sub_round_pd, _mm512_mask_sub_round_ps,
+	_mm512_mask_ternarylogic_epi32, _mm512_mask_ternarylogic_epi64,
+	_mm512_maskz_fmadd_round_pd, _mm512_maskz_fmadd_round_ps,
+	_mm512_maskz_fmaddsub_round_pd, _mm512_maskz_fmaddsub_round_ps,
+	_mm512_maskz_fmsub_round_pd, _mm512_maskz_fmsub_round_ps,
+	_mm512_maskz_fmsubadd_round_pd, _mm512_maskz_fmsubadd_round_ps,
+	_mm512_maskz_fnmadd_round_pd, _mm512_maskz_fnmadd_round_ps,
+	_mm512_maskz_fnmsub_round_pd, _mm512_maskz_fnmsub_round_ps,
+	_mm512_maskz_ternarylogic_epi32, _mm512_maskz_ternarylogic_epi64,
+	_mm_mask3_fmadd_round_sd, _mm_mask3_fmadd_round_ss,
+	_mm_mask3_fmsub_round_sd, _mm_mask3_fmsub_round_ss,
+	_mm_mask3_fnmadd_round_sd, _mm_mask3_fnmadd_round_ss,
+	_mm_mask3_fnmsub_round_sd, _mm_mask3_fnmsub_round_ss,
+	_mm_mask_add_round_sd, _mm_mask_add_round_ss, _mm_mask_cvt_roundsd_ss,
+	_mm_mask_cvt_roundss_sd, _mm_mask_div_round_sd, _mm_mask_div_round_ss,
+	_mm_mask_fmadd_round_sd, _mm_mask_fmadd_round_ss,
+	_mm_mask_fmsub_round_sd, _mm_mask_fmsub_round_ss,
+	_mm_mask_fnmadd_round_sd, _mm_mask_fnmadd_round_ss,
+	_mm_mask_fnmsub_round_sd, _mm_mask_fnmsub_round_ss,
+	_mm_mask_getexp_round_sd, _mm_mask_getexp_round_ss,
+	_mm_mask_getmant_round_sd, _mm_mask_getmant_round_ss,
+	_mm_mask_mul_round_sd, _mm_mask_mul_round_ss,
+	_mm_mask_scalef_round_sd, _mm_mask_scalef_round_ss,
+	_mm_mask_sqrt_round_sd, _mm_mask_sqrt_round_ss, _mm_mask_sub_round_sd,
+	_mm_mask_sub_round_ss, _mm_maskz_fmadd_round_sd,
+	_mm_maskz_fmadd_round_ss, _mm_maskz_fmsub_round_sd,
+	_mm_maskz_fmsub_round_ss, _mm_maskz_fnmadd_round_sd,
+	_mm_maskz_fnmadd_round_ss, _mm_maskz_fnmsub_round_sd,
+	_mm_maskz_fnmsub_round_ss, _mm512_mask_i32scatter_epi32,
+	_mm512_mask_i32scatter_epi64, _mm512_mask_i32scatter_pd,
+	_mm512_mask_i32scatter_ps, _mm512_mask_i64scatter_epi32,
+	_mm512_mask_i64scatter_epi64, _mm512_mask_i64scatter_pd,
+	_mm512_mask_i64scatter_ps, _mm_mask_getmant_sd, _mm_mask_getmant_ss,
+	_mm_mask_roundscale_round_sd, _mm_mask_roundscale_round_ss,
+	_mm512_mask_fixupimm_round_pd, _mm512_mask_fixupimm_round_ps,
+	_mm512_maskz_fixupimm_round_pd, _mm512_maskz_fixupimm_round_ps,
+	_mm_mask_fixupimm_round_sd, _mm_mask_fixupimm_round_ss,
+	_mm_maskz_fixupimm_round_sd, _mm_maskz_fixupimm_round_ss,
+	_mm512_mask_prefetch_i32gather_ps, _mm512_mask_prefetch_i32scatter_ps,
+	_mm512_mask_prefetch_i64gather_ps, _mm512_mask_prefetch_i64scatter_ps,
+	_mm512_exp2a23_round_pd, _mm512_exp2a23_round_ps,
+	_mm512_rcp28_round_pd, _mm512_rcp28_round_ps, _mm512_rsqrt28_round_pd,
+	_mm512_rsqrt28_round_ps, _mm512_maskz_exp2a23_round_pd,
+	_mm512_maskz_exp2a23_round_ps, _mm512_maskz_rcp28_round_pd,
+	_mm512_maskz_rcp28_round_ps, _mm512_maskz_rsqrt28_round_pd,
+	_mm512_maskz_rsqrt28_round_ps, _mm512_mask_exp2a23_round_pd,
+	_mm512_mask_exp2a23_round_ps, _mm512_mask_rcp28_round_pd,
+	_mm512_mask_rcp28_round_ps, _mm512_mask_rsqrt28_round_pd,
+	_mm512_mask_rsqrt28_round_ps.
+	* gcc.target/i386/testimm-10.c: New file.
+	* gcc.target/i386/testround-1.c: Ditto.
+	* gcc.target/i386/testround-2.c: Ditto.
+	* gcc.target/x86_64/abi/avx512f/test_m512_returning.c: Ditto.
+	* gcc.target/x86_64/abi/avx512f/test_passing_m512.c: Ditto.
+	* gcc.target/x86_64/abi/avx512f/test_passing_structs.c: Ditto.
+	* gcc.target/x86_64/abi/avx512f/test_passing_unions.c: Ditto.
+	* gcc.target/i386/avx512cd-check.h: Ditto.
+	* gcc.target/i386/avx512er-check.h: Ditto.
+	* gcc.target/i386/avx512f-check.h: Ditto.
+	* gcc.target/i386/avx512f-helper.h: Ditto.
+	* gcc.target/i386/avx512f-mask-type.h: Ditto.
+	* gcc.target/i386/avx512f-os-support.h: Ditto.
+	* gcc.target/i386/i386.exp (check_effective_target_avx512f): New.
+	(check_effective_target_avx512cd): Ditto.
+	(check_effective_target_avx512er): Ditto.
+	* gcc.target/i386/m128-check.h (CHECK_FP_EXP): Ditto.
+	* gcc.target/i386/m512-check.h: Ditto.
+	* gcc.target/x86_64/abi/avx512f/abi-avx512f.exp: New file.
+	* gcc.target/x86_64/abi/avx512f/args.h: Ditto.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Ditto.
+	* gcc.target/x86_64/abi/avx512f/avx512f-check.h: Ditto.
+	* lib/target-supports.exp (check_effective_target_avx512f): New.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* gcc.target/i386/avx-1.c: Extend to AVX-512.
 	* gcc.target/i386/sse-22.c: Ditto.
 	* gcc.target/i386/sse-23.c: Ditto.
