@@ -1,5 +1,8 @@
 2014-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/sse.md (*mov<mode>_internal): Guard
+	EXT_REX_SSE_REGNO_P (REGNO ()) uses with REG_P.
+
 	PR rtl-optimization/59647
 	* cse.c (cse_process_notes_1): Don't substitute negative VOIDmode
 	new_rtx into UNSIGNED_FLOAT rtxes.
