@@ -6090,6 +6090,18 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
 	return x;
       }
 
+    case UNSIGNED_FLOAT:
+      {
+	rtx new_rtx = cse_process_notes (XEXP (x, 0), object, changed);
+	/* We don't substitute negative VOIDmode constants into these rtx,
+	   since they would impede folding.  */
+	if (GET_MODE (new_rtx) != VOIDmode
+	    || (CONST_INT_P (new_rtx) && INTVAL (new_rtx) >= 0)
+	    || (CONST_DOUBLE_P (new_rtx) && CONST_DOUBLE_HIGH (new_rtx) >= 0))
+	  validate_change (object, &XEXP (x, 0), new_rtx, 0);
+	return x;
+      }
+
     case REG:
       i = REG_QTY (REGNO (x));
 
