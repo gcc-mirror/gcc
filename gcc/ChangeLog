@@ -16,6 +16,123 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* config/i386/avx512fintrin.h (_mm_add_round_sd): New.
+	(_mm_add_round_sd): Ditto.
+	(_mm_add_round_ss): Ditto.
+	(_mm_sub_round_sd): Ditto.
+	(_mm_sub_round_ss): Ditto.
+	(_mm_rcp14_sd): Ditto.
+	(_mm_rcp14_ss): Ditto.
+	(_mm_sqrt_round_sd): Ditto.
+	(_mm_sqrt_round_ss): Ditto.
+	(_mm_mul_round_sd): Ditto.
+	(_mm_mul_round_ss): Ditto.
+	(_mm_div_round_sd): Ditto.
+	(_mm_div_round_ss): Ditto.
+	(_mm_scalef_round_sd): Ditto.
+	(_mm_scalef_round_ss): Ditto.
+	(_mm_scalef_round_sd): Ditto.
+	(_mm_scalef_round_ss): Ditto.
+	(_mm_cvt_roundsd_ss): Ditto.
+	(_mm_cvt_roundsd_sd): Ditto.
+	(_mm_getexp_round_ss): Ditto.
+	(_mm_getexp_round_sd): Ditto.
+	(_mm_getmant_round_sd): Ditto.
+	(_mm_getmant_round_ss): Ditto.
+	(_mm_roundscale_round_ss): Ditto.
+	(_mm_roundscale_round_sd): Ditto.
+	(_mm_max_round_sd): Ditto.
+	(_mm_max_round_ss): Ditto.
+	(_mm_min_round_sd): Ditto.
+	(_mm_min_round_ss): Ditto.
+	(_mm_fmadd_round_sd): Ditto.
+	(_mm_fmadd_round_ss): Ditto.
+	(_mm_fmsub_round_sd): Ditto.
+	(_mm_fmsub_round_ss): Ditto.
+	(_mm_fnmadd_round_sd): Ditto.
+	(_mm_fnmadd_round_ss): Ditto.
+	(_mm_fnmsub_round_sd): Ditto.
+	(_mm_fnmsub_round_ss): Ditto.
+	(_mm_scalef_sd): Ditto.
+	(_mm_scalef_ss): Ditto.
+	(_mm_getexp_ss): Ditto.
+	(_mm_getexp_sd): Ditto.
+	(_mm_getmant_sd): Ditto.
+	(_mm_getmant_ss): Ditto.
+	(_mm_roundscale_ss): Ditto.
+	(_mm_roundscale_sd): Ditto.
+	* config/i386/i386-builtin-types.def: New types to support
+	new built-ins: <V2DF, V2DF, V2DF, INT, INT>, <V4SF, V4SF, V4SF, INT, INT>,
+	<(V4SF, V4SF, V2DF, INT>, <V2DF, V2DF, V4SF, INT>,
+	<V4SF, V4SF, V4SF, V4SF, IN>.
+	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_ADDSD_ROUND,
+	IX86_BUILTIN_ADDSS_ROUND, IX86_BUILTIN_CVTSD2SS_ROUND,
+	IX86_BUILTIN_CVTSS2SD_ROUND, IX86_BUILTIN_DIVSD_ROUND,
+	IX86_BUILTIN_GETEXPSD128, IX86_BUILTIN_DIVSS_ROUND,
+	IX86_BUILTIN_GETEXPSS128, IX86_BUILTIN_GETMANTSD128,
+	IX86_BUILTIN_GETMANTSS128, IX86_BUILTIN_MAXSD_ROUND,
+	IX86_BUILTIN_MAXSS_ROUND, IX86_BUILTIN_MINSD_ROUND,
+	IX86_BUILTIN_MINSS_ROUND, IX86_BUILTIN_MULSD_ROUND,
+	IX86_BUILTIN_MULSS_ROUND, IX86_BUILTIN_RCP14SD,
+	IX86_BUILTIN_RCP14SS, IX86_BUILTIN_RNDSCALESD,
+	IX86_BUILTIN_RNDSCALESS, IX86_BUILTIN_RSQRT14SD,
+	IX86_BUILTIN_RSQRT14SS, IX86_BUILTIN_SCALEFSD,
+	IX86_BUILTIN_SCALEFSS, IX86_BUILTIN_SQRTSD_ROUND,
+	IX86_BUILTIN_SQRTSS_ROUND, IX86_BUILTIN_SUBSD_ROUND,
+	IX86_BUILTIN_SUBSS_ROUND, IX86_BUILTIN_VFMADDSD3_ROUND,
+	IX86_BUILTIN_VFMADDSS3_ROUND, IX86_BUILTIN_VFMSUBSD3_MASK3,
+	IX86_BUILTIN_VFMSUBSS3_MASK3.
+	(builtin_description bdesc_args[]): Add
+	__builtin_ia32_rcp14sd, __builtin_ia32_rcp14ss,
+	__builtin_ia32_rsqrt14pd512_mask, __builtin_ia32_rsqrt14ps512_mask,
+	__builtin_ia32_rsqrt14sd, __builtin_ia32_rsqrt14ss,
+	__builtin_ia32_addsd_round, __builtin_ia32_addss_round,
+	__builtin_ia32_cvtsd2ss_round, __builtin_ia32_cvtss2sd_round,
+	__builtin_ia32_divsd_round, __builtin_ia32_divss_round,
+	__builtin_ia32_getexpsd128_round, __builtin_ia32_getexpss128_round,
+	__builtin_ia32_getmantsd_round, __builtin_ia32_getmantss_round,
+	__builtin_ia32_maxsd_round, __builtin_ia32_maxss_round,
+	__builtin_ia32_minsd_round, __builtin_ia32_minss_round,
+	__builtin_ia32_mulsd_round, __builtin_ia32_mulss_round,
+	__builtin_ia32_rndscalesd_round, __builtin_ia32_rndscaless_round,
+	__builtin_ia32_scalefsd_round, __builtin_ia32_scalefss_round,
+	__builtin_ia32_sqrtsd_round, __builtin_ia32_sqrtss_round,
+	__builtin_ia32_subsd_round, __builtin_ia32_subss_round,
+	__builtin_ia32_vfmaddsd3_round, __builtin_ia32_vfmaddss3_round.
+	(ix86_expand_round_builtin): Expand new FTYPEs.
+	* config/i386/sse.md (<sse>_vm<plusminus_insn><mode>3): Support
+	EVEX's embedded rouding.
+	(<sse>_vm<multdiv_mnemonic><mode>3): Ditto.
+	(<sse>_vmsqrt<mode>2): Ditto.
+	(<sse>_vm<code><mode>3): Ditto.
+	(sse2_cvtsd2ss): Ditto.
+	(sse2_cvtss2sd): Ditto.
+	(*avx512f_vmscalef<mode>): Ditto.
+	(avx512f_sgetexp<mode>): Ditto.
+	(*avx512f_rndscale<mode>): Ditto.
+	(avx512f_getmant<mode>): Ditto.
+	(*srcp14<mode>): Make visible.
+	(*rsqrt14<mode>): Ditto.
+	* config/i386/subst.md (mask_mode512bit_condition): Fix
+	mode calculation.
+	(sd_mask_mode512bit_condition): Ditto.
+	(round_mode512bit_condition): Ditto.
+	(round_modev4sf_condition): Ditto.
+	(round_mask_scalar_operand3): Remove.
+	(round_prefix): New.
+	(round_saeonly_op3): Ditto.
+	(round_saeonly_prefix): Ditto.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_SHA_SET): New.
 	(OPTION_MASK_ISA_SHA_UNSET): Ditto.
 	(ix86_handle_option): Handle OPT_msha.

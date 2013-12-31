@@ -77,7 +77,13 @@ test8bit (void)
   m512  = _mm512_mask_fixupimm_ps (m512, mmask16, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m512  = _mm512_maskz_fixupimm_ps (mmask16, m512, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
+  m128d = _mm_fixupimm_sd (m128d, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128d = _mm_mask_fixupimm_sd (m128d, mmask8, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128d = _mm_maskz_fixupimm_sd (mmask8, m128d, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
+  m128  = _mm_fixupimm_ss (m128, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128  = _mm_mask_fixupimm_ss (m128, mmask8, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128  = _mm_maskz_fixupimm_ss (mmask8, m128, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
   m512i = _mm512_rol_epi32 (m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_mask_rol_epi32 (m512i, mmask16, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
@@ -107,6 +113,8 @@ test8bit (void)
   m512  = _mm512_mask_roundscale_ps (m512, mmask16, m512, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m512  = _mm512_maskz_roundscale_ps (mmask16, m512, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
+  m128d = _mm_roundscale_sd (m128d, m128d, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128  = _mm_roundscale_ss (m128, m128, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
   m512i = _mm512_alignr_epi32 (m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_mask_alignr_epi32 (m512i, mmask16, m512i, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
@@ -179,5 +187,6 @@ test4bit (void) {
   m512  = _mm512_mask_getmant_ps (m512, mmask16, m512, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
   m512  = _mm512_maskz_getmant_ps (mmask16, m512, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
 
-
+  m128d = _mm_getmant_sd (m128d, m128d, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
+  m128  = _mm_getmant_ss (m128, m128, 1, 64); /* { dg-error "the immediate argument must be a 4-bit immediate" } */
 }
