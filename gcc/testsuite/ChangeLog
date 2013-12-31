@@ -13,6 +13,71 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* gcc.target/i386/avx-1.c: Update for AVX-512 scalar insns.
+	* gcc.target/i386/avx512f-vaddsd-1.c: New.
+	* gcc.target/i386/avx512f-vaddss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtsd2ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vcvtss2sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vdivss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vextractf32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vextracti32x4-2.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmaddXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfmsubXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmaddXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vfnmsubXXXss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetexpss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vgetmantss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmaxss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vminss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmulss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalesd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaless-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14sd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrsqrt14ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefsd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vscalefss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsqrtss-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubsd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vsubss-1.c: Ditto.
+	* gcc.target/i386/sse-14.c: Update for AVX-512 scalar insns.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/testimm-10.c: Ditto.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* gcc.target/i386/avx-1.c: Add define for __builtin_ia32_sha1rnds4.
 	* gcc.target/i386/i386.exp (check_effective_target_sha): New.
 	* gcc.target/i386/sha-check.h: New file.
