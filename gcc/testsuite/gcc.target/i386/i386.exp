@@ -253,6 +253,46 @@ proc check_effective_target_rtm { } {
     } "-mrtm" ]
 }
 
+# Return 1 if avx512f instructions can be compiled.
+proc check_effective_target_avx512f { } {
+    return [check_no_compiler_messages avx512f object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	mm512_and_epi64  (__v8di __X, __v8di __Y)
+	{
+            __v8di __W;
+            return __builtin_ia32_pandq512_mask (__X, __Y, __W, -1);
+	}
+    } "-mavx512f" ]
+}
+
+# Return 1 if avx512cd instructions can be compiled.
+proc check_effective_target_avx512cd { } {
+    return [check_no_compiler_messages avx512cd_trans object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_conflict_epi64 (__v8di __W, __v8di __A)
+	{
+	  return (__v8di) __builtin_ia32_vpconflictdi_512_mask ((__v8di) __A,
+		  						 (__v8di) __W,
+			  					 -1);
+	}
+   } "-Wno-psabi -mavx512cd" ]
+}
+
+# Return 1 if avx512er instructions can be compiled.
+proc check_effective_target_avx512er { } {
+    return [check_no_compiler_messages avx512er_trans object {
+	typedef float __v16sf __attribute__ ((__vector_size__ (64)));
+	__v16sf
+	mm512_exp2a23_ps  (__v16sf __X)
+	{
+        __v16sf __W;
+	    return __builtin_ia32_exp2ps_mask (__X, __W, -1, 4);
+	}
+   } "-Wno-psabi -mavx512er" ]
+}
+
 # If the linker used understands -M <mapfile>, pass it to clear hardware
 # capabilities set by the Sun assembler.
 # Try mapfile syntax v2 first which is the only way to clear hwcap_2 flags.
