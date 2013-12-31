@@ -1,0 +1,7 @@
+# Soft-float functions go in glibc only, to facilitate the possible
+# future addition of exception and rounding mode support integrated
+# with <fenv.h>.
+
+LIB2FUNCS_EXCLUDE = _floatdidf _floatdisf _fixunsdfsi _fixunssfsi \
+  _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi _floatundidf _floatundisf
+LIB2ADD += $(srcdir)/config/nios2/linux-atomic.c

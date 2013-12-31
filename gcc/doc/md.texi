@@ -3233,6 +3233,52 @@ Memory constraint for 45 format.
 Memory constraint for 37 format.
 @end table
 
+@item Nios II family---@file{config/nios2/constraints.md}
+@table @code
+
+@item I
+Integer that is valid as an immediate operand in an
+instruction taking a signed 16-bit number. Range
+@minus{}32768 to 32767.
+
+@item J
+Integer that is valid as an immediate operand in an
+instruction taking an unsigned 16-bit number. Range
+0 to 65535.
+
+@item K
+Integer that is valid as an immediate operand in an
+instruction taking only the upper 16-bits of a
+32-bit number. Range 32-bit numbers with the lower
+16-bits being 0.
+
+@item L
+Integer that is valid as an immediate operand for a 
+shift instruction. Range 0 to 31.
+
+@item M
+Integer that is valid as an immediate operand for
+only the value 0. Can be used in conjunction with
+the format modifier @code{z} to use @code{r0}
+instead of @code{0} in the assembly output.
+
+@item N
+Integer that is valid as an immediate operand for
+a custom instruction opcode. Range 0 to 255.
+
+@item S
+Matches immediates which are addresses in the small
+data section and therefore can be added to @code{gp}
+as a 16-bit immediate to re-create their 32-bit value.
+
+@ifset INTERNALS
+@item T
+A @code{const} wrapped @code{UNSPEC} expression,
+representing a supported PIC or TLS relocation.
+@end ifset
+
+@end table
+
 @item PDP-11---@file{config/pdp11/constraints.md}
 @table @code
 @item a

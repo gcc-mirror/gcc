@@ -3847,6 +3847,14 @@ int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
 int sse3_func (void) __attribute__ ((__target__ ("sse3")));
 @end smallexample
 
+You can either use multiple
+strings to specify multiple options, or separate the options
+with a comma (@samp{,}).
+
+The @code{target} attribute is presently implemented for
+i386/x86_64, PowerPC, and Nios II targets only.
+The options supported are specific to each target.
+
 On the 386, the following options are allowed:
 
 @table @samp
@@ -4168,19 +4176,35 @@ compilation tunes for the @var{CPU} architecture, and not the
 default tuning specified on the command line.
 @end table
 
-On the 386/x86_64 and PowerPC back ends, you can use either multiple
-strings to specify multiple options, or you can separate the option
-with a comma (@code{,}).
+When compiling for Nios II, the following options are allowed:
+
+@table @samp
+@item custom-@var{insn}=@var{N}
+@itemx no-custom-@var{insn}
+@cindex @code{target("custom-@var{insn}=@var{N}")} attribute
+@cindex @code{target("no-custom-@var{insn}")} attribute
+Each @samp{custom-@var{insn}=@var{N}} attribute locally enables use of a
+custom instruction with encoding @var{N} when generating code that uses 
+@var{insn}.  Similarly, @samp{no-custom-@var{insn}} locally inhibits use of
+the custom instruction @var{insn}.
+These target attributes correspond to the
+@option{-mcustom-@var{insn}=@var{N}} and @option{-mno-custom-@var{insn}}
+command-line options, and support the same set of @var{insn} keywords.
+@xref{Nios II Options}, for more information.
+
+@item custom-fpu-cfg=@var{name}
+@cindex @code{target("custom-fpu-cfg=@var{name}")} attribute
+This attribute corresponds to the @option{-mcustom-fpu-cfg=@var{name}}
+command-line option, to select a predefined set of custom instructions
+named @var{name}.
+@xref{Nios II Options}, for more information.
+@end table
 
 On the 386/x86_64 and PowerPC back ends, the inliner does not inline a
 function that has different target options than the caller, unless the
 callee has a subset of the target options of the caller.  For example
 a function declared with @code{target("sse3")} can inline a function
 with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
-
-The @code{target} attribute is not implemented in GCC versions earlier
-than 4.4 for the i386/x86_64 and 4.6 for the PowerPC back ends.  It is
-not currently implemented for other back ends.
 
 @item tiny_data
 @cindex tiny data section on the H8/300H and H8S
@@ -9012,6 +9036,7 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * Alpha Built-in Functions::
+* Altera Nios II Built-in Functions::
 * ARC Built-in Functions::
 * ARC SIMD Built-in Functions::
 * ARM iWMMXt Built-in Functions::
@@ -9123,6 +9148,110 @@ PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
 void *__builtin_thread_pointer (void)
 void __builtin_set_thread_pointer (void *)
 @end smallexample
+
+@node Altera Nios II Built-in Functions
+@subsection Altera Nios II Built-in Functions
+
+These built-in functions are available for the Altera Nios II
+family of processors.
+
+The following built-in functions are always available.  They
+all generate the machine instruction that is part of the name.
+
+@example
+int __builtin_ldbio (volatile const void *)
+int __builtin_ldbuio (volatile const void *)
+int __builtin_ldhio (volatile const void *)
+int __builtin_ldhuio (volatile const void *)
+int __builtin_ldwio (volatile const void *)
+void __builtin_stbio (volatile void *, int)
+void __builtin_sthio (volatile void *, int)
+void __builtin_stwio (volatile void *, int)
+void __builtin_sync (void)
+int __builtin_rdctl (int) 
+void __builtin_wrctl (int, int)
+@end example
+
+The following built-in functions are always available.  They
+all generate a Nios II Custom Instruction. The name of the
+function represents the types that the function takes and
+returns. The letter before the @code{n} is the return type
+or void if absent. The @code{n} represents the first parameter
+to all the custom instructions, the custom instruction number.
+The two letters after the @code{n} represent the up to two
+parameters to the function.
+
+The letters represent the following data types:
+@table @code
+@item <no letter>
+@code{void} for return type and no parameter for parameter types.
+
+@item i
+@code{int} for return type and parameter type
+
+@item f
+@code{float} for return type and parameter type
+
+@item p
+@code{void *} for return type and parameter type
+
+@end table
+
+And the function names are:
+@example
+void __builtin_custom_n (void)
+void __builtin_custom_ni (int)
+void __builtin_custom_nf (float)
+void __builtin_custom_np (void *)
+void __builtin_custom_nii (int, int)
+void __builtin_custom_nif (int, float)
+void __builtin_custom_nip (int, void *)
+void __builtin_custom_nfi (float, int)
+void __builtin_custom_nff (float, float)
+void __builtin_custom_nfp (float, void *)
+void __builtin_custom_npi (void *, int)
+void __builtin_custom_npf (void *, float)
+void __builtin_custom_npp (void *, void *)
+int __builtin_custom_in (void)
+int __builtin_custom_ini (int)
+int __builtin_custom_inf (float)
+int __builtin_custom_inp (void *)
+int __builtin_custom_inii (int, int)
+int __builtin_custom_inif (int, float)
+int __builtin_custom_inip (int, void *)
+int __builtin_custom_infi (float, int)
+int __builtin_custom_inff (float, float)
+int __builtin_custom_infp (float, void *)
+int __builtin_custom_inpi (void *, int)
+int __builtin_custom_inpf (void *, float)
+int __builtin_custom_inpp (void *, void *)
+float __builtin_custom_fn (void)
+float __builtin_custom_fni (int)
+float __builtin_custom_fnf (float)
+float __builtin_custom_fnp (void *)
+float __builtin_custom_fnii (int, int)
+float __builtin_custom_fnif (int, float)
+float __builtin_custom_fnip (int, void *)
+float __builtin_custom_fnfi (float, int)
+float __builtin_custom_fnff (float, float)
+float __builtin_custom_fnfp (float, void *)
+float __builtin_custom_fnpi (void *, int)
+float __builtin_custom_fnpf (void *, float)
+float __builtin_custom_fnpp (void *, void *)
+void * __builtin_custom_pn (void)
+void * __builtin_custom_pni (int)
+void * __builtin_custom_pnf (float)
+void * __builtin_custom_pnp (void *)
+void * __builtin_custom_pnii (int, int)
+void * __builtin_custom_pnif (int, float)
+void * __builtin_custom_pnip (int, void *)
+void * __builtin_custom_pnfi (float, int)
+void * __builtin_custom_pnff (float, float)
+void * __builtin_custom_pnfp (float, void *)
+void * __builtin_custom_pnpi (void *, int)
+void * __builtin_custom_pnpf (void *, float)
+void * __builtin_custom_pnpp (void *, void *)
+@end example
 
 @node ARC Built-in Functions
 @subsection ARC Built-in Functions
@@ -16290,9 +16419,8 @@ function.  The parenthesis around the options is optional.
 @xref{Function Attributes}, for more information about the
 @code{target} attribute and the attribute syntax.
 
-The @code{#pragma GCC target} attribute is not implemented in GCC versions earlier
-than 4.4 for the i386/x86_64 and 4.6 for the PowerPC back ends.  At
-present, it is not implemented for other back ends.
+The @code{#pragma GCC target} pragma is presently implemented for
+i386/x86_64, PowerPC, and Nios II targets only.
 @end table
 
 @table @code

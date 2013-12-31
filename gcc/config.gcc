@@ -425,6 +425,10 @@ nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
 	;;
+nios2-*-*)
+	cpu_type=nios2
+	extra_options="${extra_options} g.opt"
+	;;	
 picochip-*-*)
         cpu_type=picochip
         ;;
@@ -2113,6 +2117,19 @@ nds32be-*-*)
 	tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="nds32/t-mlibs"
+	;;
+nios2-*-*)
+	tm_file="elfos.h ${tm_file}"
+        tmake_file="${tmake_file} nios2/t-nios2"
+        case ${target} in
+        nios2-*-linux*)
+                tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h nios2/linux.h "
+                ;;
+	nios2-*-elf*)
+		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
+		extra_options="${extra_options} nios2/elf.opt"
+		;;
+        esac
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"

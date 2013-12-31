@@ -1,0 +1,531 @@
+; Options for the Altera Nios II port of the compiler.
+; Copyright (C) 2012-2013 Free Software Foundation, Inc.
+; Contributed by Altera and Mentor Graphics, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GCC is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/nios2/nios2-opts.h
+
+TargetSave
+int saved_fpu_custom_code[n2fpu_code_num]
+
+TargetSave
+enum nios2_ccs_code saved_custom_code_status[256]
+
+TargetSave
+int saved_custom_code_index[256]
+
+mhw-div
+Target Report Mask(HAS_DIV)
+Enable DIV, DIVU
+
+mhw-mul
+Target Report Mask(HAS_MUL)
+Enable MUL instructions
+
+mhw-mulx
+Target Report Mask(HAS_MULX)
+Enable MULX instructions, assume fast shifter
+
+mfast-sw-div
+Target Report Mask(FAST_SW_DIV)
+Use table based fast divide (default at -O3)
+
+mbypass-cache
+Target Report Mask(BYPASS_CACHE)
+All memory accesses use I/O load/store instructions
+
+mno-cache-volatile
+Target Report RejectNegative Mask(BYPASS_CACHE_VOLATILE)
+Volatile memory accesses use I/O load/store instructions
+
+mcache-volatile
+Target Report RejectNegative Undocumented InverseMask(BYPASS_CACHE_VOLATILE)
+Volatile memory accesses do not use I/O load/store instructions
+
+mgpopt
+Target Report Var(TARGET_GPOPT) Init(-1)
+Use GP-relative addressing to access small data
+
+meb
+Target Report RejectNegative Mask(BIG_ENDIAN)
+Use big-endian byte order
+
+mel
+Target Report RejectNegative InverseMask(BIG_ENDIAN)
+Use little-endian byte order
+
+mcustom-fpu-cfg=
+Target RejectNegative Joined Var(nios2_custom_fpu_cfg_string)
+Floating point custom instruction configuration name
+
+mno-custom-ftruncds
+Target Report RejectNegative Var(nios2_custom_ftruncds, -1)
+Do not use the ftruncds custom instruction
+
+mcustom-ftruncds=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_ftruncds) Init(-1)
+Integer id (N) of ftruncds custom instruction
+
+mno-custom-fextsd
+Target Report RejectNegative Var(nios2_custom_fextsd, -1)
+Do not use the fextsd custom instruction
+
+mcustom-fextsd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fextsd) Init(-1)
+Integer id (N) of fextsd custom instruction
+
+mno-custom-fixdu
+Target Report RejectNegative Var(nios2_custom_fixdu, -1)
+Do not use the fixdu custom instruction
+
+mcustom-fixdu=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fixdu) Init(-1)
+Integer id (N) of fixdu custom instruction
+
+mno-custom-fixdi
+Target Report RejectNegative Var(nios2_custom_fixdi, -1)
+Do not use the fixdi custom instruction
+
+mcustom-fixdi=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fixdi) Init(-1)
+Integer id (N) of fixdi custom instruction
+
+mno-custom-fixsu
+Target Report RejectNegative Var(nios2_custom_fixsu, -1)
+Do not use the fixsu custom instruction
+
+mcustom-fixsu=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fixsu) Init(-1)
+Integer id (N) of fixsu custom instruction
+
+mno-custom-fixsi
+Target Report RejectNegative Var(nios2_custom_fixsi, -1)
+Do not use the fixsi custom instruction
+
+mcustom-fixsi=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fixsi) Init(-1)
+Integer id (N) of fixsi custom instruction
+
+mno-custom-floatud
+Target Report RejectNegative Var(nios2_custom_floatud, -1)
+Do not use the floatud custom instruction
+
+mcustom-floatud=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_floatud) Init(-1)
+Integer id (N) of floatud custom instruction
+
+mno-custom-floatid
+Target Report RejectNegative Var(nios2_custom_floatid, -1)
+Do not use the floatid custom instruction
+
+mcustom-floatid=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_floatid) Init(-1)
+Integer id (N) of floatid custom instruction
+
+mno-custom-floatus
+Target Report RejectNegative Var(nios2_custom_floatus, -1)
+Do not use the floatus custom instruction
+
+mcustom-floatus=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_floatus) Init(-1)
+Integer id (N) of floatus custom instruction
+
+mno-custom-floatis
+Target Report RejectNegative Var(nios2_custom_floatis, -1)
+Do not use the floatis custom instruction
+
+mcustom-floatis=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_floatis) Init(-1)
+Integer id (N) of floatis custom instruction
+
+mno-custom-fcmpned
+Target Report RejectNegative Var(nios2_custom_fcmpned, -1)
+Do not use the fcmpned custom instruction
+
+mcustom-fcmpned=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpned) Init(-1)
+Integer id (N) of fcmpned custom instruction
+
+mno-custom-fcmpeqd
+Target Report RejectNegative Var(nios2_custom_fcmpeqd, -1)
+Do not use the fcmpeqd custom instruction
+
+mcustom-fcmpeqd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpeqd) Init(-1)
+Integer id (N) of fcmpeqd custom instruction
+
+mno-custom-fcmpged
+Target Report RejectNegative Var(nios2_custom_fcmpged, -1)
+Do not use the fcmpged custom instruction
+
+mcustom-fcmpged=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpged) Init(-1)
+Integer id (N) of fcmpged custom instruction
+
+mno-custom-fcmpgtd
+Target Report RejectNegative Var(nios2_custom_fcmpgtd, -1)
+Do not use the fcmpgtd custom instruction
+
+mcustom-fcmpgtd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpgtd) Init(-1)
+Integer id (N) of fcmpgtd custom instruction
+
+mno-custom-fcmpled
+Target Report RejectNegative Var(nios2_custom_fcmpled, -1)
+Do not use the fcmpled custom instruction
+
+mcustom-fcmpled=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpled) Init(-1)
+Integer id (N) of fcmpled custom instruction
+
+mno-custom-fcmpltd
+Target Report RejectNegative Var(nios2_custom_fcmpltd, -1)
+Do not use the fcmpltd custom instruction
+
+mcustom-fcmpltd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpltd) Init(-1)
+Integer id (N) of fcmpltd custom instruction
+
+mno-custom-flogd
+Target Report RejectNegative Var(nios2_custom_flogd, -1)
+Do not use the flogd custom instruction
+
+mcustom-flogd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_flogd) Init(-1)
+Integer id (N) of flogd custom instruction
+
+mno-custom-fexpd
+Target Report RejectNegative Var(nios2_custom_fexpd, -1)
+Do not use the fexpd custom instruction
+
+mcustom-fexpd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fexpd) Init(-1)
+Integer id (N) of fexpd custom instruction
+
+mno-custom-fatand
+Target Report RejectNegative Var(nios2_custom_fatand, -1)
+Do not use the fatand custom instruction
+
+mcustom-fatand=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fatand) Init(-1)
+Integer id (N) of fatand custom instruction
+
+mno-custom-ftand
+Target Report RejectNegative Var(nios2_custom_ftand, -1)
+Do not use the ftand custom instruction
+
+mcustom-ftand=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_ftand) Init(-1)
+Integer id (N) of ftand custom instruction
+
+mno-custom-fsind
+Target Report RejectNegative Var(nios2_custom_fsind, -1)
+Do not use the fsind custom instruction
+
+mcustom-fsind=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsind) Init(-1)
+Integer id (N) of fsind custom instruction
+
+mno-custom-fcosd
+Target Report RejectNegative Var(nios2_custom_fcosd, -1)
+Do not use the fcosd custom instruction
+
+mcustom-fcosd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcosd) Init(-1)
+Integer id (N) of fcosd custom instruction
+
+mno-custom-fsqrtd
+Target Report RejectNegative Var(nios2_custom_fsqrtd, -1)
+Do not use the fsqrtd custom instruction
+
+mcustom-fsqrtd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsqrtd) Init(-1)
+Integer id (N) of fsqrtd custom instruction
+
+mno-custom-fabsd
+Target Report RejectNegative Var(nios2_custom_fabsd, -1)
+Do not use the fabsd custom instruction
+
+mcustom-fabsd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fabsd) Init(-1)
+Integer id (N) of fabsd custom instruction
+
+mno-custom-fnegd
+Target Report RejectNegative Var(nios2_custom_fnegd, -1)
+Do not use the fnegd custom instruction
+
+mcustom-fnegd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fnegd) Init(-1)
+Integer id (N) of fnegd custom instruction
+
+mno-custom-fmaxd
+Target Report RejectNegative Var(nios2_custom_fmaxd, -1)
+Do not use the fmaxd custom instruction
+
+mcustom-fmaxd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmaxd) Init(-1)
+Integer id (N) of fmaxd custom instruction
+
+mno-custom-fmind
+Target Report RejectNegative Var(nios2_custom_fmind, -1)
+Do not use the fmind custom instruction
+
+mcustom-fmind=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmind) Init(-1)
+Integer id (N) of fmind custom instruction
+
+mno-custom-fdivd
+Target Report RejectNegative Var(nios2_custom_fdivd, -1)
+Do not use the fdivd custom instruction
+
+mcustom-fdivd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fdivd) Init(-1)
+Integer id (N) of fdivd custom instruction
+
+mno-custom-fmuld
+Target Report RejectNegative Var(nios2_custom_fmuld, -1)
+Do not use the fmuld custom instruction
+
+mcustom-fmuld=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmuld) Init(-1)
+Integer id (N) of fmuld custom instruction
+
+mno-custom-fsubd
+Target Report RejectNegative Var(nios2_custom_fsubd, -1)
+Do not use the fsubd custom instruction
+
+mcustom-fsubd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsubd) Init(-1)
+Integer id (N) of fsubd custom instruction
+
+mno-custom-faddd
+Target Report RejectNegative Var(nios2_custom_faddd, -1)
+Do not use the faddd custom instruction
+
+mcustom-faddd=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_faddd) Init(-1)
+Integer id (N) of faddd custom instruction
+
+mno-custom-fcmpnes
+Target Report RejectNegative Var(nios2_custom_fcmpnes, -1)
+Do not use the fcmpnes custom instruction
+
+mcustom-fcmpnes=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpnes) Init(-1)
+Integer id (N) of fcmpnes custom instruction
+
+mno-custom-fcmpeqs
+Target Report RejectNegative Var(nios2_custom_fcmpeqs, -1)
+Do not use the fcmpeqs custom instruction
+
+mcustom-fcmpeqs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpeqs) Init(-1)
+Integer id (N) of fcmpeqs custom instruction
+
+mno-custom-fcmpges
+Target Report RejectNegative Var(nios2_custom_fcmpges, -1)
+Do not use the fcmpges custom instruction
+
+mcustom-fcmpges=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpges) Init(-1)
+Integer id (N) of fcmpges custom instruction
+
+mno-custom-fcmpgts
+Target Report RejectNegative Var(nios2_custom_fcmpgts, -1)
+Do not use the fcmpgts custom instruction
+
+mcustom-fcmpgts=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmpgts) Init(-1)
+Integer id (N) of fcmpgts custom instruction
+
+mno-custom-fcmples
+Target Report RejectNegative Var(nios2_custom_fcmples, -1)
+Do not use the fcmples custom instruction
+
+mcustom-fcmples=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmples) Init(-1)
+Integer id (N) of fcmples custom instruction
+
+mno-custom-fcmplts
+Target Report RejectNegative Var(nios2_custom_fcmplts, -1)
+Do not use the fcmplts custom instruction
+
+mcustom-fcmplts=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcmplts) Init(-1)
+Integer id (N) of fcmplts custom instruction
+
+mno-custom-flogs
+Target Report RejectNegative Var(nios2_custom_flogs, -1)
+Do not use the flogs custom instruction
+
+mcustom-flogs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_flogs) Init(-1)
+Integer id (N) of flogs custom instruction
+
+mno-custom-fexps
+Target Report RejectNegative Var(nios2_custom_fexps, -1)
+Do not use the fexps custom instruction
+
+mcustom-fexps=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fexps) Init(-1)
+Integer id (N) of fexps custom instruction
+
+mno-custom-fatans
+Target Report RejectNegative Var(nios2_custom_fatans, -1)
+Do not use the fatans custom instruction
+
+mcustom-fatans=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fatans) Init(-1)
+Integer id (N) of fatans custom instruction
+
+mno-custom-ftans
+Target Report RejectNegative Var(nios2_custom_ftans, -1)
+Do not use the ftans custom instruction
+
+mcustom-ftans=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_ftans) Init(-1)
+Integer id (N) of ftans custom instruction
+
+mno-custom-fsins
+Target Report RejectNegative Var(nios2_custom_fsins, -1)
+Do not use the fsins custom instruction
+
+mcustom-fsins=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsins) Init(-1)
+Integer id (N) of fsins custom instruction
+
+mno-custom-fcoss
+Target Report RejectNegative Var(nios2_custom_fcoss, -1)
+Do not use the fcoss custom instruction
+
+mcustom-fcoss=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fcoss) Init(-1)
+Integer id (N) of fcoss custom instruction
+
+mno-custom-fsqrts
+Target Report RejectNegative Var(nios2_custom_fsqrts, -1)
+Do not use the fsqrts custom instruction
+
+mcustom-fsqrts=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsqrts) Init(-1)
+Integer id (N) of fsqrts custom instruction
+
+mno-custom-fabss
+Target Report RejectNegative Var(nios2_custom_fabss, -1)
+Do not use the fabss custom instr
+
+mcustom-fabss=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fabss) Init(-1)
+Integer id (N) of fabss custom instruction
+
+mno-custom-fnegs
+Target Report RejectNegative Var(nios2_custom_fnegs, -1)
+Do not use the fnegs custom instruction
+
+mcustom-fnegs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fnegs) Init(-1)
+Integer id (N) of fnegs custom instruction
+
+mno-custom-fmaxs
+Target Report RejectNegative Var(nios2_custom_fmaxs, -1)
+Do not use the fmaxs custom instruction
+
+mcustom-fmaxs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmaxs) Init(-1)
+Integer id (N) of fmaxs custom instruction
+
+mno-custom-fmins
+Target Report RejectNegative Var(nios2_custom_fmins, -1)
+Do not use the fmins custom instruction
+
+mcustom-fmins=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmins) Init(-1)
+Integer id (N) of fmins custom instruction
+
+mno-custom-fdivs
+Target Report RejectNegative Var(nios2_custom_fdivs, -1)
+Do not use the fdivs custom instruction
+
+mcustom-fdivs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fdivs) Init(-1)
+Integer id (N) of fdivs custom instruction
+
+mno-custom-fmuls
+Target Report RejectNegative Var(nios2_custom_fmuls, -1)
+Do not use the fmuls custom instruction
+
+mcustom-fmuls=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fmuls) Init(-1)
+Integer id (N) of fmuls custom instruction
+
+mno-custom-fsubs
+Target Report RejectNegative Var(nios2_custom_fsubs, -1)
+Do not use the fsubs custom instruction
+
+mcustom-fsubs=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fsubs) Init(-1)
+Integer id (N) of fsubs custom instruction
+
+mno-custom-fadds
+Target Report RejectNegative Var(nios2_custom_fadds, -1)
+Do not use the fadds custom instruction
+
+mcustom-fadds=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fadds) Init(-1)
+Integer id (N) of fadds custom instruction
+
+mno-custom-frdy
+Target Report RejectNegative Var(nios2_custom_frdy, -1)
+Do not use the frdy custom instruction
+
+mcustom-frdy=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_frdy) Init(-1)
+Integer id (N) of frdy custom instruction
+
+mno-custom-frdxhi
+Target Report RejectNegative Var(nios2_custom_frdxhi, -1)
+Do not use the frdxhi custom instruction
+
+mcustom-frdxhi=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_frdxhi) Init(-1)
+Integer id (N) of frdxhi custom instruction
+
+mno-custom-frdxlo
+Target Report RejectNegative Var(nios2_custom_frdxlo, -1)
+Do not use the frdxlo custom instruction
+
+mcustom-frdxlo=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_frdxlo) Init(-1)
+Integer id (N) of frdxlo custom instruction
+
+mno-custom-fwry
+Target Report RejectNegative Var(nios2_custom_fwry, -1)
+Do not use the fwry custom instruction
+
+mcustom-fwry=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fwry) Init(-1)
+Integer id (N) of fwry custom instruction
+
+mno-custom-fwrx
+Target Report RejectNegative Var(nios2_custom_fwrx, -1)
+Do not use the fwrx custom instruction
+
+mcustom-fwrx=
+Target Report RejectNegative Joined UInteger Var(nios2_custom_fwrx) Init(-1)
+Integer id (N) of fwrx custom instruction
