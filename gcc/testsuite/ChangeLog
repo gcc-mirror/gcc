@@ -1,3 +1,15 @@
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	Sergey Lega  <sergey.s.lega@intel.com>
+	Anna Tikhonova  <anna.tikhonova@intel.com>
+	Ilya Tocar  <ilya.tocar@intel.com>
+	Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	Ilya Verbin  <ilya.verbin@intel.com>
+	Kirill Yukhin  <kirill.yukhin@intel.com>
+	Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.target/i386/pr49002-2.c: allow vmovapd generation.
+
 2013-12-31  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Based on patches from Altera Corporation

@@ -748,8 +748,9 @@
    (set (attr "mode")
 	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
 		 (const_string "<ssePSmode>")
-	       (and (eq_attr "alternative" "2")
-		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+	       (and (match_test "GET_MODE_SIZE (<MODE>mode) == 16")
+		    (and (eq_attr "alternative" "2")
+			 (match_test "TARGET_SSE_TYPELESS_STORES")))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
@@ -986,8 +987,9 @@
    (set_attr "ssememalign" "8")
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+        (cond [(and (match_test "GET_MODE_SIZE (<MODE>mode) == 16")
+                    (ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+                         (match_test "TARGET_SSE_TYPELESS_STORES")))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<MODE>")
@@ -1091,6 +1093,7 @@
 {
   switch (get_attr_mode (insn))
     {
+    case MODE_V16SF:
     case MODE_V8SF:
     case MODE_V4SF:
       return "%vmovups\t{%1, %0|%0, %1}";
@@ -1113,8 +1116,9 @@
      (const_string "1")))
    (set_attr "prefix" "maybe_vex")
    (set (attr "mode")
-	(cond [(ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
-		    (match_test "TARGET_SSE_TYPELESS_STORES"))
+	(cond [(and (match_test "GET_MODE_SIZE (<MODE>mode) == 16")
+		    (ior (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+			 (match_test "TARGET_SSE_TYPELESS_STORES")))
 		 (const_string "<ssePSmode>")
 	       (match_test "TARGET_AVX")
 		 (const_string "<sseinsnmode>")
@@ -3492,7 +3496,11 @@
    (match_operand:<sseintvecmode> 1 "register_operand")]
   "TARGET_SSE2 && (<MODE>mode == V4SFmode || TARGET_AVX2)"
 {
-  ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
+  if (<MODE>mode == V16SFmode)
+    emit_insn (gen_ufloatv16siv16sf2 (operands[0], operands[1]));
+  else
+    ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
+
   DONE;
 })
 
@@ -3583,11 +3591,17 @@
    (match_operand:VF1 1 "register_operand")]
   "TARGET_SSE2"
 {
-  rtx tmp[3];
-  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
-  tmp[1] = gen_reg_rtx (<sseintvecmode>mode);
-  emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (tmp[1], tmp[0]));
-  emit_insn (gen_xor<sseintvecmodelower>3 (operands[0], tmp[1], tmp[2]));
+  if (<MODE>mode == V16SFmode)
+    emit_insn (gen_ufix_truncv16sfv16si2 (operands[0],
+					  operands[1]));
+  else
+    {
+      rtx tmp[3];
+      tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
+      tmp[1] = gen_reg_rtx (<sseintvecmode>mode);
+      emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (tmp[1], tmp[0]));
+      emit_insn (gen_xor<sseintvecmodelower>3 (operands[0], tmp[1], tmp[2]));
+    }
   DONE;
 })
 
@@ -4514,6 +4528,32 @@
   DONE;
 })
 
+(define_expand "vec_unpacku_float_hi_v16si"
+  [(match_operand:V8DF 0 "register_operand")
+   (match_operand:V16SI 1 "register_operand")]
+  "TARGET_AVX512F"
+{
+  REAL_VALUE_TYPE TWO32r;
+  rtx k, x, tmp[4];
+
+  real_ldexp (&TWO32r, &dconst1, 32);
+  x = const_double_from_real_value (TWO32r, DFmode);
+
+  tmp[0] = force_reg (V8DFmode, CONST0_RTX (V8DFmode));
+  tmp[1] = force_reg (V8DFmode, ix86_build_const_vector (V8DFmode, 1, x));
+  tmp[2] = gen_reg_rtx (V8DFmode);
+  tmp[3] = gen_reg_rtx (V8SImode);
+  k = gen_reg_rtx (QImode);
+
+  emit_insn (gen_vec_extract_hi_v16si (tmp[3], operands[1]));
+  emit_insn (gen_floatv8siv8df2 (tmp[2], tmp[3]));
+  emit_insn (gen_rtx_SET (VOIDmode, k,
+			  gen_rtx_LT (QImode, tmp[2], tmp[0])));
+  emit_insn (gen_addv8df3_mask (tmp[2], tmp[2], tmp[1], tmp[2], k));
+  emit_move_insn (operands[0], tmp[2]);
+  DONE;
+})
+
 (define_expand "vec_unpacku_float_lo_v8si"
   [(match_operand:V4DF 0 "register_operand")
    (match_operand:V8SI 1 "nonimmediate_operand")]
@@ -4679,31 +4719,46 @@
 
 (define_expand "vec_pack_ufix_trunc_<mode>"
   [(match_operand:<ssepackfltmode> 0 "register_operand")
-   (match_operand:VF2_128_256 1 "register_operand")
-   (match_operand:VF2_128_256 2 "register_operand")]
+   (match_operand:VF2 1 "register_operand")
+   (match_operand:VF2 2 "register_operand")]
   "TARGET_SSE2"
 {
-  rtx tmp[7];
-  tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
-  tmp[1] = ix86_expand_adjust_ufix_to_sfix_si (operands[2], &tmp[3]);
-  tmp[4] = gen_reg_rtx (<ssepackfltmode>mode);
-  emit_insn (gen_vec_pack_sfix_trunc_<mode> (tmp[4], tmp[0], tmp[1]));
-  if (<ssepackfltmode>mode == V4SImode || TARGET_AVX2)
+  if (<MODE>mode == V8DFmode)
     {
-      tmp[5] = gen_reg_rtx (<ssepackfltmode>mode);
-      ix86_expand_vec_extract_even_odd (tmp[5], tmp[2], tmp[3], 0);
+      rtx r1, r2;
+
+      r1 = gen_reg_rtx (V8SImode);
+      r2 = gen_reg_rtx (V8SImode);
+
+      emit_insn (gen_ufix_truncv8dfv8si2 (r1, operands[1]));
+      emit_insn (gen_ufix_truncv8dfv8si2 (r2, operands[2]));
+      emit_insn (gen_avx_vec_concatv16si (operands[0], r1, r2));
     }
   else
     {
-      tmp[5] = gen_reg_rtx (V8SFmode);
-      ix86_expand_vec_extract_even_odd (tmp[5], gen_lowpart (V8SFmode, tmp[2]),
-					gen_lowpart (V8SFmode, tmp[3]), 0);
-      tmp[5] = gen_lowpart (V8SImode, tmp[5]);
+      rtx tmp[7];
+      tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
+      tmp[1] = ix86_expand_adjust_ufix_to_sfix_si (operands[2], &tmp[3]);
+      tmp[4] = gen_reg_rtx (<ssepackfltmode>mode);
+      emit_insn (gen_vec_pack_sfix_trunc_<mode> (tmp[4], tmp[0], tmp[1]));
+      if (<ssepackfltmode>mode == V4SImode || TARGET_AVX2)
+	{
+	  tmp[5] = gen_reg_rtx (<ssepackfltmode>mode);
+	  ix86_expand_vec_extract_even_odd (tmp[5], tmp[2], tmp[3], 0);
+	}
+      else
+	{
+	  tmp[5] = gen_reg_rtx (V8SFmode);
+	  ix86_expand_vec_extract_even_odd (tmp[5], gen_lowpart (V8SFmode, tmp[2]),
+					    gen_lowpart (V8SFmode, tmp[3]), 0);
+	  tmp[5] = gen_lowpart (V8SImode, tmp[5]);
+	}
+      tmp[6] = expand_simple_binop (<ssepackfltmode>mode, XOR, tmp[4], tmp[5],
+				    operands[0], 0, OPTAB_DIRECT);
+      if (tmp[6] != operands[0])
+	emit_move_insn (operands[0], tmp[6]);
     }
-  tmp[6] = expand_simple_binop (<ssepackfltmode>mode, XOR, tmp[4], tmp[5],
-				operands[0], 0, OPTAB_DIRECT);
-  if (tmp[6] != operands[0])
-    emit_move_insn (operands[0], tmp[6]);
+
   DONE;
 })
 
