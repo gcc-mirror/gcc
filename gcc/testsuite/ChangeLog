@@ -1,3 +1,8 @@
+2014-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/59647
+	* g++.dg/opt/pr59647.C: New test.
+
 2013-12-31  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline

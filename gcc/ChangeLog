@@ -1,3 +1,9 @@
+2014-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/59647
+	* cse.c (cse_process_notes_1): Don't substitute negative VOIDmode
+	new_rtx into UNSIGNED_FLOAT rtxes.
+
 2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (output file options): Document -fada-spec-parent.
