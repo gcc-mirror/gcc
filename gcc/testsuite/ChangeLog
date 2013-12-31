@@ -1,3 +1,58 @@
+2013-12-31  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Based on patches from Altera Corporation
+
+	* gcc.dg/stack-usage-1.c (SIZE): Define case for __nios2__.
+	* gcc.dg/20040813-1.c: Skip for nios2-*-*.
+	* gcc.dg/20020312-2.c: Add __nios2__ case.
+	* g++.dg/other/PR23205.C: Skip for nios2-*-*.
+	* g++.dg/other/pr23205-2.C: Skip for nios2-*-*.
+	* g++.dg/cpp0x/constexpr-rom.C: Skip for nios2-*-*.
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Skip for nios2-*-*.
+	* g++.old-deja/g++.jason/thunk3.C: Skip for nios2-*-*.
+	* lib/target-supports.exp (check_profiling_available): Check for
+	nios2-*-elf.
+	* gcc.c-torture/execute/pr47237.x:: Skip for nios2-*-*.
+	* gcc.c-torture/execute/20101011-1.c: Skip for nios2-*-*.
+	* gcc.c-torture/execute/builtins/lib/chk.c (memset): Place
+	char-based memset loop before inline check, to prevent
+	problems when called to initialize .bss. Update comments.
+	* gcc.target/nios2/nios2.exp: New DejaGNU file.
+	* gcc.target/nios2/nios2-custom-1.c: New test.
+	* gcc.target/nios2/nios2-trap-insn.c: New test.
+	* gcc.target/nios2/nios2-builtin-custom.c: New test.
+	* gcc.target/nios2/nios2-builtin-io.c: New test.
+	* gcc.target/nios2/nios2-stack-check-1.c: New test.
+	* gcc.target/nios2/nios2-stack-check-2.c: New test.
+	* gcc.target/nios2/nios2-rdctl.c: New test.
+	* gcc.target/nios2/nios2-wrctl.c: New test.
+	* gcc.target/nios2/nios2-wrctl-zero.c: New test.
+	* gcc.target/nios2/nios2-wrctl-not-zero.c: New test.
+	* gcc.target/nios2/nios2-rdwrctl-1.c: New test.
+	* gcc.target/nios2/nios2-reg-constraints.c: New test.
+	* gcc.target/nios2/nios2-ashlsi3-one_shift.c: New test.
+	* gcc.target/nios2/nios2-mul-options-1.c: New test.
+	* gcc.target/nios2/nios2-mul-options-2.c: New test.
+	* gcc.target/nios2/nios2-mul-options-3.c: New test.
+	* gcc.target/nios2/nios2-mul-options-4.c: New test.
+	* gcc.target/nios2/nios2-nor.c: New test.
+	* gcc.target/nios2/nios2-stxio.c: New test.
+	* gcc.target/nios2/custom-fp-1.c: New test.
+	* gcc.target/nios2/custom-fp-2.c: New test.
+	* gcc.target/nios2/custom-fp-3.c: New test.
+	* gcc.target/nios2/custom-fp-4.c: New test.
+	* gcc.target/nios2/custom-fp-5.c: New test.
+	* gcc.target/nios2/custom-fp-6.c: New test.
+	* gcc.target/nios2/custom-fp-7.c: New test.
+	* gcc.target/nios2/custom-fp-8.c: New test.
+	* gcc.target/nios2/custom-fp-cmp-1.c: New test.
+	* gcc.target/nios2/custom-fp-conversion.c: New test.
+	* gcc.target/nios2/custom-fp-double.c: New test.
+	* gcc.target/nios2/custom-fp-float.c: New test.
+	* gcc.target/nios2/nios2-int-types.c: New test.
+	* gcc.target/nios2/nios2-cache-1.c: New test.
+	* gcc.target/nios2/nios2-cache-2.c: New test.
+
 2013-12-30  Mike Stump  <mikestump@comcast.net>
 
 	PR c++/41090

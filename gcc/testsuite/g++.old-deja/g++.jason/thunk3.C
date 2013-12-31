@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-skip-if "fails with generic thunk support" { rs6000-*-* powerpc-*-eabi v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa*-*-* m32r*-*-* lm32-*-* } { "*" } { "" } }
+// { dg-skip-if "fails with generic thunk support" { rs6000-*-* powerpc-*-eabi v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa*-*-* m32r*-*-* lm32-*-* nios2-*-* } { "*" } { "" } }
 // Test that variadic function calls using thunks work right.
 // Note that this will break on any target that uses the generic thunk
 //  support, because it doesn't support variadic functions.

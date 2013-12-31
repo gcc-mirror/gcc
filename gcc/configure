@@ -23396,6 +23396,13 @@ foo:
 	tls_first_minor=19
 	tls_as_opt='--fatal-warnings'
 	;;
+  nios2-*-*)
+      conftest_s='
+	.section ".tdata","awT",@progbits'
+	tls_first_major=2
+	tls_first_minor=23
+	tls_as_opt="--fatal-warnings"
+	;;
   aarch64*-*-*)
     conftest_s='
 	.section ".tdata","awT",%progbits
@@ -26251,8 +26258,8 @@ esac
 # version to the per-target configury.
 case "$cpu_type" in
   aarch64 | alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze \
-  | mips | pa | rs6000 | score | sparc | spu | tilegx | tilepro | xstormy16 \
-  | xtensa)
+  | mips | nios2 | pa | rs6000 | score | sparc | spu | tilegx | tilepro \
+  | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

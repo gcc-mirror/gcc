@@ -1,3 +1,31 @@
+2013-12-31  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Based on patches from Altera Corporation
+
+	* config.gcc (nios2-*-*): Add nios2 config targets.
+	* configure.ac (TLS_SECTION_ASM_FLAG): Add nios2 case.
+	("$cpu_type"): Add nios2 as new cpu type.
+	* configure: Regenerate.
+	* config/nios2/nios2.c: New file.
+	* config/nios2/nios2.h: New file.
+	* config/nios2/nios2-opts.h: New file.
+	* config/nios2/nios2-protos.h: New file.
+	* config/nios2/elf.h: New file.
+	* config/nios2/elf.opt: New file.
+	* config/nios2/linux.h: New file.
+	* config/nios2/nios2.opt: New file.
+	* config/nios2/nios2.md: New file.
+	* config/nios2/predicates.md: New file.
+	* config/nios2/constraints.md: New file.
+	* config/nios2/t-nios2: New file.
+	* common/config/nios2/nios2-common.c: New file.
+	* doc/invoke.texi (Nios II options): Document Nios II specific
+	options.
+	* doc/md.texi (Nios II family): Document Nios II specific
+	constraints.
+	* doc/extend.texi (Function Specific Option Pragmas): Document
+	Nios II supported target pragma functionality.
+
 2013-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59591

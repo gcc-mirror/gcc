@@ -840,6 +840,16 @@ Objective-C and Objective-C++ Dialects}.
 -mforce-fp-as-gp -mforbid-fp-as-gp @gol
 -mex9 -mctor-dtor -mrelax}
 
+@emph{Nios II Options}
+@gccoptlist{-G @var{num} -mgpopt -mno-gpopt -mel -meb @gol
+-mno-bypass-cache -mbypass-cache @gol
+-mno-cache-volatile -mcache-volatile @gol
+-mno-fast-sw-div -mfast-sw-div @gol
+-mhw-mul -mno-hw-mul -mhw-mulx -mno-hw-mulx -mno-hw-div -mhw-div @gol
+-mcustom-@var{insn}=@var{N} -mno-custom-@var{insn} @gol
+-mcustom-fpu-cfg=@var{name} @gol
+-mhal -msmallc -msys-crt0=@var{name} -msys-lib=@var{name}}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -11230,6 +11240,7 @@ platform.
 * Moxie Options::
 * MSP430 Options::
 * NDS32 Options::
+* Nios II Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -18211,6 +18222,285 @@ Enable constructor/destructor feature.
 @item -mrelax
 @opindex mrelax
 Guide linker to relax instructions.
+
+@end table
+
+@node Nios II Options
+@subsection Nios II Options
+@cindex Nios II options
+@cindex Altera Nios II options
+
+These are the options defined for the Altera Nios II processor.
+
+@table @gcctabopt
+
+@item -G @var{num}
+@opindex G
+@cindex smaller data references
+Put global and static objects less than or equal to @var{num} bytes
+into the small data or BSS sections instead of the normal data or BSS
+sections.  The default value of @var{num} is 8.
+
+@item -mgpopt
+@itemx -mno-gpopt
+@opindex mgpopt
+@opindex mno-gpopt
+Generate (do not generate) GP-relative accesses for objects in the
+small data or BSS sections.  The default is @option{-mgpopt} except
+when @option{-fpic} or @option{-fPIC} is specified to generate
+position-independent code.  Note that the Nios II ABI does not permit
+GP-relative accesses from shared libraries.
+
+You may need to specify @option{-mno-gpopt} explicitly when building
+programs that include large amounts of small data, including large
+GOT data sections.  In this case, the 16-bit offset for GP-relative
+addressing may not be large enough to allow access to the entire 
+small data section.
+
+@item -mel
+@itemx -meb
+@opindex mel
+@opindex meb
+Generate little-endian (default) or big-endian (experimental) code,
+respectively.
+
+@item -mbypass-cache
+@itemx -mno-bypass-cache
+@opindex mno-bypass-cache
+@opindex mbypass-cache
+Force all load and store instructions to always bypass cache by 
+using I/O variants of the instructions. The default is not to
+bypass the cache.
+
+@item -mno-cache-volatile 
+@itemx -mcache-volatile       
+@opindex mcache-volatile 
+@opindex mno-cache-volatile
+Volatile memory access bypass the cache using the I/O variants of 
+the load and store instructions. The default is not to bypass the cache.
+
+@item -mno-fast-sw-div
+@itemx -mfast-sw-div
+@opindex mno-fast-sw-div
+@opindex mfast-sw-div
+Do not use table-based fast divide for small numbers. The default 
+is to use the fast divide at @option{-O3} and above.
+
+@item -mno-hw-mul
+@itemx -mhw-mul
+@itemx -mno-hw-mulx
+@itemx -mhw-mulx
+@itemx -mno-hw-div
+@itemx -mhw-div
+@opindex mno-hw-mul
+@opindex mhw-mul
+@opindex mno-hw-mulx
+@opindex mhw-mulx
+@opindex mno-hw-div
+@opindex mhw-div
+Enable or disable emitting @code{mul}, @code{mulx} and @code{div} family of 
+instructions by the compiler. The default is to emit @code{mul}
+and not emit @code{div} and @code{mulx}.
+
+@item -mcustom-@var{insn}=@var{N}
+@itemx -mno-custom-@var{insn}
+@opindex mcustom-@var{insn}
+@opindex mno-custom-@var{insn}
+Each @option{-mcustom-@var{insn}=@var{N}} option enables use of a
+custom instruction with encoding @var{N} when generating code that uses 
+@var{insn}.  For example, @code{-mcustom-fadds=253} generates custom
+instruction 253 for single-precision floating-point add operations instead
+of the default behavior of using a library call.
+
+The following values of @var{insn} are supported.  Except as otherwise
+noted, floating-point operations are expected to be implemented with
+normal IEEE 754 semantics and correspond directly to the C operators or the
+equivalent GCC built-in functions (@pxref{Other Builtins}).
+
+Single-precision floating point:
+@table @asis
+
+@item @samp{fadds}, @samp{fsubs}, @samp{fdivs}, @samp{fmuls}
+Binary arithmetic operations.
+
+@item @samp{fnegs}
+Unary negation.
+
+@item @samp{fabss}
+Unary absolute value.
+
+@item @samp{fcmpeqs}, @samp{fcmpges}, @samp{fcmpgts}, @samp{fcmples}, @samp{fcmplts}, @samp{fcmpnes}
+Comparison operations.
+
+@item @samp{fmins}, @samp{fmaxs}
+Floating-point minimum and maximum.  These instructions are only
+generated if @option{-ffinite-math-only} is specified.
+
+@item @samp{fsqrts}
+Unary square root operation.
+
+@item @samp{fcoss}, @samp{fsins}, @samp{ftans}, @samp{fatans}, @samp{fexps}, @samp{flogs}
+Floating-point trigonometric and exponential functions.  These instructions
+are only generated if @option{-funsafe-math-optimizations} is also specified.
+
+@end table
+
+Double-precision floating point:
+@table @asis
+
+@item @samp{faddd}, @samp{fsubd}, @samp{fdivd}, @samp{fmuld}
+Binary arithmetic operations.
+
+@item @samp{fnegd}
+Unary negation.
+
+@item @samp{fabsd}
+Unary absolute value.
+
+@item @samp{fcmpeqd}, @samp{fcmpged}, @samp{fcmpgtd}, @samp{fcmpled}, @samp{fcmpltd}, @samp{fcmpned}
+Comparison operations.
+
+@item @samp{fmind}, @samp{fmaxd}
+Double-precision minimum and maximum.  These instructions are only
+generated if @option{-ffinite-math-only} is specified.
+
+@item @samp{fsqrtd}
+Unary square root operation.
+
+@item @samp{fcosd}, @samp{fsind}, @samp{ftand}, @samp{fatand}, @samp{fexpd}, @samp{flogd}
+Double-precision trigonometric and exponential functions.  These instructions
+are only generated if @option{-funsafe-math-optimizations} is also specified.
+
+@end table
+
+Conversions:
+@table @asis
+@item @samp{fextsd}
+Conversion from single precision to double precision.
+
+@item @samp{ftruncds}
+Conversion from double precision to single precision.
+
+@item @samp{fixsi}, @samp{fixsu}, @samp{fixdi}, @samp{fixdu}
+Conversion from floating point to signed or unsigned integer types, with
+truncation towards zero.
+
+@item @samp{floatis}, @samp{floatus}, @samp{floatid}, @samp{floatud}
+Conversion from signed or unsigned integer types to floating-point types.
+
+@end table
+
+In addition, all of the following transfer instructions for internal
+registers X and Y must be provided to use any of the double-precision
+floating-point instructions.  Custom instructions taking two
+double-precision source operands expect the first operand in the
+64-bit register X.  The other operand (or only operand of a unary
+operation) is given to the custom arithmetic instruction with the
+least significant half in source register @var{src1} and the most
+significant half in @var{src2}.  A custom instruction that returns a
+double-precision result returns the most significant 32 bits in the
+destination register and the other half in 32-bit register Y.  
+GCC automatically generates the necessary code sequences to write
+register X and/or read register Y when double-precision floating-point
+instructions are used.
+
+@table @asis
+
+@item @samp{fwrx}
+Write @var{src1} into the least significant half of X and @var{src2} into
+the most significant half of X.
+
+@item @samp{fwry}
+Write @var{src1} into Y.
+
+@item @samp{frdxhi}, @samp{frdxlo}
+Read the most or least (respectively) significant half of X and store it in
+@var{dest}.
+
+@item @samp{frdy}
+Read the value of Y and store it into @var{dest}.
+@end table
+
+Note that you can gain more local control over generation of Nios II custom
+instructions by using the @code{target("custom-@var{insn}=@var{N}")}
+and @code{target("no-custom-@var{insn}")} function attributes
+(@pxref{Function Attributes})
+or pragmas (@pxref{Function Specific Option Pragmas}).
+
+@item -mcustom-fpu-cfg=@var{name}
+@opindex mcustom-fpu-cfg
+
+This option enables a predefined, named set of custom instruction encodings
+(see @option{-mcustom-@var{insn}} above).  
+Currently, the following sets are defined:
+
+@option{-mcustom-fpu-cfg=60-1} is equivalent to:
+@gccoptlist{-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-fsingle-precision-constant}
+
+@option{-mcustom-fpu-cfg=60-2} is equivalent to:
+@gccoptlist{-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol
+-fsingle-precision-constant}
+
+@option{-mcustom-fpu-cfg=72-3} is equivalent to:
+@gccoptlist{-mcustom-floatus=243 @gol
+-mcustom-fixsi=244 @gol
+-mcustom-floatis=245 @gol
+-mcustom-fcmpgts=246 @gol
+-mcustom-fcmples=249 @gol
+-mcustom-fcmpeqs=250 @gol
+-mcustom-fcmpnes=251 @gol
+-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol
+-fsingle-precision-constant}
+
+Custom instruction assignments given by individual
+@option{-mcustom-@var{insn}=} options override those given by
+@option{-mcustom-fpu-cfg=}, regardless of the
+order of the options on the command line.
+
+Note that you can gain more local control over selection of a FPU
+configuration by using the @code{target("custom-fpu-cfg=@var{name}")}
+function attribute (@pxref{Function Attributes})
+or pragma (@pxref{Function Specific Option Pragmas}).
+
+@end table
+
+These additional @samp{-m} options are available for the Altera Nios II
+ELF (bare-metal) target:
+
+@table @gcctabopt
+
+@item -mhal
+@opindex mhal
+Link with HAL BSP.  This suppresses linking with the GCC-provided C runtime
+startup and termination code, and is typically used in conjunction with
+@option{-msys-crt0=} to specify the location of the alternate startup code
+provided by the HAL BSP.
+
+@item -msmallc
+@opindex msmallc
+Link with a limited version of the C library, @option{-lsmallc}, rather than
+Newlib.
+
+@item -msys-crt0=@var{startfile}
+@opindex msys-crt0
+@var{startfile} is the file name of the startfile (crt0) to use 
+when linking.  This option is only useful in conjunction with @option{-mhal}.
+
+@item -msys-lib=@var{systemlib}
+@opindex msys-lib
+@var{systemlib} is the library name of the library that provides
+low-level system calls required by the C library,
+e.g. @code{read} and @code{write}.
+This option is typically used to link with a library provided by a HAL BSP.
 
 @end table
 
