@@ -327,6 +327,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SSE4_2__");
   if (isa_flag & OPTION_MASK_ISA_AES)
     def_or_undef (parse_in, "__AES__");
+  if (isa_flag & OPTION_MASK_ISA_SHA)
+    def_or_undef (parse_in, "__SHA__");
   if (isa_flag & OPTION_MASK_ISA_PCLMUL)
     def_or_undef (parse_in, "__PCLMUL__");
   if (isa_flag & OPTION_MASK_ISA_AVX)

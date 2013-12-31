@@ -341,6 +341,9 @@
 #define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, 1)
 #define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, 1)
 
+/* shaintrin.h */
+#define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

@@ -409,7 +409,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_rdseed = 0, has_prfchw = 0, has_adx = 0;
   unsigned int has_osxsave = 0, has_fxsr = 0, has_xsave = 0, has_xsaveopt = 0;
   unsigned int has_avx512er = 0, has_avx512pf = 0, has_avx512cd = 0;
-  unsigned int has_avx512f = 0;
+  unsigned int has_avx512f = 0, has_sha = 0;
 
   bool arch;
 
@@ -485,6 +485,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512er = ebx & bit_AVX512ER;
       has_avx512pf = ebx & bit_AVX512PF;
       has_avx512cd = ebx & bit_AVX512CD;
+      has_sha = ebx & bit_SHA;
     }
 
   if (max_level >= 13)
@@ -850,6 +851,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *sahf = has_lahf_lm ? " -msahf" : " -mno-sahf";
       const char *movbe = has_movbe ? " -mmovbe" : " -mno-movbe";
       const char *aes = has_aes ? " -maes" : " -mno-aes";
+      const char *sha = has_sha ? " -msha" : " -mno-sha";
       const char *pclmul = has_pclmul ? " -mpclmul" : " -mno-pclmul";
       const char *popcnt = has_popcnt ? " -mpopcnt" : " -mno-popcnt";
       const char *abm = has_abm ? " -mabm" : " -mno-abm";
@@ -882,7 +884,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512pf = has_avx512pf ? " -mavx512pf" : " -mno-avx512pf";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
-			sse4a, cx16, sahf, movbe, aes, pclmul,
+			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, bmi2,
 			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, rtm,
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,

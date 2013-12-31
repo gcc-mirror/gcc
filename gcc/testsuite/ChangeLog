@@ -8,6 +8,38 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* gcc.target/i386/avx-1.c: Add define for __builtin_ia32_sha1rnds4.
+	* gcc.target/i386/i386.exp (check_effective_target_sha): New.
+	* gcc.target/i386/sha-check.h: New file.
+	* gcc.target/i386/sha1msg1-1.c: Ditto.
+	* gcc.target/i386/sha1msg1-2.c: Ditto.
+	* gcc.target/i386/sha1msg2-1.c: Ditto.
+	* gcc.target/i386/sha1msg2-2.c: Ditto.
+	* gcc.target/i386/sha1nexte-1: Ditto.
+	* gcc.target/i386/sha1nexte-2: Ditto.
+	* gcc.target/i386/sha1rnds4-1.c: Ditto.
+	* gcc.target/i386/sha1rnds4-2.c: Ditto.
+	* gcc.target/i386/sha256msg1-1.c: Ditto.
+	* gcc.target/i386/sha256msg1-2.c: Ditto.
+	* gcc.target/i386/sha256msg2-1.c: Ditto.
+	* gcc.target/i386/sha256msg2-2.c: Ditto.
+	* gcc.target/i386/sha256rnds2-1.c: Ditto.
+	* gcc.target/i386/sha256rnds2-2.c: Ditto.
+	* gcc.target/i386/sse-13.c: Add __builtin_ia32_sha1rnds4.
+	* gcc.target/i386/sse-14.c: Add _mm_sha1rnds4_epu32.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Add __builtin_ia32_sha1rnds4.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* gcc.target/i386/avx512cd-check.h: New file.
 	* gcc.target/i386/avx512cd-vpbroadcastmb2q-1.c: Ditto.
 	* gcc.target/i386/avx512cd-vpbroadcastmb2q-2.c: Ditto.

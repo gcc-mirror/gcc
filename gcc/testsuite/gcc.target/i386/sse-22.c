@@ -99,7 +99,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512pf,avx512er,avx512cd")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512pf,avx512er,avx512cd,sha")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -212,9 +212,9 @@ test_4 (_mm_cmpestro, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrs, int, __m128i, int, __m128i, int, 1)
 test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
-/* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM/AVX512F) */
+/* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM/AVX512F/SHA) */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf")
+#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,avx512f,avx512er,avx512cd,avx512pf,sha")
 #endif
 #include <immintrin.h>
 test_1 (_cvtss_sh, unsigned short, float, 1)
@@ -665,6 +665,9 @@ test_3 (_mm512_mask_rcp28_round_pd, __m512d, __m512d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_rcp28_round_ps, __m512, __m512, __mmask16, __m512, 1)
 test_3 (_mm512_mask_rsqrt28_round_pd, __m512d, __m512d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_rsqrt28_round_ps, __m512, __m512, __mmask16, __m512, 1)
+
+/* shaintrin.h */
+test_2 (_mm_sha1rnds4_epu32, __m128i, __m128i, __m128i, 1)
 
 /* wmmintrin.h (AES/PCLMUL).  */
 #ifdef DIFFERENT_PRAGMAS

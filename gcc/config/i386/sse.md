@@ -119,6 +119,15 @@
   UNSPEC_EXP2
   UNSPEC_RCP28
   UNSPEC_RSQRT28
+
+  ;; For SHA support
+  UNSPEC_SHA1MSG1
+  UNSPEC_SHA1MSG2
+  UNSPEC_SHA1NEXTE
+  UNSPEC_SHA1RNDS4
+  UNSPEC_SHA256MSG1
+  UNSPEC_SHA256MSG2
+  UNSPEC_SHA256RNDS2
 ])
 
 (define_c_enum "unspecv" [
@@ -15210,3 +15219,84 @@
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "sha1msg1"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")]
+	  UNSPEC_SHA1MSG1))]
+  "TARGET_SHA"
+  "sha1msg1\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha1msg2"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")]
+	  UNSPEC_SHA1MSG2))]
+  "TARGET_SHA"
+  "sha1msg2\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha1nexte"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")]
+	  UNSPEC_SHA1NEXTE))]
+  "TARGET_SHA"
+  "sha1nexte\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha1rnds4"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")
+	   (match_operand:SI 3 "const_0_to_3_operand" "n")]
+	  UNSPEC_SHA1RNDS4))]
+  "TARGET_SHA"
+  "sha1rnds4\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha256msg1"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")]
+	  UNSPEC_SHA256MSG1))]
+  "TARGET_SHA"
+  "sha256msg1\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha256msg2"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")]
+	  UNSPEC_SHA256MSG2))]
+  "TARGET_SHA"
+  "sha256msg2\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "mode" "TI")])
+
+(define_insn "sha256rnds2"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(unspec:V4SI
+	  [(match_operand:V4SI 1 "register_operand" "0")
+	   (match_operand:V4SI 2 "nonimmediate_operand" "xm")
+	   (match_operand:V4SI 3 "register_operand" "Yz")]
+	  UNSPEC_SHA256RNDS2))]
+  "TARGET_SHA"
+  "sha256rnds2\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])

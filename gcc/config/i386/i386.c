@@ -2534,6 +2534,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
     { "-maes",		OPTION_MASK_ISA_AES },
+    { "-msha",		OPTION_MASK_ISA_SHA },
     { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
@@ -3029,6 +3030,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512ER		(HOST_WIDE_INT_1 << 41)
 #define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
 #define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
+#define PTA_SHA			(HOST_WIDE_INT_1 << 45)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3526,8 +3528,11 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVBE))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVBE;
 	if (processor_alias_table[i].flags & PTA_AES
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AES;
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
+	if (processor_alias_table[i].flags & PTA_SHA
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SHA))
+	  ix86_isa_flags |= OPTION_MASK_ISA_SHA;
 	if (processor_alias_table[i].flags & PTA_PCLMUL
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PCLMUL))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL;
@@ -4416,6 +4421,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("lzcnt",	OPT_mlzcnt),
     IX86_ATTR_ISA ("tbm",	OPT_mtbm),
     IX86_ATTR_ISA ("aes",	OPT_maes),
+    IX86_ATTR_ISA ("sha",	OPT_msha),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("avx2",	OPT_mavx2),
     IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
@@ -28288,6 +28294,15 @@ enum ix86_builtins
   IX86_BUILTIN_RSQRT28PD,
   IX86_BUILTIN_RSQRT28PS,
 
+  /* SHA builtins.  */
+  IX86_BUILTIN_SHA1MSG1,
+  IX86_BUILTIN_SHA1MSG2,
+  IX86_BUILTIN_SHA1NEXTE,
+  IX86_BUILTIN_SHA1RNDS4,
+  IX86_BUILTIN_SHA256MSG1,
+  IX86_BUILTIN_SHA256MSG2,
+  IX86_BUILTIN_SHA256RNDS2,
+
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
   IX86_BUILTIN_HUGE_VALQ,
@@ -29934,6 +29949,15 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_kunpckhi, "__builtin_ia32_kunpckhi", IX86_BUILTIN_KUNPCKBW, UNKNOWN, (int) HI_FTYPE_HI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_kxnorhi, "__builtin_ia32_kxnorhi", IX86_BUILTIN_KXNOR16, UNKNOWN, (int) HI_FTYPE_HI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_xorhi3, "__builtin_ia32_kxorhi", IX86_BUILTIN_KXOR16, UNKNOWN, (int) HI_FTYPE_HI_HI },
+
+  /* SHA */
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha1msg1, 0, IX86_BUILTIN_SHA1MSG1, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha1msg2, 0, IX86_BUILTIN_SHA1MSG2, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha1nexte, 0, IX86_BUILTIN_SHA1NEXTE, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha1rnds4, 0, IX86_BUILTIN_SHA1RNDS4, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_INT },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha256msg1, 0, IX86_BUILTIN_SHA256MSG1, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha256msg2, 0, IX86_BUILTIN_SHA256MSG2, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_sha256rnds2, 0, IX86_BUILTIN_SHA256RNDS2, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI_V4SI },
 };
 
 /* Builtins with rounding support.  */
@@ -30761,6 +30785,22 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfqps",
 	       VOID_FTYPE_QI_V8DI_PCINT_INT_INT,
 	       IX86_BUILTIN_SCATTERPFQPS);
+
+  /* SHA */
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha1msg1",
+		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA1MSG1);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha1msg2",
+		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA1MSG2);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha1nexte",
+		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA1NEXTE);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha1rnds4",
+		     V4SI_FTYPE_V4SI_V4SI_INT, IX86_BUILTIN_SHA1RNDS4);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha256msg1",
+		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA256MSG1);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha256msg2",
+		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA256MSG2);
+  def_builtin_const (OPTION_MASK_ISA_SHA, "__builtin_ia32_sha256rnds2",
+		     V4SI_FTYPE_V4SI_V4SI_V4SI, IX86_BUILTIN_SHA256RNDS2);
 
   /* RTM.  */
   def_builtin (OPTION_MASK_ISA_RTM, "__builtin_ia32_xabort",
@@ -33491,6 +33531,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8SF_FTYPE_V8DF_V8SF_QI:
     case V8SI_FTYPE_V8DF_V8SI_QI:
     case V8SI_FTYPE_V8DI_V8SI_QI:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:
@@ -33710,6 +33751,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 		error ("the last argument must be a 4-bit immediate");
 		return const0_rtx;
 
+	      case CODE_FOR_sha1rnds4:
 	      case CODE_FOR_sse4_1_blendpd:
 	      case CODE_FOR_avx_vpermilv2df:
 	      case CODE_FOR_xop_vpermil2v2df3:

@@ -77,6 +77,7 @@
 #define bit_AVX512PF	(1 << 26)
 #define bit_AVX512ER	(1 << 27)
 #define bit_AVX512CD	(1 << 28)
+#define bit_SHA		(1 << 29)
 
 /* Extended State Enumeration Sub-leaf (%eax == 13, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)

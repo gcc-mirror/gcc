@@ -725,6 +725,10 @@ maes
 Target Report Mask(ISA_AES) Var(ix86_isa_flags) Save
 Support AES built-in functions and code generation
 
+msha
+Target Report Mask(ISA_SHA) Var(ix86_isa_flags) Save
+Support SHA1 and SHA256 built-in functions and code generation
+
 mpclmul
 Target Report Mask(ISA_PCLMUL) Var(ix86_isa_flags) Save
 Support PCLMUL built-in functions and code generation

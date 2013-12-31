@@ -84,9 +84,11 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_LWP_SET \
   OPTION_MASK_ISA_LWP
 
-/* AES and PCLMUL need SSE2 because they use xmm registers */
+/* AES, SHA and PCLMUL need SSE2 because they use xmm registers.  */
 #define OPTION_MASK_ISA_AES_SET \
   (OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2_SET)
+#define OPTION_MASK_ISA_SHA_SET \
+  (OPTION_MASK_ISA_SHA | OPTION_MASK_ISA_SSE2_SET)
 #define OPTION_MASK_ISA_PCLMUL_SET \
   (OPTION_MASK_ISA_PCLMUL | OPTION_MASK_ISA_SSE2_SET)
 
@@ -166,6 +168,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_LWP_UNSET OPTION_MASK_ISA_LWP
 
 #define OPTION_MASK_ISA_AES_UNSET OPTION_MASK_ISA_AES
+#define OPTION_MASK_ISA_SHA_UNSET OPTION_MASK_ISA_SHA
 #define OPTION_MASK_ISA_PCLMUL_UNSET OPTION_MASK_ISA_PCLMUL
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
 #define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
@@ -608,6 +611,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AES_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AES_UNSET;
+	}
+      return true;
+
+    case OPT_msha:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SHA_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SHA_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SHA_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SHA_UNSET;
 	}
       return true;
 
