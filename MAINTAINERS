@@ -90,6 +90,8 @@ msp430 port		DJ Delorie		dj@redhat.com
 msp430 port		Nick Clifton		nickc@redhat.com
 nds32 port		Chung-Ju Wu		jasonwucj@gmail.com
 nds32 port		Shiva Chen		shiva0217@gmail.com
+nios2 port		Chung-Lin Tang		cltang@codesourcery.com
+nios2 port		Sandra Loosemore	sandra@codesourcery.com
 pdp11 port		Paul Koning		ni1d@arrl.net
 picochip port		Daniel Towner		dant@picochip.com
 rl78 port		DJ Delorie		dj@redhat.com

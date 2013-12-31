@@ -1,3 +1,9 @@
+2013-12-31  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* MAINTAINERS: Add Sandra Loosemore and Chung-Lin Tang as
+	nios2 port maintainers.
+
 2013-12-16  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* MAINTAINERS (Write After Approval): Add myself.
