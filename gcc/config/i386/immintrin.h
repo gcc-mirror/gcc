@@ -50,6 +50,8 @@
 
 #include <avx512cdintrin.h>
 
+#include <shaintrin.h>
+
 #include <lzcntintrin.h>
 
 #include <bmiintrin.h>

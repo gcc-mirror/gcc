@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er  -mavx512pf -mavx512cd" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er  -mavx512pf -mavx512cd -msha" } */
+
 #include <mm_malloc.h>
 
 /* Test that the intrinsics compile without optimization.  All of them are
@@ -496,6 +497,9 @@ test_3 (_mm512_mask_rcp28_round_pd, __m512d, __m512d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_rcp28_round_ps, __m512, __m512, __mmask16, __m512, 1)
 test_3 (_mm512_mask_rsqrt28_round_pd, __m512d, __m512d, __mmask8, __m512d, 1)
 test_3 (_mm512_mask_rsqrt28_round_ps, __m512, __m512, __mmask16, __m512, 1)
+
+/* shaintrin.h */
+test_2 (_mm_sha1rnds4_epu32, __m128i, __m128i, __m128i, 1)
 
 /* wmmintrin.h */
 test_1 (_mm_aeskeygenassist_si128, __m128i, __m128i, 1)

@@ -379,3 +379,6 @@
 #define __builtin_ia32_vfnmsubps512_mask3(A, B, C, D, E) __builtin_ia32_vfnmsubps512_mask3(A, B, C, D, 1)
 #define __builtin_ia32_vpermilpd512_mask(A, E, C, D) __builtin_ia32_vpermilpd512_mask(A, 1, C, D)
 #define __builtin_ia32_vpermilps512_mask(A, E, C, D) __builtin_ia32_vpermilps512_mask(A, 1, C, D)
+
+/* shaintrin.h */
+#define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)

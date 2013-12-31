@@ -8,6 +8,56 @@
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_SHA_SET): New.
+	(OPTION_MASK_ISA_SHA_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_msha.
+	* config.gcc (extra_headers): Add shaintrin.h.
+	* config/i386/cpuid.h (bit_SHA): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect SHA
+	instructions.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_SHA.
+	* config/i386/i386.c (ix86_target_string): Add -msha.
+	(ix86_option_override_internal): Add PTA_SHA.
+	(ix86_valid_target_attribute_inner_p): Handle OPT_msha.
+	(enum ix86_builtins): Add IX86_BUILTIN_SHA1MSG1,
+	IX86_BUILTIN_SHA1MSG2, IX86_BUILTIN_SHA1NEXTE, IX86_BUILTIN_SHA1RNDS4,
+	IX86_BUILTIN_SHA256MSG1, IX86_BUILTIN_SHA256MSG2,
+	IX86_BUILTIN_SHA256RNDS2.
+	(bdesc_args): Add BUILTINS defined above.
+	(ix86_init_mmx_sse_builtins): Add __builtin_ia32_sha1msg1,
+	__builtin_ia32_sha1msg2, __builtin_ia32_sha1nexte,
+	__builtin_ia32_sha1rnds4, __builtin_ia32_sha256msg1,
+	__builtin_ia32_sha256msg2, __builtin_ia32_sha256rnds2.
+	(ix86_expand_args_builtin): Handle V4SI_FTYPE_V4SI_V4SI_V4SI, add
+	warning for CODE_FOR_sha1rnds4.
+	* config/i386/i386.h (TARGET_SHA): New.
+	(TARGET_SHA_P): Ditto.
+	* config/i386/i386.opt (-msha): Document it.
+	* config/i386/immintrin.h: Add shaintrin.h.
+	* config/i386/shaintrin.h: New.
+	* config/i386/sse.md (unspec): Add UNSPEC_SHA1MSG1, UNSPEC_SHA1MSG2,
+	UNSPEC_SHA1NEXTE, UNSPEC_SHA1RNDS4, UNSPEC_SHA256MSG1,
+	UNSPEC_SHA256MSG2, UNSPEC_SHA256RNDS2.
+	(sha1msg1): New.
+	(sha1msg2): Ditto.
+	(sha1nexte): Ditto.
+	(sha1rnds4): Ditto.
+	(sha256msg1): Ditto.
+	(sha256msg2): Ditto.
+	(sha256rnds2): Ditto.
+	* doc/invoke.texi: Add -msha.
+
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
 	* config.gcc (extra_headers): Add avx512fintrin.h, avx512cdintrin.h,
 	avx512erintrin.h, avx512pfintrin.h.
 	* config/i386/avx512cdintrin.h: New file.
