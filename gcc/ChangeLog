@@ -1,3 +1,11 @@
+2013-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59622
+	* gimple-fold.c (gimple_fold_call): Don't replace OBJ_TYPE_REF
+	call fndecl with 0 possible targets with BUILT_IN_UNREACHABLE,
+	instead only for !inplace add a __builtin_unreachable () call
+	before the call.
+
 2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>

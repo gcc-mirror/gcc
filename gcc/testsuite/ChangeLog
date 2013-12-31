@@ -1,3 +1,8 @@
+2013-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59622
+	* g++.dg/opt/pr59622.C: New test.
+
 2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
