@@ -683,8 +683,8 @@ struct dataref_aux {
    conversion.  */
 #define MAX_INTERM_CVT_STEPS         3
 
-/* The maximum vectorization factor supported by any target (V32QI).  */
-#define MAX_VECTORIZATION_FACTOR 32
+/* The maximum vectorization factor supported by any target (V64QI).  */
+#define MAX_VECTORIZATION_FACTOR 64
 
 /* Avoid GTY(()) on stmt_vec_info.  */
 typedef void *vec_void_p;

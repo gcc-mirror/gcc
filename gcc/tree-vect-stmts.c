@@ -5699,7 +5699,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       tree vec_oprnd0 = NULL_TREE, op;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
       tree rettype, srctype, ptrtype, idxtype, masktype, scaletype;
-      tree ptr, mask, var, scale, perm_mask = NULL_TREE, prev_res = NULL_TREE;
+      tree ptr, mask, var, scale, merge, perm_mask = NULL_TREE, prev_res = NULL_TREE;
       edge pe = loop_preheader_edge (loop);
       gimple_seq seq;
       basic_block new_bb;
@@ -5741,8 +5741,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       idxtype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       masktype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
       scaletype = TREE_VALUE (arglist);
-      gcc_checking_assert (types_compatible_p (srctype, rettype)
-			   && types_compatible_p (srctype, masktype));
+      gcc_checking_assert (types_compatible_p (srctype, rettype));
 
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
@@ -5756,8 +5755,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
       /* Currently we support only unconditional gather loads,
 	 so mask should be all ones.  */
-      if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
-	mask = build_int_cst (TREE_TYPE (masktype), -1);
+      if (TREE_CODE (masktype) == INTEGER_TYPE)
+	mask = build_int_cst (masktype, -1);
+      else if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
+	{
+	  mask = build_int_cst (TREE_TYPE (masktype), -1);
+	  mask = build_vector_from_val (masktype, mask);
+	}
       else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (masktype)))
 	{
 	  REAL_VALUE_TYPE r;
@@ -5766,13 +5770,29 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    tmp[j] = -1;
 	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (masktype)));
 	  mask = build_real (TREE_TYPE (masktype), r);
+	  mask = build_vector_from_val (masktype, mask);
 	}
       else
 	gcc_unreachable ();
-      mask = build_vector_from_val (masktype, mask);
       mask = vect_init_vector (stmt, mask, masktype, NULL);
 
       scale = build_int_cst (scaletype, gather_scale);
+
+      if (TREE_CODE (TREE_TYPE (rettype)) == INTEGER_TYPE)
+	merge = build_int_cst (TREE_TYPE (rettype), 0);
+      else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (rettype)))
+	{
+	  REAL_VALUE_TYPE r;
+	  long tmp[6];
+	  for (j = 0; j < 6; ++j)
+	    tmp[j] = 0;
+	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (rettype)));
+	  merge = build_real (TREE_TYPE (rettype), r);
+	}
+      else
+	gcc_unreachable ();
+      merge = build_vector_from_val (rettype, merge);
+      merge = vect_init_vector (stmt, merge, rettype, NULL);
 
       prev_stmt_info = NULL;
       for (j = 0; j < ncopies; ++j)
@@ -5802,7 +5822,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    }
 
 	  new_stmt
-	    = gimple_build_call (gather_decl, 5, mask, ptr, op, mask, scale);
+	    = gimple_build_call (gather_decl, 5, merge, ptr, op, mask, scale);
 
 	  if (!useless_type_conversion_p (vectype, rettype))
 	    {

@@ -1,3 +1,76 @@
+2013-12-31  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (MAX_CLASSES): Increase number of classes.
+	(classify_argument): Extend for 512 bit vectors.
+	(construct_container): Ditto.
+	(function_arg_advance_32): Ditto.
+	(function_arg_advance_64): Ditto.
+	(function_arg_32): Ditto.
+	(function_arg_64): Ditto.
+	(function_value_32): Ditto.
+	(return_in_memory_32): Ditto.
+	(ix86_gimplify_va_arg): Ditto.
+	(standard_sse_constant_p): Ditto.
+	(standard_sse_constant_opcode): Ditto.
+	(ix86_expand_vector_convert_uns_vsivsf): Ditto.
+	(ix86_build_const_vector): Ditto.
+	(ix86_build_signbit_mask): Ditto.
+	(ix86_expand_sse_cmp): Extend for AVX512.
+	(ix86_expand_sse_movcc): Ditto.
+	(ix86_expand_int_vcond): Ditto.
+	(ix86_expand_vec_perm): Ditto.
+	(ix86_expand_sse_unpack): Ditto.
+	(ix86_constant_alignment): Ditto.
+	(ix86_builtin_vectorized_function): Ditto.
+	(ix86_vectorize_builtin_gather): Ditto.
+	(avx_vpermilp_parallel): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_expand_vector_init_duplicate): Ditto.
+	(ix86_expand_vector_init_concat): Ditto.
+	(ix86_expand_vector_init_general): Ditto.
+	(ix86_expand_vector_extract): Ditto.
+	(emit_reduc_half): Ditto.
+	(ix86_vector_mode_supported_p): Ditto.
+	(ix86_emit_swdivsf): Ditto.
+	(ix86_emit_swsqrtsf): Ditto.
+	(expand_vec_perm_1): Ditto.
+	(ix86_vectorize_vec_perm_const_ok): Ditto.
+	(ix86_expand_mul_widen_evenodd): Ditto.
+	(ix86_expand_sse2_mulvxdi3): Ditto.
+	(ix86_preferred_simd_mode): Ditto.
+	(ix86_autovectorize_vector_sizes): Ditto.
+	(ix86_expand_vec_perm_vpermi2): New.
+	(ix86_vector_duplicate_value): Ditto.
+	(IX86_BUILTIN_SQRTPD512, IX86_BUILTIN_EXP2PS, IX86_BUILTIN_SQRTPS_NR512,
+	IX86_BUILTIN_GATHER3ALTDIV16SF, IX86_BUILTIN_GATHER3ALTDIV16SI,
+	IX86_BUILTIN_GATHER3ALTSIV8DF, IX86_BUILTIN_GATHER3ALTSIV8DI,
+	IX86_BUILTIN_GATHER3DIV16SF, IX86_BUILTIN_GATHER3DIV16SI,
+	IX86_BUILTIN_GATHER3DIV8DF, IX86_BUILTIN_GATHER3DIV8DI,
+	IX86_BUILTIN_GATHER3SIV16SF, IX86_BUILTIN_GATHER3SIV16SI,
+	IX86_BUILTIN_GATHER3SIV8DF, IX86_BUILTIN_CEILPD_VEC_PACK_SFIX512,
+	IX86_BUILTIN_CPYSGNPS512, IX86_BUILTIN_CPYSGNPD512,
+	IX86_BUILTIN_FLOORPD_VEC_PACK_SFIX512,
+	IX86_BUILTIN_ROUNDPD_AZ_VEC_PACK_SFIX512): Ditto.
+	* config/i386/sse.md (*mov<mode>_internal): Disable SSE typeless
+	stores vectors > 128bit (AVX*).
+	(<sse>_storeu<ssemodesuffix><avxsizesuffix>): Ditto.
+	(<sse2_avx_avx512f>_storedqu<mode>): Extend for AVX-512, disable
+	SSE typeless stores vectors > 128bit (AVX*).
+	(fixuns_trunc<mode><sseintvecmodelower>2): Extend for AVX-512.
+	(vec_pack_ufix_trunc_<mode>): Ditto.
+	(vec_unpacku_float_hi_v16si): New.
+	* tree-vect-stmts.c (vectorizable_load): Support AVX512's gathers.
+	* tree-vectorizer.h (MAX_VECTORIZATION_FACTOR): Extend for 512 bit
+	vectors.
+
 2013-12-31  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 	    Based on patches from Altera Corporation
