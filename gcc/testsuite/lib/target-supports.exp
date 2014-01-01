@@ -5176,9 +5176,9 @@ proc check_effective_target_avx512f { } {
     return [check_no_compiler_messages avx512f object {
 	typedef double __m512d __attribute__ ((__vector_size__ (64)));
 
-	void _mm512_add (__m512d a)
+	__m512d _mm512_add (__m512d a)
 	{
-	   __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
+	  return __builtin_ia32_addpd512_mask (a, a, a, 1, 4);
 	}
     } "-O2 -mavx512f" ]
 }

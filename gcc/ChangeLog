@@ -7,7 +7,7 @@
 	* cse.c (cse_process_notes_1): Don't substitute negative VOIDmode
 	new_rtx into UNSIGNED_FLOAT rtxes.
 
-Copyright (C) 2013 Free Software Foundation, Inc.
+Copyright (C) 2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

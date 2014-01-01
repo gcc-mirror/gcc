@@ -1,9 +1,12 @@
 2014-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* lib/target-supports.exp (check_effective_target_avx512f): Make sure
+	the builtin isn't optimized away as unused.
+
 	PR rtl-optimization/59647
 	* g++.dg/opt/pr59647.C: New test.
 
-Copyright (C) 2013 Free Software Foundation, Inc.
+Copyright (C) 2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
