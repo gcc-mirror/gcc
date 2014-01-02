@@ -1,7 +1,7 @@
 /* Functions needed for soft-float on powerpc64-linux, copied from
    libgcc2.c with macros expanded to force the use of specific types.
  
-   Copyright (C) 1989-2013 Free Software Foundation, Inc.
+   Copyright (C) 1989-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

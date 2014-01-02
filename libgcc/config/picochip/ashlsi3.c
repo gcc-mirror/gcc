@@ -2,7 +2,7 @@
 
 picoChip GCC support for 32-bit shift left.
 
-Copyright (C) 2003-2013 Free Software Foundation, Inc.
+Copyright (C) 2003-2014 Free Software Foundation, Inc.
 Contributed by Picochip Ltd.
 Maintained by Daniel Towner (daniel.towner@picochip.com)
 
