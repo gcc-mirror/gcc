@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1998-2013 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    Contributed by Ovidiu Predescu.
 
 This file is part of GCC.

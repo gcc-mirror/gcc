@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime protocols - Private functions
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Nicola Pero <nicola.pero@meta-innovation.com>
 
 This file is part of GCC.
