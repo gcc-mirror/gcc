@@ -5934,6 +5934,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    && !(BRACE_ENCLOSED_INITIALIZER_P (expr)
 		 && CONSTRUCTOR_IS_DIRECT_INIT (expr)))
 	  {
+	    if (!(complain & tf_error))
+	      return error_mark_node;
 	    error ("converting to %qT from initializer list would use "
 		   "explicit constructor %qD", totype, convfn);
 	  }
