@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* testsuite/18_support/new_handler.cc,
 	testsuite/18_support/terminate_handler.cc,
 	testsuite/18_support/unexpected_handler.cc: Use the standard form for
@@ -4599,7 +4603,7 @@
 	* testsuite/22_locale/time_get/get_weekday/wchar_t/3.cc: Likewise.
 
 
-Copyright (C) 2013 Free Software Foundation, Inc.
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
