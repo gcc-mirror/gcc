@@ -1,4 +1,4 @@
-2013-01-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+2014-01-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/nios2/nios2.h (BITS_PER_UNIT): Don't define it.
 
