@@ -1,6 +1,5 @@
 /* NamingServicePersistent.java -- The persistent naming service.
-   Copyright (C) 2006, 2008, 2009, 2010, 2011, 2012, 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -180,7 +179,7 @@ public class Main
         System.out.println("GNU Classpath persistent naming service "
                            + "started at " + iorr.Internet.host + ":"
                            + iorr.Internet.port + " key 'NameService'.\n\n"
-                           + "Copyright (C) 2013 Free Software Foundation\n"
+                           + "Copyright (C) 2014 Free Software Foundation\n"
                            + "This tool comes with ABSOLUTELY NO WARRANTY. "
                            + "This is free software, and you are\nwelcome to "
                            + "redistribute it under conditions, defined in "

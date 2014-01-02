@@ -1,3 +1,7 @@
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* testsuite/libgomp.c/affinity-1.c: Remove alloca.h inlcude. Replace

@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-go 2010-2013
+@set copyrights-go 2010-2014
 
 @copying
 @c man begin COPYRIGHT
