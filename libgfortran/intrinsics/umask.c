@@ -1,5 +1,5 @@
 /* Implementation of the UMASK intrinsic.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
