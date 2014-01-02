@@ -951,7 +951,7 @@ cp:
 	(write_integer_cst): Use wide-int interfaces.
 	(write_array_type): Likewise.
 	* tree.c: Include wide-int.h.
-	(cp_tree_equal): Use wide-int interfaces.
+	(cp_tree_equal): Use tree_int_cst_equal.
 	* typeck2.c: Include wide-int.h.
 	(process_init_constructor_array): Use wide-int interfaces.
 
