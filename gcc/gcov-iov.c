@@ -1,6 +1,6 @@
 /* Generate gcov version string from version.c. See gcov-io.h for
    description of how the version string is generated.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
 
 This file is part of GCC.

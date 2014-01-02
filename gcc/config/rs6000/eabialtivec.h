@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for PowerPC targeted systems with AltiVec support.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.

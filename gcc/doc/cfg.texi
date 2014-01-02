@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2013 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2014 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 

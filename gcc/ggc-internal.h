@@ -1,7 +1,7 @@
 /* Garbage collection for the GNU compiler.  Internal definitions
    for ggc-*.c and stringpool.c.
 
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

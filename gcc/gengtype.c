@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1665,7 +1665,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004-2013 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004-2014 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",

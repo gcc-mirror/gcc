@@ -1,6 +1,6 @@
 #! /bin/sh
 # Wrapper around gettext for programs using the msgid convention.
-# Copyright (C) 1998-2013 Free Software Foundation, Inc.
+# Copyright (C) 1998-2014 Free Software Foundation, Inc.
 
 # Written by Paul Eggert <eggert@twinsun.com>.
 # Revised by Zack Weinberg <zackw@stanford.edu> for no-POTFILES operation.

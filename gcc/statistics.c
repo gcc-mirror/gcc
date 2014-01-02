@@ -1,5 +1,5 @@
 /* Optimization statistics functions.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Richard Guenther  <rguenther@suse.de>
 
 This file is part of GCC.

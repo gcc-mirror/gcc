@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by Manuel Lopez-Ibanez <manu@gcc.gnu.org>
 
 This file is part of GCC.
@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Based on code from: */
 /* grep.c - main driver file for grep.
-   Copyright (C) 1992-2013 Free Software Foundation, Inc.
+   Copyright (C) 1992-2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

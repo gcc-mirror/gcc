@@ -1,7 +1,7 @@
 /* This file contains routines to construct GNU OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2013 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 

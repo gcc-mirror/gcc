@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

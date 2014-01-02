@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989-2013 Free Software Foundation, Inc.
+   Copyright (C) 1989-2014 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GCC.

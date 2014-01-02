@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998-2013 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
    This file is part of GCC.

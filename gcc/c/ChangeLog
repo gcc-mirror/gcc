@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* c-array-notation.c: Use the standard form for the copyright notice.
 
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
@@ -925,7 +929,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2013 Free Software Foundation, Inc.
+Copyright (C) 2012-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

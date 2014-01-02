@@ -1,7 +1,7 @@
 /* The tracer pass for the GNU compiler.
    Contributed by Jan Hubicka, SuSE Labs.
    Adapted to work on GIMPLE instead of RTL by Robert Kidd, UIUC.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

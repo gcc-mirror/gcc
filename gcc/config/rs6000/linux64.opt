@@ -1,6 +1,6 @@
 ; Options for 64-bit PowerPC Linux.
 ;
-; Copyright (C) 2005-2013 Free Software Foundation, Inc.
+; Copyright (C) 2005-2014 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.

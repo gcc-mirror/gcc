@@ -1,5 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2014 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.

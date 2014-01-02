@@ -1,5 +1,5 @@
 /* Common definitions for Intel 386 and AMD x86-64 systems using
-   GNU userspace.  Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   GNU userspace.  Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich.
 
 This file is part of GCC.

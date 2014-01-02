@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 

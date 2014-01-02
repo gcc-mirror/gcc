@@ -1,5 +1,5 @@
 ; Options for the Altera Nios II port of the compiler.
-; Copyright (C) 2012-2013 Free Software Foundation, Inc.
+; Copyright (C) 2012-2014 Free Software Foundation, Inc.
 ; Contributed by Altera and Mentor Graphics, Inc.
 ;
 ; This file is part of GCC.

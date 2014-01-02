@@ -1,5 +1,5 @@
 /* PowerPC AltiVec include file.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
    Rewritten by Paolo Bonzini (bonzini@gnu.org).
 

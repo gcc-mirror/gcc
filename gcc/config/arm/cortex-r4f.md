@@ -1,5 +1,5 @@
 ;; ARM Cortex-R4F VFP pipeline description
-;; Copyright (C) 2007-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2014 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.

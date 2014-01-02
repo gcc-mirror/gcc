@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate avr-tables.opt from the list in avr-mcus.def.
-# Copyright (C) 2011-2013 Free Software Foundation, Inc.
+# Copyright (C) 2011-2014 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,7 +22,7 @@ cat <<EOF
 ; -*- buffer-read-only: t -*-
 ; Generated automatically by genopt.sh from avr-mcus.def.
 
-; Copyright (C) 2011-2013 Free Software Foundation, Inc.
+; Copyright (C) 2011-2014 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
