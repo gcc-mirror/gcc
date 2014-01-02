@@ -1,3 +1,8 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* array-notation-common.c, c-cilkplus.c: Use the standard form for
+	the copyright notice.
+
 2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (print_constructor): New function.

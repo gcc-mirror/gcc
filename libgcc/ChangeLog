@@ -1,3 +1,43 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/arc/asm.h, config/arc/crtg.S, config/arc/crtgend.S,
+	config/arc/crti.S, config/arc/crtn.S, config/arc/divtab-arc700.c,
+	config/arc/dp-hack.h, config/arc/fp-hack.h,
+	config/arc/ieee-754/adddf3.S, config/arc/ieee-754/addsf3.S,
+	config/arc/ieee-754/arc600-dsp/divdf3.S,
+	config/arc/ieee-754/arc600-dsp/divsf3.S,
+	config/arc/ieee-754/arc600-dsp/muldf3.S,
+	config/arc/ieee-754/arc600-dsp/mulsf3.S,
+	config/arc/ieee-754/arc600-mul64/divdf3.S,
+	config/arc/ieee-754/arc600-mul64/divsf3.S,
+	config/arc/ieee-754/arc600-mul64/muldf3.S,
+	config/arc/ieee-754/arc600-mul64/mulsf3.S,
+	config/arc/ieee-754/arc600/divsf3.S,
+	config/arc/ieee-754/arc600/mulsf3.S,
+	config/arc/ieee-754/divdf3.S, config/arc/ieee-754/divsf3-stdmul.S,
+	config/arc/ieee-754/divsf3.S, config/arc/ieee-754/divtab-arc-df.c,
+	config/arc/ieee-754/divtab-arc-sf.c, config/arc/ieee-754/eqdf2.S,
+	config/arc/ieee-754/eqsf2.S, config/arc/ieee-754/extendsfdf2.S,
+	config/arc/ieee-754/fixdfsi.S, config/arc/ieee-754/fixsfsi.S,
+	config/arc/ieee-754/fixunsdfsi.S, config/arc/ieee-754/floatsidf.S,
+	config/arc/ieee-754/floatsisf.S, config/arc/ieee-754/floatunsidf.S,
+	config/arc/ieee-754/gedf2.S, config/arc/ieee-754/gesf2.S,
+	config/arc/ieee-754/gtdf2.S, config/arc/ieee-754/gtsf2.S,
+	config/arc/ieee-754/muldf3.S, config/arc/ieee-754/mulsf3.S,
+	config/arc/ieee-754/orddf2.S, config/arc/ieee-754/ordsf2.S,
+	config/arc/ieee-754/truncdfsf2.S, config/arc/ieee-754/uneqdf2.S,
+	config/arc/ieee-754/uneqsf2.S, config/arc/initfini.c,
+	config/arc/lib1funcs.S, config/arc/t-arc, config/arc/t-arc-newlib,
+	config/cris/umulsidi3.S, config/msp430/cmpsi2.S,
+	config/msp430/epilogue.S, config/msp430/lib2bitcountHI.c,
+	config/msp430/lib2divHI.c, config/msp430/lib2divQI.c,
+	config/msp430/lib2divSI.c, config/msp430/lib2mul.c,
+	config/msp430/msp430-divmod.h, config/msp430/msp430-mul.h,
+	config/msp430/slli.S, config/msp430/srai.S, config/msp430/srli.S,
+	config/rl78/divmodhi.S, config/rl78/divmodqi.S, config/rl78/divmodsi.S,
+	config/rl78/signbit.S, vtv_end.c, vtv_end_preinit.c, vtv_start.c,
+	vtv_start_preinit.c: Use the standard form for the copyright notice.
+
 2013-12-31  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Based on patches from Altera Corporation
