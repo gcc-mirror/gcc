@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel <krebbel@linux.vnet.ibm.com>
 
    This file is part of the GNU Transactional Memory Library (libitm).
