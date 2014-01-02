@@ -1,5 +1,11 @@
 2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/59087
+	* parser.c (cp_parser_userdef_numeric_literal): Mention
+	-fext-numeric-literals in the message.
+
+2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/59641
 	* call.c (build_conditional_expr_1): Check the return value of
 	force_rvalue.
