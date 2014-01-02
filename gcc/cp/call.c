@@ -4402,6 +4402,12 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       arg2 = force_rvalue (arg2, complain);
       arg3 = force_rvalue (arg3, complain);
 
+      /* force_rvalue can return error_mark on valid arguments.  */
+      if (error_operand_p (arg1)
+	  || error_operand_p (arg2)
+	  || error_operand_p (arg3))
+	return error_mark_node;
+
       tree arg1_type = TREE_TYPE (arg1);
       arg2_type = TREE_TYPE (arg2);
       arg3_type = TREE_TYPE (arg3);
