@@ -1,9 +1,3 @@
-2014-01-02  Tobias Burnus  <burnus@net-b.de>
-
-	* gnu/gcj/convert/Convert.java (version): Update copyright notice
-	dates.
-	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Ditto.
-
 2013-12-09  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.am (toolexeclib_LTLIBRARIES) [USE_LIBGCJ_BC]: Use
@@ -67,7 +61,7 @@
 	dates.
 	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Likewise.
 
-Copyright (C) 2014 Free Software Foundation, Inc.
+Copyright (C) 2013 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
