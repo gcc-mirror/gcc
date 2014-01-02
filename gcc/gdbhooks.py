@@ -1,5 +1,5 @@
 # Python hooks for gdb for debugging GCC
-# Copyright (C) 2013 Free Software Foundation, Inc.
+# Copyright (C) 2013-2014 Free Software Foundation, Inc.
 
 # Contributed by David Malcolm <dmalcolm@redhat.com>
 

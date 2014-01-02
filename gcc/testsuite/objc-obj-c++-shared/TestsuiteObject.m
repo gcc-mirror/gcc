@@ -1,5 +1,5 @@
 /* Very simple root class for writing testcases.
-   Copyright (C) 2011-2013 Free Software Foundation, Inc.
+   Copyright (C) 2011-2014 Free Software Foundation, Inc.
    Contributed by Nicola Pero
 
 This file is part of GCC.

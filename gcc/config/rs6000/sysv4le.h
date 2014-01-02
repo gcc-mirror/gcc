@@ -1,6 +1,6 @@
 /* Target definitions for GCC for a little endian PowerPC
    running System V.4
-   Copyright (C) 1995-2013 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.

@@ -1,5 +1,5 @@
 /* Provide prototypes for functions exported from prefix.c.
-   Copyright (C) 1999-2013 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running Linux-based GNU systems with ELF format.
-   Copyright (C) 1994-2013 Free Software Foundation, Inc.
+   Copyright (C) 1994-2014 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 

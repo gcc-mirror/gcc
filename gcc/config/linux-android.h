@@ -1,5 +1,5 @@
 /* Configuration file for Linux Android targets.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Doug Kwan (dougkwan@google.com)
    Rewritten by CodeSourcery, Inc.
 

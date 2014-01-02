@@ -1,5 +1,5 @@
 /* Definitions of C specific functions for GNU compiler.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Steve Ellcey <sje@cup.hp.com>
 
 This file is part of GCC.

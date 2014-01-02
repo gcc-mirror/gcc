@@ -1,6 +1,6 @@
 /* Header file for minimum-cost maximal flow routines used to smooth basic
    block and edge frequency counts.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com)
        and Vinodha Ramasamy (vinodha@google.com).
 

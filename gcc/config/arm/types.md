@@ -1,6 +1,6 @@
 ;; Instruction Classification for ARM for GNU compiler.
 
-;; Copyright (C) 1991-2013 Free Software Foundation, Inc.
+;; Copyright (C) 1991-2014 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.

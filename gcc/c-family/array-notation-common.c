@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains the builtin functions for Array
    notations.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
                   Intel Corporation
 

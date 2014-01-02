@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* cp-array-notation.c, cp-cilkplus.c, vtable-class-hierarchy.c: Use
 	the standard form for the copyright notice.
 
@@ -4293,7 +4297,7 @@
 	* tree.c (build_cplus_array_type): Copy layout information
 	to main variant if necessary.
 
-Copyright (C) 2013 Free Software Foundation, Inc.
+Copyright (C) 2013-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

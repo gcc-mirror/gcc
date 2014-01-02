@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* common/config/arc/arc-common.c, config/arc/arc-modes.def,
 	config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h,
 	config/arc/arc.md, config/arc/arc.opt, config/arm/arm_neon_builtins.def,

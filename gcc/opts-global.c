@@ -1,6 +1,6 @@
 /* Command line option handling.  Code involving global state that
    should not be shared with the driver.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

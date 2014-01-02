@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM POWER8 processor.
-;; Copyright (C) 2013 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 

@@ -1,5 +1,5 @@
 (* Auto-generate ARM ldm/stm patterns
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -322,7 +322,7 @@ let _ =
 "/* ARM ldm/stm instruction patterns.  This file was automatically generated";
 "   using arm-ldmstm.ml.  Please do not edit manually.";
 "";
-"   Copyright (C) 2010-2013 Free Software Foundation, Inc.";
+"   Copyright (C) 2010-2014 Free Software Foundation, Inc.";
 "   Contributed by CodeSourcery.";
 "";
 "   This file is part of GCC.";

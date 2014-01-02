@@ -1,6 +1,6 @@
 ;; Pipeline model for ST Microelectronics Loongson-2E/2F cores.
 
-;; Copyright (C) 2008-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2014 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; GCC is free software; you can redistribute it and/or modify

@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/arc/arc.exp: Use the standard form for the copyright
 	notice.
 

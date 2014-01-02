@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for AltiVec enhanced PowerPC machines running GNU/Linux.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.

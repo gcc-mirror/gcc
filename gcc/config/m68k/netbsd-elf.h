@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for m68k (including m68010) NetBSD platforms using the
    ELF object format.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Wasabi Systems. Inc.
 
    This file is derived from <m68k/m68kv4.h>, <m68k/m68kelf.h>,

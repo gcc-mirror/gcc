@@ -1,6 +1,6 @@
 (* ARM NEON documentation generator.
 
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -322,7 +322,7 @@ let document_group chan (group_title, group_extractor) =
 
 let gnu_header chan =
   List.iter (fun s -> Printf.fprintf chan "%s\n" s) [
-  "@c Copyright (C) 2006-2013 Free Software Foundation, Inc.";
+  "@c Copyright (C) 2006-2014 Free Software Foundation, Inc.";
   "@c This is part of the GCC manual.";
   "@c For copying conditions, see the file gcc.texi.";
   "";

@@ -1,5 +1,5 @@
 /* Support for GCC on Xilinx embedded PowerPC systems
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Michael Eager, eager@eagercon.com
 
    This file is part of GCC.

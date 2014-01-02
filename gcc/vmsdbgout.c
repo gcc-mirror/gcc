@@ -1,5 +1,5 @@
 /* Output VMS debug format symbol table information from GCC.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
 

@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains routines to handle Cilk Plus specific
    routines for the C++ Compiler.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
    This file is part of GCC.

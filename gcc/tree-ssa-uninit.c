@@ -1,5 +1,5 @@
 /* Predicate aware uninitialized variable warning.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.

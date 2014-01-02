@@ -1,7 +1,7 @@
 /* This file read a Java(TM) .class file.
    It is not stand-alone:  It depends on tons of macros, and the
    intent is you #include this file after you've defined the macros.
-   Copyright (C) 1996-2013 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

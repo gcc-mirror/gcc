@@ -1,7 +1,7 @@
 /* Handle a .class file embedded in a .zip archive.
    This extracts a member from a .zip file, but does not handle
    uncompression (since that is not needed for classes.zip).
-   Copyright (C) 1996-2013 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

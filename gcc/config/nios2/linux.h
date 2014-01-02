@@ -1,6 +1,6 @@
 /* Definitions of target support for Altera Nios II systems
    running GNU/Linux with ELF format.
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Mentor Graphics, Inc.
 
    This file is part of GCC.
