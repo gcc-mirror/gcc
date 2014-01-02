@@ -1,3 +1,7 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* hashtab.h: Use the standard form for the copyright notice.
+
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* libgomp.texi: Bump @copying's copyright year.

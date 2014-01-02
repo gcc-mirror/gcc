@@ -1,7 +1,7 @@
 /* This file is part of the Intel(R) Cilk(TM) Plus support
    This file contains routines to handle Array Notation expression
    handling routines in the C Compiler.
-   Copyright (C) 2013  Free Software Foundation, Inc.
+   Copyright (C) 2013 Free Software Foundation, Inc.
    Contributed by Balaji V. Iyer <balaji.v.iyer@intel.com>,
                   Intel Corporation.
 

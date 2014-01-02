@@ -1,3 +1,16 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* common/config/arc/arc-common.c, config/arc/arc-modes.def,
+	config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h,
+	config/arc/arc.md, config/arc/arc.opt, config/arm/arm_neon_builtins.def,
+	config/arm/crypto.def, config/i386/avx512cdintrin.h,
+	config/i386/avx512erintrin.h, config/i386/avx512fintrin.h,
+	config/i386/avx512pfintrin.h, config/i386/btver2.md,
+	config/i386/shaintrin.h, config/i386/slm.md, config/linux-protos.h,
+	config/linux.c, config/winnt-c.c, diagnostic-color.c,
+	diagnostic-color.h, gimple-ssa-isolate-paths.c, vtable-verify.c,
+	vtable-verify.h: Use the standard form for the copyright notice.
+
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc.c (process_command): Update copyright notice dates.

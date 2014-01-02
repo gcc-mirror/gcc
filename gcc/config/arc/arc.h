@@ -1,6 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 2007-2013
-   Free Software Foundation, Inc.
+   Copyright (C) 1994-2013 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.

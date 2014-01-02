@@ -1,6 +1,6 @@
 ; libgcc1 routines for Synopsys DesignWare ARC cpu.
 
-/* Copyright (C) 1995, 1997, 2007-2013 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2013 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 

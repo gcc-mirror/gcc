@@ -1,3 +1,10 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* testsuite/18_support/new_handler.cc,
+	testsuite/18_support/terminate_handler.cc,
+	testsuite/18_support/unexpected_handler.cc: Use the standard form for
+	the copyright notice.
+
 2013-12-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/20_util/hash/chi2_quality.h: Break out from

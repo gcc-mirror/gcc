@@ -1,3 +1,7 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* c-array-notation.c: Use the standard form for the copyright notice.
+
 2013-12-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-parser.c (struct c_parser::cilk_simd_fn_tokens): Added new field.
