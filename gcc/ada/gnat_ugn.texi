@@ -7,14 +7,14 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c           Copyright (C) 1992-2013, Free Software Foundation, Inc.          o
+@c           Copyright (C) 1992-2014, Free Software Foundation, Inc.          o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
 @setfilename gnat_ugn.info
 
 @copying
-Copyright @copyright{} 1995-2009 Free Software Foundation,
+Copyright @copyright{} 1995-2014 Free Software Foundation,
 Inc.
 
 Permission is granted to copy, distribute and/or modify this document

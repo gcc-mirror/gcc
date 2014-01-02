@@ -1,3 +1,12 @@
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* classpath/gnu/java/rmi/registry/RegistryImpl.java (version): Update
+	copyright notice dates.
+	* classpath/tools/gnu/classpath/tools/orbd/Main.java (run): Ditto.
+	* gnu/gcj/convert/Convert.java (version): Update copyright notice
+	dates.
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Ditto.
+
 2013-12-09  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.am (toolexeclib_LTLIBRARIES) [USE_LIBGCJ_BC]: Use

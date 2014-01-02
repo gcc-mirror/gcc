@@ -1,3 +1,16 @@
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c: Ditto.
+	* gcov.c: Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 2014-01-01  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/nios2/nios2.h (BITS_PER_UNIT): Don't define it.
