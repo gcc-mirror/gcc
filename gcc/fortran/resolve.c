@@ -11903,9 +11903,6 @@ resolve_typebound_procedures (gfc_symbol* derived)
   resolve_bindings_derived = derived;
   resolve_bindings_result = true;
 
-  /* Make sure the vtab has been generated.  */
-  gfc_find_derived_vtab (derived);
-
   if (derived->f2k_derived->tb_sym_root)
     gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
 			  &resolve_typebound_procedure);
