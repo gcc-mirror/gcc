@@ -1371,7 +1371,6 @@ decide_peel_simple (struct loop *loop, int flags)
   /* If we have realistic estimate on number of iterations, use it.  */
   if (get_estimated_loop_iterations (loop, &iterations))
     {
-      /* TODO: unsigned/signed confusion */
       if (wi::leu_p (npeel, iterations))
 	{
 	  if (dump_file)
