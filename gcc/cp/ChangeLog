@@ -1,5 +1,9 @@
 2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	* call.c (convert_like_real): Check complain.
+
+2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/59378
 	* typeck.c (build_x_vec_perm_expr): Handle non-dependent arguments
 	in templates.

@@ -1,5 +1,9 @@
 2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	* g++.dg/cpp0x/initlist-explicit-sfinae.C: New file.
+
+2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/59378
 	* g++.dg/ext/pr59378.C: New file.
 
