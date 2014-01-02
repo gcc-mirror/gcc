@@ -1,6 +1,6 @@
 /* Functions shipped in the ppc64 and x86_64 version of libgcc_s.1.dylib
    in older Mac OS X versions, preserved for backwards compatibility.
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

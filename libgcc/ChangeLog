@@ -1,5 +1,9 @@
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/arc/asm.h, config/arc/crtg.S, config/arc/crtgend.S,
 	config/arc/crti.S, config/arc/crtn.S, config/arc/divtab-arc700.c,
 	config/arc/dp-hack.h, config/arc/fp-hack.h,

@@ -1,3 +1,7 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years
+
 2012-11-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* bid_functions.h: Check for __GLIBC__ additionally to LINUX when

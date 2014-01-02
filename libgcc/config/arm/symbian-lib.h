@@ -1,5 +1,5 @@
 /* Configuration file for Symbian OS on ARM processors, library renames.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
