@@ -3,7 +3,7 @@
 // For powerpc-eabi, SAMPLES=30000 fails.
 // { dg-options "-std=gnu++0x -DSAMPLES=35000" { target simulator } }
 
-// Copyright (C) 2010-2013 Free Software Foundation, Inc.
+// Copyright (C) 2010-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
