@@ -4944,12 +4944,25 @@ build_x_vec_perm_expr (location_t loc,
 			tree arg0, tree arg1, tree arg2,
 			tsubst_flags_t complain)
 {
-  if (processing_template_decl
-      && (type_dependent_expression_p (arg0)
+  tree orig_arg0 = arg0;
+  tree orig_arg1 = arg1;
+  tree orig_arg2 = arg2;
+  if (processing_template_decl)
+    {
+      if (type_dependent_expression_p (arg0)
 	  || type_dependent_expression_p (arg1)
-	  || type_dependent_expression_p (arg2)))
-    return build_min_nt_loc (loc, VEC_PERM_EXPR, arg0, arg1, arg2);
-  return c_build_vec_perm_expr (loc, arg0, arg1, arg2, complain & tf_error);
+	  || type_dependent_expression_p (arg2))
+	return build_min_nt_loc (loc, VEC_PERM_EXPR, arg0, arg1, arg2);
+      arg0 = build_non_dependent_expr (arg0);
+      if (arg1)
+	arg1 = build_non_dependent_expr (arg1);
+      arg2 = build_non_dependent_expr (arg2);
+    }
+  tree exp = c_build_vec_perm_expr (loc, arg0, arg1, arg2, complain & tf_error);
+  if (processing_template_decl && exp != error_mark_node)
+    return build_min_non_dep (VEC_PERM_EXPR, exp, orig_arg0,
+			      orig_arg1, orig_arg2);
+  return exp;
 }
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
