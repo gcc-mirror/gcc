@@ -1403,7 +1403,9 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 			    || code == PREDECREMENT_EXPR
 			    || code == PREINCREMENT_EXPR
 			    || code == POSTDECREMENT_EXPR
-			    || code == POSTINCREMENT_EXPR)))
+			    || code == POSTINCREMENT_EXPR))
+		   || code == VEC_PERM_EXPR
+		   || code == VEC_COND_EXPR)
                   && (complain & tf_warning))
 		warning_at (loc, OPT_Wunused_value, "value computed is not used");
 	    }
