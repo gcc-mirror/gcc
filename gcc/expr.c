@@ -9477,11 +9477,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return decl_rtl;
 
     case INTEGER_CST:
-      /* "Given that TYPE_PRECISION (type) is not always equal to
+      /* Given that TYPE_PRECISION (type) is not always equal to
          GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
          the former to the latter according to the signedness of the
-         type". */
-
+         type. */
       temp = immed_wide_int_const (wide_int::from
 				   (exp,
 				    GET_MODE_PRECISION (TYPE_MODE (type)),
