@@ -1,5 +1,5 @@
 /* Common hooks for pdp11.
-   Copyright (C) 1994-2013 Free Software Foundation, Inc.
+   Copyright (C) 1994-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2390,6 +2390,7 @@ duplicate_computed_gotos (void)
   basic_block bb, new_bb;
   bitmap candidates;
   int max_size;
+  bool changed = false;
 
   if (n_basic_blocks_for_fn (cfun) <= NUM_FIXED_BLOCKS + 1)
     return 0;
@@ -2486,9 +2487,15 @@ duplicate_computed_gotos (void)
       new_bb->aux = bb->aux;
       bb->aux = new_bb;
       new_bb->flags |= BB_VISITED;
+      changed = true;
     }
 
 done:
+  /* Duplicating blocks above will redirect edges and may cause hot blocks
+     previously reached by both hot and cold blocks to become dominated only
+     by cold blocks.  */
+  if (changed)
+    fixup_partitions ();
   cfg_layout_finalize ();
 
   BITMAP_FREE (candidates);

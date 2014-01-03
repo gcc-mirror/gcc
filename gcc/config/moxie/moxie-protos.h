@@ -1,5 +1,5 @@
 /* Prototypes for moxie.c functions used in the md file & elsewhere.
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

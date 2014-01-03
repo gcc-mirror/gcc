@@ -1,6 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013
-   Free Software Foundation, Inc.
+   Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -158,11 +157,12 @@ VAR5 (REINTERP, vreinterpretv4hi, v8qi, v4hi, v2si, v2sf, di),
 VAR5 (REINTERP, vreinterpretv2si, v8qi, v4hi, v2si, v2sf, di),
 VAR5 (REINTERP, vreinterpretv2sf, v8qi, v4hi, v2si, v2sf, di),
 VAR5 (REINTERP, vreinterpretdi, v8qi, v4hi, v2si, v2sf, di),
-VAR5 (REINTERP, vreinterpretv16qi, v16qi, v8hi, v4si, v4sf, v2di),
-VAR5 (REINTERP, vreinterpretv8hi, v16qi, v8hi, v4si, v4sf, v2di),
-VAR5 (REINTERP, vreinterpretv4si, v16qi, v8hi, v4si, v4sf, v2di),
-VAR5 (REINTERP, vreinterpretv4sf, v16qi, v8hi, v4si, v4sf, v2di),
-VAR5 (REINTERP, vreinterpretv2di, v16qi, v8hi, v4si, v4sf, v2di),
+VAR6 (REINTERP, vreinterpretv16qi, v16qi, v8hi, v4si, v4sf, v2di, ti),
+VAR6 (REINTERP, vreinterpretv8hi, v16qi, v8hi, v4si, v4sf, v2di, ti),
+VAR6 (REINTERP, vreinterpretv4si, v16qi, v8hi, v4si, v4sf, v2di, ti),
+VAR6 (REINTERP, vreinterpretv4sf, v16qi, v8hi, v4si, v4sf, v2di, ti),
+VAR6 (REINTERP, vreinterpretv2di, v16qi, v8hi, v4si, v4sf, v2di, ti),
+VAR6 (REINTERP, vreinterpretti, v16qi, v8hi, v4si, v4sf, v2di, ti),
 VAR10 (LOAD1, vld1,
          v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di),
 VAR10 (LOAD1LANE, vld1_lane,

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -1462,6 +1462,8 @@ common_handle_option (struct gcc_options *opts,
 	      { "null", SANITIZE_NULL, sizeof "null" - 1 },
 	      { "signed-integer-overflow", SANITIZE_SI_OVERFLOW,
 		sizeof "signed-integer-overflow" -1 },
+	      { "bool", SANITIZE_BOOL, sizeof "bool" - 1 },
+	      { "enum", SANITIZE_ENUM, sizeof "enum" - 1 },
 	      { NULL, 0, 0 }
 	    };
 	    const char *comma;
@@ -1710,6 +1712,8 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
+      if (!opts_set->x_flag_profile_reorder_functions)
+	opts->x_flag_profile_reorder_functions = value;
       /* Indirect call profiling should do all useful transformations
  	 speculative devirtualization does.  */
       if (!opts_set->x_flag_devirtualize_speculatively

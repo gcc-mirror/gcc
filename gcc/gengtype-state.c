@@ -1,7 +1,7 @@
 /* Gengtype persistent state serialization & de-serialization.
    Useful for gengtype in plugin mode.
 
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2650,7 +2650,7 @@ read_state_files_list (void)
 				 "expecting file in !fileslist of state file");
 	};
       t0 = peek_state_token (0);
-      if (!state_token_kind (t0) == STOK_RIGHTPAR)
+      if (state_token_kind (t0) != STOK_RIGHTPAR)
 	fatal_reading_state (t0, "missing ) for !fileslist in state file");
       next_state_tokens (1);
     }

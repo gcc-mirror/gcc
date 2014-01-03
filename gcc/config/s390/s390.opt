@@ -1,6 +1,6 @@
 ; Options for the S/390 / zSeries port of the compiler.
 
-; Copyright (C) 2005-2013 Free Software Foundation, Inc.
+; Copyright (C) 2005-2014 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -95,6 +95,14 @@ Enable decimal floating point hardware support
 mhard-float
 Target Report RejectNegative Negative(msoft-float) InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Enable hardware floating point
+
+mhotpatch
+Target Report Var(s390_deferred_options) Defer
+Prepend the function label with 12 two-byte Nop instructions, and add a four byte Nop instruction after the label for hotpatching.
+
+mhotpatch=
+Target RejectNegative Report Joined Var(s390_deferred_options) Defer
+Prepend the function label with the given number of two-byte Nop instructions, and add a four byte Nop instruction after the label for hotpatching.
 
 mlong-double-128
 Target Report RejectNegative Negative(mlong-double-64) Mask(LONG_DOUBLE_128)

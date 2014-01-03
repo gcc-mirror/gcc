@@ -1,3 +1,15 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years
+
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gccgo.texi: Bump @copying's copyright year.
+
+2013-12-16  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::struct_field_expression): New function.
+
 2013-12-11  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_post_options): Disable sibling calls by
@@ -739,3 +751,9 @@
 2010-12-02  Ian Lance Taylor  <iant@google.com>
 
 	Go frontend added to gcc repository.
+
+Copyright (C) 2010-2014 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

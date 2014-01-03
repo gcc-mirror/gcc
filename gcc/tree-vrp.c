@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2013 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -3129,9 +3129,9 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
     }
 
   /* Handle operations that we express in terms of others.  */
-  if (code == PAREN_EXPR)
+  if (code == PAREN_EXPR || code == OBJ_TYPE_REF)
     {
-      /* PAREN_EXPR is a simple copy.  */
+      /* PAREN_EXPR and OBJ_TYPE_REF are simple copies.  */
       copy_value_range (vr, &vr0);
       return;
     }

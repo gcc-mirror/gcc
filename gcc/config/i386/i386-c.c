@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -141,25 +141,35 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__core2");
       def_or_undef (parse_in, "__core2__");
       break;
-    case PROCESSOR_COREI7:
+    case PROCESSOR_NEHALEM:
       def_or_undef (parse_in, "__corei7");
       def_or_undef (parse_in, "__corei7__");
+      def_or_undef (parse_in, "__nehalem");
+      def_or_undef (parse_in, "__nehalem__");
       break;
-    case PROCESSOR_COREI7_AVX:
+    case PROCESSOR_SANDYBRIDGE:
       def_or_undef (parse_in, "__corei7_avx");
       def_or_undef (parse_in, "__corei7_avx__");
+      def_or_undef (parse_in, "__sandybridge");
+      def_or_undef (parse_in, "__sandybridge__");
       break;
     case PROCESSOR_HASWELL:
       def_or_undef (parse_in, "__core_avx2");
       def_or_undef (parse_in, "__core_avx2__");
+      def_or_undef (parse_in, "__haswell");
+      def_or_undef (parse_in, "__haswell__");
       break;
-    case PROCESSOR_ATOM:
+    case PROCESSOR_BONNELL:
       def_or_undef (parse_in, "__atom");
       def_or_undef (parse_in, "__atom__");
+      def_or_undef (parse_in, "__bonnell");
+      def_or_undef (parse_in, "__bonnell__");
       break;
-    case PROCESSOR_SLM:
+    case PROCESSOR_SILVERMONT:
       def_or_undef (parse_in, "__slm");
       def_or_undef (parse_in, "__slm__");
+      def_or_undef (parse_in, "__silvermont");
+      def_or_undef (parse_in, "__silvermont__");
       break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
@@ -246,20 +256,25 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     case PROCESSOR_CORE2:
       def_or_undef (parse_in, "__tune_core2__");
       break;
-    case PROCESSOR_COREI7:
+    case PROCESSOR_NEHALEM:
       def_or_undef (parse_in, "__tune_corei7__");
+      def_or_undef (parse_in, "__tune_nehalem__");
       break;
-    case PROCESSOR_COREI7_AVX:
+    case PROCESSOR_SANDYBRIDGE:
       def_or_undef (parse_in, "__tune_corei7_avx__");
+      def_or_undef (parse_in, "__tune_sandybridge__");
       break;
     case PROCESSOR_HASWELL:
       def_or_undef (parse_in, "__tune_core_avx2__");
+      def_or_undef (parse_in, "__tune_haswell__");
       break;
-    case PROCESSOR_ATOM:
+    case PROCESSOR_BONNELL:
       def_or_undef (parse_in, "__tune_atom__");
+      def_or_undef (parse_in, "__tune_bonnell__");
       break;
-    case PROCESSOR_SLM:
+    case PROCESSOR_SILVERMONT:
       def_or_undef (parse_in, "__tune_slm__");
+      def_or_undef (parse_in, "__tune_silvermont__");
       break;
     case PROCESSOR_GENERIC:
       break;
@@ -312,6 +327,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SSE4_2__");
   if (isa_flag & OPTION_MASK_ISA_AES)
     def_or_undef (parse_in, "__AES__");
+  if (isa_flag & OPTION_MASK_ISA_SHA)
+    def_or_undef (parse_in, "__SHA__");
   if (isa_flag & OPTION_MASK_ISA_PCLMUL)
     def_or_undef (parse_in, "__PCLMUL__");
   if (isa_flag & OPTION_MASK_ISA_AVX)

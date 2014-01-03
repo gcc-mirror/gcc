@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -367,3 +367,26 @@
   BUILTIN_VSDQ_I_DI (BSL_U, simd_bsl, 0)
   BUILTIN_VALLDIF (BSL_S, simd_bsl, 0)
 
+  /* Implemented by aarch64_crypto_aes<op><mode>.  */
+  VAR1 (BINOPU, crypto_aese, 0, v16qi)
+  VAR1 (BINOPU, crypto_aesd, 0, v16qi)
+  VAR1 (UNOPU, crypto_aesmc, 0, v16qi)
+  VAR1 (UNOPU, crypto_aesimc, 0, v16qi)
+
+  /* Implemented by aarch64_crypto_sha1<op><mode>.  */
+  VAR1 (UNOPU, crypto_sha1h, 0, si)
+  VAR1 (BINOPU, crypto_sha1su1, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1c, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1m, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1p, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha1su0, 0, v4si)
+
+  /* Implemented by aarch64_crypto_sha256<op><mode>.  */
+  VAR1 (TERNOPU, crypto_sha256h, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha256h2, 0, v4si)
+  VAR1 (BINOPU, crypto_sha256su0, 0, v4si)
+  VAR1 (TERNOPU, crypto_sha256su1, 0, v4si)
+
+  /* Implemented by aarch64_crypto_pmull<mode>.  */
+  VAR1 (BINOPP, crypto_pmull, 0, di)
+  VAR1 (BINOPP, crypto_pmull, 0, v2di)

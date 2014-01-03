@@ -3,7 +3,7 @@
 #
 # The Makefile fragment to include when compiling gcc et al for CRIS.
 #
-# Copyright (C) 2001-2013 Free Software Foundation, Inc.
+# Copyright (C) 2001-2014 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #

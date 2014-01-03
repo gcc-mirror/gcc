@@ -11,7 +11,7 @@ ABI-compliant should also be covered by a test for -Wabi to ensure that
 there is a warning for the construct.
 
 
-Copyright (C) 2002-2013 Free Software Foundation, Inc.
+Copyright (C) 2002-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

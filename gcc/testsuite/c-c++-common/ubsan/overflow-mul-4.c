@@ -83,4 +83,4 @@ main ()
 /* { dg-output "\[^\n\r]*overflow-mul-4.c:48:\[^\n\r]*signed integer overflow: 4257126176 \\* 2166572391 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*overflow-mul-4.c:49:\[^\n\r]*signed integer overflow: -4257126176 \\* -2166572391 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*overflow-mul-4.c:50:\[^\n\r]*signed integer overflow: -4257126176 \\* 2166572391 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*overflow-mul-4.c:51:\[^\n\r]*signed integer overflow: 4257126176 \\* -2166572391 cannot be represented in type 'long long int'(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*overflow-mul-4.c:51:\[^\n\r]*signed integer overflow: 4257126176 \\* -2166572391 cannot be represented in type 'long long int'" } */

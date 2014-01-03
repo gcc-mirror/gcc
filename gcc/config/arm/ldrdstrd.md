@@ -1,6 +1,6 @@
 ;; ARM ldrd/strd peephole optimizations.
 ;;
-;; Copyright (C) 2013 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014 Free Software Foundation, Inc.
 ;;
 ;; Written by Greta Yorsh <greta.yorsh@arm.com>
 

@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime method related functions.
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Nicola Pero
 
 This file is part of GCC.

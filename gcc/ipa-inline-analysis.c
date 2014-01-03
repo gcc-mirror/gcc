@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -2795,6 +2795,11 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
 	}
     }
   estimate_function_body_sizes (node, early);
+
+  for (e = node->callees; e; e = e->next_callee)
+    if (symtab_comdat_local_p (e->callee))
+      break;
+  node->calls_comdat_local = (e != NULL);
 
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   info->time = info->self_time;

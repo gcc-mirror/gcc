@@ -1,6 +1,6 @@
 (* ARM NEON documentation generator.
 
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -322,12 +322,91 @@ let document_group chan (group_title, group_extractor) =
 
 let gnu_header chan =
   List.iter (fun s -> Printf.fprintf chan "%s\n" s) [
-  "@c Copyright (C) 2006-2013 Free Software Foundation, Inc.";
+  "@c Copyright (C) 2006-2014 Free Software Foundation, Inc.";
   "@c This is part of the GCC manual.";
   "@c For copying conditions, see the file gcc.texi.";
   "";
   "@c This file is generated automatically using gcc/config/arm/neon-docgen.ml";
   "@c Please do not edit manually."]
+
+let crypto_doc =
+"
+@itemize @bullet
+@item poly128_t vldrq_p128(poly128_t const *)
+@end itemize
+
+@itemize @bullet
+@item void vstrq_p128(poly128_t *, poly128_t)
+@end itemize
+
+@itemize @bullet
+@item uint64x1_t vceq_p64 (poly64x1_t, poly64x1_t)
+@end itemize
+
+@itemize @bullet
+@item uint64x1_t vtst_p64 (poly64x1_t, poly64x1_t)
+@end itemize
+
+@itemize @bullet
+@item uint32_t vsha1h_u32 (uint32_t)
+@*@emph{Form of expected instruction(s):} @code{sha1h.32 @var{q0}, @var{q1}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha1cq_u32 (uint32x4_t, uint32_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha1c.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha1pq_u32 (uint32x4_t, uint32_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha1p.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha1mq_u32 (uint32x4_t, uint32_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha1m.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha1su0q_u32 (uint32x4_t, uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha1su0.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha1su1q_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha1su1.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item uint32x4_t vsha256hq_u32 (uint32x4_t, uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha256h.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+ 
+@itemize @bullet
+@item uint32x4_t vsha256h2q_u32 (uint32x4_t, uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha256h2.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+ 
+@itemize @bullet
+@item uint32x4_t vsha256su0q_u32 (uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha256su0.32 @var{q0}, @var{q1}}
+@end itemize
+ 
+@itemize @bullet
+@item uint32x4_t vsha256su1q_u32 (uint32x4_t, uint32x4_t, uint32x4_t)
+@*@emph{Form of expected instruction(s):} @code{sha256su1.32 @var{q0}, @var{q1}, @var{q2}}
+@end itemize
+
+@itemize @bullet
+@item poly128_t vmull_p64 (poly64_t a, poly64_t b)
+@*@emph{Form of expected instruction(s):} @code{vmull.p64 @var{q0}, @var{d1}, @var{d2}}
+@end itemize
+
+@itemize @bullet
+@item poly128_t vmull_high_p64 (poly64x2_t a, poly64x2_t b)
+@*@emph{Form of expected instruction(s):} @code{vmull.p64 @var{q0}, @var{d1}, @var{d2}}
+@end itemize
+"
 
 (* Program entry point.  *)
 let _ =
@@ -339,6 +418,7 @@ let _ =
       let chan = open_out file in
         gnu_header chan;
         List.iter (document_group chan) intrinsic_groups;
+        Printf.fprintf chan "%s\n" crypto_doc;
         close_out chan
     with Sys_error sys ->
       failwith ("Could not create output file " ^ file ^ ": " ^ sys)

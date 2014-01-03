@@ -1,0 +1,61 @@
+# Copyright (C) 2009-2014 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# The x86-64 AVX512F ABI testsuite needs one additional assembler file for most
+# testcases.  For simplicity we will just link it into each test.
+
+load_lib c-torture.exp
+load_lib target-supports.exp
+load_lib torture-options.exp
+
+if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
+     || ![is-effective-target lp64]
+     || ![is-effective-target avx512f] } then {
+  return
+}
+
+
+# If the linker used understands -M <mapfile>, pass it to clear hardware
+# capabilities set by the Sun assembler.
+set flags ""
+set clearcap_ldflags "-Wl,-M,$srcdir/gcc.target/i386/clearcap.map"
+
+if [check_no_compiler_messages mapfile executable {
+	int main (void) { return 0; }
+  } $clearcap_ldflags ] {
+  set flags $clearcap_ldflags
+}
+
+torture-init
+set-torture-options $C_TORTURE_OPTIONS
+set additional_flags "-W -Wall -mavx512f $flags"
+
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	if { ([istarget *-*-darwin*]) } then {
+	    # FIXME: Darwin isn't tested.
+	    c-torture-execute [list $src \
+				    $srcdir/$subdir/asm-support-darwin.s] \
+				    $additional_flags
+	} else {
+	    c-torture-execute [list $src \
+				    $srcdir/$subdir/asm-support.S] \
+				    $additional_flags
+	}
+    }
+}
+
+torture-finish

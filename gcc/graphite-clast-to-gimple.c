@@ -1,5 +1,5 @@
 /* Translation of CLAST (CLooG AST) to Gimple.
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -1658,7 +1658,7 @@ debug_generated_program (scop_p scop)
 bool
 gloog (scop_p scop, bb_pbb_htab_type bb_pbb_mapping)
 {
-  stack_vec<tree, 10> newivs;
+  auto_vec<tree, 10> newivs;
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;

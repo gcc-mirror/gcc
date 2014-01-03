@@ -1,5 +1,5 @@
 /* FreeBSD configuration setting for FreeBSD systems.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Loren J. Rittle <ljrittle@acm.org>
 
 This file is part of GCC.

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Generate arm-tune.md, a file containing the tune attribute from the list of 
 # CPUs in arm-cores.def
-# Copyright (C) 2004-2013 Free Software Foundation, Inc.
+# Copyright (C) 2004-2014 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,5 +25,5 @@ echo ";; Generated automatically by gentune.sh from arm-cores.def"
 allcores=`awk -F'[(, 	]+' '/^ARM_CORE/ { cores = cores$3"," } END { print cores } ' $1`
 
 echo "(define_attr \"tune\""
-echo "	\"$allcores\"" | sed -e 's/,"$/"/'
+echo "	\"$allcores\"" | sed -e 's/,"$/"/' | sed -e 's/\([a-z0-9_]\+,[a-z0-9_]\+,[a-z0-9_]\+,\)/\1\n\t/g'
 echo "	(const (symbol_ref \"((enum attr_tune) arm_tune)\")))"

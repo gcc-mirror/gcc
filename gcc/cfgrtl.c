@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3736,7 +3736,8 @@ fixup_reorder_chain (void)
 	      if (!e_fall)
 		{
 		  gcc_assert (!onlyjump_p (bb_end_insn)
-			      || returnjump_p (bb_end_insn));
+			      || returnjump_p (bb_end_insn)
+                              || (e_taken->flags & EDGE_CROSSING));
 		  emit_barrier_after (bb_end_insn);
 		  continue;
 		}

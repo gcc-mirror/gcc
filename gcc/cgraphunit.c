@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1244,7 +1244,8 @@ mark_functions_to_output (void)
 	      for (next = cgraph (node->same_comdat_group);
 		   next != node;
 		   next = cgraph (next->same_comdat_group))
-		if (!next->thunk.thunk_p && !next->alias)
+		if (!next->thunk.thunk_p && !next->alias
+		    && !symtab_comdat_local_p (next))
 		  next->process = 1;
 	    }
 	}
@@ -1831,6 +1832,23 @@ expand_function (struct cgraph_node *node)
   ipa_remove_all_references (&node->ref_list);
 }
 
+/* Node comparer that is responsible for the order that corresponds
+   to time when a function was launched for the first time.  */
+
+static int
+node_cmp (const void *pa, const void *pb)
+{
+  const struct cgraph_node *a = *(const struct cgraph_node * const *) pa;
+  const struct cgraph_node *b = *(const struct cgraph_node * const *) pb;
+
+  /* Functions with time profile must be before these without profile.  */
+  if (!a->tp_first_run || !b->tp_first_run)
+    return a->tp_first_run - b->tp_first_run;
+
+  return a->tp_first_run != b->tp_first_run
+	 ? b->tp_first_run - a->tp_first_run
+	 : b->order - a->order;
+}
 
 /* Expand all functions that must be output.
 
@@ -1847,6 +1865,7 @@ expand_all_functions (void)
 {
   struct cgraph_node *node;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  unsigned int expanded_func_count = 0, profiled_func_count = 0;
   int order_pos, new_order_pos = 0;
   int i;
 
@@ -1859,20 +1878,39 @@ expand_all_functions (void)
     if (order[i]->process)
       order[new_order_pos++] = order[i];
 
+  if (flag_profile_reorder_functions)
+    qsort (order, new_order_pos, sizeof (struct cgraph_node *), node_cmp);
+
   for (i = new_order_pos - 1; i >= 0; i--)
     {
       node = order[i];
+
       if (node->process)
 	{
+     expanded_func_count++;
+     if(node->tp_first_run)
+       profiled_func_count++;
+
+    if (cgraph_dump_file)
+      fprintf (cgraph_dump_file, "Time profile order in expand_all_functions:%s:%d\n", node->asm_name (), node->tp_first_run);
+
 	  node->process = 0;
 	  expand_function (node);
 	}
     }
+
+    if (dump_file)
+      fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
+               main_input_filename, profiled_func_count, expanded_func_count);
+
+  if (cgraph_dump_file && flag_profile_reorder_functions)
+    fprintf (cgraph_dump_file, "Expanded functions with time profile:%u/%u\n",
+             profiled_func_count, expanded_func_count);
+
   cgraph_process_new_functions ();
   free_gimplify_stack ();
 
   free (order);
-
 }
 
 /* This is used to sort the node types by the cgraph order number.  */
@@ -2194,6 +2232,7 @@ compile (void)
 #endif
 
   cgraph_state = CGRAPH_STATE_EXPANSION;
+
   if (!flag_toplevel_reorder)
     output_in_order ();
   else

@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2013 Free Software Foundation, Inc.
+# Copyright (C) 1997-2014 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -251,6 +251,60 @@ proc check_effective_target_rtm { } {
 	    return __builtin_ia32_xend ();
 	}
     } "-mrtm" ]
+}
+
+# Return 1 if avx512f instructions can be compiled.
+proc check_effective_target_avx512f { } {
+    return [check_no_compiler_messages avx512f object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	mm512_and_epi64  (__v8di __X, __v8di __Y)
+	{
+            __v8di __W;
+            return __builtin_ia32_pandq512_mask (__X, __Y, __W, -1);
+	}
+    } "-mavx512f" ]
+}
+
+# Return 1 if avx512cd instructions can be compiled.
+proc check_effective_target_avx512cd { } {
+    return [check_no_compiler_messages avx512cd_trans object {
+	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
+	__v8di
+	_mm512_conflict_epi64 (__v8di __W, __v8di __A)
+	{
+	  return (__v8di) __builtin_ia32_vpconflictdi_512_mask ((__v8di) __A,
+		  						 (__v8di) __W,
+			  					 -1);
+	}
+   } "-Wno-psabi -mavx512cd" ]
+}
+
+# Return 1 if avx512er instructions can be compiled.
+proc check_effective_target_avx512er { } {
+    return [check_no_compiler_messages avx512er_trans object {
+	typedef float __v16sf __attribute__ ((__vector_size__ (64)));
+	__v16sf
+	mm512_exp2a23_ps  (__v16sf __X)
+	{
+        __v16sf __W;
+	    return __builtin_ia32_exp2ps_mask (__X, __W, -1, 4);
+	}
+   } "-Wno-psabi -mavx512er" ]
+}
+
+# Return 1 if sha instructions can be compiled.
+proc check_effective_target_sha { } {
+    return [check_no_compiler_messages sha object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	typedef int __v4si __attribute__ ((__vector_size__ (16)));
+
+	__m128i _mm_sha1msg1_epu32 (__m128i __X, __m128i __Y)
+	{
+            return (__m128i) __builtin_ia32_sha1msg1 ((__v4si)__X,
+						      (__v4si)__Y);
+	}
+    } "-O2 -msha" ]
 }
 
 # If the linker used understands -M <mapfile>, pass it to clear hardware

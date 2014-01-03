@@ -1,6 +1,6 @@
 /* Utility macros to handle Java(TM) byte codes.
 
-   Copyright (C) 1996-2013 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -154,7 +154,7 @@ WORD_TO_INT(jword w)
 {
   jint n = w & 0xffffffff; /* Mask lower 32 bits.  */
   n ^= (jint)1 << 31;
-  n -= (jint)1 << 31; /* Sign extend lower 32 bits to upper.  */
+  n -= (uint32)1 << 31; /* Sign extend lower 32 bits to upper.  */
   return n;
 } 
 

@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
 
@@ -3349,7 +3349,7 @@ uniq_sort_alt_states (alt_state_t alt_states_list)
   if (alt_states_list->next_alt_state == 0)
     return alt_states_list;
 
-  stack_vec<alt_state_t, 150> alt_states;
+  auto_vec<alt_state_t, 150> alt_states;
   for (curr_alt_state = alt_states_list;
        curr_alt_state != NULL;
        curr_alt_state = curr_alt_state->next_alt_state)
@@ -3494,7 +3494,7 @@ reserv_sets_hash_value (reserv_sets_t reservs)
     {
       reservs_num--;
       hash_value += ((*reserv_ptr >> i)
-		     | (*reserv_ptr << (sizeof (set_el_t) * CHAR_BIT - i)));
+		     | (*reserv_ptr << ((sizeof (set_el_t) * CHAR_BIT) & -i)));
       i++;
       if (i == sizeof (set_el_t) * CHAR_BIT)
 	i = 0;
@@ -5484,7 +5484,7 @@ form_ainsn_with_same_reservs (automaton_t automaton)
 {
   ainsn_t curr_ainsn;
   size_t i;
-  stack_vec<ainsn_t, 150> last_insns;
+  auto_vec<ainsn_t, 150> last_insns;
 
   for (curr_ainsn = automaton->ainsn_list;
        curr_ainsn != NULL;
@@ -5555,7 +5555,7 @@ make_automaton (automaton_t automaton)
   state_t state;
   state_t start_state;
   state_t state2;
-  stack_vec<state_t, 150> state_stack;
+  auto_vec<state_t, 150> state_stack;
   int states_n;
   reserv_sets_t reservs_matter = form_reservs_matter (automaton);
 

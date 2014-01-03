@@ -3,7 +3,7 @@
 //
 //   Support for 32-bit arithmetic shift left.
 //
-//   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+//   Copyright (C) 2003-2014 Free Software Foundation, Inc.
 //   Contributed by Picochip Ltd.
 //   Maintained by Hariharan Sandanagobalane (hariharan@picochip.com)
 //

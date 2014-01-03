@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2013 Free Software Foundation, Inc.
+; Copyright (C) 2003-2014 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -1712,6 +1712,10 @@ fprofile-report
 Common Report Var(profile_report)
 Report on consistency of profile
 
+fprofile-reorder-functions
+Common Report Var(flag_profile_reorder_functions)
+Enable function reordering that improves code placement
+
 frandom-seed
 Common Var(common_deferred_options) Defer
 
@@ -2246,11 +2250,11 @@ Common Report Var(flag_unwind_tables) Optimization
 Just generate unwind tables for exception handling
 
 fuse-ld=bfd
-Common Negative(fuse-ld=gold)
+Common Driver Negative(fuse-ld=gold)
 Use the bfd linker instead of the default linker
 
 fuse-ld=gold
-Common Negative(fuse-ld=bfd)
+Common Driver Negative(fuse-ld=bfd)
 Use the gold linker instead of the default linker
 
 fuse-linker-plugin

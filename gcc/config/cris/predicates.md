@@ -1,5 +1,5 @@
 ;; Operand and operator predicates for the GCC CRIS port.
-;; Copyright (C) 2005-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2014 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 ;;
@@ -75,6 +75,10 @@
        (and (match_code "mem")
 	    (match_test "cris_simple_address_operand (XEXP (op, 0),
 						      Pmode)"))))
+
+(define_predicate "cris_nonsp_register_operand"
+  (and (match_operand 0 "register_operand")
+       (match_test "op != stack_pointer_rtx")))
 
 ;; The caller needs to use :SI.
 (define_predicate "cris_bdap_sign_extend_operand"

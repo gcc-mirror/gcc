@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -216,9 +216,11 @@ enum sanitize_code {
   SANITIZE_NULL = 1 << 7,
   SANITIZE_RETURN = 1 << 8,
   SANITIZE_SI_OVERFLOW = 1 << 9,
+  SANITIZE_BOOL = 1 << 10,
+  SANITIZE_ENUM = 1 << 11,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN
-		       | SANITIZE_SI_OVERFLOW
+		       | SANITIZE_SI_OVERFLOW | SANITIZE_BOOL | SANITIZE_ENUM
 };
 
 /* flag_vtable_verify initialization levels. */

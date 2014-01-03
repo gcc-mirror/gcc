@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2014 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2013 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2014 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -161,7 +161,7 @@ in the following sections.
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
--fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{arg} -fdump-go-spec=@var{file}}
+-fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{unit} -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -394,7 +394,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
--fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
+-fprofile-use -fprofile-use=@var{path} -fprofile-values -fprofile-reorder-functions @gol
 -freciprocal-math -free -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
@@ -666,7 +666,7 @@ Objective-C and Objective-C++ Dialects}.
 -mrecip -mrecip=@var{opt} @gol
 -mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
--mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
+-mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -msha @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
@@ -840,6 +840,16 @@ Objective-C and Objective-C++ Dialects}.
 -mforce-fp-as-gp -mforbid-fp-as-gp @gol
 -mex9 -mctor-dtor -mrelax}
 
+@emph{Nios II Options}
+@gccoptlist{-G @var{num} -mgpopt -mno-gpopt -mel -meb @gol
+-mno-bypass-cache -mbypass-cache @gol
+-mno-cache-volatile -mcache-volatile @gol
+-mno-fast-sw-div -mfast-sw-div @gol
+-mhw-mul -mno-hw-mul -mhw-mulx -mno-hw-mulx -mno-hw-div -mhw-div @gol
+-mcustom-@var{insn}=@var{N} -mno-custom-@var{insn} @gol
+-mcustom-fpu-cfg=@var{name} @gol
+-mhal -msmallc -msys-crt0=@var{name} -msys-lib=@var{name}}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -933,7 +943,8 @@ See RS/6000 and PowerPC Options.
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd @gol
--mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard}
+-mwarn-framesize  -mwarn-dynamicstack  -mstack-size -mstack-guard @gol
+-mhotpatch[=@var{halfwords}] -mno-hotpatch}
 
 @emph{Score Options}
 @gccoptlist{-meb -mel @gol
@@ -1517,9 +1528,14 @@ for the plugin called @var{name}.
 
 @item -fdump-ada-spec@r{[}-slim@r{]}
 @opindex fdump-ada-spec
-For C and C++ source and include files, generate corresponding Ada
-specs. @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
+For C and C++ source and include files, generate corresponding Ada specs.
+@xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
 GNAT User's Guide}, which provides detailed documentation on this feature.
+
+@item -fada-spec-parent=@var{unit}
+@opindex fada-spec-parent
+In conjunction with @option{-fdump-ada-spec@r{[}-slim@r{]}} above, generate
+Ada specs as child units of parent @var{unit}.
 
 @item -fdump-go-spec=@var{file}
 @opindex fdump-go-spec
@@ -5977,9 +5993,9 @@ Dump after generating the function prologues and epilogues.
 @option{-fdump-rtl-sched1} and @option{-fdump-rtl-sched2} enable dumping
 after the basic block scheduling passes.
 
-@item -fdump-rtl-see
-@opindex fdump-rtl-see
-Dump after sign extension elimination.
+@item -fdump-rtl-ree
+@opindex fdump-rtl-ree
+Dump after sign/zero extension elimination.
 
 @item -fdump-rtl-seqabstr
 @opindex fdump-rtl-seqabstr
@@ -6506,7 +6522,7 @@ gcc -fopt-info-vec-missed=vec.miss -fopt-info-loop-optimized=loop.opt
 Here the two output filenames @file{vec.miss} and @file{loop.opt} are
 in conflict since only one output file is allowed. In this case, only
 the first option takes effect and the subsequent options are
-ignored. Thus only the @file{vec.miss} is produced which cotaints
+ignored. Thus only the @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
 @item -frandom-seed=@var{string}
@@ -7337,6 +7353,18 @@ Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fdeclone-ctor-dtor
+@opindex fdeclone-ctor-dtor
+The C++ ABI requires multiple entry points for constructors and
+destructors: one for a base subobject, one for a complete object, and
+one for a virtual destructor that calls operator delete afterwards.
+For a hierarchy with virtual bases, the base and complete variants are
+clones, which means two copies of the function.  With this option, the
+base and complete variants are changed to be thunks that call a common
+implementation.
+
+Enabled by @option{-Os}.
 
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
@@ -9070,6 +9098,14 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions for usage in optimizations.
 
 Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
+
+@item -fprofile-reoder-functions
+@opindex fprofile-reorder-functions
+Function reordering based on profile instrumentation collects
+first time of execution of a function and orders these functions
+in ascending order.
+
+Enabled with @option{-fprofile-use}.
 
 @item -fvpt
 @opindex fvpt
@@ -11204,6 +11240,7 @@ platform.
 * Moxie Options::
 * MSP430 Options::
 * NDS32 Options::
+* Nios II Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -11325,6 +11362,9 @@ feature modifiers.  This option has the form
 possible values for @var{cpu} are @samp{generic}, @samp{cortex-a53},
 @samp{cortex-a57}.  The possible values for @var{feature} are documented
 in the sub-section below.
+
+Additionally, this option can specify that the target is a big.LITTLE system.
+The only possible value is @samp{cortex-a57.cortex-a53}.
 
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
@@ -12157,7 +12197,8 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{arm1136j-s}, @samp{arm1136jf-s}, @samp{mpcore}, @samp{mpcorenovfp},
 @samp{arm1156t2-s}, @samp{arm1156t2f-s}, @samp{arm1176jz-s}, @samp{arm1176jzf-s},
 @samp{cortex-a5}, @samp{cortex-a7}, @samp{cortex-a8}, @samp{cortex-a9},
-@samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-r4},
+@samp{cortex-a12}, @samp{cortex-a15}, @samp{cortex-a53}, @samp{cortex-a57},
+@samp{cortex-r4},
 @samp{cortex-r4f}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-m4},
 @samp{cortex-m3},
 @samp{cortex-m1},
@@ -12168,6 +12209,9 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{fa526}, @samp{fa626},
 @samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
 
+Additionally, this option can specify that GCC should tune the performance
+of the code for a big.LITTLE system.  Permissible names are:
+@samp{cortex-a15.cortex-a7}, @samp{cortex-a57.cortex-a53}.
 
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
@@ -12212,8 +12256,11 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
-@samp{armv8-a},
+@samp{armv8-a}, @samp{armv8-a+crc},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=armv8-a+crc} enables code generation for the ARMv8-A
+architecture together with the optional CRC32 extensions.
 
 @option{-march=native} causes the compiler to auto-detect the architecture
 of the build computer.  At present, this feature is only supported on
@@ -14629,29 +14676,38 @@ SSE2 and SSE3 instruction set support.
 Intel Core 2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
-@item corei7
-Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item nehalem
+Intel Nehalem CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2 and POPCNT instruction set support.
 
-@item corei7-avx
-Intel Core i7 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item westmere
+Intel Westmere CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AES and PCLMUL instruction set support.
+
+@item sandybridge
+Intel Sandy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AES and PCLMUL instruction set support.
 
-@item core-avx-i
-Intel Core CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+@item ivybridge
+Intel Ivy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C
 instruction set support.
 
-@item core-avx2
-Intel Core CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+@item haswell
+Intel Haswell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2 and F16C instruction set support.
 
-@item atom
-Intel Atom CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
+@item broadwell
+Intel Broadwell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+BMI, BMI2, F16C, RDSEED, ADCX and PREFETCHW instruction set support.
+
+@item bonnell
+Intel Bonnell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
-@item slm
+@item silvermont
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, AES, PCLMUL and RDRND instruction set support.
 
@@ -15136,6 +15192,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-avx512er
 @itemx -mavx512cd
 @itemx -mno-avx512cd
+@itemx -msha
+@itemx -mno-sha
 @itemx -maes
 @itemx -mno-aes
 @itemx -mpclmul
@@ -15184,8 +15242,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
-AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
-FXSR, XSAVE, XSAVEOPT, LZCNT, RTM or 3DNow!@:
+SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
+BMI, BMI2, FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
@@ -18169,6 +18227,285 @@ Guide linker to relax instructions.
 
 @end table
 
+@node Nios II Options
+@subsection Nios II Options
+@cindex Nios II options
+@cindex Altera Nios II options
+
+These are the options defined for the Altera Nios II processor.
+
+@table @gcctabopt
+
+@item -G @var{num}
+@opindex G
+@cindex smaller data references
+Put global and static objects less than or equal to @var{num} bytes
+into the small data or BSS sections instead of the normal data or BSS
+sections.  The default value of @var{num} is 8.
+
+@item -mgpopt
+@itemx -mno-gpopt
+@opindex mgpopt
+@opindex mno-gpopt
+Generate (do not generate) GP-relative accesses for objects in the
+small data or BSS sections.  The default is @option{-mgpopt} except
+when @option{-fpic} or @option{-fPIC} is specified to generate
+position-independent code.  Note that the Nios II ABI does not permit
+GP-relative accesses from shared libraries.
+
+You may need to specify @option{-mno-gpopt} explicitly when building
+programs that include large amounts of small data, including large
+GOT data sections.  In this case, the 16-bit offset for GP-relative
+addressing may not be large enough to allow access to the entire 
+small data section.
+
+@item -mel
+@itemx -meb
+@opindex mel
+@opindex meb
+Generate little-endian (default) or big-endian (experimental) code,
+respectively.
+
+@item -mbypass-cache
+@itemx -mno-bypass-cache
+@opindex mno-bypass-cache
+@opindex mbypass-cache
+Force all load and store instructions to always bypass cache by 
+using I/O variants of the instructions. The default is not to
+bypass the cache.
+
+@item -mno-cache-volatile 
+@itemx -mcache-volatile       
+@opindex mcache-volatile 
+@opindex mno-cache-volatile
+Volatile memory access bypass the cache using the I/O variants of 
+the load and store instructions. The default is not to bypass the cache.
+
+@item -mno-fast-sw-div
+@itemx -mfast-sw-div
+@opindex mno-fast-sw-div
+@opindex mfast-sw-div
+Do not use table-based fast divide for small numbers. The default 
+is to use the fast divide at @option{-O3} and above.
+
+@item -mno-hw-mul
+@itemx -mhw-mul
+@itemx -mno-hw-mulx
+@itemx -mhw-mulx
+@itemx -mno-hw-div
+@itemx -mhw-div
+@opindex mno-hw-mul
+@opindex mhw-mul
+@opindex mno-hw-mulx
+@opindex mhw-mulx
+@opindex mno-hw-div
+@opindex mhw-div
+Enable or disable emitting @code{mul}, @code{mulx} and @code{div} family of 
+instructions by the compiler. The default is to emit @code{mul}
+and not emit @code{div} and @code{mulx}.
+
+@item -mcustom-@var{insn}=@var{N}
+@itemx -mno-custom-@var{insn}
+@opindex mcustom-@var{insn}
+@opindex mno-custom-@var{insn}
+Each @option{-mcustom-@var{insn}=@var{N}} option enables use of a
+custom instruction with encoding @var{N} when generating code that uses 
+@var{insn}.  For example, @code{-mcustom-fadds=253} generates custom
+instruction 253 for single-precision floating-point add operations instead
+of the default behavior of using a library call.
+
+The following values of @var{insn} are supported.  Except as otherwise
+noted, floating-point operations are expected to be implemented with
+normal IEEE 754 semantics and correspond directly to the C operators or the
+equivalent GCC built-in functions (@pxref{Other Builtins}).
+
+Single-precision floating point:
+@table @asis
+
+@item @samp{fadds}, @samp{fsubs}, @samp{fdivs}, @samp{fmuls}
+Binary arithmetic operations.
+
+@item @samp{fnegs}
+Unary negation.
+
+@item @samp{fabss}
+Unary absolute value.
+
+@item @samp{fcmpeqs}, @samp{fcmpges}, @samp{fcmpgts}, @samp{fcmples}, @samp{fcmplts}, @samp{fcmpnes}
+Comparison operations.
+
+@item @samp{fmins}, @samp{fmaxs}
+Floating-point minimum and maximum.  These instructions are only
+generated if @option{-ffinite-math-only} is specified.
+
+@item @samp{fsqrts}
+Unary square root operation.
+
+@item @samp{fcoss}, @samp{fsins}, @samp{ftans}, @samp{fatans}, @samp{fexps}, @samp{flogs}
+Floating-point trigonometric and exponential functions.  These instructions
+are only generated if @option{-funsafe-math-optimizations} is also specified.
+
+@end table
+
+Double-precision floating point:
+@table @asis
+
+@item @samp{faddd}, @samp{fsubd}, @samp{fdivd}, @samp{fmuld}
+Binary arithmetic operations.
+
+@item @samp{fnegd}
+Unary negation.
+
+@item @samp{fabsd}
+Unary absolute value.
+
+@item @samp{fcmpeqd}, @samp{fcmpged}, @samp{fcmpgtd}, @samp{fcmpled}, @samp{fcmpltd}, @samp{fcmpned}
+Comparison operations.
+
+@item @samp{fmind}, @samp{fmaxd}
+Double-precision minimum and maximum.  These instructions are only
+generated if @option{-ffinite-math-only} is specified.
+
+@item @samp{fsqrtd}
+Unary square root operation.
+
+@item @samp{fcosd}, @samp{fsind}, @samp{ftand}, @samp{fatand}, @samp{fexpd}, @samp{flogd}
+Double-precision trigonometric and exponential functions.  These instructions
+are only generated if @option{-funsafe-math-optimizations} is also specified.
+
+@end table
+
+Conversions:
+@table @asis
+@item @samp{fextsd}
+Conversion from single precision to double precision.
+
+@item @samp{ftruncds}
+Conversion from double precision to single precision.
+
+@item @samp{fixsi}, @samp{fixsu}, @samp{fixdi}, @samp{fixdu}
+Conversion from floating point to signed or unsigned integer types, with
+truncation towards zero.
+
+@item @samp{floatis}, @samp{floatus}, @samp{floatid}, @samp{floatud}
+Conversion from signed or unsigned integer types to floating-point types.
+
+@end table
+
+In addition, all of the following transfer instructions for internal
+registers X and Y must be provided to use any of the double-precision
+floating-point instructions.  Custom instructions taking two
+double-precision source operands expect the first operand in the
+64-bit register X.  The other operand (or only operand of a unary
+operation) is given to the custom arithmetic instruction with the
+least significant half in source register @var{src1} and the most
+significant half in @var{src2}.  A custom instruction that returns a
+double-precision result returns the most significant 32 bits in the
+destination register and the other half in 32-bit register Y.  
+GCC automatically generates the necessary code sequences to write
+register X and/or read register Y when double-precision floating-point
+instructions are used.
+
+@table @asis
+
+@item @samp{fwrx}
+Write @var{src1} into the least significant half of X and @var{src2} into
+the most significant half of X.
+
+@item @samp{fwry}
+Write @var{src1} into Y.
+
+@item @samp{frdxhi}, @samp{frdxlo}
+Read the most or least (respectively) significant half of X and store it in
+@var{dest}.
+
+@item @samp{frdy}
+Read the value of Y and store it into @var{dest}.
+@end table
+
+Note that you can gain more local control over generation of Nios II custom
+instructions by using the @code{target("custom-@var{insn}=@var{N}")}
+and @code{target("no-custom-@var{insn}")} function attributes
+(@pxref{Function Attributes})
+or pragmas (@pxref{Function Specific Option Pragmas}).
+
+@item -mcustom-fpu-cfg=@var{name}
+@opindex mcustom-fpu-cfg
+
+This option enables a predefined, named set of custom instruction encodings
+(see @option{-mcustom-@var{insn}} above).  
+Currently, the following sets are defined:
+
+@option{-mcustom-fpu-cfg=60-1} is equivalent to:
+@gccoptlist{-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-fsingle-precision-constant}
+
+@option{-mcustom-fpu-cfg=60-2} is equivalent to:
+@gccoptlist{-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol
+-fsingle-precision-constant}
+
+@option{-mcustom-fpu-cfg=72-3} is equivalent to:
+@gccoptlist{-mcustom-floatus=243 @gol
+-mcustom-fixsi=244 @gol
+-mcustom-floatis=245 @gol
+-mcustom-fcmpgts=246 @gol
+-mcustom-fcmples=249 @gol
+-mcustom-fcmpeqs=250 @gol
+-mcustom-fcmpnes=251 @gol
+-mcustom-fmuls=252 @gol
+-mcustom-fadds=253 @gol
+-mcustom-fsubs=254 @gol
+-mcustom-fdivs=255 @gol
+-fsingle-precision-constant}
+
+Custom instruction assignments given by individual
+@option{-mcustom-@var{insn}=} options override those given by
+@option{-mcustom-fpu-cfg=}, regardless of the
+order of the options on the command line.
+
+Note that you can gain more local control over selection of a FPU
+configuration by using the @code{target("custom-fpu-cfg=@var{name}")}
+function attribute (@pxref{Function Attributes})
+or pragma (@pxref{Function Specific Option Pragmas}).
+
+@end table
+
+These additional @samp{-m} options are available for the Altera Nios II
+ELF (bare-metal) target:
+
+@table @gcctabopt
+
+@item -mhal
+@opindex mhal
+Link with HAL BSP.  This suppresses linking with the GCC-provided C runtime
+startup and termination code, and is typically used in conjunction with
+@option{-msys-crt0=} to specify the location of the alternate startup code
+provided by the HAL BSP.
+
+@item -msmallc
+@opindex msmallc
+Link with a limited version of the C library, @option{-lsmallc}, rather than
+Newlib.
+
+@item -msys-crt0=@var{startfile}
+@opindex msys-crt0
+@var{startfile} is the file name of the startfile (crt0) to use 
+when linking.  This option is only useful in conjunction with @option{-mhal}.
+
+@item -msys-lib=@var{systemlib}
+@opindex msys-lib
+@var{systemlib} is the library name of the library that provides
+low-level system calls required by the C library,
+e.g. @code{read} and @code{write}.
+This option is typically used to link with a library provided by a HAL BSP.
+
+@end table
+
 @node PDP-11 Options
 @subsection PDP-11 Options
 @cindex PDP-11 Options
@@ -19762,6 +20099,21 @@ values have to be exact powers of 2 and @var{stack-size} has to be greater than
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
 The @var{stack-guard} option can only be used in conjunction with @var{stack-size}.
+
+@item -mhotpatch[=@var{halfwords}]
+@itemx -mno-hotpatch
+@opindex mhotpatch
+If the hotpatch option is enabled, a ``hot-patching'' function
+prologue is generated for all functions in the compilation unit.
+The funtion label is prepended with the given number of two-byte
+Nop instructions (@var{halfwords}, maximum 1000000) or 12 Nop
+instructions if no argument is present.  Functions with a
+hot-patching prologue are never inlined automatically, and a
+hot-patching prologue is never generated for functions functions
+that are explicitly inline.
+
+This option can be overridden for individual functions with the
+@code{hotpatch} attribute.
 @end table
 
 @node Score Options

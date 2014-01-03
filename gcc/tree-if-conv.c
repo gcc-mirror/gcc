@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
 This file is part of GCC.
@@ -1314,7 +1314,7 @@ if_convertible_loop_p (struct loop *loop, bool *any_mask_load_store)
 
   refs.create (5);
   ddrs.create (25);
-  stack_vec<loop_p, 3> loop_nest;
+  auto_vec<loop_p, 3> loop_nest;
   res = if_convertible_loop_p_1 (loop, &loop_nest, &refs, &ddrs,
 				 any_mask_load_store);
 

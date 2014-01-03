@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -126,6 +126,18 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
       case 0x0c:
 	level1->sizekb = 16; level1->assoc = 4; level1->line = 32;
 	break;
+      case 0x0d:
+	level1->sizekb = 16; level1->assoc = 4; level1->line = 64;
+	break;
+      case 0x0e:
+	level1->sizekb = 24; level1->assoc = 6; level1->line = 64;
+	break;
+      case 0x21:
+	level2->sizekb = 256; level2->assoc = 8; level2->line = 64;
+	break;
+      case 0x24:
+	level2->sizekb = 1024; level2->assoc = 16; level2->line = 64;
+	break;
       case 0x2c:
 	level1->sizekb = 32; level1->assoc = 8; level1->line = 64;
 	break;
@@ -161,6 +173,9 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
 	break;
       case 0x45:
 	level2->sizekb = 2048; level2->assoc = 4; level2->line = 32;
+	break;
+      case 0x48:
+	level2->sizekb = 3072; level2->assoc = 12; level2->line = 64;
 	break;
       case 0x49:
 	if (xeon_mp)
@@ -202,6 +217,9 @@ decode_caches_intel (unsigned reg, bool xeon_mp,
 	break;
       case 0x7f:
 	level2->sizekb = 512; level2->assoc = 2; level2->line = 64;
+	break;
+      case 0x80:
+	level2->sizekb = 512; level2->assoc = 8; level2->line = 64;
 	break;
       case 0x82:
 	level2->sizekb = 256; level2->assoc = 8; level2->line = 32;
@@ -391,7 +409,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_rdseed = 0, has_prfchw = 0, has_adx = 0;
   unsigned int has_osxsave = 0, has_fxsr = 0, has_xsave = 0, has_xsaveopt = 0;
   unsigned int has_avx512er = 0, has_avx512pf = 0, has_avx512cd = 0;
-  unsigned int has_avx512f = 0;
+  unsigned int has_avx512f = 0, has_sha = 0;
 
   bool arch;
 
@@ -467,6 +485,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512er = ebx & bit_AVX512ER;
       has_avx512pf = ebx & bit_AVX512PF;
       has_avx512cd = ebx & bit_AVX512CD;
+      has_sha = ebx & bit_SHA;
     }
 
   if (max_level >= 13)
@@ -643,13 +662,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	{
 	case 0x1c:
 	case 0x26:
-	  /* Atom.  */
-	  cpu = "atom";
+	  /* Bonnell.  */
+	  cpu = "bonnell";
 	  break;
 	case 0x37:
 	case 0x4d:
 	  /* Silvermont.  */
-	  cpu = "slm";
+	  cpu = "silvermont";
 	  break;
 	case 0x0f:
 	  /* Merom.  */
@@ -663,52 +682,56 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	case 0x1f:
 	case 0x2e:
 	  /* Nehalem.  */
+	  cpu = "nehalem";
+	  break;
 	case 0x25:
 	case 0x2c:
 	case 0x2f:
 	  /* Westmere.  */
-	  cpu = "corei7";
+	  cpu = "westmere";
 	  break;
 	case 0x2a:
 	case 0x2d:
 	  /* Sandy Bridge.  */
-	  cpu = "corei7-avx";
+	  cpu = "sandybridge";
 	  break;
 	case 0x3a:
 	case 0x3e:
 	  /* Ivy Bridge.  */
-	  cpu = "core-avx-i";
+	  cpu = "ivybridge";
 	  break;
 	case 0x3c:
 	case 0x45:
 	case 0x46:
 	  /* Haswell.  */
-	  cpu = "core-avx2";
+	  cpu = "haswell";
 	  break;
 	default:
 	  if (arch)
 	    {
 	      /* This is unknown family 0x6 CPU.  */
-	      if (has_avx2)
+	      if (has_adx)
+		cpu = "broadwell";
+	      else if (has_avx2)
 		/* Assume Haswell.  */
-		cpu = "core-avx2";
+		cpu = "haswell";
 	      else if (has_avx)
 		/* Assume Sandy Bridge.  */
-		cpu = "corei7-avx";
+		cpu = "sandybridge";
 	      else if (has_sse4_2)
 		{
 		  if (has_movbe)
-		    /* Assume SLM.  */
-		    cpu = "slm";
+		    /* Assume Silvermont.  */
+		    cpu = "silvermont";
 		  else
-		    /* Assume Core i7.  */
-		    cpu = "corei7";
+		    /* Assume Nehalem.  */
+		    cpu = "nehalem";
 		}
 	      else if (has_ssse3)
 		{
 		  if (has_movbe)
-		    /* Assume Atom.  */
-		    cpu = "atom";
+		    /* Assume Bonnell.  */
+		    cpu = "bonnell";
 		  else
 		    /* Assume Core 2.  */
 		    cpu = "core2";
@@ -828,6 +851,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *sahf = has_lahf_lm ? " -msahf" : " -mno-sahf";
       const char *movbe = has_movbe ? " -mmovbe" : " -mno-movbe";
       const char *aes = has_aes ? " -maes" : " -mno-aes";
+      const char *sha = has_sha ? " -msha" : " -mno-sha";
       const char *pclmul = has_pclmul ? " -mpclmul" : " -mno-pclmul";
       const char *popcnt = has_popcnt ? " -mpopcnt" : " -mno-popcnt";
       const char *abm = has_abm ? " -mabm" : " -mno-abm";
@@ -860,7 +884,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *avx512pf = has_avx512pf ? " -mavx512pf" : " -mno-avx512pf";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
-			sse4a, cx16, sahf, movbe, aes, pclmul,
+			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
 			popcnt, abm, lwp, fma, fma4, xop, bmi, bmi2,
 			tbm, avx, avx2, sse4_2, sse4_1, lzcnt, rtm,
 			hle, rdrnd, f16c, fsgsbase, rdseed, prfchw, adx,

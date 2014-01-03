@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 AdvSIMD architecture.
-;; Copyright (C) 2011-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2014 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -4074,3 +4074,124 @@
       (gen_aarch64_get_lane<mode> (operands[0], operands[1], operands[2]));
     DONE;
 })
+
+;; aes
+
+(define_insn "aarch64_crypto_aes<aes_op>v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")
+		       (match_operand:V16QI 2 "register_operand" "w")]
+         CRYPTO_AES))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "aes<aes_op>\\t%0.16b, %2.16b"
+  [(set_attr "type" "crypto_aes")]
+)
+
+(define_insn "aarch64_crypto_aes<aesmc_op>v16qi"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "w")]
+	 CRYPTO_AESMC))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "aes<aesmc_op>\\t%0.16b, %1.16b"
+  [(set_attr "type" "crypto_aes")]
+)
+
+;; sha1
+
+(define_insn "aarch64_crypto_sha1hsi"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+        (unspec:SI [(match_operand:SI 1
+                       "register_operand" "w")]
+         UNSPEC_SHA1H))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1h\\t%s0, %s1"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
+(define_insn "aarch64_crypto_sha1su1v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")]
+         UNSPEC_SHA1SU1))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1su1\\t%0.4s, %2.4s"
+  [(set_attr "type" "crypto_sha1_fast")]
+)
+
+(define_insn "aarch64_crypto_sha1<sha1_op>v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         CRYPTO_SHA1))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1<sha1_op>\\t%q0, %s2, %3.4s"
+  [(set_attr "type" "crypto_sha1_slow")]
+)
+
+(define_insn "aarch64_crypto_sha1su0v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         UNSPEC_SHA1SU0))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha1su0\\t%0.4s, %2.4s, %3.4s"
+  [(set_attr "type" "crypto_sha1_xor")]
+)
+
+;; sha256
+
+(define_insn "aarch64_crypto_sha256h<sha256_op>v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         CRYPTO_SHA256))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "sha256h<sha256_op>\\t%q0, %q2, %3.4s"
+  [(set_attr "type" "crypto_sha256_slow")]
+)
+
+(define_insn "aarch64_crypto_sha256su0v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")]
+         UNSPEC_SHA256SU0))]
+  "TARGET_SIMD &&TARGET_CRYPTO"
+  "sha256su0\\t%0.4s, %2.4s"
+  [(set_attr "type" "crypto_sha256_fast")]
+)
+
+(define_insn "aarch64_crypto_sha256su1v4si"
+  [(set (match_operand:V4SI 0 "register_operand" "=w")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "0")
+                      (match_operand:V4SI 2 "register_operand" "w")
+                      (match_operand:V4SI 3 "register_operand" "w")]
+         UNSPEC_SHA256SU1))]
+  "TARGET_SIMD &&TARGET_CRYPTO"
+  "sha256su1\\t%0.4s, %2.4s, %3.4s"
+  [(set_attr "type" "crypto_sha256_slow")]
+)
+
+;; pmull
+
+(define_insn "aarch64_crypto_pmulldi"
+  [(set (match_operand:TI 0 "register_operand" "=w")
+        (unspec:TI  [(match_operand:DI 1 "register_operand" "w")
+		     (match_operand:DI 2 "register_operand" "w")]
+		    UNSPEC_PMULL))]
+ "TARGET_SIMD && TARGET_CRYPTO"
+ "pmull\\t%0.1q, %1.1d, %2.1d"
+  [(set_attr "type" "neon_mul_d_long")]
+)
+
+(define_insn "aarch64_crypto_pmullv2di"
+ [(set (match_operand:TI 0 "register_operand" "=w")
+       (unspec:TI [(match_operand:V2DI 1 "register_operand" "w")
+		   (match_operand:V2DI 2 "register_operand" "w")]
+		  UNSPEC_PMULL2))]
+  "TARGET_SIMD && TARGET_CRYPTO"
+  "pmull2\\t%0.1q, %1.2d, %2.2d"
+  [(set_attr "type" "neon_mul_d_long")]
+)

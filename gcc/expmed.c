@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -434,7 +434,7 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
     return bitnum % BITS_PER_WORD == 0;
 }
 
-/* Return true if -fstrict-volatile-bitfields applies an access of OP0
+/* Return true if -fstrict-volatile-bitfields applies to an access of OP0
    containing BITSIZE bits starting at BITNUM, with field mode FIELDMODE.
    Return false if the access would touch memory outside the range
    BITREGION_START to BITREGION_END for conformance to the C++ memory
@@ -502,7 +502,8 @@ simple_mem_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
 static bool
 store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 			    unsigned HOST_WIDE_INT bitsize,
-			    unsigned HOST_WIDE_INT bitnum, rtx value)
+			    unsigned HOST_WIDE_INT bitnum,
+			    rtx value)
 {
   struct expand_operand ops[4];
   rtx value1;
@@ -952,7 +953,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, fieldmode,
 				  bitregion_start, bitregion_end))
     {
-
       /* Storing any naturally aligned field can be done with a simple
 	 store.  For targets that support fast unaligned memory, any
 	 naturally sized, unit aligned field can be done directly.  */
@@ -969,8 +969,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  /* Explicitly override the C/C++ memory model; ignore the
 	     bit range so that we can do the access in the mode mandated
 	     by -fstrict-volatile-bitfields instead.  */
-	  store_fixed_bit_field_1 (str_rtx, bitsize, bitnum,
-				   value);
+	  store_fixed_bit_field_1 (str_rtx, bitsize, bitnum, value);
 	}
 
       return;
@@ -1014,8 +1013,6 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 		       unsigned HOST_WIDE_INT bitregion_end,
 		       rtx value)
 {
-  enum machine_mode mode;
-
   /* There is a case not handled here:
      a structure with a known alignment of just a halfword
      and a field split across two aligned halfwords within the structure.
@@ -1025,7 +1022,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   if (MEM_P (op0))
     {
-      mode = GET_MODE (op0);
+      enum machine_mode mode = GET_MODE (op0);
       if (GET_MODE_BITSIZE (mode) == 0
 	  || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
 	mode = word_mode;
@@ -1045,7 +1042,6 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
     }
 
   store_fixed_bit_field_1 (op0, bitsize, bitnum, value);
-  return;
 }
 
 /* Helper function for store_fixed_bit_field, stores
@@ -1053,8 +1049,8 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
 static void
 store_fixed_bit_field_1 (rtx op0, unsigned HOST_WIDE_INT bitsize,
-		         unsigned HOST_WIDE_INT bitnum,
-		         rtx value)
+			 unsigned HOST_WIDE_INT bitnum,
+			 rtx value)
 {
   enum machine_mode mode;
   rtx temp;
@@ -1805,12 +1801,11 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 			 unsigned HOST_WIDE_INT bitnum, rtx target,
 			 int unsignedp)
 {
-  enum machine_mode mode;
-
   if (MEM_P (op0))
     {
-      mode = get_best_mode (bitsize, bitnum, 0, 0,
-			    MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
+      enum machine_mode mode
+	= get_best_mode (bitsize, bitnum, 0, 0, MEM_ALIGN (op0), word_mode,
+			 MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	/* The only way this should occur is if the field spans word
@@ -1833,9 +1828,7 @@ extract_fixed_bit_field_1 (enum machine_mode tmode, rtx op0,
 			   unsigned HOST_WIDE_INT bitnum, rtx target,
 			   int unsignedp)
 {
-  enum machine_mode mode;
-
-  mode = GET_MODE (op0);
+  enum machine_mode mode = GET_MODE (op0);
   gcc_assert (SCALAR_INT_MODE_P (mode));
 
   /* Note that bitsize + bitnum can be greater than GET_MODE_BITSIZE (mode)

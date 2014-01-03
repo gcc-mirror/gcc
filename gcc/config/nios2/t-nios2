@@ -1,0 +1,27 @@
+# Target Makefile Fragment for Altera Nios II.
+# Copyright (C) 2013-2014 Free Software Foundation, Inc.
+# Contributed by Altera and Mentor Graphics, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# MULTILIB_OPTIONS = mno-hw-mul/mhw-mulx mcustom-fpu-cfg=60-1/mcustom-fpu-cfg=60-2
+# MULTILIB_DIRNAMES = nomul mulx fpu-60-1 fpu-60-2
+# MULTILIB_EXCEPTIONS = 
+
+# MULTILIB_OPTIONS += EL/EB
+# MULTILIB_DIRNAMES += le be
+# MULTILIB_MATCHES += EL=mel EB=meb

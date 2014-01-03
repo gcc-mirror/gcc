@@ -1,3 +1,29 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years
+
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* hashtab.h: Use the standard form for the copyright notice.
+
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2013-12-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* testsuite/libgomp.c/affinity-1.c: Remove alloca.h inlcude. Replace
+	alloca () with __builtin_alloca ().
+	* testsuite/libgomp.c/icv-2.c: Add FreeBSD coverage.
+	* testsuite/libgomp.c/lock-3.c: Likewise.
+	* testsuite/libgomp.c/pr48591.c: Likewise.
+
+2013-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/59534
+	* testsuite/libgomp.fortran/retval1.f90 (e5): Avoid non-shortcircuited
+	comparisons.
+
 2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/58756

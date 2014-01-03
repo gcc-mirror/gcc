@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2013 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -377,8 +377,8 @@ build_capture_proxy (tree member)
       tree ptr = build_simple_component_ref (object, field);
       field = next_initializable_field (DECL_CHAIN (field));
       tree max = build_simple_component_ref (object, field);
-      type = build_array_type (TREE_TYPE (TREE_TYPE (ptr)),
-			       build_index_type (max));
+      type = build_cplus_array_type (TREE_TYPE (TREE_TYPE (ptr)),
+				     build_index_type (max));
       type = build_reference_type (type);
       REFERENCE_VLA_OK (type) = true;
       object = convert (type, ptr);

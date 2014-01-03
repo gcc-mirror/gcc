@@ -25,7 +25,7 @@ The awk script prints unexpected results followed by the number of tests
 that passed and failed.
 
 
-Copyright (C) 2005-2013 Free Software Foundation, Inc.
+Copyright (C) 2005-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

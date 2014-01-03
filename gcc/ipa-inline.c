@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -241,7 +241,7 @@ report_inline_failed_reason (struct cgraph_edge *e)
 
    if REPORT is true, output reason to the dump file.  
 
-   if DISREGARD_LIMITES is true, ignore size limits.*/
+   if DISREGARD_LIMITS is true, ignore size limits.*/
 
 static bool
 can_inline_edge_p (struct cgraph_edge *e, bool report,
@@ -269,6 +269,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   if (!callee || !callee->definition)
     {
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
+      inlinable = false;
+    }
+  else if (callee->calls_comdat_local)
+    {
+      e->inline_failed = CIF_USES_COMDAT_LOCAL;
       inlinable = false;
     }
   else if (!inline_summary (callee)->inlinable 
@@ -2339,19 +2344,6 @@ make_pass_early_inline (gcc::context *ctxt)
   return new pass_early_inline (ctxt);
 }
 
-
-/* When to run IPA inlining.  Inlining of always-inline functions
-   happens during early inlining.
-
-   Enable inlining unconditoinally, because callgraph redirection
-   happens here.   */
-
-static bool
-gate_ipa_inline (void)
-{
-  return true;
-}
-
 namespace {
 
 const pass_data pass_data_ipa_inline =
@@ -2359,7 +2351,7 @@ const pass_data pass_data_ipa_inline =
   IPA_PASS, /* type */
   "inline", /* name */
   OPTGROUP_INLINE, /* optinfo_flags */
-  true, /* has_gate */
+  false, /* has_gate */
   true, /* has_execute */
   TV_IPA_INLINING, /* tv_id */
   0, /* properties_required */
@@ -2386,7 +2378,6 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_ipa_inline (); }
   unsigned int execute () { return ipa_inline (); }
 
 }; // class pass_ipa_inline

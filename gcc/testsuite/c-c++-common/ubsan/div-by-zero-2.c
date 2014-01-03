@@ -20,4 +20,4 @@ main (void)
 /* { dg-output "\[^\n\r]*division by zero(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*division by zero(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*division by zero(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*division by zero(\n|\r\n|\r)" } */
+/* { dg-output "\[^\n\r]*division by zero" } */

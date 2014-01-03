@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2013 Free Software Foundation, Inc.
+   Copyright (C) 1988-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -8828,6 +8828,29 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
 							 ptr_mode, true), 0);
+
+      /* For -fsanitize={bool,enum} make sure the load isn't performed in
+	 the bool or enum type.  */
+      if (((flag_sanitize & SANITIZE_BOOL)
+	   && TREE_CODE (desttype) == BOOLEAN_TYPE)
+	  || ((flag_sanitize & SANITIZE_ENUM)
+	      && TREE_CODE (desttype) == ENUMERAL_TYPE))
+	{
+	  tree destitype
+	    = lang_hooks.types.type_for_mode (TYPE_MODE (desttype),
+					      TYPE_UNSIGNED (desttype));
+	  desttype = build_aligned_type (destitype, TYPE_ALIGN (desttype));
+	}
+      if (((flag_sanitize & SANITIZE_BOOL)
+	   && TREE_CODE (srctype) == BOOLEAN_TYPE)
+	  || ((flag_sanitize & SANITIZE_ENUM)
+	      && TREE_CODE (srctype) == ENUMERAL_TYPE))
+	{
+	  tree srcitype
+	    = lang_hooks.types.type_for_mode (TYPE_MODE (srctype),
+					      TYPE_UNSIGNED (srctype));
+	  srctype = build_aligned_type (srcitype, TYPE_ALIGN (srctype));
+	}
 
       destvar = dest;
       STRIP_NOPS (destvar);

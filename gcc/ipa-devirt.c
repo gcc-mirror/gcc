@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -982,23 +982,22 @@ get_polymorphic_call_info (tree fndecl,
 		 is known.  */
 	      else if (DECL_P (base))
 		{
-		  context->outer_type = TREE_TYPE (base);
-		  gcc_assert (!POINTER_TYPE_P (context->outer_type));
+		  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (base)));
 
 		  /* Only type inconsistent programs can have otr_type that is
 		     not part of outer type.  */
-		  if (!contains_type_p (context->outer_type,
-					context->offset, *otr_type))
+		  if (!contains_type_p (TREE_TYPE (base),
+					context->offset + offset2, *otr_type))
 		    return base_pointer;
+		  context->outer_type = TREE_TYPE (base);
 		  context->offset += offset2;
-		  base_pointer = NULL;
 		  /* Make very conservative assumption that all objects
 		     may be in construction. 
 		     TODO: ipa-prop already contains code to tell better. 
 		     merge it later.  */
 		  context->maybe_in_construction = true;
 		  context->maybe_derived_type = false;
-		  return base_pointer;
+		  return NULL;
 		}
 	      else
 		break;

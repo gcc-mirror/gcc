@@ -1,3 +1,7 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years
+
 2013-11-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* configure: Regenerate.
@@ -328,7 +332,7 @@
 
 	* New directory, new ChangeLog.
 
-Copyright (C) 2003-2013 Free Software Foundation, Inc.
+Copyright (C) 2003-2014 Free Software Foundation, Inc.
 
 This ChangeLog is free software; the Free Software Foundation gives
 unlimited permission to copy, distribute, and modify it.

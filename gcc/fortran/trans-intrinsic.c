@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -7646,10 +7646,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 	    }
 	  else
 	    {
-	      if (from_expr->ts.type != BT_DERIVED)
-		vtab = gfc_find_intrinsic_vtab (&from_expr->ts);
-	      else
-		vtab = gfc_find_derived_vtab (from_expr->ts.u.derived);
+	      vtab = gfc_find_vtab (&from_expr->ts);
 	      gcc_assert (vtab);
 	      tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
 	      gfc_add_modify_loc (input_location, &block, to_se.expr,
@@ -7703,10 +7700,7 @@ conv_intrinsic_move_alloc (gfc_code *code)
 	}
       else
 	{
-	  if (from_expr->ts.type != BT_DERIVED)
-	    vtab = gfc_find_intrinsic_vtab (&from_expr->ts);
-	  else
-	    vtab = gfc_find_derived_vtab (from_expr->ts.u.derived);
+	  vtab = gfc_find_vtab (&from_expr->ts);
 	  gcc_assert (vtab);
 	  tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
 	  gfc_add_modify_loc (input_location, &block, to_se.expr,

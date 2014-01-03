@@ -1,5 +1,5 @@
 ;; GCC machine description for CRIS cpu cores.
-;; Copyright (C) 1998-2013 Free Software Foundation, Inc.
+;; Copyright (C) 1998-2014 Free Software Foundation, Inc.
 ;; Contributed by Axis Communications.
 
 ;; This file is part of GCC.
@@ -758,7 +758,7 @@
 		      (match_operand:SI 1 "const_int_operand" ""))
 	     (match_operand:SI 2 "register_operand" ""))])
 	  (match_operand 3 "register_operand" ""))
-     (set (match_operand:SI 4 "register_operand" "")
+     (set (match_operand:SI 4 "cris_nonsp_register_operand" "")
 	  (plus:SI (mult:SI (match_dup 0)
 			    (match_dup 1))
 		   (match_dup 2)))])]
@@ -859,7 +859,7 @@
 	     (match_operand:SI 0 "cris_bdap_operand" "")
 	     (match_operand:SI 1 "cris_bdap_operand" ""))])
 	  (match_operand 2 "register_operand" ""))
-     (set (match_operand:SI 3 "register_operand" "")
+     (set (match_operand:SI 3 "cris_nonsp_register_operand" "")
 	  (plus:SI (match_dup 0) (match_dup 1)))])]
   "reload_completed && reg_overlap_mentioned_p (operands[3], operands[2])"
   [(set (match_dup 4) (match_dup 2))
@@ -3960,7 +3960,7 @@
 ;; up.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 4 "cris_operand_extend_operator"
 	 [(match_operand 1 "register_operand" "")
@@ -3990,7 +3990,7 @@
 ;; Call this op-extend-split-rx=rz
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 4 "cris_plus_or_bound_operator"
 	 [(match_operand 1 "register_operand" "")
@@ -4018,7 +4018,7 @@
 ;; Call this op-extend-split-swapped
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 4 "cris_plus_or_bound_operator"
 	 [(match_operator
@@ -4044,7 +4044,7 @@
 ;; bound.  Call this op-extend-split-swapped-rx=rz.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 4 "cris_plus_or_bound_operator"
 	 [(match_operator
@@ -4075,7 +4075,7 @@
 ;; Call this op-extend.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 3 "cris_orthogonal_operator"
 	 [(match_operand 1 "register_operand" "")
@@ -4099,7 +4099,7 @@
 ;; Call this op-split-rx=rz
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 3 "cris_commutative_orth_op"
 	 [(match_operand 2 "memory_operand" "")
@@ -4123,7 +4123,7 @@
 ;; Call this op-split-swapped.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 3 "cris_commutative_orth_op"
 	 [(match_operand 1 "register_operand" "")
@@ -4146,7 +4146,7 @@
 ;; Call this op-split-swapped-rx=rz.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 3 "cris_orthogonal_operator"
 	 [(match_operand 2 "memory_operand" "")
@@ -4555,10 +4555,11 @@
 ;; We're not allowed to generate copies of registers with different mode
 ;; until after reload; copying pseudos upsets reload.  CVS as of
 ;; 2001-08-24, unwind-dw2-fde.c, _Unwind_Find_FDE ICE in
-;; cselib_invalidate_regno.
+;; cselib_invalidate_regno.  Also, don't do this for the stack-pointer,
+;; as we don't want it set temporarily to an invalid value.
 
 (define_split ; indir_to_reg_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operand 1 "indirect_operand" ""))]
   "reload_completed
    && REG_P (operands[0])
@@ -4574,7 +4575,7 @@
 ;; As the above, but MOVS and MOVU.
 
 (define_split
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "cris_nonsp_register_operand" "")
 	(match_operator
 	 4 "cris_extend_operator"
 	 [(match_operand 1 "indirect_operand" "")]))]

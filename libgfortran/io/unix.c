@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -1124,7 +1124,7 @@ tempfile_open (const char *tempdir, char **fname)
 #endif
 
 #if defined(HAVE_MKOSTEMP) && defined(O_CLOEXEC)
-  fd = mkostemp (template, O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
+  fd = mkostemp (template, O_CLOEXEC);
 #else
   fd = mkstemp (template);
   set_close_on_exec (fd);

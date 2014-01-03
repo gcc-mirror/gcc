@@ -1,5 +1,5 @@
 (* Auto-generate ARM ldm/stm patterns
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -67,10 +67,13 @@ let destreg nregs first op_type thumb =
     Printf.sprintf ("(match_operand:SI %d \"s_register_operand\" \"%s%s\")")
       (nregs + 1) (inout_constr op_type) (constr thumb)
 
+let reg_predicate thumb =
+  if thumb then "low_register_operand" else "arm_hard_general_register_operand"
+
 let write_ldm_set thumb nregs offset opnr first =
   let indent = "     " in
   Printf.printf "%s" (if first then "    [" else indent);
-  Printf.printf "(set (match_operand:SI %d \"arm_hard_register_operand\" \"\")\n" opnr;
+  Printf.printf "(set (match_operand:SI %d \"%s\" \"\")\n" opnr (reg_predicate thumb);
   Printf.printf "%s     (mem:SI " indent;
   begin if offset != 0 then Printf.printf "(plus:SI " end;
   Printf.printf "%s" (destreg nregs first IN thumb);
@@ -84,7 +87,7 @@ let write_stm_set thumb nregs offset opnr first =
   begin if offset != 0 then Printf.printf "(plus:SI " end;
   Printf.printf "%s" (destreg nregs first IN thumb);
   begin if offset != 0 then Printf.printf " (const_int %d))" offset end;
-  Printf.printf ")\n%s     (match_operand:SI %d \"arm_hard_register_operand\" \"\"))" indent opnr 
+  Printf.printf ")\n%s     (match_operand:SI %d \"%s\" \"\"))" indent opnr (reg_predicate thumb)
 
 let write_ldm_peep_set extra_indent nregs opnr first =
   let indent = "   " ^ extra_indent in
@@ -319,7 +322,7 @@ let _ =
 "/* ARM ldm/stm instruction patterns.  This file was automatically generated";
 "   using arm-ldmstm.ml.  Please do not edit manually.";
 "";
-"   Copyright (C) 2010-2013 Free Software Foundation, Inc.";
+"   Copyright (C) 2010-2014 Free Software Foundation, Inc.";
 "   Contributed by CodeSourcery.";
 "";
 "   This file is part of GCC.";

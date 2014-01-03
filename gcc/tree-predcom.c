@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2013 Free Software Foundation, Inc.
+   Copyright (C) 2005-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2398,7 +2398,7 @@ tree_predictive_commoning_loop (struct loop *loop)
 
   /* Find the data references and split them into components according to their
      dependence relations.  */
-  stack_vec<loop_p, 3> loop_nest;
+  auto_vec<loop_p, 3> loop_nest;
   dependences.create (10);
   datarefs.create (10);
   if (! compute_data_dependences_for_loop (loop, true, &loop_nest, &datarefs,

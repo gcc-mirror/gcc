@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -246,7 +246,7 @@ struct processor
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
-#define AARCH64_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
+#define AARCH64_CORE(NAME, X, IDENT, ARCH, FLAGS, COSTS) \
   {NAME, IDENT, #ARCH, FLAGS | AARCH64_FL_FOR_ARCH##ARCH, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
@@ -5119,6 +5119,7 @@ aarch64_parse_cpu (void)
       if (strlen (cpu->name) == len && strncmp (cpu->name, str, len) == 0)
 	{
 	  selected_cpu = cpu;
+	  selected_tune = cpu;
 	  aarch64_isa_flags = selected_cpu->flags;
 
 	  if (ext != NULL)
@@ -6386,6 +6387,7 @@ static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
   { V2DFmode,  "__builtin_aarch64_simd_df",     "13__Float64x2_t" },
   { V16QImode, "__builtin_aarch64_simd_poly8",  "12__Poly8x16_t" },
   { V8HImode,  "__builtin_aarch64_simd_poly16", "12__Poly16x8_t" },
+  { V2DImode,  "__builtin_aarch64_simd_poly64", "12__Poly64x2_t" },
   { VOIDmode, NULL, NULL }
 };
 
@@ -7437,7 +7439,9 @@ aarch64_start_file (void)
     }
   else if (selected_cpu)
     {
-      asm_fprintf (asm_out_file, "\t.cpu %s", selected_cpu->name);
+      const char *truncated_name
+	    = aarch64_rewrite_selected_cpu (selected_cpu->name);
+      asm_fprintf (asm_out_file, "\t.cpu %s", truncated_name);
       aarch64_print_extension ();
     }
   default_file_start();

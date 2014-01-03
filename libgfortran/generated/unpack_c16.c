@@ -1,5 +1,5 @@
 /* Specific implementation of the UNPACK intrinsic
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+   Copyright (C) 2008-2014 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    unpack_generic.c by Paul Brook <paul@nowt.org>.
 

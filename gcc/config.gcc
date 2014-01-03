@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2013 Free Software Foundation, Inc.
+# Copyright (C) 1997-2014 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -329,8 +329,8 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_headers="mmintrin.h arm_neon.h"
 	extra_objs="aarch-common.o"
+	extra_headers="mmintrin.h arm_neon.h arm_acle.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
@@ -372,9 +372,11 @@ i[34567]86-*-*)
 		       immintrin.h x86intrin.h avxintrin.h xopintrin.h
 		       ia32intrin.h cross-stdarg.h lwpintrin.h popcntintrin.h
 		       lzcntintrin.h bmiintrin.h bmi2intrin.h tbmintrin.h
-		       avx2intrin.h fmaintrin.h f16cintrin.h rtmintrin.h
-		       xtestintrin.h rdseedintrin.h prfchwintrin.h adxintrin.h
-		       fxsrintrin.h xsaveintrin.h xsaveoptintrin.h"
+		       avx2intrin.h avx512fintrin.h fmaintrin.h f16cintrin.h
+		       rtmintrin.h xtestintrin.h rdseedintrin.h prfchwintrin.h
+		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
+		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
+		       shaintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -387,9 +389,11 @@ x86_64-*-*)
 		       immintrin.h x86intrin.h avxintrin.h xopintrin.h
 		       ia32intrin.h cross-stdarg.h lwpintrin.h popcntintrin.h
 		       lzcntintrin.h bmiintrin.h tbmintrin.h bmi2intrin.h
-		       avx2intrin.h fmaintrin.h f16cintrin.h rtmintrin.h
-		       xtestintrin.h rdseedintrin.h prfchwintrin.h adxintrin.h
-		       fxsrintrin.h xsaveintrin.h xsaveoptintrin.h"
+		       avx2intrin.h avx512fintrin.h fmaintrin.h f16cintrin.h
+		       rtmintrin.h xtestintrin.h rdseedintrin.h prfchwintrin.h
+		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
+		       avx512cdintrin.h avx512erintrin.h avx512pfintrin.h
+		       shaintrin.h"
 	need_64bit_hwint=yes
 	;;
 ia64-*-*)
@@ -425,6 +429,10 @@ nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h"
 	;;
+nios2-*-*)
+	cpu_type=nios2
+	extra_options="${extra_options} g.opt"
+	;;	
 picochip-*-*)
         cpu_type=picochip
         ;;
@@ -2114,6 +2122,19 @@ nds32be-*-*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="nds32/t-mlibs"
 	;;
+nios2-*-*)
+	tm_file="elfos.h ${tm_file}"
+        tmake_file="${tmake_file} nios2/t-nios2"
+        case ${target} in
+        nios2-*-linux*)
+                tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h nios2/linux.h "
+                ;;
+	nios2-*-elf*)
+		tm_file="${tm_file} newlib-stdint.h nios2/elf.h"
+		extra_options="${extra_options} nios2/elf.opt"
+		;;
+        esac
+	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
@@ -3676,7 +3697,7 @@ case "${target}" in
 			| opteron-sse3 | athlon-fx | bdver4 | bdver3 | bdver2 \
 			| bdver1 | btver2 |  btver1 | amdfam10 | barcelona \
 			| nocona | core2 | corei7 | corei7-avx | core-avx-i \
-			| core-avx2 | atom | slm)
+			| core-avx2 | broadwell | atom | slm)
 				# OK
 				;;
 			*)

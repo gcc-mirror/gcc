@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2013 Free Software Foundation, Inc.
+   Copyright (C) 1998-2014 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -2493,7 +2493,7 @@ cris_pic_symbol_type_of (const_rtx x)
 
 	gcc_assert (t1 == cris_no_symbol || t2 == cris_no_symbol);
 
-	if (t1 == cris_got_symbol || t1 == cris_got_symbol)
+	if (t1 == cris_got_symbol || t2 == cris_got_symbol)
 	  return cris_got_symbol_needing_fixup;
 
 	return t1 != cris_no_symbol ? t1 : t2;

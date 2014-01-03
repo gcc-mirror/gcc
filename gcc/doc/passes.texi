@@ -1,6 +1,6 @@
 @c markers: BUG TODO
 
-@c Copyright (C) 1988-2013 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2014 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -9,6 +9,7 @@
 @cindex passes and files of the compiler
 @cindex files and passes of the compiler
 @cindex compiler passes and files
+@cindex pass dumps
 
 This chapter is dedicated to giving an overview of the optimization and
 code generation passes of the compiler.  In the process, it describes
@@ -22,6 +23,7 @@ where near complete.
 * Pass manager::         Sequencing the optimization passes.
 * Tree SSA passes::      Optimizations on a high-level representation.
 * RTL passes::           Optimizations on a low-level representation.
+* Optimization info::    Dumping optimization information from passes.
 @end menu
 
 @node Parsing pass
@@ -208,6 +210,7 @@ semantic checks), it should return @code{GS_ERROR}.
 
 The pass manager is located in @file{passes.c}, @file{tree-optimize.c}
 and @file{tree-pass.h}.
+It processes passes as described in @file{passes.def}.
 Its job is to run all of the individual passes in the correct order,
 and take care of standard bookkeeping that applies to every pass.
 
@@ -974,3 +977,7 @@ symbol table format, and @file{vmsdbgout.c} for VMS debug symbol table
 format.
 
 @end itemize
+
+@node Optimization info
+@section Optimization info
+@include optinfo.texi

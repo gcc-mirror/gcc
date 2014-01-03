@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2858,12 +2858,7 @@ gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
 
   /* CLASS arguments: Make sure the vtab of from is present.  */
   if (to->ts.type == BT_CLASS && !UNLIMITED_POLY (from))
-    {
-      if (from->ts.type == BT_CLASS || from->ts.type == BT_DERIVED)
-	gfc_find_derived_vtab (from->ts.u.derived);
-      else
-	gfc_find_intrinsic_vtab (&from->ts);
-    }
+    gfc_find_vtab (&from->ts);
 
   return true;
 }
