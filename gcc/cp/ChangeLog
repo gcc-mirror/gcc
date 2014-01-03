@@ -1,3 +1,8 @@
+2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/58950
+	* cvt.c (convert_to_void): Handle VEC_PERM_EXPR and VEC_COND_EXPR.
+
 2014-01-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR c++/58567
