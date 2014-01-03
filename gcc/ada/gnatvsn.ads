@@ -92,7 +92,7 @@ package Gnatvsn is
    Verbose_Library_Version : constant String := "GNAT Lib v" & Library_Version;
    --  Version string stored in e.g. ALI files
 
-   Current_Year : constant String := "2013";
+   Current_Year : constant String := "2014";
    --  Used in printing copyright messages
 
 end Gnatvsn;

@@ -1,3 +1,7 @@
+2014-01-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Current_Year): Bump to 2014.
+
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.
