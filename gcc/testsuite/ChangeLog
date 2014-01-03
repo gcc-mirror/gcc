@@ -1,3 +1,7 @@
+2014-01-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.target/powerpc/rs6000-ldouble-3.c: New test.
+
 2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/59641

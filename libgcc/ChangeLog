@@ -1,3 +1,8 @@
+2014-01-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/ibm-ldouble.c (__gcc_qdiv): Scale up arguments in
+	case of small numerator and finite nonzero result.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
