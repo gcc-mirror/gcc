@@ -2337,11 +2337,8 @@ hash_rtx_cb (const_rtx x, enum machine_mode mode,
       return hash;
 
     case CONST_WIDE_INT:
-      {
-	int i;
-	for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
-	  hash += CONST_WIDE_INT_ELT (x, i);
-      }
+      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
     case CONST_DOUBLE:

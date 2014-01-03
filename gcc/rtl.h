@@ -347,7 +347,10 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
   unsigned return_val : 1;
 
   union {
-    /* RTXs are free to use up to 32 bit from here.  */
+    /* The final union field is aligned to 64 bits on LP64 hosts,
+       giving a 32-bit gap after the fields above. We optimize the
+       layout for that case and use the gap for extra code-specific
+       information.  */
 
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */

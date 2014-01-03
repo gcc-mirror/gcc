@@ -727,12 +727,11 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   if (mode == oldmode)
     return x;
 
-  if (CONST_SCALAR_INT_P (x)
-      && GET_MODE_CLASS (mode) == MODE_INT)
+  if (CONST_SCALAR_INT_P (x) && GET_MODE_CLASS (mode) == MODE_INT)
     {
-      /* If the caller did not tell us the old mode, then there is
-	 not much to do with respect to canonization.  We have to assume
-	 that all the bits are significant.  */
+      /* If the caller did not tell us the old mode, then there is not
+	 much to do with respect to canonicalization.  We have to
+	 assume that all the bits are significant.  */
       if (GET_MODE_CLASS (oldmode) != MODE_INT)
 	oldmode = MAX_MODE_INT;
       wide_int w = wide_int::from (std::make_pair (x, oldmode),
@@ -5298,10 +5297,10 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 			       &alt_rtl);
     }
 
-  /* If TEMP is a VOIDmode constant and the mode of the type of EXP is
-     not the same as that of TARGET, adjust the constant.  This is
-     needed, for example, in case it is a CONST_DOUBLE or
-     CONST_WIDE_INT and we want only a word-sized value.  */
+  /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
+     the same as that of TARGET, adjust the constant.  This is needed, for
+     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want 
+     only a word-sized value.  */
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
       && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
@@ -9478,19 +9477,18 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return decl_rtl;
 
     case INTEGER_CST:
-      {
-	tree type = TREE_TYPE (exp);
-	/* One could argue that GET_MODE_PRECISION (TYPE_MODE (type))
-	   should always be the same as TYPE_PRECISION (type).
-	   However, it is not.  Since we are converting from tree to
-	   rtl, we have to expose this ugly truth here.  */
-	temp = immed_wide_int_const (wide_int::from
-				       (exp,
-					GET_MODE_PRECISION (TYPE_MODE (type)),
-					TYPE_SIGN (type)),
-				     TYPE_MODE (type));
-	return temp;
-      }
+      /* "Given that TYPE_PRECISION (type) is not always equal to
+         GET_MODE_PRECISION (TYPE_MODE (type)), we need to extend from
+         the former to the latter according to the signedness of the
+         type". */
+
+      temp = immed_wide_int_const (wide_int::from
+				   (exp,
+				    GET_MODE_PRECISION (TYPE_MODE (type)),
+				    TYPE_SIGN (type)),
+				   TYPE_MODE (type));
+      return temp;
+
     case VECTOR_CST:
       {
 	tree tmp = NULL_TREE;
@@ -11155,8 +11153,7 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i)
-	  = immed_wide_int_const (elt, TYPE_MODE (TREE_TYPE (elt)));
+	RTVEC_ELT (v, i) = immed_wide_int_const (elt, inner);
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

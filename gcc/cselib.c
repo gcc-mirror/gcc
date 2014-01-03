@@ -1121,11 +1121,8 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       return hash ? hash : (unsigned int) CONST_INT;
 
     case CONST_WIDE_INT:
-      {
-	int i;
-	for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
-	  hash += CONST_WIDE_INT_ELT (x, i);
-      }
+      for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
     case CONST_DOUBLE:
