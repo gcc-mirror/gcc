@@ -1,3 +1,9 @@
+2014-01-03  Bingfeng Mei <bmei@broadcom.com>
+
+	PR tree-optimization/59651
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): 
+	Address	range for negative step should be added by TYPE_SIZE_UNIT.
+
 2014-01-03  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (handle_move_double): Handle pushes with

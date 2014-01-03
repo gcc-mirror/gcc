@@ -2240,13 +2240,24 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 
       tree seg_a_min = addr_base_a;
       tree seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
+      /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
+	 bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
+	 [a, a+12) */
       if (tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0)
-	seg_a_min = seg_a_max, seg_a_max = addr_base_a;
+	{
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a.dr)));
+	  seg_a_min = fold_build_pointer_plus (seg_a_max, unit_size);
+	  seg_a_max = fold_build_pointer_plus (addr_base_a, unit_size);
+	}
 
       tree seg_b_min = addr_base_b;
       tree seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
       if (tree_int_cst_compare (DR_STEP (dr_b.dr), size_zero_node) < 0)
-	seg_b_min = seg_b_max, seg_b_max = addr_base_b;
+	{
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b.dr)));
+	  seg_b_min = fold_build_pointer_plus (seg_b_max, unit_size);
+	  seg_b_max = fold_build_pointer_plus (addr_base_b, unit_size);
+	}
 
       part_cond_expr =
       	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
