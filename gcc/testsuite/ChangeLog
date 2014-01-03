@@ -1,3 +1,8 @@
+2014-01-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR c++/58567
+	* g++.dg/gomp/pr58567.C: New.
+
 2014-01-03  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR tree-optimization/59651

@@ -1,3 +1,8 @@
+2014-01-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR c++/58567
+	* pt.c (tsubst_omp_for_iterator): Early return for error_mark_node.
+
 2014-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Core DR 1442
