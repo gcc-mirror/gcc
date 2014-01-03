@@ -8728,12 +8728,12 @@ This function is the equivalent to the preprocessor @code{__LINE__}
 macro and returns the line number of the invocation of the built-in.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_FUNCTION ()
+@deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
 This function is the equivalent to the preprocessor @code{__FUNCTION__}
 macro and returns the function name the invocation of the built-in is in.
 @end deftypefn
 
-@deftypefn {Built-in Function} int __builtin_FILE ()
+@deftypefn {Built-in Function} {const char *} __builtin_FILE ()
 This function is the equivalent to the preprocessor @code{__FILE__}
 macro and returns the file name the invocation of the built-in is in.
 @end deftypefn

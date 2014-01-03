@@ -1,3 +1,9 @@
+2014-01-03  Marek Polacek  <polacek@redhat.com>
+
+	PR other/59661
+	* doc/extend.texi: Fix the return value of __builtin_FUNCTION and
+	__builtin_FILE.
+
 2014-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59625
