@@ -1,3 +1,9 @@
+2014-01-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.c (handle_move_double): Handle pushes with
+	overlapping registers also for registers other than the stack
+	pointer.
+
 2014-01-03  Marek Polacek  <polacek@redhat.com>
 
 	PR other/59661
