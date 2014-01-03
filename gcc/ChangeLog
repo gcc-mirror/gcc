@@ -1,8 +1,22 @@
+2014-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (MODE_SIZE): New mode attribute.
+	(push splitter): Use <P:MODE_SIZE> instead of
+	GET_MODE_SIZE (<P:MODE>mode).
+	(lea splitter): Use <MODE_SIZE> instead of GET_MODE_SIZE (<MODE>mode).
+	(mov -1, reg peephole2): Likewise.
+	* config/i386/sse.md (*mov<mode>_internal,
+	<sse>_storeu<ssemodesuffix><avxsizesuffix>,
+	<sse2_avx_avx512f>_storedqu<mode>, <sse>_andnot<mode>3,
+	*<code><mode>3, *andnot<mode>3<mask_name>,
+	<mask_codefor><code><mode>3<mask_name>): Likewise.
+	* config/i386/subst.md (mask_mode512bit_condition,
+	sd_mask_mode512bit_condition): Likewise.
+
 2014-01-02  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/59303
-	* tree-ssa-uninit.c (is_use_properly_guarded):
-	Main cleanup.
+	* tree-ssa-uninit.c (is_use_properly_guarded): Main cleanup.
 	(dump_predicates): Better output format.
 	(pred_equal_p): New function.
 	(is_neq_relop_p): Ditto.

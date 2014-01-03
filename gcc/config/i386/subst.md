@@ -51,7 +51,7 @@
 (define_subst_attr "mask_operand18" "mask" "" "%{%19%}%N18")
 (define_subst_attr "mask_operand19" "mask" "" "%{%20%}%N19")
 (define_subst_attr "mask_codefor" "mask" "*" "")
-(define_subst_attr "mask_mode512bit_condition" "mask" "1" "(GET_MODE_SIZE (<MODE>mode) == 64)")
+(define_subst_attr "mask_mode512bit_condition" "mask" "1" "(<MODE_SIZE> == 64)")
 (define_subst_attr "store_mask_constraint" "mask" "vm" "v")
 (define_subst_attr "store_mask_predicate" "mask" "nonimmediate_operand" "register_operand")
 (define_subst_attr "mask_prefix" "mask" "vex" "evex")
@@ -85,7 +85,7 @@
 (define_subst_attr "sd_mask_op4" "sd" "" "%{%5%}%N4")
 (define_subst_attr "sd_mask_op5" "sd" "" "%{%6%}%N5")
 (define_subst_attr "sd_mask_codefor" "sd" "*" "")
-(define_subst_attr "sd_mask_mode512bit_condition" "sd" "1" "(GET_MODE_SIZE (<MODE>mode) == 64)")
+(define_subst_attr "sd_mask_mode512bit_condition" "sd" "1" "(<MODE_SIZE> == 64)")
 
 (define_subst "sd"
  [(set (match_operand:SUBST_V 0)
