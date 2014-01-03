@@ -1,3 +1,10 @@
+2014-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Core DR 1442
+	PR c++/59165
+	* g++.dg/cpp0x/range-for28.C: New.
+	* g++.dg/cpp0x/range-for3.C: Update.
+
 2014-01-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/powerpc/rs6000-ldouble-3.c: New test.

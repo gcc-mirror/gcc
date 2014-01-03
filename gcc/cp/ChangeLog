@@ -1,3 +1,19 @@
+2014-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Core DR 1442
+	PR c++/59165
+	* parser.c (cp_parser_perform_range_for_lookup): Don't pass true
+	as include_std to perform_koenig_lookup.
+	(cp_parser_postfix_expression): Adjust.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* semantics.c (perform_koenig_lookup): Remove bool parameter.
+	(omp_reduction_lookup): Adjust.
+	* name-lookup.c (lookup_arg_dependent_1): Remove bool parameter.
+	(lookup_arg_dependent): Likewise.
+	(lookup_function_nonclass): Adjust.
+	* name-lookup.h: Adjust declaration.
+	* cp-tree.h: Likewise.
+
 2014-01-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/59087
