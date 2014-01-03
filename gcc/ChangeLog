@@ -1,3 +1,46 @@
+2014-01-02  Xinliang David Li  <davidxl@google.com>
+
+	PR tree-optimization/59303
+	* tree-ssa-uninit.c (is_use_properly_guarded):
+	Main cleanup.
+	(dump_predicates): Better output format.
+	(pred_equal_p): New function.
+	(is_neq_relop_p): Ditto.
+	(is_neq_zero_form_p): Ditto.
+	(pred_expr_equal_p): Ditto.
+	(pred_neg_p): Ditto.
+	(simplify_pred): Ditto.
+	(simplify_preds_2): Ditto.
+	(simplify_preds_3): Ditto.
+	(simplify_preds_4): Ditto.
+	(simplify_preds): Ditto.
+	(push_pred): Ditto.
+	(push_to_worklist): Ditto.
+	(get_pred_info_from_cmp): Ditto.
+	(is_degenerated_phi): Ditto.
+	(normalize_one_pred_1): Ditto.
+	(normalize_one_pred): Ditto.
+	(normalize_one_pred_chain): Ditto.
+	(normalize_preds): Ditto.
+	(normalize_cond_1): Remove function.
+	(normalize_cond): Ditto.
+	(is_gcond_subset_of): Ditto.
+	(is_subset_of_any): Ditto.
+	(is_or_set_subset_of): Ditto.
+	(is_and_set_subset_of): Ditto.
+	(is_norm_cond_subset_of): Ditto.
+	(pred_chain_length_cmp): Ditto.
+	(convert_control_dep_chain_into_preds): Type change.
+	(find_predicates): Ditto.
+	(find_def_preds): Ditto.
+	(destroy_predicates_vecs): Ditto.
+	(find_matching_predicates_in_rest_chains): Ditto.
+	(use_pred_not_overlap_with_undef_path_pred): Ditto.
+	(is_pred_expr_subset): Ditto.
+	(is_pred_chain_subset_of): Ditto.
+	(is_included_in): Ditto.
+	(is_superset_of): Ditto.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
