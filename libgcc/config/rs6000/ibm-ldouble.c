@@ -189,7 +189,16 @@ __gcc_qdiv (double a, double b, double c, double d)
       || nonfinite (t))
     return t;
 
-  /* Finite nonzero result requires corrections to the highest order term.  */
+  /* Finite nonzero result requires corrections to the highest order
+     term.  These corrections require the low part of c * t to be
+     exactly represented in double.  */
+  if (fabs (a) <= 0x1p-969)
+    {
+      a *= 0x1p106;
+      b *= 0x1p106;
+      c *= 0x1p106;
+      d *= 0x1p106;
+    }
 
   s = c * t;                    /* (s,sigma) = c*t exactly.  */
   w = -(-b + d * t);	/* Written to get fnmsub for speed, but not
