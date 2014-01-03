@@ -1,3 +1,8 @@
+2014-01-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/ibm-ldouble.c (__gcc_qdiv): Scale up arguments in
+	case of small numerator and finite nonzero result.
+
 2013-12-12  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	Backport from trunk r205917.
