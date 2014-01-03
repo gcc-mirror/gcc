@@ -1,3 +1,9 @@
+2014-01-03  Bingfeng Mei  <bmei@broadcom.com>
+
+	PR tree-optimization/59651
+	* gcc.dg/torture/pr59651.c: New test.
+	* gcc.dg/vect/pr59651.c: Ditto.
+
 2014-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59625
