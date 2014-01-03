@@ -4879,7 +4879,7 @@ lookup_function_nonclass (tree name, vec<tree, va_gc> *args, bool block_p)
   return
     lookup_arg_dependent (name,
 			  lookup_name_real (name, 0, 1, block_p, 0, 0),
-			  args, false);
+			  args);
 }
 
 tree
@@ -5578,8 +5578,7 @@ arg_assoc (struct arg_lookup *k, tree n)
    are the functions found in normal lookup.  */
 
 static tree
-lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args,
-			bool include_std)
+lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args)
 {
   struct arg_lookup k;
 
@@ -5617,8 +5616,6 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args,
   else
     k.fn_set = NULL;
 
-  if (include_std)
-    arg_assoc_namespace (&k, std_node);
   arg_assoc_args_vec (&k, args);
 
   fns = k.functions;
@@ -5643,13 +5640,12 @@ lookup_arg_dependent_1 (tree name, tree fns, vec<tree, va_gc> *args,
 /* Wrapper for lookup_arg_dependent_1.  */
 
 tree
-lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args,
-                      bool include_std)
+lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 {
   tree ret;
   bool subtime;
   subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  ret = lookup_arg_dependent_1 (name, fns, args, include_std);
+  ret = lookup_arg_dependent_1 (name, fns, args);
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }

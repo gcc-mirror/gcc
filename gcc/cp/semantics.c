@@ -2041,12 +2041,10 @@ empty_expr_stmt_p (tree expr_stmt)
 
 /* Perform Koenig lookup.  FN is the postfix-expression representing
    the function (or functions) to call; ARGS are the arguments to the
-   call; if INCLUDE_STD then the `std' namespace is automatically
-   considered an associated namespace (used in range-based for loops).
-   Returns the functions to be considered by overload resolution.  */
+   call.  Returns the functions to be considered by overload resolution.  */
 
 tree
-perform_koenig_lookup (tree fn, vec<tree, va_gc> *args, bool include_std,
+perform_koenig_lookup (tree fn, vec<tree, va_gc> *args,
 		       tsubst_flags_t complain)
 {
   tree identifier = NULL_TREE;
@@ -2083,7 +2081,7 @@ perform_koenig_lookup (tree fn, vec<tree, va_gc> *args, bool include_std,
   if (!any_type_dependent_arguments_p (args)
       && !any_dependent_template_arguments_p (tmpl_args))
     {
-      fn = lookup_arg_dependent (identifier, functions, args, include_std);
+      fn = lookup_arg_dependent (identifier, functions, args);
       if (!fn)
 	{
 	  /* The unqualified name could not be resolved.  */
@@ -4643,7 +4641,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	{
 	  vec<tree, va_gc> *args = NULL;
 	  vec_safe_push (args, build_reference_type (type));
-	  id = perform_koenig_lookup (id, args, false, tf_none);
+	  id = perform_koenig_lookup (id, args, tf_none);
 	}
     }
   else if (TREE_CODE (id) == SCOPE_REF)

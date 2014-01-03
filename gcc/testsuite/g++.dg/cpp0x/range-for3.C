@@ -36,7 +36,7 @@ namespace std
 int main()
 {
     container c(1,4);
-    for (int it : c)
+    for (int it : c)    // { dg-error "was not declared" }
     {
     }
 }
