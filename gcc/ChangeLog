@@ -1,5 +1,9 @@
 2014-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59625
+	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Don't consider
+	asm goto as jump.
+
 	* config/i386/i386.md (MODE_SIZE): New mode attribute.
 	(push splitter): Use <P:MODE_SIZE> instead of
 	GET_MODE_SIZE (<P:MODE>mode).

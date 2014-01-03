@@ -1,3 +1,8 @@
+2014-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59625
+	* gcc.target/i386/pr59625.c: New test.
+
 2014-01-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Core DR 1442

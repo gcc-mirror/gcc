@@ -38825,7 +38825,10 @@ ix86_avoid_jump_mispredicts (void)
      The smallest offset in the page INSN can start is the case where START
      ends on the offset 0.  Offset of INSN is then NBYTES - sizeof (INSN).
      We add p2align to 16byte window with maxskip 15 - NBYTES + sizeof (INSN).
-     */
+
+     Don't consider asm goto as jump, while it can contain a jump, it doesn't
+     have to, control transfer to label(s) can be performed through other
+     means, and also we estimate minimum length of all asm stmts as 0.  */
   for (insn = start; insn; insn = NEXT_INSN (insn))
     {
       int min_size;
@@ -38852,7 +38855,8 @@ ix86_avoid_jump_mispredicts (void)
 	      while (nbytes + max_skip >= 16)
 		{
 		  start = NEXT_INSN (start);
-		  if (JUMP_P (start) || CALL_P (start))
+		  if ((JUMP_P (start) && asm_noperands (PATTERN (start)) < 0)
+		      || CALL_P (start))
 		    njumps--, isjump = 1;
 		  else
 		    isjump = 0;
@@ -38867,7 +38871,8 @@ ix86_avoid_jump_mispredicts (void)
       if (dump_file)
 	fprintf (dump_file, "Insn %i estimated to %i bytes\n",
 		 INSN_UID (insn), min_size);
-      if (JUMP_P (insn) || CALL_P (insn))
+      if ((JUMP_P (insn) && asm_noperands (PATTERN (insn)) < 0)
+	  || CALL_P (insn))
 	njumps++;
       else
 	continue;
@@ -38875,7 +38880,8 @@ ix86_avoid_jump_mispredicts (void)
       while (njumps > 3)
 	{
 	  start = NEXT_INSN (start);
-	  if (JUMP_P (start) || CALL_P (start))
+	  if ((JUMP_P (start) && asm_noperands (PATTERN (start)) < 0)
+	      || CALL_P (start))
 	    njumps--, isjump = 1;
 	  else
 	    isjump = 0;
