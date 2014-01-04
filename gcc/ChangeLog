@@ -1,3 +1,10 @@
+2014-01-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_get_frame_offsets): Revamp long lines.
+	(arm_expand_epilogue_apcs_frame): Take into account the number of bytes
+	used to save the static chain register in the computation of the offset
+	from which the FP registers need to be restored.
+
 2014-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59519
