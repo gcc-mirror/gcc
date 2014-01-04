@@ -714,9 +714,11 @@ add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
 
   if (tb->u.specific)
     {
-      c->ts.interface = tb->u.specific->n.sym;
+      gfc_symbol *ifc = tb->u.specific->n.sym;
+      c->ts.interface = ifc;
       if (!tb->deferred)
 	c->initializer = gfc_get_variable_expr (tb->u.specific);
+      c->attr.pure = ifc->attr.pure;
     }
 }
 

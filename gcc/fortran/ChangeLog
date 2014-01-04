@@ -1,3 +1,8 @@
+2014-01-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59547
+	* class.c (add_proc_comp): Copy pure attribute.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
