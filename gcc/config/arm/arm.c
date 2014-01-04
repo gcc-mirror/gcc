@@ -20316,8 +20316,10 @@ arm_get_frame_offsets (void)
   offsets->saved_args = crtl->args.pretend_args_size;
 
   /* In Thumb mode this is incorrect, but never used.  */
-  offsets->frame = offsets->saved_args + (frame_pointer_needed ? 4 : 0) +
-                   arm_compute_static_chain_stack_bytes();
+  offsets->frame
+    = (offsets->saved_args
+       + arm_compute_static_chain_stack_bytes ()
+       + (frame_pointer_needed ? 4 : 0));
 
   if (TARGET_32BIT)
     {
@@ -20357,9 +20359,10 @@ arm_get_frame_offsets (void)
     }
 
   /* Saved registers include the stack frame.  */
-  offsets->saved_regs = offsets->saved_args + saved +
-                        arm_compute_static_chain_stack_bytes();
+  offsets->saved_regs
+    = offsets->saved_args + arm_compute_static_chain_stack_bytes () + saved;
   offsets->soft_frame = offsets->saved_regs + CALLER_INTERWORKING_SLOT_SIZE;
+
   /* A leaf function does not need any stack alignment if it has nothing
      on the stack.  */
   if (leaf && frame_size == 0
@@ -27048,7 +27051,10 @@ arm_expand_epilogue_apcs_frame (bool really_return)
   saved_regs_mask = offsets->saved_regs_mask;
 
   /* Find the offset of the floating-point save area in the frame.  */
-  floats_from_frame = offsets->saved_args - offsets->frame;
+  floats_from_frame
+    = (offsets->saved_args
+       + arm_compute_static_chain_stack_bytes ()
+       - offsets->frame);
 
   /* Compute how many core registers saved and how far away the floats are.  */
   for (i = 0; i <= LAST_ARM_REGNUM; i++)
