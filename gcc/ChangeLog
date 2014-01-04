@@ -1,5 +1,11 @@
 2014-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59519
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Don't
+	ICE if get_current_def (current_new_name) is already non-NULL, as long
+	as it is a phi result of some other phi in *new_exit_bb that has
+	the same argument.
+
 	* config/i386/sse.md (avx512f_load<mode>_mask): Emit vmovup{s,d}
 	or vmovdqu* for misaligned_operand.
 	(<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>,
