@@ -1,3 +1,12 @@
+2014-01-04  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	2014-01-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59654
+	* resolve.c (resolve_typebound_procedures): No need to create the vtab
+	here.
+
 2013-12-31  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
