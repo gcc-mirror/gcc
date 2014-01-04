@@ -483,7 +483,18 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
 	  if (!current_new_name)
 	    continue;
         }
-      gcc_assert (get_current_def (current_new_name) == NULL_TREE);
+      tree new_name = get_current_def (current_new_name);
+      /* Because of peeled_chrec optimization it is possible that we have
+	 set this earlier.  Verify the PHI has the same value.  */
+      if (new_name)
+	{
+	  gimple phi = SSA_NAME_DEF_STMT (new_name);
+	  gcc_assert (gimple_code (phi) == GIMPLE_PHI
+		      && gimple_bb (phi) == *new_exit_bb
+		      && (PHI_ARG_DEF_FROM_EDGE (phi, single_exit (loop))
+			  == loop_arg));
+	  continue;
+	}
 
       set_current_def (current_new_name, PHI_RESULT (new_phi));
     }

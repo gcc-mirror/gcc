@@ -1,5 +1,9 @@
 2014-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59519
+	* gcc.dg/vect/pr59519-1.c: New test.
+	* gcc.dg/vect/pr59519-2.c: New test.
+
 	* gcc.target/i386/avx512f-vmovdqu32-1.c: Allow vmovdqu64 instead of
 	vmovdqu32.
 
