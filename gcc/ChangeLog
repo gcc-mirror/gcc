@@ -1,4 +1,14 @@
-2014-01-03  Bingfeng Mei <bmei@broadcom.com>
+2014-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx512f_load<mode>_mask): Emit vmovup{s,d}
+	or vmovdqu* for misaligned_operand.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix><mask_name>,
+	<sse2_avx_avx512f>_loaddqu<mode><mask_name>): Handle <mask_applied>.
+	* config/i386/i386.c (ix86_expand_special_args_builtin): Set
+	aligned_mem for AVX512F masked aligned load and store builtins and for
+	non-temporal moves.
+
+2014-01-03  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR tree-optimization/59651
 	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): 
