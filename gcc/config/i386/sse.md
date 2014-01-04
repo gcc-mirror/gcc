@@ -786,8 +786,12 @@
     {
     case MODE_V8DF:
     case MODE_V16SF:
+      if (misaligned_operand (operands[1], <MODE>mode))
+	return "vmovu<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
       return "vmova<ssemodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
     default:
+      if (misaligned_operand (operands[1], <MODE>mode))
+	return "vmovdqu<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
       return "vmovdqa<ssescalarsize>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}";
     }
 }
@@ -936,11 +940,14 @@
      false, still emit UNSPEC_LOADU insn to honor user's request for
      misaligned load.  */
   if (TARGET_AVX
-      && misaligned_operand (operands[1], <MODE>mode)
-      /* FIXME: Revisit after AVX512F merge is completed.  */
-      && !<mask_applied>)
+      && misaligned_operand (operands[1], <MODE>mode))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+      rtx src = operands[1];
+      if (<mask_applied>)
+	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
+				 operands[2 * <mask_applied>],
+				 operands[3 * <mask_applied>]);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
       DONE;
     }
 })
@@ -1046,11 +1053,14 @@
      false, still emit UNSPEC_LOADU insn to honor user's request for
      misaligned load.  */
   if (TARGET_AVX
-      && misaligned_operand (operands[1], <MODE>mode)
-      /* FIXME: Revisit after AVX512F merge is completed.  */
-      && !<mask_applied>)
+      && misaligned_operand (operands[1], <MODE>mode))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+      rtx src = operands[1];
+      if (<mask_applied>)
+	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
+				 operands[2 * <mask_applied>],
+				 operands[3 * <mask_applied>]);
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
       DONE;
     }
 })

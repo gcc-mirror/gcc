@@ -1,3 +1,8 @@
+2014-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/avx512f-vmovdqu32-1.c: Allow vmovdqu64 instead of
+	vmovdqu32.
+
 2014-01-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59547

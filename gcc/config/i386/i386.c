@@ -34407,6 +34407,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	case CODE_FOR_sse2_movntidi:
 	case CODE_FOR_sse_movntq:
 	case CODE_FOR_sse2_movntisi:
+	case CODE_FOR_avx512f_movntv16sf:
+	case CODE_FOR_avx512f_movntv8df:
+	case CODE_FOR_avx512f_movntv8di:
 	  aligned_mem = true;
 	  break;
 	default:
@@ -34431,6 +34434,24 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case VOID_FTYPE_PV8DF_V8DF_QI:
+    case VOID_FTYPE_PV16SF_V16SF_HI:
+    case VOID_FTYPE_PV8DI_V8DI_QI:
+    case VOID_FTYPE_PV16SI_V16SI_HI:
+      switch (icode)
+	{
+	/* These builtins and instructions require the memory
+	   to be properly aligned.  */
+	case CODE_FOR_avx512f_storev16sf_mask:
+	case CODE_FOR_avx512f_storev16si_mask:
+	case CODE_FOR_avx512f_storev8df_mask:
+	case CODE_FOR_avx512f_storev8di_mask:
+	  aligned_mem = true;
+	  break;
+	default:
+	  break;
+	}
+      /* FALLTHRU */
     case VOID_FTYPE_PV8SF_V8SI_V8SF:
     case VOID_FTYPE_PV4DF_V4DI_V4DF:
     case VOID_FTYPE_PV4SF_V4SI_V4SF:
@@ -34439,10 +34460,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PV4DI_V4DI_V4DI:
     case VOID_FTYPE_PV4SI_V4SI_V4SI:
     case VOID_FTYPE_PV2DI_V2DI_V2DI:
-    case VOID_FTYPE_PV8DF_V8DF_QI:
-    case VOID_FTYPE_PV16SF_V16SF_HI:
-    case VOID_FTYPE_PV8DI_V8DI_QI:
-    case VOID_FTYPE_PV16SI_V16SI_HI:
     case VOID_FTYPE_PDOUBLE_V2DF_QI:
     case VOID_FTYPE_PFLOAT_V4SF_QI:
       nargs = 2;
@@ -34459,6 +34476,19 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 3;
       klass = load;
       memory = 0;
+      switch (icode)
+	{
+	/* These builtins and instructions require the memory
+	   to be properly aligned.  */
+	case CODE_FOR_avx512f_loadv16sf_mask:
+	case CODE_FOR_avx512f_loadv16si_mask:
+	case CODE_FOR_avx512f_loadv8df_mask:
+	case CODE_FOR_avx512f_loadv8di_mask:
+	  aligned_mem = true;
+	  break;
+	default:
+	  break;
+	}
       break;
     case VOID_FTYPE_UINT_UINT_UINT:
     case VOID_FTYPE_UINT64_UINT_UINT:
