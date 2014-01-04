@@ -1,3 +1,8 @@
+2014-01-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59547
+	* gfortran.dg/typebound_proc_32.f90: New.
+
 2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58950
