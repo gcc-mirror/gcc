@@ -1,3 +1,13 @@
+2014-01-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/reassoc-33.c: Don't run on hppa*-*-*.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-28.c: Skip compile on hppa*-*-*.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+
 2014-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/arm/neon-nested-apcs.c: New test.
