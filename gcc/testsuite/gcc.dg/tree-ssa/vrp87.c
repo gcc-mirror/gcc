@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! "m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* picochip*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* arc*-*-*"} } } */
+/* { dg-do compile { target { ! "m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* picochip*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* arc*-*-* hppa*-*-*"} } } */
 
 /* { dg-options "-O2 -fdump-tree-vrp2-details -fdump-tree-cddce2-details" } */
 /* { dg-additional-options "-mbranch-cost=2" { target avr-*-* } } */
