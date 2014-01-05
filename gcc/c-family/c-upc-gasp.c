@@ -1,4 +1,4 @@
-/* upc-gasp.c: UPC GASP (GAS Performance) instrumentation support
+/* c-upc-gasp.c: UPC GASP (GAS Performance) instrumentation support
    Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
@@ -40,11 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "function.h"
 #include "target.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "c-family/c-upc.h"
-#include "upc-gasp.h"
-#include "upc-rts-names.h"
+#include "c-common.h"
+#include "c-pragma.h"
+#include "c-upc.h"
+#include "c-upc-gasp.h"
+#include "c-upc-rts-names.h"
 
 static tree build_string_ref (const char *string);
 

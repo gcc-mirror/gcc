@@ -31,10 +31,6 @@ extern const char *const debug_type_names[];
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);
 
-/* Nonzero means use UPC extensions in the generated symbolic
-   debugging information (DWARF2 only).  */
-extern int use_upc_dwarf2_extensions;
-
 /* Return true iff flags are set as if -ffast-math.  */
 extern bool fast_math_flags_set_p (const struct gcc_options *);
 extern bool fast_math_flags_struct_set_p (struct cl_optimization *);

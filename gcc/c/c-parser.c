@@ -57,13 +57,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-upc.h"
+#include "c-family/c-upc-gasp.h"
+#include "c-family/c-upc-pts-ops.h"
+#include "output.h"
 #include "vec.h"
 #include "target.h"
 #include "cgraph.h"
 #include "plugin.h"
 #include "omp-low.h"
-
-#include "upc/upc-tree.h"
 
 
 /* Initialization routine for this file.  */
@@ -93,7 +94,7 @@ c_parse_init (void)
   if (!c_dialect_objc ())
     mask |= D_OBJC | D_CXX_OBJC;
 
-  if (!c_dialect_upc ())
+  if (!flag_upc)
     mask |= D_UPC;
 
   ridpointers = ggc_alloc_cleared_vec_tree ((int) RID_MAX);
@@ -5020,19 +5021,19 @@ c_parser_statement_after_labels (c_parser *parser)
 	  c_parser_objc_synchronized_statement (parser);
 	  break;
 	case RID_UPC_FORALL:
-          gcc_assert (c_dialect_upc ());
+          gcc_assert (flag_upc);
 	  c_parser_upc_forall_statement (parser);
 	  break;
         case RID_UPC_NOTIFY:
-          gcc_assert (c_dialect_upc ());
+          gcc_assert (flag_upc);
 	  c_parser_upc_sync_statement (parser, UPC_SYNC_NOTIFY_OP);
 	  goto expect_semicolon;
         case RID_UPC_WAIT:
-          gcc_assert (c_dialect_upc ());
+          gcc_assert (flag_upc);
 	  c_parser_upc_sync_statement (parser, UPC_SYNC_WAIT_OP);
 	  goto expect_semicolon;
         case RID_UPC_BARRIER:
-          gcc_assert (c_dialect_upc ());
+          gcc_assert (flag_upc);
 	  c_parser_upc_sync_statement (parser, UPC_SYNC_BARRIER_OP);
 	  goto expect_semicolon;
 	default:
@@ -6523,7 +6524,7 @@ c_parser_unary_expression (c_parser *parser)
 	case RID_UPC_BLOCKSIZEOF:
 	case RID_UPC_ELEMSIZEOF:
 	case RID_UPC_LOCALSIZEOF:
-          gcc_assert (c_dialect_upc ());
+          gcc_assert (flag_upc);
 	  return c_parser_sizeof_expression (parser);
 	case RID_ALIGNOF:
 	  return c_parser_alignof_expression (parser);
@@ -9648,6 +9649,67 @@ c_parser_upc_shared_qual (source_location loc,
   c_parser_consume_token (parser);
 }
 
+/* Implement UPC's upc_forall 'affinity' test.
+   If the type of AFFINITY is a UPC pointer-to-shared type,
+   rewrite it into:
+     upc_threadof (AFFINITY) == MYTHREAD
+   If AFFINITY is an integer expression, then
+   rewrite it into:
+     (AFFINITY % THREADS) == MYTHREAD   */
+
+static tree
+upc_affinity_test (location_t loc, tree affinity)
+{
+  tree mythread;
+  tree affinity_test;
+
+  gcc_assert (affinity != NULL_TREE);
+
+  if (TREE_CODE (TREE_TYPE (affinity)) == POINTER_TYPE
+      && upc_shared_type_p (TREE_TYPE (TREE_TYPE (affinity))))
+    {
+      /* We have a pointer to a UPC shared object and the affinity is
+         determined by the thread component of the address.  */
+      const tree pts_rep = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node,
+				   save_expr (affinity));
+      affinity = (*upc_pts.threadof) (loc, pts_rep);
+    }
+  else if (TREE_CODE (TREE_TYPE (affinity)) == INTEGER_TYPE)
+    {
+      tree n_threads = upc_num_threads ();
+      affinity =
+	build_binary_op (loc, FLOOR_MOD_EXPR, affinity, n_threads, 0);
+    }
+  else
+    {
+      error
+	("UPC affinity expression is neither an integer nor the address of "
+	 "a shared object");
+      return error_mark_node;
+    }
+
+  /* Generate an external reference to the "MYTHREAD" identifier.  */
+
+  mythread = lookup_name (get_identifier ("MYTHREAD"));
+  gcc_assert (mythread != NULL_TREE);
+  assemble_external (mythread);
+  TREE_USED (mythread) = 1;
+
+  /* AFFINITY now contains an integer value that can be compared to MY_THREAD.
+     Create an expression that tests if AFFINITY is equal to MYTHREAD. */
+
+  if (!c_types_compatible_p (TREE_TYPE (affinity), TREE_TYPE (mythread)))
+    affinity = convert (TREE_TYPE (mythread), affinity);
+  affinity_test = c_objc_common_truthvalue_conversion (loc,
+				   build_binary_op (loc, EQ_EXPR,
+						    affinity, mythread, 1));
+  /* Remove any MAYBE_CONST_EXPR's.  */
+
+  affinity_test = c_fully_fold (affinity_test, false, NULL);
+
+  return affinity_test;
+}
+
 /* Parse a UPC upc_forall statement
 
    upc_forall-statement:
@@ -9792,6 +9854,33 @@ c_parser_upc_forall_statement (c_parser *parser)
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_break_label = save_break;
   c_cont_label = save_cont;
+}
+
+/* For the given kind of UPC synchronization statement given
+   by SYNC_KIND (UPC_SYNC_NOTIFY_OP, UPC_SYNC_WAIT_OP,
+   or UPC_SYNC_BARRIER_OP), build a UPC_SYNC_STMT tree node,
+   and add it to the current statement list.  The value of
+   SYNC_EXPR will be non-null if an expression is present
+   in the UPC statement being compiled.
+
+   If SYNC_EXPR is supplied, it must be assignment compatible
+   with type 'int'.  */
+
+static tree
+upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
+{
+  if (sync_expr != NULL_TREE)
+    {
+      mark_exp_read (sync_expr);
+      sync_expr = c_cvt_expr_for_assign (loc, integer_type_node, sync_expr);
+      if (sync_expr == error_mark_node)
+        {
+	  inform (loc, "UPC synchronization statement expressions "
+	               "must be assignment compatible with type `int'");
+          sync_expr = NULL_TREE;
+        }
+    }
+  return add_stmt (build_stmt (loc, UPC_SYNC_STMT, sync_kind, sync_expr));
 }
 
 /* Parse an upc-sync-statement.

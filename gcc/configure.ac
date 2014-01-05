@@ -714,32 +714,18 @@ else
 fi,
 objc_boehm_gc='')
 
-case ,${enable_languages}, in
-   *,upc,) lang_upc_enabled="yes" ;;
-   *) ;;
-esac
-
 AC_ARG_WITH([upc-pts],
 AS_HELP_STRING(
   [--with-upc-pts={struct,packed}],
   [choose the representation of a UPC pointer-to-shared]),
 [
-if test x"$lang_upc_enabled" = x"yes" ; then
   case "$withval" in
     packed|struct) upc_pts_rep="$withval" ;;
     *) AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
       ;;
   esac
-else
-  AC_MSG_WARN([--with-upc-pts is allowed only when UPC
-support has been enabled])
-fi
 ],
-[
-if test x"$lang_upc_enabled" = x"yes" ; then
-  upc_pts_rep="packed"
-fi
-])
+[upc_pts_rep="packed"])
 
 
 # Perl is required for checking pts representation
@@ -750,39 +736,20 @@ AS_HELP_STRING(
 [--with-upc-pts-vaddr-order={last,first}],
 [choose position of the address field in UPC pointer-to-shared representation]),
 [
-if test x"$lang_upc_enabled" = x"yes" ; then
   upc_vaddr_order="$withval"
   case "$upc_vaddr_order" in
     first|last) ;;
     *) AC_MSG_ERROR(
 	 [$withval is an invalid option to --with-upc-pts-vaddr-order]) ;;
   esac
-else
-  AC_MSG_WARN([--upc-pts-vaddr-order is allowed only when UPC
-support has been enabled])
-fi
 ],
-[
-if test x"$lang_upc_enabled" = x"yes" ; then
-  # Default UPC PTS vaddr order to "first"
-  upc_vaddr_order="first"
-fi
-])
-
-AC_ARG_WITH([upc-packed-bits],,
-[
-  AC_MSG_WARN([--with-upc-packed-bits is deprecated. 
-Use --with-upc-pts-packed-bits instead.])
-  with_upc_pts_packed_bits="$withval";
-],
-[])
+[upc_vaddr_order="first"])
 
 AC_ARG_WITH([upc-pts-packed-bits],
 AS_HELP_STRING(
 [--with-upc-pts-packed-bits=phase,thread,vaddr],
 [choose bit distribution in packed UPC pointer-to-shared representation]),
 [
-if test x"$lang_upc_enabled" = x"yes" ; then
   if test x"$upc_pts_rep" = x"packed"; then
     UPC_PTS_PHASE_SIZE=`echo "$withval" | $PERL -ne 'm/^(\d+),(\d+),(\d+)$/;
 						  print $1 if ($1+$2+$3 == 64) && $1>=1;'`
@@ -800,13 +767,8 @@ if test x"$lang_upc_enabled" = x"yes" ; then
     AC_MSG_ERROR([--with-upc-pts-packed-bits is only supported for
 the packed UPC pointer-to-shared representation])
   fi
-else
-  AC_MSG_WARN([--with-upc-pts-packed-bits is allowed only when UPC
-support has been enabled])
-fi
 ],
 [
-if test x"$lang_upc_enabled" = x"yes" ; then
   # GNU UPC packed pointer representation defaults.
   case "$target" in
     i[356]86* )
@@ -819,7 +781,6 @@ if test x"$lang_upc_enabled" = x"yes" ; then
       UPC_PTS_THREAD_SIZE=10
       UPC_PTS_VADDR_SIZE=34
   esac
-fi
 ])
 
 AC_ARG_ENABLE(upc-link-script,
@@ -829,65 +790,57 @@ AS_HELP_STRING(
   this will define the UPC shared section as a no load section on
   targets where this feature is supported (requires GNU LD)]),
 [
-if test x"$lang_upc_enabled" = x"yes" ; then
   case $enableval in
   yes | no) ;;
   *)
     AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
   esac
-else
-  AC_MSG_WARN([--enable-upc-link-script is allowed only when UPC
-support has been enabled])
-fi
 ],
-[
-if test x"$lang_upc_enabled" = x"yes" ; then
-  enable_upc_link_script=no
-fi
-])
+[enable_upc_link_script=no])
 
-if test x"$lang_upc_enabled" = x"yes" ; then
-  AC_MSG_CHECKING([for UPC pointer-to-shared representation])
-  AC_MSG_RESULT([$upc_pts_rep])
-  case "$upc_pts_rep" in
-    packed)
-      AC_DEFINE(HAVE_UPC_PTS_PACKED_REP,[1],
-	[Define to 1 if UPC pointer-to-shared representation
-	 is a packed 64 bit word.])
-      ;;
-    struct)
-      AC_DEFINE(HAVE_UPC_PTS_STRUCT_REP,[1],
-	[Define to 1 if UPC pointer-to-shared representation
-	 is a structure.])
-      ;;
-  esac
-  AC_MSG_CHECKING([for UPC pointer-to-shared address field position])
-  AC_MSG_RESULT([$upc_vaddr_order])
-  if test x"$upc_vaddr_order" = x"first"; then
-    AC_DEFINE(HAVE_UPC_PTS_VADDR_FIRST,[1],
-      [Define to 1 if the 'vaddr' field is the first field
+#
+# Process UPC-specific configuration options.
+#
+AC_MSG_CHECKING([for UPC pointer-to-shared representation])
+AC_MSG_RESULT([$upc_pts_rep])
+case "$upc_pts_rep" in
+  packed)
+    AC_DEFINE(HAVE_UPC_PTS_PACKED_REP,[1],
+      [Define to 1 if UPC pointer-to-shared representation
+       is a packed 64 bit word.])
+    ;;
+  struct)
+    AC_DEFINE(HAVE_UPC_PTS_STRUCT_REP,[1],
+      [Define to 1 if UPC pointer-to-shared representation
+       is a structure.])
+    ;;
+esac
+AC_MSG_CHECKING([for UPC pointer-to-shared address field position])
+AC_MSG_RESULT([$upc_vaddr_order])
+if test x"$upc_vaddr_order" = x"first"; then
+  AC_DEFINE(HAVE_UPC_PTS_VADDR_FIRST,[1],
+    [Define to 1 if the 'vaddr' field is the first field
 in the UPC pointer-to-shared representation.])
-  fi
-  if test x"$upc_pts_rep" = x"packed"; then
-    AC_DEFINE_UNQUOTED(UPC_PTS_PHASE_SIZE,$UPC_PTS_PHASE_SIZE,
-      [For packed UPC pointers-to-shared,
-       the size of the phase field (in bits).])
-    AC_DEFINE_UNQUOTED(UPC_PTS_THREAD_SIZE,$UPC_PTS_THREAD_SIZE,
-      [For packed UPC pointers-to-shared,
-       the size of the thread field (in bits).])
-    AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_SIZE,$UPC_PTS_VADDR_SIZE,
-      [For packed UPC pointers-to-shared,
-       the size of the address field (in bits).])
-    AC_MSG_CHECKING([for packed UPC pointer-to-shared layout])
-    AC_MSG_RESULT(
-      ["phase=${UPC_PTS_PHASE_SIZE},thread=${UPC_PTS_THREAD_SIZE},
+fi
+if test x"$upc_pts_rep" = x"packed"; then
+  AC_DEFINE_UNQUOTED(UPC_PTS_PHASE_SIZE,$UPC_PTS_PHASE_SIZE,
+    [For packed UPC pointers-to-shared,
+     the size of the phase field (in bits).])
+  AC_DEFINE_UNQUOTED(UPC_PTS_THREAD_SIZE,$UPC_PTS_THREAD_SIZE,
+    [For packed UPC pointers-to-shared,
+     the size of the thread field (in bits).])
+  AC_DEFINE_UNQUOTED(UPC_PTS_VADDR_SIZE,$UPC_PTS_VADDR_SIZE,
+    [For packed UPC pointers-to-shared,
+     the size of the address field (in bits).])
+  AC_MSG_CHECKING([for packed UPC pointer-to-shared layout])
+  AC_MSG_RESULT(
+    ["phase=${UPC_PTS_PHASE_SIZE},thread=${UPC_PTS_THREAD_SIZE},
 vaddr=${UPC_PTS_VADDR_SIZE}"])
-  fi
-  AC_MSG_CHECKING([for UPC link script support])
-  AC_MSG_RESULT($enable_upc_link_script)
-  if test "$enable_upc_link_script" = yes; then
-    AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
-  fi
+fi
+AC_MSG_CHECKING([for UPC link script support])
+AC_MSG_RESULT($enable_upc_link_script)
+if test "$enable_upc_link_script" = yes; then
+  AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
 fi
 
 AC_ARG_WITH(dwarf2,

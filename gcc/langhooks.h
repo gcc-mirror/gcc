@@ -225,6 +225,13 @@ struct lang_hooks_for_decls
 
   /* Do language specific checking on an implicitly determined clause.  */
   void (*omp_finish_clause) (tree clause);
+
+  /* Return true if language-specific layout is needed.  */
+  bool (*layout_decl_p) (tree decl, tree type); 
+
+  /* Perform language-specific layout.
+     (Should be called only if the layout_decl_p hook is ture.)  */
+  void (*layout_decl) (tree decl, tree type); 
 };
 
 /* Language hooks related to LTO serialization.  */
@@ -242,6 +249,23 @@ struct lang_hooks_for_lto
 
   /* End the previously begun LTO section.  */
   void (*end_section) (void);
+};
+
+/* Language hooks related to UPC.  */
+
+struct lang_hooks_for_upc
+{
+
+  /* Enable/Disable UPC keywords.  */
+  void (*toggle_keywords) (bool);
+
+  /* For UPC pointers-to-shared that are represented using
+     a 'struct', declare and define the PTS representation type.  */
+  void (*pts_struct_init_type) (void);
+
+  /* Build a function that will be called by the UPC runtime
+     to initialize UPC shared variables.  */
+  void (*build_init_func) (tree);
 };
 
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */
@@ -410,6 +434,8 @@ struct lang_hooks
   
   struct lang_hooks_for_lto lto;
 
+  struct lang_hooks_for_upc upc;
+
   /* Returns a TREE_VEC of the generic parameters of an instantiation of
      a generic type or decl, e.g. C++ template instantiation.  If
      TREE_CHAIN of the return value is set, it is an INTEGER_CST
@@ -422,11 +448,6 @@ struct lang_hooks
 
   /* Determine if a tree is a function parameter pack.  */
   bool (*function_parameter_pack_p) (const_tree);
-
-  /* Genericize before finalization (called from finish_function()).
-     Perform lowering of function bodies from language dependent form
-     to language independent (GENERIC) form.  */
-  void (*genericize) (tree);
 
   /* Perform language-specific gimplification on the argument.  Returns an
      enum gimplify_status, though we can't see that type here.  */

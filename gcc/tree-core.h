@@ -764,11 +764,14 @@ struct GTY(()) tree_base {
       unsigned user_align : 1;
       unsigned nameless_flag : 1;
       unsigned atomic_flag : 1;
-      unsigned upc_shared_flag : 1;
-      unsigned upc_strict_flag : 1;
-      unsigned upc_relaxed_flag : 1;
+      unsigned shared_flag : 1;
+      unsigned strict_flag : 1;
+      unsigned relaxed_flag : 1;
 
-      unsigned spare1 : 8;
+      unsigned threads_factor_flag : 1;
+      unsigned block_factor_0 : 1;
+      unsigned block_factor_x : 1;
+      unsigned spare1 : 5;
 
       /* This field is only used with TREE_TYPE nodes; the only reason it is
 	 present in tree_base instead of tree_type is to save space.  The size

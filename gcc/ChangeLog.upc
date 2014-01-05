@@ -1,3 +1,130 @@
+2014-01-04  Gary Funck  <gary@intrepid.com>
+
+	Integrate GUPC into cc1.
+	* upc/: Remove directory.  Re-distribute files.
+	* c/c-upc-lang.c: Move upc/upc-lang.c here.
+	* c/c-upc-lang.h: New.
+	* c-family/c-upc.c: Move upc/upc-act.c here.
+	* c-family/c-upc-gasp.c: Move upc/upc-gasp.c here.
+	* c-family/c-upc-gasp.h: Move upc/upc-gasp.h here.
+	* c-family/c-upc.h: Move upc/upc-act.h here.
+	* c-family/c-upc-low.c: Move upc/upc-genericize.c here.
+	* c-family/c-upc-low.h: Move upc/upc-genericize.h here.
+	* c-family/c-upc-pts.h: Split upc/upc-pts.h here.
+	* c-family/c-upc-pts-ops.c: Split upc/upc-pts.c here.
+	* c-family/c-upc-pts-ops.h: Split upc/upc-pts.h here.
+	* c-family/c-upc-pts-packed.c: Move upc/upc-pts-packed.c here.
+	* c-family/c-upc-pts-struct.c: Move upc/upc-pts-struct.c here.
+	* c-family/c-upc-rts-names.h: Move upc/upc-rts-names.h here.
+	* c-family/stub-upc.c: Remove.
+	* c/gupcspec.c: Move upc/gupcspec.c here.
+	* doc/gupc.texi: Move upc/gupc.texi here.
+	* c/c-objc-common.h: Revert to trunk.
+	* cp/lex.c: Revert to trunk.
+	* cp/Make-lang.in: Revert to trunk.
+	* expr.h: Revert to trunk.
+	* flags.h: Revert to trunk.
+	* fortran/Make-lang.in: Revert to trunk.
+	* java/Make-lang.in: Revert to trunk.
+	* lto/Make-lang.in: Revert to trunk.
+	* objc/Make-lang.in: Revert to trunk.
+	* stor-layout.c: Delete custom hook routines, use
+	newly defined declaration layout language hooks.
+	* stor-layout.h: Revert to trunk.
+	* ../configure.ac: Remove check for UPC language dialect.
+	* ../configure: Re-generate.
+	* Makefile.in (C_COMMON_OBJS): Add UPC-related object files.
+	* c/Make-lang.in: Compile UPC-related files.  Build gupc driver.
+	* c/c-decl.c: Call c_genericize() directly rather than
+	lang_hooks.genericize().  Adjust for flag_upc and name changes.
+	* c/c-lang.c (LANG_HOOKS_UPC_TOGGLE_KEYWORDS,
+	LANG_HOOKS_UPC_PTS_STRUCT_INIT_TYPE, LANG_HOOKS_UPC_BUILD_INIT_FUNC,
+	LANG_HOOKS_LAYOUT_DECL_P, LANG_HOOKS_LAYOUT_DECL):
+	Define UPC-specific hooks.
+	* c/c-objc-common.c (upc_types_compatible_p): Move to here.
+	(c_types_compatible_p): Call upc_types_compatible_p().
+	* c/c-parser.c (upc_affinity_test): Move to here. 
+	(upc_build_sync_stmt): Move to here.
+	* c/c-typeck.c: #include c-family/c-upc-low.h.
+	* c/config-lang.in (gtfiles): Add UPC gt files.
+	* c-family/c-common.c: Add #include c-upc.h.
+	(c_common_get_alias_set): Move UPC-related alias check to here.
+	(upc_num_threads): Move to here.
+	(c_common_init_ts): Mark UPC-specific statement tree definitions.
+	* c-family/c-common.def (UPC_FORALL_STMT, UPC_SYNC_STMT):
+	Define UPC-specific statements.
+	* c-family/c-common.h (RID_FIRST_UPC_QUAL, RID_LAST_UPC_QUAL,
+	RID_FIRST_UPC_KW, RID_LAST_UPC_KW, UPC_IS_KEYWORD): New.
+	(clk_upc, clk_upcxx, c_dialect_upc, compiling_upc): Delete.
+	(use_upc_dwarf2_extensions, flag_upc): Move to c-family/c.opts.
+	(upc_num_threads): Declare prototype.
+	(UPC_SYNC_OP, UPC_SYNC_ID, UPC_SYNC_NOTIFY_OP, UPC_SYNC_WAIT_OP,
+	UPC_SYNC_BARRIER_OP): Move definitions here.
+	* c-family/c-cppbuiltin.c: Remove #include c-upc.h and
+	add #include c-upc-pts.h.
+	(upc_cpp_builtins): Move to here.  Define as static.
+	(c_cpp_builtin): Change call to c_dialect_upc () into
+	test of flag_upc.
+	* c-family/c-gimplify.c: #include c-upc-low.h.
+	(c_common_genericize): Rename c_genericize() to this and make static.
+	(c_genericize): Call upc_genericize() if flag_upc is set and
+	then call c_common_genericize().
+	* c-family/c-opts.c: #include c-upc-low.h and c-upc-pts.h.
+	(c_family_lang_mask): Remove CL_UPC.
+	(c_common_option_lang_mask): Remove CL_UPC from lang_flags.
+	(upc_init_options): Move to here, make it static.
+	(c_common_init_options): Add early check for flag_upc, if found
+	call upc_init_options().
+	(upc_handle_option): Move to here and make static.
+	(c_common_handle_option): Check for UPC-related options
+	and call upc_handle_option().  Remove references to
+	OPT_lang_upc and clk_upc.  Check flag_upc instead of
+	calling c_dialect_upc().
+	* c-family/c-pragma.c: #include langhooks.h.
+	(handle_pragma_upc): Remove warning if flag_upc not set;
+	flag_upc now serves the function of compiling_upc().
+	Add call to lang_hooks.upc.toggle_keywords() to
+	implement enable/disable of UPC keywords.
+	(init_pragma): Check flag_upc instead of compiling_upc.
+	* c-family/c-pragma.h (deny_pragma_upc, get_upc_consistency_mode,
+	permit_pragma_upc, pop_upc_consistency_mode,
+	pragma_upc_permitted_p, push_upc_consistency_mode,
+	set_upc_consistency_mode): Move prototypes to here.
+	* c-family/c.opt: Remove all references to "UPC" language dialect.
+	Add -fupc option. Delete -fupc-link option.
+	Add -fupc-threads= option and deprecate -fupc-threads-.
+	* configure.ac: Remove check for UPC language dialect.
+	* configure: Re-generate.
+	* explow.c (tree_expr_size): Move to tree.c.
+	* gcc.c: Change specs to refer to -fupc instead of -lang-upc
+	and -fupc-link.
+	* hooks.c (hook_bool_tree_tree_false): Declare prototype.
+	* langhooks.c (lhd_do_nothing_b, lhd_do_nothing_t_t): New.
+	* langhooks.h (lang_hooks_for_upc): Define hooks for UPC.
+	(layout_decl_p, layout_decl): Define language-specific
+	declaration  layout hooks.
+	(genericize): Remove this language hook.
+	* langhooks-def.h: Define UPC default language hooks.
+	Define language-specific declaration layout default hooks.
+	* langhooks.c (lhd_do_nothing_b): New.
+	* tree-core.h (shared_flag): Rename from upc_shared_flag.
+	(strict_flag): Rename from upc_strict_flag.
+	(relaxed_flag): Rename from upc_relaxed_flag.
+	(threads_factor_flag): New. Was a lang. flag.
+	(block_factor_0): New. Was a lang. flag.
+	(block_factor_x): New. Was a lang. flag.
+	(spare1): Decrement spare bits from 8 down to 5.
+	* tree.c (block_factor_for_type): Move to here.
+	(tree_expr_size): Move to here from explow.c.
+	(block_factor_lookup): Move to here.
+	(block_factor_insert): Move to here.
+	(upc_get_block_factor): Move to here.
+	* tree.h: refer to block_factor_* instead of upc_block_factor_*.
+	(TYPE_HAS_BLOCK_FACTOR_0, TYPE_HAS_BLOCK_FACTOR_X,
+	TYPE_HAS_THREADS_FACTOR): Refer to tree base flag bits instead
+	of lang. flag bits.
+	(tree_expr_size): Move prototype from explow.h.
+
 2013-12-30 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206243 into gupc branch.
@@ -48,8 +175,8 @@
 
 2013-11-26  Meador Inge  <meadori@codesourcery.com>
 
-        * upc/upc-genericize.c (upc_expand_get): Ensure that temporaries
-        are declared via a DECL_EXPR.
+	* upc/upc-genericize.c (upc_expand_get): Ensure that temporaries
+	are declared via a DECL_EXPR.
 
 2013-11-25 Gary Funck  <gary@intrepid.com>
 
@@ -202,7 +329,7 @@
 	* upc/upc-pts-packed.c (upc_pts_packed_build_cvt):
 	When checking whether the phase of a PTS should be reset,
 	if the source type is an array type, then bypass
-        the check for equal type sizes.
+	the check for equal type sizes.
 	* upc/upc-pts-struct.c (upc_pts_struct_build_cvt): Ditto.
 
 2013-05-13 Gary Funck  <gary@intrepid.com>

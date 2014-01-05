@@ -1139,7 +1139,10 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
-  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o
+  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
+  c-family/c-upc.o c-family/c-upc-gasp.o \
+  c-family/c-upc-low.o c-family/c-upc-pts-ops.o \
+  c-family/c-upc-pts-packed.o c-family/c-upc-pts-struct.o
 
 # Language-independent object files.
 # We put the insn-*.o files first so that a parallel make will build

@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Tree nodes used in the C frontend.  These are also shared with the
-   C++ and Objective C frontends.  */
+   C++, Objective C and UPC frontends.  */
 
 /* A C_MAYBE_CONST_EXPR, currently only used for C and Objective C,
    tracks information about constancy of an expression and VLA type
@@ -61,6 +61,24 @@ DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
    Operand 2 contains the number of elements you need to access.
    Operand 3 is the stride.  */
 DEFTREECODE (ARRAY_NOTATION_REF, "array_notation_ref", tcc_reference, 4) 
+
+/* Used to represent a `upc_forall' statement. The operands are
+   UPC_FORALL_INIT_STMT, UPC_FORALL_COND, UPC_FORALL_EXPR,
+   UPC_FORALL_BODY, and UPC_FORALL_AFFINITY respectively. */
+
+DEFTREECODE (UPC_FORALL_STMT, "upc_forall_stmt", tcc_statement, 5)
+
+/* Used to represent a UPC synchronization statement. The first
+   operand is the synchronization operation, UPC_SYNC_OP:
+   UPC_SYNC_NOTIFY_OP	1	Notify operation
+   UPC_SYNC_WAIT_OP	2	Wait operation
+   UPC_SYNC_BARRIER_OP	3	Barrier operation
+
+   The second operand, UPC_SYNC_ID is the (optional) expression
+   whose value specifies the barrier identifier which is checked
+   by the various synchronization operations. */
+
+DEFTREECODE (UPC_SYNC_STMT, "upc_sync_stmt", tcc_statement, 2)
 
 /*
 Local variables:

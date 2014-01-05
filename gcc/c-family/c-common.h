@@ -203,6 +203,10 @@ enum rid
 
   RID_FIRST_CXX0X = RID_CONSTEXPR,
   RID_LAST_CXX0X = RID_STATIC_ASSERT,
+  RID_FIRST_UPC_QUAL = RID_SHARED,
+  RID_LAST_UPC_QUAL = RID_STRICT,
+  RID_FIRST_UPC_KW = RID_UPC_BARRIER,
+  RID_LAST_UPC_KW = RID_UPC_WAIT,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -234,6 +238,13 @@ enum rid
   (rid == RID_CLASS							\
    || rid == RID_PUBLIC || rid == RID_PROTECTED || rid == RID_PRIVATE	\
    || rid == RID_TRY || rid == RID_THROW || rid == RID_CATCH)
+
+/* Test whether a reserved ID designates a UPC keyword.  */
+#define UPC_IS_KEYWORD(rid) \
+  (((unsigned int) (rid) >= (unsigned int) RID_FIRST_UPC_QUAL && \
+    (unsigned int) (rid) <= (unsigned int) RID_LAST_UPC_QUAL) || \
+   ((unsigned int) (rid) >= (unsigned int) RID_FIRST_UPC_KW && \
+    (unsigned int) (rid) <= (unsigned int) RID_LAST_UPC_KW))
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
@@ -463,9 +474,7 @@ typedef enum c_language_kind
   clk_c		= 0,		/* C90, C94 or C99 */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
-  clk_objcxx	= 3,		/* clk_cxx with ObjC features.  */
-  clk_upc 	= 4,		/* clk_c with UPC features */
-  clk_upcxx 	= 6		/* clk_cxx with UPC features */
+  clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
 }
 c_language_kind;
 
@@ -475,7 +484,6 @@ extern c_language_kind c_language;
 
 #define c_dialect_cxx()		((c_language & clk_cxx) != 0)
 #define c_dialect_objc()	((c_language & clk_objc) != 0)
-#define c_dialect_upc()		((c_language & clk_upc) != 0)
 
 /* The various name of operator that appears in error messages. */
 typedef enum ref_operator {
@@ -595,23 +603,10 @@ extern const char *pch_file;
 
 extern int flag_iso;
 
-/* Non-zero if the current compilation context is UPC */
-extern int compiling_upc;
-
-/* Non-zero if dwarf2 debugging info. should
-   encode UPC specific information. */
-extern int use_upc_dwarf2_extensions;
-
-/* Nonzero whenever UPC functionality is being used.  */
-extern int flag_upc;
-
 /* Nonzero whenever UPC -fupc-threads-N is asserted.
    The value N gives the number of UPC threads to be
    defined at compile-time. */
 extern int flag_upc_threads;
-
-/* Non-zero if the current compilation context is UPC */
-extern int compiling_upc;
 
 /* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
 extern int flag_upc_pthreads;
@@ -879,6 +874,7 @@ extern int self_promoting_args_p (const_tree);
 extern tree strip_pointer_operator (tree);
 extern tree strip_pointer_or_array_types (tree);
 extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);
+extern tree upc_num_threads (void);
 
 /* This is the basic parsing function.  */
 extern void c_parse_file (void);
@@ -1271,6 +1267,25 @@ c_tree_chain_next (tree t)
     return TREE_CHAIN (t);
   return NULL;
 }
+
+/* Used to represent a UPC synchronization statement. The first
+   operand is the synchonization operation, UPC_SYNC_OP:
+   UPC_SYNC_NOTIFY_OP	1	Notify operation
+   UPC_SYNC_WAIT_OP	2	Wait operation
+   UPC_SYNC_BARRIER_OP	3	Barrier operation
+
+   The second operand, UPC_SYNC_ID is the (optional) expression
+   whose value specifies the barrier identifier which is checked
+   by the various synchronization operations. */
+
+#define UPC_SYNC_OP(NODE)	TREE_OPERAND (UPC_SYNC_STMT_CHECK (NODE), 0)
+#define UPC_SYNC_ID(NODE)	TREE_OPERAND (UPC_SYNC_STMT_CHECK (NODE), 1)
+
+/* Values of the first operand in a UPC_SYNC_STMT */
+
+#define UPC_SYNC_NOTIFY_OP	1	/* Notify operation */
+#define UPC_SYNC_WAIT_OP	2	/* Wait operation */
+#define UPC_SYNC_BARRIER_OP	3	/* Barrier operation */
 
 /* Mask used by tm_stmt_attr.  */
 #define TM_STMT_ATTR_OUTER	2

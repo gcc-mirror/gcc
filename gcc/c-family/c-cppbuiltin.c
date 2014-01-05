@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "c-common.h"
 #include "c-pragma.h"
-#include "c-upc.h"
+#include "c-upc-pts.h"
 #include "output.h"		/* For user_label_prefix.  */
 #include "debug.h"		/* For dwarf2out_do_cfi_asm.  */
 #include "tm_p.h"		/* For TARGET_CPU_CPP_BUILTINS & friends.  */
@@ -775,6 +775,86 @@ cpp_iec_559_complex_value (void)
   return ret;
 }
 
+/* Generate UPC specific pre-defined macros. */
+
+static void
+upc_cpp_builtins (cpp_reader * pfile)
+{
+  char def_buf[256];
+  cpp_define (pfile, "__UPC__=1");
+  cpp_define (pfile, "__GUPC__=1");
+  /* Define __GCC_UPC__ for backward compatibility.  */
+  cpp_define (pfile, "__GCC_UPC__=1");
+  cpp_define (pfile, "__UPC_VERSION__=201311L");
+  (void) sprintf (def_buf, "UPC_MAX_BLOCK_SIZE=%lu",
+		  (unsigned long) UPC_MAX_BLOCK_SIZE);
+  cpp_define (pfile, def_buf);
+#if defined(HAVE_UPC_PTS_PACKED_REP)
+  cpp_define (pfile, "__UPC_PTS_PACKED_REP__=1");
+#elif defined(HAVE_UPC_PTS_STRUCT_REP)
+  cpp_define (pfile, "__UPC_PTS_STRUCT_REP__=1");
+  (void) sprintf (def_buf, "__UPC_VADDR_TYPE__=%s", UPC_PTS_VADDR_TYPE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_THREAD_TYPE__=%s", UPC_PTS_THREAD_TYPE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_PHASE_TYPE__=%s", UPC_PTS_PHASE_TYPE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_PTS_ALIGN__=%d",
+			   (2 * POINTER_SIZE) / BITS_PER_UNIT);
+  cpp_define (pfile, def_buf);
+#else
+#error cannot determine UPC pointer-to-shared representation
+#endif
+#ifdef HAVE_UPC_PTS_VADDR_FIRST
+  cpp_define (pfile, "__UPC_VADDR_FIRST__=1");
+#endif
+  (void) sprintf (def_buf, "__UPC_PTS_SIZE__=%d", UPC_PTS_SIZE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_VADDR_SIZE__=%d", UPC_PTS_VADDR_SIZE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_THREAD_SIZE__=%d", UPC_PTS_THREAD_SIZE);
+  cpp_define (pfile, def_buf);
+  (void) sprintf (def_buf, "__UPC_PHASE_SIZE__=%d", UPC_PTS_PHASE_SIZE);
+  cpp_define (pfile, def_buf);
+  if (flag_upc_threads)
+    {
+      cpp_define (pfile, "__UPC_STATIC_THREADS__=1");
+      (void) sprintf (def_buf, "THREADS=%d", flag_upc_threads);
+      cpp_define (pfile, def_buf);
+    }
+  else
+    {
+      cpp_define (pfile, "__UPC_DYNAMIC_THREADS__=1");
+    }
+  if (flag_upc_pthreads && (upc_pthreads_model == upc_pthreads_tls_model))
+    {
+      cpp_define (pfile, "__UPC_PTHREADS_MODEL_TLS__=1");
+    }
+  /* UPC castability library is supported.  */
+  cpp_define (parse_in, "__UPC_CASTABLE__=1");
+  /* Collectives are supported. */
+  cpp_define (parse_in, "__UPC_COLLECTIVE__=1");
+  /* Wall-clock timers are supported. */
+  cpp_define (parse_in, "__UPC_TICK__=1");
+  /* If debugging or instrumentation is enabled,
+     then disable inlining of the runtime.  */
+  if (flag_upc_debug || flag_upc_instrument)
+    flag_upc_inline_lib = 0;
+  /* If -f[no-]upc-inline-lib hasn't been asserted, force inlining of the
+     runtime library if optimization is enabled.  */
+  if (flag_upc_inline_lib < 0)
+    flag_upc_inline_lib = (optimize >= 1);
+  if (flag_upc_inline_lib)
+    cpp_define (parse_in, "__UPC_INLINE_LIB__=1");
+  /* UPC profiling capabilities are implemented.  */
+  cpp_define (parse_in, "__UPC_PUPC__=1");
+  /* UPC profiling instrumentation code will be generated.  */
+  if (flag_upc_instrument)
+    {
+      cpp_define (parse_in, "__UPC_PUPC_INST__=1");
+    }
+}
+
 /* Hook that registers front end and target-specific built-ins.  */
 void
 c_cpp_builtins (cpp_reader *pfile)
@@ -998,7 +1078,7 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "_OPENMP=201307");
 
   /* Add UPC defines */
-  if (c_dialect_upc ())
+  if (flag_upc)
     upc_cpp_builtins (pfile);
 
   if (int128_integer_type_node != NULL_TREE)

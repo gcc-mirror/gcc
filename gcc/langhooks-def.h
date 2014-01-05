@@ -35,7 +35,9 @@ struct diagnostic_info;
 /* See langhooks.h for the definition and documentation of each hook.  */
 
 extern void lhd_do_nothing (void);
+extern void lhd_do_nothing_b (bool);
 extern void lhd_do_nothing_t (tree);
+extern void lhd_do_nothing_t_t (tree, tree);
 extern void lhd_do_nothing_f (struct function *);
 extern tree lhd_pass_through_t (tree);
 extern bool lhd_post_options (const char **);
@@ -132,9 +134,6 @@ extern bool lhd_omp_mappable_type (tree);
   LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P, \
 }
 
-/* Hook for lowering function body to GENERIC before finalization.  */
-#define LANG_HOOKS_GENERICIZE lhd_do_nothing_t
-
 /* Hooks for tree gimplification.  */
 #define LANG_HOOKS_GIMPLIFY_EXPR lhd_gimplify_expr
 
@@ -176,6 +175,9 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS	NULL
 #define LANG_HOOKS_DESCRIPTIVE_TYPE	NULL
 #define LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE reconstruct_complex_type
+#define LANG_HOOKS_UPC_TOGGLE_KEYWORDS  lhd_do_nothing_b
+#define LANG_HOOKS_UPC_PTS_STRUCT_INIT_TYPE  lhd_do_nothing
+#define LANG_HOOKS_UPC_BUILD_INIT_FUNC lhd_do_nothing_t
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -216,6 +218,8 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP lhd_omp_assignment
 #define LANG_HOOKS_OMP_CLAUSE_DTOR hook_tree_tree_tree_null
 #define LANG_HOOKS_OMP_FINISH_CLAUSE hook_void_tree
+#define LANG_HOOKS_LAYOUT_DECL_P hook_bool_tree_tree_false
+#define LANG_HOOKS_LAYOUT_DECL lhd_do_nothing_t_t
 
 #define LANG_HOOKS_DECLS { \
   LANG_HOOKS_GLOBAL_BINDINGS_P, \
@@ -238,7 +242,9 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_OMP_CLAUSE_COPY_CTOR, \
   LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP, \
   LANG_HOOKS_OMP_CLAUSE_DTOR, \
-  LANG_HOOKS_OMP_FINISH_CLAUSE \
+  LANG_HOOKS_OMP_FINISH_CLAUSE, \
+  LANG_HOOKS_LAYOUT_DECL_P, \
+  LANG_HOOKS_LAYOUT_DECL \
 }
 
 /* LTO hooks.  */
@@ -254,6 +260,12 @@ extern void lhd_end_section (void);
   LANG_HOOKS_BEGIN_SECTION, \
   LANG_HOOKS_APPEND_DATA, \
   LANG_HOOKS_END_SECTION \
+}
+
+#define LANG_HOOKS_UPC { \
+  LANG_HOOKS_UPC_TOGGLE_KEYWORDS, \
+  LANG_HOOKS_UPC_PTS_STRUCT_INIT_TYPE, \
+  LANG_HOOKS_UPC_BUILD_INIT_FUNC \
 }
 
 /* The whole thing.  The structure is defined in langhooks.h.  */
@@ -295,10 +307,10 @@ extern void lhd_end_section (void);
   LANG_HOOKS_DECLS, \
   LANG_HOOKS_FOR_TYPES_INITIALIZER, \
   LANG_HOOKS_LTO, \
+  LANG_HOOKS_UPC, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_PARMS, \
   LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS, \
   LANG_HOOKS_FUNCTION_PARAMETER_PACK_P, \
-  LANG_HOOKS_GENERICIZE, \
   LANG_HOOKS_GIMPLIFY_EXPR, \
   LANG_HOOKS_BUILTIN_FUNCTION, \
   LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE, \

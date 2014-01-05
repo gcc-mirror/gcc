@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"
+#include "langhooks.h"
 #include "c-common.h"
 #include "c-upc.h"
 #include "tm_p.h"		/* For REGISTER_TARGET_PRAGMAS (why is
@@ -553,12 +554,6 @@ handle_pragma_upc (cpp_reader * ARG_UNUSED (dummy))
         p_c_code, p_detect_upc, p_unknown};
   enum upc_pragma_op upc_pragma = p_unknown;
 
-  if (!flag_upc)
-    {
-      warning (OPT_Wpragmas, "#pragma upc found in non-UPC source file");
-      return;
-    }
-
   t = pragma_lex (&x);
   if (t == CPP_NAME)
     {
@@ -610,11 +605,12 @@ handle_pragma_upc (cpp_reader * ARG_UNUSED (dummy))
     }
   else if ((upc_pragma == p_upc_code) || (upc_pragma == p_c_code))
     {
-      compiling_upc = (upc_pragma == p_upc_code);
+      flag_upc = (upc_pragma == p_upc_code);
+      lang_hooks.upc.toggle_keywords (flag_upc);
     }
   else if (upc_pragma == p_detect_upc)
     {
-      /* Skip: this is a Berkeley-specific pragma that requires no action.  */
+      /* Skip: This is a Berkeley-specific pragma that requires no action.  */
     }
 }
 
@@ -1654,7 +1650,7 @@ init_pragma (void)
 
   c_register_pragma_with_expansion (0, "message", handle_pragma_message);
 
-  if (compiling_upc)
+  if (flag_upc)
     {
       c_register_pragma (0, "upc", handle_pragma_upc);
       init_pragma_upc ();

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-inline.h"
 #include "omp-low.h"
+#include "c-family/c-upc-low.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-upc.h"
 #include "c-family/c-common.h"

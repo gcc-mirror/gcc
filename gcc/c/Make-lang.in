@@ -36,7 +36,7 @@
 
 #
 # Define the names for selecting c in LANGUAGES.
-c: cc1$(exeext)
+c: cc1$(exeext) gupc$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: c gcc
@@ -46,17 +46,34 @@ c: cc1$(exeext)
 # is to cc1 as e.g. g++ is to cc1plus, or gfortran is to f951).
 CFLAGS-c/gccspec.o += $(DRIVER_DEFINES)
 
+# The UPC compiler driver: gupc.
+
+GUPC_INSTALL_NAME := $(shell echo gupc|sed '$(program_transform_name)')
+UPC_INSTALL_NAME := $(shell echo upc|sed '$(program_transform_name)')
+GUPC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gupc|sed '$(program_transform_name)')
+
+gupcspec.o: $(srcdir)/c/gupcspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
+	$(CONFIG_H) coretypes.h intl.h $(OPTS_H)
+	(SHLIB='$(SHLIB)'; \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+	    $(INCLUDES) $(srcdir)/c/gupcspec.c)
+
+GUPC_D_OBJS = gupcspec.o $(GCC_OBJS)
+gupc$(exeext): $(GUPC_D_OBJS) $(EXTRA_GCC_OBJS) \
+	libcommon-target.a $(LIBDEPS)
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GUPC_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
 # The C compiler itself.
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c/c-errors.o c/c-decl.o c/c-typeck.o \
   c/c-convert.o c/c-aux-info.o c/c-objc-common.o c/c-parser.o \
-  c/c-array-notation.o $(C_COMMON_OBJS) $(C_TARGET_OBJS)
-
-C_STUB_OBJS = c-family/stub-objc.o c-family/stub-upc.o
+  c/c-array-notation.o c/c-upc-lang.o $(C_COMMON_OBJS) $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
-C_OBJS = c/c-lang.o $(C_STUB_OBJS) $(C_AND_OBJC_OBJS)
+C_OBJS = c/c-lang.o c-family/stub-objc.o $(C_AND_OBJC_OBJS)
 c_OBJS = $(C_OBJS) cc1-checksum.o c/gccspec.o
 
 # Use strict warnings for this front end.
@@ -105,7 +122,14 @@ check-c : check-gcc
 # Install hooks:
 # cc1 is installed elsewhere as part of $(COMPILERS).
 
-c.install-common:
+c.install-common: gupc$(exeext) installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) -m 755 gupc$(exeext) $(DESTDIR)$(bindir)/$(GUPC_INSTALL_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(GUPC_TARGET_INSTALL_NAME)$(exeext)
+	cd $(DESTDIR)$(bindir) && \
+	   $(LN) $(GUPC_INSTALL_NAME)$(exeext) $(GUPC_TARGET_INSTALL_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(UPC_INSTALL_NAME)$(exeext)
+	cd $(DESTDIR)$(bindir) && $(LN_S) $(GUPC_INSTALL_NAME)$(exeext) $(UPC_INSTALL_NAME)$(exeext)
 c.install-man:
 c.install-plugin:
 c.uninstall:

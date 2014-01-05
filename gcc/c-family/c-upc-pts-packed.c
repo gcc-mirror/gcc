@@ -1,4 +1,4 @@
-/* upc-pts-packed.c: implement UPC packed pointer-to-shared representation
+/* c-upc-pts-packed.c: implement UPC packed pointer-to-shared representation
    Copyright (C) 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
@@ -39,14 +39,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "varasm.h"
 #include "target.h"
-#include "upc-act.h"
-#include "upc-gasp.h"
-#include "upc-pts.h"
-#include "upc-rts-names.h"
 #include "cgraph.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "c-family/c-upc.h"
+#include "c-common.h"
+#include "c-pragma.h"
+#include "c-upc.h"
+#include "c-upc-gasp.h"
+#include "c-upc-pts.h"
+#include "c-upc-pts-ops.h"
+#include "c-upc-rts-names.h"
 
 static tree upc_pts_packed_build_addrfield (location_t, tree);
 static tree upc_pts_packed_build_cond_expr (location_t, tree);

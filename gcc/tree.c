@@ -190,6 +190,12 @@ struct GTY(()) type_hash {
 static GTY ((if_marked ("type_hash_marked_p"), param_is (struct type_hash)))
      htab_t type_hash_table;
 
+/* Hash table for UPC block factor lookups when the block factor
+   is not 0 (the indefinite block factor) or 1 (the default).  */
+static GTY ((if_marked ("tree_map_marked_p"),
+           param_is (struct tree_map)))
+     htab_t block_factor_for_type;
+
 /* Hash table and temporary node for larger integer const values.  */
 static GTY (()) tree int_cst_node;
 static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
@@ -564,6 +570,9 @@ init_ttree (void)
   /* Initialize the hash table of types.  */
   type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
 				     type_hash_eq, 0);
+
+  block_factor_for_type = htab_create_ggc (512, tree_map_hash,
+                                               tree_map_eq, 0);
 
   debug_expr_for_decl = htab_create_ggc (512, tree_decl_map_hash,
 					 tree_decl_map_eq, 0);
@@ -2645,6 +2654,18 @@ size_in_bytes (const_tree type)
     }
 
   return t;
+}
+
+/* Returns a tree for the size of EXP in bytes.  */
+
+tree
+tree_expr_size (const_tree exp)
+{
+  if (DECL_P (exp)
+      && DECL_SIZE_UNIT (exp) != 0)
+    return DECL_SIZE_UNIT (exp);
+  else
+    return size_in_bytes (TREE_TYPE (exp));
 }
 
 /* Return the size of TYPE (in bytes) as a wide integer
@@ -6263,6 +6284,63 @@ build_qualified_type_1 (tree type, int type_quals, tree layout_qualifier)
     }
 
   return t;
+}
+
+/* Lookup the UPC block size of TYPE, and return it if we find one.  */
+
+tree
+block_factor_lookup (const_tree type)
+{
+  struct tree_map *h, in;
+  union
+    {
+      const_tree ct;
+      tree t;
+    } ct_to_t;
+  ct_to_t.ct = type;
+  /* Drop the const qualifier, avoid the warning.  */
+  in.base.from = ct_to_t.t;
+
+  h = (struct tree_map *)
+      htab_find_with_hash (block_factor_for_type, &in, TYPE_HASH (type));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert a mapping TYPE->BLOCK_FACTOR in the UPC block factor  hashtable.  */
+
+void
+block_factor_insert (tree type,
+                     tree block_factor)
+{
+  struct tree_map *h;
+  void **loc;
+
+  gcc_assert (type && TYPE_P (type));
+  gcc_assert (block_factor && INTEGRAL_TYPE_P (TREE_TYPE (block_factor)));
+  gcc_assert (!(integer_zerop (block_factor) || integer_onep (block_factor)));
+  h = ggc_alloc_tree_map ();
+  h->base.from = type;
+  h->to = (tree) block_factor;
+  loc = htab_find_slot_with_hash (block_factor_for_type,
+                                  h, TYPE_HASH (type), INSERT);
+  *(struct tree_map **) loc = h;
+}
+
+/* Return the blocking factor of the UPC shared type, TYPE.
+   If the blocking factor is NULL, then return the default blocking
+   factor of 1.  */
+
+tree
+upc_get_block_factor (const tree type)
+{
+  tree block_factor = size_one_node;
+  const tree elt_type = strip_array_types (type);
+  if (elt_type && (TREE_CODE (elt_type) != ERROR_MARK)
+      && TYPE_HAS_BLOCK_FACTOR (elt_type))
+    block_factor = TYPE_BLOCK_FACTOR (elt_type);
+  return block_factor;
 }
 
 /* Return a variant of TYPE, where all UPC qualifiers

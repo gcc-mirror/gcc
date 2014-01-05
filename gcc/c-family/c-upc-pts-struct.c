@@ -38,19 +38,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "function.h"
 #include "target.h"
-#include "upc-act.h"
-#include "upc-pts.h"
-#include "upc-rts-names.h"
-#include "upc-gasp.h"
 #include "stor-layout.h"
 #include "basic-block.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
-#include "c-family/c-common.h"
-#include "c-family/c-pragma.h"
-#include "c-family/c-upc.h"
-/* define decl_default_tls_model() prototype */
-#include "rtl.h"
+#include "c-common.h"
+#include "c-pragma.h"
+#include "c-upc.h"
+#include "c-upc-gasp.h"
+#include "c-upc-pts.h"
+#include "c-upc-pts-ops.h"
+#include "c-upc-rts-names.h"
 
 static tree upc_pts_struct_build_cond_expr (location_t, tree);
 static tree upc_pts_struct_build_constant (location_t, tree);
@@ -81,71 +79,8 @@ const upc_pts_ops_t upc_pts_struct_ops =
 static void
 upc_pts_struct_init_type (void)
 {
-  tree fields = NULL_TREE;
-  tree name = NULL_TREE;
-  tree ref;
   tree shared_void_type, shared_char_type;
-  enum machine_mode pts_mode;
-  const location_t loc = UNKNOWN_LOCATION;
-  struct c_struct_parse_info *null_struct_parse_info = NULL;
-  int save_pedantic = pedantic;
-  ref = start_struct (loc, RECORD_TYPE, name, &null_struct_parse_info);
-  /* Ensure that shared pointers have twice the alignment of a pointer.  */
-  TYPE_ALIGN (ref) = 2 * TYPE_ALIGN (ptr_type_node);
-  TYPE_USER_ALIGN (ref) = 1;
-  name = get_identifier ("vaddr");
-  upc_vaddr_field_node = build_decl (loc, FIELD_DECL, name,
-				     build_pointer_type (char_type_node));
-  fields = chainon (fields, upc_vaddr_field_node);
-  DECL_NONADDRESSABLE_P (upc_vaddr_field_node) = 0;
-  DECL_INITIAL (upc_vaddr_field_node) = NULL_TREE;
-  upc_thread_field_node =
-    build_decl (loc, FIELD_DECL, get_identifier ("thread"),
-		c_common_type_for_size (UPC_PTS_THREAD_SIZE, 1));
-  fields = chainon (fields, upc_thread_field_node);
-  if (!(UPC_PTS_THREAD_SIZE % 8))
-    {
-      DECL_NONADDRESSABLE_P (upc_thread_field_node) = 0;
-      DECL_INITIAL (upc_thread_field_node) = NULL_TREE;
-    }
-  else
-    {
-      DECL_NONADDRESSABLE_P (upc_thread_field_node) = 1;
-      DECL_INITIAL (upc_thread_field_node) = size_int (UPC_PTS_THREAD_SIZE);
-    }
-  upc_phase_field_node =
-    build_decl (loc, FIELD_DECL, get_identifier ("phase"),
-		c_common_type_for_size (UPC_PTS_PHASE_SIZE, 1));
-  fields = chainon (fields, upc_phase_field_node);
-  if (!(UPC_PTS_PHASE_SIZE % 8))
-    {
-      DECL_NONADDRESSABLE_P (upc_phase_field_node) = 0;
-      DECL_INITIAL (upc_phase_field_node) = NULL_TREE;
-    }
-  else
-    {
-      DECL_NONADDRESSABLE_P (upc_phase_field_node) = 1;
-      DECL_INITIAL (upc_phase_field_node) = size_int (UPC_PTS_PHASE_SIZE);
-    }
-#if !HAVE_UPC_PTS_VADDR_FIRST
-  fields = nreverse (fields);
-#endif
-  /* avoid spurious complaints regarding the definition
-   * `phase' and `thread'. */
-  pedantic = 0;
-  upc_pts_rep_type_node = finish_struct (loc, ref, fields, NULL_TREE,
-					 null_struct_parse_info);
-  pedantic = save_pedantic;
-  gcc_assert (TYPE_SIZE (upc_pts_rep_type_node));
-  gcc_assert (tree_fits_uhwi_p (TYPE_SIZE (upc_pts_rep_type_node)));
-  gcc_assert (tree_to_uhwi (TYPE_SIZE (upc_pts_rep_type_node))
-	      == 2 * POINTER_SIZE);
-  pts_mode = mode_for_size_tree (TYPE_SIZE (upc_pts_rep_type_node),
-                                 MODE_INT, 0);
-  gcc_assert (pts_mode != BLKmode);
-  SET_TYPE_MODE(upc_pts_rep_type_node, pts_mode);
-  record_builtin_type (RID_SHARED, "upc_shared_ptr_t",
-		       upc_pts_rep_type_node);
+  lang_hooks.upc.pts_struct_init_type ();
   shared_void_type = c_build_qualified_type_1 (void_type_node,
                                                TYPE_QUAL_SHARED, NULL_TREE);
   upc_pts_type_node = build_pointer_type (shared_void_type);
@@ -153,7 +88,8 @@ upc_pts_struct_init_type (void)
                                                TYPE_QUAL_SHARED,
 					       size_zero_node);
   upc_char_pts_type_node = build_pointer_type (shared_char_type);
-  upc_null_pts_node = upc_pts_struct_build_value (loc, upc_pts_type_node,
+  upc_null_pts_node = upc_pts_struct_build_value (UNKNOWN_LOCATION,
+                                                  upc_pts_type_node,
 				                  integer_zero_node,
 						  integer_zero_node,
 				                  integer_zero_node);
@@ -194,7 +130,7 @@ upc_pts_struct_build_constant (location_t loc, tree c)
   return result;
 }
 
-/* Build a constructor of the form {phase, thread, vaddr}. */
+/* Build a constructor of the form {phase, thread, vaddr}.  */
 
 static tree
 upc_pts_struct_build_value (location_t loc ATTRIBUTE_UNUSED, tree type,
@@ -215,16 +151,16 @@ upc_pts_struct_build_value (location_t loc ATTRIBUTE_UNUSED, tree type,
   result = build_constructor_from_list (upc_pts_rep_type_node, elts);
   TREE_CONSTANT (result) = is_const;
 
-  /* wrap the constructor into the specified pointer to shared type */
+  /* Wrap the constructor into the specified pointer to shared type.  */
   result = build1 (VIEW_CONVERT_EXPR, type, result);
   result = fold (result);
   TREE_CONSTANT (result) = is_const;
-  /* force all shared constant pointer values to memory */
+  /* Force all shared constant pointer values to memory.  */
   TREE_STATIC (result) = is_const;
   return result;
 }
 
-/* Return TRUE if EXP is a null UPC pointer-to-shared. */
+/* Return TRUE if EXP is a null UPC pointer-to-shared.  */
 
 static int
 upc_pts_struct_is_null_p (tree exp)
@@ -325,7 +261,7 @@ upc_pts_struct_build_sum (location_t loc, tree exp)
     {
       /* Make sure n_threads is a signed integer to ensure
          that the FLOOR_MOD and FLOOR_DIV operations below are performed
-         with signed operations. */
+         with signed operations.  */
       if (TYPE_UNSIGNED (TREE_TYPE (n_threads)))
 	n_threads = convert (integer_type_node, n_threads);
       if (has_phase)
@@ -536,7 +472,7 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
     {
       /* below, we handle the case of conversions to non-generic
          shared types. If the target is a generic type, we can
-         safely use the source value directly. */
+         safely use the source value directly.  */
       tree s1 = TYPE_SIZE (tt1);
       tree s2 = TYPE_SIZE (tt2);
       /* normalize block sizes, so that [0] => NULL */
@@ -568,7 +504,7 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
          a generic pointer to shared and the target type is a pointer
          to a shared type with either an indefinite block size, or
          a block size of one, then the resulting value must have a
-         phase of zero. */
+         phase of zero.  */
       if ((!VOID_TYPE_P (tt2)
 	   && !(tree_int_cst_equal (b1, b2) && tree_int_cst_equal (s1, s2)))
 	  || (VOID_TYPE_P (tt2)
@@ -666,7 +602,7 @@ upc_pts_struct_build_cond_expr (location_t loc, tree exp)
 	  const tree thread_cmp =
 	    build_binary_op (loc, code, thread0, thread1, 0);
 	  result = build_binary_op (loc, tcode, off_cmp, thread_cmp, 0);
-	  /* Remove possible C_MAYBE_EXPR operands. */
+	  /* Remove possible C_MAYBE_EXPR operands.  */
 	  result = c_fully_fold (result, 0, NULL);
 	  result = gimple_boolify (result);
 	  result = fold_convert (TREE_TYPE (exp), result);

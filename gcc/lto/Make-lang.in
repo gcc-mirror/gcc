@@ -69,7 +69,7 @@ lto-warn = $(STRICT_WARN)
 
 $(LTO_EXE): $(LTO_OBJS) $(BACKEND) $(LIBDEPS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(LTO_OBJS) $(C_STUB_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
+		$(LTO_OBJS) $(BACKEND) $(BACKENDLIBS) $(LIBS)
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:

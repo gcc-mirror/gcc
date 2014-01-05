@@ -1,4 +1,4 @@
-/* Define UPC pointer-to-shared representation-independent operations
+/* Define UPC pointer-to-shared representation characteristics.
    Copyright (C) 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
@@ -20,31 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UPC_PTS_H_
-#define _UPC_PTS_H_ 1
-
-typedef struct upc_pts_ops_struct
-  {
-    tree (*build) (location_t, tree, tree, tree, tree);
-    tree (*cond_expr) (location_t, tree);
-    tree (*constant) (location_t, tree);
-    tree (*cvt) (location_t, tree);
-    tree (*diff) (location_t, tree);
-    void (*init) (void);
-    int (*is_null_p) (tree);
-    tree (*sum) (location_t, tree);
-    tree (*threadof) (location_t, tree);
-  } upc_pts_ops_t;
-
-/* In upc/upc-pts-packed.c */
-extern const upc_pts_ops_t upc_pts_packed_ops;
-
-/* In upc/upc-pts-struct.c */
-extern const upc_pts_ops_t upc_pts_struct_ops;
-
-/* Export the representation-specific handlers (in upc/upc-act.c).  */
-extern upc_pts_ops_t upc_pts;
-
+#ifndef GCC_C_FAMILY_UPC_PTS_H
+#define GCC_C_FAMILY_UPC_PTS_H 1
 
 #ifdef HAVE_UPC_PTS_PACKED_REP
   /* 'packed' UPC pointer-to-shared representation */
@@ -90,4 +67,4 @@ extern upc_pts_ops_t upc_pts;
 #define UPC_MAX_BLOCK_SIZE ((1 << (((UPC_PTS_PHASE_SIZE) < 31) \
 				    ? (UPC_PTS_PHASE_SIZE) : 31)) - 1)
 
-#endif  /* !_UPC_PTS_H_ */
+#endif  /* !GCC_C_FAMILY_UPC_PTS_H */

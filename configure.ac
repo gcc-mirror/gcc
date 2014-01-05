@@ -2072,23 +2072,11 @@ esac
 AC_ARG_WITH([upc-pts],
 AS_HELP_STRING(
 [[--with-upc-pts=[{struct,packed}]]],
- [choose the representation of a UPC pointer-to-shared]),
+ [choose the default representation of a UPC pointer-to-shared]),
 [
- case ,${enable_languages}, in
-   *,upc,) 
-     case "$withval" in
-       struct|packed)
-	 true
-         ;;
-       *)
-         AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
-         ;;
-     esac
-     ;;
-   *)
-     AC_MSG_ERROR([--with-upc-pts supplied, but UPC language not enabled])
-     ;;
- esac
+  if test "$withval"x != "struct"x && test "$withval"x != "packed"x; then \
+    AC_MSG_ERROR([$withval is an invalid option to --with-upc-pts])
+  fi
 ],[])
 
 # Disable libitm, libsanitizer, libvtv if we're not building C++

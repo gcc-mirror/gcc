@@ -1,5 +1,5 @@
-/* upc-gasp.h: GASP instrumentation API.
-   Copyright (C) 2009, 2010, 2011
+/* c-upc-lang.h: UPC language-specific functions.
+   Copyright (C) 2012
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
      and Nenad Vukicevic <nenad@intrepid.com>.
@@ -20,11 +20,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UPC_GASP_H_
-#define _UPC_GASP_H_
-
-extern tree upc_gasp_add_src_args (tree, const char *, int);
-extern tree upc_instrument_forall (location_t, int);
-extern void upc_instrument_func (tree);
-
-#endif /* !_UPC_GASP_H_ */
+#ifndef GCC_C_UPC_LANG_H
+#define GCC_C_UPC_LANG_H 1
+extern void upc_pts_struct_init_type (void);
+extern void upc_build_init_func (tree);
+extern void upc_toggle_keywords (bool);
+extern bool upc_lang_layout_decl_p (tree, tree);
+extern void upc_lang_layout_decl (tree, tree);
+extern void upc_lang_init (void);
+#endif /* !GCC_C_UPC_LANG_H */

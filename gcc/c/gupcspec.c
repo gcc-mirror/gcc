@@ -227,6 +227,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Start with the compiler itself. */
   append_arg (&decoded_options[0]);
 
+  /* Always assert -fupc.  */
+  append_option (OPT_fupc, NULL, 1);
+
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)
     invoke_linker = 0;
@@ -236,6 +239,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   is_x_upc_in_effect = 0;
   for (i = 1; i < gupc_xargc; ++i)
     {
+      /* Skip -fupc, we asserted it above.  */
+      if (decoded_options[i].opt_index == OPT_fupc)
+        continue;
+
       /* Check for "-x [c,upc,..]". */
       if (decoded_options[i].opt_index == OPT_x)
 	{
@@ -276,13 +283,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    }
 	}
       append_arg (&decoded_options[i]);
-    }
-
-  if (invoke_linker)
-    {
-      /* The -fupc-link switch triggers per-target libgupc compiler specs
-         via %:include(libgupc.spec).  */
-      append_option (OPT_fupc_link, NULL, 1);
     }
 
   if (verbose)

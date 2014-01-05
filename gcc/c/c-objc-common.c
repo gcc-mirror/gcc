@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "langhooks.h"
 #include "c-objc-common.h"
+#include "c-upc-lang.h"
+#include "c-family/c-upc.h"
 
 #include <new>                          // For placement new.
 
@@ -64,6 +66,9 @@ c_objc_common_init (void)
 
   if (c_common_init () == false)
     return false;
+
+  if (flag_upc)
+    upc_lang_init ();
 
   /* These were not defined in the Objective-C front end, but I'm
      putting them here anyway.  The diagnostic format decoder might
@@ -197,10 +202,87 @@ c_initialize_diagnostics (diagnostic_context *context)
   XDELETE (base);
 }
 
+/* Check for the possible need to convert UPC-specific types.  */
+
+static int
+upc_types_compatible_p (tree x, tree y)
+{
+  if (POINTER_TYPE_P (x) && POINTER_TYPE_P (y))
+    {
+      const tree ttx = TREE_TYPE (x);
+      const tree tty = TREE_TYPE (y);
+      if (upc_shared_type_p (ttx) && upc_shared_type_p (tty))
+	{
+	  tree bx, by, sx, sy;
+	  int x_has_zero_phase, y_has_zero_phase;
+	  int result;
+	  /* If both types are generic UPC pointers-to-shared,
+	     then they're compatible.  */
+	  if (VOID_TYPE_P (ttx) && VOID_TYPE_P (tty))
+	    return 1;
+	  /* Intermediate conversions to (shared void *) (defined
+	     to be a "generic pointer-to-shared" in the UPC
+	     specification) cannot always be optimized away.
+	     For example,
+	       p1 = (shared void *) p2;
+	     preserves the phase of p2, when assigning to p1.
+	     We need to be conservative, and not consider conversions
+	     involving a generic UPC pointer-to-shared value to be
+	     equivalent.  */
+	  if (VOID_TYPE_P (ttx) != VOID_TYPE_P (tty))
+	    return 0;
+	  bx = upc_get_block_factor (ttx);
+	  by = upc_get_block_factor (tty);
+	  sx = TYPE_SIZE (ttx);
+	  sy = TYPE_SIZE (tty);
+	  x_has_zero_phase = (integer_zerop (bx) || integer_onep (bx));
+	  y_has_zero_phase = (integer_zerop (by) || integer_onep (by));
+	  /* Normalize type size so that 0 => NULL. */
+	  if (sx && integer_zerop (sx))
+	    sx = NULL_TREE;
+	  if (sy && integer_zerop (sy))
+	    sy = NULL_TREE;
+	  /* If the target types have the same UPC block size
+	     (or they both have a phase value of zero) 
+	     and the same size and the target types are
+	     otherwise compatible, then the pointer-to-shared
+	     types are compatible. */
+	  result = (tree_int_cst_equal (bx, by)
+		    || (x_has_zero_phase && y_has_zero_phase))
+	           && tree_int_cst_equal (sx, sy);
+	  return result;
+	}
+      /* If one operand has a UPC shared type,
+         and the other operand's type is not a UPC shared type,
+         then they aren't equivalent.  */
+      else if (upc_shared_type_p (ttx) != upc_shared_type_p (tty))
+	return 0;
+    }
+  else if (upc_shared_type_p (x) || upc_shared_type_p (y))
+    {
+      /* In UPC, blocking factors can be applied to
+         non-pointer objects/types. They're compatible
+         if the block sizes are equal.  */
+      const tree bx = upc_get_block_factor (x);
+      const tree by = upc_get_block_factor (y);
+      return tree_int_cst_equal (bx, by)
+	&& c_types_compatible_p (TYPE_MAIN_VARIANT (x),
+				 TYPE_MAIN_VARIANT (y));
+    }
+  /* Otherwise, they're not compatible.
+     comptypes() should be called before this function
+     in order to implement a full "C" compatibility check.  */
+  return 0;
+}
+
 int
 c_types_compatible_p (tree x, tree y)
 {
-  return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
+  int result;
+  result = comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
+  if (!result && flag_upc)
+    result = upc_types_compatible_p (x, y);
+  return result;
 }
 
 /* Determine if the type is a vla type for the backend.  */

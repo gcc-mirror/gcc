@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "c-common.h"
 #include "c-objc.h"
-#include "c-upc.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"
@@ -193,18 +192,6 @@ const char *pch_file;
    user's namespace.  */
 int flag_iso;
 
-/* Nonzero whenever UPC -fupc-threads-N is asserted.
-   The value N gives the number of UPC threads to be
-   defined at compile-time. */
-int flag_upc_threads;
-
-/* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
-int flag_upc_pthreads;
-
-/* The implementation model for UPC threads that
-   are mapped to POSIX threads, specified at compilation
-   time by the -fupc-pthreads-model-* switch. */
-upc_pthreads_model_kind upc_pthreads_model;
 
 /* C/ObjC language option variables.  */
 
@@ -244,6 +231,20 @@ int print_struct_values;
 
 const char *constant_string_class_name;
 
+/* UPC language option variables.  */
+
+/* Nonzero whenever UPC -fupc-threads-N is asserted.
+   The value N gives the number of UPC threads to be
+   defined at compile-time. */
+int flag_upc_threads;
+
+/* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
+int flag_upc_pthreads;
+
+/* The implementation model for UPC threads that
+   are mapped to POSIX threads, specified at compilation
+   time by the -fupc-pthreads-model-* switch. */
+upc_pthreads_model_kind upc_pthreads_model;
 
 /* C++ language option variables.  */
 
@@ -4902,6 +4903,18 @@ c_common_get_alias_set (tree t)
 	return get_alias_set (t1);
     }
 
+  /* For the time being, make UPC pointers-to-shared conflict
+     with everything else. Ideally, UPC pointers-to-shared should
+     only conflict with the internal type used to represent
+     the UPC pointer-to-shared (i.e., upc_pts_rep_type_node).  */
+
+  if (TYPE_P (t) ? (TREE_CODE (t) == POINTER_TYPE
+		    && upc_shared_type_p (TREE_TYPE (t)))
+                 : (TREE_TYPE(t)
+		    && TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
+		    && upc_shared_type_p (TREE_TYPE (TREE_TYPE (t)))))
+    return 0;
+
   /* Handle the case of multiple type nodes referring to "the same" type,
      which occurs with IMA.  These share an alias set.  FIXME:  Currently only
      C90 is handled.  (In C99 type compatibility is not transitive, which
@@ -4963,6 +4976,44 @@ c_common_get_alias_set (tree t)
     *slot = t;
 
   return -1;
+}
+
+/* Return the value of THREADS.
+
+   UPC defines a reserved variable, THREADS, which returns the
+   number of threads that will be created when the UPC program
+   executes.  The value of threads can be specified at runtime via
+   the -fupc-threads=N switch, where N is an integer specifying
+   the number of threads.  When the value of THREADS is specified
+   at compile-time, this is called the "static threads compilation
+   environment".
+
+   In the static threads compilation environment, THREADS is a
+   pre-defined preprocessor macro with the value, N.
+
+   If no value for threads is given at compile-time, then the value
+   must be specified when the application program is executed.
+   This method of establishing the value of THREADS is called
+   the "dynamic threads compilation environment".  */
+
+tree
+upc_num_threads (void)
+{
+  tree n;
+  gcc_assert (flag_upc);
+  n = flag_upc_threads ? ssize_int (flag_upc_threads)
+    : lookup_name (get_identifier ("THREADS"));
+  if (!n)
+    {
+      error ("the UPC-required THREADS variable is undefined; "
+	     "when compiling pre-processed source, "
+	     "all -fupc-* switches must be passed on the command line, "
+	     "asserting the same values as supplied when the "
+	     "original source file was preprocessed");
+      abort ();
+    }
+
+  return n;
 }
 
 /* Compute the value of 'sizeof (TYPE)' or '__alignof__ (TYPE)', where
@@ -11727,6 +11778,8 @@ c_common_init_ts (void)
   MARK_TS_TYPED (C_MAYBE_CONST_EXPR);
   MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
   MARK_TS_TYPED (ARRAY_NOTATION_REF);
+  MARK_TS_COMMON (UPC_FORALL_STMT);
+  MARK_TS_COMMON (UPC_SYNC_STMT);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE

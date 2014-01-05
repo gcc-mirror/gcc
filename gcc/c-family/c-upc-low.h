@@ -1,12 +1,8 @@
-/* upc-act.h: define interfaces to UPC-related actions
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
+/* c-upc-low.h: declarations for upc-low.c
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
      and Nenad Vukicevic <nenad@intrepid.com>.
-   Based on original implementation
-     by Jesse M. Draper <jdraper@super.org>
-     and William W. Carlson <wwc@super.org>.
 
 This file is part of GCC.
 
@@ -24,15 +20,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UPC_ACT_H_
-#define _UPC_ACT_H_
+#ifndef GCC_C_FAMILY_UPC_LOW_H
+#define GCC_C_FAMILY_UPC_LOW_H 1
 
-extern bool upc_handle_option (size_t, const char *, int, int, location_t,
-                              const struct cl_option_handlers *);
-extern bool upc_lang_init (void);
-extern void upc_finish (void);
-extern int upc_types_compatible_p (tree, tree);
-extern int upc_inner_shared_ref_p (tree);
-extern int upc_pts_is_valid_p (tree);
+extern void upc_genericize (tree);
+extern void upc_genericize_init (void);
+extern void upc_genericize_finish (void);
 
-#endif /* !_UPC_ACT_H_ */
+extern int upc_check_decl_init (tree, tree);
+extern void upc_decl_init (tree, tree);
+extern void upc_write_global_declarations (void);
+
+#endif /* !GCC_C_FAMILY_UPC_LOW_H */

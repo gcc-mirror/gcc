@@ -125,35 +125,16 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-# If the language specific compiler does not exist, but the "gcc" directory
-# does, we do not build anything. Note, $r is set by the top-level Makefile.
-# Note that when we look for the compiler, we search both with and without
-# extension to handle cross and canadian cross builds.
-compiler_name=cc1upc
+# If the language specific driver does not exist, we do not build anything.
+# Note, $r is set by the top-level Makefile.
 rm -f skip-this-dir
-AC_MSG_CHECKING(if compiler $compiler_name has been built)
-AC_CACHE_VAL(upc_cv_compiler_exists,
-[
-  upc_cv_compiler_exists=yes
-  if test -n "$r"; then
-    if test -d "$r"/gcc; then
-      if test -f "$r"/gcc/$compiler_name \
-	   -o -f "$r"/gcc/$compiler_name.exe; then
-	true
-      else
-	upc_cv_compiler_exists=no
-      fi
-    fi
-  fi
-])
-AC_MSG_RESULT($upc_cv_compiler_exists)
 AC_MSG_CHECKING([if UPC driver 'gupc' has been built])
 AC_CACHE_VAL(upc_cv_driver_exists,
 [
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/gupc && test -f "$r"/gcc/gupc); then
+      if (test -f "$r"/gcc/gupc && test -x "$r"/gcc/gupc); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -162,8 +143,7 @@ AC_CACHE_VAL(upc_cv_driver_exists,
   fi
 ])
 AC_MSG_RESULT($upc_cv_driver_exists)
-if test x$upc_cv_compiler_exists = xno \
-     -o x$upc_cv_driver_exists = xno
+if test x$upc_cv_driver_exists = xno
 then
   echo "rm -f config.cache config.log multilib.out" > skip-this-dir
   rm -f Makefile conftest* confdefs* core

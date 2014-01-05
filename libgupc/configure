@@ -3519,34 +3519,9 @@ esac
 
 
 
-# If the language specific compiler does not exist, but the "gcc" directory
-# does, we do not build anything. Note, $r is set by the top-level Makefile.
-# Note that when we look for the compiler, we search both with and without
-# extension to handle cross and canadian cross builds.
-compiler_name=cc1upc
+# If the language specific driver does not exist, we do not build anything.
+# Note, $r is set by the top-level Makefile.
 rm -f skip-this-dir
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if compiler $compiler_name has been built" >&5
-$as_echo_n "checking if compiler $compiler_name has been built... " >&6; }
-if test "${upc_cv_compiler_exists+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  upc_cv_compiler_exists=yes
-  if test -n "$r"; then
-    if test -d "$r"/gcc; then
-      if test -f "$r"/gcc/$compiler_name \
-	   -o -f "$r"/gcc/$compiler_name.exe; then
-	true
-      else
-	upc_cv_compiler_exists=no
-      fi
-    fi
-  fi
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_compiler_exists" >&5
-$as_echo "$upc_cv_compiler_exists" >&6; }
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if UPC driver 'gupc' has been built" >&5
 $as_echo_n "checking if UPC driver 'gupc' has been built... " >&6; }
 if test "${upc_cv_driver_exists+set}" = set; then :
@@ -3556,7 +3531,7 @@ else
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
-      if (test -f "$r"/gcc/gupc && test -f "$r"/gcc/gupc); then
+      if (test -f "$r"/gcc/gupc && test -x "$r"/gcc/gupc); then
 	true
       else
 	upc_cv_driver_exists=no
@@ -3568,8 +3543,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_driver_exists" >&5
 $as_echo "$upc_cv_driver_exists" >&6; }
-if test x$upc_cv_compiler_exists = xno \
-     -o x$upc_cv_driver_exists = xno
+if test x$upc_cv_driver_exists = xno
 then
   echo "rm -f config.cache config.log multilib.out" > skip-this-dir
   rm -f Makefile conftest* confdefs* core
@@ -11658,7 +11632,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11661 "configure"
+#line 11635 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11764,7 +11738,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11767 "configure"
+#line 11741 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15282,8 +15256,8 @@ $as_echo "$PATH_TO_GDB" >&6; }
   upc_backtrace_gdb_available=yes
 else
   upc_backtrace_gdb_available=no
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"none\"" >&5
-$as_echo "\"none\"" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC backtrace GDB support" >&5

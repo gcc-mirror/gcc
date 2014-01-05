@@ -93,10 +93,9 @@ gfortran-cross$(exeext): gfortran$(exeext)
 
 # The compiler itself is called f951.
 f951$(exeext): $(F95_OBJS) \
-		$(C_STUB_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
+		$(BACKEND) $(LIBDEPS) attribs.o
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(F95_OBJS) $(BACKEND) $(ZLIB) $(LIBS) attribs.o \
-		$(C_STUB_OBJS) \
 		$(BACKENDLIBS)
 
 gt-fortran-trans.h    : s-gtype; @true

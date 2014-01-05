@@ -559,25 +559,23 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
   (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : (NODE)))
 
-/* Record that we are processing a UPC shared array declaration
-   or type definition that refers to THREADS in its array dimension.*/
-#define TYPE_HAS_THREADS_FACTOR(TYPE) TYPE_LANG_FLAG_3 (TYPE)
-
 /* Non-zero if the UPC blocking factor is 0.  */
-#define TYPE_HAS_BLOCK_FACTOR_0(TYPE) TYPE_LANG_FLAG_4 (TYPE)
+#define TYPE_HAS_BLOCK_FACTOR_0(NODE)  \
+  TYPE_CHECK (NODE)->base.u.bits.block_factor_0
 
 /* Non-zero if the UPC blocking factor is greater than 1.
    In this case, the blocking factor value is stored in a hash table.  */
-#define TYPE_HAS_BLOCK_FACTOR_X(TYPE) TYPE_LANG_FLAG_5 (TYPE)
+#define TYPE_HAS_BLOCK_FACTOR_X(NODE) \
+  TYPE_CHECK (NODE)->base.u.bits.block_factor_x
 
 /* Non-zero if the UPC blocking factor is not equal to 1 (the default).  */
-#define TYPE_HAS_BLOCK_FACTOR(TYPE) \
-  (TYPE_SHARED(TYPE) \
-   && (TYPE_HAS_BLOCK_FACTOR_0 (TYPE) \
-       || TYPE_HAS_BLOCK_FACTOR_X (TYPE)))
+#define TYPE_HAS_BLOCK_FACTOR(NODE) \
+  (TYPE_SHARED(NODE) \
+   && (TYPE_HAS_BLOCK_FACTOR_0 (NODE) \
+       || TYPE_HAS_BLOCK_FACTOR_X (NODE)))
 
-extern void upc_block_factor_insert (tree, tree);
-extern tree upc_block_factor_lookup (const_tree);
+extern void block_factor_insert (tree, tree);
+extern tree block_factor_lookup (const_tree);
 
 /* Return the UPC blocking factor of the type given by NODE..
    The default block factor is one.  The additional flag bits
@@ -585,7 +583,7 @@ extern tree upc_block_factor_lookup (const_tree);
 #define TYPE_BLOCK_FACTOR(NODE) \
   (TYPE_SHARED (NODE) \
     ? (TYPE_HAS_BLOCK_FACTOR_0 (NODE) ? size_zero_node \
-      : TYPE_HAS_BLOCK_FACTOR_X (NODE) ? upc_block_factor_lookup (NODE) \
+      : TYPE_HAS_BLOCK_FACTOR_X (NODE) ? block_factor_lookup (NODE) \
       : NULL_TREE) \
     : NULL_TREE)
 
@@ -610,7 +608,7 @@ extern tree upc_block_factor_lookup (const_tree);
 		else \
 		  { \
 		    TYPE_HAS_BLOCK_FACTOR_X (NODE) = 1; \
-		    upc_block_factor_insert (NODE, VAL); \
+		    block_factor_insert (NODE, VAL); \
 		  } \
 	      } \
           } \
@@ -938,9 +936,9 @@ extern tree upc_block_factor_lookup (const_tree);
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
 
 /* UPC common tree flags */
-#define TREE_SHARED(NODE) ((NODE)->base.u.bits.upc_shared_flag)
-#define TREE_STRICT(NODE) ((NODE)->base.u.bits.upc_strict_flag)
-#define TREE_RELAXED(NODE) ((NODE)->base.u.bits.upc_relaxed_flag)
+#define TREE_SHARED(NODE) ((NODE)->base.u.bits.shared_flag)
+#define TREE_STRICT(NODE) ((NODE)->base.u.bits.strict_flag)
+#define TREE_RELAXED(NODE) ((NODE)->base.u.bits.relaxed_flag)
 
 /* In fixed-point types, means a saturating type.  */
 #define TYPE_SATURATING(NODE) (TYPE_CHECK (NODE)->base.u.bits.saturating_flag)
@@ -1700,13 +1698,18 @@ extern void protected_set_expr_location (tree, location_t);
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.restrict_flag)
 
 /* If nonzero, this type is `shared'-qualified, in the UPC dialect */
-#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_shared_flag)
+#define TYPE_SHARED(NODE) (TYPE_CHECK (NODE)->base.u.bits.shared_flag)
 
 /* If nonzero, this type is `strict'-qualified, in the UPC dialect  */
-#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_strict_flag)
+#define TYPE_STRICT(NODE) (TYPE_CHECK (NODE)->base.u.bits.strict_flag)
 
 /* If nonzero, this type is `relaxed'-qualified, in the UPC dialect  */
-#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.u.bits.upc_relaxed_flag)
+#define TYPE_RELAXED(NODE) (TYPE_CHECK (NODE)->base.u.bits.relaxed_flag)
+
+/* Record that we are processing a UPC shared array declaration
+   or type definition that refers to THREADS in its array dimension.*/
+#define TYPE_HAS_THREADS_FACTOR(NODE) \
+  (TYPE_CHECK (NODE)->base.u.bits.threads_factor_flag)
 
 /* If nonzero, type's name shouldn't be emitted into debug info.  */
 #define TYPE_NAMELESS(NODE) (TYPE_CHECK (NODE)->base.u.bits.nameless_flag)
@@ -3925,6 +3928,7 @@ extern tree type_hash_canon (unsigned int, tree);
 extern tree convert (tree, tree);
 extern unsigned int expr_align (const_tree);
 extern tree size_in_bytes (const_tree);
+extern tree tree_expr_size (const_tree);
 extern HOST_WIDE_INT int_size_in_bytes (const_tree);
 extern HOST_WIDE_INT max_int_size_in_bytes (const_tree);
 extern tree bit_position (const_tree);

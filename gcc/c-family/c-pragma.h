@@ -172,6 +172,15 @@ extern void add_to_renaming_pragma_list (tree, tree);
 
 extern enum cpp_ttype pragma_lex (tree *);
 
+/* UPC-related pragma handling.  */
+extern void deny_pragma_upc (void);
+extern int get_upc_consistency_mode (void);
+extern void permit_pragma_upc (void);
+extern void pop_upc_consistency_mode (void);
+extern int pragma_upc_permitted_p (void);
+extern void push_upc_consistency_mode (void);
+extern void set_upc_consistency_mode (int);
+
 /* Flags for use with c_lex_with_flags.  The values here were picked
    so that 0 means to translate and join strings.  */
 #define C_LEX_STRING_NO_TRANSLATE 1 /* Do not lex strings into

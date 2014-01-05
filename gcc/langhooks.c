@@ -48,10 +48,25 @@ lhd_do_nothing (void)
 {
 }
 
+/* Do nothing (bool).  */
+
+void
+lhd_do_nothing_b (bool ARG_UNUSED (b))
+{
+}
+
 /* Do nothing (tree).  */
 
 void
 lhd_do_nothing_t (tree ARG_UNUSED (t))
+{
+}
+
+/* Do nothing (tree, tree).  */
+
+void
+lhd_do_nothing_t_t (tree ARG_UNUSED (a),
+                    tree ARG_UNUSED (b))
 {
 }
 

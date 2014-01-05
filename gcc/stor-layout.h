@@ -25,7 +25,6 @@ extern void fixup_signed_type (tree);
 extern void internal_reference_types (void);
 extern unsigned int update_alignment_for_field (record_layout_info, tree,
                                                 unsigned int);
-extern void set_lang_adjust_rli (void (*) (record_layout_info));
 extern record_layout_info start_record_layout (tree);
 extern tree bit_from_pos (tree, tree);
 extern tree byte_from_pos (tree, tree);
@@ -41,10 +40,6 @@ extern unsigned int element_precision (const_tree);
 extern void finalize_size_functions (void);
 extern void fixup_unsigned_type (tree);
 extern void initialize_sizetypes (void);
-
-/* UPC related functions */
-extern void set_lang_layout_decl_p (int (*) (tree, tree));
-extern void set_lang_layout_decl (void (*) (tree, tree));
 
 /* Finish up a builtin RECORD_TYPE. Give it a name and provide its
    fields. Optionally specify an alignment, and then lay it out.  */

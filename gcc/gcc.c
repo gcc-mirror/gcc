@@ -764,15 +764,15 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*}\
     %X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} " VTABLE_VERIFICATION_SPEC " \
-    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) " SANITIZER_EARLY_SPEC " %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
-    %{fupc-link:%:include(libgupc.spec)%(link_upc)}\
+    %{fupc:%:include(libgupc.spec)%(link_upc)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtend.spec)%(upc_crtend)}}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc:%:include(upc-crtend.spec)%(upc_crtend)}}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
 
@@ -883,8 +883,8 @@ static const char *cc1_options =
  %{fsyntax-only:-o %j} %{-param*}\
  %{coverage:-fprofile-arcs -ftest-coverage}";
 
-static const char *upc_options = "-lang-upc \
- %{!fno-upc-pre-include:-include gcc-upc.h}";
+static const char *upc_options =
+ "-fupc %{!fno-upc-pre-include:-include gcc-upc.h}";
 
 static const char *asm_options =
 "%{-target-help:%:print-asm-header()} "
@@ -1028,7 +1028,6 @@ static const struct compiler default_compilers[] =
   {".r", "#Ratfor", 0, 0, 0},
   {".p", "#Pascal", 0, 0, 0}, {".pas", "#Pascal", 0, 0, 0},
   {".java", "#Java", 0, 0, 0}, {".class", "#Java", 0, 0, 0},
-  {".upc", "#UPC", 0, 0, 0},
   {".zip", "#Java", 0, 0, 0}, {".jar", "#Java", 0, 0, 0},
   {".go", "#Go", 0, 1, 0},
   /* Next come the entries for C.  */
@@ -1087,6 +1086,21 @@ static const struct compiler default_compilers[] =
        as %(asm_debug) %(asm_options) %m.s %A }}}}"
 #endif
    , 0, 0, 0},
+  {".upc", "@upc", 0, 0, 0},
+  {"@upc",
+     /* Same as "@c" above, with the addition of %(upc_options).  */
+     "%{E|M|MM:cc1 -E %(upc_options) %(cpp_options) %(cpp_debug_options)}\
+      %{!E:%{!M:%{!MM:\
+	%{traditional|ftraditional|traditional-cpp:\
+              %e UPC does not support traditional compilation}\
+	%{save-temps|no-integrated-cpp:\
+	      cc1 -E %(upc_options) %(cpp_options)\
+	  %{save-temps:%b.mi} %{!save-temps:%g.mi} \n\
+	      cc1 -fpreprocessed %{save-temps:%b.mi} %{!save-temps:%g.mi}\
+	             %(upc_options) %(cc1_options)}\
+	%{!save-temps:%{!no-integrated-cpp:\
+	    cc1 %(cpp_unique_options) %(upc_options) %(cc1_options)}}\
+        %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
 
 #include "specs.h"
   /* Mark end of table.  */

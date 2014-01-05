@@ -4495,7 +4495,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	objc_check_decl (decl);
 
       /* Give UPC a chance to check the declaration.  */
-      if (c_dialect_upc ())
+      if (flag_upc)
 	upc_check_decl (decl);
 
       if (asmspec)
@@ -8814,8 +8814,7 @@ finish_function (void)
       if (!decl_function_context (fndecl))
 	{
 	  invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
-	  /* Lower to GENERIC form before finalization. */
-	  lang_hooks.genericize (fndecl);
+	  c_genericize (fndecl);
 
 	  /* ??? Objc emits functions after finalizing the compilation unit.
 	     This should be cleaned up later and this conditional removed.  */

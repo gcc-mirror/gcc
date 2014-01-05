@@ -1,4 +1,4 @@
-/* upc-genericize.c: UPC language specific tree lowering pass
+/* c-upc-low.c: UPC language specific tree lowering pass
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
@@ -33,12 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "output.h"
 #include "tm.h"
-#include "rtl.h"
 #include "insn-flags.h"
-#include "expr.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
-#include "c-family/c-upc.h"
+#include "langhooks.h"
 #include "function.h"
 #include "bitmap.h"
 #include "cgraph.h"
@@ -54,13 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "ggc.h"
 #include "target.h"
-#include "upc-tree.h"
-#include "upc-act.h"
-#include "upc-pts.h"
-#include "upc-rts-names.h"
-#include "upc-gasp.h"
-#include "upc-genericize.h"
-#include "langhooks.h"
+#include "c-upc-low.h"
+#include "c-family/c-upc.h"
+#include "c-family/c-upc-gasp.h"
+#include "c-family/c-upc-pts.h"
+#include "c-family/c-upc-pts-ops.h"
+#include "c-family/c-upc-rts-names.h"
+
+static GTY (()) tree upc_init_stmt_list;
 
 static void get_lc_mode_name (char *, enum machine_mode);
 static tree upc_expand_get (location_t, tree, int);
@@ -73,6 +72,7 @@ static tree upc_shared_addr (location_t, tree);
 static tree upc_shared_addr_rep (location_t, tree);
 static tree upc_simplify_shared_ref (location_t, tree);
 static void upc_strip_useless_generic_pts_cvt (tree *);
+static void upc_write_init_func (void);
 
 /* Given a shared variable's VAR_DECL node, map to another
    VAR_DECL that has a similar external symbol name, with
@@ -86,6 +86,7 @@ struct GTY (()) uid_tree_map
   tree to;
 };
 static GTY ((param_is (struct uid_tree_map))) htab_t unshared_vars;
+
 static hashval_t uid_tree_map_hash (const void *);
 static int uid_tree_map_eq (const void *, const void *);
 static tree create_unshared_var (location_t, const tree);
@@ -399,7 +400,7 @@ upc_simplify_shared_ref (location_t loc, tree exp)
   {
     const tree base_addr_type = TREE_TYPE (base_addr);
     const enum tree_code cvt_op =
-	upc_types_compatible_p ( upc_char_pts_type_node, base_addr_type)
+	lang_hooks.types_compatible_p (upc_char_pts_type_node, base_addr_type)
 	? NOP_EXPR : CONVERT_EXPR;
     /* Convert the base address to (shared [] char *), which may
        reset the pointer's phase to zero.  This is the behavior
@@ -1398,6 +1399,22 @@ upc_genericize_fndecl (tree fndecl)
     upc_genericize_fndecl (cgn->decl);
 }
 
+/* If the accumulated UPC initialization statement list is
+   not empty, then build (and define) the per-file UPC
+   global initialization function.  */
+
+static void
+upc_write_init_func (void)
+{
+  if (upc_init_stmt_list)
+    {
+      int pupc_mode = disable_pupc_mode ();
+      lang_hooks.upc.build_init_func (upc_init_stmt_list);
+      set_pupc_mode (pupc_mode);
+      upc_init_stmt_list = NULL;
+    }
+}
+
 /* Convert the tree representation of FNDECL built by the UPC front-end
    into the GENERIC form.  Then call the "C" genericize hook.  */
 
@@ -1405,13 +1422,85 @@ void
 upc_genericize (tree fndecl)
 {
   upc_genericize_fndecl (fndecl);
-  c_genericize (fndecl);
+}
+
+/* Return TRUE if either DECL's type is a UPC shared type, or if
+   the value on the right-hand-side of the initialization has a
+   type that is a UPC shared type.  Initializations that meet
+   this criteria generally need to be actively initialized
+   at runtime.  */
+
+int
+upc_check_decl_init (tree decl, tree init)
+{
+  tree init_type;
+  int is_shared_var_decl_init;
+  int is_decl_init_with_shared_addr_refs;
+  int is_upc_decl;
+  if (!(decl && init && TREE_TYPE (decl) && TREE_TYPE (init)))
+    return 0;
+  if ((TREE_CODE (decl) == ERROR_MARK)
+      || (TREE_CODE (TREE_TYPE (decl)) == ERROR_MARK)
+      || (TREE_CODE (init) == ERROR_MARK)
+      || (TREE_CODE (TREE_TYPE (init)) == ERROR_MARK))
+    return 0;
+  init_type = TREE_TYPE (init);
+  is_shared_var_decl_init = (TREE_CODE (decl) == VAR_DECL)
+    && TREE_TYPE (decl) && upc_shared_type_p (TREE_TYPE (decl));
+  is_decl_init_with_shared_addr_refs = TREE_STATIC (decl)
+    && upc_contains_pts_refs_p (init_type);
+  is_upc_decl = (is_shared_var_decl_init
+		 || is_decl_init_with_shared_addr_refs);
+  return is_upc_decl;
+}
+
+/* Add the initialization statement:
+     DECL = INIT;
+   onto a list, `upc_init_stmt_list', which collects
+   initializations that must be made at runtime.
+
+   This runtime initialization necessary because, in general, UPC
+   shared addresses are not known, or cannot be easily generated
+   at compile-time.  */
+
+void
+upc_decl_init (tree decl, tree init)
+{
+  tree init_stmt;
+  if (TREE_CODE (init) == ERROR_MARK)
+    return;
+  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    {
+      error ("initialization of UPC shared arrays "
+	     "is currently not supported");
+      return;
+    }
+  if (!upc_init_stmt_list)
+    upc_init_stmt_list = alloc_stmt_list ();
+  init_stmt = build2 (INIT_EXPR, void_type_node, decl, init);
+  append_to_statement_list_force (init_stmt, &upc_init_stmt_list);
+}
+
+/* Write out the UPC global initialization function, if required
+   and call upc_genericize_finish() to free the hash table
+   used to track the "shadow" variables that are created
+   to generate addresses of UPC shared variables.
+
+   This function is called from c_common_parse_file(), just after
+   parsing the main source file.  */
+
+void
+upc_write_global_declarations (void)
+{
+  upc_write_init_func ();
+  upc_genericize_finish ();
 }
 
 void
 upc_genericize_finish (void)
 {
   upc_free_unshared_var_table ();
+  upc_init_stmt_list = NULL;
 }
 
 void
@@ -1419,6 +1508,7 @@ upc_genericize_init (void)
 {
   unshared_vars = htab_create_ggc (101, uid_tree_map_hash,
                                    uid_tree_map_eq, NULL);
+  upc_init_stmt_list = NULL;
 }
 
-#include "gt-upc-upc-genericize.h"
+#include "gt-c-family-c-upc-low.h"

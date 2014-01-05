@@ -1,5 +1,5 @@
-/* upc-genericize.h: declarations for upc-genericize.c
-   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+/* c-upc-gasp.h: GASP instrumentation API.
+   Copyright (C) 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck <gary@intrepid.com>
      and Nenad Vukicevic <nenad@intrepid.com>.
@@ -20,11 +20,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef _UPC_GENERICIZE_H_
-#define _UPC_GENERICIZE_H_
+#ifndef GCC_C_FAMILY_UPC_GASP_H
+#define GCC_C_FAMILY_UPC_GASP_H 1
 
-extern void upc_genericize_finish (void);
-extern void upc_genericize_init (void);
-extern void upc_genericize (tree);
+extern int disable_pupc_mode(void);
+extern int get_upc_pupc_mode(void);
+extern tree upc_gasp_add_src_args (tree, const char *, int);
+extern tree upc_instrument_forall (location_t, int);
+extern void set_pupc_mode(int);
+extern void upc_instrument_func (tree);
 
-#endif /* !_UPC_GENERICIZE_H_ */
+#endif /* !GCC_C_FAMILY_UPC_GASP_H */

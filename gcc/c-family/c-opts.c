@@ -24,7 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "c-common.h"
 #include "c-pragma.h"
+#include "c-upc-low.h"
 #include "c-upc.h"
+#include "c-upc-pts.h"
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"
@@ -137,7 +139,7 @@ static struct deferred_opt
 
 
 extern const unsigned int 
-c_family_lang_mask = (CL_C | CL_CXX | CL_UPC | CL_ObjC | CL_ObjCXX);
+c_family_lang_mask = (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX);
 
 /* Defer option CODE with argument ARG.  */
 static void
@@ -152,8 +154,7 @@ defer_opt (enum opt_code code, const char *arg)
 unsigned int
 c_common_option_lang_mask (void)
 {
-  static const unsigned int
-  lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX, CL_UPC};
+  static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
   return lang_flags[c_language];
 }
 
@@ -204,6 +205,55 @@ c_common_init_options_struct (struct gcc_options *opts)
   opts->x_flag_complex_method = 2;
 }
 
+/* Initialize UPC-specific options.  */
+static void
+upc_init_options ()
+{
+  struct cl_option_handlers handlers;
+
+  /* UPC is based upon the C99 dialect. Assert it here.
+   * We'll let the user override these options as he/she
+   * sees fit. For example, -traditional will disable
+   * prototype checking.  */
+  set_std_c99 ( 0 /* iso=0 */ );
+
+  /* The consensus of the UPC community seems to be that
+     arithmetic on (void *) pointers and sizeof (void)
+     are compilation errors.  Enable this warning-as-error
+     mode by default.  */
+  warn_pointer_arith = 1;
+  set_default_handlers (&handlers);
+  control_warning_option (OPT_Wpointer_arith, (int) DK_ERROR, true,
+			  UNKNOWN_LOCATION, CL_C,
+			  &handlers, &global_options, &global_options_set,
+			  global_dc);
+
+#ifdef ENABLE_UPC_DWARF2_SUPPORT
+  /* Some targets support UPC's DWARF2 extensions by default.  */
+  use_upc_dwarf2_extensions = 1;
+#else
+  use_upc_dwarf2_extensions = 0;
+#endif
+
+  flag_upc = 1;
+  flag_upc_threads = 0;
+  flag_upc_pthreads = 0;
+  /* By default, don't map UPC threads to POSIX threads.  */
+  flag_upc_pthreads = 0;
+  upc_pthreads_model = upc_pthreads_no_model;
+  /* By default, GASP profiling is off.  */
+  flag_upc_instrument = 0;
+  flag_upc_instrument_functions = 0;
+  /* By default, optimization level > 0 defines shared access routines
+     inlining, otherwise use the user specified flag for unconditional 
+     enable/disable of inlining (0 - disable, 1 - enable).  */
+  flag_upc_inline_lib = -1;
+  /* Disable section anchors. The presence of an unshared equivalent of the
+     shared variables causes a double definition of the symbol names in the
+     assembly code.  */
+  flag_section_anchors = 0;
+}
+
 /* Common initialization before calling option handlers.  */
 void
 c_common_init_options (unsigned int decoded_options_count,
@@ -229,15 +279,90 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
-      /* If preprocessing assembly language, accept any of the C-family
-	 front end options since the driver may pass them through.  */
       for (i = 1; i < decoded_options_count; i++)
-	if (decoded_options[i].opt_index == OPT_lang_asm)
-	  {
-	    accept_all_c_family_options = true;
-	    break;
-	  }
+        {
+	  /* If preprocessing assembly language, accept any of the C-family
+	     front end options since the driver may pass them through.  */
+	  if (decoded_options[i].opt_index == OPT_lang_asm)
+	    {
+	      accept_all_c_family_options = true;
+	      break;
+	    }
+	  /* If compiling UPC, initialize appropriate default options.  */
+	  if (decoded_options[i].opt_index == OPT_fupc)
+	    {
+	      upc_init_options ();
+	      break;
+	    }
+        }
     }
+}
+
+/* Process UPC specific command line switches */
+
+static bool
+upc_handle_option (const enum opt_code code, const char *arg, const int value)
+{
+  int result = 1;
+  if (!flag_upc)
+    {
+      error ("%s is supported only when -fupc is also present", arg);
+      return false;
+    }
+  switch (code)
+    {
+    default:
+      gcc_unreachable ();
+      break;
+    case OPT_fupc:
+      flag_upc = value;
+      break;
+    case OPT_dwarf_2_upc:
+      use_upc_dwarf2_extensions = value;
+      break;
+    case OPT_fupc_debug:
+      if ((value == 1) && (flag_upc_inline_lib == 1))
+	error ("-fupc-debug is incompatible with -fupc-inline-lib");
+      flag_upc_debug = value;
+      break;
+    case OPT_fupc_inline_lib:
+      if ((value == 1) && (flag_upc_instrument == 1))
+	error ("-fupc-inline-lib is incompatible with -fupc-instrument");
+      if ((value == 1) && (flag_upc_debug == 1))
+	error ("-fupc-inline-lib is incompatible with -fupc-debug");
+      flag_upc_inline_lib = value;
+      break;
+    case OPT_fupc_instrument:
+      if ((value == 1) && (flag_upc_inline_lib == 1))
+	error ("-fupc-instrument is incompatible with -fupc-inline-lib");
+      flag_upc_instrument = value;
+      break;
+    case OPT_fupc_instrument_functions:
+      if ((value == 1) && (flag_upc_inline_lib == 1))
+	error
+	  ("-fupc-instrument-functions is incompatible "
+	   "with -fupc-inline-lib");
+      flag_upc_instrument = value;
+      flag_upc_instrument_functions = value;
+      break;
+    case OPT_fupc_pthreads_model_tls:
+      flag_upc_pthreads = 1;
+      upc_pthreads_model = upc_pthreads_tls_model;
+      break;
+    case OPT_fupc_threads_:
+      {
+        int num_threads = value;
+	if (num_threads > UPC_MAX_THREADS)
+	  {
+	    error ("THREADS value exceeds UPC implementation limit of %d",
+		   UPC_MAX_THREADS);
+	    num_threads = 1;
+	  }
+        flag_upc_threads = num_threads;
+      }
+      break;
+    }
+  return result;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-
@@ -587,6 +712,17 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       cpp_opts->ext_numeric_literals = value;
       break;
 
+    case OPT_fupc:
+    case OPT_dwarf_2_upc:
+    case OPT_fupc_debug:
+    case OPT_fupc_inline_lib:
+    case OPT_fupc_instrument:
+    case OPT_fupc_instrument_functions:
+    case OPT_fupc_pthreads_model_tls:
+    case OPT_fupc_threads_:
+      result = upc_handle_option (code, arg, value);
+      break;
+
     case OPT_idirafter:
       add_path (xstrdup (arg), AFTER, 0, true);
       break;
@@ -627,17 +763,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_lang_asm:
       cpp_set_lang (parse_in, CLK_ASM);
       cpp_opts->dollars_in_ident = false;
-      break;
- 
-    case OPT_lang_upc:
-      cpp_set_lang (parse_in, CLK_UPC);
-      break;
-
-    case OPT_fupc_instrument:
-    case OPT_fupc_instrument_functions:
-    case OPT_fupc_pthreads_model_tls:
-    case OPT_fupc_threads_:
-      /* processed in language-specific routine */
       break;
 
     case OPT_nostdinc:
@@ -759,13 +884,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
                                scode, arg, value, 
                                c_family_lang_mask, kind,
                                loc, handlers, global_dc);
-      break;
-
-    case clk_upc:
-      UPC_handle_option_auto (&global_options, &global_options_set,
-                              scode, arg, value, 
-                              c_family_lang_mask, kind,
-                              loc, handlers, global_dc);
       break;
 
     case clk_cxx:
@@ -1078,7 +1196,7 @@ c_common_parse_file (void)
       push_file_scope ();
       c_parse_file ();
       /* Generate UPC global initialization code, if required.  */
-      if (c_dialect_upc ())
+      if (flag_upc)
         upc_write_global_declarations ();
       pop_file_scope ();
       /* And end the main input file, if the debug writer wants it  */
