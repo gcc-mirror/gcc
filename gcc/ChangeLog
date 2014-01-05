@@ -1,3 +1,9 @@
+2014-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
+	from prefetch_block tune setting.
+	(nocona_cost): Correct size of prefetch block to 64.
+
 2014-01-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): Revamp long lines.
@@ -24,7 +30,7 @@
 2014-01-03  Bingfeng Mei  <bmei@broadcom.com>
 
 	PR tree-optimization/59651
-	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks): 
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
 	Address	range for negative step should be added by TYPE_SIZE_UNIT.
 
 2014-01-03  Andreas Schwab  <schwab@linux-m68k.org>
@@ -102,20 +108,21 @@
 
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	Update copyright years
+	Update copyright years.
 
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* common/config/arc/arc-common.c, config/arc/arc-modes.def,
 	config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h,
-	config/arc/arc.md, config/arc/arc.opt, config/arm/arm_neon_builtins.def,
-	config/arm/crypto.def, config/i386/avx512cdintrin.h,
-	config/i386/avx512erintrin.h, config/i386/avx512fintrin.h,
-	config/i386/avx512pfintrin.h, config/i386/btver2.md,
-	config/i386/shaintrin.h, config/i386/slm.md, config/linux-protos.h,
-	config/linux.c, config/winnt-c.c, diagnostic-color.c,
-	diagnostic-color.h, gimple-ssa-isolate-paths.c, vtable-verify.c,
-	vtable-verify.h: Use the standard form for the copyright notice.
+	config/arc/arc.md, config/arc/arc.opt,
+	config/arm/arm_neon_builtins.def, config/arm/crypto.def,
+	config/i386/avx512cdintrin.h, config/i386/avx512erintrin.h,
+	config/i386/avx512fintrin.h, config/i386/avx512pfintrin.h,
+	config/i386/btver2.md, config/i386/shaintrin.h, config/i386/slm.md,
+	config/linux-protos.h, config/linux.c, config/winnt-c.c,
+	diagnostic-color.c, diagnostic-color.h, gimple-ssa-isolate-paths.c,
+	vtable-verify.c, vtable-verify.h: Use the standard form for the
+	copyright notice.
 
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 

@@ -1568,7 +1568,7 @@ struct processor_costs nocona_cost = {
   8,					/* MMX or SSE register to integer */
   8,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
-  128,					/* size of prefetch block */
+  64,					/* size of prefetch block */
   8,					/* number of parallel prefetches */
   1,					/* Branch cost */
   COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
@@ -26465,8 +26465,16 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align, bool opt)
 {
-  int max_align = optimize_size ? BITS_PER_WORD
-				: MIN (512, MAX_OFILE_ALIGNMENT);
+  /* A data structure, equal or greater than the size of a cache line
+     (64 bytes in the Pentium 4 and other recent Intel processors, including
+     processors based on Intel Core microarchitecture) should be aligned
+     so that its base address is a multiple of a cache line size.  */
+
+  int max_align
+    = MIN ((unsigned) ix86_tune_cost->prefetch_block * 8, MAX_OFILE_ALIGNMENT);
+
+  if (max_align < BITS_PER_WORD)
+    max_align = BITS_PER_WORD;
 
   if (opt
       && AGGREGATE_TYPE_P (type)
