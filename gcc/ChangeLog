@@ -1,3 +1,9 @@
+2014-01-05  Iain Sandoe  <iain@codesourcery.com>
+
+	PR bootstrap/59541
+	* config/darwin.c (darwin_function_section): Adjust return values to
+	correspond to optimisation changes made in r206070.
+
 2014-01-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
