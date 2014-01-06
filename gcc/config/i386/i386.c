@@ -9281,7 +9281,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 
   if (crtl->drap_reg
       && regno == REGNO (crtl->drap_reg)
-      && crtl->stack_realign_needed)
+      && !cfun->machine->no_drap_save_restore)
     return true;
 
   return (df_regs_ever_live_p (regno)
@@ -10519,18 +10519,6 @@ ix86_finalize_stack_realign_flags (void)
       return;
     }
 
-  /* If drap has been set, but it actually isn't live at the start
-     of the function and !stack_realign, there is no reason to set it up.  */
-  if (crtl->drap_reg && !stack_realign)
-    {
-      basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-      if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
-	{
-	  crtl->drap_reg = NULL_RTX;
-	  crtl->need_drap = false;
-	}
-    }
-
   /* If the only reason for frame_pointer_needed is that we conservatively
      assumed stack realignment might be needed, but in the end nothing that
      needed the stack alignment had been spilled, clear frame_pointer_needed
@@ -10584,6 +10572,8 @@ ix86_finalize_stack_realign_flags (void)
 	      crtl->need_drap = false;
 	    }
 	}
+      else
+	cfun->machine->no_drap_save_restore = true;
 
       frame_pointer_needed = false;
       stack_realign = false;

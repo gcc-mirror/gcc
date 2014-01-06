@@ -1,3 +1,16 @@
+2014-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59644
+	* config/i386/i386.h (struct machine_function): Add
+	no_drap_save_restore field.
+	* config/i386/i386.c (ix86_save_reg): Use
+	!cfun->machine->no_drap_save_restore instead of
+	crtl->stack_realign_needed.
+	(ix86_finalize_stack_realign_flags): Don't clear drap_reg unless
+	this function clears frame_pointer_needed.  Set
+	cfun->machine->no_drap_save_restore if clearing frame_pointer_needed
+	and DRAP reg is needed.
+
 2014-01-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/57773
