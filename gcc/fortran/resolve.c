@@ -2351,6 +2351,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
   if ((sym->attr.if_source == IFSRC_UNKNOWN
        || sym->attr.if_source == IFSRC_IFBODY)
       && gsym->type != GSYM_UNKNOWN
+      && !gsym->binding_label
       && gsym->ns
       && gsym->ns->resolved != -1
       && gsym->ns->proc_name
@@ -10162,7 +10163,6 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 	gsym = gfc_get_gsymbol (sym->binding_label);
       gsym->where = sym->declared_at;
       gsym->sym_name = sym->name;
-      gsym->binding_label = sym->binding_label;
       gsym->binding_label = sym->binding_label;
       gsym->ns = sym->ns;
       gsym->mod_name = module;

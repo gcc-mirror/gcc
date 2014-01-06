@@ -1,3 +1,8 @@
+2014-01-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59023
+	* gfortran.dg/bind_c_procs_2.f90: New.
+
 2014-01-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/reassoc-33.c: Don't run on hppa*-*-*.
