@@ -3854,12 +3854,6 @@
 	targets like arm-none-eabi.
 	* expr.c (expand_assignment): Handle normal fields like bit regions.
 
-2013-12-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
-
-	PR target/58115
-	* function.c (invoke_set_current_function_hook): Call
-	targetm.set_current_function after setting this_fn_optabs.
-
 2013-12-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59139
