@@ -787,6 +787,25 @@ has_finalizer_component (gfc_symbol *derived)
 }
 
 
+static bool
+comp_is_finalizable (gfc_component *comp)
+{
+  if (comp->attr.allocatable && comp->ts.type != BT_CLASS)
+    return true;
+  else if (comp->ts.type == BT_DERIVED && !comp->attr.pointer
+	   && (comp->ts.u.derived->attr.alloc_comp
+	       || has_finalizer_component (comp->ts.u.derived)
+	       || (comp->ts.u.derived->f2k_derived
+		   && comp->ts.u.derived->f2k_derived->finalizers)))
+    return true;
+  else if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+	    && CLASS_DATA (comp)->attr.allocatable)
+    return true;
+  else
+    return false;
+}
+
+
 /* Call DEALLOCATE for the passed component if it is allocatable, if it is
    neither allocatable nor a pointer but has a finalizer, call it. If it
    is a nonpointer component with allocatable components or has finalizers, walk
@@ -803,19 +822,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   gfc_expr *e;
   gfc_ref *ref;
 
-  if (comp->ts.type != BT_DERIVED && comp->ts.type != BT_CLASS
-      && !comp->attr.allocatable)
-    return;
-
-  if ((comp->ts.type == BT_DERIVED && comp->attr.pointer)
-      || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-	  && CLASS_DATA (comp)->attr.pointer))
-    return;
-
-  if (comp->ts.type == BT_DERIVED && !comp->attr.allocatable
-      && (comp->ts.u.derived->f2k_derived == NULL
-	  || comp->ts.u.derived->f2k_derived->finalizers == NULL)
-      && !has_finalizer_component (comp->ts.u.derived))
+  if (!comp_is_finalizable (comp))
     return;
 
   e = gfc_copy_expr (expr);
@@ -1462,17 +1469,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	    && ancestor_wrapper && ancestor_wrapper->expr_type != EXPR_NULL)
 	continue;
 
-	if (comp->ts.type != BT_CLASS && !comp->attr.pointer
-	    && (comp->attr.allocatable
-		|| (comp->ts.type == BT_DERIVED
-		    && (comp->ts.u.derived->attr.alloc_comp
-			|| has_finalizer_component (comp->ts.u.derived)
-			|| (comp->ts.u.derived->f2k_derived
-			    && comp->ts.u.derived->f2k_derived->finalizers)))))
-	  finalizable_comp = true;
-	else if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-		 && CLASS_DATA (comp)->attr.allocatable)
-	  finalizable_comp = true;
+	finalizable_comp |= comp_is_finalizable (comp);
       }
 
   /* If there is no new finalizer and no new allocatable, return with
