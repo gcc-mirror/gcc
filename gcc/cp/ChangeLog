@@ -8,6 +8,10 @@
 	* cp/parser.c (cp_parser_template_parameter): Early out with
 	error_mark_node if parameter declaration was not parsed.
 
+	PR c++/59629
+	* cp/parser.c (cp_parser_lambda_expression): Save/reset/restore
+	auto_is_implicit_function_template_parm_p around lambda body.
+
 2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58950

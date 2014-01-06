@@ -8738,6 +8738,8 @@ cp_parser_lambda_expression (cp_parser* parser)
         = parser->fully_implicit_function_template_p;
     tree implicit_template_parms = parser->implicit_template_parms;
     cp_binding_level* implicit_template_scope = parser->implicit_template_scope;
+    bool auto_is_implicit_function_template_parm_p
+        = parser->auto_is_implicit_function_template_parm_p;
 
     parser->num_template_parameter_lists = 0;
     parser->in_statement = 0;
@@ -8745,6 +8747,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->fully_implicit_function_template_p = false;
     parser->implicit_template_parms = 0;
     parser->implicit_template_scope = 0;
+    parser->auto_is_implicit_function_template_parm_p = false;
 
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
@@ -8772,6 +8775,8 @@ cp_parser_lambda_expression (cp_parser* parser)
 	= fully_implicit_function_template_p;
     parser->implicit_template_parms = implicit_template_parms;
     parser->implicit_template_scope = implicit_template_scope;
+    parser->auto_is_implicit_function_template_parm_p
+	= auto_is_implicit_function_template_parm_p;
   }
 
   pop_deferring_access_checks ();
