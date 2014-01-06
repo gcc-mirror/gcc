@@ -1,3 +1,7 @@
+2014-01-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* aarch64.c (aarch64_rtx_costs): Fix cost calculation for MADD.
+
 2014-01-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59008
