@@ -1,3 +1,10 @@
+2014-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/59350
+	PR debug/59510
+	* var-tracking.c (add_stores): Preserve the value of the source even if
+	we don't record the store.
+
 2014-01-06  Terry Guo  <terry.guo@arm.com>
 
 	* config.gcc (arm*-*-*): Check --with-arch against arm-arches.def.
