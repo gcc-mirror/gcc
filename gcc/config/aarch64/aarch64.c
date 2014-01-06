@@ -4643,12 +4643,15 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 			  extra_cost->mult[GET_MODE (x) == DImode].extend_add;
 		      return true;
 		    }
+
 		  *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
 			    + rtx_cost (XEXP (op0, 1), MULT, 1, speed)
 			    + rtx_cost (op1, PLUS, 1, speed));
 
 		  if (speed)
 		    *cost += extra_cost->mult[GET_MODE (x) == DImode].add;
+
+		  return true;
 		}
 
 	      *cost += (rtx_cost (new_op0, PLUS, 0, speed)
