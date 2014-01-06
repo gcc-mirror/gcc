@@ -1,3 +1,8 @@
+2014-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57773
+	* gcc.dg/pr57773.c: New test.
+
 2014-01-06  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/59635

@@ -1,3 +1,9 @@
+2014-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57773
+	* c-decl.c (check_bitfield_type_and_width): Warn for implementation
+	defined bit-field types only in ISO C.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
