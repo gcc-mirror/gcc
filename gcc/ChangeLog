@@ -1,3 +1,10 @@
+2014-01-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59008
+	* ipa-cp.c (ipcp_discover_new_direct_edges): Changed param_index type
+	to int.
+	* ipa-prop.c (ipa_print_node_params): Fix indentation.
+
 2014-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/59350

@@ -1,3 +1,8 @@
+2014-01-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59008
+	* gcc.dg/ipa/pr59008.c: New test.
+
 2014-01-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/vect/vect.exp: Add clearcap_ldflags to DEFAULT_VECTCFLAGS

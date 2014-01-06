@@ -3326,6 +3326,7 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
     {
       int c;
 
+      fprintf (f, "    ");
       ipa_dump_param (f, info, i);
       if (ipa_is_param_used (info, i))
 	fprintf (f, " used");
