@@ -1,3 +1,11 @@
+2014-01-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59023
+	PR fortran/59662
+	* resolve.c (resolve_global_procedure): Don't apply to c-binding
+	procedures.
+	(gfc_verify_binding_labels): Remove duplicate line.
+
 2014-01-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59547
