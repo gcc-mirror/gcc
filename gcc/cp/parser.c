@@ -16780,6 +16780,15 @@ cp_parser_init_declarator (cp_parser* parser,
       warning (OPT_Wattributes,
 	       "attributes after parenthesized initializer ignored");
 
+  /* A non-template declaration involving a function parameter list containing
+     an implicit template parameter will have been made into a template.  If it
+     turns out that the resulting declaration is not an actual function then
+     finish the template declaration here.  An error message will already have
+     been issued.  */
+  if (parser->fully_implicit_function_template_p)
+    if (!function_declarator_p (declarator))
+      finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
   if (member_p)
