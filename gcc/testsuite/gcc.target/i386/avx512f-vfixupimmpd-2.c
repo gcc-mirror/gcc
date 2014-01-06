@@ -1,6 +1,7 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512f" } */
+/* { dg-options "-O2 -mavx512f -std=gnu99" } */
 /* { dg-require-effective-target avx512f } */
+/* { dg-require-effective-target c99_runtime } */
 
 #define AVX512F
 
