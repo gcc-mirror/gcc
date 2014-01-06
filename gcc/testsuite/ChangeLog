@@ -1,7 +1,9 @@
 2014-01-06  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/59635
+	PR c++/59636
 	* g++.dg/cpp1y/pr59635.C: New testcase.
+	* g++.dg/cpp1y/pr59636.C: New testcase.
 
 2014-01-06  Martin Jambor  <mjambor@suse.cz>
 

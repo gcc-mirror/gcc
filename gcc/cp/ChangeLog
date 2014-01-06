@@ -4,6 +4,10 @@
 	* cp/lambda.c (maybe_add_lambda_conv_op): Handle marking conversion
 	function as unimplemented for generic lambdas with varargs.
 
+	PR c++/59636
+	* cp/parser.c (cp_parser_template_parameter): Early out with
+	error_mark_node if parameter declaration was not parsed.
+
 2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58950
