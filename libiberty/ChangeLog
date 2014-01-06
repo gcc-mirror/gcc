@@ -1,3 +1,9 @@
+2014-01-06  Mike Frysinger  <vapier@gentoo.org>
+
+	PR other/56780
+	* configure.ac: Delete target_header_dir assignment.
+	* configure: Regenerated.
+
 2014-01-06  Gary Benson  <gbenson@redhat.com>
 
 	* cp-demangle.c (struct d_print_info): New fields
