@@ -1211,6 +1211,8 @@ func ArchChar(goarch string) (string, error) {
 		return "6", nil
 	case "arm":
 		return "5", nil
+	case "arm64":
+		return "7", nil
 	}
 	return "", errors.New("unsupported GOARCH " + goarch)
 }
