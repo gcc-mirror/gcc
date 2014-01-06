@@ -329,8 +329,16 @@ struct d_print_info
   unsigned long int flush_count;
   /* Array of saved scopes for evaluating substitutions.  */
   struct d_saved_scope *saved_scopes;
+  /* Index of the next unused saved scope in the above array.  */
+  int next_saved_scope;
   /* Number of saved scopes in the above array.  */
   int num_saved_scopes;
+  /* Array of templates for saving into scopes.  */
+  struct d_print_template *copy_templates;
+  /* Index of the next unused copy template in the above array.  */
+  int next_copy_template;
+  /* Number of copy templates in the above array.  */
+  int num_copy_templates;
   /* The nearest enclosing template, if any.  */
   const struct demangle_component *current_template;
 };
@@ -475,7 +483,8 @@ static void
 d_growable_string_callback_adapter (const char *, size_t, void *);
 
 static void
-d_print_init (struct d_print_info *, demangle_callbackref, void *);
+d_print_init (struct d_print_info *, demangle_callbackref, void *,
+	      const struct demangle_component *);
 
 static inline void d_print_error (struct d_print_info *);
 
@@ -3777,11 +3786,141 @@ d_growable_string_callback_adapter (const char *s, size_t l, void *opaque)
   d_growable_string_append_buffer (dgs, s, l);
 }
 
+/* Walk the tree, counting the number of templates encountered, and
+   the number of times a scope might be saved.  These counts will be
+   used to allocate data structures for d_print_comp, so the logic
+   here must mirror the logic d_print_comp will use.  It is not
+   important that the resulting numbers are exact, so long as they
+   are larger than the actual numbers encountered.  */
+
+static void
+d_count_templates_scopes (int *num_templates, int *num_scopes,
+			  const struct demangle_component *dc)
+{
+  if (dc == NULL)
+    return;
+
+  switch (dc->type)
+    {
+    case DEMANGLE_COMPONENT_NAME:
+    case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
+    case DEMANGLE_COMPONENT_SUB_STD:
+    case DEMANGLE_COMPONENT_BUILTIN_TYPE:
+    case DEMANGLE_COMPONENT_OPERATOR:
+    case DEMANGLE_COMPONENT_CHARACTER:
+    case DEMANGLE_COMPONENT_NUMBER:
+    case DEMANGLE_COMPONENT_UNNAMED_TYPE:
+      break;
+
+    case DEMANGLE_COMPONENT_TEMPLATE:
+      (*num_templates)++;
+      goto recurse_left_right;
+
+    case DEMANGLE_COMPONENT_REFERENCE:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
+      if (d_left (dc)->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
+	(*num_scopes)++;
+      goto recurse_left_right;
+
+    case DEMANGLE_COMPONENT_QUAL_NAME:
+    case DEMANGLE_COMPONENT_LOCAL_NAME:
+    case DEMANGLE_COMPONENT_TYPED_NAME:
+    case DEMANGLE_COMPONENT_VTABLE:
+    case DEMANGLE_COMPONENT_VTT:
+    case DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE:
+    case DEMANGLE_COMPONENT_TYPEINFO:
+    case DEMANGLE_COMPONENT_TYPEINFO_NAME:
+    case DEMANGLE_COMPONENT_TYPEINFO_FN:
+    case DEMANGLE_COMPONENT_THUNK:
+    case DEMANGLE_COMPONENT_VIRTUAL_THUNK:
+    case DEMANGLE_COMPONENT_COVARIANT_THUNK:
+    case DEMANGLE_COMPONENT_JAVA_CLASS:
+    case DEMANGLE_COMPONENT_GUARD:
+    case DEMANGLE_COMPONENT_TLS_INIT:
+    case DEMANGLE_COMPONENT_TLS_WRAPPER:
+    case DEMANGLE_COMPONENT_REFTEMP:
+    case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
+    case DEMANGLE_COMPONENT_RESTRICT:
+    case DEMANGLE_COMPONENT_VOLATILE:
+    case DEMANGLE_COMPONENT_CONST:
+    case DEMANGLE_COMPONENT_RESTRICT_THIS:
+    case DEMANGLE_COMPONENT_VOLATILE_THIS:
+    case DEMANGLE_COMPONENT_CONST_THIS:
+    case DEMANGLE_COMPONENT_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
+    case DEMANGLE_COMPONENT_POINTER:
+    case DEMANGLE_COMPONENT_COMPLEX:
+    case DEMANGLE_COMPONENT_IMAGINARY:
+    case DEMANGLE_COMPONENT_VENDOR_TYPE:
+    case DEMANGLE_COMPONENT_FUNCTION_TYPE:
+    case DEMANGLE_COMPONENT_ARRAY_TYPE:
+    case DEMANGLE_COMPONENT_PTRMEM_TYPE:
+    case DEMANGLE_COMPONENT_FIXED_TYPE:
+    case DEMANGLE_COMPONENT_VECTOR_TYPE:
+    case DEMANGLE_COMPONENT_ARGLIST:
+    case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
+    case DEMANGLE_COMPONENT_INITIALIZER_LIST:
+    case DEMANGLE_COMPONENT_CAST:
+    case DEMANGLE_COMPONENT_NULLARY:
+    case DEMANGLE_COMPONENT_UNARY:
+    case DEMANGLE_COMPONENT_BINARY:
+    case DEMANGLE_COMPONENT_BINARY_ARGS:
+    case DEMANGLE_COMPONENT_TRINARY:
+    case DEMANGLE_COMPONENT_TRINARY_ARG1:
+    case DEMANGLE_COMPONENT_TRINARY_ARG2:
+    case DEMANGLE_COMPONENT_LITERAL:
+    case DEMANGLE_COMPONENT_LITERAL_NEG:
+    case DEMANGLE_COMPONENT_JAVA_RESOURCE:
+    case DEMANGLE_COMPONENT_COMPOUND_NAME:
+    case DEMANGLE_COMPONENT_DECLTYPE:
+    case DEMANGLE_COMPONENT_TRANSACTION_CLONE:
+    case DEMANGLE_COMPONENT_NONTRANSACTION_CLONE:
+    case DEMANGLE_COMPONENT_PACK_EXPANSION:
+    case DEMANGLE_COMPONENT_TAGGED_NAME:
+    case DEMANGLE_COMPONENT_CLONE:
+    recurse_left_right:
+      d_count_templates_scopes (num_templates, num_scopes,
+				d_left (dc));
+      d_count_templates_scopes (num_templates, num_scopes,
+				d_right (dc));
+      break;
+
+    case DEMANGLE_COMPONENT_CTOR:
+      d_count_templates_scopes (num_templates, num_scopes,
+				dc->u.s_ctor.name);
+      break;
+
+    case DEMANGLE_COMPONENT_DTOR:
+      d_count_templates_scopes (num_templates, num_scopes,
+				dc->u.s_dtor.name);
+      break;
+
+    case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
+      d_count_templates_scopes (num_templates, num_scopes,
+				dc->u.s_extended_operator.name);
+      break;
+
+    case DEMANGLE_COMPONENT_GLOBAL_CONSTRUCTORS:
+    case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
+      d_count_templates_scopes (num_templates, num_scopes,
+				d_left (dc));
+      break;
+
+    case DEMANGLE_COMPONENT_LAMBDA:
+    case DEMANGLE_COMPONENT_DEFAULT_ARG:
+      d_count_templates_scopes (num_templates, num_scopes,
+				dc->u.s_unary_num.sub);
+      break;
+    }
+}
+
 /* Initialize a print information structure.  */
 
 static void
 d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
-	      void *opaque)
+	      void *opaque, const struct demangle_component *dc)
 {
   dpi->len = 0;
   dpi->last_char = '\0';
@@ -3796,29 +3935,18 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->demangle_failure = 0;
 
   dpi->saved_scopes = NULL;
+  dpi->next_saved_scope = 0;
   dpi->num_saved_scopes = 0;
+
+  dpi->copy_templates = NULL;
+  dpi->next_copy_template = 0;
+  dpi->num_copy_templates = 0;
+
+  d_count_templates_scopes (&dpi->num_copy_templates,
+			    &dpi->num_saved_scopes, dc);
+  dpi->num_copy_templates *= dpi->num_saved_scopes;
+
   dpi->current_template = NULL;
-}
-
-/* Free a print information structure.  */
-
-static void
-d_print_free (struct d_print_info *dpi)
-{
-  int i;
-
-  for (i = 0; i < dpi->num_saved_scopes; i++)
-    {
-      struct d_print_template *ts, *tn;
-
-      for (ts = dpi->saved_scopes[i].templates; ts != NULL; ts = tn)
-	{
-	  tn = ts->next;
-	  free (ts);
-	}
-    }
-
-  free (dpi->saved_scopes);
 }
 
 /* Indicate that an error occurred during printing, and test for error.  */
@@ -3903,17 +4031,29 @@ cplus_demangle_print_callback (int options,
                                demangle_callbackref callback, void *opaque)
 {
   struct d_print_info dpi;
-  int success;
 
-  d_print_init (&dpi, callback, opaque);
+  d_print_init (&dpi, callback, opaque, dc);
 
-  d_print_comp (&dpi, options, dc);
+  {
+#ifdef CP_DYNAMIC_ARRAYS
+    __extension__ struct d_saved_scope scopes[dpi.num_saved_scopes];
+    __extension__ struct d_print_template temps[dpi.num_copy_templates];
+
+    dpi.saved_scopes = scopes;
+    dpi.copy_templates = temps;
+#else
+    dpi.saved_scopes = alloca (dpi.num_saved_scopes
+			       * sizeof (*dpi.saved_scopes));
+    dpi.copy_templates = alloca (dpi.num_copy_templates
+				 * sizeof (*dpi.copy_templates));
+#endif
+
+    d_print_comp (&dpi, options, dc);
+  }
 
   d_print_flush (&dpi);
 
-  success = ! d_print_saw_error (&dpi);
-  d_print_free (&dpi);
-  return success;
+  return ! d_print_saw_error (&dpi);
 }
 
 /* Turn components into a human readable string.  OPTIONS is the
@@ -4070,25 +4210,37 @@ d_print_subexpr (struct d_print_info *dpi, int options,
     d_append_char (dpi, ')');
 }
 
-/* Return a shallow copy of the current list of templates.
-   On error d_print_error is called and a partial list may
-   be returned.  Whatever is returned must be freed.  */
+/* Save the current scope.  */
 
-static struct d_print_template *
-d_copy_templates (struct d_print_info *dpi)
+static void
+d_save_scope (struct d_print_info *dpi,
+	      const struct demangle_component *container)
 {
-  struct d_print_template *src, *result, **link = &result;
+  struct d_saved_scope *scope;
+  struct d_print_template *src, **link;
+
+  if (dpi->next_saved_scope >= dpi->num_saved_scopes)
+    {
+      d_print_error (dpi);
+      return;
+    }
+  scope = &dpi->saved_scopes[dpi->next_saved_scope];
+  dpi->next_saved_scope++;
+
+  scope->container = container;
+  link = &scope->templates;
 
   for (src = dpi->templates; src != NULL; src = src->next)
     {
-      struct d_print_template *dst =
-	(struct d_print_template *) malloc (sizeof (struct d_print_template));
+      struct d_print_template *dst;
 
-      if (dst == NULL)
+      if (dpi->next_copy_template >= dpi->num_copy_templates)
 	{
 	  d_print_error (dpi);
-	  break;
+	  return;
 	}
+      dst = &dpi->copy_templates[dpi->next_copy_template];
+      dpi->next_copy_template++;
 
       dst->template_decl = src->template_decl;
       *link = dst;
@@ -4096,8 +4248,22 @@ d_copy_templates (struct d_print_info *dpi)
     }
 
   *link = NULL;
+}
 
-  return result;
+/* Attempt to locate a previously saved scope.  Returns NULL if no
+   corresponding saved scope was found.  */
+
+static struct d_saved_scope *
+d_get_saved_scope (struct d_print_info *dpi,
+		   const struct demangle_component *container)
+{
+  int i;
+
+  for (i = 0; i < dpi->next_saved_scope; i++)
+    if (dpi->saved_scopes[i].container == container)
+      return &dpi->saved_scopes[i];
+
+  return NULL;
 }
 
 /* Subroutine to handle components.  */
@@ -4492,37 +4658,16 @@ d_print_comp (struct d_print_info *dpi, int options,
 	const struct demangle_component *sub = d_left (dc);
 	if (sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
 	  {
+	    struct d_saved_scope *scope = d_get_saved_scope (dpi, sub);
 	    struct demangle_component *a;
-	    struct d_saved_scope *scope = NULL, *scopes;
-	    int i;
-
-	    for (i = 0; i < dpi->num_saved_scopes; i++)
-	      if (dpi->saved_scopes[i].container == sub)
-		scope = &dpi->saved_scopes[i];
 
 	    if (scope == NULL)
 	      {
-		size_t size;
-
 		/* This is the first time SUB has been traversed.
 		   We need to capture the current templates so
 		   they can be restored if SUB is reentered as a
 		   substitution.  */
-		++dpi->num_saved_scopes;
-		size = sizeof (struct d_saved_scope) * dpi->num_saved_scopes;
-		scopes = (struct d_saved_scope *) realloc (dpi->saved_scopes,
-							   size);
-		if (scopes == NULL)
-		  {
-		    d_print_error (dpi);
-		    return;
-		  }
-
-		dpi->saved_scopes = scopes;
-		scope = dpi->saved_scopes + (dpi->num_saved_scopes - 1);
-
-		scope->container = sub;
-		scope->templates = d_copy_templates (dpi);
+		d_save_scope (dpi, sub);
 		if (d_print_saw_error (dpi))
 		  return;
 	      }

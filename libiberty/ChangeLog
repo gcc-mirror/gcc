@@ -1,3 +1,20 @@
+2014-01-06  Gary Benson  <gbenson@redhat.com>
+
+	* cp-demangle.c (struct d_print_info): New fields
+	next_saved_scope, copy_templates, next_copy_template and
+	num_copy_templates.
+	(d_count_templates): New function.
+	(d_print_init): New parameter "dc".
+	Estimate numbers of templates and scopes required.
+	(d_print_free): Removed function.
+	(cplus_demangle_print_callback): Allocate stack for
+	templates and scopes.  Removed call to d_print_free.
+	(d_copy_templates): Removed function.
+	(d_save_scope): New function.
+	(d_get_saved_scope): Likewise.
+	(d_print_comp): Replace state saving/restoring code with
+	calls to d_save_scope and d_get_saved_scope.
+
 2013-12-23  Bill Maddox  <maddox@google.com>
 
 	* cp-demangle.c (cplus_demangle_fill_ctor,cplus_demangle_fill_dtor):
