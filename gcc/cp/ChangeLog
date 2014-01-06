@@ -1,3 +1,9 @@
+2014-01-06  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/59635
+	* cp/lambda.c (maybe_add_lambda_conv_op): Handle marking conversion
+	function as unimplemented for generic lambdas with varargs.
+
 2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58950
