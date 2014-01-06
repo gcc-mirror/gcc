@@ -12,6 +12,10 @@
 	* cp/parser.c (cp_parser_lambda_expression): Save/reset/restore
 	auto_is_implicit_function_template_parm_p around lambda body.
 
+	PR c++/59638
+	* cp/parser.c (cp_parser_init_declarator): Undo fully implicit
+	template parameter list when declarator is not a function.
+
 2014-01-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/58950
