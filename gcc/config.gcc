@@ -3476,19 +3476,17 @@ case "${target}" in
 			fi
 		done
 
-		case "$with_arch" in
-		"" \
-		| armv[23456] | armv2a | armv3m | armv4t | armv5t \
-		| armv5te | armv6j |armv6k | armv6z | armv6zk | armv6-m \
-		| armv7 | armv7-a | armv7-r | armv7-m | armv8-a \
-		| iwmmxt | ep9312)
-			# OK
-			;;
-		*)
-			echo "Unknown arch used in --with-arch=$with_arch" 1>&2
-			exit 1
-			;;
-		esac
+		# See if it matches any of the entries in arm-arches.def
+		if [ x"$with_arch" = x ] \
+		    || grep "^ARM_ARCH(\"$with_arch\"," \
+			    ${srcdir}/config/arm/arm-arches.def \
+			    > /dev/null; then
+		  # OK
+		  true
+		else
+		  echo "Unknown arch used in --with-arch=$with_arch" 1>&2
+		  exit 1
+		fi
 
 		case "$with_float" in
 		"" \

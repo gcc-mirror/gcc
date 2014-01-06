@@ -1,3 +1,7 @@
+2014-01-06  Terry Guo  <terry.guo@arm.com>
+
+	* config.gcc (arm*-*-*): Check --with-arch against arm-arches.def.
+
 2014-01-05  Iain Sandoe  <iain@codesourcery.com>
 
 	PR bootstrap/59541
