@@ -12977,20 +12977,21 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
      = cp_parser_parameter_declaration (parser, /*template_parm_p=*/true,
 					/*parenthesized_p=*/NULL);
 
+  if (!parameter_declarator)
+    return error_mark_node;
+
   /* If the parameter declaration is marked as a parameter pack, set
      *IS_PARAMETER_PACK to notify the caller. Also, unmark the
      declarator's PACK_EXPANSION_P, otherwise we'll get errors from
      grokdeclarator. */
-  if (parameter_declarator
-      && parameter_declarator->declarator
+  if (parameter_declarator->declarator
       && parameter_declarator->declarator->parameter_pack_p)
     {
       *is_parameter_pack = true;
       parameter_declarator->declarator->parameter_pack_p = false;
     }
 
-  if (parameter_declarator
-      && parameter_declarator->default_argument)
+  if (parameter_declarator->default_argument)
     {
       /* Can happen in some cases of erroneous input (c++/34892).  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -13014,8 +13015,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
   /* We might end up with a pack expansion as the type of the non-type
      template parameter, in which case this is a non-type template
      parameter pack.  */
-  else if (parameter_declarator
-	   && parameter_declarator->decl_specifiers.type
+  else if (parameter_declarator->decl_specifiers.type
 	   && PACK_EXPANSION_P (parameter_declarator->decl_specifiers.type))
     {
       *is_parameter_pack = true;
