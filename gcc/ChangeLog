@@ -1,3 +1,9 @@
+2014-01-07  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/arm/arm.c (arm_expand_neon_args): Call expand_expr
+	with EXPAND_MEMORY for NEON_ARG_MEMORY; check if the returned
+	rtx is const0_rtx or not.
+
 2014-01-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/58115
