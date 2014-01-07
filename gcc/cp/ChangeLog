@@ -1,5 +1,9 @@
 2014-01-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58856
+	* pt.c (num_innermost_template_parms): New.
+	(get_underlying_template): Use it.
+
 	PR c++/58965
 	* mangle.c (write_guarded_var_name): Handle null DECL_NAME.
 
