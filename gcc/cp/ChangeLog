@@ -1,3 +1,8 @@
+2014-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58965
+	* mangle.c (write_guarded_var_name): Handle null DECL_NAME.
+
 2014-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (trait_expr_value, [CPTK_IS_BASE_OF]): Implement
