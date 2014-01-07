@@ -1,3 +1,7 @@
+2014-01-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/i386/intrinsics_4.c (bar): New function.
+
 2014-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/ext/is_base_of_incomplete-2.C: New.

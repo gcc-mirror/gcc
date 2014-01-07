@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "optabs.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -1752,6 +1753,23 @@ target_reinit (void)
 {
   struct rtl_data saved_x_rtl;
   rtx *saved_regno_reg_rtx;
+  tree saved_optimization_current_node;
+  struct target_optabs *saved_this_fn_optabs;
+
+  /* Temporarily switch to the default optimization node, so that
+     *this_target_optabs is set to the default, not reflecting
+     whatever a previous function used for the optimize
+     attribute.  */
+  saved_optimization_current_node = optimization_current_node;
+  saved_this_fn_optabs = this_fn_optabs;
+  if (saved_optimization_current_node != optimization_default_node)
+    {
+      optimization_current_node = optimization_default_node;
+      cl_optimization_restore
+	(&global_options,
+	 TREE_OPTIMIZATION (optimization_default_node));
+    }
+  this_fn_optabs = this_target_optabs;
 
   /* Save *crtl and regno_reg_rtx around the reinitialization
      to allow target_reinit being called even after prepare_function_start.  */
@@ -1769,7 +1787,16 @@ target_reinit (void)
   /* Reinitialize lang-dependent parts.  */
   lang_dependent_init_target ();
 
-  /* And restore it at the end, as free_after_compilation from
+  /* Restore the original optimization node.  */
+  if (saved_optimization_current_node != optimization_default_node)
+    {
+      optimization_current_node = saved_optimization_current_node;
+      cl_optimization_restore (&global_options,
+			       TREE_OPTIMIZATION (optimization_current_node));
+    }
+  this_fn_optabs = saved_this_fn_optabs;
+
+  /* Restore regno_reg_rtx at the end, as free_after_compilation from
      expand_dummy_function_end clears it.  */
   if (saved_regno_reg_rtx)
     {
