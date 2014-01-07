@@ -129,43 +129,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StackT         _M_stack;
     };
 
-  template<typename _Tp>
-    struct __has_contiguous_iter : std::false_type { };
-
-  template<typename _Ch, typename _Tr, typename _Alloc>
-    struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
-    : std::true_type  // string<Ch> storage is contiguous
-    { };
-
-  template<typename _Tp, typename _Alloc>
-    struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
-    : std::true_type  // vector<Tp> storage is contiguous
-    { };
-
-  template<typename _Alloc>
-    struct __has_contiguous_iter<std::vector<bool, _Alloc>>
-    : std::false_type // vector<bool> storage is not contiguous
-    { };
-
-  template<typename _Tp>
-    struct __is_contiguous_normal_iter : std::false_type { };
-
-  template<typename _Tp, typename _Cont>
-    struct
-    __is_contiguous_normal_iter<__gnu_cxx::__normal_iterator<_Tp, _Cont>>
-    : __has_contiguous_iter<_Cont>::type
-    { };
-
-  template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_normal_iter
-      = typename enable_if< __is_contiguous_normal_iter<_Iter>::value,
-			    std::shared_ptr<_NFA<_TraitsT>> >::type;
-
-  template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_normal_iter
-      = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
-			    std::shared_ptr<_NFA<_TraitsT>> >::type;
-
   template<typename _FwdIter, typename _TraitsT>
     inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
     __compile_nfa(_FwdIter __first, _FwdIter __last, const _TraitsT& __traits,
@@ -185,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __compile_nfa(__cfirst, __cfirst + __len, __traits, __flags);
     }
 
-  template<typename _TraitsT>
+  template<typename _TraitsT, bool __is_ecma>
     struct _AnyMatcher
     {
       typedef typename _TraitsT::char_type	  _CharT;
@@ -197,25 +160,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       operator()(_CharT __ch) const
+      { return _M_apply(__ch, typename is_same<_CharT, char>::type()); }
+
+      bool
+      _M_apply(_CharT __ch, true_type) const
       {
-	return _M_traits.translate(__ch) != '\n'
-	  && _M_traits.translate(__ch) != '\r'
-	  && _M_traits.translate(__ch) != u'\u2028'
-	  && _M_traits.translate(__ch) != u'\u2029';
+	auto __c = _M_traits.translate(__ch);
+	if (__is_ecma)
+	  {
+	    static auto __n = _M_traits.translate('\n');
+	    static auto __r = _M_traits.translate('\r');
+	    return __c != __n && __c != __r;
+	  }
+	else
+	  {
+	    static auto __nul = _M_traits.translate('\0');
+	    return __c != __nul;
+	  }
+      }
+
+      bool
+      _M_apply(_CharT __ch, false_type) const
+      {
+	auto __c = _M_traits.translate(__ch);
+	if (__is_ecma)
+	  {
+	    static auto __n = _M_traits.translate('\n');
+	    static auto __r = _M_traits.translate('\r');
+	    static auto __u2028 = _M_traits.translate(u'\u2028');
+	    static auto __u2029 = _M_traits.translate(u'\u2029');
+	    return __c != __n && __c != __r && __c != __u2028
+	      && __c != __u2029;
+	  }
+	else
+	  {
+	    static auto __nul = _M_traits.translate('\0');
+	    return __c != __nul;
+	  }
       }
 
       const _TraitsT& _M_traits;
     };
 
-  template<typename _TraitsT>
+  template<typename _TraitsT, bool __icase>
     struct _CharMatcher
     {
       typedef typename _TraitsT::char_type	  _CharT;
-      typedef regex_constants::syntax_option_type _FlagT;
 
-      explicit
-      _CharMatcher(_CharT __ch, const _TraitsT& __traits, _FlagT __flags)
-      : _M_traits(__traits), _M_flags(__flags), _M_ch(_M_translate(__ch))
+      _CharMatcher(_CharT __ch, const _TraitsT& __traits)
+      : _M_traits(__traits), _M_ch(_M_translate(__ch))
       { }
 
       bool
@@ -225,44 +218,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _CharT
       _M_translate(_CharT __ch) const
       {
-	if (_M_flags & regex_constants::icase)
+	if (__icase)
 	  return _M_traits.translate_nocase(__ch);
 	else
 	  return _M_traits.translate(__ch);
       }
 
       const _TraitsT& _M_traits;
-      _FlagT          _M_flags;
       _CharT          _M_ch;
     };
 
   /// Matches a character range (bracket expression)
   // TODO: Convert used _M_flags fields to template parameters, including
   // collate and icase. Avoid using std::set, could use flat_set
-  // (sorted vector and binary search) instead; use an fixed sized (256)
-  // vector<bool> for char specialization if necessary.
+  // (sorted vector and binary search) instead.
   template<typename _TraitsT>
     struct _BracketMatcher
     {
+    public:
       typedef typename _TraitsT::char_type	  _CharT;
       typedef typename _TraitsT::char_class_type  _CharClassT;
       typedef typename _TraitsT::string_type      _StringT;
       typedef regex_constants::syntax_option_type _FlagT;
 
-      explicit
+    public:
       _BracketMatcher(bool __is_non_matching,
 		      const _TraitsT& __traits,
 		      _FlagT __flags)
-      : _M_traits(__traits), _M_class_set(0), _M_flags(__flags),
+      :
+#ifdef _GLIBCXX_DEBUG
+      _M_is_ready(false),
+#endif
+      _M_traits(__traits), _M_class_set(0), _M_flags(__flags),
       _M_is_non_matching(__is_non_matching)
       { }
 
       bool
-      operator()(_CharT) const;
+      operator()(_CharT __ch) const
+      {
+	_GLIBCXX_DEBUG_ASSERT(_M_is_ready);
+	return _M_apply(__ch, _IsChar());
+      }
 
       void
       _M_add_char(_CharT __c)
-      { _M_char_set.insert(_M_translate(__c)); }
+      {
+	_M_char_set.insert(_M_translate(__c));
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = false;
+#endif
+      }
 
       void
       _M_add_collating_element(const _StringT& __s)
@@ -272,6 +277,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
 	_M_char_set.insert(_M_translate(__st[0]));
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = false;
+#endif
       }
 
       void
@@ -284,6 +292,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__st = _M_traits.transform_primary(__st.data(),
 					   __st.data() + __st.size());
 	_M_equiv_set.insert(__st);
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = false;
+#endif
       }
 
       void
@@ -295,6 +306,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__mask == 0)
 	  __throw_regex_error(regex_constants::error_ctype);
 	_M_class_set |= __mask;
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = false;
+#endif
       }
 
       void
@@ -306,7 +320,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _M_get_str(_M_translate(__r))));
 	else
 	  _M_range_set.insert(make_pair(_M_get_str(__l), _M_get_str(__r)));
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = false;
+#endif
       }
+
+      void
+      _M_ready()
+      {
+	_M_make_cache(_IsChar());
+#ifdef _GLIBCXX_DEBUG
+	_M_is_ready = true;
+#endif
+      }
+
+    private:
+      typedef typename is_same<_CharT, char>::type _IsChar;
+      struct _Dummy { };
+      typedef typename conditional<_IsChar::value,
+				   std::bitset<1 << (8 * sizeof(_CharT))>,
+				   _Dummy>::type _CacheT;
+      typedef typename make_unsigned<_CharT>::type _UnsignedCharT;
+
+    private:
+      bool
+      _M_apply(_CharT __ch, false_type) const;
+
+      bool
+      _M_apply(_CharT __ch, true_type) const
+      { return _M_cache[static_cast<_UnsignedCharT>(__ch)]; }
 
       _CharT
       _M_translate(_CharT __c) const
@@ -328,6 +370,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_traits.transform(__s.begin(), __s.end());
       }
 
+      void
+      _M_make_cache(true_type)
+      {
+	for (int __i = 0; __i < _M_cache.size(); __i++)
+	  _M_cache[static_cast<_UnsignedCharT>(__i)] =
+	    _M_apply(__i, false_type());
+      }
+
+      void
+      _M_make_cache(false_type)
+      { }
+
+    private:
+      _CacheT                            _M_cache;
       std::set<_CharT>                   _M_char_set;
       std::set<_StringT>                 _M_equiv_set;
       std::set<pair<_StringT, _StringT>> _M_range_set;
@@ -335,6 +391,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _CharClassT                        _M_class_set;
       _FlagT                             _M_flags;
       bool                               _M_is_non_matching;
+#ifdef _GLIBCXX_DEBUG
+      bool                               _M_is_ready;
+#endif
     };
 
  //@} regex-detail

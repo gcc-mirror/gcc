@@ -1,3 +1,28 @@
+2014-01-07  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_compiler.h (_AnyMatcher<>::_AnyMatcher(),
+	_AnyMatcher<>::operator(), _AnyMatcher<>::_M_apply(),
+	_CharMatcher<>::_CharMatcher(), _CharMatcher<>::_M_translate(),
+	_BracketMatcher<>::_BracketMatcher(), _BracketMatcher<>::operator(),
+	_BracketMatcher<>::_M_add_char(),
+	_BracketMatcher<>::_M_add_collating_element(),
+	_BracketMatcher<>::_M_add_equivalence_class(),
+	_BracketMatcher<>::_M_add_character_class(),
+	_BracketMatcher<>::_M_make_range(), _BracketMatcher<>::_M_ready(),
+	_BracketMatcher<>::_M_apply(), _BracketMatcher<>::_M_make_cache()):
+	Fix _AnyMatcher behavior of POSIX style and move _M_flags
+	to template parameter; Add cache for _BracketMatcher. Adjust
+	declarations from here...
+	* include/bits/regex.h (basic_regex<>::imbue()): ...to here. Also,
+	imbuing a regex will trigger a recompilation to rebuild the cache.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_atom(),
+	_Compiler<>::_M_bracket_expression()): Adjust matchers' caller for
+	different template bool parameters.
+	* include/bits/regex_executor.h: Remove unnecessary declarations.
+	* include/std/regex: Adjust including orders.
+	* testsuite/28_regex/traits/char/user_defined.cc: New.
+	* testsuite/28_regex/traits/wchar_t/user_defined.cc: New.
+
 2014-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerate.
