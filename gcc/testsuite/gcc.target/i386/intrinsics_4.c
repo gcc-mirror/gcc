@@ -12,3 +12,10 @@ foo (void)
 {
   a[0] = _mm256_and_ps (b[0], c[0]);
 }
+
+/* Try again with a combination of target and optimization attributes.  */
+void __attribute__((target ("avx"), optimize(3)))
+bar (void)
+{
+  a[0] = _mm256_and_ps (b[0], c[0]);
+}

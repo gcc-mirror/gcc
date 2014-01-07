@@ -68,7 +68,6 @@ struct target_globals *
 save_target_globals (void)
 {
   struct target_globals *g;
-  struct target_optabs *saved_this_fn_optabs = this_fn_optabs;
 
   g = ggc_alloc_target_globals ();
   g->flag_state = XCNEW (struct target_flag_state);
@@ -88,10 +87,8 @@ save_target_globals (void)
   g->bb_reorder = XCNEW (struct target_bb_reorder);
   g->lower_subreg = XCNEW (struct target_lower_subreg);
   restore_target_globals (g);
-  this_fn_optabs = this_target_optabs;
   init_reg_sets ();
   target_reinit ();
-  this_fn_optabs = saved_this_fn_optabs;
   return g;
 }
 
