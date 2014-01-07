@@ -1,3 +1,14 @@
+2014-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58668
+	* cfgcleanup.c (flow_find_cross_jump): Don't count
+	any jumps if dir_p is NULL.  Remove p1 variable and make USE/CLOBBER
+	check consistent with other places.
+	(flow_find_head_matching_sequence): Don't count USE or CLOBBER insns.
+	(try_head_merge_bb): Adjust for the flow_find_head_matching_sequence
+	counting change.
+	* ifcvt.c (count_bb_insns): Don't count USE or CLOBBER insns.
+
 2014-01-07  Mike Stump  <mikestump@comcast.net>
 	    Jakub Jelinek  <jakub@redhat.com>
 

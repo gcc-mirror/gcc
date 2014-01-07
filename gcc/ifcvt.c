@@ -115,7 +115,11 @@ count_bb_insns (const_basic_block bb)
 
   while (1)
     {
-      if (CALL_P (insn) || NONJUMP_INSN_P (insn))
+      if ((CALL_P (insn) || NONJUMP_INSN_P (insn))
+	  /* Don't count USE/CLOBBER insns, flow_find_cross_jump etc.
+	     don't count them either and we need consistency.  */
+	  && GET_CODE (PATTERN (insn)) != USE
+	  && GET_CODE (PATTERN (insn)) != CLOBBER)
 	count++;
 
       if (insn == BB_END (bb))

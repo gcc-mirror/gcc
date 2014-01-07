@@ -1293,7 +1293,6 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
-  rtx p1;
   enum replace_direction dir, last_dir, afterlast_dir;
   bool follow_fallthru, did_fallthru;
 
@@ -1321,8 +1320,9 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
       || (returnjump_p (i2) && !side_effects_p (PATTERN (i2))))
     {
       last2 = i2;
-      /* Count everything except for unconditional jump as insn.  */
-      if (!simplejump_p (i2) && !returnjump_p (i2) && last1)
+      /* Count everything except for unconditional jump as insn.
+	 Don't count any jumps if dir_p is NULL.  */
+      if (!simplejump_p (i2) && !returnjump_p (i2) && last1 && dir_p)
 	ninsns++;
       i2 = PREV_INSN (i2);
     }
@@ -1373,8 +1373,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 	  last1 = i1, last2 = i2;
 	  afterlast_dir = last_dir;
 	  last_dir = dir;
-	  p1 = PATTERN (i1);
-	  if (!(GET_CODE (p1) == USE || GET_CODE (p1) == CLOBBER))
+	  if (GET_CODE (PATTERN (i1)) != USE
+	      && GET_CODE (PATTERN (i1)) != CLOBBER)
 	    ninsns++;
 	}
 
@@ -1492,7 +1492,9 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
 	  beforelast1 = last1, beforelast2 = last2;
 	  last1 = i1, last2 = i2;
-	  ninsns++;
+	  if (GET_CODE (PATTERN (i1)) != USE
+	      && GET_CODE (PATTERN (i1)) != CLOBBER)
+	    ninsns++;
 	}
 
       if (i1 == BB_END (bb1) || i2 == BB_END (bb2)
@@ -2398,7 +2400,9 @@ try_head_merge_bb (basic_block bb)
 	return false;
       do
 	e0_last_head = prev_real_insn (e0_last_head);
-      while (DEBUG_INSN_P (e0_last_head));
+      while (DEBUG_INSN_P (e0_last_head)
+	     || GET_CODE (PATTERN (e0_last_head)) == USE
+	     || GET_CODE (PATTERN (e0_last_head)) == CLOBBER);
     }
 
   if (max_match == 0)
@@ -2418,7 +2422,9 @@ try_head_merge_bb (basic_block bb)
       basic_block merge_bb = EDGE_SUCC (bb, ix)->dest;
       rtx head = BB_HEAD (merge_bb);
 
-      while (!NONDEBUG_INSN_P (head))
+      while (!NONDEBUG_INSN_P (head)
+	     || GET_CODE (PATTERN (head)) == USE
+	     || GET_CODE (PATTERN (head)) == CLOBBER)
 	head = NEXT_INSN (head);
       headptr[ix] = head;
       currptr[ix] = head;
@@ -2427,7 +2433,9 @@ try_head_merge_bb (basic_block bb)
       for (j = 1; j < max_match; j++)
 	do
 	  head = NEXT_INSN (head);
-	while (!NONDEBUG_INSN_P (head));
+	while (!NONDEBUG_INSN_P (head)
+	       || GET_CODE (PATTERN (head)) == USE
+	       || GET_CODE (PATTERN (head)) == CLOBBER);
       simulate_backwards_to_point (merge_bb, live, head);
       IOR_REG_SET (live_union, live);
     }

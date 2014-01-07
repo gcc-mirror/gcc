@@ -1,5 +1,8 @@
 2014-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/58668
+	* gcc.dg/pr58668.c: New test.
+
 	Backported from mainline
 	2013-12-16  Jakub Jelinek  <jakub@redhat.com>
 
