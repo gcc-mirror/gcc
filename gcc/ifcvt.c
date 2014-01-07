@@ -118,7 +118,7 @@ count_bb_insns (const_basic_block bb)
 
   while (1)
     {
-      if (CALL_P (insn) || NONJUMP_INSN_P (insn))
+      if (active_insn_p (insn) && !JUMP_P (insn))
 	count++;
 
       if (insn == BB_END (bb))

@@ -1,5 +1,16 @@
 2014-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/58668
+	* cfgcleanup.c (flow_find_cross_jump): Don't count
+	any jumps if dir_p is NULL.  Remove p1 variable, use active_insn_p
+	to determine what is counted.
+	(flow_find_head_matching_sequence): Use active_insn_p to determine
+	what is counted.
+	(try_head_merge_bb): Adjust for the flow_find_head_matching_sequence
+	counting change.
+	* ifcvt.c (count_bb_insns): Use active_insn_p && !JUMP_P to
+	determine what is counted.
+
 	PR tree-optimization/59643
 	* tree-predcom.c (split_data_refs_to_components): If one dr is
 	read and one write, determine_offset fails and the write isn't
