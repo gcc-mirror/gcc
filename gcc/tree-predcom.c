@@ -772,10 +772,37 @@ split_data_refs_to_components (struct loop *loop,
       bad = component_of (comp_father, n);
 
       /* If both A and B are reads, we may ignore unsuitable dependences.  */
-      if (DR_IS_READ (dra) && DR_IS_READ (drb)
-	  && (ia == bad || ib == bad
-	      || !determine_offset (dra, drb, &dummy_off)))
-	continue;
+      if (DR_IS_READ (dra) && DR_IS_READ (drb))
+	{
+	  if (ia == bad || ib == bad
+	      || !determine_offset (dra, drb, &dummy_off))
+	    continue;
+	}
+      /* If A is read and B write or vice versa and there is unsuitable
+	 dependence, instead of merging both components into a component
+	 that will certainly not pass suitable_component_p, just put the
+	 read into bad component, perhaps at least the write together with
+	 all the other data refs in it's component will be optimizable.  */
+      else if (DR_IS_READ (dra) && ib != bad)
+	{
+	  if (ia == bad)
+	    continue;
+	  else if (!determine_offset (dra, drb, &dummy_off))
+	    {
+	      merge_comps (comp_father, comp_size, bad, ia);
+	      continue;
+	    }
+	}
+      else if (DR_IS_READ (drb) && ia != bad)
+	{
+	  if (ib == bad)
+	    continue;
+	  else if (!determine_offset (dra, drb, &dummy_off))
+	    {
+	      merge_comps (comp_father, comp_size, bad, ib);
+	      continue;
+	    }
+	}
 
       merge_comps (comp_father, comp_size, ia, ib);
     }
