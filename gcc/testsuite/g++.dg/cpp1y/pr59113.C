@@ -1,7 +1,6 @@
+// PR c++/59113
 // { dg-do compile }
 // { dg-options "-std=gnu++1y" }
-
-// PR c++/59113
 
 void foo()
 {
