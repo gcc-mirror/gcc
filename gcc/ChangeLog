@@ -1,3 +1,8 @@
+2014-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-elf.h (ASM_SPEC): Remove identity spec for
+	-mcpu.
+
 2014-01-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/arm/arm.c (arm_expand_neon_args): Call expand_expr
