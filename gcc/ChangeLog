@@ -1,3 +1,10 @@
+2014-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59643
+	* tree-predcom.c (split_data_refs_to_components): If one dr is
+	read and one write, determine_offset fails and the write isn't
+	in the bad component, just put the read into the bad component.
+
 2014-01-07  Mike Stump  <mikestump@comcast.net>
 	    Jakub Jelinek  <jakub@redhat.com>
 
