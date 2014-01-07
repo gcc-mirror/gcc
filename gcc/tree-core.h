@@ -1550,7 +1550,7 @@ struct GTY(()) tree_optimization_option {
 
   /* Target optabs for this set of optimization options.  This is of
      type `struct target_optabs *'.  */
-  unsigned char *GTY ((atomic)) optabs;
+  void *GTY ((atomic)) optabs;
 
   /* The value of this_target_optabs against which the optabs above were
      generated.  */
