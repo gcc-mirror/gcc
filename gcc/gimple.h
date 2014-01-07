@@ -888,13 +888,14 @@ extern tree gimple_signed_type (tree);
 extern alias_set_type gimple_get_alias_set (tree);
 extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
 				   unsigned *);
+typedef bool (*walk_stmt_load_store_addr_fn) (gimple, tree, tree, void *);
 extern bool walk_stmt_load_store_addr_ops (gimple, void *,
-					   bool (*)(gimple, tree, void *),
-					   bool (*)(gimple, tree, void *),
-					   bool (*)(gimple, tree, void *));
+					   walk_stmt_load_store_addr_fn,
+					   walk_stmt_load_store_addr_fn,
+					   walk_stmt_load_store_addr_fn);
 extern bool walk_stmt_load_store_ops (gimple, void *,
-				      bool (*)(gimple, tree, void *),
-				      bool (*)(gimple, tree, void *));
+				      walk_stmt_load_store_addr_fn,
+				      walk_stmt_load_store_addr_fn);
 extern bool gimple_ior_addresses_taken (bitmap, gimple);
 extern bool gimple_call_builtin_p (gimple, enum built_in_class);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
