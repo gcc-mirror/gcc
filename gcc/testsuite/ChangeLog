@@ -1,3 +1,7 @@
+2014-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/ext/is_base_of_incomplete-2.C: New.
+
 2014-01-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58668

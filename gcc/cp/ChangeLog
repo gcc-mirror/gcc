@@ -1,3 +1,9 @@
+2014-01-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (trait_expr_value, [CPTK_IS_BASE_OF]): Implement
+	the letter of 20.11.6 about Base and Derived naming the same
+	class type modulo cv-qualifiers.
+
 2014-01-06  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/59635
