@@ -1,3 +1,7 @@
+2014-01-07  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/arm/neon/vst1Q_laneu64-1.c: New test.
+
 2014-01-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/i386/intrinsics_4.c (bar): New function.
