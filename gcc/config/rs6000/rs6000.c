@@ -5428,12 +5428,13 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x,
       break;
 
     case TFmode:
-    case TDmode:
-    case TImode:
       if (TARGET_E500_DOUBLE)
 	return (SPE_CONST_OFFSET_OK (offset)
 		&& SPE_CONST_OFFSET_OK (offset + 8));
+      /* fall through */
 
+    case TDmode:
+    case TImode:
       extra = 8;
       if (!worst_case)
 	break;
