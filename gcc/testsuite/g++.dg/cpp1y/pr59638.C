@@ -1,8 +1,6 @@
+// PR c++/59638
 // { dg-do compile }
 // { dg-options "-std=gnu++1y" }
-
-// PR c++/59638
-
 
 void (*a)(auto);         // { dg-error "template declaration" }
 
