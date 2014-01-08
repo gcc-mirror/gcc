@@ -6,7 +6,7 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 2010-2013 Free Software Foundation, Inc.
+Copyright @copyright{} 2010-2014 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document

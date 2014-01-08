@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 

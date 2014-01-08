@@ -1,4 +1,4 @@
-@c Copyright (C) 2010-2013 Free Software Foundation, Inc.
+@c Copyright (C) 2010-2014 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Jan Hubicka <jh@suse.cz> and

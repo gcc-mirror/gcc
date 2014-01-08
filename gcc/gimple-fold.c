@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -1184,13 +1184,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    = possible_polymorphic_call_targets (callee, &final);
 	  if (final && targets.length () <= 1)
 	    {
-	      tree fndecl;
 	      if (targets.length () == 1)
-		fndecl = targets[0]->decl;
-	      else
-		fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-	      gimple_call_set_fndecl (stmt, fndecl);
-	      changed = true;
+		{
+		  gimple_call_set_fndecl (stmt, targets[0]->decl);
+		  changed = true;
+		}
+	      else if (!inplace)
+		{
+		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  gimple new_stmt = gimple_build_call (fndecl, 0);
+		  gimple_set_location (new_stmt, gimple_location (stmt));
+		  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		  return true;
+		}
 	    }
 	}
     }

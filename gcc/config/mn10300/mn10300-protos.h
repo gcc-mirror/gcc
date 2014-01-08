@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.

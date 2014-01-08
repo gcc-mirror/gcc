@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2013 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2014 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -41,6 +41,16 @@
 #include <avxintrin.h>
 
 #include <avx2intrin.h>
+
+#include <avx512fintrin.h>
+
+#include <avx512erintrin.h>
+
+#include <avx512pfintrin.h>
+
+#include <avx512cdintrin.h>
+
+#include <shaintrin.h>
 
 #include <lzcntintrin.h>
 

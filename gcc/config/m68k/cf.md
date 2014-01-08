@@ -1,5 +1,5 @@
 ;; ColdFire V1, V2, V3 and V4/V4e DFA description.
-;; Copyright (C) 2007-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2014 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery Inc., www.codesourcery.com
 ;;
 ;; This file is part of GCC.

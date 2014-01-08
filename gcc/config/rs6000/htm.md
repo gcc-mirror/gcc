@@ -1,5 +1,5 @@
 ;; Hardware Transactional Memory (HTM) patterns.
-;; Copyright (C) 2013 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2014 Free Software Foundation, Inc.
 ;; Contributed by Peter Bergner <bergner@vnet.ibm.com>.
 
 ;; This file is part of GCC.

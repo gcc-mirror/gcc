@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for Sun SPARC.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org>.
 
 This file is part of GCC.

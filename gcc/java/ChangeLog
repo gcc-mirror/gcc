@@ -1,3 +1,12 @@
+2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Update copyright years
+
+2014-01-02  Tobias Burnus  <burnus@net-b.de>
+
+	* jcf-dump.c (version): Update copyright notice dates.
+	* gcj.texi: Bump @copying's copyright year.
+
 2013-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/59545
@@ -22891,7 +22900,7 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	New directory.
 
 
-Copyright (C) 1996-2013 Free Software Foundation, Inc.
+Copyright (C) 1996-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

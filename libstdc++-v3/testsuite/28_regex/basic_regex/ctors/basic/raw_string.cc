@@ -2,7 +2,7 @@
 
 // 2012-08-20  Benjamin Kosnik <bkoz@redhat.com>
 //
-// Copyright (C) 2012-2013 Free Software Foundation, Inc.
+// Copyright (C) 2012-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

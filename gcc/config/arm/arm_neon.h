@@ -1,7 +1,7 @@
 /* ARM NEON intrinsics include file. This file is generated automatically
    using neon-gen.ml.  Please do not edit manually.
 
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

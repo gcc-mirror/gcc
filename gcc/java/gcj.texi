@@ -17,7 +17,7 @@
 @c the word ``Java'.
 
 @c When this manual is copyrighted.
-@set copyrights-gcj 2001-2013
+@set copyrights-gcj 2001-2014
 
 @copying
 @c man begin COPYRIGHT

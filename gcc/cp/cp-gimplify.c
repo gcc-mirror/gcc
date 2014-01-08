@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.

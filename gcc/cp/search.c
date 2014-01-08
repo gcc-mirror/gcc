@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.

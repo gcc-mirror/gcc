@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
    and Steve Kargl.
 

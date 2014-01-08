@@ -54,6 +54,8 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined(__nds32__)
 /* No pic register.  */
+#elif defined(__nios2__)
+/* No pic register.  */
 #elif defined(__hppa__)
 /* PIC register is %r27 or %r19, but is used even without -fpic.  */
 #elif defined(__pdp11__)

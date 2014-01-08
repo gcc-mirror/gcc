@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999-2013 Free Software Foundation, Inc.
+   Copyright (C) 1999-2014 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GCC.

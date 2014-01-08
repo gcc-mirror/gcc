@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2013 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Transactional Memory Library (libitm).

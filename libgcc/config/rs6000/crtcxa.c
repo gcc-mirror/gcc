@@ -1,5 +1,5 @@
 /* __dso_handle initialization for AIX.
-   Copyright (C) 2013 Free Software Foundation, Inc.
+   Copyright (C) 2013-2014 Free Software Foundation, Inc.
    Written by David Edelsohn, IBM.
 
 This file is part of GCC.

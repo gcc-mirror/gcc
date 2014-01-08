@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1403,7 +1403,9 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 			    || code == PREDECREMENT_EXPR
 			    || code == PREINCREMENT_EXPR
 			    || code == POSTDECREMENT_EXPR
-			    || code == POSTINCREMENT_EXPR)))
+			    || code == POSTINCREMENT_EXPR))
+		   || code == VEC_PERM_EXPR
+		   || code == VEC_COND_EXPR)
                   && (complain & tf_warning))
 		warning_at (loc, OPT_Wunused_value, "value computed is not used");
 	    }

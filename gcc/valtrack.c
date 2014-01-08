@@ -1,6 +1,6 @@
 /* Infrastructure for tracking user variable locations and values
    throughout compilation.
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>.
 
 This file is part of GCC.

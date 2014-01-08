@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c and other code to write to asm_out_file.
    These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

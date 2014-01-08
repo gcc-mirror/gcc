@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! "m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* picochip*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* arc*-*-*"} } } */
+/* { dg-do compile { target { ! "m68k*-*-* mmix*-*-* mep*-*-* bfin*-*-* v850*-*-* picochip*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* arc*-*-* hppa*-*-*"} } } */
 /* { dg-options "-O2 -fdump-tree-forwprop1" } */
 /* Skip on ARM Cortex-M, where LOGICAL_OP_NON_SHORT_CIRCUIT is set to false,
    leading to two conditional jumps when evaluating an && condition.  Forwprop1

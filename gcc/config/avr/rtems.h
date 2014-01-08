@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a AVR using ELF.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    Contributed by Ralf Corsepius (ralf.corsepius@rtems.org).
 
 This file is part of GCC.

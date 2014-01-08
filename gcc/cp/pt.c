@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992-2013 Free Software Foundation, Inc.
+   Copyright (C) 1992-2014 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -13035,6 +13035,10 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
   init_decl = (init && TREE_CODE (init) == DECL_EXPR);
   init = RECUR (init);
   decl = RECUR (decl);
+
+  if (decl == error_mark_node || init == error_mark_node)
+    return;
+
   if (init_decl)
     {
       gcc_assert (!processing_template_decl);
@@ -14490,8 +14494,7 @@ tsubst_copy_and_build (tree t,
 	       into a non-dependent call.  */
 	    && type_dependent_expression_p_push (t)
 	    && !any_type_dependent_arguments_p (call_args))
-	  function = perform_koenig_lookup (function, call_args, false,
-					    tf_none);
+	  function = perform_koenig_lookup (function, call_args, tf_none);
 
 	if (identifier_p (function)
 	    && !any_type_dependent_arguments_p (call_args))

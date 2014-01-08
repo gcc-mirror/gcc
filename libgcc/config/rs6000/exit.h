@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2013 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
 
 Derived from exit.h in GNU C Library.
 

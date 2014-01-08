@@ -1,0 +1,499 @@
+/* Definitions of target machine for Altera Nios II.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
+   Contributed by Jonah Graham (jgraham@altera.com), 
+   Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
+   Contributed by Mentor Graphics, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 3, or (at your
+   option) any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef GCC_NIOS2_H
+#define GCC_NIOS2_H
+
+/* FPU insn codes declared here.  */
+#include "config/nios2/nios2-opts.h"
+
+/* Define built-in preprocessor macros.  */
+#define TARGET_CPU_CPP_BUILTINS()                   \
+  do                                                \
+    {                                               \
+      builtin_define_std ("NIOS2");                 \
+      builtin_define_std ("nios2");                 \
+      if (TARGET_BIG_ENDIAN)                        \
+        builtin_define_std ("nios2_big_endian");    \
+      else                                          \
+        builtin_define_std ("nios2_little_endian"); \
+    }                                               \
+  while (0)
+
+/* We're little endian, unless otherwise specified by defining
+   BIG_ENDIAN_FLAG.  */
+#ifndef TARGET_ENDIAN_DEFAULT
+# define TARGET_ENDIAN_DEFAULT 0
+#endif
+
+/* Default target_flags if no switches specified.  */
+#ifndef TARGET_DEFAULT
+# define TARGET_DEFAULT (MASK_HAS_MUL | TARGET_ENDIAN_DEFAULT)
+#endif
+
+#define CC1_SPEC "%{G*}"
+
+#if TARGET_ENDIAN_DEFAULT == 0
+# define ASM_SPEC "%{!meb:-EL} %{meb:-EB}"
+# define LINK_SPEC_ENDIAN "%{!meb:-EL} %{meb:-EB}"
+# define MULTILIB_DEFAULTS { "EL" }
+#else
+# define ASM_SPEC "%{!mel:-EB} %{mel:-EL}"
+# define LINK_SPEC_ENDIAN "%{!mel:-EB} %{mel:-EL}"
+# define MULTILIB_DEFAULTS { "EB" }
+#endif
+
+#define LINK_SPEC LINK_SPEC_ENDIAN \
+  " %{shared:-shared} \
+    %{static:-Bstatic}"
+
+
+/* Storage layout.  */
+
+#define DEFAULT_SIGNED_CHAR 1
+#define BITS_BIG_ENDIAN 0
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define BITS_PER_WORD 32
+#define UNITS_PER_WORD 4
+#define POINTER_SIZE 32
+#define BIGGEST_ALIGNMENT 32
+#define STRICT_ALIGNMENT 1
+#define FUNCTION_BOUNDARY 32
+#define PARM_BOUNDARY 32
+#define STACK_BOUNDARY 32
+#define PREFERRED_STACK_BOUNDARY 32
+#define MAX_FIXED_MODE_SIZE 64
+
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)                          \
+  ((TREE_CODE (EXP) == STRING_CST)                              \
+   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+
+/* Layout of source language data types.  */
+
+#define INT_TYPE_SIZE 32
+#define SHORT_TYPE_SIZE 16
+#define LONG_TYPE_SIZE 32
+#define LONG_LONG_TYPE_SIZE 64
+#define FLOAT_TYPE_SIZE 32
+#define DOUBLE_TYPE_SIZE 64
+#define LONG_DOUBLE_TYPE_SIZE DOUBLE_TYPE_SIZE
+
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+
+/* Basic characteristics of Nios II registers:
+
+   Regno  Name
+   0      r0       zero    always zero
+   1      r1       at      Assembler Temporary
+   2-3    r2-r3            Return Location
+   4-7    r4-r7            Register Arguments
+   8-15   r8-r15           Caller Saved Registers
+   16-22  r16-r22          Callee Saved Registers
+   22     r22              Global Offset Table pointer (Linux ABI only)
+   23     r23              Thread pointer (Linux ABI only)
+   24     r24      et      Exception Temporary
+   25     r25      bt      Breakpoint Temporary
+   26     r26      gp      Global Pointer
+   27     r27      sp      Stack Pointer
+   28     r28      fp      Frame Pointer
+   29     r29      ea      Exception Return Address
+   30     r30      ba      Breakpoint Return Address
+   31     r31      ra      Return Address
+			   
+   32     ctl0     status
+   33     ctl1     estatus STATUS saved by exception
+   34     ctl2     bstatus STATUS saved by break
+   35     ctl3     ipri    Interrupt Priority Mask
+   36     ctl4     ecause  Exception Cause
+
+   37     pc               Not an actual register
+
+   38     fake_fp          Fake Frame Pointer (always eliminated)
+   39     fake_ap          Fake Argument Pointer (always eliminated)
+   40                      First Pseudo Register
+
+   In addition, r12 is used as the static chain register and r13, r14, and r15
+   are clobbered by PLT code sequences.  
+
+   The definitions for all the hard register numbers are located in nios2.md.
+*/
+
+#define FIXED_REGISTERS                      \
+  {					     \
+/*        +0  1  2  3  4  5  6  7  8  9 */   \
+/*   0 */  1, 1, 0, 0, 0, 0, 0, 0, 0, 0,     \
+/*  10 */  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     \
+/*  20 */  0, 0, TARGET_LINUX_ABI, TARGET_LINUX_ABI, 1, 1, 1, 1, 0, 1,     \
+/*  30 */  1, 0, 1, 1, 1, 1, 1, 1, 1, 1,     \
+  }
+
+/* Call used == caller saved + fixed regs + args + ret vals.  */
+#define CALL_USED_REGISTERS                  \
+  {					     \
+/*        +0  1  2  3  4  5  6  7  8  9 */   \
+/*   0 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,     \
+/*  10 */  1, 1, 1, 1, 1, 1, 0, 0, 0, 0,     \
+/*  20 */  0, 0, TARGET_LINUX_ABI, TARGET_LINUX_ABI, 1, 1, 1, 1, 0, 1,     \
+/*  30 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,     \
+  }
+
+#define MODES_TIEABLE_P(MODE1, MODE2) 1
+#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
+#define HARD_REGNO_NREGS(REGNO, MODE)            \
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Register Classes.  */
+
+enum reg_class
+{
+  NO_REGS,
+  SIB_REGS,
+  GP_REGS,
+  ALL_REGS,
+  LIM_REG_CLASSES
+};
+
+#define N_REG_CLASSES (int) LIM_REG_CLASSES
+
+#define REG_CLASS_NAMES   \
+  {  "NO_REGS",		  \
+     "SIB_REGS",	  \
+     "GP_REGS",           \
+     "ALL_REGS" }
+
+#define GENERAL_REGS ALL_REGS
+
+#define REG_CLASS_CONTENTS			\
+  {						\
+    /* NO_REGS  */ { 0, 0},			\
+    /* SIB_REGS */ { 0xfe0c, 0},		\
+    /* GP_REGS  */ {~0, 0},			\
+    /* ALL_REGS */ {~0,~0}			\
+  }
+
+
+#define GP_REG_P(REGNO) ((unsigned)(REGNO) <= LAST_GP_REG)
+#define REGNO_REG_CLASS(REGNO) (GP_REG_P (REGNO) ? GP_REGS : ALL_REGS)
+#define CLASS_MAX_NREGS(CLASS, MODE)					\
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Tests for various kinds of constants used in the Nios II port.  */
+
+#define SMALL_INT(X) ((unsigned HOST_WIDE_INT)(X) + 0x8000 < 0x10000)
+#define SMALL_INT_UNSIGNED(X) ((X) >= 0 && (X) < 0x10000)
+#define UPPER16_INT(X) (((X) & 0xffff) == 0)
+#define SHIFT_INT(X) ((X) >= 0 && (X) <= 31)
+#define RDWRCTL_INT(X) ((X) >= 0 && (X) <= 31)
+#define CUSTOM_INSN_OPCODE(X) ((X) >= 0 && (X) <= 255)
+
+/* Say that the epilogue uses the return address register.  Note that
+   in the case of sibcalls, the values "used by the epilogue" are
+   considered live at the start of the called function.  */
+#define EPILOGUE_USES(REGNO) (epilogue_completed && (REGNO) == RA_REGNO)
+
+/* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
+   the stack pointer does not matter.  The value is tested only in
+   functions that have frame pointers.
+   No definition is equivalent to always zero.  */
+
+#define EXIT_IGNORE_STACK 1
+
+/* Trampolines use a 5-instruction sequence.  */
+#define TRAMPOLINE_SIZE 20
+
+/* Stack layout.  */
+#define STACK_GROWS_DOWNWARD
+#define STARTING_FRAME_OFFSET 0
+#define FIRST_PARM_OFFSET(FUNDECL) 0
+
+/* Before the prologue, RA lives in r31.  */
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, RA_REGNO)
+#define RETURN_ADDR_RTX(C,F) nios2_get_return_address (C)
+
+#define DWARF_FRAME_RETURN_COLUMN RA_REGNO
+
+/* The CFA includes the pretend args.  */
+#define ARG_POINTER_CFA_OFFSET(FNDECL) \
+  (gcc_assert ((FNDECL) == current_function_decl), \
+   FIRST_PARM_OFFSET (FNDECL) + crtl->args.pretend_args_size)
+
+/* Frame/arg pointer elimination settings.  */
+#define ELIMINABLE_REGS                                                 \
+{{ ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},                         \
+ { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM},                    \
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},                         \
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
+
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  (OFFSET) = nios2_initial_elimination_offset ((FROM), (TO))
+
+/* Calling convention definitions.  */
+typedef struct nios2_args
+{
+  int regs_used;
+} CUMULATIVE_ARGS;
+
+#define NUM_ARG_REGS (LAST_ARG_REGNO - FIRST_ARG_REGNO + 1)
+
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
+  do { (CUM).regs_used = 0; } while (0)
+
+#define FUNCTION_ARG_PADDING(MODE, TYPE) \
+  (nios2_function_arg_padding ((MODE), (TYPE)))
+
+#define PAD_VARARGS_DOWN \
+  (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+
+#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
+  (nios2_block_reg_padding ((MODE), (TYPE), (FIRST)))
+
+#define FUNCTION_ARG_REGNO_P(REGNO) \
+  ((REGNO) >= FIRST_ARG_REGNO && (REGNO) <= LAST_ARG_REGNO)
+
+/* Passing function arguments on stack.  */
+#define PUSH_ARGS 0
+#define ACCUMULATE_OUTGOING_ARGS 1
+
+/* We define TARGET_RETURN_IN_MEMORY, so set to zero.  */
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Profiling.  */
+#define PROFILE_BEFORE_PROLOGUE
+#define NO_PROFILE_COUNTERS 1
+#define FUNCTION_PROFILER(FILE, LABELNO) \
+  nios2_function_profiler ((FILE), (LABELNO))
+
+/* Addressing modes.  */
+
+#define CONSTANT_ADDRESS_P(X) \
+  (CONSTANT_P (X) && memory_address_p (SImode, X))
+
+#define MAX_REGS_PER_ADDRESS 1
+#define BASE_REG_CLASS ALL_REGS
+#define INDEX_REG_CLASS NO_REGS
+
+#define REGNO_OK_FOR_BASE_P(REGNO) nios2_regno_ok_for_base_p ((REGNO), true)
+#define REGNO_OK_FOR_INDEX_P(REGNO) 0
+
+/* Describing Relative Costs of Operations.  */
+#define MOVE_MAX 4
+#define SLOW_BYTE_ACCESS 1
+
+/* It is as good to call a constant function address as to call an address
+   kept in a register.  */
+#define NO_FUNCTION_CSE
+
+/* Position independent code.  */
+
+#define PIC_OFFSET_TABLE_REGNUM 22
+#define LEGITIMATE_PIC_OPERAND_P(X) nios2_legitimate_pic_operand_p (X)
+
+/* Define output assembler language.  */
+
+#define ASM_APP_ON "#APP\n"
+#define ASM_APP_OFF "#NO_APP\n"
+
+#define ASM_COMMENT_START "# "
+
+#define GLOBAL_ASM_OP "\t.global\t"
+
+#define REGISTER_NAMES \
+  {		       \
+    "zero", \
+    "at", \
+    "r2", \
+    "r3", \
+    "r4", \
+    "r5", \
+    "r6", \
+    "r7", \
+    "r8", \
+    "r9", \
+    "r10", \
+    "r11", \
+    "r12", \
+    "r13", \
+    "r14", \
+    "r15", \
+    "r16", \
+    "r17", \
+    "r18", \
+    "r19", \
+    "r20", \
+    "r21", \
+    "r22", \
+    "r23", \
+    "et", \
+    "bt", \
+    "gp", \
+    "sp", \
+    "fp", \
+    "ta", \
+    "ba", \
+    "ra", \
+    "status", \
+    "estatus", \
+    "bstatus", \
+    "ipri", \
+    "ecause", \
+    "pc", \
+    "fake_fp", \
+    "fake_ap", \
+}
+
+#define ADDITIONAL_REGISTER_NAMES       \
+{					\
+  {"r0", 0},				\
+  {"r1", 1},				\
+  {"r24", 24},                          \
+  {"r25", 25},                          \
+  {"r26", 26},                          \
+  {"r27", 27},                          \
+  {"r28", 28},                          \
+  {"r29", 29},                          \
+  {"r30", 30},                          \
+  {"r31", 31}                           \
+}
+
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
+  do									\
+    {									\
+      fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
+      fprintf (FILE, ".L%u\n", (unsigned) (VALUE));			\
+    }									\
+  while (0)
+
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)\
+  do									\
+    {									\
+      fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), STREAM); \
+      fprintf (STREAM, ".L%u-.L%u\n", (unsigned) (VALUE), (unsigned) (REL)); \
+    }									\
+  while (0)
+
+/* Section directives.  */
+
+/* Output before read-only data.  */
+#define TEXT_SECTION_ASM_OP "\t.section\t.text"
+
+/* Output before writable data.  */
+#define DATA_SECTION_ASM_OP "\t.section\t.data"
+
+/* Output before uninitialized data.  */
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
+
+/* Output before 'small' uninitialized data.  */
+#define SBSS_SECTION_ASM_OP "\t.section\t.sbss"
+
+#ifndef IN_LIBGCC2
+/* Default the definition of "small data" to 8 bytes.  */
+extern unsigned HOST_WIDE_INT nios2_section_threshold;
+#endif
+
+#define NIOS2_DEFAULT_GVALUE 8
+
+/* This says how to output assembler code to declare an
+   uninitialized external linkage data object.  Under SVR4,
+   the linker seems to want the alignment of data objects
+   to depend on their types.  We do exactly that here.  */
+#undef COMMON_ASM_OP
+#define COMMON_ASM_OP   "\t.comm\t"
+
+#define ASM_OUTPUT_ALIGN(FILE, LOG)		     \
+  do {						     \
+    fprintf ((FILE), "%s%d\n", ALIGN_ASM_OP, (LOG)); \
+  } while (0)
+
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)              \
+do                                                                      \
+  {									\
+    fprintf ((FILE), "%s", COMMON_ASM_OP);				\
+    assemble_name ((FILE), (NAME));					\
+    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE),	\
+	     (ALIGN) / BITS_PER_UNIT);					\
+  }									\
+while (0)
+
+
+/* This says how to output assembler code to declare an
+   uninitialized internal linkage data object.  Under SVR4,
+   the linker seems to want the alignment of data objects
+   to depend on their types.  We do exactly that here.  */
+
+#undef  ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)               \
+do {                                                                    \
+  if ((SIZE) <= nios2_section_threshold)                                \
+    switch_to_section (sbss_section);					\
+  else                                                                  \
+    switch_to_section (bss_section);					\
+  ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");                     \
+  if (!flag_inhibit_size_directive)                                     \
+    ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, SIZE);                       \
+  ASM_OUTPUT_ALIGN ((FILE), exact_log2((ALIGN) / BITS_PER_UNIT));       \
+  ASM_OUTPUT_LABEL(FILE, NAME);                                         \
+  ASM_OUTPUT_SKIP((FILE), (SIZE) ? (SIZE) : 1);                         \
+} while (0)
+
+/* Put the jump tables in .text because when using position-independent code,
+   Nios II elf has no relocation that can represent arbitrary differences
+   between symbols in different sections.  */
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
+/* Exception handling.  */
+
+/* Describe __builtin_eh_return.  */
+#define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, LAST_RETVAL_REGNO)
+#define EH_RETURN_DATA_REGNO(N) ((N) <= (LAST_ARG_REGNO - FIRST_ARG_REGNO) \
+				 ? (N) + FIRST_ARG_REGNO : INVALID_REGNUM)
+
+/* Nios II has no appropriate relocations for a 32-bit PC-relative or
+   section-relative pointer encoding.  This therefore always chooses an
+   absolute representation for pointers.  An unfortunate consequence of
+   this is that ld complains about the absolute fde encoding when linking
+   with -shared or -fpie, but the warning is harmless and there seems to
+   be no good way to suppress it.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)		\
+  (flag_pic ? DW_EH_PE_aligned : DW_EH_PE_sdata4)
+
+/* Misc. parameters.  */
+
+#define STORE_FLAG_VALUE 1
+#define Pmode SImode
+#define FUNCTION_MODE QImode
+
+#define CASE_VECTOR_MODE Pmode
+
+#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
+
+#define LOAD_EXTEND_OP(MODE) (ZERO_EXTEND)
+
+#define WORD_REGISTER_OPERATIONS
+
+#endif /* GCC_NIOS2_H */

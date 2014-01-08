@@ -1,5 +1,5 @@
 ;; ARM 1136J[F]-S Pipeline Description
-;; Copyright (C) 2003-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2014 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.

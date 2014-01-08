@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2013 Free Software Foundation, Inc.
+   Copyright (C) 1988-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,6 +102,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_CRC32_P(x)	TARGET_ISA_CRC32_P(x)
 #define TARGET_AES	TARGET_ISA_AES
 #define TARGET_AES_P(x)	TARGET_ISA_AES_P(x)
+#define TARGET_SHA	TARGET_ISA_SHA
+#define TARGET_SHA_P(x)	TARGET_ISA_SHA_P(x)
 #define TARGET_PCLMUL	TARGET_ISA_PCLMUL
 #define TARGET_PCLMUL_P(x)	TARGET_ISA_PCLMUL_P(x)
 #define TARGET_CMPXCHG16B	TARGET_ISA_CX16

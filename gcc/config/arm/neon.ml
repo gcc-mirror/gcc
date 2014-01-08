@@ -1,7 +1,7 @@
 (* Common code for ARM NEON header file, documentation and test case
    generators.
 
-   Copyright (C) 2006-2013 Free Software Foundation, Inc.
+   Copyright (C) 2006-2014 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

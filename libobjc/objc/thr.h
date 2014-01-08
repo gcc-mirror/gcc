@@ -1,5 +1,5 @@
 /* Thread and mutex controls for Objective C.
-   Copyright (C) 1996-2013 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GCC.

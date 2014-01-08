@@ -20,7 +20,7 @@ main-15.c	address and call	address taken only	Neither (* But creating a PLT entr
 main-16.c	address and call	address and call	PLT entry
 
 
-Copyright (C) 2008-2013 Free Software Foundation, Inc.
+Copyright (C) 2008-2014 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

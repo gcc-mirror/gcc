@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3328,12 +3328,12 @@ handle_move_double (rtx operands[2],
 	latehalf[1] = adjust_address (operands[1], SImode, 0);
     }
 
-  /* If insn is effectively movd N(sp),-(sp) then we will do the
-     high word first.  We should use the adjusted operand 1 (which is N+4(sp))
-     for the low word as well, to compensate for the first decrement of sp.  */
+  /* If insn is effectively movd N(REG),-(REG) then we will do the high
+     word first.  We should use the adjusted operand 1 (which is N+4(REG))
+     for the low word as well, to compensate for the first decrement of
+     REG.  */
   if (optype0 == PUSHOP
-      && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
-      && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
+      && reg_overlap_mentioned_p (XEXP (XEXP (operands[0], 0), 0), operands[1]))
     operands[1] = middlehalf[1] = latehalf[1];
 
   /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),

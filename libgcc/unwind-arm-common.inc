@@ -1,5 +1,5 @@
 /* Common unwinding code for ARM EABI and C6X.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
    This file is free software; you can redistribute it and/or modify it

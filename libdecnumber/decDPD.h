@@ -1,5 +1,5 @@
 /* Conversion lookup tables for the decNumber C Library.
-   Copyright (C) 2007-2013 Free Software Foundation, Inc.
+   Copyright (C) 2007-2014 Free Software Foundation, Inc.
    Contributed by IBM Corporation.  Author Mike Cowlishaw.
 
    This file is part of GCC.

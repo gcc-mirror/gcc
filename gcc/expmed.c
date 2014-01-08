@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,6 +1,6 @@
 /* Routines for restoring vector registers.
 
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Written by Alan Modra, IBM
 
    This file is free software; you can redistribute it and/or modify it

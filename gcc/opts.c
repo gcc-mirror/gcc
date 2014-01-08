@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 2002-2014 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.

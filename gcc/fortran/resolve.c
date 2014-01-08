@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -11903,9 +11903,6 @@ resolve_typebound_procedures (gfc_symbol* derived)
   resolve_bindings_derived = derived;
   resolve_bindings_result = true;
 
-  /* Make sure the vtab has been generated.  */
-  gfc_find_derived_vtab (derived);
-
   if (derived->f2k_derived->tb_sym_root)
     gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
 			  &resolve_typebound_procedure);
@@ -12732,7 +12729,8 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.flavor == FL_UNKNOWN
       || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic
 	  && !sym->attr.generic && !sym->attr.external
-	  && sym->attr.if_source == IFSRC_UNKNOWN))
+	  && sym->attr.if_source == IFSRC_UNKNOWN
+	  && sym->ts.type == BT_UNKNOWN))
     {
 
     /* If we find that a flavorless symbol is an interface in one of the

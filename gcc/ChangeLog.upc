@@ -1,3 +1,7 @@
+2014-01-06 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 206354 into gupc branch.
+
 2014-01-04  Gary Funck  <gary@intrepid.com>
 
 	Integrate GUPC into cc1.

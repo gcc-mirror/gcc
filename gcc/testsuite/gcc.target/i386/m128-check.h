@@ -164,3 +164,26 @@ union ieee754_double
    } bits __attribute__((packed));
 };
 #endif
+
+#define CHECK_FP_EXP(UINON_TYPE, VALUE_TYPE, ESP, FMT)		\
+static int							\
+__attribute__((noinline, unused))				\
+check_fp_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
+{								\
+  int i;							\
+  int err = 0;							\
+								\
+  for (i = 0; i < ARRAY_SIZE (u.a); i++)			\
+    if (u.a[i] > (v[i] + (ESP)) || u.a[i] < (v[i] - (ESP)))	\
+      {								\
+	err++;							\
+	PRINTF ("%i: " FMT " != " FMT "\n",			\
+		i, v[i], u.a[i]);				\
+      }								\
+  return err;							\
+}
+
+CHECK_FP_EXP (union128, float, ESP_FLOAT, "%f")
+#ifdef __SSE2__
+CHECK_FP_EXP (union128d, double, ESP_DOUBLE, "%f")
+#endif

@@ -1,3 +1,8 @@
+2013-12-31  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config-list.mk: Add nios2-elf, nios2-linux-gnu. Corrected
+	ordering of some configs.
+
 2013-12-23  Yury Gribov  <y.gribov@samsung.com>
 
 	* mklog: Automatically insert comments in trivial cases.

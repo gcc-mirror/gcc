@@ -1,5 +1,5 @@
 /* Implementation of the EXTENDS_TYPE_OF intrinsic.
-   Copyright (C) 2004-2013 Free Software Foundation, Inc.
+   Copyright (C) 2004-2014 Free Software Foundation, Inc.
    Contributed by Janus Weil <janus@gcc.gnu.org>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).

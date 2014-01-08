@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992-2013 Free Software Foundation, Inc.
+   Copyright (C) 1992-2014 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).

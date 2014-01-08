@@ -1,5 +1,5 @@
 /* Functions to support a pool of allocatable objects.
-   Copyright (C) 1987-2013 Free Software Foundation, Inc.
+   Copyright (C) 1987-2014 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@cgsoftware.com>
 
 This file is part of GCC.

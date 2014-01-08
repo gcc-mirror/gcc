@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2013 Free Software Foundation, Inc.
+   Copyright (C) 2007-2014 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.

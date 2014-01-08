@@ -1,6 +1,6 @@
 /* Definitions of target machine needed for option handling for GNU compiler,
    for IBM RS/6000.
-   Copyright (C) 2010-2013 Free Software Foundation, Inc.
+   Copyright (C) 2010-2014 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.

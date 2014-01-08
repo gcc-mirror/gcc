@@ -1,5 +1,5 @@
 /* Vectorizer Specific Loop Manipulations
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -483,7 +483,18 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
 	  if (!current_new_name)
 	    continue;
         }
-      gcc_assert (get_current_def (current_new_name) == NULL_TREE);
+      tree new_name = get_current_def (current_new_name);
+      /* Because of peeled_chrec optimization it is possible that we have
+	 set this earlier.  Verify the PHI has the same value.  */
+      if (new_name)
+	{
+	  gimple phi = SSA_NAME_DEF_STMT (new_name);
+	  gcc_assert (gimple_code (phi) == GIMPLE_PHI
+		      && gimple_bb (phi) == *new_exit_bb
+		      && (PHI_ARG_DEF_FROM_EDGE (phi, single_exit (loop))
+			  == loop_arg));
+	  continue;
+	}
 
       set_current_def (current_new_name, PHI_RESULT (new_phi));
     }
@@ -2240,13 +2251,24 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 
       tree seg_a_min = addr_base_a;
       tree seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
+      /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
+	 bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
+	 [a, a+12) */
       if (tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0)
-	seg_a_min = seg_a_max, seg_a_max = addr_base_a;
+	{
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a.dr)));
+	  seg_a_min = fold_build_pointer_plus (seg_a_max, unit_size);
+	  seg_a_max = fold_build_pointer_plus (addr_base_a, unit_size);
+	}
 
       tree seg_b_min = addr_base_b;
       tree seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
       if (tree_int_cst_compare (DR_STEP (dr_b.dr), size_zero_node) < 0)
-	seg_b_min = seg_b_max, seg_b_max = addr_base_b;
+	{
+	  tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b.dr)));
+	  seg_b_min = fold_build_pointer_plus (seg_b_max, unit_size);
+	  seg_b_max = fold_build_pointer_plus (addr_base_b, unit_size);
+	}
 
       part_cond_expr =
       	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,

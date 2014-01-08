@@ -63,6 +63,10 @@ __aeabi_idiv0 (int return_value)
 }
 #  define DO_TEST 1
 # endif
+#elif defined (__nios2__)
+  /* Nios II requires both hardware support and user configuration to
+     raise an exception on divide by zero.  */
+# define DO_TEST 0
 #else
 # define DO_TEST 1
 #endif

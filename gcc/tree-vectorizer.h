@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2014 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -683,8 +683,8 @@ struct dataref_aux {
    conversion.  */
 #define MAX_INTERM_CVT_STEPS         3
 
-/* The maximum vectorization factor supported by any target (V32QI).  */
-#define MAX_VECTORIZATION_FACTOR 32
+/* The maximum vectorization factor supported by any target (V64QI).  */
+#define MAX_VECTORIZATION_FACTOR 64
 
 /* Avoid GTY(()) on stmt_vec_info.  */
 typedef void *vec_void_p;

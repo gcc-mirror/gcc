@@ -1,5 +1,5 @@
 /* mips16 floating point support code
-   Copyright (C) 1996-2013 Free Software Foundation, Inc.
+   Copyright (C) 1996-2014 Free Software Foundation, Inc.
    Contributed by Cygnus Support
 
 This file is free software; you can redistribute it and/or modify it

@@ -1,6 +1,6 @@
 ;; Machine description for Loongson-specific patterns, such as
 ;; ST Microelectronics Loongson-2E/2F etc.
-;; Copyright (C) 2008-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2014 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; This file is part of GCC.

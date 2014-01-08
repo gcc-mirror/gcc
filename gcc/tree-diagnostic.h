@@ -1,7 +1,7 @@
 /* Various declarations for language-independent diagnostics
    subroutines that are only for use in the compilers proper and not
    the driver or other programs.
-   Copyright (C) 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

@@ -1,7 +1,7 @@
 /* Interchange heuristics and transform for loop interchange on
    polyhedral representation.
 
-   Copyright (C) 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 2009-2014 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Harsha Jagasia <harsha.jagasia@amd.com>.
 

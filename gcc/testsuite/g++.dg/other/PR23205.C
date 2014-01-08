@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { aarch64*-*-* mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* tile*-*-* *-*-vxworks } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { aarch64*-*-* mmix-*-* *-*-aix* alpha*-*-* hppa*64*-*-* ia64-*-* nios2-*-* tile*-*-* *-*-vxworks } { "*" } { "" } } */
 /* { dg-options "-gstabs+ -fno-eliminate-unused-debug-types" } */
 
 const int foobar = 4;

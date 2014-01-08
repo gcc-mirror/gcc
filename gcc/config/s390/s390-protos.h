@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 2000-2014 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 

@@ -1,6 +1,6 @@
 /* crt1.s for Solaris 2, x86
 
-   Copyright (C) 1993-2013 Free Software Foundation, Inc.
+   Copyright (C) 1993-2014 Free Software Foundation, Inc.
    Written By Fred Fish, Nov 1992
 
 This file is free software; you can redistribute it and/or modify it

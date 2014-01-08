@@ -1,5 +1,5 @@
 ;; Faraday FA626TE Pipeline Description
-;; Copyright (C) 2010-2013 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2014 Free Software Foundation, Inc.
 ;; Written by I-Jui Sung, based on ARM926EJ-S Pipeline Description.
 ;;
 ;; This file is part of GCC.

@@ -1,5 +1,5 @@
 /* newlib libgcc routines of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.

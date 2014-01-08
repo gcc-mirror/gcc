@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    For ARM with COFF object format.
-   Copyright (C) 1995-2013 Free Software Foundation, Inc.
+   Copyright (C) 1995-2014 Free Software Foundation, Inc.
    Contributed by Doug Evans (devans@cygnus.com).
    
    This file is part of GCC.

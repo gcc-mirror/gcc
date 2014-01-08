@@ -1,7 +1,7 @@
 /* .init/.fini section handling + C++ global constructor/destructor
    handling of Andes NDS32 cpu for GNU compiler.
    This file is based on crtstuff.c, sol2-crti.asm, sol2-crtn.asm.
-   Copyright (C) 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2012-2014 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.

@@ -1,5 +1,5 @@
 /* VMS dwarf2 section sequentializer.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
 This file is part of GCC.
