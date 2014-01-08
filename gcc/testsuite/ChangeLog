@@ -1,3 +1,8 @@
+2014-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59610
+	* gcc.dg/ipa/pr59610.c: New test.
+
 2014-01-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58182
