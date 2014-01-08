@@ -1,3 +1,7 @@
+2014-01-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/weak2.ad[sb]: New test.
+
 2014-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59471

@@ -1,3 +1,7 @@
+2014-01-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraph.h (varpool_variable_node): Do not choke on null node.
+
 2014-01-08  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.md (simple_return): Attempt to use JRC for microMIPS.
