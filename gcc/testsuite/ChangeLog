@@ -1,5 +1,16 @@
 2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/tree-ssa/reassoc-32.c, gcc.dg/tree-ssa/reassoc-33.c,
+	gcc.dg/tree-ssa/reassoc-34.c, gcc.dg/tree-ssa/reassoc-35.c,
+	gcc.dg/tree-ssa/reassoc-36.c: Extend -mbranch-cost handling to MIPS.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c,
+	gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c,
+	gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c,
+	gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c,
+	gcc.dg/tree-ssa/vrp87.c, gcc.dg/tree-ssa/forwprop-28.c: Skip for MIPS.
+
+2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR rtl-optimization/59137
 	* gcc.target/mips/pr59137.c: New test.
 
