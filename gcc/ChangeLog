@@ -1,3 +1,7 @@
+2014-01-07  Dan Xio Qiang <ziyan01@163.com>
+
+	* hw-doloop.c (reorg_loops): Release the bitmap obstack.
+
 2014-01-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/59652
@@ -78,7 +82,7 @@
 	* doc/implement-c.texi: Mention that other integer types are
 	permitted as bit-field types in strictly conforming mode.
 
-2014-01-02  Felix Yang  <fei.yang0953@gmail.com>
+2014-01-06  Felix Yang  <fei.yang0953@gmail.com>
 
 	* modulo-sched.c (schedule_reg_moves): Clear distance1_uses if it
 	is newly allocated.
