@@ -868,14 +868,14 @@ libgcov-driver-objects = $(patsubst %,%$(objext),$(LIBGCOV_DRIVER))
 libgcov-objects = $(libgcov-merge-objects) $(libgcov-profiler-objects) \
                  $(libgcov-interface-objects) $(libgcov-driver-objects)
 
-$(libgcov-merge-objects): %$(objext): $(srcdir)/libgcov-merge.c
+$(libgcov-merge-objects): %$(objext): $(srcdir)/libgcov-merge.c $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-merge.c
-$(libgcov-profiler-objects): %$(objext): $(srcdir)/libgcov-profiler.c
+$(libgcov-profiler-objects): %$(objext): $(srcdir)/libgcov-profiler.c $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-profiler.c
-$(libgcov-interface-objects): %$(objext): $(srcdir)/libgcov-interface.c
+$(libgcov-interface-objects): %$(objext): $(srcdir)/libgcov-interface.c $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-interface.c
 $(libgcov-driver-objects): %$(objext): $(srcdir)/libgcov-driver.c \
-  $(srcdir)/libgcov-driver-system.c
+  $(srcdir)/libgcov-driver-system.c $(srcdir)/libgcov.h
 	$(gcc_compile) -DL$* -c $(srcdir)/libgcov-driver.c
 
 
