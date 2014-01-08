@@ -311,6 +311,9 @@ ubsan_type_descriptor (tree type, bool want_pointer_type_p)
         type2 = TYPE_METHOD_BASETYPE (type2);
     }
 
+  /* If an array, get its type.  */
+  type2 = strip_array_types (type2);
+
   if (TYPE_NAME (type2) != NULL)
     {
       if (TREE_CODE (TYPE_NAME (type2)) == IDENTIFIER_NODE)

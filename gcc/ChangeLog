@@ -1,3 +1,8 @@
+2014-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59667
+	* ubsan.c (ubsan_type_descriptor): Call strip_array_types on type2.
+
 2014-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/59649
