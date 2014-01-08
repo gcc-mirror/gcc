@@ -1433,7 +1433,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_move_assign(vector&& __x, std::true_type) noexcept
       {
-	const vector __tmp(std::move(*this));
+	const vector __tmp(std::move(*this), get_allocator());
 	this->_M_impl._M_swap_data(__x._M_impl);
 	if (_Alloc_traits::_S_propagate_on_move_assign())
 	  std::__alloc_on_move(_M_get_Tp_allocator(),

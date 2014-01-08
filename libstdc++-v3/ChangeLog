@@ -1,3 +1,22 @@
+2014-01-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_vector.h (std::vector<>::_M_move_assign): Pass
+	*this allocator instance when building temporary vector instance
+	so that *this allocator does not get moved.
+	* include/debug/safe_base.h
+	(_Safe_sequence_base(_Safe_sequence_base&&)): New.
+	* include/debug/vector (__gnu_debug::vector<>(vector&&)): Use new
+	move constructor from _Safe_sequence_base.
+	(__gnu_debug::vector<>(vector&&, const allocator_type&)): Swap
+	safe iterators if the instance is moved.
+	(__gnu_debug::vector<>::operator=(vector&&)): Likewise.
+	* testsuite/23_containers/vector/allocator/move.cc (test01): Add
+	check on a vector iterator.
+	* testsuite/23_containers/vector/allocator/move_assign.cc
+	(test02): Likewise.
+	(test03): New, test with a non-propagating allocator.
+	* testsuite/23_containers/vector/debug/move_assign_neg.cc: New.
+
 2014-01-07  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_compiler.h (_AnyMatcher<>::_AnyMatcher(),

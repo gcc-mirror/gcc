@@ -52,6 +52,7 @@ namespace __debug
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
 #if __cplusplus >= 201103L
+      typedef __gnu_debug::_Safe_sequence<vector<_Tp, _Allocator> > _Safe_base;
       typedef __gnu_cxx::__alloc_traits<_Allocator>  _Alloc_traits;
 #endif
 
@@ -111,18 +112,16 @@ namespace __debug
       vector(const vector& __x)
       : _Base(__x), _M_guaranteed_capacity(__x.size()) { }
 
-      /// Construction from a release-mode vector
+      /// Construction from a normal-mode vector
       vector(const _Base& __x)
       : _Base(__x), _M_guaranteed_capacity(__x.size()) { }
 
 #if __cplusplus >= 201103L
       vector(vector&& __x) noexcept
       : _Base(std::move(__x)),
+	_Safe_base(std::move(__x)),
 	_M_guaranteed_capacity(this->size())
-      {
-	this->_M_swap(__x);
-	__x._M_guaranteed_capacity = 0;
-      }
+      { __x._M_guaranteed_capacity = 0; }
 
       vector(const vector& __x, const allocator_type& __a)
       : _Base(__x, __a), _M_guaranteed_capacity(__x.size()) { }
@@ -131,7 +130,10 @@ namespace __debug
       : _Base(std::move(__x), __a),
         _M_guaranteed_capacity(this->size())
       {
-	__x._M_invalidate_all();
+	if (__x.get_allocator() == __a)
+	  this->_M_swap(__x);
+	else
+	  __x._M_invalidate_all();
 	__x._M_guaranteed_capacity = 0;
       }
 
@@ -146,7 +148,7 @@ namespace __debug
       vector&
       operator=(const vector& __x)
       {
-	static_cast<_Base&>(*this) = __x;
+	_M_base() = __x;
 	this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
 	return *this;
@@ -157,8 +159,13 @@ namespace __debug
       operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
       {
 	__glibcxx_check_self_move_assign(__x);
-	_Base::operator=(std::move(__x));
-	this->_M_invalidate_all();
+	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	    || __x.get_allocator() == this->get_allocator();
+	_M_base() = std::move(__x._M_base());
+	if (xfer_memory)
+	  this->_M_swap(__x);
+	else
+	  this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
 	__x._M_invalidate_all();
 	__x._M_guaranteed_capacity = 0;
@@ -168,7 +175,7 @@ namespace __debug
       vector&
       operator=(initializer_list<value_type> __l)
       {
-	static_cast<_Base&>(*this) = __l;
+	_M_base() = __l;
 	this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
 	return *this;
