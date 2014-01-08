@@ -23,21 +23,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "tconfig.h"
-#include "tsystem.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "libgcc_tm.h"
-
-#if defined(inhibit_libc)
-#define IN_LIBGCOV (-1)
-#else
-#define IN_LIBGCOV 1
-#if defined(L_gcov)
-#define GCOV_LINKAGE /* nothing */
-#endif
-#endif
-#include "gcov-io.h"
+#include "libgcov.h"
 
 #if defined(inhibit_libc)
 /* If libc and its header files are not available, provide dummy functions.  */
@@ -156,7 +142,7 @@ buffer_fn_data (const char *filename, const struct gcov_info *gi_ptr,
       n_ctrs++;
 
   len = sizeof (*fn_buffer) + sizeof (fn_buffer->info.ctrs[0]) * n_ctrs;
-  fn_buffer = (struct gcov_fn_buffer *)malloc (len);
+  fn_buffer = (struct gcov_fn_buffer *) xmalloc (len);
 
   if (!fn_buffer)
     goto fail;
@@ -183,7 +169,7 @@ buffer_fn_data (const char *filename, const struct gcov_info *gi_ptr,
 
       length = GCOV_TAG_COUNTER_NUM (gcov_read_unsigned ());
       len = length * sizeof (gcov_type);
-      values = (gcov_type *)malloc (len);
+      values = (gcov_type *) xmalloc (len);
       if (!values)
         goto fail;
 
@@ -450,7 +436,7 @@ gcov_exit_merge_gcda (struct gcov_info *gi_ptr,
              histogram entries that will be emitted, and thus the
              size of the merged summary.  */
           (*sum_tail) = (struct gcov_summary_buffer *)
-              malloc (sizeof(struct gcov_summary_buffer));
+              xmalloc (sizeof(struct gcov_summary_buffer));
           (*sum_tail)->summary = tmp;
           (*sum_tail)->next = 0;
           sum_tail = &((*sum_tail)->next);
@@ -718,7 +704,7 @@ gcov_exit_merge_summary (const struct gcov_info *gi_ptr, struct gcov_summary *pr
              }
 #endif
     }
-
+  
   prg->checksum = crc32;
 
   return 0;

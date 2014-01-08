@@ -1,3 +1,15 @@
+2014-01-08  Rong Xu  <xur@google.com> 
+
+	* libgcov-driver.c: Use libgcov.h.
+	(buffer_fn_data): Use xmalloc instead of malloc.
+	(gcov_exit_merge_gcda): Ditto.
+	* libgcov-driver-system.c (allocate_filename_struct): Ditto.
+	* libgcov.h: New common header files for libgcov-*.h.
+	* libgcov-interface.c: Use libgcov.h
+	* libgcov-merge.c: Ditto.
+	* libgcov-profiler.c: Ditto.
+	* Makefile.in: Add dependence to libgcov.h
+
 2014-01-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/ibm-ldouble.c (__gcc_qdiv): Scale up arguments in
