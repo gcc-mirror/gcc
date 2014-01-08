@@ -1,3 +1,8 @@
+2014-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
+	two duplicate entries.
+
 2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Revert:
