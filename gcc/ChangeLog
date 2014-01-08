@@ -1,3 +1,10 @@
+2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/59137
+	* reorg.c (steal_delay_list_from_target): Call update_block for
+	elided insns.
+	(steal_delay_list_from_fallthrough, relax_delay_slots): Likewise.
+
 2014-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Remove
