@@ -1312,20 +1312,32 @@
 
 ;; Combiner patterns for unsigned byte-add.
 
-(define_insn "*baddu_si"
+(define_insn "*baddu_si_eb"
   [(set (match_operand:SI 0 "register_operand" "=d")
         (zero_extend:SI
-	 (plus:QI (match_operand:QI 1 "register_operand" "d")
-		  (match_operand:QI 2 "register_operand" "d"))))]
-  "ISA_HAS_BADDU"
+	 (subreg:QI
+	  (plus:SI (match_operand:SI 1 "register_operand" "d")
+		   (match_operand:SI 2 "register_operand" "d")) 3)))]
+  "ISA_HAS_BADDU && BYTES_BIG_ENDIAN"
+  "baddu\\t%0,%1,%2"
+  [(set_attr "alu_type" "add")])
+
+(define_insn "*baddu_si_el"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (zero_extend:SI
+	 (subreg:QI
+	  (plus:SI (match_operand:SI 1 "register_operand" "d")
+		   (match_operand:SI 2 "register_operand" "d")) 0)))]
+  "ISA_HAS_BADDU && !BYTES_BIG_ENDIAN"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_di<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (zero_extend:GPR
-	 (plus:QI (truncate:QI (match_operand:DI 1 "register_operand" "d"))
-		  (truncate:QI (match_operand:DI 2 "register_operand" "d")))))]
+	 (truncate:QI
+	  (plus:DI (match_operand:DI 1 "register_operand" "d")
+		   (match_operand:DI 2 "register_operand" "d")))))]
   "ISA_HAS_BADDU && TARGET_64BIT"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])

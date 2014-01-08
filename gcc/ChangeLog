@@ -1,3 +1,17 @@
+2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Revert:
+	2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_truncated_op_cost): New function.
+	(mips_rtx_costs): Adjust test for BADDU.
+	* config/mips/mips.md (*baddu_di<mode>): Push truncates to operands.
+
+	2012-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md (*baddu_si_eb, *baddu_si_el): Merge into...
+	(*baddu_si): ...this new pattern.
+
 2014-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/59722
