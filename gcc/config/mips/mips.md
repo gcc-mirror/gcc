@@ -6161,7 +6161,12 @@
 (define_insn "*<optab>"
   [(any_return)]
   ""
-  "%*j\t$31%/"
+  {
+    if (TARGET_MICROMIPS)
+      return "%*jr%:\t$31";
+    else
+      return "%*j\t$31%/";
+  }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 

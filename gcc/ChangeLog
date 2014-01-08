@@ -1,3 +1,8 @@
+2014-01-08  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.md (simple_return): Attempt to use JRC for microMIPS.
+	* config/mips/mips.h (MIPS_CALL): Attempt to use JALS for microMIPS.
+
 2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/59137

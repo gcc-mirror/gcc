@@ -2529,7 +2529,9 @@ typedef struct mips_args {
       : TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED	\
       ? "%*" INSN "r%!\t%" #TARGET_OPNO "%/"			\
       : "%*" INSN "r\t%" #TARGET_OPNO "%/")			\
-   : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #TARGET_OPNO "%/"))
+   : TARGET_MICROMIPS && !TARGET_INTERLINK_COMPRESSED		\
+     ? MIPS_ABSOLUTE_JUMP ("%*" INSN "%!\t%" #TARGET_OPNO "%/")	\
+     : MIPS_ABSOLUTE_JUMP ("%*" INSN "\t%" #TARGET_OPNO "%/"))	\
 
 /* Similar to MIPS_CALL, but this is for MICROMIPS "j" to generate
    "jrc" when nop is in the delay slot of "jr".  */
