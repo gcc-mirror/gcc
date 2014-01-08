@@ -2351,27 +2351,37 @@ gimple_ior_addresses_taken (bitmap addresses_taken, gimple stmt)
 }
 
 
-/* Return TRUE iff stmt is a call to a built-in function.  */
-
-bool
-is_gimple_builtin_call (gimple stmt)
-{
-  tree callee;
-
-  if (is_gimple_call (stmt)
-      && (callee = gimple_call_fndecl (stmt))
-      && is_builtin_fn (callee)
-      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
-    return true;
-
-  return false;
-}
-
-/* Return true when STMTs arguments match those of FNDECL.  */
+/* Return true if TYPE1 and TYPE2 are compatible enough for builtin
+   processing.  */
 
 static bool
-validate_call (gimple stmt, tree fndecl)
+validate_type (tree type1, tree type2)
 {
+  if (INTEGRAL_TYPE_P (type1)
+      && INTEGRAL_TYPE_P (type2))
+    ;
+  else if (POINTER_TYPE_P (type1)
+	   && POINTER_TYPE_P (type2))
+    ;
+  else if (TREE_CODE (type1)
+	   != TREE_CODE (type2))
+    return false;
+  return true;
+}
+
+/* Return true when STMTs arguments and return value match those of FNDECL,
+   a decl of a builtin function.  */
+
+bool
+gimple_builtin_call_types_compatible_p (gimple stmt, tree fndecl)
+{
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
+
+  tree ret = gimple_call_lhs (stmt);
+  if (ret
+      && !validate_type (TREE_TYPE (ret), TREE_TYPE (TREE_TYPE (fndecl))))
+    return false;
+
   tree targs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   unsigned nargs = gimple_call_num_args (stmt);
   for (unsigned i = 0; i < nargs; ++i)
@@ -2380,20 +2390,26 @@ validate_call (gimple stmt, tree fndecl)
       if (!targs)
 	return true;
       tree arg = gimple_call_arg (stmt, i);
-      if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
-	  && INTEGRAL_TYPE_P (TREE_VALUE (targs)))
-	;
-      else if (POINTER_TYPE_P (TREE_TYPE (arg))
-	       && POINTER_TYPE_P (TREE_VALUE (targs)))
-	;
-      else if (TREE_CODE (TREE_TYPE (arg))
-	       != TREE_CODE (TREE_VALUE (targs)))
+      if (!validate_type (TREE_TYPE (arg), TREE_VALUE (targs)))
 	return false;
       targs = TREE_CHAIN (targs);
     }
   if (targs && !VOID_TYPE_P (TREE_VALUE (targs)))
     return false;
   return true;
+}
+
+/* Return true when STMT is builtins call.  */
+
+bool
+gimple_call_builtin_p (gimple stmt)
+{
+  tree fndecl;
+  if (is_gimple_call (stmt)
+      && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
+      && DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN)
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
+  return false;
 }
 
 /* Return true when STMT is builtins call to CLASS.  */
@@ -2405,7 +2421,7 @@ gimple_call_builtin_p (gimple stmt, enum built_in_class klass)
   if (is_gimple_call (stmt)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
       && DECL_BUILT_IN_CLASS (fndecl) == klass)
-    return validate_call (stmt, fndecl);
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
 
@@ -2419,7 +2435,7 @@ gimple_call_builtin_p (gimple stmt, enum built_in_function code)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL 
       && DECL_FUNCTION_CODE (fndecl) == code)
-    return validate_call (stmt, fndecl);
+    return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
 

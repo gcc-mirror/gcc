@@ -879,8 +879,6 @@ gimple_fold_builtin (gimple stmt)
   int nargs;
   location_t loc = gimple_location (stmt);
 
-  gcc_assert (is_gimple_call (stmt));
-
   ignore = (gimple_call_lhs (stmt) == NULL);
 
   /* First try the generic builtin folder.  If that succeeds, return the
@@ -890,6 +888,8 @@ gimple_fold_builtin (gimple stmt)
     {
       if (ignore)
 	STRIP_NOPS (result);
+      else
+	result = fold_convert (gimple_call_return_type (stmt), result);
       return result;
     }
 
@@ -1206,8 +1206,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 
   /* Check for builtins that CCP can handle using information not
      available in the generic fold routines.  */
-  callee = gimple_call_fndecl (stmt);
-  if (callee && DECL_BUILT_IN (callee))
+  if (gimple_call_builtin_p (stmt))
     {
       tree result = gimple_fold_builtin (stmt);
       if (result)
@@ -1216,7 +1215,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    gimplify_and_update_call_from_tree (gsi, result);
 	  changed = true;
 	}
-      else if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
+      else if (gimple_call_builtin_p (stmt, BUILT_IN_MD))
 	changed |= targetm.gimple_fold_builtin (gsi);
     }
 
@@ -2726,7 +2725,9 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	fn = (*valueize) (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR
 	    && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
-	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
+	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0))
+	    && gimple_builtin_call_types_compatible_p (stmt,
+						       TREE_OPERAND (fn, 0)))
 	  {
 	    tree *args = XALLOCAVEC (tree, gimple_call_num_args (stmt));
 	    tree call, retval;
@@ -2738,8 +2739,11 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 					 fn, gimple_call_num_args (stmt), args);
 	    retval = fold_call_expr (EXPR_LOCATION (call), call, false);
 	    if (retval)
-	      /* fold_call_expr wraps the result inside a NOP_EXPR.  */
-	      STRIP_NOPS (retval);
+	      {
+		/* fold_call_expr wraps the result inside a NOP_EXPR.  */
+		STRIP_NOPS (retval);
+		retval = fold_convert (gimple_call_return_type (stmt), retval);
+	      }
 	    return retval;
 	  }
 	return NULL_TREE;
