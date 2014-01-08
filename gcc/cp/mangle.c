@@ -1338,6 +1338,8 @@ write_abi_tags (tree tags)
 
   for (tree t = tags; t; t = TREE_CHAIN (t))
     {
+      if (ABI_TAG_IMPLICIT (t))
+	continue;
       tree str = TREE_VALUE (t);
       vec_safe_push (vec, str);
     }
