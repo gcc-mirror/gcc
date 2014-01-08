@@ -1,3 +1,14 @@
+2014-01-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/57748
+	* expr.h (expand_expr_real, expand_expr_real_1): Add new parameter
+	inner_reference_p.
+	(expand_expr, expand_normal): Adjust.
+	* expr.c (expand_expr_real, expand_expr_real_1): Add new parameter
+	inner_reference_p. Use inner_reference_p to expand inner references.
+	(store_expr): Adjust.
+	* cfgexpand.c (expand_call_stmt): Adjust.
+
 2014-01-08  Rong Xu  <xur@google.com> 
 
 	* gcov-io.c (gcov_var): Move from gcov-io.h.
