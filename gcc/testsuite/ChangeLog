@@ -1,3 +1,8 @@
+2014-01-08  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/59667
+	* c-c++-common/ubsan/pr59667.c: New test.
+
 2014-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59630
