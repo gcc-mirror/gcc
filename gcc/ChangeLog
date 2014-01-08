@@ -1,5 +1,22 @@
 2014-01-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/59630
+	* gimple.h (is_gimple_builtin_call): Remove.
+	(gimple_builtin_call_types_compatible_p): New.
+	(gimple_call_builtin_p): New overload.
+	* gimple.c (is_gimple_builtin_call): Remove.
+	(validate_call): Rename to ...
+	(gimple_builtin_call_types_compatible_p): ... this and export.  Also
+	check return types.
+	(validate_type): New static function.
+	(gimple_call_builtin_p): New overload and adjust.
+	* gimple-fold.c (gimple_fold_builtin): Fold the return value.
+	(gimple_fold_call): Likewise.  Use gimple_call_builtin_p.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	* tsan.c (instrument_gimple): Use gimple_call_builtin_p.
+
+2014-01-08  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/59471
 	* gimplify.c (gimplify_expr): Gimplify register-register type
 	VIEW_CONVERT_EXPRs to separate stmts.

@@ -1,5 +1,10 @@
 2014-01-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/59630
+	* gcc.dg/pr59630.c: New testcase.
+
+2014-01-08  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/59471
 	* gcc.dg/pr59471.c: New testcase.
 
