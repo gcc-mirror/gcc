@@ -1,3 +1,12 @@
+2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
+	from prefetch_block tune setting.
+	(nocona_cost): Correct size of prefetch block to 64.
+
 2014-01-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/59610
@@ -16,8 +25,7 @@
 
 	PR 57386/target
 	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):
-	Only check TFmode for SPE constants.  Don't check TImode or
-	TDmode.
+	Only check TFmode for SPE constants.  Don't check TImode or TDmode.
 
 2014-01-07  Jakub Jelinek  <jakub@redhat.com>
 
