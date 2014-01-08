@@ -1,3 +1,8 @@
+2014-01-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58182
+	* resolve.c (gfc_verify_binding_labels): Modify order of checks.
+
 2014-01-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/59589

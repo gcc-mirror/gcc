@@ -1,3 +1,9 @@
+2014-01-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58182
+	* gfortran.dg/binding_label_tests_26a.f90: New.
+	* gfortran.dg/binding_label_tests_26b.f90: New.
+
 2014-01-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/59667
