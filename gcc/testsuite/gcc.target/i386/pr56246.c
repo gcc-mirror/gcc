@@ -1,5 +1,5 @@
 /* PR target/56225 */
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target { ia32 && fpic } } } */
 /* { dg-options "-O2 -fno-omit-frame-pointer -march=i686 -fpic" } */
 
 void NoBarrier_AtomicExchange (long long *ptr) {

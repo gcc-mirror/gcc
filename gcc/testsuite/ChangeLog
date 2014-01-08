@@ -1,3 +1,13 @@
+2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/asm-1.c (dg-options): Remove -m32.
+	* gcc.target/i386/incoming-5.c (dg-options): Ditto.
+	* gcc.target/i386/pr55433.c (dg-options): Ditto.
+	* gcc.target/i386/pr57848.c (dg-options): Ditto.
+	* gcc.target/i386/pr59099.c (dg-options): Ditto.
+	Require fpic effective target.
+	* gcc.target/i386/pr56246.c (dg-do): Compile for fpic target only.
+
 2014-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/59722
