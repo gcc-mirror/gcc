@@ -1,3 +1,15 @@
+2014-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59614
+	* class.c (abi_tag_data): Add tags field.
+	(check_abi_tags): Initialize it.
+	(find_abi_tags_r): Support collecting missing tags.
+	(mark_type_abi_tags): Don't look at template args.
+	(inherit_targ_abi_tags): New.
+	(check_bases_and_members): Use it.
+	* cp-tree.h (ABI_TAG_IMPLICIT): New.
+	* mangle.c (write_abi_tags): Check it.
+
 2014-01-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58856
