@@ -1465,10 +1465,17 @@ go_os_signal_files = \
 	go/os/signal/signal.go \
 	go/os/signal/signal_unix.go
 
+if LIBGO_IS_SOLARIS
+os_user_decls_file = go/os/user/decls_solaris.go
+else
+os_user_decls_file = go/os/user/decls_unix.go
+endif
+
 go_os_user_files = \
-	go/os/user/user.go \
 	go/os/user/lookup.go \
-	go/os/user/lookup_unix.go
+	go/os/user/lookup_unix.go \
+	go/os/user/user.go \
+	$(os_user_decls_file)
 
 go_path_filepath_files = \
 	go/path/filepath/match.go \
