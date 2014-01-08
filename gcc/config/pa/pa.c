@@ -10424,13 +10424,13 @@ pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 
 	  /* When INT14_OK_STRICT is false, a secondary reload is needed
 	     to adjust the displacement of SImode and DImode floating point
-	     instructions.  So, we return false when STRICT is true.  We
+	     instructions but this may fail when the register also needs
+	     reloading.  So, we return false when STRICT is true.  We
 	     also reject long displacements for float mode addresses since
 	     the majority of accesses will use floating point instructions
 	     that don't support 14-bit offsets.  */
 	  if (!INT14_OK_STRICT
-	      && reload_in_progress
-	      && strict
+	      && (strict || !(reload_in_progress || reload_completed))
 	      && mode != QImode
 	      && mode != HImode)
 	    return false;
@@ -10490,8 +10490,7 @@ pa_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 	    return true;
 
 	  if (!INT14_OK_STRICT
-	      && reload_in_progress
-	      && strict
+	      && (strict || !(reload_in_progress || reload_completed))
 	      && mode != QImode
 	      && mode != HImode)
 	    return false;
