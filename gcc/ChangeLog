@@ -1,3 +1,9 @@
+2014-01-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/59652
+	* config/pa/pa.c (pa_legitimate_address_p): Return false before reload
+	for 14-bit register offsets when INT14_OK_STRICT is false.
+
 2014-01-07  Roland Stigge  <stigge@antcom.de>
 	    Michael Meissner  <meissner@linux.vnet.ibm.com>
 
