@@ -1,3 +1,10 @@
+2014-01-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59610
+	* ipa-prop.c (ipa_compute_jump_functions): Bail out if not optimizing.
+	(parm_preserved_before_stmt_p): Assume modification present when not
+	optimizing.
+
 2014-01-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/59652
