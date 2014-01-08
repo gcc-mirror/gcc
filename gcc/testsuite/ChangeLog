@@ -1,3 +1,8 @@
+2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/59137
+	* gcc.target/mips/pr59137.c: New test.
+
 2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/asm-1.c (dg-options): Remove -m32.
