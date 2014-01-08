@@ -1,3 +1,8 @@
+2014-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/59722
+	* ipa-prop.c (ipa_analyze_params_uses): Ignore uses in debug stmts.
+
 2014-01-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/57748
