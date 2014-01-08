@@ -7373,12 +7373,22 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 					TREE_TYPE (*expr_p));
 	  break;
 
+	case VIEW_CONVERT_EXPR:
+	  if (is_gimple_reg_type (TREE_TYPE (*expr_p))
+	      && is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (*expr_p, 0))))
+	    {
+	      ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
+				   post_p, is_gimple_val, fb_rvalue);
+	      recalculate_side_effects (*expr_p);
+	      break;
+	    }
+	  /* Fallthru.  */
+
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	case COMPONENT_REF:
-	case VIEW_CONVERT_EXPR:
 	  ret = gimplify_compound_lval (expr_p, pre_p, post_p,
 					fallback ? fallback : fb_rvalue);
 	  break;
