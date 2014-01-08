@@ -1,3 +1,12 @@
+2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-01-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
+	from prefetch_block tune setting.
+	(nocona_cost): Correct size of prefetch block to 64.
+
 2013-12-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (output file options): Add missing markers.
