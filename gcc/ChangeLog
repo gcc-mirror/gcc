@@ -1,3 +1,9 @@
+2014-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59471
+	* gimplify.c (gimplify_expr): Gimplify register-register type
+	VIEW_CONVERT_EXPRs to separate stmts.
+
 2014-01-07  Jeff Law  <law@redhat.com>
 
 	PR middle-end/53623
