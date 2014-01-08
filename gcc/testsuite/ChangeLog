@@ -1,3 +1,8 @@
+2014-01-07  Jeff Law  <law@redhat.com>
+
+	PR middle-end/53623
+	* gcc.target/i386/pr53623.c: New test.
+
 2014-01-07  Adam Butcher  <adam@jessamine.co.uk>
 
 	* g++.dg/cpp1y/pr58500.C: Hoist PR reference to first line and remove

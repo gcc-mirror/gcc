@@ -1,5 +1,18 @@
 2014-01-07  Jeff Law  <law@redhat.com>
 
+	PR middle-end/53623
+	* ree.c (combine_set_extension): Handle case where source
+	and destination registers in an extension insn are different.
+	(combine_reaching_defs): Allow source and destination
+	registers in extension to be different under limited
+	circumstances.
+	(add_removable_extension): Remove restriction that the
+	source and destination registers in the extension are the
+	same.
+	(find_and_remove_re): Emit a copy from the extension's
+	destination to its source after the defining insn if
+	the source and destination registers are different.
+
 	PR middle-end/59285
 	* ifcvt.c (merge_if_block): If we are merging a block with more than
 	one successor with a block with no successors, remove any BARRIER
