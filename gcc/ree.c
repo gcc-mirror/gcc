@@ -282,8 +282,20 @@ static bool
 combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
 {
   rtx orig_src = SET_SRC (*orig_set);
-  rtx new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
   rtx new_set;
+  rtx cand_pat = PATTERN (cand->insn);
+
+  /* If the extension's source/destination registers are not the same
+     then we need to change the original load to reference the destination
+     of the extension.  Then we need to emit a copy from that destination
+     to the original destination of the load.  */
+  rtx new_reg;
+  bool copy_needed
+    = (REGNO (SET_DEST (cand_pat)) != REGNO (XEXP (SET_SRC (cand_pat), 0)));
+  if (copy_needed)
+    new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (cand_pat)));
+  else
+    new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
 
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
@@ -342,7 +354,8 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
       if (dump_file)
         {
           fprintf (dump_file,
-		   "Tentatively merged extension with definition:\n");
+		   "Tentatively merged extension with definition %s:\n",
+		   (copy_needed) ? "(copy needed)" : "");
           print_rtl_single (dump_file, curr_insn);
         }
       return true;
@@ -662,6 +675,53 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
   if (!outcome)
     return false;
 
+  /* If the destination operand of the extension is a different
+     register than the source operand, then additional restrictions
+     are needed.  */
+  if ((REGNO (SET_DEST (PATTERN (cand->insn)))
+       != REGNO (XEXP (SET_SRC (PATTERN (cand->insn)), 0))))
+    {
+      /* In theory we could handle more than one reaching def, it
+	 just makes the code to update the insn stream more complex.  */
+      if (state->defs_list.length () != 1)
+	return false;
+
+      /* We require the candidate not already be modified.  This may
+	 be overly conservative.  */
+      if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
+	return false;
+
+      /* There's only one reaching def.  */
+      rtx def_insn = state->defs_list[0];
+
+      /* The defining statement must not have been modified either.  */
+      if (state->modified[INSN_UID (def_insn)].kind != EXT_MODIFIED_NONE)
+	return false;
+
+      /* The defining statement and candidate insn must be in the same block.
+	 This is merely to keep the test for safety and updating the insn
+	 stream simple.  */
+      if (BLOCK_FOR_INSN (cand->insn) != BLOCK_FOR_INSN (def_insn))
+	return false;
+
+      /* If there is an overlap between the destination of DEF_INSN and
+	 CAND->insn, then this transformation is not safe.  Note we have
+	 to test in the widened mode.  */
+      rtx tmp_reg = gen_rtx_REG (GET_MODE (SET_DEST (PATTERN (cand->insn))),
+				 REGNO (SET_DEST (PATTERN (def_insn))));
+      if (reg_overlap_mentioned_p (tmp_reg, SET_DEST (PATTERN (cand->insn))))
+	return false;
+
+      /* The destination register of the extension insn must not be
+	 used or set between the def_insn and cand->insn exclusive.  */
+      if (reg_used_between_p (SET_DEST (PATTERN (cand->insn)),
+			      def_insn, cand->insn)
+	  || reg_set_between_p (SET_DEST (PATTERN (cand->insn)),
+				def_insn, cand->insn))
+	return false;
+    }
+
+
   /* If cand->insn has been already modified, update cand->mode to a wider
      mode if possible, or punt.  */
   if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
@@ -778,8 +838,7 @@ add_removable_extension (const_rtx expr, rtx insn,
 
   if (REG_P (dest)
       && (code == SIGN_EXTEND || code == ZERO_EXTEND)
-      && REG_P (XEXP (src, 0))
-      && REGNO (dest) == REGNO (XEXP (src, 0)))
+      && REG_P (XEXP (src, 0)))
     {
       struct df_link *defs, *def;
       ext_cand *cand;
@@ -863,6 +922,7 @@ find_and_remove_re (void)
   int num_re_opportunities = 0, num_realized = 0, i;
   vec<ext_cand> reinsn_list;
   auto_vec<rtx> reinsn_del_list;
+  auto_vec<rtx> reinsn_copy_list;
   ext_state state;
 
   /* Construct DU chain to get all reaching definitions of each
@@ -899,9 +959,39 @@ find_and_remove_re (void)
           if (dump_file)
             fprintf (dump_file, "Eliminated the extension.\n");
           num_realized++;
-          reinsn_del_list.safe_push (curr_cand->insn);
+	  if (REGNO (SET_DEST (PATTERN (curr_cand->insn)))
+	      != REGNO (XEXP (SET_SRC (PATTERN (curr_cand->insn)), 0)))
+	    {
+              reinsn_copy_list.safe_push (curr_cand->insn);
+              reinsn_copy_list.safe_push (state.defs_list[0]);
+	    }
+	  reinsn_del_list.safe_push (curr_cand->insn);
 	  state.modified[INSN_UID (curr_cand->insn)].deleted = 1;
         }
+    }
+
+  /* The copy list contains pairs of insns which describe copies we
+     need to insert into the INSN stream.
+
+     The first insn in each pair is the extension insn, from which
+     we derive the source and destination of the copy.
+
+     The second insn in each pair is the memory reference where the
+     extension will ultimately happen.  We emit the new copy
+     immediately after this insn.
+
+     It may first appear that the arguments for the copy are reversed.
+     Remember that the memory reference will be changed to refer to the
+     destination of the extention.  So we're actually emitting a copy
+     from the new destination to the old destination.  */
+  for (unsigned int i = 0; i < reinsn_copy_list.length (); i += 2)
+    {
+      rtx curr_insn = reinsn_copy_list[i];
+      rtx pat = PATTERN (curr_insn);
+      rtx new_reg = gen_rtx_REG (GET_MODE (SET_DEST (pat)),
+				 REGNO (XEXP (SET_SRC (pat), 0)));
+      rtx set = gen_rtx_SET (VOIDmode, new_reg, SET_DEST (pat));
+      emit_insn_after (set, reinsn_copy_list[i + 1]);
     }
 
   /* Delete all useless extensions here in one sweep.  */
