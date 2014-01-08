@@ -1,3 +1,9 @@
+2014-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59471
+	* gcc.dg/pr59471.c (foo): Avoid vector type arguments or return
+	type, use pointers to vector type instead.
+
 2014-01-08  Catherine Moore  <clm@codesourcery.com>
 
 	* gcc.target/mips/umips-branch-3.c: New test.
