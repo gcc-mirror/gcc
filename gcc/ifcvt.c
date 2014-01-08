@@ -3153,6 +3153,20 @@ merge_if_block (struct ce_if_block * ce_info)
 
   if (then_bb)
     {
+      /* If THEN_BB has no successors, then there's a BARRIER after it.
+	 If COMBO_BB has more than one successor (THEN_BB), then that BARRIER
+	 is no longer needed, and in fact it is incorrect to leave it in
+	 the insn stream.  */
+      if (EDGE_COUNT (then_bb->succs) == 0
+	  && EDGE_COUNT (combo_bb->succs) > 1)
+	{
+	  rtx end = NEXT_INSN (BB_END (then_bb));
+	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
+	    end = NEXT_INSN (end);
+
+	  if (end && BARRIER_P (end))
+	    delete_insn (end);
+	}
       merge_blocks (combo_bb, then_bb);
       num_true_changes++;
     }
@@ -3162,6 +3176,20 @@ merge_if_block (struct ce_if_block * ce_info)
      get their addresses taken.  */
   if (else_bb)
     {
+      /* If ELSE_BB has no successors, then there's a BARRIER after it.
+	 If COMBO_BB has more than one successor (ELSE_BB), then that BARRIER
+	 is no longer needed, and in fact it is incorrect to leave it in
+	 the insn stream.  */
+      if (EDGE_COUNT (else_bb->succs) == 0
+	  && EDGE_COUNT (combo_bb->succs) > 1)
+	{
+	  rtx end = NEXT_INSN (BB_END (else_bb));
+	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
+	    end = NEXT_INSN (end);
+
+	  if (end && BARRIER_P (end))
+	    delete_insn (end);
+	}
       merge_blocks (combo_bb, else_bb);
       num_true_changes++;
     }

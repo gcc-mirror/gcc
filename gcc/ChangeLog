@@ -1,3 +1,10 @@
+2014-01-07  Jeff Law  <law@redhat.com>
+
+	PR middle-end/59285
+	* ifcvt.c (merge_if_block): If we are merging a block with more than
+	one successor with a block with no successors, remove any BARRIER
+	after the second block.
+
 2014-01-07  Dan Xio Qiang <ziyan01@163.com>
 
 	* hw-doloop.c (reorg_loops): Release the bitmap obstack.
