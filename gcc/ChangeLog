@@ -1,3 +1,9 @@
+2014-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/59649
+	* stor-layout.c (get_mode_bounds): For BImode return
+	0 and STORE_FLAG_VALUE.
+
 2014-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59630

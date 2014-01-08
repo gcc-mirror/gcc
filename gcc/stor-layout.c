@@ -2821,7 +2821,21 @@ get_mode_bounds (enum machine_mode mode, int sign,
 
   gcc_assert (size <= HOST_BITS_PER_WIDE_INT);
 
-  if (sign)
+  /* Special case BImode, which has values 0 and STORE_FLAG_VALUE.  */
+  if (mode == BImode)
+    {
+      if (STORE_FLAG_VALUE < 0)
+	{
+	  min_val = STORE_FLAG_VALUE;
+	  max_val = 0;
+	}
+      else
+	{
+	  min_val = 0;
+	  max_val = STORE_FLAG_VALUE;
+	}
+    }
+  else if (sign)
     {
       min_val = -((unsigned HOST_WIDE_INT) 1 << (size - 1));
       max_val = ((unsigned HOST_WIDE_INT) 1 << (size - 1)) - 1;
