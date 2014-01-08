@@ -11537,7 +11537,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	unsigned int alignment = node->simdclone->args[i].alignment;
 	tree orig_arg = node->simdclone->args[i].orig_arg;
 	tree def = ssa_default_def (cfun, orig_arg);
-	if (!has_zero_uses (def))
+	if (def && !has_zero_uses (def))
 	  {
 	    tree fn = builtin_decl_explicit (BUILT_IN_ASSUME_ALIGNED);
 	    gimple_seq seq = NULL;
@@ -11587,7 +11587,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	tree def = ssa_default_def (cfun, orig_arg);
 	gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (orig_arg))
 		    || POINTER_TYPE_P (TREE_TYPE (orig_arg)));
-	if (!has_zero_uses (def))
+	if (def && !has_zero_uses (def))
 	  {
 	    iter1 = make_ssa_name (orig_arg, NULL);
 	    iter2 = make_ssa_name (orig_arg, NULL);

@@ -1,5 +1,10 @@
 2014-01-08  Marek Polacek  <polacek@redhat.com>
 
+	PR middle-end/59669
+	* omp-low.c (simd_clone_adjust): Don't crash if def is NULL.
+
+2014-01-08  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/59667
 	* ubsan.c (ubsan_type_descriptor): Call strip_array_types on type2.
 
