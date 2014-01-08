@@ -1,17 +1,18 @@
 2014-01-07  Adam Butcher  <adam@jessamine.co.uk>
 
-	* cpp1y/pr58500.C: Hoist PR tag to first line and remove blanks at EOF.
-	* cpp1y/pr58534.C: Likewise.
-	* cpp1y/pr58536.C: Likewise.
-	* cpp1y/pr58548.C: Likewise.
-	* cpp1y/pr58549.C: Likewise.
-	* cpp1y/pr58637.C: Likewise.
-	* cpp1y/pr59112.C: Likewise.
-	* cpp1y/pr59113.C: Likewise.
-	* cpp1y/pr59629.C: Likewise.
-	* cpp1y/pr59635.C: Likewise.
-	* cpp1y/pr59636.C: Likewise.
-	* cpp1y/pr59638.C: Likewise.
+	* g++.dg/cpp1y/pr58500.C: Hoist PR reference to first line and remove
+	blanks at EOF.
+	* g++.dg/cpp1y/pr58534.C: Likewise.
+	* g++.dg/cpp1y/pr58536.C: Likewise.
+	* g++.dg/cpp1y/pr58548.C: Likewise.
+	* g++.dg/cpp1y/pr58549.C: Likewise.
+	* g++.dg/cpp1y/pr58637.C: Likewise.
+	* g++.dg/cpp1y/pr59112.C: Likewise.
+	* g++.dg/cpp1y/pr59113.C: Likewise.
+	* g++.dg/cpp1y/pr59629.C: Likewise.
+	* g++.dg/cpp1y/pr59635.C: Likewise.
+	* g++.dg/cpp1y/pr59636.C: Likewise.
+	* g++.dg/cpp1y/pr59638.C: Likewise.
 
 2014-01-07  Yufeng Zhang  <yufeng.zhang@arm.com>
 
