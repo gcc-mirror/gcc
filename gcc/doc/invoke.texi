@@ -18890,6 +18890,38 @@ the AltiVec instruction set.  You may also need to set
 @option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
 enhancements.
 
+When @option{-maltivec} is used, rather than @option{-maltivec=le} or
+@option{-maltivec=be}, the element order for Altivec intrinsics such
+as @code{vec_splat}, @code{vec_extract}, and @code{vec_insert} will
+match array element order corresponding to the endianness of the
+target.  That is, element zero identifies the leftmost element in a
+vector register when targeting a big-endian platform, and identifies
+the rightmost element in a vector register when targeting a
+little-endian platform.
+
+@item -maltivec=be
+@opindex maltivec=be
+Generate Altivec instructions using big-endian element order,
+regardless of whether the target is big- or little-endian.  This is
+the default when targeting a big-endian platform.
+
+The element order is used to interpret element numbers in Altivec
+intrinsics such as @code{vec_splat}, @code{vec_extract}, and
+@code{vec_insert}.  By default, these will match array element order
+corresponding to the endianness for the target.
+
+@item -maltivec=le
+@opindex maltivec=le
+Generate Altivec instructions using little-endian element order,
+regardless of whether the target is big- or little-endian.  This is
+the default when targeting a little-endian platform.  This option is
+currently ignored when targeting a big-endian platform.
+
+The element order is used to interpret element numbers in Altivec
+intrinsics such as @code{vec_splat}, @code{vec_extract}, and
+@code{vec_insert}.  By default, these will match array element order
+corresponding to the endianness for the target.
+
 @item -mvrsave
 @itemx -mno-vrsave
 @opindex mvrsave
