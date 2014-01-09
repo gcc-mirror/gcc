@@ -1,3 +1,7 @@
+2014-01-09  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.dg/delay-slot-1.c: Restrict -mabi=64 to 64 bit processors.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47735
