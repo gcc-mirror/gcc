@@ -4,6 +4,9 @@
 	* include/bits/stl_vector.h (vector<>::_M_move_assign): Restore
 	support for non-Movable types.
 
+	PR libstdc++/59680
+	* src/c++11/thread.cc (__sleep_for): Fix call to ::sleep.
+
 2014-01-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_vector.h (std::vector<>::_M_move_assign): Pass

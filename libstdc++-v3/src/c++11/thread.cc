@@ -183,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         ::usleep(__us);
       }
 # else
-    ::sleep(__s.count() + (__ns >= 1000000));
+    ::sleep(__s.count() + (__ns.count() >= 1000000));
 # endif
 #elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
     unsigned long ms = __ns.count() / 1000000;
