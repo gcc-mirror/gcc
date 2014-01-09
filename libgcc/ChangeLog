@@ -1,3 +1,12 @@
+2014-01-09  Rong Xu  <xur@google.com>
+
+	* libgcov-driver.c (this_prg): make it local to save
+	bss space.
+	(gcov_exit_compute_summary): Ditto.
+	(gcov_exit_merge_gcda): Ditto.
+	(gcov_exit_merge_summary): Ditto.
+	(gcov_exit_dump_gcov): Ditto.
+
 2014-01-08  Rong Xu  <xur@google.com> 
 
 	* libgcov-driver.c: Use libgcov.h.
