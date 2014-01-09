@@ -575,6 +575,18 @@ class Expression
 	int iota_value)
   { return this->do_lower(gogo, function, inserter, iota_value); }
 
+  // Flatten an expression. This is called after order_evaluation.
+  // FUNCTION is the function we are in; it will be NULL for an
+  // expression initializing a global variable.  INSERTER may be used
+  // to insert statements before the statement or initializer
+  // containing this expression; it is normally used to create
+  // temporary variables. This function must resolve expressions
+  // which could not be fully parsed into their final form.  It
+  // returns the same Expression or a new one.
+  Expression*
+  flatten(Gogo* gogo, Named_object* function, Statement_inserter* inserter)
+  { return this->do_flatten(gogo, function, inserter); }
+
   // Determine the real type of an expression with abstract integer,
   // floating point, or complex type.  TYPE_CONTEXT describes the
   // expected type.
@@ -697,6 +709,12 @@ class Expression
   virtual Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   { return this; }
+
+  // Return a flattened expression.
+  virtual Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*)
+  { return this; }
+
 
   // Return whether this is a constant expression.
   virtual bool

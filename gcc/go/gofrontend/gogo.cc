@@ -2703,6 +2703,169 @@ Gogo::order_evaluations()
   this->traverse(&order_eval);
 }
 
+// Traversal to flatten parse tree after order of evaluation rules are applied.
+
+class Flatten : public Traverse
+{
+ public:
+  Flatten(Gogo* gogo, Named_object* function)
+    : Traverse(traverse_variables
+	       | traverse_functions
+	       | traverse_statements
+	       | traverse_expressions),
+      gogo_(gogo), function_(function), inserter_()
+  { }
+
+  void
+  set_inserter(const Statement_inserter* inserter)
+  { this->inserter_ = *inserter; }
+
+  int
+  variable(Named_object*);
+
+  int
+  function(Named_object*);
+
+  int
+  statement(Block*, size_t* pindex, Statement*);
+
+  int
+  expression(Expression**);
+
+ private:
+  // General IR.
+  Gogo* gogo_;
+  // The function we are traversing.
+  Named_object* function_;
+  // Current statement inserter for use by expressions.
+  Statement_inserter inserter_;
+};
+
+// Flatten variables.
+
+int
+Flatten::variable(Named_object* no)
+{
+  if (!no->is_variable())
+    return TRAVERSE_CONTINUE;
+
+  if (no->is_variable() && no->var_value()->is_global())
+    {
+      // Global variables can have loops in their initialization
+      // expressions.  This is handled in flatten_init_expression.
+      no->var_value()->flatten_init_expression(this->gogo_, this->function_,
+                                               &this->inserter_);
+      return TRAVERSE_CONTINUE;
+    }
+
+  go_assert(!no->var_value()->has_pre_init());
+
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Flatten the body of a function.  Record the function while flattening it,
+// so that we can pass it down when flattening an expression.
+
+int
+Flatten::function(Named_object* no)
+{
+  go_assert(this->function_ == NULL);
+  this->function_ = no;
+  int t = no->func_value()->traverse(this);
+  this->function_ = NULL;
+
+  if (t == TRAVERSE_EXIT)
+    return t;
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Flatten statement parse trees.
+
+int
+Flatten::statement(Block* block, size_t* pindex, Statement* sorig)
+{
+  // Because we explicitly traverse the statement's contents
+  // ourselves, we want to skip block statements here.  There is
+  // nothing to flatten in a block statement.
+  if (sorig->is_block_statement())
+    return TRAVERSE_CONTINUE;
+
+  Statement_inserter hold_inserter(this->inserter_);
+  this->inserter_ = Statement_inserter(block, pindex);
+
+  // Flatten the expressions first.
+  int t = sorig->traverse_contents(this);
+  if (t == TRAVERSE_EXIT)
+    {
+      this->inserter_ = hold_inserter;
+      return t;
+    }
+
+  // Keep flattening until nothing changes.
+  Statement* s = sorig;
+  while (true)
+    {
+      Statement* snew = s->flatten(this->gogo_, this->function_, block,
+                                   &this->inserter_);
+      if (snew == s)
+	break;
+      s = snew;
+      t = s->traverse_contents(this);
+      if (t == TRAVERSE_EXIT)
+	{
+	  this->inserter_ = hold_inserter;
+	  return t;
+	}
+    }
+
+  if (s != sorig)
+    block->replace_statement(*pindex, s);
+
+  this->inserter_ = hold_inserter;
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Flatten expression parse trees.
+
+int
+Flatten::expression(Expression** pexpr)
+{
+  // Keep flattening until nothing changes.
+  while (true)
+    {
+      Expression* e = *pexpr;
+      if (e->traverse_subexpressions(this) == TRAVERSE_EXIT)
+        return TRAVERSE_EXIT;
+
+      Expression* enew = e->flatten(this->gogo_, this->function_,
+                                    &this->inserter_);
+      if (enew == e)
+	break;
+      *pexpr = enew;
+    }
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Flatten an expression.  INSERTER may be NULL, in which case the
+// expression had better not need to create any temporaries.
+
+void
+Gogo::flatten_expression(Named_object* function, Statement_inserter* inserter,
+                         Expression** pexpr)
+{
+  Flatten flatten(this, function);
+  if (inserter != NULL)
+    flatten.set_inserter(inserter);
+  flatten.expression(pexpr);
+}
+
+void
+Gogo::flatten()
+{
+  Flatten flatten(this, NULL);
+  this->traverse(&flatten);
+}
+
 // Traversal to convert calls to the predeclared recover function to
 // pass in an argument indicating whether it can recover from a panic
 // or not.
@@ -4286,10 +4449,11 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
     is_receiver_(is_receiver), is_varargs_parameter_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
-    seen_(false), init_is_lowered_(false), type_from_init_tuple_(false),
-    type_from_range_index_(false), type_from_range_value_(false),
-    type_from_chan_element_(false), is_type_switch_var_(false),
-    determined_type_(false), in_unique_section_(false)
+    seen_(false), init_is_lowered_(false), init_is_flattened_(false),
+    type_from_init_tuple_(false), type_from_range_index_(false),
+    type_from_range_value_(false), type_from_chan_element_(false),
+    is_type_switch_var_(false), determined_type_(false),
+    in_unique_section_(false)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -4348,6 +4512,40 @@ Variable::lower_init_expression(Gogo* gogo, Named_object* function,
       this->seen_ = false;
 
       this->init_is_lowered_ = true;
+    }
+}
+
+// Flatten the initialization expression after ordering evaluations.
+
+void
+Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
+                                  Statement_inserter* inserter)
+{
+  Named_object* dep = gogo->var_depends_on(this);
+  if (dep != NULL && dep->is_variable())
+    dep->var_value()->flatten_init_expression(gogo, function, inserter);
+
+  if (this->init_ != NULL && !this->init_is_flattened_)
+    {
+      if (this->seen_)
+	{
+	  // We will give an error elsewhere, this is just to prevent
+	  // an infinite loop.
+	  return;
+	}
+      this->seen_ = true;
+
+      Statement_inserter global_inserter;
+      if (this->is_global_)
+	{
+	  global_inserter = Statement_inserter(gogo, this);
+	  inserter = &global_inserter;
+	}
+
+      gogo->flatten_expression(function, inserter, &this->init_);
+
+      this->seen_ = false;
+      this->init_is_flattened_ = true;
     }
 }
 

@@ -306,6 +306,16 @@ class Statement
 	Statement_inserter* inserter)
   { return this->do_lower(gogo, function, block, inserter); }
 
+  // Flatten a statement.  This is called immediately after the order of
+  // evaluation rules are applied to statements.  It returns the same
+  // Statement or a new one.  FUNCTION is the function containing this
+  // statement.  BLOCK is the block containing this statement.
+  // INSERTER can be used to insert new statements before this one.
+  Statement*
+  flatten(Gogo* gogo, Named_object* function, Block* block,
+          Statement_inserter* inserter)
+  { return this->do_flatten(gogo, function, block, inserter); }
+
   // Set type information for unnamed constants.
   void
   determine_types();
@@ -410,6 +420,12 @@ class Statement
   // one.
   virtual Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*)
+  { return this; }
+
+  // Implemented by the child class: lower this statement to a simpler
+  // one.
+  virtual Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*)
   { return this; }
 
   // Implemented by child class: set type information for unnamed
@@ -582,6 +598,9 @@ class Variable_declaration_statement : public Statement
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
+
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   Bstatement*
   do_get_backend(Translate_context*);

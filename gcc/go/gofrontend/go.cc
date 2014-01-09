@@ -119,12 +119,15 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Use temporary variables to force order of evaluation.
   ::gogo->order_evaluations();
 
+  // Flatten the parse tree.
+  ::gogo->flatten();
+
   // Build thunks for functions which call recover.
   ::gogo->build_recover_thunks();
 
   // Convert complicated go and defer statements into simpler ones.
   ::gogo->simplify_thunk_statements();
-  
+
   // Dump ast, use filename[0] as the base name
   ::gogo->dump_ast(filenames[0]);
 }
