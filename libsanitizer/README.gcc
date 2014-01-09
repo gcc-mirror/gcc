@@ -9,6 +9,8 @@ http://llvm.org/svn/llvm-project/compiler-rt in the following directories:
   lib/interception
   lib/asan
   lib/tsan
+  lib/lsan
+  lib/ubsan
 
 Trivial and urgent fixes (portability, build fixes, etc.) may go directly to the
 GCC tree.  All non-trivial changes, functionality improvements, etc. should go
