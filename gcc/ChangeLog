@@ -1,3 +1,7 @@
+2014-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (cpu): Remove the unused btver1.
+
 2014-01-09  Rong Xu  <xur@google.com>
 
 	* libgcc/libgcov-driver.c (this_prg): make it local to save
