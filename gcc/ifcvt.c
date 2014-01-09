@@ -522,7 +522,10 @@ cond_exec_process_if_block (ce_if_block * ce_info,
 	  n_insns -= 2 * n_matching;
 	}
 
-      if (then_start && else_start)
+      if (then_start
+	  && else_start
+	  && then_n_insns > n_matching
+	  && else_n_insns > n_matching)
 	{
 	  int longest_match = MIN (then_n_insns - n_matching,
 				   else_n_insns - n_matching);
