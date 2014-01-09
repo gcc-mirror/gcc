@@ -280,8 +280,6 @@ hash_canonical_type (tree type)
      only existing types having the same features as the new type will be
      checked.  */
   v = iterative_hash_hashval_t (TREE_CODE (type), 0);
-  v = iterative_hash_hashval_t (TREE_ADDRESSABLE (type), v);
-  v = iterative_hash_hashval_t (TYPE_ALIGN (type), v);
   v = iterative_hash_hashval_t (TYPE_MODE (type), v);
 
   /* Incorporate common features of numerical types.  */
@@ -308,9 +306,7 @@ hash_canonical_type (tree type)
      pointed to but do not recurse to the pointed-to type.  */
   if (POINTER_TYPE_P (type))
     {
-      v = iterative_hash_hashval_t (TYPE_REF_CAN_ALIAS_ALL (type), v);
       v = iterative_hash_hashval_t (TYPE_ADDR_SPACE (TREE_TYPE (type)), v);
-      v = iterative_hash_hashval_t (TYPE_RESTRICT (type), v);
       v = iterative_hash_hashval_t (TREE_CODE (TREE_TYPE (type)), v);
     }
 
@@ -447,9 +443,6 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return false;
 
-  if (TREE_ADDRESSABLE (t1) != TREE_ADDRESSABLE (t2))
-    return false;
-
   /* Qualifiers do not matter for canonical type comparison purposes.  */
 
   /* Void types and nullptr types are always the same.  */
@@ -458,8 +451,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
     return true;
 
   /* Can't be the same type if they have different alignment, or mode.  */
-  if (TYPE_ALIGN (t1) != TYPE_ALIGN (t2)
-      || TYPE_MODE (t1) != TYPE_MODE (t2))
+  if (TYPE_MODE (t1) != TYPE_MODE (t2))
     return false;
 
   /* Non-aggregate types can be handled cheaply.  */
@@ -486,16 +478,8 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
 	 useless_type_conversion_p would do.  */
       if (POINTER_TYPE_P (t1))
 	{
-	  /* If the two pointers have different ref-all attributes,
-	     they can't be the same type.  */
-	  if (TYPE_REF_CAN_ALIAS_ALL (t1) != TYPE_REF_CAN_ALIAS_ALL (t2))
-	    return false;
-
 	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
 	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
-	    return false;
-
-	  if (TYPE_RESTRICT (t1) != TYPE_RESTRICT (t2))
 	    return false;
 
 	  if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
