@@ -1143,6 +1143,10 @@ proc go-gc-tests { } {
 		   || $test_line == "// \$G \$D/pkg.go && pack grcS pkg.a pkg.\$A 2> /dev/null && rm pkg.\$A && \$G -I. -u \$D/main.go" } {
 	    # This tests the gc -u option, which gccgo does not
 	    # support.
+	} elseif { $test_line == "// errorcheck -0 -N -d=nil" \
+		       || $test_line == "// errorcheck -0 -d=nil" } {
+	    # This tests gc nil pointer checks using -d=nil, which
+	    # gccgo does not support.
 	} else {
 	    clone_output "$name: unrecognized test line: $test_line"
 	    unsupported $name

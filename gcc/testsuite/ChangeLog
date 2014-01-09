@@ -1,3 +1,8 @@
+2014-01-09  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Skip nilptr tests that test
+	the other Go compiler.
+
 2014-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59730
