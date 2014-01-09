@@ -1,3 +1,12 @@
+2014-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59622
+	* gimple-fold.c (gimple_fold_call): Fix a typo in message.  For
+	__builtin_unreachable replace the OBJ_TYPE_REF call with a call to
+	__builtin_unreachable and add if needed a setter of the lhs SSA_NAME.
+	Don't devirtualize for inplace at all.  For targets.length () == 1,
+	if the call is noreturn and cfun isn't in SSA form yet, clear lhs.
+
 2014-01-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (cpu): Remove the unused btver1.

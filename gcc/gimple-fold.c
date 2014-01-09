@@ -1167,7 +1167,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
                                                  (OBJ_TYPE_REF_EXPR (callee)))))
 	    {
 	      fprintf (dump_file,
-		       "Type inheritnace inconsistent devirtualization of ");
+		       "Type inheritance inconsistent devirtualization of ");
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, " to ");
 	      print_generic_expr (dump_file, callee, TDF_SLIM);
@@ -1177,24 +1177,45 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
-      else if (flag_devirtualize && virtual_method_call_p (callee))
+      else if (flag_devirtualize && !inplace && virtual_method_call_p (callee))
 	{
 	  bool final;
 	  vec <cgraph_node *>targets
 	    = possible_polymorphic_call_targets (callee, &final);
 	  if (final && targets.length () <= 1)
 	    {
+	      tree lhs = gimple_call_lhs (stmt);
 	      if (targets.length () == 1)
 		{
 		  gimple_call_set_fndecl (stmt, targets[0]->decl);
 		  changed = true;
+		  /* If the call becomes noreturn, remove the lhs.  */
+		  if (lhs && (gimple_call_flags (stmt) & ECF_NORETURN))
+		    {
+		      if (TREE_CODE (lhs) == SSA_NAME)
+			{
+			  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+			  tree def = get_or_create_ssa_default_def (cfun, var);
+			  gimple new_stmt = gimple_build_assign (lhs, def);
+			  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+			}
+		      gimple_call_set_lhs (stmt, NULL_TREE);
+		    }
 		}
-	      else if (!inplace)
+	      else
 		{
 		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  gimple new_stmt = gimple_build_call (fndecl, 0);
 		  gimple_set_location (new_stmt, gimple_location (stmt));
-		  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+		    {
+		      tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+		      tree def = get_or_create_ssa_default_def (cfun, var);
+		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		      update_call_from_tree (gsi, def);
+		    }
+		  else
+		    gsi_replace (gsi, new_stmt, true);
 		  return true;
 		}
 	    }
