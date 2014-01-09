@@ -1,3 +1,12 @@
+2014-01-09  Rong Xu  <xur@google.com>
+
+	* libgcc/libgcov-driver.c (this_prg): make it local to save
+	bss space.
+	(gcov_exit_compute_summary): Ditto.
+	(gcov_exit_merge_gcda): Ditto.
+	(gcov_exit_merge_summary): Ditto.
+	(gcov_exit_dump_gcov): Ditto.
+
 2014-01-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gdbasan.in: Put a breakpoint on __sanitizer::Report.
