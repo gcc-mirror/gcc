@@ -1,5 +1,9 @@
 2014-01-09  Richard Biener  <rguenther@suse.de>
 
+	* lto.c (gimple_canonical_types_compatible_p): Fix comment.
+
+2014-01-09  Richard Biener  <rguenther@suse.de>
+
 	PR lto/45586
 	* lto.c (hash_canonical_type): Do not hash TREE_ADDRESSABLE,
 	TYPE_ALIGN, TYPE_RESTRICT or TYPE_REF_CAN_ALIAS_ALL.
