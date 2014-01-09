@@ -246,6 +246,16 @@ Variable_declaration_statement::do_lower(Gogo* gogo, Named_object* function,
   return this;
 }
 
+// Flatten the variable's initialization expression.
+
+Statement*
+Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
+                                           Block*, Statement_inserter* inserter)
+{
+  this->var_->var_value()->flatten_init_expression(gogo, function, inserter);
+  return this;
+}
+
 // Convert a variable declaration to the backend representation.
 
 Bstatement*
