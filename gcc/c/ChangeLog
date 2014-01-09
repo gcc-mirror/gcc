@@ -1,3 +1,9 @@
+2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c++/59631
+	* c-parser.c (c_parser_postfix_expression): Replaced consecutive if
+	statements with if-elseif statements.
+
 2014-01-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/57773

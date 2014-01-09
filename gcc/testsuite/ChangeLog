@@ -1,3 +1,17 @@
+2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c++/59631
+	* gcc.dg/cilk-plus/cilk-plus.exp: Removed "-fcilkplus" from flags list.
+	* g++.dg/cilk-plus/cilk-plus.exp: Likewise.
+	* c-c++-common/cilk-plus/CK/spawnee_inline.c: Replaced second dg-option
+	with dg-additional-options.
+	* c-c++-common/cilk-plus/CK/varargs_test.c: Likewise.
+	* c-c++-common/cilk-plus/CK/steal_check.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+	* c-c++-common/cilk-plus/CK/spawning_arg.c: Likewise.
+	* c-c++-common/cilk-plus/CK/invalid_spawns.c: Added a dg-options tag.
+	* c-c++-common/cilk-plus/CK/pr59631.c: New testcase.
+
 2014-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59715
