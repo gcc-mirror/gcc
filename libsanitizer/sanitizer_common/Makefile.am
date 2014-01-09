@@ -7,8 +7,10 @@ DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 if LIBBACKTRACE_SUPPORTED
-AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -I $(top_srcdir)/../libbacktrace \
+AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
+	       -I $(top_srcdir)/../libbacktrace \
 	       -I $(top_builddir)/libbacktrace \
+	       -I $(top_srcdir)/../include \
 	       -include $(top_srcdir)/libbacktrace/backtrace-rename.h
 endif
 ACLOCAL_AMFLAGS = -I m4

@@ -3,6 +3,9 @@
 /* ELF size: 32 or 64 */
 #undef BACKTRACE_ELF_SIZE
 
+/* Define to 1 if you have the <alloca.h> header file. */
+#undef HAVE_ALLOCA_H
+
 /* Define to 1 if you have the __atomic functions */
 #undef HAVE_ATOMIC_FUNCTIONS
 

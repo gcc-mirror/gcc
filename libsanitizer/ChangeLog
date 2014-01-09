@@ -1,5 +1,39 @@
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* sanitizer_common/sanitizer_symbolizer_libbacktrace.h
+	(LibbacktraceSymbolizer::Demangle): New declaration.
+	* sanitizer_common/sanitizer_symbolizer_posix_libcdep.cc
+	(POSIXSymbolizer::Demangle): Use libbacktrace_symbolizer_'s Demangle
+	method if possible.
+	* sanitizer_common/sanitizer_symbolizer_libbacktrace.cc: Include
+	"demangle.h" if SANITIZE_CP_DEMANGLE is defined.
+	(struct CplusV3DemangleData): New type.
+	(CplusV3DemangleCallback, CplusV3Demangle): New functions.
+	(SymbolizeCodePCInfoCallback, SymbolizeCodeCallback,
+	SymbolizeDataCallback): Use CplusV3Demangle.
+	* sanitizer_common/Makefile.am (AM_CXXFLAGS): Add
+	-DSANITIZE_CP_DEMANGLE and -I $(top_srcdir)/../include.
+	* libbacktrace/backtrace-rename.h (cplus_demangle_builtin_types,
+	cplus_demangle_fill_ctor, cplus_demangle_fill_dtor,
+	cplus_demangle_fill_extended_operator, cplus_demangle_fill_name,
+	cplus_demangle_init_info, cplus_demangle_mangled_name,
+	cplus_demangle_operators, cplus_demangle_print,
+	cplus_demangle_print_callback, cplus_demangle_type, cplus_demangle_v3,
+	cplus_demangle_v3_callback, is_gnu_v3_mangled_ctor,
+	is_gnu_v3_mangled_dtor, java_demangle_v3, java_demangle_v3_callback):
+	Define.
+	(__asan_internal_memcmp, __asan_internal_strncmp): New prototypes.
+	(memcmp, strncmp): Redefine.
+	* libbacktrace/Makefile.am (libsanitizer_libbacktrace_la_SOURCES): Add
+	../../libiberty/cp-demangle.c.
+	* libbacktrace/bridge.cc (__asan_internal_memcmp,
+	__asan_internal_strncmp): New functions.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* libbacktrace/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Regenerated.
+	* config.h.in: Regenerated.
+
 	* sanitizer_common/Makefile.am (AM_CPPFLAGS): Add
 	-isystem $(top_srcdir)/include/system.
 	* sanitizer_common/Makefile.in: Regenerated.
