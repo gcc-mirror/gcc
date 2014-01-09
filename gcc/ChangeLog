@@ -1,3 +1,10 @@
+2014-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59715
+	* tree-cfg.h (split_critical_edges): Declare.
+	* tree-cfg.c (split_critical_edges): Export.
+	* tree-ssa-sink.c (execute_sink_code): Split critical edges.
+
 2014-01-09  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* cfgexpand.c (expand_stack_vars): Optionally disable 

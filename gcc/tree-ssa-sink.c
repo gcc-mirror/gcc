@@ -567,7 +567,7 @@ static void
 execute_sink_code (void)
 {
   loop_optimizer_init (LOOPS_NORMAL);
-
+  split_critical_edges ();
   connect_infinite_loops_to_exit ();
   memset (&sink_stats, 0, sizeof (sink_stats));
   calculate_dominance_info (CDI_DOMINATORS);
