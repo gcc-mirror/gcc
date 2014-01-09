@@ -1,3 +1,8 @@
+2014-01-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59730
+	* g++.dg/cpp0x/variadic145.C: New.
+
 2014-01-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* go.test/go-test.exp (go-gc-tests): Don't run peano.go on systems
