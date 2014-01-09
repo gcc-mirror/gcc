@@ -1,5 +1,5 @@
-AM_CPPFLAGS = -I $(top_srcdir)/include
- 
+AM_CPPFLAGS = -I $(top_srcdir)/include -isystem $(top_srcdir)/include/system
+
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 

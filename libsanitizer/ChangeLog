@@ -1,4 +1,13 @@
-2014-10-09  Jakub Jelinek  <jakub@redhat.com>
+2014-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/Makefile.am (AM_CPPFLAGS): Add
+	-isystem $(top_srcdir)/include/system.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* include/system/linux/aio_abi.h: New header.
+	* include/system/linux/mroute.h: New header.
+	* include/system/linux/mroute6.h: New header.
+	* include/system/linux/perf_event.h: New header.
+	* include/system/linux/types.h: New header.
 
 	PR sanitizer/59136
 	* sanitizer_common/Makefile.am (AM_CXXFLAGS): If
