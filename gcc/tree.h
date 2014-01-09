@@ -1114,9 +1114,6 @@ extern void protected_set_expr_location (tree, location_t);
    the given label expression.  */
 #define LABEL_EXPR_LABEL(NODE)  TREE_OPERAND (LABEL_EXPR_CHECK (NODE), 0)
 
-/* VDEF_EXPR accessors are specified in tree-flow.h, along with the other
-   accessors for SSA operands.  */
-
 /* CATCH_EXPR accessors.  */
 #define CATCH_TYPES(NODE)	TREE_OPERAND (CATCH_EXPR_CHECK (NODE), 0)
 #define CATCH_BODY(NODE)	TREE_OPERAND (CATCH_EXPR_CHECK (NODE), 1)

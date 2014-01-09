@@ -1,3 +1,13 @@
+2014-01-09  Steve Ellcey  <sellcey@mips.com>
+
+	* Makefile.in (TREE_FLOW_H): Remove.
+	(TREE_SSA_H): Add file names from tree-flow.h.
+	* doc/tree-ssa.texi (Annotations): Remove reference to tree-flow.h
+	* tree.h: Remove tree-flow.h reference.
+	* hash-table.h: Remove tree-flow.h reference.
+	* tree-ssa-loop-niter.c (dump_affine_iv): Replace tree-flow.h
+	reference with tree-ssa-loop.h.
+
 2014-01-09  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* doc/invoke.texi: Add -maltivec={be,le} options, and document
