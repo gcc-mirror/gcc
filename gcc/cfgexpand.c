@@ -1215,8 +1215,11 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	 we conservatively assume it will be on stack even if VAR is
 	 eventually put into register after RA pass.  For non-automatic
 	 variables, which won't be on stack, we collect alignment of
-	 type and ignore user specified alignment.  */
-      if (TREE_STATIC (var) || DECL_EXTERNAL (var))
+	 type and ignore user specified alignment.  Similarly for
+	 SSA_NAMEs for which use_register_for_decl returns true.  */
+      if (TREE_STATIC (var)
+	  || DECL_EXTERNAL (var)
+	  || (TREE_CODE (origvar) == SSA_NAME && use_register_for_decl (var)))
 	align = MINIMUM_ALIGNMENT (TREE_TYPE (var),
 				   TYPE_MODE (TREE_TYPE (var)),
 				   TYPE_ALIGN (TREE_TYPE (var)));
