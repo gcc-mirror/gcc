@@ -1,3 +1,12 @@
+2014-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/59724
+	* ifcvt.c (cond_exec_process_if_block): Don't call
+	flow_find_head_matching_sequence with 0 longest_match.
+	* cfgcleanup.c (flow_find_head_matching_sequence): Count even
+	non-active insns if !stop_after.
+	(try_head_merge_bb): Revert 2014-01-07 changes.
+
 2014-01-08  Jeff Law  <law@redhat.com>
 
 	* ree.c (get_sub_rtx): New function, extracted from...
