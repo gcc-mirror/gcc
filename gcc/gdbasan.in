@@ -1,3 +1,7 @@
 # Put a breakpoint on __asan_report_error to help with debugging buffer
 # overflow.
 b __asan_report_error
+
+# Put a breakpoint on __sanitizer::Report to help with debugging sanitizer
+# issues.
+b __sanitizer::Report

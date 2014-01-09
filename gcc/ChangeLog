@@ -1,3 +1,7 @@
+2014-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gdbasan.in: Put a breakpoint on __sanitizer::Report.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58115
