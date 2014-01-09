@@ -108,7 +108,8 @@ endif
 libcilkrts_la_LDFLAGS += -no-undefined
 
 # C/C++ header files for Cilk.
-cilkincludedir = $(includedir)/cilk
+# cilkincludedir = $(includedir)/cilk
+cilkincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include/cilk
 cilkinclude_HEADERS =              \
   include/cilk/cilk_api.h          \
   include/cilk/cilk_api_linux.h    \
