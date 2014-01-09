@@ -1,5 +1,10 @@
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/47735
+	* cfgexpand.c (expand_one_var): For SSA_NAMEs, if the underlying
+	var satisfies use_register_for_decl, just take into account type
+	alignment, rather than decl alignment.
+
 	PR tree-optimization/59622
 	* gimple-fold.c (gimple_fold_call): Fix a typo in message.  For
 	__builtin_unreachable replace the OBJ_TYPE_REF call with a call to

@@ -1,5 +1,8 @@
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/47735
+	* gcc.target/i386/pr47735.c: New test.
+
 	PR tree-optimization/59622
 	* g++.dg/opt/pr59622-2.C: New test.
 	* g++.dg/opt/pr59622-3.C: New test.
