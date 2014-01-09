@@ -11527,6 +11527,28 @@ build_target_option_node (struct gcc_options *opts)
   return t;
 }
 
+/* Reset TREE_TARGET_GLOBALS cache for TARGET_OPTION_NODE.
+   Called through htab_traverse.  */
+
+static int
+prepare_target_option_node_for_pch (void **slot, void *)
+{
+  tree node = (tree) *slot;
+  if (TREE_CODE (node) == TARGET_OPTION_NODE)
+    TREE_TARGET_GLOBALS (node) = NULL;
+  return 1;
+}
+
+/* Clear TREE_TARGET_GLOBALS of all TARGET_OPTION_NODE trees,
+   so that they aren't saved during PCH writing.  */
+
+void
+prepare_target_option_nodes_for_pch (void)
+{
+  htab_traverse (cl_option_hash_table, prepare_target_option_node_for_pch,
+		 NULL);
+}
+
 /* Determine the "ultimate origin" of a block.  The block may be an inlined
    instance of an inlined instance of a block which is local to an inline
    function, so we have to trace all of the way back through the origin chain

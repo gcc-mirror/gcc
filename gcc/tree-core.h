@@ -1557,10 +1557,17 @@ struct GTY(()) tree_optimization_option {
   struct target_optabs *GTY ((skip)) base_optabs;
 };
 
+/* Forward declaration, defined in target-globals.h.  */
+
+struct GTY(()) target_globals;
+
 /* Target options used by a function.  */
 
 struct GTY(()) tree_target_option {
   struct tree_common common;
+
+  /* Target globals for the corresponding target option.  */
+  struct target_globals *globals;
 
   /* The optimization options used by the user.  */
   struct cl_target_option opts;

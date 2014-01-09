@@ -2510,6 +2510,9 @@ extern void debug_dispatch_window (int);
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)
 
+/* For switching between functions with different target attributes.  */
+#define SWITCHABLE_TARGET 1
+
 /*
 Local variables:
 version-control: t

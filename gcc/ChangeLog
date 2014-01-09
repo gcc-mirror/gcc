@@ -1,3 +1,20 @@
+2014-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58115
+	* tree-core.h (struct target_globals): New forward declaration.
+	(struct tree_target_option): Add globals field.
+	* tree.h (TREE_TARGET_GLOBALS): Define.
+	(prepare_target_option_nodes_for_pch): New prototype.
+	* target-globals.h (struct target_globals): Define even if
+	!SWITCHABLE_TARGET.
+	* tree.c (prepare_target_option_node_for_pch,
+	prepare_target_option_nodes_for_pch): New functions.
+	* config/i386/i386.h (SWITCHABLE_TARGET): Define.
+	* config/i386/i386.c: Include target-globals.h.
+	(ix86_set_current_function): Instead of doing target_reinit
+	unconditionally, use save_target_globals_default_opts and
+	restore_target_globals.
+
 2014-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59715
