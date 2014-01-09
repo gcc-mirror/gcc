@@ -450,7 +450,7 @@ gimple_canonical_types_compatible_p (tree t1, tree t2)
       || TREE_CODE (t1) == NULLPTR_TYPE)
     return true;
 
-  /* Can't be the same type if they have different alignment, or mode.  */
+  /* Can't be the same type if they have different mode.  */
   if (TYPE_MODE (t1) != TYPE_MODE (t2))
     return false;
 
