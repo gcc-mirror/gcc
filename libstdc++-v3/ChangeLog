@@ -1,3 +1,9 @@
+2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59738
+	* include/bits/stl_vector.h (vector<>::_M_move_assign): Restore
+	support for non-Movable types.
+
 2014-01-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_vector.h (std::vector<>::_M_move_assign): Pass
