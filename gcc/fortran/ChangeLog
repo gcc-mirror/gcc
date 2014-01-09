@@ -1,3 +1,8 @@
+2014-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	* cpp.c (gfc_cpp_handle_option): Add missing break.
+	* trans-io.c (transfer_expr): Silence unused value warning.
+
 2014-01-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58182
