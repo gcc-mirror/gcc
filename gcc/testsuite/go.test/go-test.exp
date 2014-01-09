@@ -400,17 +400,16 @@ proc go-gc-tests { } {
 	}
 
 	if { ( [file tail $test] == "select2.go" \
-		   || [file tail $test] == "stack.go" ) \
+		   || [file tail $test] == "stack.go" \
+		   || [file tail $test] == "peano.go" ) \
 		 && ! [check_effective_target_split_stack] } {
-	    # chan/select2.go fails on targets without split stack,
-	    # because they allocate a large stack segment that blows
-	    # out the memory calculations.
+	    # These tests fails on targets without split stack.
 	    untested $name
 	    continue
 	}
 
-	if { [file tail $test] == "rotate.go" } {
-	    # This test produces a temporary file that takes too long
+	if [string match "*go.test/test/rotate\[0123\].go" $test] {
+	    # These tests produces a temporary file that takes too long
 	    # to compile--5 minutes on my laptop without optimization.
 	    # When compiling without optimization it tests nothing
 	    # useful, since the point of the test is to see whether

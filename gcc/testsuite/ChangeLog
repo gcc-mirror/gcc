@@ -1,3 +1,8 @@
+2014-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* go.test/go-test.exp (go-gc-tests): Don't run peano.go on systems
+	which don't support -fsplit-stack.  Skip rotate[0123].go tests.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR testsuite/59524
