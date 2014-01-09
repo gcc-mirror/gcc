@@ -1,3 +1,36 @@
+2014-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59136
+	* sanitizer_common/Makefile.am (AM_CXXFLAGS): If
+	LIBBACKTRACE_SUPPORTED add -DSANITIZER_LIBBACKTRACE
+	and -I/-include flags.
+	* lsan/Makefile.am (liblsan_la_LIBADD): Add
+	libsanitizer_libbacktrace.la if LIBBACKTRACE_SUPPORTED.
+	* tsan/Makefile.am (libtsan_la_LIBADD): Likewise.
+	* ubsan/Makefile.am (libubsan_la_LIBADD): Likewise.
+	* asan/Makefile.am (libasan_la_LIBADD): Likewise.
+	* Makefile.am (SUBDIRS): If LIBBACKTRACE_SUPPORTED add
+	libbacktrace.
+	* README.gcc: Document that also lsan and ubsan are
+	maintained in compiler-rt upstream.
+	* libbacktrace/Makefile.am: New file.
+	* libbacktrace/backtrace-rename.h: New file.
+	* libbacktrace/backtrace-supported.h.in: New file.
+	* libbacktrace/bridge.cc: New file.
+	* configure.ac: Add tests needed for libbacktrace build
+	within libsanitizer.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* lsan/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Regenerated.
+	* ubsan/Makefile.in: Regenerated.
+	* libbacktrace/Makefile.in: Generated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* interception/Makefile.in: Regenerated.
+	* asan/Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+
 2013-12-19  Kostya Serebryany  <kcc@google.com>
 
         * sanitizer_common/sanitizer_platform_limits_posix.cc:

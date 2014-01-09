@@ -12,4 +12,4 @@ int main() {
 }
 
 /* { dg-output "heap-use-after-free.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ \[(\]\[^/\]\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ \[(\]?\[^/\]\[^\n\r]*(\n|\r\n|\r)" } */

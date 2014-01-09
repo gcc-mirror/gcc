@@ -16,6 +16,8 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+AC_USE_SYSTEM_EXTENSIONS
+
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 AC_CANONICAL_SYSTEM
@@ -61,9 +63,15 @@ AC_SUBST(toolexeclibdir)
 AC_PROG_CC
 AC_PROG_CXX
 AM_PROG_AS
+AC_PROG_RANLIB
 
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+
+AC_PROG_AWK
+case "$AWK" in
+"") AC_MSG_ERROR([can't build without awk]) ;;
+esac
 
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
@@ -122,9 +130,177 @@ case "$host" in
 esac
 AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
 
-AC_CONFIG_FILES([Makefile libsanitizer.spec])
+backtrace_supported=yes
 
-AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common lsan asan ubsan], [DIR/Makefile ]),
+# Test for __sync support.
+AC_CACHE_CHECK([__sync extensions],
+[libsanitizer_cv_sys_sync],
+[if test -n "${with_target_subdir}"; then
+   libsanitizer_cv_sys_sync=yes
+ else
+   AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM([int i;],
+                      [__sync_bool_compare_and_swap (&i, i, i);
+                       __sync_lock_test_and_set (&i, 1);
+                       __sync_lock_release (&i);])],
+     [libsanitizer_cv_sys_sync=yes],
+     [libsanitizer_cv_sys_sync=no])
+ fi])
+if test "$libsanitizer_cv_sys_sync" = "yes"; then
+  AC_DEFINE([HAVE_SYNC_FUNCTIONS], 1,
+	    [Define to 1 if you have the __sync functions])
+fi
+
+# Test for __atomic support.
+AC_CACHE_CHECK([__atomic extensions],
+[libsanitizer_cv_sys_atomic],
+[if test -n "${with_target_subdir}"; then
+   libsanitizer_cv_sys_atomic=yes
+ else
+   AC_LINK_IFELSE(
+     [AC_LANG_PROGRAM([int i;],
+     		      [__atomic_load_n (&i, __ATOMIC_ACQUIRE);
+		       __atomic_store_n (&i, 1, __ATOMIC_RELEASE);])],
+     [libsanitizer_cv_sys_atomic=yes],
+     [libsanitizer_cv_sys_atomic=no])
+ fi])
+if test "$libsanitizer_cv_sys_atomic" = "yes"; then
+  AC_DEFINE([HAVE_ATOMIC_FUNCTIONS], 1,
+	    [Define to 1 if you have the __atomic functions])
+fi
+
+# The library needs to be able to read the executable itself.  Compile
+# a file to determine the executable format.  The awk script
+# filetype.awk prints out the file type.
+AC_CACHE_CHECK([output filetype],
+[libsanitizer_cv_sys_filetype],
+[filetype=
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([int i;], [int j;])],
+  [filetype=`${AWK} -f $srcdir/../libbacktrace/filetype.awk conftest.$ac_objext`],
+  [AC_MSG_FAILURE([compiler failed])])
+libsanitizer_cv_sys_filetype=$filetype])
+
+# Match the file type to decide what files to compile.
+FORMAT_FILE=
+case "$libsanitizer_cv_sys_filetype" in
+elf*) FORMAT_FILE="elf.lo" ;;
+*) AC_MSG_WARN([could not determine output file type])
+   FORMAT_FILE="unknown.lo"
+   backtrace_supported=no
+   ;;
+esac
+AC_SUBST(FORMAT_FILE)
+
+# ELF defines.
+elfsize=
+case "$libsanitizer_cv_sys_filetype" in
+elf32) elfsize=32 ;;
+elf64) elfsize=64 ;;
+esac
+AC_DEFINE_UNQUOTED([BACKTRACE_ELF_SIZE], [$elfsize], [ELF size: 32 or 64])
+
+BACKTRACE_SUPPORTED=0
+if test "$backtrace_supported" = "yes"; then
+  BACKTRACE_SUPPORTED=1
+fi
+AC_SUBST(BACKTRACE_SUPPORTED)
+
+GCC_HEADER_STDINT(gstdint.h)
+
+AC_CHECK_HEADERS(sys/mman.h)
+if test "$ac_cv_header_sys_mman_h" = "no"; then
+  have_mmap=no
+else
+  if test -n "${with_target_subdir}"; then
+    # When built as a GCC target library, we can't do a link test.  We
+    # simply assume that if we have mman.h, we have mmap.
+    have_mmap=yes
+  else
+    AC_CHECK_FUNC(mmap, [have_mmap=yes], [have_mmap=no])
+  fi
+fi
+if test "$have_mmap" = "no"; then
+  VIEW_FILE=read.lo
+  ALLOC_FILE=alloc.lo
+else
+  VIEW_FILE=mmapio.lo
+  AC_PREPROC_IFELSE([
+#include <sys/mman.h>
+#if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
+  #error no MAP_ANONYMOUS
+#endif
+], [ALLOC_FILE=mmap.lo], [ALLOC_FILE=alloc.lo])
+fi
+AC_SUBST(VIEW_FILE)
+AC_SUBST(ALLOC_FILE)
+
+BACKTRACE_USES_MALLOC=0
+if test "$ALLOC_FILE" = "alloc.lo"; then
+  BACKTRACE_USES_MALLOC=1
+fi
+AC_SUBST(BACKTRACE_USES_MALLOC)
+
+# Don't care about thread support
+BACKTRACE_SUPPORTS_THREADS=0
+AC_SUBST(BACKTRACE_SUPPORTS_THREADS)
+
+# Check for dl_iterate_phdr.
+AC_CHECK_HEADERS(link.h)
+if test "$ac_cv_header_link_h" = "no"; then
+  have_dl_iterate_phdr=no
+else
+  # When built as a GCC target library, we can't do a link test.
+  AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
+		  [have_dl_iterate_phdr=no])
+  case "${host}" in
+  *-*-solaris2.10*)
+    # Avoid dl_iterate_phdr on Solaris 10, where it is in the
+    # header file but is only in -ldl.
+    have_dl_iterate_phdr=no ;;
+  esac
+fi
+if test "$have_dl_iterate_phdr" = "yes"; then
+  AC_DEFINE(HAVE_DL_ITERATE_PHDR, 1, [Define if dl_iterate_phdr is available.])
+fi
+
+# Check for the fcntl function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-mingw*) have_fcntl=no ;;
+   *) have_fcntl=yes ;;
+   esac
+else
+  AC_CHECK_FUNC(fcntl, [have_fcntl=yes], [have_fcntl=no])
+fi
+if test "$have_fcntl" = "yes"; then
+  AC_DEFINE([HAVE_FCNTL], 1,
+	    [Define to 1 if you have the fcntl function])
+fi
+
+AC_CHECK_DECLS(strnlen)
+
+# Check for getexecname function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-solaris2*) have_getexecname=yes ;;
+   *) have_getexecname=no ;;
+   esac
+else
+  AC_CHECK_FUNC(getexecname, [have_getexecname=yes], [have_getexecname=no])
+fi
+if test "$have_getexecname" = "yes"; then
+  AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
+fi
+
+AM_CONDITIONAL(LIBBACKTRACE_SUPPORTED,
+	       [test "x${BACKTRACE_SUPPORTED}x${BACKTRACE_USES_MALLOC}" = "x1x0"])
+
+AH_BOTTOM([#include "libbacktrace/backtrace-rename.h"])
+AC_CONFIG_FILES([Makefile libsanitizer.spec libbacktrace/backtrace-supported.h])
+AC_CONFIG_HEADER(config.h)
+
+AC_CONFIG_FILES(AC_FOREACH([DIR], [interception sanitizer_common libbacktrace lsan asan ubsan], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF

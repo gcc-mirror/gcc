@@ -28,7 +28,11 @@ lsan_files = \
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
 
 liblsan_la_SOURCES = $(lsan_files)
-liblsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+liblsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
+if LIBBACKTRACE_SUPPORTED
+liblsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+endif
+liblsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_liblsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

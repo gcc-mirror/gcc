@@ -35,6 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@LIBBACKTRACE_SUPPORTED_TRUE@am__append_1 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 subdir = lsan
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -44,6 +45,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/libstdc++-raw-cxx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
@@ -51,6 +53,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
+CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -80,7 +83,7 @@ am__DEPENDENCIES_1 =
 liblsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
-	$(am__DEPENDENCIES_1)
+	$(am__append_1) $(am__DEPENDENCIES_1)
 am__objects_1 = lsan_common.lo lsan_common_linux.lo
 am__objects_2 = $(am__objects_1) lsan.lo lsan_allocator.lo \
 	lsan_interceptors.lo lsan_preinit.lo lsan_thread.lo
@@ -93,7 +96,7 @@ liblsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 libsanitizer_lsan_la_LIBADD =
 am_libsanitizer_lsan_la_OBJECTS = $(am__objects_1)
 libsanitizer_lsan_la_OBJECTS = $(am_libsanitizer_lsan_la_OBJECTS)
-DEFAULT_INCLUDES = -I.@am__isrc@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -110,12 +113,16 @@ SOURCES = $(liblsan_la_SOURCES) $(libsanitizer_lsan_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
+ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BACKTRACE_SUPPORTED = @BACKTRACE_SUPPORTED@
+BACKTRACE_SUPPORTS_THREADS = @BACKTRACE_SUPPORTS_THREADS@
+BACKTRACE_USES_MALLOC = @BACKTRACE_USES_MALLOC@
 CC = @CC@
 CCAS = @CCAS@
 CCASDEPMODE = @CCASDEPMODE@
@@ -139,6 +146,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FORMAT_FILE = @FORMAT_FILE@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -178,6 +186,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VIEW_FILE = @VIEW_FILE@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -269,7 +278,10 @@ lsan_files = \
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
 liblsan_la_SOURCES = $(lsan_files)
-liblsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+liblsan_la_LIBADD =  \
+	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
+	$(top_builddir)/interception/libinterception.la \
+	$(am__append_1) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_liblsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
