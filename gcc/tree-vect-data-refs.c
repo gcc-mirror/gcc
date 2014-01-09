@@ -3320,9 +3320,10 @@ again:
 			    {
 			      gimple def = SSA_NAME_DEF_STMT (off);
 			      tree reft = TREE_TYPE (DR_REF (newdr));
-			      if (gimple_call_internal_p (def)
-				  && gimple_call_internal_fn (def)
-				  == IFN_GOMP_SIMD_LANE)
+			      if (is_gimple_call (def)
+				  && gimple_call_internal_p (def)
+				  && (gimple_call_internal_fn (def)
+				      == IFN_GOMP_SIMD_LANE))
 				{
 				  tree arg = gimple_call_arg (def, 0);
 				  gcc_assert (TREE_CODE (arg) == SSA_NAME);
