@@ -1,5 +1,11 @@
 2014-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/bswap-1.c, gcc.target/mips/bswap-2.c,
+	gcc.target/mips/bswap-3.c, gcc.target/mips/bswap-4.c,
+	gcc.target/mips/bswap-5.c, gcc.target/mips/bswap-6.c: New tests.
+
+2014-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR rtl-optimization/59137
 	* gcc.target/mips/pr59137.c: New test.
 
