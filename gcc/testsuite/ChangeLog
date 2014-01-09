@@ -1,3 +1,11 @@
+2014-01-09  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/no-asan-globals.c: New test.
+	* c-c++-common/asan/no-instrument-reads.c: Likewise.
+	* c-c++-common/asan/no-instrument-writes.c: Likewise.
+	* c-c++-common/asan/use-after-return-1.c: Likewise.
+	* c-c++-common/asan/no-use-after-return.c: Likewise.
+
 2014-01-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/weak2.ad[sb]: New test.

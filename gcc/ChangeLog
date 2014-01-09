@@ -1,3 +1,21 @@
+2014-01-09  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* cfgexpand.c (expand_stack_vars): Optionally disable 
+	asan stack protection.
+	(expand_used_vars): Likewise.
+	(partition_stack_vars): Likewise.
+	* asan.c (asan_emit_stack_protection): Optionally disable 
+	after return stack usage.
+	(instrument_derefs): Optionally disable memory 
+	access instrumentation.
+	(instrument_builtin_call): Likewise.
+	(instrument_strlen_call): Likewise.
+	(asan_protect_global): Optionally disable 
+	global variables protection.
+	* doc/invoke.texi: Added doc for new options.
+	* params.def: Added new options.
+	* params.h: Likewise.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/59724
