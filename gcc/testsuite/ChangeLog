@@ -1,4 +1,10 @@
-2014-10-09  Jakub Jelinek  <jakub@redhat.com>
+2014-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59622
+	* g++.dg/opt/pr59622-2.C: New test.
+	* g++.dg/opt/pr59622-3.C: New test.
+	* g++.dg/opt/pr59622-4.C: New test.
+	* g++.dg/opt/pr59622-5.C: New test.
 
 	PR sanitizer/59136
 	* c-c++-common/asan/strip-path-prefix-1.c: Allow also the
