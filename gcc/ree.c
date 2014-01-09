@@ -580,27 +580,21 @@ make_defs_and_copies_lists (rtx extend_insn, const_rtx set_pat,
   return ret;
 }
 
-/* Merge the DEF_INSN with an extension.  Calls combine_set_extension
-   on the SET pattern.  */
-
-static bool
-merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
+/* If DEF_INSN has single SET expression, possibly buried inside
+   a PARALLEL, return the address of the SET expression, else
+   return NULL.  This is similar to single_set, except that
+   single_set allows multiple SETs when all but one is dead.  */
+static rtx *
+get_sub_rtx (rtx def_insn)
 {
-  enum machine_mode ext_src_mode;
-  enum rtx_code code;
-  rtx *sub_rtx;
-  rtx s_expr;
-  int i;
-
-  ext_src_mode = GET_MODE (XEXP (SET_SRC (cand->expr), 0));
-  code = GET_CODE (PATTERN (def_insn));
-  sub_rtx = NULL;
+  enum rtx_code code = GET_CODE (PATTERN (def_insn));
+  rtx *sub_rtx = NULL;
 
   if (code == PARALLEL)
     {
-      for (i = 0; i < XVECLEN (PATTERN (def_insn), 0); i++)
+      for (int i = 0; i < XVECLEN (PATTERN (def_insn), 0); i++)
         {
-          s_expr = XVECEXP (PATTERN (def_insn), 0, i);
+          rtx s_expr = XVECEXP (PATTERN (def_insn), 0, i);
           if (GET_CODE (s_expr) != SET)
             continue;
 
@@ -609,7 +603,7 @@ merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
           else
             {
               /* PARALLEL with multiple SETs.  */
-              return false;
+              return NULL;
             }
         }
     }
@@ -618,10 +612,27 @@ merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
   else
     {
       /* It is not a PARALLEL or a SET, what could it be ? */
-      return false;
+      return NULL;
     }
 
   gcc_assert (sub_rtx != NULL);
+  return sub_rtx;
+}
+
+/* Merge the DEF_INSN with an extension.  Calls combine_set_extension
+   on the SET pattern.  */
+
+static bool
+merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
+{
+  enum machine_mode ext_src_mode;
+  rtx *sub_rtx;
+
+  ext_src_mode = GET_MODE (XEXP (SET_SRC (cand->expr), 0));
+  sub_rtx = get_sub_rtx (def_insn);
+
+  if (sub_rtx == NULL)
+    return false;
 
   if (REG_P (SET_DEST (*sub_rtx))
       && (GET_MODE (SET_DEST (*sub_rtx)) == ext_src_mode
@@ -707,8 +718,13 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       /* If there is an overlap between the destination of DEF_INSN and
 	 CAND->insn, then this transformation is not safe.  Note we have
 	 to test in the widened mode.  */
+      rtx *dest_sub_rtx = get_sub_rtx (def_insn);
+      if (dest_sub_rtx == NULL
+	  || !REG_P (SET_DEST (*dest_sub_rtx)))
+	return false;
+
       rtx tmp_reg = gen_rtx_REG (GET_MODE (SET_DEST (PATTERN (cand->insn))),
-				 REGNO (SET_DEST (PATTERN (def_insn))));
+				 REGNO (SET_DEST (*dest_sub_rtx)));
       if (reg_overlap_mentioned_p (tmp_reg, SET_DEST (PATTERN (cand->insn))))
 	return false;
 

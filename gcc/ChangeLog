@@ -1,3 +1,9 @@
+2014-01-08  Jeff Law  <law@redhat.com>
+
+	* ree.c (get_sub_rtx): New function, extracted from...
+	(merge_def_and_ext): Here.
+	(combine_reaching_defs): Use get_sub_rtx.
+
 2014-01-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraph.h (varpool_variable_node): Do not choke on null node.
