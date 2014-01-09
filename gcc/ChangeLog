@@ -1,3 +1,9 @@
+2014-01-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/54300
+	* regcprop.c (copyprop_hardreg_forward_1): Ensure any unused
+	outputs in a single-set are killed from the value chains.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/59724
