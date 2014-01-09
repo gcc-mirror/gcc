@@ -1,3 +1,10 @@
+2014-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR lto/45586
+	* lto.c (hash_canonical_type): Do not hash TREE_ADDRESSABLE,
+	TYPE_ALIGN, TYPE_RESTRICT or TYPE_REF_CAN_ALIAS_ALL.
+	(gimple_canonical_types_compatible_p): Do not compare them either.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
