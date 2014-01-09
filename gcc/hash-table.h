@@ -1050,10 +1050,7 @@ hash_table <Descriptor, Allocator>::end ()
 
 /* Iterate through the elements of hash_table HTAB,
    using hash_table <....>::iterator ITER,
-   storing each element in RESULT, which is of type TYPE.
-
-   This macro has this form for compatibility with the
-   FOR_EACH_HTAB_ELEMENT currently defined in tree-flow.h.  */
+   storing each element in RESULT, which is of type TYPE.  */
 
 #define FOR_EACH_HASH_TABLE_ELEMENT(HTAB, RESULT, TYPE, ITER) \
   for ((ITER) = (HTAB).begin (); \
