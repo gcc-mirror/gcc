@@ -2695,8 +2695,13 @@ extern tree build_optimization_node (struct gcc_options *opts);
 #define TREE_TARGET_OPTION(NODE) \
   (&TARGET_OPTION_NODE_CHECK (NODE)->target_option.opts)
 
+#define TREE_TARGET_GLOBALS(NODE) \
+  (TARGET_OPTION_NODE_CHECK (NODE)->target_option.globals)
+
 /* Return a tree node that encapsulates the target options in OPTS.  */
 extern tree build_target_option_node (struct gcc_options *opts);
+
+extern void prepare_target_option_nodes_for_pch (void);
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 

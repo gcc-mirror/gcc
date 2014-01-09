@@ -37,6 +37,7 @@ extern struct target_builtins *this_target_builtins;
 extern struct target_gcse *this_target_gcse;
 extern struct target_bb_reorder *this_target_bb_reorder;
 extern struct target_lower_subreg *this_target_lower_subreg;
+#endif
 
 struct GTY(()) target_globals {
   struct target_flag_state *GTY((skip)) flag_state;
@@ -57,6 +58,7 @@ struct GTY(()) target_globals {
   struct target_lower_subreg *GTY((skip)) lower_subreg;
 };
 
+#if SWITCHABLE_TARGET
 extern struct target_globals default_target_globals;
 
 extern struct target_globals *save_target_globals (void);
