@@ -1,3 +1,11 @@
+2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c++/59631
+	* parser.c (cp_parser_postfix_expression): Added a new if-statement
+	and replaced an existing if-statement with else-if statement.
+	Changed an existing error message wording to match the one from the C
+	parser.
+
 2014-01-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59614

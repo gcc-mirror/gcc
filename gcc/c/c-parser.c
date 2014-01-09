@@ -7500,7 +7500,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      expr = c_parser_postfix_expression (parser);
 	      expr.value = error_mark_node;	      
 	    }
-	  if (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
+	  else if (c_parser_peek_token (parser)->keyword == RID_CILK_SPAWN)
 	    {
 	      error_at (loc, "consecutive %<_Cilk_spawn%> keywords "
 			"are not permitted");
