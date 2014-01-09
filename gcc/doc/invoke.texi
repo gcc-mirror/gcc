@@ -10065,6 +10065,41 @@ The default choice depends on the target.
 Set the maximum number of existing candidates that will be considered when
 seeking a basis for a new straight-line strength reduction candidate.
 
+@item asan-globals
+Enable buffer overflow detection for global objects.  This kind
+of protection is enabled by default if you are using
+@option{-fsanitize=address} option.
+To disable global objects protection use @option{--param asan-globals=0}.
+
+@item asan-stack
+Enable buffer overflow detection for stack objects.  This kind of
+protection is enabled by default when using@option{-fsanitize=address}.
+To disable stack protection use @option{--param asan-stack=0} option.
+
+@item asan-instrument-reads
+Enable buffer overflow detection for memory reads.  This kind of
+protection is enabled by default when using @option{-fsanitize=address}.
+To disable memory reads protection use
+@option{--param asan-instrument-reads=0}.
+
+@item asan-instrument-writes
+Enable buffer overflow detection for memory writes.  This kind of
+protection is enabled by default when using @option{-fsanitize=address}.
+To disable memory writes protection use
+@option{--param asan-instrument-writes=0} option.
+
+@item asan-memintrin
+Enable detection for built-in functions.  This kind of protection
+is enabled by default when using @option{-fsanitize=address}.
+To disable built-in functions protection use
+@option{--param asan-memintrin=0}.
+
+@item asan-use-after-return
+Enable detection of use-after-return.  This kind of protection
+is enabled by default when using @option{-fsanitize=address} option.
+To disable use-after-return detection use 
+@option{--param asan-use-after-return=0}.
+
 @end table
 @end table
 
