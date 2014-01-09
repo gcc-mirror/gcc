@@ -637,8 +637,7 @@ runtime_settype_flush(M *mp)
 
 		// (Manually inlined copy of runtime_MHeap_Lookup)
 		p = (uintptr)v>>PageShift;
-		if(sizeof(void*) == 8)
-			p -= (uintptr)runtime_mheap.arena_start >> PageShift;
+		p -= (uintptr)runtime_mheap.arena_start >> PageShift;
 		s = runtime_mheap.spans[p];
 
 		if(s->sizeclass == 0) {
