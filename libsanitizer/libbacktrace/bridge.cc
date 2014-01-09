@@ -52,9 +52,21 @@ __asan_internal_memset (void *dest, int c, size_t n)
 }
 
 int
+__asan_internal_memcmp (const void *s1, const void *s2, size_t n)
+{
+  return __sanitizer::internal_memcmp (s1, s2, n);
+}
+
+int
 __asan_internal_strcmp (const char *s1, const char *s2)
 {
   return __sanitizer::internal_strcmp (s1, s2);
+}
+
+int
+__asan_internal_strncmp (const char *s1, const char *s2, size_t n)
+{
+  return __sanitizer::internal_strncmp (s1, s2, n);
 }
 
 size_t

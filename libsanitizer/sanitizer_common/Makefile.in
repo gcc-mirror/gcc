@@ -35,8 +35,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@LIBBACKTRACE_SUPPORTED_TRUE@am__append_1 = -DSANITIZER_LIBBACKTRACE -I $(top_srcdir)/../libbacktrace \
+@LIBBACKTRACE_SUPPORTED_TRUE@am__append_1 = -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
+@LIBBACKTRACE_SUPPORTED_TRUE@	       -I $(top_srcdir)/../libbacktrace \
 @LIBBACKTRACE_SUPPORTED_TRUE@	       -I $(top_builddir)/libbacktrace \
+@LIBBACKTRACE_SUPPORTED_TRUE@	       -I $(top_srcdir)/../include \
 @LIBBACKTRACE_SUPPORTED_TRUE@	       -include $(top_srcdir)/libbacktrace/backtrace-rename.h
 
 subdir = sanitizer_common

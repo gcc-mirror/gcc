@@ -513,6 +513,11 @@ class POSIXSymbolizer : public Symbolizer {
     SymbolizerScope sym_scope(this);
     if (internal_symbolizer_ != 0)
       return internal_symbolizer_->Demangle(name);
+    if (libbacktrace_symbolizer_ != 0) {
+      const char *demangled = libbacktrace_symbolizer_->Demangle(name);
+      if (demangled)
+	return demangled;
+    }
     return DemangleCXXABI(name);
   }
 
