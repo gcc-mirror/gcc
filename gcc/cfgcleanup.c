@@ -1420,7 +1420,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 /* Like flow_find_cross_jump, except start looking for a matching sequence from
    the head of the two blocks.  Do not include jumps at the end.
    If STOP_AFTER is nonzero, stop after finding that many matching
-   instructions.  */
+   instructions.  If STOP_AFTER is zero, count all INSN_P insns, if it is
+   non-zero, only count active insns.  */
 
 int
 flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
@@ -1492,8 +1493,9 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
 	  beforelast1 = last1, beforelast2 = last2;
 	  last1 = i1, last2 = i2;
-	  if (GET_CODE (PATTERN (i1)) != USE
-	      && GET_CODE (PATTERN (i1)) != CLOBBER)
+	  if (!stop_after
+	      || (GET_CODE (PATTERN (i1)) != USE
+		  && GET_CODE (PATTERN (i1)) != CLOBBER))
 	    ninsns++;
 	}
 
@@ -2400,9 +2402,7 @@ try_head_merge_bb (basic_block bb)
 	return false;
       do
 	e0_last_head = prev_real_insn (e0_last_head);
-      while (DEBUG_INSN_P (e0_last_head)
-	     || GET_CODE (PATTERN (e0_last_head)) == USE
-	     || GET_CODE (PATTERN (e0_last_head)) == CLOBBER);
+      while (DEBUG_INSN_P (e0_last_head));
     }
 
   if (max_match == 0)
@@ -2422,9 +2422,7 @@ try_head_merge_bb (basic_block bb)
       basic_block merge_bb = EDGE_SUCC (bb, ix)->dest;
       rtx head = BB_HEAD (merge_bb);
 
-      while (!NONDEBUG_INSN_P (head)
-	     || GET_CODE (PATTERN (head)) == USE
-	     || GET_CODE (PATTERN (head)) == CLOBBER)
+      while (!NONDEBUG_INSN_P (head))
 	head = NEXT_INSN (head);
       headptr[ix] = head;
       currptr[ix] = head;
@@ -2433,9 +2431,7 @@ try_head_merge_bb (basic_block bb)
       for (j = 1; j < max_match; j++)
 	do
 	  head = NEXT_INSN (head);
-	while (!NONDEBUG_INSN_P (head)
-	       || GET_CODE (PATTERN (head)) == USE
-	       || GET_CODE (PATTERN (head)) == CLOBBER);
+	while (!NONDEBUG_INSN_P (head));
       simulate_backwards_to_point (merge_bb, live, head);
       IOR_REG_SET (live_union, live);
     }
