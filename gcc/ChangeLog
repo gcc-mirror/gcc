@@ -1,3 +1,7 @@
+2014-01-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Fix pasto for VPKSDUS.
+
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59745
