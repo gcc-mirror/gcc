@@ -1,3 +1,8 @@
+2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/54300
+	* gcc.target/arm/pr54300.C: New test.
+
 2014-01-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.target/powerpc/rs6000-ldouble-3.c: New test.
