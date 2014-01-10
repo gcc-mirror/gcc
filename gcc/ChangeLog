@@ -1,3 +1,8 @@
+2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_init_iwmmxt_builtins): Skip
+	non-iwmmxt builtins.
+
 2014-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58252
