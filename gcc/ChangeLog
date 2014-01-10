@@ -1,3 +1,8 @@
+2014-01-10  Huacai Chen  <chenhc@lemote.com>
+
+	* config/mips/driver-native.c (host_detect_local_cpu): Handle new
+	kernel strings for Loongson-2E/2F/3A.
+
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59670
