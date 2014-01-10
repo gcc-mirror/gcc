@@ -1,3 +1,10 @@
+2014-01-10  Jeff Law  <law@redhat.com>
+
+	PR middle-end/59743
+	* ree.c (combine_reaching_defs): Ensure the defining statement
+	occurs before the extension when optimizing extensions with
+	different source and destination hard registers.
+
 2014-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/58585
