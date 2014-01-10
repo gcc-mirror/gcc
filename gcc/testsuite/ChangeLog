@@ -1,3 +1,11 @@
+2014-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58252
+	PR ipa/59226
+	* g++.dg/ipa/devirt-20.C: New testcase.	
+	* g++.dg/torture/pr58252.C: Likewise.
+	* g++.dg/torture/pr59226.C: Likewise.
+
 2014-01-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* c-c++-common/asan/no-asan-stack.c: New test.
