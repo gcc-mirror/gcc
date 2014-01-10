@@ -7,6 +7,10 @@
 	and update for C++11.
 	* doc/xml/manual/ctype.xml (std.localization.facet.ctype): Likewise.
 
+	PR libstdc++/59687
+	* doc/xml/manual/backwards_compatibility.xml
+	(backwards.third.nocreate_noreplace): Correct and expand.
+
 2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59738
