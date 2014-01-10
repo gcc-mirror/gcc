@@ -9092,6 +9092,9 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
     {
     case SET:
       *cost = 0;
+      /* SET RTXs don't have a mode so we get it from the destination.  */
+      mode = GET_MODE (SET_DEST (x));
+
       if (REG_P (SET_SRC (x))
 	  && REG_P (SET_DEST (x)))
 	{
@@ -9106,6 +9109,8 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	     in 16 bits in Thumb mode.  */
 	  if (!speed_p && TARGET_THUMB && outer_code == COND_EXEC)
 	    *cost >>= 1;
+
+	  return true;
 	}
 
       if (CONST_INT_P (SET_SRC (x)))
@@ -9113,7 +9118,6 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  /* Handle CONST_INT here, since the value doesn't have a mode
 	     and we would otherwise be unable to work out the true cost.  */
 	  *cost = rtx_cost (SET_DEST (x), SET, 0, speed_p);
-	  mode = GET_MODE (SET_DEST (x));
 	  outer_code = SET;
 	  /* Slightly lower the cost of setting a core reg to a constant.
 	     This helps break up chains and allows for better scheduling.  */
