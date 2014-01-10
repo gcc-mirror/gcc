@@ -18,10 +18,10 @@
     
 
 <para>
-For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
+For the required specialization <classname>codecvt&lt;wchar_t, char, mbstate_t&gt;</classname>,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
-LC_CTYPE category implements.
+<code>LC_CTYPE</code> category implements.
 </para>
 
 <para>
@@ -45,8 +45,10 @@ ctype&lt;wchar_t&gt;
 <para>
 This specialization, by specifying all the template parameters, pretty
 much ties the hands of implementors. As such, the implementation is
-straightforward, involving mcsrtombs for the conversions between char
-to wchar_t and wcsrtombs for conversions between wchar_t and char.
+straightforward, involving <function>mcsrtombs</function> for the
+conversions between <type>char</type> to <type>wchar_t</type> and
+<function>wcsrtombs</function> for conversions between <type>wchar_t</type>
+and <type>char</type>.
 </para>
 
 <para>
@@ -69,7 +71,8 @@ characters.
 
    <listitem>
    <para>
-   How to deal with different types than char, wchar_t? </para></listitem>
+   How to deal with types other than <type>char</type>, <type>wchar_t</type>?
+   </para></listitem>
 
    <listitem><para>
    Overlap between codecvt/ctype: narrow/widen
@@ -77,8 +80,8 @@ characters.
 
    <listitem>
      <para>
-       Mask typedef in codecvt_base, argument types in codecvt.  what
-       is know about this type?
+       <type>mask</type> typedef in <classname>codecvt_base</classname>,
+       argument types in <type>codecvt</type>.  what is know about this type?
    </para></listitem>
 
    <listitem>
@@ -95,10 +98,11 @@ characters.
 
    <listitem>
      <para>
-       Get the ctype&lt;wchar_t&gt;::mask stuff under control. Need to
-       make some kind of static table, and not do lookup every time
-       somebody hits the do_is... functions. Too bad we can't just
-       redefine mask for ctype&lt;wchar_t&gt;
+       Get the <type>ctype&lt;wchar_t&gt;::mask</type> stuff under control.
+       Need to make some kind of static table, and not do lookup every time
+       somebody hits the <code>do_is...</code> functions. Too bad we can't
+       just redefine <type>mask</type> for
+       <classname>ctype&lt;wchar_t&gt;</classname>
    </para></listitem>
 
    <listitem>
