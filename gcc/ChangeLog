@@ -1,3 +1,11 @@
+2014-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58252
+	PR ipa/59226
+	* ipa-devirt.c record_target_from_binfo): Take as argument
+	stack of binfos and lookup matching one for virtual inheritance.
+	(possible_polymorphic_call_targets_1): Update.
+
 2014-01-10  Huacai Chen  <chenhc@lemote.com>
 
 	* config/mips/driver-native.c (host_detect_local_cpu): Handle new
