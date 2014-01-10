@@ -1,3 +1,8 @@
+2014-01-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_tbegin): Remove jump over CC
+	extraction in good case.
+
 2014-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59374
