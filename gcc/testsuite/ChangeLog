@@ -1,3 +1,10 @@
+2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_crypto_ok_nocache): New.
+	(check_effective_target_arm_crypto_ok): Use above procedure.
+	(add_options_for_arm_crypto): Use et_arm_crypto_flags.
+
 2014-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58252

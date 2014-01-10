@@ -2311,19 +2311,37 @@ proc check_effective_target_arm_unaligned { } {
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=crypto-neon-fp-armv8
-# -mfloat-abi=softfp.
-proc check_effective_target_arm_crypto_ok {} {
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_crypto_flags to the
+# best options to add.
+
+proc check_effective_target_arm_crypto_ok_nocache { } {
+    global et_arm_crypto_flags
+    set et_arm_crypto_flags ""
     if { [check_effective_target_arm32] } {
-	return [check_no_compiler_messages arm_crypto_ok object {
-	  int foo (void)
-	  {
-	     __asm__ volatile ("aese.8 q0, q0");
-	     return 0;
-	  }
-	} "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"]
-    } else {
-	return 0
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=crypto-neon-fp-armv8" "-mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_crypto_ok object {
+		#include "arm_neon.h"
+		uint8x16_t
+		foo (uint8x16_t a, uint8x16_t b)
+		{
+	          return vaeseq_u8 (a, b);
+		}
+	    } "$flags"] } {
+		set et_arm_crypto_flags $flags
+		return 1
+	    }
+	}
     }
+
+    return 0
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=crypto-neon-fp-armv8
+
+proc check_effective_target_arm_crypto_ok { } {
+    return [check_cached_effective_target arm_crypto_ok \
+		check_effective_target_arm_crypto_ok_nocache]
 }
 
 # Add options for crypto extensions.
@@ -2331,7 +2349,8 @@ proc add_options_for_arm_crypto { flags } {
     if { ! [check_effective_target_arm_crypto_ok] } {
         return "$flags"
     }
-    return "$flags -mfpu=crypto-neon-fp-armv8 -mfloat-abi=softfp"
+    global et_arm_crypto_flags
+    return "$flags $et_arm_crypto_flags"
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
