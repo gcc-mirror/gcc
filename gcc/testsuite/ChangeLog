@@ -1,3 +1,7 @@
+2014-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/arm/neon-nested-apcs.c: Tweak dg directives.
+
 2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/59744
