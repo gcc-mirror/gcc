@@ -1,3 +1,10 @@
+2014-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59374
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Move dependence
+	checking after SLP discovery.  Mark stmts not participating
+	in any SLP instance properly.
+
 2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs): Use destination mode
