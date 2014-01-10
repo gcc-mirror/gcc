@@ -1,3 +1,10 @@
+2014-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56060
+	PR c++/59730
+	* g++.dg/cpp0x/variadic144.C: New.
+	* g++.dg/cpp0x/variadic145.C: Likewise.
+
 2014-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59715
@@ -28,7 +35,7 @@
 	* gcc.dg/strlenopt-4gf.c: Likewise.
 
 	2013-12-03  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR tree-optimization/59362
 	* gcc.c-torture/compile/pr59362.c: New test.
 
