@@ -1,3 +1,7 @@
+2014-01-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr46309.c: Disable for cris*-*-*.
+
 2014-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/arm/neon-nested-apcs.c: Tweak dg directives.
