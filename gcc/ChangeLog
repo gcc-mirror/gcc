@@ -1,5 +1,10 @@
 2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.c (arm_new_rtx_costs): Use destination mode
+	when handling a SET rtx.
+
+2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-cores.def (cortex-a53): Specify FL_CRC32.
 	(cortex-a57): Likewise.
 	(cortex-a57.cortex-a53): Likewise. Remove redundant flags.
