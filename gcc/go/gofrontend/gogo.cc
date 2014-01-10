@@ -2846,6 +2846,15 @@ Flatten::expression(Expression** pexpr)
   return TRAVERSE_SKIP_COMPONENTS;
 }
 
+// Flatten a block.
+
+void
+Gogo::flatten_block(Named_object* function, Block* block)
+{
+  Flatten flatten(this, function);
+  block->traverse(&flatten);
+}
+
 // Flatten an expression.  INSERTER may be NULL, in which case the
 // expression had better not need to create any temporaries.
 

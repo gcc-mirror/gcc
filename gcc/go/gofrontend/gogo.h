@@ -487,6 +487,10 @@ class Gogo
   void
   lower_constant(Named_object*);
 
+  // Flatten all the statements in a block.
+  void
+  flatten_block(Named_object* function, Block*);
+
   // Flatten an expression.
   void
   flatten_expression(Named_object* function, Statement_inserter*, Expression**);

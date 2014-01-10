@@ -2312,17 +2312,17 @@ class Array_type : public Type
   array_has_hidden_fields(const Named_type* within, std::string* reason) const
   { return this->element_type_->has_hidden_fields(within, reason); }
 
-  // Return a tree for the pointer to the values in an array.
-  tree
-  value_pointer_tree(Gogo*, tree array) const;
+  // Return an expression for the pointer to the values in an array.
+  Expression*
+  get_value_pointer(Gogo*, Expression* array) const;
 
-  // Return a tree for the length of an array with this type.
-  tree
-  length_tree(Gogo*, tree array);
+  // Return an expression for the length of an array with this type.
+  Expression*
+  get_length(Gogo*, Expression* array) const;
 
-  // Return a tree for the capacity of an array with this type.
-  tree
-  capacity_tree(Gogo*, tree array);
+  // Return an expression for the capacity of an array with this type.
+  Expression*
+  get_capacity(Gogo*, Expression* array) const;
 
   // Import an array type.
   static Array_type*

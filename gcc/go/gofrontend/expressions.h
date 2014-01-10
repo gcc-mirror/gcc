@@ -102,6 +102,7 @@ class Expression
     EXPRESSION_RECEIVE,
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_TYPE_INFO,
+    EXPRESSION_SLICE_INFO,
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_MAP_DESCRIPTOR,
     EXPRESSION_LABEL_ADDR
@@ -339,6 +340,22 @@ class Expression
   static Expression*
   make_type_info(Type* type, Type_info);
 
+  // Make an expression that evaluates to some characteristic of a
+  // slice.  For simplicity, the enum values must match the field indexes
+  // in the underlying struct.
+  enum Slice_info
+    {
+      // The underlying data of the slice.
+      SLICE_INFO_VALUE_POINTER,
+      // The length of the slice.
+      SLICE_INFO_LENGTH,
+      // The capacity of the slice.
+      SLICE_INFO_CAPACITY
+    };
+
+  static Expression*
+  make_slice_info(Expression* slice, Slice_info, Location);
+
   // Make an expression which evaluates to the offset of a field in a
   // struct.  This is only used for type descriptors, so there is no
   // location parameter.
@@ -543,6 +560,10 @@ class Expression
   // Return true if this is a composite literal which is not constant.
   bool
   is_nonconstant_composite_literal() const;
+
+  // Return true if this is a variable or temporary variable.
+  bool
+  is_variable() const;
 
   // Return true if this is a reference to a local variable.
   bool

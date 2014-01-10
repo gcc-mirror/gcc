@@ -2471,6 +2471,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   gogo->add_block(b, location);
 
   gogo->lower_block(function, b);
+  gogo->flatten_block(function, b);
 
   // We already ran the determine_types pass, so we need to run it
   // just for the call statement now.  The other types are known.
