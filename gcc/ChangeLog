@@ -1,3 +1,9 @@
+2014-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/58585
+	* ipa-devirt.c (build_type_inheritance_graph): Also add types of vtables
+	into the type inheritance graph.
+
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/59754

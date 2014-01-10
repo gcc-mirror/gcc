@@ -542,7 +542,7 @@ method_class_type (tree t)
 void
 build_type_inheritance_graph (void)
 {
-  struct cgraph_node *n;
+  struct symtab_node *n;
   FILE *inheritance_dump_file;
   int flags;
 
@@ -554,10 +554,37 @@ build_type_inheritance_graph (void)
 
   /* We reconstruct the graph starting of types of all methods seen in the
      the unit.  */
-  FOR_EACH_FUNCTION (n)
-    if (DECL_VIRTUAL_P (n->decl)
+  FOR_EACH_SYMBOL (n)
+    if (is_a <cgraph_node> (n)
+	&& DECL_VIRTUAL_P (n->decl)
 	&& symtab_real_symbol_p (n))
       get_odr_type (method_class_type (TREE_TYPE (n->decl)), true);
+
+    /* Look also for virtual tables of types that do not define any methods.
+ 
+       We need it in a case where class B has virtual base of class A
+       re-defining its virtual method and there is class C with no virtual
+       methods with B as virtual base.
+
+       Here we output B's virtual method in two variant - for non-virtual
+       and virtual inheritance.  B's virtual table has non-virtual version,
+       while C's has virtual.
+
+       For this reason we need to know about C in order to include both
+       variants of B.  More correctly, record_target_from_binfo should
+       add both variants of the method when walking B, but we have no
+       link in between them.
+
+       We rely on fact that either the method is exported and thus we
+       assume it is called externally or C is in anonymous namespace and
+       thus we will see the vtable.  */
+
+    else if (is_a <varpool_node> (n)
+	     && DECL_VIRTUAL_P (n->decl)
+	     && TREE_CODE (DECL_CONTEXT (n->decl)) == RECORD_TYPE
+	     && TYPE_BINFO (DECL_CONTEXT (n->decl))
+	     && polymorphic_type_binfo_p (TYPE_BINFO (DECL_CONTEXT (n->decl))))
+      get_odr_type (DECL_CONTEXT (n->decl), true);
   if (inheritance_dump_file)
     {
       dump_type_inheritance_graph (inheritance_dump_file);
