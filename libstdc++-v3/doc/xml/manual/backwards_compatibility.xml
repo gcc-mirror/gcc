@@ -782,18 +782,25 @@ AC_DEFUN([AC_HEADER_EXT_HASH_SET], [
 </title></info>
 
 
-<para> The existence of <code>ios::nocreate</code> being used for
-input-streams has been confirmed, most probably because the author
-thought it would be more correct to specify nocreate explicitly.  So
-it can be left out for input-streams.
+<para>Historically these flags were used with iostreams to control whether
+new files are created or not when opening a file stream, similar to the
+<code>O_CREAT</code> and <code>O_EXCL</code> flags for the
+<function>open(2)</function> system call. Because iostream modes correspond
+to <function>fopen(3)</function> modes these flags are not supported.
+For input streams a new file will not be created anyway, so
+<code>ios::nocreate</code> is not needed.
+For output streams, a new file will be created if it does not exist, which is
+consistent with the behaviour of <function>fopen</function>.
 </para>
 
-<para>For output streams, <quote>nocreate</quote> is probably the default,
-unless you specify <code>std::ios::trunc</code> ? To be safe, you can
-open the file for reading, check if it has been opened, and then
-decide whether you want to create/replace or not. To my knowledge,
-even older implementations support <code>app</code>, <code>ate</code>
-and <code>trunc</code> (except for <code>app</code> ?).
+<para>When one of these flags is needed a possible alternative is to attempt
+to open the file using <type>std::ifstream</type> first to determine whether
+the file already exists or not. This may not be reliable however, because
+whether the file exists or not could change between opening the
+<type>std::istream</type> and re-opening with an output stream. If you need
+to check for existence and open a file as a single operation then you will
+need to use OS-specific facilities outside the C++ standard library, such
+as <function>open(2)</function>.
 </para>
 </section>
 
