@@ -3,21 +3,21 @@
 
 extern void abort (void);
 
+/* It's unsafe to use CMN in these comparisons.  */
+
 void __attribute__ ((noinline))
 foo_s32 (int a, int b)
 {
-  if (a == -b)
+  if (a < -b)
     abort ();
 }
-/* { dg-final { scan-assembler "cmn\tw\[0-9\]" } } */
 
 void __attribute__ ((noinline))
-foo_s64 (long long a, long long b)
+foo_s64 (unsigned long long a, unsigned long long b)
 {
-  if (a == -b)
+  if (a > -b)
     abort ();
 }
-/* { dg-final { scan-assembler "cmn\tx\[0-9\]" } } */
 
 
 int
@@ -29,5 +29,6 @@ main (void)
   foo_s64 (a, b);
   return 0;
 }
+/* { dg-final { scan-assembler-not "cmn\t" } } */
 
 /* { dg-final { cleanup-saved-temps } } */

@@ -1,3 +1,9 @@
+2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59744
+	* gcc.target/aarch64/cmn-neg.c: Use equality comparisons.
+	* gcc.target/aarch64/cmn-neg2.c: New test.
+
 2014-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59374
