@@ -11,6 +11,9 @@
 	* doc/xml/manual/backwards_compatibility.xml
 	(backwards.third.nocreate_noreplace): Correct and expand.
 
+	PR libstdc++/59699
+	* doc/xml/manual/support.xml (std.support.types.null): Update links.
+
 2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59738
