@@ -1,3 +1,10 @@
+2014-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59715
+	* tree-flow.h (split_critical_edges): Declare.
+	* tree-cfg.c (split_critical_edges): Export.
+	* tree-ssa-sink.c (execute_sink_code): Split critical edges.
+
 2014-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (ISA_HAS_WSBH): Define.

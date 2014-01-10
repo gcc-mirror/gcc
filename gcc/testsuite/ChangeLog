@@ -1,3 +1,8 @@
+2014-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59715
+	* gcc.dg/torture/pr59715.c: New testcase.
+
 2014-01-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/bswap-1.c, gcc.target/mips/bswap-2.c,
