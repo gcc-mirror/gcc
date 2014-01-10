@@ -1,3 +1,10 @@
+2014-01-10  Steve Ellcey  <sellcey@mips.com>
+
+	PR plugins/59335
+	* Makefile.in (PLUGIN_HEADERS): Add gimplify.h, gimple-iterator.h,
+	gimple-ssa.h, fold-const.h, tree-cfg.h, tree-into-ssa.h,
+	tree-ssanames.h, print-tree.h, varasm.h, and context.h.
+
 2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/59744
