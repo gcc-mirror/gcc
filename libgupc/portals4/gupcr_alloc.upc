@@ -91,6 +91,21 @@ static strict shared size_t gupcr_heap_local_low_water_mark;
 static upc_heap_p gupcr_global_heap;
 static upc_heap_p gupcr_local_heap;
 
+/** Increment a shared pointer, by 'nbytes'.  */
+static inline shared void *
+gupcr_pts_add_offset (shared void *ptr, ptrdiff_t nbytes)
+{
+  return (shared void *) (((shared [] char *) ptr) + nbytes);
+}
+
+/** Return the difference between 'ptr1' and 'ptr2'. Both
+    pointers must be non-NULL and have affinity to the same thread.  */
+static inline ptrdiff_t
+gupcr_pts_diff (shared void *ptr1, shared void *ptr2)
+{
+  return (ptrdiff_t) (((shared [] char *) ptr1) - ((shared [] char *) ptr2));
+}
+
 /** Return the smallest power of 2 that is >= 'v',
     scaled so that gupcr_log2 of the minimum allocation size is 0.  */
 static inline unsigned int

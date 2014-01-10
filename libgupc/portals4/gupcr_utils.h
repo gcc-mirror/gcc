@@ -243,28 +243,6 @@ gupcr_log2 (unsigned long long v)
   return gupcr_floor_log2 (v) + !gupcr_is_pow_2 (v);
 }
 
-#ifdef __UPC__
-
-/* For ptrdiff_t definition.  */
-#include <stddef.h>
-
-/** Increment a shared pointer, by 'nbytes'.  */
-static inline shared void *
-gupcr_pts_add_offset (shared void *ptr, ptrdiff_t nbytes)
-{
-  return (shared void *) (((shared [] char *) ptr) + nbytes);
-}
-
-/** Return the difference between 'ptr1' and 'ptr2'. Both
-    pointers must be non-NULL and have affinity to the same thread.  */
-static inline ptrdiff_t
-gupcr_pts_diff (shared void *ptr1, shared void *ptr2)
-{
-  return (ptrdiff_t) (((shared [] char *) ptr1) - ((shared [] char *) ptr2));
-}
-
-#endif /* __UPC__ */
-
 extern gupcr_facility_t gupcr_debug_facility_mask;
 extern gupcr_facility_t gupcr_log_facility_mask;
 extern gupcr_facility_t gupcr_stats_facility_mask;
