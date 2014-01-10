@@ -2447,6 +2447,7 @@ tree_predictive_commoning_loop (struct loop *loop)
   if (!components)
     {
       free_data_refs (datarefs);
+      free_affine_expand_cache (&name_expansions);
       return false;
     }
 

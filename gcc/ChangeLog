@@ -1,5 +1,9 @@
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/59745
+	* tree-predcom.c (tree_predictive_commoning_loop): Call
+	free_affine_expand_cache if giving up because components is NULL.
+
 	* target-globals.c (save_target_globals): Allocate < 4KB structs using
 	GC in payload of target_globals struct instead of allocating them on
 	the heap and the larger structs separately using GC.
