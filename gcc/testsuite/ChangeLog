@@ -1,3 +1,8 @@
+2014-01-10  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/58585
+	* g++.dg/torture/pr58585.C: New testcase.
+
 2014-01-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/pr46309.c: Disable for cris*-*-*.
