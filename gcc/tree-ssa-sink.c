@@ -604,7 +604,9 @@ const pass_data pass_data_sink_code =
   true, /* has_gate */
   true, /* has_execute */
   TV_TREE_SINK, /* tv_id */
-  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  /* PROP_no_crit_edges is ensured by running split_critical_edges in
+     execute_sink_code.  */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
