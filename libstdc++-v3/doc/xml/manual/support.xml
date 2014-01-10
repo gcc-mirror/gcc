@@ -169,16 +169,18 @@
      <constant>NULL</constant> is always a pointer.)
     </para>
 
-    <para>In his book <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.awprofessional.com/titles/0-201-92488-9/"><emphasis>Effective
-    C++</emphasis></link>, Scott Meyers points out that the best way
+    <para>In his book <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="http://www.aristeia.com/books.html"><emphasis>Effective
+      C++</emphasis></link>, Scott Meyers points out that the best way
     to solve this problem is to not overload on pointer-vs-integer
     types to begin with.  He also offers a way to make your own magic
     <constant>NULL</constant> that will match pointers before it
     matches integers.
     </para>
-    <para>See
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.awprofessional.com/titles/0-201-31015-5/">the
-      Effective C++ CD example</link>
+    <para>See the
+      <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="http://www.aristeia.com/books.html"><emphasis>Effective
+      C++ CD</emphasis></link> example.
     </para>
   </section>
 
