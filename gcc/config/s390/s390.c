@@ -10005,16 +10005,9 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 void
 s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
 {
-  const int CC0 = 1 << 3;
-  const int CC1 = 1 << 2;
-  const int CC3 = 1 << 0;
-  rtx abort_label = gen_label_rtx ();
-  rtx leave_label = gen_label_rtx ();
   rtx retry_plus_two = gen_reg_rtx (SImode);
   rtx retry_reg = gen_reg_rtx (SImode);
   rtx retry_label = NULL_RTX;
-  rtx jump;
-  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
   if (retry != NULL_RTX)
     {
@@ -10031,38 +10024,25 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
     emit_insn (gen_tbegin_nofloat_1 (gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK),
 				     tdb));
 
-  jump = s390_emit_jump (abort_label,
-			 gen_rtx_NE (VOIDmode,
-				     gen_rtx_REG (CCRAWmode, CC_REGNUM),
-				     gen_rtx_CONST_INT (VOIDmode, CC0)));
-
-  JUMP_LABEL (jump) = abort_label;
-  LABEL_NUSES (abort_label) = 1;
-  add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
-
-  /* Initialize CC return value.  */
-  emit_move_insn (dest, const0_rtx);
-
-  s390_emit_jump (leave_label, NULL_RTX);
-  LABEL_NUSES (leave_label) = 1;
-  emit_barrier ();
-
-  /* Abort handler code.  */
-
-  emit_label (abort_label);
   emit_move_insn (dest, gen_rtx_UNSPEC (SImode,
 					gen_rtvec (1, gen_rtx_REG (CCRAWmode,
 								   CC_REGNUM)),
 					UNSPEC_CC_TO_INT));
   if (retry != NULL_RTX)
     {
+      const int CC0 = 1 << 3;
+      const int CC1 = 1 << 2;
+      const int CC3 = 1 << 0;
+      rtx jump;
       rtx count = gen_reg_rtx (SImode);
+      rtx leave_label = gen_label_rtx ();
+
+      /* Exit for success and permanent failures.  */
       jump = s390_emit_jump (leave_label,
 			     gen_rtx_EQ (VOIDmode,
 			       gen_rtx_REG (CCRAWmode, CC_REGNUM),
-			       gen_rtx_CONST_INT (VOIDmode, CC1 | CC3)));
-      LABEL_NUSES (leave_label) = 2;
-      add_int_reg_note (jump, REG_BR_PROB, very_unlikely);
+			       gen_rtx_CONST_INT (VOIDmode, CC0 | CC1 | CC3)));
+      LABEL_NUSES (leave_label) = 1;
 
       /* CC2 - transient failure. Perform retry with ppa.  */
       emit_move_insn (count, retry_plus_two);
@@ -10073,9 +10053,8 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
 					      retry_reg));
       JUMP_LABEL (jump) = retry_label;
       LABEL_NUSES (retry_label) = 1;
+      emit_label (leave_label);
     }
-
-  emit_label (leave_label);
 }
 
 /* Builtins.  */
