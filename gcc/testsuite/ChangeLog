@@ -1,3 +1,7 @@
+2014-01-10  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* c-c++-common/asan/no-asan-stack.c: New test.
+
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59670
