@@ -1,3 +1,7 @@
+2014-01-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr46309.c: Disable for cris*-*-*.
+
 2014-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56060
