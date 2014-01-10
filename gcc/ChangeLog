@@ -1,5 +1,11 @@
 2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-cores.def (cortex-a53): Specify FL_CRC32.
+	(cortex-a57): Likewise.
+	(cortex-a57.cortex-a53): Likewise. Remove redundant flags.
+
+2014-01-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.c (arm_init_iwmmxt_builtins): Skip
 	non-iwmmxt builtins.
 
