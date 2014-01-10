@@ -1,3 +1,14 @@
+2014-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* target-globals.c (save_target_globals): Allocate < 4KB structs using
+	GC in payload of target_globals struct instead of allocating them on
+	the heap and the larger structs separately using GC.
+	* target-globals.h (struct target_globals): Make regs, hard_regs,
+	reload, expmed, ira, ira_int and lra_fields GTY((atomic)) instead
+	of GTY((skip)) and change type to void *.
+	(reset_target_globals): Cast loads from those fields to corresponding
+	types.
+
 2014-01-10  Steve Ellcey  <sellcey@mips.com>
 
 	PR plugins/59335
