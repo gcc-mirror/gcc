@@ -1,3 +1,12 @@
+2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/9744
+	* aarch64-modes.def (CC_Zmode): New flags mode.
+	* aarch64.c (aarch64_select_cc_mode): Only allow NEG when the condition
+	represents an equality.
+	(aarch64_get_condition_code0): Handle CC_Zmode.
+	* aarch64.md (compare_neg<mode>): Restrict to equality operations.
+
 2014-01-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_tbegin): Remove jump over CC
