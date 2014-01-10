@@ -1,3 +1,12 @@
+2014-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59698
+	* doc/xml/manual/status_cxx1998.xml (iso.1998.specific): Markup
+	and stylistic improvements.
+	* doc/xml/manual/codecvt.xml (std.localization.facet.codecvt): Likewise
+	and update for C++11.
+	* doc/xml/manual/ctype.xml (std.localization.facet.ctype): Likewise.
+
 2014-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59738

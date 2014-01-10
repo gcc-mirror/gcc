@@ -15,11 +15,11 @@
 The standard class codecvt attempts to address conversions between
 different character encoding schemes. In particular, the standard
 attempts to detail conversions between the implementation-defined wide
-characters (hereafter referred to as wchar_t) and the standard type
-char that is so beloved in classic <quote>C</quote> (which can now be
-referred to as narrow characters.)  This document attempts to describe
-how the GNU libstdc++ implementation deals with the conversion between
-wide and narrow characters, and also presents a framework for dealing
+characters (hereafter referred to as <type>wchar_t</type>) and the standard
+type <type>char</type> that is so beloved in classic <quote>C</quote>
+(which can now be referred to as narrow characters.)  This document attempts
+to describe how the GNU libstdc++ implementation deals with the conversion
+between wide and narrow characters, and also presents a framework for dealing
 with the huge number of other encodings that iconv can convert,
 including Unicode and UTF8. Design issues and requirements are
 addressed, and examples of correct usage for both the required
@@ -47,8 +47,8 @@ The text around the codecvt definition gives some clues:
 <blockquote>
 <para>
 <emphasis>
--1- The class codecvt&lt;internT,externT,stateT&gt; is for use when
-converting from one codeset to another, such as from wide characters
+-1- The class <code>codecvt&lt;internT,externT,stateT&gt;</code> is for use
+when converting from one codeset to another, such as from wide characters
 to multibyte characters, between wide character encodings such as
 Unicode and EUC.
 </emphasis>
@@ -64,7 +64,7 @@ class.
 <blockquote>
 <para>
 <emphasis>
--2- The stateT argument selects the pair of codesets being mapped between.
+-2- The <type>stateT</type> argument selects the pair of codesets being mapped between.
 </emphasis>
 </para>
 </blockquote>
@@ -76,17 +76,19 @@ Ah ha! Another clue...
 <blockquote>
 <para>
 <emphasis>
--3- The instantiations required in the Table ??
-(lib.locale.category), namely codecvt&lt;wchar_t,char,mbstate_t&gt; and
-codecvt&lt;char,char,mbstate_t&gt;, convert the implementation-defined
-native character set. codecvt&lt;char,char,mbstate_t&gt; implements a
-degenerate conversion; it does not convert at
-all. codecvt&lt;wchar_t,char,mbstate_t&gt; converts between the native
-character sets for tiny and wide characters. Instantiations on
-mbstate_t perform conversion between encodings known to the library
+-3- The instantiations required in the Table 51 (lib.locale.category), namely
+<classname>codecvt&lt;wchar_t,char,mbstate_t&gt;</classname> and
+<classname>codecvt&lt;char,char,mbstate_t&gt;</classname>, convert the
+implementation-defined native character set.
+<classname>codecvt&lt;char,char,mbstate_t&gt;</classname> implements a
+degenerate conversion; it does not convert at all.
+<classname>codecvt&lt;wchar_t,char,mbstate_t&gt;</classname> converts between
+the native character sets for tiny and wide characters. Instantiations on
+<type>mbstate_t</type> perform conversion between encodings known to the library
 implementor.  Other encodings can be converted by specializing on a
-user-defined stateT type. The stateT object can contain any state that
-is useful to communicate to or from the specialized do_convert member.
+user-defined <type>stateT</type> type. The <type>stateT</type> object can
+contain any state that is useful to communicate to or from the specialized
+<function>do_convert</function> member.
 </emphasis>
 </para>
 </blockquote>
@@ -98,13 +100,14 @@ At this point, a couple points become clear:
 <para>
 One: The standard clearly implies that attempts to add non-required
 (yet useful and widely used) conversions need to do so through the
-third template parameter, stateT.</para>
+third template parameter, <type>stateT</type>.</para>
 
 <para>
-Two: The required conversions, by specifying mbstate_t as the third
-template parameter, imply an implementation strategy that is mostly
+Two: The required conversions, by specifying <type>mbstate_t</type> as the
+third template parameter, imply an implementation strategy that is mostly
 (or wholly) based on the underlying C library, and the functions
-mcsrtombs and wcsrtombs in particular.</para>
+<function>mcsrtombs</function> and <function>wcsrtombs</function> in
+particular.</para>
 </section>
 
 <section xml:id="facet.codecvt.design"><info><title>Design</title></info>
@@ -114,7 +117,7 @@ mcsrtombs and wcsrtombs in particular.</para>
     
 
     <para>
-      The simple implementation detail of wchar_t's size seems to
+      The simple implementation detail of <type>wchar_t</type>'s size seems to
       repeatedly confound people. Many systems use a two byte,
       unsigned integral type to represent wide characters, and use an
       internal encoding of Unicode or UCS2. (See AIX, Microsoft NT,
@@ -122,7 +125,7 @@ mcsrtombs and wcsrtombs in particular.</para>
       type to represent wide characters, and use an internal encoding
       of UCS4. (GNU/Linux systems using glibc, in particular.) The C
       programming language (and thus C++) does not specify a specific
-      size for the type wchar_t.
+      size for the type <type>wchar_t</type>.
     </para>
 
     <para>
@@ -136,9 +139,12 @@ mcsrtombs and wcsrtombs in particular.</para>
     Probably the most frequently asked question about code conversion
     is: "So dudes, what's the deal with Unicode strings?"
     The dude part is optional, but apparently the usefulness of
-    Unicode strings is pretty widely appreciated. Sadly, this specific
-    encoding (And other useful encodings like UTF8, UCS4, ISO 8859-10,
-    etc etc etc) are not mentioned in the C++ standard.
+    Unicode strings is pretty widely appreciated. The Unicode character
+    set (and useful encodings like UTF-8, UCS-4, ISO 8859-10,
+    etc etc etc) were not mentioned in the first C++ standard. (The 2011
+    standard added support for string literals with different encodings
+    and some library facilities for converting between encodings, but the
+    notes below have not been updated to reflect that.)
   </para>
 
   <para>
@@ -149,8 +155,8 @@ mcsrtombs and wcsrtombs in particular.</para>
     The thought that all one needs to convert between two arbitrary
     codesets is two types and some kind of state argument is
     unfortunate. In particular, encodings may be stateless. The naming
-    of the third parameter as stateT is unfortunate, as what is really
-    needed is some kind of generalized type that accounts for the
+    of the third parameter as <type>stateT</type> is unfortunate, as what is
+    really needed is some kind of generalized type that accounts for the
     issues that abstract encodings will need. The minimum information
     that is required includes:
   </para>
@@ -240,7 +246,8 @@ mechanism may be required.
 <para>
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they
-affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
+affect the required specialization
+<classname>codecvt&lt;wchar_t, char, mbstate_t&gt;</classname>
 when implemented using standard "C" functions.
 </para>
 
@@ -249,7 +256,8 @@ Three problems arise, one big, one of medium importance, and one small.
 </para>
 
 <para>
-First, the small: mcsrtombs and wcsrtombs may not be multithread-safe
+First, the small: <function>mcsrtombs</function> and
+<function>wcsrtombs</function> may not be multithread-safe
 on all systems required by the GNU tools. For GNU/Linux and glibc,
 this is not an issue.
 </para>
@@ -275,7 +283,8 @@ option, a high-quality implementation, damn the additional complexity!
 </para>
 
 <para>
-For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
+For the required specialization
+<classname>codecvt&lt;wchar_t, char, mbstate_t&gt;</classname>,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
@@ -311,37 +320,39 @@ codecvt&lt;char, wchar_t, mbstate_t&gt;
 <para>
 This specialization, by specifying all the template parameters, pretty
 much ties the hands of implementors. As such, the implementation is
-straightforward, involving mcsrtombs for the conversions between char
-to wchar_t and wcsrtombs for conversions between wchar_t and char.
+straightforward, involving <function>mcsrtombs</function> for the conversions
+between <type>char</type> to <type>wchar_t</type> and
+<function>wcsrtombs</function> for conversions between <type>wchar_t</type>
+and <type>char</type>.
 </para>
 
 <para>
 Neither of these two required specializations deals with Unicode
 characters. As such, libstdc++ implements a partial specialization
-of the codecvt class with and iconv wrapper class, encoding_state as the
-third template parameter.
+of the <type>codecvt</type> class with an iconv wrapper class,
+<classname>encoding_state</classname> as the third template parameter.
 </para>
 
 <para>
 This implementation should be standards conformant. First of all, the
 standard explicitly points out that instantiations on the third
-template parameter, stateT, are the proper way to implement
+template parameter, <type>stateT</type>, are the proper way to implement
 non-required conversions. Second of all, the standard says (in Chapter
-17) that partial specializations of required classes are a-ok. Third
-of all, the requirements for the stateT type elsewhere in the standard
-(see 21.1.2 traits typedefs) only indicate that this type be copy
+17) that partial specializations of required classes are A-OK. Third
+of all, the requirements for the <type>stateT</type> type elsewhere in the
+standard (see 21.1.2 traits typedefs) only indicate that this type be copy
 constructible.
 </para>
 
 <para>
-As such, the type encoding_state is defined as a non-templatized, POD
-type to be used as the third type of a codecvt instantiation. This
-type is just a wrapper class for iconv, and provides an easy interface
+As such, the type <type>encoding_state</type> is defined as a non-templatized,
+POD type to be used as the third type of a <type>codecvt</type> instantiation.
+This type is just a wrapper class for iconv, and provides an easy interface
 to iconv functionality.
 </para>
 
 <para>
-There are two constructors for encoding_state:
+There are two constructors for <type>encoding_state</type>:
 </para>
 
 <para>
@@ -352,7 +363,7 @@ encoding_state() : __in_desc(0), __out_desc(0)
 <para>
 This default constructor sets the internal encoding to some default
 (currently UCS4) and the external encoding to whatever is returned by
-nl_langinfo(CODESET).
+<code>nl_langinfo(CODESET)</code>.
 </para>
 
 <para>
@@ -370,7 +381,7 @@ either argument.
 <para>
 One of the issues with iconv is that the string literals identifying
 conversions are not standardized. Because of this, the thought of
-mandating and or enforcing some set of pre-determined valid
+mandating and/or enforcing some set of pre-determined valid
 identifiers seems iffy: thus, a more practical (and non-migraine
 inducing) strategy was implemented: end-users can specify any string
 (subject to a pre-determined length qualifier, currently 32 bytes) for
@@ -400,12 +411,12 @@ _M_good()
 </para>
 
 <para>
-Provides a way to see if the given encoding_state object has been
+Provides a way to see if the given <type>encoding_state</type> object has been
 properly initialized. If the string literals describing the desired
 internal and external encoding are not valid, initialization will
 fail, and this will return false. If the internal and external
-encodings are valid, but iconv_open could not allocate conversion
-descriptors, this will also return false. Otherwise, the object is
+encodings are valid, but <function>iconv_open</function> could not allocate
+conversion descriptors, this will also return false. Otherwise, the object is
 ready to convert and will return true.
 </para>
 
@@ -424,8 +435,8 @@ themselves.
 
 <para>
 Definitions for all the required codecvt member functions are provided
-for this specialization, and usage of codecvt&lt;internal character type,
-external character type, encoding_state&gt; is consistent with other
+for this specialization, and usage of <code>codecvt&lt;<replaceable>internal
+character type</replaceable>, <replaceable>external character type</replaceable>, <replaceable>encoding_state</replaceable>&gt;</code> is consistent with other
 codecvt usage.
 </para>
 
@@ -433,7 +444,7 @@ codecvt usage.
 
 <section xml:id="facet.codecvt.use"><info><title>Use</title></info>
 
-<para>A conversions involving string literal.</para>
+<para>A conversion involving a string literal.</para>
 
 <programlisting>
   typedef codecvt_base::result                  result;
@@ -490,7 +501,7 @@ codecvt usage.
 
 <listitem>
   <para>
-   b. conversions involving std::string
+   b. conversions involving <type>std::string</type>
   </para>
    <itemizedlist>
       <listitem><para>
