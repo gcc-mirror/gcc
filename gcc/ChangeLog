@@ -1,3 +1,9 @@
+2014-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/59754
+	* ree.c (combine_reaching_defs): Disallow !SCALAR_INT_MODE_P
+	modes in the REGNO != REGNO case.
+
 2014-01-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Fix pasto for VPKSDUS.
