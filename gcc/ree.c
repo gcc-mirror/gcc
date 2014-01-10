@@ -723,8 +723,10 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 
       /* The defining statement and candidate insn must be in the same block.
 	 This is merely to keep the test for safety and updating the insn
-	 stream simple.  */
-      if (BLOCK_FOR_INSN (cand->insn) != BLOCK_FOR_INSN (def_insn))
+	 stream simple.  Also ensure that within the block the candidate
+	 follows the defining insn.  */
+      if (BLOCK_FOR_INSN (cand->insn) != BLOCK_FOR_INSN (def_insn)
+	  || DF_INSN_LUID (def_insn) > DF_INSN_LUID (cand->insn))
 	return false;
 
       /* If there is an overlap between the destination of DEF_INSN and
