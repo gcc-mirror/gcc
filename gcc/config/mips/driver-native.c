@@ -58,11 +58,17 @@ host_detect_local_cpu (int argc, const char **argv)
     if (strncmp (buf, "cpu model", sizeof ("cpu model") - 1) == 0)
       {
 	if (strstr (buf, "Godson2 V0.2") != NULL
-	    || strstr (buf, "Loongson-2 V0.2") != NULL)
+	    || strstr (buf, "Loongson-2 V0.2") != NULL
+	    || strstr (buf, "Loongson-2E") != NULL)
 	  cpu = "loongson2e";
 	else if (strstr (buf, "Godson2 V0.3") != NULL
-		 || strstr (buf, "Loongson-2 V0.3") != NULL)
+		 || strstr (buf, "Loongson-2 V0.3") != NULL
+		 || strstr (buf, "Loongson-2F") != NULL)
 	  cpu = "loongson2f";
+	else if (strstr (buf, "Godson3 V0.5") != NULL
+		 || strstr (buf, "Loongson-3 V0.5") != NULL
+		 || strstr (buf, "Loongson-3A") != NULL)
+	  cpu = "loongson3a";
 	else if (strstr (buf, "SiByte SB1") != NULL)
 	  cpu = "sb1";
 	else if (strstr (buf, "R5000") != NULL)
