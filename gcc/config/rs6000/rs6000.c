@@ -11470,7 +11470,7 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
 
 
 static rtx
-rs6000_expand_mtfsf_builtin (enum insn_code icode, tree exp, rtx target)
+rs6000_expand_mtfsf_builtin (enum insn_code icode, tree exp)
 {
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
@@ -13324,7 +13324,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffs, target);
 
     case RS6000_BUILTIN_MTFSF:
-      return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp, target);
+      return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp);
 
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
