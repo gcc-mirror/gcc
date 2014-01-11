@@ -1,5 +1,11 @@
 2014-01-11  David Edelsohn  <dje.gcc@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_expand_mtfsf_builtin): Remove
+	target parameter.
+	(rs6000_expand_builtin): Adjust call.
+
+2014-01-11  David Edelsohn  <dje.gcc@gmail.com>
+
 	PR target/58115
 	* config/rs6000/rs6000.h (SWITCHABLE_TARGET): Define.
 	* config/rs6000/rs6000.c: Include target-globals.h.
