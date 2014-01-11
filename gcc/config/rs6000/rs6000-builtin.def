@@ -1752,6 +1752,14 @@ BU_SPECIAL_X (RS6000_BUILTIN_GET_TB, "__builtin_ppc_get_timebase",
 BU_SPECIAL_X (RS6000_BUILTIN_MFTB, "__builtin_ppc_mftb",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
 
+BU_SPECIAL_X (RS6000_BUILTIN_MFFS, "__builtin_mffs",
+	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_MTFSF, "__builtin_mtfsf",
+	          RS6000_BTM_ALWAYS,
+	          RS6000_BTC_MISC | RS6000_BTC_UNARY | RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_mtfsf)
+
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 	      RS6000_BTC_MISC)

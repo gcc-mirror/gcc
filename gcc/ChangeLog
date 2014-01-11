@@ -1,3 +1,21 @@
+2014-01-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/58115
+	* config/rs6000/rs6000.h (SWITCHABLE_TARGET): Define.
+	* config/rs6000/rs6000.c: Include target-globals.h.
+	(rs6000_set_current_function): Instead of doing target_reinit
+	unconditionally, use save_target_globals_default_opts and
+	restore_target_globals.
+
+	* config/rs6000/rs6000-builtin.def (mffs, mtfsf): Add builtins for
+	FPSCR.
+	* config/rs6000/rs6000.c (rs6000_expand_mtfsf_builtin): New.
+	(rs6000_expand_builtin): Handle mffs and mtfsf.
+	(rs6000_init_builtins): Define mffs and mtfsf.
+	* config/rs6000/rs6000.md (UNSPECV_MFFS, UNSPECV_MTFSF): New constants.
+	(rs6000_mffs): New pattern.
+	(rs6000_mtfsf): New pattern.
+
 2014-01-11  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (iv_ca_narrow): New parameter.
