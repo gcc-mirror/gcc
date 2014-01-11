@@ -2446,6 +2446,9 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
+/* For switching between functions with different target attributes.  */
+#define SWITCHABLE_TARGET 1
+
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */
 /* #define  MACHINE_no_sched_speculative */
