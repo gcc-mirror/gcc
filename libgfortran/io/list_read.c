@@ -118,7 +118,7 @@ free_saved (st_parameter_dt *dtp)
 static void
 free_line (st_parameter_dt *dtp)
 {
-  dtp->u.p.item_count = 0;
+  dtp->u.p.line_buffer_pos = 0;
   dtp->u.p.line_buffer_enabled = 0;
 
   if (dtp->u.p.line_buffer == NULL)
@@ -150,15 +150,15 @@ next_char (st_parameter_dt *dtp)
     {
       dtp->u.p.at_eol = 0;
 
-      c = dtp->u.p.line_buffer[dtp->u.p.item_count];
-      if (c != '\0' && dtp->u.p.item_count < 64)
+      c = dtp->u.p.line_buffer[dtp->u.p.line_buffer_pos];
+      if (c != '\0' && dtp->u.p.line_buffer_pos < 64)
 	{
-	  dtp->u.p.line_buffer[dtp->u.p.item_count] = '\0';
-	  dtp->u.p.item_count++;
+	  dtp->u.p.line_buffer[dtp->u.p.line_buffer_pos] = '\0';
+	  dtp->u.p.line_buffer_pos++;
 	  goto done;
 	}
 
-      dtp->u.p.item_count = 0;
+      dtp->u.p.line_buffer_pos = 0;
       dtp->u.p.line_buffer_enabled = 0;
     }    
 
@@ -639,7 +639,7 @@ l_push_char (st_parameter_dt *dtp, char c)
   if (dtp->u.p.line_buffer == NULL)
     dtp->u.p.line_buffer = xcalloc (SCRATCH_SIZE, 1);
 
-  dtp->u.p.line_buffer[dtp->u.p.item_count++] = c;
+  dtp->u.p.line_buffer[dtp->u.p.line_buffer_pos++] = c;
 }
 
 
@@ -749,7 +749,7 @@ read_logical (st_parameter_dt *dtp, int length)
 	{
 	  dtp->u.p.nml_read_error = 1;
 	  dtp->u.p.line_buffer_enabled = 1;
-	  dtp->u.p.item_count = 0;
+	  dtp->u.p.line_buffer_pos = 0;
 	  return;
 	}
       
@@ -757,14 +757,17 @@ read_logical (st_parameter_dt *dtp, int length)
 
  bad_logical:
 
-  free_line (dtp);
-
   if (nml_bad_return (dtp, c))
-    return;
+    {
+      free_line (dtp);
+      return;
+    }
+
 
   free_saved (dtp);
   if (c == EOF)
     {
+      free_line (dtp);
       hit_eof (dtp);
       return;
     }
@@ -772,6 +775,7 @@ read_logical (st_parameter_dt *dtp, int length)
     eat_line (dtp);
   snprintf (message, MSGLEN, "Bad logical value while reading item %d",
 	      dtp->u.p.item_count);
+  free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
   return;
 
@@ -912,9 +916,9 @@ read_integer (st_parameter_dt *dtp, int length)
   else if (c != '\n')
     eat_line (dtp);
 
-  free_line (dtp);
   snprintf (message, MSGLEN, "Bad integer for item %d in list input",
 	      dtp->u.p.item_count);
+  free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 
   return;
@@ -1297,9 +1301,9 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   else if (c != '\n')
     eat_line (dtp);
 
-  free_line (dtp);
   snprintf (message, MSGLEN, "Bad floating point number for item %d",
 	      dtp->u.p.item_count);
+  free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 
   return 1;
@@ -1405,9 +1409,9 @@ eol_4:
   else if (c != '\n')   
     eat_line (dtp);
 
-  free_line (dtp);
   snprintf (message, MSGLEN, "Bad complex value in item %d of list input",
 	      dtp->u.p.item_count);
+  free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 }
 
@@ -1769,7 +1773,7 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
     {
       dtp->u.p.nml_read_error = 1;
       dtp->u.p.line_buffer_enabled = 1;
-      dtp->u.p.item_count = 0;
+      dtp->u.p.line_buffer_pos = 0;
       return;
     }
 
@@ -1788,9 +1792,9 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
   else if (c != '\n')
     eat_line (dtp);
 
-  free_line (dtp);
   snprintf (message, MSGLEN, "Bad real number in item %d of list input",
 	      dtp->u.p.item_count);
+  free_line (dtp);
   generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
 }
 
@@ -1805,11 +1809,10 @@ check_type (st_parameter_dt *dtp, bt type, int kind)
 
   if (dtp->u.p.saved_type != BT_UNKNOWN && dtp->u.p.saved_type != type)
     {
-      free_line (dtp);
       snprintf (message, MSGLEN, "Read type %s where %s was expected for item %d",
 		  type_name (dtp->u.p.saved_type), type_name (type),
 		  dtp->u.p.item_count);
-
+      free_line (dtp);
       generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
       return 1;
     }
@@ -1820,13 +1823,13 @@ check_type (st_parameter_dt *dtp, bt type, int kind)
   if ((type != BT_COMPLEX && dtp->u.p.saved_length != kind)
       || (type == BT_COMPLEX && dtp->u.p.saved_length != kind*2))
     {
-      free_line (dtp);
       snprintf (message, MSGLEN,
 		  "Read kind %d %s where kind %d is required for item %d",
 		  type == BT_COMPLEX ? dtp->u.p.saved_length / 2
 				     : dtp->u.p.saved_length,
 		  type_name (dtp->u.p.saved_type), kind,
 		  dtp->u.p.item_count);
+      free_line (dtp);
       generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
       return 1;
     }
