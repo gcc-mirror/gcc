@@ -1,3 +1,18 @@
+2014-01-11  Jerry DeLisle  <jvdelisle@gcc.gnu>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR libfortran/59700
+	PR libfortran/59764
+	* io/io.h (struct st_parameter_dt): Assign expanded_read flag to
+	unused bit. Define new variable line_buffer_pos.
+	* io/list_read.c (free_saved, next_char, l_push_char,
+	read_logical, read_real): Replace use of item_count with
+	line_buffer_pos for line_buffer look ahead.
+	(read_logical, read_integer, parse_real, read_real, check_type):
+	Adjust location of free_line to after generating error messages
+	to retain the correct item count for the message. 
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
