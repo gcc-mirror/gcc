@@ -1,3 +1,14 @@
+2014-01-11  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	2013-12-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59612
+	PR fortran/57042
+	* dump-parse-tree.c (show_typespec): Check for charlen.
+	* invoke.texi: Fix documentation of -fdump-fortran-optimized and
+	-fdump-parse-tree.
+
 2014-01-04  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
