@@ -1,3 +1,8 @@
+2014-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/59700
+	* gfortran.dg/pr59700.f90: New test.
+
 2014-01-11  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/binding_label_tests_10_main.f03: Cleanup mod file.
