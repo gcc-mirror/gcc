@@ -940,11 +940,12 @@ Output the internal parse tree after translating the source program
 into internal representation.  Only really useful for debugging the
 GNU Fortran compiler itself.
 
-@item -fdump-optimized-tree
+@item -fdump-fortran-optimized
 @opindex @code{fdump-fortran-optimized}
 Output the parse tree after front-end optimization.  Only really
 useful for debugging the GNU Fortran compiler itself.
 
+@item -fdump-parse-tree
 @opindex @code{fdump-parse-tree}
 Output the internal parse tree after translating the source program
 into internal representation.  Only really useful for debugging the
