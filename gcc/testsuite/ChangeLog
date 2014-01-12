@@ -1,3 +1,7 @@
+2014-01-10  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.target/arm/neon/vst1Q_laneu64-1.c: New test.
+
 2014-01-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/pr46309.c: Disable for cris*-*-*.
