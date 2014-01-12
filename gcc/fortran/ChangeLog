@@ -1,3 +1,8 @@
+2014-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58026
+	* decl.c (gfc_match_data_decl): Improve error recovery.
+
 2014-01-09  Tobias Burnus  <burnus@net-b.de>
 
 	* cpp.c (gfc_cpp_handle_option): Add missing break.
