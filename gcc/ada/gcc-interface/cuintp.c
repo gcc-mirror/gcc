@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -59,8 +59,8 @@
 static tree
 build_cst_from_int (tree type, HOST_WIDE_INT low)
 {
-  if (TREE_CODE (type) == REAL_TYPE)
-    return convert (type, build_int_cst (NULL_TREE, low));
+  if (SCALAR_FLOAT_TYPE_P (type))
+    return convert (type, build_int_cst (gnat_type_for_size (32, 0), low));
   else
     return build_int_cst_type (type, low);
 }
@@ -99,19 +99,12 @@ UI_To_gnu (Uint Input, tree type)
       gcc_assert (Length > 0);
 
       /* The computations we perform below always require a type at least as
-	 large as an integer not to overflow.  REAL types are always fine, but
+	 large as an integer not to overflow.  FP types are always fine, but
 	 INTEGER or ENUMERAL types we are handed may be too short.  We use a
 	 base integer type node for the computations in this case and will
-	 convert the final result back to the incoming type later on.
-	 The base integer precision must be superior than 16.  */
-
-      if (TREE_CODE (comp_type) != REAL_TYPE
-	  && TYPE_PRECISION (comp_type)
-	     < TYPE_PRECISION (long_integer_type_node))
-	{
-	  comp_type = long_integer_type_node;
-	  gcc_assert (TYPE_PRECISION (comp_type) > 16);
-	}
+	 convert the final result back to the incoming type later on.  */
+      if (!SCALAR_FLOAT_TYPE_P (comp_type) && TYPE_PRECISION (comp_type) < 32)
+	comp_type = gnat_type_for_size (32, 0);
 
       gnu_base = build_cst_from_int (comp_type, Base);
 
