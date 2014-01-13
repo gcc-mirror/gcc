@@ -1,5 +1,13 @@
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59617
+	* config/i386/i386.c (ix86_vectorize_builtin_gather): Uncomment
+	AVX512F gather builtins.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): For now punt
+	on gather decls with INTEGER_TYPE masktype.
+	(vectorizable_load): For INTEGER_TYPE masktype, put the INTEGER_CST
+	directly into the builtin rather than hoisting it before loop.
+
 	PR tree-optimization/59387
 	* tree-scalar-evolution.c: Include gimple-fold.h and gimplify-me.h.
 	(scev_const_prop): If folded_casts and type has undefined overflow,

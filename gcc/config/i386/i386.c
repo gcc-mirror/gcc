@@ -36565,9 +36565,6 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
     case V8SImode:
       code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
       break;
-#if 0
-    /*  FIXME: Commented until vectorizer can work with (mask_type != src_type)
-	PR59617.   */
     case V8DFmode:
       if (TARGET_AVX512F)
 	code = si ? IX86_BUILTIN_GATHER3ALTSIV8DF : IX86_BUILTIN_GATHER3DIV8DF;
@@ -36592,7 +36589,6 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
       else
 	return NULL_TREE;
       break;
-#endif
     default:
       return NULL_TREE;
     }
