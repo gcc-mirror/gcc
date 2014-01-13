@@ -1,3 +1,10 @@
+2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/insert.c: New.
+	* gcc.dg/vmx/insert-be-order.c: New.
+	* gcc.dg/vmx/extract.c: New.
+	* gcc.dg/vmx/extract-be-order.c: New.
+
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59387
