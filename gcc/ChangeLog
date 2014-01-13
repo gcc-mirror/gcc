@@ -1,3 +1,15 @@
+2014-01-10  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (call_internal): Don't allow memory
+	references with SP as the base register.
+	(call_value_internal): Likewise.
+	* config/msp430/constraints.md (Yc): New.  For memory references
+	that don't use SP as a base register.
+
+	* config/msp430/msp430.c (msp430_print_operand): Add 'J' to mean
+	"an integer without a # prefix"
+	* config/msp430/msp430.md (epilogue_helper): Use it.
+
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59617
