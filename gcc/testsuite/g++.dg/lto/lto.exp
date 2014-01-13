@@ -35,17 +35,17 @@ load_lib target-libpath.exp
 # Load the language-independent compabibility support procedures.
 load_lib lto.exp
 
+# If LTO has not been enabled, bail.
+if { ![check_effective_target_lto] } {
+    return
+}
+
 g++_init
 lto_init no-mathlib
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other lto tests running at the same time.
 set sid "cp_lto"
-
-# If LTO has not been enabled, bail.
-if { ![check_effective_target_lto] } {
-    return
-}
 
 # Main loop.
 foreach src [lsort [find $srcdir/$subdir *_0.\[cC\]]] {
