@@ -1,3 +1,12 @@
+2014-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2014-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59745
+	* tree-predcom.c (tree_predictive_commoning_loop): Call
+	free_affine_expand_cache if giving up because components is NULL.
+
 2014-01-10  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/arm/arm.c (arm_expand_neon_args): Call expand_expr
