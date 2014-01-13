@@ -1,3 +1,8 @@
+2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Implement -maltivec=be for vec_insert and vec_extract.
+
 2014-01-10  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.md (call_internal): Don't allow memory
