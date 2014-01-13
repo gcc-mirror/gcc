@@ -1,3 +1,9 @@
+2014-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/59194
+	* omp-low.c (expand_omp_atomic_pipeline): Expand the initial
+	load as __atomic_load_N if possible.
+
 2014-01-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_mtfsf_builtin): Remove
