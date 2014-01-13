@@ -434,7 +434,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
      alignment that can prevail.  */
   if (offset)
     {
-      int trailing_zeros = tree_ctz (offset);
+      unsigned int trailing_zeros = tree_ctz (offset);
       if (trailing_zeros < HOST_BITS_PER_INT)
 	{
 	  unsigned int inner = (1U << trailing_zeros) * BITS_PER_UNIT;
