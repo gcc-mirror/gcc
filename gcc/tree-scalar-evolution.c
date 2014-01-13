@@ -286,6 +286,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "params.h"
 #include "tree-ssa-propagate.h"
+#include "gimple-fold.h"
+#include "gimplify-me.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -3409,7 +3411,7 @@ scev_const_prop (void)
     {
       edge exit;
       tree def, rslt, niter;
-      gimple_stmt_iterator bsi;
+      gimple_stmt_iterator gsi;
 
       /* If we do not know exact number of iterations of the loop, we cannot
 	 replace the final value.  */
@@ -3424,7 +3426,7 @@ scev_const_prop (void)
       /* Ensure that it is possible to insert new statements somewhere.  */
       if (!single_pred_p (exit->dest))
 	split_loop_exit_edge (exit);
-      bsi = gsi_after_labels (exit->dest);
+      gsi = gsi_after_labels (exit->dest);
 
       ex_loop = superloop_at_depth (loop,
 				    loop_depth (exit->dest->loop_father) + 1);
@@ -3447,7 +3449,9 @@ scev_const_prop (void)
 	      continue;
 	    }
 
-	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def, NULL);
+	  bool folded_casts;
+	  def = analyze_scalar_evolution_in_loop (ex_loop, loop, def,
+						  &folded_casts);
 	  def = compute_overall_effect_of_inner_loop (ex_loop, def);
 	  if (!tree_does_not_contain_chrecs (def)
 	      || chrec_contains_symbols_defined_in_loop (def, ex_loop->num)
@@ -3485,10 +3489,37 @@ scev_const_prop (void)
 	  def = unshare_expr (def);
 	  remove_phi_node (&psi, false);
 
-	  def = force_gimple_operand_gsi (&bsi, def, false, NULL_TREE,
-      					  true, GSI_SAME_STMT);
+	  /* If def's type has undefined overflow and there were folded
+	     casts, rewrite all stmts added for def into arithmetics
+	     with defined overflow behavior.  */
+	  if (folded_casts && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (def)))
+	    {
+	      gimple_seq stmts;
+	      gimple_stmt_iterator gsi2;
+	      def = force_gimple_operand (def, &stmts, true, NULL_TREE);
+	      gsi2 = gsi_start (stmts);
+	      while (!gsi_end_p (gsi2))
+		{
+		  gimple stmt = gsi_stmt (gsi2);
+		  gimple_stmt_iterator gsi3 = gsi2;
+		  gsi_next (&gsi2);
+		  gsi_remove (&gsi3, false);
+		  if (is_gimple_assign (stmt)
+		      && arith_code_with_undefined_signed_overflow
+					(gimple_assign_rhs_code (stmt)))
+		    gsi_insert_seq_before (&gsi,
+					   rewrite_to_defined_overflow (stmt),
+					   GSI_SAME_STMT);
+		  else
+		    gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		}
+	    }
+	  else
+	    def = force_gimple_operand_gsi (&gsi, def, false, NULL_TREE,
+					    true, GSI_SAME_STMT);
+
 	  ass = gimple_build_assign (rslt, def);
-	  gsi_insert_before (&bsi, ass, GSI_SAME_STMT);
+	  gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
 	  if (dump_file)
 	    {
 	      print_gimple_stmt (dump_file, ass, 0, 0);
