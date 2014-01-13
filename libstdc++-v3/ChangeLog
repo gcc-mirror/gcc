@@ -1,3 +1,30 @@
+2014-01-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/set.h (set): Implement C++11 allocator-aware
+	container requirements.
+	* include/debug/map.h (map): Likewise.
+	* include/debug/multiset.h (multiset): Likewise.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/set.h (set::operator=(set&&)): Add noexcept and
+	fix implementation regarding management of safe iterators.
+	* include/debug/map.h (map::operator=(map&&)): Likewise.
+	* include/debug/multiset.h (multiset::operator=(multiset&&)): Likewise.
+	* include/debug/multimap.h (multimap::operator=(multimap&&)):
+	Likewise.
+	* include/debug/set.h (set::operator=(std::initializer_list<>)):
+	Rely on the same operator from normal mode.
+	* include/debug/map.h (map::operator=(std::initializer_list<>)):
+	Likewise.
+	* include/debug/multiset.h
+	(multiset::operator=(std::initializer_list<>)): Likewise.
+	* include/debug/multimap.h
+	(multimap::operator=(std::initializer_list<>)): Likewise.
+	* include/debug/set.h (set::swap(set&)): Add noexcept
+	specification, add allocator equality check.
+	* include/debug/map.h (map::swap(map&)): Likewise.
+	* include/debug/multiset.h (multiset::swap(multiset&)): Likewise.
+	* include/debug/multimap.h (multimap::swap(multimap&)): Likewise.
+
 2014-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59698
