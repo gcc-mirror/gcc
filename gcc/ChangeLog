@@ -1,3 +1,8 @@
+2014-01-13  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Unroll small sizes and
+	  optimized non constant lengths.
+
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/59194

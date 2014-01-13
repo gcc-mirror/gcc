@@ -1,3 +1,7 @@
+2014-01-13  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.target/sh/cmpstrn.c: New case.
+
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/vect-simd-clone-10.c: Add dg-do run.
