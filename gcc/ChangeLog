@@ -1,3 +1,7 @@
+2014-01-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.h (MAX_CONDITIONAL_EXECUTE): Fix typo in description.
+
 2014-01-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* builtins.c (get_object_alignment_2): Minor tweak.
