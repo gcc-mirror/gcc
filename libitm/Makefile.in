@@ -1050,8 +1050,10 @@ vpath % $(strip $(search_path))
 @LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libitm_la_LIBADD) | \
 @LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @LIBITM_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBITM_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
-@ARCH_X86_TRUE@x86_sse.lo : XCFLAGS += -msse
-@ARCH_X86_AVX_TRUE@x86_avx.lo : XCFLAGS += -mavx
+# Make sure -msse is appended at the end.
+@ARCH_X86_TRUE@x86_sse.lo : override CXXFLAGS += -msse
+# Make sure -mavx is appended at the end.
+@ARCH_X86_AVX_TRUE@x86_avx.lo : override CXXFLAGS += -mavx
 
 all-local: $(STAMP_GENINSRC)
 
