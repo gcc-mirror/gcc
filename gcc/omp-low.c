@@ -7536,12 +7536,21 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
       loadedi = loaded_val;
     }
 
+  fncode = (enum built_in_function) (BUILT_IN_ATOMIC_LOAD_N + index + 1);
+  tree loaddecl = builtin_decl_explicit (fncode);
+  if (loaddecl)
+    initial
+      = fold_convert (TREE_TYPE (TREE_TYPE (iaddr)),
+		      build_call_expr (loaddecl, 2, iaddr,
+				       build_int_cst (NULL_TREE,
+						      MEMMODEL_RELAXED)));
+  else
+    initial = build2 (MEM_REF, TREE_TYPE (TREE_TYPE (iaddr)), iaddr,
+		      build_int_cst (TREE_TYPE (iaddr), 0));
+
   initial
-    = force_gimple_operand_gsi (&si,
-				build2 (MEM_REF, TREE_TYPE (TREE_TYPE (iaddr)),
-					iaddr,
-					build_int_cst (TREE_TYPE (iaddr), 0)),
-				true, NULL_TREE, true, GSI_SAME_STMT);
+    = force_gimple_operand_gsi (&si, initial, true, NULL_TREE, true,
+				GSI_SAME_STMT);
 
   /* Move the value to the LOADEDI temporary.  */
   if (gimple_in_ssa_p (cfun))
