@@ -1,3 +1,10 @@
+2014-01-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libitm/53113
+	* Makefile.am (x86_sse.lo): Append -msse to CXXFLAGS.
+	(x86_avx.lo): Append -mavx to CXXFLAGS.
+	* Makefile.in: Regenerate.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
