@@ -6000,84 +6000,53 @@ Array_type::finish_backend_element(Gogo* gogo)
     }
 }
 
-// Return a tree for a pointer to the values in ARRAY.
+// Return an expression for a pointer to the values in ARRAY.
 
-tree
-Array_type::value_pointer_tree(Gogo*, tree array) const
+Expression*
+Array_type::get_value_pointer(Gogo*, Expression* array) const
 {
-  tree ret;
   if (this->length() != NULL)
     {
       // Fixed array.
-      ret = fold_convert(build_pointer_type(TREE_TYPE(TREE_TYPE(array))),
-			 build_fold_addr_expr(array));
+      go_assert(array->type()->array_type() != NULL);
+      Type* etype = array->type()->array_type()->element_type();
+      array = Expression::make_unary(OPERATOR_AND, array, array->location());
+      return Expression::make_cast(Type::make_pointer_type(etype), array,
+                                   array->location());
     }
-  else
-    {
-      // Open array.
-      tree field = TYPE_FIELDS(TREE_TYPE(array));
-      go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)),
-			"__values") == 0);
-      ret = fold_build3(COMPONENT_REF, TREE_TYPE(field), array, field,
-			NULL_TREE);
-    }
-  if (TREE_CONSTANT(array))
-    TREE_CONSTANT(ret) = 1;
-  return ret;
+
+  // Open array.
+  return Expression::make_slice_info(array,
+                                     Expression::SLICE_INFO_VALUE_POINTER,
+                                     array->location());
 }
 
-// Return a tree for the length of the array ARRAY which has this
+// Return an expression for the length of the array ARRAY which has this
 // type.
 
-tree
-Array_type::length_tree(Gogo* gogo, tree array)
+Expression*
+Array_type::get_length(Gogo*, Expression* array) const
 {
   if (this->length_ != NULL)
-    {
-      if (TREE_CODE(array) == SAVE_EXPR)
-	return this->get_length_tree(gogo);
-      else
-	{
-	  tree len = this->get_length_tree(gogo);
-	  return omit_one_operand(TREE_TYPE(len), len, array);
-	}
-    }
+    return this->length_;
 
   // This is an open array.  We need to read the length field.
-
-  tree type = TREE_TYPE(array);
-  go_assert(TREE_CODE(type) == RECORD_TYPE);
-
-  tree field = DECL_CHAIN(TYPE_FIELDS(type));
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__count") == 0);
-
-  tree ret = build3(COMPONENT_REF, TREE_TYPE(field), array, field, NULL_TREE);
-  if (TREE_CONSTANT(array))
-    TREE_CONSTANT(ret) = 1;
-  return ret;
+  return Expression::make_slice_info(array, Expression::SLICE_INFO_LENGTH,
+                                     array->location());
 }
 
-// Return a tree for the capacity of the array ARRAY which has this
+// Return an expression for the capacity of the array ARRAY which has this
 // type.
 
-tree
-Array_type::capacity_tree(Gogo* gogo, tree array)
+Expression*
+Array_type::get_capacity(Gogo*, Expression* array) const
 {
   if (this->length_ != NULL)
-    {
-      tree len = this->get_length_tree(gogo);
-      return omit_one_operand(TREE_TYPE(len), len, array);
-    }
+    return this->length_;
 
   // This is an open array.  We need to read the capacity field.
-
-  tree type = TREE_TYPE(array);
-  go_assert(TREE_CODE(type) == RECORD_TYPE);
-
-  tree field = DECL_CHAIN(DECL_CHAIN(TYPE_FIELDS(type)));
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__capacity") == 0);
-
-  return build3(COMPONENT_REF, TREE_TYPE(field), array, field, NULL_TREE);
+  return Expression::make_slice_info(array, Expression::SLICE_INFO_CAPACITY,
+                                     array->location());
 }
 
 // Export.

@@ -53,9 +53,6 @@ variable has aliases.  All these attributes are stored in data
 structures called annotations which are then linked to the field
 @code{ann} in @code{struct tree_common}.
 
-Presently, we define annotations for variables (@code{var_ann_t}).
-Annotations are defined and documented in @file{tree-flow.h}.
-
 
 @node SSA Operands
 @section SSA Operands

@@ -2351,6 +2351,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
   if ((sym->attr.if_source == IFSRC_UNKNOWN
        || sym->attr.if_source == IFSRC_IFBODY)
       && gsym->type != GSYM_UNKNOWN
+      && !gsym->binding_label
       && gsym->ns
       && gsym->ns->resolved != -1
       && gsym->ns->proc_name
@@ -10163,7 +10164,6 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       gsym->where = sym->declared_at;
       gsym->sym_name = sym->name;
       gsym->binding_label = sym->binding_label;
-      gsym->binding_label = sym->binding_label;
       gsym->ns = sym->ns;
       gsym->mod_name = module;
       if (sym->attr.function)
@@ -10200,11 +10200,11 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
 	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
 	   && sym != gsym->ns->proc_name
-	   && (strcmp (gsym->sym_name, sym->name) != 0
-	       || module != gsym->mod_name
+	   && (module != gsym->mod_name
+	       || strcmp (gsym->sym_name, sym->name) != 0
 	       || (module && strcmp (module, gsym->mod_name) != 0)))
     {
-      /* Print an error if the procdure is defined multiple times; we have to
+      /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
 	 multiple checks for the same procedure.  */
       gfc_error ("Procedure %s with binding label %s at %L uses the same "

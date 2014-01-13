@@ -22,6 +22,7 @@ open(99,access="sequential")
 inquire(99, stream=str)
 !print *, "str=",str
 if (str /= "NO") goto 10
+close(99, status="delete")
 stop
 10 close(99, status="delete")
 call abort

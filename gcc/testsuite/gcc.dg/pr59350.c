@@ -1,4 +1,4 @@
-/* PR rtl-optimization/59350 */
+/* PR debug/59350 */
 /* Testcase by Ryan Mansfield <rmansfield@qnx.com> */
 
 /* { dg-do compile } */

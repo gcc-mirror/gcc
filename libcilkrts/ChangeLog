@@ -1,3 +1,10 @@
+2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	bootstrap/59094
+	* Makefile.am (cilkincludedir): Fixed a bug to store version-specific
+	runtime libraries in the correct place.
+	* Makefile.in: Regenerate.
+
 2013-12-13  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* Makefile.am (GENERAL_FLAGS): Removed undefining of Cilk keywords.

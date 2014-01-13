@@ -3060,6 +3060,9 @@ class Type_conversion_expression : public Expression
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
   bool
   do_is_constant() const;
 
@@ -3200,6 +3203,25 @@ Type_conversion_expression::do_lower(Gogo*, Named_object*,
 	}
     }
 
+  return this;
+}
+
+// Flatten a type conversion by using a temporary variable for the slice
+// in slice to string conversions.
+
+Expression*
+Type_conversion_expression::do_flatten(Gogo*, Named_object*,
+                                       Statement_inserter* inserter)
+{
+  if (this->type()->is_string_type()
+      && this->expr_->type()->is_slice_type()
+      && !this->expr_->is_variable())
+    {
+      Temporary_statement* temp =
+          Statement::make_temporary(NULL, this->expr_, this->location());
+      inserter->insert(temp);
+      this->expr_ = Expression::make_temporary_reference(temp, this->location());
+    }
   return this;
 }
 
@@ -3361,47 +3383,24 @@ Type_conversion_expression::do_get_tree(Translate_context* context)
     }
   else if (type->is_string_type() && expr_type->is_slice_type())
     {
-      if (!DECL_P(expr_tree))
-	expr_tree = save_expr(expr_tree);
-
-      Type* int_type = Type::lookup_integer_type("int");
-      tree int_type_tree = type_to_tree(int_type->get_backend(gogo));
-
+      Location location = this->location();
       Array_type* a = expr_type->array_type();
       Type* e = a->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
-      tree valptr = fold_convert(const_ptr_type_node,
-				 a->value_pointer_tree(gogo, expr_tree));
-      tree len = a->length_tree(gogo, expr_tree);
-      len = fold_convert_loc(this->location().gcc_location(), int_type_tree,
-                             len);
+      go_assert(this->expr_->is_variable());
+
+      Runtime::Function code;
       if (e->integer_type()->is_byte())
-	{
-	  static tree byte_array_to_string_fndecl;
-	  ret = Gogo::call_builtin(&byte_array_to_string_fndecl,
-				   this->location(),
-				   "__go_byte_array_to_string",
-				   2,
-				   type_tree,
-				   const_ptr_type_node,
-				   valptr,
-				   int_type_tree,
-				   len);
-	}
+        code = Runtime::BYTE_ARRAY_TO_STRING;
       else
-	{
-	  go_assert(e->integer_type()->is_rune());
-	  static tree int_array_to_string_fndecl;
-	  ret = Gogo::call_builtin(&int_array_to_string_fndecl,
-				   this->location(),
-				   "__go_int_array_to_string",
-				   2,
-				   type_tree,
-				   const_ptr_type_node,
-				   valptr,
-				   int_type_tree,
-				   len);
-	}
+        {
+          go_assert(e->integer_type()->is_rune());
+          code = Runtime::INT_ARRAY_TO_STRING;
+        }
+      Expression* valptr = a->get_value_pointer(gogo, this->expr_);
+      Expression* len = a->get_length(gogo, this->expr_);
+      Expression* a2s_expr = Runtime::make_call(code, location, 2, valptr, len);
+      ret = a2s_expr->get_tree(context);
     }
   else if (type->is_slice_type() && expr_type->is_string_type())
     {
@@ -6595,6 +6594,7 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
     {
       std::swap(left_type, right_type);
       std::swap(left_tree, right_tree);
+      std::swap(left_expr, right_expr);
     }
 
   if (right_type->is_nil_type())
@@ -6603,7 +6603,8 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 	  && left_type->array_type()->length() == NULL)
 	{
 	  Array_type* at = left_type->array_type();
-	  left_tree = at->value_pointer_tree(context->gogo(), left_tree);
+          left_expr = at->get_value_pointer(context->gogo(), left_expr);
+          left_tree = left_expr->get_tree(context);
 	  right_tree = fold_convert(TREE_TYPE(left_tree), null_pointer_node);
 	}
       else if (left_type->interface_type() != NULL)
@@ -7037,6 +7038,9 @@ class Builtin_call_expression : public Call_expression
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
   bool
   do_is_constant() const;
 
@@ -7364,6 +7368,36 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       break;
     }
 
+  return this;
+}
+
+// Flatten a builtin call expression.  This turns the arguments of copy and
+// append into temporary expressions.
+
+Expression*
+Builtin_call_expression::do_flatten(Gogo*, Named_object*,
+                                    Statement_inserter* inserter)
+{
+  if (this->code_ == BUILTIN_APPEND
+      || this->code_ == BUILTIN_COPY)
+    {
+      Location loc = this->location();
+      Type* at = this->args()->front()->type();
+      for (Expression_list::iterator pa = this->args()->begin();
+           pa != this->args()->end();
+           ++pa)
+        {
+          if ((*pa)->is_nil_expression())
+            *pa = Expression::make_slice_composite_literal(at, NULL, loc);
+          if (!(*pa)->is_variable())
+            {
+              Temporary_statement* temp =
+                  Statement::make_temporary(NULL, *pa, loc);
+              inserter->insert(temp);
+              *pa = Expression::make_temporary_reference(temp, loc);
+            }
+        }
+    }
   return this;
 }
 
@@ -8503,7 +8537,8 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 		    return error_mark_node;
 		  }
 		this->seen_ = true;
-		val_tree = arg_type->array_type()->length_tree(gogo, arg_tree);
+		Expression* len = arg_type->array_type()->get_length(gogo, arg);
+		val_tree = len->get_tree(context);
 		this->seen_ = false;
 	      }
 	    else if (arg_type->map_type() != NULL)
@@ -8543,8 +8578,9 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 		    return error_mark_node;
 		  }
 		this->seen_ = true;
-		val_tree = arg_type->array_type()->capacity_tree(gogo,
-								 arg_tree);
+		Expression* cap =
+		    arg_type->array_type()->get_capacity(gogo, arg);
+		val_tree = cap->get_tree(context);
 		this->seen_ = false;
 	      }
 	    else if (arg_type->channel_type() != NULL)
@@ -8848,9 +8884,11 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 
 	Type* arg1_type = arg1->type();
 	Array_type* at = arg1_type->array_type();
-	arg1_tree = save_expr(arg1_tree);
-	tree arg1_val = at->value_pointer_tree(gogo, arg1_tree);
-	tree arg1_len = at->length_tree(gogo, arg1_tree);
+	go_assert(arg1->is_variable());
+	Expression* arg1_valptr = at->get_value_pointer(gogo, arg1);
+	Expression* arg1_len_expr = at->get_length(gogo, arg1);
+	tree arg1_val = arg1_valptr->get_tree(context);
+	tree arg1_len = arg1_len_expr->get_tree(context);
 	if (arg1_val == error_mark_node || arg1_len == error_mark_node)
 	  return error_mark_node;
 
@@ -8860,9 +8898,11 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	if (arg2_type->is_slice_type())
 	  {
 	    at = arg2_type->array_type();
-	    arg2_tree = save_expr(arg2_tree);
-	    arg2_val = at->value_pointer_tree(gogo, arg2_tree);
-	    arg2_len = at->length_tree(gogo, arg2_tree);
+	    go_assert(arg2->is_variable());
+	    Expression* arg2_valptr = at->get_value_pointer(gogo, arg2);
+	    Expression* arg2_len_expr = at->get_length(gogo, arg2);
+	    arg2_val = arg2_valptr->get_tree(context);
+	    arg2_len = arg2_len_expr->get_tree(context);
 	  }
 	else
 	  {
@@ -8950,23 +8990,15 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	  }
 	else
 	  {
-	    arg2_tree = Expression::convert_for_assignment(context, at,
-							   arg2->type(),
-							   arg2_tree,
-							   location);
-	    if (arg2_tree == error_mark_node)
+	    go_assert(arg2->is_variable());
+	    arg2_val =
+		at->get_value_pointer(gogo, arg2)->get_tree(context);
+	    arg2_len = at->get_length(gogo, arg2)->get_tree(context);
+	    Btype* element_btype = element_type->get_backend(gogo);
+	    tree element_type_tree = type_to_tree(element_btype);
+	    if (element_type_tree == error_mark_node)
 	      return error_mark_node;
-
-	    arg2_tree = save_expr(arg2_tree);
-
-	     arg2_val = at->value_pointer_tree(gogo, arg2_tree);
-	     arg2_len = at->length_tree(gogo, arg2_tree);
-
-	     Btype* element_btype = element_type->get_backend(gogo);
-	     tree element_type_tree = type_to_tree(element_btype);
-	     if (element_type_tree == error_mark_node)
-	       return error_mark_node;
-	     element_size = TYPE_SIZE_UNIT(element_type_tree);
+	    element_size = TYPE_SIZE_UNIT(element_type_tree);
 	  }
 
 	arg2_val = fold_convert_loc(location.gcc_location(), ptr_type_node,
@@ -10371,6 +10403,9 @@ class Array_index_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
+  Expression*
   do_copy()
   {
     return Expression::make_array_index(this->array_->copy(),
@@ -10611,6 +10646,22 @@ Array_index_expression::do_check_types(Gogo*)
     }
 }
 
+// Flatten array indexing by using a temporary variable for slices.
+
+Expression*
+Array_index_expression::do_flatten(Gogo*, Named_object*,
+                                   Statement_inserter* inserter)
+{
+  Location loc = this->location();
+  if (this->array_->type()->is_slice_type() && !this->array_->is_variable())
+    {
+      Temporary_statement* temp = Statement::make_temporary(NULL, this->array_, loc);
+      inserter->insert(temp);
+      this->array_ = Expression::make_temporary_reference(temp, loc);
+    }
+  return this;
+}
+
 // Return whether this expression is addressable.
 
 bool
@@ -10643,22 +10694,17 @@ Array_index_expression::do_get_tree(Translate_context* context)
       go_assert(this->array_->type()->is_error());
       return error_mark_node;
     }
+  go_assert(!array_type->is_slice_type() || this->array_->is_variable());
 
   tree type_tree = type_to_tree(array_type->get_backend(gogo));
   if (type_tree == error_mark_node)
     return error_mark_node;
 
-  tree array_tree = this->array_->get_tree(context);
-  if (array_tree == error_mark_node)
-    return error_mark_node;
-
-  if (array_type->length() == NULL && !DECL_P(array_tree))
-    array_tree = save_expr(array_tree);
-
   tree length_tree = NULL_TREE;
   if (this->end_ == NULL || this->end_->is_nil_expression())
     {
-      length_tree = array_type->length_tree(gogo, array_tree);
+      Expression* len = array_type->get_length(gogo, this->array_);
+      length_tree = len->get_tree(context);
       if (length_tree == error_mark_node)
 	return error_mark_node;
       length_tree = save_expr(length_tree);
@@ -10667,7 +10713,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
   tree capacity_tree = NULL_TREE;
   if (this->end_ != NULL)
     {
-      capacity_tree = array_type->capacity_tree(gogo, array_tree);
+      Expression* cap = array_type->get_capacity(gogo, this->array_);
+      capacity_tree = cap->get_tree(context);
       if (capacity_tree == error_mark_node)
 	return error_mark_node;
       capacity_tree = save_expr(capacity_tree);
@@ -10732,13 +10779,18 @@ Array_index_expression::do_get_tree(Translate_context* context)
       if (array_type->length() != NULL)
 	{
 	  // Fixed array.
+	  tree array_tree = this->array_->get_tree(context);
+	  if (array_tree == error_mark_node)
+	    return error_mark_node;
 	  return build4(ARRAY_REF, TREE_TYPE(type_tree), array_tree,
 			start_tree, NULL_TREE, NULL_TREE);
 	}
       else
 	{
 	  // Open array.
-	  tree values = array_type->value_pointer_tree(gogo, array_tree);
+          Expression* valptr =
+              array_type->get_value_pointer(gogo, this->array_);
+	  tree values = valptr->get_tree(context);
 	  Type* element_type = array_type->element_type();
 	  Btype* belement_type = element_type->get_backend(gogo);
 	  tree element_type_tree = type_to_tree(belement_type);
@@ -10820,7 +10872,8 @@ Array_index_expression::do_get_tree(Translate_context* context)
                                                  start_tree),
 				element_size);
 
-  tree value_pointer = array_type->value_pointer_tree(gogo, array_tree);
+  Expression* valptr = array_type->get_value_pointer(gogo, this->array_);
+  tree value_pointer = valptr->get_tree(context);
   if (value_pointer == error_mark_node)
     return error_mark_node;
 
@@ -14133,6 +14186,22 @@ Expression::is_nonconstant_composite_literal() const
     }
 }
 
+// Return true if this is a variable or temporary_variable.
+
+bool
+Expression::is_variable() const
+{
+  switch (this->classification_)
+    {
+    case EXPRESSION_VAR_REFERENCE:
+    case EXPRESSION_TEMPORARY_REFERENCE:
+    case EXPRESSION_SET_AND_USE_TEMPORARY:
+      return true;
+    default:
+      return false;
+    }
+}
+
 // Return true if this is a reference to a local variable.
 
 bool
@@ -14572,6 +14641,117 @@ Expression*
 Expression::make_type_info(Type* type, Type_info type_info)
 {
   return new Type_info_expression(type, type_info);
+}
+
+// An expression that evaluates to some characteristic of a slice.
+// This is used when indexing, bound-checking, or nil checking a slice.
+
+class Slice_info_expression : public Expression
+{
+ public:
+  Slice_info_expression(Expression* slice, Slice_info slice_info,
+                        Location location)
+    : Expression(EXPRESSION_SLICE_INFO, location),
+      slice_(slice), slice_info_(slice_info)
+  { }
+
+ protected:
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Slice_info_expression(this->slice_->copy(), this->slice_info_,
+                                     this->location());
+  }
+
+  tree
+  do_get_tree(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+  void
+  do_issue_nil_check()
+  { this->slice_->issue_nil_check(); }
+
+ private:
+  // The slice for which we are getting information.
+  Expression* slice_;
+  // What information we want.
+  Slice_info slice_info_;
+};
+
+// Return the type of the slice info.
+
+Type*
+Slice_info_expression::do_type()
+{
+  switch (this->slice_info_)
+    {
+    case SLICE_INFO_VALUE_POINTER:
+      return Type::make_pointer_type(
+          this->slice_->type()->array_type()->element_type());
+    case SLICE_INFO_LENGTH:
+    case SLICE_INFO_CAPACITY:
+        return Type::lookup_integer_type("int");
+    default:
+      go_unreachable();
+    }
+}
+
+// Return slice information in GENERIC.
+
+tree
+Slice_info_expression::do_get_tree(Translate_context* context)
+{
+  Gogo* gogo = context->gogo();
+
+  Bexpression* bslice = tree_to_expr(this->slice_->get_tree(context));
+  Bexpression* ret;
+  switch (this->slice_info_)
+    {
+    case SLICE_INFO_VALUE_POINTER:
+    case SLICE_INFO_LENGTH:
+    case SLICE_INFO_CAPACITY:
+      ret = gogo->backend()->struct_field_expression(bslice, this->slice_info_,
+                                                     this->location());
+      break;
+    default:
+      go_unreachable();
+    }
+  return expr_to_tree(ret);
+}
+
+// Dump ast representation for a type info expression.
+
+void
+Slice_info_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "sliceinfo(";
+  this->slice_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << ",";
+  ast_dump_context->ostream() << 
+      (this->slice_info_ == SLICE_INFO_VALUE_POINTER ? "values" 
+    : this->slice_info_ == SLICE_INFO_LENGTH ? "length"
+    : this->slice_info_ == SLICE_INFO_CAPACITY ? "capacity "
+    : "unknown");
+  ast_dump_context->ostream() << ")";
+}
+
+// Make a slice info expression.
+
+Expression*
+Expression::make_slice_info(Expression* slice, Slice_info slice_info,
+                            Location location)
+{
+  return new Slice_info_expression(slice, slice_info, location);
 }
 
 // An expression which evaluates to the offset of a field within a

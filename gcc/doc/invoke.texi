@@ -10065,6 +10065,41 @@ The default choice depends on the target.
 Set the maximum number of existing candidates that will be considered when
 seeking a basis for a new straight-line strength reduction candidate.
 
+@item asan-globals
+Enable buffer overflow detection for global objects.  This kind
+of protection is enabled by default if you are using
+@option{-fsanitize=address} option.
+To disable global objects protection use @option{--param asan-globals=0}.
+
+@item asan-stack
+Enable buffer overflow detection for stack objects.  This kind of
+protection is enabled by default when using@option{-fsanitize=address}.
+To disable stack protection use @option{--param asan-stack=0} option.
+
+@item asan-instrument-reads
+Enable buffer overflow detection for memory reads.  This kind of
+protection is enabled by default when using @option{-fsanitize=address}.
+To disable memory reads protection use
+@option{--param asan-instrument-reads=0}.
+
+@item asan-instrument-writes
+Enable buffer overflow detection for memory writes.  This kind of
+protection is enabled by default when using @option{-fsanitize=address}.
+To disable memory writes protection use
+@option{--param asan-instrument-writes=0} option.
+
+@item asan-memintrin
+Enable detection for built-in functions.  This kind of protection
+is enabled by default when using @option{-fsanitize=address}.
+To disable built-in functions protection use
+@option{--param asan-memintrin=0}.
+
+@item asan-use-after-return
+Enable detection of use-after-return.  This kind of protection
+is enabled by default when using @option{-fsanitize=address} option.
+To disable use-after-return detection use 
+@option{--param asan-use-after-return=0}.
+
 @end table
 @end table
 
@@ -18854,6 +18889,38 @@ enable the use of built-in functions that allow more direct access to
 the AltiVec instruction set.  You may also need to set
 @option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
 enhancements.
+
+When @option{-maltivec} is used, rather than @option{-maltivec=le} or
+@option{-maltivec=be}, the element order for Altivec intrinsics such
+as @code{vec_splat}, @code{vec_extract}, and @code{vec_insert} will
+match array element order corresponding to the endianness of the
+target.  That is, element zero identifies the leftmost element in a
+vector register when targeting a big-endian platform, and identifies
+the rightmost element in a vector register when targeting a
+little-endian platform.
+
+@item -maltivec=be
+@opindex maltivec=be
+Generate Altivec instructions using big-endian element order,
+regardless of whether the target is big- or little-endian.  This is
+the default when targeting a big-endian platform.
+
+The element order is used to interpret element numbers in Altivec
+intrinsics such as @code{vec_splat}, @code{vec_extract}, and
+@code{vec_insert}.  By default, these will match array element order
+corresponding to the endianness for the target.
+
+@item -maltivec=le
+@opindex maltivec=le
+Generate Altivec instructions using little-endian element order,
+regardless of whether the target is big- or little-endian.  This is
+the default when targeting a little-endian platform.  This option is
+currently ignored when targeting a big-endian platform.
+
+The element order is used to interpret element numbers in Altivec
+intrinsics such as @code{vec_splat}, @code{vec_extract}, and
+@code{vec_insert}.  By default, these will match array element order
+corresponding to the endianness for the target.
 
 @item -mvrsave
 @itemx -mno-vrsave

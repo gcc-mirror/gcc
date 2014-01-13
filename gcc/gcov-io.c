@@ -36,6 +36,61 @@ static const gcov_unsigned_t *gcov_read_words (unsigned);
 static void gcov_allocate (unsigned);
 #endif
 
+/* Optimum number of gcov_unsigned_t's read from or written to disk.  */
+#define GCOV_BLOCK_SIZE (1 << 10)
+
+GCOV_LINKAGE struct gcov_var
+{
+  FILE *file;
+  gcov_position_t start;	/* Position of first byte of block */
+  unsigned offset;		/* Read/write position within the block.  */
+  unsigned length;		/* Read limit in the block.  */
+  unsigned overread;		/* Number of words overread.  */
+  int error;			/* < 0 overflow, > 0 disk error.  */
+  int mode;	                /* < 0 writing, > 0 reading */
+#if IN_LIBGCOV
+  /* Holds one block plus 4 bytes, thus all coverage reads & writes
+     fit within this buffer and we always can transfer GCOV_BLOCK_SIZE
+     to and from the disk. libgcov never backtracks and only writes 4
+     or 8 byte objects.  */
+  gcov_unsigned_t buffer[GCOV_BLOCK_SIZE + 1];
+#else
+  int endian;			/* Swap endianness.  */
+  /* Holds a variable length block, as the compiler can write
+     strings and needs to backtrack.  */
+  size_t alloc;
+  gcov_unsigned_t *buffer;
+#endif
+} gcov_var;
+
+/* Save the current position in the gcov file.  */
+static inline gcov_position_t
+gcov_position (void)
+{
+  gcc_assert (gcov_var.mode > 0); 
+  return gcov_var.start + gcov_var.offset;
+}
+
+/* Return nonzero if the error flag is set.  */
+static inline int 
+gcov_is_error (void)
+{
+  return gcov_var.file ? gcov_var.error : 1;
+}
+
+#if IN_LIBGCOV
+/* Move to beginning of file and initialize for writing.  */
+GCOV_LINKAGE inline void
+gcov_rewrite (void)
+{
+  gcc_assert (gcov_var.mode > 0); 
+  gcov_var.mode = -1; 
+  gcov_var.start = 0;
+  gcov_var.offset = 0;
+  fseek (gcov_var.file, 0L, SEEK_SET);
+}
+#endif
+
 static inline gcov_unsigned_t from_file (gcov_unsigned_t value)
 {
 #if !IN_LIBGCOV

@@ -542,7 +542,7 @@ method_class_type (tree t)
 void
 build_type_inheritance_graph (void)
 {
-  struct cgraph_node *n;
+  struct symtab_node *n;
   FILE *inheritance_dump_file;
   int flags;
 
@@ -554,10 +554,37 @@ build_type_inheritance_graph (void)
 
   /* We reconstruct the graph starting of types of all methods seen in the
      the unit.  */
-  FOR_EACH_FUNCTION (n)
-    if (DECL_VIRTUAL_P (n->decl)
+  FOR_EACH_SYMBOL (n)
+    if (is_a <cgraph_node> (n)
+	&& DECL_VIRTUAL_P (n->decl)
 	&& symtab_real_symbol_p (n))
       get_odr_type (method_class_type (TREE_TYPE (n->decl)), true);
+
+    /* Look also for virtual tables of types that do not define any methods.
+ 
+       We need it in a case where class B has virtual base of class A
+       re-defining its virtual method and there is class C with no virtual
+       methods with B as virtual base.
+
+       Here we output B's virtual method in two variant - for non-virtual
+       and virtual inheritance.  B's virtual table has non-virtual version,
+       while C's has virtual.
+
+       For this reason we need to know about C in order to include both
+       variants of B.  More correctly, record_target_from_binfo should
+       add both variants of the method when walking B, but we have no
+       link in between them.
+
+       We rely on fact that either the method is exported and thus we
+       assume it is called externally or C is in anonymous namespace and
+       thus we will see the vtable.  */
+
+    else if (is_a <varpool_node> (n)
+	     && DECL_VIRTUAL_P (n->decl)
+	     && TREE_CODE (DECL_CONTEXT (n->decl)) == RECORD_TYPE
+	     && TYPE_BINFO (DECL_CONTEXT (n->decl))
+	     && polymorphic_type_binfo_p (TYPE_BINFO (DECL_CONTEXT (n->decl))))
+      get_odr_type (DECL_CONTEXT (n->decl), true);
   if (inheritance_dump_file)
     {
       dump_type_inheritance_graph (inheritance_dump_file);
@@ -614,10 +641,8 @@ maybe_record_node (vec <cgraph_node *> &nodes,
    This match what get_binfo_at_offset does, but with offset
    being unknown.
 
-   TYPE_BINFO is binfo holding an virtual table matching
-   BINFO's type.  In the case of single inheritance, this
-   is binfo of BINFO's type ancestor (vtable is shared),
-   otherwise it is binfo of BINFO's type.
+   TYPE_BINFOS is a stack of BINFOS of types with defined
+   virtual table seen on way from class type to BINFO.
 
    MATCHED_VTABLES tracks virtual tables we already did lookup
    for virtual function in. INSERTED tracks nodes we already
@@ -630,7 +655,7 @@ static void
 record_target_from_binfo (vec <cgraph_node *> &nodes,
 			  tree binfo,
 			  tree otr_type,
-			  tree type_binfo,
+			  vec <tree> &type_binfos,
 			  HOST_WIDE_INT otr_token,
 			  tree outer_type,
 			  HOST_WIDE_INT offset,
@@ -642,10 +667,32 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
   int i;
   tree base_binfo;
 
-  gcc_checking_assert (BINFO_VTABLE (type_binfo));
 
+  if (BINFO_VTABLE (binfo))
+    type_binfos.safe_push (binfo);
   if (types_same_for_odr (type, outer_type))
     {
+      int i;
+      tree type_binfo = NULL;
+
+      /* Lookup BINFO with virtual table.  For normal types it is always last
+	 binfo on stack.  */
+      for (i = type_binfos.length () - 1; i >= 0; i--)
+	if (BINFO_OFFSET (type_binfos[i]) == BINFO_OFFSET (binfo))
+	  {
+	    type_binfo = type_binfos[i];
+	    break;
+	  }
+      if (BINFO_VTABLE (binfo))
+	type_binfos.pop ();
+      /* If this is duplicated BINFO for base shared by virtual inheritance,
+	 we may not have its associated vtable.  This is not a problem, since
+	 we will walk it on the other path.  */
+      if (!type_binfo)
+	{
+	  gcc_assert (BINFO_VIRTUAL_P (binfo));
+	  return;
+	}
       tree inner_binfo = get_binfo_at_offset (type_binfo,
 					      offset, otr_type);
       /* For types in anonymous namespace first check if the respective vtable
@@ -676,12 +723,11 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
     /* Walking bases that have no virtual method is pointless excercise.  */
     if (polymorphic_type_binfo_p (base_binfo))
       record_target_from_binfo (nodes, base_binfo, otr_type,
-				/* In the case of single inheritance,
-				   the virtual table is shared with
-				   the outer type.  */
-				BINFO_VTABLE (base_binfo) ? base_binfo : type_binfo,
+				type_binfos, 
 				otr_token, outer_type, offset, inserted,
 				matched_vtables, anonymous);
+  if (BINFO_VTABLE (binfo))
+    type_binfos.pop ();
 }
      
 /* Lookup virtual methods matching OTR_TYPE (with OFFSET and OTR_TOKEN)
@@ -701,11 +747,13 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 {
   tree binfo = TYPE_BINFO (type->type);
   unsigned int i;
+  vec <tree> type_binfos = vNULL;
 
-  record_target_from_binfo (nodes, binfo, otr_type, binfo, otr_token,
+  record_target_from_binfo (nodes, binfo, otr_type, type_binfos, otr_token,
 			    outer_type, offset,
 			    inserted, matched_vtables,
 			    type->anonymous_namespace);
+  type_binfos.release ();
   for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,

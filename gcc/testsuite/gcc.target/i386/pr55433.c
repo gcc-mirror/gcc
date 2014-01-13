@@ -1,5 +1,5 @@
-/* { dg-do compile {target { *-*-darwin* } } } */
-/* { dg-options "-O1 -m32" } */
+/* { dg-do compile { target { *-*-darwin* } } } */
+/* { dg-options "-O1" } */
 
 typedef unsigned long long tick_t;
 extern int foo(void);

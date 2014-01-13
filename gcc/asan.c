@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-builder.h"
 #include "ubsan.h"
 #include "predict.h"
+#include "params.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -1003,7 +1004,8 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   str_cst = asan_pp_string (&asan_pp);
 
   /* Emit the prologue sequence.  */
-  if (asan_frame_size > 32 && asan_frame_size <= 65536 && pbase)
+  if (asan_frame_size > 32 && asan_frame_size <= 65536 && pbase
+      && ASAN_USE_AFTER_RETURN)
     {
       use_after_return_class = floor_log2 (asan_frame_size - 1) - 5;
       /* __asan_stack_malloc_N guarantees alignment
@@ -1239,6 +1241,9 @@ asan_needs_local_alias (tree decl)
 bool
 asan_protect_global (tree decl)
 {
+  if (!ASAN_GLOBALS)
+    return false;
+
   rtx rtl, symbol;
 
   if (TREE_CODE (decl) == STRING_CST)
@@ -1568,6 +1573,11 @@ static void
 instrument_derefs (gimple_stmt_iterator *iter, tree t,
 		   location_t location, bool is_store)
 {
+  if (is_store && !ASAN_INSTRUMENT_WRITES)
+    return;
+  if (!is_store && !ASAN_INSTRUMENT_READS)
+    return;
+
   tree type, base;
   HOST_WIDE_INT size_in_bytes;
 
@@ -1897,6 +1907,9 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
 static bool
 instrument_builtin_call (gimple_stmt_iterator *iter)
 {
+  if (!ASAN_MEMINTRIN)
+    return false;
+
   bool iter_advanced_p = false;
   gimple call = gsi_stmt (*iter);
 

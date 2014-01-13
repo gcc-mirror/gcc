@@ -29,6 +29,8 @@ class LibbacktraceSymbolizer {
 
   bool SymbolizeData(DataInfo *info);
 
+  const char *Demangle(const char *name);
+
  private:
   explicit LibbacktraceSymbolizer(void *state) : state_(state) {}
 

@@ -970,7 +970,7 @@ maybe_add_lambda_conv_op (tree type)
      the conversion op is used.  */
   if (varargs_function_p (callop))
     {
-      DECL_DELETED_FN (fn) = 1;
+      DECL_DELETED_FN (STRIP_TEMPLATE (fn)) = 1;
       return;
     }
 

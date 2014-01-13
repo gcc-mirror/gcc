@@ -468,6 +468,15 @@ extern int rs6000_vector_align[];
    ? rs6000_vector_align[(MODE)]					\
    : (int)GET_MODE_BITSIZE ((MODE)))
 
+/* Determine the element order to use for vector instructions.  By
+   default we use big-endian element order when targeting big-endian,
+   and little-endian element order when targeting little-endian.  For
+   programs being ported from BE Power to LE Power, it can sometimes
+   be useful to use big-endian element order when targeting little-endian.
+   This is set via -maltivec=be, for example.  */
+#define VECTOR_ELT_ORDER_BIG                                  \
+  (BYTES_BIG_ENDIAN || (rs6000_altivec_element_order == 2))
+
 /* Alignment options for fields in structures for sub-targets following
    AIX-like ABI.
    ALIGN_POWER word-aligns FP doubles (default AIX ABI).
@@ -2436,6 +2445,9 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* Print a memory address as an operand to reference that memory location.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
+
+/* For switching between functions with different target attributes.  */
+#define SWITCHABLE_TARGET 1
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */

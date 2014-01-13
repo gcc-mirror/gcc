@@ -246,6 +246,16 @@ Variable_declaration_statement::do_lower(Gogo* gogo, Named_object* function,
   return this;
 }
 
+// Flatten the variable's initialization expression.
+
+Statement*
+Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
+                                           Block*, Statement_inserter* inserter)
+{
+  this->var_->var_value()->flatten_init_expression(gogo, function, inserter);
+  return this;
+}
+
 // Convert a variable declaration to the backend representation.
 
 Bstatement*
@@ -2461,6 +2471,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   gogo->add_block(b, location);
 
   gogo->lower_block(function, b);
+  gogo->flatten_block(function, b);
 
   // We already ran the determine_types pass, so we need to run it
   // just for the call statement now.  The other types are known.

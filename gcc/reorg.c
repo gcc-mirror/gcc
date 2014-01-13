@@ -1093,6 +1093,7 @@ steal_delay_list_from_target (rtx insn, rtx condition, rtx seq,
   int used_annul = 0;
   int i;
   struct resources cc_set;
+  bool *redundant;
 
   /* We can't do anything if there are more delay slots in SEQ than we
      can handle, or if we don't know that it will be a taken branch.
@@ -1133,6 +1134,7 @@ steal_delay_list_from_target (rtx insn, rtx condition, rtx seq,
     return delay_list;
 #endif
 
+  redundant = XALLOCAVEC (bool, XVECLEN (seq, 0));
   for (i = 1; i < XVECLEN (seq, 0); i++)
     {
       rtx trial = XVECEXP (seq, 0, i);
@@ -1154,7 +1156,8 @@ steal_delay_list_from_target (rtx insn, rtx condition, rtx seq,
 
       /* If this insn was already done (usually in a previous delay slot),
 	 pretend we put it in our delay slot.  */
-      if (redundant_insn (trial, insn, new_delay_list))
+      redundant[i] = redundant_insn (trial, insn, new_delay_list);
+      if (redundant[i])
 	continue;
 
       /* We will end up re-vectoring this branch, so compute flags
@@ -1186,6 +1189,12 @@ steal_delay_list_from_target (rtx insn, rtx condition, rtx seq,
       else
 	return delay_list;
     }
+
+  /* Record the effect of the instructions that were redundant and which
+     we therefore decided not to copy.  */
+  for (i = 1; i < XVECLEN (seq, 0); i++)
+    if (redundant[i])
+      update_block (XVECEXP (seq, 0, i), insn);
 
   /* Show the place to which we will be branching.  */
   *pnew_thread = first_active_target_insn (JUMP_LABEL (XVECEXP (seq, 0, 0)));
@@ -1250,6 +1259,7 @@ steal_delay_list_from_fallthrough (rtx insn, rtx condition, rtx seq,
       /* If this insn was already done, we don't need it.  */
       if (redundant_insn (trial, insn, delay_list))
 	{
+	  update_block (trial, insn);
 	  delete_from_delay_slot (trial);
 	  continue;
 	}
@@ -3236,6 +3246,7 @@ relax_delay_slots (rtx first)
 	 to reprocess this insn.  */
       if (redundant_insn (XVECEXP (pat, 0, 1), delay_insn, 0))
 	{
+	  update_block (XVECEXP (pat, 0, 1), insn);
 	  delete_from_delay_slot (XVECEXP (pat, 0, 1));
 	  next = prev_active_insn (next);
 	  continue;
@@ -3355,6 +3366,7 @@ relax_delay_slots (rtx first)
 	      && redirect_with_delay_slots_safe_p (delay_insn, target_label,
 						   insn))
 	    {
+	      update_block (XVECEXP (PATTERN (trial), 0, 1), insn);
 	      reorg_redirect_jump (delay_insn, target_label);
 	      next = insn;
 	      continue;

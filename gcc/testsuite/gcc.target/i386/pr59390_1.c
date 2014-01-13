@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c99 -O3" } */
 
-#include "math.h"
+extern double fma (double, double, double);
 void fun() __attribute__((target("fma")));
 
 __attribute__((target("fma")))

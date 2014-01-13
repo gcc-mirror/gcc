@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vmovdqu32\[ \\t\]+\[^\n\]*\\)\[^\n\]*%zmm\[0-9\]\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqu\[36\]\[24\]\[ \\t\]+\[^\n\]*\\)\[^\n\]*%zmm\[0-9\]\[^\{\]" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu32\[ \\t\]+\[^\n\]*\\)\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu32\[ \\t\]+\[^\n\]*\\)\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu32\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[^\n\]*\\)\[^\{\]" 1 } } */

@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fPIC -m32" } */
+/* { dg-require-effective-target fpic } */
+/* { dg-options "-O2 -fPIC" } */
 
 void (*pfn)(void);
 

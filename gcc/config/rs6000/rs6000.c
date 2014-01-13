@@ -78,6 +78,7 @@
 #include "tree-vectorizer.h"
 #include "dumpfile.h"
 #include "cgraph.h"
+#include "target-globals.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -3238,6 +3239,18 @@ rs6000_option_override_internal (bool global_init_p)
       && !(processor_target_table[tune_index].target_enable & OPTION_MASK_HTM))
     rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
 
+  /* -maltivec={le,be} implies -maltivec.  */
+  if (rs6000_altivec_element_order != 0)
+    rs6000_isa_flags |= OPTION_MASK_ALTIVEC;
+
+  /* Disallow -maltivec=le in big endian mode for now.  This is not
+     known to be useful for anyone.  */
+  if (BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 1)
+    {
+      warning (0, N_("-maltivec=le not allowed for big-endian targets"));
+      rs6000_altivec_element_order = 0;
+    }
+
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {
@@ -6324,13 +6337,14 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x,
       break;
 
     case TFmode:
-    case TDmode:
-    case TImode:
-    case PTImode:
       if (TARGET_E500_DOUBLE)
 	return (SPE_CONST_OFFSET_OK (offset)
 		&& SPE_CONST_OFFSET_OK (offset + 8));
+      /* fall through */
 
+    case TDmode:
+    case TImode:
+    case PTImode:
       extra = 8;
       if (!worst_case)
 	break;
@@ -11450,6 +11464,48 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
 
 
 static rtx
+rs6000_expand_mtfsf_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  enum machine_mode mode0 = insn_data[icode].operand[0].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (GET_CODE (op0) != CONST_INT
+      || INTVAL (op0) > 255
+      || INTVAL (op0) < 0)
+    {
+      error ("argument 1 must be an 8-bit field value");
+      return const0_rtx;
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  pat = GEN_FCN (icode) (op0, op1);
+  if (! pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+
+
+static rtx
 rs6000_expand_unop_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat;
@@ -13256,6 +13312,12 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 					    : CODE_FOR_rs6000_mftb_si),
 					   target);
 
+    case RS6000_BUILTIN_MFFS:
+      return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffs, target);
+
+    case RS6000_BUILTIN_MTFSF:
+      return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp);
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -13562,6 +13624,14 @@ rs6000_init_builtins (void)
     ftype = build_function_type_list (unsigned_intSI_type_node,
 				      NULL_TREE);
   def_builtin ("__builtin_ppc_mftb", ftype, RS6000_BUILTIN_MFTB);
+
+  ftype = build_function_type_list (double_type_node, NULL_TREE);
+  def_builtin ("__builtin_mffs", ftype, RS6000_BUILTIN_MFFS);
+
+  ftype = build_function_type_list (void_type_node,
+				    intSI_type_node, double_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_mtfsf", ftype, RS6000_BUILTIN_MTFSF);
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
@@ -31188,16 +31258,25 @@ rs6000_set_current_function (tree fndecl)
 	{
 	  cl_target_option_restore (&global_options,
 				    TREE_TARGET_OPTION (new_tree));
-	  target_reinit ();
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
 	}
 
       else if (old_tree)
 	{
-	  struct cl_target_option *def
-	    = TREE_TARGET_OPTION (target_option_current_node);
-
-	  cl_target_option_restore (&global_options, def);
-	  target_reinit ();
+	  new_tree = target_option_current_node;
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else if (new_tree == target_option_default_node)
+	    restore_target_globals (&default_target_globals);
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
 	}
     }
 }

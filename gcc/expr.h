@@ -41,7 +41,8 @@ along with GCC; see the file COPYING3.  If not see
     is a constant that is not a legitimate address.
    EXPAND_WRITE means we are only going to write to the resulting rtx.
    EXPAND_MEMORY means we are interested in a memory result, even if
-    the memory is constant and we could have propagated a constant value.  */
+    the memory is constant and we could have propagated a constant value,
+    or the memory is unaligned on a STRICT_ALIGNMENT target.  */
 enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER, EXPAND_WRITE,
 		      EXPAND_MEMORY};
@@ -437,9 +438,9 @@ extern rtx force_operand (rtx, rtx);
 
 /* Work horses for expand_expr.  */
 extern rtx expand_expr_real (tree, rtx, enum machine_mode,
-			     enum expand_modifier, rtx *);
+			     enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_1 (tree, rtx, enum machine_mode,
-			       enum expand_modifier, rtx *);
+			       enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_2 (sepops, rtx, enum machine_mode,
 			       enum expand_modifier);
 
@@ -450,13 +451,13 @@ static inline rtx
 expand_expr (tree exp, rtx target, enum machine_mode mode,
 	     enum expand_modifier modifier)
 {
-  return expand_expr_real (exp, target, mode, modifier, NULL);
+  return expand_expr_real (exp, target, mode, modifier, NULL, false);
 }
 
 static inline rtx
 expand_normal (tree exp)
 {
-  return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL);
+  return expand_expr_real (exp, NULL_RTX, VOIDmode, EXPAND_NORMAL, NULL, false);
 }
 
 /* At the start of a function, record that we have no previously-pushed

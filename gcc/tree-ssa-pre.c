@@ -4798,9 +4798,11 @@ const pass_data pass_data_pre =
   true, /* has_gate */
   true, /* has_execute */
   TV_TREE_PRE, /* tv_id */
+  /* PROP_no_crit_edges is ensured by placing pass_split_crit_edges before
+     pass_pre.  */
   ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
-  0, /* properties_destroyed */
+  PROP_no_crit_edges, /* properties_destroyed */
   TODO_rebuild_alias, /* todo_flags_start */
   TODO_verify_ssa, /* todo_flags_finish */
 };

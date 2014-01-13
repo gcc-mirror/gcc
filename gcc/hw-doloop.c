@@ -661,6 +661,7 @@ reorg_loops (bool do_reorder, struct hw_doloop_hooks *hooks)
     }
 
   free_loops (loops);
+  bitmap_obstack_release (&loop_stack);
 
   if (dump_file)
     print_rtl (dump_file, get_insns ());

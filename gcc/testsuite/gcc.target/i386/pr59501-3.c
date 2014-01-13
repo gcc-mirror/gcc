@@ -1,6 +1,7 @@
 /* PR target/59501 */
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx -mno-accumulate-outgoing-args" } */
+/* { dg-require-effective-target avx } */
 
 #define CHECK_H "avx-check.h"
 #define TEST avx_test

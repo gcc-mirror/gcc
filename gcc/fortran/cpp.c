@@ -363,6 +363,7 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
 
     case OPT_Wdate_time:
       gfc_cpp_option.warn_date_time = value;
+      break;
 
     case OPT_A:
     case OPT_D:

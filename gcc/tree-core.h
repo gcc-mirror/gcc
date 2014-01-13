@@ -1570,17 +1570,24 @@ struct GTY(()) tree_optimization_option {
 
   /* Target optabs for this set of optimization options.  This is of
      type `struct target_optabs *'.  */
-  unsigned char *GTY ((atomic)) optabs;
+  void *GTY ((atomic)) optabs;
 
   /* The value of this_target_optabs against which the optabs above were
      generated.  */
   struct target_optabs *GTY ((skip)) base_optabs;
 };
 
+/* Forward declaration, defined in target-globals.h.  */
+
+struct GTY(()) target_globals;
+
 /* Target options used by a function.  */
 
 struct GTY(()) tree_target_option {
   struct tree_common common;
+
+  /* Target globals for the corresponding target option.  */
+  struct target_globals *globals;
 
   /* The optimization options used by the user.  */
   struct cl_target_option opts;

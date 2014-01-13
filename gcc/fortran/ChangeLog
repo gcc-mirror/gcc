@@ -1,3 +1,38 @@
+2014-01-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58026
+	* decl.c (gfc_match_data_decl): Improve error recovery.
+
+2014-01-09  Tobias Burnus  <burnus@net-b.de>
+
+	* cpp.c (gfc_cpp_handle_option): Add missing break.
+	* trans-io.c (transfer_expr): Silence unused value warning.
+
+2014-01-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58182
+	* resolve.c (gfc_verify_binding_labels): Modify order of checks.
+
+2014-01-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59589
+	* class.c (comp_is_finalizable): New function to dermine if a given
+	component is finalizable.
+	(finalize_component, generate_finalization_wrapper): Use it.
+
+2014-01-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59023
+	PR fortran/59662
+	* resolve.c (resolve_global_procedure): Don't apply to c-binding
+	procedures.
+	(gfc_verify_binding_labels): Remove duplicate line.
+
+2014-01-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59547
+	* class.c (add_proc_comp): Copy pure attribute.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years

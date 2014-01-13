@@ -58,11 +58,6 @@ runtime_progname()
   return argc == 0 ? nil : argv[0];
 }
 
-// Information about what cpu features are available.
-// Set on startup in asm_{x86/amd64}.s.
-uint32 runtime_cpuid_ecx;
-uint32 runtime_cpuid_edx;
-
 void
 runtime_goargs(void)
 {

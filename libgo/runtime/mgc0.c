@@ -269,8 +269,7 @@ markonly(void *obj)
 	// (Manually inlined copy of MHeap_LookupMaybe.)
 	k = (uintptr)obj>>PageShift;
 	x = k;
-	if(sizeof(void*) == 8)
-		x -= (uintptr)runtime_mheap.arena_start>>PageShift;
+	x -= (uintptr)runtime_mheap.arena_start>>PageShift;
 	s = runtime_mheap.spans[x];
 	if(s == nil || k < s->start || (byte*)obj >= s->limit || s->state != MSpanInUse)
 		return false;
@@ -453,8 +452,7 @@ flushptrbuf(PtrTarget *ptrbuf, PtrTarget **ptrbufpos, Obj **_wp, Workbuf **_wbuf
 			// (Manually inlined copy of MHeap_LookupMaybe.)
 			k = (uintptr)obj>>PageShift;
 			x = k;
-			if(sizeof(void*) == 8)
-				x -= (uintptr)arena_start>>PageShift;
+			x -= (uintptr)arena_start>>PageShift;
 			s = runtime_mheap.spans[x];
 			if(s == nil || k < s->start || obj >= s->limit || s->state != MSpanInUse)
 				continue;
@@ -501,8 +499,7 @@ flushptrbuf(PtrTarget *ptrbuf, PtrTarget **ptrbufpos, Obj **_wp, Workbuf **_wbuf
 			// Ask span about size class.
 			// (Manually inlined copy of MHeap_Lookup.)
 			x = (uintptr)obj >> PageShift;
-			if(sizeof(void*) == 8)
-				x -= (uintptr)arena_start>>PageShift;
+			x -= (uintptr)arena_start>>PageShift;
 			s = runtime_mheap.spans[x];
 
 			PREFETCH(obj);
@@ -617,8 +614,7 @@ checkptr(void *obj, uintptr objti)
 	if(t == nil)
 		return;
 	x = (uintptr)obj >> PageShift;
-	if(sizeof(void*) == 8)
-		x -= (uintptr)(runtime_mheap.arena_start)>>PageShift;
+	x -= (uintptr)(runtime_mheap.arena_start)>>PageShift;
 	s = runtime_mheap.spans[x];
 	objstart = (byte*)((uintptr)s->start<<PageShift);
 	if(s->sizeclass != 0) {

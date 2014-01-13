@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "target-globals.h"
 
 static rtx legitimize_dllimport_symbol (rtx, bool);
 static rtx legitimize_pe_coff_extern_decl (rtx, bool);
@@ -1569,7 +1570,7 @@ struct processor_costs nocona_cost = {
   8,					/* MMX or SSE register to integer */
   8,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
-  128,					/* size of prefetch block */
+  64,					/* size of prefetch block */
   8,					/* number of parallel prefetches */
   1,					/* Branch cost */
   COSTS_N_INSNS (6),			/* cost of FADD and FSUB insns.  */
@@ -4869,16 +4870,25 @@ ix86_set_current_function (tree fndecl)
 	{
 	  cl_target_option_restore (&global_options,
 				    TREE_TARGET_OPTION (new_tree));
-	  target_reinit ();
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
 	}
 
       else if (old_tree)
 	{
-	  struct cl_target_option *def
-	    = TREE_TARGET_OPTION (target_option_current_node);
-
-	  cl_target_option_restore (&global_options, def);
-	  target_reinit ();
+	  new_tree = target_option_current_node;
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (new_tree));
+	  if (TREE_TARGET_GLOBALS (new_tree))
+	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+	  else if (new_tree == target_option_default_node)
+	    restore_target_globals (&default_target_globals);
+	  else
+	    TREE_TARGET_GLOBALS (new_tree)
+	      = save_target_globals_default_opts ();
 	}
     }
 }
@@ -9282,7 +9292,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return)
 
   if (crtl->drap_reg
       && regno == REGNO (crtl->drap_reg)
-      && crtl->stack_realign_needed)
+      && !cfun->machine->no_drap_save_restore)
     return true;
 
   return (df_regs_ever_live_p (regno)
@@ -10520,18 +10530,6 @@ ix86_finalize_stack_realign_flags (void)
       return;
     }
 
-  /* If drap has been set, but it actually isn't live at the start
-     of the function and !stack_realign, there is no reason to set it up.  */
-  if (crtl->drap_reg && !stack_realign)
-    {
-      basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-      if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
-	{
-	  crtl->drap_reg = NULL_RTX;
-	  crtl->need_drap = false;
-	}
-    }
-
   /* If the only reason for frame_pointer_needed is that we conservatively
      assumed stack realignment might be needed, but in the end nothing that
      needed the stack alignment had been spilled, clear frame_pointer_needed
@@ -10585,6 +10583,8 @@ ix86_finalize_stack_realign_flags (void)
 	      crtl->need_drap = false;
 	    }
 	}
+      else
+	cfun->machine->no_drap_save_restore = true;
 
       frame_pointer_needed = false;
       stack_realign = false;
@@ -26466,8 +26466,16 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align, bool opt)
 {
-  int max_align = optimize_size ? BITS_PER_WORD
-				: MIN (512, MAX_OFILE_ALIGNMENT);
+  /* A data structure, equal or greater than the size of a cache line
+     (64 bytes in the Pentium 4 and other recent Intel processors, including
+     processors based on Intel Core microarchitecture) should be aligned
+     so that its base address is a multiple of a cache line size.  */
+
+  int max_align
+    = MIN ((unsigned) ix86_tune_cost->prefetch_block * 8, MAX_OFILE_ALIGNMENT);
+
+  if (max_align < BITS_PER_WORD)
+    max_align = BITS_PER_WORD;
 
   if (opt
       && AGGREGATE_TYPE_P (type)
@@ -34407,6 +34415,9 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	case CODE_FOR_sse2_movntidi:
 	case CODE_FOR_sse_movntq:
 	case CODE_FOR_sse2_movntisi:
+	case CODE_FOR_avx512f_movntv16sf:
+	case CODE_FOR_avx512f_movntv8df:
+	case CODE_FOR_avx512f_movntv8di:
 	  aligned_mem = true;
 	  break;
 	default:
@@ -34431,6 +34442,24 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case VOID_FTYPE_PV8DF_V8DF_QI:
+    case VOID_FTYPE_PV16SF_V16SF_HI:
+    case VOID_FTYPE_PV8DI_V8DI_QI:
+    case VOID_FTYPE_PV16SI_V16SI_HI:
+      switch (icode)
+	{
+	/* These builtins and instructions require the memory
+	   to be properly aligned.  */
+	case CODE_FOR_avx512f_storev16sf_mask:
+	case CODE_FOR_avx512f_storev16si_mask:
+	case CODE_FOR_avx512f_storev8df_mask:
+	case CODE_FOR_avx512f_storev8di_mask:
+	  aligned_mem = true;
+	  break;
+	default:
+	  break;
+	}
+      /* FALLTHRU */
     case VOID_FTYPE_PV8SF_V8SI_V8SF:
     case VOID_FTYPE_PV4DF_V4DI_V4DF:
     case VOID_FTYPE_PV4SF_V4SI_V4SF:
@@ -34439,10 +34468,6 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case VOID_FTYPE_PV4DI_V4DI_V4DI:
     case VOID_FTYPE_PV4SI_V4SI_V4SI:
     case VOID_FTYPE_PV2DI_V2DI_V2DI:
-    case VOID_FTYPE_PV8DF_V8DF_QI:
-    case VOID_FTYPE_PV16SF_V16SF_HI:
-    case VOID_FTYPE_PV8DI_V8DI_QI:
-    case VOID_FTYPE_PV16SI_V16SI_HI:
     case VOID_FTYPE_PDOUBLE_V2DF_QI:
     case VOID_FTYPE_PFLOAT_V4SF_QI:
       nargs = 2;
@@ -34459,6 +34484,19 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       nargs = 3;
       klass = load;
       memory = 0;
+      switch (icode)
+	{
+	/* These builtins and instructions require the memory
+	   to be properly aligned.  */
+	case CODE_FOR_avx512f_loadv16sf_mask:
+	case CODE_FOR_avx512f_loadv16si_mask:
+	case CODE_FOR_avx512f_loadv8df_mask:
+	case CODE_FOR_avx512f_loadv8di_mask:
+	  aligned_mem = true;
+	  break;
+	default:
+	  break;
+	}
       break;
     case VOID_FTYPE_UINT_UINT_UINT:
     case VOID_FTYPE_UINT64_UINT_UINT:

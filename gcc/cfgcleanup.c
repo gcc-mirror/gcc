@@ -1295,7 +1295,6 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
-  rtx p1;
   enum replace_direction dir, last_dir, afterlast_dir;
   bool follow_fallthru, did_fallthru;
 
@@ -1323,8 +1322,9 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
       || (returnjump_p (i2) && !side_effects_p (PATTERN (i2))))
     {
       last2 = i2;
-      /* Count everything except for unconditional jump as insn.  */
-      if (!simplejump_p (i2) && !returnjump_p (i2) && last1)
+      /* Count everything except for unconditional jump as insn.
+	 Don't count any jumps if dir_p is NULL.  */
+      if (!simplejump_p (i2) && !returnjump_p (i2) && last1 && dir_p)
 	ninsns++;
       i2 = PREV_INSN (i2);
     }
@@ -1375,8 +1375,7 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 	  last1 = i1, last2 = i2;
 	  afterlast_dir = last_dir;
 	  last_dir = dir;
-	  p1 = PATTERN (i1);
-	  if (!(GET_CODE (p1) == USE || GET_CODE (p1) == CLOBBER))
+	  if (active_insn_p (i1))
 	    ninsns++;
 	}
 
@@ -1422,7 +1421,8 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx *f1, rtx *f2,
 /* Like flow_find_cross_jump, except start looking for a matching sequence from
    the head of the two blocks.  Do not include jumps at the end.
    If STOP_AFTER is nonzero, stop after finding that many matching
-   instructions.  */
+   instructions.  If STOP_AFTER is zero, count all INSN_P insns, if it is
+   non-zero, only count active insns.  */
 
 int
 flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
@@ -1494,7 +1494,8 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx *f1,
 
 	  beforelast1 = last1, beforelast2 = last2;
 	  last1 = i1, last2 = i2;
-	  ninsns++;
+	  if (!stop_after || active_insn_p (i1))
+	    ninsns++;
 	}
 
       if (i1 == BB_END (bb1) || i2 == BB_END (bb2)

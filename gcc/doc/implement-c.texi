@@ -479,9 +479,8 @@ by the @option{-funsigned-bitfields} option.
 @cite{Allowable bit-field types other than @code{_Bool}, @code{signed int},
 and @code{unsigned int} (C99 and C11 6.7.2.1).}
 
-No other types are permitted in strictly conforming mode.
-@c Would it be better to restrict the pedwarn for other types to C90
-@c mode and document the other types for C99/C11 mode?
+Other integer types, such as @code{long int}, and enumerated types are
+permitted even in strictly conforming mode.
 
 @item
 @cite{Whether atomic types are permitted for bit-fields (C11 6.7.2.1).}

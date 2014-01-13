@@ -284,15 +284,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_atom()
     {
       if (_M_match_token(_ScannerT::_S_token_anychar))
-	_M_stack.push(_StateSeqT(_M_nfa,
-				_M_nfa._M_insert_matcher
-				(_AnyMatcher<_TraitsT>(_M_traits))));
+	{
+	  if (_M_flags & regex_constants::ECMAScript)
+	    _M_stack.push(_StateSeqT(_M_nfa,
+				     _M_nfa._M_insert_matcher
+				     (_AnyMatcher<_TraitsT,
+					true>(_M_traits))));
+	  else
+	    _M_stack.push(_StateSeqT(_M_nfa,
+				     _M_nfa._M_insert_matcher
+				     (_AnyMatcher<_TraitsT,
+					false>(_M_traits))));
+	}
       else if (_M_try_char())
-	_M_stack.push(_StateSeqT(_M_nfa,
-				 _M_nfa._M_insert_matcher
-				 (_CharMatcher<_TraitsT>(_M_value[0],
-								 _M_traits,
-								 _M_flags))));
+	{
+	  if (_M_flags & regex_constants::icase)
+	    _M_stack.push(_StateSeqT(_M_nfa,
+				     _M_nfa._M_insert_matcher
+				     (_CharMatcher<_TraitsT,
+					true>(_M_value[0],
+					      _M_traits))));
+	  else
+	    _M_stack.push(_StateSeqT(_M_nfa,
+				     _M_nfa._M_insert_matcher
+				     (_CharMatcher<_TraitsT,
+					false>(_M_value[0],
+					       _M_traits))));
+	}
       else if (_M_match_token(_ScannerT::_S_token_backref))
 	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
 				 _M_insert_backref(_M_cur_int_value(10))));
@@ -302,6 +320,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _BMatcherT __matcher(_M_ctype.is(_CtypeT::upper, _M_value[0]),
 			       _M_traits, _M_flags);
 	  __matcher._M_add_character_class(_M_value);
+	  __matcher._M_ready();
 	  _M_stack.push(_StateSeqT(_M_nfa,
 		_M_nfa._M_insert_matcher(std::move(__matcher))));
 	}
@@ -341,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _BMatcherT __matcher(__neg, _M_traits, _M_flags);
       while (!_M_match_token(_ScannerT::_S_token_bracket_end))
 	_M_expression_term(__matcher);
+      __matcher._M_ready();
       _M_stack.push(_StateSeqT(_M_nfa,
 			       _M_nfa._M_insert_matcher(std::move(__matcher))));
       return true;
@@ -432,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _TraitsT>
     bool
-    _BracketMatcher<_TraitsT>::operator()(_CharT __ch) const
+    _BracketMatcher<_TraitsT>::_M_apply(_CharT __ch, false_type) const
     {
       bool __ret = false;
       if (_M_traits.isctype(__ch, _M_class_set)

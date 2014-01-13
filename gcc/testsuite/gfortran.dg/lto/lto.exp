@@ -34,16 +34,16 @@ load_lib gfortran-dg.exp
 # Load the language-independent compabibility support procedures.
 load_lib lto.exp
 
+# If LTO has not been enabled, bail.
+if { ![check_effective_target_lto] } {
+    return
+}
+
 lto_init no-mathlib
 
 # Define an identifier for use with this suite to avoid name conflicts
 # with other lto tests running at the same time.
 set sid "f_lto"
-
-# If LTO has not been enabled, bail.
-if { ![check_effective_target_lto] } {
-    return
-}
 
 # Main loop.
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*_0.\[fF\]{,90,95,03,08} ]] {

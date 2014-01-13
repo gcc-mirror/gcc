@@ -1318,7 +1318,7 @@ BU_P8V_AV_2 (VMRGOW,		"vmrgow",	CONST,	p8_vmrgow)
 BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
 BU_P8V_AV_2 (VPKSDSS,		"vpksdss",	CONST,	altivec_vpksdss)
 BU_P8V_AV_2 (VPKUDUS,		"vpkudus",	CONST,	altivec_vpkudus)
-BU_P8V_AV_2 (VPKSDUS,		"vpksdus",	CONST,	altivec_vpkswus)
+BU_P8V_AV_2 (VPKSDUS,		"vpksdus",	CONST,	altivec_vpksdus)
 BU_P8V_AV_2 (VRLD,		"vrld",		CONST,	vrotlv2di3)
 BU_P8V_AV_2 (VSLD,		"vsld",		CONST,	vashlv2di3)
 BU_P8V_AV_2 (VSRD,		"vsrd",		CONST,	vlshrv2di3)
@@ -1751,6 +1751,14 @@ BU_SPECIAL_X (RS6000_BUILTIN_GET_TB, "__builtin_ppc_get_timebase",
 
 BU_SPECIAL_X (RS6000_BUILTIN_MFTB, "__builtin_ppc_mftb",
 	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
+BU_SPECIAL_X (RS6000_BUILTIN_MFFS, "__builtin_mffs",
+	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+
+RS6000_BUILTIN_X (RS6000_BUILTIN_MTFSF, "__builtin_mtfsf",
+	          RS6000_BTM_ALWAYS,
+	          RS6000_BTC_MISC | RS6000_BTC_UNARY | RS6000_BTC_VOID,
+		  CODE_FOR_rs6000_mtfsf)
 
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
