@@ -70,3 +70,16 @@
 		  (match_test ("IN_RANGE (INTVAL (XEXP (XEXP (op, 0), 1)), -1 << 15, (1 << 15)-1)"))))
 	(match_code "reg" "0")
 	)))
+
+(define_constraint "Yc"
+  "Memory reference, for CALL - we can't use SP"
+  (and (match_code "mem")
+       (match_code "mem" "0")
+       (not (ior
+	     (and (match_code "plus" "00")
+		  (and (match_code "reg" "000")
+		       (match_test ("REGNO (XEXP (XEXP (op, 0), 0)) != SP_REGNO"))))
+	     (and (match_code "reg" "0")
+		  (match_test ("REGNO (XEXP (XEXP (op, 0), 0)) != SP_REGNO")))
+	     ))))
+

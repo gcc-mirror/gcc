@@ -1920,6 +1920,7 @@ msp430_print_operand_addr (FILE * file, rtx addr)
    D   bits 48-63 of a 64-bit value/reg 4 of a DImode value
    H   like %B (for backwards compatibility)
    I   inverse of value
+   J   an integer without a # prefix
    L   like %A (for backwards compatibility)
    O   offset of the top of the stack
    Q   like X but generates an A postfix
@@ -1950,7 +1951,6 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       /* Print the constant value, less four.  */
       fprintf (file, "#%ld", INTVAL (op) - 4);
       return;
-      /* case 'D': used for "decimal without '#'" */
     case 'I':
       if (GET_CODE (op) == CONST_INT)
 	{
@@ -2110,6 +2110,8 @@ msp430_print_operand (FILE * file, rtx op, int letter)
 	        - 2);
       return;
 
+    case 'J':
+      gcc_assert (GET_CODE (op) == CONST_INT);
     case 0:
       break;
     default:
