@@ -49,6 +49,11 @@ namespace __debug
       typedef typename _Base::const_iterator _Base_const_iterator;
       typedef typename _Base::iterator _Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+#if __cplusplus >= 201103L
+      typedef __gnu_cxx::__alloc_traits<typename
+					_Base::allocator_type> _Alloc_traits;
+#endif
     public:
       // types:
       typedef _Key                                  key_type;
@@ -101,6 +106,27 @@ namespace __debug
 	  const _Compare& __c = _Compare(),
 	  const allocator_type& __a = allocator_type())
       : _Base(__l, __c, __a) { }
+
+      explicit
+      map(const allocator_type& __a)
+      : _Base(__a) { }
+
+      map(const map& __m, const allocator_type& __a)
+      : _Base(__m, __a) { }
+
+      map(map&& __m, const allocator_type& __a)
+      : _Base(std::move(__m._M_base()), __a) { }
+
+      map(initializer_list<value_type> __l, const allocator_type& __a)
+      : _Base(__l, __a) { }
+
+      template<typename _InputIterator>
+        map(_InputIterator __first, _InputIterator __last,
+	    const allocator_type& __a)
+	  : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								       __last)),
+		  __gnu_debug::__base(__last), __a)
+	{ }
 #endif
 
       ~map() _GLIBCXX_NOEXCEPT { }
@@ -108,7 +134,7 @@ namespace __debug
       map&
       operator=(const map& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x;
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -116,20 +142,25 @@ namespace __debug
 #if __cplusplus >= 201103L
       map&
       operator=(map&& __x)
+      noexcept(_Alloc_traits::_S_nothrow_move())
       {
-	// NB: DR 1204.
-	// NB: DR 675.
 	__glibcxx_check_self_move_assign(__x);
-	clear();
-	swap(__x);
+	bool xfer_memory = _Alloc_traits::_S_propagate_on_move_assign()
+	    || __x.get_allocator() == this->get_allocator();
+	_M_base() = std::move(__x._M_base());
+	if (xfer_memory)
+	  this->_M_swap(__x);
+	else
+	  this->_M_invalidate_all();
+	__x._M_invalidate_all();
 	return *this;
       }
 
       map&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
+	this->_M_invalidate_all();
 	return *this;
       }
 #endif
@@ -360,7 +391,14 @@ namespace __debug
 
       void
       swap(map& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       {
+#if __cplusplus >= 201103L
+	if (!_Alloc_traits::_S_propagate_on_swap())
+	  __glibcxx_check_equal_allocs(__x);
+#endif
 	_Base::swap(__x);
 	this->_M_swap(__x);
       }
