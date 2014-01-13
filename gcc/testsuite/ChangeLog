@@ -1,3 +1,8 @@
+2014-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization17.adb: New test.
+	* gnat.dg/loop_optimization17_pkg.ad[sb]: New helper.
+
 2014-01-13  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/sh/cmpstrn.c: New case.

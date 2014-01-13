@@ -1,7 +1,12 @@
+2014-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.c (get_object_alignment_2): Minor tweak.
+	* tree-ssa-loop-ivopts.c (may_be_unaligned_p): Rewrite.
+
 2014-01-13  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Unroll small sizes and
-	  optimized non constant lengths.
+	optimized non constant lengths.
 
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
