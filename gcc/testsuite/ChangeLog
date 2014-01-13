@@ -1,3 +1,8 @@
+2014-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59387
+	* gcc.c-torture/execute/pr59387.c: New test.
+
 2014-01-13  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/lto/lto.exp: Do check_effective_target_lto check before

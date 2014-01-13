@@ -1,3 +1,22 @@
+2014-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59387
+	* tree-scalar-evolution.c: Include gimple-fold.h and gimplify-me.h.
+	(scev_const_prop): If folded_casts and type has undefined overflow,
+	use force_gimple_operand instead of force_gimple_operand_gsi and
+	for each added stmt if it is assign with
+	arith_code_with_undefined_signed_overflow, call
+	rewrite_to_defined_overflow.
+	* tree-ssa-loop-im.c: Don't include gimplify-me.h, include
+	gimple-fold.h instead.
+	(arith_code_with_undefined_signed_overflow,
+	rewrite_to_defined_overflow): Moved to ...
+	* gimple-fold.c (arith_code_with_undefined_signed_overflow,
+	rewrite_to_defined_overflow): ... here.  No longer static.
+	Include gimplify-me.h.
+	* gimple-fold.h (arith_code_with_undefined_signed_overflow,
+	rewrite_to_defined_overflow): New prototypes.
+
 2014-01-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.h (MAX_CONDITIONAL_EXECUTE): Fix typo in description.
