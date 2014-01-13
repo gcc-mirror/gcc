@@ -1,3 +1,9 @@
+2014-01-13  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/lto/lto.exp: Do check_effective_target_lto check before
+	adjusting mathlib options.
+	* gfortran.dg/lto/lto.exp: Likewise.
+
 2014-01-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization17.adb: New test.
