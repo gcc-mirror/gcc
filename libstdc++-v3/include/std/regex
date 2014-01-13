@@ -56,11 +56,11 @@
 
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>
-#include <bits/regex_scanner.h>
 #include <bits/regex_automaton.h>
+#include <bits/regex.h>
+#include <bits/regex_scanner.h>
 #include <bits/regex_compiler.h>
 #include <bits/regex_executor.h>
-#include <bits/regex.h>
 
 #endif // C++11
 

@@ -1,11 +1,18 @@
-AM_CPPFLAGS = -I $(top_srcdir)/include 
- 
+AM_CPPFLAGS = -I $(top_srcdir)/include -isystem $(top_srcdir)/include/system
+
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS 
 AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long-long  -fPIC -fno-builtin -fno-exceptions -fno-rtti -fomit-frame-pointer -funwind-tables -fvisibility=hidden -Wno-variadic-macros
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
+if LIBBACKTRACE_SUPPORTED
+AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
+	       -I $(top_srcdir)/../libbacktrace \
+	       -I $(top_builddir)/libbacktrace \
+	       -I $(top_srcdir)/../include \
+	       -include $(top_srcdir)/libbacktrace/backtrace-rename.h
+endif
 ACLOCAL_AMFLAGS = -I m4
 
 noinst_LTLIBRARIES = libsanitizer_common.la

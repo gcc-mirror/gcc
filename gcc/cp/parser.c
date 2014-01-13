@@ -5803,7 +5803,13 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	postfix_expression = 
 	  cp_parser_postfix_expression (parser, false, false, 
 					false, false, &idk);
-	if (saved_in_statement & IN_CILK_SPAWN)
+	if (!flag_enable_cilkplus)
+	  {
+	    error_at (token->location, "-fcilkplus must be enabled to use"
+		      " %<_Cilk_spawn%>");
+	    cfun->calls_cilk_spawn = 0;
+	  }
+	else if (saved_in_statement & IN_CILK_SPAWN)
 	  {
 	    error_at (token->location, "consecutive %<_Cilk_spawn%> keywords "
 		      "are not permitted");
@@ -5830,8 +5836,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  finish_expr_stmt (sync_expr);
 	}
       else
-	error_at (input_location, "_Cilk_sync cannot be used without enabling "
-		  "Cilk Plus");
+	error_at (token->location, "-fcilkplus must be enabled to use" 
+		  " %<_Cilk_sync%>");
       cp_lexer_consume_token (parser->lexer);
       break;
 
@@ -8738,6 +8744,8 @@ cp_parser_lambda_expression (cp_parser* parser)
         = parser->fully_implicit_function_template_p;
     tree implicit_template_parms = parser->implicit_template_parms;
     cp_binding_level* implicit_template_scope = parser->implicit_template_scope;
+    bool auto_is_implicit_function_template_parm_p
+        = parser->auto_is_implicit_function_template_parm_p;
 
     parser->num_template_parameter_lists = 0;
     parser->in_statement = 0;
@@ -8745,6 +8753,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->fully_implicit_function_template_p = false;
     parser->implicit_template_parms = 0;
     parser->implicit_template_scope = 0;
+    parser->auto_is_implicit_function_template_parm_p = false;
 
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
@@ -8772,6 +8781,8 @@ cp_parser_lambda_expression (cp_parser* parser)
 	= fully_implicit_function_template_p;
     parser->implicit_template_parms = implicit_template_parms;
     parser->implicit_template_scope = implicit_template_scope;
+    parser->auto_is_implicit_function_template_parm_p
+	= auto_is_implicit_function_template_parm_p;
   }
 
   pop_deferring_access_checks ();
@@ -12977,20 +12988,21 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
      = cp_parser_parameter_declaration (parser, /*template_parm_p=*/true,
 					/*parenthesized_p=*/NULL);
 
+  if (!parameter_declarator)
+    return error_mark_node;
+
   /* If the parameter declaration is marked as a parameter pack, set
      *IS_PARAMETER_PACK to notify the caller. Also, unmark the
      declarator's PACK_EXPANSION_P, otherwise we'll get errors from
      grokdeclarator. */
-  if (parameter_declarator
-      && parameter_declarator->declarator
+  if (parameter_declarator->declarator
       && parameter_declarator->declarator->parameter_pack_p)
     {
       *is_parameter_pack = true;
       parameter_declarator->declarator->parameter_pack_p = false;
     }
 
-  if (parameter_declarator
-      && parameter_declarator->default_argument)
+  if (parameter_declarator->default_argument)
     {
       /* Can happen in some cases of erroneous input (c++/34892).  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -13014,8 +13026,7 @@ cp_parser_template_parameter (cp_parser* parser, bool *is_non_type,
   /* We might end up with a pack expansion as the type of the non-type
      template parameter, in which case this is a non-type template
      parameter pack.  */
-  else if (parameter_declarator
-	   && parameter_declarator->decl_specifiers.type
+  else if (parameter_declarator->decl_specifiers.type
 	   && PACK_EXPANSION_P (parameter_declarator->decl_specifiers.type))
     {
       *is_parameter_pack = true;
@@ -16774,6 +16785,15 @@ cp_parser_init_declarator (cp_parser* parser,
     if (cp_parser_attributes_opt (parser))
       warning (OPT_Wattributes,
 	       "attributes after parenthesized initializer ignored");
+
+  /* A non-template declaration involving a function parameter list containing
+     an implicit template parameter will have been made into a template.  If it
+     turns out that the resulting declaration is not an actual function then
+     finish the template declaration here.  An error message will already have
+     been issued.  */
+  if (parser->fully_implicit_function_template_p)
+    if (!function_declarator_p (declarator))
+      finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
 
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */

@@ -1,3 +1,10 @@
+2014-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/59772
+	* gcc-interface/cuintp.c (build_cst_from_int): Use 32-bit integer type
+	as intermediate type.
+	(UI_To_gnu): Likewise.
+
 2014-01-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.ads (Current_Year): Bump to 2014.

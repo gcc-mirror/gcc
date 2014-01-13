@@ -879,8 +879,6 @@ gimple_fold_builtin (gimple stmt)
   int nargs;
   location_t loc = gimple_location (stmt);
 
-  gcc_assert (is_gimple_call (stmt));
-
   ignore = (gimple_call_lhs (stmt) == NULL);
 
   /* First try the generic builtin folder.  If that succeeds, return the
@@ -890,6 +888,8 @@ gimple_fold_builtin (gimple stmt)
     {
       if (ignore)
 	STRIP_NOPS (result);
+      else
+	result = fold_convert (gimple_call_return_type (stmt), result);
       return result;
     }
 
@@ -1167,7 +1167,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
                                                  (OBJ_TYPE_REF_EXPR (callee)))))
 	    {
 	      fprintf (dump_file,
-		       "Type inheritnace inconsistent devirtualization of ");
+		       "Type inheritance inconsistent devirtualization of ");
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, " to ");
 	      print_generic_expr (dump_file, callee, TDF_SLIM);
@@ -1177,24 +1177,45 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
-      else if (flag_devirtualize && virtual_method_call_p (callee))
+      else if (flag_devirtualize && !inplace && virtual_method_call_p (callee))
 	{
 	  bool final;
 	  vec <cgraph_node *>targets
 	    = possible_polymorphic_call_targets (callee, &final);
 	  if (final && targets.length () <= 1)
 	    {
+	      tree lhs = gimple_call_lhs (stmt);
 	      if (targets.length () == 1)
 		{
 		  gimple_call_set_fndecl (stmt, targets[0]->decl);
 		  changed = true;
+		  /* If the call becomes noreturn, remove the lhs.  */
+		  if (lhs && (gimple_call_flags (stmt) & ECF_NORETURN))
+		    {
+		      if (TREE_CODE (lhs) == SSA_NAME)
+			{
+			  tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+			  tree def = get_or_create_ssa_default_def (cfun, var);
+			  gimple new_stmt = gimple_build_assign (lhs, def);
+			  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+			}
+		      gimple_call_set_lhs (stmt, NULL_TREE);
+		    }
 		}
-	      else if (!inplace)
+	      else
 		{
 		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  gimple new_stmt = gimple_build_call (fndecl, 0);
 		  gimple_set_location (new_stmt, gimple_location (stmt));
-		  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+		    {
+		      tree var = create_tmp_var (TREE_TYPE (lhs), NULL);
+		      tree def = get_or_create_ssa_default_def (cfun, var);
+		      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+		      update_call_from_tree (gsi, def);
+		    }
+		  else
+		    gsi_replace (gsi, new_stmt, true);
 		  return true;
 		}
 	    }
@@ -1206,8 +1227,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 
   /* Check for builtins that CCP can handle using information not
      available in the generic fold routines.  */
-  callee = gimple_call_fndecl (stmt);
-  if (callee && DECL_BUILT_IN (callee))
+  if (gimple_call_builtin_p (stmt))
     {
       tree result = gimple_fold_builtin (stmt);
       if (result)
@@ -1216,7 +1236,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	    gimplify_and_update_call_from_tree (gsi, result);
 	  changed = true;
 	}
-      else if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_MD)
+      else if (gimple_call_builtin_p (stmt, BUILT_IN_MD))
 	changed |= targetm.gimple_fold_builtin (gsi);
     }
 
@@ -2726,7 +2746,9 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 	fn = (*valueize) (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR
 	    && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
-	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
+	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0))
+	    && gimple_builtin_call_types_compatible_p (stmt,
+						       TREE_OPERAND (fn, 0)))
 	  {
 	    tree *args = XALLOCAVEC (tree, gimple_call_num_args (stmt));
 	    tree call, retval;
@@ -2738,8 +2760,11 @@ gimple_fold_stmt_to_constant_1 (gimple stmt, tree (*valueize) (tree))
 					 fn, gimple_call_num_args (stmt), args);
 	    retval = fold_call_expr (EXPR_LOCATION (call), call, false);
 	    if (retval)
-	      /* fold_call_expr wraps the result inside a NOP_EXPR.  */
-	      STRIP_NOPS (retval);
+	      {
+		/* fold_call_expr wraps the result inside a NOP_EXPR.  */
+		STRIP_NOPS (retval);
+		retval = fold_convert (gimple_call_return_type (stmt), retval);
+	      }
 	    return retval;
 	  }
 	return NULL_TREE;

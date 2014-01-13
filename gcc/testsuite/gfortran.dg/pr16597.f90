@@ -19,7 +19,7 @@
       open (UNIT=iunit,FORM='unformatted',ACCESS='direct',RECL=strlen)
       write (iunit, rec=1) 'ABCD'
       read (iunit, rec=1) string
-      close (iunit)
+      close (iunit, status = 'delete')
       if (string.ne.'ABCD') call abort
 
       open (UNIT=iunit,FORM='unformatted',ACCESS='direct',STATUS='scratch',RECL=strlen)

@@ -1340,13 +1340,19 @@ struct abi_tag_data
 {
   tree t;
   tree subob;
+  // error_mark_node to get diagnostics; otherwise collect missing tags here
+  tree tags;
 };
 
 static tree
-find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
+find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 {
   if (!OVERLOAD_TYPE_P (*tp))
     return NULL_TREE;
+
+  /* walk_tree shouldn't be walking into any subtrees of a RECORD_TYPE
+     anyway, but let's make sure of it.  */
+  *walk_subtrees = false;
 
   if (tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (*tp)))
     {
@@ -1358,7 +1364,20 @@ find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
 	  tree id = get_identifier (TREE_STRING_POINTER (tag));
 	  if (!IDENTIFIER_MARKED (id))
 	    {
-	      if (TYPE_P (p->subob))
+	      if (p->tags != error_mark_node)
+		{
+		  /* We're collecting tags from template arguments.  */
+		  tree str = build_string (IDENTIFIER_LENGTH (id),
+					   IDENTIFIER_POINTER (id));
+		  p->tags = tree_cons (NULL_TREE, str, p->tags);
+		  ABI_TAG_IMPLICIT (p->tags) = true;
+
+		  /* Don't inherit this tag multiple times.  */
+		  IDENTIFIER_MARKED (id) = true;
+		}
+
+	      /* Otherwise we're diagnosing missing tags.  */
+	      else if (TYPE_P (p->subob))
 		{
 		  warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
 			   "that base %qT has", p->t, tag, p->subob);
@@ -1397,22 +1416,6 @@ mark_type_abi_tags (tree t, bool val)
 	  IDENTIFIER_MARKED (id) = val;
 	}
     }
-
-  /* Also mark ABI tags from template arguments.  */
-  if (CLASSTYPE_TEMPLATE_INFO (t))
-    {
-      tree args = CLASSTYPE_TI_ARGS (t);
-      for (int i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
-	{
-	  tree level = TMPL_ARGS_LEVEL (args, i+1);
-	  for (int j = 0; j < TREE_VEC_LENGTH (level); ++j)
-	    {
-	      tree arg = TREE_VEC_ELT (level, j);
-	      if (CLASS_TYPE_P (arg))
-		mark_type_abi_tags (arg, val);
-	    }
-	}
-    }
 }
 
 /* Check that class T has all the abi tags that subobject SUBOB has, or
@@ -1424,9 +1427,46 @@ check_abi_tags (tree t, tree subob)
   mark_type_abi_tags (t, true);
 
   tree subtype = TYPE_P (subob) ? subob : TREE_TYPE (subob);
-  struct abi_tag_data data = { t, subob };
+  struct abi_tag_data data = { t, subob, error_mark_node };
 
   cp_walk_tree_without_duplicates (&subtype, find_abi_tags_r, &data);
+
+  mark_type_abi_tags (t, false);
+}
+
+void
+inherit_targ_abi_tags (tree t)
+{
+  if (CLASSTYPE_TEMPLATE_INFO (t) == NULL_TREE)
+    return;
+
+  mark_type_abi_tags (t, true);
+
+  tree args = CLASSTYPE_TI_ARGS (t);
+  struct abi_tag_data data = { t, NULL_TREE, NULL_TREE };
+  for (int i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
+    {
+      tree level = TMPL_ARGS_LEVEL (args, i+1);
+      for (int j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	{
+	  tree arg = TREE_VEC_ELT (level, j);
+	  data.subob = arg;
+	  cp_walk_tree_without_duplicates (&arg, find_abi_tags_r, &data);
+	}
+    }
+
+  // If we found some tags on our template arguments, add them to our
+  // abi_tag attribute.
+  if (data.tags)
+    {
+      tree attr = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (t));
+      if (attr)
+	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
+      else
+	TYPE_ATTRIBUTES (t)
+	  = tree_cons (get_identifier ("abi_tag"), data.tags,
+		       TYPE_ATTRIBUTES (t));
+    }
 
   mark_type_abi_tags (t, false);
 }
@@ -5430,6 +5470,9 @@ check_bases_and_members (tree t)
   bool saved_complex_asn_ref;
   bool saved_nontrivial_dtor;
   tree fn;
+
+  /* Pick up any abi_tags from our template arguments before checking.  */
+  inherit_targ_abi_tags (t);
 
   /* By default, we use const reference arguments and generate default
      constructors.  */

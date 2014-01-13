@@ -2127,8 +2127,11 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 	      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, ddef)
 		if (!is_gimple_call (USE_STMT (use_p)))
 		  {
-		    controlled_uses = IPA_UNDESCRIBED_USE;
-		    break;
+		    if (!is_gimple_debug (USE_STMT (use_p)))
+		      {
+			controlled_uses = IPA_UNDESCRIBED_USE;
+			break;
+		      }
 		  }
 		else
 		  controlled_uses++;
@@ -3326,6 +3329,7 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
     {
       int c;
 
+      fprintf (f, "    ");
       ipa_dump_param (f, info, i);
       if (ipa_is_param_used (info, i))
 	fprintf (f, " used");

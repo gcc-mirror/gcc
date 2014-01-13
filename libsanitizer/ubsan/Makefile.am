@@ -22,6 +22,9 @@ libubsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 if !USING_MAC_INTERPOSE
 libubsan_la_LIBADD += $(top_builddir)/interception/libinterception.la
 endif
+if LIBBACKTRACE_SUPPORTED
+libubsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+endif
 libubsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libubsan)
 

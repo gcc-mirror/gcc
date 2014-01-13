@@ -1049,7 +1049,37 @@ DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
 	  "strength reduction",
 	  50, 1, 999999)
 
+DEFPARAM (PARAM_ASAN_STACK,
+         "asan-stack",
+         "Enable asan stack protection",
+         1, 0, 1)
+
+DEFPARAM (PARAM_ASAN_GLOBALS,
+         "asan-globals",
+         "Enable asan globals protection",
+         1, 0, 1)
+
+DEFPARAM (PARAM_ASAN_INSTRUMENT_WRITES,
+         "asan-instrument-writes",
+         "Enable asan store operations protection",
+         1, 0, 1)
+
+DEFPARAM (PARAM_ASAN_INSTRUMENT_READS,
+         "asan-instrument-reads",
+         "Enable asan load operations protection",
+         1, 0, 1)
+
+DEFPARAM (PARAM_ASAN_MEMINTRIN,
+         "asan-memintrin",
+         "Enable asan builtin functions protection",
+         1, 0, 1)
+
+DEFPARAM (PARAM_ASAN_USE_AFTER_RETURN,
+         "asan-use-after-return",
+         "Enable asan builtin functions protection",
+         1, 0, 1)
 /*
+
 Local variables:
 mode:c
 End:

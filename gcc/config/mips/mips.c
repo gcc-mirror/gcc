@@ -3634,17 +3634,6 @@ mips_set_reg_reg_cost (enum machine_mode mode)
     }
 }
 
-/* Return the cost of an operand X that can be trucated for free.
-   SPEED says whether we're optimizing for size or speed.  */
-
-static int
-mips_truncated_op_cost (rtx x, bool speed)
-{
-  if (GET_CODE (x) == TRUNCATE)
-    x = XEXP (x, 0);
-  return set_src_cost (x, speed);
-}
-
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -4037,13 +4026,12 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case ZERO_EXTEND:
       if (outer_code == SET
 	  && ISA_HAS_BADDU
+	  && (GET_CODE (XEXP (x, 0)) == TRUNCATE
+	      || GET_CODE (XEXP (x, 0)) == SUBREG)
 	  && GET_MODE (XEXP (x, 0)) == QImode
-	  && GET_CODE (XEXP (x, 0)) == PLUS)
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS)
 	{
-	  rtx plus = XEXP (x, 0);
-	  *total = (COSTS_N_INSNS (1)
-		    + mips_truncated_op_cost (XEXP (plus, 0), speed)
-		    + mips_truncated_op_cost (XEXP (plus, 1), speed));
+	  *total = set_src_cost (XEXP (XEXP (x, 0), 0), speed);
 	  return true;
 	}
       *total = mips_zero_extend_cost (mode, XEXP (x, 0));

@@ -118,10 +118,15 @@ runtime_netpollclose(uintptr fd)
 	return 0;
 }
 
+/* Used to avoid using too much stack memory.  */
+static bool inuse;
+static fd_set grfds, gwfds, gefds, gtfds;
+
 G*
 runtime_netpoll(bool block)
 {
-	fd_set rfds, wfds, efds, tfds;
+	fd_set *prfds, *pwfds, *pefds, *ptfds;
+	bool allocatedfds;
 	struct timeval timeout;
 	struct timeval *pt;
 	int max, c, i;
@@ -140,37 +145,52 @@ runtime_netpoll(bool block)
 		return nil;
 	}
 
-	__builtin_memcpy(&rfds, &fds, sizeof fds);
+	if(inuse) {
+		prfds = runtime_SysAlloc(4 * sizeof fds, &mstats.other_sys);
+		pwfds = prfds + 1;
+		pefds = pwfds + 1;
+		ptfds = pefds + 1;
+		allocatedfds = true;
+	} else {
+		prfds = &grfds;
+		pwfds = &gwfds;
+		pefds = &gefds;
+		ptfds = &gtfds;
+		inuse = true;
+		allocatedfds = false;
+	}
+
+	__builtin_memcpy(prfds, &fds, sizeof fds);
 
 	runtime_unlock(&selectlock);
 
-	__builtin_memcpy(&wfds, &rfds, sizeof fds);
-	FD_CLR(rdwake, &wfds);
-	__builtin_memcpy(&efds, &wfds, sizeof fds);
+	__builtin_memcpy(pwfds, prfds, sizeof fds);
+	FD_CLR(rdwake, pwfds);
+	__builtin_memcpy(pefds, pwfds, sizeof fds);
 
-	__builtin_memcpy(&tfds, &wfds, sizeof fds);
+	__builtin_memcpy(ptfds, pwfds, sizeof fds);
 
 	__builtin_memset(&timeout, 0, sizeof timeout);
 	pt = &timeout;
 	if(block)
 		pt = nil;
 
-	c = select(max, &rfds, &wfds, &efds, pt);
+	c = select(max, prfds, pwfds, pefds, pt);
 	if(c < 0) {
 		if(errno == EBADF) {
 			// Some file descriptor has been closed.
 			// Check each one, and treat each closed
 			// descriptor as ready for read/write.
 			c = 0;
-			FD_ZERO(&rfds);
-			FD_ZERO(&wfds);
-			FD_ZERO(&efds);
+			FD_ZERO(prfds);
+			FD_ZERO(pwfds);
+			FD_ZERO(pefds);
 			for(i = 0; i < max; i++) {
-				if(FD_ISSET(i, &tfds)
+				if(FD_ISSET(i, ptfds)
 				   && fstat(i, &st) < 0
 				   && errno == EBADF) {
-					FD_SET(i, &rfds);
-					FD_SET(i, &wfds);
+					FD_SET(i, prfds);
+					FD_SET(i, pwfds);
 					c += 2;
 				}
 			}
@@ -184,15 +204,15 @@ runtime_netpoll(bool block)
 	gp = nil;
 	for(i = 0; i < max && c > 0; i++) {
 		mode = 0;
-		if(FD_ISSET(i, &rfds)) {
+		if(FD_ISSET(i, prfds)) {
 			mode += 'r';
 			--c;
 		}
-		if(FD_ISSET(i, &wfds)) {
+		if(FD_ISSET(i, pwfds)) {
 			mode += 'w';
 			--c;
 		}
-		if(FD_ISSET(i, &efds)) {
+		if(FD_ISSET(i, pefds)) {
 			mode = 'r' + 'w';
 			--c;
 		}
@@ -213,6 +233,15 @@ runtime_netpoll(bool block)
 	}
 	if(block && gp == nil)
 		goto retry;
+
+	if(allocatedfds) {
+		runtime_SysFree(prfds, 4 * sizeof fds, &mstats.other_sys);
+	} else {
+		runtime_lock(&selectlock);
+		inuse = false;
+		runtime_unlock(&selectlock);
+	}
+
 	return gp;
 }
 

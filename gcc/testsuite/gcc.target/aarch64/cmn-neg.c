@@ -6,7 +6,7 @@ extern void abort (void);
 void __attribute__ ((noinline))
 foo_s32 (int a, int b)
 {
-  if (a < -b)
+  if (a == -b)
     abort ();
 }
 /* { dg-final { scan-assembler "cmn\tw\[0-9\]" } } */
@@ -14,7 +14,7 @@ foo_s32 (int a, int b)
 void __attribute__ ((noinline))
 foo_s64 (long long a, long long b)
 {
-  if (a < -b)
+  if (a == -b)
     abort ();
 }
 /* { dg-final { scan-assembler "cmn\tx\[0-9\]" } } */

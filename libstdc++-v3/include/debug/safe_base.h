@@ -192,6 +192,12 @@ namespace __gnu_debug
     : _M_iterators(0), _M_const_iterators(0), _M_version(1)
     { }
 
+#if __cplusplus >= 201103L
+    _Safe_sequence_base(_Safe_sequence_base&& __x) noexcept
+      : _Safe_sequence_base()
+    { _M_swap(__x); }
+#endif
+
     /** Notify all iterators that reference this sequence that the
 	sequence is being destroyed. */
     ~_Safe_sequence_base()

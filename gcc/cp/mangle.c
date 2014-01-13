@@ -1338,6 +1338,8 @@ write_abi_tags (tree tags)
 
   for (tree t = tags; t; t = TREE_CHAIN (t))
     {
+      if (ABI_TAG_IMPLICIT (t))
+	continue;
       tree str = TREE_VALUE (t);
       vec_safe_push (vec, str);
     }
@@ -3775,7 +3777,8 @@ mangle_conv_op_name_for_type (const tree type)
 static void
 write_guarded_var_name (const tree variable)
 {
-  if (strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
+  if (DECL_NAME (variable)
+      && strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
     /* The name of a guard variable for a reference temporary should refer
        to the reference, not the temporary.  */
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);

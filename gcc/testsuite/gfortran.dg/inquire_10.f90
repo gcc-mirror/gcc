@@ -10,6 +10,8 @@
   inquire(file=trim(cwd) // '/cseq',number=unit)
   if (unit /= 23) call abort
 
+  close(unit=23, status = 'delete')
+
   inquire(file='foo/../cseq2',number=unit)
   if (unit >= 0) call abort
   inquire(file='cseq2',number=unit)

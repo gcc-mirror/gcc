@@ -5930,6 +5930,13 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
   if (type != MO_VAL_SET)
     goto log_and_return;
 
+  v = find_use_val (oloc, mode, cui);
+
+  if (!v)
+    goto log_and_return;
+
+  resolve = preserve = !cselib_preserved_value_p (v);
+
   /* We cannot track values for multiple-part variables, so we track only
      locations for tracked parameters passed either by invisible reference
      or directly in multiple locations.  */
@@ -5943,14 +5950,15 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	   && XEXP (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) != arg_pointer_rtx)
           || (GET_CODE (DECL_INCOMING_RTL (REG_EXPR (loc))) == PARALLEL
 	      && XVECLEN (DECL_INCOMING_RTL (REG_EXPR (loc)), 0) > 1)))
-    goto log_and_return;
-
-  v = find_use_val (oloc, mode, cui);
-
-  if (!v)
-    goto log_and_return;
-
-  resolve = preserve = !cselib_preserved_value_p (v);
+    {
+      /* Although we don't use the value here, it could be used later by the
+	 mere virtue of its existence as the operand of the reverse operation
+	 that gave rise to it (typically extension/truncation).  Make sure it
+	 is preserved as required by vt_expand_var_loc_chain.  */
+      if (preserve)
+	preserve_value (v);
+      goto log_and_return;
+    }
 
   if (loc == stack_pointer_rtx
       && hard_frame_pointer_adjustment != -1

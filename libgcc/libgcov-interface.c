@@ -23,19 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "tconfig.h"
-#include "tsystem.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "libgcc_tm.h"
+#include "libgcov.h"
 #include "gthr.h"
-
-#if defined(inhibit_libc)
-#define IN_LIBGCOV (-1)
-#else
-#define IN_LIBGCOV 1
-#endif
-#include "gcov-io.h"
 
 #if defined(inhibit_libc)
 

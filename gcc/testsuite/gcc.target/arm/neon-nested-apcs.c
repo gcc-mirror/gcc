@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_neon_hw } */
-/* { dg-options "-fno-omit-frame-pointer -mapcs-frame -O -mfloat-abi=softfp -mfpu=neon" } */
+/* { dg-options "-fno-omit-frame-pointer -mapcs-frame -O" }
+/* { dg-add-options arm_neon } */
 
 extern void abort (void);
 

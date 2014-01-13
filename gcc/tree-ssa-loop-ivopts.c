@@ -5733,18 +5733,20 @@ iv_ca_extend (struct ivopts_data *data, struct iv_ca *ivs,
 }
 
 /* Try narrowing set IVS by removing CAND.  Return the cost of
-   the new set and store the differences in DELTA.  */
+   the new set and store the differences in DELTA.  START is
+   the candidate with which we start narrowing.  */
 
 static comp_cost
 iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
-	      struct iv_cand *cand, struct iv_ca_delta **delta)
+	      struct iv_cand *cand, struct iv_cand *start,
+	      struct iv_ca_delta **delta)
 {
   unsigned i, ci;
   struct iv_use *use;
   struct cost_pair *old_cp, *new_cp, *cp;
   bitmap_iterator bi;
   struct iv_cand *cnd;
-  comp_cost cost;
+  comp_cost cost, best_cost, acost;
 
   *delta = NULL;
   for (i = 0; i < n_iv_uses (data); i++)
@@ -5755,13 +5757,15 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
       if (old_cp->cand != cand)
 	continue;
 
-      new_cp = NULL;
+      best_cost = iv_ca_cost (ivs);
+      /* Start narrowing with START.  */
+      new_cp = get_use_iv_cost (data, use, start);
 
       if (data->consider_all_candidates)
 	{
 	  EXECUTE_IF_SET_IN_BITMAP (ivs->cands, 0, ci, bi)
 	    {
-	      if (ci == cand->id)
+	      if (ci == cand->id || (start && ci == start->id))
 		continue;
 
 	      cnd = iv_cand (data, ci);
@@ -5770,20 +5774,21 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	      if (!cp)
 		continue;
 
-	      if (!iv_ca_has_deps (ivs, cp))
-                continue; 
+	      iv_ca_set_cp (data, ivs, use, cp);
+	      acost = iv_ca_cost (ivs);
 
-	      if (!cheaper_cost_pair (cp, new_cp))
-		continue;
-
-	      new_cp = cp;
+	      if (compare_costs (acost, best_cost) < 0)
+		{
+		  best_cost = acost;
+		  new_cp = cp;
+		}
 	    }
 	}
       else
 	{
 	  EXECUTE_IF_AND_IN_BITMAP (use->related_cands, ivs->cands, 0, ci, bi)
 	    {
-	      if (ci == cand->id)
+	      if (ci == cand->id || (start && ci == start->id))
 		continue;
 
 	      cnd = iv_cand (data, ci);
@@ -5791,15 +5796,19 @@ iv_ca_narrow (struct ivopts_data *data, struct iv_ca *ivs,
 	      cp = get_use_iv_cost (data, use, cnd);
 	      if (!cp)
 		continue;
-	      if (!iv_ca_has_deps (ivs, cp))
-		continue;
 
-	      if (!cheaper_cost_pair (cp, new_cp))
-		continue;
+	      iv_ca_set_cp (data, ivs, use, cp);
+	      acost = iv_ca_cost (ivs);
 
-	      new_cp = cp;
+	      if (compare_costs (acost, best_cost) < 0)
+		{
+		  best_cost = acost;
+		  new_cp = cp;
+		}
 	    }
 	}
+      /* Restore to old cp for use.  */
+      iv_ca_set_cp (data, ivs, use, old_cp);
 
       if (!new_cp)
 	{
@@ -5841,7 +5850,7 @@ iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
       if (cand == except_cand)
 	continue;
 
-      acost = iv_ca_narrow (data, ivs, cand, &act_delta);
+      acost = iv_ca_narrow (data, ivs, cand, except_cand, &act_delta);
 
       if (compare_costs (acost, best_cost) < 0)
 	{

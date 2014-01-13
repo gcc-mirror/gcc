@@ -1,6 +1,6 @@
 /* { dg-do run  { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-fcilkplus" } */
-/* { dg-options "-lcilkrts" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-lcilkrts" { target { i?86-*-* x86_64-*-* } } } */
 
 #include <stdlib.h>
 #define DEFAULT_VALUE 30

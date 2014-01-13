@@ -3326,16 +3326,23 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	  || GET_CODE (x) == NEG))
     return CC_NZmode;
 
-  /* A compare with a shifted or negated operand.  Because of canonicalization,
+  /* A compare with a shifted operand.  Because of canonicalization,
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
       && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == LSHIFTRT
-	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND
-	  || GET_CODE (x) == NEG))
+	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND))
     return CC_SWPmode;
+
+  /* Similarly for a negated operand, but we can only do this for
+     equalities.  */
+  if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
+      && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
+      && (code == EQ || code == NE)
+      && GET_CODE (x) == NEG)
+    return CC_Zmode;
 
   /* A compare of a mode narrower than SI mode against zero can be done
      by extending the value in the comparison.  */
@@ -3423,6 +3430,15 @@ aarch64_get_condition_code (rtx x)
 	case EQ: return AARCH64_EQ;
 	case GE: return AARCH64_PL;
 	case LT: return AARCH64_MI;
+	default: gcc_unreachable ();
+	}
+      break;
+
+    case CC_Zmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE;
+	case EQ: return AARCH64_EQ;
 	default: gcc_unreachable ();
 	}
       break;
@@ -4643,12 +4659,15 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 			  extra_cost->mult[GET_MODE (x) == DImode].extend_add;
 		      return true;
 		    }
+
 		  *cost += (rtx_cost (XEXP (op0, 0), MULT, 0, speed)
 			    + rtx_cost (XEXP (op0, 1), MULT, 1, speed)
 			    + rtx_cost (op1, PLUS, 1, speed));
 
 		  if (speed)
 		    *cost += extra_cost->mult[GET_MODE (x) == DImode].add;
+
+		  return true;
 		}
 
 	      *cost += (rtx_cost (new_op0, PLUS, 0, speed)
