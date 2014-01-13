@@ -1813,6 +1813,17 @@ vectorizable_mask_load_store (gimple stmt, gimple_stmt_iterator *gsi,
 			     "gather index use not simple.");
 	  return false;
 	}
+
+      tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gather_decl));
+      tree masktype
+	= TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
+      if (TREE_CODE (masktype) == INTEGER_TYPE)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "masked gather with integer mask not supported.");
+	  return false;
+	}
     }
   else if (tree_int_cst_compare (nested_in_vect_loop
 				 ? STMT_VINFO_DR_STEP (stmt_info)
@@ -5761,6 +5772,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  mask = build_int_cst (TREE_TYPE (masktype), -1);
 	  mask = build_vector_from_val (masktype, mask);
+	  mask = vect_init_vector (stmt, mask, masktype, NULL);
 	}
       else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (masktype)))
 	{
@@ -5771,10 +5783,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (masktype)));
 	  mask = build_real (TREE_TYPE (masktype), r);
 	  mask = build_vector_from_val (masktype, mask);
+	  mask = vect_init_vector (stmt, mask, masktype, NULL);
 	}
       else
 	gcc_unreachable ();
-      mask = vect_init_vector (stmt, mask, masktype, NULL);
 
       scale = build_int_cst (scaletype, gather_scale);
 
