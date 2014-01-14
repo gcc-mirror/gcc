@@ -8,8 +8,8 @@
 static void
 compute_vrcp14sd (double *s1, double *s2, double *r)
 {
-  r[0] = 1.0 / s2[0];
-  r[1] = s1[1];
+  r[0] = 1.0 / s1[0];
+  r[1] = s2[1];
 }
 
 static void
@@ -26,6 +26,6 @@ avx512f_test (void)
 
   compute_vrcp14sd (s1.a, s2.a, res_ref);
 
-  if (check_union128d (res1, res_ref))
+  if (checkVd (res1.a, res_ref, 2))
     abort ();
 }

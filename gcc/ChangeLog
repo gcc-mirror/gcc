@@ -1,3 +1,42 @@
+2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+       * config/i386/avx512erintrin.h (_mm_rcp28_round_sd): New.
+	(_mm_rcp28_round_ss): Ditto.
+	(_mm_rsqrt28_round_sd): Ditto.
+	(_mm_rsqrt28_round_ss): Ditto.
+	(_mm_rcp28_sd): Ditto.
+	(_mm_rcp28_ss): Ditto.
+	(_mm_rsqrt28_sd): Ditto.
+	(_mm_rsqrt28_ss): Ditto.
+	* config/i386/avx512fintrin.h (_mm512_stream_load_si512): Ditto.
+	* config/i386/i386-builtin-types.def (V8DI_FTYPE_PV8DI): Ditto.
+	* config/i386/i386.c (IX86_BUILTIN_MOVNTDQA512): Ditto.
+	(IX86_BUILTIN_RCP28SD): Ditto.
+	(IX86_BUILTIN_RCP28SS): Ditto.
+	(IX86_BUILTIN_RSQRT28SD): Ditto.
+	(IX86_BUILTIN_RSQRT28SS): Ditto.
+	(bdesc_special_args): Define __builtin_ia32_movntdqa512,
+	__builtin_ia32_rcp28sd_round, __builtin_ia32_rcp28ss_round,
+	__builtin_ia32_rsqrt28sd_round, __builtin_ia32_rsqrt28ss_round.
+	(ix86_expand_special_args_builtin): Expand new FTYPE.
+	* config/i386/sse.md (define_mode_attr "sse4_1_avx2"): Expand to V8DI.
+	(srcp14<mode>): Make insn unary.
+	(avx512f_vmscalef<mode><round_name>): Use substed predicate.
+	(avx512f_sgetexp<mode><round_saeonly_name>): Ditto.
+	(avx512f_rndscale<mode><round_saeonly_name>): Ditto.
+	(<sse4_1_avx2>_movntdqa): Extend to 512 bits.
+	(avx512er_exp2<mode><mask_name><round_saeonly_name>):
+	Fix rounding: make it SAE only.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>): Ditto.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>): Ditto.
+	(avx512er_vmrcp28<mode><round_saeonly_name>): Ditto.
+	(avx512er_vmrsqrt28<mode><round_saeonly_name>): Ditto.
+	(avx512f_getmant<mode><mask_name><round_saeonly_name>): Ditto.
+	* config/i386/subst.md (round_saeonly_mask_scalar_operand3): Remove.
+	(round_saeonly_mask_scalar_operand4): Ditto.
+	(round_saeonly_mask_scalar_op3): Ditto.
+	(round_saeonly_mask_scalar_op4): Ditto.
+
 2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):

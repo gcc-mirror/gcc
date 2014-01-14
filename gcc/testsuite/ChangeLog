@@ -1,3 +1,33 @@
+2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/avx-1.c: Fix __builtin_ia32_exp2ps_mask,
+	__builtin_ia32_exp2pd_mask, __builtin_ia32_rcp28ps_mask,
+	__builtin_ia32_rcp28pd_mask, __builtin_ia32_rsqrt28ps_mask,
+	__builtin_ia32_rsqrt28pd_mask. Add __builtin_ia32_rcp28ss_round,
+	__builtin_ia32_rcp28sd_round, __builtin_ia32_rsqrt28ss_round,
+	__builtin_ia32_rsqrt28sd_round.
+	* gcc.target/i386/avx512er-vexp2pd-1.c: Fix rounding mode.
+	* gcc.target/i386/avx512er-vexp2ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: New.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdqa-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdqa-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Fix.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/sse-22.c: Extend with new built-ins,
+	fix wrong rounding mode (see above).
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/insert.c: New.

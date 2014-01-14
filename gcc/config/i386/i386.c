@@ -28050,6 +28050,7 @@ enum ix86_builtins
   IX86_BUILTIN_MOVDQA64STORE512,
   IX86_BUILTIN_MOVDQA64_512,
   IX86_BUILTIN_MOVNTDQ512,
+  IX86_BUILTIN_MOVNTDQA512,
   IX86_BUILTIN_MOVNTPD512,
   IX86_BUILTIN_MOVNTPS512,
   IX86_BUILTIN_MOVSHDUP512,
@@ -28326,13 +28327,19 @@ enum ix86_builtins
   IX86_BUILTIN_GATHERPFQPS,
   IX86_BUILTIN_SCATTERPFDPS,
   IX86_BUILTIN_SCATTERPFQPS,
+
+  /* AVX-512ER */
   IX86_BUILTIN_EXP2PD_MASK,
   IX86_BUILTIN_EXP2PS_MASK,
   IX86_BUILTIN_EXP2PS,
   IX86_BUILTIN_RCP28PD,
   IX86_BUILTIN_RCP28PS,
+  IX86_BUILTIN_RCP28SD,
+  IX86_BUILTIN_RCP28SS,
   IX86_BUILTIN_RSQRT28PD,
   IX86_BUILTIN_RSQRT28PS,
+  IX86_BUILTIN_RSQRT28SD,
+  IX86_BUILTIN_RSQRT28SS,
 
   /* SHA builtins.  */
   IX86_BUILTIN_SHA1MSG1,
@@ -28920,6 +28927,7 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_movntv16sf, "__builtin_ia32_movntps512", IX86_BUILTIN_MOVNTPS512, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V16SF },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_movntv8df, "__builtin_ia32_movntpd512", IX86_BUILTIN_MOVNTPD512, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V8DF },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_movntv8di, "__builtin_ia32_movntdq512", IX86_BUILTIN_MOVNTDQ512, UNKNOWN, (int) VOID_FTYPE_PV8DI_V8DI },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_movntdqa, "__builtin_ia32_movntdqa512", IX86_BUILTIN_MOVNTDQA512, UNKNOWN, (int) V8DI_FTYPE_PV8DI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_storedquv16si_mask, "__builtin_ia32_storedqusi512_mask", IX86_BUILTIN_STOREDQUSI512, UNKNOWN, (int) VOID_FTYPE_PV16SI_V16SI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_storedquv8di_mask, "__builtin_ia32_storedqudi512_mask", IX86_BUILTIN_STOREDQUDI512, UNKNOWN, (int) VOID_FTYPE_PV8DI_V8DI_QI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_storeupd512_mask, "__builtin_ia32_storeupd512_mask", IX86_BUILTIN_STOREUPD512, UNKNOWN, (int) VOID_FTYPE_PV8DF_V8DF_QI },
@@ -30133,8 +30141,12 @@ static const struct builtin_description bdesc_round_args[] =
   { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_exp2v16sf_mask_round, "__builtin_ia32_exp2ps_mask", IX86_BUILTIN_EXP2PS_MASK, UNKNOWN, (int) V16SF_FTYPE_V16SF_V16SF_HI_INT },
   { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_rcp28v8df_mask_round, "__builtin_ia32_rcp28pd_mask", IX86_BUILTIN_RCP28PD, UNKNOWN, (int) V8DF_FTYPE_V8DF_V8DF_QI_INT },
   { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_rcp28v16sf_mask_round, "__builtin_ia32_rcp28ps_mask", IX86_BUILTIN_RCP28PS, UNKNOWN, (int) V16SF_FTYPE_V16SF_V16SF_HI_INT },
+  { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_vmrcp28v2df_round, "__builtin_ia32_rcp28sd_round", IX86_BUILTIN_RCP28SD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_vmrcp28v4sf_round, "__builtin_ia32_rcp28ss_round", IX86_BUILTIN_RCP28SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
   { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_rsqrt28v8df_mask_round, "__builtin_ia32_rsqrt28pd_mask", IX86_BUILTIN_RSQRT28PD, UNKNOWN, (int) V8DF_FTYPE_V8DF_V8DF_QI_INT },
   { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_rsqrt28v16sf_mask_round, "__builtin_ia32_rsqrt28ps_mask", IX86_BUILTIN_RSQRT28PS, UNKNOWN, (int) V16SF_FTYPE_V16SF_V16SF_HI_INT },
+  { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_vmrsqrt28v2df_round, "__builtin_ia32_rsqrt28sd_round", IX86_BUILTIN_RSQRT28SD, UNKNOWN, (int) V2DF_FTYPE_V2DF_V2DF_INT },
+  { OPTION_MASK_ISA_AVX512ER, CODE_FOR_avx512er_vmrsqrt28v4sf_round, "__builtin_ia32_rsqrt28ss_round", IX86_BUILTIN_RSQRT28SS, UNKNOWN, (int) V4SF_FTYPE_V4SF_V4SF_INT },
 };
 
 /* FMA4 and XOP.  */
@@ -34367,6 +34379,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case V16SI_FTYPE_PV4SI:
     case V16SF_FTYPE_PV4SF:
     case V8DI_FTYPE_PV4DI:
+    case V8DI_FTYPE_PV8DI:
     case V8DF_FTYPE_PV4DF:
       nargs = 1;
       klass = load;
@@ -34375,6 +34388,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	{
 	case CODE_FOR_sse4_1_movntdqa:
 	case CODE_FOR_avx2_movntdqa:
+	case CODE_FOR_avx512f_movntdqa:
 	  aligned_mem = true;
 	  break;
 	default:

@@ -3,9 +3,9 @@
 /* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*%zmm\[0-9\]\[\\n\]" 2 } } */
 /* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
 /* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
-/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\n\]*%zmm\[0-9\]" 1 } } */
-/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%zmm\[0-9\]\[^\{\]*\n" 1 } } */
+/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vexp2pd\[ \\t\]+\[^\n\]*\{sae\}\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
 
 #include <immintrin.h>
 
@@ -18,7 +18,7 @@ avx512er_test (void)
   x = _mm512_exp2a23_pd (x);
   x = _mm512_mask_exp2a23_pd (x, m, x);
   x = _mm512_maskz_exp2a23_pd (m, x);
-  x = _mm512_exp2a23_round_pd (x, _MM_FROUND_TO_NEAREST_INT);
-  x = _mm512_mask_exp2a23_round_pd (x, m, x, _MM_FROUND_TO_NEG_INF);
-  x = _mm512_maskz_exp2a23_round_pd (m, x, _MM_FROUND_TO_ZERO);
+  x = _mm512_exp2a23_round_pd (x, _MM_FROUND_NO_EXC);
+  x = _mm512_mask_exp2a23_round_pd (x, m, x, _MM_FROUND_NO_EXC);
+  x = _mm512_maskz_exp2a23_round_pd (m, x, _MM_FROUND_NO_EXC);
 }
