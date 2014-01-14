@@ -1,3 +1,11 @@
+2014-01-14  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-protos.h (tune_params): Add issue_rate.
+	* config/aarch64/aarch64.c (generic_tunings): Add issue rate of 2.
+	(cortexa53_tunings): Likewise.
+	(aarch64_sched_issue_rate): New function.
+	(TARGET_SCHED_ISSUE_RATE): Define.
+
 2014-01-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-costs.c (find_costs_and_classes): Add missed
