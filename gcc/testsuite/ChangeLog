@@ -1,3 +1,12 @@
+2014-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/59494
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Change
+	-fdump-tree-optimized to -fdump-tree-pcom-details in dg-options and
+	cleanup-tree-dump from optimized to pcom.  Remove scan-tree-dump-times
+	for vect_\[^\\n\]*\\+, add scan-tree-dump-times for no suitable chains and
+	Executing predictive commoning without unrolling.
+
 2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc.target/i386/avx-1.c: Fix __builtin_ia32_exp2ps_mask,
