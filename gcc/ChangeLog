@@ -1,5 +1,10 @@
 2014-01-14  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* ira-costs.c (find_costs_and_classes): Add missed
+	ira_init_register_move_cost_if_necessary.
+
+2014-01-14  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR target/59787
 	* config/arm/arm.c (arm_coproc_mem_operand): Add lra_in_progress.
 
