@@ -1,3 +1,12 @@
+2014-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58921
+	PR tree-optimization/59006
+	* tree-vect-loop-manip.c (vect_loop_versioning): Remove code
+	hoisting invariant stmts.
+	* tree-vect-stmts.c (vectorizable_load): Insert the splat of
+	invariant loads on the preheader edge if possible.
+
 2014-01-14  Joey Ye  <joey.ye@arm.com>
 
 	* doc/plugin.texi (Building GCC plugins): Update to C++.

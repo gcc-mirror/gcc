@@ -6380,12 +6380,39 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      /* 4. Handle invariant-load.  */
 	      if (inv_p && !bb_vinfo)
 		{
-		  gimple_stmt_iterator gsi2 = *gsi;
 		  gcc_assert (!grouped_load);
-		  gsi_next (&gsi2);
-		  new_temp = vect_init_vector (stmt, scalar_dest,
-					       vectype, &gsi2);
+		  /* If we have versioned for aliasing then we are sure
+		     this is a loop invariant load and thus we can insert
+		     it on the preheader edge.  */
+		  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+		    {
+		      if (dump_enabled_p ())
+			{
+			  dump_printf_loc (MSG_NOTE, vect_location,
+					   "hoisting out of the vectorized "
+					   "loop: ");
+			  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+			  dump_printf (MSG_NOTE, "\n");
+			}
+		      tree tem = copy_ssa_name (scalar_dest, NULL);
+		      gsi_insert_on_edge_immediate
+			(loop_preheader_edge (loop),
+			 gimple_build_assign (tem,
+					      unshare_expr
+					        (gimple_assign_rhs1 (stmt))));
+		      new_temp = vect_init_vector (stmt, tem, vectype, NULL);
+		    }
+		  else
+		    {
+		      gimple_stmt_iterator gsi2 = *gsi;
+		      gsi_next (&gsi2);
+		      new_temp = vect_init_vector (stmt, scalar_dest,
+						   vectype, &gsi2);
+		    }
 		  new_stmt = SSA_NAME_DEF_STMT (new_temp);
+		  set_vinfo_for_stmt (new_stmt,
+				      new_stmt_vec_info (new_stmt, loop_vinfo,
+							 bb_vinfo));
 		}
 
 	      if (negative)
