@@ -1,3 +1,8 @@
+2014-01-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/59787
+	* config/arm/arm.c (arm_coproc_mem_operand): Add lra_in_progress.
+
 2014-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59794
