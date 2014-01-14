@@ -1,3 +1,11 @@
+2014-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
+	from prefetch_block tune setting.
+
 2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/54300
