@@ -12439,7 +12439,7 @@ arm_coproc_mem_operand (rtx op, bool wb)
   rtx ind;
 
   /* Reject eliminable registers.  */
-  if (! (reload_in_progress || reload_completed)
+  if (! (reload_in_progress || reload_completed || lra_in_progress)
       && (   reg_mentioned_p (frame_pointer_rtx, op)
 	  || reg_mentioned_p (arg_pointer_rtx, op)
 	  || reg_mentioned_p (virtual_incoming_args_rtx, op)
