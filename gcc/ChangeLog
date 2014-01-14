@@ -1,3 +1,7 @@
+2014-01-14  Joey Ye  <joey.ye@arm.com>
+
+	* doc/plugin.texi (Building GCC plugins): Update to C++.
+
 2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
        * config/i386/avx512erintrin.h (_mm_rcp28_round_sd): New.
