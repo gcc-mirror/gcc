@@ -62,7 +62,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
   int i;
 
-  gcc_assert (n);
+  gcc_assert (n && n <= WIDE_INT_MAX_ELTS);
 
   if (width == HOST_BITS_PER_WIDE_INT)
     low = value;
@@ -75,6 +75,7 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
   for (i = 0; i < n; i++)
     a[i] = low;
 
+  gcc_assert (TYPE_PRECISION (type) <= MAX_BITSIZE_MODE_ANY_INT);
   return wide_int_to_tree
     (type, wide_int::from_array (a, n, TYPE_PRECISION (type)));
 }

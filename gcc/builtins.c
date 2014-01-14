@@ -685,10 +685,10 @@ c_readstr (const char *str, enum machine_mode mode)
   HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
-
   unsigned int len = (GET_MODE_PRECISION (mode) + HOST_BITS_PER_WIDE_INT - 1)
     / HOST_BITS_PER_WIDE_INT;
 
+  gcc_assert (len <= MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT);
   for (i = 0; i < len; i++)
     tmp[i] = 0;
 

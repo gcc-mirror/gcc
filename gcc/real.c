@@ -1377,10 +1377,12 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 wide_int
 real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
+  typedef FIXED_WIDE_INT (WIDE_INT_MAX_PRECISION * 2) real_int;
   HOST_WIDE_INT val[2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
   int exp;
   int words;
   wide_int result;
+  real_int tmp;
   int w;
 
   switch (r->cl)
@@ -1440,10 +1442,10 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	}
 #endif
       w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT;
-      result = wide_int::from_array
+      tmp = real_int::from_array
 	(val, (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w);
-      result = wi::lrshift (result, (words * HOST_BITS_PER_WIDE_INT) - exp);
-      result = wide_int::from (result, precision, UNSIGNED);
+      tmp = wi::lrshift<real_int> (tmp, (words * HOST_BITS_PER_WIDE_INT) - exp);
+      result = wide_int::from (tmp, precision, UNSIGNED);
 
       if (r->sign)
 	return -result;
