@@ -1,3 +1,8 @@
+2014-01-14  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* jump.c (redirect_jump_2): Remove REG_CROSSING_JUMP notes when
+	converting a conditional jump into a conditional return.
+
 2014-01-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58921

@@ -1580,6 +1580,16 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 	}
     }
 
+  /* Handle the case where we had a conditional crossing jump to a return
+     label and are now changing it into a direct conditional return.
+     The jump is no longer crossing in that case.  */
+  if (ANY_RETURN_P (nlabel))
+    {
+      note = find_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
+      if (note)
+	remove_note (jump, note);
+    }
+
   if (!ANY_RETURN_P (olabel)
       && --LABEL_NUSES (olabel) == 0 && delete_unused > 0
       /* Undefined labels will remain outside the insn stream.  */
