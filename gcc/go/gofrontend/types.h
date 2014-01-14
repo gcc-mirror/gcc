@@ -19,6 +19,7 @@ class Float_type;
 class Complex_type;
 class String_type;
 class Function_type;
+class Backend_function_type;
 class Struct_field;
 class Struct_field_list;
 class Struct_type;
@@ -483,6 +484,12 @@ class Type
 		     Typed_identifier_list* parameters,
 		     Typed_identifier_list* results,
 		     Location);
+
+  static Backend_function_type*
+  make_backend_function_type(Typed_identifier* receiver,
+                             Typed_identifier_list* parameters,
+                             Typed_identifier_list* results,
+                             Location);
 
   static Pointer_type*
   make_pointer_type(Type*);
@@ -1894,6 +1901,23 @@ class Function_type : public Type
   // The backend representation of this type for backend function
   // declarations and definitions.
   Btype* fnbtype_;
+};
+
+// The type of a function's backend representation.
+
+class Backend_function_type : public Function_type
+{
+ public:
+  Backend_function_type(Typed_identifier* receiver,
+                        Typed_identifier_list* parameters,
+                        Typed_identifier_list* results, Location location)
+      : Function_type(receiver, parameters, results, location)
+  { }
+
+ protected:
+  Btype*
+  do_get_backend(Gogo* gogo)
+  { return this->get_backend_fntype(gogo); }
 };
 
 // The type of a pointer.
