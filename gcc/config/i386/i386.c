@@ -24991,16 +24991,8 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align)
 {
-  /* A data structure, equal or greater than the size of a cache line
-     (64 bytes in the Pentium 4 and other recent Intel processors, including
-     processors based on Intel Core microarchitecture) should be aligned
-     so that its base address is a multiple of a cache line size.  */
-
   int max_align
-    = MIN ((unsigned) ix86_tune_cost->prefetch_block * 8, MAX_OFILE_ALIGNMENT);
-
-  if (max_align < BITS_PER_WORD)
-    max_align = BITS_PER_WORD;
+    = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
 
   if (AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)

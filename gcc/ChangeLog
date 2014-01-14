@@ -1,3 +1,11 @@
+2014-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2014-01-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_data_alignment): Calculate max_align
+	from prefetch_block tune setting.
+
 2014-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
@@ -75,7 +83,7 @@
 	after the first pass_forwprop and before pass_fre.
 
 	2013-12-03  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR tree-optimization/59362
 	* tree-object-size.c (object_sizes): Change into array of
 	vec<unsigned HOST_WIDE_INT>.
@@ -121,8 +129,7 @@
 	2013-12-25   H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59587
-	* config/i386/i386.c (struct ptt): Add a field for processor
-	name.
+	* config/i386/i386.c (struct ptt): Add a field for processor name.
 	(processor_target_table): Sync with processor_type.  Add
 	processor names.
 	(cpu_names): Removed.
