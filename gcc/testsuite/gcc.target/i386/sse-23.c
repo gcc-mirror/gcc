@@ -367,12 +367,16 @@
 #define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, 1)
 
 /* avx512erintrin.h */
-#define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask (A, B, C, 1)
-#define __builtin_ia32_exp2ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask (A, B, C, 1)
-#define __builtin_ia32_rcp28pd_mask(A, B, C, D) __builtin_ia32_rcp28pd_mask (A, B, C, 1)
-#define __builtin_ia32_rcp28ps_mask(A, B, C, D) __builtin_ia32_rcp28ps_mask (A, B, C, 1)
-#define __builtin_ia32_rsqrt28pd_mask(A, B, C, D) __builtin_ia32_rsqrt28pd_mask (A, B, C, 1)
-#define __builtin_ia32_rsqrt28ps_mask(A, B, C, D) __builtin_ia32_rsqrt28ps_mask (A, B, C, 1)
+#define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask (A, B, C, 5)
+#define __builtin_ia32_exp2ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask (A, B, C, 5)
+#define __builtin_ia32_rcp28pd_mask(A, B, C, D) __builtin_ia32_rcp28pd_mask (A, B, C, 5)
+#define __builtin_ia32_rcp28ps_mask(A, B, C, D) __builtin_ia32_rcp28ps_mask (A, B, C, 5)
+#define __builtin_ia32_rsqrt28pd_mask(A, B, C, D) __builtin_ia32_rsqrt28pd_mask (A, B, C, 5)
+#define __builtin_ia32_rsqrt28ps_mask(A, B, C, D) __builtin_ia32_rsqrt28ps_mask (A, B, C, 5)
+#define __builtin_ia32_rcp28sd_round(A, B, C) __builtin_ia32_rcp28sd_round(A, B, 5)
+#define __builtin_ia32_rcp28ss_round(A, B, C) __builtin_ia32_rcp28ss_round(A, B, 5)
+#define __builtin_ia32_rsqrt28sd_round(A, B, C) __builtin_ia32_rsqrt28sd_round(A, B, 5)
+#define __builtin_ia32_rsqrt28ss_round(A, B, C) __builtin_ia32_rsqrt28ss_round(A, B, 5)
 
 /* shaintrin.h */
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)

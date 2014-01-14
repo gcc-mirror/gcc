@@ -7809,6 +7809,13 @@ _mm512_stream_pd (double *__P, __m512d __A)
   __builtin_ia32_movntpd512 (__P, (__v8df) __A);
 }
 
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_stream_load_si512 (void *__P)
+{
+  return __builtin_ia32_movntdqa512 ((__v8di *)__P);
+}
+
 #ifdef __OPTIMIZE__
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

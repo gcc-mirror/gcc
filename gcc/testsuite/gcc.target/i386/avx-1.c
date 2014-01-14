@@ -344,12 +344,20 @@
 #define __builtin_ia32_vfnmsubps512_mask3(A, B, C, D, E) __builtin_ia32_vfnmsubps512_mask3(A, B, C, D, 1)
 #define __builtin_ia32_vpermilpd512_mask(A, E, C, D) __builtin_ia32_vpermilpd512_mask(A, 1, C, D)
 #define __builtin_ia32_vpermilps512_mask(A, E, C, D) __builtin_ia32_vpermilps512_mask(A, 1, C, D)
-#define __builtin_ia32_exp2ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask(A, B, C, 1)
-#define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask(A, B, C, 1)
-#define __builtin_ia32_rcp28ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask(A, B, C, 1)
-#define __builtin_ia32_rcp28pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask(A, B, C, 1)
-#define __builtin_ia32_rsqrt28ps_mask(A, B, C, D) __builtin_ia32_rsqrt28ps_mask(A, B, C, 1)
-#define __builtin_ia32_rsqrt28pd_mask(A, B, C, D) __builtin_ia32_rsqrt28pd_mask(A, B, C, 1)
+
+/* avx512erintrin.h */
+#define __builtin_ia32_exp2ps_mask(A, B, C, D) __builtin_ia32_exp2ps_mask(A, B, C, 5)
+#define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask(A, B, C, 5)
+#define __builtin_ia32_rcp28ps_mask(A, B, C, D) __builtin_ia32_rcp28ps_mask(A, B, C, 5)
+#define __builtin_ia32_rcp28pd_mask(A, B, C, D) __builtin_ia32_rcp28pd_mask(A, B, C, 5)
+#define __builtin_ia32_rsqrt28ps_mask(A, B, C, D) __builtin_ia32_rsqrt28ps_mask(A, B, C, 5)
+#define __builtin_ia32_rsqrt28pd_mask(A, B, C, D) __builtin_ia32_rsqrt28pd_mask(A, B, C, 5)
+#define __builtin_ia32_rcp28ss_round(A, B, C) __builtin_ia32_rcp28ss_round(A, B, 5)
+#define __builtin_ia32_rcp28sd_round(A, B, C) __builtin_ia32_rcp28sd_round(A, B, 5)
+#define __builtin_ia32_rsqrt28ss_round(A, B, C) __builtin_ia32_rsqrt28ss_round(A, B, 5)
+#define __builtin_ia32_rsqrt28sd_round(A, B, C) __builtin_ia32_rsqrt28sd_round(A, B, 5)
+
+/* avx512pfintrin.h */
 #define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, 1)
 #define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, 1)
 #define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, 1)
