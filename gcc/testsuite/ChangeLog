@@ -1,3 +1,11 @@
+2014-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58921
+	PR tree-optimization/59006
+	* gcc.dg/torture/pr58921.c: New testcase.
+	* gcc.dg/torture/pr59006.c: Likewise.
+	* gcc.dg/vect/pr58508.c: XFAIL no longer handled cases.
+
 2014-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/59494
