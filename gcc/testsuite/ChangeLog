@@ -1,3 +1,17 @@
+2014-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59794
+	* g++.dg/ext/vector23.C: Also prune ABI change for Linux/x86.
+	* gcc.target/i386/pr39162.c (y): New __m256i variable.
+	(bar): Change return type to void.  Set y to x.
+	* gcc.target/i386/pr59794-1.c: New testcase.
+	* gcc.target/i386/pr59794-2.c: Likewise.
+	* gcc.target/i386/pr59794-3.c: Likewise.
+	* gcc.target/i386/pr59794-4.c: Likewise.
+	* gcc.target/i386/pr59794-5.c: Likewise.
+	* gcc.target/i386/pr59794-6.c: Likewise.
+	* gcc.target/i386/pr59794-7.c: Likewise.
+
 2014-01-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58921
@@ -17,7 +31,7 @@
 
 2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * gcc.target/i386/avx-1.c: Fix __builtin_ia32_exp2ps_mask,
+	* gcc.target/i386/avx-1.c: Fix __builtin_ia32_exp2ps_mask,
 	__builtin_ia32_exp2pd_mask, __builtin_ia32_rcp28ps_mask,
 	__builtin_ia32_rcp28pd_mask, __builtin_ia32_rsqrt28ps_mask,
 	__builtin_ia32_rsqrt28pd_mask. Add __builtin_ia32_rcp28ss_round,
