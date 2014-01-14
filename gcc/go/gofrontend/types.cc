@@ -4066,6 +4066,17 @@ Type::make_function_type(Typed_identifier* receiver,
   return new Function_type(receiver, parameters, results, location);
 }
 
+// Make a backend function type.
+
+Backend_function_type*
+Type::make_backend_function_type(Typed_identifier* receiver,
+                                 Typed_identifier_list* parameters,
+                                 Typed_identifier_list* results,
+                                 Location location)
+{
+  return new Backend_function_type(receiver, parameters, results, location);
+}
+
 // Class Pointer_type.
 
 // Traversal.
