@@ -1,3 +1,26 @@
+2014-01-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (*-*-rtems*): Add t-rtems to tmake_file.
+	(arm*-*-uclinux*eabi*): Do not override an existing tmake_file.
+	(arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*): Likwise.
+	(arm*-*-rtems*): Use t-rtems from existing tmake_file.
+	(avr-*-rtems*): Likewise.
+	(bfin*-rtems*): Likewise.
+	(moxie-*-rtems*): Likewise.
+	(h8300-*-rtems*): Likewise.
+	(i[34567]86-*-rtems*): Likewise.
+	(lm32-*-rtems*): Likewise.
+	(m32r-*-rtems*): Likewise.
+	(m68k-*-rtems*): Likewise.
+	(microblaze*-*-rtems*): Likewise.
+	(mips*-*-rtems*): Likewise.
+	(powerpc-*-rtems*): Likewise.
+	(sh-*-rtems*): Likewise.
+	(sparc-*-rtems*): Likewise.
+	(sparc64-*-rtems*): Likewise.
+	(v850-*-rtems*): Likewise.
+	(m32c-*-rtems*): Likewise.
+
 2014-01-15  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59511
