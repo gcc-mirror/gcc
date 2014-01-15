@@ -2488,7 +2488,7 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
       if (ncount < zcount)
 	{
 	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT ((~val) & 0xffff));
+			  GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
 	  tval = 0xffff;
 	}
       else
