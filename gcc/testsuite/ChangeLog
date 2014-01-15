@@ -1,3 +1,8 @@
+2014-01-15  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/mult-even-odd.c: New.
+	* gcc.dg/vmx/mult-even-odd-be-order.c: New.
+
 2014-01-15  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* lib/target-supports.exp (check_libcilkrts_available): Added an
