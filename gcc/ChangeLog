@@ -1,3 +1,8 @@
+2014-01-15  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Check if
+	current procedure should be profiled.
+
 2014-01-15  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_register_move_cost): Correct cost

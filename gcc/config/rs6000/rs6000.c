@@ -23198,7 +23198,7 @@ rs6000_output_function_prologue (FILE *file,
   /* Output -mprofile-kernel code.  This needs to be done here instead of
      in output_function_profile since it must go after the ELFv2 ABI
      local entry point.  */
-  if (TARGET_PROFILE_KERNEL)
+  if (TARGET_PROFILE_KERNEL && crtl->profile)
     {
       gcc_assert (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2);
       gcc_assert (!TARGET_32BIT);
