@@ -1,3 +1,9 @@
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* gcc.c-torture/execute/pr58943.c: New test.
+	* gcc.dg/tree-ssa/ssa-fre-33.c (main): Avoid using += in the test.
+
 2014-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59794
