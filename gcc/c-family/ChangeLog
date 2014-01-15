@@ -1,3 +1,12 @@
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* c-omp.c (c_finish_omp_atomic): Set in_late_binary_op around
+	build_modify_expr with non-NOP_EXPR opcode.  Handle return from it
+	being COMPOUND_EXPR.
+	(c_finish_omp_for): Handle incr being COMPOUND_EXPR with first
+	operand a SAVE_EXPR and second MODIFY_EXPR.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58115
