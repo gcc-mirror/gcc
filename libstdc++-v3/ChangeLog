@@ -1,5 +1,6 @@
 2014-01-15  François Dumont  <fdumont@gcc.gnu.org>
 
+	PR libstdc++/59712
 	* include/bits/hashtable_policy.h: Fix some long lines.
 	* include/bits/hashtable.h (__hash_code_base_access): Define and
 	use it to check its _M_bucket_index noexcept qualification. Use
