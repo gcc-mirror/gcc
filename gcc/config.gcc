@@ -775,6 +775,7 @@ case ${target} in
   case ${enable_threads} in
     yes) thread_file='rtems' ;;
   esac
+  tmake_file="${tmake_file} t-rtems"
   extra_options="${extra_options} rtems.opt"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
@@ -1015,7 +1016,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	;;
 arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
-	tmake_file="arm/t-arm arm/t-arm-elf arm/t-bpabi"
+	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
@@ -1027,7 +1028,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	esac
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
-	tmake_file="arm/t-arm arm/t-arm-elf"
+	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf"
 	case ${target} in
 	arm*-*-eabi*)
 	  tm_file="$tm_file newlib-stdint.h"
@@ -1036,7 +1037,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	  ;;
 	arm*-*-rtems*)
 	  tm_file="${tm_file} rtems.h arm/rtems-eabi.h newlib-stdint.h"
-	  tmake_file="${tmake_file} arm/t-bpabi t-rtems arm/t-rtems-eabi"
+	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems-eabi"
 	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
@@ -1049,7 +1050,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	;;
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="avr/t-avr avr/t-multilib t-rtems avr/t-rtems"
+	tmake_file="${tmake_file} avr/t-avr avr/t-multilib avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
@@ -1081,7 +1082,7 @@ bfin*-linux-uclibc*)
 	;;
 bfin*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="t-rtems bfin/t-rtems"
+	tmake_file="${tmake_file} bfin/t-rtems"
 	;;
 bfin*-*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h bfin/elf.h"
@@ -1155,11 +1156,11 @@ moxie-*-uclinux*)
 	tmake_file="${tmake_file} moxie/t-moxie"
 	;;
 moxie-*-rtems*)
-	tmake_file="${tmake_file} moxie/t-moxie t-rtems"
+	tmake_file="${tmake_file} moxie/t-moxie"
 	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
 	;;
 h8300-*-rtems*)
-	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
+	tmake_file="${tmake_file} h8300/t-h8300 h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h newlib-stdint.h"
 	;;
 h8300-*-elf*)
@@ -1500,7 +1501,7 @@ i[34567]86-*-nto-qnx*)
 	;;
 i[34567]86-*-rtems*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/rtemself.h rtems.h newlib-stdint.h"
-	tmake_file="${tmake_file} i386/t-rtems t-rtems"
+	tmake_file="${tmake_file} i386/t-rtems"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	tm_file="${tm_file} i386/unix.h i386/att.h ${sol2_tm_file}"
@@ -1748,7 +1749,6 @@ lm32-*-elf*)
 lm32-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} lm32/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
-	tmake_file="${tmake_file} t-rtems"
 	tmake_file="${tmake_file} lm32/t-rtems"
          ;;
 lm32-*-uclinux*)
@@ -1763,7 +1763,7 @@ m32rle-*-elf*)
 	;;
 m32r-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} m32r/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="m32r/t-m32r t-rtems"
+	tmake_file="${tmake_file} m32r/t-m32r"
  	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
@@ -1854,7 +1854,7 @@ m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 m68k-*-rtems*)
 	default_m68k_cpu=68020
 	default_cf_cpu=5206
-	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-crtstuff t-rtems m68k/t-rtems m68k/t-mlibs"
+	tmake_file="${tmake_file} m68k/t-floatlib m68k/t-m68kbare m68k/t-crtstuff m68k/t-rtems m68k/t-mlibs"
 	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h m68k/rtemself.h rtems.h newlib-stdint.h"
 	tm_defines="${tm_defines} MOTOROLA=1"
 	;;
@@ -1904,7 +1904,7 @@ microblaze*-*-rtems*)
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} microblaze/t-microblaze"
-	tmake_file="${tmake_file} t-rtems microblaze/t-rtems"
+	tmake_file="${tmake_file} microblaze/t-rtems"
         ;;
 microblaze*-*-elf)
 	case $target in
@@ -2079,7 +2079,7 @@ mips64orion-*-elf* | mips64orionel-*-elf*)
 	;;
 mips*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/rtems.h rtems.h"
-	tmake_file="mips/t-elf t-rtems mips/t-rtems"
+	tmake_file="${tmake_file} mips/t-elf mips/t-rtems"
 	;;
 mips-wrs-vxworks)
 	tm_file="elfos.h ${tm_file} mips/elf.h vx-common.h vxworks.h mips/vxworks.h"
@@ -2236,7 +2236,7 @@ powerpc-*-eabi*)
 powerpc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/e500.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-rtems t-rtems rs6000/t-ppccomm"
+	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
 	;;
 powerpc*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h rs6000/sysv4.h"
@@ -2607,7 +2607,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 	tmake_file="$tmake_file t-sysroot-suffix"
 	;;
 sh-*-rtems*)
-	tmake_file="sh/t-sh t-rtems sh/t-rtems"
+	tmake_file="${tmake_file} sh/t-sh sh/t-rtems"
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h newlib-stdint.h"
 	;;
 sh-wrs-vxworks)
@@ -2630,7 +2630,7 @@ sparc-*-elf*)
 	;;
 sparc-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h sparc/sp-elf.h sparc/rtemself.h rtems.h newlib-stdint.h"
-	tmake_file="sparc/t-sparc sparc/t-elf sparc/t-rtems t-rtems"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-elf sparc/t-rtems"
 	;;
 sparc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/tso.h"
@@ -2684,7 +2684,7 @@ sparc64-*-elf*)
 sparc64-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h sparc/sysv4.h sparc/sp64-elf.h sparc/rtemself.h rtems.h"
 	extra_options="${extra_options}"
-	tmake_file="${tmake_file} sparc/t-sparc sparc/t-rtems-64 t-rtems"
+	tmake_file="${tmake_file} sparc/t-sparc sparc/t-rtems-64"
 	;;
 sparc64-*-linux*)
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/default-64.h sparc/linux64.h sparc/tso.h"
@@ -2761,7 +2761,7 @@ v850-*-rtems*)
 	tm_file="dbxelf.h elfos.h v850/v850.h"
 	tm_file="${tm_file} rtems.h v850/rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} v850/t-v850"
-	tmake_file="${tmake_file} t-rtems v850/t-rtems"
+	tmake_file="${tmake_file} v850/t-rtems"
 	use_collect2=no
 	c_target_objs="v850-c.o"
 	cxx_target_objs="v850-c.o"
@@ -2834,7 +2834,6 @@ am33_2.0-*-linux*)
 	;;
 m32c-*-rtems*)
 	tm_file="dbxelf.h elfos.h ${tm_file} m32c/rtems.h rtems.h newlib-stdint.h"
-	tmake_file="${tmake_file} t-rtems"
 	c_target_objs="m32c-pragma.o"
 	cxx_target_objs="m32c-pragma.o"
  	;;
