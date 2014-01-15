@@ -1,3 +1,13 @@
+2014-01-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59659
+	* typeck2.c (massage_init_elt): New.
+	(process_init_constructor_record)
+	(process_init_constructor_union): Use it.
+	(process_init_constructor_array): Use it.  Use RANGE_EXPR.
+	(split_nonconstant_init_1): Handle it.
+	* semantics.c (cxx_eval_vec_init_1): Use force_rvalue.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c++/59631

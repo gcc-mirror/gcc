@@ -8961,19 +8961,13 @@ cxx_eval_vec_init_1 (const constexpr_call *call, tree atype, tree init,
       else
 	{
 	  /* Copying an element.  */
-	  vec<tree, va_gc> *argvec;
 	  gcc_assert (same_type_ignoring_top_level_qualifiers_p
 		      (atype, TREE_TYPE (init)));
 	  eltinit = cp_build_array_ref (input_location, init, idx,
 					tf_warning_or_error);
 	  if (!real_lvalue_p (init))
 	    eltinit = move (eltinit);
-	  argvec = make_tree_vector ();
-	  argvec->quick_push (eltinit);
-	  eltinit = (build_special_member_call
-		     (NULL_TREE, complete_ctor_identifier, &argvec,
-		      elttype, LOOKUP_NORMAL, tf_warning_or_error));
-	  release_tree_vector (argvec);
+	  eltinit = force_rvalue (eltinit, tf_warning_or_error);
 	  eltinit = cxx_eval_constant_expression
 	    (call, eltinit, allow_non_constant, addr, non_constant_p, overflow_p);
 	}
