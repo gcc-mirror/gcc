@@ -246,6 +246,12 @@ class Gcc_backend : public Backend
   Bexpression*
   struct_field_expression(Bexpression*, size_t, Location);
 
+  Bexpression*
+  compound_expression(Bstatement*, Bexpression*, Location);
+
+  Bexpression*
+  conditional_expression(Bexpression*, Bexpression*, Bexpression*, Location);
+
   // Statements.
 
   Bstatement*
@@ -1032,6 +1038,41 @@ Gcc_backend::struct_field_expression(Bexpression* bstruct, size_t index,
   if (TREE_CONSTANT(struct_tree))
     TREE_CONSTANT(ret) = 1;
   return tree_to_expr(ret);
+}
+
+// Return an expression that executes BSTAT before BEXPR.
+
+Bexpression*
+Gcc_backend::compound_expression(Bstatement* bstat, Bexpression* bexpr,
+                                 Location location)
+{
+  tree stat = bstat->get_tree();
+  tree expr = bexpr->get_tree();
+  if (stat == error_mark_node || expr == error_mark_node)
+    return this->error_expression();
+  tree ret = fold_build2_loc(location.gcc_location(), COMPOUND_EXPR,
+                             TREE_TYPE(expr), stat, expr);
+  return this->make_expression(ret);
+}
+
+// Return an expression that executes THEN_EXPR if CONDITION is true, or
+// ELSE_EXPR otherwise.
+
+Bexpression*
+Gcc_backend::conditional_expression(Bexpression* condition,
+                                    Bexpression* then_expr,
+                                    Bexpression* else_expr, Location location)
+{
+  tree cond_tree = condition->get_tree();
+  tree then_tree = then_expr->get_tree();
+  tree else_tree = else_expr == NULL ? NULL_TREE : else_expr->get_tree();
+  if (cond_tree == error_mark_node
+      || then_tree == error_mark_node
+      || else_tree == error_mark_node)
+    return this->error_expression();
+  tree ret = build3_loc(location.gcc_location(), COND_EXPR, void_type_node,
+                        cond_tree, then_tree, else_tree);
+  return this->make_expression(ret);
 }
 
 // An expression as a statement.
