@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "default constructible" "" { target *-*-* } 287 }
+// { dg-error "default constructible" "" { target *-*-* } 288 }
 
 #include <unordered_set>
 

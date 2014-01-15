@@ -260,9 +260,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Compile-time diagnostics.
 
+      // _Hash_code_base has everything protected, so use this derived type to
+      // access it.
+      struct __hash_code_base_access : __hash_code_base
+      { using __hash_code_base::_M_bucket_index; };
+
       // Getting a bucket index from a node shall not throw because it is used
       // in methods (erase, swap...) that shall not throw.
-      static_assert(noexcept(declval<const _Hashtable&>()
+      static_assert(noexcept(declval<const __hash_code_base_access&>()
 			     ._M_bucket_index((const __node_type*)nullptr,
 					      (std::size_t)0)),
 		    "Cache the hash code or qualify your functors involved"
@@ -277,15 +282,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Functor used to map hash code to bucket index"
 		    " must be default constructible");
 
-      // _Hash_code_base has a protected default constructor, so use this
-      // derived type to tell if it's usable.
-      struct __access_protected_ctor : __hash_code_base { };
-
       // When hash codes are not cached local iterator inherits from
       // __hash_code_base above to compute node bucket index so it has to be
       // default constructible.
       static_assert(__if_hash_not_cached<
-		    is_default_constructible<__access_protected_ctor>>::value,
+		    is_default_constructible<__hash_code_base_access>>::value,
 		    "Cache the hash code or make functors involved in hash code"
 		    " and bucket index computation default constructible");
 
