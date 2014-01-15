@@ -5384,7 +5384,8 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		tmp[u] = buf;
 		base += HOST_BITS_PER_WIDE_INT;
 	      }
-	    gcc_assert (GET_MODE_PRECISION (outer_submode) <= MAX_BITSIZE_MODE_ANY_INT);
+	    gcc_assert (GET_MODE_PRECISION (outer_submode)
+			<= MAX_BITSIZE_MODE_ANY_INT);
 	    r = wide_int::from_array (tmp, units,
 				      GET_MODE_PRECISION (outer_submode));
 	    elems[elem] = immed_wide_int_const (r, outer_submode);
