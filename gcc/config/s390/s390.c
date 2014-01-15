@@ -3148,15 +3148,22 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
 	 prefer ADDR_REGS.  If 'class' is not a superset
 	 of ADDR_REGS, e.g. FP_REGS, reject this reload.  */
       case CONST:
-	/* A larl operand with odd addend will get fixed via secondary
-	   reload.  So don't request it to be pushed into literal
-	   pool.  */
+	/* Symrefs cannot be pushed into the literal pool with -fPIC
+	   so we *MUST NOT* return NO_REGS for these cases
+	   (s390_cannot_force_const_mem will return true).  
+
+	   On the other hand we MUST return NO_REGS for symrefs with
+	   invalid addend which might have been pushed to the literal
+	   pool (no -fPIC).  Usually we would expect them to be
+	   handled via secondary reload but this does not happen if
+	   they are used as literal pool slot replacement in reload
+	   inheritance (see emit_input_reload_insns).  */
 	if (TARGET_CPU_ZARCH
 	    && GET_CODE (XEXP (op, 0)) == PLUS
 	    && GET_CODE (XEXP (XEXP(op, 0), 0)) == SYMBOL_REF
 	    && GET_CODE (XEXP (XEXP(op, 0), 1)) == CONST_INT)
 	  {
-	    if (reg_class_subset_p (ADDR_REGS, rclass))
+	    if (flag_pic && reg_class_subset_p (ADDR_REGS, rclass))
 	      return ADDR_REGS;
 	    else
 	      return NO_REGS;
