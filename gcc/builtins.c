@@ -3117,7 +3117,7 @@ determine_block_size (tree len, rtx len_rtx,
 {
   if (CONST_INT_P (len_rtx))
     {
-      *min_size = *max_size = UINTVAL (len_rtx);
+      *min_size = *max_size = *probable_max_size = UINTVAL (len_rtx);
       return;
     }
   else
@@ -3131,7 +3131,8 @@ determine_block_size (tree len, rtx len_rtx,
       else
 	*min_size = 0;
       if (tree_fits_uhwi_p (TYPE_MAX_VALUE (TREE_TYPE (len))))
-	*probable_max_size = *max_size = tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (len)));
+	*probable_max_size = *max_size
+	  = tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (len)));
       else
 	*probable_max_size = *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
 
