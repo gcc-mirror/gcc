@@ -1,5 +1,6 @@
 2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	PR target/59803
 	* gcc.c-torture/compile/pr59803.c: New testcase.
 
 2014-01-15  Jakub Jelinek  <jakub@redhat.com>
