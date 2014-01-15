@@ -1,3 +1,8 @@
+2014-01-15  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (aarch64_register_move_cost): Correct cost
+	of moving from/to the STACK_REG register class.
+
 2014-01-15  Richard Henderson <rth@redhat.com>
 
 	PR debug/54694
