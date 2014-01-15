@@ -1,3 +1,8 @@
+2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_preferred_reload_class): Don't return
+	ADDR_REGS for invalid symrefs in non-PIC code.
+
 2014-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/58712
