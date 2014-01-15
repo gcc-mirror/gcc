@@ -1,3 +1,8 @@
+2014-01-15  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* lib/target-supports.exp (check_libcilkrts_available): Added an
+	extern "C" if we are using C++ along with a function prototype.
+
 2014-01-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59747
