@@ -612,7 +612,9 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
 		&& ! df_regs_ever_live_p (hard_regno + j))
 	      /* It needs save restore.	 */
 	      hard_regno_costs[hard_regno]
-		+= 2 * ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->frequency + 1;
+		+= (2
+		    * REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
+		    + 1);
 	  priority = targetm.register_priority (hard_regno);
 	  if (best_hard_regno < 0 || hard_regno_costs[hard_regno] < best_cost
 	      || (hard_regno_costs[hard_regno] == best_cost

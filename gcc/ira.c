@@ -1574,21 +1574,30 @@ ira_init_register_move_cost (enum machine_mode mode)
 	      && ira_may_move_out_cost[mode] == NULL);
   ira_assert (have_regs_of_mode[mode]);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
-    if (contains_reg_of_mode[cl1][mode])
-      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
-	{
-	  int cost;
-	  if (!contains_reg_of_mode[cl2][mode])
-	    cost = 65535;
-	  else
-	    {
-	      cost = register_move_cost (mode, (enum reg_class) cl1,
-					 (enum reg_class) cl2);
-	      ira_assert (cost < 65535);
-	    }
-	  all_match &= (last_move_cost[cl1][cl2] == cost);
-	  last_move_cost[cl1][cl2] = cost;
-	}
+    for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
+      {
+	int cost;
+	if (!contains_reg_of_mode[cl1][mode]
+	    || !contains_reg_of_mode[cl2][mode])
+	  {
+	    if ((ira_reg_class_max_nregs[cl1][mode]
+		 > ira_class_hard_regs_num[cl1])
+		|| (ira_reg_class_max_nregs[cl2][mode]
+		    > ira_class_hard_regs_num[cl2]))
+	      cost = 65535;
+	    else
+	      cost = (ira_memory_move_cost[mode][cl1][0]
+		      + ira_memory_move_cost[mode][cl2][1]);
+	  }
+	else
+	  {
+	    cost = register_move_cost (mode, (enum reg_class) cl1,
+				       (enum reg_class) cl2);
+	    ira_assert (cost < 65535);
+	  }
+	all_match &= (last_move_cost[cl1][cl2] == cost);
+	last_move_cost[cl1][cl2] = cost;
+      }
   if (all_match && last_mode_for_init_move_cost != -1)
     {
       ira_register_move_cost[mode]
@@ -1604,58 +1613,51 @@ ira_init_register_move_cost (enum machine_mode mode)
   ira_may_move_in_cost[mode] = XNEWVEC (move_table, N_REG_CLASSES);
   ira_may_move_out_cost[mode] = XNEWVEC (move_table, N_REG_CLASSES);
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
-    if (contains_reg_of_mode[cl1][mode])
-      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
-	{
-	  int cost;
-	  enum reg_class *p1, *p2;
-
-	  if (last_move_cost[cl1][cl2] == 65535)
-	    {
-	      ira_register_move_cost[mode][cl1][cl2] = 65535;
-	      ira_may_move_in_cost[mode][cl1][cl2] = 65535;
-	      ira_may_move_out_cost[mode][cl1][cl2] = 65535;
-	    }
-	  else
-	    {
-	      cost = last_move_cost[cl1][cl2];
-
-	      for (p2 = &reg_class_subclasses[cl2][0];
-		   *p2 != LIM_REG_CLASSES; p2++)
-		if (ira_class_hard_regs_num[*p2] > 0
-		    && (ira_reg_class_max_nregs[*p2][mode]
-			<= ira_class_hard_regs_num[*p2]))
-		  cost = MAX (cost, ira_register_move_cost[mode][cl1][*p2]);
-
-	      for (p1 = &reg_class_subclasses[cl1][0];
-		   *p1 != LIM_REG_CLASSES; p1++)
-		if (ira_class_hard_regs_num[*p1] > 0
-		    && (ira_reg_class_max_nregs[*p1][mode]
-			<= ira_class_hard_regs_num[*p1]))
-		  cost = MAX (cost, ira_register_move_cost[mode][*p1][cl2]);
-
-	      ira_assert (cost <= 65535);
-	      ira_register_move_cost[mode][cl1][cl2] = cost;
-
-	      if (ira_class_subset_p[cl1][cl2])
-		ira_may_move_in_cost[mode][cl1][cl2] = 0;
-	      else
-		ira_may_move_in_cost[mode][cl1][cl2] = cost;
-
-	      if (ira_class_subset_p[cl2][cl1])
-		ira_may_move_out_cost[mode][cl1][cl2] = 0;
-	      else
-		ira_may_move_out_cost[mode][cl1][cl2] = cost;
-	    }
-	}
-    else
-      for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
-	{
-	  ira_register_move_cost[mode][cl1][cl2] = 65535;
-	  ira_may_move_in_cost[mode][cl1][cl2] = 65535;
-	  ira_may_move_out_cost[mode][cl1][cl2] = 65535;
-	}
+    for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
+      {
+	int cost;
+	enum reg_class *p1, *p2;
+	
+	if (last_move_cost[cl1][cl2] == 65535)
+	  {
+	    ira_register_move_cost[mode][cl1][cl2] = 65535;
+	    ira_may_move_in_cost[mode][cl1][cl2] = 65535;
+	    ira_may_move_out_cost[mode][cl1][cl2] = 65535;
+	  }
+	else
+	  {
+	    cost = last_move_cost[cl1][cl2];
+	    
+	    for (p2 = &reg_class_subclasses[cl2][0];
+		 *p2 != LIM_REG_CLASSES; p2++)
+	      if (ira_class_hard_regs_num[*p2] > 0
+		  && (ira_reg_class_max_nregs[*p2][mode]
+		      <= ira_class_hard_regs_num[*p2]))
+		cost = MAX (cost, ira_register_move_cost[mode][cl1][*p2]);
+	    
+	    for (p1 = &reg_class_subclasses[cl1][0];
+		 *p1 != LIM_REG_CLASSES; p1++)
+	      if (ira_class_hard_regs_num[*p1] > 0
+		  && (ira_reg_class_max_nregs[*p1][mode]
+		      <= ira_class_hard_regs_num[*p1]))
+		cost = MAX (cost, ira_register_move_cost[mode][*p1][cl2]);
+	    
+	    ira_assert (cost <= 65535);
+	    ira_register_move_cost[mode][cl1][cl2] = cost;
+	    
+	    if (ira_class_subset_p[cl1][cl2])
+	      ira_may_move_in_cost[mode][cl1][cl2] = 0;
+	    else
+	      ira_may_move_in_cost[mode][cl1][cl2] = cost;
+	    
+	    if (ira_class_subset_p[cl2][cl1])
+	      ira_may_move_out_cost[mode][cl1][cl2] = 0;
+	    else
+	      ira_may_move_out_cost[mode][cl1][cl2] = cost;
+	  }
+      }
 }
+
 
 
 /* This is called once during compiler work.  It sets up

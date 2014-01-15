@@ -79,8 +79,8 @@ move_freq_compare_func (const void *v1p, const void *v2p)
   rtx mv2 = *(const rtx *) v2p;
   int pri1, pri2;
 
-  pri1 = BLOCK_FOR_INSN (mv1)->frequency;
-  pri2 = BLOCK_FOR_INSN (mv2)->frequency;
+  pri1 = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (mv1));
+  pri2 = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (mv2));
   if (pri2 - pri1)
     return pri2 - pri1;
 
@@ -277,7 +277,7 @@ lra_coalesce (void)
 	    fprintf
 	      (lra_dump_file, "      Coalescing move %i:r%d-r%d (freq=%d)\n",
 	       INSN_UID (mv), sregno, dregno,
-	       BLOCK_FOR_INSN (mv)->frequency);
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (mv)));
 	  /* We updated involved_insns_bitmap when doing the merge.  */
 	}
       else if (!(lra_intersected_live_ranges_p
@@ -291,7 +291,7 @@ lra_coalesce (void)
 	       "  Coalescing move %i:r%d(%d)-r%d(%d) (freq=%d)\n",
 	       INSN_UID (mv), sregno, ORIGINAL_REGNO (SET_SRC (set)),
 	       dregno, ORIGINAL_REGNO (SET_DEST (set)),
-	       BLOCK_FOR_INSN (mv)->frequency);
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (mv)));
 	  bitmap_ior_into (&involved_insns_bitmap,
 			   &lra_reg_info[sregno].insn_bitmap);
 	  bitmap_ior_into (&involved_insns_bitmap,
@@ -316,7 +316,8 @@ lra_coalesce (void)
 		/* Coalesced move.  */
 		if (lra_dump_file != NULL)
 		  fprintf (lra_dump_file, "	 Removing move %i (freq=%d)\n",
-			 INSN_UID (insn), BLOCK_FOR_INSN (insn)->frequency);
+			   INSN_UID (insn),
+			   REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn)));
 		lra_set_insn_deleted (insn);
 	      }
 	  }

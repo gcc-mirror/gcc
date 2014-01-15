@@ -4077,7 +4077,7 @@ lra_constraints (bool first_p)
 		      fprintf (lra_dump_file,
 			       "      Removing equiv init insn %i (freq=%d)\n",
 			       INSN_UID (curr_insn),
-			       BLOCK_FOR_INSN (curr_insn)->frequency);
+			       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (curr_insn)));
 		      dump_insn_slim (lra_dump_file, curr_insn);
 		    }
 		  if (contains_reg_p (x, true, false))
