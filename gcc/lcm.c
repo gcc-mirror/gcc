@@ -496,12 +496,20 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   bitmap_vector_ones (avout, last_basic_block_for_fn (cfun));
 
   /* Put every block on the worklist; this is necessary because of the
-     optimistic initialization of AVOUT above.  */
-  FOR_EACH_BB_FN (bb, cfun)
+     optimistic initialization of AVOUT above.  Use inverted postorder
+     to make the dataflow problem require less iterations.  */
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = inverted_post_order_compute (postorder);
+  for (int i = 0; i < postorder_num; ++i)
     {
+      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	continue;
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (postorder);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];

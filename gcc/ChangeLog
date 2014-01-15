@@ -1,3 +1,9 @@
+2014-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/59802
+	* lcm.c (compute_available): Use inverted postorder to seed
+	the initial worklist.
+
 2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Don't return
