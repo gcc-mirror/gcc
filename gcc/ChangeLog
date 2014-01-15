@@ -1,3 +1,10 @@
+2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+            Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/59695
+	* config/aarch64/aarch64.c (aarch64_build_constant): Fix incorrect
+	truncation.
+
 2014-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/59802

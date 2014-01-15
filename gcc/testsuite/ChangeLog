@@ -1,3 +1,9 @@
+2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/59695
+	* g++.dg/pr59695.C: New testcase.
+
 2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/59803
