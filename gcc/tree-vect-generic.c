@@ -57,7 +57,8 @@ static tree
 build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
 {
   int width = tree_to_uhwi (TYPE_SIZE (inner_type));
-  int n = TYPE_PRECISION (type) / width;
+  int n = (TYPE_PRECISION (type) + HOST_BITS_PER_WIDE_INT - 1) 
+    / HOST_BITS_PER_WIDE_INT;
   unsigned HOST_WIDE_INT low, mask;
   HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
   int i;
