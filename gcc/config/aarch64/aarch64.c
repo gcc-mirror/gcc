@@ -4870,6 +4870,16 @@ aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params->regmove_cost;
 
+  /* Moving between GPR and stack cost is the same as GP2GP.  */
+  if ((from == GENERAL_REGS && to == STACK_REG)
+      || (to == GENERAL_REGS && from == STACK_REG))
+    return regmove_cost->GP2GP;
+
+  /* To/From the stack register, we move via the gprs.  */
+  if (to == STACK_REG || from == STACK_REG)
+    return aarch64_register_move_cost (mode, from, GENERAL_REGS)
+            + aarch64_register_move_cost (mode, GENERAL_REGS, to);
+
   if (from == GENERAL_REGS && to == GENERAL_REGS)
     return regmove_cost->GP2GP;
   else if (from == GENERAL_REGS)
