@@ -1,3 +1,9 @@
+2014-01-15  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/59808
+	* gcc.target/i386/sse-12.c: Add `-mavx512[cd, er, pf]' options.
+	* gcc.target/i386/sse-14.c: Fix PR59808.
+
 2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
 	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
