@@ -1,3 +1,22 @@
+2014-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59794
+	* c-c++-common/convert-vec-1.c: Also prune ABI change for
+	Linux/x86.
+	* g++.dg/cpp0x/constexpr-53094-2.C: Likewise.
+	* g++.dg/ext/attribute-test-1.C: Likewise.
+	* g++.dg/ext/attribute-test-2.C: Likewise.
+	* g++.dg/ext/attribute-test-3.C: Likewise.
+	* g++.dg/ext/attribute-test-4.C: Likewise.
+	* g++.dg/ext/pr56790-1.C: Likewise.
+	* g++.dg/torture/pr38565.C: Likewise.
+	* gcc.dg/pr53060.c: Likewise.
+	* c-c++-common/scal-to-vec2.c: Add -msse2 for x86.
+	* c-c++-common/vector-compare-2.c: Likewise.
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: Likewise.
+	* g++.dg/conversion/simd1.C: Add -msse2 for x86.  Adjust
+	dg-message line number.
+
 2014-01-15  Matthias Klose  <doko@ubuntu.com>
 
 	* go.test/go-test.exp: Set goarch for aarch64*-*-*.

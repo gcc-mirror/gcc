@@ -50,3 +50,4 @@ int main()
 
 /* Ignore a warning that is irrelevant to the purpose of this test.  */
 /* { dg-prune-output ".*GCC vector returned by reference.*" } */
+/* { dg-prune-output "changes the ABI" } */
