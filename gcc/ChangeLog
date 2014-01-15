@@ -1,3 +1,7 @@
+2014-01-15  Teresa Johnson  <tejohnson@google.com>
+
+	* tree-ssa-sccvn.c (visit_reference_op_call): Handle NULL vdef.
+
 2014-01-15  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* config/rs6000/altivec.md (mulv8hi3): Explicitly generate vmulesh

@@ -2792,7 +2792,7 @@ visit_reference_op_call (tree lhs, gimple stmt)
 
   if (vnresult)
     {
-      if (vnresult->result_vdef)
+      if (vnresult->result_vdef && vdef)
 	changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
 
       if (!vnresult->result && lhs)
