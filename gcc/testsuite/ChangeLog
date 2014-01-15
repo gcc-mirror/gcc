@@ -1,3 +1,7 @@
+2014-01-15  Matthias Klose  <doko@ubuntu.com>
+
+	* go.test/go-test.exp: Set goarch for aarch64*-*-*.
+
 2014-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59822
