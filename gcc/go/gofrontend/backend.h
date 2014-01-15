@@ -284,6 +284,16 @@ class Backend
   virtual Bexpression*
   struct_field_expression(Bexpression* bstruct, size_t index, Location) = 0;
 
+  // Create an expression that executes BSTAT before BEXPR.
+  virtual Bexpression*
+  compound_expression(Bstatement* bstat, Bexpression* bexpr, Location) = 0;
+
+  // Return an expression that executes THEN_EXPR if CONDITION is true, or
+  // ELSE_EXPR otherwise.  ELSE_EXPR may be NULL.
+  virtual Bexpression*
+  conditional_expression(Bexpression* condition, Bexpression* then_expr,
+                         Bexpression* else_expr, Location) = 0;
+
   // Statements.
 
   // Create an error statement.  This is used for cases which should
