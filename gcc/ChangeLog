@@ -1,3 +1,13 @@
+2014-01-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59511
+	* ira.c (ira_init_register_move_cost): Use memory costs for some
+	cases of register move cost calculations.
+	* lra-constraints.c (lra_constraints): Use REG_FREQ_FROM_BB
+	instead of BB frequency.
+	* lra-coalesce.c (move_freq_compare_func, lra_coalesce): Ditto.
+	* lra-assigns.c (find_hard_regno_for): Ditto.
+
 2014-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59822
