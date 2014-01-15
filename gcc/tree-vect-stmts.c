@@ -5480,6 +5480,59 @@ permute_vec_elements (tree x, tree y, tree mask_vec, gimple stmt,
   return data_ref;
 }
 
+/* Hoist the definitions of all SSA uses on STMT out of the loop LOOP,
+   inserting them on the loops preheader edge.  Returns true if we
+   were successful in doing so (and thus STMT can be moved then),
+   otherwise returns false.  */
+
+static bool
+hoist_defs_of_uses (gimple stmt, struct loop *loop)
+{
+  ssa_op_iter i;
+  tree op;
+  bool any = false;
+
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (op);
+      if (!gimple_nop_p (def_stmt)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+	{
+	  /* Make sure we don't need to recurse.  While we could do
+	     so in simple cases when there are more complex use webs
+	     we don't have an easy way to preserve stmt order to fulfil
+	     dependencies within them.  */
+	  tree op2;
+	  ssa_op_iter i2;
+	  FOR_EACH_SSA_TREE_OPERAND (op2, def_stmt, i2, SSA_OP_USE)
+	    {
+	      gimple def_stmt2 = SSA_NAME_DEF_STMT (op2);
+	      if (!gimple_nop_p (def_stmt2)
+		  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt2)))
+		return false;
+	    }
+	  any = true;
+	}
+    }
+
+  if (!any)
+    return true;
+
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (op);
+      if (!gimple_nop_p (def_stmt)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
+	  gsi_remove (&gsi, false);
+	  gsi_insert_on_edge_immediate (loop_preheader_edge (loop), def_stmt);
+	}
+    }
+
+  return true;
+}
+
 /* vectorizable_load.
 
    Check if STMT reads a non scalar data-ref (array/pointer/structure) that
@@ -6384,7 +6437,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		  /* If we have versioned for aliasing then we are sure
 		     this is a loop invariant load and thus we can insert
 		     it on the preheader edge.  */
-		  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+		  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo)
+		      && hoist_defs_of_uses (stmt, loop))
 		    {
 		      if (dump_enabled_p ())
 			{

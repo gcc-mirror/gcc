@@ -1,3 +1,10 @@
+2014-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59822
+	* tree-vect-stmts.c (hoist_defs_of_uses): New function.
+	(vectorizable_load): Use it to hoist defs of uses of invariant
+	loads out of the loop.
+
 2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
             Kugan Vivekanandarajah  <kuganv@linaro.org>
 

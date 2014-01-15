@@ -1,3 +1,8 @@
+2014-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59822
+	* g++.dg/torture/pr59822.C: New testcase.
+
 2014-01-15  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/59808
