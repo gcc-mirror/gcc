@@ -1,3 +1,10 @@
+2014-01-15  Laurent Alfonsi <laurent.alfonsi@st.com>
+
+	PR c++/49718
+	* c-common.c (handle_no_instrument_function_attribute): Allow
+	no_instrument_function attribute in class member
+	definition/declaration.
+
 2014-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/58943

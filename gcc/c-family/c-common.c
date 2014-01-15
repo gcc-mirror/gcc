@@ -7985,12 +7985,6 @@ handle_no_instrument_function_attribute (tree *node, tree name,
 		"%qE attribute applies only to functions", name);
       *no_add_attrs = true;
     }
-  else if (DECL_INITIAL (decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"can%'t set %qE attribute after definition", name);
-      *no_add_attrs = true;
-    }
   else
     DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
 
