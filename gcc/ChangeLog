@@ -1,3 +1,11 @@
+2014-01-15  Richard Henderson <rth@redhat.com>
+
+	PR debug/54694
+	* reginfo.c (global_regs_decl): Globalize.
+	* rtl.h (global_regs_decl): Declare.
+	* ira.c (do_reload): Diagnose frame_pointer_needed and it
+	reserved via global_regs.
+
 2014-01-15  Teresa Johnson  <tejohnson@google.com>
 
 	* tree-ssa-sccvn.c (visit_reference_op_call): Handle NULL vdef.
