@@ -161,7 +161,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __hashtable_alloc& _M_h;
     };
 
-  // Functor similar to the previous one but without any pool of node to recycle.
+  // Functor similar to the previous one but without any pool of nodes to
+  // recycle.
   template<typename _NodeAlloc>
     struct _AllocNode
     {
@@ -1088,7 +1089,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::size_t
       _M_bucket_index(const __node_type* __p, std::size_t __n) const
-	noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>(), (std::size_t)0)) )
+	noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>(),
+						   (std::size_t)0)) )
       { return _M_ranged_hash()(_M_extract()(__p->_M_v()), __n); }
 
       void
@@ -1175,7 +1177,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::size_t
       _M_bucket_index(const __node_type* __p, std::size_t __n) const
 	noexcept( noexcept(declval<const _H1&>()(declval<const _Key&>()))
-		  && noexcept(declval<const _H2&>()((__hash_code)0, (std::size_t)0)) )
+		  && noexcept(declval<const _H2&>()((__hash_code)0,
+						    (std::size_t)0)) )
       { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v())), __n); }
 
       void

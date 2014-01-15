@@ -1,3 +1,15 @@
+2014-01-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h: Fix some long lines.
+	* include/bits/hashtable.h (__hash_code_base_access): Define and
+	use it to check its _M_bucket_index noexcept qualification. Use
+	also in place of...
+	(__access_protected_ctor): ...this.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
 2014-01-13  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/set.h (set): Implement C++11 allocator-aware
