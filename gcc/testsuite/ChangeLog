@@ -1,3 +1,8 @@
+2014-01-15  Richard Henderson  <rth@redhat.com>
+
+	PR debug/54694
+	* gcc.target/i386/pr54694.c: New test.
+
 2014-01-15  Laurent Alfonsi <laurent.alfonsi@st.com>
 
 	PR c++/49718
