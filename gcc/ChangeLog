@@ -1,3 +1,12 @@
+2014-01-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59747
+	* ree.c (find_and_remove_re): Properly handle case where a second
+	eliminated extension requires widening a copy created for elimination
+	of a prior extension.
+	(combine_set_extension): Ensure that the number of hard regs needed
+	for a destination register does not change when we widen it.
+
 2014-01-15  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (*-*-rtems*): Add t-rtems to tmake_file.
