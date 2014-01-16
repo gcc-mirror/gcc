@@ -5563,6 +5563,7 @@ find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
 
   enum reg_class context_reg_class;
   RTX_CODE code = GET_CODE (x);
+  bool reloaded_inner_of_autoinc = false;
 
   if (context == 1)
     context_reg_class = INDEX_REG_CLASS;
@@ -5850,6 +5851,7 @@ find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
 		  find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
 					&XEXP (tem, 0), opnum, type,
 					ind_levels, insn);
+		  reloaded_inner_of_autoinc = true;
 		  if (!rtx_equal_p (tem, orig))
 		    push_reg_equiv_alt_mem (regno, tem);
 		  /* Put this inside a new increment-expression.  */
@@ -5898,7 +5900,10 @@ find_reloads_address_1 (enum machine_mode mode, addr_space_t as,
 #endif
 		  && ! (icode != CODE_FOR_nothing
 			&& insn_operand_matches (icode, 0, equiv)
-			&& insn_operand_matches (icode, 1, equiv)))
+			&& insn_operand_matches (icode, 1, equiv))
+		  /* Using RELOAD_OTHER means we emit this and the reload we
+		     made earlier in the wrong order.  */
+		  && !reloaded_inner_of_autoinc)
 		{
 		  /* We use the original pseudo for loc, so that
 		     emit_reload_insns() knows which pseudo this
