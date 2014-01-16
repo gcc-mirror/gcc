@@ -1,13 +1,13 @@
 extern void abort (void);
 extern void exit (int);
 
-int a[6], b, c = 1, d;
+int a[6], c = 1, d;
 short e;
 
 int __attribute__ ((noinline))
 fn1 (int p)
 {
-  b = a[p];
+  return a[p];
 }
 
 int
