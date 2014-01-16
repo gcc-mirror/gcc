@@ -1,3 +1,10 @@
+2014-01-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/59780
+	* aarch64.c (aarch64_split_128bit_move): Don't lookup REGNO on
+	non-register objects.  Use gen_(high/low)part more consistently.
+	Fix assertions.
+
 2014-01-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/59844
