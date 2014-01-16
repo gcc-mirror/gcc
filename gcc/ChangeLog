@@ -1,3 +1,13 @@
+2014-01-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59844
+	* config/rs6000/rs6000.md (reload_vsx_from_gprsf): Add little
+	endian support, remove tests for WORDS_BIG_ENDIAN.
+	(p8_mfvsrd_3_<mode>): Likewise.
+	(reload_gpr_from_vsx<mode>): Likewise.
+	(reload_gpr_from_vsxsf): Likewise.
+	(p8_mfvsrd_4_disf): Likewise.
+
 2014-01-16  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/46590
