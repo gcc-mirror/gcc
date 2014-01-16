@@ -680,90 +680,82 @@ aarch64_emit_move (rtx dest, rtx src)
 	  : emit_move_insn_1 (dest, src));
 }
 
+/* Split a 128-bit move operation into two 64-bit move operations,
+   taking care to handle partial overlap of register to register
+   copies.  Special cases are needed when moving between GP regs and
+   FP regs.  SRC can be a register, constant or memory; DST a register
+   or memory.  If either operand is memory it must not have any side
+   effects.  */
 void
 aarch64_split_128bit_move (rtx dst, rtx src)
 {
-  rtx low_dst;
+  rtx dst_lo, dst_hi;
+  rtx src_lo, src_hi;
 
-  enum machine_mode src_mode = GET_MODE (src);
-  enum machine_mode dst_mode = GET_MODE (dst);
-  int src_regno = REGNO (src);
-  int dst_regno = REGNO (dst);
+  enum machine_mode mode = GET_MODE (dst);
 
-  gcc_assert (dst_mode == TImode || dst_mode == TFmode);
+  gcc_assert (mode == TImode || mode == TFmode);
+  gcc_assert (!(side_effects_p (src) || side_effects_p (dst)));
+  gcc_assert (mode == GET_MODE (src) || GET_MODE (src) == VOIDmode);
 
   if (REG_P (dst) && REG_P (src))
     {
-      gcc_assert (src_mode == TImode || src_mode == TFmode);
+      int src_regno = REGNO (src);
+      int dst_regno = REGNO (dst);
 
-      /* Handle r -> w, w -> r.  */
+      /* Handle FP <-> GP regs.  */
       if (FP_REGNUM_P (dst_regno) && GP_REGNUM_P (src_regno))
 	{
-	  switch (src_mode) {
-	  case TImode:
-	    emit_insn
-	      (gen_aarch64_movtilow_di (dst, gen_lowpart (word_mode, src)));
-	    emit_insn
-	      (gen_aarch64_movtihigh_di (dst, gen_highpart (word_mode, src)));
-	    return;
-	  case TFmode:
-	    emit_insn
-	      (gen_aarch64_movtflow_di (dst, gen_lowpart (word_mode, src)));
-	    emit_insn
-	      (gen_aarch64_movtfhigh_di (dst, gen_highpart (word_mode, src)));
-	    return;
-	  default:
-	    gcc_unreachable ();
-	  }
+	  src_lo = gen_lowpart (word_mode, src);
+	  src_hi = gen_highpart (word_mode, src);
+
+	  if (mode == TImode)
+	    {
+	      emit_insn (gen_aarch64_movtilow_di (dst, src_lo));
+	      emit_insn (gen_aarch64_movtihigh_di (dst, src_hi));
+	    }
+	  else
+	    {
+	      emit_insn (gen_aarch64_movtflow_di (dst, src_lo));
+	      emit_insn (gen_aarch64_movtfhigh_di (dst, src_hi));
+	    }
+	  return;
 	}
       else if (GP_REGNUM_P (dst_regno) && FP_REGNUM_P (src_regno))
 	{
-	  switch (src_mode) {
-	  case TImode:
-	    emit_insn
-	      (gen_aarch64_movdi_tilow (gen_lowpart (word_mode, dst), src));
-	    emit_insn
-	      (gen_aarch64_movdi_tihigh (gen_highpart (word_mode, dst), src));
-	    return;
-	  case TFmode:
-	    emit_insn
-	      (gen_aarch64_movdi_tflow (gen_lowpart (word_mode, dst), src));
-	    emit_insn
-	      (gen_aarch64_movdi_tfhigh (gen_highpart (word_mode, dst), src));
-	    return;
-	  default:
-	    gcc_unreachable ();
-	  }
+	  dst_lo = gen_lowpart (word_mode, dst);
+	  dst_hi = gen_highpart (word_mode, dst);
+
+	  if (mode == TImode)
+	    {
+	      emit_insn (gen_aarch64_movdi_tilow (dst_lo, src));
+	      emit_insn (gen_aarch64_movdi_tihigh (dst_hi, src));
+	    }
+	  else
+	    {
+	      emit_insn (gen_aarch64_movdi_tflow (dst_lo, src));
+	      emit_insn (gen_aarch64_movdi_tfhigh (dst_hi, src));
+	    }
+	  return;
 	}
-      /* Fall through to r -> r cases.  */
     }
 
-  switch (dst_mode) {
-  case TImode:
-    low_dst = gen_lowpart (word_mode, dst);
-    if (REG_P (low_dst)
-	&& reg_overlap_mentioned_p (low_dst, src))
-      {
-	aarch64_emit_move (gen_highpart (word_mode, dst),
-			   gen_highpart_mode (word_mode, TImode, src));
-	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-      }
-    else
-      {
-	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-	aarch64_emit_move (gen_highpart (word_mode, dst),
-			   gen_highpart_mode (word_mode, TImode, src));
-      }
-    return;
-  case TFmode:
-    emit_move_insn (gen_rtx_REG (DFmode, dst_regno),
-		    gen_rtx_REG (DFmode, src_regno));
-    emit_move_insn (gen_rtx_REG (DFmode, dst_regno + 1),
-		    gen_rtx_REG (DFmode, src_regno + 1));
-    return;
-  default:
-    gcc_unreachable ();
-  }
+  dst_lo = gen_lowpart (word_mode, dst);
+  dst_hi = gen_highpart (word_mode, dst);
+  src_lo = gen_lowpart (word_mode, src);
+  src_hi = gen_highpart_mode (word_mode, mode, src);
+
+  /* At most one pairing may overlap.  */
+  if (reg_overlap_mentioned_p (dst_lo, src_hi))
+    {
+      aarch64_emit_move (dst_hi, src_hi);
+      aarch64_emit_move (dst_lo, src_lo);
+    }
+  else
+    {
+      aarch64_emit_move (dst_lo, src_lo);
+      aarch64_emit_move (dst_hi, src_hi);
+    }
 }
 
 bool
