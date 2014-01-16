@@ -33933,10 +33933,10 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* We implement the move patterns for all vector modes into and
 	 out of SSE registers, even when no operation instructions
-	 are available.  OImode move is available only when AVX is
-	 enabled.  */
-      return ((TARGET_AVX && mode == OImode)
-	      || VALID_AVX256_REG_MODE (mode)
+	 are available.  OImode and AVX modes are available only when
+	 AVX is enabled.  */
+      return ((TARGET_AVX
+	       && VALID_AVX256_REG_OR_OI_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
 	      || VALID_SSE2_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)

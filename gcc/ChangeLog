@@ -1,3 +1,17 @@
+2014-01-16  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2014-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Use
+	VALID_AVX256_REG_OR_OI_MODE.
+
+	2013-09-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/58139
+	* reginfo.c (choose_hard_reg_mode): Scan through all mode classes
+	looking for widest mode.
+
 2014-01-16  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
