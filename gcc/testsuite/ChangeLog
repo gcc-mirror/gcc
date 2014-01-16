@@ -1,3 +1,9 @@
+2014-01-16  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/28865
+	* gcc.c-torture/compile/pr28865.c: New.
+	* gcc.c-torture/execute/pr28865.c: New.
+
 2014-01-16  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/59827
