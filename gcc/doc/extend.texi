@@ -8726,6 +8726,8 @@ means that the compiler can assume for @code{x}, set to @code{arg}, that
 @deftypefn {Built-in Function} int __builtin_LINE ()
 This function is the equivalent to the preprocessor @code{__LINE__}
 macro and returns the line number of the invocation of the built-in.
+In a C++ default argument for a function @var{F}, it gets the line number of
+the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
@@ -8736,6 +8738,8 @@ macro and returns the function name the invocation of the built-in is in.
 @deftypefn {Built-in Function} {const char *} __builtin_FILE ()
 This function is the equivalent to the preprocessor @code{__FILE__}
 macro and returns the file name the invocation of the built-in is in.
+In a C++ default argument for a function @var{F}, it gets the file name of
+the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
