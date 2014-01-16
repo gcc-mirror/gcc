@@ -1,3 +1,9 @@
+2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59835
+	* ira.c (ira_init_register_move_cost): Increase cost for
+	impossible modes.
+
 2014-01-16  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/arm.opt: Make -mcpu, -march, -mtune case-insensitive.
