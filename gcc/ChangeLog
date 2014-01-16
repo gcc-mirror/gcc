@@ -1,3 +1,10 @@
+2014-01-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/56791
+	* reload.c (find_reloads_address_1): Do not use RELOAD_OTHER when
+	pushing a reload for an autoinc when we had previously reloaded an
+	inner part of the address.
+
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vectorizer.h (struct _loop_vec_info): Add no_data_dependencies
