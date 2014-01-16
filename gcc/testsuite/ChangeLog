@@ -1,3 +1,11 @@
+2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59827
+	* gcc.dg/pr59827.c: New test.
+
 2014-01-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR rtl-optimization/54300
