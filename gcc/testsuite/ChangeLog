@@ -1,5 +1,8 @@
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59839
+	* gcc.target/i386/pr59839.c: New test.
+
 	PR debug/54694
 	* gcc.target/i386/pr9771-1.c (main): Rename to...
 	(real_main): ... this.  Add __asm name "main".

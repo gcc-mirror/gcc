@@ -1,3 +1,10 @@
+2014-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59839
+	* config/i386/i386.c (ix86_expand_builtin): If target doesn't
+	satisfy operand 0 predicate for gathers, use a new pseudo as
+	subtarget.
+
 2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/59609
