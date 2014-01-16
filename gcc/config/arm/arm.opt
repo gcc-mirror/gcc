@@ -77,7 +77,7 @@ mapcs-stack-check
 Target Report Mask(APCS_STACK) Undocumented
 
 march=
-Target RejectNegative Joined Enum(arm_arch) Var(arm_arch_option)
+Target RejectNegative ToLower Joined Enum(arm_arch) Var(arm_arch_option)
 Specify the name of the target architecture
 
 ; Other arm_arch values are loaded from arm-tables.opt
@@ -102,7 +102,7 @@ Target Report Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code
 
 mcpu=
-Target RejectNegative Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_cpu_option) Init(arm_none)
 Specify the name of the target CPU
 
 mfloat-abi=
@@ -223,7 +223,7 @@ Target Report Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed
 
 mtune=
-Target RejectNegative Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
+Target RejectNegative ToLower Joined Enum(processor_type) Var(arm_tune_option) Init(arm_none)
 Tune code for the given processor
 
 ; Other processor_type values are loaded from arm-tables.opt

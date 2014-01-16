@@ -1,3 +1,7 @@
+2014-01-16  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/arm.opt: Make -mcpu, -march, -mtune case-insensitive.
+
 2014-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/59780
