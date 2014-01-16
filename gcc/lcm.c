@@ -109,11 +109,15 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
-  FOR_EACH_BB_REVERSE_FN (bb, cfun)
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = post_order_compute (postorder, false, false);
+  for (int i = 0; i < postorder_num; ++i)
     {
+      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (postorder);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
@@ -281,11 +285,18 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  FOR_EACH_BB_FN (bb, cfun)
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = inverted_post_order_compute (postorder);
+  for (int i = 0; i < postorder_num; ++i)
     {
+      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+      if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	continue;
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (postorder);
 
   /* Note that we do not use the last allocated element for our queue,
      as EXIT_BLOCK is never inserted into it. */
@@ -307,14 +318,14 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
       bitmap_ones (laterin[bb->index]);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	bitmap_and (laterin[bb->index], laterin[bb->index],
-			 later[(size_t)e->aux]);
+		    later[(size_t)e->aux]);
 
       /* Calculate LATER for all outgoing edges.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (bitmap_ior_and_compl (later[(size_t) e->aux],
-				      earliest[(size_t) e->aux],
-				      laterin[e->src->index],
-				      antloc[e->src->index])
+				  earliest[(size_t) e->aux],
+				  laterin[bb->index],
+				  antloc[bb->index])
 	    /* If LATER for an outgoing edge was changed, then we need
 	       to add the target of the outgoing edge to the worklist.  */
 	    && e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun) && e->dest->aux == 0)
@@ -333,8 +344,8 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
   bitmap_ones (laterin[last_basic_block_for_fn (cfun)]);
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     bitmap_and (laterin[last_basic_block_for_fn (cfun)],
-		     laterin[last_basic_block_for_fn (cfun)],
-		     later[(size_t) e->aux]);
+		laterin[last_basic_block_for_fn (cfun)],
+		later[(size_t) e->aux]);
 
   clear_aux_for_edges ();
   free (worklist);

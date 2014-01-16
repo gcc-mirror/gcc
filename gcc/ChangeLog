@@ -1,3 +1,9 @@
+2014-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/46590
+	* lcm.c (compute_antinout_edge): Use postorder iteration.
+	(compute_laterin): Use inverted postorder iteration.
+
 2014-01-16  Nick Clifton  <nickc@redhat.com>
 
 	PR middle-end/28865
