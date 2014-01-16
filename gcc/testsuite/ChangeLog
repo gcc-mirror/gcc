@@ -1,3 +1,10 @@
+2014-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54694
+	* gcc.target/i386/pr9771-1.c (main): Rename to...
+	(real_main): ... this.  Add __asm name "main".
+	(ASMNAME, ASMNAME2, STRING): Define.
+
 2014-01-16  Nick Clifton  <nickc@redhat.com>
 
 	PR middle-end/28865
