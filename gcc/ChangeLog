@@ -1,3 +1,8 @@
+2014-01-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Use
+	VALID_AVX256_REG_OR_OI_MODE.
+
 2014-01-15  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Check if
@@ -142,9 +147,8 @@
 
 	PR target/59794
 	* config/i386/i386.c (type_natural_mode): Add a bool parameter
-	to indicate if type is used for function return value.  Warn
-	ABI change if the vector mode isn't available for function
-	return value.
+	to indicate if type is used for function return value.  Warn ABI
+	change if the vector mode isn't available for function return value.
 	(ix86_function_arg_advance): Pass false to type_natural_mode.
 	(ix86_function_arg): Likewise.
 	(ix86_gimplify_va_arg): Likewise.
@@ -201,8 +205,10 @@
 	(<sse4_1_avx2>_movntdqa): Extend to 512 bits.
 	(avx512er_exp2<mode><mask_name><round_saeonly_name>):
 	Fix rounding: make it SAE only.
-	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>): Ditto.
-	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>): Ditto.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>):
+	Ditto.
 	(avx512er_vmrcp28<mode><round_saeonly_name>): Ditto.
 	(avx512er_vmrsqrt28<mode><round_saeonly_name>): Ditto.
 	(avx512f_getmant<mode><mask_name><round_saeonly_name>): Ditto.
@@ -316,8 +322,8 @@
 2014-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/58585
-	* ipa-devirt.c (build_type_inheritance_graph): Also add types of vtables
-	into the type inheritance graph.
+	* ipa-devirt.c (build_type_inheritance_graph): Also add types of
+	vtables into the type inheritance graph.
 
 2014-01-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -475,17 +481,17 @@
 
 2014-01-09  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
-	* cfgexpand.c (expand_stack_vars): Optionally disable 
+	* cfgexpand.c (expand_stack_vars): Optionally disable
 	asan stack protection.
 	(expand_used_vars): Likewise.
 	(partition_stack_vars): Likewise.
-	* asan.c (asan_emit_stack_protection): Optionally disable 
+	* asan.c (asan_emit_stack_protection): Optionally disable
 	after return stack usage.
-	(instrument_derefs): Optionally disable memory 
+	(instrument_derefs): Optionally disable memory
 	access instrumentation.
 	(instrument_builtin_call): Likewise.
 	(instrument_strlen_call): Likewise.
-	(asan_protect_global): Optionally disable 
+	(asan_protect_global): Optionally disable
 	global variables protection.
 	* doc/invoke.texi: Added doc for new options.
 	* params.def: Added new options.
@@ -512,7 +518,8 @@
 
 2014-01-08  Catherine Moore  <clm@codesourcery.com>
 
-	* config/mips/mips.md (simple_return): Attempt to use JRC for microMIPS.
+	* config/mips/mips.md (simple_return): Attempt to use JRC
+	for microMIPS.
 	* config/mips/mips.h (MIPS_CALL): Attempt to use JALS for microMIPS.
 
 2014-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
@@ -557,7 +564,7 @@
 	(store_expr): Adjust.
 	* cfgexpand.c (expand_call_stmt): Adjust.
 
-2014-01-08  Rong Xu  <xur@google.com> 
+2014-01-08  Rong Xu  <xur@google.com>
 
 	* gcov-io.c (gcov_var): Move from gcov-io.h.
 	(gcov_position): Ditto.
@@ -610,12 +617,10 @@
 	PR middle-end/53623
 	* ree.c (combine_set_extension): Handle case where source
 	and destination registers in an extension insn are different.
-	(combine_reaching_defs): Allow source and destination
-	registers in extension to be different under limited
-	circumstances.
+	(combine_reaching_defs): Allow source and destination registers
+	in extension to be different under limited circumstances.
 	(add_removable_extension): Remove restriction that the
-	source and destination registers in the extension are the
-	same.
+	source and destination registers in the extension are the same.
 	(find_and_remove_re): Emit a copy from the extension's
 	destination to its source after the defining insn if
 	the source and destination registers are different.
@@ -640,8 +645,7 @@
 
 	PR 57386/target
 	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):
-	Only check TFmode for SPE constants.  Don't check TImode or
-	TDmode.
+	Only check TFmode for SPE constants.  Don't check TImode or TDmode.
 
 2014-01-07  James Greenhalgh  <james.greenhalgh@arm.com>
 

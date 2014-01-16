@@ -1047,7 +1047,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
    || (MODE) == V4DFmode)
 
-#define VALID_AVX256_REG_OR_OI_MODE(MODE)					\
+#define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
   (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
 
 #define VALID_AVX512F_SCALAR_MODE(MODE)					\

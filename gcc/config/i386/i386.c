@@ -37473,9 +37473,9 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
       if (EXT_REX_SSE_REGNO_P (regno))
 	return false;
 
-      /* OImode move is available only when AVX is enabled.  */
-      return ((TARGET_AVX && mode == OImode)
-	      || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
+      /* OImode and AVX modes are available only when AVX is enabled.  */
+      return ((TARGET_AVX
+	       && VALID_AVX256_REG_OR_OI_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
 	      || VALID_SSE2_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
