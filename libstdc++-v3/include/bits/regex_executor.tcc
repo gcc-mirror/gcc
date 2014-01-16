@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  _M_match_queue->push(make_pair(_M_start_state, _M_results));
+	  _M_match_queue->push_back(make_pair(_M_start_state, _M_results));
 	  bool __ret = false;
 	  while (1)
 	    {
@@ -120,10 +120,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		break;
 	      _M_visited->assign(_M_visited->size(), false);
 	      auto _M_old_queue = std::move(*_M_match_queue);
-	      while (!_M_old_queue.empty())
+	      for (auto __task : _M_old_queue)
 		{
-		  auto __task = _M_old_queue.front();
-		  _M_old_queue.pop();
 		  _M_cur_results = __task.second;
 		  _M_dfs<__match_mode>(__task.first);
 		}
@@ -279,7 +277,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  else
 	    if (__state._M_matches(*_M_current))
-	      _M_match_queue->push(make_pair(__state._M_next, _M_cur_results));
+	      _M_match_queue->push_back(make_pair(__state._M_next,
+						  _M_cur_results));
 	  break;
 	// First fetch the matched result from _M_cur_results as __submatch;
 	// then compare it with

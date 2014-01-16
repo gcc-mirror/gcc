@@ -39,19 +39,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  template<typename _TraitsT>
+  template<typename, bool, bool>
     struct _BracketMatcher;
 
   /// Builds an NFA from an input iterator interval.
-  template<typename _FwdIter, typename _TraitsT>
+  template<typename _TraitsT>
     class _Compiler
     {
     public:
-      typedef typename _TraitsT::string_type      _StringT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef const _CharT*                       _IterT;
       typedef _NFA<_TraitsT>              	  _RegexT;
       typedef regex_constants::syntax_option_type _FlagT;
 
-      _Compiler(_FwdIter __b, _FwdIter __e,
+      _Compiler(_IterT __b, _IterT __e,
 		const _TraitsT& __traits, _FlagT __flags);
 
       std::shared_ptr<_RegexT>
@@ -59,12 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return make_shared<_RegexT>(std::move(_M_nfa)); }
 
     private:
-      typedef _Scanner<_FwdIter>                              _ScannerT;
-      typedef typename _ScannerT::_TokenT                     _TokenT;
-      typedef _StateSeq<_TraitsT>                     	      _StateSeqT;
-      typedef std::stack<_StateSeqT, std::vector<_StateSeqT>> _StackT;
-      typedef _BracketMatcher<_TraitsT>			      _BMatcherT;
-      typedef std::ctype<typename _TraitsT::char_type>        _CtypeT;
+      typedef _Scanner<_CharT>               _ScannerT;
+      typedef typename _TraitsT::string_type _StringT;
+      typedef typename _ScannerT::_TokenT    _TokenT;
+      typedef _StateSeq<_TraitsT>            _StateSeqT;
+      typedef std::stack<_StateSeqT>         _StackT;
+      typedef std::ctype<_CharT>             _CtypeT;
 
       // accepts a specific token or returns false.
       bool
@@ -91,20 +92,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_bracket_expression();
 
-      void
-      _M_expression_term(_BMatcherT& __matcher);
+      template<bool __icase, bool __collate>
+	void
+	_M_insert_any_matcher_ecma();
 
-      bool
-      _M_range_expression(_BMatcherT& __matcher);
+      template<bool __icase, bool __collate>
+	void
+	_M_insert_any_matcher_posix();
 
-      bool
-      _M_collating_symbol(_BMatcherT& __matcher);
+      template<bool __icase, bool __collate>
+	void
+	_M_insert_char_matcher();
 
-      bool
-      _M_equivalence_class(_BMatcherT& __matcher);
+      template<bool __icase, bool __collate>
+	void
+	_M_insert_character_class_matcher();
 
-      bool
-      _M_character_class(_BMatcherT& __matcher);
+      template<bool __icase, bool __collate>
+	void
+	_M_insert_bracket_matcher(bool __neg);
+
+      template<bool __icase, bool __collate>
+	void
+	_M_expression_term(_BracketMatcher<_TraitsT, __icase, __collate>&
+			   __matcher);
 
       int
       _M_cur_int_value(int __radix);
@@ -129,33 +140,119 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StackT         _M_stack;
     };
 
-  template<typename _FwdIter, typename _TraitsT>
-    inline __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last, const _TraitsT& __traits,
+  template<typename _TraitsT>
+    inline std::shared_ptr<_NFA<_TraitsT>>
+    __compile_nfa(const typename _TraitsT::char_type* __first,
+		  const typename _TraitsT::char_type* __last,
+		  const _TraitsT& __traits,
 		  regex_constants::syntax_option_type __flags)
     {
-      using _Cmplr = _Compiler<_FwdIter, _TraitsT>;
+      using _Cmplr = _Compiler<_TraitsT>;
       return _Cmplr(__first, __last, __traits, __flags)._M_get_nfa();
     }
 
-  template<typename _Iter, typename _TraitsT>
-    inline __enable_if_contiguous_normal_iter<_Iter, _TraitsT>
-    __compile_nfa(_Iter __first, _Iter __last, const _TraitsT& __traits,
-		  regex_constants::syntax_option_type __flags)
+  // [28.13.14]
+  template<typename _TraitsT, bool __icase, bool __collate>
+    class _RegexTranslator
     {
-      size_t __len = __last - __first;
-      const auto* __cfirst = __len ? std::__addressof(*__first) : nullptr;
-      return __compile_nfa(__cfirst, __cfirst + __len, __traits, __flags);
-    }
+    public:
+      typedef typename _TraitsT::char_type	      _CharT;
+      typedef typename _TraitsT::string_type	      _StringT;
+      typedef typename std::conditional<__collate,
+					_StringT,
+					_CharT>::type _StrTransT;
 
-  template<typename _TraitsT, bool __is_ecma>
-    struct _AnyMatcher
+      explicit
+      _RegexTranslator(const _TraitsT& __traits)
+      : _M_traits(__traits)
+      { }
+
+      _CharT
+      _M_translate(_CharT __ch) const
+      {
+	if (__icase)
+	  return _M_traits.translate_nocase(__ch);
+	else if (__collate)
+	  return _M_traits.translate(__ch);
+	else
+	  return __ch;
+      }
+
+      _StrTransT
+      _M_transform(_CharT __ch) const
+      {
+	return _M_transform_impl(__ch, typename integral_constant<bool,
+				 __collate>::type());
+      }
+
+    private:
+      _StrTransT
+      _M_transform_impl(_CharT __ch, false_type) const
+      { return __ch; }
+
+      _StrTransT
+      _M_transform_impl(_CharT __ch, true_type) const
+      {
+	_StrTransT __str = _StrTransT(1, _M_translate(__ch));
+	return _M_traits.transform(__str.begin(), __str.end());
+      }
+
+      const _TraitsT& _M_traits;
+    };
+
+  template<typename _TraitsT>
+    class _RegexTranslator<_TraitsT, false, false>
     {
-      typedef typename _TraitsT::char_type	  _CharT;
+    public:
+      typedef typename _TraitsT::char_type _CharT;
+      typedef _CharT                       _StrTransT;
+
+      explicit
+      _RegexTranslator(const _TraitsT& __traits)
+      { }
+
+      _CharT
+      _M_translate(_CharT __ch) const
+      { return __ch; }
+
+      _StrTransT
+      _M_transform(_CharT __ch) const
+      { return __ch; }
+    };
+
+  template<typename _TraitsT, bool __is_ecma, bool __icase, bool __collate>
+    struct _AnyMatcher;
+
+  template<typename _TraitsT, bool __icase, bool __collate>
+    struct _AnyMatcher<_TraitsT, false, __icase, __collate>
+    {
+      typedef _RegexTranslator<_TraitsT, __icase, __collate> _TransT;
+      typedef typename _TransT::_CharT                       _CharT;
 
       explicit
       _AnyMatcher(const _TraitsT& __traits)
-      : _M_traits(__traits)
+      : _M_translator(__traits)
+      { }
+
+      bool
+      operator()(_CharT __ch) const
+      {
+	static auto __nul = _M_translator._M_translate('\0');
+	return _M_translator._M_translate(__ch) != __nul;
+      }
+
+      _TransT _M_translator;
+    };
+
+  template<typename _TraitsT, bool __icase, bool __collate>
+    struct _AnyMatcher<_TraitsT, true, __icase, __collate>
+    {
+      typedef _RegexTranslator<_TraitsT, __icase, __collate> _TransT;
+      typedef typename _TransT::_CharT                       _CharT;
+
+      explicit
+      _AnyMatcher(const _TraitsT& __traits)
+      : _M_translator(__traits)
       { }
 
       bool
@@ -165,92 +262,63 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_apply(_CharT __ch, true_type) const
       {
-	auto __c = _M_traits.translate(__ch);
-	if (__is_ecma)
-	  {
-	    static auto __n = _M_traits.translate('\n');
-	    static auto __r = _M_traits.translate('\r');
-	    return __c != __n && __c != __r;
-	  }
-	else
-	  {
-	    static auto __nul = _M_traits.translate('\0');
-	    return __c != __nul;
-	  }
+	auto __c = _M_translator._M_translate(__ch);
+	auto __n = _M_translator._M_translate('\n');
+	auto __r = _M_translator._M_translate('\r');
+	return __c != __n && __c != __r;
       }
 
       bool
       _M_apply(_CharT __ch, false_type) const
       {
-	auto __c = _M_traits.translate(__ch);
-	if (__is_ecma)
-	  {
-	    static auto __n = _M_traits.translate('\n');
-	    static auto __r = _M_traits.translate('\r');
-	    static auto __u2028 = _M_traits.translate(u'\u2028');
-	    static auto __u2029 = _M_traits.translate(u'\u2029');
-	    return __c != __n && __c != __r && __c != __u2028
-	      && __c != __u2029;
-	  }
-	else
-	  {
-	    static auto __nul = _M_traits.translate('\0');
-	    return __c != __nul;
-	  }
+	auto __c = _M_translator._M_translate(__ch);
+	auto __n = _M_translator._M_translate('\n');
+	auto __r = _M_translator._M_translate('\r');
+	auto __u2028 = _M_translator._M_translate(u'\u2028');
+	auto __u2029 = _M_translator._M_translate(u'\u2029');
+	return __c != __n && __c != __r && __c != __u2028 && __c != __u2029;
       }
 
-      const _TraitsT& _M_traits;
+      _TransT _M_translator;
     };
 
-  template<typename _TraitsT, bool __icase>
+  template<typename _TraitsT, bool __icase, bool __collate>
     struct _CharMatcher
     {
-      typedef typename _TraitsT::char_type	  _CharT;
+      typedef _RegexTranslator<_TraitsT, __icase, __collate> _TransT;
+      typedef typename _TransT::_CharT                       _CharT;
 
       _CharMatcher(_CharT __ch, const _TraitsT& __traits)
-      : _M_traits(__traits), _M_ch(_M_translate(__ch))
+      : _M_translator(__traits), _M_ch(_M_translator._M_translate(__ch))
       { }
 
       bool
       operator()(_CharT __ch) const
-      { return _M_ch == _M_translate(__ch); }
+      { return _M_ch == _M_translator._M_translate(__ch); }
 
-      _CharT
-      _M_translate(_CharT __ch) const
-      {
-	if (__icase)
-	  return _M_traits.translate_nocase(__ch);
-	else
-	  return _M_traits.translate(__ch);
-      }
-
-      const _TraitsT& _M_traits;
-      _CharT          _M_ch;
+      _TransT _M_translator;
+      _CharT  _M_ch;
     };
 
   /// Matches a character range (bracket expression)
-  // TODO: Convert used _M_flags fields to template parameters, including
-  // collate and icase. Avoid using std::set, could use flat_set
-  // (sorted vector and binary search) instead.
-  template<typename _TraitsT>
+  template<typename _TraitsT, bool __icase, bool __collate>
     struct _BracketMatcher
     {
     public:
-      typedef typename _TraitsT::char_type	  _CharT;
-      typedef typename _TraitsT::char_class_type  _CharClassT;
-      typedef typename _TraitsT::string_type      _StringT;
-      typedef regex_constants::syntax_option_type _FlagT;
+      typedef _RegexTranslator<_TraitsT, __icase, __collate> _TransT;
+      typedef typename _TransT::_CharT                       _CharT;
+      typedef typename _TransT::_StrTransT                   _StrTransT;
+      typedef typename _TraitsT::string_type                 _StringT;
+      typedef typename _TraitsT::char_class_type             _CharClassT;
 
     public:
       _BracketMatcher(bool __is_non_matching,
-		      const _TraitsT& __traits,
-		      _FlagT __flags)
-      :
-#ifdef _GLIBCXX_DEBUG
-      _M_is_ready(false),
-#endif
-      _M_traits(__traits), _M_class_set(0), _M_flags(__flags),
+		      const _TraitsT& __traits)
+      : _M_class_set(0), _M_translator(__traits), _M_traits(__traits),
       _M_is_non_matching(__is_non_matching)
+#ifdef _GLIBCXX_DEBUG
+      , _M_is_ready(false)
+#endif
       { }
 
       bool
@@ -263,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_add_char(_CharT __c)
       {
-	_M_char_set.insert(_M_translate(__c));
+	_M_char_set.push_back(_M_translator._M_translate(__c));
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -276,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s.data() + __s.size());
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
-	_M_char_set.insert(_M_translate(__st[0]));
+	_M_char_set.push_back(_M_translator._M_translate(__st[0]));
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -291,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __throw_regex_error(regex_constants::error_collate);
 	__st = _M_traits.transform_primary(__st.data(),
 					   __st.data() + __st.size());
-	_M_equiv_set.insert(__st);
+	_M_equiv_set.push_back(__st);
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -302,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	auto __mask = _M_traits.lookup_classname(__s.data(),
 						 __s.data() + __s.size(),
-						 _M_is_icase());
+						 __icase);
 	if (__mask == 0)
 	  __throw_regex_error(regex_constants::error_ctype);
 	_M_class_set |= __mask;
@@ -314,12 +382,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_make_range(_CharT __l, _CharT __r)
       {
-	if (_M_flags & regex_constants::collate)
-	  _M_range_set.insert(
-	    make_pair(_M_get_str(_M_translate(__l)),
-		      _M_get_str(_M_translate(__r))));
-	else
-	  _M_range_set.insert(make_pair(_M_get_str(__l), _M_get_str(__r)));
+	_M_range_set.push_back(make_pair(_M_translator._M_transform(__l),
+				      _M_translator._M_transform(__r)));
 #ifdef _GLIBCXX_DEBUG
 	_M_is_ready = false;
 #endif
@@ -350,26 +414,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_apply(_CharT __ch, true_type) const
       { return _M_cache[static_cast<_UnsignedCharT>(__ch)]; }
 
-      _CharT
-      _M_translate(_CharT __c) const
-      {
-	if (_M_is_icase())
-	  return _M_traits.translate_nocase(__c);
-	else
-	  return _M_traits.translate(__c);
-      }
-
-      bool
-      _M_is_icase() const
-      { return _M_flags & regex_constants::icase; }
-
-      _StringT
-      _M_get_str(_CharT __c) const
-      {
-	_StringT __s(1, __c);
-	return _M_traits.transform(__s.begin(), __s.end());
-      }
-
       void
       _M_make_cache(true_type)
       {
@@ -383,16 +427,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
     private:
-      _CacheT                            _M_cache;
-      std::set<_CharT>                   _M_char_set;
-      std::set<_StringT>                 _M_equiv_set;
-      std::set<pair<_StringT, _StringT>> _M_range_set;
-      const _TraitsT&                    _M_traits;
-      _CharClassT                        _M_class_set;
-      _FlagT                             _M_flags;
-      bool                               _M_is_non_matching;
+      _CacheT                                   _M_cache;
+      std::vector<_CharT>                       _M_char_set;
+      std::vector<_StringT>                     _M_equiv_set;
+      std::vector<pair<_StrTransT, _StrTransT>> _M_range_set;
+      _CharClassT                               _M_class_set;
+      _TransT                                   _M_translator;
+      const _TraitsT&                           _M_traits;
+      bool                                      _M_is_non_matching;
 #ifdef _GLIBCXX_DEBUG
-      bool                               _M_is_ready;
+      bool                                      _M_is_ready;
 #endif
     };
 
