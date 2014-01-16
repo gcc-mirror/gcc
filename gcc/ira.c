@@ -1587,7 +1587,7 @@ ira_init_register_move_cost (enum machine_mode mode)
 	      cost = 65535;
 	    else
 	      cost = (ira_memory_move_cost[mode][cl1][0]
-		      + ira_memory_move_cost[mode][cl2][1]);
+		      + ira_memory_move_cost[mode][cl2][1]) * 2;
 	  }
 	else
 	  {
