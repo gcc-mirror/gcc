@@ -1,3 +1,12 @@
+2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59827
+	* gimple-low.c (gimple_check_call_args): Don't use DECL_ARG_TYPE if
+	it is error_mark_node.
+
 2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/59803
