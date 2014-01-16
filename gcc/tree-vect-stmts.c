@@ -5504,6 +5504,8 @@ hoist_defs_of_uses (gimple stmt, struct loop *loop)
 	     dependencies within them.  */
 	  tree op2;
 	  ssa_op_iter i2;
+	  if (gimple_code (def_stmt) == GIMPLE_PHI)
+	    return false;
 	  FOR_EACH_SSA_TREE_OPERAND (op2, def_stmt, i2, SSA_OP_USE)
 	    {
 	      gimple def_stmt2 = SSA_NAME_DEF_STMT (op2);
@@ -6434,10 +6436,12 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      if (inv_p && !bb_vinfo)
 		{
 		  gcc_assert (!grouped_load);
-		  /* If we have versioned for aliasing then we are sure
-		     this is a loop invariant load and thus we can insert
-		     it on the preheader edge.  */
-		  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo)
+		  /* If we have versioned for aliasing or the loop doesn't
+		     have any data dependencies that would preclude this,
+		     then we are sure this is a loop invariant load and
+		     thus we can insert it on the preheader edge.  */
+		  if (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
+		      && !nested_in_vect_loop
 		      && hoist_defs_of_uses (stmt, loop))
 		    {
 		      if (dump_enabled_p ())

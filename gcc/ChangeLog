@@ -1,5 +1,18 @@
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vectorizer.h (struct _loop_vec_info): Add no_data_dependencies
+	field.
+	(LOOP_VINFO_NO_DATA_DEPENDENCIES): Define.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Clear it
+	when not giving up or versioning for alias only because of
+	loop->safelen.
+	(vect_analyze_data_ref_dependences): Set to true.
+	* tree-vect-stmts.c (hoist_defs_of_uses): Return false if def_stmt
+	is a GIMPLE_PHI.
+	(vectorizable_load): Use LOOP_VINFO_NO_DATA_DEPENDENCIES instead of
+	LOOP_REQUIRES_VERSIONING_FOR_ALIAS, add && !nested_in_vect_loop
+	to the condition.
+
 	PR middle-end/58344
 	* expr.c (expand_expr_real_1): Handle init == NULL_TREE.
 
