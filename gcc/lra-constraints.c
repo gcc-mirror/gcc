@@ -1710,7 +1710,6 @@ process_alt_operands (int only_alternative)
 			    && MEM_P (*curr_id->operand_loc[m])
 			    && curr_alt[m] == NO_REGS && ! curr_alt_win[m])
 			  continue;
-
 		      }
 		    else
 		      {
@@ -2082,7 +2081,8 @@ process_alt_operands (int only_alternative)
 		  int i;
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (HARD_REGNO_MODE_OK (i, mode)
-			&& in_hard_reg_set_p (reg_class_contents[this_alternative], mode, i))
+			&& in_hard_reg_set_p (reg_class_contents[this_alternative],
+					      mode, i))
 		      break;
 		  if (i == FIRST_PSEUDO_REGISTER)
 		    winreg = false;
@@ -2095,7 +2095,13 @@ process_alt_operands (int only_alternative)
 		badop = false;
 
 	      if (badop)
-		goto fail;
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf (lra_dump_file,
+			     "            alt=%d: Bad operand -- refuse\n",
+			     nalt);
+		  goto fail;
+		}
 
 	      this_alternative_offmemok = offmemok;
 	      if (this_costly_alternative != NO_REGS)
@@ -2132,7 +2138,14 @@ process_alt_operands (int only_alternative)
 					       [this_alternative][0],
 					       GET_MODE
 					       (*curr_id->operand_loc[nop])))
-		    goto fail;
+		    {
+		      if (lra_dump_file != NULL)
+			fprintf
+			  (lra_dump_file,
+			   "            alt=%d: Strict low subreg reload -- refuse\n",
+			   nalt);
+		      goto fail;
+		    }
 		  losers++;
 		}
 	      if (operand_reg[nop] != NULL_RTX
@@ -2175,8 +2188,17 @@ process_alt_operands (int only_alternative)
 		   && no_output_reloads_p
 		   && ! find_reg_note (curr_insn, REG_UNUSED, op))
 		  || (curr_static_id->operand[nop].type != OP_OUT
-		      && no_input_reloads_p && ! const_to_mem))
-		goto fail;
+		      && no_input_reloads_p && ! const_to_mem)
+		  || (this_alternative_matches >= 0
+		      && (no_input_reloads_p || no_output_reloads_p)))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            alt=%d: No input/otput reload -- refuse\n",
+		       nalt);
+		  goto fail;
+		}
 
 	      /* Check strong discouragement of reload of non-constant
 		 into class THIS_ALTERNATIVE.  */

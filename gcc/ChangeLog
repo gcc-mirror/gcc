@@ -1,5 +1,12 @@
 2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR middle-end/59609
+	* lra-constraints.c (process_alt_operands): Add printing debug
+	info.  Check absence of input/output reloads for matched operands
+	too.
+
+2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/59835
 	* ira.c (ira_init_register_move_cost): Increase cost for
 	impossible modes.
