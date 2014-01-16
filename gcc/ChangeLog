@@ -1,5 +1,8 @@
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/58344
+	* expr.c (expand_expr_real_1): Handle init == NULL_TREE.
+
 	PR target/59839
 	* config/i386/i386.c (ix86_expand_builtin): If target doesn't
 	satisfy operand 0 predicate for gathers, use a new pseudo as
