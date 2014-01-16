@@ -1,3 +1,9 @@
+2014-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59821
+	* tree.c (bot_manip): Update the location of builtin_LINE and
+	builtin_FILE calls.
+
 2014-01-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59659

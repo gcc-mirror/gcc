@@ -2306,7 +2306,20 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
   /* Make a copy of this node.  */
   t = copy_tree_r (tp, walk_subtrees, NULL);
   if (TREE_CODE (*tp) == CALL_EXPR)
-    set_flags_from_callee (*tp);
+    {
+      set_flags_from_callee (*tp);
+
+      /* builtin_LINE and builtin_FILE get the location where the default
+	 argument is expanded, not where the call was written.  */
+      tree callee = get_callee_fndecl (*tp);
+      if (callee && DECL_BUILT_IN (callee))
+	switch (DECL_FUNCTION_CODE (callee))
+	  {
+	  case BUILT_IN_FILE:
+	  case BUILT_IN_LINE:
+	    SET_EXPR_LOCATION (*tp, input_location);
+	  }
+    }
   return t;
 }
 
