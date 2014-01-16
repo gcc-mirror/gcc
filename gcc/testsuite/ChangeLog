@@ -1,3 +1,8 @@
+2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59827
+	* gcc.dg/pr59827.c: New test.
+
 2014-01-16  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.c-torture/execute/pr59747.c (fn1): Return a value.

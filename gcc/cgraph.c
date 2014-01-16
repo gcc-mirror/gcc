@@ -3035,6 +3035,7 @@ gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
 	    break;
 	  arg = gimple_call_arg (stmt, i);
 	  if (p == error_mark_node
+	      || DECL_ARG_TYPE (p) == error_mark_node
 	      || arg == error_mark_node
 	      || (!types_compatible_p (DECL_ARG_TYPE (p), TREE_TYPE (arg))
 		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))

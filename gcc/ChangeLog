@@ -1,3 +1,9 @@
+2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59827
+	* cgraph.c (gimple_check_call_args): Don't use DECL_ARG_TYPE if
+	it is error_mark_node.
+
 2014-01-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_hard_regno_mode_ok): Use
