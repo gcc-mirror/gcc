@@ -60,51 +60,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename, typename, typename, bool>
     class _Executor;
 
-  template<typename _Tp>
-    struct __has_contiguous_iter : std::false_type { };
-
-  template<typename _Ch, typename _Tr, typename _Alloc>
-    struct __has_contiguous_iter<std::basic_string<_Ch, _Tr, _Alloc>>
-    : std::true_type  // string<Ch> storage is contiguous
-    { };
-
-  template<typename _Tp, typename _Alloc>
-    struct __has_contiguous_iter<std::vector<_Tp, _Alloc>>
-    : std::true_type  // vector<Tp> storage is contiguous
-    { };
-
-  template<typename _Alloc>
-    struct __has_contiguous_iter<std::vector<bool, _Alloc>>
-    : std::false_type // vector<bool> storage is not contiguous
-    { };
-
-  template<typename _Tp>
-    struct __is_contiguous_normal_iter : std::false_type { };
-
-  template<typename _Tp, typename _Cont>
-    struct
-    __is_contiguous_normal_iter<__gnu_cxx::__normal_iterator<_Tp, _Cont>>
-    : __has_contiguous_iter<_Cont>::type
-    { };
-
-  template<typename _Iter, typename _TraitsT>
-    using __enable_if_contiguous_normal_iter
-      = typename enable_if< __is_contiguous_normal_iter<_Iter>::value,
-			    std::shared_ptr<_NFA<_TraitsT>> >::type;
-
-  template<typename _Iter, typename _TraitsT>
-    using __disable_if_contiguous_normal_iter
-      = typename enable_if< !__is_contiguous_normal_iter<_Iter>::value,
-			    std::shared_ptr<_NFA<_TraitsT>> >::type;
-
-  template<typename _FwdIter, typename _TraitsT>
-    __disable_if_contiguous_normal_iter<_FwdIter, _TraitsT>
-    __compile_nfa(_FwdIter __first, _FwdIter __last, const _TraitsT& __traits,
-		  regex_constants::syntax_option_type __flags);
-
-  template<typename _Iter, typename _TraitsT>
-    __enable_if_contiguous_normal_iter<_Iter, _TraitsT>
-    __compile_nfa(_Iter __first, _Iter __last, const _TraitsT& __traits,
+  template<typename _TraitsT>
+    inline std::shared_ptr<_NFA<_TraitsT>>
+    __compile_nfa(const typename _TraitsT::char_type* __first,
+		  const typename _TraitsT::char_type* __last,
+		  const _TraitsT& __traits,
 		  regex_constants::syntax_option_type __flags);
 
 _GLIBCXX_END_NAMESPACE_VERSION
@@ -561,7 +521,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    flag_type __f = ECMAScript)
 	: _M_flags(__f),
 	  _M_original_str(__first, __last),
-	  _M_automaton(__detail::__compile_nfa(__first, __last, _M_traits,
+	  _M_automaton(__detail::__compile_nfa(_M_original_str.c_str(),
+					       _M_original_str.c_str()
+						 + _M_original_str.size(),
+					       _M_traits,
 					       _M_flags))
 	{ }
 
@@ -698,7 +661,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _M_flags = __flags;
 	  _M_original_str.assign(__s.begin(), __s.end());
-	  _M_automaton = __detail::__compile_nfa(__s.begin(), __s.end(),
+	  auto __p = _M_original_str.c_str();
+	  _M_automaton = __detail::__compile_nfa(__p,
+						 __p + _M_original_str.size(),
 						 _M_traits, _M_flags);
 	  return *this;
 	}

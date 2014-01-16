@@ -41,7 +41,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   typedef long _StateIdT;
-  typedef std::set<_StateIdT> _StateSet;
   static const _StateIdT _S_invalid_state_id  = -1;
 
   template<typename _CharT>
@@ -138,16 +137,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_start() const
     { return _M_start_state; }
 
-    const _StateSet&
-    _M_final_states() const
-    { return _M_accepting_states; }
-
     _SizeT
     _M_sub_count() const
     { return _M_subexpr_count; }
 
     std::vector<size_t>       _M_paren_stack;
-    _StateSet                 _M_accepting_states;
     _FlagT                    _M_flags;
     _StateIdT                 _M_start_state;
     _SizeT                    _M_subexpr_count;
@@ -172,7 +166,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_insert_accept()
       {
 	auto __ret = _M_insert_state(_StateT(_S_opcode_accept));
-	this->_M_accepting_states.insert(__ret);
 	return __ret;
       }
 

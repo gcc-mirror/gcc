@@ -1,3 +1,51 @@
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()): Do not
+	use std::map.
+	* include/bits/regex_automaton.h: Do not use std::set.
+	* include/bits/regex_compiler.h (_BracketMatcher<>::_M_add_char(),
+	_BracketMatcher<>::_M_add_collating_element(),
+	_BracketMatcher<>::_M_add_equivalence_class(),
+	_BracketMatcher<>::_M_make_range()): Likewise.
+	* include/bits/regex_compiler.tcc (_BracketMatcher<>::_M_apply()):
+	Likewise.
+	* include/bits/regex_executor.h: Do not use std::queue.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main(),
+	_Executor<>::_M_dfs()): Likewise.
+	* include/std/regex: Remove <map>, <set> and <queue>.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (__compile_nfa<>(), basic_regex<>::basic_regex(),
+	basic_regex<>::assign()): Change __compile_nfa to accept
+	const _CharT* only.
+	* include/bits/regex_compiler.h: Change _Compiler's template
+	argument from <_FwdIter, _TraitsT> to <_TraitsT>.
+	* include/bits/regex_compiler.tcc: Likewise.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_compiler.h: Change _ScannerT into char-type
+	templated.
+	* include/bits/regex_scanner.h (_Scanner<>::_Scanner()): Separate
+	_ScannerBase from _Scanner; Change _Scanner's template argument from
+	_FwdIter to _CharT. Avoid use of std::map and std::set by using arrays
+	instead.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_Scanner(),
+	_Scanner<>::_M_scan_normal(), _Scanner<>::_M_eat_escape_ecma(),
+	_Scanner<>::_M_eat_escape_posix(), _Scanner<>::_M_eat_escape_awk()):
+	Likewise.
+	* include/std/regex: Add <cstring> for using strchr.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* bits/regex_automaton.tcc: Indentation fix.
+	* bits/regex_compiler.h (__compile_nfa<>(), _Compiler<>,
+	_RegexTranslator<> _AnyMatcher<>, _CharMatcher<>,
+	_BracketMatcher<>): Add bool option template parameters and
+	specializations to make matching more efficient and space saving.
+	* bits/regex_compiler.tcc: Likewise.
+
 2014-01-15  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/59712
