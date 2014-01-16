@@ -1,3 +1,16 @@
+2014-01-16  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/28865
+	* varasm.c (output_constant): Return the number of bytes actually
+	emitted.
+	(output_constructor_array_range): Update the field size with the
+	number of bytes emitted by output_constant.
+	(output_constructor_regular_field): Likewise.  Also do not
+	complain if the total number of bytes emitted is now greater
+	than the expected fieldpos.
+	* output.h (output_constant): Update prototype and descriptive
+	comment.
+
 2014-01-16  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/59827
