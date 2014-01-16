@@ -1,3 +1,7 @@
+2014-01-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/execute/pr59747.c (fn1): Return a value.
+
 2014-01-15  Richard Henderson  <rth@redhat.com>
 
 	PR debug/54694
