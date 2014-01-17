@@ -2940,7 +2940,8 @@ fold_array_ctor_reference (tree type, tree ctor,
      be larger than size of array element.  */
   if (!TYPE_SIZE_UNIT (type)
       || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || elt_size.slt (tree_to_double_int (TYPE_SIZE_UNIT (type))))
+      || elt_size.slt (tree_to_double_int (TYPE_SIZE_UNIT (type)))
+      || elt_size.is_zero ())
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
