@@ -43,6 +43,10 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Allocator> _Base;
 
+#if __cplusplus >= 201103L
+      typedef __gnu_cxx::__alloc_traits<_Allocator> _Alloc_traits;
+#endif
+
     public:
       // types:
       typedef _Key				     key_type;
@@ -79,49 +83,62 @@ namespace __profile
 	       const _Allocator& __a = _Allocator())
       : _Base(__first, __last, __comp, __a) { }
 
+#if __cplusplus < 201103L
       multimap(const multimap& __x)
       : _Base(__x) { }
-
-      multimap(const _Base& __x)
-      : _Base(__x) { }
-
-#if __cplusplus >= 201103L
-      multimap(multimap&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _Base(std::move(__x))
-      { }
+#else
+      multimap(const multimap&) = default;
+      multimap(multimap&&) = default;
 
       multimap(initializer_list<value_type> __l,
 	       const _Compare& __c = _Compare(),
 	       const allocator_type& __a = allocator_type())
       : _Base(__l, __c, __a) { }
+
+      explicit
+      multimap(const allocator_type& __a)
+	: _Base(__a) { }
+
+      multimap(const multimap& __x, const allocator_type& __a)
+      : _Base(__x, __a) { }
+
+      multimap(multimap&& __x, const allocator_type& __a)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value
+	       && _Alloc_traits::_S_always_equal())
+      : _Base(std::move(__x), __a) { }
+
+      multimap(initializer_list<value_type> __l, const allocator_type& __a)
+      : _Base(__l, __a) { }
+
+      template<typename _InputIterator>
+        multimap(_InputIterator __first, _InputIterator __last,
+	    const allocator_type& __a)
+	  : _Base(__first, __last, __a) { }
 #endif
+
+      multimap(const _Base& __x)
+      : _Base(__x) { }
 
       ~multimap() _GLIBCXX_NOEXCEPT { }
 
+#if __cplusplus < 201103L
       multimap&
       operator=(const multimap& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x;
 	return *this;
       }
-
-#if __cplusplus >= 201103L
+#else
       multimap&
-      operator=(multimap&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(const multimap&) = default;
+
+      multimap&
+      operator=(multimap&&) = default;
 
       multimap&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
 	return *this;
       }
 #endif
@@ -289,6 +306,9 @@ namespace __profile
 
       void
       swap(multimap& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       { _Base::swap(__x); }
 
       void

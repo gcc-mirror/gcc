@@ -43,6 +43,10 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator> _Base;
 
+#if __cplusplus >= 201103L
+      typedef __gnu_cxx::__alloc_traits<_Allocator> _Alloc_traits;
+#endif
+
     public:
       // types:
       typedef _Key                                  key_type;
@@ -93,40 +97,61 @@ namespace __profile
       map(map&& __x)
       noexcept(is_nothrow_copy_constructible<_Compare>::value)
       : _Base(std::move(__x))
-      { }
+      { __profcxx_map_to_unordered_map_construct(this); }
 
       map(initializer_list<value_type> __l,
 	  const _Compare& __c = _Compare(),
 	  const allocator_type& __a = allocator_type())
-      : _Base(__l, __c, __a) { }
+      : _Base(__l, __c, __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
+
+      explicit
+      map(const allocator_type& __a)
+	: _Base(__a)
+      { __profcxx_map_to_unordered_map_construct(this); }
+
+      map(const map& __x, const allocator_type& __a)
+      : _Base(__x, __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
+
+      map(map&& __x, const allocator_type& __a)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value
+	       && _Alloc_traits::_S_always_equal())
+      : _Base(std::move(__x), __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
+
+      map(initializer_list<value_type> __l, const allocator_type& __a)
+      : _Base(__l, __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
+
+      template<typename _InputIterator>
+        map(_InputIterator __first, _InputIterator __last,
+	    const allocator_type& __a)
+	  : _Base(__first, __last, __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
 #endif
 
       ~map() _GLIBCXX_NOEXCEPT
       { __profcxx_map_to_unordered_map_destruct(this); }
 
+#if __cplusplus < 201103L
       map&
       operator=(const map& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x;
 	return *this;
       }
-
-#if __cplusplus >= 201103L
+#else
       map&
-      operator=(map&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(const map&) = default;
+
+      map&
+      operator=(map&&) = default;
 
       map&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
 	return *this;
       }
 #endif
@@ -393,6 +418,9 @@ namespace __profile
 
       void
       swap(map& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       { _Base::swap(__x); }
 
       void

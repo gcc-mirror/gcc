@@ -43,6 +43,10 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::set<_Key, _Compare, _Allocator> _Base;
 
+#if __cplusplus >= 201103L
+      typedef __gnu_cxx::__alloc_traits<_Allocator> _Alloc_traits;
+#endif
+
     public:
       // types:
       typedef _Key				    key_type;
@@ -79,49 +83,62 @@ namespace __profile
 	    const _Allocator& __a = _Allocator())
 	: _Base(__first, __last, __comp, __a) { }
 
+#if __cplusplus < 201103L
       set(const set& __x)
       : _Base(__x) { }
-
-      set(const _Base& __x)
-      : _Base(__x) { }
-
-#if __cplusplus >= 201103L
-      set(set&& __x)
-      noexcept(is_nothrow_copy_constructible<_Compare>::value)
-      : _Base(std::move(__x))
-      { }
+#else
+      set(const set&) = default;
+      set(set&&) = default;
 
       set(initializer_list<value_type> __l,
 	  const _Compare& __comp = _Compare(),
 	  const allocator_type& __a = allocator_type())
       : _Base(__l, __comp, __a) { }
+
+      explicit
+      set(const allocator_type& __a)
+	: _Base(__a) { }
+
+      set(const set& __x, const allocator_type& __a)
+      : _Base(__x, __a) { }
+
+      set(set&& __x, const allocator_type& __a)
+      noexcept(is_nothrow_copy_constructible<_Compare>::value
+	       && _Alloc_traits::_S_always_equal())
+      : _Base(std::move(__x), __a) { }
+
+      set(initializer_list<value_type> __l, const allocator_type& __a)
+      : _Base(__l, __a) { }
+
+      template<typename _InputIterator>
+        set(_InputIterator __first, _InputIterator __last,
+	    const allocator_type& __a)
+	  : _Base(__first, __last, __a) { }
 #endif
+
+      set(const _Base& __x)
+      : _Base(__x) { }
 
       ~set() _GLIBCXX_NOEXCEPT { }
 
+#if __cplusplus < 201103L
       set&
       operator=(const set& __x)
       {
-	*static_cast<_Base*>(this) = __x;
+	_M_base() = __x;
 	return *this;
       }
-
-#if __cplusplus >= 201103L
+#else
       set&
-      operator=(set&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(const set&) = default;
+
+      set&
+      operator=(set&&) = default;
 
       set&
       operator=(initializer_list<value_type> __l)
       {
-	this->clear();
-	this->insert(__l);
+	_M_base() = __l;
 	return *this;
       }
 #endif
@@ -286,6 +303,9 @@ namespace __profile
 
       void
       swap(set& __x)
+#if __cplusplus >= 201103L
+      noexcept(_Alloc_traits::_S_nothrow_swap())
+#endif
       { _Base::swap(__x); }
 
       void
