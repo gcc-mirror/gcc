@@ -1,5 +1,9 @@
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_data_alignment): For compatibility with
+	(incorrect) GCC 4.8 and earlier alignment assumptions ensure we align
+	decls to at least the GCC 4.8 used alignments.
+
 	PR fortran/59440
 	* tree-nested.c (convert_nonlocal_reference_stmt,
 	convert_local_reference_stmt): For NAMELIST_DECLs in gimple_bind_vars

@@ -26433,6 +26433,15 @@ ix86_constant_alignment (tree exp, int align)
 int
 ix86_data_alignment (tree type, int align, bool opt)
 {
+  /* GCC 4.8 and earlier used to incorrectly assume this alignment even
+     for symbols from other compilation units or symbols that don't need
+     to bind locally.  In order to preserve some ABI compatibility with
+     those compilers, ensure we don't decrease alignment from what we
+     used to assume.  */
+
+  int max_align_compat
+    = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
+
   /* A data structure, equal or greater than the size of a cache line
      (64 bytes in the Pentium 4 and other recent Intel processors, including
      processors based on Intel Core microarchitecture) should be aligned
@@ -26447,11 +26456,17 @@ ix86_data_alignment (tree type, int align, bool opt)
   if (opt
       && AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)
-      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
-	  || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
-      && align < max_align)
-    align = max_align;
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+    {
+      if ((TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align_compat
+	   || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+	  && align < max_align_compat)
+	align = max_align_compat;
+      if ((TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
+	   || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+	  && align < max_align)
+	align = max_align;
+    }
 
   /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
      to 16byte boundary.  */
