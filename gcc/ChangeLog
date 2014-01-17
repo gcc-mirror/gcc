@@ -1,3 +1,9 @@
+2014-01-17  Jeff Law  <law@redhat.com>
+
+	PR middle-end/57904
+	* passes.def: Reorder pass_copy_prop, pass_unrolli, pass_ccp sequence
+	so that pass_ccp runs first.
+
 2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_lea_outperforms): Use TARGET_XXX.

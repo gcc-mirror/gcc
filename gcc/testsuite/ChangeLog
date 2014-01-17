@@ -1,3 +1,8 @@
+2014-01-17  Jeff Law  <law@redhat.com>
+
+        PR middle-end/57904
+	* gfortran.dg/pr57904.f90: New test.
+
 2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59269
