@@ -180,7 +180,7 @@ static struct {
 	Obj	*roots;
 	uint32	nroot;
 	uint32	rootcap;
-} work;
+} work __attribute__((aligned(8)));
 
 enum {
 	GC_DEFAULT_PTR = GC_NUM_INSTR,
