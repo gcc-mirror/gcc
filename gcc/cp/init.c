@@ -400,6 +400,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 
 	      ftype = TREE_TYPE (field);
 
+	      if (ftype == error_mark_node)
+		continue;
+
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
 		 performance at all; it should be simpler in general just
