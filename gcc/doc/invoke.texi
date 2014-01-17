@@ -824,7 +824,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-meb -mel -mno-crt0}
 
 @emph{MSP430 Options}
-@gccoptlist{-msim -masm-hex -mmcu= -mlarge -msmall -mrelax}
+@gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax}
 
 @emph{NDS32 Options}
 @gccoptlist{-mbig-endian -mlittle-endian @gol
@@ -18124,20 +18124,24 @@ testsuite and/or aesthetic purposes.
 
 @item -mmcu=
 @opindex mmcu=
-Select the MCU to target.  If the MCU supports the MSP430X ISA or the
-MSP430Xv2 ISA then gcc will make use of the extra instructions.  A C
-preprocessor symbol will be defined based upon the MCU name, converted
-to upper case and pre- and post- fixed with @code{__}.
+Select the MCU to target.  This is used to create a C preprocessor
+symbol based upon the MCU name, converted to upper case and pre- and
+post- fixed with @code{__}.  This in turn will be used by the
+@code{msp430.h} header file to select an MCU specific supplimentary
+header file.
 
 In addition two scripts will be added to the linker command line:
 @code{memory.ld} and @code{peripherals.ld}, with a search path based
 upon the MCU name.
 
-Note that there are three ``generic'' MCUs: @code{msp430},
-@code{msp430x} and @code{msp430xv2}, which can be used if a specific
-MCU is not being targeted.
-
 This option is also passed on to the assembler.
+
+@item -mcpu=
+@opindex -mcpu=
+Specific the ISA to use.  Accepted values are @code{msp430},
+@code{msp430x} and @code{msp430xv2}.  This option is needed in order
+to ensure that the correct instructions are generated and that the
+correct libraries are linked in.
 
 @item -msim
 @opindex msim

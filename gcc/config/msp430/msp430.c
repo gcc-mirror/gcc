@@ -178,12 +178,12 @@ static const char * msp430x_names [] =
 const char *
 msp430_mcu_name (void)
 {
-  if (target_cpu)
+  if (target_mcu)
     {
       unsigned int i;
       static char mcu_name [64];
 
-      snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_cpu);
+      snprintf (mcu_name, sizeof (mcu_name) - 1, "__%s__", target_mcu);
       for (i = strlen (mcu_name); i--;)
 	mcu_name[i] = TOUPPER (mcu_name[i]);
       return mcu_name;
@@ -199,10 +199,17 @@ msp430_option_override (void)
 
   if (target_cpu)
     {
+      if (strcasecmp (target_cpu, "msp430x") == 0
+	  || strcasecmp (target_cpu, "msp430xv2") == 0)
+	msp430x = true;
+    }
+  
+  if (target_mcu)
+    {
       unsigned i;
 
       for (i = ARRAY_SIZE (msp430x_names); i--;)
-	if (strcasecmp (target_cpu, msp430x_names[i]) == 0)
+	if (strcasecmp (target_mcu, msp430x_names[i]) == 0)
 	  {
 	    msp430x = true;
 	    break;
@@ -214,10 +221,14 @@ msp430_option_override (void)
 
       /* We also recognise two generic MCU 430X names.  They do not
 	 appear in the msp430x_names table as we want to be able to
-	 generate special C preprocessor defines for them.  */
-      if (strcasecmp (target_cpu, "msp430x") == 0
-	  || strcasecmp (target_cpu, "msp430xv2") == 0)
-	msp430x = true;
+	 generate special C preprocessor defines for them.  That is
+	 why we set target_mcu to NULL.  */
+      if (strcasecmp (target_mcu, "msp430x") == 0
+	  || strcasecmp (target_mcu, "msp430xv2") == 0)
+	{
+	  msp430x = true;
+	  target_mcu = NULL;
+	}
     }
 
   if (TARGET_LARGE && !msp430x)
@@ -1093,11 +1104,11 @@ msp430_attr (tree * node,
 	  break;
 
 	case INTEGER_CST:
-	  if (TREE_INT_CST_LOW (value) > 31)
+	  if (TREE_INT_CST_LOW (value) > 63)
 	    /* Allow the attribute to be added - the linker script
 	       being used may still recognise this value.  */
 	    warning (OPT_Wattributes,
-		     "numeric argument of %qE attribute must be in range 0..31",
+		     "numeric argument of %qE attribute must be in range 0..63",
 		     name);
 	  break;
 
@@ -1458,11 +1469,9 @@ msp430_expand_epilogue (int is_eh)
 
 	if (msp430x)
 	  {
-	    /* Note: With TARGET_LARGE we still use POPM as POPX.A is two
-	       bytes bigger.
-	       Note: See the popm pattern for the explanation of the strange
-	       arguments.  */
-	    emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (~(seq - 1)),
+	    /* Note: With TARGET_LARGE we still use
+	       POPM as POPX.A is two bytes bigger.  */
+	    emit_insn (gen_popm (stack_pointer_rtx, GEN_INT (seq - 1),
 				 GEN_INT (count)));
 	    i += count - 1;
 	  }
@@ -2186,7 +2195,7 @@ msp430x_extendhisi (rtx * operands)
 {
   if (REGNO (operands[0]) == REGNO (operands[1]))
     /* Low word of dest == source word.  */
-    return "BIT.W #0x8000, %L0 { SUBC.W %H0, %H0 { INV.W %H0, %H0"; /* 8-bytes.  */
+    return "BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0"; /* 8-bytes.  */
 
   if (! msp430x)
     /* Note: This sequence is approximately the same length as invoking a helper
@@ -2199,14 +2208,14 @@ msp430x_extendhisi (rtx * operands)
 
        but this version does not involve any function calls or using argument
        registers, so it reduces register pressure.  */
-    return "MOV.W %1, %L0 { BIT.W #0x8000, %L0 { SUBC.W %H0, %H0 { INV.W %H0, %H0"; /* 10-bytes.  */
+    return "MOV.W\t%1, %L0 { BIT.W\t#0x8000, %L0 { SUBC.W\t%H0, %H0 { INV.W\t%H0, %H0"; /* 10-bytes.  */
   
   if (REGNO (operands[0]) + 1 == REGNO (operands[1]))
     /* High word of dest == source word.  */
-    return "MOV.W %1, %L0 { RPT #15 { RRAX.W %H0"; /* 6-bytes.  */
+    return "MOV.W\t%1, %L0 { RPT\t#15 { RRAX.W\t%H0"; /* 6-bytes.  */
 
   /* No overlap between dest and source.  */
-  return "MOV.W %1, %L0 { MOV.W %1, %H0 { RPT #15 { RRAX.W %H0"; /* 8-bytes.  */
+  return "MOV.W\t%1, %L0 { MOV.W\t%1, %H0 { RPT\t#15 { RRAX.W\t%H0"; /* 8-bytes.  */
 }
 
 /* Likewise for logical right shifts.  */
