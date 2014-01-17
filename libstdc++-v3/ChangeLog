@@ -1,3 +1,36 @@
+2014-01-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/set.h (set): Implement C++11 allocator-aware
+	container requirements.
+	* include/profile/map.h (map): Likewise.
+	* include/profile/multiset.h (multiset): Likewise.
+	* include/profile/multimap.h (multimap): Likewise.
+	* include/profile/set.h
+	(set::operator=(const set&)): Define as default in C++11 mode.
+	(set::operator=(set&&)): Likewise.
+	* include/profile/map.h
+	(map::operator=(const map&)): Likewise.
+	(map::operator=(map&&)): Likewise.
+	* include/profile/multiset.h
+	(multiset::operator=(const multiset&)): Likewise.
+	(multiset::operator=(multiset&&)): Likewise.
+	* include/profile/multimap.h
+	(multimap::operator=(const multimap&)): Likewise.
+	(multimap::operator=(multimap&&)): Likewise.
+	* include/profile/set.h (set::operator=(std::initializer_list<>)):
+	Rely on the same operator from normal mode.
+	* include/profile/map.h (map::operator=(std::initializer_list<>)):
+	Likewise.
+	* include/profile/multiset.h
+	(multiset::operator=(std::initializer_list<>)): Likewise.
+	* include/profile/multimap.h
+	(multimap::operator=(std::initializer_list<>)): Likewise.
+	* include/profile/set.h (set::swap(set&)): Add noexcept
+	specification.
+	* include/profile/map.h (map::swap(map&)): Likewise.
+	* include/profile/multiset.h (multiset::swap(multiset&)): Likewise.
+	* include/profile/multimap.h (multimap::swap(multimap&)): Likewise.
+
 2014-01-17  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()): Do not
