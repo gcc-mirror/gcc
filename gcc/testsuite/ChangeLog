@@ -1,5 +1,16 @@
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/59064
+	* gcc.dg/vect/vect-ivdep-1.c: Replace two dg-bogus lines separately
+	testing for " version" and " alias" with one testing for
+	" version\[^\n\r]* alias".
+	* gcc.dg/vect/vect-ivdep-2.c: Likewise.
+	* gfortran.dg/vect/vect-do-concurrent-1.f90: Likewise.
+	* g++.dg/vect/pr33426-ivdep.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-2.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-3.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Adjust comments similarly.
+
 	PR c++/57945
 	* c-c++-common/torture/pr57945.c: New test.
 

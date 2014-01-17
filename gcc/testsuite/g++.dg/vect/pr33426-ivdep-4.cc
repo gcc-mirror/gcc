@@ -20,8 +20,7 @@ void foo(std::vector<int> *ar, int *b) {
 }
 
 /* { dg-message "loop vectorized" "" { target *-*-* } 0 } */
-/* FIXME:     dg-bogus " version" "" { target *-*-* } 0  */
-/* FIXME:     dg-bogus " alias" "" { target *-*-* } 0  */
+/* FIXME:     dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0  */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
 /* { dg-final { scan-tree-dump-times "ANNOTATE_EXPR " 1 "original" } } */
