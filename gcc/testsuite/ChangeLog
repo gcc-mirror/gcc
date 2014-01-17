@@ -1,3 +1,19 @@
+2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59794
+	* gcc.target/i386/pr39162.c (y): New __m256i variable.
+	(bar): Change return type to void.  Set y to x.
+	* gcc.target/i386/pr59794-1.c: New testcase.
+	* gcc.target/i386/pr59794-2.c: Likewise.
+	* gcc.target/i386/pr59794-3.c: Likewise.
+	* gcc.target/i386/pr59794-4.c: Likewise.
+	* gcc.target/i386/pr59794-5.c: Likewise.
+	* gcc.target/i386/pr59794-6.c: Likewise.
+	* gcc.target/i386/pr59794-7.c: Likewise.
+
 2014-01-17  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from the trunk:
