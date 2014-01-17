@@ -1,3 +1,23 @@
+2014-01-17  Charles Baylis  <charles.baylis@linaro.org>
+
+	Backport from mainline
+	2013-12-19  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/59142
+	* config/arm/arm-ldmstm.ml: Use low_register_operand for Thumb
+	patterns.
+	* config/arm/ldmstm.md: Regenerate.
+
+	2013-12-19  Charles Baylis  <charles.baylis@linaro.org>
+
+	PR target/59142
+	* config/arm/predicates.md (arm_hard_general_register_operand):
+	New predicate.
+	(arm_hard_register_operand): Remove.
+	* config/arm/arm-ldmstm.ml: Use arm_hard_general_register_operand
+	for all patterns.
+	* config/arm/ldmstm.md: Regenerate.
+
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59839
