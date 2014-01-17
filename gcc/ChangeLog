@@ -1,3 +1,13 @@
+2014-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/46590
+	* opts.c (default_options_table): Add entries for
+	OPT_fbranch_count_reg, OPT_fmove_loop_invariants and OPT_ftree_pta,
+	all enabled at -O1 but not for -Og.
+	* common.opt (fbranch-count-reg): Remove Init(1).
+	(fmove-loop-invariants): Likewise.
+	(ftree-pta): Likewise.
+
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_data_alignment): For compatibility with
