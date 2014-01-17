@@ -1,3 +1,9 @@
+2014-01-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c++/57945
+	* passes.c (rest_of_decl_compilation): Don't call varpool_finalize_decl
+	on decls for which assemble_alias has been called.
+
 2014-01-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.opt: (mcpu): New option.
