@@ -1,3 +1,10 @@
+2014-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/59440
+	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt): For NAMELIST_DECLs in gimple_bind_vars
+	of GIMPLE_BIND stmts, adjust associated decls.
+
 2014-01-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/46590
