@@ -1,5 +1,10 @@
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/59440
+	* gfortran.dg/pr59440-1.f90: New test.
+	* gfortran.dg/pr59440-2.f90: New test.
+	* gfortran.dg/pr59440-3.f90: New test.
+
 	PR testsuite/59064
 	* gcc.dg/vect/vect-ivdep-1.c: Replace two dg-bogus lines separately
 	testing for " version" and " alias" with one testing for
