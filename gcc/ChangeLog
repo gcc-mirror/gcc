@@ -1,5 +1,6 @@
 2014-01-17  Terry Guo  <terry.guo@arm.com>
 
+	PR target/59826
 	* config/arm/arm.md (prefetch): Set insn type attribute to load1.
 
 2014-01-16  Jakub Jelinek  <jakub@redhat.com>
