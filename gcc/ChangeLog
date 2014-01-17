@@ -1,3 +1,8 @@
+2014-01-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-ref.c (ipa_remove_stmt_references): Fix references
+	traversal when removing references.
+
 2014-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59775
