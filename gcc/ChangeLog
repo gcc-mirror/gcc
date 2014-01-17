@@ -1,3 +1,10 @@
+2014-01-17  Andrew Pinski <apinski@cavium.com>
+	    Steve Ellcey  <sellcey@mips.com>
+
+	PR target/59462
+	* config/mips/mips.c (mips_print_operand): Check operand mode instead
+	of operator mode.
+
 2014-01-17  Jeff Law  <law@redhat.com>
 
 	PR middle-end/57904
