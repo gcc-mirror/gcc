@@ -11270,7 +11270,9 @@
 	     (match_operand:SI 1 "" "")
 	     (match_operand:SI 2 "" ""))]
   "TARGET_32BIT && arm_arch5e"
-  "pld\\t%a0")
+  "pld\\t%a0"
+  [(set_attr "type" "load1")]
+)
 
 ;; General predication pattern
 
