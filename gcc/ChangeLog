@@ -1,3 +1,35 @@
+2014-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/46590
+	* vec.h (vec<>::bseach): New member function implementing
+	binary search according to C89 bsearch.
+	(vec<>::qsort): Avoid calling ::qsort for vectors with sizes 0 or 1.
+	* tree-ssa-loop-im.c (struct mem_ref): Make stored member a
+	bitmap pointer again.  Make accesses_in_loop a flat array.
+	(mem_ref_obstack): New global.
+	(outermost_indep_loop): Adjust for mem_ref->stored changes.
+	(mark_ref_stored): Likewise.
+	(ref_indep_loop_p_2): Likewise.
+	(set_ref_stored_in_loop): New helper function.
+	(mem_ref_alloc): Allocate mem_refs on the mem_ref_obstack obstack.
+	(memref_free): Adjust.
+	(record_mem_ref_loc): Simplify.
+	(gather_mem_refs_stmt): Adjust.
+	(sort_locs_in_loop_postorder_cmp): New function.
+	(analyze_memory_references): Sort accesses_in_loop after
+	loop postorder number.
+	(find_ref_loc_in_loop_cmp): New function.
+	(for_all_locs_in_loop): Find relevant cluster of locs in
+	accesses_in_loop and iterate without recursion.
+	(execute_sm): Avoid uninit warning.
+	(struct ref_always_accessed): Simplify.
+	(ref_always_accessed::operator ()): Likewise.
+	(ref_always_accessed_p): Likewise.
+	(tree_ssa_lim_initialize): Initialize mem_ref_obstack, compute
+	loop postorder numbers here.
+	(tree_ssa_lim_finalize): Free mem_ref_obstack and loop postorder
+	numbers.
+
 2014-01-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c++/57945
