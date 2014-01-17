@@ -7491,7 +7491,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    tree cond = TREE_OPERAND (*expr_p, 0);
 	    tree id = TREE_OPERAND (*expr_p, 1);
-	    tree tmp = create_tmp_var_raw (TREE_TYPE(cond), NULL);
+	    tree type = TREE_TYPE (cond);
+	    if (!INTEGRAL_TYPE_P (type))
+	      {
+		*expr_p = cond;
+		ret = GS_OK;
+		break;
+	      }
+	    tree tmp = create_tmp_var (type, NULL);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
 	    gimple call = gimple_build_call_internal (IFN_ANNOTATE, 2,
 						      cond, id);
