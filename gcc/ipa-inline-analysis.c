@@ -4146,7 +4146,8 @@ inline_free_summary (void)
   if (!inline_edge_summary_vec.exists ())
     return;
   FOR_EACH_DEFINED_FUNCTION (node)
-    reset_inline_summary (node);
+    if (!node->alias)
+      reset_inline_summary (node);
   if (function_insertion_hook_holder)
     cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   function_insertion_hook_holder = NULL;
