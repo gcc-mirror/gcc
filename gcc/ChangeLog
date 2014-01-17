@@ -1,3 +1,9 @@
+2014-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* gimple-fold.c (fold_array_ctor_reference): Don't fold if element
+	size is zero.
+
 2014-01-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/46590
