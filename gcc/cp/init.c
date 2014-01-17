@@ -382,7 +382,8 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
-      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type));
+      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type)
+		  || errorcount != 0);
 	
       if (TREE_CODE (type) != UNION_TYPE)
 	{
