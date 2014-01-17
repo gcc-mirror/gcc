@@ -1,3 +1,13 @@
+2014-01-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/59736
+	* ipa-cp.c (prev_edge_clone): New variable.
+	(grow_next_edge_clone_vector): Renamed to grow_edge_clone_vectors.
+	Also resize prev_edge_clone vector.
+	(ipcp_edge_duplication_hook): Also update prev_edge_clone.
+	(ipcp_edge_removal_hook): New function.
+	(ipcp_driver): Register ipcp_edge_removal_hook.
+
 2014-01-17  Andrew Pinski <apinski@cavium.com>
 	    Steve Ellcey  <sellcey@mips.com>
 
