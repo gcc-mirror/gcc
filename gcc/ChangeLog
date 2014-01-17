@@ -11,13 +11,13 @@
 	with PROCESSOR_INTEL for "intel".
 	(ix86_lea_outperforms): Support PROCESSOR_INTEL.  Duplicate
 	PROCESSOR_SILVERMONT.
-	(ix86_avoid_lea_for_addr): Check TARGET_AVOID_LEA_FOR_ADDR
-	instead of TARGET_OPT_AGU.
 	(ix86_issue_rate): Likewise.
 	(ix86_adjust_cost): Likewise.
 	(ia32_multipass_dfa_lookahead): Likewise.
 	(swap_top_of_ready_list): Likewise.
 	(ix86_sched_reorder): Likewise.
+	(ix86_avoid_lea_for_addr): Check TARGET_AVOID_LEA_FOR_ADDR
+	instead of TARGET_OPT_AGU.
 	* config/i386/i386.h (TARGET_INTEL): New.
 	(TARGET_AVOID_LEA_FOR_ADDR): Likewise.
 	(processor_type): Add PROCESSOR_INTEL.
