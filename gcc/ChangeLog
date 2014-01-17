@@ -58,7 +58,7 @@
 
 2014-01-16  Alan Lawrence  <alan.lawrence@arm.com>
 
-	* config/arm/arm.opt: Make -mcpu, -march, -mtune case-insensitive.
+	* config/arm/arm.opt (mcpu, march, mtune): Make case-insensitive.
 
 2014-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
