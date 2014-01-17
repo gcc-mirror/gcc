@@ -1,3 +1,29 @@
+2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_INTEL.  Treat like PROCESSOR_GENERIC.
+	* config/i386/i386.c (intel_memcpy): New.  Duplicate slm_memcpy.
+	(intel_memset): New.  Duplicate slm_memset.
+	(intel_cost): New.  Duplicate slm_cost.
+	(m_INTEL): New macro.
+	(processor_target_table): Add "intel".
+	(ix86_option_override_internal): Replace PROCESSOR_SILVERMONT
+	with PROCESSOR_INTEL for "intel".
+	(ix86_lea_outperforms): Support PROCESSOR_INTEL.  Duplicate
+	PROCESSOR_SILVERMONT.
+	(ix86_avoid_lea_for_addr): Check TARGET_AVOID_LEA_FOR_ADDR
+	instead of TARGET_OPT_AGU.
+	(ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	(swap_top_of_ready_list): Likewise.
+	(ix86_sched_reorder): Likewise.
+	* config/i386/i386.h (TARGET_INTEL): New.
+	(TARGET_AVOID_LEA_FOR_ADDR): Likewise.
+	(processor_type): Add PROCESSOR_INTEL.
+	* config/i386/x86-tune.def: Support m_INTEL. Duplicate
+	m_SILVERMONT.  Add X86_TUNE_AVOID_LEA_FOR_ADDR.
+
 2014-01-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/58346
