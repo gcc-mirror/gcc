@@ -1,3 +1,18 @@
+2014-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/38518
+	* df.h (df_analyze_loop): Declare.
+	* df-core.c: Include cfgloop.h.
+	(df_analyze_1): Split out main part of df_analyze.
+	(df_analyze): Adjust.
+	(loop_inverted_post_order_compute): New function.
+	(loop_post_order_compute): Likewise.
+	(df_analyze_loop): New function avoiding whole-function
+	postorder computes.
+	* loop-invariant.c (find_defs): Use df_analyze_loop.
+	(find_invariants): Adjust.
+	* loop-iv.c (iv_analysis_loop_init): Use df_analyze_loop.
+
 2014-01-17  Zhenqiang Chen  <zhenqiang.chen@arm.com>
 
 	* config/arm/arm.c (arm_v7m_tune): Set max_insns_skipped to 2.
