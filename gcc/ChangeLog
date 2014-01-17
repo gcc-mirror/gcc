@@ -1,5 +1,13 @@
 2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_lea_outperforms): Use TARGET_XXX.
+	(ix86_adjust_cost): Use !TARGET_XXX.
+	(do_reorder_for_imul): Likewise.
+	(swap_top_of_ready_list): Likewise.
+	(ix86_sched_reorder): Likewise.
+
+2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
 	PROCESSOR_INTEL.  Treat like PROCESSOR_GENERIC.
 	* config/i386/i386.c (intel_memcpy): New.  Duplicate slm_memcpy.

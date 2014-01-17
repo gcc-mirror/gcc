@@ -18020,7 +18020,7 @@ ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
   /* For Silvermont if using a 2-source or 3-source LEA for
      non-destructive destination purposes, or due to wanting
      ability to use SCALE, the use of LEA is justified.  */
-  if (ix86_tune == PROCESSOR_SILVERMONT || ix86_tune == PROCESSOR_INTEL)
+  if (TARGET_SILVERMONT || TARGET_INTEL)
     {
       if (has_scale)
 	return true;
@@ -25567,7 +25567,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if (((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	   && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
-	  && (ix86_tune != PROCESSOR_ATHLON && ix86_tune != PROCESSOR_K8))
+	  && (!TARGET_ATHLON && !TARGET_K8))
 	return 0;
 
       /* Show ability of reorder buffer to hide latency of load by executing
@@ -25832,7 +25832,7 @@ do_reorder_for_imul (rtx *ready, int n_ready)
   int index = -1;
   int i;
 
-  if (ix86_tune != PROCESSOR_BONNELL)
+  if (!TARGET_BONNELL)
     return index;
 
   /* Check that IMUL instruction is on the top of ready list.  */
@@ -25912,7 +25912,7 @@ swap_top_of_ready_list (rtx *ready, int n_ready)
   int clock2 = -1;
   #define INSN_TICK(INSN) (HID (INSN)->tick)
 
-  if (ix86_tune != PROCESSOR_SILVERMONT && ix86_tune != PROCESSOR_INTEL)
+  if (!TARGET_SILVERMONT && !TARGET_INTEL)
     return false;
 
   if (!NONDEBUG_INSN_P (top))
@@ -25985,9 +25985,7 @@ ix86_sched_reorder (FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
   issue_rate = ix86_issue_rate ();
 
   /* Do reodering for BONNELL/SILVERMONT only.  */
-  if (ix86_tune != PROCESSOR_BONNELL
-      && ix86_tune != PROCESSOR_SILVERMONT
-      && ix86_tune != PROCESSOR_INTEL)
+  if (!TARGET_BONNELL && !TARGET_SILVERMONT && !TARGET_INTEL)
     return issue_rate;
 
   /* Nothing to do if ready list contains only 1 instruction.  */
