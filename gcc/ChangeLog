@@ -1,3 +1,13 @@
+2014-01-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Backport from mainline
+	2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+            Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/59695
+	* config/aarch64/aarch64.c (aarch64_build_constant): Fix incorrect
+	truncation.
+
 2014-01-17  Terry Guo  <terry.guo@arm.com>
 
 	PR target/59826

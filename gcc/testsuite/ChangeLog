@@ -1,3 +1,12 @@
+2014-01-15  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	Backport from mainline
+	2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/59695
+	* g++.dg/pr59695.C: New testcase.
+
 2014-01-17  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/pr59826.c: New test.
