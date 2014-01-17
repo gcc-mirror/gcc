@@ -1,5 +1,10 @@
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/58776
+	* gcc.dg/tree-ssa-gen-vect-32.c: Add -fno-vect-cost-model to
+	dg-options, use dg-additional-options for i?86/x86_64 to avoid
+	option duplication.
+
 	PR fortran/59440
 	* gfortran.dg/pr59440-1.f90: New test.
 	* gfortran.dg/pr59440-2.f90: New test.
