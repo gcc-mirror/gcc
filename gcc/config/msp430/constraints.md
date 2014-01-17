@@ -72,7 +72,7 @@
 	)))
 
 (define_constraint "Yc"
-  "Memory reference, for CALL - we can't use SP"
+  "Memory reference, for CALL - we can't use SP."
   (and (match_code "mem")
        (match_code "mem" "0")
        (not (ior

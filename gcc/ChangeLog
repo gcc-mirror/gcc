@@ -1,3 +1,20 @@
+2014-01-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.opt: (mcpu): New option.
+	* config/msp430/msp430.c (msp430_mcu_name): Use target_mcu.
+	(msp430_option_override): Parse target_cpu.  If the MCU name
+	matches a generic string, clear target_mcu.
+	(msp430_attr): Allow numeric interrupt values up to 63.
+	(msp430_expand_epilogue): No longer invert operand 1 of gen_popm.
+	* config/msp430/msp430.h (ASM_SPEC): Convert -mcpu into a -mmcu
+	option.
+	* config/msp430/t-msp430: (MULTILIB_MATCHES): Remove mcu matches.
+	Add mcpu matches.
+	* config/msp430/msp430.md (popm): Use %J rather than %I.
+	(addsi3): Use msp430_nonimmediate_operand for operand 2.
+	(addhi_cy_i): Use immediate_operand for operand 2.
+	* doc/invoke.texi: Document -mcpu option.
+
 2014-01-17  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/38518

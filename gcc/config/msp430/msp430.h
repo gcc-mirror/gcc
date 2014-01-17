@@ -52,7 +52,7 @@ extern bool msp430x;
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
-  "%{mmcu=msp430x:-mmcu=msp430X;mmcu=*:-mmcu=%*} " /* Pass the MCU type on to the assembler.  */  \
+  "%{mcpu=*:-mmcu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
   "%{!msim:-md} %{msim:%{mlarge:-md}}" /* Copy data from ROM to RAM if necessary.  */ \
