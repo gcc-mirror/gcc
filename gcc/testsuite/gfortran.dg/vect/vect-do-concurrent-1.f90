@@ -12,6 +12,5 @@ subroutine test(n, a, b, c)
 end subroutine test
 
 ! { dg-message "loop vectorized" "" { target *-*-* } 0 }
-! { dg-bogus " version" "" { target *-*-* } 0 }
-! { dg-bogus " alias" "" { target *-*-* } 0 }
+! { dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0 }
 ! { dg-final { cleanup-tree-dump "vect" } }
