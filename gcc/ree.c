@@ -297,11 +297,15 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
   else
     new_reg = gen_rtx_REG (cand->mode, REGNO (SET_DEST (*orig_set)));
 
+#if 0
+  /* Rethinking test.  Temporarily disabled.  */
   /* We're going to be widening the result of DEF_INSN, ensure that doing so
      doesn't change the number of hard registers needed for the result.  */
   if (HARD_REGNO_NREGS (REGNO (new_reg), cand->mode)
-      != HARD_REGNO_NREGS (REGNO (orig_src), GET_MODE (SET_DEST (*orig_set))))
+      != HARD_REGNO_NREGS (REGNO (SET_DEST (*orig_set)),
+			   GET_MODE (SET_DEST (*orig_set))))
 	return false;
+#endif
 
   /* Merge constants by directly moving the constant into the register under
      some conditions.  Recall that RTL constants are sign-extended.  */
