@@ -250,7 +250,11 @@ class Gcc_backend : public Backend
   compound_expression(Bstatement*, Bexpression*, Location);
 
   Bexpression*
-  conditional_expression(Bexpression*, Bexpression*, Bexpression*, Location);
+  conditional_expression(Btype*, Bexpression*, Bexpression*, Bexpression*,
+                         Location);
+
+  Bexpression*
+  binary_expression(Operator, Bexpression*, Bexpression*, Location);
 
   // Statements.
 
@@ -1059,19 +1063,139 @@ Gcc_backend::compound_expression(Bstatement* bstat, Bexpression* bexpr,
 // ELSE_EXPR otherwise.
 
 Bexpression*
-Gcc_backend::conditional_expression(Bexpression* condition,
+Gcc_backend::conditional_expression(Btype* btype, Bexpression* condition,
                                     Bexpression* then_expr,
                                     Bexpression* else_expr, Location location)
 {
+  tree type_tree = btype == NULL ? void_type_node : btype->get_tree();
   tree cond_tree = condition->get_tree();
   tree then_tree = then_expr->get_tree();
   tree else_tree = else_expr == NULL ? NULL_TREE : else_expr->get_tree();
-  if (cond_tree == error_mark_node
+  if (type_tree == error_mark_node
+      || cond_tree == error_mark_node
       || then_tree == error_mark_node
       || else_tree == error_mark_node)
     return this->error_expression();
-  tree ret = build3_loc(location.gcc_location(), COND_EXPR, void_type_node,
+  tree ret = build3_loc(location.gcc_location(), COND_EXPR, type_tree,
                         cond_tree, then_tree, else_tree);
+  return this->make_expression(ret);
+}
+
+// Convert a gofrontend operator to an equivalent tree_code.
+
+static enum tree_code
+operator_to_tree_code(Operator op, tree type)
+{
+  enum tree_code code;
+  switch (op)
+    {
+    case OPERATOR_EQEQ:
+      code = EQ_EXPR;
+      break;
+    case OPERATOR_NOTEQ:
+      code = NE_EXPR;
+      break;
+    case OPERATOR_LT:
+      code = LT_EXPR;
+      break;
+    case OPERATOR_LE:
+      code = LE_EXPR;
+      break;
+    case OPERATOR_GT:
+      code = GT_EXPR;
+      break;
+    case OPERATOR_GE:
+      code = GE_EXPR;
+      break;
+    case OPERATOR_OROR:
+      code = TRUTH_ORIF_EXPR;
+      break;
+    case OPERATOR_ANDAND:
+      code = TRUTH_ANDIF_EXPR;
+      break;
+    case OPERATOR_PLUS:
+      code = PLUS_EXPR;
+      break;
+    case OPERATOR_MINUS:
+      code = MINUS_EXPR;
+      break;
+    case OPERATOR_OR:
+      code = BIT_IOR_EXPR;
+      break;
+    case OPERATOR_XOR:
+      code = BIT_XOR_EXPR;
+      break;
+    case OPERATOR_MULT:
+      code = MULT_EXPR;
+      break;
+    case OPERATOR_DIV:
+      if (TREE_CODE(type) == REAL_TYPE || TREE_CODE(type) == COMPLEX_TYPE)
+	code = RDIV_EXPR;
+      else
+	code = TRUNC_DIV_EXPR;
+      break;
+    case OPERATOR_MOD:
+      code = TRUNC_MOD_EXPR;
+      break;
+    case OPERATOR_LSHIFT:
+      code = LSHIFT_EXPR;
+      break;
+    case OPERATOR_RSHIFT:
+      code = RSHIFT_EXPR;
+      break;
+    case OPERATOR_AND:
+      code = BIT_AND_EXPR;
+      break;
+    case OPERATOR_BITCLEAR:
+      code = BIT_AND_EXPR;
+      break;
+    default:
+      gcc_unreachable();
+    }
+
+  return code;
+}
+
+// Return an expression for the binary operation LEFT OP RIGHT.
+
+Bexpression*
+Gcc_backend::binary_expression(Operator op, Bexpression* left,
+                               Bexpression* right, Location location)
+{
+  tree left_tree = left->get_tree();
+  tree right_tree = right->get_tree();
+  if (left_tree == error_mark_node
+      || right_tree == error_mark_node)
+    return this->error_expression();
+  enum tree_code code = operator_to_tree_code(op, TREE_TYPE(left_tree));
+
+  bool use_left_type = op != OPERATOR_OROR && op != OPERATOR_ANDAND;
+  tree type_tree = use_left_type ? TREE_TYPE(left_tree) : TREE_TYPE(right_tree);
+  tree computed_type = excess_precision_type(type_tree);
+  if (computed_type != NULL_TREE)
+    {
+      left_tree = convert(computed_type, left_tree);
+      right_tree = convert(computed_type, right_tree);
+      type_tree = computed_type;
+    }
+
+  // For comparison operators, the resulting type should be boolean.
+  switch (op)
+    {
+    case OPERATOR_EQEQ:
+    case OPERATOR_NOTEQ:
+    case OPERATOR_LT:
+    case OPERATOR_LE:
+    case OPERATOR_GT:
+    case OPERATOR_GE:
+      type_tree = boolean_type_node;
+      break;
+    default:
+      break;
+    }
+
+  tree ret = fold_build2_loc(location.gcc_location(), code, type_tree,
+                             left_tree, right_tree);
   return this->make_expression(ret);
 }
 

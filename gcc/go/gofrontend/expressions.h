@@ -704,11 +704,11 @@ class Expression
 				 Type* rhs_type, tree rhs_tree,
 				 bool for_type_guard, Location);
 
-  // Return a tree implementing the comparison LHS_EXPR OP RHS_EXPR.
+  // Return a backend expression implementing the comparison LEFT OP RIGHT.
   // TYPE is the type of both sides.
-  static tree
-  comparison_tree(Translate_context*, Type* result_type, Operator op,
-		  Expression* left_expr, Expression* right_expr, Location);
+  static Bexpression*
+  comparison(Translate_context*, Type* result_type, Operator op,
+	     Expression* left, Expression* right, Location);
 
   // Return the backend expression for the numeric constant VAL.
   static Bexpression*
@@ -1288,6 +1288,9 @@ class Binary_expression : public Expression
 
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   bool
   do_is_constant() const
