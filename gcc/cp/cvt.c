@@ -753,6 +753,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     unspecified.  */
 	  if ((complain & tf_warning)
 	      && TREE_CODE (e) == INTEGER_CST
+	      && ENUM_UNDERLYING_TYPE (type)
 	      && !int_fits_type_p (e, ENUM_UNDERLYING_TYPE (type)))
 	    warning_at (loc, OPT_Wconversion, 
 			"the result of the conversion is unspecified because "

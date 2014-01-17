@@ -1,5 +1,10 @@
 2014-01-17  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/59838
+	* g++.dg/diagnostic/pr59838.C: New test.
+
+2014-01-17  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58346
 	* gcc.dg/pr58346.c: New test.
 
