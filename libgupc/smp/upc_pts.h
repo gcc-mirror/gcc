@@ -94,7 +94,7 @@ typedef upc_shared_ptr_t upc_dbg_shared_ptr_t;
 #define GUPCR_PTS_THREAD(P) (P).thread
 #define GUPCR_PTS_PHASE(P) (P).phase
 
-#define GUPCR_PTS_SET_VADDR(P,V) (P).vaddr = (void *)((char *)(V) \
+#define GUPCR_PTS_SET_VADDR(P,V) (P).vaddr = (GUPCR_PTS_VADDR_TYPE)((char *)(V) \
 			+ (size_t)GUPCR_SHARED_SECTION_START)
 #define GUPCR_PTS_INCR_VADDR(P,V) (P).vaddr += ((size_t)(V))
 #define GUPCR_PTS_SET_THREAD(P,V) (P).thread = (size_t)(V)

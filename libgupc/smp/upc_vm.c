@@ -358,6 +358,6 @@ __upc_vm_map_addr (upc_shared_ptr_t p)
   __upc_page2_base = __upc_page1_base;
   __upc_page1_ref = (pn << GUPCR_THREAD_SIZE) | t;
   __upc_page1_base = page_base;
-  addr = page_base + p_offset;
+  addr = (char *)page_base + p_offset;
   return addr;
 }

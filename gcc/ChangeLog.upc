@@ -1,3 +1,9 @@
+2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+
+	* c-family/c-cppbuiltin.c (upc_cpp_builtins): Remove pre-defines
+	for __UPC_CASTABLE__, __UPC_COLLECTIVE__, __UPC_TICK__ and
+	__UPC_PUPC__ as they are library and not compiler features.
+
 2014-01-13 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206575 into gupc branch.

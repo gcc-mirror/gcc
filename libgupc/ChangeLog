@@ -1,3 +1,17 @@
+2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+
+	* smp/upc_barrier.upc: Remove unnecessary include.
+	* smp/upc_pts.hi (GUPCR_PTS_SET_VADDR): Fix the cast.  Some other
+	compilers might issues a warning.
+	* smp/upc_vm.c (__upc_vm_map_addr): Add a cast to avoid a possible
+	warning on void * arithmetic.
+
+2014-01-17 Nenad Vukicevic  <nenad@intrepid.com>
+
+	* smp/gcc-upc-lib.in: Add defines for __UPC_CASTABLE__,
+	__UPC_COLLECTIVE__, __UPC_TICK__, and __UPC_PUCP__ defines.
+	* portals4/gcc-upc-lib.in: Ditto.
+
 2014-01-10 Gary Funck  <gary@intrepid.com>
 
 	Update copyright notices.

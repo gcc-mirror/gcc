@@ -830,12 +830,6 @@ upc_cpp_builtins (cpp_reader * pfile)
     {
       cpp_define (pfile, "__UPC_PTHREADS_MODEL_TLS__=1");
     }
-  /* UPC castability library is supported.  */
-  cpp_define (parse_in, "__UPC_CASTABLE__=1");
-  /* Collectives are supported. */
-  cpp_define (parse_in, "__UPC_COLLECTIVE__=1");
-  /* Wall-clock timers are supported. */
-  cpp_define (parse_in, "__UPC_TICK__=1");
   /* If debugging or instrumentation is enabled,
      then disable inlining of the runtime.  */
   if (flag_upc_debug || flag_upc_instrument)
@@ -846,8 +840,6 @@ upc_cpp_builtins (cpp_reader * pfile)
     flag_upc_inline_lib = (optimize >= 1);
   if (flag_upc_inline_lib)
     cpp_define (parse_in, "__UPC_INLINE_LIB__=1");
-  /* UPC profiling capabilities are implemented.  */
-  cpp_define (parse_in, "__UPC_PUPC__=1");
   /* UPC profiling instrumentation code will be generated.  */
   if (flag_upc_instrument)
     {

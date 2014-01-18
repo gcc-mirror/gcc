@@ -89,7 +89,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <upc.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "config.h"
 
 /* Thread's children.  */
 static int *__upc_child;
