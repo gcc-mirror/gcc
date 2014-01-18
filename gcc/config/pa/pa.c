@@ -8099,7 +8099,8 @@ pa_attr_length_indirect_call (rtx insn)
     return 12;
 
   if (TARGET_FAST_INDIRECT_CALLS
-      || (!TARGET_PORTABLE_RUNTIME
+      || (!TARGET_LONG_CALLS
+	  && !TARGET_PORTABLE_RUNTIME
 	  && ((TARGET_PA_20 && !TARGET_SOM && distance < 7600000)
 	      || distance < MAX_PCREL17F_OFFSET)))
     return 8;
