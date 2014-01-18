@@ -596,6 +596,24 @@ esac
 # Common C libraries.
 tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3"
 
+# 32-bit x86 processors supported by --with-arch=.  Each processor
+# MUST be separated by exactly one space.
+x86_archs="athlon athlon-4 athlon-fx athlon-mp athlon-tbird \
+athlon-xp k6 k6-2 k6-3 geode c3 c3-2 winchip-c6 winchip2 i386 i486 \
+i586 i686 pentium pentium-m pentium-mmx pentium2 pentium3 pentium3m \
+pentium4 pentium4m pentiumpro prescott"
+
+# 64-bit x86 processors supported by --with-arch=.  Each processor
+# MUST be separated by exactly one space.
+x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
+bdver3 bdver4 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
+core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
+sandybridge ivybridge haswell broadwell bonnell silvermont x86-64 native"
+
+# Additional x86 processors supported by --with-cpu=.  Each processor
+# MUST be separated by exactly one space.
+x86_cpus="generic intel"
+
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
@@ -1401,20 +1419,21 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 			done
 			TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 			need_64bit_isa=yes
-			case X"${with_cpu}" in
-			Xgeneric|Xintel|Xatom|Xslm|Xcore2|Xcorei7|Xcorei7-avx|Xnocona|Xx86-64|Xbdver4|Xbdver3|Xbdver2|Xbdver1|Xbtver2|Xbtver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)			
-				;;
-			X)
+			if test x$with_cpu = x; then
 				if test x$with_cpu_64 = x; then
 					with_cpu_64=generic
 				fi
-				;;
-			*)
-				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-				echo "generic intel atom slm core2 corei7 corei7-avx nocona x86-64 bdver4 bdver3 bdver2 bdver1 btver2 btver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
-				exit 1
-				;;
-			esac
+			else
+				case " $x86_cpus $x86_archs $x86_64_archs " in
+				*" $with_cpu "*)
+					;;
+				*)
+					echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
+					echo "$x86_cpus $x86_archs $x86_64_archs " 1>&2
+					exit 1
+					;;
+				esac
+			fi
 		else
 			tm_file="${tm_file} i386/gnu-user-common.h i386/gnu-user.h i386/linux-common.h i386/linux.h"
 		fi
@@ -1523,20 +1542,21 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 		tmake_file="$tmake_file i386/t-sol2-64"
 		need_64bit_isa=yes
-		case X"${with_cpu}" in
-		Xgeneric|Xintel|Xatom|Xslm|Xcore2|Xcorei7|Xcorei7-avx|Xnocona|Xx86-64|Xbdver4|Xbdver3|Xbdver2|Xbdver1|Xbtver2|Xbtver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
-			;;
-		X)
+		if test x$with_cpu = x; then
 			if test x$with_cpu_64 = x; then
 				with_cpu_64=generic
 			fi
-			;;
-		*)
-			echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-			echo "generic intel atom slm core2 corei7 corei7-avx nocona x86-64 bdver4 bdver3 bdver2 bdver1 btver2 btver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
-			exit 1
-			;;
-		esac
+		else
+			case " $x86_cpus $x86_archs $x86_64_archs " in
+			*" $with_cpu "*)
+				;;
+			*)
+				echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
+				echo "$x86_cpus $x86_archs $x86_64_archs" 1>&2
+				exit 1
+				;;
+			esac
+		fi
 		;;
 	esac
 	;;
@@ -1608,20 +1628,21 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			tm_file="${tm_file} i386/mingw-w64.h"
 			if test x$enable_targets = xall; then
 				tm_defines="${tm_defines} TARGET_BI_ARCH=1"
-				case X"${with_cpu}" in
-				Xgeneric|Xintel|Xatom|Xslm|Xcore2|Xcorei7|Xcorei7-avx|Xnocona|Xx86-64|Xbdver4|Xbdver3|Xbdver2|Xbdver1|Xbtver2|Xbtver1|Xamdfam10|Xbarcelona|Xk8|Xopteron|Xathlon64|Xathlon-fx|Xathlon64-sse3|Xk8-sse3|Xopteron-sse3)
-					;;
-				X)
+				if test x$with_cpu = x; then
 					if test x$with_cpu_64 = x; then
 						with_cpu_64=generic
 					fi
-					;;
-				*)
-					echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
-					echo "generic intel atom slm core2 corei7 Xcorei7-avx nocona x86-64 bdver4 bdver3 bdver2 bdver1 btver2 btver1 amdfam10 barcelona k8 opteron athlon64 athlon-fx athlon64-sse3 k8-sse3 opteron-sse3" 1>&2
-					exit 1
-					;;
-				esac
+				else
+					case " $x86_cpus $x86_archs $x86_64_archs " in
+					*" $with_cpu "*)
+						;;
+					*)
+						echo "Unsupported CPU used in --with-cpu=$with_cpu, supported values:" 1>&2
+						echo "$x86_cpus $x86_archs $x86_64_archs" 1>&2
+						exit 1
+						;;
+					esac
+				fi
 			fi
 			;;
 		*)
@@ -3668,13 +3689,8 @@ case "${target}" in
 		supported_defaults="abi arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64"
 		for which in arch arch_32 arch_64 cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
-			case ${val} in
-			i386 | i486 \
-			| i586 | pentium | pentium-mmx | winchip-c6 | winchip2 \
-			| c3 | c3-2 | i686 | pentiumpro | pentium2 | pentium3 \
-			| pentium4 | k6 | k6-2 | k6-3 | athlon | athlon-tbird \
-			| athlon-4 | athlon-xp | athlon-mp | geode \
-			| prescott | pentium-m | pentium4m | pentium3m)
+			case " $x86_archs " in
+			*" ${val} "*)
 				case "${target}" in
 				  x86_64-*-*)
 				      case "x$which" in
@@ -3689,17 +3705,34 @@ case "${target}" in
 				esac
 				# OK
 				;;
-			"" | x86-64 | generic | intel | native \
-			| k8 | k8-sse3 | athlon64 | athlon64-sse3 | opteron \
-			| opteron-sse3 | athlon-fx | bdver4 | bdver3 | bdver2 \
-			| bdver1 | btver2 |  btver1 | amdfam10 | barcelona \
-			| nocona | core2 | corei7 | corei7-avx | core-avx-i \
-			| core-avx2 | broadwell | atom | slm)
-				# OK
-				;;
 			*)
-				echo "Unknown CPU given in --with-$which=$val." 1>&2
-				exit 1
+				if test x${val} != x; then
+					case " $x86_64_archs " in
+					*" ${val} "*)
+						# OK
+						;;
+					*)
+						# Allow $x86_cpus --with-cpu=/--with-tune=
+						case "x$which" in
+						xcpu*|xtune*)
+							case " $x86_cpus " in
+							*" ${val} "*)
+								# OK
+								;;
+							*)
+								echo "Unknown CPU given in --with-$which=$val." 1>&2
+								exit 1
+								;;
+							esac
+							;;
+						*)
+							echo "Unknown CPU given in --with-$which=$val." 1>&2
+							exit 1
+							;;
+						esac
+					;;
+					esac
+				fi
 				;;
 			esac
 		done
