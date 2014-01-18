@@ -1,3 +1,10 @@
+2014-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58944
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Temporarily
+	clear cpp_get_options (parse_in)->warn_unused_macros for
+	ix86_target_macros_internal with cpp_define.
+
 2014-01-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* jump.c (delete_related_insns): Keep (use (insn))s.

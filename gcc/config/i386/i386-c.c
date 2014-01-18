@@ -460,12 +460,21 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 			       (enum fpmath_unit) prev_opt->x_ix86_fpmath,
 			       cpp_undef);
 
+  /* For the definitions, ensure all newly defined macros are considered
+     as used for -Wunused-macros.  There is no point warning about the
+     compiler predefined macros.  */
+  cpp_options *cpp_opts = cpp_get_options (parse_in);
+  unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
+  cpp_opts->warn_unused_macros = 0;
+
   /* Define all of the macros for new options that were just turned on.  */
   ix86_target_macros_internal (cur_isa & diff_isa,
 			       cur_arch,
 			       cur_tune,
 			       (enum fpmath_unit) cur_opt->x_ix86_fpmath,
 			       cpp_define);
+
+  cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 
   return true;
 }
