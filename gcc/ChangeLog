@@ -1,3 +1,15 @@
+2014-01-18   H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/59580
+	PR bootstrap/59583
+	* config.gcc (x86_archs): New variable.
+	(x86_64_archs): Likewise.
+	(x86_cpus): Likewise.
+	Use $x86_archs, $x86_64_archs and $x86_cpus to check valid
+	--with-arch/--with-cpu= options.
+	Support --with-arch=/--with-cpu={nehalem,westmere,
+	sandybridge,ivybridge,haswell,broadwell,bonnell,silvermont}.
+
 2014-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_adjust_cost): Reorder PROCESSOR_K8
