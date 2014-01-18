@@ -1355,6 +1355,13 @@ delete_related_insns (rtx insn)
 	  /* Keep going past other deleted labels to delete what follows.  */
 	  else if (code == CODE_LABEL && INSN_DELETED_P (next))
 	    next = NEXT_INSN (next);
+	  /* Keep the (use (insn))s created by dbr_schedule, which needs
+	     them in order to track liveness relative to a previous
+	     barrier.  */
+	  else if (INSN_P (next)
+		   && GET_CODE (PATTERN (next)) == USE
+		   && INSN_P (XEXP (PATTERN (next), 0)))
+	    next = NEXT_INSN (next);
 	  else if (code == BARRIER || INSN_P (next))
 	    /* Note: if this deletes a jump, it can cause more
 	       deletion of unreachable code, after a different label.
