@@ -18309,7 +18309,7 @@ ix86_split_lea_for_addr (rtx insn, rtx operands[], enum machine_mode mode)
       /* Case r1 = r1 + ...  */
       if (regno1 == regno0)
 	{
-	  /* If we have a case r1 = r1 + C * r1 then we
+	  /* If we have a case r1 = r1 + C * r2 then we
 	     should use multiplication which is very
 	     expensive.  Assume cost model is wrong if we
 	     have such case here.  */
