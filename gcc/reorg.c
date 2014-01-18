@@ -1512,7 +1512,10 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
        trial && insns_to_search > 0;
        trial = PREV_INSN (trial))
     {
-      if (LABEL_P (trial))
+      /* (use (insn))s can come immediately after a barrier if the
+	 label that used to precede them has been deleted as dead.
+	 See delete_related_insns.  */
+      if (LABEL_P (trial) || BARRIER_P (trial))
 	return 0;
 
       if (!INSN_P (trial))

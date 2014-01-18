@@ -1,3 +1,8 @@
+2014-01-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* jump.c (delete_related_insns): Keep (use (insn))s.
+	* reorg.c (redundant_insn): Check for barriers too.
+
 2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_split_lea_for_addr): Fix a comment
