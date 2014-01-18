@@ -25491,8 +25491,6 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       break;
 
     case PROCESSOR_PENTIUMPRO:
-      memory = get_attr_memory (insn);
-
       /* INT->FP conversion is expensive.  */
       if (get_attr_fp_int_src (dep_insn))
 	cost += 5;
@@ -25504,6 +25502,8 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	  && rtx_equal_p (SET_DEST (set), SET_SRC (set2))
 	  && MEM_P (SET_DEST (set2)))
 	cost += 1;
+
+      memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -25522,10 +25522,8 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       break;
 
     case PROCESSOR_K6:
-      memory = get_attr_memory (insn);
-
-      /* The esp dependency is resolved before the instruction is really
-         finished.  */
+     /* The esp dependency is resolved before
+	the instruction is really finished.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
 	return 1;
@@ -25533,6 +25531,8 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       /* INT->FP conversion is expensive.  */
       if (get_attr_fp_int_src (dep_insn))
 	cost += 5;
+
+      memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -25552,8 +25552,6 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	}
       break;
 
-    case PROCESSOR_ATHLON:
-    case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
@@ -25562,13 +25560,15 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
     case PROCESSOR_GENERIC:
-      memory = get_attr_memory (insn);
-
       /* Stack engine allows to execute push&pop instructions in parall.  */
-      if (((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
-	   && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
-	  && (!TARGET_ATHLON && !TARGET_K8))
+      if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
+	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
 	return 0;
+      /* FALLTHRU */
+
+    case PROCESSOR_ATHLON:
+    case PROCESSOR_K8:
+      memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -25600,12 +25600,12 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
     case PROCESSOR_HASWELL:
-      memory = get_attr_memory (insn);
-
       /* Stack engine allows to execute push&pop instructions in parall.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
 	return 0;
+
+      memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case

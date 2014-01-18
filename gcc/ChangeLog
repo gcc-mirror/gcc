@@ -1,3 +1,12 @@
+2014-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_adjust_cost): Reorder PROCESSOR_K8
+	and PROCESSOR_ATHLON to simplify code.  Move "memory" calculation.
+
+2014-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*swap<mode>): Rename from swap<mode>.
+
 2014-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58944
@@ -12,8 +21,7 @@
 
 2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* config/i386/i386.c (ix86_split_lea_for_addr): Fix a comment
-	typo.
+	* config/i386/i386.c (ix86_split_lea_for_addr): Fix a comment typo.
 
 2014-01-17  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -92,8 +100,8 @@
 	* config/i386/i386.h (TARGET_INTEL): New.
 	(TARGET_AVOID_LEA_FOR_ADDR): Likewise.
 	(processor_type): Add PROCESSOR_INTEL.
-	* config/i386/x86-tune.def: Support m_INTEL. Duplicate
-	m_SILVERMONT.  Add X86_TUNE_AVOID_LEA_FOR_ADDR.
+	* config/i386/x86-tune.def: Support m_INTEL. Duplicate m_SILVERMONT.
+	Add X86_TUNE_AVOID_LEA_FOR_ADDR.
 
 2014-01-17  Marek Polacek  <polacek@redhat.com>
 
@@ -233,16 +241,14 @@
 	* expr.c (expand_expr_real_1): Handle init == NULL_TREE.
 
 	PR target/59839
-	* config/i386/i386.c (ix86_expand_builtin): If target doesn't
-	satisfy operand 0 predicate for gathers, use a new pseudo as
-	subtarget.
+	* config/i386/i386.c (ix86_expand_builtin): If target doesn't satisfy
+	operand 0 predicate for gathers, use a new pseudo as subtarget.
 
 2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/59609
-	* lra-constraints.c (process_alt_operands): Add printing debug
-	info.  Check absence of input/output reloads for matched operands
-	too.
+	* lra-constraints.c (process_alt_operands): Add printing debug info.
+	Check absence of input/output reloads for matched operands too.
 
 2014-01-16  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -287,8 +293,7 @@
 	(output_constructor_regular_field): Likewise.  Also do not
 	complain if the total number of bytes emitted is now greater
 	than the expected fieldpos.
-	* output.h (output_constant): Update prototype and descriptive
-	comment.
+	* output.h (output_constant): Update prototype and descriptive comment.
 
 2014-01-16  Marek Polacek  <polacek@redhat.com>
 
@@ -785,12 +790,10 @@
 	(partition_stack_vars): Likewise.
 	* asan.c (asan_emit_stack_protection): Optionally disable
 	after return stack usage.
-	(instrument_derefs): Optionally disable memory
-	access instrumentation.
+	(instrument_derefs): Optionally disable memory access instrumentation.
 	(instrument_builtin_call): Likewise.
 	(instrument_strlen_call): Likewise.
-	(asan_protect_global): Optionally disable
-	global variables protection.
+	(asan_protect_global): Optionally disable global variables protection.
 	* doc/invoke.texi: Added doc for new options.
 	* params.def: Added new options.
 	* params.h: Likewise.
@@ -1082,8 +1085,7 @@
 2014-01-03  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.c (handle_move_double): Handle pushes with
-	overlapping registers also for registers other than the stack
-	pointer.
+	overlapping registers also for registers other than the stack pointer.
 
 2014-01-03  Marek Polacek  <polacek@redhat.com>
 
