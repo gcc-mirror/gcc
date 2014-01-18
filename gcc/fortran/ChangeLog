@@ -1,3 +1,17 @@
+2014-01-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/58007
+	* module.c (MOD_VERSION): Bump.
+	(fp2, find_pointer2): Remove.
+	(mio_component_ref): Don't forcedfully set the containing derived type
+	symbol for loading.  Remove unused argument.
+	(mio_ref): Update caller
+	(mio_symbol): Dump component list earlier.
+	(skip_list): New argument nest_level.  Initialize level with the new
+	argument.
+	(read_module): Add forced pointer components association for derived
+	type symbols.
+
 2014-01-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58026
