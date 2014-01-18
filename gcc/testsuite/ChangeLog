@@ -1,3 +1,9 @@
+2014-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58944
+	* gcc.target/i386/pr58944.c: Drop -march=native from dg-options.
+	Remove dg-prune-output lines.
+
 2014-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59706
