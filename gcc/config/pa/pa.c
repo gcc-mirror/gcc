@@ -7534,7 +7534,7 @@ pa_attr_length_millicode_call (rtx insn)
       if (!TARGET_LONG_CALLS && distance < MAX_PCREL17F_OFFSET)
 	return 8;
 
-      if (TARGET_LONG_ABS_CALL && !flag_pic)
+      if (!flag_pic)
 	return 12;
 
       return 24;

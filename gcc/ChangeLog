@@ -1,3 +1,8 @@
+2014-01-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_attr_length_millicode_call): Correct length of
+	long non-pic millicode calls.
+
 2014-01-19  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/vax/vax.h (FUNCTION_ARG_REGNO_P): Fix unused variable warning.
