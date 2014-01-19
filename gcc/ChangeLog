@@ -1,3 +1,7 @@
+2014-01-19  Jan Hubicka  <jh@suse.cz>
+
+	* varasm.c (compute_reloc_for_constant): Use targetm.binds_local_p.
+
 2014-01-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_attr_length_millicode_call): Correct length of
