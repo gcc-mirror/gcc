@@ -1,3 +1,13 @@
+2014-01-19  Jerry DeLisle  <jvdelisle@gcc.gnu>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/59771
+	PR libfortran/59774
+	PR libfortran/59836
+	* io/write_float.def (output_float): Fix wrong handling of the
+	Fw.0 format.
+	(output_float_FMT_G_): Fixes rounding issues with -m32.
+
 2014-01-11  Jerry DeLisle  <jvdelisle@gcc.gnu>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
