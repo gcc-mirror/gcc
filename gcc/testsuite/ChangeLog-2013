@@ -1739,7 +1739,7 @@
 2013-12-14   Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59265
-	g++.dg/torture/pr59265.C: New testcase.
+	* g++.dg/torture/pr59265.C: New testcase.
 
 2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -3778,8 +3778,7 @@
 
 	* gcc.target/arm/neon-vcond-gt.c: Scan for vbsl or vbit or vbif.
 	* gcc.target/arm/neon-vcond-ltgt.c: Scan for vbsl or vbit or vbif.
-	* gcc.target/arm/neon-vcond-unordered.c: Scan for vbsl or vbit or
-	vbif.
+	* gcc.target/arm/neon-vcond-unordered.c: Scan for vbsl or vbit or vbif.
 
 2013-11-03  Marek Polacek  <polacek@redhat.com>
 
