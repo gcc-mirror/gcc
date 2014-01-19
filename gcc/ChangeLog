@@ -1,10 +1,17 @@
+2014-01-18  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59379
+	* config/i386/i386.md (*lea<mode>): Zero-extend return register
+	to DImode for zero-extended addresses.
+
 2014-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57763
 	* bb-reorder.c (fix_crossing_unconditional_branches): Set JUMP_LABEL
 	on the new indirect jump_insn and increment LABEL_NUSES (label).
 
-2014-01-18   H.J. Lu  <hongjiu.lu@intel.com>
+2014-01-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/59580
 	PR bootstrap/59583
