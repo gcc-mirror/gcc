@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return true;
       if (this->_M_atom())
 	{
-	  this->_M_quantifier();
+	  while (this->_M_quantifier());
 	  return true;
 	}
       return false;
@@ -173,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _TraitsT>
-    void
+    bool
     _Compiler<_TraitsT>::
     _M_quantifier()
     {
@@ -276,6 +276,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  _M_stack.push(__e);
 	}
+      else
+	return false;
+      return true;
     }
 
 #define __INSERT_REGEX_MATCHER(__func, args...)\

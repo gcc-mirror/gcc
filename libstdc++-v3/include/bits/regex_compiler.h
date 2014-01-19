@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_assertion();
 
-      void
+      bool
       _M_quantifier();
 
       bool
