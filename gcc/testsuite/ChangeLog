@@ -1,3 +1,12 @@
+2014-01-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34547
+	* gfortran.dg/null_5.f90 : Include new error.
+	* gfortran.dg/null_6.f90 : Include new error.
+
 2014-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

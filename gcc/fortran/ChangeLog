@@ -1,3 +1,12 @@
+2014-01-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	2013-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34547
+	* resolve.c (resolve_transfer): EXPR_NULL is always in an
+	invalid context in a transfer statement.
+
 2014-01-11  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline

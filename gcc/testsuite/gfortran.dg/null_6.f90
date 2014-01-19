@@ -30,5 +30,5 @@ end subroutine test_PR50375_2
 
 subroutine test_PR34547_3 ()
   integer, allocatable :: i(:)
-  print *, NULL(i)
+  print *, NULL(i)    ! { dg-error "Invalid context for NULL" }
 end subroutine test_PR34547_3

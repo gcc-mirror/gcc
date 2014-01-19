@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2013 Free Software Foundation, Inc.
+   Copyright (C) 2001-2014 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -8705,10 +8705,11 @@ resolve_transfer (gfc_code *code)
 	 && exp->value.op.op == INTRINSIC_PARENTHESES)
     exp = exp->value.op.op1;
 
-  if (exp && exp->expr_type == EXPR_NULL && exp->ts.type == BT_UNKNOWN)
+  if (exp && exp->expr_type == EXPR_NULL
+      && code->ext.dt)
     {
-      gfc_error ("NULL intrinsic at %L in data transfer statement requires "
-		 "MOLD=", &exp->where);
+      gfc_error ("Invalid context for NULL () intrinsic at %L",
+		 &exp->where);
       return;
     }
 
