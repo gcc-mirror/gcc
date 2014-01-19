@@ -1,5 +1,5 @@
-/* { dg-require-effective-target vect_int } */
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "--param=vect-max-version-for-alias-checks=2" } */
 
 /* A test case showing four potential alias checks between a[i] and b[0], b[1],
