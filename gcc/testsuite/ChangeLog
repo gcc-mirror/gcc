@@ -1,5 +1,9 @@
 2014-01-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/pr54240.c: Add -ffat-lto-objects.
+
+2014-01-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/vect/pr57705.c: Require vect_int.
 	* gcc.dg/vect/pr58508.c: Fix order of dg-require-effective-target line.
 	* gcc.dg/vect/vect-alias-check.c: Likewise.
