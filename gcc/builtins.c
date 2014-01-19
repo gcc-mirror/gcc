@@ -3392,7 +3392,8 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
-  expand_insn (CODE_FOR_movstr, 3, ops);
+  if (!maybe_expand_insn (CODE_FOR_movstr, 3, ops))
+    return NULL_RTX;
 
   if (endp && target != const0_rtx)
     {
