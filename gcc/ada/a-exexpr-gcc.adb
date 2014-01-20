@@ -34,7 +34,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
-with System.Storage_Elements;  use System.Storage_Elements;
+with System.Storage_Elements;   use System.Storage_Elements;
 with System.Exceptions.Machine; use System.Exceptions.Machine;
 
 separate (Ada.Exceptions)
