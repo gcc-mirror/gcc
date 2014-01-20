@@ -1,5 +1,23 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi (Allow_Integer_Address): Remove note about not
+	allowed if address is non-private, no longer true.
+	* sem_prag.adb (Analyze_Pragma, case Allow_Integer_Address):
+	Remove check for address being private, causes difficulty when
+	pragma used in gnat.adc file and is not needed, since we guard
+	this in Address_Integer_Convert_OK.
+	* exp_ch7.adb: Minor reformatting.
+	* sem_ch4.adb: Handle operator operands in Allow_Integer_Address mode.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Range_Check): Remove gnatprove special
+	casing of exponentiation.
+	* sem_res.adb (Resolve_Op_Expon): Apply range check to right
+	operand for integer case to check range against Natural.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* s-tataat.adb: Minor reformatting.
 
 2014-01-20  Robert Dewar  <dewar@adacore.com>

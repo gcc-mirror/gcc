@@ -9853,12 +9853,6 @@ package body Sem_Prag is
          when Pragma_Allow_Integer_Address =>
             GNAT_Pragma;
             Check_Arg_Count (0);
-
-            if not Is_Private_Type (RTE (RE_Address)) then
-               Error_Pragma
-                 ("pragma% allowed only if Address is a private type");
-            end if;
-
             Opt.Allow_Integer_Address := True;
 
          --------------
