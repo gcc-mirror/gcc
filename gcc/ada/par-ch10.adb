@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -360,7 +360,7 @@ package body Ch10 is
                (File_Name (Current_Source_File)) = Expect_Body
          then
             Error_Msg_BC -- CODEFIX
-              ("keyword BODY expected here [see file name]");
+              ("keyword BODY expected here '[see file name']");
             Restore_Scan_State (Scan_State);
             Set_Unit (Comp_Unit_Node, P_Package (Pf_Pbod_Pexp));
          else

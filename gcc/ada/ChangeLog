@@ -1,3 +1,14 @@
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression): If after
+	pre-analysis  the loop parameter specification has been
+	rewritten as a iterator specification, propagate the change to
+	the quantified expression, for ASIS navigtion needs.
+
+2014-01-20  Vincent Celier  <celier@adacore.com>
+
+	* par-ch10.adb: Minor error message change: escape [ and ].
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb: Make warnings on exceptions into errors in GNATprove mode.
