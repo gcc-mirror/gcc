@@ -1,3 +1,9 @@
+2014-01-20  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER): Expand
+	loader name using mbig-endian.
+	(LINUX_TARGET_LINK_SPEC): Pass linker -m flag.
+
 2014-01-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/invoke.texi (-march): Clarify documentation for AArch64.
