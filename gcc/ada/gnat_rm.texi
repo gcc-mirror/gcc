@@ -6308,7 +6308,7 @@ Pragma SPARK_Mode can be used as a local pragma with the following semantics:
 Auto cannot be used as a mode argument.
 
 @item
-When the pragma at the start of the visible declarations (preceded only
+When the pragma is at the start of the visible declarations (preceded only
 by other pragmas) of a package declaration, it marks the whole package
 (declaration and body) in or out of SPARK 2014.
 
