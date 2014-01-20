@@ -1,3 +1,9 @@
+2014-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59860
+	* builtins.c (fold_builtin_strcat): Remove case better handled
+	by tree-ssa-strlen.c.
+
 2014-01-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.opt
