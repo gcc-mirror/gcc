@@ -597,9 +597,9 @@ package body Sem_Aggr is
 
                elsif Expr_Value (This_Low) /= Expr_Value (Aggr_Low (Dim)) then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate low bound mismatch??", N);
-                  Error_Msg_N
-                     ("\Constraint_Error will be raised at run time??", N);
+                  Error_Msg_Warn := not GNATprove_Mode;
+                  Error_Msg_N ("sub-aggregate low bound mismatch<<", N);
+                  Error_Msg_N ("\Constraint_Error [<<", N);
                end if;
             end if;
 
@@ -611,9 +611,9 @@ package body Sem_Aggr is
                  Expr_Value (This_High) /= Expr_Value (Aggr_High (Dim))
                then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate high bound mismatch??", N);
-                  Error_Msg_N
-                     ("\Constraint_Error will be raised at run time??", N);
+                  Error_Msg_Warn := not GNATprove_Mode;
+                  Error_Msg_N ("sub-aggregate high bound mismatch<<", N);
+                  Error_Msg_N ("\Constraint_Error [<<", N);
                end if;
             end if;
          end if;
@@ -1456,8 +1456,9 @@ package body Sem_Aggr is
 
          if OK_BH and then OK_AH and then Val_BH < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound out of range??", AH);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", AH);
+            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_N ("upper bound out of range<<", AH);
+            Error_Msg_N ("\Constraint_Error [<<", AH);
 
             --  You need to set AH to BH or else in the case of enumerations
             --  indexes we will not be able to resolve the aggregate bounds.
@@ -1499,14 +1500,16 @@ package body Sem_Aggr is
 
          if OK_L and then Val_L > Val_AL then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("lower bound of aggregate out of range??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_N ("lower bound of aggregate out of range<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
 
          if OK_H and then Val_H < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound of aggregate out of range??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_N ("upper bound of aggregate out of range<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
       end Check_Bounds;
 
@@ -1545,8 +1548,9 @@ package body Sem_Aggr is
 
          if Range_Len < Len then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("too many elements??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_N ("too many elements<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
       end Check_Length;
 

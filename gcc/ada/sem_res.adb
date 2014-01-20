@@ -769,8 +769,9 @@ package body Sem_Res is
               and then Nkind (Parent (P)) = N_Subprogram_Body
               and then Is_Empty_List (Declarations (Parent (P)))
             then
-               Error_Msg_N ("!??infinite recursion", N);
-               Error_Msg_N ("\!??Storage_Error will be raised at run time", N);
+               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_N ("!infinite recursion<<", N);
+               Error_Msg_N ("\!Storage_Error [<<", N);
                Insert_Action (N,
                  Make_Raise_Storage_Error (Sloc (N),
                    Reason => SE_Infinite_Recursion));
@@ -867,8 +868,9 @@ package body Sem_Res is
          end if;
       end loop;
 
-      Error_Msg_N ("!??possible infinite recursion", N);
-      Error_Msg_N ("\!??Storage_Error may be raised at run time", N);
+      Error_Msg_Warn := not GNATprove_Mode;
+      Error_Msg_N ("!possible infinite recursion<<", N);
+      Error_Msg_N ("\!??Storage_Error ]<<", N);
 
       return True;
    end Check_Infinite_Recursion;
@@ -4553,11 +4555,11 @@ package body Sem_Res is
                  Deepest_Type_Access_Level (Typ)
             then
                if In_Instance_Body then
+                  Error_Msg_Warn := not GNATprove_Mode;
                   Error_Msg_N
-                    ("??type in allocator has deeper level than "
-                     & "designated class-wide type", E);
-                  Error_Msg_N
-                    ("\??Program_Error will be raised at run time", E);
+                    ("type in allocator has deeper level than "
+                     & "designated class-wide type<<", E);
+                  Error_Msg_N ("\Program_Error [<<", E);
                   Rewrite (N,
                     Make_Raise_Program_Error (Sloc (N),
                       Reason => PE_Accessibility_Check_Failed));
@@ -4664,8 +4666,9 @@ package body Sem_Res is
         and then Ekind (Current_Scope) = E_Package
         and then not In_Package_Body (Current_Scope)
       then
-         Error_Msg_N ("??cannot activate task before body seen", N);
-         Error_Msg_N ("\??Program_Error will be raised at run time", N);
+         Error_Msg_Warn := not GNATprove_Mode;
+         Error_Msg_N ("cannot activate task before body seen<<", N);
+         Error_Msg_N ("\Program_Error [<<", N);
       end if;
 
       --  Ada 2012 (AI05-0111-3): Detect an attempt to allocate a task or a
@@ -4677,8 +4680,9 @@ package body Sem_Res is
         and then Present (Subpool_Handle_Name (N))
         and then Has_Task (Desig_T)
       then
-         Error_Msg_N ("??cannot allocate task on subpool", N);
-         Error_Msg_N ("\??Program_Error will be raised at run time", N);
+         Error_Msg_Warn := not GNATprove_Mode;
+         Error_Msg_N ("cannot allocate task on subpool<<", N);
+         Error_Msg_N ("\Program_Error [<<", N);
 
          Rewrite (N,
            Make_Raise_Program_Error (Sloc (N),
@@ -5392,11 +5396,11 @@ package body Sem_Res is
                            and then Is_Entry_Barrier_Function (P))
                then
                   Rtype := Etype (N);
+                  Error_Msg_Warn := not GNATprove_Mode;
                   Error_Msg_NE
-                    ("??& should not be used in entry body (RM C.7(17))",
+                    ("& should not be used in entry body (RM C.7(17))<<",
                      N, Nam);
-                  Error_Msg_NE
-                    ("\Program_Error will be raised at run time??", N, Nam);
+                  Error_Msg_NE ("\Program_Error [<<", N, Nam);
                   Rewrite (N,
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Current_Task_In_Entry_Body));
@@ -5693,10 +5697,9 @@ package body Sem_Res is
                      --  Here warning is to be issued
 
                      Set_Has_Recursive_Call (Nam);
-                     Error_Msg_N
-                       ("??possible infinite recursion!", N);
-                     Error_Msg_N
-                       ("\??Storage_Error may be raised at run time!", N);
+                     Error_Msg_Warn := not GNATprove_Mode;
+                     Error_Msg_N ("possible infinite recursion<<!", N);
+                     Error_Msg_N ("\Storage_Error ]<<!", N);
                   end if;
 
                   exit Scope_Loop;
@@ -6008,8 +6011,9 @@ package body Sem_Res is
             end loop;
 
             if not Call_OK then
-               Error_Msg_N ("!?? cannot determine tag of result", N);
-               Error_Msg_N ("!?? Program_Error will be raised", N);
+               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_N ("!cannot determine tag of result<<", N);
+               Error_Msg_N ("\Program_Error [<<!", N);
                Insert_Action (N,
                  Make_Raise_Program_Error (Sloc (N),
                     Reason => PE_Explicit_Raise));
@@ -10873,12 +10877,11 @@ package body Sem_Res is
                     Deepest_Type_Access_Level (Opnd_Type)
                then
                   if In_Instance_Body then
+                     Error_Msg_Warn := not GNATprove_Mode;
                      Conversion_Error_N
-                       ("??source array type has deeper accessibility "
-                        & "level than target", Operand);
-                     Conversion_Error_N
-                       ("\??Program_Error will be raised at run time",
-                        Operand);
+                       ("source array type has deeper accessibility "
+                        & "level than target<<", Operand);
+                     Conversion_Error_N ("\Program_Error [<<", Operand);
                      Rewrite (N,
                        Make_Raise_Program_Error (Sloc (N),
                          Reason => PE_Accessibility_Check_Failed));
@@ -11183,11 +11186,11 @@ package body Sem_Res is
                --  will be generated by Expand_N_Type_Conversion.
 
                if In_Instance_Body then
+                  Error_Msg_Warn := not GNATprove_Mode;
                   Conversion_Error_N
-                    ("??cannot convert local pointer to non-local access type",
+                    ("cannot convert local pointer to non-local access type<<",
                      Operand);
-                  Conversion_Error_N
-                    ("\??Program_Error will be raised at run time", Operand);
+                  Conversion_Error_N ("\Program_Error [<<", Operand);
 
                else
                   Conversion_Error_N
@@ -11216,12 +11219,14 @@ package body Sem_Res is
                   --  will be generated by Expand_N_Type_Conversion.
 
                   if In_Instance_Body then
+                     Error_Msg_Warn := not GNATprove_Mode;
                      Conversion_Error_N
-                       ("??cannot convert access discriminant to non-local "
-                        & "access type", Operand);
-                     Conversion_Error_N
-                       ("\??Program_Error will be raised at run time",
-                        Operand);
+                       ("cannot convert access discriminant to non-local "
+                        & "access type<<", Operand);
+                     Conversion_Error_N ("\Program_Error [<<", Operand);
+
+                  --  Real error if not in instance body
+
                   else
                      Conversion_Error_N
                        ("cannot convert access discriminant to non-local "
@@ -11361,11 +11366,13 @@ package body Sem_Res is
                --  will be generated by Expand_N_Type_Conversion.
 
                if In_Instance_Body then
+                  Error_Msg_Warn := not GNATprove_Mode;
                   Conversion_Error_N
-                    ("??cannot convert local pointer to non-local access type",
+                    ("cannot convert local pointer to non-local access type<<",
                      Operand);
-                  Conversion_Error_N
-                    ("\??Program_Error will be raised at run time", Operand);
+                  Conversion_Error_N ("\Program_Error [<<", Operand);
+
+               --  If not in an instance body, this is a real error
 
                else
                   --  Avoid generation of spurious error message
@@ -11399,12 +11406,13 @@ package body Sem_Res is
                   --  will be generated by Expand_N_Type_Conversion.
 
                   if In_Instance_Body then
+                     Error_Msg_Warn := not GNATprove_Mode;
                      Conversion_Error_N
-                       ("??cannot convert access discriminant to non-local "
-                        & "access type", Operand);
-                     Conversion_Error_N
-                       ("\??Program_Error will be raised at run time",
-                        Operand);
+                       ("cannot convert access discriminant to non-local "
+                        & "access type<<", Operand);
+                     Conversion_Error_N ("\Program_Error [<<", Operand);
+
+                  --  If not in an instance body, this is a real error
 
                   else
                      Conversion_Error_N

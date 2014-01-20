@@ -538,6 +538,8 @@ package body Restrict is
       --  set in gnat1drv.adb so that we have consistency between each
       --  compilation.
 
+      --  Just checking, SPARK does not allow restrictions to be set ???
+
       if CodePeer_Mode or GNATprove_Mode then
          return;
       end if;

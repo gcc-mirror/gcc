@@ -360,6 +360,8 @@ begin
 
          --  Cleanup processing after completing main analysis
 
+         --  Comment needed for ASIS mode test and GNATprove mode test???
+
          if Operating_Mode = Generate_Code
            or else (Operating_Mode = Check_Semantics
                      and then (ASIS_Mode or GNATprove_Mode))

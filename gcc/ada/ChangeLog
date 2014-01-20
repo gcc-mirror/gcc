@@ -1,5 +1,23 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb: Make warnings on exceptions into errors in GNATprove mode.
+	* errout.adb: Implement [ and ] insertion characters.
+	* errout.ads: Document new [ and ] insertion characters.
+	* sem_ch12.adb, restrict.adb, frontend.adb, exp_ch7.adb: Minor
+	addition of ??? comment.
+	* lib-xref.adb, exp_util.adb, gnat1drv.adb: Minor reformatting
+	* exp_ch4.adb, sem_ch3.adb, sem_ch4.adb, sem_ch6.adb, sem_elab.adb,
+	sem_eval.adb, sem_res.adb, sem_util.adb, sem_attr.adb, sem_aggr.adb:
+	Make warnings on exceptions into errors in GNATprove mode.
+	* sem_dim.adb: Minor reformatting throughout Quote [ and ]
+	in error messages.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Code clean up.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* errout.ads, errout.adb: Implement >? >x? >X? sequences in error
 	messages.
 	* sem_ch6.adb (Check_Statement_Sequence): Missing return is an

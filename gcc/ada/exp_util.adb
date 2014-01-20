@@ -2034,7 +2034,7 @@ package body Exp_Util is
       --  may be constants that depend on the bounds of a string literal, both
       --  standard string types and more generally arrays of characters.
 
-      --  In GNATprove mode, we also need the more precise subtype to be set.
+      --  In GNATprove mode, we also need the more precise subtype to be set
 
       if not (Expander_Active or GNATprove_Mode)
         and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))

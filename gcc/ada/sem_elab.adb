@@ -1138,13 +1138,14 @@ package body Sem_Elab is
 
       --  Here we definitely have a bad instantiation
 
-      Error_Msg_NE ("??cannot instantiate& before body seen", N, Ent);
+      Error_Msg_Warn := not GNATprove_Mode;
+      Error_Msg_NE ("cannot instantiate& before body seen<<", N, Ent);
 
       if Present (Instance_Spec (N)) then
          Supply_Bodies (Instance_Spec (N));
       end if;
 
-      Error_Msg_N ("\??Program_Error will be raised at run time", N);
+      Error_Msg_N ("\Program_Error [<<", N);
       Insert_Elab_Check (N);
       Set_ABE_Is_Certain (N);
    end Check_Bad_Instantiation;
@@ -2178,14 +2179,17 @@ package body Sem_Elab is
       --  level, and the ABE is bound to occur.
 
       if Elab_Call.Last = 0 then
+         Error_Msg_Warn := not GNATprove_Mode;
+
          if Inst_Case then
             Error_Msg_NE
-              ("??cannot instantiate& before body seen", N, Orig_Ent);
+              ("cannot instantiate& before body seen<<", N, Orig_Ent);
          else
-            Error_Msg_NE ("??cannot call& before body seen", N, Orig_Ent);
+            Error_Msg_NE
+              ("cannot call& before body seen<<", N, Orig_Ent);
          end if;
 
-         Error_Msg_N ("\??Program_Error will be raised at run time", N);
+         Error_Msg_N ("\Program_Error [<<", N);
          Insert_Elab_Check (N);
 
       --  Call is not at outer level
@@ -2259,17 +2263,19 @@ package body Sem_Elab is
            and then (Nkind (Original_Node (N)) /= N_Function_Call
                       or else not In_Assertion_Expression (Original_Node (N)))
          then
+            Error_Msg_Warn := not GNATprove_Mode;
+
             if Inst_Case then
                Error_Msg_NE
-                 ("instantiation of& may occur before body is seen??",
+                 ("instantiation of& may occur before body is seen<<",
                   N, Orig_Ent);
             else
                Error_Msg_NE
-                 ("call to& may occur before body is seen??", N, Orig_Ent);
+                 ("call to& may occur before body is seen<<", N, Orig_Ent);
             end if;
 
             Error_Msg_N
-              ("\Program_Error may be raised at run time??", N);
+              ("\Program_Error ]<<", N);
 
             Output_Calls (N);
          end if;
@@ -2364,11 +2370,11 @@ package body Sem_Elab is
                       or else
                     Scope (Proc) = Scope (Defining_Identifier (Decl)))
                then
+                  Error_Msg_Warn := not GNATprove_Mode;
                   Error_Msg_N
-                    ("task will be activated before elaboration of its body??",
+                    ("task will be activated before elaboration of its body<<",
                       Decl);
-                  Error_Msg_N
-                    ("\Program_Error will be raised at run time??", Decl);
+                  Error_Msg_N ("\Program_Error [<<", Decl);
 
                elsif
                  Present (Corresponding_Body (Unit_Declaration_Node (Proc)))
