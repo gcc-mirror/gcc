@@ -822,13 +822,8 @@ do {									     \
   extern void  __aarch64_sync_cache_range (void *, void *);	\
   __aarch64_sync_cache_range (beg, end)
 
-/*  VFP registers may only be accessed in the mode they
-   were set.  */
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)	\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)		\
-   ? reg_classes_intersect_p (FP_REGS, (CLASS))		\
-   : 0)
-
+  aarch64_cannot_change_mode_class (FROM, TO, CLASS)
 
 #define SHIFT_COUNT_TRUNCATED !TARGET_SIMD
 
