@@ -1,3 +1,14 @@
+2013-01-20  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vneg_f.c (STORE_INST): New macro.
+	(RUN_TEST): Use new macro.
+	(INDEX64_32): Delete.
+	(INDEX64_64): Likewise.
+	(INDEX128_32): Likewise.
+	(INDEX128_64): Likewise.
+	(INDEX): Likewise.
+	(test_vneg_f32): Use fixed RUN_TEST.
+
 2014-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/59860
