@@ -2619,17 +2619,10 @@ package body Sem_Res is
             --  treated as an Address. The reverse case of integer wanted,
             --  Address found, is treated in an analogous manner.
 
-            if Allow_Integer_Address then
-               if (Is_RTE (Typ, RE_Address)
-                    and then Is_Integer_Type (Etype (N)))
-                 or else
-                   (Is_Integer_Type (Typ)
-                     and then Is_RTE (Etype (N), RE_Address))
-               then
-                  Rewrite (N, Unchecked_Convert_To (Typ, Relocate_Node (N)));
-                  Analyze_And_Resolve (N, Typ);
-                  return;
-               end if;
+            if Address_Integer_Convert_OK (Typ, Etype (N)) then
+               Rewrite (N, Unchecked_Convert_To (Typ, Relocate_Node (N)));
+               Analyze_And_Resolve (N, Typ);
+               return;
             end if;
 
             --  That special Allow_Integer_Address check did not appply, so we
@@ -11095,14 +11088,7 @@ package body Sem_Res is
       --  Allow_Integer_Address is in effect. We convert the conversion to
       --  an unchecked conversion in this case and we are all done!
 
-      if Allow_Integer_Address
-        and then
-          ((Is_RTE (Target_Type, RE_Address)
-             and then Is_Integer_Type (Opnd_Type))
-          or else
-           (Is_RTE (Opnd_Type, RE_Address)
-             and then Is_Integer_Type (Target_Type)))
-      then
+      if Address_Integer_Convert_OK (Opnd_Type, Target_Type) then
          Rewrite (N, Unchecked_Convert_To (Target_Type, Expression (N)));
          Analyze_And_Resolve (N, Target_Type);
          return True;

@@ -7982,16 +7982,13 @@ package body Exp_Ch7 is
       --    end;
 
       --  A special case is made for Boolean expressions so that the back-end
-      --  knows to generate a conditional branch instruction if running with
+      --  knows to generate a conditional branch instruction, if running with
       --  -fpreserve-control-flow. This ensures that a control flow change
       --  signalling the decision outcome occurs before the cleanup actions.
-      --  In the absence of -fpreserve-control-flow, the back-end will
-      --  optimize away the extra conditional expression, so we can do this
-      --  modification unconditionally here.
 
-      --  Why don't we add a test of Opt.Preserve_Control_Flow here???
-
-      if Is_Boolean_Type (Typ) then
+      if Opt.Suppress_Control_Flow_Optimizations
+           and then Is_Boolean_Type (Typ)
+      then
          Expr :=
            Make_If_Expression (Loc,
              Expressions => New_List (

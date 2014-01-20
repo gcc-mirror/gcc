@@ -361,6 +361,27 @@ package body Sem_Util is
       Analyze (N);
    end Add_Global_Declaration;
 
+   --------------------------------
+   -- Address_Integer_Convert_OK --
+   --------------------------------
+
+   function Address_Integer_Convert_OK (T1, T2 : Entity_Id) return Boolean is
+   begin
+      if Allow_Integer_Address
+        and then ((Is_Descendent_Of_Address  (T1)
+                    and then Is_Private_Type (T1)
+                    and then Is_Integer_Type (T2))
+                            or else
+                  (Is_Descendent_Of_Address  (T2)
+                    and then Is_Private_Type (T2)
+                    and then Is_Integer_Type (T1)))
+      then
+         return True;
+      else
+         return False;
+      end if;
+   end Address_Integer_Convert_OK;
+
    -----------------
    -- Addressable --
    -----------------
