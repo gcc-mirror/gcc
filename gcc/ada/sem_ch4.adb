@@ -6331,7 +6331,8 @@ package body Sem_Ch4 is
             --  binary operator case.
 
             elsif Junk_Operand (R)
-              or (Nkind (N) in N_Binary_Op and then Junk_Operand (L))
+              or  -- really mean OR here and not OR ELSE, see above
+                (Nkind (N) in N_Binary_Op and then Junk_Operand (L))
             then
                return;
 
@@ -6390,11 +6391,42 @@ package body Sem_Ch4 is
                      Rewrite (L,
                        Unchecked_Convert_To (Etype (R), Relocate_Node (L)));
                      Analyze_Arithmetic_Op (N);
+                     return;
 
                   else
                      Resolve (L, Etype (R));
                   end if;
+
                   return;
+
+               elsif Allow_Integer_Address
+                 and then Is_Descendent_Of_Address (Etype (L))
+                 and then Is_Descendent_Of_Address (Etype (R))
+                 and then not Error_Posted (N)
+               then
+                  declare
+                     Addr_Type : constant Entity_Id := Etype (L);
+
+                  begin
+                     Rewrite (L,
+                       Unchecked_Convert_To (
+                         Standard_Integer, Relocate_Node (L)));
+                     Rewrite (R,
+                       Unchecked_Convert_To (
+                         Standard_Integer, Relocate_Node (R)));
+                     Analyze_Arithmetic_Op (N);
+
+                     --  If this is an operand in an enclosing arithmetic
+                     --  operation, Convert the result as an address so that
+                     --  arithmetic folding of address can continue.
+
+                     if Nkind (Parent (N)) in N_Op then
+                        Rewrite (N,
+                          Unchecked_Convert_To (Addr_Type, Relocate_Node (N)));
+                     end if;
+
+                     return;
+                  end;
                end if;
 
             --  Comparisons on A'Access are common enough to deserve a
