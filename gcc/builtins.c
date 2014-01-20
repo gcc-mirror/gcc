@@ -11760,17 +11760,11 @@ fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
 	  if (!strlen_fn || !strcpy_fn)
 	    return NULL_TREE;
 
-	  /* If we don't have a movstr we don't want to emit an strcpy
-	     call.  We have to do that if the length of the source string
-	     isn't computable (in that case we can use memcpy probably
-	     later expanding to a sequence of mov instructions).  If we
-	     have movstr instructions we can emit strcpy calls.  */
-	  if (!HAVE_movstr)
-	    {
-	      tree len = c_strlen (src, 1);
-	      if (! len || TREE_SIDE_EFFECTS (len))
-		return NULL_TREE;
-	    }
+	  /* If the length of the source string isn't computable don't
+	     split strcat into strlen and strcpy.  */
+	  tree len = c_strlen (src, 1);
+	  if (! len || TREE_SIDE_EFFECTS (len))
+	    return NULL_TREE;
 
 	  /* Stabilize the argument list.  */
 	  dst = builtin_save_expr (dst);
