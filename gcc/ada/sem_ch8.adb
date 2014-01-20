@@ -5262,8 +5262,7 @@ package body Sem_Ch8 is
                      Candidate        := Non_Limited_View (Id);
                      Is_New_Candidate := True;
 
-                  --  Hide the candidate because it is not used in a proper
-                  --  context.
+                  --  Hide candidate because it is not used in a proper context
 
                   else
                      Candidate        := Empty;

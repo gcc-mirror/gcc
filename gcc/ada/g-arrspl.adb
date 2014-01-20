@@ -337,8 +337,8 @@ package body GNAT.Array_Split is
          raise Index_Error;
 
       else
-         return S.D.Source
-           (S.D.Slices (Index).Start .. S.D.Slices (Index).Stop);
+         return
+           S.D.Source (S.D.Slices (Index).Start .. S.D.Slices (Index).Stop);
       end if;
    end Slice;
 

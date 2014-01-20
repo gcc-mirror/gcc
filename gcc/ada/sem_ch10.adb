@@ -3066,7 +3066,7 @@ package body Sem_Ch10 is
         and then Nkind (Original_Node (Unit)) = N_Package_Instantiation
       then
          return Defining_Entity
-                 (Specification (Instance_Spec (Original_Node (Unit))));
+                  (Specification (Instance_Spec (Original_Node (Unit))));
       elsif Nkind (Unit) = N_Package_Instantiation then
          return Defining_Entity (Specification (Instance_Spec (Unit)));
       else

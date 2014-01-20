@@ -3611,8 +3611,7 @@ package body Sem_Ch12 is
 
          --  Save the instantiation node, for subsequent instantiation of the
          --  body, if there is one and we are generating code for the current
-         --  unit. Mark the unit as having a body, to avoid a premature error
-         --  message.
+         --  unit. Mark unit as having a body (avoids premature error message).
 
          --  We instantiate the body if we are generating code, if we are
          --  generating cross-reference information, or if we are building
@@ -4390,8 +4389,7 @@ package body Sem_Ch12 is
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
 
-        --  Must be generating code or analyzing code in ASIS mode or GNATprove
-        --  mode.
+        --  Must be generating code or analyzing code in ASIS/GNATprove mode
 
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics

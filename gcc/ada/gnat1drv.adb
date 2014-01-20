@@ -1262,8 +1262,7 @@ begin
       --  same as the object file produced for compilation.
 
       Write_ALI (Object => (Back_End_Mode = Generate_Object
-                              or else
-                            GNATprove_Mode));
+                             or else GNATprove_Mode));
 
       if not Compilation_Errors then
 

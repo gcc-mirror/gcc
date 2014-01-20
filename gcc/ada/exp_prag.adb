@@ -639,7 +639,7 @@ package body Exp_Prag is
                     Expression => Make_Identifier (Loc, Chars (Dum))),
 
                   Make_Pragma_Argument_Association (Loc,
-                    Chars => Name_External_Name,
+                    Chars      => Name_External_Name,
                     Expression => Relocate_Node (Rtti_Name))))));
 
             Rewrite (Expression (Foreign_Data),
@@ -654,7 +654,6 @@ package body Exp_Prag is
 
       else
          null;
-
       end if;
    end Expand_Pragma_Import_Or_Interface;
 

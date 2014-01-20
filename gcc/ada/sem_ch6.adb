@@ -1276,7 +1276,6 @@ package body Sem_Ch6 is
          return;
 
       else
-
          --  Resolve the types of the formals now, because the freeze point
          --  may appear in a different context, e.g. an instantiation.
 
@@ -1362,13 +1361,11 @@ package body Sem_Ch6 is
       Par : constant Node_Id := Parent (N);
 
    begin
-      if        (Nkind (Par) = N_Function_Call
-                  and then N = Name (Par))
+      if        (Nkind (Par) = N_Function_Call and then N = Name (Par))
         or else  Nkind (Par) = N_Function_Instantiation
-        or else (Nkind (Par) = N_Indexed_Component
-                   and then N = Prefix (Par))
+        or else (Nkind (Par) = N_Indexed_Component and then N = Prefix (Par))
         or else (Nkind (Par) = N_Pragma_Argument_Association
-                   and then not Is_Pragma_String_Literal (Par))
+                  and then not Is_Pragma_String_Literal (Par))
         or else  Nkind (Par) = N_Subprogram_Renaming_Declaration
         or else (Nkind (Par) = N_Attribute_Reference
                   and then Attribute_Name (Par) /= Name_Value)

@@ -1,3 +1,10 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, exp_prag.adb, sem_aux.adb, sinfo.ads, sem_ch10.adb,
+	checks.adb, sem_prag.adb, sem_ch12.adb, freeze.adb, g-arrspl.adb,
+	expander.adb, gnat1drv.adb, exp_ch4.adb, sem_ch6.adb,
+	sem_ch8.adb, exp_dist.adb: Minor reformatting.
+
 2014-01-20  Yannick Moy  <moy@adacore.com>
 
 	* gnat1drv.adb (Gnat1drv): Call Write_ALI with Object=True in GNATprove

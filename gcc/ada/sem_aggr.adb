@@ -459,9 +459,7 @@ package body Sem_Aggr is
       --  added in the tree, so that the formal verification can rely on those
       --  to be present.
 
-      if not (Expander_Active or GNATprove_Mode)
-        or In_Spec_Expression
-      then
+      if not (Expander_Active or GNATprove_Mode) or In_Spec_Expression then
          return;
       end if;
 
@@ -1585,7 +1583,7 @@ package body Sem_Aggr is
             Value := Expr_Value (From);
 
          --  If expression From is something like Some_Type'Val (10) then
-         --  Value = 10
+         --  Value = 10.
 
          elsif Nkind (From) = N_Attribute_Reference
            and then Attribute_Name (From) = Name_Val
@@ -1682,7 +1680,6 @@ package body Sem_Aggr is
               (Expr, Nxt_Ind, Nxt_Ind_Constr, Component_Typ, Others_Allowed);
 
          else
-
             --  If it's "... => <>", nothing to resolve
 
             if Nkind (Expr) = N_Component_Association then
