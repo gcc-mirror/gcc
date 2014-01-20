@@ -1,3 +1,8 @@
+2014-01-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_avoid_lea_for_addr): Return false
+	for SImode_address_operand operands, having only a REG argument.
+
 2014-01-20  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64-linux.h (GLIBC_DYNAMIC_LINKER): Expand
