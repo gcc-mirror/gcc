@@ -1,3 +1,14 @@
+2014-01-20  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/target-supports.exp (force_conventional_output_for): New
+	procedure.
+	* lib/scanasm.exp (scan-assembler_required_options)
+	(scan-assembler-not_required_options)
+	(scan-assembler-times_required_options): Replace with
+	force_conventional_output_fors.
+	* lib/scanrtl.exp: Force conventional output for all rtl dump scans.
+	* gcc.target/mips/octeon-pipe-1.c: Remove -ffat-lto-objects.
+
 2014-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/59789

@@ -5667,3 +5667,17 @@ proc check_effective_target_fenv_exceptions {} {
 	}
     } "-std=gnu99"]
 }
+
+# Record that dg-final test TEST requires convential compilation.
+
+proc force_conventional_output_for { test } {
+    if { [info proc $test] == "" } {
+	perror "$test does not exist"
+	exit 1
+    }
+    proc ${test}_required_options {} {
+	global gcc_force_conventional_output
+	return $gcc_force_conventional_output
+    }
+}
+
