@@ -491,19 +491,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 run-time library.  */
       goto object;
 
-    case E_Discriminant:
     case E_Component:
+    case E_Discriminant:
       {
 	/* The GNAT record where the component was defined.  */
 	Entity_Id gnat_record = Underlying_Type (Scope (gnat_entity));
 
-	/* If the variable is an inherited record component (in the case of
-	   extended record types), just return the inherited entity, which
-	   must be a FIELD_DECL.  Likewise for discriminants.
-	   For discriminants of untagged records which have explicit
-	   stored discriminants, return the entity for the corresponding
-	   stored discriminant.  Also use Original_Record_Component
-	   if the record has a private extension.  */
+	/* If the entity is an inherited component (in the case of extended
+	   tagged record types), just return the original entity, which must
+	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
+	   non-girder discriminant (in the case of derived untagged record
+	   types), return the stored discriminant it renames.  */
 	if (Present (Original_Record_Component (gnat_entity))
 	    && Original_Record_Component (gnat_entity) != gnat_entity)
 	  {
@@ -514,44 +512,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    break;
 	  }
 
-	/* If the enclosing record has explicit stored discriminants,
-	   then it is an untagged record.  If the Corresponding_Discriminant
-	   is not empty then this must be a renamed discriminant and its
-	   Original_Record_Component must point to the corresponding explicit
-	   stored discriminant (i.e. we should have taken the previous
-	   branch).  */
-	else if (Present (Corresponding_Discriminant (gnat_entity))
-		 && Is_Tagged_Type (gnat_record))
+	/* If this is a discriminant of an extended tagged type used to rename
+	   a discriminant of the parent type, return the latter.  */
+	else if (Present (Corresponding_Discriminant (gnat_entity)))
 	  {
-	    /* A tagged record has no explicit stored discriminants.  */
-	    gcc_assert (First_Discriminant (gnat_record)
-		       == First_Stored_Discriminant (gnat_record));
+	    /* If the derived type is untagged, then this is a non-girder
+	       discriminant and its Original_Record_Component must point to
+	       the stored discriminant it renames (i.e. we should have taken
+	       the previous branch).  */
+	    gcc_assert (Is_Tagged_Type (gnat_record));
+
 	    gnu_decl
 	      = gnat_to_gnu_entity (Corresponding_Discriminant (gnat_entity),
 				    gnu_expr, definition);
 	    saved = true;
 	    break;
 	  }
-
-	else if (Present (CR_Discriminant (gnat_entity))
-		 && type_annotate_only)
-	  {
-	    gnu_decl = gnat_to_gnu_entity (CR_Discriminant (gnat_entity),
-					   gnu_expr, definition);
-	    saved = true;
-	    break;
-	  }
-
-	/* If the enclosing record has explicit stored discriminants, then
-	   it is an untagged record.  If the Corresponding_Discriminant
-	   is not empty then this must be a renamed discriminant and its
-	   Original_Record_Component must point to the corresponding explicit
-	   stored discriminant (i.e. we should have taken the first
-	   branch).  */
-	else if (Present (Corresponding_Discriminant (gnat_entity))
-		 && (First_Discriminant (gnat_record)
-		     != First_Stored_Discriminant (gnat_record)))
-	  gcc_unreachable ();
 
 	/* Otherwise, if we are not defining this and we have no GCC type
 	   for the containing record, make one for it.  Then we should
@@ -586,7 +562,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else
 	  /* Here we have no GCC type and this is a reference rather than a
 	     definition.  This should never happen.  Most likely the cause is
-	     reference before declaration in the gnat tree for gnat_entity.  */
+	     reference before declaration in the GNAT tree for gnat_entity.  */
 	  gcc_unreachable ();
       }
 
