@@ -6,7 +6,7 @@ enum tree_code_class { tcc_type, tcc_other };
 extern enum tree_code_class tree_code_type[];
 
 struct tree_base {
-  enum tree_code code : 16;
+  enum tree_code code : 8;
   unsigned unsigned_flag : 1;
 };
 
