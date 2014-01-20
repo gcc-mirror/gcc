@@ -9411,11 +9411,8 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      D         : constant Node_Id := Discrete_Range (N);
-      Pref      : constant Node_Id := Prefix (N);
-      Pref_Typ  : Entity_Id        := Etype (Pref);
-      Drange    : Node_Id;
-      Index_Typ : Entity_Id;
+      Pref     : constant Node_Id := Prefix (N);
+      Pref_Typ : Entity_Id        := Etype (Pref);
 
    --  Start of processing for Expand_N_Slice
 
@@ -9440,41 +9437,6 @@ package body Exp_Ch4 is
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
       end if;
-
-      --  Find the range of the discrete_range. For ranges that do not appear
-      --  in the slice itself, we make a shallow copy and inherit the source
-      --  location and the parent field from the discrete_range. This ensures
-      --  that the range check is inserted relative to the slice and that the
-      --  runtime exception poins to the proper construct.
-
-      if Nkind (D) = N_Range then
-         Drange := D;
-
-      elsif Nkind_In (D, N_Expanded_Name, N_Identifier) then
-         Drange := New_Copy (Scalar_Range (Entity (D)));
-         Set_Etype  (Drange, Entity (D));
-         Set_Parent (Drange, Parent (D));
-         Set_Sloc   (Drange, Sloc   (D));
-
-      else pragma Assert (Nkind (D) = N_Subtype_Indication);
-         Drange := New_Copy (Range_Expression (Constraint (D)));
-         Set_Etype  (Drange, Etype  (D));
-         Set_Parent (Drange, Parent (D));
-         Set_Sloc   (Drange, Sloc   (D));
-      end if;
-
-      --  Find the type of the array index
-
-      if Ekind (Pref_Typ) = E_String_Literal_Subtype then
-         Index_Typ := Etype (String_Literal_Low_Bound (Pref_Typ));
-      else
-         Index_Typ := Etype (First_Index (Pref_Typ));
-      end if;
-
-      --  Add a runtime check to test the compatibility between the array range
-      --  and the discrete_range.
-
-      Apply_Range_Check (Drange, Index_Typ);
 
       --  The remaining case to be handled is packed slices. We can leave
       --  packed slices as they are in the following situations:

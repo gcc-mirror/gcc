@@ -1,3 +1,35 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb: Minor comment update.
+
+2014-01-20  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (PERSONALITY_FUNCTION/arm): Remove unused
+	variables, comment out unused code.
+	* a-exexpr-gcc.adb: Move declarations to s-excmac-gcc.ads
+	* s-excmac-gcc.ads: New file, extracted from a-exexpr-gcc.adb
+	* s-excmac-arm.ads: New file.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Slice): Remove constant D and variables
+	Drange and Index_Typ. Remove the circuitry which creates a
+	range check to compare the index type of the array against the
+	discrete_range.
+	* sem_res.adb (Resolve_Slice): Add local variable Dexpr. Update
+	the circuitry which creates a range check to handle a
+	discrete_range denoted by a subtype indication.
+
+2014-01-20  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* sinput.adb, sinput.ads (Sloc_Range): Traverse the tree of original
+	nodes to get the original sloc range.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Use Defining_Entity to obtain the
+	entity of a [library level] package.
+
 2014-01-20  Tristan Gingold  <gingold@adacore.com>
 
 	* raise-gcc.c (exception_class_eq): New function.

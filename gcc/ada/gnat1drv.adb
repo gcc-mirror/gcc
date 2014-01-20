@@ -289,6 +289,9 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
+      --  Enable some individual switches that are implied by relaxed RM
+      --  semantics mode.
+
       if Relaxed_RM_Semantics then
          Overriding_Renamings := True;
          Treat_Categorization_Errors_As_Warnings := True;

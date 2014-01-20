@@ -770,18 +770,20 @@ package body Sinput is
       -------------
 
       function Process (N : Node_Id) return Traverse_Result is
+         Orig : constant Node_Id := Original_Node (N);
       begin
-         if Sloc (N) < Min then
-            if Sloc (N) > No_Location then
-               Min := Sloc (N);
+         if Sloc (Orig) < Min then
+            if Sloc (Orig) > No_Location then
+               Min := Sloc (Orig);
             end if;
-         elsif Sloc (N) > Max then
-            if Sloc (N) > No_Location then
-               Max := Sloc (N);
+
+         elsif Sloc (Orig) > Max then
+            if Sloc (Orig) > No_Location then
+               Max := Sloc (Orig);
             end if;
          end if;
 
-         return OK;
+         return OK_Orig;
       end Process;
 
    --  Start of processing for Sloc_Range

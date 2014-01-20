@@ -18142,7 +18142,7 @@ package body Sem_Prag is
                      Context := Specification (Context);
                   end if;
 
-                  Body_Id := Defining_Unit_Name (Context);
+                  Body_Id := Defining_Entity (Context);
 
                   Chain_Pragma (Body_Id, N);
 
