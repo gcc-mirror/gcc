@@ -1,3 +1,8 @@
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* output.h (output_constant): Delete.
+	* varasm.c (output_constant): Make private.
+
 2014-01-20  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd.md (vec_perm<mode>): Add BE check.
