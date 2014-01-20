@@ -6290,7 +6290,7 @@ package body Checks is
       --  enhanced to check for an always True value in the condition and to
       --  generate a compilation warning???
 
-      if not Expander_Active or else not Checks_On then
+      if not Expander_Active or not Checks_On then
          return;
       end if;
 

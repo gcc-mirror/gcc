@@ -12262,12 +12262,11 @@ package body Exp_Ch4 is
 
             while Present (Par) loop
                if Par = Wrapped_Node
-                    or else
-                  Nkind_In (Par, N_Assignment_Statement,
-                                 N_Object_Declaration,
-                                 N_Pragma,
-                                 N_Procedure_Call_Statement,
-                                 N_Simple_Return_Statement)
+                 or else Nkind_In (Par, N_Assignment_Statement,
+                                        N_Object_Declaration,
+                                        N_Pragma,
+                                        N_Procedure_Call_Statement,
+                                        N_Simple_Return_Statement)
                then
                   Hook_Context := Par;
                   goto Hook_Context_Found;
@@ -12303,13 +12302,14 @@ package body Exp_Ch4 is
 
             Finalize_Always :=
                not (In_Cond_Expr
-                      or else
-                    Nkind_In (Original_Node (N), N_Case_Expression,
-                                                 N_If_Expression));
+                     or else
+                       Nkind_In (Original_Node (N), N_Case_Expression,
+                                                    N_If_Expression));
 
             declare
                Loc  : constant Source_Ptr := Sloc (N);
                Temp : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+
             begin
                Append_To (Actions (N),
                  Make_Object_Declaration (Loc,

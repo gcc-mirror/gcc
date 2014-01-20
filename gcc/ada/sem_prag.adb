@@ -4607,7 +4607,7 @@ package body Sem_Prag is
             --  where there is no later point at which the aspect will be
             --  analyzed.
 
-            if GNATprove_Mode or else ASIS_Mode then
+            if GNATprove_Mode or ASIS_Mode then
                Analyze_Pre_Post_Condition_In_Decl_Part
                  (N, Defining_Entity (Unit (Parent (PO))));
             end if;

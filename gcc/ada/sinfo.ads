@@ -519,12 +519,12 @@ package Sinfo is
    --  This light expansion does two transformations of the tree, that cannot
    --  be postponed after the frontend semantic analysis:
 
-   --    1. Replace object renamings by renamed object. This requires
-   --       introducing temporaries at the point of the renaming, which must be
-   --       properly analyzed.
+   --    1. Replace object renamings by renamed object. This requires the
+   --       introdtion of temporaries at the point of the renaming, which must
+   --       be properly analyzed.
 
    --    2. Fully qualify entity names. This is needed to generate suitable
-   --       local effects/call-graphs in ALI files, with the completely
+   --       local effects and call-graphs in ALI files, with the completely
    --       qualified names (in particular the suffix to distinguish homonyms).
 
    --  The tree after this light expansion should be fully analyzed
@@ -553,7 +553,7 @@ package Sinfo is
    -- Common Flag Fields --
    ------------------------
 
-   --  The following flag fields appear in all nodes
+   --  The following flag fields appear in all nodes:
 
    --  Analyzed
    --    This flag is used to indicate that a node (and all its children have

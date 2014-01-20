@@ -103,6 +103,8 @@ package body Sem_Aux is
       then
          return Class_Wide_Type (Non_Limited_View (Etype (Ent)));
 
+      --  In all other cases, return entity unchanged
+
       else
          return Ent;
       end if;
