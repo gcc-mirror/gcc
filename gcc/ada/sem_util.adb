@@ -578,7 +578,7 @@ package body Sem_Util is
    begin
       if Has_Predicates (Typ) then
          if Is_Generic_Actual_Type (Typ) then
-            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_Warn := SPARK_Mode /= On;
             Error_Msg_FE (Msg & "<<", N, Typ);
             Error_Msg_F ("\Program_Error [<<", N);
             Insert_Action (N,
@@ -3268,11 +3268,10 @@ package body Sem_Util is
       Eloc : Source_Ptr;
 
    begin
-      --  If this is a warning, convert it into an error if we are operating
-      --  in GNATprove mode, because in SPARK, we are allowed to consider
-      --  such warnings as illegalities, and we choose to do so!
+      --  If this is a warning, convert it into an error if we are in code
+      --  subject to SPARK_Mode being set ON.
 
-      Error_Msg_Warn := not GNATprove_Mode;
+      Error_Msg_Warn := SPARK_Mode /= On;
 
       --  A static constraint error in an instance body is not a fatal error.
       --  we choose to inhibit the message altogether, because there is no
@@ -3414,7 +3413,7 @@ package body Sem_Util is
          end loop;
 
          if Msgs then
-            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_Warn := SPARK_Mode /= On;
 
             if Present (Ent) then
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);

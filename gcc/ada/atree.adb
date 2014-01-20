@@ -733,6 +733,7 @@ package body Atree is
          Nodes.Table (Destination + 2) := Nodes.Table (Source + 2);
          Nodes.Table (Destination + 3) := Nodes.Table (Source + 3);
          Nodes.Table (Destination + 4) := Nodes.Table (Source + 4);
+         Nodes.Table (Destination + 5) := Nodes.Table (Source + 5);
 
       else
          pragma Assert (not Has_Extension (Source));
@@ -1105,18 +1106,26 @@ package body Atree is
       Temp_Ent := Nodes.Table (E1);
       Nodes.Table (E1) := Nodes.Table (E2);
       Nodes.Table (E2) := Temp_Ent;
+
       Temp_Ent := Nodes.Table (E1 + 1);
       Nodes.Table (E1 + 1) := Nodes.Table (E2 + 1);
       Nodes.Table (E2 + 1) := Temp_Ent;
+
       Temp_Ent := Nodes.Table (E1 + 2);
       Nodes.Table (E1 + 2) := Nodes.Table (E2 + 2);
       Nodes.Table (E2 + 2) := Temp_Ent;
+
       Temp_Ent := Nodes.Table (E1 + 3);
       Nodes.Table (E1 + 3) := Nodes.Table (E2 + 3);
       Nodes.Table (E2 + 3) := Temp_Ent;
+
       Temp_Ent := Nodes.Table (E1 + 4);
       Nodes.Table (E1 + 4) := Nodes.Table (E2 + 4);
       Nodes.Table (E2 + 4) := Temp_Ent;
+
+      Temp_Ent := Nodes.Table (E1 + 5);
+      Nodes.Table (E1 + 5) := Nodes.Table (E2 + 5);
+      Nodes.Table (E2 + 5) := Temp_Ent;
 
       --  That exchange exchanged the parent pointers as well, which is what
       --  we want, but we need to patch up the defining identifier pointers

@@ -47,7 +47,6 @@ with Lib.Xref; use Lib.Xref;
 with Namet.Sp; use Namet.Sp;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
-with Opt;      use Opt;
 with Output;   use Output;
 with Par_SCO;  use Par_SCO;
 with Restrict; use Restrict;
@@ -253,10 +252,10 @@ package body Sem_Prag is
    --  original one, following the renaming chain) is returned. Otherwise the
    --  entity is returned unchanged. Should be in Einfo???
 
-   function Get_SPARK_Mode_Id (N : Name_Id) return SPARK_Mode_Id;
+   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type;
    --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
-   --  Get_SPARK_Mode_Id. Convert a name into a corresponding value of type
-   --  SPARK_Mode_Id.
+   --  Get_SPARK_Mode_Type. Convert a name into a corresponding value of type
+   --  SPARK_Mode_Type.
 
    function Is_Part_Of
      (State    : Entity_Id;
@@ -18065,8 +18064,7 @@ package body Sem_Prag is
                New_Id       : Entity_Id);
             --  Verify the "monotonicity" of SPARK modes between two entities.
             --  The order of modes is Off < Auto < On. Governing_Id establishes
-            --  the mode of the context. New_Id attempts to redefine the known
-            --  mode.
+            --  the mode of the context. New_Id is the desired new mode.
 
             procedure Check_Pragma_Conformance
               (Governing_Mode : Node_Id;
@@ -18076,8 +18074,8 @@ package body Sem_Prag is
             --  mode dictated by the context. New_Mode attempts to redefine the
             --  governing mode.
 
-            function Get_SPARK_Mode_Name (Id : SPARK_Mode_Id) return Name_Id;
-            --  Convert a value of type SPARK_Mode_Id into a corresponding name
+            function Get_SPARK_Mode_Name (Id : SPARK_Mode_Type) return Name_Id;
+            --  Convert a value of type SPARK_Mode_Type to corresponding name
 
             ------------------
             -- Chain_Pragma --
@@ -18086,22 +18084,19 @@ package body Sem_Prag is
             procedure Chain_Pragma (Context : Entity_Id; Prag : Node_Id) is
                Existing_Prag : constant Node_Id :=
                                  SPARK_Mode_Pragmas (Context);
+
             begin
-               --  The context does not have a prior mode defined
+               --  Chain existing pragmas to this one, checking consistency
 
-               if No (Existing_Prag) then
-                  Set_SPARK_Mode_Pragmas (Context, Prag);
-
-               --  Chain the new mode on the list of SPARK_Mode pragmas. Verify
-               --  the consistency between the existing mode and the new one.
-
-               else
-                  Set_Next_Pragma (Existing_Prag, Prag);
-
+               if Present (Existing_Prag) then
                   Check_Pragma_Conformance
                     (Governing_Mode => Existing_Prag,
                      New_Mode       => Prag);
+
+                  Set_Next_Pragma (Prag, Existing_Prag);
                end if;
+
+               Set_SPARK_Mode_Pragmas (Context, Prag);
             end Chain_Pragma;
 
             ----------------------------------
@@ -18150,9 +18145,10 @@ package body Sem_Prag is
               (Governing_Mode : Node_Id;
                New_Mode       : Node_Id)
             is
-               Gov_M : constant SPARK_Mode_Id :=
-                         Get_SPARK_Mode_Id (Governing_Mode);
-               New_M : constant SPARK_Mode_Id := Get_SPARK_Mode_Id (New_Mode);
+               Gov_M : constant SPARK_Mode_Type :=
+                         Get_SPARK_Mode_From_Pragma (Governing_Mode);
+               New_M : constant SPARK_Mode_Type :=
+                         Get_SPARK_Mode_From_Pragma (New_Mode);
 
             begin
                --  The new mode is less restrictive than the established mode
@@ -18173,13 +18169,15 @@ package body Sem_Prag is
             -- Get_SPARK_Mode_Name --
             -------------------------
 
-            function Get_SPARK_Mode_Name (Id : SPARK_Mode_Id) return Name_Id is
+            function Get_SPARK_Mode_Name
+              (Id : SPARK_Mode_Type) return Name_Id
+            is
             begin
-               if Id = SPARK_On then
+               if Id = On then
                   return Name_On;
-               elsif Id = SPARK_Off then
+               elsif Id = Off then
                   return Name_Off;
-               elsif Id = SPARK_Auto then
+               elsif Id = Auto then
                   return Name_Auto;
 
                --  Mode "None" should never be used in error message generation
@@ -18194,51 +18192,48 @@ package body Sem_Prag is
             Body_Id : Entity_Id;
             Context : Node_Id;
             Mode    : Name_Id;
-            Mode_Id : SPARK_Mode_Id;
+            Mode_Id : SPARK_Mode_Type;
             Spec_Id : Entity_Id;
             Stmt    : Node_Id;
 
-         --  Start of processing for SPARK_Mode
+         --  Start of processing for SPARK_Mod
 
          begin
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
-            --  Check the legality of the mode
+            --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
                Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_Auto);
                Mode := Chars (Get_Pragma_Arg (Arg1));
-
-            --  A SPARK_Mode without an argument defaults to "On"
-
             else
                Mode := Name_On;
             end if;
 
-            Mode_Id := Get_SPARK_Mode_Id (Mode);
+            Mode_Id := Get_SPARK_Mode_Type (Mode);
             Context := Parent (N);
+            SPARK_Mode := Mode_Id;
 
             --  The pragma appears in a configuration file
 
             if No (Context) then
                Check_Valid_Configuration_Pragma;
-               Global_SPARK_Mode := Mode_Id;
 
             --  When the pragma is placed before the declaration of a unit, it
             --  configures the whole unit.
 
             elsif Nkind (Context) = N_Compilation_Unit then
                Check_Valid_Configuration_Pragma;
-               Set_SPARK_Mode_Pragma (Current_Sem_Unit, N);
+                  Set_SPARK_Mode_Pragma (Current_Sem_Unit, N);
 
             --  The pragma applies to a [library unit] subprogram or package
 
             else
                --  Mode "Auto" cannot be used in nested subprograms or packages
 
-               if Mode_Id = SPARK_Auto then
+               if Mode_Id = Auto then
                   Error_Pragma_Arg
                     ("mode `Auto` can only apply to the configuration variant "
                      & "of pragma %", Arg1);
@@ -18256,8 +18251,7 @@ package body Sem_Prag is
                      if Pragma_Name (Stmt) = Pname then
                         Error_Msg_Name_1 := Pname;
                         Error_Msg_Sloc   := Sloc (Stmt);
-                        Error_Msg_N
-                          ("pragma % duplicates pragma declared #", N);
+                        Error_Msg_N ("pragma% duplicates pragma declared#", N);
                      end if;
 
                   --  Skip internally generated code
@@ -18322,8 +18316,7 @@ package body Sem_Prag is
                   Spec_Id := Defining_Unit_Name (Context);
                   Chain_Pragma (Spec_Id, N);
 
-               --  The pragma is immediately within a package or subprogram
-               --  body.
+               --  Pragma is immediately within a package or subprogram body
 
                --    function F ... is
                --       pragma SPARK_Mode;
@@ -22845,30 +22838,30 @@ package body Sem_Prag is
    end Get_Base_Subprogram;
 
    -----------------------
-   -- Get_SPARK_Mode_Id --
+   -- Get_SPARK_Mode_Type --
    -----------------------
 
-   function Get_SPARK_Mode_Id (N : Name_Id) return SPARK_Mode_Id is
+   function Get_SPARK_Mode_Type (N : Name_Id) return SPARK_Mode_Type is
    begin
       if N = Name_On then
-         return SPARK_On;
+         return On;
       elsif N = Name_Off then
-         return SPARK_Off;
+         return Off;
       elsif N = Name_Auto then
-         return SPARK_Auto;
+         return Auto;
 
       --  Any other argument is erroneous
 
       else
          raise Program_Error;
       end if;
-   end Get_SPARK_Mode_Id;
+   end Get_SPARK_Mode_Type;
 
-   -----------------------
-   -- Get_SPARK_Mode_Id --
-   -----------------------
+   --------------------------------
+   -- Get_SPARK_Mode_From_Pragma --
+   --------------------------------
 
-   function Get_SPARK_Mode_Id (N : Node_Id) return SPARK_Mode_Id is
+   function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type is
       Args : List_Id;
       Mode : Node_Id;
 
@@ -22880,14 +22873,14 @@ package body Sem_Prag is
 
       if Present (Args) then
          Mode := First (Pragma_Argument_Associations (N));
-         return Get_SPARK_Mode_Id (Chars (Get_Pragma_Arg (Mode)));
+         return Get_SPARK_Mode_Type (Chars (Get_Pragma_Arg (Mode)));
 
-      --  When SPARK_Mode appears without an argument, the default is ON
+      --  If SPARK_Mode pragma has no argument, default is ON
 
       else
-         return SPARK_On;
+         return On;
       end if;
-   end Get_SPARK_Mode_Id;
+   end Get_SPARK_Mode_From_Pragma;
 
    ----------------
    -- Initialize --

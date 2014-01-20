@@ -3797,7 +3797,7 @@ package body Sem_Ch3 is
                     and then Present (Get_Attribute_Definition_Clause
                                         (E, Attribute_Address))
                   then
-                     Error_Msg_Warn := not GNATprove_Mode;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_N
                        ("more than one task with same entry address<<", N);
                      Error_Msg_N ("\Program_Error [<<", N);

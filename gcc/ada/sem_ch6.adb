@@ -983,7 +983,7 @@ package body Sem_Ch6 is
                    Reason => PE_Accessibility_Check_Failed));
                Analyze (N);
 
-               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_N ("cannot return a local value by reference<<", N);
                Error_Msg_NE ("\& [<<", N, Standard_Program_Error);
             end if;
@@ -2986,6 +2986,13 @@ package body Sem_Ch6 is
             end if;
 
             Push_Scope (Spec_Id);
+
+            --  Set SPARK_Mode from spec if spec had a SPARK_Mode pragma
+
+            if Present (SPARK_Mode_Pragmas (Spec_Id)) then
+               SPARK_Mode :=
+                 Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragmas (Spec_Id));
+            end if;
 
             --  Make sure that the subprogram is immediately visible. For
             --  child units that have no separate spec this is indispensable.
@@ -7223,7 +7230,7 @@ package body Sem_Ch6 is
 
                --  In GNATprove mode, it is an error to have a missing return
 
-               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_N
                  ("RETURN statement missing following this statement<<!",
                   Last_Stm);
@@ -7252,7 +7259,7 @@ package body Sem_Ch6 is
                      & "will raise Program_Error??", Last_Stm);
                end if;
 
-               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_NE
                  ("\procedure & is marked as No_Return<<!", Last_Stm, Proc);
             end if;

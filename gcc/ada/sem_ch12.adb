@@ -13061,13 +13061,13 @@ package body Sem_Ch12 is
                --  ASIS tree traversal, so we recover the original entity to
                --  expose the renaming. Take into account that the context may
                --  be a nested generic and that the original node may itself
-               --  have an associated node.
+               --  have an associated node that had better be an entity.
 
                if Ekind (E) = E_Package
                  and then Nkind (Parent (N)) = N_Expanded_Name
                  and then Present (Original_Node (N2))
+                 and then Is_Entity_Name (Original_Node (N2))
                  and then Present (Entity (Original_Node (N2)))
-                 and then Is_Entity_Name (Entity (Original_Node (N2)))
                then
                   if Is_Global (Entity (Original_Node (N2))) then
                      N2 := Original_Node (N2);

@@ -9654,7 +9654,7 @@ package body Exp_Ch4 is
 
       procedure Raise_Accessibility_Error is
       begin
-         Error_Msg_Warn := not GNATprove_Mode;
+         Error_Msg_Warn := SPARK_Mode /= On;
          Rewrite (N,
            Make_Raise_Program_Error (Sloc (N),
              Reason => PE_Accessibility_Check_Failed));
