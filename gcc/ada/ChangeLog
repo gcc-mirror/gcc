@@ -1,3 +1,15 @@
+2014-01-20  Bob Duff  <duff@adacore.com>
+
+	* exp_intr.adb (Expand_Unc_Deallocation): Remove warning on abort
+	followed by free.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Address_Clause_Check): If there is an
+	alignment check on the expression in an address clause, and there
+	is no local exception propagation, add an additional explanatory
+	message to clarify the cause of previous warning.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb: Minor reformatting.
