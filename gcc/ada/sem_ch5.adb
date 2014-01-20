@@ -2111,6 +2111,17 @@ package body Sem_Ch5 is
 
             if not Has_Call_Using_Secondary_Stack (Analyzed_Bound) then
                Analyze_And_Resolve (Original_Bound, Typ);
+
+               --  Ensure that the bound is valid. This check should not be
+               --  generated when the range belongs to a quantified expression
+               --  as the construct is still not expanded into its final form.
+
+               if Nkind (Parent (R)) /= N_Loop_Parameter_Specification
+                 or else Nkind (Parent (Parent (R))) /= N_Quantified_Expression
+               then
+                  Ensure_Valid (Original_Bound);
+               end if;
+
                Force_Evaluation (Original_Bound);
                return Original_Bound;
             end if;

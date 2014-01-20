@@ -71,7 +71,10 @@ package Ada.Containers.Formal_Vectors is
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector (Capacity : Count_Type) is private;
+   subtype Capacity_Range is
+     Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
+
+   type Vector (Capacity : Capacity_Range) is private;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -372,7 +375,7 @@ private
    type Elements_Array is array (Count_Type range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Vector (Capacity : Count_Type) is record
+   type Vector (Capacity : Capacity_Range) is record
       Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
    end record;

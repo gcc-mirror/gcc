@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -144,6 +144,7 @@ private
       D : Delay_Block_Access);
    pragma Inline (Time_Enqueue);
    --  Used by the child units to enqueue delays on the timer queue
-   --  implemented in the body of this package.
+   --  implemented in the body of this package. T denotes a point in time as
+   --  the duration elapsed since the epoch of the Ada real-time clock.
 
 end System.Tasking.Async_Delays;

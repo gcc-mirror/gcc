@@ -3854,6 +3854,14 @@ package body Exp_Attr is
             Insert_Action (First (Declarations (Subp)), Asn_Stm);
          end if;
 
+         --  Ensure that the prefix of attribute 'Old is valid. The check must
+         --  be inserted after the expansion of the attribute has taken place
+         --  to reflect the new placement of the prefix.
+
+         if Validity_Checks_On and then Validity_Check_Operands then
+            Ensure_Valid (Pref);
+         end if;
+
          Pop_Scope;
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));

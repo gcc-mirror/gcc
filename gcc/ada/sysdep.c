@@ -43,10 +43,7 @@
 #include "selectLib.h"
 #include "vxWorks.h"
 #if defined (__RTP__)
-# include "version.h"
-# if (_WRS_VXWORKS_MAJOR == 6)
 #  include "vwModNum.h"
-# endif /* _WRS_VXWORKS_MAJOR == 6 */
 #endif /* __RTP__ */
 #endif
 
@@ -926,9 +923,9 @@ __gnat_is_file_not_found_error (int errno_val) {
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
       case S_nfsLib_NFSERR_NOENT:
 #endif
-#if defined (__RTP__) && (_WRS_VXWORKS_MAJOR == 6)
+#if defined (__RTP__)
 	/* An RTP can return an NFS file not found, and the NFS bits must
-	   first be masked off to check the errno.  */
+	   first be masked on to check the errno.  */
       case M_nfsStat | ENOENT:
 #endif
 #endif

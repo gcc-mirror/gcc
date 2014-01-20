@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,8 @@
 ------------------------------------------------------------------------------
 
 with Ada.Calendar.Delays;
+with System.OS_Constants;
+with System.OS_Primitives;
 with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;
 
@@ -39,6 +41,12 @@ function System.Tasking.Async_Delays.Enqueue_Calendar
    return Boolean
 is
    use type Ada.Calendar.Time;
+
+   package SOSC renames System.OS_Constants;
+   package STPO renames System.Task_Primitives.Operations;
+
+   RT_T : Duration := Ada.Calendar.Delays.To_Duration (T);
+
 begin
    if T <= Ada.Calendar.Clock then
       D.Timed_Out := True;
@@ -46,8 +54,22 @@ begin
       return False;
    end if;
 
+   --  T is expressed as a duration elapsed since the UNIX epoch, whereas
+   --  Time_Enque expects duraction elapsed since the epoch of the Ada
+   --  real time clock: compensate if necessary.
+
+   pragma Warnings (Off);
+   --  Comparison "SOSC.CLOCK_RT_Ada = SOSC.CLOCK_REALTIME" is compile
+   --  time known.
+
+   if SOSC.CLOCK_RT_Ada /= SOSC.CLOCK_REALTIME then
+      pragma Warnings (On);
+
+      RT_T := RT_T - OS_Primitives.Monotonic_Clock + STPO.Monotonic_Clock;
+   end if;
+
    System.Tasking.Initialization.Defer_Abort
      (System.Task_Primitives.Operations.Self);
-   Time_Enqueue (Ada.Calendar.Delays.To_Duration (T), D);
+   Time_Enqueue (RT_T, D);
    return True;
 end System.Tasking.Async_Delays.Enqueue_Calendar;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,6 @@ package Ada.Calendar.Delays is
    --  must perform all the processing required for an abort point.
 
    function To_Duration (T : Time) return Duration;
-   --  Convert Time to Duration
+   --  Convert Time to Duration elapsed since UNIX epoch
 
 end Ada.Calendar.Delays;
