@@ -81,7 +81,7 @@ package System.Tasking.Async_Delays is
    --              abort_undefer.all;
    --        end;
    --     end if;
-   --
+
    --     if Timed_Out (DB'Unchecked_Access) then
    --        ...continuation for timeout case...
    --     end if;
@@ -108,9 +108,8 @@ package System.Tasking.Async_Delays is
    pragma Inline (Timed_Out);
    --  Return True if the delay specified in D has timed out
 
-   --  There are child units for delays on Ada.Calendar.Time and
-   --  Ada.Real_Time.Time, so that an application will not need to link in
-   --  features that is not using.
+   --  There are child units for delays on Ada.Calendar.Time/Ada.Real_Time.Time
+   --  so that an application need not link in features that it is not using.
 
 private
 
@@ -119,11 +118,10 @@ private
       --  ID of the calling task
 
       Level : ATC_Level_Base;
-      --  Normally Level is the ATC nesting level of the
-      --  async. select statement to which this delay belongs, but
-      --  after a call has been dequeued we set it to
-      --  ATC_Level_Infinity so that the Cancel operation can
-      --  detect repeated calls, and act idempotently.
+      --  Normally Level is the ATC nesting level of the asynchronous select
+      --  statement to which this delay belongs, but after a call has been
+      --  dequeued we set it to ATC_Level_Infinity so that the Cancel operation
+      --  can detect repeated calls, and act idempotently.
 
       Resume_Time : Duration;
       --  The absolute wake up time, represented as Duration
@@ -135,16 +133,15 @@ private
       --  A double linked list
    end record;
 
-   --  The above "overlaying" of Self_ID and Level to hold other
-   --  data that has a non-overlapping lifetime is an unabashed
-   --  hack to save memory.
+   --  The above "overlaying" of Self_ID and Level to hold other data that has
+   --  a non-overlapping lifetime is an unabashed hack to save memory.
 
    procedure Time_Enqueue
      (T : Duration;
       D : Delay_Block_Access);
    pragma Inline (Time_Enqueue);
-   --  Used by the child units to enqueue delays on the timer queue
-   --  implemented in the body of this package. T denotes a point in time as
-   --  the duration elapsed since the epoch of the Ada real-time clock.
+   --  Used by the child units to enqueue delays on the timer queue implemented
+   --  in the body of this package. T denotes a point in time as the duration
+   --  elapsed since the epoch of the Ada real-time clock.
 
 end System.Tasking.Async_Delays;

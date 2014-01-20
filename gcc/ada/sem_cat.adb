@@ -1225,7 +1225,13 @@ package body Sem_Cat is
                   --  means that a pragma Preelaborable_Initialization was
                   --  given for the private type.
 
-                  if Has_Preelaborable_Initialization (Ent) then
+                  if Relaxed_RM_Semantics then
+                     --  In relaxed mode, do not issue these messages, this
+                     --  is basically similar to the GNAT_Mode test below.
+
+                     null;
+
+                  elsif Has_Preelaborable_Initialization (Ent) then
 
                      --  But for the predefined units, we will ignore this
                      --  status unless we are in Ada 2005 mode since we want
