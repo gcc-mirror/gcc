@@ -19905,7 +19905,7 @@ package body Sem_Prag is
          function Output_Constituents (State_Id : Entity_Id) return Elist_Id;
          --  Given a state denoted by State_Id, return a list of all output
          --  constituents that may be referenced within Refined_Depends. The
-         --  contents of the list depend on whethe Refined_Global is present.
+         --  contents of the list depend on whether Refined_Global is present.
 
          procedure Report_Unused_Constituents (Constits : Elist_Id);
          --  Emit errors for all constituents found in list Constits
@@ -19989,7 +19989,10 @@ package body Sem_Prag is
                --  Remaining cases are formal parameters, variables, and states
 
                else
-                  Dep_Id := Entity_Of (Dep_Input);
+                  --  Handle abstract views of states and variables generated
+                  --  for limited with clauses.
+
+                  Dep_Id := Available_View (Entity_Of (Dep_Input));
 
                   --  Inspect all inputs of the refinement clause and attempt
                   --  to match against the inputs of the dependence clause.
@@ -20061,6 +20064,18 @@ package body Sem_Prag is
                                  Remove (Ref_Input);
                               end if;
                            end if;
+
+                        --  The abstract view of a state matches its
+                        --  corresponding non-abstract view:
+
+                        --    Depends         => (<output> => Lim_Pack.State)
+                        --    Refined_Depends => (<output> => State)
+
+                        elsif Is_Entity_Name (Ref_Input)
+                          and then Entity_Of (Ref_Input) = Dep_Id
+                        then
+                           Remove (Ref_Input);
+                           return True;
                         end if;
 
                      --  Formal parameters and variables are matched on
@@ -20364,14 +20379,18 @@ package body Sem_Prag is
             --  The remaining cases are formal parameters, variables and states
 
             elsif Is_Entity_Name (Dep_Output) then
-               Dep_Id := Entity_Of (Dep_Output);
+
+               --  Handle abstract views of states and variables generated for
+               --  limited with clauses.
+
+               Dep_Id := Available_View (Entity_Of (Dep_Output));
 
                if Ekind (Dep_Id) = E_Abstract_State then
 
                   --  A state with a null refinement matches either a null
                   --  output list or nothing at all (no clause):
 
-                  --    Refined_State => (State => null)
+                  --    Refined_State   => (State => null)
 
                   --  No clause
 
@@ -20446,6 +20465,18 @@ package body Sem_Prag is
                            Remove (Out_Constits, Ref_Id);
                         end if;
                      end if;
+
+                  --  The abstract view of a state matches is corresponding
+                  --  non-abstract view:
+
+                  --    Depends         => (Lim_Pack.State => <input>)
+                  --    Refined_Depends => (State          => <input>)
+
+                  elsif Is_Entity_Name (Ref_Output)
+                    and then Entity_Of (Ref_Output) = Dep_Id
+                  then
+                     Matching_Clause := Ref_Clause;
+                     exit;
                   end if;
 
                --  Formal parameters and variables match if their inputs match
@@ -22127,7 +22158,9 @@ package body Sem_Prag is
          -------------------------
 
          procedure Process_Global_Item (Item : Node_Id; Mode : Name_Id) is
-            Item_Id : constant Entity_Id := Entity_Of (Item);
+            Item_Id : constant Entity_Id := Available_View (Entity_Of (Item));
+            --  The above handles abstract views of variables and states built
+            --  for limited with clauses.
 
          begin
             --  Signal that the global list contains at least one abstract

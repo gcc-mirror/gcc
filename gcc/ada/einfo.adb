@@ -2497,7 +2497,8 @@ package body Einfo is
 
    function Non_Limited_View (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) in Incomplete_Kind);
+      pragma Assert
+        (Ekind (Id) in Incomplete_Kind or else Ekind (Id) = E_Abstract_State);
       return Node17 (Id);
    end Non_Limited_View;
 
@@ -3865,7 +3866,8 @@ package body Einfo is
 
    procedure Set_From_Limited_With (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id) or else Ekind (Id) = E_Package);
+      pragma Assert
+        (Is_Type (Id) or else Ekind_In (Id, E_Abstract_State, E_Package));
       Set_Flag159 (Id, V);
    end Set_From_Limited_With;
 
@@ -5172,7 +5174,8 @@ package body Einfo is
 
    procedure Set_Non_Limited_View (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) in Incomplete_Kind);
+      pragma Assert
+        (Ekind (Id) in Incomplete_Kind or else Ekind (Id) = E_Abstract_State);
       Set_Node17 (Id, V);
    end Set_Non_Limited_View;
 
@@ -8787,7 +8790,8 @@ package body Einfo is
          when Modular_Integer_Kind                         =>
             Write_Str ("Modulus");
 
-         when E_Incomplete_Type                            =>
+         when E_Abstract_State                             |
+              E_Incomplete_Type                            =>
             Write_Str ("Non_Limited_View");
 
          when E_Incomplete_Subtype                         =>
