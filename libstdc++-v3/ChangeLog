@@ -1,3 +1,26 @@
+2014-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56267
+	* include/bits/hashtable_policy.h (_Hash_code_base<... false>): Grant
+	friendship to _Local_iterator_base<..., false>.
+	(_Local_iterator_base): Give protected access to all existing members.
+	(_Local_iterator_base::_M_curr()): New public accessor.
+	(_Local_iterator_base::_M_get_bucket()): New public accessor.
+	(_Local_iterator_base<..., false>::_M_init()): New function to manage
+	the lifetime of the _Hash_code_base explicitly.
+	(_Local_iterator_base<..., false>::_M_destroy()): Likewise.
+	(_Local_iterator_base<..., false>): Define copy constructor and copy
+	assignment operator that use new functions to manage _Hash_code_base.
+	(operator==(const _Local_iterator_base&, const _Local_iterator_base&),
+	operator==(const _Local_iterator_base&, const _Local_iterator_base&)):
+	Use public API for _Local_iterator_base.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator): Likewise.
+	* include/debug/unordered_map (__debug::unordered_map::erase(),
+	__debug::unordered_multimap::erase()): Likewise.
+	* include/debug/unordered_set (__debug::unordered_set::erase(),
+	__debug::unordered_multiset::erase()): Likewise.
+	* testsuite/23_containers/unordered_set/56267-2.cc: New test.
+
 2014-01-19  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_compiler.h (_Comipler<>::_M_quantifier()):

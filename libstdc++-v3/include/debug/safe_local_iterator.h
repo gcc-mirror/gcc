@@ -219,7 +219,7 @@ namespace __gnu_debug
        * @brief Return the bucket
        */
       size_type
-      bucket() const { return _M_current._M_bucket; }
+      bucket() const { return _M_current._M_get_bucket(); }
 
       /**
        * @brief Conversion to underlying non-debug iterator to allow
