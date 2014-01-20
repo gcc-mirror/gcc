@@ -293,6 +293,7 @@ procedure Gnat1drv is
       --  semantics mode.
 
       if Relaxed_RM_Semantics then
+         Opt.Allow_Integer_Address := True;
          Overriding_Renamings := True;
          Treat_Categorization_Errors_As_Warnings := True;
       end if;

@@ -1695,8 +1695,8 @@ package body Sem_Ch5 is
 
       Set_Ekind (Def_Id, E_Variable);
 
-      --  Provide a link between the iterator variable and the container,
-      --  for subequent use in cross-reference and modification information.
+      --  Provide a link between the iterator variable and the container, for
+      --  subsequent use in cross-reference and modification information.
 
       if Of_Present (N) then
          Set_Related_Expression (Def_Id, Iter_Name);

@@ -9825,6 +9825,17 @@ package body Sem_Prag is
             end if;
          end All_Calls_Remote;
 
+         ---------------------------
+         -- Allow_Integer_Address --
+         ---------------------------
+
+         --  pragma Allow_Integer_Address;
+
+         when Pragma_Allow_Integer_Address =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Opt.Allow_Integer_Address := True;
+
          --------------
          -- Annotate --
          --------------
@@ -22874,6 +22885,7 @@ package body Sem_Prag is
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
       Pragma_All_Calls_Remote               => -1,
+      Pragma_Allow_Integer_Address          => 0,
       Pragma_Annotate                       => -1,
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,

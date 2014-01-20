@@ -13081,7 +13081,7 @@ package body Sem_Util is
 
                   if Present (Related_Expression (Ent))
                     and then Nkind (Parent (Related_Expression (Ent))) =
-                      N_Iterator_Specification
+                                                   N_Iterator_Specification
                   then
                      Exp := Original_Node (Related_Expression (Ent));
                   end if;
