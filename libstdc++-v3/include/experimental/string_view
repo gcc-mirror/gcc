@@ -181,7 +181,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const _CharT&
       operator[](size_type __pos) const
       {
-	_GLIBCXX_DEBUG_ASSERT(__pos <= this->_M_len);
+	// TODO: Assert to restore in a way compatible with the constexpr.
+	// _GLIBCXX_DEBUG_ASSERT(__pos <= this->_M_len);
 	return *(this->_M_str + __pos);
       }
 
@@ -200,14 +201,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr const _CharT&
       front() const
       {
-	_GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
+	// TODO: Assert to restore in a way compatible with the constexpr.
+	// _GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
 	return *this->_M_str;
       }
 
       constexpr const _CharT&
       back() const
       {
-	_GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
+	// TODO: Assert to restore in a way compatible with the constexpr.
+	// _GLIBCXX_DEBUG_ASSERT(this->_M_len > 0);
 	return *(this->_M_str + this->_M_len - 1);
       }
 

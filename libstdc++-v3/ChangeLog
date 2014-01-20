@@ -1,3 +1,18 @@
+2014-01-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* scripts/create_testsuite_files: Add testsuite/experimental in
+	the list of folders to search for tests.
+	* include/experimental/string_view
+	(basic_string_view<>::operator[]): Comment _GLIBCXX_DEBUG_ASSERT,
+	incompatible with constexpr qualifier.
+	(basic_string_view<>::front()): Likewise.
+	(basic_string_view<>::back()): Likewise.
+	* testsuite/experimental/string_view/element_access/wchar_t/2.cc:
+	Merge dg-options directives into one.
+	* testsuite/experimental/string_view/element_access/char/2.cc:
+	Likewise. Remove invalid experimental namespace scope on
+	string_view_type.
+
 2014-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56267
