@@ -29,6 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Declaration of the machine exception and some associated facilities. The
+--  machine exception is the object that is propagated by low level routines
+--  and that contains the Ada exception occurrence.
+
 --  This is the version using the GCC EH mechanism
 
 with Ada.Unchecked_Conversion;
@@ -183,4 +187,5 @@ package System.Exceptions.Machine is
                         others  => 0),
          Occurrence => <>));
    --  Allocate and initialize a machine occurrence
+
 end System.Exceptions.Machine;

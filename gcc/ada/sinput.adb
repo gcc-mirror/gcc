@@ -771,6 +771,7 @@ package body Sinput is
 
       function Process (N : Node_Id) return Traverse_Result is
          Orig : constant Node_Id := Original_Node (N);
+
       begin
          if Sloc (Orig) < Min then
             if Sloc (Orig) > No_Location then

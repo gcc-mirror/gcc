@@ -29,6 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Declaration of the machine exception and some associated facilities. The
+--  machine exception is the object that is propagated by low level routines
+--  and that contains the Ada exception occurrence.
+
 --  This is the version using the ARM EHABI mechanism
 
 with Ada.Unchecked_Conversion;
@@ -106,8 +110,8 @@ package System.Exceptions.Machine is
    end record;
 
    type Barrier_Cache_Type is record
-      Sp          : uint32_t;
-      Bitpattern  : uint32_t_array (0 .. 4);
+      Sp         : uint32_t;
+      Bitpattern : uint32_t_array (0 .. 4);
    end record;
 
    type Cleanup_Cache_Type is record
@@ -122,8 +126,8 @@ package System.Exceptions.Machine is
    end record;
 
    type Unwind_Control_Block is record
-      Class    : Exception_Class;
-      Cleanup  : System.Address;
+      Class   : Exception_Class;
+      Cleanup : System.Address;
 
       --  Caches
       Unwinder_Cache : Unwinder_Cache_Type;
@@ -178,4 +182,5 @@ package System.Exceptions.Machine is
                          others => <>),
           Occurrence => <>));
    --  Allocate and initialize a machine occurrence
+
 end System.Exceptions.Machine;

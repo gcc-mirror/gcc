@@ -3903,13 +3903,17 @@ package body Sem_Attr is
          Stmt := Attr;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma
+            --  Locate the corresponding enclosing pragma. Note that in the
+            --  case of Assert[And_Cut] and Assume, we have already checked
+            --  that the pragma appears in an appropriate loop location.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
-              and then
-                Nam_In (Pragma_Name (Original_Node (Stmt)),
-                        Name_Loop_Invariant,
-                        Name_Loop_Variant)
+              and then Nam_In (Pragma_Name (Original_Node (Stmt)),
+                               Name_Loop_Invariant,
+                               Name_Loop_Variant,
+                               Name_Assert,
+                               Name_Assert_And_Cut,
+                               Name_Assume)
             then
                In_Loop_Assertion := True;
 
@@ -3941,12 +3945,14 @@ package body Sem_Attr is
             Stmt := Parent (Stmt);
          end loop;
 
-         --  Loop_Entry must appear within a Loop_Assertion pragma
+            --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
+            --  Assert_And_Cut, Assume count as loop assertion pragmas for this
+            --  purpose if they appear in an appropriate location in a loop,
+            --  which was already checked by the top level pragma circuit).
 
          if not In_Loop_Assertion then
             Error_Attr
-              ("attribute % must appear within pragma Loop_Variant or " &
-               "Loop_Invariant", N);
+              ("attribute % must appear within appropriate pragma", N);
          end if;
 
          --  A Loop_Entry that applies to a given loop statement shall not

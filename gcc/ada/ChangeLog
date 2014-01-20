@@ -1,5 +1,19 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* sem_attr.adb (Analyze_Attribute, case Loop_Entry): Allow
+	Loop_Entry in Assert, Assert_And_Cut, and Assume pragmas.
+	* sem_prag.adb (Analyze_Pragma, case Assert[_And_Cut], Assume):
+	Allow Loop_Entry to be used in these pragmas if they appear in
+	an appropriate context.
+	(Placement_Error): Specialize error
+	message for pragma Assert[_And_Cut] or pragma Assume containing
+	Loop_Entry attribute.
+	* a-exexpr-gcc.adb, sinput.adb: Minor reformatting.
+	* s-excmac-arm.ads, s-except.ads, s-excmac-gcc.ads: Minor reformatting
+	and code clean ups.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* gnat1drv.adb: Minor comment update.
 
 2014-01-20  Tristan Gingold  <gingold@adacore.com>
