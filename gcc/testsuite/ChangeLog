@@ -1,3 +1,7 @@
+2014-01-20  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/pr44194-1.c: Tweak regexp.
+
 2014-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR libfortran/59771
