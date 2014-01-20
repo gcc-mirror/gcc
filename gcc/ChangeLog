@@ -1,3 +1,9 @@
+2014-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59880
+	* config/i386/i386.c (ix86_avoid_lea_for_addr): Return false
+	if operands[1] is a REG or ZERO_EXTEND of a REG.
+
 2014-01-19  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (compute_reloc_for_constant): Use targetm.binds_local_p.
