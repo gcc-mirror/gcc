@@ -1,3 +1,33 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-tataat.adb: Minor reformatting.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Is_Descendent_Of_Address): Now applies to all
+	entities, and also fix documentation to remove mention of visible
+	integer type, since this is not what the implementation does.
+	* einfo.ads (Is_Descendent_Of_Address): Now applies to all
+	entities, and also fix documentation to remove mention of visible
+	integer type, since this is not what the implementation does.
+	* gnat_rm.texi: Minor clarification of Allow_Integer_Address
+	function.
+	* sem_ch4.adb (Analyze_One_Call): Handle Allow_Integer_Address
+	case for parameter type check.
+	* sem_res.adb (Resolve): Use new function
+	Address_Integer_Convert_OK.
+	* sem_type.adb: Minor code reorganization (use Ekind_In) Minor
+	reformatting throughout.
+	* sem_util.adb (Address_Integer_Convert_OK): New function.
+	* sem_util.ads: Minor reformatting (put specs in alpha order)
+	(Address_Integer_Convert_OK): New function.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Wrap_Transient_Expression):
+	Insertion extra conditional expression only if
+	Opt.Suppress_Control_Flow_Optimizations is set.
+
 2014-01-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tataat.adb (Initialize_Attributes): Abort might already be

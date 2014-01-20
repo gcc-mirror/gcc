@@ -186,6 +186,9 @@ package body System.Tasking.Task_Attributes is
       Self_Id : constant Task_Id := Self;
 
    begin
+      --  Note: we call [Un]Defer_Abort_Nestable, rather than [Un]Defer_Abort,
+      --  because Abort might already be deferred in Create_Task.
+
       Defer_Abort_Nestable (Self_Id);
       Lock_RTS;
 

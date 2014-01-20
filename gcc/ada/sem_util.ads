@@ -67,6 +67,11 @@ package Sem_Util is
    --  for the current unit. The declarations are added in the current scope,
    --  so the caller should push a new scope as required before the call.
 
+   function Address_Integer_Convert_OK (T1, T2 : Entity_Id) return Boolean;
+   --  Given two types, returns True if we are in Allow_Integer_Address mode
+   --  and one of the types is (a descendent of) System.Address (and this type
+   --  is private), and the other type is any integer type.
+
    function Addressable (V : Uint) return Boolean;
    function Addressable (V : Int)  return Boolean;
    pragma Inline (Addressable);
@@ -398,12 +403,12 @@ package Sem_Util is
       --    * Array-of-scalars with specified Default_Component_Value
       --    * Array type with fully default initialized component type
       --    * Record or protected type with components that either have a
-      --        default expression or their related types are fully default
-      --        initialized.
+      --      default expression or their related types are fully default
+      --      initialized.
       --    * Scalar type with specified Default_Value
       --    * Task type
       --    * Type extension of a type with full default initialization where
-      --        the extension components are also fully default initialized
+      --      the extension components are also fully default initialized.
 
       Mixed_Initialization,
       --  This value applies to a type where some of its internals are fully
@@ -415,8 +420,7 @@ package Sem_Util is
 
    function Default_Initialization
      (Typ : Entity_Id) return Default_Initialization_Kind;
-   --  Determine the default initialization kind that applies to a particular
-   --  type.
+   --  Determine default initialization kind that applies to a particular type
 
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
@@ -973,6 +977,20 @@ package Sem_Util is
    function Is_CPP_Constructor_Call (N : Node_Id) return Boolean;
    --  Returns True if N is a call to a CPP constructor
 
+   function Is_Child_Or_Sibling
+     (Pack_1        : Entity_Id;
+      Pack_2        : Entity_Id;
+      Private_Child : Boolean) return Boolean;
+   --  Determine the following relations between two arbitrary packages:
+   --    1) One package is the parent of a child package
+   --    2) Both packages are siblings and share a common parent
+   --  If flag Private_Child is set, then the child in case 1) or both siblings
+   --  in case 2) must be private.
+
+   function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
+   --  First determine whether type T is an interface and then check whether
+   --  it is of protected, synchronized or task kind.
+
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
    --  Returns True if Object is the name of a subcomponent that depends on
@@ -990,20 +1008,6 @@ package Sem_Util is
    --  Returns True if type T1 is a descendent of type T2, and false otherwise.
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
-
-   function Is_Child_Or_Sibling
-     (Pack_1        : Entity_Id;
-      Pack_2        : Entity_Id;
-      Private_Child : Boolean) return Boolean;
-   --  Determine the following relations between two arbitrary packages:
-   --    1) One package is the parent of a child package
-   --    2) Both packages are siblings and share a common parent
-   --  If flag Private_Child is set, then the child in case 1) or both siblings
-   --  in case 2) must be private.
-
-   function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
-   --  First determine whether type T is an interface and then check whether
-   --  it is of protected, synchronized or task kind.
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Predicate to determine whether a scope entity comes from a rewritten

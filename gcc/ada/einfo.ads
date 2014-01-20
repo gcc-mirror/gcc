@@ -2216,10 +2216,8 @@ package Einfo is
 --       types and subtypes.
 
 --    Is_Descendent_Of_Address (Flag223)
---       Defined in all type and subtype entities. Indicates that a type is an
---       address type that is visibly a numeric type. Used for semantic checks
---       on VMS to remove ambiguities in universal integer expressions that may
---       have an address interpretation
+--       Defined in all entities. True if the entity is type System.Address,
+--       or (recursively) a subtype or derived type of System.Address.
 
 --    Is_Discrete_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
@@ -4961,6 +4959,7 @@ package Einfo is
    --    Is_Child_Unit                       (Flag73)
    --    Is_Compilation_Unit                 (Flag149)
    --    Is_Completely_Hidden                (Flag103)
+   --    Is_Descendent_Of_Address            (Flag223)
    --    Is_Discrim_SO_Function              (Flag176)
    --    Is_Dispatch_Table_Entity            (Flag234)
    --    Is_Dispatching_Operation            (Flag6)
@@ -6451,6 +6450,7 @@ package Einfo is
    function Is_Constructor                      (Id : E) return B;
    function Is_Controlled                       (Id : E) return B;
    function Is_Controlling_Formal               (Id : E) return B;
+   function Is_Descendent_Of_Address            (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
    function Is_Dispatch_Table_Entity            (Id : E) return B;
    function Is_Dispatching_Operation            (Id : E) return B;
@@ -6666,7 +6666,6 @@ package Einfo is
    function Is_Concurrent_Type                  (Id : E) return B;
    function Is_Decimal_Fixed_Point_Type         (Id : E) return B;
    function Is_Digits_Type                      (Id : E) return B;
-   function Is_Descendent_Of_Address            (Id : E) return B;
    function Is_Discrete_Or_Fixed_Point_Type     (Id : E) return B;
    function Is_Discrete_Type                    (Id : E) return B;
    function Is_Elementary_Type                  (Id : E) return B;

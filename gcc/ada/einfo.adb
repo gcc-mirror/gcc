@@ -1927,7 +1927,6 @@ package body Einfo is
 
    function Is_Descendent_Of_Address (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
       return Flag223 (Id);
    end Is_Descendent_Of_Address;
 

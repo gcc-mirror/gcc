@@ -3189,6 +3189,23 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  In Allow_Integer_Address mode, we allow an actual integer to
+               --  match a formal address type and vice versa. We only do this
+               --  if we are certain that an error will otherwise be issued
+
+               elsif Address_Integer_Convert_OK
+                       (Etype (Actual), Etype (Formal))
+                 and then (Report and not Is_Indexed and not Is_Indirect)
+               then
+                  --  Handle this case by introducing an unchecked conversion
+
+                  Rewrite (Actual,
+                           Unchecked_Convert_To (Etype (Formal),
+                             Relocate_Node (Actual)));
+                  Analyze_And_Resolve (Actual, Etype (Formal));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                else
                   if Debug_Flag_E then
                      Write_Str (" type checking fails in call ");
@@ -3199,6 +3216,8 @@ package body Sem_Ch4 is
                      Write_Int (Int (Nam));
                      Write_Eol;
                   end if;
+
+                  --  Comment needed on the following test???
 
                   if Report and not Is_Indexed and not Is_Indirect then
 
