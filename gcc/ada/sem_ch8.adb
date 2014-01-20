@@ -2203,7 +2203,7 @@ package body Sem_Ch8 is
 
          if Is_Actual
            and then Is_Abstract_Subprogram (Formal_Spec)
-           and then Full_Expander_Active
+           and then Expander_Active
          then
             declare
                Stream_Prim : Entity_Id;

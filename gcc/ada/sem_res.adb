@@ -1762,7 +1762,7 @@ package body Sem_Res is
    --  Start of processing for Replace_Actual_Discriminants
 
    begin
-      if not Full_Expander_Active then
+      if not Expander_Active then
          return;
       end if;
 
@@ -2033,7 +2033,7 @@ package body Sem_Res is
                   --  If we are generating code in distributed mode, perform
                   --  semantic checks against corresponding remote entities.
 
-                  if Full_Expander_Active
+                  if Expander_Active
                     and then Get_PCS_Name /= Name_No_DSA
                   then
                      Check_Subtype_Conformant
@@ -3608,7 +3608,7 @@ package body Sem_Res is
             elsif Nkind (A) = N_Function_Call
               and then Is_Limited_Record (Etype (F))
               and then not Is_Constrained (Etype (F))
-              and then Full_Expander_Active
+              and then Expander_Active
               and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
                Establish_Transient_Scope (A, Sec_Stack => False);
@@ -3624,7 +3624,7 @@ package body Sem_Res is
 
             elsif Nkind (A) = N_Op_Concat
               and then Nkind (N) = N_Procedure_Call_Statement
-              and then Full_Expander_Active
+              and then Expander_Active
               and then
                 not (Is_Intrinsic_Subprogram (Nam)
                       and then Chars (Nam) = Name_Asm)
@@ -3687,7 +3687,7 @@ package body Sem_Res is
                      --  be removed in the expansion of the wrapped construct.
 
                      if (Is_Controlled (DDT) or else Has_Task (DDT))
-                       and then Full_Expander_Active
+                       and then Expander_Active
                      then
                         Establish_Transient_Scope (A, Sec_Stack => False);
                      end if;
@@ -5756,7 +5756,7 @@ package body Sem_Res is
       then
          null;
 
-      elsif Full_Expander_Active
+      elsif Expander_Active
         and then Is_Type (Etype (Nam))
         and then Requires_Transient_Scope (Etype (Nam))
         and then
@@ -6836,7 +6836,7 @@ package body Sem_Res is
       --  Protected functions can return on the secondary stack, in which
       --  case we must trigger the transient scope mechanism.
 
-      elsif Full_Expander_Active
+      elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
          Establish_Transient_Scope (N, Sec_Stack => True);
@@ -7139,7 +7139,7 @@ package body Sem_Res is
 
          --  Why the Expander_Active test here ???
 
-         if Full_Expander_Active
+         if Expander_Active
            and then
              (Ekind_In (T, E_Anonymous_Access_Type,
                            E_Anonymous_Access_Subprogram_Type)
@@ -7551,7 +7551,7 @@ package body Sem_Res is
       --  We must preserve the original entity in a generic setting, so that
       --  the legality of the operation can be verified in an instance.
 
-      if not Full_Expander_Active then
+      if not Expander_Active then
          return;
       end if;
 
@@ -8670,7 +8670,7 @@ package body Sem_Res is
       --  transformation while analyzing generic units, as type information
       --  would be lost when reanalyzing the constant node in the instance.
 
-      if Is_Discrete_Type (Typ) and then Full_Expander_Active then
+      if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
             Fold_Uint  (L, Expr_Value (L), Is_Static_Expression (L));
          end if;
@@ -9022,7 +9022,7 @@ package body Sem_Res is
       --  helpful for coverage analysis. However this should not happen in
       --  generics.
 
-      if Full_Expander_Active then
+      if Expander_Active then
          declare
             Reloc_L : constant Node_Id := Relocate_Node (L);
          begin
@@ -9877,7 +9877,7 @@ package body Sem_Res is
       --  expression coincides with the target type.
 
       if Ada_Version >= Ada_2005
-        and then Full_Expander_Active
+        and then Expander_Active
         and then Operand_Typ /= Target_Typ
       then
          declare
@@ -10387,7 +10387,7 @@ package body Sem_Res is
       --  premature (e.g. if the slice is within a transient scope). This needs
       --  to be done only if expansion is enabled.
 
-      elsif Full_Expander_Active then
+      elsif Expander_Active then
          Ensure_Defined (Typ => Slice_Subtype, N => N);
       end if;
    end Set_Slice_Subtype;

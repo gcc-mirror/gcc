@@ -1700,7 +1700,7 @@ package body Sem_Aggr is
             --  performed safely.
 
             if Single_Elmt
-              or else not Full_Expander_Active
+              or else not Expander_Active
               or else In_Spec_Expression
             then
                Analyze_And_Resolve (Expr, Component_Typ);

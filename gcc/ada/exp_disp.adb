@@ -696,7 +696,7 @@ package body Exp_Disp is
       --  Expand_Dispatching_Call is called directly from the semantics,
       --  so we only proceed if the expander is active.
 
-      if not Full_Expander_Active
+      if not Expander_Active
 
         --  And there is no need to expand the call if we are compiling under
         --  restriction No_Dispatching_Calls; the semantic analyzer has
