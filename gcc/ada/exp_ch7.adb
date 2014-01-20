@@ -7989,12 +7989,15 @@ package body Exp_Ch7 is
       --  optimize away the extra conditional expression, so we can do this
       --  modification unconditionally here.
 
+      --  Why don't we add a test of Opt.Preserve_Control_Flow here???
+
       if Is_Boolean_Type (Typ) then
-         Expr := Make_If_Expression (Loc,
-                   Expressions => New_List (
-                     Expr,
-                     New_Occurrence_Of (Standard_True, Loc),
-                     New_Occurrence_Of (Standard_False, Loc)));
+         Expr :=
+           Make_If_Expression (Loc,
+             Expressions => New_List (
+               Expr,
+               New_Occurrence_Of (Standard_True, Loc),
+               New_Occurrence_Of (Standard_False, Loc)));
       end if;
 
       Insert_Actions (N, New_List (

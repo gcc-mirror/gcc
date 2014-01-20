@@ -14145,6 +14145,10 @@ Reformat comment blocks
 @item ^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^
 Keep unchanged special form comments
 
+@item --comments-only
+@cindex @option{--comments-only} @command{gnatpp}
+Format just the comments.
+
 @cindex @option{^-l@var{n}^/CONSTRUCT_LAYOUT^} (@command{gnatpp})
 @item ^-l1^/CONSTRUCT_LAYOUT=GNAT^
 GNAT-style layout (this is the default)
@@ -14431,10 +14435,6 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatpp}
 Display usage, then exit disregarding all other options.
 
-@item --pp-new
-@cindex @option{--pp-new} @command{gnatpp}
-Use the new experimental formatting algorithms. This is the default.
-
 @item --pp-old
 @cindex @option{--pp-old} @command{gnatpp}
 Use the old formatting algorithms.
@@ -14658,6 +14658,17 @@ not white space nor line break immediately following the leading @code{--} of
 the comment) should be without any change moved from the argument source
 into reformatted source. This switch allows to preserve comments that are used
 as a special marks in the code (e.g.@: SPARK annotation).
+
+@noindent
+The @option{--comments-only} switch specifies that only the comments
+are formatted; the rest of the program text is left alone. The
+comments are formatted according to the -c3 and -c4 switches; other
+formatting switches are ignored. For example, @option{--comments-only
+-c4} means to fill comment paragraphs, and do nothing else. Likewise,
+@option{--comments-only -c3} ensures comments start with at least two
+spaces after @code{--}, and @option{--comments-only -c3 -c4} does
+both. If @option{--comments-only} is given without @option{-c3} or
+@option{-c4}, then gnatpp doesn't format anything.
 
 @node Construct Layout
 @subsection Construct Layout
