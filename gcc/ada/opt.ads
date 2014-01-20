@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                                                          --
+--                                SPARK                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                                  O P T                                   --
@@ -1264,6 +1264,14 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
 
+   type SPARK_Mode_Type is (None, Off, Auto, On);
+   pragma Ordered (SPARK_Mode_Type);
+   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode
+
+   SPARK_Mode : SPARK_Mode_Type := None;
+   --  GNAT
+   --  Current SPARK mode setting
+
    Special_Exception_Package_Used : Boolean := False;
    --  GNAT
    --  Set to True if either of the unit GNAT.Most_Recent_Exception or
@@ -1895,6 +1903,9 @@ package Opt is
    --  This flag is used to set the initial value for Short_Descriptors at the
    --  start of analyzing each unit.
 
+   SPARK_Mode_Config : SPARK_Mode_Type := None;
+   --  The setting of SPARK_Mode from configuration pragmas
+
    Use_VADS_Size_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch that controls the use of
@@ -2001,10 +2012,6 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
-   Global_SPARK_Mode : SPARK_Mode_Id := None;
-   --  The mode applicable to the whole compilation. The global mode can be set
-   --  in a configuration file such as gnat.adc.
-
    GNATprove_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification for those parts
    --  of the input code that belong to the SPARK 2014 subset of Ada. Set True
@@ -2043,6 +2050,7 @@ private
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
       Short_Descriptors              : Boolean;
+      SPARK_Mode                     : SPARK_Mode_Type;
       Use_VADS_Size                  : Boolean;
    end record;
 

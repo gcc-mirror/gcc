@@ -1138,7 +1138,7 @@ package body Sem_Elab is
 
       --  Here we definitely have a bad instantiation
 
-      Error_Msg_Warn := not GNATprove_Mode;
+      Error_Msg_Warn := SPARK_Mode /= On;
       Error_Msg_NE ("cannot instantiate& before body seen<<", N, Ent);
 
       if Present (Instance_Spec (N)) then
@@ -2179,7 +2179,7 @@ package body Sem_Elab is
       --  level, and the ABE is bound to occur.
 
       if Elab_Call.Last = 0 then
-         Error_Msg_Warn := not GNATprove_Mode;
+         Error_Msg_Warn := SPARK_Mode /= On;
 
          if Inst_Case then
             Error_Msg_NE
@@ -2263,7 +2263,7 @@ package body Sem_Elab is
            and then (Nkind (Original_Node (N)) /= N_Function_Call
                       or else not In_Assertion_Expression (Original_Node (N)))
          then
-            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_Warn := SPARK_Mode /= On;
 
             if Inst_Case then
                Error_Msg_NE
@@ -2370,7 +2370,7 @@ package body Sem_Elab is
                       or else
                     Scope (Proc) = Scope (Defining_Identifier (Decl)))
                then
-                  Error_Msg_Warn := not GNATprove_Mode;
+                  Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N
                     ("task will be activated before elaboration of its body<<",
                       Decl);

@@ -5396,7 +5396,7 @@ package body Sem_Attr is
                                            Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
-                     Error_Msg_Warn := not GNATprove_Mode;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N ("cannot use % attribute for type with simple "
                                & "storage pool<<", N);
                   Error_Msg_N ("\Program_Error [<<", N);
@@ -9311,7 +9311,7 @@ package body Sem_Attr is
          --  know will fail, so generate an appropriate warning.
 
          if In_Instance_Body then
-            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_Warn := SPARK_Mode /= On;
             Error_Msg_F
               ("non-local pointer cannot point to local object<<", P);
             Error_Msg_F ("\Program_Error [<<", P);
@@ -9792,7 +9792,7 @@ package body Sem_Attr is
                   --  know will fail, so generate an appropriate warning.
 
                   if In_Instance_Body then
-                     Error_Msg_Warn := not GNATprove_Mode;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_F
                        ("non-local pointer cannot point to local object<<", P);
                      Error_Msg_F ("\Program_Error [<<", P);

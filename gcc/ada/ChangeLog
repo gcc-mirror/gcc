@@ -1,5 +1,66 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* exp_ch4.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* opt.adb (SPARK_Mode_Config): Handled like other config flags
+	* opt.ads (SPARK_Mode_Type): Moved here from types (renamed from
+	SPARK_Mode_Id) (SPARK_Mode_Type): Add pragma Ordered, remove
+	SPARK_ from names (SPARK_Mode): New flag (SPARK_Mode_Config):
+	New flag (Config_Switches_Type): Add SPARK_Mode field
+	* sem.adb: Minor code reorganization (remove unnecessary with)
+	* sem.ads (Scope_Stack_Entry): Add Save_SPARK_Mode field
+	* sem_aggr.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_attr.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_ch3.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_ch4.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Reset SPARK_Mode
+	from spec if needed
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Reset SPARK_Mode
+	from spec if needed
+	* sem_ch8.adb (Push_Scope): Save SPARK_Mode (Pop_Scope):
+	Restore SPARK_Mode
+	* sem_elab.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_prag.adb (Get_SPARK_Mode_From_Pragma): New function
+	(Get_SPARK_Mode_Id): Removed (Get_SPARK_Mode_Type): New name
+	of Get_SPARK_Mode_Id
+	* sem_prag.ads (Get_SPARK_Mode_From_Pragma): New function
+	* sem_res.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* sem_util.adb: Check SPARK_Mode instead of GNATProve_Mode for
+	converting warnings on inevitable exceptions to errors.
+	* types.ads (SPARK_Mode_Id): Moved to opt.ads and renamed
+	SPARK_Mode_Type
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Add semantic information to rewritten type
+	reference.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): If both sides
+	are of a type with unknown discriminants, convert both to the
+	underlying view of the type, so that the proper constraint check
+	can be applied to the right-hand side.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb (Copy_Node): Fix failure to copy last component
+	(Exchange_Entities): Fix failure to exchange last entity
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi, sem_ch4.adb: Minor reformatting.
 
 2014-01-20  Ed Schonberg  <schonberg@adacore.com>

@@ -3697,7 +3697,7 @@ package body Checks is
       --  Here we have the optimizable case, warn if not short-circuited
 
       if K = N_Op_And or else K = N_Op_Or then
-         Error_Msg_Warn := not GNATprove_Mode;
+         Error_Msg_Warn := SPARK_Mode /= On;
 
          case Check is
             when Access_Check =>

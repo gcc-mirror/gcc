@@ -5939,6 +5939,20 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
+
+            --  Add semantic information to node to be rewritten, for ASIS
+            --  navigation needs.
+
+            if Nkind (N) = N_Identifier then
+               Set_Entity (N, T);
+               Set_Etype  (N, T);
+
+            elsif Nkind (N) = N_Selected_Component then
+               Analyze (Prefix (N));
+               Set_Entity (Selector_Name (N), T);
+               Set_Etype  (Selector_Name (N), T);
+            end if;
+
             --  Invariant'Class, replace with T'Class (obj)
 
             if Class_Present (Ritem) then

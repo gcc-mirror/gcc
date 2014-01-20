@@ -4651,7 +4651,7 @@ package body Sem_Ch4 is
                      --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     Error_Msg_Warn := not GNATprove_Mode;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }<<",
                         CE_Discriminant_Check_Failed,

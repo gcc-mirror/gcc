@@ -56,6 +56,7 @@ with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Snames;   use Snames;
@@ -344,6 +345,13 @@ package body Sem_Ch7 is
       end if;
 
       Push_Scope (Spec_Id);
+
+      --  Set SPARK_Mode from spec if package spec had SPARK_Mode pragma
+
+      if Present (SPARK_Mode_Pragmas (Spec_Id)) then
+         SPARK_Mode :=
+           Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragmas (Spec_Id));
+      end if;
 
       Set_Categorization_From_Pragmas (N);
 
