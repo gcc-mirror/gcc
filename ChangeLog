@@ -1,3 +1,8 @@
+2014-01-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Convert to UTF-8.
+	Properly sort Xinliang David Li's entry.
+
 2014-01-19  Kito Cheng  <kito@0xlab.org>
 
 	* gcc/builtins.c (expand_movstr): Check movstr expand done or fail.
