@@ -7107,9 +7107,31 @@ package body Sem_Prag is
          Hom_Id : Entity_Id;
 
       begin
-         Process_Convention (C, Def_Id);
-         Kill_Size_Check_Code (Def_Id);
-         Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
+         --  In Relaxed_RM_Semantics, support old Ada 83 style:
+         --  pragma Import (Entity, "external name");
+
+         if Relaxed_RM_Semantics
+           and then Arg_Count = 2
+           and then Prag_Id = Pragma_Import
+           and then Nkind (Expression (Arg2)) = N_String_Literal
+         then
+            C := Convention_C;
+            Def_Id := Get_Pragma_Arg (Arg1);
+            Analyze (Def_Id);
+
+            if not Is_Entity_Name (Def_Id) then
+               Error_Pragma_Arg ("entity name required", Arg1);
+            end if;
+
+            Def_Id := Entity (Def_Id);
+            Kill_Size_Check_Code (Def_Id);
+            Note_Possible_Modification (Get_Pragma_Arg (Arg1), Sure => False);
+
+         else
+            Process_Convention (C, Def_Id);
+            Kill_Size_Check_Code (Def_Id);
+            Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
+         end if;
 
          if Ekind_In (Def_Id, E_Variable, E_Constant) then
 
@@ -8602,6 +8624,18 @@ package body Sem_Prag is
          --  or Export pragma), then the external names must match
 
          if Present (Interface_Name (Internal_Ent)) then
+
+            --  Ignore mismatching names in CodePeer mode, to support some
+            --  old compilers which would export the same procedure under
+            --  different names, e.g:
+            --     procedure P;
+            --     pragma Export_Procedure (P, "a");
+            --     pragma Export_Procedure (P, "b");
+
+            if CodePeer_Mode then
+               return;
+            end if;
+
             Check_Matching_Internal_Names : declare
                S1 : constant String_Id := Strval (Old_Name);
                S2 : constant String_Id := Strval (New_Name);
@@ -12225,15 +12259,36 @@ package body Sem_Prag is
 
             Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments  (4);
-            Process_Convention (C, Def_Id);
 
-            if Ekind (Def_Id) /= E_Constant then
-               Note_Possible_Modification
-                 (Get_Pragma_Arg (Arg2), Sure => False);
+            --  In Relaxed_RM_Semantics, support old Ada 83 style:
+            --  pragma Export (Entity, "external name");
+
+            if Relaxed_RM_Semantics
+              and then Arg_Count = 2
+              and then Nkind (Expression (Arg2)) = N_String_Literal
+            then
+               C := Convention_C;
+               Def_Id := Get_Pragma_Arg (Arg1);
+               Analyze (Def_Id);
+
+               if not Is_Entity_Name (Def_Id) then
+                  Error_Pragma_Arg ("entity name required", Arg1);
+               end if;
+
+               Def_Id := Entity (Def_Id);
+               Set_Exported (Def_Id, Arg1);
+
+            else
+               Process_Convention (C, Def_Id);
+
+               if Ekind (Def_Id) /= E_Constant then
+                  Note_Possible_Modification
+                    (Get_Pragma_Arg (Arg2), Sure => False);
+               end if;
+
+               Process_Interface_Name (Def_Id, Arg3, Arg4);
+               Set_Exported (Def_Id, Arg2);
             end if;
-
-            Process_Interface_Name (Def_Id, Arg3, Arg4);
-            Set_Exported (Def_Id, Arg2);
 
             --  If the entity is a deferred constant, propagate the information
             --  to the full view, because gigi elaborates the full view only.
