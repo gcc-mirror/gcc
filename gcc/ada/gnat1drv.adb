@@ -341,6 +341,8 @@ procedure Gnat1drv is
          --  trees between specs compiled as part of a main unit or as part of
          --  a with-clause.
 
+         --  Comment is incomplete, SPARK semantics rely on static mode no???
+
          Dynamic_Elaboration_Checks := False;
 
          --  Set STRICT mode for overflow checks if not set explicitly. This
@@ -372,6 +374,8 @@ procedure Gnat1drv is
          Operating_Mode := Check_Semantics;
 
          --  Skip call to gigi
+
+         --  This debug flag is not documented, AARGH! ???
 
          Debug_Flag_HH := True;
 
@@ -1145,11 +1149,11 @@ begin
       --  since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
-           and then
-         (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
-           or else Main_Kind = N_Subunit
-           or else Targparm.Frontend_Layout_On_Target
-           or else Targparm.VM_Target /= No_VM)
+        and then
+          (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
+            or else Main_Kind = N_Subunit
+            or else Targparm.Frontend_Layout_On_Target
+            or else Targparm.VM_Target /= No_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;

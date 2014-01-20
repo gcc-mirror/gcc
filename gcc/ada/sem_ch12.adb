@@ -3722,6 +3722,9 @@ package body Sem_Ch12 is
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
+
+                           --  Need comment for this check ???
+
                            or else (Operating_Mode = Check_Semantics
                                      and then (ASIS_Mode or GNATprove_Mode)));
 

@@ -3797,10 +3797,10 @@ package body Sem_Ch3 is
                     and then Present (Get_Attribute_Definition_Clause
                                         (E, Attribute_Address))
                   then
+                     Error_Msg_Warn := not GNATprove_Mode;
                      Error_Msg_N
-                       ("??more than one task with same entry address", N);
-                     Error_Msg_N
-                       ("\??Program_Error will be raised at run time", N);
+                       ("more than one task with same entry address<<", N);
+                     Error_Msg_N ("\Program_Error [<<", N);
                      Insert_Action (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Duplicated_Entry_Address));

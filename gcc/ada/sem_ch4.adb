@@ -4627,23 +4627,17 @@ package body Sem_Ch4 is
                      Set_Etype (Sel, Etype (Comp));
                      Set_Etype (N,   Etype (Comp));
 
-                     --  Emit appropriate message. Gigi will replace the
-                     --  node subsequently with the appropriate Raise.
+                     --  Emit appropriate message. Gigi will replace the node
+                     --  subsequently with the appropriate Raise.
 
                      --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     if GNATprove_Mode then
-                        Apply_Compile_Time_Constraint_Error
-                          (N, "component not present in }",
-                           CE_Discriminant_Check_Failed,
-                           Ent => Prefix_Type, Rep => False);
-                     else
-                        Apply_Compile_Time_Constraint_Error
-                          (N, "component not present in }??",
-                           CE_Discriminant_Check_Failed,
-                           Ent => Prefix_Type, Rep => False);
-                     end if;
+                     Error_Msg_Warn := not GNATprove_Mode;
+                     Apply_Compile_Time_Constraint_Error
+                       (N, "component not present in }<<",
+                        CE_Discriminant_Check_Failed,
+                        Ent => Prefix_Type, Rep => False);
 
                      Set_Raises_Constraint_Error (N);
                      return;

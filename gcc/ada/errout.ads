@@ -304,9 +304,9 @@ package Errout is
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above, and in particular <? and
-   --      <X? have the effect of ?? and ?X? respectively. If Error_Msg_Warn
-   --      is False, then the < <? or <X? sequence is ignored and the message
+   --      effect is the same as ? described above, and in particular << and
+   --      <X< have the effect of ?? and ?X? respectively. If Error_Msg_Warn
+   --      is False, then the < << or <X< sequence is ignored and the message
    --      is treated as a error rather than a warning.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
@@ -354,6 +354,31 @@ package Errout is
    --      Indicates that Error_Msg_String (1 .. Error_Msg_Strlen) is to be
    --      inserted to replace the ~ character. The string is inserted in the
    --      literal form it appears, without any action on special characters.
+
+   --    Insertion character [ (Left bracket: will/would be raised at run time)
+   --      This is used in messages about exceptions being raised at run-time.
+   --      If the current message is a warning message, then if the code is
+   --      executed, the exception will be raised, and [ inserts:
+   --
+   --        will be raised at run time
+   --
+   --      If the current message is an error message, then it is an error
+   --      because the exception would have been raised and [ inserts:
+   --
+   --        would have been raised at run time
+   --
+   --      Typically the message contains a < insertion which means that the
+   --      message is a warning or error depending on Error_Msg_Warn. This is
+   --      most typically used in the context of messages which are normally
+   --      warnings, but are errors in GNATprove mode, corresponding to the
+   --      permission in the definition of SPARK that allows an implementation
+   --      to reject a program as illegal if a situation arises in which the
+   --      compiler can determine that it is certain that a run-time check
+   --      would have fail if the statement was executed.
+
+   --    Insertion character ] (Right bracket: may/might be raised at run time)
+   --      This is like [ except that the insertion messages say may/might,
+   --      instead of will/would.
 
    ----------------------------------------
    -- Specialization of Messages for VMS --

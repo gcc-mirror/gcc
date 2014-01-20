@@ -5396,10 +5396,10 @@ package body Sem_Attr is
                                            Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
+                     Error_Msg_Warn := not GNATprove_Mode;
                   Error_Msg_N ("cannot use % attribute for type with simple "
-                               & "storage pool??", N);
-                  Error_Msg_N
-                     ("\Program_Error will be raised at run time??", N);
+                               & "storage pool<<", N);
+                  Error_Msg_N ("\Program_Error [<<", N);
 
                   Rewrite
                     (N, Make_Raise_Program_Error
@@ -9311,10 +9311,10 @@ package body Sem_Attr is
          --  know will fail, so generate an appropriate warning.
 
          if In_Instance_Body then
+            Error_Msg_Warn := not GNATprove_Mode;
             Error_Msg_F
-              ("??non-local pointer cannot point to local object", P);
-            Error_Msg_F
-              ("\??Program_Error will be raised at run time", P);
+              ("non-local pointer cannot point to local object<<", P);
+            Error_Msg_F ("\Program_Error [<<", P);
             Rewrite (N,
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Accessibility_Check_Failed));
@@ -9792,10 +9792,11 @@ package body Sem_Attr is
                   --  know will fail, so generate an appropriate warning.
 
                   if In_Instance_Body then
+                     Error_Msg_Warn := not GNATprove_Mode;
                      Error_Msg_F
-                       ("??non-local pointer cannot point to local object", P);
-                     Error_Msg_F
-                       ("\??Program_Error will be raised at run time", P);
+                       ("non-local pointer cannot point to local object<<", P);
+                     Error_Msg_F ("\Program_Error [<<", P);
+
                      Rewrite (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Accessibility_Check_Failed));

@@ -937,6 +937,8 @@ package body Exp_Ch7 is
       --  Do not create finalization masters in SPARK mode because they result
       --  in unwanted expansion.
 
+      --  More detail would be useful here ???
+
       elsif GNATprove_Mode then
          return;
       end if;

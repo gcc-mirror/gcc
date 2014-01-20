@@ -578,8 +578,9 @@ package body Sem_Util is
    begin
       if Has_Predicates (Typ) then
          if Is_Generic_Actual_Type (Typ) then
-            Error_Msg_FE (Msg & "??", N, Typ);
-            Error_Msg_F ("\Program_Error will be raised at run time??", N);
+            Error_Msg_Warn := not GNATprove_Mode;
+            Error_Msg_FE (Msg & "<<", N, Typ);
+            Error_Msg_F ("\Program_Error [<<", N);
             Insert_Action (N,
               Make_Raise_Program_Error (Sloc (N),
                 Reason => PE_Bad_Predicated_Generic_Type));
@@ -3257,7 +3258,7 @@ package body Sem_Util is
       Warn : Boolean    := False) return Node_Id
    is
       Msgc : String (1 .. Msg'Length + 3);
-      --  Copy of message, with room for possible ?? and ! at end
+      --  Copy of message, with room for possible ?? or << and ! at end
 
       Msgl : Natural;
       Wmsg : Boolean;
@@ -3267,6 +3268,12 @@ package body Sem_Util is
       Eloc : Source_Ptr;
 
    begin
+      --  If this is a warning, convert it into an error if we are operating
+      --  in GNATprove mode, because in SPARK, we are allowed to consider
+      --  such warnings as illegalities, and we choose to do so!
+
+      Error_Msg_Warn := not GNATprove_Mode;
+
       --  A static constraint error in an instance body is not a fatal error.
       --  we choose to inhibit the message altogether, because there is no
       --  obvious node (for now) on which to post it. On the other hand the
@@ -3281,12 +3288,22 @@ package body Sem_Util is
             Eloc := Sloc (N);
          end if;
 
-         Msgc (1 .. Msg'Length) := Msg;
+         --  Copy message to Msgc, converting any ? in the message into
+         --  < instead, so that we have an error in GNATprove mode.
+
          Msgl := Msg'Length;
+
+         for J in 1 .. Msgl loop
+            if Msg (J) = '?' and then (J = 1 or else Msg (J) /= ''') then
+               Msgc (J) := '<';
+            else
+               Msgc (J) := Msg (J);
+            end if;
+         end loop;
 
          --  Message is a warning, even in Ada 95 case
 
-         if Msg (Msg'Last) = '?' then
+         if Msg (Msg'Last) = '?' or else Msg (Msg'Last) = '<' then
             Wmsg := True;
 
          --  In Ada 83, all messages are warnings. In the private part and
@@ -3297,16 +3314,16 @@ package body Sem_Util is
            or else (Ada_Version = Ada_83 and then Comes_From_Source (N))
          then
             Msgl := Msgl + 1;
-            Msgc (Msgl) := '?';
+            Msgc (Msgl) := '<';
             Msgl := Msgl + 1;
-            Msgc (Msgl) := '?';
+            Msgc (Msgl) := '<';
             Wmsg := True;
 
          elsif In_Instance_Not_Visible then
             Msgl := Msgl + 1;
-            Msgc (Msgl) := '?';
+            Msgc (Msgl) := '<';
             Msgl := Msgl + 1;
-            Msgc (Msgl) := '?';
+            Msgc (Msgl) := '<';
             Wmsg := True;
 
          --  Otherwise we have a real error message (Ada 95 static case)
@@ -3397,6 +3414,8 @@ package body Sem_Util is
          end loop;
 
          if Msgs then
+            Error_Msg_Warn := not GNATprove_Mode;
+
             if Present (Ent) then
                Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);
             else
@@ -3424,25 +3443,27 @@ package body Sem_Util is
                        and then not Comes_From_Source (Conc_Typ)
                      then
                         Error_Msg_NEL
-                          ("\??& will be raised at run time",
-                           N, Standard_Constraint_Error, Eloc);
+                          ("\& [<<", N, Standard_Constraint_Error, Eloc);
 
                      else
-                        Error_Msg_NEL
-                          ("\??& will be raised for objects of this type",
-                           N, Standard_Constraint_Error, Eloc);
+                        if GNATprove_Mode then
+                           Error_Msg_NEL
+                             ("\& would have been raised for objects of this "
+                              & "type", N, Standard_Constraint_Error, Eloc);
+                        else
+                           Error_Msg_NEL
+                             ("\& will be raised for objects of this type??",
+                              N, Standard_Constraint_Error, Eloc);
+                        end if;
                      end if;
                   end;
 
                else
-                  Error_Msg_NEL
-                    ("\??& will be raised at run time",
-                     N, Standard_Constraint_Error, Eloc);
+                  Error_Msg_NEL ("\& [<<", N, Standard_Constraint_Error, Eloc);
                end if;
 
             else
-               Error_Msg
-                 ("\static expression fails Constraint_Check", Eloc);
+               Error_Msg ("\static expression fails Constraint_Check", Eloc);
                Set_Error_Posted (N);
             end if;
          end if;

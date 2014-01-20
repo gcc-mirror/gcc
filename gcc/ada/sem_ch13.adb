@@ -6047,6 +6047,20 @@ package body Sem_Ch13 is
                Set_Parent (Exp, N);
                Preanalyze_Assert_Expression (Exp, Standard_Boolean);
 
+               --  In ASIS mode, even if assertions are not enabled, we must
+               --  analyze the original expression in the aspect specification
+               --  because it is part of the original tree.
+
+               if ASIS_Mode then
+                  declare
+                     Inv : constant Node_Id :=
+                             Expression (Corresponding_Aspect (Ritem));
+                  begin
+                     Replace_Type_References (Inv, Chars (T));
+                     Preanalyze_Assert_Expression (Inv, Standard_Boolean);
+                  end;
+               end if;
+
                --  Build first two arguments for Check pragma
 
                Assoc := New_List (

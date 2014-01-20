@@ -2956,9 +2956,12 @@ package body Checks is
       Loc         : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On   : constant Boolean :=
         (not Index_Checks_Suppressed (Target_Typ))
-         or else (not Length_Checks_Suppressed (Target_Typ));
+          or else (not Length_Checks_Suppressed (Target_Typ));
 
    begin
+      --  Note: this means that we lose some useful warnings if the expander
+      --  is not active, and we also lose these warnings in SPARK mode ???
+
       if not Expander_Active then
          return;
       end if;
@@ -3694,15 +3697,30 @@ package body Checks is
       --  Here we have the optimizable case, warn if not short-circuited
 
       if K = N_Op_And or else K = N_Op_Or then
+         Error_Msg_Warn := not GNATprove_Mode;
+
          case Check is
             when Access_Check =>
-               Error_Msg_N
-                 ("Constraint_Error may be raised (access check)??",
-                  Parent (Nod));
+               if GNATprove_Mode then
+                  Error_Msg_N
+                    ("Constraint_Error might have been raised (access check)",
+                     Parent (Nod));
+               else
+                  Error_Msg_N
+                    ("Constraint_Error may be raised (access check)??",
+                     Parent (Nod));
+               end if;
+
             when Division_Check =>
-               Error_Msg_N
-                 ("Constraint_Error may be raised (zero divide)??",
-                  Parent (Nod));
+               if GNATprove_Mode then
+                  Error_Msg_N
+                    ("Constraint_Error might have been raised (zero divide)",
+                     Parent (Nod));
+               else
+                  Error_Msg_N
+                    ("Constraint_Error may be raised (zero divide)??",
+                     Parent (Nod));
+               end if;
 
             when others =>
                raise Program_Error;
@@ -3870,22 +3888,22 @@ package body Checks is
                     N_Discriminant_Specification =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed " &
-                               "in null-excluding components??",
+                     Msg    => "(Ada 2005) null not allowed "
+                               & "in null-excluding components??",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Object_Declaration =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed " &
-                               "in null-excluding objects?",
+                     Msg    => "(Ada 2005) null not allowed "
+                               & "in null-excluding objects?",
                      Reason => CE_Null_Not_Allowed);
 
                when N_Parameter_Specification =>
                   Apply_Compile_Time_Constraint_Error
                     (N      => Expr,
-                     Msg    => "(Ada 2005) null not allowed " &
-                               "in null-excluding formals??",
+                     Msg    => "(Ada 2005) null not allowed "
+                               & "in null-excluding formals??",
                      Reason => CE_Null_Not_Allowed);
 
                when others =>
@@ -6682,9 +6700,7 @@ package body Checks is
 
          if not Inside_Init_Proc then
             Apply_Compile_Time_Constraint_Error
-              (N,
-               "null value not allowed here??",
-               CE_Access_Check_Failed);
+              (N, "null value not allowed here??", CE_Access_Check_Failed);
          else
             Insert_Action (N,
               Make_Raise_Constraint_Error (Loc,

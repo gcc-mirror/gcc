@@ -983,11 +983,9 @@ package body Sem_Ch6 is
                    Reason => PE_Accessibility_Check_Failed));
                Analyze (N);
 
-               Error_Msg_N
-                 ("cannot return a local value by reference??", N);
-               Error_Msg_NE
-                 ("\& will be raised at run time??",
-                   N, Standard_Program_Error);
+               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_N ("cannot return a local value by reference<<", N);
+               Error_Msg_NE ("\& [<<", N, Standard_Program_Error);
             end if;
          end if;
 
@@ -7225,21 +7223,12 @@ package body Sem_Ch6 is
 
                --  In GNATprove mode, it is an error to have a missing return
 
-               if GNATprove_Mode then
-                  Error_Msg_N
-                    ("RETURN statement missing following this statement!",
-                     Last_Stm);
-
-               --  Otherwise normal case of warning (RM insists this is legal)
-
-               else
-                  Error_Msg_N
-                    ("RETURN statement missing following this statement??!",
-                     Last_Stm);
-                  Error_Msg_N
-                    ("\Program_Error may be raised at run time??!",
-                     Last_Stm);
-               end if;
+               Error_Msg_Warn := not GNATprove_Mode;
+               Error_Msg_N
+                 ("RETURN statement missing following this statement<<!",
+                  Last_Stm);
+               Error_Msg_N
+                 ("\Program_Error ]<<!", Last_Stm);
             end if;
 
             --  Note: we set Err even though we have not issued a warning
@@ -7253,13 +7242,19 @@ package body Sem_Ch6 is
 
          else
             if not Raise_Exception_Call then
-               Error_Msg_N
-                 ("implied return after this statement " &
-                  "will raise Program_Error??",
-                  Last_Stm);
+               if GNATprove_Mode then
+                  Error_Msg_N
+                    ("implied return after this statement "
+                     & "would have raised Program_Error", Last_Stm);
+               else
+                  Error_Msg_N
+                    ("implied return after this statement "
+                     & "will raise Program_Error??", Last_Stm);
+               end if;
+
+               Error_Msg_Warn := not GNATprove_Mode;
                Error_Msg_NE
-                 ("\procedure & is marked as No_Return??!",
-                  Last_Stm, Proc);
+                 ("\procedure & is marked as No_Return<<!", Last_Stm, Proc);
             end if;
 
             declare
