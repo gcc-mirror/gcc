@@ -1,3 +1,10 @@
+2014-01-20  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR other/58996
+	* configure.ac: Added a check for pthread affinity support.
+	* runtime/os-unix.c: Likewise.
+	* configure: Regenerate.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	bootstrap/59094

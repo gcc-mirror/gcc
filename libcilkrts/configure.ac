@@ -164,5 +164,25 @@ AC_SUBST(toolexeclibdir)
 
 AC_SUBST(lt_cv_dlopen_libs)
 
+# Check for pthread_{,attr_}[sg]etaffinity_np.
+AC_LINK_IFELSE(
+ [AC_LANG_PROGRAM(
+  [#define _GNU_SOURCE
+   #include <pthread.h>],
+  [cpu_set_t cpuset;
+   pthread_attr_t attr;
+   pthread_getaffinity_np (pthread_self (), sizeof (cpu_set_t), &cpuset);
+   if (CPU_ISSET (0, &cpuset))
+     CPU_SET (1, &cpuset);
+   else
+     CPU_ZERO (&cpuset);
+   pthread_setaffinity_np (pthread_self (), sizeof (cpu_set_t), &cpuset);
+   pthread_attr_init (&attr);
+   pthread_attr_getaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);
+   pthread_attr_setaffinity_np (&attr, sizeof (cpu_set_t), &cpuset);])],
+  AC_DEFINE(HAVE_PTHREAD_AFFINITY_NP, 1,
+[       Define if pthread_{,attr_}{g,s}etaffinity_np is supported.]))
+
+
 # Must be last
 AC_OUTPUT
