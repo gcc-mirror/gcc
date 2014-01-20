@@ -1,3 +1,27 @@
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Slice): Relocate some variables and
+	constants to the "Local variables" area. Add new constant D. Add
+	new variables Drange and Index_Typ.  Rename Pfx to Rep and Ptp
+	to Pref_Typ and update all occurrences. Add circuitry to extract
+	the discrete_range and the index type and build a range check.
+
+2014-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Enable
+	Treat_Categorization_Errors_As_Warnings when Relaxed_RM_Semantics
+	is set.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch5.adb, sem_ch4.adb: Minor reformatting.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	When aspect SPARK_Mode appears on a package body, insert the
+	generated pragma at the top of the body declarations.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, exp_prag.adb, sem_aux.adb, sinfo.ads, sem_ch10.adb,

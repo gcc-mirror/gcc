@@ -9329,10 +9329,8 @@ package body Exp_Ch4 is
    --------------------
 
    procedure Expand_N_Slice (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
-      Pfx  : constant Node_Id    := Prefix (N);
-      Ptp  : Entity_Id           := Etype (Pfx);
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
 
       function Is_Procedure_Actual (N : Node_Id) return Boolean;
       --  Check whether the argument is an actual for a procedure call, in
@@ -9390,8 +9388,8 @@ package body Exp_Ch4 is
       ------------------------------
 
       procedure Make_Temporary_For_Slice is
-         Decl : Node_Id;
          Ent  : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Decl : Node_Id;
 
       begin
          Decl :=
@@ -9404,37 +9402,79 @@ package body Exp_Ch4 is
          Insert_Actions (N, New_List (
            Decl,
            Make_Assignment_Statement (Loc,
-             Name => New_Occurrence_Of (Ent, Loc),
+             Name       => New_Occurrence_Of (Ent, Loc),
              Expression => Relocate_Node (N))));
 
          Rewrite (N, New_Occurrence_Of (Ent, Loc));
          Analyze_And_Resolve (N, Typ);
       end Make_Temporary_For_Slice;
 
+      --  Local variables
+
+      D         : constant Node_Id := Discrete_Range (N);
+      Pref      : constant Node_Id := Prefix (N);
+      Pref_Typ  : Entity_Id        := Etype (Pref);
+      Drange    : Node_Id;
+      Index_Typ : Entity_Id;
+
    --  Start of processing for Expand_N_Slice
 
    begin
       --  Special handling for access types
 
-      if Is_Access_Type (Ptp) then
+      if Is_Access_Type (Pref_Typ) then
+         Pref_Typ := Designated_Type (Pref_Typ);
 
-         Ptp := Designated_Type (Ptp);
-
-         Rewrite (Pfx,
+         Rewrite (Pref,
            Make_Explicit_Dereference (Sloc (N),
-            Prefix => Relocate_Node (Pfx)));
+            Prefix => Relocate_Node (Pref)));
 
-         Analyze_And_Resolve (Pfx, Ptp);
+         Analyze_And_Resolve (Pref, Pref_Typ);
       end if;
 
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
       if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Pfx)
+        and then Is_Build_In_Place_Function_Call (Pref)
       then
-         Make_Build_In_Place_Call_In_Anonymous_Context (Pfx);
+         Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
       end if;
+
+      --  Find the range of the discrete_range. For ranges that do not appear
+      --  in the slice itself, we make a shallow copy and inherit the source
+      --  location and the parent field from the discrete_range. This ensures
+      --  that the range check is inserted relative to the slice and that the
+      --  runtime exception poins to the proper construct.
+
+      if Nkind (D) = N_Range then
+         Drange := D;
+
+      elsif Nkind_In (D, N_Expanded_Name, N_Identifier) then
+         Drange := New_Copy (Scalar_Range (Entity (D)));
+         Set_Etype  (Drange, Entity (D));
+         Set_Parent (Drange, Parent (D));
+         Set_Sloc   (Drange, Sloc   (D));
+
+      else pragma Assert (Nkind (D) = N_Subtype_Indication);
+         Drange := New_Copy (Range_Expression (Constraint (D)));
+         Set_Etype  (Drange, Etype  (D));
+         Set_Parent (Drange, Parent (D));
+         Set_Sloc   (Drange, Sloc   (D));
+      end if;
+
+      --  Find the type of the array index
+
+      if Ekind (Pref_Typ) = E_String_Literal_Subtype then
+         Index_Typ := Etype (String_Literal_Low_Bound (Pref_Typ));
+      else
+         Index_Typ := Etype (First_Index (Pref_Typ));
+      end if;
+
+      --  Add a runtime check to test the compatibility between the array range
+      --  and the discrete_range.
+
+      Apply_Range_Check (Drange, Index_Typ);
 
       --  The remaining case to be handled is packed slices. We can leave
       --  packed slices as they are in the following situations:

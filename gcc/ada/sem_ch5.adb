@@ -187,7 +187,7 @@ package body Sem_Ch5 is
       end Diagnose_Non_Variable_Lhs;
 
       --------------
-      -- Kill_LHS --
+      -- Kill_Lhs --
       --------------
 
       procedure Kill_Lhs is

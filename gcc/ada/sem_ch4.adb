@@ -6839,8 +6839,8 @@ package body Sem_Ch4 is
 
       if No (Func_Name) then
 
-         --  The prefix itself may be an indexing of a container
-         --  rewrite as such and re-analyze.
+         --  The prefix itself may be an indexing of a container: rewrite
+         --  as such and re-analyze.
 
          if Has_Implicit_Dereference (Etype (Prefix)) then
             Build_Explicit_Dereference

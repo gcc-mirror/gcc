@@ -291,6 +291,7 @@ procedure Gnat1drv is
 
       if Relaxed_RM_Semantics then
          Overriding_Renamings := True;
+         Treat_Categorization_Errors_As_Warnings := True;
       end if;
 
       --  Set switches for formal verification mode
