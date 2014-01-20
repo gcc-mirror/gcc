@@ -452,15 +452,17 @@ package body Sem_Ch6 is
             Push_Scope (Id);
             Install_Formals (Id);
 
-            --  Do a preanalysis of the expression on a separate copy, to
-            --  prevent visibility issues later with operators in instances.
-            --  Attach copy to tree so that parent links are available.
+            --  Preanalyze the expression for name capture, except in an
+            --  instance, where this has been done during generic analysis,
+            --  and will be redone when analyzing the body.
 
             declare
-               Expr : constant Node_Id := New_Copy_Tree (Expression (Ret));
+               Expr : Node_Id renames Expression (Ret);
             begin
                Set_Parent (Expr, Ret);
-               Preanalyze_Spec_Expression (Expr, Etype (Id));
+               if not In_Instance then
+                  Preanalyze_Spec_Expression (Expr, Etype (Id));
+               end if;
             end;
 
             End_Scope;

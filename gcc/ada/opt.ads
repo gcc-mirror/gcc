@@ -191,9 +191,8 @@ package Opt is
    Allow_Integer_Address : Boolean := False;
    --  GNAT
    --  Allow use of integer expression in a context requiring System.Address.
-   --  Set by the use of configuration pragma Allow_Integer_Address, or the
-   --  compiler switch -gnates. Also set in relaxed semantics mode for use
-   --  by CodePeer.
+   --  Set by the use of configuration pragma Allow_Integer_Address Also set
+   --  in relaxed semantics mode for use by CodePeer or when -gnatd.M is used.
 
    All_Sources : Boolean := False;
    --  GNATBIND

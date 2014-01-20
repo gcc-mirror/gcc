@@ -660,15 +660,6 @@ package body Switch.C is
                   when 'P' =>
                      Treat_Categorization_Errors_As_Warnings := True;
 
-                  --  -gnates (allow integer expression for System.Address)
-
-                  --  Note: there is no VMS equivalent for this switch, since
-                  --  in VMS, System.Address is an integer type in any case.
-
-                  when 's' =>
-                     Allow_Integer_Address := True;
-                     Ptr := Ptr + 1;
-
                   --  -gnateS (generate SCO information)
 
                   --  Include Source Coverage Obligation information in ALI

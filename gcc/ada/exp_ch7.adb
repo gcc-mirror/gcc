@@ -7960,8 +7960,8 @@ package body Exp_Ch7 is
    -------------------------------
 
    procedure Wrap_Transient_Expression (N : Node_Id) is
-      Expr : constant Node_Id    := Relocate_Node (N);
       Loc  : constant Source_Ptr := Sloc (N);
+      Expr : Node_Id             := Relocate_Node (N);
       Temp : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Typ  : constant Entity_Id  := Etype (N);
 
@@ -7972,13 +7972,30 @@ package body Exp_Ch7 is
       --    declare
       --       M : constant Mark_Id := SS_Mark;
       --       procedure Finalizer is ...  (See Build_Finalizer)
-
+      --
       --    begin
-      --       Temp := <Expr>;
+      --       Temp := <Expr>;                           --  general case
+      --       Temp := (if <Expr> then True else False); --  boolean case
       --
       --    at end
       --       Finalizer;
       --    end;
+
+      --  A special case is made for Boolean expressions so that the back-end
+      --  knows to generate a conditional branch instruction if running with
+      --  -fpreserve-control-flow. This ensures that a control flow change
+      --  signalling the decision outcome occurs before the cleanup actions.
+      --  In the absence of -fpreserve-control-flow, the back-end will
+      --  optimize away the extra conditional expression, so we can do this
+      --  modification unconditionally here.
+
+      if Is_Boolean_Type (Typ) then
+         Expr := Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Expr,
+                     New_Occurrence_Of (Standard_True, Loc),
+                     New_Occurrence_Of (Standard_False, Loc)));
+      end if;
 
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
