@@ -2615,7 +2615,21 @@ package body Sem_Res is
             --  If an error message was issued already, Found got reset to
             --  True, so if it is still False, issue standard Wrong_Type msg.
 
-            if not Found then
+            --  First check for special case of Address wanted, integer found
+            --  with the configuration pragma Allow_Integer_Address active.
+
+            if Allow_Integer_Address
+              and then Is_RTE (Typ, RE_Address)
+              and then Is_Integer_Type (Etype (N))
+            then
+               Rewrite
+                 (N, Unchecked_Convert_To (RTE (RE_Address),
+                  Relocate_Node (N)));
+               return;
+
+            --  OK, not the special case go ahead and issue message
+
+            elsif not Found then
                if Is_Overloaded (N)
                  and then Nkind (N) = N_Function_Call
                then
@@ -11621,6 +11635,19 @@ package body Sem_Res is
          Conversion_Error_NE -- CODEFIX
             ("add ALL to }!", N, Target_Type);
          return False;
+
+      --  Deal with conversion of integer type to address if the pragma
+      --  Allow_Integer_Address is in effect.
+
+      elsif Allow_Integer_Address
+        and then Is_RTE (Etype (N), RE_Address)
+        and then Is_Integer_Type (Etype (Operand))
+      then
+         Rewrite (N,
+           Unchecked_Convert_To (RTE (RE_Address), Relocate_Node (N)));
+         return True;
+
+      --  Here we have a real conversion error
 
       else
          Conversion_Error_NE

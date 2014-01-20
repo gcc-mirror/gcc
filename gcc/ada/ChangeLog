@@ -1,3 +1,23 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb: Set Allow_Integer_Address in relaxed semantics mode.
+	* gnat_rm.texi: Document pragma Allow_Integer_Address.
+	* gnat_ugn.texi: Document pragma Allow_Integer_Address, -gnates.
+	* opt.ads: New flag Allow_Integer_Address.
+	* par-prag.adb: Dummy entry for pragma Allow_Integer_Address.
+	* sem_ch5.adb: Minor reformatting.
+	* sem_prag.adb: Implement pragma Allow_Integer_Address.
+	* sem_res.adb (Resolve): Allow integer address value if
+	switch set.
+	* sem_util.adb: Minor reformatting.
+	* snames.ads-tmpl: Add entry for pragma Allow_Integer_Address.
+	* switch-c.adb: Recognize flag -gnates.
+	* usage.adb: Document flag -gnates.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* s-tadeca.adb: Fix minor typos in comment.
+
 2014-01-20  Pascal Obry  <obry@adacore.com>
 
 	* s-win32.ads (FreeLibrary): New import.

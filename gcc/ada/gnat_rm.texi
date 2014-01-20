@@ -104,6 +104,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2005::
 * Pragma Ada_12::
 * Pragma Ada_2012::
+* Pragma Allow_Integer_Address::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assert_And_Cut::
@@ -276,6 +277,7 @@ Implementation Defined Aspects
 * Aspect Abstract_State::
 * Aspect Ada_2005::
 * Aspect Ada_2012::
+* Pragma Allow_Integer_Address::
 * Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
@@ -927,6 +929,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2005::
 * Pragma Ada_12::
 * Pragma Ada_2012::
+* Pragma Allow_Integer_Address::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assert_And_Cut::
@@ -1217,6 +1220,42 @@ pragma Ada_2012;
 @noindent
 This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
+
+@node Pragma Allow_Integer_Address
+@unnumberedsec Pragma Allow_Integer_Address
+@findex Allow_Integer_Address
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Allow_Integer_Address;
+@end smallexample
+
+@noindent
+In most versions of GNAT, @code{System.Address} is a private type, which means
+that integer values are not allowed. If the configuration pragma
+@code{Allow_Integer_Address} is given, then integer expressions may
+be used anywhere a value of type @code{System.Address} is required.
+The effect is to introduce an implicit unchecked conversion from the
+integer value to type @code{System.Address}. The following example
+compiles without errors:
+
+@smallexample @c ada
+pragma Allow_Integer_Address;
+with System; use System;
+package AddrAsInt is
+   X : Integer;
+   Y : Integer;
+   for X'Address use 16#1240#;
+   for Y use at 16#3230#;
+   m : Address := 16#4000#;
+   n : constant Address := 4000;
+   p : constant Address := Address (X + Y);
+   type R is new integer;
+   RR : R := 1000;
+   Z : Integer;
+   for Z'Address use RR;
+end AddrAsInt;
+@end smallexample
 
 @node Pragma Annotate
 @unnumberedsec Pragma Annotate

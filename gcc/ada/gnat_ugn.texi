@@ -3821,9 +3821,16 @@ these errors become warnings (which can be ignored, or suppressed in the usual
 manner). This can be useful in some specialized circumstances such as the
 temporary use of special test software.
 
+@ifclear vms
+@item -gnates
+@cindex @option{-gnates} (@command{gcc})
+Activates @code{Allow_Integer_Address} mode as though the corresponding
+configuration pragma was present.
+@end ifclear
+
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
-Synonym of @option{-fdump-scos}, kept for backards compatibility.
+Synonym of @option{-fdump-scos}, kept for backwards compatibility.
 
 @item -gnatet=@var{path}
 @cindex @option{-gnatet=file} (@command{gcc})
@@ -11778,6 +11785,7 @@ recognized by GNAT:
    Ada_2005
    Ada_12
    Ada_2012
+   Allow_Integer_Address
    Annotate
    Assertion_Policy
    Assume_No_Invalid_Values
@@ -22817,6 +22825,8 @@ following:
 @item  @code{Ada_12}
 
 @item  @code{Ada_2012}
+
+@item  @code{ALLOW_INTEGER_ADDRESS}
 
 @item  @code{ANNOTATE}
 

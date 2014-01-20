@@ -55,7 +55,7 @@ begin
    end if;
 
    --  T is expressed as a duration elapsed since the UNIX epoch, whereas
-   --  Time_Enque expects duraction elapsed since the epoch of the Ada real-
+   --  Time_Enqueue expects duration elapsed since the epoch of the Ada real-
    --  time clock: compensate if necessary.
 
    --  Comparison "SOSC.CLOCK_RT_Ada = SOSC.CLOCK_REALTIME" is compile

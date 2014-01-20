@@ -236,6 +236,11 @@ begin
    Write_Switch_Char ("eP");
    Write_Line ("Pure/Prelaborate errors generate warnings rather than errors");
 
+   --  Line fofr -gnates switch
+
+   Write_Switch_Char ("es");
+   Write_Line ("Allow integer expression for System.Address value");
+
    --  Line for -gnateS switch
 
    Write_Switch_Char ("eS");

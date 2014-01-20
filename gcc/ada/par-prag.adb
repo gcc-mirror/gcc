@@ -1114,6 +1114,7 @@ begin
            Pragma_Assume_No_Invalid_Values       |
            Pragma_AST_Entry                      |
            Pragma_All_Calls_Remote               |
+           Pragma_Allow_Integer_Address          |
            Pragma_Annotate                       |
            Pragma_Assert                         |
            Pragma_Assert_And_Cut                 |

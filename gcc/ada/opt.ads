@@ -188,6 +188,13 @@ package Opt is
    --  also repeated error messages for references to undefined identifiers
    --  and certain other repeated error messages. Set by use of -gnatf.
 
+   Allow_Integer_Address : Boolean := False;
+   --  GNAT
+   --  Allow use of integer expression in a context requiring System.Address.
+   --  Set by the use of configuration pragma Allow_Integer_Address, or the
+   --  compiler switch -gnates. Also set in relaxed semantics mode for use
+   --  by CodePeer.
+
    All_Sources : Boolean := False;
    --  GNATBIND
    --  Set to True to require all source files to be present. This flag is
