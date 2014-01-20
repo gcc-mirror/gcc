@@ -2183,6 +2183,9 @@ fix_crossing_unconditional_branches (void)
 	      emit_insn_before (indirect_jump_sequence, last_insn);
 	      delete_insn (last_insn);
 
+	      JUMP_LABEL (jump_insn) = label;
+	      LABEL_NUSES (label)++;
+
 	      /* Make BB_END for cur_bb be the jump instruction (NOT the
 		 barrier instruction at the end of the sequence...).  */
 

@@ -40,5 +40,7 @@ extern tree fold_const_aggregate_ref (tree);
 extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
 extern bool gimple_val_nonnegative_real_p (tree);
 extern tree gimple_fold_indirect_ref (tree);
+extern bool arith_code_with_undefined_signed_overflow (tree_code);
+extern gimple_seq rewrite_to_defined_overflow (gimple);
 
 #endif  /* GCC_GIMPLE_FOLD_H */

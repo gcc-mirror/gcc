@@ -4172,7 +4172,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	return build_constructor (type, vec);
     }
 
-  /* For now use pointer tricks to do the extaction, unless we are on VSX
+  /* For now use pointer tricks to do the extraction, unless we are on VSX
      extracting a double from a constant offset.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_EXTRACT)
     {
@@ -4199,6 +4199,17 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	goto bad; 
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
 	goto bad; 
+
+      /* If we are targeting little-endian, but -maltivec=be has been
+	 specified to override the element order, adjust the element
+	 number accordingly.  */
+      if (!BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 2)
+	{
+	  unsigned int last_elem = TYPE_VECTOR_SUBPARTS (arg1_type) - 1;
+	  arg2 = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg2),
+				  build_int_cstu (TREE_TYPE (arg2), last_elem),
+				  arg2);
+	}
 
       /* If we can use the VSX xxpermdi instruction, use that for extract.  */
       mode = TYPE_MODE (arg1_type);
@@ -4256,7 +4267,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       return stmt;
     }
 
-  /* For now use pointer tricks to do the insertation, unless we are on VSX
+  /* For now use pointer tricks to do the insertion, unless we are on VSX
      inserting a double to a constant offset..  */
   if (fcode == ALTIVEC_BUILTIN_VEC_INSERT)
     {
@@ -4285,6 +4296,17 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	goto bad; 
       if (!INTEGRAL_TYPE_P (TREE_TYPE (arg2)))
 	goto bad; 
+
+      /* If we are targeting little-endian, but -maltivec=be has been
+	 specified to override the element order, adjust the element
+	 number accordingly.  */
+      if (!BYTES_BIG_ENDIAN && rs6000_altivec_element_order == 2)
+	{
+	  unsigned int last_elem = TYPE_VECTOR_SUBPARTS (arg1_type) - 1;
+	  arg2 = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg2),
+				  build_int_cstu (TREE_TYPE (arg2), last_elem),
+				  arg2);
+	}
 
       /* If we can use the VSX xxpermdi instruction, use that for insert.  */
       mode = TYPE_MODE (arg1_type);

@@ -434,7 +434,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
      alignment that can prevail.  */
   if (offset)
     {
-      int trailing_zeros = tree_ctz (offset);
+      unsigned int trailing_zeros = tree_ctz (offset);
       if (trailing_zeros < HOST_BITS_PER_INT)
 	{
 	  unsigned int inner = (1U << trailing_zeros) * BITS_PER_UNIT;
@@ -3117,7 +3117,7 @@ determine_block_size (tree len, rtx len_rtx,
 {
   if (CONST_INT_P (len_rtx))
     {
-      *min_size = *max_size = UINTVAL (len_rtx);
+      *min_size = *max_size = *probable_max_size = UINTVAL (len_rtx);
       return;
     }
   else
@@ -3131,7 +3131,8 @@ determine_block_size (tree len, rtx len_rtx,
       else
 	*min_size = 0;
       if (tree_fits_uhwi_p (TYPE_MAX_VALUE (TREE_TYPE (len))))
-	*probable_max_size = *max_size = tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (len)));
+	*probable_max_size = *max_size
+	  = tree_to_uhwi (TYPE_MAX_VALUE (TREE_TYPE (len)));
       else
 	*probable_max_size = *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
 
@@ -3391,7 +3392,8 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   create_output_operand (&ops[0], endp ? target : NULL_RTX, Pmode);
   create_fixed_operand (&ops[1], dest_mem);
   create_fixed_operand (&ops[2], src_mem);
-  expand_insn (CODE_FOR_movstr, 3, ops);
+  if (!maybe_expand_insn (CODE_FOR_movstr, 3, ops))
+    return NULL_RTX;
 
   if (endp && target != const0_rtx)
     {

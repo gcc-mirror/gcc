@@ -1,3 +1,306 @@
+2014-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59880
+	* gcc.target/i386/pr59880.c: New test.
+
+2014-01-20  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.dg/pr44194-1.c: Tweak regexp.
+
+2014-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR libfortran/59771
+	PR libfortran/59774
+	PR libfortran/59836
+	* gfortran.dg/round_3.f08: New cases added.
+	* gfortran.dg/fmt_g_1.f90: New test.
+
+2014-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/pr49718.C: Add "-mno-explicit-relocs" for alpha*-*-* targets.
+
+2014-01-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/pr54240.c: Add -ffat-lto-objects.
+
+2014-01-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/vect/pr57705.c: Require vect_int.
+	* gcc.dg/vect/pr58508.c: Fix order of dg-require-effective-target line.
+	* gcc.dg/vect/vect-alias-check.c: Likewise.
+
+2014-01-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/58007
+	* gfortran.dg/unresolved_fixup_1.f90: New test.
+	* gfortran.dg/unresolved_fixup_2.f90: New test.
+
+2014-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58944
+	* gcc.target/i386/pr58944.c: Drop -march=native from dg-options.
+	Remove dg-prune-output lines.
+
+2014-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59706
+	* gfortran.dg/pr59706.f90: New test.
+	* g++.dg/ext/pr59706.C: New test.
+
+2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59270
+	PR c++/58811
+	* g++.dg/cpp0x/decltype-incomplete1.C: New.
+	* g++.dg/init/pr58811.C: Likewise.
+
+2014-01-17  Jeff Law  <law@redhat.com>
+
+	PR middle-end/57904
+	* gfortran.dg/pr57904.f90: New test.
+
+2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59269
+	* g++.dg/cpp0x/nsdmi-union4.C: New.
+
+2014-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59838
+	* g++.dg/diagnostic/pr59838.C: New test.
+
+2014-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* gcc.dg/pr58346.c: New test.
+
+2014-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/58776
+	* gcc.dg/tree-ssa/gen-vect-32.c: Add -fno-vect-cost-model to
+	dg-options, use dg-additional-options for i?86/x86_64 to avoid
+	option duplication.
+
+	PR fortran/59440
+	* gfortran.dg/pr59440-1.f90: New test.
+	* gfortran.dg/pr59440-2.f90: New test.
+	* gfortran.dg/pr59440-3.f90: New test.
+
+	PR testsuite/59064
+	* gcc.dg/vect/vect-ivdep-1.c: Replace two dg-bogus lines separately
+	testing for " version" and " alias" with one testing for
+	" version\[^\n\r]* alias".
+	* gcc.dg/vect/vect-ivdep-2.c: Likewise.
+	* gfortran.dg/vect/vect-do-concurrent-1.f90: Likewise.
+	* g++.dg/vect/pr33426-ivdep.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-2.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-3.cc: Likewise.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Adjust comments similarly.
+
+	PR c++/57945
+	* c-c++-common/torture/pr57945.c: New test.
+
+2014-01-17  Zhenqiang Chen  <zhenqiang.chen@arm.com>
+
+	* gcc.target/arm/its.c: New testcase.
+
+2014-01-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59775
+	* g++.dg/torture/pr59775.C: New testcase.
+
+2014-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58344
+	* gcc.c-torture/compile/pr58344.c: New test.
+
+	PR target/59839
+	* gcc.target/i386/pr59839.c: New test.
+
+	PR debug/54694
+	* gcc.target/i386/pr9771-1.c (main): Rename to...
+	(real_main): ... this.  Add __asm name "main".
+	(ASMNAME, ASMNAME2, STRING): Define.
+
+2014-01-16  Nick Clifton  <nickc@redhat.com>
+
+	PR middle-end/28865
+	* gcc.c-torture/compile/pr28865.c: New.
+	* gcc.c-torture/execute/pr28865.c: New.
+
+2014-01-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59827
+	* gcc.dg/pr59827.c: New test.
+
+2014-01-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.c-torture/execute/pr59747.c (fn1): Return a value.
+
+2014-01-15  Richard Henderson  <rth@redhat.com>
+
+	PR debug/54694
+	* gcc.target/i386/pr54694.c: New test.
+
+2014-01-15  Laurent Alfonsi <laurent.alfonsi@st.com>
+
+	PR c++/49718
+	* g++.dg/pr49718.C: New test.
+
+2014-01-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/umips-branch-4.c: Add addressing=absolute.
+
+2014-01-15  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/vmx/mult-even-odd.c: New.
+	* gcc.dg/vmx/mult-even-odd-be-order.c: New.
+
+2014-01-15  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* lib/target-supports.exp (check_libcilkrts_available): Added an
+	extern "C" if we are using C++ along with a function prototype.
+
+2014-01-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59747
+	* gcc.c-torture/execute/pr59747.c: New test.
+
+2014-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59794
+	* c-c++-common/convert-vec-1.c: Also prune ABI change for
+	Linux/x86.
+	* g++.dg/cpp0x/constexpr-53094-2.C: Likewise.
+	* g++.dg/ext/attribute-test-1.C: Likewise.
+	* g++.dg/ext/attribute-test-2.C: Likewise.
+	* g++.dg/ext/attribute-test-3.C: Likewise.
+	* g++.dg/ext/attribute-test-4.C: Likewise.
+	* g++.dg/ext/pr56790-1.C: Likewise.
+	* g++.dg/torture/pr38565.C: Likewise.
+	* gcc.dg/pr53060.c: Likewise.
+	* c-c++-common/scal-to-vec2.c: Add -msse2 for x86.
+	* c-c++-common/vector-compare-2.c: Likewise.
+	* gcc.dg/Wstrict-aliasing-bogus-ref-all-2.c: Likewise.
+	* g++.dg/conversion/simd1.C: Add -msse2 for x86.  Adjust
+	dg-message line number.
+
+2014-01-15  Matthias Klose  <doko@ubuntu.com>
+
+	* go.test/go-test.exp: Set goarch for aarch64*-*-*.
+
+2014-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59822
+	* g++.dg/torture/pr59822.C: New testcase.
+
+2014-01-15  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/59808
+	* gcc.target/i386/sse-12.c: Add `-mavx512[cd, er, pf]' options.
+	* gcc.target/i386/sse-14.c: Update constants avx512erintrin.h tests.
+
+2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR target/59695
+	* g++.dg/pr59695.C: New testcase.
+
+2014-01-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/59803
+	* gcc.c-torture/compile/pr59803.c: New testcase.
+
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* gcc.c-torture/execute/pr58943.c: New test.
+	* gcc.dg/tree-ssa/ssa-fre-33.c (main): Avoid using += in the test.
+
+2014-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59794
+	* g++.dg/ext/vector23.C: Also prune ABI change for Linux/x86.
+	* gcc.target/i386/pr39162.c (y): New __m256i variable.
+	(bar): Change return type to void.  Set y to x.
+	* gcc.target/i386/pr59794-1.c: New testcase.
+	* gcc.target/i386/pr59794-2.c: Likewise.
+	* gcc.target/i386/pr59794-3.c: Likewise.
+	* gcc.target/i386/pr59794-4.c: Likewise.
+	* gcc.target/i386/pr59794-5.c: Likewise.
+	* gcc.target/i386/pr59794-6.c: Likewise.
+	* gcc.target/i386/pr59794-7.c: Likewise.
+
+2014-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58921
+	PR tree-optimization/59006
+	* gcc.dg/torture/pr58921.c: New testcase.
+	* gcc.dg/torture/pr59006.c: Likewise.
+	* gcc.dg/vect/pr58508.c: XFAIL no longer handled cases.
+
+2014-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/59494
+	* gfortran.dg/vect/fast-math-mgrid-resid.f: Change
+	-fdump-tree-optimized to -fdump-tree-pcom-details in dg-options and
+	cleanup-tree-dump from optimized to pcom.  Remove scan-tree-dump-times
+	for vect_\[^\\n\]*\\+, add scan-tree-dump-times for no suitable chains and
+	Executing predictive commoning without unrolling.
+
+2014-01-14  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx-1.c: Fix __builtin_ia32_exp2ps_mask,
+	__builtin_ia32_exp2pd_mask, __builtin_ia32_rcp28ps_mask,
+	__builtin_ia32_rcp28pd_mask, __builtin_ia32_rsqrt28ps_mask,
+	__builtin_ia32_rsqrt28pd_mask. Add __builtin_ia32_rcp28ss_round,
+	__builtin_ia32_rcp28sd_round, __builtin_ia32_rsqrt28ss_round,
+	__builtin_ia32_rsqrt28sd_round.
+	* gcc.target/i386/avx512er-vexp2pd-1.c: Fix rounding mode.
+	* gcc.target/i386/avx512er-vexp2ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: New.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdqa-1.c: Ditto.
+	* gcc.target/i386/avx512f-vmovntdqa-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Fix.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Ditto.
+	* gcc.target/i386/sse-22.c: Extend with new built-ins,
+	fix wrong rounding mode (see above).
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2014-01-13  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/insert.c: New.
+	* gcc.dg/vmx/insert-be-order.c: New.
+	* gcc.dg/vmx/extract.c: New.
+	* gcc.dg/vmx/extract-be-order.c: New.
+
+2014-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59387
+	* gcc.c-torture/execute/pr59387.c: New test.
+
+2014-01-13  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/lto/lto.exp: Do check_effective_target_lto check before
+	adjusting mathlib options.
+	* gfortran.dg/lto/lto.exp: Likewise.
+
+2014-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization17.adb: New test.
+	* gnat.dg/loop_optimization17_pkg.ad[sb]: New helper.
+
 2014-01-13  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/sh/cmpstrn.c: New case.

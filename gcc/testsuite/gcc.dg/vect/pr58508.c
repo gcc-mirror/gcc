@@ -1,5 +1,5 @@
-/* { dg-require-effective-target vect_int } */
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 
 
 /* The GCC vectorizer generates loop versioning for the following loop
@@ -66,5 +66,6 @@ void test5 (int* a, int* b)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "hoist" 8 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "hoist" 8 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "hoist" 3 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

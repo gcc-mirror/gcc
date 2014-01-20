@@ -1,3 +1,9 @@
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* c-typeck.c (build_modify_expr): For lhs op= rhs, if rhs has side
+	effects, preevaluate rhs using SAVE_EXPR first.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c++/59631

@@ -15,5 +15,5 @@ void func() {
 /* { dg-final { scan-rtl-dump "global deletions = (2|3)" "dse1" } } */
 /* { dg-final { cleanup-rtl-dump "dse1" } } */
 
-/* { dg-final { scan-rtl-dump-not "insn \[^\n\]*set \\(mem" "final" } } */
+/* { dg-final { scan-rtl-dump-not "insn\[^\n\]*set \\(mem(?!\[^\n\]*scratch)" "final" } } */
 /* { dg-final { cleanup-rtl-dump "final" } } */

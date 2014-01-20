@@ -221,7 +221,8 @@ static const struct tune_params generic_tunings =
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,
-  NAMED_PARAM (memmov_cost, 4)
+  NAMED_PARAM (memmov_cost, 4),
+  NAMED_PARAM (issue_rate, 2)
 };
 
 static const struct tune_params cortexa53_tunings =
@@ -230,7 +231,8 @@ static const struct tune_params cortexa53_tunings =
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,
-  NAMED_PARAM (memmov_cost, 4)
+  NAMED_PARAM (memmov_cost, 4),
+  NAMED_PARAM (issue_rate, 2)
 };
 
 /* A processor implementing AArch64.  */
@@ -678,90 +680,82 @@ aarch64_emit_move (rtx dest, rtx src)
 	  : emit_move_insn_1 (dest, src));
 }
 
+/* Split a 128-bit move operation into two 64-bit move operations,
+   taking care to handle partial overlap of register to register
+   copies.  Special cases are needed when moving between GP regs and
+   FP regs.  SRC can be a register, constant or memory; DST a register
+   or memory.  If either operand is memory it must not have any side
+   effects.  */
 void
 aarch64_split_128bit_move (rtx dst, rtx src)
 {
-  rtx low_dst;
+  rtx dst_lo, dst_hi;
+  rtx src_lo, src_hi;
 
-  enum machine_mode src_mode = GET_MODE (src);
-  enum machine_mode dst_mode = GET_MODE (dst);
-  int src_regno = REGNO (src);
-  int dst_regno = REGNO (dst);
+  enum machine_mode mode = GET_MODE (dst);
 
-  gcc_assert (dst_mode == TImode || dst_mode == TFmode);
+  gcc_assert (mode == TImode || mode == TFmode);
+  gcc_assert (!(side_effects_p (src) || side_effects_p (dst)));
+  gcc_assert (mode == GET_MODE (src) || GET_MODE (src) == VOIDmode);
 
   if (REG_P (dst) && REG_P (src))
     {
-      gcc_assert (src_mode == TImode || src_mode == TFmode);
+      int src_regno = REGNO (src);
+      int dst_regno = REGNO (dst);
 
-      /* Handle r -> w, w -> r.  */
+      /* Handle FP <-> GP regs.  */
       if (FP_REGNUM_P (dst_regno) && GP_REGNUM_P (src_regno))
 	{
-	  switch (src_mode) {
-	  case TImode:
-	    emit_insn
-	      (gen_aarch64_movtilow_di (dst, gen_lowpart (word_mode, src)));
-	    emit_insn
-	      (gen_aarch64_movtihigh_di (dst, gen_highpart (word_mode, src)));
-	    return;
-	  case TFmode:
-	    emit_insn
-	      (gen_aarch64_movtflow_di (dst, gen_lowpart (word_mode, src)));
-	    emit_insn
-	      (gen_aarch64_movtfhigh_di (dst, gen_highpart (word_mode, src)));
-	    return;
-	  default:
-	    gcc_unreachable ();
-	  }
+	  src_lo = gen_lowpart (word_mode, src);
+	  src_hi = gen_highpart (word_mode, src);
+
+	  if (mode == TImode)
+	    {
+	      emit_insn (gen_aarch64_movtilow_di (dst, src_lo));
+	      emit_insn (gen_aarch64_movtihigh_di (dst, src_hi));
+	    }
+	  else
+	    {
+	      emit_insn (gen_aarch64_movtflow_di (dst, src_lo));
+	      emit_insn (gen_aarch64_movtfhigh_di (dst, src_hi));
+	    }
+	  return;
 	}
       else if (GP_REGNUM_P (dst_regno) && FP_REGNUM_P (src_regno))
 	{
-	  switch (src_mode) {
-	  case TImode:
-	    emit_insn
-	      (gen_aarch64_movdi_tilow (gen_lowpart (word_mode, dst), src));
-	    emit_insn
-	      (gen_aarch64_movdi_tihigh (gen_highpart (word_mode, dst), src));
-	    return;
-	  case TFmode:
-	    emit_insn
-	      (gen_aarch64_movdi_tflow (gen_lowpart (word_mode, dst), src));
-	    emit_insn
-	      (gen_aarch64_movdi_tfhigh (gen_highpart (word_mode, dst), src));
-	    return;
-	  default:
-	    gcc_unreachable ();
-	  }
+	  dst_lo = gen_lowpart (word_mode, dst);
+	  dst_hi = gen_highpart (word_mode, dst);
+
+	  if (mode == TImode)
+	    {
+	      emit_insn (gen_aarch64_movdi_tilow (dst_lo, src));
+	      emit_insn (gen_aarch64_movdi_tihigh (dst_hi, src));
+	    }
+	  else
+	    {
+	      emit_insn (gen_aarch64_movdi_tflow (dst_lo, src));
+	      emit_insn (gen_aarch64_movdi_tfhigh (dst_hi, src));
+	    }
+	  return;
 	}
-      /* Fall through to r -> r cases.  */
     }
 
-  switch (dst_mode) {
-  case TImode:
-    low_dst = gen_lowpart (word_mode, dst);
-    if (REG_P (low_dst)
-	&& reg_overlap_mentioned_p (low_dst, src))
-      {
-	aarch64_emit_move (gen_highpart (word_mode, dst),
-			   gen_highpart_mode (word_mode, TImode, src));
-	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-      }
-    else
-      {
-	aarch64_emit_move (low_dst, gen_lowpart (word_mode, src));
-	aarch64_emit_move (gen_highpart (word_mode, dst),
-			   gen_highpart_mode (word_mode, TImode, src));
-      }
-    return;
-  case TFmode:
-    emit_move_insn (gen_rtx_REG (DFmode, dst_regno),
-		    gen_rtx_REG (DFmode, src_regno));
-    emit_move_insn (gen_rtx_REG (DFmode, dst_regno + 1),
-		    gen_rtx_REG (DFmode, src_regno + 1));
-    return;
-  default:
-    gcc_unreachable ();
-  }
+  dst_lo = gen_lowpart (word_mode, dst);
+  dst_hi = gen_highpart (word_mode, dst);
+  src_lo = gen_lowpart (word_mode, src);
+  src_hi = gen_highpart_mode (word_mode, mode, src);
+
+  /* At most one pairing may overlap.  */
+  if (reg_overlap_mentioned_p (dst_lo, src_hi))
+    {
+      aarch64_emit_move (dst_hi, src_hi);
+      aarch64_emit_move (dst_lo, src_lo);
+    }
+  else
+    {
+      aarch64_emit_move (dst_lo, src_lo);
+      aarch64_emit_move (dst_hi, src_hi);
+    }
 }
 
 bool
@@ -2486,7 +2480,7 @@ aarch64_build_constant (int regnum, HOST_WIDE_INT val)
       if (ncount < zcount)
 	{
 	  emit_move_insn (gen_rtx_REG (Pmode, regnum),
-			  GEN_INT ((~val) & 0xffff));
+			  GEN_INT (val | ~(HOST_WIDE_INT) 0xffff));
 	  tval = 0xffff;
 	}
       else
@@ -4868,6 +4862,16 @@ aarch64_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
   const struct cpu_regmove_cost *regmove_cost
     = aarch64_tune_params->regmove_cost;
 
+  /* Moving between GPR and stack cost is the same as GP2GP.  */
+  if ((from == GENERAL_REGS && to == STACK_REG)
+      || (to == GENERAL_REGS && from == STACK_REG))
+    return regmove_cost->GP2GP;
+
+  /* To/From the stack register, we move via the gprs.  */
+  if (to == STACK_REG || from == STACK_REG)
+    return aarch64_register_move_cost (mode, from, GENERAL_REGS)
+            + aarch64_register_move_cost (mode, GENERAL_REGS, to);
+
   if (from == GENERAL_REGS && to == GENERAL_REGS)
     return regmove_cost->GP2GP;
   else if (from == GENERAL_REGS)
@@ -4893,6 +4897,13 @@ aarch64_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 			  bool in ATTRIBUTE_UNUSED)
 {
   return aarch64_tune_params->memmov_cost;
+}
+
+/* Return the number of instructions that can be issued per cycle.  */
+static int
+aarch64_sched_issue_rate (void)
+{
+  return aarch64_tune_params->issue_rate;
 }
 
 /* Vectorizer cost model target hooks.  */
@@ -8410,6 +8421,9 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS aarch64_rtx_costs
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT aarch64_trampoline_init

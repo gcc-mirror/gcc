@@ -5536,6 +5536,61 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
   return Expression::make_binary(this->op_, call, zero, loc);
 }
 
+Expression*
+Binary_expression::do_flatten(Gogo*, Named_object*,
+                              Statement_inserter* inserter)
+{
+  Location loc = this->location();
+  Temporary_statement* temp;
+  if (this->left_->type()->is_string_type()
+      && this->op_ == OPERATOR_PLUS)
+    {
+      if (!this->left_->is_variable())
+        {
+          temp = Statement::make_temporary(NULL, this->left_, loc);
+          inserter->insert(temp);
+          this->left_ = Expression::make_temporary_reference(temp, loc);
+        }
+      if (!this->right_->is_variable())
+        {
+          temp =
+              Statement::make_temporary(this->left_->type(), this->right_, loc);
+          this->right_ = Expression::make_temporary_reference(temp, loc);
+          inserter->insert(temp);
+        }
+    }
+
+  Type* left_type = this->left_->type();
+  bool is_shift_op = (this->op_ == OPERATOR_LSHIFT
+                      || this->op_ == OPERATOR_RSHIFT);
+  bool is_idiv_op = ((this->op_ == OPERATOR_DIV &&
+                      left_type->integer_type() != NULL)
+                     || this->op_ == OPERATOR_MOD);
+
+  // FIXME: go_check_divide_zero and go_check_divide_overflow are globals
+  // defined in gcc/go/lang.opt.  These should be defined in go_create_gogo
+  // and accessed from the Gogo* passed to do_flatten.
+  if (is_shift_op
+      || (is_idiv_op && (go_check_divide_zero || go_check_divide_overflow)))
+    {
+      if (!this->left_->is_variable())
+        {
+          temp = Statement::make_temporary(NULL, this->left_, loc);
+          inserter->insert(temp);
+          this->left_ = Expression::make_temporary_reference(temp, loc);
+        }
+      if (!this->right_->is_variable())
+        {
+          temp =
+              Statement::make_temporary(NULL, this->right_, loc);
+          this->right_ = Expression::make_temporary_reference(temp, loc);
+          inserter->insert(temp);
+        }
+    }
+  return this;
+}
+
+
 // Return the address of EXPR, cast to unsafe.Pointer.
 
 Expression*
@@ -5956,14 +6011,10 @@ tree
 Binary_expression::do_get_tree(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
+  Location loc = this->location();
+  Type* left_type = this->left_->type();
+  Type* right_type = this->right_->type();
 
-  tree left = this->left_->get_tree(context);
-  tree right = this->right_->get_tree(context);
-
-  if (left == error_mark_node || right == error_mark_node)
-    return error_mark_node;
-
-  enum tree_code code;
   bool use_left_type = true;
   bool is_shift_op = false;
   bool is_idiv_op = false;
@@ -5975,198 +6026,126 @@ Binary_expression::do_get_tree(Translate_context* context)
     case OPERATOR_LE:
     case OPERATOR_GT:
     case OPERATOR_GE:
-      return Expression::comparison_tree(context, this->type_, this->op_,
-					 this->left_, this->right_,
-					 this->location());
+      {
+        Bexpression* ret =
+            Expression::comparison(context, this->type_, this->op_,
+                                   this->left_, this->right_, loc);
+        return expr_to_tree(ret);
+      }
 
     case OPERATOR_OROR:
-      code = TRUTH_ORIF_EXPR;
-      use_left_type = false;
-      break;
     case OPERATOR_ANDAND:
-      code = TRUTH_ANDIF_EXPR;
       use_left_type = false;
       break;
     case OPERATOR_PLUS:
-      code = PLUS_EXPR;
-      break;
     case OPERATOR_MINUS:
-      code = MINUS_EXPR;
-      break;
     case OPERATOR_OR:
-      code = BIT_IOR_EXPR;
-      break;
     case OPERATOR_XOR:
-      code = BIT_XOR_EXPR;
-      break;
     case OPERATOR_MULT:
-      code = MULT_EXPR;
       break;
     case OPERATOR_DIV:
-      {
-	Type *t = this->left_->type();
-	if (t->float_type() != NULL || t->complex_type() != NULL)
-	  code = RDIV_EXPR;
-	else
-	  {
-	    code = TRUNC_DIV_EXPR;
-	    is_idiv_op = true;
-	  }
-      }
-      break;
+      if (left_type->float_type() != NULL || left_type->complex_type() != NULL)
+        break;
     case OPERATOR_MOD:
-      code = TRUNC_MOD_EXPR;
       is_idiv_op = true;
       break;
     case OPERATOR_LSHIFT:
-      code = LSHIFT_EXPR;
-      is_shift_op = true;
-      break;
     case OPERATOR_RSHIFT:
-      code = RSHIFT_EXPR;
       is_shift_op = true;
-      break;
-    case OPERATOR_AND:
-      code = BIT_AND_EXPR;
       break;
     case OPERATOR_BITCLEAR:
-      right = fold_build1(BIT_NOT_EXPR, TREE_TYPE(right), right);
-      code = BIT_AND_EXPR;
+      this->right_ = Expression::make_unary(OPERATOR_XOR, this->right_, loc);
+    case OPERATOR_AND:
       break;
     default:
       go_unreachable();
     }
 
-  location_t gccloc = this->location().gcc_location();
-  tree type = use_left_type ? TREE_TYPE(left) : TREE_TYPE(right);
-
-  if (this->left_->type()->is_string_type())
+  if (left_type->is_string_type())
     {
       go_assert(this->op_ == OPERATOR_PLUS);
-      Type* st = Type::make_string_type();
-      tree string_type = type_to_tree(st->get_backend(gogo));
-      static tree string_plus_decl;
-      return Gogo::call_builtin(&string_plus_decl,
-				this->location(),
-				"__go_string_plus",
-				2,
-				string_type,
-				string_type,
-				left,
-				string_type,
-				right);
+      Expression* string_plus =
+          Runtime::make_call(Runtime::STRING_PLUS, loc, 2,
+                             this->left_, this->right_);
+      return string_plus->get_tree(context);
     }
 
-  // For complex division Go wants slightly different results than the
-  // GCC library provides, so we have our own runtime routine.
+  // For complex division Go might want slightly different results than the
+  // backend implementation provides, so we have our own runtime routine.
   if (this->op_ == OPERATOR_DIV && this->left_->type()->complex_type() != NULL)
     {
-      const char *name;
-      tree *pdecl;
-      Type* ctype;
-      static tree complex64_div_decl;
-      static tree complex128_div_decl;
+      Runtime::Function complex_code;
       switch (this->left_->type()->complex_type()->bits())
 	{
 	case 64:
-	  name = "__go_complex64_div";
-	  pdecl = &complex64_div_decl;
-	  ctype = Type::lookup_complex_type("complex64");
+          complex_code = Runtime::COMPLEX64_DIV;
 	  break;
 	case 128:
-	  name = "__go_complex128_div";
-	  pdecl = &complex128_div_decl;
-	  ctype = Type::lookup_complex_type("complex128");
+          complex_code = Runtime::COMPLEX128_DIV;
 	  break;
 	default:
 	  go_unreachable();
 	}
-      Btype* cbtype = ctype->get_backend(gogo);
-      tree ctype_tree = type_to_tree(cbtype);
-      return Gogo::call_builtin(pdecl,
-				this->location(),
-				name,
-				2,
-				ctype_tree,
-				ctype_tree,
-				fold_convert_loc(gccloc, ctype_tree, left),
-				type,
-				fold_convert_loc(gccloc, ctype_tree, right));
+      Expression* complex_div =
+          Runtime::make_call(complex_code, loc, 2, this->left_, this->right_);
+      return complex_div->get_tree(context);
     }
 
-  tree compute_type = excess_precision_type(type);
-  if (compute_type != NULL_TREE)
-    {
-      left = ::convert(compute_type, left);
-      right = ::convert(compute_type, right);
-    }
+  Bexpression* left = tree_to_expr(this->left_->get_tree(context));
+  Bexpression* right = tree_to_expr(this->right_->get_tree(context));
 
-  tree eval_saved = NULL_TREE;
-  if (is_shift_op
-      || (is_idiv_op && (go_check_divide_zero || go_check_divide_overflow)))
-    {
-      // Make sure the values are evaluated.
-      if (!DECL_P(left))
-	{
-	  left = save_expr(left);
-	  eval_saved = left;
-	}
-      if (!DECL_P(right))
-	{
-	  right = save_expr(right);
-	  if (eval_saved == NULL_TREE)
-	    eval_saved = right;
-	  else
-	    eval_saved = fold_build2_loc(gccloc, COMPOUND_EXPR,
-					 void_type_node, eval_saved, right);
-	}
-    }
+  Type* type = use_left_type ? left_type : right_type;
+  Btype* btype = type->get_backend(gogo);
 
-  tree ret = fold_build2_loc(gccloc, code,
-			     compute_type != NULL_TREE ? compute_type : type,
-			     left, right);
+  Bexpression* ret =
+      gogo->backend()->binary_expression(this->op_, left, right, loc);
+  ret = gogo->backend()->convert_expression(btype, ret, loc);
 
-  if (compute_type != NULL_TREE)
-    ret = ::convert(type, ret);
+  // Initialize overflow constants.
+  Bexpression* overflow;
+  mpz_t zero;
+  mpz_init_set_ui(zero, 0UL);
+  mpz_t one;
+  mpz_init_set_ui(one, 1UL);
+  mpz_t neg_one;
+  mpz_init_set_si(neg_one, -1);
+
+  Btype* left_btype = left_type->get_backend(gogo);
+  Btype* right_btype = right_type->get_backend(gogo);
 
   // In Go, a shift larger than the size of the type is well-defined.
-  // This is not true in GENERIC, so we need to insert a conditional.
+  // This is not true in C, so we need to insert a conditional.
   if (is_shift_op)
     {
-      go_assert(INTEGRAL_TYPE_P(TREE_TYPE(left)));
-      go_assert(this->left_->type()->integer_type() != NULL);
-      int bits = TYPE_PRECISION(TREE_TYPE(left));
+      go_assert(left_type->integer_type() != NULL);
 
-      tree compare = fold_build2(LT_EXPR, boolean_type_node, right,
-				 build_int_cst_type(TREE_TYPE(right), bits));
+      mpz_t bitsval;
+      int bits = left_type->integer_type()->bits();
+      mpz_init_set_ui(bitsval, bits);
+      Bexpression* bits_expr =
+          gogo->backend()->integer_constant_expression(right_btype, bitsval);
+      Bexpression* compare =
+          gogo->backend()->binary_expression(OPERATOR_LT,
+                                             right, bits_expr, loc);
 
-      tree overflow_result = fold_convert_loc(gccloc, TREE_TYPE(left),
-					      integer_zero_node);
+      Bexpression* zero_expr =
+          gogo->backend()->integer_constant_expression(left_btype, zero);
+      overflow = zero_expr;
       if (this->op_ == OPERATOR_RSHIFT
-	  && !this->left_->type()->integer_type()->is_unsigned())
+	  && !left_type->integer_type()->is_unsigned())
 	{
-	  tree neg =
-            fold_build2_loc(gccloc, LT_EXPR, boolean_type_node,
-			    left,
-                            fold_convert_loc(gccloc, TREE_TYPE(left),
-                                             integer_zero_node));
-	  tree neg_one =
-            fold_build2_loc(gccloc, MINUS_EXPR, TREE_TYPE(left),
-                            fold_convert_loc(gccloc, TREE_TYPE(left),
-                                             integer_zero_node),
-                            fold_convert_loc(gccloc, TREE_TYPE(left),
-                                             integer_one_node));
-	  overflow_result =
-            fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(left),
-			    neg, neg_one, overflow_result);
+          Bexpression* neg_expr =
+              gogo->backend()->binary_expression(OPERATOR_LT, left,
+                                                 zero_expr, loc);
+          Bexpression* neg_one_expr =
+              gogo->backend()->integer_constant_expression(left_btype, neg_one);
+          overflow = gogo->backend()->conditional_expression(btype, neg_expr,
+                                                             neg_one_expr,
+                                                             zero_expr, loc);
 	}
-
-      ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(left),
-			    compare, ret, overflow_result);
-
-      if (eval_saved != NULL_TREE)
-	ret = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
-			      eval_saved, ret);
+      ret = gogo->backend()->conditional_expression(btype, compare, ret,
+                                                    overflow, loc);
+      mpz_clear(bitsval);
     }
 
   // Add checks for division by zero and division overflow as needed.
@@ -6175,23 +6154,20 @@ Binary_expression::do_get_tree(Translate_context* context)
       if (go_check_divide_zero)
 	{
 	  // right == 0
-	  tree check = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
-				       right,
-				       fold_convert_loc(gccloc,
-							TREE_TYPE(right),
-							integer_zero_node));
+          Bexpression* zero_expr =
+              gogo->backend()->integer_constant_expression(right_btype, zero);
+          Bexpression* check =
+              gogo->backend()->binary_expression(OPERATOR_EQEQ,
+                                                 right, zero_expr, loc);
 
-	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO), 0
+	  // __go_runtime_error(RUNTIME_ERROR_DIVISION_BY_ZERO)
 	  int errcode = RUNTIME_ERROR_DIVISION_BY_ZERO;
-	  Expression* crash = gogo->runtime_error(errcode, this->location());
-	  tree panic = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
-				       crash->get_tree(context),
-				       fold_convert_loc(gccloc, TREE_TYPE(ret),
-							integer_zero_node));
+	  Expression* crash = gogo->runtime_error(errcode, loc);
+          Bexpression* crash_expr = tree_to_expr(crash->get_tree(context));
 
 	  // right == 0 ? (__go_runtime_error(...), 0) : ret
-	  ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
-				check, panic, ret);
+          ret = gogo->backend()->conditional_expression(btype, check,
+                                                        crash_expr, ret, loc);
 	}
 
       if (go_check_divide_overflow)
@@ -6199,60 +6175,62 @@ Binary_expression::do_get_tree(Translate_context* context)
 	  // right == -1
 	  // FIXME: It would be nice to say that this test is expected
 	  // to return false.
-	  tree m1 = integer_minus_one_node;
-	  tree check = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
-				       right,
-				       fold_convert_loc(gccloc,
-							TREE_TYPE(right),
-							m1));
 
-	  tree overflow;
-	  if (TYPE_UNSIGNED(TREE_TYPE(ret)))
+          Bexpression* neg_one_expr =
+              gogo->backend()->integer_constant_expression(right_btype, neg_one);
+          Bexpression* check =
+              gogo->backend()->binary_expression(OPERATOR_EQEQ,
+                                                 right, neg_one_expr, loc);
+
+          Bexpression* zero_expr =
+              gogo->backend()->integer_constant_expression(btype, zero);
+          Bexpression* one_expr =
+              gogo->backend()->integer_constant_expression(btype, one);
+
+	  if (type->integer_type()->is_unsigned())
 	    {
 	      // An unsigned -1 is the largest possible number, so
 	      // dividing is always 1 or 0.
-	      tree cmp = fold_build2_loc(gccloc, EQ_EXPR, boolean_type_node,
-					 left, right);
+
+              Bexpression* cmp =
+                  gogo->backend()->binary_expression(OPERATOR_EQEQ,
+                                                     left, right, loc);
 	      if (this->op_ == OPERATOR_DIV)
-		overflow = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
-					   cmp,
-					   fold_convert_loc(gccloc,
-							    TREE_TYPE(ret),
-							    integer_one_node),
-					   fold_convert_loc(gccloc,
-							    TREE_TYPE(ret),
-							    integer_zero_node));
+                overflow =
+                    gogo->backend()->conditional_expression(btype, cmp,
+                                                            one_expr, zero_expr,
+                                                            loc);
 	      else
-		overflow = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
-					   cmp,
-					   fold_convert_loc(gccloc,
-							    TREE_TYPE(ret),
-							    integer_zero_node),
-					   left);
+                overflow =
+                    gogo->backend()->conditional_expression(btype, cmp,
+                                                            zero_expr, left,
+                                                            loc);
 	    }
 	  else
 	    {
 	      // Computing left / -1 is the same as computing - left,
 	      // which does not overflow since Go sets -fwrapv.
 	      if (this->op_ == OPERATOR_DIV)
-		overflow = fold_build1_loc(gccloc, NEGATE_EXPR, TREE_TYPE(left),
-					   left);
+                {
+                  Expression* negate_expr =
+                      Expression::make_unary(OPERATOR_MINUS, this->left_, loc);
+                  overflow = tree_to_expr(negate_expr->get_tree(context));
+                }
 	      else
-		overflow = integer_zero_node;
+                overflow = zero_expr;
 	    }
-	  overflow = fold_convert_loc(gccloc, TREE_TYPE(ret), overflow);
+          overflow = gogo->backend()->convert_expression(btype, overflow, loc);
 
 	  // right == -1 ? - left : ret
-	  ret = fold_build3_loc(gccloc, COND_EXPR, TREE_TYPE(ret),
-				check, overflow, ret);
+          ret = gogo->backend()->conditional_expression(btype, check, overflow,
+                                                        ret, loc);
 	}
-
-      if (eval_saved != NULL_TREE)
-	ret = fold_build2_loc(gccloc, COMPOUND_EXPR, TREE_TYPE(ret),
-			      eval_saved, ret);
     }
 
-  return ret;
+  mpz_clear(zero);
+  mpz_clear(one);
+  mpz_clear(neg_one);
+  return expr_to_tree(ret);
 }
 
 // Export a binary expression.
@@ -6471,55 +6449,24 @@ Expression::make_binary(Operator op, Expression* left, Expression* right,
 
 // Implement a comparison.
 
-tree
-Expression::comparison_tree(Translate_context* context, Type* result_type,
-			    Operator op, Expression* left_expr,
-			    Expression* right_expr, Location location)
+Bexpression*
+Expression::comparison(Translate_context* context, Type* result_type,
+		       Operator op, Expression* left, Expression* right,
+		       Location location)
 {
-  Type* left_type = left_expr->type();
-  Type* right_type = right_expr->type();
+  Type* left_type = left->type();
+  Type* right_type = right->type();
 
   mpz_t zval;
   mpz_init_set_ui(zval, 0UL);
   Expression* zexpr = Expression::make_integer(&zval, NULL, location);
   mpz_clear(zval);
 
-  enum tree_code code;
-  switch (op)
-    {
-    case OPERATOR_EQEQ:
-      code = EQ_EXPR;
-      break;
-    case OPERATOR_NOTEQ:
-      code = NE_EXPR;
-      break;
-    case OPERATOR_LT:
-      code = LT_EXPR;
-      break;
-    case OPERATOR_LE:
-      code = LE_EXPR;
-      break;
-    case OPERATOR_GT:
-      code = GT_EXPR;
-      break;
-    case OPERATOR_GE:
-      code = GE_EXPR;
-      break;
-    default:
-      go_unreachable();
-    }
-
-  // FIXME: Computing the tree here means it will be computed multiple times,
-  // which is wasteful.  This is a temporary modification until all tree code
-  // here can be replaced with frontend expressions.
-  tree left_tree = left_expr->get_tree(context);
-  tree right_tree = right_expr->get_tree(context);
   if (left_type->is_string_type() && right_type->is_string_type())
     {
-      Expression* strcmp_call = Runtime::make_call(Runtime::STRCMP, location, 2,
-                                                   left_expr, right_expr);
-      left_tree = strcmp_call->get_tree(context);
-      right_tree = zexpr->get_tree(context);
+      left = Runtime::make_call(Runtime::STRCMP, location, 2,
+                                left, right);
+      right = zexpr;
     }
   else if ((left_type->interface_type() != NULL
 	    && right_type->interface_type() == NULL
@@ -6532,31 +6479,30 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
       if (left_type->interface_type() == NULL)
 	{
 	  std::swap(left_type, right_type);
-	  std::swap(left_expr, right_expr);
+	  std::swap(left, right);
 	}
 
       // The right operand is not an interface.  We need to take its
       // address if it is not a pointer.
       Expression* pointer_arg = NULL;
       if (right_type->points_to() != NULL)
-        pointer_arg = right_expr;
+        pointer_arg = right;
       else
 	{
-          go_assert(right_expr->is_addressable());
-          pointer_arg = Expression::make_unary(OPERATOR_AND, right_expr,
+          go_assert(right->is_addressable());
+          pointer_arg = Expression::make_unary(OPERATOR_AND, right,
                                                location);
 	}
 
-      Expression* descriptor_expr = Expression::make_type_descriptor(right_type,
-                                                                     location);
-      Call_expression* iface_valcmp =
+      Expression* descriptor =
+          Expression::make_type_descriptor(right_type, location);
+      left =
           Runtime::make_call((left_type->interface_type()->is_empty()
                               ? Runtime::EMPTY_INTERFACE_VALUE_COMPARE
                               : Runtime::INTERFACE_VALUE_COMPARE),
-                             location, 3, left_expr, descriptor_expr,
+                             location, 3, left, descriptor,
                              pointer_arg);
-      left_tree = iface_valcmp->get_tree(context);
-      right_tree = zexpr->get_tree(context);
+      right = zexpr;
     }
   else if (left_type->interface_type() != NULL
 	   && right_type->interface_type() != NULL)
@@ -6574,68 +6520,49 @@ Expression::comparison_tree(Translate_context* context, Type* result_type,
 	    {
 	      go_assert(op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ);
 	      std::swap(left_type, right_type);
-	      std::swap(left_expr, right_expr);
+	      std::swap(left, right);
 	    }
 	  go_assert(!left_type->interface_type()->is_empty());
 	  go_assert(right_type->interface_type()->is_empty());
 	  compare_function = Runtime::INTERFACE_EMPTY_COMPARE;
 	}
 
-      Call_expression* ifacecmp_call =
-          Runtime::make_call(compare_function, location, 2,
-                             left_expr, right_expr);
-
-      left_tree = ifacecmp_call->get_tree(context);
-      right_tree = zexpr->get_tree(context);
+      left = Runtime::make_call(compare_function, location, 2, left, right);
+      right = zexpr;
     }
 
   if (left_type->is_nil_type()
       && (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ))
     {
       std::swap(left_type, right_type);
-      std::swap(left_tree, right_tree);
-      std::swap(left_expr, right_expr);
+      std::swap(left, right);
     }
 
   if (right_type->is_nil_type())
     {
+      right = Expression::make_nil(location);
       if (left_type->array_type() != NULL
 	  && left_type->array_type()->length() == NULL)
 	{
 	  Array_type* at = left_type->array_type();
-          left_expr = at->get_value_pointer(context->gogo(), left_expr);
-          left_tree = left_expr->get_tree(context);
-	  right_tree = fold_convert(TREE_TYPE(left_tree), null_pointer_node);
+          left = at->get_value_pointer(context->gogo(), left);
 	}
       else if (left_type->interface_type() != NULL)
 	{
 	  // An interface is nil if the first field is nil.
-	  tree left_type_tree = TREE_TYPE(left_tree);
-	  go_assert(TREE_CODE(left_type_tree) == RECORD_TYPE);
-	  tree field = TYPE_FIELDS(left_type_tree);
-	  left_tree = build3(COMPONENT_REF, TREE_TYPE(field), left_tree,
-			     field, NULL_TREE);
-	  right_tree = fold_convert(TREE_TYPE(left_tree), null_pointer_node);
-	}
-      else
-	{
-	  go_assert(POINTER_TYPE_P(TREE_TYPE(left_tree)));
-	  right_tree = fold_convert(TREE_TYPE(left_tree), null_pointer_node);
+          left = Expression::make_field_reference(left, 0, location);
 	}
     }
 
-  if (left_tree == error_mark_node || right_tree == error_mark_node)
-    return error_mark_node;
+  Bexpression* left_bexpr = tree_to_expr(left->get_tree(context));
+  Bexpression* right_bexpr = tree_to_expr(right->get_tree(context));
 
-  tree result_type_tree;
-  if (result_type == NULL)
-    result_type_tree = boolean_type_node;
-  else
-    result_type_tree = type_to_tree(result_type->get_backend(context->gogo()));
-
-  tree ret = fold_build2(code, result_type_tree, left_tree, right_tree);
-  if (CAN_HAVE_LOCATION_P(ret))
-    SET_EXPR_LOCATION(ret, location.gcc_location());
+  Gogo* gogo = context->gogo();
+  Bexpression* ret = gogo->backend()->binary_expression(op, left_bexpr,
+                                                        right_bexpr, location);
+  if (result_type != NULL)
+    ret = gogo->backend()->convert_expression(result_type->get_backend(gogo),
+                                              ret, location);
   return ret;
 }
 
@@ -6851,6 +6778,7 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
   gogo->lower_block(new_no, b);
+  gogo->flatten_block(new_no, b);
   gogo->finish_function(loc);
 
   ins.first->second = new_no;
@@ -9745,21 +9673,13 @@ Call_expression::do_must_eval_in_order() const
 // Get the function and the first argument to use when calling an
 // interface method.
 
-tree
+Expression*
 Call_expression::interface_method_function(
-    Translate_context* context,
     Interface_field_reference_expression* interface_method,
-    tree* first_arg_ptr)
+    Expression** first_arg_ptr)
 {
-  tree expr = interface_method->expr()->get_tree(context);
-  if (expr == error_mark_node)
-    return error_mark_node;
-  expr = save_expr(expr);
-  tree first_arg = interface_method->get_underlying_object_tree(context, expr);
-  if (first_arg == error_mark_node)
-    return error_mark_node;
-  *first_arg_ptr = first_arg;
-  return interface_method->get_function_tree(context, expr);
+  *first_arg_ptr = interface_method->get_underlying_object();
+  return interface_method->get_function();
 }
 
 // Build the call expression.
@@ -9889,8 +9809,12 @@ Call_expression::do_get_tree(Translate_context* context)
     }      
   else
     {
-      fn = this->interface_method_function(context, interface_method,
-					   &args[0]);
+      Expression* first_arg;
+      Expression* fn_expr =
+          this->interface_method_function(interface_method, &first_arg);
+      args[0] = first_arg->get_tree(context);
+      fn = fn_expr->get_tree(context);
+
       if (fn == error_mark_node)
 	return error_mark_node;
       closure_tree = NULL_TREE;
@@ -11623,58 +11547,39 @@ Expression::make_field_reference(Expression* expr, unsigned int field_index,
 
 // Class Interface_field_reference_expression.
 
-// Return a tree for the pointer to the function to call.
+// Return an expression for the pointer to the function to call.
 
-tree
-Interface_field_reference_expression::get_function_tree(Translate_context*,
-							tree expr)
+Expression*
+Interface_field_reference_expression::get_function()
 {
-  if (this->expr_->type()->points_to() != NULL)
-    expr = build_fold_indirect_ref(expr);
+  Expression* ref = this->expr_;
+  Location loc = this->location();
+  if (ref->type()->points_to() != NULL)
+    ref = Expression::make_unary(OPERATOR_MULT, ref, loc);
 
-  tree expr_type = TREE_TYPE(expr);
-  go_assert(TREE_CODE(expr_type) == RECORD_TYPE);
-
-  tree field = TYPE_FIELDS(expr_type);
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__methods") == 0);
-
-  tree table = build3(COMPONENT_REF, TREE_TYPE(field), expr, field, NULL_TREE);
-  go_assert(POINTER_TYPE_P(TREE_TYPE(table)));
-
-  table = build_fold_indirect_ref(table);
-  go_assert(TREE_CODE(TREE_TYPE(table)) == RECORD_TYPE);
+  Expression* mtable =
+      Expression::make_interface_info(ref, INTERFACE_INFO_METHODS, loc);
+  Struct_type* mtable_type = mtable->type()->points_to()->struct_type();
 
   std::string name = Gogo::unpack_hidden_name(this->name_);
-  for (field = DECL_CHAIN(TYPE_FIELDS(TREE_TYPE(table)));
-       field != NULL_TREE;
-       field = DECL_CHAIN(field))
-    {
-      if (name == IDENTIFIER_POINTER(DECL_NAME(field)))
-	break;
-    }
-  go_assert(field != NULL_TREE);
-
-  return build3(COMPONENT_REF, TREE_TYPE(field), table, field, NULL_TREE);
+  unsigned int index;
+  const Struct_field* field = mtable_type->find_local_field(name, &index);
+  go_assert(field != NULL);
+  mtable = Expression::make_unary(OPERATOR_MULT, mtable, loc);
+  return Expression::make_field_reference(mtable, index, loc);
 }
 
-// Return a tree for the first argument to pass to the interface
+// Return an expression for the first argument to pass to the interface
 // function.
 
-tree
-Interface_field_reference_expression::get_underlying_object_tree(
-    Translate_context*,
-    tree expr)
+Expression*
+Interface_field_reference_expression::get_underlying_object()
 {
-  if (this->expr_->type()->points_to() != NULL)
-    expr = build_fold_indirect_ref(expr);
-
-  tree expr_type = TREE_TYPE(expr);
-  go_assert(TREE_CODE(expr_type) == RECORD_TYPE);
-
-  tree field = DECL_CHAIN(TYPE_FIELDS(expr_type));
-  go_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__object") == 0);
-
-  return build3(COMPONENT_REF, TREE_TYPE(field), expr, field, NULL_TREE);
+  Expression* expr = this->expr_;
+  if (expr->type()->points_to() != NULL)
+    expr = Expression::make_unary(OPERATOR_MULT, expr, this->location());
+  return Expression::make_interface_info(expr, INTERFACE_INFO_OBJECT,
+                                         this->location());
 }
 
 // Traversal.
@@ -11694,9 +11599,7 @@ Interface_field_reference_expression::do_lower(Gogo*, Named_object*,
 					       Statement_inserter* inserter,
 					       int)
 {
-  if (this->expr_->var_expression() == NULL
-      && this->expr_->temporary_reference_expression() == NULL
-      && this->expr_->set_and_use_temporary_expression() == NULL)
+  if (!this->expr_->is_variable())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(this->expr_->type(), NULL, this->location());
@@ -11873,6 +11776,7 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
   gogo->lower_block(new_no, b);
+  gogo->flatten_block(new_no, b);
   gogo->finish_function(loc);
 
   ins.first->second->push_back(std::make_pair(name, new_no));
@@ -11923,30 +11827,22 @@ Interface_field_reference_expression::do_get_tree(Translate_context* context)
   Expression* expr = Expression::make_struct_composite_literal(st, vals, loc);
   expr = Expression::make_heap_composite(expr, loc);
 
-  tree closure_tree = expr->get_tree(context);
+  Bexpression* bclosure = tree_to_expr(expr->get_tree(context));
+  Expression* nil_check =
+      Expression::make_binary(OPERATOR_EQEQ, this->expr_,
+                              Expression::make_nil(loc), loc);
+  Bexpression* bnil_check = tree_to_expr(nil_check->get_tree(context));
 
-  // Note that we are evaluating this->expr_ twice, but that is OK
-  // because in the lowering pass we forced it into a temporary
-  // variable.
-  tree nil_check_tree = Expression::comparison_tree(context,
-						    Type::lookup_bool_type(),
-						    OPERATOR_EQEQ,
-						    this->expr_,
-						    Expression::make_nil(loc),
-						    loc);
-  Expression* crash_expr =
-      context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
-  tree crash = crash_expr->get_tree(context);
-  if (closure_tree == error_mark_node
-      || nil_check_tree == error_mark_node
-      || crash == error_mark_node)
-    return error_mark_node;
-  return fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-			 TREE_TYPE(closure_tree),
-			 build3_loc(loc.gcc_location(), COND_EXPR,
-				    void_type_node, nil_check_tree, crash,
-				    NULL_TREE),
-			 closure_tree);
+  Gogo* gogo = context->gogo();
+  Expression* crash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+  Bexpression* bcrash = tree_to_expr(crash->get_tree(context));
+
+  Bexpression* bcond =
+      gogo->backend()->conditional_expression(NULL, bnil_check, bcrash, NULL, loc);
+  Bstatement* cond_statement = gogo->backend()->expression_statement(bcond);
+  Bexpression* ret =
+      gogo->backend()->compound_expression(cond_statement, bclosure, loc);
+  return expr_to_tree(ret);
 }
 
 // Dump ast representation for an interface field reference.
@@ -12211,6 +12107,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 
   // Lower the call in case there are multiple results.
   gogo->lower_block(no, b);
+  gogo->flatten_block(no, b);
 
   gogo->finish_function(location);
 
@@ -14752,6 +14649,155 @@ Expression::make_slice_info(Expression* slice, Slice_info slice_info,
                             Location location)
 {
   return new Slice_info_expression(slice, slice_info, location);
+}
+
+
+// An expression that evaluates to some characteristic of a non-empty interface.
+// This is used to access the method table or underlying object of an interface.
+
+class Interface_info_expression : public Expression
+{
+ public:
+  Interface_info_expression(Expression* iface, Interface_info iface_info,
+                        Location location)
+    : Expression(EXPRESSION_INTERFACE_INFO, location),
+      iface_(iface), iface_info_(iface_info)
+  { }
+
+ protected:
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return new Interface_info_expression(this->iface_->copy(),
+                                         this->iface_info_, this->location());
+  }
+
+  tree
+  do_get_tree(Translate_context* context);
+
+  void
+  do_dump_expression(Ast_dump_context*) const;
+
+  void
+  do_issue_nil_check()
+  { this->iface_->issue_nil_check(); }
+
+ private:
+  // The interface for which we are getting information.
+  Expression* iface_;
+  // What information we want.
+  Interface_info iface_info_;
+};
+
+// Return the type of the interface info.
+
+Type*
+Interface_info_expression::do_type()
+{
+  switch (this->iface_info_)
+    {
+    case INTERFACE_INFO_METHODS:
+      {
+        Location loc = this->location();
+        Struct_field_list* sfl = new Struct_field_list();
+        Type* pdt = Type::make_type_descriptor_ptr_type();
+        sfl->push_back(
+            Struct_field(Typed_identifier("__type_descriptor", pdt, loc)));
+
+        Interface_type* itype = this->iface_->type()->interface_type();
+        for (Typed_identifier_list::const_iterator p = itype->methods()->begin();
+             p != itype->methods()->end();
+             ++p)
+          {
+            Function_type* ft = p->type()->function_type();
+            go_assert(ft->receiver() == NULL);
+
+            const Typed_identifier_list* params = ft->parameters();
+            Typed_identifier_list* mparams = new Typed_identifier_list();
+            if (params != NULL)
+              mparams->reserve(params->size() + 1);
+            Type* vt = Type::make_pointer_type(Type::make_void_type());
+            mparams->push_back(Typed_identifier("", vt, ft->location()));
+            if (params != NULL)
+              {
+                for (Typed_identifier_list::const_iterator pp = params->begin();
+                     pp != params->end();
+                     ++pp)
+                  mparams->push_back(*pp);
+              }
+
+            Typed_identifier_list* mresults = (ft->results() == NULL
+                                               ? NULL
+                                               : ft->results()->copy());
+            Backend_function_type* mft =
+                Type::make_backend_function_type(NULL, mparams, mresults,
+                                                 ft->location());
+
+            std::string fname = Gogo::unpack_hidden_name(p->name());
+            sfl->push_back(Struct_field(Typed_identifier(fname, mft, loc)));
+          }
+
+        return Type::make_pointer_type(Type::make_struct_type(sfl, loc));
+      }
+    case INTERFACE_INFO_OBJECT:
+      return Type::make_pointer_type(Type::make_void_type());
+    default:
+      go_unreachable();
+    }
+}
+
+// Return interface information in GENERIC.
+
+tree
+Interface_info_expression::do_get_tree(Translate_context* context)
+{
+  Gogo* gogo = context->gogo();
+
+  Bexpression* biface = tree_to_expr(this->iface_->get_tree(context));
+  Bexpression* ret;
+  switch (this->iface_info_)
+    {
+    case INTERFACE_INFO_METHODS:
+    case INTERFACE_INFO_OBJECT:
+      ret = gogo->backend()->struct_field_expression(biface, this->iface_info_,
+                                                     this->location());
+      break;
+    default:
+      go_unreachable();
+    }
+  return expr_to_tree(ret);
+}
+
+// Dump ast representation for an interface info expression.
+
+void
+Interface_info_expression::do_dump_expression(
+    Ast_dump_context* ast_dump_context) const
+{
+  ast_dump_context->ostream() << "interfaceinfo(";
+  this->iface_->dump_expression(ast_dump_context);
+  ast_dump_context->ostream() << ",";
+  ast_dump_context->ostream() <<
+      (this->iface_info_ == INTERFACE_INFO_METHODS ? "methods"
+    : this->iface_info_ == INTERFACE_INFO_OBJECT ? "object"
+    : "unknown");
+  ast_dump_context->ostream() << ")";
+}
+
+// Make an interface info expression.
+
+Expression*
+Expression::make_interface_info(Expression* iface, Interface_info iface_info,
+                                Location location)
+{
+  return new Interface_info_expression(iface, iface_info, location);
 }
 
 // An expression which evaluates to the offset of a field within a

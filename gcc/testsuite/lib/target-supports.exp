@@ -1038,9 +1038,13 @@ proc check_iconv_available { test_what } {
 # Return true if Cilk Library is supported on the target.
 proc check_libcilkrts_available { } {
   return [ check_no_compiler_messages_nocache libcilkrts_available executable {
+	#ifdef __cplusplus
+	extern "C" 
+	#endif
+	   int __cilkrts_set_param (const char *, const char *);
 	    int main (void) { 
-		__cilkrts_set_param ("nworkers", "0");  
-		return 0; 
+		int x = __cilkrts_set_param ("nworkers", "0");
+		return x; 
 	    }
 	} "-fcilkplus -lcilkrts" ]
 }

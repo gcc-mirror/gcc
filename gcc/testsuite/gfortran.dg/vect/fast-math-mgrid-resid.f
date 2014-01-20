@@ -1,7 +1,7 @@
 ! { dg-do compile { target i?86-*-* x86_64-*-* } }
 ! { dg-require-effective-target vect_double }
 ! { dg-require-effective-target sse2 }
-! { dg-options "-O3 -ffast-math -msse2 -fpredictive-commoning -ftree-vectorize -fdump-tree-optimized" }
+! { dg-options "-O3 -ffast-math -msse2 -fpredictive-commoning -ftree-vectorize -fdump-tree-pcom-details" }
 
 
 ******* RESID COMPUTES THE RESIDUAL:  R = V - AU
@@ -39,8 +39,9 @@ C
       RETURN
       END
 ! we want to check that predictive commoning did something on the
-! vectorized loop, which means we have to have exactly 13 vector
-! additions.
-! { dg-final { scan-tree-dump-times "vect_\[^\\n\]*\\+ " 13 "optimized" } }
+! vectorized loop.
+! { dg-final { scan-tree-dump-times "Executing predictive commoning without unrolling" 1 "pcom" { target lp64 } } }
+! { dg-final { scan-tree-dump-times "Executing predictive commoning without unrolling" 2 "pcom" { target ia32 } } }
+! { dg-final { scan-tree-dump-times "Predictive commoning failed: no suitable chains" 0 "pcom" } }
 ! { dg-final { cleanup-tree-dump "vect" } }
-! { dg-final { cleanup-tree-dump "optimized" } }
+! { dg-final { cleanup-tree-dump "pcom" } }

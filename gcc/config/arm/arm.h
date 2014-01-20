@@ -189,7 +189,7 @@ extern arm_cc arm_current_cc;
 
 #define ARM_INVERSE_CONDITION_CODE(X)  ((arm_cc) (((int)X) ^ 1))
 
-/* The maximaum number of instructions that is beneficial to
+/* The maximum number of instructions that is beneficial to
    conditionally execute. */
 #undef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE arm_max_conditional_execute ()

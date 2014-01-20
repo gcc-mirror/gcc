@@ -382,7 +382,8 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
      SFINAE-enabled.  */
   if (CLASS_TYPE_P (type))
     {
-      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type));
+      gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type)
+		  || errorcount != 0);
 	
       if (TREE_CODE (type) != UNION_TYPE)
 	{
@@ -398,6 +399,9 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
 		continue;
 
 	      ftype = TREE_TYPE (field);
+
+	      if (ftype == error_mark_node)
+		continue;
 
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve

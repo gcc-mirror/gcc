@@ -156,6 +156,7 @@ struct tune_params
   const struct cpu_regmove_cost *const regmove_cost;
   const struct cpu_vector_cost *const vec_costs;
   const int memmov_cost;
+  const int issue_rate;
 };
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);

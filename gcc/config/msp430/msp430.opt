@@ -7,8 +7,12 @@ Target Mask(ASM_HEX)
 Force assembly output to always use hex constants
 
 mmcu=
+Target Joined RejectNegative Var(target_mcu)
+Specify the MCU to build for.
+
+mcpu=
 Target Joined RejectNegative Var(target_cpu)
-Specify the cpu to build for.  If the name begins with 'msp430x' then the 430X instructions are enabled
+Specify the ISA to build for: msp430, mdsp430x, msp430xv2
 
 mlarge
 Target Mask(LARGE) RejectNegative

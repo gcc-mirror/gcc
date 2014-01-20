@@ -1668,50 +1668,30 @@ constant_multiple_of (tree top, tree bot, double_int *mul)
     }
 }
 
-/* Returns true if memory reference REF with step STEP may be unaligned.  */
+/* Return true if memory reference REF with step STEP may be unaligned.  */
 
 static bool
 may_be_unaligned_p (tree ref, tree step)
 {
-  tree base;
-  tree base_type;
-  HOST_WIDE_INT bitsize;
-  HOST_WIDE_INT bitpos;
-  tree toffset;
-  enum machine_mode mode;
-  int unsignedp, volatilep;
-  unsigned base_align;
-
   /* TARGET_MEM_REFs are translated directly to valid MEMs on the target,
      thus they are not misaligned.  */
   if (TREE_CODE (ref) == TARGET_MEM_REF)
     return false;
 
-  /* The test below is basically copy of what expr.c:normal_inner_ref
-     does to check whether the object must be loaded by parts when
-     STRICT_ALIGNMENT is true.  */
-  base = get_inner_reference (ref, &bitsize, &bitpos, &toffset, &mode,
-			      &unsignedp, &volatilep, true);
-  base_type = TREE_TYPE (base);
-  base_align = get_object_alignment (base);
-  base_align = MAX (base_align, TYPE_ALIGN (base_type));
+  unsigned int align = TYPE_ALIGN (TREE_TYPE (ref));
 
-  if (mode != BLKmode)
-    {
-      unsigned mode_align = GET_MODE_ALIGNMENT (mode);
+  unsigned HOST_WIDE_INT bitpos;
+  unsigned int ref_align;
+  get_object_alignment_1 (ref, &ref_align, &bitpos);
+  if (ref_align < align
+      || (bitpos % align) != 0
+      || (bitpos % BITS_PER_UNIT) != 0)
+    return true;
 
-      if (base_align < mode_align
-	  || (bitpos % mode_align) != 0
-	  || (bitpos % BITS_PER_UNIT) != 0)
-	return true;
-
-      if (toffset
-	  && (highest_pow2_factor (toffset) * BITS_PER_UNIT) < mode_align)
-	return true;
-
-      if ((highest_pow2_factor (step) * BITS_PER_UNIT) < mode_align)
-	return true;
-    }
+  unsigned int trailing_zeros = tree_ctz (step);
+  if (trailing_zeros < HOST_BITS_PER_INT
+      && (1U << trailing_zeros) * BITS_PER_UNIT < align)
+    return true;
 
   return false;
 }

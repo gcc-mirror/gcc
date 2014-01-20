@@ -1,3 +1,132 @@
+2014-01-19  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_compiler.h (_Comipler<>::_M_quantifier()):
+	Fix parse error of multiple consecutive quantifiers like "a**".
+	* include/bits/regex_compiler.tcc (_Comipler<>::_M_quantifier()):
+	Likewise.
+	* testsuite/28_regex/basic_regex/multiple_quantifiers.cc: New.
+
+2014-01-17  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/profile/set.h (set): Implement C++11 allocator-aware
+	container requirements.
+	* include/profile/map.h (map): Likewise.
+	* include/profile/multiset.h (multiset): Likewise.
+	* include/profile/multimap.h (multimap): Likewise.
+	* include/profile/set.h
+	(set::operator=(const set&)): Define as default in C++11 mode.
+	(set::operator=(set&&)): Likewise.
+	* include/profile/map.h
+	(map::operator=(const map&)): Likewise.
+	(map::operator=(map&&)): Likewise.
+	* include/profile/multiset.h
+	(multiset::operator=(const multiset&)): Likewise.
+	(multiset::operator=(multiset&&)): Likewise.
+	* include/profile/multimap.h
+	(multimap::operator=(const multimap&)): Likewise.
+	(multimap::operator=(multimap&&)): Likewise.
+	* include/profile/set.h (set::operator=(std::initializer_list<>)):
+	Rely on the same operator from normal mode.
+	* include/profile/map.h (map::operator=(std::initializer_list<>)):
+	Likewise.
+	* include/profile/multiset.h
+	(multiset::operator=(std::initializer_list<>)): Likewise.
+	* include/profile/multimap.h
+	(multimap::operator=(std::initializer_list<>)): Likewise.
+	* include/profile/set.h (set::swap(set&)): Add noexcept
+	specification.
+	* include/profile/map.h (map::swap(map&)): Likewise.
+	* include/profile/multiset.h (multiset::swap(multiset&)): Likewise.
+	* include/profile/multimap.h (multimap::swap(multimap&)): Likewise.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<>::_M_clone()): Do not
+	use std::map.
+	* include/bits/regex_automaton.h: Do not use std::set.
+	* include/bits/regex_compiler.h (_BracketMatcher<>::_M_add_char(),
+	_BracketMatcher<>::_M_add_collating_element(),
+	_BracketMatcher<>::_M_add_equivalence_class(),
+	_BracketMatcher<>::_M_make_range()): Likewise.
+	* include/bits/regex_compiler.tcc (_BracketMatcher<>::_M_apply()):
+	Likewise.
+	* include/bits/regex_executor.h: Do not use std::queue.
+	* include/bits/regex_executor.tcc (_Executor<>::_M_main(),
+	_Executor<>::_M_dfs()): Likewise.
+	* include/std/regex: Remove <map>, <set> and <queue>.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (__compile_nfa<>(), basic_regex<>::basic_regex(),
+	basic_regex<>::assign()): Change __compile_nfa to accept
+	const _CharT* only.
+	* include/bits/regex_compiler.h: Change _Compiler's template
+	argument from <_FwdIter, _TraitsT> to <_TraitsT>.
+	* include/bits/regex_compiler.tcc: Likewise.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_compiler.h: Change _ScannerT into char-type
+	templated.
+	* include/bits/regex_scanner.h (_Scanner<>::_Scanner()): Separate
+	_ScannerBase from _Scanner; Change _Scanner's template argument from
+	_FwdIter to _CharT. Avoid use of std::map and std::set by using arrays
+	instead.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_Scanner(),
+	_Scanner<>::_M_scan_normal(), _Scanner<>::_M_eat_escape_ecma(),
+	_Scanner<>::_M_eat_escape_posix(), _Scanner<>::_M_eat_escape_awk()):
+	Likewise.
+	* include/std/regex: Add <cstring> for using strchr.
+
+2014-01-17  Tim Shen  <timshen91@gmail.com>
+
+	* bits/regex_automaton.tcc: Indentation fix.
+	* bits/regex_compiler.h (__compile_nfa<>(), _Compiler<>,
+	_RegexTranslator<> _AnyMatcher<>, _CharMatcher<>,
+	_BracketMatcher<>): Add bool option template parameters and
+	specializations to make matching more efficient and space saving.
+	* bits/regex_compiler.tcc: Likewise.
+
+2014-01-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/59712
+	* include/bits/hashtable_policy.h: Fix some long lines.
+	* include/bits/hashtable.h (__hash_code_base_access): Define and
+	use it to check its _M_bucket_index noexcept qualification. Use
+	also in place of...
+	(__access_protected_ctor): ...this.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adapt line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
+2014-01-13  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/set.h (set): Implement C++11 allocator-aware
+	container requirements.
+	* include/debug/map.h (map): Likewise.
+	* include/debug/multiset.h (multiset): Likewise.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/set.h (set::operator=(set&&)): Add noexcept and
+	fix implementation regarding management of safe iterators.
+	* include/debug/map.h (map::operator=(map&&)): Likewise.
+	* include/debug/multiset.h (multiset::operator=(multiset&&)): Likewise.
+	* include/debug/multimap.h (multimap::operator=(multimap&&)):
+	Likewise.
+	* include/debug/set.h (set::operator=(std::initializer_list<>)):
+	Rely on the same operator from normal mode.
+	* include/debug/map.h (map::operator=(std::initializer_list<>)):
+	Likewise.
+	* include/debug/multiset.h
+	(multiset::operator=(std::initializer_list<>)): Likewise.
+	* include/debug/multimap.h
+	(multimap::operator=(std::initializer_list<>)): Likewise.
+	* include/debug/set.h (set::swap(set&)): Add noexcept
+	specification, add allocator equality check.
+	* include/debug/map.h (map::swap(map&)): Likewise.
+	* include/debug/multiset.h (multiset::swap(multiset&)): Likewise.
+	* include/debug/multimap.h (multimap::swap(multimap&)): Likewise.
+
 2014-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59698

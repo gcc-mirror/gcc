@@ -2795,6 +2795,8 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
 
+/* reginfo.c */
+extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
 
 
 #endif /* ! GCC_RTL_H */

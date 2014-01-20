@@ -276,11 +276,11 @@ Fortran			Jerry DeLisle		jvdelisle@gcc.gnu.org
 Fortran			Erik Edelmann		erik.edelmann@iki.fi
 Fortran			Daniel Franke		franke.daniel@gmail.com
 Fortran			Steven G. Kargl		sgk@troutmask.apl.washington.edu
-Fortran			Thomas Kˆnig		tkoenig@gcc.gnu.org
+Fortran			Thomas K√∂nig		tkoenig@gcc.gnu.org
 Fortran			Daniel Kraft		d@domob.eu
 Fortran			Toon Moene		toon@moene.org
 Fortran			Mikael Morin		mikael.morin@sfr.fr
-Fortran			Tobias Schl¸ter		tobias.schlueter@physik.uni-muenchen.de
+Fortran			Tobias Schl√ºter		tobias.schlueter@physik.uni-muenchen.de
 Fortran			Paul Thomas		pault@gcc.gnu.org
 Fortran			Janus Weil		janus@gcc.gnu.org
 gengtype/GTY		Laurynas Biveinis       laurynas.biveinis@gmail.com
@@ -346,14 +346,14 @@ Daniel Carrera					dcarrera@gmail.com
 Stephane Carrez					stcarrez@nerim.fr
 Gabriel Charette				gchare@google.com
 Chandra Chavva					cchavva@redhat.com
-Fabien ChÍne					fabien@gcc.gnu.org
+Fabien Ch√™ne					fabien@gcc.gnu.org
 Bin Cheng					bin.cheng@arm.com
 Harshit Chopra					harshit@google.com
 William Cohen					wcohen@redhat.com
 Josh Conner					jconner@apple.com
 R. Kelley Cook					kcook@gcc.gnu.org
 Christian Cornelssen				ccorn@cs.tu-berlin.de
-FranÁois-Xavier Coudert				fxcoudert@gcc.gnu.org
+Fran√ßois-Xavier Coudert				fxcoudert@gcc.gnu.org
 Cary Coutant					ccoutant@google.com
 Lawrence Crowl					crowl@google.com
 Ian Dall					ian@beware.dropbear.id.au
@@ -361,7 +361,7 @@ David Daney					david.daney@caviumnetworks.com
 Bud Davis					jmdavis@link.com
 Chris Demetriou					cgd@google.com
 Sameera Deshpande				sameera.deshpande@arm.com
-FranÁois Dumont					fdumont@gcc.gnu.org
+Fran√ßois Dumont					fdumont@gcc.gnu.org
 Benoit Dupont de Dinechin			benoit.dupont-de-dinechin@st.com
 Michael Eager					eager@eagercon.com
 Bernd Edlinger					bernd.edlinger@hotmail.de
@@ -369,7 +369,7 @@ Phil Edwards					pme@gcc.gnu.org
 Mohan Embar					gnustuff@thisiscool.com
 Revital Eres					eres@il.ibm.com
 Marc Espie					espie@cvs.openbsd.org
-Rafael ¡vila de EspÌndola			espindola@google.com
+Rafael √Åvila de Esp√≠ndola			espindola@google.com
 Ansgar Esztermann				ansgar@thphy.uni-duesseldorf.de
 Doug Evans					dje@google.com
 Chris Fairles					cfairles@gcc.gnu.org
@@ -448,15 +448,15 @@ Georg-Johann Lay				avr@gjlay.de
 Marc Lehmann					pcg@goof.com
 James Lemke					jwlemke@codesourcery.com
 Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
+Xinliang David Li				davidxl@google.com
 Jiangning Liu					jiangning.liu@arm.com
 Sa Liu						saliu@de.ibm.com
 Ralph Loader					rcl@ihug.co.nz
 Gabor Loki					loki@inf.u-szeged.hu
 Sandra Loosemore				sandra@codesourcery.com
-Manuel LÛpez-Ib·Òez				manu@gcc.gnu.org
-Martin v. Lˆwis					loewis@informatik.hu-berlin.de
+Manuel L√≥pez-Ib√°√±ez				manu@gcc.gnu.org
+Martin v. L√∂wis					loewis@informatik.hu-berlin.de
 H.J. Lu						hjl.tools@gmail.com
-Xinliang David Li				davidxl@google.com
 Christophe Lyon					christophe.lyon@st.com
 Luis Machado					luisgpm@br.ibm.com
 Ziga Mahkovec					ziga.mahkovec@klika.si

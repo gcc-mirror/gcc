@@ -1827,6 +1827,7 @@ find_costs_and_classes (FILE *dump_file)
 		  int ind = cost_classes_ptr->index[aclass];
 
 		  ira_assert (ind >= 0);
+		  ira_init_register_move_cost_if_necessary (ALLOCNO_MODE (a));
 		  ira_add_allocno_pref (a, ira_class_hard_regs[best][0],
 					(a_costs[ind] - ALLOCNO_CLASS_COST (a))
 					/ (ira_register_move_cost

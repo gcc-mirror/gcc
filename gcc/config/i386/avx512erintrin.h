@@ -159,6 +159,24 @@ _mm512_maskz_rcp28_round_ps (__mmask16 __U, __m512 __A, int __R)
 					       (__mmask16) __U, __R);
 }
 
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rcp28_round_sd (__m128d __A, __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rcp28sd_round ((__v2df) __A,
+						 (__v2df) __B,
+						 __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rcp28_round_ss (__m128 __A, __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rcp28ss_round ((__v4sf) __A,
+						(__v4sf) __B,
+						__R);
+}
+
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rsqrt28_round_pd (__m512d __A, int __R)
@@ -214,6 +232,25 @@ _mm512_maskz_rsqrt28_round_ps (__mmask16 __U, __m512 __A, int __R)
 						 (__v16sf) _mm512_setzero_ps (),
 						 (__mmask16) __U, __R);
 }
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rsqrt28_round_sd (__m128d __A, __m128d __B, int __R)
+{
+  return (__m128d) __builtin_ia32_rsqrt28sd_round ((__v2df) __A,
+						   (__v2df) __B,
+						   __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_rsqrt28_round_ss (__m128 __A, __m128 __B, int __R)
+{
+  return (__m128) __builtin_ia32_rsqrt28ss_round ((__v4sf) __A,
+						  (__v4sf) __B,
+						  __R);
+}
+
 #else
 #define _mm512_exp2a23_round_pd(A, C)            \
     __builtin_ia32_exp2pd_mask(A, (__v8df)_mm512_setzero_pd(), -1, C)
@@ -268,6 +305,19 @@ _mm512_maskz_rsqrt28_round_ps (__mmask16 __U, __m512 __A, int __R)
 
 #define _mm512_maskz_rsqrt28_round_ps(U, A, C)   \
     __builtin_ia32_rsqrt28ps_mask(A, (__v16sf)_mm512_setzero_ps(), U, C)
+
+#define _mm_rcp28_round_sd(A, B, R)	\
+    __builtin_ia32_rcp28sd_round(A, B, R)
+
+#define _mm_rcp28_round_ss(A, B, R)	\
+    __builtin_ia32_rcp28ss_round(A, B, R)
+
+#define _mm_rsqrt28_round_sd(A, B, R)	\
+    __builtin_ia32_rsqrt28sd_round(A, B, R)
+
+#define _mm_rsqrt28_round_ss(A, B, R)	\
+    __builtin_ia32_rsqrt28ss_round(A, B, R)
+
 #endif
 
 #define _mm512_exp2a23_pd(A)                    \
@@ -323,6 +373,18 @@ _mm512_maskz_rsqrt28_round_ps (__mmask16 __U, __m512 __A, int __R)
 
 #define _mm512_maskz_rsqrt28_ps(U, A)     \
     _mm512_maskz_rsqrt28_round_ps(U, A, _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_rcp28_sd(A, B)	\
+    __builtin_ia32_rcp28sd_round(A, B, _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_rcp28_ss(A, B)	\
+    __builtin_ia32_rcp28ss_round(A, B, _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_rsqrt28_sd(A, B)	\
+    __builtin_ia32_rsqrt28sd_round(A, B, _MM_FROUND_CUR_DIRECTION)
+
+#define _mm_rsqrt28_ss(A, B)	\
+    __builtin_ia32_rsqrt28ss_round(A, B, _MM_FROUND_CUR_DIRECTION)
 
 #ifdef __DISABLE_AVX512ER__
 #undef __DISABLE_AVX512ER__

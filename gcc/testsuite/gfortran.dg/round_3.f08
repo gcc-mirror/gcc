@@ -16,19 +16,39 @@ program pr48615
     call checkfmt("(RU,1P,G6.0E2)", 2.0,  "2.E+00")
     call checkfmt("(RU,1P,G10.4E2)", 2.3456e5,  "2.3456E+05")
 
-    call checkfmt("(RU,F2.0)",     0.09,  "1.")     ! 0.
+    call checkfmt("(RC,G10.2)", 99.5,   "  0.10E+03") ! pr59774
+    call checkfmt("(RC,G10.2)", 995.,   "  0.10E+04") ! pr59774
+    call checkfmt("(RC,G10.3)", 999.5,  " 0.100E+04") ! pr59774
+    call checkfmt("(RC,G10.3)", 9995.,  " 0.100E+05") ! pr59774
+    call checkfmt("(RU,G10.2)", .099,   "  0.10    ") ! pr59774
+    call checkfmt("(RC,G10.1)", .095,   "   0.1    ") ! pr59774
+    call checkfmt("(RU,G10.3)", .0999,  " 0.100    ") ! pr59774
+    call checkfmt("(RC,G10.2)", .0995,  "  0.10    ") ! pr59774
+
+    call checkfmt("(RU,G9.3)",  891.1,  " 892.")      ! pr59836
+    call checkfmt("(RD,G9.3)", -891.1,  "-892.")      ! pr59836
+
+    call checkfmt("(RU,F2.0)",     0.09,  "1.")       ! 0.
     call checkfmt("(RD,F3.0)",     -0.09,  "-1.")     ! -0.
-    call checkfmt("(RU,F2.0)",      2.0,  "2.")     ! 3.
-    call checkfmt("(RD,F3.0)",     -2.0,  "-2.")     ! -3.
-    call checkfmt("(RU,F6.4)",      2.0,  "2.0000")     ! 2.0001
-    call checkfmt("(RD,F7.4)",     -2.0,  "-2.0000")     ! -2.0001
-    call checkfmt("(RU,1P,E6.0E2)", 2.0,  "2.E+00") ! 3.E+00
+    call checkfmt("(RU,F2.0)",     0.9,  "1.")        ! pr59836
+    call checkfmt("(RC,F2.0)",     0.4,  "0.")        ! pr59836
+    call checkfmt("(RC,F2.0)",     0.5,  "1.")        ! pr59836
+    call checkfmt("(RC,F2.0)",     0.6,  "1.")        ! pr59836
+    call checkfmt("(RD,F3.0)",     -0.9,  "-1.")      ! pr59836
+    call checkfmt("(RC,F3.0)",     -0.4,  "-0.")      ! pr59836
+    call checkfmt("(RC,F3.0)",     -0.5,  "-1.")      ! pr59836
+    call checkfmt("(RC,F3.0)",     -0.6,  "-1.")      ! pr59836
+    call checkfmt("(RU,F2.0)",      2.0,  "2.")       ! 3.
+    call checkfmt("(RD,F3.0)",     -2.0,  "-2.")      ! -3.
+    call checkfmt("(RU,F6.4)",      2.0,  "2.0000")   ! 2.0001
+    call checkfmt("(RD,F7.4)",     -2.0,  "-2.0000")  ! -2.0001
+    call checkfmt("(RU,1P,E6.0E2)", 2.0,  "2.E+00")   ! 3.E+00
     call checkfmt("(RD,1P,E7.0E2)", -2.0,  "-2.E+00") ! -3.E+00
-    call checkfmt("(RU,1P,E7.1E2)", 2.5,  "2.5E+00") ! 2.6E+00
+    call checkfmt("(RU,1P,E7.1E2)", 2.5,  "2.5E+00")  ! 2.6E+00
     call checkfmt("(RD,1P,E8.1E2)", -2.5,  "-2.5E+00") ! -2.6E+00
     call checkfmt("(RU,1P,E10.4E2)", 2.5,  "2.5000E+00") ! 2.5001E+00
     call checkfmt("(RD,1P,E11.4E2)", -2.5,  "-2.5000E+00") ! -2.5001E+00
-    call checkfmt("(RU,1P,G6.0E2)", 2.0,  "2.E+00") ! 3.E+00
+    call checkfmt("(RU,1P,G6.0E2)", 2.0,  "2.E+00")   ! 3.E+00
     call checkfmt("(RD,1P,G7.0E2)", -2.0,  "-2.E+00") ! -3.E+00
     call checkfmt("(RU,1P,G10.4E2)", 2.3456e5,  "2.3456E+05") ! 2.3457E+05
     call checkfmt("(RD,1P,G11.4E2)", -2.3456e5,  "-2.3456E+05") ! -2.3457E+05

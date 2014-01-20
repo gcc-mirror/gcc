@@ -2321,13 +2321,17 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
    edge. */
 
 static vec<cgraph_edge_p> next_edge_clone;
+static vec<cgraph_edge_p> prev_edge_clone;
 
 static inline void
-grow_next_edge_clone_vector (void)
+grow_edge_clone_vectors (void)
 {
   if (next_edge_clone.length ()
       <=  (unsigned) cgraph_edge_max_uid)
     next_edge_clone.safe_grow_cleared (cgraph_edge_max_uid + 1);
+  if (prev_edge_clone.length ()
+      <=  (unsigned) cgraph_edge_max_uid)
+    prev_edge_clone.safe_grow_cleared (cgraph_edge_max_uid + 1);
 }
 
 /* Edge duplication hook to grow the appropriate linked list in
@@ -2335,11 +2339,32 @@ grow_next_edge_clone_vector (void)
 
 static void
 ipcp_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
-			    __attribute__((unused)) void *data)
+			    void *)
 {
-  grow_next_edge_clone_vector ();
-  next_edge_clone[dst->uid] = next_edge_clone[src->uid];
+  grow_edge_clone_vectors ();
+
+  struct cgraph_edge *old_next = next_edge_clone[src->uid];
+  if (old_next)
+    prev_edge_clone[old_next->uid] = dst;
+  prev_edge_clone[dst->uid] = src;
+
+  next_edge_clone[dst->uid] = old_next;
   next_edge_clone[src->uid] = dst;
+}
+
+/* Hook that is called by cgraph.c when an edge is removed.  */
+
+static void
+ipcp_edge_removal_hook (struct cgraph_edge *cs, void *)
+{
+  grow_edge_clone_vectors ();
+
+  struct cgraph_edge *prev = prev_edge_clone[cs->uid];
+  struct cgraph_edge *next = next_edge_clone[cs->uid];
+  if (prev)
+    next_edge_clone[prev->uid] = next;
+  if (next)
+    prev_edge_clone[next->uid] = prev;
 }
 
 /* See if NODE is a clone with a known aggregate value at a given OFFSET of a
@@ -3568,13 +3593,17 @@ static unsigned int
 ipcp_driver (void)
 {
   struct cgraph_2edge_hook_list *edge_duplication_hook_holder;
+  struct cgraph_edge_hook_list *edge_removal_hook_holder;
   struct topo_info topo;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
-  grow_next_edge_clone_vector ();
+  grow_edge_clone_vectors ();
   edge_duplication_hook_holder =
     cgraph_add_edge_duplication_hook (&ipcp_edge_duplication_hook, NULL);
+  edge_removal_hook_holder =
+    cgraph_add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
+
   ipcp_values_pool = create_alloc_pool ("IPA-CP values",
 					sizeof (struct ipcp_value), 32);
   ipcp_sources_pool = create_alloc_pool ("IPA-CP value sources",
@@ -3600,6 +3629,7 @@ ipcp_driver (void)
   /* Free all IPCP structures.  */
   free_toporder_info (&topo);
   next_edge_clone.release ();
+  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
   cgraph_remove_edge_duplication_hook (edge_duplication_hook_holder);
   ipa_free_all_structures_after_ipa_cp ();
   if (dump_file)
