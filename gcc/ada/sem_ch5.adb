@@ -2739,7 +2739,7 @@ package body Sem_Ch5 is
 
       if No (Iter)
         or else No (Iterator_Specification (Iter))
-        or else not Full_Expander_Active
+        or else not Expander_Active
       then
          if Present (Iter)
            and then Present (Iterator_Specification (Iter))

@@ -1264,7 +1264,7 @@ package body Sem_Disp is
             --  emitted after those tables are built, to prevent access before
             --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive and then Full_Expander_Active then
+            if Body_Is_Last_Primitive and then Expander_Active then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;

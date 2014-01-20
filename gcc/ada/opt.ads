@@ -1939,9 +1939,6 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
-   --
-   --  Note: for many purposes, it is more appropriate to test the flag
-   --  Full_Expander_Active, which also checks that SPARK mode is not active.
 
    Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
@@ -2022,15 +2019,6 @@ package Opt is
    --  Interpret compiler permissions as strictly as possible. E.g. base ranges
    --  for integers are limited to the strict minimum with this option. Set by
    --  debug flag -gnatd.D.
-
-   function Full_Expander_Active return Boolean;
-   pragma Inline (Full_Expander_Active);
-   --  Returns the value of (Expander_Active and not SPARK_Mode). This "flag"
-   --  indicates that expansion is fully active, that is, not in the reduced
-   --  mode for SPARK (True) or that expansion is either deactivated, or active
-   --  in the reduced mode for SPARK (False). For more information on full
-   --  expansion, see package Expander. For more information on reduced
-   --  SPARK expansion, see package Exp_SPARK.
 
 private
 

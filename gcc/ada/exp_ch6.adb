@@ -9603,7 +9603,7 @@ package body Exp_Ch6 is
       --  may end up with a call that is neither resolved to an entity, nor
       --  an indirect call.
 
-      if not Full_Expander_Active then
+      if not Expander_Active then
          return False;
       end if;
 

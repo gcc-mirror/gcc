@@ -3200,7 +3200,7 @@ package body Sem_Ch6 is
       --  body may be the rewritting of an expression function, and we need to
       --  verify that the original node is in the source.
 
-      if Full_Expander_Active
+      if Expander_Active
         and then Comes_From_Source (Original_Node (N))
         and then Present (Prot_Typ)
         and then Present (Spec_Id)
@@ -11447,7 +11447,7 @@ package body Sem_Ch6 is
                --  parameter block, and it is this local variable that may
                --  require an actual subtype.
 
-               if Full_Expander_Active then
+               if Expander_Active then
                   Decl := Build_Actual_Subtype (T, Renamed_Object (Formal));
                else
                   Decl := Build_Actual_Subtype (T, Formal);
@@ -11486,7 +11486,7 @@ package body Sem_Ch6 is
             end if;
 
             if Nkind (N) = N_Accept_Statement
-              and then Full_Expander_Active
+              and then Expander_Active
             then
                Set_Actual_Subtype (Renamed_Object (Formal),
                  Defining_Identifier (Decl));

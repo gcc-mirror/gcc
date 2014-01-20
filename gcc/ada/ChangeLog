@@ -1,5 +1,18 @@
 2014-01-20  Yannick Moy  <moy@adacore.com>
 
+	* exp_spark.adb (Expand_SPARK_Call): Remove procedure.
+	* opt.adb, opt.ads (Full_Expander_Active): Remove function.
+	* checks.adb, exp_ch6.adb, exp_ch9.adb, exp_disp.adb, sem_aggr.adb,
+	* sem_ch10.adb, sem_ch5.adb, sem_ch6.adb, sem_ch8.adb, sem_ch9.adb,
+	* sem_disp.adb, sem_res.adb Replace Full_Expander_Active by
+	Expander_Active.
+
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads Update documentation of GNATprove mode.
+
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
 	* adabkend.adb, ali-util.adb, errout.adb, exp_ch7.adb,
 	* exp_dbug.adb, freeze.adb, lib-xref.adb, restrict.adb,
 	* sem_attr.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb, sem_ch8.adb,

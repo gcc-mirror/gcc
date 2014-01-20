@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
-with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -37,10 +36,6 @@ package body Exp_SPARK is
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   procedure Expand_SPARK_Call (N : Node_Id);
-   --  This procedure contains common processing for function and procedure
-   --  calls: replacement of renaming by subprogram renamed
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -71,9 +66,6 @@ package body Exp_SPARK is
               N_Subprogram_Body     =>
             Qualify_Entity_Names (N);
 
-         when N_Subprogram_Call     =>
-            Expand_SPARK_Call (N);
-
          when N_Expanded_Name |
               N_Identifier    =>
             Expand_Potential_Renaming (N);
@@ -87,36 +79,6 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
-
-   -----------------------
-   -- Expand_SPARK_Call --
-   -----------------------
-
-   procedure Expand_SPARK_Call (N : Node_Id) is
-   begin
-      --  If the subprogram is a renaming, replace it in the call with the name
-      --  of the actual subprogram being called. We distinguish renamings from
-      --  inherited primitive operations, which both have an Alias component,
-      --  by looking at the parent node of the entity. The entity for a
-      --  renaming has the function or procedure specification node as
-      --  parent, while an inherited primitive operation has the derived
-      --  type declaration as parent.
-
-      if Nkind (Name (N)) in N_Has_Entity
-        and then Present (Entity (Name (N)))
-      then
-         declare
-            E : constant Entity_Id := Entity (Name (N));
-         begin
-            if Nkind_In (Parent (E), N_Function_Specification,
-                                     N_Procedure_Specification)
-              and then Present (Alias (E))
-            then
-               Set_Entity (Name (N), Ultimate_Alias (E));
-            end if;
-         end;
-      end if;
-   end Expand_SPARK_Call;
 
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --
