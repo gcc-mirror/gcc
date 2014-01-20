@@ -1,3 +1,14 @@
+2014-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tataat.adb (Initialize_Attributes): Abort might already be
+	deferred in Create_Task.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Scalar_Range_Check): Flag
+	the exponent as requiring a range check when the expression is
+	an exponentiation.
+
 2014-01-20  Fedor Rybin  <frybin@adacore.com>
 
 	* gnat_ugn.texi: Documenting --passed-tests option for gnattest.

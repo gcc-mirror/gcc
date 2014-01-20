@@ -2797,6 +2797,19 @@ package body Checks is
          return;
       end if;
 
+      --  Ensure that the exponent is a natural. The flag is set only in formal
+      --  verification mode as the expander takes care of this check and there
+      --  is no expansion phase in GNATprove_Mode.
+
+      --  Doesn't seem right to do this unconditionally, we should check the
+      --  range of the exponent operand. If we do that, it seems like we should
+      --  then set the flag unconditionally and have the expander check the
+      --  flag to see whether to generate a check ???
+
+      if GNATprove_Mode and then Nkind (Expr) = N_Op_Expon then
+         Set_Do_Range_Check (Right_Opnd (Expr));
+      end if;
+
       Is_Unconstrained_Subscr_Ref :=
         Is_Subscr_Ref and then not Is_Constrained (Arr_Typ);
 

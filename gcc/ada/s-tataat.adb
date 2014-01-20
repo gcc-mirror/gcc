@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,7 +186,7 @@ package body System.Tasking.Task_Attributes is
       Self_Id : constant Task_Id := Self;
 
    begin
-      Defer_Abort (Self_Id);
+      Defer_Abort_Nestable (Self_Id);
       Lock_RTS;
 
       --  Initialize all the direct-access attributes of this task
@@ -204,7 +204,7 @@ package body System.Tasking.Task_Attributes is
       end loop;
 
       Unlock_RTS;
-      Undefer_Abort (Self_Id);
+      Undefer_Abort_Nestable (Self_Id);
 
    exception
       when others =>
