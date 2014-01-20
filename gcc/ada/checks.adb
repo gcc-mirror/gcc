@@ -767,9 +767,11 @@ package body Checks is
            and then not Warnings_Off (E)
            and then Restriction_Active (No_Exception_Propagation)
          then
-            Error_Msg_N ("address value may be incompatible with " &
-                           "alignment of object?", N);
+            Error_Msg_N
+              ("address value may be incompatible with alignment of object?",
+               N);
          end if;
+
          return;
       end if;
 

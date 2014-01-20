@@ -70,9 +70,9 @@ package body Exp_Ch9 is
    --  The following constant establishes the upper bound for the index of
    --  an entry family. It is used to limit the allocated size of protected
    --  types with defaulted discriminant of an integer type, when the bound
-   --  of some entry family depends on a discriminant. The limitation to
-   --  entry families of 128K should be reasonable in all cases, and is a
-   --  documented implementation restriction.
+   --  of some entry family depends on a discriminant. The limitation to entry
+   --  families of 128K should be reasonable in all cases, and is a documented
+   --  implementation restriction.
 
    Entry_Family_Bound : constant Int := 2**16;
 
@@ -202,8 +202,8 @@ package body Exp_Ch9 is
    --  pre/postconditions. The body gathers the PPC's and expands them in the
    --  usual way, and performs the entry call itself. This way preconditions
    --  are evaluated before the call is queued. E is the entry in question,
-   --  and Decl is the enclosing synchronized type declaration at whose
-   --  freeze point the generated body is analyzed.
+   --  and Decl is the enclosing synchronized type declaration at whose freeze
+   --  point the generated body is analyzed.
 
    function Build_Protected_Entry
      (N   : Node_Id;
@@ -238,12 +238,12 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id;
    --  This function is used to construct the protected version of a protected
-   --  subprogram. Its statement sequence first defers abort, then locks
-   --  the associated protected object, and then enters a block that contains
-   --  a call to the unprotected version of the subprogram (for details, see
-   --  Build_Unprotected_Subprogram_Body). This block statement requires
-   --  a cleanup handler that unlocks the object in all cases.
-   --  (see Exp_Ch7.Expand_Cleanup_Actions).
+   --  subprogram. Its statement sequence first defers abort, then locks the
+   --  associated protected object, and then enters a block that contains a
+   --  call to the unprotected version of the subprogram (for details, see
+   --  Build_Unprotected_Subprogram_Body). This block statement requires a
+   --  cleanup handler that unlocks the object in all cases. For details,
+   --  see Exp_Ch7.Expand_Cleanup_Actions.
 
    function Build_Renamed_Formal_Declaration
      (New_F          : Entity_Id;
@@ -262,14 +262,13 @@ package body Exp_Ch9 is
      (Prefix      : Entity_Id;
       Selector    : Entity_Id;
       Append_Char : Character := ' ') return Name_Id;
-   --  Build a name in the form of Prefix__Selector, with an optional
-   --  character appended. This is used for internal subprograms generated
-   --  for operations of protected types, including barrier functions.
-   --  For the subprograms generated for entry bodies and entry barriers,
-   --  the generated name includes a sequence number that makes names
-   --  unique in the presence of entry overloading. This is necessary
-   --  because entry body procedures and barrier functions all have the
-   --  same signature.
+   --  Build a name in the form of Prefix__Selector, with an optional character
+   --  appended. This is used for internal subprograms generated for operations
+   --  of protected types, including barrier functions. For the subprograms
+   --  generated for entry bodies and entry barriers, the generated name
+   --  includes a sequence number that makes names unique in the presence of
+   --  entry overloading. This is necessary because entry body procedures and
+   --  barrier functions all have the same signature.
 
    procedure Build_Simple_Entry_Call
      (N       : Node_Id;
@@ -350,14 +349,14 @@ package body Exp_Ch9 is
 
    procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id);
    --  If control flow optimizations are suppressed, and Alt is an accept,
-   --  delay, or entry call alternative with no trailing statements, insert a
-   --  null trailing statement with the given Loc (which is the sloc of the
-   --  accept, delay, or entry call statement). There might not be any
-   --  generated code for the accept, delay, or entry call itself (the
-   --  effect of these statements is part of the general processsing done
-   --  for the enclosing selective accept, timed entry call, or asynchronous
-   --  select), and the null statement is there to carry the sloc of that
-   --  statement to the back-end for trace-based coverage analysis purposes.
+   --  delay, or entry call alternative with no trailing statements, insert
+   --  a null trailing statement with the given Loc (which is the sloc of
+   --  the accept, delay, or entry call statement). There might not be any
+   --  generated code for the accept, delay, or entry call itself (the effect
+   --  of these statements is part of the general processsing done for the
+   --  enclosing selective accept, timed entry call, or asynchronous select),
+   --  and the null statement is there to carry the sloc of that statement to
+   --  the back-end for trace-based coverage analysis purposes.
 
    procedure Extract_Dispatching_Call
      (N        : Node_Id;
@@ -376,8 +375,8 @@ package body Exp_Ch9 is
       Concval : out Node_Id;
       Ename   : out Node_Id;
       Index   : out Node_Id);
-   --  Given an entry call, returns the associated concurrent object,
-   --  the entry name, and the entry family index.
+   --  Given an entry call, returns the associated concurrent object, the entry
+   --  name, and the entry family index.
 
    function Family_Offset
      (Loc  : Source_Ptr;
@@ -385,11 +384,11 @@ package body Exp_Ch9 is
       Lo   : Node_Id;
       Ttyp : Entity_Id;
       Cap  : Boolean) return Node_Id;
-   --  Compute (Hi - Lo) for two entry family indexes. Hi is the index in
-   --  an accept statement, or the upper bound in the discrete subtype of
-   --  an entry declaration. Lo is the corresponding lower bound. Ttyp is
-   --  the concurrent type of the entry. If Cap is true, the result is
-   --  capped according to Entry_Family_Bound.
+   --  Compute (Hi - Lo) for two entry family indexes. Hi is the index in an
+   --  accept statement, or the upper bound in the discrete subtype of an entry
+   --  declaration. Lo is the corresponding lower bound. Ttyp is the concurrent
+   --  type of the entry. If Cap is true, the result is capped according to
+   --  Entry_Family_Bound.
 
    function Family_Size
      (Loc  : Source_Ptr;
@@ -397,11 +396,11 @@ package body Exp_Ch9 is
       Lo   : Node_Id;
       Ttyp : Entity_Id;
       Cap  : Boolean) return Node_Id;
-   --  Compute (Hi - Lo) + 1 Max 0, to determine the number of entries in
-   --  a family, and handle properly the superflat case. This is equivalent
-   --  to the use of 'Length on the index type, but must use Family_Offset
-   --  to handle properly the case of bounds that depend on discriminants.
-   --  If Cap is true, the result is capped according to Entry_Family_Bound.
+   --  Compute (Hi - Lo) + 1 Max 0, to determine the number of entries in a
+   --  family, and handle properly the superflat case. This is equivalent to
+   --  the use of 'Length on the index type, but must use Family_Offset to
+   --  handle properly the case of bounds that depend on discriminants. If
+   --  Cap is true, the result is capped according to Entry_Family_Bound.
 
    procedure Find_Enclosing_Context
      (N             : Node_Id;
@@ -417,8 +416,8 @@ package body Exp_Ch9 is
 
    function Index_Object (Spec_Id : Entity_Id) return Entity_Id;
    --  Given a subprogram identifier, return the entity which is associated
-   --  with the protection entry index in the Protected_Body_Subprogram or the
-   --  Task_Body_Procedure of Spec_Id. The returned entity denotes formal
+   --  with the protection entry index in the Protected_Body_Subprogram or
+   --  the Task_Body_Procedure of Spec_Id. The returned entity denotes formal
    --  parameter _E.
 
    function Is_Exception_Safe (Subprogram : Node_Id) return Boolean;
@@ -436,9 +435,9 @@ package body Exp_Ch9 is
 
    function Null_Statements (Stats : List_Id) return Boolean;
    --  Used to check DO-END sequence. Checks for equivalent of DO NULL; END.
-   --  Allows labels, and pragma Warnings/Unreferenced in the sequence as
-   --  well to still count as null. Returns True for a null sequence. The
-   --  argument is the list of statements from the DO-END sequence.
+   --  Allows labels, and pragma Warnings/Unreferenced in the sequence as well
+   --  to still count as null. Returns True for a null sequence. The argument
+   --  is the list of statements from the DO-END sequence.
 
    function Parameter_Block_Pack
      (Loc     : Source_Ptr;
@@ -447,8 +446,8 @@ package body Exp_Ch9 is
       Formals : List_Id;
       Decls   : List_Id;
       Stmts   : List_Id) return Entity_Id;
-   --  Set the components of the generated parameter block with the values of
-   --  the actual parameters. Generate aliased temporaries to capture the
+   --  Set the components of the generated parameter block with the values
+   --  of the actual parameters. Generate aliased temporaries to capture the
    --  values for types that are passed by copy. Otherwise generate a reference
    --  to the actual's value. Return the address of the aggregate block.
    --  Generate:
@@ -605,8 +604,8 @@ package body Exp_Ch9 is
             S :=
               Etype (Discrete_Subtype_Definition (Declaration_Node (Prev)));
 
-            --  The need for the following full view retrieval stems from
-            --  this complex case of nested generics and tasking:
+            --  The need for the following full view retrieval stems from this
+            --  complex case of nested generics and tasking:
 
             --     generic
             --        type Formal_Index is range <>;
@@ -638,6 +637,7 @@ package body Exp_Ch9 is
             --  We are currently building the index expression for the entry
             --  call "T.E" (1). Part of the expansion must mention the range
             --  of the discrete type "Index" (2) of entry family "Fam".
+
             --  However only the private view of type "Index" is available to
             --  the inner generic (3) because there was no prior mention of
             --  the type inside "Inner". This visibility requirement is
@@ -708,9 +708,9 @@ package body Exp_Ch9 is
          Set_Etype (New_F, Etype (Formal));
          Set_Scope (New_F, Ent);
 
-         --  Now we set debug info needed on New_F even though it does not
-         --  come from source, so that the debugger will get the right
-         --  information for these generated names.
+         --  Now we set debug info needed on New_F even though it does not come
+         --  from source, so that the debugger will get the right information
+         --  for these generated names.
 
          Set_Debug_Info_Needed (New_F);
 
@@ -843,8 +843,8 @@ package body Exp_Ch9 is
          New_S := Stats;
       end if;
 
-      --  At this stage we know that the new statement sequence does not
-      --  have an exception handler part, so we supply one to call
+      --  At this stage we know that the new statement sequence does
+      --  not have an exception handler part, so we supply one to call
       --  Exceptional_Complete_Rendezvous. This handler is
 
       --    when all others =>
@@ -974,8 +974,7 @@ package body Exp_Ch9 is
 
             Prepend_To (Decls, Decl);
 
-            --  Ensure that the _chain appears in the proper scope of the
-            --  context.
+            --  Ensure that _chain appears in the proper scope of the context
 
             if Context_Id /= Current_Scope then
                Push_Scope (Context_Id);
@@ -1189,9 +1188,9 @@ package body Exp_Ch9 is
                   while Nkind (Par) /= N_Compilation_Unit loop
                      Par := Parent (Par);
 
-                     --  If we fall off the top, we are at the outer level, and
-                     --  the environment task is our effective master, so
-                     --  nothing to mark.
+                     --  If we fall off the top, we are at the outer level,
+                     --  and the environment task is our effective master,
+                     --  so nothing to mark.
 
                      if Nkind_In (Par, N_Block_Statement,
                                        N_Subprogram_Body,

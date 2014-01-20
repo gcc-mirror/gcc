@@ -2612,30 +2612,36 @@ package body Sem_Res is
                end;
             end if;
 
-            --  If an error message was issued already, Found got reset to
-            --  True, so if it is still False, issue standard Wrong_Type msg.
+            --  Looks like we have a type error, but check for special case
+            --  of Address wanted, integer found, with the configuration pragma
+            --  Allow_Integer_Address active. If we have this case, introduce
+            --  an unchecked conversion to allow the integer expression to be
+            --  treated as an Address. The reverse case of integer wanted,
+            --  Address found, is treated in an analogous manner.
 
-            --  First check for special case of Address wanted, integer found
-            --  with the configuration pragma Allow_Integer_Address active.
-
-            if Allow_Integer_Address
-              and then Is_RTE (Typ, RE_Address)
-              and then Is_Integer_Type (Etype (N))
-            then
-               Rewrite
-                 (N, Unchecked_Convert_To (RTE (RE_Address),
-                  Relocate_Node (N)));
-               Analyze_And_Resolve (N, RTE (RE_Address));
-               return;
-
-            --  OK, not the special case go ahead and issue message
-
-            elsif not Found then
-               if Is_Overloaded (N)
-                 and then Nkind (N) = N_Function_Call
+            if Allow_Integer_Address then
+               if (Is_RTE (Typ, RE_Address)
+                    and then Is_Integer_Type (Etype (N)))
+                 or else
+                   (Is_Integer_Type (Typ)
+                     and then Is_RTE (Etype (N), RE_Address))
                then
+                  Rewrite (N, Unchecked_Convert_To (Typ, Relocate_Node (N)));
+                  Analyze_And_Resolve (N, Typ);
+                  return;
+               end if;
+            end if;
+
+            --  That special Allow_Integer_Address check did not appply, so we
+            --  have a real type error. If an error message was issued already,
+            --  Found got reset to True, so if it's still False, issue standard
+            --  Wrong_Type message.
+
+            if not Found then
+               if Is_Overloaded (N) and then Nkind (N) = N_Function_Call then
                   declare
                      Subp_Name : Node_Id;
+
                   begin
                      if Is_Entity_Name (Name (N)) then
                         Subp_Name := Name (N);
@@ -11085,6 +11091,23 @@ package body Sem_Res is
          end;
       end if;
 
+      --  Deal with conversion of integer type to address if the pragma
+      --  Allow_Integer_Address is in effect. We convert the conversion to
+      --  an unchecked conversion in this case and we are all done!
+
+      if Allow_Integer_Address
+        and then
+          ((Is_RTE (Target_Type, RE_Address)
+             and then Is_Integer_Type (Opnd_Type))
+          or else
+           (Is_RTE (Opnd_Type, RE_Address)
+             and then Is_Integer_Type (Target_Type)))
+      then
+         Rewrite (N, Unchecked_Convert_To (Target_Type, Expression (N)));
+         Analyze_And_Resolve (N, Target_Type);
+         return True;
+      end if;
+
       --  If we are within a child unit, check whether the type of the
       --  expression has an ancestor in a parent unit, in which case it
       --  belongs to its derivation class even if the ancestor is private.
@@ -11094,7 +11117,7 @@ package body Sem_Res is
 
       --  Numeric types
 
-      if Is_Numeric_Type (Target_Type)  then
+      if Is_Numeric_Type (Target_Type) then
 
          --  A universal fixed expression can be converted to any numeric type
 
@@ -11120,11 +11143,11 @@ package body Sem_Res is
 
          else
             return Conversion_Check
-                    (Is_Numeric_Type (Opnd_Type)
-                      or else
-                        (Present (Inc_Ancestor)
-                          and then Is_Numeric_Type (Inc_Ancestor)),
-                     "illegal operand for numeric conversion");
+                     (Is_Numeric_Type (Opnd_Type)
+                       or else
+                         (Present (Inc_Ancestor)
+                           and then Is_Numeric_Type (Inc_Ancestor)),
+                      "illegal operand for numeric conversion");
          end if;
 
       --  Array types
@@ -11636,18 +11659,6 @@ package body Sem_Res is
          Conversion_Error_NE -- CODEFIX
             ("add ALL to }!", N, Target_Type);
          return False;
-
-      --  Deal with conversion of integer type to address if the pragma
-      --  Allow_Integer_Address is in effect.
-
-      elsif Allow_Integer_Address
-        and then Is_RTE (Etype (N), RE_Address)
-        and then Is_Integer_Type (Etype (Operand))
-      then
-         Rewrite (N,
-           Unchecked_Convert_To (RTE (RE_Address), Relocate_Node (N)));
-         Analyze_And_Resolve (N, RTE (RE_Address));
-         return True;
 
       --  Here we have a real conversion error
 

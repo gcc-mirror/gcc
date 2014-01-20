@@ -113,7 +113,12 @@ package body Ch8 is
          Error_Msg_Ada_2012_Feature ("|`USE ALL TYPE`", Token_Ptr);
          All_Present := True;
          Scan; -- past ALL
-      else
+
+         if Token /= Tok_Type then
+            Error_Msg_SC ("TYPE expected");
+         end if;
+
+      else pragma Assert (Token = Tok_Type);
          All_Present := False;
       end if;
 
