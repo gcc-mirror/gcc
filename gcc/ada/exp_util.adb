@@ -2034,9 +2034,19 @@ package body Exp_Util is
       --  may be constants that depend on the bounds of a string literal, both
       --  standard string types and more generally arrays of characters.
 
-      if not Expander_Active
+      --  In GNATprove mode, we also need the more precise subtype to be set.
+
+      if not (Expander_Active or GNATprove_Mode)
         and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
       then
+         return;
+      end if;
+
+      --  In GNATprove mode, Unc_Type might not be complete when analyzing
+      --  a generic unit. As generic units are not analyzed directly in
+      --  GNATprove, return here rather than failing later.
+
+      if GNATprove_Mode and then No (Underlying_Type (Unc_Type)) then
          return;
       end if;
 
@@ -6862,9 +6872,11 @@ package body Exp_Util is
    --  Start of processing for Remove_Side_Effects
 
    begin
-      --  Handle cases in which there is nothing to do
+      --  Handle cases in which there is nothing to do. In GNATprove mode,
+      --  removal of side effects is useful for the light expansion of
+      --  renamings.
 
-      if not Expander_Active then
+      if not (Expander_Active or (Full_Analysis and GNATprove_Mode)) then
          return;
       end if;
 
@@ -7074,7 +7086,7 @@ package body Exp_Util is
          --  free if the resulting value is captured by a variable or a
          --  constant.
 
-         if SPARK_Mode
+         if GNATprove_Mode
            and then Nkind (Parent (Exp)) = N_Object_Declaration
          then
             goto Leave;
@@ -7119,7 +7131,7 @@ package body Exp_Util is
          --  types, use a different approach which ignores the secondary stack
          --  and "copies" the returned object.
 
-         if SPARK_Mode then
+         if GNATprove_Mode then
             Res := New_Reference_To (Def_Id, Loc);
             Ref_Type := Exp_Type;
 
@@ -7156,7 +7168,7 @@ package body Exp_Util is
             --  Do not generate a 'reference in SPARK mode since the access
             --  type is not created in the first place.
 
-            if SPARK_Mode then
+            if GNATprove_Mode then
                New_Exp := E;
 
             --  Otherwise generate reference, marking the value as non-null

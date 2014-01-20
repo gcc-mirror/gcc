@@ -1,3 +1,45 @@
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
+	* adabkend.adb, ali-util.adb, errout.adb, exp_ch7.adb,
+	* exp_dbug.adb, freeze.adb, lib-xref.adb, restrict.adb,
+	* sem_attr.adb, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb, sem_ch8.adb,
+	* sem_prag.adb, sem_res.adb, sem_util.adb Rename SPARK_Mode into
+	GNATprove_Mode.
+	* sem_ch13.adb: Remove blank.
+	* exp_spark.adb, exp_spark.ads (Expand_SPARK_Call): Only replace
+	subprograms by alias for renamings, not for inherited primitive
+	operations.
+	* exp_util.adb (Expand_Subtype_From_Expr): Apply the expansion
+	in GNATprove mode.
+	(Remove_Side_Effects): Apply the removal in
+	GNATprove mode, for the full analysis of expressions.
+	* expander.adb (Expand): Call the light SPARK expansion in GNATprove
+	mode.
+	(Expander_Mode_Restore, Expander_Mode_Save_And_Set): Ignore
+	save/restore actions for Expander_Active flag in GNATprove mode,
+	similar to what is done in ASIS mode.
+	* frontend.adb (Frontend): Generic bodies are instantiated in
+	GNATprove mode.
+	* gnat1drv.adb (Adjust_Global_Switches): Set operating
+	mode to Check_Semantics in GNATprove mode, although a light
+	expansion is still performed.
+	(Gnat1drv): Set Back_End_Mode to
+	Declarations_Only in GNATprove mode, and later on special case
+	the GNATprove mode to continue analysis anyway.
+	* lib-writ.adb (Write_ALI): Always generate ALI files in
+	GNATprove mode.
+	* opt.adb, opt.ads (Full_Expander_Active): Make it equivalent to
+	Expander_Active.
+	(SPARK_Mode): Renamed as GNATprove_Mode.
+	* sem_aggr.adb (Aggregate_Constraint_Checks): Add checks in the
+	tree in GNATprove_Mode.
+	* sem_ch12.adb (Analyze_Package_Instantiation): Always instantiate
+	body in GNATprove mode.
+	(Need_Subprogram_Instance_Body): Always instantiate body in GNATprove
+	mode.
+	* sem_ch3.adb (Constrain_Index, Process_Range_Expr_In_Decl):
+	Make sure side effects are removed in GNATprove mode.
+
 2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Robustify tests

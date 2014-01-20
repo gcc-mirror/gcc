@@ -1693,7 +1693,7 @@ package body Sem_Res is
       --  case of Ada 2012 constructs such as quantified expressions, which are
       --  expanded in two separate steps.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          Analyze_And_Resolve (N, T);
       else
          Analyze_And_Resolve (N, T, Suppress => All_Checks);
@@ -4206,7 +4206,7 @@ package body Sem_Res is
               --  in scope at the point of reference, so the reference should
               --  be ignored for computing effects of subprograms.
 
-              and then not SPARK_Mode
+              and then not GNATprove_Mode
             then
                Set_Entity (Selector_Name (Parent (A)), F);
                Generate_Reference (F, Selector_Name (Parent (A)));

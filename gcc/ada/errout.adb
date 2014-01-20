@@ -239,7 +239,7 @@ package body Errout is
       --  an error status. These errors are handled in the driver of the
       --  verification process instead.
 
-      elsif SPARK_Mode and not Frame_Condition_Mode then
+      elsif GNATprove_Mode and not Frame_Condition_Mode then
          return False;
 
       else
@@ -2970,7 +2970,7 @@ package body Errout is
          --  Suppress "size too small" errors in CodePeer mode and SPARK mode,
          --  since pragma Pack is also ignored in these configurations.
 
-         if CodePeer_Mode or SPARK_Mode then
+         if CodePeer_Mode or GNATprove_Mode then
             return True;
 
          --  When a size is wrong for a frozen type there is no explicit size

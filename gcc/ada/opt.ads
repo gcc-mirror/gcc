@@ -1996,7 +1996,7 @@ package Opt is
    -----------------------------------
 
    Frame_Condition_Mode : Boolean := False;
-   --  Specific mode to be used in combination with SPARK_Mode. If set to
+   --  Specific mode to be used in combination with GNATprove_Mode. If set to
    --  true, ALI files containing the frame conditions (global effects) are
    --  generated, and Why files are *not* generated. If not true, Why files
    --  are generated. Set by debug flag -gnatd.G.
@@ -2010,7 +2010,7 @@ package Opt is
    --  The mode applicable to the whole compilation. The global mode can be set
    --  in a configuration file such as gnat.adc.
 
-   SPARK_Mode : Boolean := False;
+   GNATprove_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
    --  the SPARK 2014 subset of Ada. Set True by the gnat2why executable or by

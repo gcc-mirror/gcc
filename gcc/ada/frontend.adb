@@ -362,7 +362,7 @@ begin
 
          if Operating_Mode = Generate_Code
            or else (Operating_Mode = Check_Semantics
-                     and then ASIS_Mode)
+                     and then (ASIS_Mode or GNATprove_Mode))
          then
             Instantiate_Bodies;
          end if;

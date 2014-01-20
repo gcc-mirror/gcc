@@ -4499,7 +4499,7 @@ package body Sem_Attr is
          --  not suffer from the out-of-order issue described above. Thus, this
          --  expansion is skipped in SPARK mode.
 
-         if not Is_Entity_Name (P) and then not SPARK_Mode then
+         if not Is_Entity_Name (P) and then not GNATprove_Mode then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);

@@ -2718,7 +2718,7 @@ package body Sem_Ch13 is
                      Prepend (Aitem,
                        Visible_Declarations (Specification (N)));
 
-                  elsif Nkind (N) =  N_Package_Instantiation then
+                  elsif Nkind (N) = N_Package_Instantiation then
                      declare
                         Spec : constant Node_Id :=
                                  Specification (Instance_Spec (N));

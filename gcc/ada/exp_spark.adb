@@ -31,7 +31,6 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Stand;    use Stand;
 
 package body Exp_SPARK is
 
@@ -94,51 +93,28 @@ package body Exp_SPARK is
    -----------------------
 
    procedure Expand_SPARK_Call (N : Node_Id) is
-      Call_Node   : constant Node_Id := N;
-      Parent_Subp : Entity_Id;
-
    begin
-      --  Ignore if previous error
-
-      if Nkind (Call_Node) in N_Has_Etype
-        and then Etype (Call_Node) = Any_Type
-      then
-         return;
-      end if;
-
-      --  Call using access to subprogram with explicit dereference
-
-      if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
-         Parent_Subp := Empty;
-
-      --  Case of call to simple entry, where the Name is a selected component
-      --  whose prefix is the task, and whose selector name is the entry name
-
-      elsif Nkind (Name (Call_Node)) = N_Selected_Component then
-         Parent_Subp := Empty;
-
-      --  Case of call to member of entry family, where Name is an indexed
-      --  component, with the prefix being a selected component giving the
-      --  task and entry family name, and the index being the entry index.
-
-      elsif Nkind (Name (Call_Node)) = N_Indexed_Component then
-         Parent_Subp := Empty;
-
-      --  Normal case
-
-      else
-         Parent_Subp := Alias (Entity (Name (Call_Node)));
-      end if;
-
       --  If the subprogram is a renaming, replace it in the call with the name
-      --  of the actual subprogram being called.
+      --  of the actual subprogram being called. We distinguish renamings from
+      --  inherited primitive operations, which both have an Alias component,
+      --  by looking at the parent node of the entity. The entity for a
+      --  renaming has the function or procedure specification node as
+      --  parent, while an inherited primitive operation has the derived
+      --  type declaration as parent.
 
-      if Present (Parent_Subp) then
-         Parent_Subp := Ultimate_Alias (Parent_Subp);
-
-         --  The below setting of Entity is suspect, see F109-018 discussion???
-
-         Set_Entity (Name (Call_Node), Parent_Subp);
+      if Nkind (Name (N)) in N_Has_Entity
+        and then Present (Entity (Name (N)))
+      then
+         declare
+            E : constant Entity_Id := Entity (Name (N));
+         begin
+            if Nkind_In (Parent (E), N_Function_Specification,
+                                     N_Procedure_Specification)
+              and then Present (Alias (E))
+            then
+               Set_Entity (Name (N), Ultimate_Alias (E));
+            end if;
+         end;
       end if;
    end Expand_SPARK_Call;
 
