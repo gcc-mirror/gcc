@@ -5,7 +5,7 @@
 	(check_effective_target_vect_perm_byte): Likewise.
 	(check_effective_target_vect_perm_short): Likewise.
 
-2013-01-20  Alex Velenko  <Alex.Velenko@arm.com>
+2014-01-20  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/vneg_f.c (STORE_INST): New macro.
 	(RUN_TEST): Use new macro.
