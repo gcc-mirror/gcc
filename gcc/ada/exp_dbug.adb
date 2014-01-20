@@ -1314,7 +1314,7 @@ package body Exp_Dbug is
       --  name as being qualified, as Qualify_Entity_Name may be called more
       --  than once on the same entity.
 
-      elsif SPARK_Mode then
+      elsif GNATprove_Mode then
          if Has_Homonym (Ent) then
             Get_Name_String (Chars (Ent));
             Append_Homonym_Number (Ent);

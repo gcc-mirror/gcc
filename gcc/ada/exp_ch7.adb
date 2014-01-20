@@ -937,7 +937,7 @@ package body Exp_Ch7 is
       --  Do not create finalization masters in SPARK mode because they result
       --  in unwanted expansion.
 
-      elsif SPARK_Mode then
+      elsif GNATprove_Mode then
          return;
       end if;
 
@@ -2813,7 +2813,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -2975,7 +2975,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because we do not create
       --  finalizers in the first place.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -3658,7 +3658,7 @@ package body Exp_Ch7 is
       --  this node and enclosed expression are not expanded, so do not apply
       --  any transformations here.
 
-      elsif SPARK_Mode
+      elsif GNATprove_Mode
         and then Nkind (Wrap_Node) = N_Pragma
         and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
       then

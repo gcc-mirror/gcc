@@ -644,7 +644,7 @@ package body Lib.Xref is
             --  in SPARK mode when the related context comes from an instance.
 
            or else
-             (SPARK_Mode
+             (GNATprove_Mode
                 and then In_Extended_Main_Code_Unit (N)
                 and then (Typ = 'm' or else Typ = 'r' or else Typ = 's'))
          then
@@ -899,7 +899,7 @@ package body Lib.Xref is
          and then
            (Instantiation_Location (Sloc (N)) = No_Location
              or else Typ = 'i'
-             or else SPARK_Mode)
+             or else GNATprove_Mode)
 
         --  Ignore dummy references
 
@@ -986,7 +986,7 @@ package body Lib.Xref is
          --  the renaming, which is needed to compute a valid set of effects
          --  (reads, writes) for the enclosing subprogram.
 
-         if SPARK_Mode then
+         if GNATprove_Mode then
             Ent := Get_Through_Renamings (Ent);
 
             --  If no enclosing object, then it could be a reference to any
@@ -1015,7 +1015,7 @@ package body Lib.Xref is
             Actual_Typ := 'P';
          end if;
 
-         if SPARK_Mode then
+         if GNATprove_Mode then
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 

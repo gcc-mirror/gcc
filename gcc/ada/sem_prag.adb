@@ -4556,7 +4556,7 @@ package body Sem_Prag is
             --  N_Contract node.
 
             if Acts_As_Spec (PO)
-              and then (SPARK_Mode or Formal_Extensions)
+              and then (GNATprove_Mode or Formal_Extensions)
             then
                declare
                   Prag : constant Node_Id := New_Copy_Tree (N);
@@ -4596,7 +4596,7 @@ package body Sem_Prag is
             --  where there is no later point at which the aspect will be
             --  analyzed.
 
-            if SPARK_Mode or else ASIS_Mode then
+            if GNATprove_Mode or else ASIS_Mode then
                Analyze_Pre_Post_Condition_In_Decl_Part
                  (N, Defining_Entity (Unit (Parent (PO))));
             end if;
@@ -8345,7 +8345,9 @@ package body Sem_Prag is
          --  user code: we want to generate checks for analysis purposes, as
          --  set respectively by -gnatC and -gnatd.F
 
-         if (CodePeer_Mode or SPARK_Mode) and then Comes_From_Source (N) then
+         if (CodePeer_Mode or GNATprove_Mode)
+           and then Comes_From_Source (N)
+         then
             return;
          end if;
 
@@ -13700,7 +13702,7 @@ package body Sem_Prag is
             --  in these modes.
 
             if not Restriction_Active (No_Initialize_Scalars)
-              and then not (CodePeer_Mode or SPARK_Mode)
+              and then not (CodePeer_Mode or GNATprove_Mode)
             then
                Init_Or_Norm_Scalars := True;
                Initialize_Scalars := True;
@@ -13819,7 +13821,7 @@ package body Sem_Prag is
             --  Pragma always active unless in CodePeer or SPARK mode, since
             --  this causes walk order issues.
 
-            if not (CodePeer_Mode or SPARK_Mode) then
+            if not (CodePeer_Mode or GNATprove_Mode) then
                Process_Inline (Enabled);
             end if;
 
@@ -15460,7 +15462,7 @@ package body Sem_Prag is
             --  incorrect negative results in SPARK mode, so ignore this pragma
             --  in these modes.
 
-            if not (CodePeer_Mode or SPARK_Mode) then
+            if not (CodePeer_Mode or GNATprove_Mode) then
                Normalize_Scalars := True;
                Init_Or_Norm_Scalars := True;
             end if;
@@ -15921,7 +15923,7 @@ package body Sem_Prag is
                   --  complex front-end expansions related to pragma Pack,
                   --  so disable handling of pragma Pack in these cases.
 
-                  if CodePeer_Mode or SPARK_Mode then
+                  if CodePeer_Mode or GNATprove_Mode then
                      null;
 
                   --  Don't attempt any packing for VM targets. We possibly

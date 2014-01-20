@@ -299,15 +299,16 @@ procedure Gnat1drv is
          Formal_Extensions := True;
       end if;
 
-      --  Enable SPARK_Mode when using -gnatd.F switch
+      --  Enable GNATprove_Mode when using -gnatd.F switch
 
       if Debug_Flag_Dot_FF then
-         SPARK_Mode := True;
+         GNATprove_Mode := True;
       end if;
 
-      --  SPARK_Mode is also activated by default in the gnat2why executable
+      --  GNATprove_Mode is also activated by default in the gnat2why
+      --  executable.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
 
          --  Set strict standard interpretation of compiler permissions
 
@@ -384,11 +385,10 @@ procedure Gnat1drv is
 
          Polling_Required := False;
 
-         --  Set operating mode to Generate_Code, but full front-end expansion
-         --  is not desirable in SPARK mode, so a light expansion is performed
-         --  instead.
+         --  Set operating mode to Check_Semantics, but a light front-end
+         --  expansion is still performed.
 
-         Operating_Mode := Generate_Code;
+         Operating_Mode := Check_Semantics;
 
          --  Skip call to gigi
 
@@ -1054,17 +1054,13 @@ begin
       elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
 
-      --  It is not an error to analyze in SPARK mode a spec which requires a
-      --  body, when the body is not available. During frame condition
+      --  It is not an error to analyze in GNATprove mode a spec which requires
+      --  a body, when the body is not available. During frame condition
       --  generation, the corresponding ALI file is generated. During
       --  translation to Why, Why code is generated for the spec.
 
-      elsif SPARK_Mode then
-         if Frame_Condition_Mode then
-            Back_End_Mode := Declarations_Only;
-         else
-            Back_End_Mode := Generate_Object;
-         end if;
+      elsif GNATprove_Mode then
+         Back_End_Mode := Declarations_Only;
 
       --  In all other cases (specs which have bodies, generics, and bodies
       --  where subunits are missing), we cannot generate code and we generate
@@ -1168,10 +1164,11 @@ begin
       --  since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
-        and then (not (Back_Annotate_Rep_Info or Generate_SCIL)
-                   or else Main_Kind = N_Subunit
-                   or else Targparm.Frontend_Layout_On_Target
-                   or else Targparm.VM_Target /= No_VM)
+           and then
+         (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
+           or else Main_Kind = N_Subunit
+           or else Targparm.Frontend_Layout_On_Target
+           or else Targparm.VM_Target /= No_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
          Sem_Ch13.Validate_Address_Clauses;

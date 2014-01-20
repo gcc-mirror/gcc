@@ -841,7 +841,7 @@ package body Lib.Writ is
               --  files, which are required to compute frame conditions
               --  of subprograms.
 
-              or else SPARK_Mode
+              or else GNATprove_Mode
             then
                Write_Info_Tab (25);
 
@@ -973,9 +973,10 @@ package body Lib.Writ is
 
       --  If we are not generating code, and there is an up to date ALI file
       --  file accessible, read it, and acquire the compilation arguments from
-      --  this file.
+      --  this file. In GNATprove mode, always generate the ALI file, which
+      --  contains a special section for formal verification.
 
-      if Operating_Mode /= Generate_Code then
+      if Operating_Mode /= Generate_Code and then not GNATprove_Mode then
          if Up_To_Date_ALI_File_Exists then
             Update_Tables_From_ALI_File;
             return;
@@ -1488,7 +1489,7 @@ package body Lib.Writ is
 
       --  Output SPARK cross-reference information if needed
 
-      if Opt.Xref_Active and then SPARK_Mode then
+      if Opt.Xref_Active and then GNATprove_Mode then
          SPARK_Specific.Collect_SPARK_Xrefs (Sdep_Table => Sdep_Table,
                                              Num_Sdep   => Num_Sdep);
          SPARK_Specific.Output_SPARK_Xrefs;

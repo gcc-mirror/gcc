@@ -454,10 +454,14 @@ package body Sem_Aggr is
          Check_Unset_Reference (Exp);
       end if;
 
-      --  This is really expansion activity, so make sure that expansion
-      --  is on and is allowed.
+      --  This is really expansion activity, so make sure that expansion is
+      --  on and is allowed. In GNATprove mode, we also want check flags to be
+      --  added in the tree, so that the formal verification can rely on those
+      --  to be present.
 
-      if not Expander_Active or else In_Spec_Expression then
+      if not (Expander_Active or GNATprove_Mode)
+        or In_Spec_Expression
+      then
          return;
       end if;
 
@@ -996,10 +1000,10 @@ package body Sem_Aggr is
       --  frozen so that initialization procedures can properly be called
       --  in the resolution that follows.  The replacement of boxes with
       --  initialization calls is properly an expansion activity but it must
-      --  be done during revolution.
+      --  be done during resolution.
 
       if Expander_Active
-        and then  Present (Component_Associations (N))
+        and then Present (Component_Associations (N))
       then
          declare
             Comp : Node_Id;

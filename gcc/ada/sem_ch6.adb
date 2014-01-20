@@ -1151,7 +1151,7 @@ package body Sem_Ch6 is
          --  prepares the contract assertions for generic subprograms or for
          --  ASIS. Do not generate contract checks in SPARK mode.
 
-         if not SPARK_Mode then
+         if not GNATprove_Mode then
             Expand_Subprogram_Contract (N, Gen_Id, Body_Id);
          end if;
 
@@ -3188,7 +3188,7 @@ package body Sem_Ch6 is
       --  prepares the contract assertions for generic subprograms or for ASIS.
       --  Do not generate contract checks in SPARK mode.
 
-      if not SPARK_Mode then
+      if not GNATprove_Mode then
          Expand_Subprogram_Contract (N, Spec_Id, Body_Id);
       end if;
 

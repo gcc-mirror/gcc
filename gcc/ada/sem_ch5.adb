@@ -1712,7 +1712,7 @@ package body Sem_Ch5 is
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
 
-        and then not SPARK_Mode
+        and then not GNATprove_Mode
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);

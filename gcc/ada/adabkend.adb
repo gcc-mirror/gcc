@@ -235,12 +235,12 @@ package body Adabkend is
                if Is_Switch (Argv) then
                   Fail ("Object file name missing after -gnatO");
 
-               --  In SPARK_Mode, such an object file is never written, and the
-               --  call to Set_Output_Object_File_Name may fail (e.g. when the
-               --  object file name does not have the expected suffix). So we
-               --  skip that call when SPARK_Mode is set.
+               --  In GNATprove_Mode, such an object file is never written, and
+               --  the call to Set_Output_Object_File_Name may fail (e.g. when
+               --  the object file name does not have the expected suffix). So
+               --  we skip that call when GNATprove_Mode is set.
 
-               elsif SPARK_Mode then
+               elsif GNATprove_Mode then
                   Output_File_Name_Seen := True;
 
                else

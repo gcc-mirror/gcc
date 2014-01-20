@@ -3616,7 +3616,7 @@ package body Sem_Ch12 is
 
          --  We instantiate the body if we are generating code, if we are
          --  generating cross-reference information, or if we are building
-         --  trees for ASIS use.
+         --  trees for ASIS use or GNATprove use.
 
          declare
             Enclosing_Body_Present : Boolean := False;
@@ -3724,7 +3724,7 @@ package body Sem_Ch12 is
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
                            or else (Operating_Mode = Check_Semantics
-                                     and then ASIS_Mode));
+                                     and then (ASIS_Mode or GNATprove_Mode)));
 
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
@@ -4390,17 +4390,18 @@ package body Sem_Ch12 is
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
 
-        --  Must be generating code or analyzing code in ASIS mode
+        --  Must be generating code or analyzing code in ASIS mode or GNATprove
+        --  mode.
 
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
-                             and then ASIS_Mode))
+                             and then (ASIS_Mode or GNATprove_Mode)))
 
         --  The body is needed when generating code (full expansion), in ASIS
-        --  mode for other tools, and in SPARK mode (special expansion) for
+        --  mode for other tools, and in GNATprove mode (special expansion) for
         --  formal verification of the body itself.
 
-        and then (Expander_Active or ASIS_Mode)
+        and then (Expander_Active or ASIS_Mode or GNATprove_Mode)
 
         --  No point in inlining if ABE is inevitable
 

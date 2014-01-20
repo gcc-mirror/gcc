@@ -1823,7 +1823,7 @@ package body Sem_Ch4 is
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          SPARK_Specific.Generate_Dereference (N);
       end if;
 
@@ -4613,7 +4613,7 @@ package body Sem_Ch4 is
                      --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     if SPARK_Mode then
+                     if GNATprove_Mode then
                         Apply_Compile_Time_Constraint_Error
                           (N, "component not present in }",
                            CE_Discriminant_Check_Failed,

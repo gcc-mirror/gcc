@@ -3280,7 +3280,7 @@ package body Freeze is
            --  general, neither CodePeer not GNATprove care about the
            --  internal representation of objects.
 
-           and then not (CodePeer_Mode or SPARK_Mode)
+           and then not (CodePeer_Mode or GNATprove_Mode)
          then
             --  If implicit packing enabled, do it
 
@@ -4230,7 +4230,7 @@ package body Freeze is
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
-                    and then not (CodePeer_Mode or SPARK_Mode)
+                    and then not (CodePeer_Mode or GNATprove_Mode)
                   then
                      --  Compute number of elements in array
 

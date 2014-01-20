@@ -44,7 +44,7 @@ package body Opt is
 
    function Full_Expander_Active return Boolean is
    begin
-      return Expander_Active and not SPARK_Mode;
+      return Expander_Active;
    end Full_Expander_Active;
 
    ----------------------------------

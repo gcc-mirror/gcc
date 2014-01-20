@@ -12802,7 +12802,7 @@ package body Sem_Util is
                --  In formal verification mode, keep track of all reads and
                --  writes through explicit dereferences.
 
-               if SPARK_Mode then
+               if GNATprove_Mode then
                   SPARK_Specific.Generate_Dereference (N, 'm');
                end if;
 
@@ -12897,11 +12897,12 @@ package body Sem_Util is
 
                --  Generate a reference only if the assignment comes from
                --  source. This excludes, for example, calls to a dispatching
-               --  assignment operation when the left-hand side is tagged.
+               --  assignment operation when the left-hand side is tagged. In
+               --  GNATprove mode, we need those references also on generated
+               --  code, as these are used to compute the local effects of
+               --  subprograms.
 
-               --  Why is SPARK mode different here ???
-
-               if Modification_Comes_From_Source or SPARK_Mode then
+               if Modification_Comes_From_Source or GNATprove_Mode then
                   Generate_Reference (Ent, Exp, 'm');
 
                   --  If the target of the assignment is the bound variable

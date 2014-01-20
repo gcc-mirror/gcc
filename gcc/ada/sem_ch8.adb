@@ -5079,7 +5079,7 @@ package body Sem_Ch8 is
 
             if Is_Object (E)
               and then Present (Renamed_Object (E))
-              and then not SPARK_Mode
+              and then not GNATprove_Mode
             then
                Generate_Reference (E, N);
 
