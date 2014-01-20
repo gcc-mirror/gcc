@@ -13819,11 +13819,8 @@ identifier case conventions, rules of indentation, and comment layout.
 
 Note: A newly-redesigned set of formatting algorithms used by gnatpp
 is now available.
-To invoke the new experimental formatting algorithms, use the
-@option{--pp-new} switch.
-The default is @option{--pp-old}; that is, gnatpp uses the old
-formatting algorithms by default.
-We intend to make @option{--pp-new} the default at some point.
+To invoke the old formatting algorithms, use the @option{--pp-old} switch.
+We intend to remove support for @option{--pp-old} at some point.
 
 To produce a reformatted file, @command{gnatpp} generates and uses the ASIS
 tree for the input source and thus requires the input to be syntactically and
@@ -14435,11 +14432,11 @@ Display usage, then exit disregarding all other options.
 
 @item --pp-new
 @cindex @option{--pp-new} @command{gnatpp}
-Use the new experimental formatting algorithms.
+Use the new experimental formatting algorithms. This is the default.
 
 @item --pp-old
 @cindex @option{--pp-old} @command{gnatpp}
-Use the old formatting algorithms. This is the default.
+Use the old formatting algorithms.
 
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})

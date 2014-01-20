@@ -18780,8 +18780,14 @@ package body Sem_Ch3 is
          --  We need to ensure validity of the bounds here, because if we
          --  go ahead and do the expansion, then the expanded code will get
          --  analyzed with range checks suppressed and we miss the check.
+         --  Validity checks on the range of a quantified expression are
+         --  delayed until the construct is transformed into a loop.
 
-         Validity_Check_Range (R);
+         if Nkind (Parent (R)) /= N_Loop_Parameter_Specification
+           or else Nkind (Parent (Parent (R))) /= N_Quantified_Expression
+         then
+            Validity_Check_Range (R);
+         end if;
 
          --  If there were errors in the declaration, try and patch up some
          --  common mistakes in the bounds. The cases handled are literals
@@ -18791,7 +18797,6 @@ package body Sem_Ch3 is
          --  are guaranteed.
 
          if Etype (R) = Any_Type then
-
             if Nkind (Lo) = N_Integer_Literal and then Is_Real_Type (T) then
                Rewrite (Lo,
                  Make_Real_Literal (Sloc (Lo), UR_From_Uint (Intval (Lo))));

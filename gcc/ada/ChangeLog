@@ -1,3 +1,42 @@
+2014-01-20  Claire Dross  <dross@adacore.com>
+
+	* a-cofove.ads (Vector): Capacity discriminant
+	should be in range of the index.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* a-caldel.ads(To_Duration), s-taasde.ads(Time_Enqueue):
+	Clarify specs s-tadeca.adb(Enqueue_Calendar): Compensate for
+	possible difference between epoch of Ada.Calendar clock and Ada
+	real-time/tasking clock.
+	* s-taprop-posix.adb: Minor comment fix.
+
+2014-01-20  Doug Rupp  <rupp@adacore.com>
+
+	* sysdep.c [vxworks]: Remove Vxworks version noise for RTP.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Generate validity
+	checks on the prefix of attribute 'Old.
+	* sem_ch3.adb (Process_Range_Expr_In_Decl): Suppress the
+	generation of validity checks on a range that belongs to the
+	iteration scheme of a quantified expression.
+	* sem_ch5.adb (One_Bound): Suppress the generation of validity
+	checks on a bound that belongs to the iteration scheme of a
+	quantified expression, generate the check in all other cases.
+
+2014-01-20  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Enable --pp-new by default. Minor reorganization.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve): When compiling a predefined unit, ignore
+	interpretations that do not come from other predefined units,
+	to prevent spurious ambiguities in the presence of user-defined
+	operators in the context of (an instance of) a predefined unit.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document that Loop_Variant is included in

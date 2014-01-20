@@ -2156,6 +2156,20 @@ package body Sem_Res is
                --  First matching interpretation
 
                if not Found then
+                  --  If the current statement is part of a predefined library
+                  --  unit, then all interpretations which come from user level
+                  --  packages should not be considered. User-defined operators
+                  --  may appear anywhere in the homonym list. This exclusion
+                  --  does not apply in an instance, where an actual may come
+                  --  from a local declaration.
+
+                  if From_Lib
+                    and then not Comes_From_Predefined_Lib_Unit (It.Nam)
+                    and then not In_Instance
+                  then
+                     goto Continue;
+                  end if;
+
                   Found := True;
                   I1    := I;
                   Seen  := It.Nam;
@@ -2167,10 +2181,6 @@ package body Sem_Res is
                --  some more obscure cases are handled in Disambiguate.
 
                else
-                  --  If the current statement is part of a predefined library
-                  --  unit, then all interpretations which come from user level
-                  --  packages should not be considered.
-
                   if From_Lib
                     and then not Comes_From_Predefined_Lib_Unit (It.Nam)
                   then
