@@ -1,3 +1,7 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, sem_ch4.adb: Minor reformatting.
+
 2014-01-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Quantified_Expression): If after

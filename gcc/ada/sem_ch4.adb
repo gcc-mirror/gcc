@@ -2956,17 +2956,15 @@ package body Sem_Ch4 is
          Form2 : constant Entity_Id := Next_Formal (Form1);
 
       begin
-         if Ekind (Fun) /= E_Function
-           or else Is_Abstract_Subprogram (Fun)
-         then
+         if Ekind (Fun) /= E_Function or else Is_Abstract_Subprogram (Fun) then
             return False;
 
          elsif not Has_Compatible_Type (Act1, Etype (Form1)) then
             return False;
 
          elsif Present (Form2) then
-            if
-              No (Act2) or else not Has_Compatible_Type (Act2, Etype (Form2))
+            if No (Act2)
+              or else not Has_Compatible_Type (Act2, Etype (Form2))
             then
                return False;
             end if;
@@ -3016,7 +3014,7 @@ package body Sem_Ch4 is
           (Needs_No_Actuals (Nam)
             or else
               (Needs_One_Actual (Nam)
-                 and then Present (Next_Actual (First (Actuals)))))
+                and then Present (Next_Actual (First (Actuals)))))
       then
          if Is_Array_Type (Subp_Type)
            and then
@@ -3673,8 +3671,7 @@ package body Sem_Ch4 is
          begin
             Preanalyze (Loop_Par);
 
-            if Nkind (Discrete_Subtype_Definition (Loop_Par)) =
-              N_Function_Call
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
               and then Parent (Loop_Par) /= N
             then
                --  The parser cannot distinguish between a loop specification
