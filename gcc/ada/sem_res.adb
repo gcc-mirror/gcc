@@ -2178,17 +2178,17 @@ package body Sem_Res is
 
                      elsif not Comes_From_Predefined_Lib_Unit (Seen) then
 
-                        --  Previous interpretation must be discarded.
+                        --  Previous interpretation must be discarded
 
-                        I1    := I;
-                        Seen  := It.Nam;
+                        I1 := I;
+                        Seen := It.Nam;
                         Expr_Type := It.Typ;
                         Set_Entity (N, Seen);
                         goto Continue;
                      end if;
                   end if;
 
-                  --  Otherwise apply further disambiguation steps.
+                  --  Otherwise apply further disambiguation steps
 
                   Error_Msg_Sloc := Sloc (Seen);
                   It1 := Disambiguate (N, I1, I, Typ);

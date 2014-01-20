@@ -12194,7 +12194,8 @@ package body Exp_Ch4 is
 
             --  The topmost case or if expression is now recovered, but it may
             --  still not be the correct place to add generated code. Climb to
-            --  find a parent that is part of a declarative or statement list.
+            --  find a parent that is part of a declarative or statement list,
+            --  and is not a list of actuals in a call.
 
             Par := Top;
             while Present (Par) loop
@@ -12203,6 +12204,11 @@ package body Exp_Ch4 is
                                              N_Discriminant_Association,
                                              N_Parameter_Association,
                                              N_Pragma_Argument_Association)
+                 and then not Nkind_In
+                                (Parent (Par), N_Function_Call,
+                                               N_Procedure_Call_Statement,
+                                               N_Entry_Call_Statement)
+
                then
                   Hook_Context := Par;
                   goto Hook_Context_Found;

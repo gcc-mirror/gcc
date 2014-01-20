@@ -1,3 +1,33 @@
+2014-01-20  Pascal Obry  <obry@adacore.com>
+
+	* s-win32.ads (FreeLibrary): New import.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb, sem_cat.adb: Minor reformatting.
+	* sem_ch11.adb (Analyze_Raise_Statement): Only give warning about
+	assigning to OUT parameters for the current subprogram scope.
+	* exp_ch4.adb: Minor reformatting.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object,
+	Find_Enclosing_Contexts): If the top-level if-expression that
+	generated the transient object is an actual in a call, the proper
+	Hook_Context is a construct enclosing the call.
+	* einfo.ads: Indicate that Related_Expression is used to link a
+	loop variable to the container expression over which the loop
+	takes place.
+	(Analyze_Iterator_Specification): Set the Related_Expression of
+	the loop variable in a container element iterator.
+	(Note_Possible_Modification): If the variable is the loop
+	variable in a container element iterator, indicate that the
+	enclosing container is also modified.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Move_Or_Merge_Aspects): Reimplemented.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* s-taasde.ads, gnat_ugn.texi, s-tadeca.adb, sem_res.adb, s-tadeca.ads:

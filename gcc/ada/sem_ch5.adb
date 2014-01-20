@@ -1695,6 +1695,13 @@ package body Sem_Ch5 is
 
       Set_Ekind (Def_Id, E_Variable);
 
+      --  Provide a link between the iterator variable and the container,
+      --  for subequent use in cross-reference and modification information.
+
+      if Of_Present (N) then
+         Set_Related_Expression (Def_Id, Iter_Name);
+      end if;
+
       --  If the domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
       --  The declaration must be a renaming because the body of the loop may

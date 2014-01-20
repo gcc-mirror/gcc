@@ -13074,6 +13074,18 @@ package body Sem_Util is
                  and then Present (Renamed_Object (Ent))
                then
                   Exp := Renamed_Object (Ent);
+
+                  --  If the entity is the loop variable in an iteration over
+                  --  a container, retrieve container expression to indicate
+                  --  possible modificastion.
+
+                  if Present (Related_Expression (Ent))
+                    and then Nkind (Parent (Related_Expression (Ent))) =
+                      N_Iterator_Specification
+                  then
+                     Exp := Original_Node (Related_Expression (Ent));
+                  end if;
+
                   goto Continue;
 
                --  The expression may be the renaming of a subcomponent of an
