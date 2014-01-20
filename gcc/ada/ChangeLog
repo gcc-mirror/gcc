@@ -1,3 +1,32 @@
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Attributes 'Old and 'Result
+	can now apply to a refined postcondition.
+	* sem_ch6.adb (Analyze_Subprogram_Contract): Remove local
+	variable Result_Seen. Add variables Case_Prag, Post_Prag,
+	Seen_In_Case and Seen_In_Post. Update the mechanism that detects
+	whether postconditions and/or constract-cases mention attribute
+	'Result and introduce a post-state when applied to functions.
+	(Check_Result_And_Post_State): Removed.
+	* sem_prag.adb (Analyze_Pragma): Add local variable
+	Result_Seen. Verify that the expression of pragma Refined_Post
+	mentions attribute 'Result and introduces a post-state.
+	* sem_util.ads, sem_util.adb (Check_Result_And_Post_State): New routine.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Is_Subprogram_Call): New routine.
+	(Process_Transient_Objects): Make variable Must_Hook global with
+	respect to all locally declared subprograms. Search the context
+	for at least one subprogram call.
+	(Requires_Hooking): Removed.
+
+2014-01-20  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads a-cfhama.ads a-cfhase.ads a-cforma.ads
+	* a-cforse.ads a-cofove.ads: Add pragma Annotate (GNATprove,
+	External_Axiomatization);
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case Loop_Entry): Allow

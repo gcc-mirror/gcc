@@ -3420,190 +3420,15 @@ package body Sem_Ch6 is
    ---------------------------------
 
    procedure Analyze_Subprogram_Contract (Subp : Entity_Id) is
-      Result_Seen : Boolean := False;
-      --  A flag which keeps track of whether at least one postcondition or
-      --  contract-case mentions attribute 'Result (set True if so).
-
-      procedure Check_Result_And_Post_State
-        (Prag      : Node_Id;
-         Error_Nod : in out Node_Id);
-      --  Determine whether pragma Prag mentions attribute 'Result and whether
-      --  the pragma contains an expression that evaluates differently in pre-
-      --  and post-state. Prag is a postcondition or a contract-cases pragma.
-      --  Error_Nod denotes the proper error node.
-
-      ---------------------------------
-      -- Check_Result_And_Post_State --
-      ---------------------------------
-
-      procedure Check_Result_And_Post_State
-        (Prag      : Node_Id;
-         Error_Nod : in out Node_Id)
-      is
-         procedure Check_Expression (Expr : Node_Id);
-         --  Perform the 'Result and post-state checks on a given expression
-
-         function Is_Function_Result (N : Node_Id) return Traverse_Result;
-         --  Attempt to find attribute 'Result in a subtree denoted by N
-
-         function Is_Trivial_Boolean (N : Node_Id) return Boolean;
-         --  Determine whether source node N denotes "True" or "False"
-
-         function Mentions_Post_State (N : Node_Id) return Boolean;
-         --  Determine whether a subtree denoted by N mentions any construct
-         --  that denotes a post-state.
-
-         procedure Check_Function_Result is
-           new Traverse_Proc (Is_Function_Result);
-
-         ----------------------
-         -- Check_Expression --
-         ----------------------
-
-         procedure Check_Expression (Expr : Node_Id) is
-         begin
-            if not Is_Trivial_Boolean (Expr) then
-               Check_Function_Result (Expr);
-
-               if not Mentions_Post_State (Expr) then
-                  if Pragma_Name (Prag) = Name_Contract_Cases then
-                     Error_Msg_N
-                       ("contract case refers only to pre-state?T?", Expr);
-                  else
-                     Error_Msg_N
-                       ("postcondition refers only to pre-state?T?", Prag);
-                  end if;
-               end if;
-            end if;
-         end Check_Expression;
-
-         ------------------------
-         -- Is_Function_Result --
-         ------------------------
-
-         function Is_Function_Result (N : Node_Id) return Traverse_Result is
-         begin
-            if Nkind (N) = N_Attribute_Reference
-              and then Attribute_Name (N) = Name_Result
-            then
-               Result_Seen := True;
-               return Abandon;
-
-            --  Continue the traversal
-
-            else
-               return OK;
-            end if;
-         end Is_Function_Result;
-
-         ------------------------
-         -- Is_Trivial_Boolean --
-         ------------------------
-
-         function Is_Trivial_Boolean (N : Node_Id) return Boolean is
-         begin
-            return
-              Comes_From_Source (N)
-                and then Is_Entity_Name (N)
-                and then (Entity (N) = Standard_True
-                            or else Entity (N) = Standard_False);
-         end Is_Trivial_Boolean;
-
-         -------------------------
-         -- Mentions_Post_State --
-         -------------------------
-
-         function Mentions_Post_State (N : Node_Id) return Boolean is
-            Post_State_Seen : Boolean := False;
-
-            function Is_Post_State (N : Node_Id) return Traverse_Result;
-            --  Attempt to find a construct that denotes a post-state. If this
-            --  is the case, set flag Post_State_Seen.
-
-            -------------------
-            -- Is_Post_State --
-            -------------------
-
-            function Is_Post_State (N : Node_Id) return Traverse_Result is
-               Ent : Entity_Id;
-
-            begin
-               if Nkind_In (N, N_Explicit_Dereference, N_Function_Call) then
-                  Post_State_Seen := True;
-                  return Abandon;
-
-               elsif Nkind_In (N, N_Expanded_Name, N_Identifier) then
-                  Ent := Entity (N);
-
-                  if No (Ent) or else Ekind (Ent) in Assignable_Kind then
-                     Post_State_Seen := True;
-                     return Abandon;
-                  end if;
-
-               elsif Nkind (N) = N_Attribute_Reference then
-                  if Attribute_Name (N) = Name_Old then
-                     return Skip;
-                  elsif Attribute_Name (N) = Name_Result then
-                     Post_State_Seen := True;
-                     return Abandon;
-                  end if;
-               end if;
-
-               return OK;
-            end Is_Post_State;
-
-            procedure Find_Post_State is new Traverse_Proc (Is_Post_State);
-
-         --  Start of processing for Mentions_Post_State
-
-         begin
-            Find_Post_State (N);
-            return Post_State_Seen;
-         end Mentions_Post_State;
-
-         --  Local variables
-
-         Expr  : constant Node_Id :=
-                   Expression (First (Pragma_Argument_Associations (Prag)));
-         Nam   : constant Name_Id := Pragma_Name (Prag);
-         CCase : Node_Id;
-
-      --  Start of processing for Check_Result_And_Post_State
-
-      begin
-         if No (Error_Nod) then
-            Error_Nod := Prag;
-         end if;
-
-         --  Examine all consequences
-
-         if Nam = Name_Contract_Cases then
-            CCase := First (Component_Associations (Expr));
-            while Present (CCase) loop
-               Check_Expression (Expression (CCase));
-
-               Next (CCase);
-            end loop;
-
-         --  Examine the expression of a postcondition
-
-         else
-            pragma Assert (Nam = Name_Postcondition);
-            Check_Expression (Expr);
-         end if;
-      end Check_Result_And_Post_State;
-
-      --  Local variables
-
-      Items       : constant Node_Id := Contract (Subp);
-      Depends     : Node_Id := Empty;
-      Error_CCase : Node_Id := Empty;
-      Error_Post  : Node_Id := Empty;
-      Global      : Node_Id := Empty;
-      Nam         : Name_Id;
-      Prag        : Node_Id;
-
-   --  Start of processing for Analyze_Subprogram_Contract
+      Items        : constant Node_Id := Contract (Subp);
+      Case_Prag    : Node_Id := Empty;
+      Depends      : Node_Id := Empty;
+      Global       : Node_Id := Empty;
+      Nam          : Name_Id;
+      Post_Prag    : Node_Id := Empty;
+      Prag         : Node_Id;
+      Seen_In_Case : Boolean := False;
+      Seen_In_Post : Boolean := False;
 
    begin
       if Present (Items) then
@@ -3620,7 +3445,8 @@ package body Sem_Ch6 is
             if Warn_On_Suspicious_Contract
               and then Pragma_Name (Prag) = Name_Postcondition
             then
-               Check_Result_And_Post_State (Prag, Error_Post);
+               Post_Prag := Prag;
+               Check_Result_And_Post_State (Prag, Seen_In_Post);
             end if;
 
             Prag := Next_Pragma (Prag);
@@ -3642,7 +3468,8 @@ package body Sem_Ch6 is
                if Warn_On_Suspicious_Contract
                  and then not Error_Posted (Prag)
                then
-                  Check_Result_And_Post_State (Prag, Error_CCase);
+                  Case_Prag := Prag;
+                  Check_Result_And_Post_State (Prag, Seen_In_Case);
                end if;
 
             else
@@ -3683,26 +3510,28 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Emit an error when none of the postconditions or contract-cases
+      --  Emit an error when neither the postconditions nor the contract-cases
       --  mention attribute 'Result in the context of a function.
 
       if Warn_On_Suspicious_Contract
         and then Ekind_In (Subp, E_Function, E_Generic_Function)
-        and then not Result_Seen
       then
-         if Present (Error_Post) and then Present (Error_CCase) then
+         if Present (Case_Prag)
+           and then not Seen_In_Case
+           and then Present (Post_Prag)
+           and then not Seen_In_Post
+         then
             Error_Msg_N
               ("neither function postcondition nor contract cases mention "
-               & "result?T?", Error_Post);
+               & "result?T?", Post_Prag);
 
-         elsif Present (Error_Post) then
+         elsif Present (Case_Prag) and then not Seen_In_Case then
             Error_Msg_N
-              ("function postcondition does not mention result?T?",
-               Error_Post);
+              ("contract cases do not mention result?T?", Case_Prag);
 
-         elsif Present (Error_CCase) then
+         elsif Present (Post_Prag) and then not Seen_In_Post then
             Error_Msg_N
-              ("contract cases do not mention result?T?", Error_CCase);
+              ("function postcondition does not mention result?T?", Post_Prag);
          end if;
       end if;
    end Analyze_Subprogram_Contract;

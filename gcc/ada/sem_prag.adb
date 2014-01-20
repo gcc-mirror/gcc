@@ -17331,9 +17331,10 @@ package body Sem_Prag is
          --  pragma Refined_Post (boolean_EXPRESSION);
 
          when Pragma_Refined_Post => Refined_Post : declare
-            Body_Id : Entity_Id;
-            Legal   : Boolean;
-            Spec_Id : Entity_Id;
+            Body_Id     : Entity_Id;
+            Legal       : Boolean;
+            Result_Seen : Boolean := False;
+            Spec_Id     : Entity_Id;
 
          begin
             Analyze_Refined_Pragma (Spec_Id, Body_Id, Legal);
@@ -17342,6 +17343,20 @@ package body Sem_Prag is
 
             if Legal then
                Analyze_Pre_Post_Condition_In_Decl_Part (N, Spec_Id);
+
+               --  Verify that the refined postcondition mentions attribute
+               --  'Result and its expression introduces a post-state.
+
+               if Warn_On_Suspicious_Contract
+                 and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+               then
+                  Check_Result_And_Post_State (N, Result_Seen);
+
+                  if not Result_Seen then
+                     Error_Pragma
+                       ("pragma % does not mention function result?T?");
+                  end if;
+               end if;
             end if;
          end Refined_Post;
 

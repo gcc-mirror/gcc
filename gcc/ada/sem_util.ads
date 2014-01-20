@@ -260,6 +260,14 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
+   procedure Check_Result_And_Post_State
+     (Prag        : Node_Id;
+      Result_Seen : in out Boolean);
+   --  Determine whether pragma Prag mentions attribute 'Result and whether
+   --  the pragma contains an expression that evaluates differently in pre-
+   --  and post-state. Prag is a [refined] postcondition or a contract-cases
+   --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
+
    procedure Check_Unprotected_Access
      (Context : Node_Id;
       Expr    : Node_Id);

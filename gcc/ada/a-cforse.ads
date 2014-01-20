@@ -63,6 +63,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Ordered_Sets is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
