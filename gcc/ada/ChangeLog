@@ -1,5 +1,24 @@
 2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Record_Subtype>:
+	Tidy up.  For a subtype with discriminants and variant part, if a
+	variant is statically selected and the fields all have a constant
+	position, put them in order of increasing position.  Likewise if
+	no variant part but representation clause is present.
+	* gcc-interface/utils.c (make_packable_type): Robustify.
+	(maybe_pad_type): Use local variable and tidy up condition.  If no
+	alignment is specified, use the original one.
+	(create_type_stub_decl): Minor tweak.
+	(convert) <case VECTOR_CST>: Fix typo.
+	<case CONSTRUCTOR>: Deal with padding types around the same type.
+	Do not punt on missing fields.
+	(unchecked_convert): Call finish_record_type to lay out the special
+	record types made for conversions from/to problematic integer types.
+	Bump the alignment of CONSTRUCTORs before converting them to a more
+	aligned type.
+
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Component>: Remove
 	obsolete code for type_annotate_only mode, simplify code and slightly
 	improve wording of comments.
