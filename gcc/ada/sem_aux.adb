@@ -76,28 +76,35 @@ package body Sem_Aux is
    -- Available_View --
    --------------------
 
-   function Available_View (Typ : Entity_Id) return Entity_Id is
+   function Available_View (Ent : Entity_Id) return Entity_Id is
    begin
-      if Is_Incomplete_Type (Typ)
-        and then Present (Non_Limited_View (Typ))
+      --  Obtain the non-limited (non-abstract) view of a state or variable
+
+      if Ekind (Ent) = E_Abstract_State
+        and then Present (Non_Limited_View (Ent))
       then
-         --  The non-limited view may itself be an incomplete type, in which
-         --  case get its full view.
+         return Non_Limited_View (Ent);
 
-         return Get_Full_View (Non_Limited_View (Typ));
+      --  The non-limited view of an incomplete type may itself be incomplete
+      --  in which case obtain its full view.
 
-      --  If it is class_wide, check whether the specific type comes from
-      --  A limited_with.
-
-      elsif Is_Class_Wide_Type (Typ)
-        and then Is_Incomplete_Type (Etype (Typ))
-        and then From_Limited_With (Etype (Typ))
-        and then Present (Non_Limited_View (Etype (Typ)))
+      elsif Is_Incomplete_Type (Ent)
+        and then Present (Non_Limited_View (Ent))
       then
-         return Class_Wide_Type (Non_Limited_View (Etype (Typ)));
+         return Get_Full_View (Non_Limited_View (Ent));
+
+      --  If it is class_wide, check whether the specific type comes from a
+      --  limited_with.
+
+      elsif Is_Class_Wide_Type (Ent)
+        and then Is_Incomplete_Type (Etype (Ent))
+        and then From_Limited_With (Etype (Ent))
+        and then Present (Non_Limited_View (Etype (Ent)))
+      then
+         return Class_Wide_Type (Non_Limited_View (Etype (Ent)));
 
       else
-         return Typ;
+         return Ent;
       end if;
    end Available_View;
 

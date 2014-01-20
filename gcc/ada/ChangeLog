@@ -1,3 +1,38 @@
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Non_Limited_View): Applies to abstract states.
+	(Set_From_Limited_With): Applies to abstract states.
+	(Set_Non_Limited_View): Applies to abstract states.
+	(Write_Field17): Output the non-limited view of an abstract state.
+	* einfo.ads: Update the comment on usage and occurrences in
+	nodes for attributes From_Limited_With and Non_Limited_View.
+	* sem_aux.adb (Available_View): This routine can now handle
+	abstract states.
+	* sem_aux.ads (Available_View): This routine can now handle
+	abstract states. Update the comment on usage.
+	* sem_ch8.adb (Find_Expanded_Name): Handle abstract views
+	of states and variables.
+	(In_Pragmas_Depends_Or_Global): New routine.
+	* sem_ch10.adb (Build_Limited_Views): Implement
+	abstract (limited) views of variables and states.
+	(Build_Shadow_Entity): This routine is now a procedure. Add
+	formal parameter Shadow. Update the comment on usage. Add
+	context-specific decoration for states and variables.
+	(Decorate_State): New routine.	(Decorate_Variable): New routine.
+	(Find_And_Process_States): New routine.
+	(Process_Declarations): Renamed to Process_Declarations_And_States.
+	(Process_Declarations_And_States): Add formal parameters
+	Pack and Create_Abstract_Views. Update the comment on usage.
+	(Process_States): New routine.
+	* sem_prag.adb (Check_Dependency_Clause): Handle abstract
+	views of states and variables. Match the abstract view of a state
+	against its corresponding non-abstract view.
+	(Is_Matching_Input):
+	Handle abstract views of states and variables. Match the abstract
+	view of a state against its corresponding non-abstract view.
+	(Process_Global_Item): Handle abstract views of states and
+	variables.
+
 2014-01-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch10.adb (Expand_With_Clause): Don't
