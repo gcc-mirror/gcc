@@ -2132,12 +2132,33 @@ package body Sem_Ch13 is
 
                --  SPARK_Mode
 
-               when Aspect_SPARK_Mode =>
+               when Aspect_SPARK_Mode => SPARK_Mode : declare
+                  Decls : List_Id;
+
+               begin
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
+
+                  --  When the aspect appears on a package body, insert the
+                  --  generated pragma at the top of the body declarations to
+                  --  emulate the behavior of a source pragma.
+
+                  if Nkind (N) = N_Package_Body then
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decls := Declarations (N);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+                     goto Continue;
+                  end if;
+               end SPARK_Mode;
 
                --  Refined_Depends
 
