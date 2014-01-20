@@ -384,6 +384,40 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
+   --  The following type lists all possible forms of default initialization
+   --  that may apply to a type.
+
+   type Default_Initialization_Kind is
+     (No_Possible_Initialization,
+      --  This value signifies that a type cannot possibly be initialized
+      --  because it has no content, for example - a null record.
+
+      Full_Default_Initialization,
+      --  This value covers the following combinations of types and content:
+      --    * Access type
+      --    * Array-of-scalars with specified Default_Component_Value
+      --    * Array type with fully default initialized component type
+      --    * Record or protected type with components that either have a
+      --        default expression or their related types are fully default
+      --        initialized.
+      --    * Scalar type with specified Default_Value
+      --    * Task type
+      --    * Type extension of a type with full default initialization where
+      --        the extension components are also fully default initialized
+
+      Mixed_Initialization,
+      --  This value applies to a type where some of its internals are fully
+      --  default initialized and some are not.
+
+      No_Default_Initialization);
+      --  This value reflects a type where none of its content is fully
+      --  default initialized.
+
+   function Default_Initialization
+     (Typ : Entity_Id) return Default_Initialization_Kind;
+   --  Determine the default initialization kind that applies to a particular
+   --  type.
+
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the

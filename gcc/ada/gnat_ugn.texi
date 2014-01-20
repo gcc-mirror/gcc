@@ -19496,6 +19496,12 @@ to check substitutability.
 Specifies the default behavior of generated skeletons. @var{val} can be either
 "fail" or "pass", "fail" being the default.
 
+@item --passed-tests=@var{val}
+@cindex @option{--skeleton-default} (@command{gnattest})
+Specifies whether or not passed tests should be shown. @var{val} can be either
+"show" or "hide", "show" being the default.
+
+
 @item --tests-root=@var{dirname}
 @cindex @option{--tests-root} (@command{gnattest})
 The directory hierarchy of tested sources is recreated in the @var{dirname}

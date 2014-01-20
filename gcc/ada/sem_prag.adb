@@ -964,9 +964,12 @@ package body Sem_Prag is
             --  or tags can be read. In general, states and variables are
             --  considered to have mode IN OUT unless they are classified by
             --  pragma [Refined_]Global. In that case, the item must appear in
-            --  an input global list.
+            --  an input global list. OUT parameters of enclosing subprograms
+            --  behave as read-write variables in which case do not emit an
+            --  error.
 
             if (Ekind (Item_Id) = E_Out_Parameter
+                 and then Scope (Item_Id) = Spec_Id
                  and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
               or else
                 (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
@@ -999,18 +1002,34 @@ package body Sem_Prag is
             --  type acts as an input because the discriminants, array bounds
             --  or the tag may be read. Note that the presence of [Refined_]
             --  Global is not significant here because the item is a parameter.
+            --  This rule applies only to the formals of the related subprogram
+            --  as OUT parameters of enclosing subprograms behave as read-write
+            --  variables and their types do not matter.
 
             elsif Ekind (Item_Id) = E_Out_Parameter
+              and then Scope (Item_Id) = Spec_Id
               and then Is_Unconstrained_Or_Tagged_Item (Item_Id)
             then
                null;
 
             --  The remaining cases are IN, IN OUT, and OUT parameters. To
             --  qualify as self-referential item, the parameter must be of
-            --  mode IN OUT.
+            --  mode IN OUT or be an IN OUT or OUT parameter of an enclosing
+            --  subprogram.
 
-            elsif Ekind (Item_Id) /= E_In_Out_Parameter then
-               Error_Msg_NE ("item & must have mode `IN OUT`", Item, Item_Id);
+            elsif Scope (Item_Id) = Spec_Id then
+               if Ekind (Item_Id) /= E_In_Out_Parameter then
+                  Error_Msg_NE
+                    ("item & must have mode `IN OUT`", Item, Item_Id);
+               end if;
+
+            --  Enclosing subprogram parameter
+
+            elsif not Ekind_In (Item_Id, E_In_Out_Parameter,
+                                         E_Out_Parameter)
+            then
+               Error_Msg_NE
+                 ("item & must have mode `IN OUT` or `OUT`", Item, Item_Id);
             end if;
 
          --  Output

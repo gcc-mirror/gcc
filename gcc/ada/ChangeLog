@@ -1,3 +1,19 @@
+2014-01-20  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Documenting --passed-tests option for gnattest.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Default_Initialization): New routine.
+	* sem_util.ads: Add new type Default_Initialization_Kind.
+	(Default_Initialization): New routine.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode): Correct all error
+	message logic dealing with in/in out parameters that may appear
+	as inputs or have a self reference.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb, checks.adb, exp_intr.adb: Minor reformatting.
