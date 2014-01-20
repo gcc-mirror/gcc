@@ -30,15 +30,15 @@
 ------------------------------------------------------------------------------
 
 with Ada.Calendar.Delays;
+
 with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;
 
 function System.Tasking.Async_Delays.Enqueue_Calendar
-  (T    : Ada.Calendar.Time;
-   D    : Delay_Block_Access)
-   return Boolean
+  (T : Ada.Calendar.Time;
+   D : Delay_Block_Access) return Boolean
 is
    use type Ada.Calendar.Time;
 
@@ -55,12 +55,13 @@ begin
    end if;
 
    --  T is expressed as a duration elapsed since the UNIX epoch, whereas
-   --  Time_Enque expects duraction elapsed since the epoch of the Ada
-   --  real time clock: compensate if necessary.
+   --  Time_Enque expects duraction elapsed since the epoch of the Ada real-
+   --  time clock: compensate if necessary.
+
+   --  Comparison "SOSC.CLOCK_RT_Ada = SOSC.CLOCK_REALTIME" is compile
+   --  time known, so turn warnings off.
 
    pragma Warnings (Off);
-   --  Comparison "SOSC.CLOCK_RT_Ada = SOSC.CLOCK_REALTIME" is compile
-   --  time known.
 
    if SOSC.CLOCK_RT_Ada /= SOSC.CLOCK_REALTIME then
       pragma Warnings (On);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,5 @@
 
 with Ada.Calendar;
 function System.Tasking.Async_Delays.Enqueue_Calendar
-  (T    : Ada.Calendar.Time;
-   D    : Delay_Block_Access)
-   return Boolean;
+  (T : Ada.Calendar.Time;
+   D : Delay_Block_Access) return Boolean;
