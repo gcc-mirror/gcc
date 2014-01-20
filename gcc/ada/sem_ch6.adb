@@ -457,9 +457,11 @@ package body Sem_Ch6 is
             --  and will be redone when analyzing the body.
 
             declare
-               Expr : Node_Id renames Expression (Ret);
+               Expr : constant Node_Id := Expression (Ret);
+
             begin
                Set_Parent (Expr, Ret);
+
                if not In_Instance then
                   Preanalyze_Spec_Expression (Expr, Etype (Id));
                end if;

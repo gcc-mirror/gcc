@@ -1,5 +1,21 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch7.adb: Minor reformatting.
+	* opt.ads: Minor comment updates.
+	* sem.adb: Minor name change Is_Main_Unit =>
+	Is_Main_Unit_Or_Main_Unit_Spec.
+	* sem_ch6.adb: Minor reformatting and code reorganization.
+
+2014-01-20  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Update gnatpp switches.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor comment edit.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Document that Allow_Integer_Address is permitted
 	only if System.Address is a private type.
 	* opt.ads (Allow_Integer_Address): No longer set by -gnates.

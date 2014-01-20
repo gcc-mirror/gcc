@@ -1021,7 +1021,9 @@ package body Exp_Ch9 is
       --  If compiling with -fpreserve-control-flow, make sure we insert an
       --  IF statement so that the back-end knows to generate a conditional
       --  branch instruction, even if the condition is just the name of a
-      --  boolean object.
+      --  boolean object. Note that Expand_N_If_Statement knows to preserve
+      --  such redundant IF statements under -fpreserve-control-flow
+      --  (whether coming from this routine, or directly from source).
 
       if Opt.Suppress_Control_Flow_Optimizations then
          Stmt := Make_Implicit_If_Statement (Cond,

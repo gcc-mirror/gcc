@@ -1919,10 +1919,11 @@ package Opt is
    --  This procedure sets the switches to the appropriate initial values. The
    --  parameter Internal_Unit is True for an internal or predefined unit, and
    --  affects the way the switches are set (see above). Main_Unit is true if
-   --  switches are being set for the main unit (this affects setting of the
-   --  assert/debug pragma switches, which are normally set false by default
-   --  for an internal unit, except when the internal unit is the main unit,
-   --  in which case we use the command line settings).
+   --  switches are being set for the main unit or for the spec of the main
+   --  unit. This affects setting of the assert/debug pragma switches, which
+   --  are normally set false by default for an internal unit, except when the
+   --  internal unit is the main unit, in which case we use the command line
+   --  settings).
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
    --  This procedure restores a set of switch values previously saved by a
