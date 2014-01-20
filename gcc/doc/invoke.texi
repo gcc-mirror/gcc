@@ -11379,27 +11379,8 @@ of TLS variables.
 Specify the name of the target architecture, optionally suffixed by one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-only value for @var{arch} is @samp{armv8-a}.  The possible values for
-@var{feature} are documented in the sub-section below.
-
-Where conflicting feature modifiers are specified, the right-most feature is
-used.
-
-GCC uses this name to determine what kind of instructions it can emit when
-generating assembly code.  This option can be used in conjunction with or
-instead of the @option{-mcpu=} option.
-
-@item -mcpu=@var{name}
-@opindex mcpu
-Specify the name of the target processor, optionally suffixed by one or more
-feature modifiers.  This option has the form
-@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-possible values for @var{cpu} are @samp{generic}, @samp{cortex-a53},
-@samp{cortex-a57}.  The possible values for @var{feature} are documented
-in the sub-section below.
-
-Additionally, this option can specify that the target is a big.LITTLE system.
-The only possible value is @samp{cortex-a57.cortex-a53}.
+only permissible value for @var{arch} is @samp{armv8-a}.  The permissible
+values for @var{feature} are documented in the sub-section below.
 
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
@@ -11407,18 +11388,47 @@ used.
 GCC uses this name to determine what kind of instructions it can emit when
 generating assembly code.
 
+Where @option{-march} is specified without either of @option{-mtune}
+or @option{-mcpu} also being specified, the code will be tuned to perform
+well across a range of target processors implementing the target
+architecture.
+
 @item -mtune=@var{name}
 @opindex mtune
-Specify the name of the processor to tune the performance for.  The code will
-be tuned as if the target processor were of the type specified in this option,
-but still using instructions compatible with the target processor specified
-by a @option{-mcpu=} option.  Where no @option{-mtune=} option is
-specified, the code will be tuned to perform well on the target processor
-given by @option{-mcpu=} or @option{-march=}.  Where none of
-@option{-mtune=}, @option{-mcpu=} or @option{-march=} are specified,
-the code will be tuned to perform well across a range of target
-processors.  This option cannot be suffixed by feature modifiers.
+Specify the name of the target processor for which GCC should tune the
+performance of the code.  Permissible values for this option are:
+@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}.
 
+Additionally, this option can specify that GCC should tune the performance
+of the code for a big.LITTLE system.  The only permissible value is
+@samp{cortex-a57.cortex-a53}.
+
+Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
+are specified, the code will be tuned to perform well across a range
+of target processors.
+
+This option cannot be suffixed by feature modifiers.
+
+@item -mcpu=@var{name}
+@opindex mcpu
+Specify the name of the target processor, optionally suffixed by one or more
+feature modifiers.  This option has the form
+@option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
+permissible values for @var{cpu} are the same as those available for
+@option{-mtune}.
+
+The permissible values for @var{feature} are documented in the sub-section
+below.
+
+Where conflicting feature modifiers are specified, the right-most feature is
+used.
+
+GCC uses this name to determine what kind of instructions it can emit when
+generating assembly code (as if by @option{-march}) and to determine
+the target processor for which to tune for performance (as if
+by @option{-mtune}).  Where this option is used in conjunction
+with @option{-march} or @option{-mtune}, those options take precedence
+over the appropriate part of this option.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} feature modifiers
