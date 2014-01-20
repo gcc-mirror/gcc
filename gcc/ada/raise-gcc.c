@@ -212,7 +212,7 @@ db_phases (int phases)
 {
   const phase_descriptor *a = phase_descriptors;
 
-  if (! (db_accepted_codes() & DB_PHASES))
+  if (! (db_accepted_codes () & DB_PHASES))
     return;
 
   db (DB_PHASES, "\n");
@@ -860,15 +860,33 @@ extern struct Exception_Data Foreign_Exception;
 extern struct Exception_Data Non_Ada_Error;
 #endif
 
+/* Return true iff the exception class of EXCEPT is EC.  */
+
+static int
+exception_class_eq (const _GNAT_Exception *except, unsigned long long ec)
+{
+#ifdef __ARM_EABI_UNWINDER__
+  union {
+    char exception_class[8];
+    unsigned long long ec;
+  } u;
+
+  u.ec = ec;
+  return memcmp (except->common.exception_class, u.exception_class, 8) == 0;
+#else
+  return except->common.exception_class == ec;
+#endif
+}
+
 static enum action_kind
-is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
+is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
 {
   /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
     return handler;
 
   /* GNAT exception occurrence.  */
-  if (propagated_exception->common.exception_class == GNAT_EXCEPTION_CLASS)
+  if (exception_class_eq (propagated_exception, GNAT_EXCEPTION_CLASS))
     {
       /* Pointer to the GNAT exception data corresponding to the propagated
          occurrence.  */
@@ -913,7 +931,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
     return handler;
 
   /* C++ exception occurrences.  */
-  if (propagated_exception->common.exception_class == CXX_EXCEPTION_CLASS
+  if (exception_class_eq (propagated_exception, CXX_EXCEPTION_CLASS)
       && Language_For (choice) == 'C')
     {
       void *choice_typeinfo = Foreign_Data_For (choice);
@@ -1070,14 +1088,120 @@ extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
 
+/* By default, the personality routine is public.  */
+#define PERSONALITY_STORAGE
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gnat_personality_sj0
 #elif defined (__SEH__)
 #define PERSONALITY_FUNCTION    __gnat_personality_imp
+/* The public personality routine for seh is __gnat_personality_seh0, defined
+   below using the SEH convention. This is a wrapper around the GNU routine,
+   which is static.  */
+#undef PERSONALITY_STORAGE
+#define PERSONALITY_STORAGE static
 #else
 #define PERSONALITY_FUNCTION    __gnat_personality_v0
 #endif
 
+/* Code executed to continue unwinding.  With the ARM unwinder, the
+   personality routine must unwind one frame.  */
+
+static _Unwind_Reason_Code
+continue_unwind (struct _Unwind_Exception* ue_header,
+		 struct _Unwind_Context* uw_context)
+{
+#ifdef __ARM_EABI_UNWINDER__
+  if (__gnu_unwind_frame (ue_header, uw_context) != _URC_OK)
+    return _URC_FAILURE;
+#endif
+  return _URC_CONTINUE_UNWIND;
+}
+
+/* Common code for the body of GNAT personality routine.  This code is shared
+   between all unwinders.  */
+
+static _Unwind_Reason_Code
+personality_body (_Unwind_Action uw_phases,
+		  _Unwind_Exception *uw_exception,
+		  _Unwind_Context *uw_context)
+{
+  region_descriptor region;
+  action_descriptor action;
+  _Unwind_Ptr ip;
+
+  /* Debug traces.  */
+  db_indent (DB_INDENT_RESET);
+  db_phases (uw_phases);
+  db_indent (DB_INDENT_INCREASE);
+
+  /* Get the region description for the context we were provided with. This
+     will tell us if there is some lsda, call_site, action and/or ttype data
+     for the associated ip.  */
+  get_region_description_for (uw_context, &region);
+
+  /* No LSDA => no handlers or cleanups => we shall unwind further up.  */
+  if (! region.lsda)
+    return continue_unwind (uw_exception, uw_context);
+
+  /* Get the instruction pointer.  */
+  ip = get_ip_from_context (uw_context);
+  db_region_for (&region, ip);
+
+  /* Search the call-site and action-record tables for the action associated
+     with this IP.  */
+  get_action_description_for (ip, uw_exception, uw_phases, &region, &action);
+  db_action_for (&action, ip);
+
+  /* Whatever the phase, if there is nothing relevant in this frame,
+     unwinding should just go on.  */
+  if (action.kind == nothing)
+    return continue_unwind (uw_exception, uw_context);
+
+  /* If we found something in search phase, we should return a code indicating
+     what to do next depending on what we found. If we only have cleanups
+     around, we shall try to unwind further up to find a handler, otherwise,
+     tell we have a handler, which will trigger the second phase.  */
+  if (uw_phases & _UA_SEARCH_PHASE)
+    {
+      if (action.kind == cleanup)
+	{
+	  return continue_unwind (uw_exception, uw_context);
+	}
+      else
+	{
+	  struct Exception_Occurrence *excep;
+
+	  /* Trigger the appropriate notification routines before the second
+	     phase starts, which ensures the stack is still intact.
+             First, setup the Ada occurrence.  */
+          excep = __gnat_setup_current_excep (uw_exception);
+	  if (action.kind == unhandler)
+	    __gnat_notify_unhandled_exception (excep);
+	  else
+	    __gnat_notify_handled_exception (excep);
+
+	  return _URC_HANDLER_FOUND;
+	}
+    }
+
+  /* We found something in cleanup/handler phase, which might be the handler
+     or a cleanup for a handled occurrence, or a cleanup for an unhandled
+     occurrence (we are in a FORCED_UNWIND phase in this case). Install the
+     context to get there.  */
+
+  setup_to_install
+    (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
+
+  /* Write current exception, so that it can be retrieved from Ada.  It was
+     already done during phase 1 (just above), but in between, one or several
+     exceptions may have been raised (in cleanup handlers).  */
+  __gnat_setup_current_excep (uw_exception);
+
+  return _URC_INSTALL_CONTEXT;
+}
+
+#ifndef __ARM_EABI_UNWINDER__
 /* Major tweak for ia64-vms : the CHF propagation phase calls this personality
    routine with sigargs/mechargs arguments and has very specific expectations
    on possible return values.
@@ -1109,15 +1233,12 @@ typedef int version_arg_t;
 typedef _Unwind_Action phases_arg_t;
 #endif
 
-#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
-static
-#endif
-_Unwind_Reason_Code
+PERSONALITY_STORAGE _Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t, phases_arg_t,
                       _Unwind_Exception_Class, _Unwind_Exception *,
                       _Unwind_Context *);
 
-_Unwind_Reason_Code
+PERSONALITY_STORAGE _Unwind_Reason_Code
 PERSONALITY_FUNCTION (version_arg_t version_arg,
                       phases_arg_t phases_arg,
                       _Unwind_Exception_Class uw_exception_class
@@ -1157,73 +1278,59 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
       return _URC_FATAL_PHASE1_ERROR;
     }
 
-  db_indent (DB_INDENT_RESET);
-  db_phases (uw_phases);
-  db_indent (DB_INDENT_INCREASE);
-
-  /* Get the region description for the context we were provided with. This
-     will tell us if there is some lsda, call_site, action and/or ttype data
-     for the associated ip.  */
-  get_region_description_for (uw_context, &region);
-  ip = get_ip_from_context (uw_context);
-  db_region_for (&region, ip);
-
-  /* No LSDA => no handlers or cleanups => we shall unwind further up.  */
-  if (! region.lsda)
-    return _URC_CONTINUE_UNWIND;
-
-  /* Search the call-site and action-record tables for the action associated
-     with this IP.  */
-  get_action_description_for (ip, uw_exception, uw_phases, &region, &action);
-  db_action_for (&action, ip);
-
-  /* Whatever the phase, if there is nothing relevant in this frame,
-     unwinding should just go on.  */
-  if (action.kind == nothing)
-    return _URC_CONTINUE_UNWIND;
-
-  /* If we found something in search phase, we should return a code indicating
-     what to do next depending on what we found. If we only have cleanups
-     around, we shall try to unwind further up to find a handler, otherwise,
-     tell we have a handler, which will trigger the second phase.  */
-  if (uw_phases & _UA_SEARCH_PHASE)
-    {
-      if (action.kind == cleanup)
-	{
-	  return _URC_CONTINUE_UNWIND;
-	}
-      else
-	{
-	  struct Exception_Occurrence *excep;
-
-	  /* Trigger the appropriate notification routines before the second
-	     phase starts, which ensures the stack is still intact.
-             First, setup the Ada occurrence.  */
-          excep = __gnat_setup_current_excep (uw_exception);
-	  if (action.kind == unhandler)
-	    __gnat_notify_unhandled_exception (excep);
-	  else
-	    __gnat_notify_handled_exception (excep);
-
-	  return _URC_HANDLER_FOUND;
-	}
-    }
-
-  /* We found something in cleanup/handler phase, which might be the handler
-     or a cleanup for a handled occurrence, or a cleanup for an unhandled
-     occurrence (we are in a FORCED_UNWIND phase in this case). Install the
-     context to get there.  */
-
-  setup_to_install
-    (uw_context, uw_exception, action.landing_pad, action.ttype_filter);
-
-  /* Write current exception, so that it can be retrieved from Ada.  It was
-     already done during phase 1 (just above), but in between, one or several
-     exceptions may have been raised (in cleanup handlers).  */
-  __gnat_setup_current_excep (uw_exception);
-
-  return _URC_INSTALL_CONTEXT;
+  return personality_body (uw_phases, uw_exception, uw_context);
 }
+
+#else /* __ARM_EABI_UNWINDER__ */
+
+PERSONALITY_STORAGE _Unwind_Reason_Code
+PERSONALITY_FUNCTION (_Unwind_State state,
+		      struct _Unwind_Exception* ue_header,
+		      struct _Unwind_Context* uw_context);
+
+PERSONALITY_STORAGE _Unwind_Reason_Code
+PERSONALITY_FUNCTION (_Unwind_State state,
+		      struct _Unwind_Exception* uw_exception,
+		      struct _Unwind_Context* uw_context)
+{
+  _Unwind_Action uw_phases;
+  region_descriptor region;
+  action_descriptor action;
+  _Unwind_Ptr ip;
+
+  switch (state & _US_ACTION_MASK)
+    {
+    case _US_VIRTUAL_UNWIND_FRAME:
+      /* Phase 1.  */
+      uw_phases = _UA_SEARCH_PHASE;
+      break;
+
+    case _US_UNWIND_FRAME_STARTING:
+      uw_phases = _UA_CLEANUP_PHASE;
+      if (!(state & _US_FORCE_UNWIND)
+	  && (uw_exception->barrier_cache.sp
+	      == _Unwind_GetGR (uw_context, UNWIND_STACK_REG)))
+	uw_phases |= _UA_HANDLER_FRAME;
+      break;
+
+    case _US_UNWIND_FRAME_RESUME:
+      return continue_unwind (uw_exception, uw_context);
+
+    default:
+      return _URC_FAILURE;
+    }
+  uw_phases |= (state & _US_FORCE_UNWIND);
+
+  /* The dwarf unwinder assumes the context structure holds things like the
+     function and LSDA pointers.  The ARM implementation caches these in
+     the exception header (UCB).  To avoid rewriting everything we make a
+     virtual scratch register point at the UCB.  This is a GNU specific
+     requirement.  */
+  _Unwind_SetGR (uw_context, UNWIND_POINTER_REG, (_Unwind_Ptr) uw_exception);
+
+  return personality_body (uw_phases, uw_exception, uw_context);
+}
+#endif /* __ARM_EABI_UNWINDER__ */
 
 /* Callback routine called by Unwind_ForcedUnwind to execute all the cleanup
    before exiting the task.  */

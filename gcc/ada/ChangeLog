@@ -1,3 +1,16 @@
+2014-01-20  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (exception_class_eq): New function.
+	(is_handled_by): Use it to compare exception classes.
+	(PERSONALITY_STORAGE): Define.	(continue_unwind): New function to
+	be called to return URC_CONTINUE_UNWIND.
+	(personality_body): New function, extracted from PERSONALITY_ROUTINE.
+	(PERSONALITY_ROUTINE): Add an implementation for the ARM unwinder.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor comment update.
+
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Slice): Relocate some variables and
