@@ -1,5 +1,38 @@
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document that Allow_Integer_Address is permitted
+	only if System.Address is a private type.
+	* opt.ads (Allow_Integer_Address): No longer set by -gnates.
+	* sem_prag.adb (Analyze_Pragma, case Allow_Integer_Address):
+	Allowed only if type System.Address is private, since otherwise
+	it makes no sense.
+	* sem_res.adb: Fix failure to properly Analyze unchecked
+	conversions that were introduced by Allow_Integer_Address.
+	* switch-c.adb: Remove -gnates switch.
+	* usage.adb: Remove -gnates switch.
+	* gnat_ugn.texi: Remove documentation of -gnates flag.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Pre-analyze and
+	resolve expression to perform proper name capture.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Semantics): When saving/restoring configuration
+	switches, the spec of a pre- defined unit that is the main unit
+	must be treated as a predefined unit as well.
+
+2014-01-20  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Wrap_Transient_Expression): For a Boolean
+	expression, insert an extra conditional expression when saving
+	the value of the expression, for the benefit of control flow
+	graph based coverage analysis.
+	* exp_ch3.adb: Minor reformatting.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
 	* gnat1drv.adb: Set Allow_Integer_Address in relaxed semantics mode.
 	* gnat_rm.texi: Document pragma Allow_Integer_Address.
 	* gnat_ugn.texi: Document pragma Allow_Integer_Address, -gnates.

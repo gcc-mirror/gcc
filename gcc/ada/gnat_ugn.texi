@@ -3821,13 +3821,6 @@ these errors become warnings (which can be ignored, or suppressed in the usual
 manner). This can be useful in some specialized circumstances such as the
 temporary use of special test software.
 
-@ifclear vms
-@item -gnates
-@cindex @option{-gnates} (@command{gcc})
-Activates @code{Allow_Integer_Address} mode as though the corresponding
-configuration pragma was present.
-@end ifclear
-
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backwards compatibility.

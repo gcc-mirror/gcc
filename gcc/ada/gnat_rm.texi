@@ -1231,8 +1231,11 @@ pragma Allow_Integer_Address;
 @end smallexample
 
 @noindent
-In most versions of GNAT, @code{System.Address} is a private type, which means
-that integer values are not allowed. If the configuration pragma
+This configuration pragma is allowed only
+if type @code{System.Address} is a private type,
+which is true in most versions of GNAT. which means that integer values,
+in particular integer literals, are not allowed as address values.
+If the configuration pragma
 @code{Allow_Integer_Address} is given, then integer expressions may
 be used anywhere a value of type @code{System.Address} is required.
 The effect is to introduce an implicit unchecked conversion from the

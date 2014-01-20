@@ -2625,6 +2625,7 @@ package body Sem_Res is
                Rewrite
                  (N, Unchecked_Convert_To (RTE (RE_Address),
                   Relocate_Node (N)));
+               Analyze_And_Resolve (N, RTE (RE_Address));
                return;
 
             --  OK, not the special case go ahead and issue message
@@ -11645,6 +11646,7 @@ package body Sem_Res is
       then
          Rewrite (N,
            Unchecked_Convert_To (RTE (RE_Address), Relocate_Node (N)));
+         Analyze_And_Resolve (N, RTE (RE_Address));
          return True;
 
       --  Here we have a real conversion error

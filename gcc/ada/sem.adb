@@ -1322,6 +1322,16 @@ package body Sem is
       --  If the main unit is generic, every compiled unit, including its
       --  context, is compiled with expansion disabled.
 
+      --  configuration flags have special settings when compiling a predefined
+      --  file as a main unit. This applies to its spec as well.
+
+      Is_Main_Unit : constant Boolean :=
+         Current_Sem_Unit = Main_Unit
+           or else
+             (Nkind (Unit (Cunit (Main_Unit))) = N_Package_Body
+               and then Library_Unit (Cunit (Main_Unit)) =
+                  Cunit (Current_Sem_Unit));
+
       Ext_Main_Source_Unit : constant Boolean :=
                                In_Extended_Main_Source_Unit (Comp_Unit);
       --  Determine if unit is in extended main source unit
@@ -1421,7 +1431,7 @@ package body Sem is
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
         (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
-         Current_Sem_Unit = Main_Unit);
+          Is_Main_Unit);
 
       --  Save current non-partition-wide restrictions
 
