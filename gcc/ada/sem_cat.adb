@@ -2172,10 +2172,11 @@ package body Sem_Cat is
             --  This is the error case
 
             else
-               --  In GNAT mode, this is just a warning, to allow it to be
-               --  judiciously turned off. Otherwise it is a real error.
+               --  In GNAT mode or Relaxed RM Semantic mode, this is just a
+               --  warning, to allow it to be judiciously turned off.
+               --  Otherwise it is a real error.
 
-               if GNAT_Mode then
+               if GNAT_Mode or Relaxed_RM_Semantics then
                   Error_Msg_N
                     ("??non-static constant in preelaborated unit", N);
                else

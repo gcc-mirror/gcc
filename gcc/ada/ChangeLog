@@ -1,5 +1,19 @@
 2014-01-20  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_attr.adb (Analyze_Attribute, case 'Constrained): In an
+	instance the attribute is legal, and its value is determined
+	statically if the type has no discriminants. This choice is
+	more useful than rechecking the legality rule in the instance,
+	is consistent with older usage, and is also consistent with all
+	existing tests.
+
+2014-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_cat.adb (Validate_Static_Object_Name): Change error into
+	warning in Relaxed_Semantic_Mode.
+
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_attr.adb: Code and comments cleanup.
 
 2014-01-20  Yannick Moy  <moy@adacore.com>

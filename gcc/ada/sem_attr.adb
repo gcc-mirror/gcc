@@ -3018,33 +3018,36 @@ package body Sem_Attr is
             end if;
 
             --  Must have discriminants or be an access type designating
-            --  a type with discriminants. If it is a classwide type is ???
+            --  a type with discriminants. If it is a classwide type it
             --  has unknown discriminants.
 
             if Has_Discriminants (P_Type)
-               or else Has_Unknown_Discriminants (P_Type)
-               or else
-                 (Is_Access_Type (P_Type)
-                   and then Has_Discriminants (Designated_Type (P_Type)))
+              or else Has_Unknown_Discriminants (P_Type)
+              or else
+                (Is_Access_Type (P_Type)
+                  and then Has_Discriminants (Designated_Type (P_Type)))
             then
+               return;
+
+            --  The rule given in 3.7.2 is part of static semantics, but the
+            --  intent is clearly that it be treated as a legality rule, and
+            --  rechecked in the visible part of an instance. Nevertheless
+            --  the intent also seems to be it should legally apply to the
+            --  actual of a formal with unknown discriminants, regardless of
+            --  whether the actual has discriminants, in which case the value
+            --  of the attribute is determined using the J.4 rules. This choice
+            --  seems the most useful, and is compatible with existing tests.
+
+            elsif In_Instance then
                return;
 
             --  Also allow an object of a generic type if extensions allowed
-            --  and allow this for any type at all.
+            --  and allow this for any type at all. (this may be obsolete ???)
 
             elsif (Is_Generic_Type (P_Type)
-                     or else Is_Generic_Actual_Type (P_Type))
+                    or else Is_Generic_Actual_Type (P_Type))
               and then Extensions_Allowed
             then
-               return;
-
-            --  For compatibility with Declib code, treat all prefixes as
-            --  legal, including non-discriminated types. This is because
-            --  DECLIB uses the obsolescent interpretation of the attribute,
-            --  and applies it to types as well as to objects, while the
-            --  current definition applies to objects of a discriminated type.
-
-            elsif OpenVMS_On_Target then
                return;
             end if;
          end if;
