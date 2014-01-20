@@ -4462,6 +4462,11 @@ package Einfo is
       --  An entry, created by an entry declaration in a task or protected
       --  object.
 
+      E_Abstract_State,
+      --  A state abstraction. Used to designate entities introduced by aspect
+      --  or pragma Abstract_State. The entity carries the various properties
+      --  of the state.
+
       --------------------
       -- Other Entities --
       --------------------
@@ -4533,16 +4538,11 @@ package Einfo is
       --  A task body. This entity serves almost no function, since all
       --  semantic analysis uses the protected entity (E_Task_Type).
 
-      E_Subprogram_Body,
+      E_Subprogram_Body
       --  A subprogram body. Used when a subprogram has a separate declaration
       --  to represent the entity for the body. This entity serves almost no
       --  function, since all semantic analysis uses the subprogram entity
       --  for the declaration (E_Function or E_Procedure).
-
-      E_Abstract_State
-      --  A state abstraction. Used to designate entities introduced by aspect
-      --  or pragma Abstract_State. The entity carries the various properties
-      --  of the state.
    );
 
    for Entity_Kind'Size use 8;
@@ -4792,7 +4792,8 @@ package Einfo is
    --  E_Function
    --  E_Operator
    --  E_Procedure
-       E_Entry;
+   --  E_Entry
+       E_Abstract_State;
 
    subtype Private_Kind                is Entity_Kind range
        E_Record_Type_With_Private ..

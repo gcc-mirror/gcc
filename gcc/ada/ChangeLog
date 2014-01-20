@@ -1,5 +1,34 @@
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.ads: E_Abstract_State is now part of the entities that
+	can be overloaded. Update type Overloadable_Kind to reflect the
+	inclusion of abstract states.
+	* sem_ch6.adb (New_Overloaded_Entity): A function can now
+	overload an abstract state.
+	* sem_prag.adb (Analyze_Constituent): Handle the overloading
+	of states by functions. Use Entity_Of to obtain the entity of
+	a constituent.	(Analyze_Global_Item): Handle the overloading of
+	states by functions.
+	(Analyze_Initialization_Item): Handle the
+	overloading of states by functions.  Use Entity_Of to obtain the
+	entity of an item.
+	(Analyze_Input_Item): Handle the overloading
+	of states by functions. Use Entity_Of to obtain the entity of an item.
+	(Analyze_Input_Output): Handle the overloading of states by functions.
+	(Analyze_Refinement_Clause): Handle the overloading
+	of states by functions.  Use Entity_Of to obtain the entity of an item.
+	(Appears_In): Use Entity_Of to obtain the entity of an element.
+	(Check_Usage): Use Entity_Of to obtain the entity of
+	an item. Add a guard to prevent a crash due to a previous error.
+	(Resolve_State): New routine.
+
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
+	* spark_xrefs.ads, debug.adb, gnat1drv.adb, errout.adb, errout.ads,
+	opt.ads: Minor comments updates.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.adb (Non_Limited_View): Applies to abstract states.
 	(Set_From_Limited_With): Applies to abstract states.
 	(Set_Non_Limited_View): Applies to abstract states.

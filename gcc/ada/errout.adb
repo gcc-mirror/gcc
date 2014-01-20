@@ -234,7 +234,7 @@ package body Errout is
       if not Finalize_Called then
          raise Program_Error;
 
-      --  In formal verification mode, errors issued when generating Why code
+      --  In formal verification mode, errors issued when analyzing code
       --  are not compilation errors, and should not result in exiting with
       --  an error status. These errors are handled in the driver of the
       --  verification process instead.

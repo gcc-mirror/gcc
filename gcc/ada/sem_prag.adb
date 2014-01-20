@@ -284,6 +284,11 @@ package body Sem_Prag is
    --  determines if we have a body reference to an abstract state, which may
    --  be illegal if the state is refined within the body.
 
+   procedure Resolve_State (N : Node_Id);
+   --  Handle the overloading of state names by functions. When N denotes a
+   --  function, this routine finds the corresponding state and sets the entity
+   --  of N to that of the state.
+
    procedure Rewrite_Assertion_Kind (N : Node_Id);
    --  If N is Pre'Class, Post'Class, Invariant'Class, or Type_Invariant'Class,
    --  then it is rewritten as an identifier with the corresponding special
@@ -771,7 +776,8 @@ package body Sem_Prag is
                   Error_Msg_N ("cannot mix null and non-null items", Item);
                end if;
 
-               Analyze (Item);
+               Analyze       (Item);
+               Resolve_State (Item);
 
                --  Find the entity of the item. If this is a renaming, climb
                --  the renaming chain to reach the root object. Renamings of
@@ -1075,12 +1081,14 @@ package body Sem_Prag is
             if Nkind (Item) = N_Defining_Identifier then
                Item_Id := Item;
             else
-               Item_Id := Entity (Item);
+               Item_Id := Entity_Of (Item);
             end if;
 
             --  The item does not appear in a dependency
 
-            if not Contains (Used_Items, Item_Id) then
+            if Present (Item_Id)
+              and then not Contains (Used_Items, Item_Id)
+            then
                if Is_Formal (Item_Id) then
                   Usage_Error (Item, Item_Id);
 
@@ -1645,7 +1653,8 @@ package body Sem_Prag is
                return;
             end if;
 
-            Analyze (Item);
+            Analyze       (Item);
+            Resolve_State (Item);
 
             --  Find the entity of the item. If this is a renaming, climb the
             --  renaming chain to reach the root object. Renamings of non-
@@ -2262,10 +2271,11 @@ package body Sem_Prag is
                  ("cannot mix null and non-null initialization items", Item);
             end if;
 
-            Analyze (Item);
+            Analyze       (Item);
+            Resolve_State (Item);
 
             if Is_Entity_Name (Item) then
-               Item_Id := Entity (Item);
+               Item_Id := Entity_Of (Item);
 
                if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
 
@@ -2356,10 +2366,11 @@ package body Sem_Prag is
                     ("cannot mix null and non-null initialization item", Item);
                end if;
 
-               Analyze (Input);
+               Analyze       (Input);
+               Resolve_State (Input);
 
                if Is_Entity_Name (Input) then
-                  Input_Id := Entity (Input);
+                  Input_Id := Entity_Of (Input);
 
                   if Ekind_In (Input_Id, E_Abstract_State, E_Variable) then
 
@@ -21574,13 +21585,14 @@ package body Sem_Prag is
                     ("cannot mix null and non-null constituents", Constit);
                end if;
 
-               Analyze (Constit);
+               Analyze       (Constit);
+               Resolve_State (Constit);
 
                --  Ensure that the constituent denotes a valid state or a
                --  whole variable.
 
                if Is_Entity_Name (Constit) then
-                  Constit_Id := Entity (Constit);
+                  Constit_Id := Entity_Of (Constit);
 
                   if Ekind_In (Constit_Id, E_Abstract_State, E_Variable) then
                      Check_Matching_Constituent (Constit_Id);
@@ -21665,13 +21677,14 @@ package body Sem_Prag is
                  ("refinement clause cannot cover multiple states", State);
 
             else
-               Analyze (State);
+               Analyze       (State);
+               Resolve_State (State);
 
                --  Ensure that the state name denotes a valid abstract state
                --  that is defined in the spec of the related package.
 
                if Is_Entity_Name (State) then
-                  State_Id := Entity (State);
+                  State_Id := Entity_Of (State);
 
                   --  Catch any attempts to re-refine a state or refine a
                   --  state that is not defined in the package declaration.
@@ -21974,7 +21987,7 @@ package body Sem_Prag is
             if Nkind (Node (Elmt)) = N_Defining_Identifier then
                Id := Node (Elmt);
             else
-               Id := Entity (Node (Elmt));
+               Id := Entity_Of (Node (Elmt));
             end if;
 
             if Id = Item_Id then
@@ -23490,6 +23503,47 @@ package body Sem_Prag is
          Stmt := Next_Stmt;
       end loop;
    end Relocate_Pragmas_To_Body;
+
+   -------------------
+   -- Resolve_State --
+   -------------------
+
+   procedure Resolve_State (N : Node_Id) is
+      Func  : Entity_Id;
+      State : Entity_Id;
+
+   begin
+      if Is_Entity_Name (N) and then Present (Entity (N)) then
+         Func := Entity (N);
+
+         --  Handle overloading of state names by functions. Traverse the
+         --  homonym chain looking for an abstract state.
+
+         if Ekind (Func) = E_Function and then Has_Homonym (Func) then
+            State := Homonym (Func);
+            while Present (State) loop
+
+               --  Resolve the overloading by setting the proper entity of the
+               --  reference to that of the state.
+
+               if Ekind (State) = E_Abstract_State then
+                  Set_Etype           (N, Standard_Void_Type);
+                  Set_Entity          (N, State);
+                  Set_Associated_Node (N, State);
+                  return;
+               end if;
+
+               State := Homonym (State);
+            end loop;
+
+            --  A function can never act as a state. If the homonym chain does
+            --  not contain a corresponding state, then something went wrong in
+            --  the overloading mechanism.
+
+            raise Program_Error;
+         end if;
+      end if;
+   end Resolve_State;
 
    ----------------------------
    -- Rewrite_Assertion_Kind --

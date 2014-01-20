@@ -317,10 +317,10 @@ procedure Gnat1drv is
          end if;
 
          --  Distinguish between the two modes of gnat2why: frame condition
-         --  generation (generation of ALI files) and translation of Why (no
-         --  ALI files generated). This is done with the switch -gnatd.G,
-         --  which activates frame condition mode. The other changes in
-         --  behavior depending on this switch are done in gnat2why directly.
+         --  generation (generation of ALI files) and analysis (no ALI files
+         --  generated). This is done with the switch -gnatd.G, which activates
+         --  frame condition mode. The other changes in behavior depending on
+         --  this switch are done in gnat2why directly.
 
          if Debug_Flag_Dot_GG then
             Frame_Condition_Mode := True;
@@ -1057,7 +1057,7 @@ begin
       --  It is not an error to analyze in GNATprove mode a spec which requires
       --  a body, when the body is not available. During frame condition
       --  generation, the corresponding ALI file is generated. During
-      --  translation to Why, Why code is generated for the spec.
+      --  analysis, the spec is analyzed.
 
       elsif GNATprove_Mode then
          Back_End_Mode := Declarations_Only;
