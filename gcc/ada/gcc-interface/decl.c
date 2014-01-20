@@ -771,8 +771,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     || (TYPE_SIZE (gnu_type)
 		 && integer_zerop (TYPE_SIZE (gnu_type))
 		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
-	    && (!Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-		|| !Is_Array_Type (Etype (gnat_entity)))
+	    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
 	    && No (Renamed_Object (gnat_entity))
 	    && No (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
@@ -864,7 +863,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Etype (gnat_entity))
+	    && (Is_Array_Type (Etype (gnat_entity))
+		|| (Is_Private_Type (Etype (gnat_entity))
+		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -1390,7 +1391,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   Note that we have to do that this late because of the couple of
 	   allocation adjustments that might be made just above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Etype (gnat_entity))
+	    && (Is_Array_Type (Etype (gnat_entity))
+		|| (Is_Private_Type (Etype (gnat_entity))
+		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -4788,10 +4791,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   from the full view.  But always get the type from the full view
 	   for define on use types, since otherwise we won't see them!  */
 	else if (!definition
-		 || (Is_Itype (full_view)
-		   && No (Freeze_Node (gnat_entity)))
-		 || (Is_Itype (gnat_entity)
-		   && No (Freeze_Node (full_view))))
+		 || (Is_Itype (full_view) && No (Freeze_Node (gnat_entity)))
+		 || (Is_Itype (gnat_entity) && No (Freeze_Node (full_view))))
 	  {
 	    gnu_decl = gnat_to_gnu_entity (full_view, NULL_TREE, 0);
 	    maybe_present = true;
