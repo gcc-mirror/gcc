@@ -81,7 +81,7 @@ package body Exp_Aggr is
 
    function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
    --  Returns true if N is an aggregate used to initialize the components
-   --  of an statically allocated dispatch table.
+   --  of a statically allocated dispatch table.
 
    function Must_Slide
      (Obj_Type : Entity_Id;
@@ -150,7 +150,7 @@ package body Exp_Aggr is
    --      aggregate
 
    function Has_Mutable_Components (Typ : Entity_Id) return Boolean;
-   --  Return true if one of the component is of a discriminated type with
+   --  Return true if one of the components is of a discriminated type with
    --  defaults. An aggregate for a type with mutable components must be
    --  expanded into individual assignments.
 
@@ -183,7 +183,7 @@ package body Exp_Aggr is
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean;
    --  This function checks if array aggregate N can be processed directly
-   --  by the backend. If this is the case True is returned.
+   --  by the backend. If this is the case, True is returned.
 
    function Build_Array_Aggr_Code
      (N           : Node_Id;
@@ -3918,7 +3918,7 @@ package body Exp_Aggr is
    --             corresponding to the same dimension have the same bounds.
 
    --  2. Check for packed array aggregate which can be converted to a
-   --     constant so that the aggregate disappeares completely.
+   --     constant so that the aggregate disappears completely.
 
    --  3. Check case of nested aggregate. Generally nested aggregates are
    --     handled during the processing of the parent aggregate.
@@ -4964,7 +4964,7 @@ package body Exp_Aggr is
 
       --  If all aggregate components are compile-time known and the aggregate
       --  has been flattened, nothing left to do. The same occurs if the
-      --  aggregate is used to initialize the components of an statically
+      --  aggregate is used to initialize the components of a statically
       --  allocated dispatch table.
 
       if Compile_Time_Known_Aggregate (N)
@@ -5282,7 +5282,7 @@ package body Exp_Aggr is
          --  form, but there are two problems with that circuit:
 
          --    a) It is limited to very small cases due to ill-understood
-         --       interations with bootstrapping. That limit is removed by
+         --       interactions with bootstrapping. That limit is removed by
          --       use of the No_Implicit_Loops restriction.
 
          --    b) It erroneously ends up with the resulting expressions being
@@ -5445,7 +5445,7 @@ package body Exp_Aggr is
       --  set and constants whose expression is such an aggregate, recursively.
 
       function Component_Not_OK_For_Backend return Boolean;
-      --  Check for presence of component which makes it impossible for the
+      --  Check for presence of a component which makes it impossible for the
       --  backend to process the aggregate, thus requiring the use of a series
       --  of assignment statements. Cases checked for are a nested aggregate
       --  needing Late_Expansion, the presence of a tagged component which may
@@ -5466,7 +5466,7 @@ package body Exp_Aggr is
 
       function Has_Visible_Private_Ancestor (Id : E) return Boolean;
       --  If any ancestor of the current type is private, the aggregate
-      --  cannot be built in place. We canot rely on Has_Private_Ancestor,
+      --  cannot be built in place. We cannot rely on Has_Private_Ancestor,
       --  because it will not be set when type and its parent are in the
       --  same scope, and the parent component needs expansion.
 
@@ -5751,13 +5751,13 @@ package body Exp_Aggr is
       then
          Convert_To_Assignments (N, Typ);
 
-      --  If the type involved has any non-bit aligned components, then we are
-      --  not sure that the back end can handle this case correctly.
+      --  If the type involved has bit aligned components, then we are not sure
+      --  that the back end can handle this case correctly.
 
       elsif Type_May_Have_Bit_Aligned_Components (Typ) then
          Convert_To_Assignments (N, Typ);
 
-      --  In all other cases, build a proper aggregate handlable by gigi
+      --  In all other cases, build a proper aggregate to be handled by gigi
 
       else
          if Nkind (N) = N_Aggregate then
@@ -6378,7 +6378,7 @@ package body Exp_Aggr is
          --  At this stage we have a suitable aggregate for handling at compile
          --  time. The only remaining checks are that the values of expressions
          --  in the aggregate are compile-time known (checks are performed by
-         --  Get_Component_Val, and that any subtypes or ranges are statically
+         --  Get_Component_Val), and that any subtypes or ranges are statically
          --  known.
 
          --  If the aggregate is not fully positional at this stage, then
