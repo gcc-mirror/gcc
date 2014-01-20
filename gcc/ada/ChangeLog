@@ -1,3 +1,11 @@
+2014-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): In
+	Relaxed_RM_Semantics, support old Ada 83 style of pragma Import.
+	(Analyze_Pragma): Ditto for pragma Export.
+	* exp_prag.adb (Expand_Pragma_Import_Or_Interface): Handle old pragma
+	Import style.
+
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.ads: E_Abstract_State is now part of the entities that
