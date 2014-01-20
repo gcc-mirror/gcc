@@ -3440,7 +3440,8 @@ proc check_effective_target_vect_perm { } {
     } else {
         set et_vect_perm_saved 0
         if { [is-effective-target arm_neon_ok]
-	     || [istarget aarch64*-*-*]
+	     || ([istarget aarch64*-*-*]
+		 && [is-effective-target aarch64_little_endian])
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
@@ -3468,7 +3469,8 @@ proc check_effective_target_vect_perm_byte { } {
         set et_vect_perm_byte_saved 0
         if { ([is-effective-target arm_neon_ok]
 	      && [is-effective-target arm_little_endian])
-	     || [istarget aarch64*-*-*]
+	     || ([istarget aarch64*-*-*]
+		 && [is-effective-target aarch64_little_endian])
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_byte_saved 1
@@ -3492,7 +3494,8 @@ proc check_effective_target_vect_perm_short { } {
         set et_vect_perm_short_saved 0
         if { ([is-effective-target arm_neon_ok]
 	      && [is-effective-target arm_little_endian])
-	     || [istarget aarch64*-*-*]
+	     || ([istarget aarch64*-*-*]
+		 && [is-effective-target aarch64_little_endian])
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*] } {
             set et_vect_perm_short_saved 1
