@@ -1,3 +1,7 @@
+2014-01-20  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_perm<mode>): Add BE check.
+
 2014-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59860

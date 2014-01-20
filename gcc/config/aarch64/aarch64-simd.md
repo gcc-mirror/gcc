@@ -3840,7 +3840,7 @@
    (match_operand:VB 1 "register_operand")
    (match_operand:VB 2 "register_operand")
    (match_operand:VB 3 "register_operand")]
-  "TARGET_SIMD"
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
 {
   aarch64_expand_vec_perm (operands[0], operands[1],
 			   operands[2], operands[3]);
