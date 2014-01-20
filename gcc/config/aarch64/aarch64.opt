@@ -88,15 +88,15 @@ Target RejectNegative Joined Enum(tls_type) Var(aarch64_tls_dialect) Init(TLS_DE
 Specify TLS dialect
 
 march=
-Target RejectNegative Joined Var(aarch64_arch_string)
+Target RejectNegative ToLower Joined Var(aarch64_arch_string)
 -march=ARCH	Use features of architecture ARCH
 
 mcpu=
-Target RejectNegative Joined Var(aarch64_cpu_string)
+Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
 -mcpu=CPU	Use features of and optimize for CPU
 
 mtune=
-Target RejectNegative Joined Var(aarch64_tune_string)
+Target RejectNegative ToLower Joined Var(aarch64_tune_string)
 -mtune=CPU	Optimize for CPU
 
 mabi=
