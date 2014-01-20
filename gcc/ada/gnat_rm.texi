@@ -98,6 +98,7 @@ About This Guide
 Implementation Defined Pragmas
 
 * Pragma Abort_Defer::
+* Pragma Abstract_State::
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
@@ -137,6 +138,7 @@ Implementation Defined Pragmas
 * Pragma Debug::
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
+* Pragma Depends::
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
@@ -157,6 +159,7 @@ Implementation Defined Pragmas
 * Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
+* Pragma Global::
 * Pragma Ident::
 * Pragma Implementation_Defined::
 * Pragma Implemented::
@@ -168,7 +171,9 @@ Implementation Defined Pragmas
 * Pragma Import_Valued_Procedure::
 * Pragma Independent::
 * Pragma Independent_Components::
+* Pragma Initial_Condition::
 * Pragma Initialize_Scalars::
+* Pragma Initializes::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
 * Pragma Interface::
@@ -225,6 +230,7 @@ Implementation Defined Pragmas
 * Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
@@ -277,7 +283,6 @@ Implementation Defined Aspects
 * Aspect Abstract_State::
 * Aspect Ada_2005::
 * Aspect Ada_2012::
-* Pragma Allow_Integer_Address::
 * Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
@@ -285,6 +290,8 @@ Implementation Defined Aspects
 * Aspect Dimension_System::
 * Aspect Favor_Top_Level::
 * Aspect Global::
+* Aspect Initial_Condition::
+* Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
 * Aspect Object_Size::
@@ -294,6 +301,7 @@ Implementation Defined Aspects
 * Aspect Pure_05::
 * Aspect Pure_12::
 * Aspect Pure_Function::
+* Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
 * Aspect Shared::
@@ -923,6 +931,7 @@ consideration, the use of these pragmas should be minimized.
 
 @menu
 * Pragma Abort_Defer::
+* Pragma Abstract_State::
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
@@ -962,6 +971,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Debug::
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
+* Pragma Depends::
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
@@ -982,6 +992,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
+* Pragma Global::
 * Pragma Ident::
 * Pragma Implementation_Defined::
 * Pragma Implemented::
@@ -993,7 +1004,9 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Import_Valued_Procedure::
 * Pragma Independent::
 * Pragma Independent_Components::
+* Pragma Initial_Condition::
 * Pragma Initialize_Scalars::
+* Pragma Initializes::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
 * Pragma Interface::
@@ -1050,6 +1063,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
@@ -1114,6 +1128,13 @@ handled sequence of statements (right after the @code{begin}).  It has
 the effect of deferring aborts for the sequence of statements (but not
 for the declarations or handlers, if any, associated with this statement
 sequence).
+
+@node Pragma Abstract_State
+@unnumberedsec Pragma Abstract_State
+@findex Abstract_State
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.4.
 
 @node Pragma Ada_83
 @unnumberedsec Pragma Ada_83
@@ -2411,6 +2432,13 @@ This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
 
+@node Pragma Depends
+@unnumberedsec Pragma Depends
+@findex Depends
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.5.
+
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
 @findex Detect_Blocking
@@ -3188,6 +3216,13 @@ For digits values from 10 to 15, G float format will be used.
 Digits values above 15 are not allowed.
 @end itemize
 
+@node Pragma Global
+@unnumberedsec Pragma Global
+@findex Global
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.4.
+
 @node Pragma Ident
 @unnumberedsec Pragma Ident
 @findex Ident
@@ -3629,6 +3664,13 @@ manipulate separate components in the composite object. This may place
 constraints on the representation of the object (for instance prohibiting
 tight packing).
 
+@node Pragma Initial_Condition
+@unnumberedsec Pragma Initial_Condition
+@findex Initial_Condition
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.6.
+
 @node Pragma Initialize_Scalars
 @unnumberedsec Pragma Initialize_Scalars
 @findex Initialize_Scalars
@@ -3690,6 +3732,13 @@ substantially larger. It may also cause an increase in the amount
 of stack required, so it is probably a good idea to turn on stack
 checking (see description of stack checking in the @value{EDITION}
 User's Guide) when using this pragma.
+
+@node Pragma Initializes
+@unnumberedsec Pragma Initializes
+@findex Initializes
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.5.
 
 @node Pragma Inline_Always
 @unnumberedsec Pragma Inline_Always
@@ -5852,6 +5901,13 @@ pragma Profile (Ravenscar);
 @noindent
 which is the preferred method of setting the @code{Ravenscar} profile.
 
+@node Pragma Refined_State
+@unnumberedsec Pragma Refined_State
+@findex Refined_State
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.2.2.
+
 @node Pragma Relative_Deadline
 @unnumberedsec Pragma Relative_Deadline
 @findex Relative_Deadline
@@ -7508,6 +7564,8 @@ clause.
 * Aspect Dimension_System::
 * Aspect Favor_Top_Level::
 * Aspect Global::
+* Aspect Initial_Condition::
+* Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
 * Aspect Lock_Free::
@@ -7518,6 +7576,7 @@ clause.
 * Aspect Pure_05::
 * Aspect Pure_12::
 * Aspect Pure_Function::
+* Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
 * Aspect Shared::
@@ -7674,7 +7733,19 @@ This aspect is equivalent to pragma @code{Favor_Top_Level}.
 @unnumberedsec Aspect Global
 @findex Global
 @noindent
-This aspect is equivalent pragma @code{Global}.
+This aspect is equivalent to pragma @code{Global}.
+
+@node Aspect Initial_Condition
+@unnumberedsec Aspect Initial_Condition
+@findex Initial_Condition
+@noindent
+This aspect is equivalent to pragma @code{Initial_Condition}.
+
+@node Aspect Initializes
+@unnumberedsec Aspect Initializes
+@findex Initializes
+@noindent
+This aspect is equivalent to pragma @code{Initializes}.
 
 @node Aspect Inline_Always
 @unnumberedsec Aspect Inline_Always
@@ -7743,6 +7814,12 @@ This aspect is equivalent to pragma @code{Pure_12}.
 @findex Pure_Function
 @noindent
 This aspect is equivalent to pragma @code{Pure_Function}.
+
+@node Aspect Refined_State
+@unnumberedsec Aspect Refined_State
+@findex Refined_State
+@noindent
+This aspect is equivalent to pragma @code{Refined_State}.
 
 @node Aspect Remote_Access_Type
 @unnumberedsec Aspect Remote_Access_Type

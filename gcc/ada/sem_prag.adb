@@ -2998,12 +2998,6 @@ package body Sem_Prag is
       --  Called for all GNAT defined pragmas to check the relevant restriction
       --  (No_Implementation_Pragmas).
 
-      procedure S14_Pragma;
-      --  Called for all pragmas defined for formal verification to check that
-      --  the S14_Extensions flag is set.
-      --  This name needs fixing ??? There is no such thing as an
-      --  "S14_Extensions" flag ???
-
       function Is_Before_First_Decl
         (Pragma_Node : Node_Id;
          Decls       : List_Id) return Boolean;
@@ -4651,7 +4645,7 @@ package body Sem_Prag is
             --  N_Contract node.
 
             if Acts_As_Spec (PO)
-              and then (GNATprove_Mode or Formal_Extensions)
+              and then GNATprove_Mode
             then
                declare
                   Prag : constant Node_Id := New_Copy_Tree (N);
@@ -9302,17 +9296,6 @@ package body Sem_Prag is
          end if;
       end Set_Ravenscar_Profile;
 
-      ----------------
-      -- S14_Pragma --
-      ----------------
-
-      procedure S14_Pragma is
-      begin
-         if not Formal_Extensions then
-            Error_Pragma ("pragma% requires the use of debug switch -gnatd.V");
-         end if;
-      end S14_Pragma;
-
    --  Start of processing for Analyze_Pragma
 
    begin
@@ -9700,9 +9683,7 @@ package body Sem_Prag is
                --  Verify whether the state introduces an illegal hidden state
                --  within a package subject to a null abstract state.
 
-               if Formal_Extensions then
-                  Check_No_Hidden_State (Id);
-               end if;
+               Check_No_Hidden_State (Id);
 
                --  Associate the state with its related package
 
@@ -9722,7 +9703,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -11894,7 +11874,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -13165,7 +13144,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -13897,7 +13875,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Initial_Condition
@@ -14009,7 +13986,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
             Ensure_Aggregate_Form (Arg1);
 
@@ -17542,7 +17518,6 @@ package body Sem_Prag is
 
          begin
             GNAT_Pragma;
-            S14_Pragma;
             Check_Arg_Count (1);
 
             --  Ensure the proper placement of the pragma. Refined states must

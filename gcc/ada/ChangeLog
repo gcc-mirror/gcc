@@ -1,3 +1,31 @@
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Code and comments cleanup.
+
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
+	* debug.adb Free debug flags -gnatd.D, -gnatd.G and -gnatd.V *
+	* errout.adb (Compilation_Errors): Remove special handling in
+	GNATprove mode.
+	* gnat1drv.adb (Adjust_Global_Switches): Remove handling of the
+	removed debug flags.
+	* gnat_rm.texi: Initial documentation for Abstract_State, Depends,
+	Global, Initial_Condition, Initializes and Refined_State pragmas and
+	aspects.
+	* opt.ads (Frame_Condition_Mode, Formal_Extensions,
+	SPARK_Strict_Mode): Remove global flags.
+	* sem_ch3.adb (Analyze_Object_Declaration): Check of no hidden state
+	always performed now, on packages declaring a null state.
+	(Signed_Integer_Type_Declaration): Remove ill-designed attempt
+	at providing pedantic mode for bounds of integer types.
+	* sem_ch4.adb (Analyze_Quantified_Expression): Warning on suspicious
+	"some" quantified expression now issued under control of -gnatw.t,
+	like the other warning on unused bound variable.
+	* sem_prag.adb (Check_Precondition_Postcondition): Remove useless test
+	on removed flag.
+	(Analyze_Pragma): Remove tests for SPARK 2014
+	pragmas, not officially allowed by GNAT.
+
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Ensure that

@@ -2001,17 +2001,6 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
-   Frame_Condition_Mode : Boolean := False;
-   --  Specific mode to be used in combination with GNATprove_Mode. If set to
-   --  true, ALI files containing the frame conditions (global effects) are
-   --  generated, and analysis is *not* performed. If not true, analysis is
-   --  performed. Set by debug flag -gnatd.G.
-
-   Formal_Extensions : Boolean := False;
-   --  When this flag is set, new aspects/pragmas/attributes are accepted,
-   --  whose main purpose is to facilitate formal verification. Set by debug
-   --  flag -gnatd.V.
-
    Global_SPARK_Mode : SPARK_Mode_Id := None;
    --  The mode applicable to the whole compilation. The global mode can be set
    --  in a configuration file such as gnat.adc.
@@ -2022,11 +2011,6 @@ package Opt is
    --  by the gnat2why executable or by use of the -gnatd.F debug switch. Note
    --  that this is completely separate from the SPARK restriction defined in
    --  GNAT to detect violations of a subset of SPARK 2005 rules.
-
-   SPARK_Strict_Mode : Boolean := False;
-   --  Interpret compiler permissions as strictly as possible. E.g. base ranges
-   --  for integers are limited to the strict minimum with this option. Set by
-   --  debug flag -gnatd.D.
 
 private
 
