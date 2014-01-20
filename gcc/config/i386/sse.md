@@ -8906,6 +8906,8 @@
       tmp = "pandn";
       break;
 
+   case MODE_V16SF:
+      gcc_assert (TARGET_AVX512F);
    case MODE_V8SF:
       gcc_assert (TARGET_AVX);
    case MODE_V4SF:
@@ -8985,6 +8987,7 @@
     {
     case MODE_XI:
       gcc_assert (TARGET_AVX512F);
+
       tmp = "p<logic><ssemodesuffix>";
       break;
 
