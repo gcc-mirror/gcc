@@ -1,3 +1,9 @@
+2014-01-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Expand_With_Clause): Don't
+	recurse on the prefix if the current with-ed name refers to a
+	package that renames its own parent, eg "package P.Q renames P;".
+
 2014-01-20  Yannick Moy  <moy@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_Call): Remove procedure.
