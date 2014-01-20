@@ -1,5 +1,14 @@
 2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Robustify tests
+	for aliased objects with an unconstrained nominal subtype.
+	* gcc-interface/trans.c (Call_to_gnu): Likewise.
+	(gnat_to_gnu) <case N_Op_Not>: Robustify test for private type.
+	<case N_Op_Minus>: Remove useless code.
+	(Exception_Handler_to_gnu_zcx): Minor tweaks.
+
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <case E_Record_Subtype>:
 	Tidy up.  For a subtype with discriminants and variant part, if a
 	variant is statically selected and the fields all have a constant
