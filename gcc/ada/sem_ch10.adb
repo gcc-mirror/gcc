@@ -3045,7 +3045,13 @@ package body Sem_Ch10 is
       Mark_Rewrite_Insertion (Withn);
       Install_Withed_Unit (Withn);
 
-      if Nkind (Nam) = N_Expanded_Name then
+      --  If we have "with X.Y;", we want to recurse on "X", except in the
+      --  unusual case where X.Y is a renaming of X. In that case, the scope
+      --  of X will be null.
+
+      if Nkind (Nam) = N_Expanded_Name
+        and then Present (Scope (Entity (Prefix (Nam))))
+      then
          Expand_With_Clause (Item, Prefix (Nam), N);
       end if;
    end Expand_With_Clause;
