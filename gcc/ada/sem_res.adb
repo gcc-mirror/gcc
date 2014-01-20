@@ -9155,6 +9155,7 @@ package body Sem_Res is
       Drange     : constant Node_Id := Discrete_Range (N);
       Name       : constant Node_Id := Prefix (N);
       Array_Type : Entity_Id        := Empty;
+      Dexpr      : Node_Id          := Empty;
       Index_Type : Entity_Id;
 
    begin
@@ -9267,45 +9268,62 @@ package body Sem_Res is
          Array_Type := Etype (Name);
       end if;
 
+      --  Obtain the type of the array index
+
+      if Ekind (Array_Type) = E_String_Literal_Subtype then
+         Index_Type := Etype (String_Literal_Low_Bound (Array_Type));
+      else
+         Index_Type := Etype (First_Index (Array_Type));
+      end if;
+
       --  If name was overloaded, set slice type correctly now
 
       Set_Etype (N, Array_Type);
 
-      --  If the range is specified by a subtype mark, no resolution is
-      --  necessary. Else resolve the bounds, and apply needed checks.
+      --  Handle the generation of a range check that compares the array index
+      --  against the discrete_range. The check is not applied to internally
+      --  built nodes associated with the expansion of dispatch tables. Check
+      --  that Ada.Tags has already been loaded to avoid extra dependencies on
+      --  the unit.
 
-      if not Is_Entity_Name (Drange) then
-         if Ekind (Array_Type) = E_String_Literal_Subtype then
-            Index_Type := Etype (String_Literal_Low_Bound (Array_Type));
-         else
-            Index_Type := Etype (First_Index (Array_Type));
-         end if;
+      if Tagged_Type_Expansion
+        and then RTU_Loaded (Ada_Tags)
+        and then Nkind (Prefix (N)) = N_Selected_Component
+        and then Present (Entity (Selector_Name (Prefix (N))))
+        and then Entity (Selector_Name (Prefix (N))) =
+                   RTE_Record_Component (RE_Prims_Ptr)
+      then
+         null;
 
+      --  The discrete_range is specified by a subtype indication. Create a
+      --  shallow copy and inherit the type, parent and source location from
+      --  the discrete_range. This ensures that the range check is inserted
+      --  relative to the slice and that the runtime exception points to the
+      --  proper construct.
+
+      elsif Is_Entity_Name (Drange) then
+         Dexpr := New_Copy (Scalar_Range (Entity (Drange)));
+
+         Set_Etype  (Dexpr, Etype  (Drange));
+         Set_Parent (Dexpr, Parent (Drange));
+         Set_Sloc   (Dexpr, Sloc   (Drange));
+
+      --  The discrete_range is a regular range. Resolve the bounds and remove
+      --  their side effects.
+
+      else
          Resolve (Drange, Base_Type (Index_Type));
 
          if Nkind (Drange) = N_Range then
-
-            --  Ensure that side effects in the bounds are properly handled
-
-            Force_Evaluation (Low_Bound (Drange));
+            Force_Evaluation (Low_Bound  (Drange));
             Force_Evaluation (High_Bound (Drange));
 
-            --  Do not apply the range check to nodes associated with the
-            --  frontend expansion of the dispatch table. We first check
-            --  if Ada.Tags is already loaded to avoid the addition of an
-            --  undesired dependence on such run-time unit.
-
-            if not Tagged_Type_Expansion
-              or else not
-                (RTU_Loaded (Ada_Tags)
-                  and then Nkind (Prefix (N)) = N_Selected_Component
-                  and then Present (Entity (Selector_Name (Prefix (N))))
-                  and then Entity (Selector_Name (Prefix (N))) =
-                                         RTE_Record_Component (RE_Prims_Ptr))
-            then
-               Apply_Range_Check (Drange, Index_Type);
-            end if;
+            Dexpr := Drange;
          end if;
+      end if;
+
+      if Present (Dexpr) then
+         Apply_Range_Check (Dexpr, Index_Type);
       end if;
 
       Set_Slice_Subtype (N);

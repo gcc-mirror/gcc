@@ -878,6 +878,8 @@ exception_class_eq (const _GNAT_Exception *except, unsigned long long ec)
 #endif
 }
 
+/* Return how CHOICE matches PROPAGATED_EXCEPTION.  */
+
 static enum action_kind
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
 {
@@ -937,7 +939,8 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
       void *choice_typeinfo = Foreign_Data_For (choice);
       void *except_typeinfo =
 	(((struct __cxa_exception *)
-	  ((_Unwind_Exception *)propagated_exception + 1)) - 1)->exceptionType;
+	  ((_Unwind_Exception *)propagated_exception + 1)) - 1)
+	->exceptionType;
 
       /* Typeinfo are directly compared, which might not be correct if they
 	 aren't merged.  ??? We should call the == operator if this module is
@@ -995,7 +998,6 @@ get_action_description_for (_Unwind_Ptr ip,
   else
     {
       const unsigned char * p = action->table_entry;
-
       _sleb128_t ar_filter, ar_disp;
 
       action->kind = nothing;
@@ -1028,7 +1030,8 @@ get_action_description_for (_Unwind_Ptr ip,
 
                   /* See if the filter we have is for an exception which
                      matches the one we are propagating.  */
-                  _Unwind_Ptr choice = get_ttype_entry_for (region, ar_filter);
+                  _Unwind_Ptr choice =
+		    get_ttype_entry_for (region, ar_filter);
 
 		  act = is_handled_by (choice, gnat_exception);
                   if (act != nothing)
@@ -1105,7 +1108,7 @@ extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 #endif
 
 /* Code executed to continue unwinding.  With the ARM unwinder, the
-   personality routine must unwind one frame.  */
+   personality routine must unwind one frame (per EHABI 7.3 4.).  */
 
 static _Unwind_Reason_Code
 continue_unwind (struct _Unwind_Exception* ue_header,
@@ -1294,9 +1297,6 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Context* uw_context)
 {
   _Unwind_Action uw_phases;
-  region_descriptor region;
-  action_descriptor action;
-  _Unwind_Ptr ip;
 
   switch (state & _US_ACTION_MASK)
     {
@@ -1306,14 +1306,21 @@ PERSONALITY_FUNCTION (_Unwind_State state,
       break;
 
     case _US_UNWIND_FRAME_STARTING:
+      /* Phase 2, to call a cleanup.  */
       uw_phases = _UA_CLEANUP_PHASE;
+#if 0
+      /* ??? We don't use UA_HANDLER_FRAME (except to debug).  Futhermore,
+	 barrier_cache.sp isn't yet set.  */
       if (!(state & _US_FORCE_UNWIND)
 	  && (uw_exception->barrier_cache.sp
 	      == _Unwind_GetGR (uw_context, UNWIND_STACK_REG)))
 	uw_phases |= _UA_HANDLER_FRAME;
+#endif
       break;
 
     case _US_UNWIND_FRAME_RESUME:
+      /* Phase 2, called at the return of a cleanup.  In the GNU
+	 implementation, there is nothing left to do, so we simply go on.  */
       return continue_unwind (uw_exception, uw_context);
 
     default:
