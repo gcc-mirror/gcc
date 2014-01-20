@@ -3037,6 +3037,15 @@ package body Sem_Attr is
               and then Extensions_Allowed
             then
                return;
+
+            --  For compatibility with Declib code, treat all prefixes as
+            --  legal, including non-discriminated types.
+
+            --  ??? this non-conforming language extension needs documenting
+            --  ??? anyway it should not depend on Extend_System!
+
+            elsif Present (System_Extend_Unit) then
+               return;
             end if;
          end if;
 

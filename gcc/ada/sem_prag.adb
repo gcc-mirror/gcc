@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -449,39 +449,38 @@ package body Sem_Prag is
       Subp_Id   := Defining_Entity (Subp_Decl);
       All_Cases := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
-      --  Multiple contract cases appear in aggregate form
+      --  Single and multiple contract cases must appear in aggregate form. If
+      --  this is not the case, then either the parser of the analysis of the
+      --  pragma failed to produce an aggregate.
 
-      if Nkind (All_Cases) = N_Aggregate then
-         if No (Component_Associations (All_Cases)) then
-            Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
+      pragma Assert (Nkind (All_Cases) = N_Aggregate);
 
-         --  Individual contract cases appear as component associations
+      if No (Component_Associations (All_Cases)) then
+         Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
 
-         else
-            --  Ensure that the formal parameters are visible when analyzing
-            --  all clauses. This falls out of the general rule of aspects
-            --  pertaining to subprogram declarations. Skip the installation
-            --  for subprogram bodies because the formals are already visible.
-
-            if not In_Open_Scopes (Subp_Id) then
-               Restore_Scope := True;
-               Push_Scope (Subp_Id);
-               Install_Formals (Subp_Id);
-            end if;
-
-            CCase := First (Component_Associations (All_Cases));
-            while Present (CCase) loop
-               Analyze_Contract_Case (CCase);
-               Next (CCase);
-            end loop;
-
-            if Restore_Scope then
-               End_Scope;
-            end if;
-         end if;
+      --  Individual contract cases appear as component associations
 
       else
-         Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
+         --  Ensure that the formal parameters are visible when analyzing all
+         --  clauses. This falls out of the general rule of aspects pertaining
+         --  to subprogram declarations. Skip the installation for subprogram
+         --  bodies because the formals are already visible.
+
+         if not In_Open_Scopes (Subp_Id) then
+            Restore_Scope := True;
+            Push_Scope (Subp_Id);
+            Install_Formals (Subp_Id);
+         end if;
+
+         CCase := First (Component_Associations (All_Cases));
+         while Present (CCase) loop
+            Analyze_Contract_Case (CCase);
+            Next (CCase);
+         end loop;
+
+         if Restore_Scope then
+            End_Scope;
+         end if;
       end if;
    end Analyze_Contract_Cases_In_Decl_Part;
 
@@ -2577,32 +2576,26 @@ package body Sem_Prag is
 
       Collect_States_And_Variables;
 
-      --  Multiple initialization clauses appear as an aggregate
+      --  Single and multiple initialization clauses must appear as an
+      --  aggregate. If this is not the case, then either the parser of
+      --  the analysis of the pragma failed to produce an aggregate.
 
-      if Nkind (Inits) = N_Aggregate then
-         if Present (Expressions (Inits)) then
-            Init := First (Expressions (Inits));
-            while Present (Init) loop
-               Analyze_Initialization_Item (Init);
+      pragma Assert (Nkind (Inits) = N_Aggregate);
 
-               Next (Init);
-            end loop;
-         end if;
+      if Present (Expressions (Inits)) then
+         Init := First (Expressions (Inits));
+         while Present (Init) loop
+            Analyze_Initialization_Item (Init);
+            Next (Init);
+         end loop;
+      end if;
 
-         if Present (Component_Associations (Inits)) then
-            Init := First (Component_Associations (Inits));
-            while Present (Init) loop
-               Analyze_Initialization_Item_With_Inputs (Init);
-
-               Next (Init);
-            end loop;
-         end if;
-
-      --  Various forms of a single initialization clause. Note that these may
-      --  include malformed initializations.
-
-      else
-         Analyze_Initialization_Item (Inits);
+      if Present (Component_Associations (Inits)) then
+         Init := First (Component_Associations (Inits));
+         while Present (Init) loop
+            Analyze_Initialization_Item_With_Inputs (Init);
+            Next (Init);
+         end loop;
       end if;
    end Analyze_Initializes_In_Decl_Part;
 
@@ -2620,8 +2613,8 @@ package body Sem_Prag is
       --  name may be different from the pragma name.
 
       Pragma_Exit : exception;
-      --  This exception is used to exit pragma processing completely. It is
-      --  used when an error is detected, and no further processing is
+      --  This exception is used to exit pragma processing completely. It
+      --  is used when an error is detected, and no further processing is
       --  required. It is also used if an earlier error has left the tree in
       --  a state where the pragma should not be processed.
 
@@ -2656,8 +2649,8 @@ package body Sem_Prag is
       --  Subsidiary routine to the analysis of body pragmas Refined_Depends,
       --  Refined_Global and Refined_Post. Check the placement and related
       --  context of the pragma. Spec_Id is the entity of the related
-      --  subprogram. Body_Id is the entity of the subprogram body. Flag Legal
-      --  is set when the pragma is properly placed.
+      --  subprogram. Body_Id is the entity of the subprogram body. Flag
+      --  Legal is set when the pragma is properly placed.
 
       procedure Check_Ada_83_Warning;
       --  Issues a warning message for the current pragma if operating in Ada
@@ -2910,6 +2903,12 @@ package body Sem_Prag is
       --  presence of at least one component. UU_Typ is the related Unchecked_
       --  Union type.
 
+      procedure Ensure_Aggregate_Form (Arg : Node_Id);
+      --  Subsidiary routine to the processing of pragmas Abstract_State,
+      --  Contract_Cases, Depends, Global, Initializes, Refined_Depends,
+      --  Refined_Global and Refined_State. Transform argument Arg into an
+      --  aggregate if not one already. N_Null is never transformed.
+
       procedure Error_Pragma (Msg : String);
       pragma No_Return (Error_Pragma);
       --  Outputs error message for current pragma. The message contains a %
@@ -2936,15 +2935,15 @@ package body Sem_Prag is
 
       procedure Error_Pragma_Arg_Ident (Msg : String; Arg : Node_Id);
       pragma No_Return (Error_Pragma_Arg_Ident);
-      --  Outputs error message for current pragma. The message may contain
-      --  a % that will be replaced with the pragma name. The parameter Arg
-      --  must be a pragma argument association with a non-empty identifier
-      --  (i.e. its Chars field must be set), and the error message is placed
-      --  on the identifier. The message is placed using Error_Msg_N so
-      --  the message may also contain an & insertion character which will
-      --  reference the identifier. After placing the message, Pragma_Exit
-      --  is raised. Note: this routine calls Fix_Error (see spec of that
-      --  procedure for details).
+      --  Outputs error message for current pragma. The message may contain a %
+      --  that will be replaced with the pragma name. The parameter Arg must be
+      --  a pragma argument association with a non-empty identifier (i.e. its
+      --  Chars field must be set), and the error message is placed on the
+      --  identifier. The message is placed using Error_Msg_N so the message
+      --  may also contain an & insertion character which will reference
+      --  the identifier. After placing the message, Pragma_Exit is raised.
+      --  Note: this routine calls Fix_Error (see spec of that procedure for
+      --  details).
 
       procedure Error_Pragma_Ref (Msg : String; Ref : Entity_Id);
       pragma No_Return (Error_Pragma_Ref);
@@ -3220,6 +3219,13 @@ package body Sem_Prag is
          GNAT_Pragma;
          Check_Arg_Count (1);
          Check_No_Identifiers;
+
+         if Nam_In (Pname, Name_Refined_Depends,
+                           Name_Refined_Global,
+                           Name_Refined_State)
+         then
+            Ensure_Aggregate_Form (Arg1);
+         end if;
 
          --  Verify the placement of the pragma and check for duplicates. The
          --  pragma must apply to a subprogram body [stub].
@@ -5109,6 +5115,70 @@ package body Sem_Prag is
             Next (Comp);
          end loop;
       end Check_Variant;
+
+      ---------------------------
+      -- Ensure_Aggregate_Form --
+      ---------------------------
+
+      procedure Ensure_Aggregate_Form (Arg : Node_Id) is
+         Expr  : constant Node_Id    := Get_Pragma_Arg (Arg);
+         Loc   : constant Source_Ptr := Sloc (Arg);
+         Nam   : constant Name_Id    := Chars (Arg);
+         Comps : List_Id := No_List;
+         Exprs : List_Id := No_List;
+
+      begin
+         --  The argument is already in aggregate form, but the presence of a
+         --  name causes this to be interpreted as a named association which in
+         --  turn must be converted into an aggregate.
+
+         --    pragma Global (In_Out => (A, B, C))
+         --                   ^         ^
+         --                   name      aggregate
+
+         --    pragma Global ((In_Out => (A, B, C)))
+         --                   ^          ^
+         --                   aggregate  aggregate
+
+         if Nkind (Expr) = N_Aggregate then
+            if Nam = No_Name then
+               return;
+            end if;
+
+         --  Do not transform a null argument into an aggregate as N_Null has
+         --  special meaning in formal verification pragmas.
+
+         elsif Nkind (Expr) = N_Null then
+            return;
+         end if;
+
+         --  Positional argument is transformed into an aggregate with an
+         --  Expressions list.
+
+         if Nam = No_Name then
+            Exprs := New_List (Relocate_Node (Expr));
+
+         --  An associative argument is transformed into an aggregate with
+         --  Component_Associations.
+
+         else
+            Comps := New_List (
+              Make_Component_Association (Loc,
+                Choices    => New_List (Make_Identifier (Loc, Chars (Arg))),
+                Expression => Relocate_Node (Expr)));
+
+         end if;
+
+         --  Remove the pragma argument name as this information has been
+         --  captured in the aggregate.
+
+         Set_Chars (Arg, No_Name);
+
+         Set_Expression (Arg,
+           Make_Aggregate (Loc,
+             Component_Associations => Comps,
+             Expressions            => Exprs));
+      end Ensure_Aggregate_Form;
 
       ------------------
       -- Error_Pragma --
@@ -9654,6 +9724,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
 
             --  Ensure the proper placement of the pragma. Abstract states must
             --  be associated with a package declaration.
@@ -9677,7 +9748,7 @@ package body Sem_Prag is
 
             State := Expression (Arg1);
 
-            --  Multiple abstract states appear as an aggregate
+            --  Multiple non-null abstract states appear as an aggregate
 
             if Nkind (State) = N_Aggregate then
                State := First (Expressions (State));
@@ -11305,6 +11376,7 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
 
             --  The pragma is analyzed at the end of the declarative part which
             --  contains the related subprogram. Reset the analyzed flag.
@@ -11824,6 +11896,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
 
             --  Ensure the proper placement of the pragma. Depends must be
             --  associated with a subprogram declaration or a body that acts
@@ -13094,6 +13167,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
 
             --  Ensure the proper placement of the pragma. Global must be
             --  associated with a subprogram declaration or a body that acts
@@ -13937,6 +14011,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             S14_Pragma;
             Check_Arg_Count (1);
+            Ensure_Aggregate_Form (Arg1);
 
             --  Ensure the proper placement of the pragma. Initializes must be
             --  associated with a package declaration.
@@ -22116,7 +22191,7 @@ package body Sem_Prag is
       Abstr_States := New_Copy_Elist (Abstract_States (Spec_Id));
       Collect_Hidden_States;
 
-      --  Multiple state refinements appear as an aggregate
+      --  Multiple non-null state refinements appear as an aggregate
 
       if Nkind (Clauses) = N_Aggregate then
          if Present (Expressions (Clauses)) then

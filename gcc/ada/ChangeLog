@@ -1,5 +1,21 @@
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma): Ensure that
+	the sole argument of pragmas Abstract_State, Contract_Cases,
+	Depends, Global and Initializes in in aggregate form.
+	(Analyze_Refined_Pragma): Ensure that the sole argument of
+	pragmas Refined_Depends, Refined_Global and Refined_State is in
+	aggregate form.
+	(Ensure_Aggregate_Form): New routine.
+
+2014-01-20  Doug Rupp  <rupp@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): case
+	Attribute_Constrained => treat all prefixes as legal for Declib
+	compatibility.
+
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Check_Mode): Reimplement the routine.
 	(Find_Mode): New routine.
 
