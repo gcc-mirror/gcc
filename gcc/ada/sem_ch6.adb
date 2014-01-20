@@ -7222,12 +7222,24 @@ package body Sem_Ch6 is
 
          if Mode = 'F' then
             if not Raise_Exception_Call then
-               Error_Msg_N
-                 ("RETURN statement missing following this statement??!",
-                  Last_Stm);
-               Error_Msg_N
-                 ("\Program_Error may be raised at run time??!",
-                  Last_Stm);
+
+               --  In GNATprove mode, it is an error to have a missing return
+
+               if GNATprove_Mode then
+                  Error_Msg_N
+                    ("RETURN statement missing following this statement!",
+                     Last_Stm);
+
+               --  Otherwise normal case of warning (RM insists this is legal)
+
+               else
+                  Error_Msg_N
+                    ("RETURN statement missing following this statement??!",
+                     Last_Stm);
+                  Error_Msg_N
+                    ("\Program_Error may be raised at run time??!",
+                     Last_Stm);
+               end if;
             end if;
 
             --  Note: we set Err even though we have not issued a warning

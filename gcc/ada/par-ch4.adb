@@ -41,6 +41,7 @@ package body Ch4 is
       Attribute_External_Tag => True,
       Attribute_Img          => True,
       Attribute_Loop_Entry   => True,
+      Attribute_Old          => True,
       Attribute_Stub_Type    => True,
       Attribute_Version      => True,
       Attribute_Type_Key     => True,
@@ -49,7 +50,8 @@ package body Ch4 is
    --  string or a type. For those attributes, a left parenthesis after
    --  the attribute should not be analyzed as the beginning of a parameters
    --  list because it may denote a slice operation (X'Img (1 .. 2)) or
-   --  a type conversion (X'Class (Y)).
+   --  a type conversion (X'Class (Y)). The Ada2012 attribute 'Old is in
+   --  this category.
 
    --  Note: Loop_Entry is in this list because, although it can take an
    --  optional argument (the loop name), we can't distinguish that at parse

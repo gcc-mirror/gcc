@@ -64,7 +64,6 @@ package Errout is
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
-   --  Note: always ignored in VMS mode where we do not provide this feature.
 
    -----------------------------------
    -- Suppression of Error Messages --
@@ -305,8 +304,10 @@ package Errout is
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above. If Error_Msg_Warn is
-   --      False, then there is no effect.
+   --      effect is the same as ? described above, and in particular <? and
+   --      <X? have the effect of ?? and ?X? respectively. If Error_Msg_Warn
+   --      is False, then the < <? or <X? sequence is ignored and the message
+   --      is treated as a error rather than a warning.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
    --      If two or more upper case letters appear in the message, they are

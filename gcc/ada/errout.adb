@@ -2713,7 +2713,8 @@ package body Errout is
       P : Natural;     -- Current index;
 
       procedure Set_Msg_Insertion_Warning;
-      --  Deal with ? ?? ?x? ?X? insertion sequences
+      --  Deal with ? ?? ?x? ?X? insertion sequences (also < <? <x? <X?). The
+      --  caller has already bumped the pointer past the initial ? or <.
 
       -------------------------------
       -- Set_Msg_Insertion_Warning --
@@ -2819,14 +2820,12 @@ package body Errout is
 
             when '<' =>
 
-               --  If tagging of messages is enabled, and this is a warning,
-               --  then it is treated as being [enabled by default].
+               --  Note: the prescan already set Is_Warning_Msg True if and
+               --  only if Error_Msg_Warn is set to True. If Error_Msg_Warn
+               --  is False, the call to Set_Msg_Insertion_Warning here does
+               --  no harm, since Warning_Msg_Char is ignored in that case.
 
-               if Error_Msg_Warn
-                 and Warning_Doc_Switch
-               then
-                  Warning_Msg_Char := '?';
-               end if;
+               Set_Msg_Insertion_Warning;
 
             when '|' =>
                null; -- already dealt with
