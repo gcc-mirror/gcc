@@ -1257,7 +1257,13 @@ begin
          Exit_Program (E_Errors);
       end if;
 
-      Write_ALI (Object => (Back_End_Mode = Generate_Object));
+      --  In GNATprove mode, an "object" file is always generated as the
+      --  result of calling gnat1 or gnat2why, although this is not the
+      --  same as the object file produced for compilation.
+
+      Write_ALI (Object => (Back_End_Mode = Generate_Object
+                              or else
+                            GNATprove_Mode));
 
       if not Compilation_Errors then
 

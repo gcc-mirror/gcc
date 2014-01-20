@@ -1,3 +1,15 @@
+2014-01-20  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Call Write_ALI with Object=True in GNATprove
+	mode.
+
+2014-01-20  Pascal Obry  <obry@adacore.com>
+
+	* g-arrspl.ads (Slice_Set): New definition (will use a copy on
+	write scheme).
+	* g-arrspl.adb: Adapt all routine to this new implementation.
+	(Set): Copy the Slice_Set definition before reusing it.
+
 2014-01-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Process_Import_Or_Interface): In

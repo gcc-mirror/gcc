@@ -39,9 +39,6 @@ package body GNAT.Array_Split is
    procedure Free is
       new Ada.Unchecked_Deallocation (Separators_Indexes, Indexes_Access);
 
-   procedure Free is
-      new Ada.Unchecked_Deallocation (Element_Sequence, Element_Access);
-
    function Count
      (Source  : Element_Sequence;
       Pattern : Element_Set) return Natural;
@@ -54,7 +51,7 @@ package body GNAT.Array_Split is
 
    procedure Adjust (S : in out Slice_Set) is
    begin
-      S.Ref_Counter.all := S.Ref_Counter.all + 1;
+      S.D.Ref_Counter := S.D.Ref_Counter + 1;
    end Adjust;
 
    ------------
@@ -81,10 +78,11 @@ package body GNAT.Array_Split is
       Separators : Element_Set;
       Mode       : Separator_Mode := Single)
    is
+      Result : Slice_Set;
    begin
-      Free (S.Source);
-      S.Source := new Element_Sequence'(From);
-      Set (S, Separators, Mode);
+      Result.D.Source := new Element_Sequence'(From);
+      Set (Result, Separators, Mode);
+      S := Result;
    end Create;
 
    -----------
@@ -116,23 +114,23 @@ package body GNAT.Array_Split is
          new Ada.Unchecked_Deallocation (Element_Sequence, Element_Access);
 
       procedure Free is
-         new Ada.Unchecked_Deallocation (Natural, Counter);
+         new Ada.Unchecked_Deallocation (Data, Data_Access);
 
-      Ref_Counter : Counter := S.Ref_Counter;
+      D : Data_Access := S.D;
 
    begin
       --  Ensure call is idempotent
 
-      S.Ref_Counter := null;
+      S.D := null;
 
-      if Ref_Counter /= null then
-         Ref_Counter.all := Ref_Counter.all - 1;
+      if D /= null then
+         D.Ref_Counter := D.Ref_Counter - 1;
 
-         if Ref_Counter.all = 0 then
-            Free (S.Source);
-            Free (S.Indexes);
-            Free (S.Slices);
-            Free (Ref_Counter);
+         if D.Ref_Counter = 0 then
+            Free (D.Source);
+            Free (D.Indexes);
+            Free (D.Slices);
+            Free (D);
          end if;
       end if;
    end Finalize;
@@ -143,7 +141,7 @@ package body GNAT.Array_Split is
 
    procedure Initialize (S : in out Slice_Set) is
    begin
-      S.Ref_Counter := new Natural'(1);
+      S.D := new Data'(1, null, 0, null, null);
    end Initialize;
 
    ----------------
@@ -155,11 +153,11 @@ package body GNAT.Array_Split is
       Index : Slice_Number) return Slice_Separators
    is
    begin
-      if Index > S.N_Slice then
+      if Index > S.D.N_Slice then
          raise Index_Error;
 
       elsif Index = 0
-        or else (Index = 1 and then S.N_Slice = 1)
+        or else (Index = 1 and then S.D.N_Slice = 1)
       then
          --  Whole string, or no separator used
 
@@ -168,15 +166,15 @@ package body GNAT.Array_Split is
 
       elsif Index = 1 then
          return (Before => Array_End,
-                 After  => S.Source (S.Slices (Index).Stop + 1));
+                 After  => S.D.Source (S.D.Slices (Index).Stop + 1));
 
-      elsif Index = S.N_Slice then
-         return (Before => S.Source (S.Slices (Index).Start - 1),
+      elsif Index = S.D.N_Slice then
+         return (Before => S.D.Source (S.D.Slices (Index).Start - 1),
                  After  => Array_End);
 
       else
-         return (Before => S.Source (S.Slices (Index).Start - 1),
-                 After  => S.Source (S.Slices (Index).Stop + 1));
+         return (Before => S.D.Source (S.D.Slices (Index).Start - 1),
+                 After  => S.D.Source (S.D.Slices (Index).Stop + 1));
       end if;
    end Separators;
 
@@ -186,7 +184,7 @@ package body GNAT.Array_Split is
 
    function Separators (S : Slice_Set) return Separators_Indexes is
    begin
-      return S.Indexes.all;
+      return S.D.Indexes.all;
    end Separators;
 
    ---------
@@ -211,21 +209,55 @@ package body GNAT.Array_Split is
       Separators : Element_Set;
       Mode       : Separator_Mode := Single)
    is
-      Count_Sep : constant Natural := Count (S.Source.all, Separators);
-      J : Positive;
+
+      procedure Copy_On_Write (S : in out Slice_Set);
+      --  Make a copy of S if shared with another variable
+
+      -------------------
+      -- Copy_On_Write --
+      -------------------
+
+      procedure Copy_On_Write (S : in out Slice_Set) is
+      begin
+         if S.D.Ref_Counter > 1 then
+            --  First let's remove our count from the current data
+
+            S.D.Ref_Counter := S.D.Ref_Counter - 1;
+
+            --  Then duplicate the data
+
+            S.D := new Data'(S.D.all);
+            S.D.Ref_Counter := 1;
+
+            if S.D.Source /= null then
+               S.D.Source := new Element_Sequence'(S.D.Source.all);
+               S.D.Indexes := null;
+               S.D.Slices := null;
+            end if;
+
+         else
+            --  If there is a single reference to this variable, free it now
+            --  as it will be redefined below.
+
+            Free (S.D.Indexes);
+            Free (S.D.Slices);
+         end if;
+      end Copy_On_Write;
+
+      Count_Sep : constant Natural := Count (S.D.Source.all, Separators);
+      J         : Positive;
+
    begin
-      --  Free old structure
-      Free (S.Indexes);
-      Free (S.Slices);
+      Copy_On_Write (S);
 
       --  Compute all separator's indexes
 
-      S.Indexes := new Separators_Indexes (1 .. Count_Sep);
-      J := S.Indexes'First;
+      S.D.Indexes := new Separators_Indexes (1 .. Count_Sep);
+      J := S.D.Indexes'First;
 
-      for K in S.Source'Range loop
-         if Is_In (S.Source (K), Separators) then
-            S.Indexes (J) := K;
+      for K in S.D.Source'Range loop
+         if Is_In (S.D.Source (K), Separators) then
+            S.D.Indexes (J) := K;
             J := J + 1;
          end if;
       end loop;
@@ -238,9 +270,9 @@ package body GNAT.Array_Split is
          Start, Stop : Natural;
 
       begin
-         S.N_Slice := 0;
+         S.D.N_Slice := 0;
 
-         Start := S.Source'First;
+         Start := S.D.Source'First;
          Stop  := 0;
 
          loop
@@ -248,16 +280,16 @@ package body GNAT.Array_Split is
 
                --  No more separators, last slice ends at end of source string
 
-               Stop := S.Source'Last;
+               Stop := S.D.Source'Last;
 
             else
-               Stop := S.Indexes (K) - 1;
+               Stop := S.D.Indexes (K) - 1;
             end if;
 
             --  Add slice to the table
 
-            S.N_Slice := S.N_Slice + 1;
-            S_Info (S.N_Slice) := (Start, Stop);
+            S.D.N_Slice := S.D.N_Slice + 1;
+            S_Info (S.D.N_Slice) := (Start, Stop);
 
             exit when K > Count_Sep;
 
@@ -268,7 +300,7 @@ package body GNAT.Array_Split is
                   --  In this mode just set start to character next to the
                   --  current separator, advance the separator index.
 
-                  Start := S.Indexes (K) + 1;
+                  Start := S.D.Indexes (K) + 1;
                   K := K + 1;
 
                when Multiple =>
@@ -276,16 +308,16 @@ package body GNAT.Array_Split is
                   --  In this mode skip separators following each other
 
                   loop
-                     Start := S.Indexes (K) + 1;
+                     Start := S.D.Indexes (K) + 1;
                      K := K + 1;
                      exit when K > Count_Sep
-                       or else S.Indexes (K) > S.Indexes (K - 1) + 1;
+                       or else S.D.Indexes (K) > S.D.Indexes (K - 1) + 1;
                   end loop;
 
             end case;
          end loop;
 
-         S.Slices := new Slices_Indexes'(S_Info (1 .. S.N_Slice));
+         S.D.Slices := new Slices_Indexes'(S_Info (1 .. S.D.N_Slice));
       end;
    end Set;
 
@@ -299,13 +331,14 @@ package body GNAT.Array_Split is
    is
    begin
       if Index = 0 then
-         return S.Source.all;
+         return S.D.Source.all;
 
-      elsif Index > S.N_Slice then
+      elsif Index > S.D.N_Slice then
          raise Index_Error;
 
       else
-         return S.Source (S.Slices (Index).Start .. S.Slices (Index).Stop);
+         return S.D.Source
+           (S.D.Slices (Index).Start .. S.D.Slices (Index).Stop);
       end if;
    end Slice;
 
@@ -315,7 +348,7 @@ package body GNAT.Array_Split is
 
    function Slice_Count (S : Slice_Set) return Slice_Number is
    begin
-      return S.N_Slice;
+      return S.D.N_Slice;
    end Slice_Count;
 
 end GNAT.Array_Split;
