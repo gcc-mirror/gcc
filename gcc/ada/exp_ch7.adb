@@ -4480,33 +4480,45 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         function Requires_Hooking return Boolean;
-         --  Determine whether the context requires transient variable export
-         --  to the outer finalizer. This scenario arises when the context may
-         --  raise an exception.
+         Must_Hook : Boolean := False;
+         --  Flag denoting whether the context requires transient variable
+         --  export to the outer finalizer.
 
-         ----------------------
-         -- Requires_Hooking --
-         ----------------------
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes a subprogram call
 
-         function Requires_Hooking return Boolean is
+         ------------------------
+         -- Is_Subprogram_Call --
+         ------------------------
+
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
-            --  The context is either a procedure or function call or an object
-            --  declaration initialized by a function call. Note that in the
-            --  latter case, a function call that returns on the secondary
-            --  stack is usually rewritten into something else. Its proper
-            --  detection requires examination of the original initialization
-            --  expression.
+            --  A regular procedure or function call
 
-            return Nkind (N) in N_Subprogram_Call
-              or else (Nkind (N) = N_Object_Declaration
-                         and then Nkind (Original_Node (Expression (N))) =
-                                    N_Function_Call);
-         end Requires_Hooking;
+            if Nkind (N) in N_Subprogram_Call then
+               Must_Hook := True;
+               return Abandon;
+
+            --  Detect a call to a function that returns on the secondary stack
+
+            elsif Nkind (N) = N_Object_Declaration
+              and then Nkind (Original_Node (Expression (N))) = N_Function_Call
+            then
+               Must_Hook := True;
+               return Abandon;
+
+            --  Keep searching
+
+            else
+               return OK;
+            end if;
+         end Is_Subprogram_Call;
+
+         procedure Detect_Subprogram_Call is
+           new Traverse_Proc (Is_Subprogram_Call);
 
          --  Local variables
 
-         Must_Hook : constant Boolean := Requires_Hooking;
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
          Fin_Block : Node_Id;
@@ -4525,6 +4537,12 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Transient_Objects
 
       begin
+         --  Search the context for at least one subprogram call. If found, the
+         --  machinery exports all transient objects to the enclosing finalizer
+         --  due to the possibility of abnormal call termination.
+
+         Detect_Subprogram_Call (N);
+
          --  Examine all objects in the list First_Object .. Last_Object
 
          Stmt := First_Object;

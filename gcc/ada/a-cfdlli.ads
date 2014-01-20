@@ -60,6 +60,7 @@ generic
                       return Boolean is <>;
 
 package Ada.Containers.Formal_Doubly_Linked_Lists is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    type List (Capacity : Count_Type) is private;

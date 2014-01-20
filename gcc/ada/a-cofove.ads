@@ -62,6 +62,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Vectors is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    subtype Extended_Index is Index_Type'Base
