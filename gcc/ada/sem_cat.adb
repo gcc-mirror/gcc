@@ -1226,6 +1226,7 @@ package body Sem_Cat is
                   --  given for the private type.
 
                   if Relaxed_RM_Semantics then
+
                      --  In relaxed mode, do not issue these messages, this
                      --  is basically similar to the GNAT_Mode test below.
 

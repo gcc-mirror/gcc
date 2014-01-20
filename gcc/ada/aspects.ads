@@ -779,7 +779,9 @@ package Aspects is
    procedure Move_Or_Merge_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. If To has
    --  aspects, the aspects of From are added to the aspects of To. If From has
-   --  no aspects, the routine has no effect.
+   --  no aspects, the routine has no effect. When From denotes a subprogram
+   --  body stub that also acts as a spec, the only aspects relocated to node
+   --  To are those from table Aspect_On_Body_Or_Stub_OK and preconditions.
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
    --  Returns True if the node N is a declaration node that permits aspect
