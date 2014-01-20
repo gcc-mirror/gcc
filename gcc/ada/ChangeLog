@@ -1,3 +1,18 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, checks.adb, exp_intr.adb: Minor reformatting.
+	* sem_res.adb (Resolve): Fix error causing infinite loop for
+	integer used as address. Allow addresses as integers.
+
+2014-01-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-linux.ads (struct_sigaction): Fix rep clause.
+
+2014-01-20  Bob Duff  <duff@adacore.com>
+
+	* par-ch8.adb (P_Use_Type_Clause): Detect syntax
+	error when "use all" is not followed by "type".
+
 2014-01-20  Bob Duff  <duff@adacore.com>
 
 	* exp_intr.adb (Expand_Unc_Deallocation): Remove warning on abort

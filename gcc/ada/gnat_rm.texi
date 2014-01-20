@@ -1239,8 +1239,9 @@ If the configuration pragma
 @code{Allow_Integer_Address} is given, then integer expressions may
 be used anywhere a value of type @code{System.Address} is required.
 The effect is to introduce an implicit unchecked conversion from the
-integer value to type @code{System.Address}. The following example
-compiles without errors:
+integer value to type @code{System.Address}. The reverse case of using
+an address where an integer type is required is handled analogously.
+The following example compiles without errors:
 
 @smallexample @c ada
 pragma Allow_Integer_Address;
@@ -1253,6 +1254,8 @@ package AddrAsInt is
    m : Address := 16#4000#;
    n : constant Address := 4000;
    p : constant Address := Address (X + Y);
+   v : Integer := y'Address;
+   w : constant Integer := Integer (Y'Address);
    type R is new integer;
    RR : R := 1000;
    Z : Integer;

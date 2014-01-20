@@ -1018,11 +1018,12 @@ package body Exp_Intr is
       --  For a task type, call Free_Task before freeing the ATCB
 
       if Is_Task_Type (Desig_T) then
+
          --  We used to detect the case of Abort followed by a Free here,
-         --  because the Free wouldn't actually free if it happens before the
-         --  aborted task actually terminates. The warning is removed, because
-         --  Free now works properly (the task will be freed once it
-         --  terminates).
+         --  because the Free wouldn't actually free if it happens before
+         --  the aborted task actually terminates. The warning was removed,
+         --  because Free now works properly (the task will be freed once
+         --  it terminates).
 
          Append_To
            (Stmts, Cleanup_Task (N, Duplicate_Subexpr_No_Checks (Arg)));
