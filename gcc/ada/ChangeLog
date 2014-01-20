@@ -1,3 +1,21 @@
+2014-01-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Check_Function_Writable_Actuals): 1) Do not
+	examine code that does not come from source. The check does not
+	apply to code generated for constraint checks, and such code may
+	generate spurious error messages when compiled with expansion
+	disabled (as in a generic unit) because side effects may not
+	have been removed.
+	2) Make error messages more explicit: indicate the component
+	of the	construct whose value is indeterminate because of a
+	call to a function with in-out parameter in another component,
+	when there is no mandated order of execution between the two
+	components (actuals, aggregate components, alternatives).
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor cleanup.
+
 2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Attributes 'Old and 'Result
