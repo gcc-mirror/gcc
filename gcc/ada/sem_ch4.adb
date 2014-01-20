@@ -3667,7 +3667,28 @@ package body Sem_Ch4 is
          end if;
 
       else pragma Assert (Present (Loop_Parameter_Specification (N)));
-         Preanalyze (Loop_Parameter_Specification (N));
+         declare
+            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
+
+         begin
+            Preanalyze (Loop_Par);
+
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) =
+              N_Function_Call
+              and then Parent (Loop_Par) /= N
+            then
+               --  The parser cannot distinguish between a loop specification
+               --  and an iterator specification. If after pre-analysis the
+               --  proper form has been recognized, rewrite the expression to
+               --  reflect the right kind. The analysis of the loop has been
+               --  performed on a copy that has the proper iterator form. This
+               --  is needed in particular for ASIS navigation.
+
+               Set_Loop_Parameter_Specification (N, Empty);
+               Set_Iterator_Specification (N,
+                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+            end if;
+         end;
       end if;
 
       Preanalyze_And_Resolve (Cond, Standard_Boolean);
