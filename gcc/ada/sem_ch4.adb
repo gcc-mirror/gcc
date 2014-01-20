@@ -6367,16 +6367,33 @@ package body Sem_Ch4 is
                                N_Op_Rem,
                                N_Op_Subtract)
             then
+               --  If Allow_Integer_Address is active, check whether the
+               --  operation becomes legal after converting an operand.
+
                if Is_Numeric_Type (Etype (L))
                  and then not Is_Numeric_Type (Etype (R))
                then
-                  Resolve (R, Etype (L));
+                  if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                     Rewrite (R,
+                       Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                     Analyze_Arithmetic_Op (N);
+
+                  else
+                     Resolve (R, Etype (L));
+                  end if;
                   return;
 
                elsif Is_Numeric_Type (Etype (R))
                  and then not Is_Numeric_Type (Etype (L))
                then
-                  Resolve (L, Etype (R));
+                  if Address_Integer_Convert_OK (Etype (L), Etype (R)) then
+                     Rewrite (L,
+                       Unchecked_Convert_To (Etype (R), Relocate_Node (L)));
+                     Analyze_Arithmetic_Op (N);
+
+                  else
+                     Resolve (L, Etype (R));
+                  end if;
                   return;
                end if;
 

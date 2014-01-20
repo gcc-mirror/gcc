@@ -7987,7 +7987,7 @@ package body Exp_Ch7 is
       --  signalling the decision outcome occurs before the cleanup actions.
 
       if Opt.Suppress_Control_Flow_Optimizations
-           and then Is_Boolean_Type (Typ)
+        and then Is_Boolean_Type (Typ)
       then
          Expr :=
            Make_If_Expression (Loc,

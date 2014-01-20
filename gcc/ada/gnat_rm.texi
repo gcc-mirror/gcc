@@ -1231,9 +1231,9 @@ pragma Allow_Integer_Address;
 @end smallexample
 
 @noindent
-This configuration pragma is allowed only
-if type @code{System.Address} is a private type,
-which is true in most versions of GNAT. which means that integer values,
+In almost all versions of GNAT, @code{System.Address} is a private
+type in accordance with the implementation advice in the RM. This
+means that integer values,
 in particular integer literals, are not allowed as address values.
 If the configuration pragma
 @code{Allow_Integer_Address} is given, then integer expressions may
@@ -1262,12 +1262,6 @@ package AddrAsInt is
    for Z'Address use RR;
 end AddrAsInt;
 @end smallexample
-
-@noindent
-Note that these automatic conversions do not apply to expressions used
-as subprogram arguments, because in general overloading can take place,
-so that the required type is not fixed by the context. If necessary
-adjust the type of the subprogram argument, e.g. by adding a conversion.
 
 @node Pragma Annotate
 @unnumberedsec Pragma Annotate

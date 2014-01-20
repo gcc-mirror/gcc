@@ -8393,6 +8393,12 @@ package body Sem_Res is
       Resolve (Left_Opnd (N), B_Typ);
       Resolve (Right_Opnd (N), Standard_Integer);
 
+      --  For integer types, right argument must be in Natural range
+
+      if Is_Integer_Type (Typ) then
+         Apply_Scalar_Range_Check (Right_Opnd (N), Standard_Natural);
+      end if;
+
       Check_Unset_Reference (Left_Opnd  (N));
       Check_Unset_Reference (Right_Opnd (N));
 
