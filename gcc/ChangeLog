@@ -1,3 +1,8 @@
+2014-01-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.opt
+	(mcpu, march, mtune): Make case-insensitive.
+
 2014-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59880
