@@ -58,7 +58,7 @@ static void dump_ada_nodes (pretty_printer *, const char *);
 static void reset_ada_withs (void);
 static void dump_ada_withs (FILE *);
 static void dump_ads (const char *, void (*)(const char *),
-		      int (*)(const_tree, cpp_operation));
+		      int (*)(tree, cpp_operation));
 static char *to_ada_name (const char *, int *);
 static bool separate_class_package (tree);
 
@@ -68,7 +68,7 @@ static bool separate_class_package (tree);
 #define INDENT_INCR 3
 
 /* Global hook used to perform C++ queries on nodes.  */
-static int (*cpp_check) (const_tree, cpp_operation) = NULL;
+static int (*cpp_check) (tree, cpp_operation) = NULL;
 
 
 /* Given a cpp MACRO, compute the max length BUFFER_LEN of the macro, as well
@@ -975,7 +975,7 @@ is_tagged_type (const_tree type)
    sufficiently simple.  */
 
 static bool
-has_nontrivial_methods (const_tree type)
+has_nontrivial_methods (tree type)
 {
   tree tmp;
 
@@ -3263,7 +3263,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
 static void
 dump_ads (const char *source_file,
 	  void (*collect_all_refs)(const char *),
-	  int (*check)(const_tree, cpp_operation))
+	  int (*check)(tree, cpp_operation))
 {
   char *ads_name;
   char *pkg_name;
@@ -3364,7 +3364,7 @@ collect_source_ref (const char *filename)
 
 void
 dump_ada_specs (void (*collect_all_refs)(const char *),
-		int (*check)(const_tree, cpp_operation))
+		int (*check)(tree, cpp_operation))
 {
   int i;
 
