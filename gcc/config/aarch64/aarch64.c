@@ -5101,12 +5101,20 @@ aarch64_parse_arch (void)
 	{
 	  selected_arch = arch;
 	  aarch64_isa_flags = selected_arch->flags;
-	  selected_cpu = &all_cores[selected_arch->core];
+
+	  if (!selected_cpu)
+	    selected_cpu = &all_cores[selected_arch->core];
 
 	  if (ext != NULL)
 	    {
 	      /* ARCH string contains at least one extension.  */
 	      aarch64_parse_extension (ext);
+	    }
+
+	  if (strcmp (selected_arch->arch, selected_cpu->arch))
+	    {
+	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+		       selected_cpu->name, selected_arch->name);
 	    }
 
 	  return;
@@ -5197,20 +5205,21 @@ aarch64_parse_tune (void)
 static void
 aarch64_override_options (void)
 {
-  /* march wins over mcpu, so when march is defined, mcpu takes the same value,
-     otherwise march remains undefined.  mtune can be used with either march or
-     mcpu.  */
+  /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
+     If either of -march or -mtune is given, they override their
+     respective component of -mcpu.
+
+     So, first parse AARCH64_CPU_STRING, then the others, be careful
+     with -march as, if -mcpu is not present on the command line, march
+     must set a sensible default CPU.  */
+  if (aarch64_cpu_string)
+    {
+      aarch64_parse_cpu ();
+    }
 
   if (aarch64_arch_string)
     {
       aarch64_parse_arch ();
-      aarch64_cpu_string = NULL;
-    }
-
-  if (aarch64_cpu_string)
-    {
-      aarch64_parse_cpu ();
-      selected_arch = NULL;
     }
 
   if (aarch64_tune_string)
