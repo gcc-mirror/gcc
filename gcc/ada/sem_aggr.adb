@@ -454,10 +454,12 @@ package body Sem_Aggr is
          Check_Unset_Reference (Exp);
       end if;
 
-      --  This is really expansion activity, so make sure that expansion
-      --  is on and is allowed.
+      --  This is really expansion activity, so make sure that expansion is
+      --  on and is allowed. In GNATprove mode, we also want check flags to be
+      --  added in the tree, so that the formal verification can rely on those
+      --  to be present.
 
-      if not Expander_Active or else In_Spec_Expression then
+      if not (Expander_Active or GNATprove_Mode) or In_Spec_Expression then
          return;
       end if;
 
@@ -595,9 +597,9 @@ package body Sem_Aggr is
 
                elsif Expr_Value (This_Low) /= Expr_Value (Aggr_Low (Dim)) then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate low bound mismatch??", N);
-                  Error_Msg_N
-                     ("\Constraint_Error will be raised at run time??", N);
+                  Error_Msg_Warn := SPARK_Mode /= On;
+                  Error_Msg_N ("sub-aggregate low bound mismatch<<", N);
+                  Error_Msg_N ("\Constraint_Error [<<", N);
                end if;
             end if;
 
@@ -609,9 +611,9 @@ package body Sem_Aggr is
                  Expr_Value (This_High) /= Expr_Value (Aggr_High (Dim))
                then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("sub-aggregate high bound mismatch??", N);
-                  Error_Msg_N
-                     ("\Constraint_Error will be raised at run time??", N);
+                  Error_Msg_Warn := SPARK_Mode /= On;
+                  Error_Msg_N ("sub-aggregate high bound mismatch<<", N);
+                  Error_Msg_N ("\Constraint_Error [<<", N);
                end if;
             end if;
          end if;
@@ -996,10 +998,10 @@ package body Sem_Aggr is
       --  frozen so that initialization procedures can properly be called
       --  in the resolution that follows.  The replacement of boxes with
       --  initialization calls is properly an expansion activity but it must
-      --  be done during revolution.
+      --  be done during resolution.
 
       if Expander_Active
-        and then  Present (Component_Associations (N))
+        and then Present (Component_Associations (N))
       then
          declare
             Comp : Node_Id;
@@ -1454,8 +1456,9 @@ package body Sem_Aggr is
 
          if OK_BH and then OK_AH and then Val_BH < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound out of range??", AH);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", AH);
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("upper bound out of range<<", AH);
+            Error_Msg_N ("\Constraint_Error [<<", AH);
 
             --  You need to set AH to BH or else in the case of enumerations
             --  indexes we will not be able to resolve the aggregate bounds.
@@ -1497,14 +1500,16 @@ package body Sem_Aggr is
 
          if OK_L and then Val_L > Val_AL then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("lower bound of aggregate out of range??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("lower bound of aggregate out of range<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
 
          if OK_H and then Val_H < Val_AH then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("upper bound of aggregate out of range??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("upper bound of aggregate out of range<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
       end Check_Bounds;
 
@@ -1543,8 +1548,9 @@ package body Sem_Aggr is
 
          if Range_Len < Len then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("too many elements??", N);
-            Error_Msg_N ("\Constraint_Error will be raised at run time??", N);
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("too many elements<<", N);
+            Error_Msg_N ("\Constraint_Error [<<", N);
          end if;
       end Check_Length;
 
@@ -1581,7 +1587,7 @@ package body Sem_Aggr is
             Value := Expr_Value (From);
 
          --  If expression From is something like Some_Type'Val (10) then
-         --  Value = 10
+         --  Value = 10.
 
          elsif Nkind (From) = N_Attribute_Reference
            and then Attribute_Name (From) = Name_Val
@@ -1678,7 +1684,6 @@ package body Sem_Aggr is
               (Expr, Nxt_Ind, Nxt_Ind_Constr, Component_Typ, Others_Allowed);
 
          else
-
             --  If it's "... => <>", nothing to resolve
 
             if Nkind (Expr) = N_Component_Association then
@@ -1696,7 +1701,7 @@ package body Sem_Aggr is
             --  performed safely.
 
             if Single_Elmt
-              or else not Full_Expander_Active
+              or else not Expander_Active
               or else In_Spec_Expression
             then
                Analyze_And_Resolve (Expr, Component_Typ);

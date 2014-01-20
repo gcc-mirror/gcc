@@ -233,15 +233,6 @@ package body Errout is
    begin
       if not Finalize_Called then
          raise Program_Error;
-
-      --  In formal verification mode, errors issued when generating Why code
-      --  are not compilation errors, and should not result in exiting with
-      --  an error status. These errors are handled in the driver of the
-      --  verification process instead.
-
-      elsif SPARK_Mode and not Frame_Condition_Mode then
-         return False;
-
       else
          return Erroutc.Compilation_Errors;
       end if;
@@ -2721,18 +2712,20 @@ package body Errout is
       C : Character;   -- Current character
       P : Natural;     -- Current index;
 
-      procedure Set_Msg_Insertion_Warning;
-      --  Deal with ? ?? ?x? ?X? insertion sequences
+      procedure Set_Msg_Insertion_Warning (C : Character);
+      --  Deal with ? ?? ?x? ?X? insertion sequences (also < << <x< <X<). The
+      --  caller has already bumped the pointer past the initial ? or < and C
+      --  is set to this initial character (? or <).
 
       -------------------------------
       -- Set_Msg_Insertion_Warning --
       -------------------------------
 
-      procedure Set_Msg_Insertion_Warning is
+      procedure Set_Msg_Insertion_Warning (C : Character) is
       begin
          Warning_Msg_Char := ' ';
 
-         if P <= Text'Last and then Text (P) = '?' then
+         if P <= Text'Last and then Text (P) = C then
             if Warning_Doc_Switch then
                Warning_Msg_Char := '?';
             end if;
@@ -2743,7 +2736,7 @@ package body Errout is
            and then (Text (P) in 'a' .. 'z'
                       or else
                      Text (P) in 'A' .. 'Z')
-           and then Text (P + 1) = '?'
+           and then Text (P + 1) = C
          then
             if Warning_Doc_Switch then
                Warning_Msg_Char := Text (P);
@@ -2824,18 +2817,16 @@ package body Errout is
                null; -- already dealt with
 
             when '?' =>
-               Set_Msg_Insertion_Warning;
+               Set_Msg_Insertion_Warning ('?');
 
             when '<' =>
 
-               --  If tagging of messages is enabled, and this is a warning,
-               --  then it is treated as being [enabled by default].
+               --  Note: the prescan already set Is_Warning_Msg True if and
+               --  only if Error_Msg_Warn is set to True. If Error_Msg_Warn
+               --  is False, the call to Set_Msg_Insertion_Warning here does
+               --  no harm, since Warning_Msg_Char is ignored in that case.
 
-               if Error_Msg_Warn
-                 and Warning_Doc_Switch
-               then
-                  Warning_Msg_Char := '?';
-               end if;
+               Set_Msg_Insertion_Warning ('<');
 
             when '|' =>
                null; -- already dealt with
@@ -2861,6 +2852,24 @@ package body Errout is
 
                else
                   Set_Msg_Char (C);
+               end if;
+
+            --  '[' (will be/would have been raised at run time)
+
+            when '[' =>
+               if Is_Warning_Msg then
+                  Set_Msg_Str ("will be raised at run time");
+               else
+                  Set_Msg_Str ("would have been raised at run time");
+               end if;
+
+            --   ']' (may be/might have been raised at run time)
+
+            when ']' =>
+               if Is_Warning_Msg then
+                  Set_Msg_Str ("may be raised at run time");
+               else
+                  Set_Msg_Str ("might have been raised at run time");
                end if;
 
             --  Normal character with no special treatment
@@ -2970,7 +2979,10 @@ package body Errout is
          --  Suppress "size too small" errors in CodePeer mode and SPARK mode,
          --  since pragma Pack is also ignored in these configurations.
 
-         if CodePeer_Mode or SPARK_Mode then
+         --  At least the comment is bogus, since you can have this message
+         --  with no pragma Pack in sight! ???
+
+         if CodePeer_Mode or GNATprove_Mode then
             return True;
 
          --  When a size is wrong for a frozen type there is no explicit size

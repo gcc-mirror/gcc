@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,7 @@ package System.Exceptions is
    --  To let Ada.Exceptions "with" us and let us "with" Standard_Library
 
    ZCX_By_Default : constant Boolean;
-   --  Visible copy to allow Ada.Exceptions to know the exception model.
+   --  Visible copy to allow Ada.Exceptions to know the exception model
 
 private
 

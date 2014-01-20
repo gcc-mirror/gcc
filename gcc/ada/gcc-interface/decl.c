@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -147,6 +147,7 @@ static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
 static bool cannot_be_superflat_p (Node_Id);
 static bool constructor_address_p (tree);
+static int compare_field_bitpos (const PTR, const PTR);
 static bool components_to_record (tree, Node_Id, tree, int, bool, bool, bool,
 				  bool, bool, bool, bool, bool, tree, tree *);
 static Uint annotate_value (tree);
@@ -491,19 +492,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 run-time library.  */
       goto object;
 
-    case E_Discriminant:
     case E_Component:
+    case E_Discriminant:
       {
 	/* The GNAT record where the component was defined.  */
 	Entity_Id gnat_record = Underlying_Type (Scope (gnat_entity));
 
-	/* If the variable is an inherited record component (in the case of
-	   extended record types), just return the inherited entity, which
-	   must be a FIELD_DECL.  Likewise for discriminants.
-	   For discriminants of untagged records which have explicit
-	   stored discriminants, return the entity for the corresponding
-	   stored discriminant.  Also use Original_Record_Component
-	   if the record has a private extension.  */
+	/* If the entity is an inherited component (in the case of extended
+	   tagged record types), just return the original entity, which must
+	   be a FIELD_DECL.  Likewise for discriminants.  If the entity is a
+	   non-girder discriminant (in the case of derived untagged record
+	   types), return the stored discriminant it renames.  */
 	if (Present (Original_Record_Component (gnat_entity))
 	    && Original_Record_Component (gnat_entity) != gnat_entity)
 	  {
@@ -514,44 +513,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    break;
 	  }
 
-	/* If the enclosing record has explicit stored discriminants,
-	   then it is an untagged record.  If the Corresponding_Discriminant
-	   is not empty then this must be a renamed discriminant and its
-	   Original_Record_Component must point to the corresponding explicit
-	   stored discriminant (i.e. we should have taken the previous
-	   branch).  */
-	else if (Present (Corresponding_Discriminant (gnat_entity))
-		 && Is_Tagged_Type (gnat_record))
+	/* If this is a discriminant of an extended tagged type used to rename
+	   a discriminant of the parent type, return the latter.  */
+	else if (Present (Corresponding_Discriminant (gnat_entity)))
 	  {
-	    /* A tagged record has no explicit stored discriminants.  */
-	    gcc_assert (First_Discriminant (gnat_record)
-		       == First_Stored_Discriminant (gnat_record));
+	    /* If the derived type is untagged, then this is a non-girder
+	       discriminant and its Original_Record_Component must point to
+	       the stored discriminant it renames (i.e. we should have taken
+	       the previous branch).  */
+	    gcc_assert (Is_Tagged_Type (gnat_record));
+
 	    gnu_decl
 	      = gnat_to_gnu_entity (Corresponding_Discriminant (gnat_entity),
 				    gnu_expr, definition);
 	    saved = true;
 	    break;
 	  }
-
-	else if (Present (CR_Discriminant (gnat_entity))
-		 && type_annotate_only)
-	  {
-	    gnu_decl = gnat_to_gnu_entity (CR_Discriminant (gnat_entity),
-					   gnu_expr, definition);
-	    saved = true;
-	    break;
-	  }
-
-	/* If the enclosing record has explicit stored discriminants, then
-	   it is an untagged record.  If the Corresponding_Discriminant
-	   is not empty then this must be a renamed discriminant and its
-	   Original_Record_Component must point to the corresponding explicit
-	   stored discriminant (i.e. we should have taken the first
-	   branch).  */
-	else if (Present (Corresponding_Discriminant (gnat_entity))
-		 && (First_Discriminant (gnat_record)
-		     != First_Stored_Discriminant (gnat_record)))
-	  gcc_unreachable ();
 
 	/* Otherwise, if we are not defining this and we have no GCC type
 	   for the containing record, make one for it.  Then we should
@@ -586,7 +563,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else
 	  /* Here we have no GCC type and this is a reference rather than a
 	     definition.  This should never happen.  Most likely the cause is
-	     reference before declaration in the gnat tree for gnat_entity.  */
+	     reference before declaration in the GNAT tree for gnat_entity.  */
 	  gcc_unreachable ();
       }
 
@@ -794,8 +771,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     || (TYPE_SIZE (gnu_type)
 		 && integer_zerop (TYPE_SIZE (gnu_type))
 		 && !TREE_OVERFLOW (TYPE_SIZE (gnu_type))))
-	    && (!Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-		|| !Is_Array_Type (Etype (gnat_entity)))
+	    && !Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
 	    && No (Renamed_Object (gnat_entity))
 	    && No (Address_Clause (gnat_entity)))
 	  gnu_size = bitsize_unit_node;
@@ -887,7 +863,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Etype (gnat_entity))
+	    && (Is_Array_Type (Etype (gnat_entity))
+		|| (Is_Private_Type (Etype (gnat_entity))
+		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -1413,7 +1391,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   Note that we have to do that this late because of the couple of
 	   allocation adjustments that might be made just above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
-	    && Is_Array_Type (Etype (gnat_entity))
+	    && (Is_Array_Type (Etype (gnat_entity))
+		|| (Is_Private_Type (Etype (gnat_entity))
+		    && Is_Array_Type (Full_View (Etype (gnat_entity)))))
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array
@@ -3365,9 +3345,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      vec<subst_pair> gnu_subst_list
 		= build_subst_list (gnat_entity, gnat_base_type, definition);
-	      tree gnu_unpad_base_type, gnu_rep_part, gnu_variant_part, t;
+	      tree gnu_unpad_base_type, gnu_rep_part, gnu_variant_part;
 	      tree gnu_pos_list, gnu_field_list = NULL_TREE;
-	      bool selected_variant = false;
+	      bool selected_variant = false, all_constant_pos = true;
 	      Entity_Id gnat_field;
 	      vec<variant_desc> gnu_variant_list;
 
@@ -3386,7 +3366,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      else
 		gnu_unpad_base_type = gnu_base_type;
 
-	      /* Look for a variant part in the base type.  */
+	      /* Look for REP and variant parts in the base type.  */
+	      gnu_rep_part = get_rep_part (gnu_unpad_base_type);
 	      gnu_variant_part = get_variant_part (gnu_unpad_base_type);
 
 	      /* If there is a variant part, we must compute whether the
@@ -3438,13 +3419,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  selected_variant = false;
 		}
 
+	      /* Make a list of fields and their position in the base type.  */
 	      gnu_pos_list
 		= build_position_list (gnu_unpad_base_type,
 				       gnu_variant_list.exists ()
-					  && !selected_variant,
+				       && !selected_variant,
 				       size_zero_node, bitsize_zero_node,
 				       BIGGEST_ALIGNMENT, NULL_TREE);
 
+	      /* Now go down every component in the subtype and compute its
+		 size and position from those of the component in the base
+		 type and from the constraints of the subtype.  */
 	      for (gnat_field = First_Entity (gnat_entity);
 		   Present (gnat_field);
 		   gnat_field = Next_Entity (gnat_field))
@@ -3452,8 +3437,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || Ekind (gnat_field) == E_Discriminant)
 		    && !(Present (Corresponding_Discriminant (gnat_field))
 			 && Is_Tagged_Type (gnat_base_type))
-		    && Underlying_Type (Scope (Original_Record_Component
-					       (gnat_field)))
+		    && Underlying_Type
+		       (Scope (Original_Record_Component (gnat_field)))
 		       == gnat_base_type)
 		  {
 		    Name_Id gnat_name = Chars (gnat_field);
@@ -3462,7 +3447,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    tree gnu_old_field
 		      = gnat_to_gnu_field_decl (gnat_old_field);
 		    tree gnu_context = DECL_CONTEXT (gnu_old_field);
-		    tree gnu_field, gnu_field_type, gnu_size;
+		    tree gnu_field, gnu_field_type, gnu_size, gnu_pos;
 		    tree gnu_cont_type, gnu_last = NULL_TREE;
 
 		    /* If the type is the same, retrieve the GCC type from the
@@ -3513,24 +3498,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       and put the field either in the new type if there is a
 		       selected variant or in one of the new variants.  */
 		    if (gnu_context == gnu_unpad_base_type
-		        || ((gnu_rep_part = get_rep_part (gnu_unpad_base_type))
+		        || (gnu_rep_part
 			    && gnu_context == TREE_TYPE (gnu_rep_part)))
 		      gnu_cont_type = gnu_type;
 		    else
 		      {
 			variant_desc *v;
 			unsigned int i;
+			tree rep_part;
 
-			t = NULL_TREE;
 			FOR_EACH_VEC_ELT (gnu_variant_list, i, v)
 			  if (gnu_context == v->type
-			      || ((gnu_rep_part = get_rep_part (v->type))
-				  && gnu_context == TREE_TYPE (gnu_rep_part)))
-			    {
-			      t = v->type;
-			      break;
-			    }
-			if (t)
+			      || ((rep_part = get_rep_part (v->type))
+				  && gnu_context == TREE_TYPE (rep_part)))
+			    break;
+			if (v)
 			  {
 			    if (selected_variant)
 			      gnu_cont_type = gnu_type;
@@ -3549,6 +3531,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      = create_field_decl_from (gnu_old_field, gnu_field_type,
 						gnu_cont_type, gnu_size,
 						gnu_pos_list, gnu_subst_list);
+		    gnu_pos = DECL_FIELD_OFFSET (gnu_field);
 
 		    /* Put it in one of the new variants directly.  */
 		    if (gnu_cont_type != gnu_type)
@@ -3581,14 +3564,42 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			gnu_field_list = gnu_field;
 			if (!gnu_last)
 			  gnu_last = gnu_field;
+			if (TREE_CODE (gnu_pos) != INTEGER_CST)
+			  all_constant_pos = false;
 		      }
 
 		    save_gnu_tree (gnat_field, gnu_field, false);
 		  }
 
+	      /* If there is a variant list, a selected variant and the fields
+		 all have a constant position, put them in order of increasing
+		 position to match that of constant CONSTRUCTORs.  Likewise if
+		 there is no variant list but a REP part, since the latter has
+		 been flattened in the process.  */
+	      if (((gnu_variant_list.exists () && selected_variant)
+		   || (!gnu_variant_list.exists () && gnu_rep_part))
+		  && all_constant_pos)
+		{
+		  const int len = list_length (gnu_field_list);
+		  tree *field_arr = XALLOCAVEC (tree, len), t;
+		  int i;
+
+		  for (t = gnu_field_list, i = 0; t; t = DECL_CHAIN (t), i++)
+		    field_arr[i] = t;
+
+		  qsort (field_arr, len, sizeof (tree), compare_field_bitpos);
+
+		  gnu_field_list = NULL_TREE;
+		  for (i = 0; i < len; i++)
+		    {
+		      DECL_CHAIN (field_arr[i]) = gnu_field_list;
+		      gnu_field_list = field_arr[i];
+		    }
+		}
+
 	      /* If there is a variant list and no selected variant, we need
 		 to create the nest of variant parts from the old nest.  */
-	      if (gnu_variant_list.exists () && !selected_variant)
+	      else if (gnu_variant_list.exists () && !selected_variant)
 		{
 		  tree new_variant_part
 		    = create_variant_part_from (gnu_variant_part,
@@ -4780,10 +4791,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   from the full view.  But always get the type from the full view
 	   for define on use types, since otherwise we won't see them!  */
 	else if (!definition
-		 || (Is_Itype (full_view)
-		   && No (Freeze_Node (gnat_entity)))
-		 || (Is_Itype (gnat_entity)
-		   && No (Freeze_Node (full_view))))
+		 || (Is_Itype (full_view) && No (Freeze_Node (gnat_entity)))
+		 || (Is_Itype (gnat_entity) && No (Freeze_Node (full_view))))
 	  {
 	    gnu_decl = gnat_to_gnu_entity (full_view, NULL_TREE, 0);
 	    maybe_present = true;

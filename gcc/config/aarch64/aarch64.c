@@ -5101,12 +5101,20 @@ aarch64_parse_arch (void)
 	{
 	  selected_arch = arch;
 	  aarch64_isa_flags = selected_arch->flags;
-	  selected_cpu = &all_cores[selected_arch->core];
+
+	  if (!selected_cpu)
+	    selected_cpu = &all_cores[selected_arch->core];
 
 	  if (ext != NULL)
 	    {
 	      /* ARCH string contains at least one extension.  */
 	      aarch64_parse_extension (ext);
+	    }
+
+	  if (strcmp (selected_arch->arch, selected_cpu->arch))
+	    {
+	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+		       selected_cpu->name, selected_arch->name);
 	    }
 
 	  return;
@@ -5197,20 +5205,21 @@ aarch64_parse_tune (void)
 static void
 aarch64_override_options (void)
 {
-  /* march wins over mcpu, so when march is defined, mcpu takes the same value,
-     otherwise march remains undefined.  mtune can be used with either march or
-     mcpu.  */
+  /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
+     If either of -march or -mtune is given, they override their
+     respective component of -mcpu.
+
+     So, first parse AARCH64_CPU_STRING, then the others, be careful
+     with -march as, if -mcpu is not present on the command line, march
+     must set a sensible default CPU.  */
+  if (aarch64_cpu_string)
+    {
+      aarch64_parse_cpu ();
+    }
 
   if (aarch64_arch_string)
     {
       aarch64_parse_arch ();
-      aarch64_cpu_string = NULL;
-    }
-
-  if (aarch64_cpu_string)
-    {
-      aarch64_parse_cpu ();
-      selected_arch = NULL;
     }
 
   if (aarch64_tune_string)
@@ -8248,6 +8257,42 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
   end_sequence ();
 
   return ret;
+}
+
+/* Implement target hook CANNOT_CHANGE_MODE_CLASS.  */
+bool
+aarch64_cannot_change_mode_class (enum machine_mode from,
+				  enum machine_mode to,
+				  enum reg_class rclass)
+{
+  /* Full-reg subregs are allowed on general regs or any class if they are
+     the same size.  */
+  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+      || !reg_classes_intersect_p (FP_REGS, rclass))
+    return false;
+
+  /* Limited combinations of subregs are safe on FPREGs.  Particularly,
+     1. Vector Mode to Scalar mode where 1 unit of the vector is accessed.
+     2. Scalar to Scalar for integer modes or same size float modes.
+     3. Vector to Vector modes.  */
+  if (GET_MODE_SIZE (from) > GET_MODE_SIZE (to))
+    {
+      if (aarch64_vector_mode_supported_p (from)
+	  && GET_MODE_SIZE (GET_MODE_INNER (from)) == GET_MODE_SIZE (to))
+	return false;
+
+      if (GET_MODE_NUNITS (from) == 1
+	  && GET_MODE_NUNITS (to) == 1
+	  && (GET_MODE_CLASS (from) == MODE_INT
+	      || from == to))
+	return false;
+
+      if (aarch64_vector_mode_supported_p (from)
+	  && aarch64_vector_mode_supported_p (to))
+	return false;
+    }
+
+  return true;
 }
 
 #undef TARGET_ADDRESS_COST

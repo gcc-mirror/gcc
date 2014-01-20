@@ -321,16 +321,19 @@ extern int darwin_emit_branch_islands;
    ? GENERAL_REGS						\
    : (CLASS))
 
-/* Compute field alignment.  This is similar to the version of the
-   macro in the Apple version of GCC, except that version supports
-   'mac68k' alignment, and that version uses the computed alignment
-   always for the first field of a structure.  The first-field
-   behavior is dealt with by
-   darwin_rs6000_special_round_type_align.  */
-#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)	\
-  (TARGET_ALIGN_NATURAL ? (COMPUTED)		\
-   : (COMPUTED) == 128 ? 128			\
-   : MIN ((COMPUTED), 32))
+/* Compute field alignment.
+   This implements the 'power' alignment rule by pegging the alignment of
+   items (beyond the first aggregate field) to 32 bits.  The pegging is
+   suppressed for vector and long double items (both 128 in size).
+   There is a dummy use of the FIELD argument to avoid an unused variable
+   warning (see PR59496).  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)			\
+  ((void) (FIELD),						\
+    (TARGET_ALIGN_NATURAL					\
+     ? (COMPUTED)						\
+     : (COMPUTED) == 128					\
+	? 128							\
+	: MIN ((COMPUTED), 32)))
 
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */

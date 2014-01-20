@@ -1,3 +1,7 @@
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check): Revert prototype change.
+
 2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59270

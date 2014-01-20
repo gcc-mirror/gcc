@@ -187,7 +187,7 @@ package body Sem_Ch5 is
       end Diagnose_Non_Variable_Lhs;
 
       --------------
-      -- Kill_LHS --
+      -- Kill_Lhs --
       --------------
 
       procedure Kill_Lhs is
@@ -1695,6 +1695,13 @@ package body Sem_Ch5 is
 
       Set_Ekind (Def_Id, E_Variable);
 
+      --  Provide a link between the iterator variable and the container, for
+      --  subsequent use in cross-reference and modification information.
+
+      if Of_Present (N) then
+         Set_Related_Expression (Def_Id, Iter_Name);
+      end if;
+
       --  If the domain of iteration is an expression, create a declaration for
       --  it, so that finalization actions are introduced outside of the loop.
       --  The declaration must be a renaming because the body of the loop may
@@ -1712,7 +1719,7 @@ package body Sem_Ch5 is
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
 
-        and then not SPARK_Mode
+        and then not GNATprove_Mode
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -2111,6 +2118,17 @@ package body Sem_Ch5 is
 
             if not Has_Call_Using_Secondary_Stack (Analyzed_Bound) then
                Analyze_And_Resolve (Original_Bound, Typ);
+
+               --  Ensure that the bound is valid. This check should not be
+               --  generated when the range belongs to a quantified expression
+               --  as the construct is still not expanded into its final form.
+
+               if Nkind (Parent (R)) /= N_Loop_Parameter_Specification
+                 or else Nkind (Parent (Parent (R))) /= N_Quantified_Expression
+               then
+                  Ensure_Valid (Original_Bound);
+               end if;
+
                Force_Evaluation (Original_Bound);
                return Original_Bound;
             end if;
@@ -2739,7 +2757,7 @@ package body Sem_Ch5 is
 
       if No (Iter)
         or else No (Iterator_Specification (Iter))
-        or else not Full_Expander_Active
+        or else not Expander_Active
       then
          if Present (Iter)
            and then Present (Iterator_Specification (Iter))

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -4156,7 +4156,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      if (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
 		  && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))
 		  && Is_Constr_Subt_For_UN_Aliased (Etype (gnat_actual))
-		  && Is_Array_Type (Etype (gnat_actual)))
+		  && (Is_Array_Type (Etype (gnat_actual))
+		      || (Is_Private_Type (Etype (gnat_actual))
+			  && Is_Array_Type (Full_View (Etype (gnat_actual))))))
 		gnu_actual = convert (gnat_to_gnu_type (Etype (gnat_actual)),
 				      gnu_actual);
 	    }
@@ -4826,10 +4828,7 @@ static tree
 Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 {
   tree gnu_etypes_list = NULL_TREE;
-  tree gnu_expr;
-  tree gnu_etype;
-  tree gnu_current_exc_ptr;
-  tree prev_gnu_incoming_exc_ptr;
+  tree gnu_current_exc_ptr, prev_gnu_incoming_exc_ptr;
   Node_Id gnat_temp;
 
   /* We build a TREE_LIST of nodes representing what exception types this
@@ -4840,20 +4839,19 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
   for (gnat_temp = First (Exception_Choices (gnat_node));
        gnat_temp; gnat_temp = Next (gnat_temp))
     {
+      tree gnu_expr, gnu_etype;
+
       if (Nkind (gnat_temp) == N_Others_Choice)
 	{
-	  tree gnu_expr
-	    = All_Others (gnat_temp) ? all_others_decl : others_decl;
-
-	  gnu_etype
-	    = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
+	  gnu_expr = All_Others (gnat_temp) ? all_others_decl : others_decl;
+	  gnu_etype = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
 	}
       else if (Nkind (gnat_temp) == N_Identifier
 	       || Nkind (gnat_temp) == N_Expanded_Name)
 	{
 	  Entity_Id gnat_ex_id = Entity (gnat_temp);
 
-	  /* Exception may be a renaming. Recover original exception which is
+	  /* Exception may be a renaming.  Recover original exception which is
 	     the one elaborated and registered.  */
 	  if (Present (Renamed_Object (gnat_ex_id)))
 	    gnat_ex_id = Renamed_Object (gnat_ex_id);
@@ -4914,8 +4912,8 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
   /* Declare and initialize the choice parameter, if present.  */
   if (Present (Choice_Parameter (gnat_node)))
     {
-      tree gnu_param = gnat_to_gnu_entity
-	(Choice_Parameter (gnat_node), NULL_TREE, 1);
+      tree gnu_param
+	= gnat_to_gnu_entity (Choice_Parameter (gnat_node), NULL_TREE, 1);
 
       add_stmt (build_call_n_expr
 		(set_exception_parameter_decl, 2,
@@ -4932,8 +4930,8 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 
   gnu_incoming_exc_ptr = prev_gnu_incoming_exc_ptr;
 
-  return build2 (CATCH_EXPR, void_type_node, gnu_etypes_list,
-		 end_stmt_group ());
+  return
+    build2 (CATCH_EXPR, void_type_node, gnu_etypes_list, end_stmt_group ());
 }
 
 /* Subroutine of gnat_to_gnu to generate code for an N_Compilation unit.  */
@@ -6250,7 +6248,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 Fall through for a boolean operand since GNU_CODES is set
 	 up to handle this.  */
       if (Is_Modular_Integer_Type (Etype (gnat_node))
-	  || (Ekind (Etype (gnat_node)) == E_Private_Type
+	  || (Is_Private_Type (Etype (gnat_node))
 	      && Is_Modular_Integer_Type (Full_View (Etype (gnat_node)))))
 	{
 	  gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
@@ -6264,12 +6262,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Op_Minus:  case N_Op_Abs:
       gnu_expr = gnat_to_gnu (Right_Opnd (gnat_node));
-
-      if (Ekind (Etype (gnat_node)) != E_Private_Type)
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      else
-	gnu_result_type = get_unpadded_type (Base_Type
-					     (Full_View (Etype (gnat_node))));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
       if (Do_Overflow_Check (gnat_node)
 	  && !TYPE_UNSIGNED (gnu_result_type)

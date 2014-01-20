@@ -9329,10 +9329,8 @@ package body Exp_Ch4 is
    --------------------
 
    procedure Expand_N_Slice (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Typ  : constant Entity_Id  := Etype (N);
-      Pfx  : constant Node_Id    := Prefix (N);
-      Ptp  : Entity_Id           := Etype (Pfx);
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
 
       function Is_Procedure_Actual (N : Node_Id) return Boolean;
       --  Check whether the argument is an actual for a procedure call, in
@@ -9390,8 +9388,8 @@ package body Exp_Ch4 is
       ------------------------------
 
       procedure Make_Temporary_For_Slice is
-         Decl : Node_Id;
          Ent  : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Decl : Node_Id;
 
       begin
          Decl :=
@@ -9404,36 +9402,40 @@ package body Exp_Ch4 is
          Insert_Actions (N, New_List (
            Decl,
            Make_Assignment_Statement (Loc,
-             Name => New_Occurrence_Of (Ent, Loc),
+             Name       => New_Occurrence_Of (Ent, Loc),
              Expression => Relocate_Node (N))));
 
          Rewrite (N, New_Occurrence_Of (Ent, Loc));
          Analyze_And_Resolve (N, Typ);
       end Make_Temporary_For_Slice;
 
+      --  Local variables
+
+      Pref     : constant Node_Id := Prefix (N);
+      Pref_Typ : Entity_Id        := Etype (Pref);
+
    --  Start of processing for Expand_N_Slice
 
    begin
       --  Special handling for access types
 
-      if Is_Access_Type (Ptp) then
+      if Is_Access_Type (Pref_Typ) then
+         Pref_Typ := Designated_Type (Pref_Typ);
 
-         Ptp := Designated_Type (Ptp);
-
-         Rewrite (Pfx,
+         Rewrite (Pref,
            Make_Explicit_Dereference (Sloc (N),
-            Prefix => Relocate_Node (Pfx)));
+            Prefix => Relocate_Node (Pref)));
 
-         Analyze_And_Resolve (Pfx, Ptp);
+         Analyze_And_Resolve (Pref, Pref_Typ);
       end if;
 
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
       if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Pfx)
+        and then Is_Build_In_Place_Function_Call (Pref)
       then
-         Make_Build_In_Place_Call_In_Anonymous_Context (Pfx);
+         Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
       end if;
 
       --  The remaining case to be handled is packed slices. We can leave
@@ -9652,15 +9654,14 @@ package body Exp_Ch4 is
 
       procedure Raise_Accessibility_Error is
       begin
+         Error_Msg_Warn := SPARK_Mode /= On;
          Rewrite (N,
            Make_Raise_Program_Error (Sloc (N),
              Reason => PE_Accessibility_Check_Failed));
          Set_Etype (N, Target_Type);
 
-         Error_Msg_N
-           ("??accessibility check failure", N);
-         Error_Msg_NE
-           ("\??& will be raised at run time", N, Standard_Program_Error);
+         Error_Msg_N ("<<accessibility check failure", N);
+         Error_Msg_NE ("\<<& [", N, Standard_Program_Error);
       end Raise_Accessibility_Error;
 
       ----------------------
@@ -12192,7 +12193,8 @@ package body Exp_Ch4 is
 
             --  The topmost case or if expression is now recovered, but it may
             --  still not be the correct place to add generated code. Climb to
-            --  find a parent that is part of a declarative or statement list.
+            --  find a parent that is part of a declarative or statement list,
+            --  and is not a list of actuals in a call.
 
             Par := Top;
             while Present (Par) loop
@@ -12201,6 +12203,11 @@ package body Exp_Ch4 is
                                              N_Discriminant_Association,
                                              N_Parameter_Association,
                                              N_Pragma_Argument_Association)
+                 and then not Nkind_In
+                                (Parent (Par), N_Function_Call,
+                                               N_Procedure_Call_Statement,
+                                               N_Entry_Call_Statement)
+
                then
                   Hook_Context := Par;
                   goto Hook_Context_Found;
@@ -12262,12 +12269,11 @@ package body Exp_Ch4 is
 
             while Present (Par) loop
                if Par = Wrapped_Node
-                    or else
-                  Nkind_In (Par, N_Assignment_Statement,
-                                 N_Object_Declaration,
-                                 N_Pragma,
-                                 N_Procedure_Call_Statement,
-                                 N_Simple_Return_Statement)
+                 or else Nkind_In (Par, N_Assignment_Statement,
+                                        N_Object_Declaration,
+                                        N_Pragma,
+                                        N_Procedure_Call_Statement,
+                                        N_Simple_Return_Statement)
                then
                   Hook_Context := Par;
                   goto Hook_Context_Found;
@@ -12303,13 +12309,14 @@ package body Exp_Ch4 is
 
             Finalize_Always :=
                not (In_Cond_Expr
-                      or else
-                    Nkind_In (Original_Node (N), N_Case_Expression,
-                                                 N_If_Expression));
+                     or else
+                       Nkind_In (Original_Node (N), N_Case_Expression,
+                                                    N_If_Expression));
 
             declare
                Loc  : constant Source_Ptr := Sloc (N);
                Temp : constant Entity_Id := Make_Temporary (Loc, 'E', N);
+
             begin
                Append_To (Actions (N),
                  Make_Object_Declaration (Loc,

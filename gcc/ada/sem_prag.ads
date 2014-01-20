@@ -27,6 +27,7 @@
 --  (logically this processing belongs in chapter 4)
 
 with Namet;  use Namet;
+with Opt;    use Opt;
 with Snames; use Snames;
 with Types;  use Types;
 
@@ -130,8 +131,8 @@ package Sem_Prag is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
 
-   function Get_SPARK_Mode_Id (N : Node_Id) return SPARK_Mode_Id;
-   --  Given a pragma SPARK_Mode node, return the corresponding mode id
+   function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
+   --  Given a pragma SPARK_Mode node, return corresponding mode id
 
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called

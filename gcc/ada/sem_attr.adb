@@ -3018,22 +3018,34 @@ package body Sem_Attr is
             end if;
 
             --  Must have discriminants or be an access type designating
-            --  a type with discriminants. If it is a classwide type is ???
+            --  a type with discriminants. If it is a classwide type it
             --  has unknown discriminants.
 
             if Has_Discriminants (P_Type)
-               or else Has_Unknown_Discriminants (P_Type)
-               or else
-                 (Is_Access_Type (P_Type)
-                   and then Has_Discriminants (Designated_Type (P_Type)))
+              or else Has_Unknown_Discriminants (P_Type)
+              or else
+                (Is_Access_Type (P_Type)
+                  and then Has_Discriminants (Designated_Type (P_Type)))
             then
                return;
 
+            --  The rule given in 3.7.2 is part of static semantics, but the
+            --  intent is clearly that it be treated as a legality rule, and
+            --  rechecked in the visible part of an instance. Nevertheless
+            --  the intent also seems to be it should legally apply to the
+            --  actual of a formal with unknown discriminants, regardless of
+            --  whether the actual has discriminants, in which case the value
+            --  of the attribute is determined using the J.4 rules. This choice
+            --  seems the most useful, and is compatible with existing tests.
+
+            elsif In_Instance then
+               return;
+
             --  Also allow an object of a generic type if extensions allowed
-            --  and allow this for any type at all.
+            --  and allow this for any type at all. (this may be obsolete ???)
 
             elsif (Is_Generic_Type (P_Type)
-                     or else Is_Generic_Actual_Type (P_Type))
+                    or else Is_Generic_Actual_Type (P_Type))
               and then Extensions_Allowed
             then
                return;
@@ -3903,13 +3915,17 @@ package body Sem_Attr is
          Stmt := Attr;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma
+            --  Locate the corresponding enclosing pragma. Note that in the
+            --  case of Assert[And_Cut] and Assume, we have already checked
+            --  that the pragma appears in an appropriate loop location.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
-              and then
-                Nam_In (Pragma_Name (Original_Node (Stmt)),
-                        Name_Loop_Invariant,
-                        Name_Loop_Variant)
+              and then Nam_In (Pragma_Name (Original_Node (Stmt)),
+                               Name_Loop_Invariant,
+                               Name_Loop_Variant,
+                               Name_Assert,
+                               Name_Assert_And_Cut,
+                               Name_Assume)
             then
                In_Loop_Assertion := True;
 
@@ -3941,12 +3957,14 @@ package body Sem_Attr is
             Stmt := Parent (Stmt);
          end loop;
 
-         --  Loop_Entry must appear within a Loop_Assertion pragma
+            --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
+            --  Assert_And_Cut, Assume count as loop assertion pragmas for this
+            --  purpose if they appear in an appropriate location in a loop,
+            --  which was already checked by the top level pragma circuit).
 
          if not In_Loop_Assertion then
             Error_Attr
-              ("attribute % must appear within pragma Loop_Variant or " &
-               "Loop_Invariant", N);
+              ("attribute % must appear within appropriate pragma", N);
          end if;
 
          --  A Loop_Entry that applies to a given loop statement shall not
@@ -4351,52 +4369,68 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                null;
 
+            --  We must have a pragma
+
             elsif Nkind (Prag) /= N_Pragma then
                Error_Attr ("% attribute can only appear in postcondition", P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
-               declare
-                  Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_CTC_Pragma (Prag);
-                  Arg     : Node_Id;
+            --  Processing depends on which pragma we have
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Arg /= Arg_Ens loop
-                     Arg := Parent (Arg);
-                  end loop;
+            else
+               case Get_Pragma_Id (Prag) is
+                  when Pragma_Test_Case =>
+                     declare
+                        Arg_Ens : constant Node_Id :=
+                                    Get_Ensures_From_CTC_Pragma (Prag);
+                        Arg     : Node_Id;
 
-                  if Arg /= Arg_Ens then
-                     Error_Attr ("% attribute misplaced inside test case", P);
-                  end if;
-               end;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag and then Arg /= Arg_Ens loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
-               declare
-                  Aggr : constant Node_Id :=
-                    Expression (First (Pragma_Argument_Associations (Prag)));
-                  Arg  : Node_Id;
+                        if Arg /= Arg_Ens then
+                           Error_Attr
+                             ("% attribute misplaced inside test case", P);
+                        end if;
+                     end;
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
-                     Arg := Parent (Arg);
-                  end loop;
+                  when Pragma_Contract_Cases =>
+                     declare
+                        Aggr : constant Node_Id :=
+                          Expression
+                            (First (Pragma_Argument_Associations (Prag)));
+                        Arg  : Node_Id;
 
-                  --  At this point, Parent (Arg) should be a component
-                  --  association. Attribute Result is only allowed in
-                  --  the expression part of this association.
+                     begin
+                        Arg := N;
+                        while Arg /= Prag
+                          and then Parent (Parent (Arg)) /= Aggr
+                        loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-                  if Nkind (Parent (Arg)) /= N_Component_Association
-                    or else Arg /= Expression (Parent (Arg))
-                  then
+                        --  At this point, Parent (Arg) should be a component
+                        --  association. Attribute Result is only allowed in
+                        --  the expression part of this association.
+
+                        if Nkind (Parent (Arg)) /= N_Component_Association
+                          or else Arg /= Expression (Parent (Arg))
+                        then
+                           Error_Attr
+                             ("% attribute misplaced inside contract cases",
+                              P);
+                        end if;
+                     end;
+
+                  when Pragma_Postcondition | Pragma_Refined_Post =>
+                     null;
+
+                  when others =>
                      Error_Attr
-                       ("% attribute misplaced inside contract cases", P);
-                  end if;
-               end;
-
-            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
-               Error_Attr ("% attribute can only appear in postcondition", P);
+                       ("% attribute can only appear in postcondition", P);
+               end case;
             end if;
 
          --  Check the legality of attribute 'Old when it appears inside pragma
@@ -4499,7 +4533,7 @@ package body Sem_Attr is
          --  not suffer from the out-of-order issue described above. Thus, this
          --  expansion is skipped in SPARK mode.
 
-         if not Is_Entity_Name (P) and then not SPARK_Mode then
+         if not Is_Entity_Name (P) and then not GNATprove_Mode then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);
@@ -4790,56 +4824,72 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                null;
 
+            --  Must have a pragma
+
             elsif Nkind (Prag) /= N_Pragma then
                Error_Attr
                  ("% attribute can only appear in postcondition of function",
                   P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
-               declare
-                  Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_CTC_Pragma (Prag);
-                  Arg     : Node_Id;
+            --  Processing depends on which pragma we have
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Arg /= Arg_Ens loop
-                     Arg := Parent (Arg);
-                  end loop;
+            else
+               case Get_Pragma_Id (Prag) is
 
-                  if Arg /= Arg_Ens then
-                     Error_Attr ("% attribute misplaced inside test case", P);
-                  end if;
-               end;
+                  when Pragma_Test_Case =>
+                     declare
+                        Arg_Ens : constant Node_Id :=
+                                    Get_Ensures_From_CTC_Pragma (Prag);
+                        Arg     : Node_Id;
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
-               declare
-                  Aggr : constant Node_Id :=
-                    Expression (First (Pragma_Argument_Associations (Prag)));
-                  Arg  : Node_Id;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag and then Arg /= Arg_Ens loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
-                     Arg := Parent (Arg);
-                  end loop;
+                        if Arg /= Arg_Ens then
+                           Error_Attr
+                             ("% attribute misplaced inside test case", P);
+                        end if;
+                     end;
 
-                  --  At this point, Parent (Arg) should be a component
-                  --  association. Attribute Result is only allowed in
-                  --  the expression part of this association.
+                  when Pragma_Contract_Cases =>
+                     declare
+                        Aggr : constant Node_Id :=
+                          Expression (First
+                                        (Pragma_Argument_Associations (Prag)));
+                        Arg  : Node_Id;
 
-                  if Nkind (Parent (Arg)) /= N_Component_Association
-                    or else Arg /= Expression (Parent (Arg))
-                  then
-                     Error_Attr
-                       ("% attribute misplaced inside contract cases", P);
-                  end if;
-               end;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag
+                          and then Parent (Parent (Arg)) /= Aggr
+                        loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
-               Error_Attr
-                 ("% attribute can only appear in postcondition of function",
-                  P);
+                        --  At this point, Parent (Arg) should be a component
+                        --  association. Attribute Result is only allowed in
+                        --  the expression part of this association.
+
+                        if Nkind (Parent (Arg)) /= N_Component_Association
+                          or else Arg /= Expression (Parent (Arg))
+                        then
+                           Error_Attr
+                             ("% attribute misplaced inside contract cases",
+                              P);
+                        end if;
+                     end;
+
+                  when Pragma_Postcondition | Pragma_Refined_Post =>
+                     null;
+
+                     when others =>
+                        Error_Attr
+                          ("% attribute can only appear in postcondition "
+                           & "of function", P);
+               end case;
             end if;
 
             --  The attribute reference is a primary. If expressions follow,
@@ -4860,8 +4910,8 @@ package body Sem_Attr is
 
             Set_Etype (N, Etype (CS));
 
-            --  If several functions with that name are visible,
-            --  the intended one is the current scope.
+            --  If several functions with that name are visible, the intended
+            --  one is the current scope.
 
             if Is_Overloaded (P) then
                Set_Entity (P, CS);
@@ -5346,10 +5396,10 @@ package body Sem_Attr is
                                            Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N ("cannot use % attribute for type with simple "
-                               & "storage pool??", N);
-                  Error_Msg_N
-                     ("\Program_Error will be raised at run time??", N);
+                               & "storage pool<<", N);
+                  Error_Msg_N ("\Program_Error [<<", N);
 
                   Rewrite
                     (N, Make_Raise_Program_Error
@@ -9261,10 +9311,10 @@ package body Sem_Attr is
          --  know will fail, so generate an appropriate warning.
 
          if In_Instance_Body then
+            Error_Msg_Warn := SPARK_Mode /= On;
             Error_Msg_F
-              ("??non-local pointer cannot point to local object", P);
-            Error_Msg_F
-              ("\??Program_Error will be raised at run time", P);
+              ("non-local pointer cannot point to local object<<", P);
+            Error_Msg_F ("\Program_Error [<<", P);
             Rewrite (N,
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Accessibility_Check_Failed));
@@ -9742,10 +9792,11 @@ package body Sem_Attr is
                   --  know will fail, so generate an appropriate warning.
 
                   if In_Instance_Body then
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_F
-                       ("??non-local pointer cannot point to local object", P);
-                     Error_Msg_F
-                       ("\??Program_Error will be raised at run time", P);
+                       ("non-local pointer cannot point to local object<<", P);
+                     Error_Msg_F ("\Program_Error [<<", P);
+
                      Rewrite (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Accessibility_Check_Failed));

@@ -9839,7 +9839,7 @@ package body Exp_Dist is
 
                declare
                   Constrained : constant Boolean :=
-                    not Transmit_As_Unconstrained (Typ);
+                                  not Transmit_As_Unconstrained (Typ);
 
                   procedure TA_Ary_Add_Process_Element
                     (Stmts   : List_Id;
@@ -9889,7 +9889,7 @@ package body Exp_Dist is
                begin
                   Set_Expression (Any_Decl,
                     Make_Function_Call (Loc,
-                      Name =>
+                      Name                   =>
                         New_Occurrence_Of (RTE (RE_Create_Any), Loc),
                       Parameter_Associations => New_List (Result_TC)));
                   Result_TC := Empty;
@@ -9899,9 +9899,9 @@ package body Exp_Dist is
                      for J in 1 .. Number_Dimensions (Typ) loop
                         Append_To (Stms,
                           Make_Procedure_Call_Statement (Loc,
-                            Name =>
-                              New_Occurrence_Of (
-                                RTE (RE_Add_Aggregate_Element), Loc),
+                            Name                   =>
+                              New_Occurrence_Of
+                                (RTE (RE_Add_Aggregate_Element), Loc),
                             Parameter_Associations => New_List (
                               New_Occurrence_Of (Any, Loc),
                               Build_To_Any_Call (Loc,
@@ -9949,10 +9949,8 @@ package body Exp_Dist is
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
-                      Defining_Identifier =>
-                        Strm,
-                      Aliased_Present     =>
-                        True,
+                      Defining_Identifier => Strm,
+                      Aliased_Present     => True,
                       Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Buffer_Stream_Type), Loc)));
 
@@ -9964,6 +9962,7 @@ package body Exp_Dist is
 
                   declare
                      Attr_Name : Name_Id;
+
                   begin
                      if Transmit_As_Unconstrained (Typ) then
                         Attr_Name := Name_Output;

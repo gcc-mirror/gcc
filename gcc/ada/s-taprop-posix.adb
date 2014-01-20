@@ -287,7 +287,7 @@ package body System.Task_Primitives.Operations is
             Rel_Time := Duration'Min (Max_Sensible_Delay, Time - Check_Time);
          end if;
 
-      --  Absolute deadline specified using the real-time clock, in the
+      --  Absolute deadline specified using the calendar clock, in the
       --  case where it is not the same as the tasking clock: compensate for
       --  difference between clock epochs (Base_Time - Base_Cal_Time).
 

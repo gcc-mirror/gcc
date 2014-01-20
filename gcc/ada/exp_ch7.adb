@@ -937,7 +937,9 @@ package body Exp_Ch7 is
       --  Do not create finalization masters in SPARK mode because they result
       --  in unwanted expansion.
 
-      elsif SPARK_Mode then
+      --  More detail would be useful here ???
+
+      elsif GNATprove_Mode then
          return;
       end if;
 
@@ -2813,7 +2815,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -2975,7 +2977,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because we do not create
       --  finalizers in the first place.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -3658,7 +3660,7 @@ package body Exp_Ch7 is
       --  this node and enclosed expression are not expanded, so do not apply
       --  any transformations here.
 
-      elsif SPARK_Mode
+      elsif GNATprove_Mode
         and then Nkind (Wrap_Node) = N_Pragma
         and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
       then
@@ -4480,33 +4482,45 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         function Requires_Hooking return Boolean;
-         --  Determine whether the context requires transient variable export
-         --  to the outer finalizer. This scenario arises when the context may
-         --  raise an exception.
+         Must_Hook : Boolean := False;
+         --  Flag denoting whether the context requires transient variable
+         --  export to the outer finalizer.
 
-         ----------------------
-         -- Requires_Hooking --
-         ----------------------
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes a subprogram call
 
-         function Requires_Hooking return Boolean is
+         ------------------------
+         -- Is_Subprogram_Call --
+         ------------------------
+
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
-            --  The context is either a procedure or function call or an object
-            --  declaration initialized by a function call. Note that in the
-            --  latter case, a function call that returns on the secondary
-            --  stack is usually rewritten into something else. Its proper
-            --  detection requires examination of the original initialization
-            --  expression.
+            --  A regular procedure or function call
 
-            return Nkind (N) in N_Subprogram_Call
-              or else (Nkind (N) = N_Object_Declaration
-                         and then Nkind (Original_Node (Expression (N))) =
-                                    N_Function_Call);
-         end Requires_Hooking;
+            if Nkind (N) in N_Subprogram_Call then
+               Must_Hook := True;
+               return Abandon;
+
+            --  Detect a call to a function that returns on the secondary stack
+
+            elsif Nkind (N) = N_Object_Declaration
+              and then Nkind (Original_Node (Expression (N))) = N_Function_Call
+            then
+               Must_Hook := True;
+               return Abandon;
+
+            --  Keep searching
+
+            else
+               return OK;
+            end if;
+         end Is_Subprogram_Call;
+
+         procedure Detect_Subprogram_Call is
+           new Traverse_Proc (Is_Subprogram_Call);
 
          --  Local variables
 
-         Must_Hook : constant Boolean := Requires_Hooking;
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
          Fin_Block : Node_Id;
@@ -4525,6 +4539,12 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Transient_Objects
 
       begin
+         --  Search the context for at least one subprogram call. If found, the
+         --  machinery exports all transient objects to the enclosing finalizer
+         --  due to the possibility of abnormal call termination.
+
+         Detect_Subprogram_Call (N);
+
          --  Examine all objects in the list First_Object .. Last_Object
 
          Stmt := First_Object;
@@ -7942,8 +7962,8 @@ package body Exp_Ch7 is
    -------------------------------
 
    procedure Wrap_Transient_Expression (N : Node_Id) is
-      Expr : constant Node_Id    := Relocate_Node (N);
       Loc  : constant Source_Ptr := Sloc (N);
+      Expr : Node_Id             := Relocate_Node (N);
       Temp : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Typ  : constant Entity_Id  := Etype (N);
 
@@ -7954,13 +7974,30 @@ package body Exp_Ch7 is
       --    declare
       --       M : constant Mark_Id := SS_Mark;
       --       procedure Finalizer is ...  (See Build_Finalizer)
-
+      --
       --    begin
-      --       Temp := <Expr>;
+      --       Temp := <Expr>;                           --  general case
+      --       Temp := (if <Expr> then True else False); --  boolean case
       --
       --    at end
       --       Finalizer;
       --    end;
+
+      --  A special case is made for Boolean expressions so that the back-end
+      --  knows to generate a conditional branch instruction, if running with
+      --  -fpreserve-control-flow. This ensures that a control flow change
+      --  signalling the decision outcome occurs before the cleanup actions.
+
+      if Opt.Suppress_Control_Flow_Optimizations
+        and then Is_Boolean_Type (Typ)
+      then
+         Expr :=
+           Make_If_Expression (Loc,
+             Expressions => New_List (
+               Expr,
+               New_Occurrence_Of (Standard_True, Loc),
+               New_Occurrence_Of (Standard_False, Loc)));
+      end if;
 
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,

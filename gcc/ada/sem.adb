@@ -32,7 +32,6 @@ with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
-with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
 with Sem_Attr; use Sem_Attr;
@@ -1322,6 +1321,15 @@ package body Sem is
       --  If the main unit is generic, every compiled unit, including its
       --  context, is compiled with expansion disabled.
 
+      Is_Main_Unit_Or_Main_Unit_Spec : constant Boolean :=
+         Current_Sem_Unit = Main_Unit
+           or else
+             (Nkind (Unit (Cunit (Main_Unit))) = N_Package_Body
+               and then Library_Unit (Cunit (Main_Unit)) =
+                  Cunit (Current_Sem_Unit));
+      --  Configuration flags have special settings when compiling a predefined
+      --  file as a main unit. This applies to its spec as well.
+
       Ext_Main_Source_Unit : constant Boolean :=
                                In_Extended_Main_Source_Unit (Comp_Unit);
       --  Determine if unit is in extended main source unit
@@ -1421,7 +1429,7 @@ package body Sem is
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
         (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
-         Current_Sem_Unit = Main_Unit);
+         Is_Main_Unit_Or_Main_Unit_Spec);
 
       --  Save current non-partition-wide restrictions
 

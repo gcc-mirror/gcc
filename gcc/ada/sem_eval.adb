@@ -369,7 +369,7 @@ package body Sem_Eval is
            Intval (N) > Expr_Value (Type_High_Bound (Universal_Integer)))
       then
          Apply_Compile_Time_Constraint_Error
-           (N, "non-static universal integer value out of range??",
+           (N, "non-static universal integer value out of range<<",
             CE_Range_Check_Failed);
 
       --  Check out of range of base type
@@ -390,7 +390,7 @@ package body Sem_Eval is
 
          elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}??", CE_Range_Check_Failed);
+              (N, "value not in range of}<<", CE_Range_Check_Failed);
 
          elsif Checks_On then
             Enable_Range_Check (N);
@@ -5224,6 +5224,8 @@ package body Sem_Eval is
    begin
       Stat := False;
       Fold := False;
+
+      --  Inhibit folding if -gnatd.f flag set
 
       if Debug_Flag_Dot_F and then In_Extended_Main_Source_Unit (N) then
          return;

@@ -882,12 +882,4 @@ package Types is
      SE_Empty_Storage_Pool ..
      SE_Object_Too_Large;
 
-   ----------------------------------------
-   -- Types Used for SPARK Mode Handling --
-   ----------------------------------------
-
-   type SPARK_Mode_Id is (None, SPARK_Off, SPARK_Auto, SPARK_On);
-   --  Type used to represent all legal modes that can be set by aspect/pragma
-   --  SPARK_Mode.
-
 end Types;

@@ -84,13 +84,14 @@ package body Expander is
           and then not (Inside_A_Generic and then Expander_Active));
 
       --  There are three reasons for the Expander_Active flag to be false
-      --
+
       --  The first is when are not generating code. In this mode the
       --  Full_Analysis flag indicates whether we are performing a complete
       --  analysis, in which case Full_Analysis = True or a pre-analysis in
-      --  which case Full_Analysis = False. See the spec of Sem for more
-      --  info on this.
-      --
+      --  which case Full_Analysis = False. See the spec of Sem for more info
+      --  on this. Additionally, the GNATprove_Mode flag indicates that a light
+      --  expansion for formal verification should be used.
+
       --  The second reason for the Expander_Active flag to be False is that
       --  we are performing a pre-analysis. During pre-analysis all expansion
       --  activity is turned off to make sure nodes are semantically decorated
@@ -107,12 +108,10 @@ package body Expander is
       --  given that the expansion actions that would normally process it will
       --  not take place. This prevents cascaded errors due to stack mismatch.
 
-      if not Expander_Active then
+      if not (Expander_Active or (Full_Analysis and GNATprove_Mode)) then
          Set_Analyzed (N, Full_Analysis);
 
-         if Serious_Errors_Detected > 0
-           and then Scope_Is_Transient
-         then
+         if Serious_Errors_Detected > 0 and then Scope_Is_Transient then
             Scope_Stack.Table
              (Scope_Stack.Last).Actions_To_Be_Wrapped_Before := No_List;
             Scope_Stack.Table
@@ -127,10 +126,11 @@ package body Expander is
          Debug_A_Entry ("expanding  ", N);
 
          begin
-            --  In SPARK mode we only need a very limited subset of the usual
-            --  expansions. This limited subset is implemented in Expand_SPARK.
+            --  In GNATprove mode we only need a very limited subset of
+            --  the usual expansions. This limited subset is implemented
+            --  in Expand_SPARK.
 
-            if SPARK_Mode then
+            if GNATprove_Mode then
                Expand_SPARK (N);
 
             --  Here for normal non-SPARK mode
@@ -503,10 +503,10 @@ package body Expander is
 
    procedure Expander_Mode_Restore is
    begin
-      --  Not active (has no effect) in ASIS mode (see comments in spec of
-      --  Expander_Mode_Save_And_Set).
+      --  Not active (has no effect) in ASIS and GNATprove modes (see comments
+      --  in spec of Expander_Mode_Save_And_Set).
 
-      if ASIS_Mode then
+      if ASIS_Mode or GNATprove_Mode then
          return;
       end if;
 
@@ -530,10 +530,10 @@ package body Expander is
 
    procedure Expander_Mode_Save_And_Set (Status : Boolean) is
    begin
-      --  Not active (has no effect) in ASIS mode (see comments in spec of
-      --  Expander_Mode_Save_And_Set).
+      --  Not active (has no effect) in ASIS and GNATprove modes (see comments
+      --  in spec of Expander_Mode_Save_And_Set).
 
-      if ASIS_Mode then
+      if ASIS_Mode or GNATprove_Mode then
          return;
       end if;
 

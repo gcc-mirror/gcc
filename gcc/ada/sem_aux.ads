@@ -90,12 +90,10 @@ package Sem_Aux is
    --  subtype then it returns the subtype or type from which the subtype was
    --  obtained, otherwise it returns Empty.
 
-   function Available_View (Typ : Entity_Id) return Entity_Id;
-   --  Typ is typically a type that has the With_Type flag set. Returns the
-   --  non-limited view of the type, if available, otherwise the type itself.
-   --  For class-wide types, there is no direct link in the tree, so we have
-   --  to retrieve the class-wide type of the non-limited view of the Etype.
-   --  Returns the argument unchanged if it is not one of these cases.
+   function Available_View (Ent : Entity_Id) return Entity_Id;
+   --  Ent denotes an abstract state or a type that may come from a limited
+   --  with clause. Return the non-limited view of Ent if there is one or Ent
+   --  if this is not the case.
 
    function Constant_Value (Ent : Entity_Id) return Node_Id;
    --  Ent is a variable, constant, named integer, or named real entity. This

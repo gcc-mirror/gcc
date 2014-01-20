@@ -941,7 +941,7 @@ package body Exp_Ch3 is
       Rec_Id            : Entity_Id;
       Loc               : Source_Ptr;
       Enclosing_Func_Id : Entity_Id;
-      Sequence          : Nat     := 1;
+      Sequence          : Nat := 1;
       Type_Def          : Node_Id;
       V                 : Node_Id;
 
@@ -984,7 +984,7 @@ package body Exp_Ch3 is
       begin
          Case_Node := New_Node (N_Case_Statement, Loc);
 
-         --  Replace the discriminant which controls the variant, with the name
+         --  Replace the discriminant which controls the variant with the name
          --  of the formal of the checking function.
 
          Set_Expression (Case_Node, Make_Identifier (Loc, Chars (Case_Id)));

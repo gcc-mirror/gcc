@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                                                          --
+--                                SPARK                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                                  O P T                                   --
@@ -187,6 +187,12 @@ package Opt is
    --  Flag set to force display of multiple errors on a single line and
    --  also repeated error messages for references to undefined identifiers
    --  and certain other repeated error messages. Set by use of -gnatf.
+
+   Allow_Integer_Address : Boolean := False;
+   --  GNAT
+   --  Allow use of integer expression in a context requiring System.Address.
+   --  Set by the use of configuration pragma Allow_Integer_Address Also set
+   --  in relaxed semantics mode for use by CodePeer or when -gnatd.M is used.
 
    All_Sources : Boolean := False;
    --  GNATBIND
@@ -1258,6 +1264,14 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
 
+   type SPARK_Mode_Type is (None, Off, Auto, On);
+   pragma Ordered (SPARK_Mode_Type);
+   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode
+
+   SPARK_Mode : SPARK_Mode_Type := None;
+   --  GNAT
+   --  Current SPARK mode setting
+
    Special_Exception_Package_Used : Boolean := False;
    --  GNAT
    --  Set to True if either of the unit GNAT.Most_Recent_Exception or
@@ -1404,7 +1418,9 @@ package Opt is
    Treat_Categorization_Errors_As_Warnings : Boolean := False;
    --  Normally categorization errors are true illegalities. If this switch
    --  is set, then such errors result in warning messages rather than error
-   --  messages. Set True by -gnateP (P for Pure/Preelaborate).
+   --  messages. Set True by -gnateP (P for Pure/Preelaborate). Also set in
+   --  Relaxed_RM_Semantics mode since some old Ada 83 compilers treated
+   --  pragma Preelaborate differently.
 
    Treat_Restrictions_As_Warnings : Boolean := False;
    --  GNAT
@@ -1887,6 +1903,9 @@ package Opt is
    --  This flag is used to set the initial value for Short_Descriptors at the
    --  start of analyzing each unit.
 
+   SPARK_Mode_Config : SPARK_Mode_Type := None;
+   --  The setting of SPARK_Mode from configuration pragmas
+
    Use_VADS_Size_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch that controls the use of
@@ -1911,10 +1930,11 @@ package Opt is
    --  This procedure sets the switches to the appropriate initial values. The
    --  parameter Internal_Unit is True for an internal or predefined unit, and
    --  affects the way the switches are set (see above). Main_Unit is true if
-   --  switches are being set for the main unit (this affects setting of the
-   --  assert/debug pragma switches, which are normally set false by default
-   --  for an internal unit, except when the internal unit is the main unit,
-   --  in which case we use the command line settings).
+   --  switches are being set for the main unit or for the spec of the main
+   --  unit. This affects setting of the assert/debug pragma switches, which
+   --  are normally set false by default for an internal unit, except when the
+   --  internal unit is the main unit, in which case we use the command line
+   --  settings).
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
    --  This procedure restores a set of switch values previously saved by a
@@ -1939,9 +1959,6 @@ package Opt is
    --  this flag, see package Expander. Indeed this flag might more logically
    --  be in the spec of Expander, but it is referenced by Errout, and it
    --  really seems wrong for Errout to depend on Expander.
-   --
-   --  Note: for many purposes, it is more appropriate to test the flag
-   --  Full_Expander_Active, which also checks that SPARK mode is not active.
 
    Static_Dispatch_Tables : Boolean := True;
    --  This flag indicates if the backend supports generation of statically
@@ -1995,42 +2012,12 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
-   Frame_Condition_Mode : Boolean := False;
-   --  Specific mode to be used in combination with SPARK_Mode. If set to
-   --  true, ALI files containing the frame conditions (global effects) are
-   --  generated, and Why files are *not* generated. If not true, Why files
-   --  are generated. Set by debug flag -gnatd.G.
-
-   Formal_Extensions : Boolean := False;
-   --  When this flag is set, new aspects/pragmas/attributes are accepted,
-   --  whose main purpose is to facilitate formal verification. Set by debug
-   --  flag -gnatd.V.
-
-   Global_SPARK_Mode : SPARK_Mode_Id := None;
-   --  The mode applicable to the whole compilation. The global mode can be set
-   --  in a configuration file such as gnat.adc.
-
-   SPARK_Mode : Boolean := False;
-   --  Specific compiling mode targeting formal verification through the
-   --  generation of Why code for those parts of the input code that belong to
-   --  the SPARK 2014 subset of Ada. Set True by the gnat2why executable or by
-   --  use of the -gnatd.F debug switch. Note that this is completely separate
-   --  from the SPARK restriction defined in GNAT to detect violations of a
-   --  subset of SPARK 2005 rules.
-
-   SPARK_Strict_Mode : Boolean := False;
-   --  Interpret compiler permissions as strictly as possible. E.g. base ranges
-   --  for integers are limited to the strict minimum with this option. Set by
-   --  debug flag -gnatd.D.
-
-   function Full_Expander_Active return Boolean;
-   pragma Inline (Full_Expander_Active);
-   --  Returns the value of (Expander_Active and not SPARK_Mode). This "flag"
-   --  indicates that expansion is fully active, that is, not in the reduced
-   --  mode for SPARK (True) or that expansion is either deactivated, or active
-   --  in the reduced mode for SPARK (False). For more information on full
-   --  expansion, see package Expander. For more information on reduced
-   --  SPARK expansion, see package Exp_SPARK.
+   GNATprove_Mode : Boolean := False;
+   --  Specific compiling mode targeting formal verification for those parts
+   --  of the input code that belong to the SPARK 2014 subset of Ada. Set True
+   --  by the gnat2why executable or by use of the -gnatd.F debug switch. Note
+   --  that this is completely separate from the SPARK restriction defined in
+   --  GNAT to detect violations of a subset of SPARK 2005 rules.
 
 private
 
@@ -2063,6 +2050,7 @@ private
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
       Short_Descriptors              : Boolean;
+      SPARK_Mode                     : SPARK_Mode_Type;
       Use_VADS_Size                  : Boolean;
    end record;
 

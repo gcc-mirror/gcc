@@ -1875,14 +1875,16 @@ package body Freeze is
                      if Ada_Version < Ada_2012 then
                         Error_Msg_N
                           ("current instance must be a limited type",
-                             Prefix (N));
+                           Prefix (N));
                      else
                         Error_Msg_N
-                          ("current instance must be an immutably limited " &
-                            "type (RM-2012, 7.5 (8.1/3))",
-                             Prefix (N));
+                          ("current instance must be an immutably limited "
+                           & "type (RM-2012, 7.5 (8.1/3))",
+                           Prefix (N));
                      end if;
+
                      return Abandon;
+
                   else
                      return OK;
                   end if;
@@ -3280,7 +3282,7 @@ package body Freeze is
            --  general, neither CodePeer not GNATprove care about the
            --  internal representation of objects.
 
-           and then not (CodePeer_Mode or SPARK_Mode)
+           and then not (CodePeer_Mode or GNATprove_Mode)
          then
             --  If implicit packing enabled, do it
 
@@ -4230,7 +4232,7 @@ package body Freeze is
                     and then not Is_Limited_Composite (E)
                     and then not Is_Packed (Root_Type (E))
                     and then not Has_Component_Size_Clause (Root_Type (E))
-                    and then not (CodePeer_Mode or SPARK_Mode)
+                    and then not (CodePeer_Mode or GNATprove_Mode)
                   then
                      --  Compute number of elements in array
 

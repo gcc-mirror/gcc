@@ -23,10 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements a light expansion which is used in formal
---  verification mode (SPARK_Mode = True). Instead of a complete expansion
---  of nodes for code generation, this SPARK expansion targets generation
---  of intermediate code for formal verification.
+--  This package implements a light expansion which is used in GNATprove mode.
+--  Instead of a complete expansion of nodes for code generation, this light
+--  expansion targets generation of intermediate code for formal verification.
 
 --  Expand_SPARK is called directly by Expander.Expand.
 

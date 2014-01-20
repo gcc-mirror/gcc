@@ -637,9 +637,14 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor)
   s-vxwext.adb<s-vxwext-noints.adb \
   s-vxwext.ads<s-vxwext-vthreads.ads \
   s-vxwork.ads<s-vxwork-ppc.ads \
-  system.ads<system-vxworks-ppc-vthread.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
+
+  ifeq ($(strip $(filter-out e500%, $(arch))),)
+    LIBGNAT_TARGET_PAIRS += system.ads<system-vxworks-e500-vthread.ads
+  else
+    LIBGNAT_TARGET_PAIRS += system.ads<system-vxworks-ppc-vthread.ads
+  endif
 
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
@@ -947,16 +952,46 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
   s-taprop.adb<s-taprop-vxworks.adb \
   s-tasinf.ads<s-tasinf-vxworks.ads \
   s-taspri.ads<s-taspri-vxworks.ads \
-  s-tpopsp.adb<s-tpopsp-vxworks.adb \
   s-vxwork.ads<s-vxwork-arm.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
-  g-stsifd.adb<g-stsifd-sockets.adb \
-  system.ads<system-vxworks-arm.ads
+  g-stsifd.adb<g-stsifd-sockets.adb
 
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
   indepsw.adb<indepsw-gnu.adb
+
+  ifeq ($(strip $(filter-out rtp-smp,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-mudido.adb<s-mudido-affinity.adb \
+    s-vxwext.ads<s-vxwext-rtp.ads \
+    s-vxwext.adb<s-vxwext-rtp-smp.adb \
+    s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
+    system.ads<system-vxworks-arm-rtp.ads
+
+    EXTRA_LIBGNAT_OBJS+=affinity.o
+  else
+    ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
+      LIBGNAT_TARGET_PAIRS += \
+      s-mudido.adb<s-mudido-affinity.adb \
+      s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
+      s-vxwext.ads<s-vxwext-kernel.ads \
+      s-vxwext.adb<s-vxwext-kernel-smp.adb \
+      system.ads<system-vxworks-arm.ads
+
+      EXTRA_LIBGNAT_OBJS+=affinity.o
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      s-tpopsp.adb<s-tpopsp-vxworks.adb \
+      system.ads<system-vxworks-arm.ads
+
+      ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
+        LIBGNAT_TARGET_PAIRS += \
+        s-vxwext.ads<s-vxwext-kernel.ads \
+        s-vxwext.adb<s-vxwext-kernel.adb
+      endif
+    endif
+  endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
@@ -2317,9 +2352,11 @@ ifeq ($(strip $(filter-out arm nucleus%,$(target_cpu) $(target_os))),)
 endif
 
 ifeq ($(EH_MECHANISM),-gcc)
-  LIBGNAT_TARGET_PAIRS += a-exexpr.adb<a-exexpr-gcc.adb
+  LIBGNAT_TARGET_PAIRS += \
+    a-exexpr.adb<a-exexpr-gcc.adb \
+    s-excmac.ads<s-excmac-gcc.ads
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
-  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
 
 # Use the Ada 2005 version of Ada.Exceptions by default, unless specified

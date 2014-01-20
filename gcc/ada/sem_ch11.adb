@@ -37,6 +37,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch5;  use Sem_Ch5;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
@@ -533,6 +534,13 @@ package body Sem_Ch11 is
                if Is_Scalar_Type (Etype (L))
                  and then Is_Entity_Name (L)
                  and then Is_Formal (Entity (L))
+
+                 --  Do this only for parameters to the current subprogram.
+                 --  This avoids some false positives for the nested case.
+
+                 and then Nearest_Dynamic_Scope (Current_Scope) =
+                            Scope (Entity (L))
+
                then
                   --  Don't give warning if we are covered by an exception
                   --  handler, since this may result in false positives, since

@@ -2132,12 +2132,33 @@ package body Sem_Ch13 is
 
                --  SPARK_Mode
 
-               when Aspect_SPARK_Mode =>
+               when Aspect_SPARK_Mode => SPARK_Mode : declare
+                  Decls : List_Id;
+
+               begin
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
+
+                  --  When the aspect appears on a package body, insert the
+                  --  generated pragma at the top of the body declarations to
+                  --  emulate the behavior of a source pragma.
+
+                  if Nkind (N) = N_Package_Body then
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decls := Declarations (N);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+                     goto Continue;
+                  end if;
+               end SPARK_Mode;
 
                --  Refined_Depends
 
@@ -2718,7 +2739,7 @@ package body Sem_Ch13 is
                      Prepend (Aitem,
                        Visible_Declarations (Specification (N)));
 
-                  elsif Nkind (N) =  N_Package_Instantiation then
+                  elsif Nkind (N) = N_Package_Instantiation then
                      declare
                         Spec : constant Node_Id :=
                                  Specification (Instance_Spec (N));
@@ -5918,6 +5939,20 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
+
+            --  Add semantic information to node to be rewritten, for ASIS
+            --  navigation needs.
+
+            if Nkind (N) = N_Identifier then
+               Set_Entity (N, T);
+               Set_Etype  (N, T);
+
+            elsif Nkind (N) = N_Selected_Component then
+               Analyze (Prefix (N));
+               Set_Entity (Selector_Name (N), T);
+               Set_Etype  (Selector_Name (N), T);
+            end if;
+
             --  Invariant'Class, replace with T'Class (obj)
 
             if Class_Present (Ritem) then
@@ -6025,6 +6060,20 @@ package body Sem_Ch13 is
 
                Set_Parent (Exp, N);
                Preanalyze_Assert_Expression (Exp, Standard_Boolean);
+
+               --  In ASIS mode, even if assertions are not enabled, we must
+               --  analyze the original expression in the aspect specification
+               --  because it is part of the original tree.
+
+               if ASIS_Mode then
+                  declare
+                     Inv : constant Node_Id :=
+                             Expression (Corresponding_Aspect (Ritem));
+                  begin
+                     Replace_Type_References (Inv, Chars (T));
+                     Preanalyze_Assert_Expression (Inv, Standard_Boolean);
+                  end;
+               end if;
 
                --  Build first two arguments for Check pragma
 

@@ -38,15 +38,6 @@ package body Opt is
    SU : constant := Storage_Unit;
    --  Shorthand for System.Storage_Unit
 
-   --------------------------
-   -- Full_Expander_Active --
-   --------------------------
-
-   function Full_Expander_Active return Boolean is
-   begin
-      return Expander_Active and not SPARK_Mode;
-   end Full_Expander_Active;
-
    ----------------------------------
    -- Register_Opt_Config_Switches --
    ----------------------------------
@@ -72,6 +63,7 @@ package body Opt is
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
       Short_Descriptors_Config              := Short_Descriptors;
+      SPARK_Mode_Config                     := SPARK_Mode;
       Use_VADS_Size_Config                  := Use_VADS_Size;
 
       --  Reset the indication that Optimize_Alignment was set locally, since
@@ -107,6 +99,7 @@ package body Opt is
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
       Short_Descriptors              := Save.Short_Descriptors;
+      SPARK_Mode                     := Save.SPARK_Mode;
       Use_VADS_Size                  := Save.Use_VADS_Size;
 
       --  Update consistently the value of Init_Or_Norm_Scalars. The value of
@@ -143,6 +136,7 @@ package body Opt is
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
       Save.Short_Descriptors              := Short_Descriptors;
+      Save.SPARK_Mode                     := SPARK_Mode;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 
@@ -173,6 +167,7 @@ package body Opt is
          Persistent_BSS_Mode         := False;
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
+         SPARK_Mode                  := Auto;
 
          --  For an internal unit, assertions/debug pragmas are off unless this
          --  is the main unit and they were explicitly enabled. We also make
@@ -207,6 +202,7 @@ package body Opt is
          Optimize_Alignment          := Optimize_Alignment_Config;
          Optimize_Alignment_Local    := False;
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
+         SPARK_Mode                  := SPARK_Mode_Config;
          Use_VADS_Size               := Use_VADS_Size_Config;
 
          --  Update consistently the value of Init_Or_Norm_Scalars. The value

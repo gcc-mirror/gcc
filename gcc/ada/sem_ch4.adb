@@ -1823,7 +1823,7 @@ package body Sem_Ch4 is
       --  In formal verification mode, keep track of all reads and writes
       --  through explicit dereferences.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          SPARK_Specific.Generate_Dereference (N);
       end if;
 
@@ -2956,17 +2956,15 @@ package body Sem_Ch4 is
          Form2 : constant Entity_Id := Next_Formal (Form1);
 
       begin
-         if Ekind (Fun) /= E_Function
-           or else Is_Abstract_Subprogram (Fun)
-         then
+         if Ekind (Fun) /= E_Function or else Is_Abstract_Subprogram (Fun) then
             return False;
 
          elsif not Has_Compatible_Type (Act1, Etype (Form1)) then
             return False;
 
          elsif Present (Form2) then
-            if
-              No (Act2) or else not Has_Compatible_Type (Act2, Etype (Form2))
+            if No (Act2)
+              or else not Has_Compatible_Type (Act2, Etype (Form2))
             then
                return False;
             end if;
@@ -3016,7 +3014,7 @@ package body Sem_Ch4 is
           (Needs_No_Actuals (Nam)
             or else
               (Needs_One_Actual (Nam)
-                 and then Present (Next_Actual (First (Actuals)))))
+                and then Present (Next_Actual (First (Actuals)))))
       then
          if Is_Array_Type (Subp_Type)
            and then
@@ -3189,6 +3187,23 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  In Allow_Integer_Address mode, we allow an actual integer to
+               --  match a formal address type and vice versa. We only do this
+               --  if we are certain that an error will otherwise be issued
+
+               elsif Address_Integer_Convert_OK
+                       (Etype (Actual), Etype (Formal))
+                 and then (Report and not Is_Indexed and not Is_Indirect)
+               then
+                  --  Handle this case by introducing an unchecked conversion
+
+                  Rewrite (Actual,
+                           Unchecked_Convert_To (Etype (Formal),
+                             Relocate_Node (Actual)));
+                  Analyze_And_Resolve (Actual, Etype (Formal));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                else
                   if Debug_Flag_E then
                      Write_Str (" type checking fails in call ");
@@ -3199,6 +3214,8 @@ package body Sem_Ch4 is
                      Write_Int (Int (Nam));
                      Write_Eol;
                   end if;
+
+                  --  Comment needed on the following test???
 
                   if Report and not Is_Indexed and not Is_Indirect then
 
@@ -3648,7 +3665,27 @@ package body Sem_Ch4 is
          end if;
 
       else pragma Assert (Present (Loop_Parameter_Specification (N)));
-         Preanalyze (Loop_Parameter_Specification (N));
+         declare
+            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
+
+         begin
+            Preanalyze (Loop_Par);
+
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
+              and then Parent (Loop_Par) /= N
+            then
+               --  The parser cannot distinguish between a loop specification
+               --  and an iterator specification. If after pre-analysis the
+               --  proper form has been recognized, rewrite the expression to
+               --  reflect the right kind. The analysis of the loop has been
+               --  performed on a copy that has the proper iterator form. This
+               --  is needed in particular for ASIS navigation.
+
+               Set_Loop_Parameter_Specification (N, Empty);
+               Set_Iterator_Specification (N,
+                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+            end if;
+         end;
       end if;
 
       Preanalyze_And_Resolve (Cond, Standard_Boolean);
@@ -3671,20 +3708,21 @@ package body Sem_Ch4 is
          Error_Msg_N ("?T?unused variable &", Loop_Id);
       end if;
 
-      --  Diagnose a possible misuse of the "some" existential quantifier. When
+      --  Diagnose a possible misuse of the SOME existential quantifier. When
       --  we have a quantified expression of the form:
 
       --    for some X => (if P then Q [else True])
 
-      --  the if expression will not hold and render the quantified expression
-      --  trivially True.
+      --  any value for X that makes P False results in the if expression being
+      --  trivially True, and so also results in the the quantified expression
+      --  being trivially True.
 
-      if Formal_Extensions
+      if Warn_On_Suspicious_Contract
         and then not All_Present (N)
         and then Nkind (Cond) = N_If_Expression
         and then No_Else_Or_Trivial_True (Cond)
       then
-         Error_Msg_N ("?suspicious expression", N);
+         Error_Msg_N ("?T?suspicious expression", N);
          Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
          Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
       end if;
@@ -4607,23 +4645,17 @@ package body Sem_Ch4 is
                      Set_Etype (Sel, Etype (Comp));
                      Set_Etype (N,   Etype (Comp));
 
-                     --  Emit appropriate message. Gigi will replace the
-                     --  node subsequently with the appropriate Raise.
+                     --  Emit appropriate message. Gigi will replace the node
+                     --  subsequently with the appropriate Raise.
 
                      --  In SPARK mode, this is made into an error to simplify
                      --  the processing of the formal verification backend.
 
-                     if SPARK_Mode then
-                        Apply_Compile_Time_Constraint_Error
-                          (N, "component not present in }",
-                           CE_Discriminant_Check_Failed,
-                           Ent => Prefix_Type, Rep => False);
-                     else
-                        Apply_Compile_Time_Constraint_Error
-                          (N, "component not present in }??",
-                           CE_Discriminant_Check_Failed,
-                           Ent => Prefix_Type, Rep => False);
-                     end if;
+                     Error_Msg_Warn := SPARK_Mode /= On;
+                     Apply_Compile_Time_Constraint_Error
+                       (N, "component not present in }<<",
+                        CE_Discriminant_Check_Failed,
+                        Ent => Prefix_Type, Rep => False);
 
                      Set_Raises_Constraint_Error (N);
                      return;
@@ -6312,7 +6344,8 @@ package body Sem_Ch4 is
             --  binary operator case.
 
             elsif Junk_Operand (R)
-              or (Nkind (N) in N_Binary_Op and then Junk_Operand (L))
+              or  -- really mean OR here and not OR ELSE, see above
+                (Nkind (N) in N_Binary_Op and then Junk_Operand (L))
             then
                return;
 
@@ -6348,17 +6381,65 @@ package body Sem_Ch4 is
                                N_Op_Rem,
                                N_Op_Subtract)
             then
+               --  If Allow_Integer_Address is active, check whether the
+               --  operation becomes legal after converting an operand.
+
                if Is_Numeric_Type (Etype (L))
                  and then not Is_Numeric_Type (Etype (R))
                then
-                  Resolve (R, Etype (L));
+                  if Address_Integer_Convert_OK (Etype (R), Etype (L)) then
+                     Rewrite (R,
+                       Unchecked_Convert_To (Etype (L), Relocate_Node (R)));
+                     Analyze_Arithmetic_Op (N);
+
+                  else
+                     Resolve (R, Etype (L));
+                  end if;
                   return;
 
                elsif Is_Numeric_Type (Etype (R))
                  and then not Is_Numeric_Type (Etype (L))
                then
-                  Resolve (L, Etype (R));
+                  if Address_Integer_Convert_OK (Etype (L), Etype (R)) then
+                     Rewrite (L,
+                       Unchecked_Convert_To (Etype (R), Relocate_Node (L)));
+                     Analyze_Arithmetic_Op (N);
+                     return;
+
+                  else
+                     Resolve (L, Etype (R));
+                  end if;
+
                   return;
+
+               elsif Allow_Integer_Address
+                 and then Is_Descendent_Of_Address (Etype (L))
+                 and then Is_Descendent_Of_Address (Etype (R))
+                 and then not Error_Posted (N)
+               then
+                  declare
+                     Addr_Type : constant Entity_Id := Etype (L);
+
+                  begin
+                     Rewrite (L,
+                       Unchecked_Convert_To (
+                         Standard_Integer, Relocate_Node (L)));
+                     Rewrite (R,
+                       Unchecked_Convert_To (
+                         Standard_Integer, Relocate_Node (R)));
+                     Analyze_Arithmetic_Op (N);
+
+                     --  If this is an operand in an enclosing arithmetic
+                     --  operation, Convert the result as an address so that
+                     --  arithmetic folding of address can continue.
+
+                     if Nkind (Parent (N)) in N_Op then
+                        Rewrite (N,
+                          Unchecked_Convert_To (Addr_Type, Relocate_Node (N)));
+                     end if;
+
+                     return;
+                  end;
                end if;
 
             --  Comparisons on A'Access are common enough to deserve a
@@ -6839,8 +6920,8 @@ package body Sem_Ch4 is
 
       if No (Func_Name) then
 
-         --  The prefix itself may be an indexing of a container
-         --  rewrite as such and re-analyze.
+         --  The prefix itself may be an indexing of a container: rewrite
+         --  as such and re-analyze.
 
          if Has_Implicit_Dereference (Etype (Prefix)) then
             Build_Explicit_Dereference

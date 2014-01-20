@@ -3797,10 +3797,10 @@ package body Sem_Ch3 is
                     and then Present (Get_Attribute_Definition_Clause
                                         (E, Attribute_Address))
                   then
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_N
-                       ("??more than one task with same entry address", N);
-                     Error_Msg_N
-                       ("\??Program_Error will be raised at run time", N);
+                       ("more than one task with same entry address<<", N);
+                     Error_Msg_N ("\Program_Error [<<", N);
                      Insert_Action (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Duplicated_Entry_Address));
@@ -3911,7 +3911,7 @@ package body Sem_Ch3 is
       --  Verify whether the object declaration introduces an illegal hidden
       --  state within a package subject to a null abstract state.
 
-      if Formal_Extensions and then Ekind (Id) = E_Variable then
+      if Ekind (Id) = E_Variable then
          Check_No_Hidden_State (Id);
       end if;
    end Analyze_Object_Declaration;
@@ -10084,7 +10084,7 @@ package body Sem_Ch3 is
                --  SPARK mode. Since this is legal code with respect to theorem
                --  proving, do not emit the error.
 
-               if SPARK_Mode
+               if GNATprove_Mode
                  and then Nkind (Exp) = N_Function_Call
                  and then Nkind (Parent (Exp)) = N_Object_Declaration
                  and then not Comes_From_Source
@@ -12223,12 +12223,12 @@ package body Sem_Ch3 is
          --  needed, since checks may cause duplication of the expressions
          --  which must not be reevaluated.
 
-         --  The forced evaluation removes side effects from expressions,
-         --  which should occur also in SPARK mode. Otherwise, we end up with
+         --  The forced evaluation removes side effects from expressions, which
+         --  should occur also in GNATprove mode. Otherwise, we end up with
          --  unexpected insertions of actions at places where this is not
          --  supposed to occur, e.g. on default parameters of a call.
 
-         if Expander_Active then
+         if Expander_Active or GNATprove_Mode then
             Force_Evaluation (Low_Bound (R));
             Force_Evaluation (High_Bound (R));
          end if;
@@ -18780,8 +18780,14 @@ package body Sem_Ch3 is
          --  We need to ensure validity of the bounds here, because if we
          --  go ahead and do the expansion, then the expanded code will get
          --  analyzed with range checks suppressed and we miss the check.
+         --  Validity checks on the range of a quantified expression are
+         --  delayed until the construct is transformed into a loop.
 
-         Validity_Check_Range (R);
+         if Nkind (Parent (R)) /= N_Loop_Parameter_Specification
+           or else Nkind (Parent (Parent (R))) /= N_Quantified_Expression
+         then
+            Validity_Check_Range (R);
+         end if;
 
          --  If there were errors in the declaration, try and patch up some
          --  common mistakes in the bounds. The cases handled are literals
@@ -18791,7 +18797,6 @@ package body Sem_Ch3 is
          --  are guaranteed.
 
          if Etype (R) = Any_Type then
-
             if Nkind (Lo) = N_Integer_Literal and then Is_Real_Type (T) then
                Rewrite (Lo,
                  Make_Real_Literal (Sloc (Lo), UR_From_Uint (Intval (Lo))));
@@ -18865,11 +18870,11 @@ package body Sem_Ch3 is
             --  duplication of the expression without forcing evaluation.
 
             --  The forced evaluation removes side effects from expressions,
-            --  which should occur also in SPARK mode. Otherwise, we end up
+            --  which should occur also in GNATprove mode. Otherwise, we end up
             --  with unexpected insertions of actions at places where this is
             --  not supposed to occur, e.g. on default parameters of a call.
 
-            if Expander_Active then
+            if Expander_Active or GNATprove_Mode then
                Force_Evaluation (Lo);
                Force_Evaluation (Hi);
             end if;
@@ -18980,11 +18985,11 @@ package body Sem_Ch3 is
       --  Case of other than an explicit N_Range node
 
       --  The forced evaluation removes side effects from expressions, which
-      --  should occur also in SPARK mode. Otherwise, we end up with unexpected
-      --  insertions of actions at places where this is not supposed to occur,
-      --  e.g. on default parameters of a call.
+      --  should occur also in GNATprove mode. Otherwise, we end up with
+      --  unexpected insertions of actions at places where this is not
+      --  supposed to occur, e.g. on default parameters of a call.
 
-      elsif Expander_Active then
+      elsif Expander_Active or GNATprove_Mode then
          Get_Index_Bounds (R, Lo, Hi);
          Force_Evaluation (Lo);
          Force_Evaluation (Hi);
@@ -20439,65 +20444,7 @@ package body Sem_Ch3 is
       Set_Ekind          (T, E_Signed_Integer_Subtype);
       Set_Etype          (T, Implicit_Base);
 
-      --  In formal verification mode, restrict the base type's range to the
-      --  minimum allowed by RM 3.5.4, namely the smallest symmetric range
-      --  around zero with a possible extra negative value that contains the
-      --  subtype range. Keep Size, RM_Size and First_Rep_Item info, which
-      --  should not be relied upon in formal verification.
-
-      if SPARK_Strict_Mode then
-         declare
-            Sym_Hi_Val : Uint;
-            Sym_Lo_Val : Uint;
-            Dloc       : constant Source_Ptr := Sloc (Def);
-            Lbound     : Node_Id;
-            Ubound     : Node_Id;
-            Bounds     : Node_Id;
-
-         begin
-            --  If the subtype range is empty, the smallest base type range
-            --  is the symmetric range around zero containing Lo_Val and
-            --  Hi_Val.
-
-            if UI_Gt (Lo_Val, Hi_Val) then
-               Sym_Hi_Val := UI_Max (UI_Abs (Lo_Val), UI_Abs (Hi_Val));
-               Sym_Lo_Val := UI_Negate (Sym_Hi_Val);
-
-               --  Otherwise, if the subtype range is not empty and Hi_Val has
-               --  the largest absolute value, Hi_Val is non negative and the
-               --  smallest base type range is the symmetric range around zero
-               --  containing Hi_Val.
-
-            elsif UI_Le (UI_Abs (Lo_Val), UI_Abs (Hi_Val)) then
-               Sym_Hi_Val := Hi_Val;
-               Sym_Lo_Val := UI_Negate (Hi_Val);
-
-               --  Otherwise, the subtype range is not empty, Lo_Val has the
-               --  strictly largest absolute value, Lo_Val is negative and the
-               --  smallest base type range is the symmetric range around zero
-               --  with an extra negative value Lo_Val.
-
-            else
-               Sym_Lo_Val := Lo_Val;
-               Sym_Hi_Val := UI_Sub (UI_Negate (Lo_Val), Uint_1);
-            end if;
-
-            Lbound := Make_Integer_Literal (Dloc, Sym_Lo_Val);
-            Ubound := Make_Integer_Literal (Dloc, Sym_Hi_Val);
-            Set_Is_Static_Expression (Lbound);
-            Set_Is_Static_Expression (Ubound);
-            Analyze_And_Resolve (Lbound, Any_Integer);
-            Analyze_And_Resolve (Ubound, Any_Integer);
-
-            Bounds := Make_Range (Dloc, Lbound, Ubound);
-            Set_Etype (Bounds, Base_Typ);
-
-            Set_Scalar_Range (Implicit_Base, Bounds);
-         end;
-
-      else
-         Set_Scalar_Range (Implicit_Base, Scalar_Range (Base_Typ));
-      end if;
+      Set_Scalar_Range (Implicit_Base, Scalar_Range (Base_Typ));
 
       Set_Size_Info      (T,                (Implicit_Base));
       Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));

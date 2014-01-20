@@ -56,8 +56,7 @@ package SPARK_Xrefs is
 
    --  SPARK cross-reference information is generated on a unit-by-unit basis
    --  in the ALI file, using lines that start with the identifying character F
-   --  ("Formal").  These lines are generated if -gnatd.E or -gnatd.F (Why
-   --  generation mode) switches are set.
+   --  ("Formal"). These lines are generated if Frame_Condition_Mode is True.
 
    --  The SPARK cross-reference information comes after the shared
    --  cross-reference information, so it needs not be read by tools like

@@ -1,4 +1,11 @@
-2014-01-15  Laurent Alfonsi <laurent.alfonsi@st.com>
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (dump_ada_specs): Revert prototype change.
+	* c-ada-spec.c (dump_ads): Likewise.
+	(cpp_check): Likewise.
+	(dump_ada_specs): Likewise.
+
+2014-01-15  Laurent Alfonsi  <laurent.alfonsi@st.com>
 
 	PR c++/49718
 	* c-common.c (handle_no_instrument_function_attribute): Allow
