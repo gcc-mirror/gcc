@@ -1,3 +1,27 @@
+2014-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/59789
+	* cgraph.c (cgraph_inline_failed_string): Add type to DEFCIFCODE.
+	(cgraph_inline_failed_type): New function.
+	* cgraph.h (DEFCIFCODE): Add type.
+	(cgraph_inline_failed_type_t): New enum.
+	(cgraph_inline_failed_type): New prototype.
+	* cif-code.def: Add CIF_FINAL_NORMAL to OK, FUNCTION_NOT_CONSIDERED,
+	FUNCTION_NOT_OPTIMIZED, REDEFINED_EXTERN_INLINE,
+	FUNCTION_NOT_INLINE_CANDIDATE, LARGE_FUNCTION_GROWTH_LIMIT,
+	LARGE_STACK_FRAME_GROWTH_LIMIT, MAX_INLINE_INSNS_SINGLE_LIMIT,
+	MAX_INLINE_INSNS_AUTO_LIMIT, INLINE_UNIT_GROWTH_LIMIT,
+	RECURSIVE_INLINING, UNLIKELY_CALL, NOT_DECLARED_INLINED,
+	OPTIMIZING_FOR_SIZE, ORIGINALLY_INDIRECT_CALL,
+	INDIRECT_UNKNOWN_CALL, USES_COMDAT_LOCAL. 
+	Add CIF_FINAL_ERROR to UNSPECIFIED, BODY_NOT_AVAILABLE,
+	FUNCTION_NOT_INLINABLE, OVERWRITABLE, MISMATCHED_ARGUMENTS,
+	EH_PERSONALITY, NON_CALL_EXCEPTIONS, TARGET_OPTION_MISMATCH,
+	OPTIMIZATION_MISMATCH.
+	* tree-inline.c (expand_call_inline): Emit errors during
+	early_inlining if cgraph_inline_failed_type returns
+	CIF_FINAL_ERROR.
+
 2014-01-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59685

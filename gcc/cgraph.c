@@ -1877,7 +1877,7 @@ const char*
 cgraph_inline_failed_string (cgraph_inline_failed_t reason)
 {
 #undef DEFCIFCODE
-#define DEFCIFCODE(code, string)	string,
+#define DEFCIFCODE(code, type, string)	string,
 
   static const char *cif_string_table[CIF_N_REASONS] = {
 #include "cif-code.def"
@@ -1887,6 +1887,24 @@ cgraph_inline_failed_string (cgraph_inline_failed_t reason)
      to unsigned before testing. */
   gcc_assert ((unsigned) reason < CIF_N_REASONS);
   return cif_string_table[reason];
+}
+
+/* Return a type describing the failure REASON.  */
+
+cgraph_inline_failed_type_t
+cgraph_inline_failed_type (cgraph_inline_failed_t reason)
+{
+#undef DEFCIFCODE
+#define DEFCIFCODE(code, type, string)	type,
+
+  static cgraph_inline_failed_type_t cif_type_table[CIF_N_REASONS] = {
+#include "cif-code.def"
+  };
+
+  /* Signedness of an enum type is implementation defined, so cast it
+     to unsigned before testing. */
+  gcc_assert ((unsigned) reason < CIF_N_REASONS);
+  return cif_type_table[reason];
 }
 
 /* Names used to print out the availability enum.  */

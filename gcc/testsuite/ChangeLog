@@ -1,3 +1,8 @@
+2014-01-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/59789
+	* gcc.target/i386/pr59789.c: New testcase.
+
 2014-01-20  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* g++.dg/debug/ra1.C (struct tree_base): Change the width of
