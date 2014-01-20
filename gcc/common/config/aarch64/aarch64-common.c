@@ -52,10 +52,10 @@ static const struct default_options aarch_option_optimization_table[] =
 /* Implement TARGET_HANDLE_OPTION.
    This function handles the target specific options for CPU/target selection.
 
-   march wins over mcpu, so when march is defined, mcpu takes the same value,
-   otherwise march remains undefined. mtune can be used with either march or
-   mcpu. If march and mcpu are used together, the rightmost option wins.
-   mtune can be used with either march or mcpu.  */
+   -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
+   If either of -march or -mtune is given, they override their
+   respective component of -mcpu.  This logic is implemented
+   in config/aarch64/aarch64.c:aarch64_override_options.  */
 
 static bool
 aarch64_handle_option (struct gcc_options *opts,
@@ -70,12 +70,10 @@ aarch64_handle_option (struct gcc_options *opts,
     {
     case OPT_march_:
       opts->x_aarch64_arch_string = arg;
-      opts->x_aarch64_cpu_string = arg;
       return true;
 
     case OPT_mcpu_:
       opts->x_aarch64_cpu_string = arg;
-      opts->x_aarch64_arch_string = NULL;
       return true;
 
     case OPT_mtune_:

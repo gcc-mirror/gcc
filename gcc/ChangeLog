@@ -1,3 +1,11 @@
+2014-01-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_handle_option): Don't handle any option order logic here.
+	* config/aarch64/aarch64.c (aarch64_parse_arch): Do not override
+	selected_cpu, warn on architecture version mismatch.
+	(aarch64_override_options): Fix parsing order for option strings.
+
 2014-01-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 	    Iain Sandoe  <iain@codesourcery.com>
 
