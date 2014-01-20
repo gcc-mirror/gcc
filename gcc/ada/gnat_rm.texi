@@ -1431,7 +1431,7 @@ implementation defined).
 
 The implementation defined policy @code{Statement_Assertions}
 applies to @code{Assert}, @code{Assert_And_Cut},
-@code{Assume}, and @code{Loop_Invariant}.
+@code{Assume}, @code{Loop_Invariant}, and @code{Loop_Variant}.
 
 @node Pragma Assume
 @unnumberedsec Pragma Assume

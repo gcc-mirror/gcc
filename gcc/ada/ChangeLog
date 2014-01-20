@@ -1,3 +1,16 @@
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that Loop_Variant is included in
+	Statement_Assertions.
+	* sem_prag.adb (Check_Kind): Add Loop_Variant to
+	Statement_Assertions (Check_Applicable_Policy): Add Loop_Variant
+	to Statement_Assertions.
+
+2014-01-20  Doug Rupp  <rupp@adacore.com>
+
+	* sysdep.c (__gnat_is_file_not_found_error) [vxworks6]: Add case
+	for errno ENOENT from RTP on NFS mounted file system.
+
 2014-01-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Check_Function_Writable_Actuals): 1) Do not

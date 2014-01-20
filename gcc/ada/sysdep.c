@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2012, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2013, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -42,6 +42,12 @@
 #endif
 #include "selectLib.h"
 #include "vxWorks.h"
+#if defined (__RTP__)
+# include "version.h"
+# if (_WRS_VXWORKS_MAJOR == 6)
+#  include "vwModNum.h"
+# endif /* _WRS_VXWORKS_MAJOR == 6 */
+#endif /* __RTP__ */
 #endif
 
 #ifdef __ANDROID__
@@ -920,11 +926,16 @@ __gnat_is_file_not_found_error (int errno_val) {
 #if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
       case S_nfsLib_NFSERR_NOENT:
 #endif
+#if defined (__RTP__) && (_WRS_VXWORKS_MAJOR == 6)
+	/* An RTP can return an NFS file not found, and the NFS bits must
+	   first be masked off to check the errno.  */
+      case M_nfsStat | ENOENT:
+#endif
 #endif
          return 1;
 
       default:
-         return 0;
+        return 0;
    }
 }
 
