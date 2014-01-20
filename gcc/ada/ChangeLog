@@ -1,3 +1,13 @@
+2014-01-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode): Reimplement the routine.
+	(Find_Mode): New routine.
+
+2014-01-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Handle additional
+	Allow_Integer_Address cases.
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi (Allow_Integer_Address): Remove note about not

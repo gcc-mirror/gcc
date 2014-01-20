@@ -953,98 +953,149 @@ package body Sem_Prag is
          Is_Input : Boolean;
          Self_Ref : Boolean)
       is
+         procedure Find_Mode
+           (Is_Input  : out Boolean;
+            Is_Output : out Boolean);
+         --  Find the mode of Item_Id. Flags Is_Input and Is_Output are set
+         --  depending on the mode.
+
+         ---------------
+         -- Find_Mode --
+         ---------------
+
+         procedure Find_Mode
+           (Is_Input  : out Boolean;
+            Is_Output : out Boolean)
+         is
+         begin
+            Is_Input  := False;
+            Is_Output := False;
+
+            --  Abstract state cases
+
+            if Ekind (Item_Id) = E_Abstract_State then
+
+               --  When pragma Global is present, the mode of the state may be
+               --  further constrained by setting a more restrictive mode.
+
+               if Global_Seen then
+                  if Appears_In (Subp_Inputs, Item_Id) then
+                     Is_Input := True;
+                  end if;
+
+                  if Appears_In (Subp_Outputs, Item_Id) then
+                     Is_Output := True;
+                  end if;
+
+               --  Otherwise the mode of the state is the one defined in pragma
+               --  Abstract_State. An In_Out state lacks both Input_Only and
+               --  Output_Only modes.
+
+               elsif not Is_Input_Only_State (Item_Id)
+                 and then not Is_Output_Only_State (Item_Id)
+               then
+                  Is_Input  := True;
+                  Is_Output := True;
+
+               elsif Is_Input_Only_State (Item_Id) then
+                  Is_Input := True;
+
+               elsif Is_Output_Only_State (Item_Id) then
+                  Is_Output := True;
+               end if;
+
+            --  Parameter cases
+
+            elsif Ekind (Item_Id) = E_In_Parameter then
+               Is_Input := True;
+
+            elsif Ekind (Item_Id) = E_In_Out_Parameter then
+               Is_Input  := True;
+               Is_Output := True;
+
+            elsif Ekind (Item_Id) = E_Out_Parameter then
+               if Scope (Item_Id) = Spec_Id then
+
+                  --  An OUT parameter of the related subprogram has mode IN
+                  --  if its type is unconstrained or tagged because array
+                  --  bounds, discriminants or tags can be read.
+
+                  if Is_Unconstrained_Or_Tagged_Item (Item_Id) then
+                     Is_Input := True;
+                  end if;
+
+                  Is_Output := True;
+
+               --  An OUT parameter of an enclosing subprogram behaves as a
+               --  read-write variable in which case the mode is IN OUT.
+
+               else
+                  Is_Input  := True;
+                  Is_Output := True;
+               end if;
+
+            --  Variable cases
+
+            else pragma Assert (Ekind (Item_Id) = E_Variable);
+
+               --  When pragma Global is present, the mode of the variable may
+               --  be further constrained by setting a more restrictive mode.
+
+               if Global_Seen then
+
+                  --  A variable has mode IN when its type is unconstrained or
+                  --  tagged because array bounds, discriminants or tags can be
+                  --  read.
+
+                  if Appears_In (Subp_Inputs, Item_Id)
+                    or else Is_Unconstrained_Or_Tagged_Item (Item_Id)
+                  then
+                     Is_Input := True;
+                  end if;
+
+                  if Appears_In (Subp_Outputs, Item_Id) then
+                     Is_Output := True;
+                  end if;
+
+               --  Otherwise the variable has a default IN OUT mode
+
+               else
+                  Is_Input  := True;
+                  Is_Output := True;
+               end if;
+            end if;
+         end Find_Mode;
+
+         --  Local variables
+
+         Item_Is_Input  : Boolean;
+         Item_Is_Output : Boolean;
+
+      --  Start of processing for Check_Mode
+
       begin
-         --  Input
+         Find_Mode (Item_Is_Input, Item_Is_Output);
+
+         --  Input item
 
          if Is_Input then
-
-            --  IN and IN OUT parameters already have the proper mode to act
-            --  as input. OUT parameters are valid inputs only when their type
-            --  is unconstrained or tagged as their discriminants, array bouns
-            --  or tags can be read. In general, states and variables are
-            --  considered to have mode IN OUT unless they are classified by
-            --  pragma [Refined_]Global. In that case, the item must appear in
-            --  an input global list. OUT parameters of enclosing subprograms
-            --  behave as read-write variables in which case do not emit an
-            --  error.
-
-            if (Ekind (Item_Id) = E_Out_Parameter
-                 and then Scope (Item_Id) = Spec_Id
-                 and then not Is_Unconstrained_Or_Tagged_Item (Item_Id))
-              or else
-                (Global_Seen and then not Appears_In (Subp_Inputs, Item_Id))
-            then
+            if not Item_Is_Input then
                Error_Msg_NE
-                 ("item & must have mode IN or `IN OUT`", Item, Item_Id);
+                 ("item & must have mode `IN` or `IN OUT`", Item, Item_Id);
             end if;
 
-         --  Self-referential output
+         --  Self-referential item
 
          elsif Self_Ref then
-
-            --  In general, states and variables are considered to have mode
-            --  IN OUT unless they are explicitly moded by pragma [Refined_]
-            --  Global. If this is the case, then the item must appear in both
-            --  an input and output global list.
-
-            if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
-               if Global_Seen
-                 and then not
-                   (Appears_In (Subp_Inputs, Item_Id)
-                      and then
-                    Appears_In (Subp_Outputs, Item_Id))
-               then
-                  Error_Msg_NE
-                    ("item & must have mode `IN OUT`", Item, Item_Id);
-               end if;
-
-            --  A self-referential OUT parameter of an unconstrained or tagged
-            --  type acts as an input because the discriminants, array bounds
-            --  or the tag may be read. Note that the presence of [Refined_]
-            --  Global is not significant here because the item is a parameter.
-            --  This rule applies only to the formals of the related subprogram
-            --  as OUT parameters of enclosing subprograms behave as read-write
-            --  variables and their types do not matter.
-
-            elsif Ekind (Item_Id) = E_Out_Parameter
-              and then Scope (Item_Id) = Spec_Id
-              and then Is_Unconstrained_Or_Tagged_Item (Item_Id)
-            then
-               null;
-
-            --  The remaining cases are IN, IN OUT, and OUT parameters. To
-            --  qualify as self-referential item, the parameter must be of
-            --  mode IN OUT or be an IN OUT or OUT parameter of an enclosing
-            --  subprogram.
-
-            elsif Scope (Item_Id) = Spec_Id then
-               if Ekind (Item_Id) /= E_In_Out_Parameter then
-                  Error_Msg_NE
-                    ("item & must have mode `IN OUT`", Item, Item_Id);
-               end if;
-
-            --  Enclosing subprogram parameter
-
-            elsif not Ekind_In (Item_Id, E_In_Out_Parameter,
-                                         E_Out_Parameter)
-            then
-               Error_Msg_NE
-                 ("item & must have mode `IN OUT` or `OUT`", Item, Item_Id);
+            if not Item_Is_Input or else not Item_Is_Output then
+               Error_Msg_NE ("item & must have mode `IN OUT`", Item, Item_Id);
             end if;
 
-         --  Output
+         --  Output item
 
-         --  IN OUT and OUT parameters already have the proper mode to act as
-         --  output. In general, states and variables are considered to have
-         --  mode IN OUT unless they are moded by pragma [Refined_]Global. In
-         --  that case, the item must appear in an output global list.
-
-         elsif Ekind (Item_Id) = E_In_Parameter
-           or else
-             (Global_Seen and then not Appears_In (Subp_Outputs, Item_Id))
-         then
+         elsif not Item_Is_Output then
             Error_Msg_NE
-              ("item & must have mode OUT or `IN OUT`", Item, Item_Id);
+              ("item & must have mode `OUT` or `IN OUT`", Item, Item_Id);
          end if;
       end Check_Mode;
 
