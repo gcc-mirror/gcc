@@ -3039,12 +3039,12 @@ package body Sem_Attr is
                return;
 
             --  For compatibility with Declib code, treat all prefixes as
-            --  legal, including non-discriminated types.
+            --  legal, including non-discriminated types. This is because
+            --  DECLIB uses the obsolescent interpretation of the attribute,
+            --  and applies it to types as well as to objects, while the
+            --  current definition applies to objects of a discriminated type.
 
-            --  ??? this non-conforming language extension needs documenting
-            --  ??? anyway it should not depend on Extend_System!
-
-            elsif Present (System_Extend_Unit) then
+            elsif OpenVMS_On_Target then
                return;
             end if;
          end if;

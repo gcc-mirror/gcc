@@ -298,12 +298,6 @@ procedure Gnat1drv is
          Treat_Categorization_Errors_As_Warnings := True;
       end if;
 
-      --  Set switches for formal verification mode
-
-      if Debug_Flag_Dot_VV then
-         Formal_Extensions := True;
-      end if;
-
       --  Enable GNATprove_Mode when using -gnatd.F switch
 
       if Debug_Flag_Dot_FF then
@@ -314,24 +308,6 @@ procedure Gnat1drv is
       --  executable.
 
       if GNATprove_Mode then
-
-         --  Set strict standard interpretation of compiler permissions
-
-         if Debug_Flag_Dot_DD then
-            SPARK_Strict_Mode := True;
-         end if;
-
-         --  Distinguish between the two modes of gnat2why: frame condition
-         --  generation (generation of ALI files) and analysis (no ALI files
-         --  generated). This is done with the switch -gnatd.G, which activates
-         --  frame condition mode. The other changes in behavior depending on
-         --  this switch are done in gnat2why directly.
-
-         if Debug_Flag_Dot_GG then
-            Frame_Condition_Mode := True;
-         else
-            Opt.Disable_ALI_File := True;
-         end if;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.

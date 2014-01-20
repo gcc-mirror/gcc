@@ -3911,7 +3911,7 @@ package body Sem_Ch3 is
       --  Verify whether the object declaration introduces an illegal hidden
       --  state within a package subject to a null abstract state.
 
-      if Formal_Extensions and then Ekind (Id) = E_Variable then
+      if Ekind (Id) = E_Variable then
          Check_No_Hidden_State (Id);
       end if;
    end Analyze_Object_Declaration;
@@ -20444,65 +20444,7 @@ package body Sem_Ch3 is
       Set_Ekind          (T, E_Signed_Integer_Subtype);
       Set_Etype          (T, Implicit_Base);
 
-      --  In formal verification mode, restrict the base type's range to the
-      --  minimum allowed by RM 3.5.4, namely the smallest symmetric range
-      --  around zero with a possible extra negative value that contains the
-      --  subtype range. Keep Size, RM_Size and First_Rep_Item info, which
-      --  should not be relied upon in formal verification.
-
-      if SPARK_Strict_Mode then
-         declare
-            Sym_Hi_Val : Uint;
-            Sym_Lo_Val : Uint;
-            Dloc       : constant Source_Ptr := Sloc (Def);
-            Lbound     : Node_Id;
-            Ubound     : Node_Id;
-            Bounds     : Node_Id;
-
-         begin
-            --  If the subtype range is empty, the smallest base type range
-            --  is the symmetric range around zero containing Lo_Val and
-            --  Hi_Val.
-
-            if UI_Gt (Lo_Val, Hi_Val) then
-               Sym_Hi_Val := UI_Max (UI_Abs (Lo_Val), UI_Abs (Hi_Val));
-               Sym_Lo_Val := UI_Negate (Sym_Hi_Val);
-
-               --  Otherwise, if the subtype range is not empty and Hi_Val has
-               --  the largest absolute value, Hi_Val is non negative and the
-               --  smallest base type range is the symmetric range around zero
-               --  containing Hi_Val.
-
-            elsif UI_Le (UI_Abs (Lo_Val), UI_Abs (Hi_Val)) then
-               Sym_Hi_Val := Hi_Val;
-               Sym_Lo_Val := UI_Negate (Hi_Val);
-
-               --  Otherwise, the subtype range is not empty, Lo_Val has the
-               --  strictly largest absolute value, Lo_Val is negative and the
-               --  smallest base type range is the symmetric range around zero
-               --  with an extra negative value Lo_Val.
-
-            else
-               Sym_Lo_Val := Lo_Val;
-               Sym_Hi_Val := UI_Sub (UI_Negate (Lo_Val), Uint_1);
-            end if;
-
-            Lbound := Make_Integer_Literal (Dloc, Sym_Lo_Val);
-            Ubound := Make_Integer_Literal (Dloc, Sym_Hi_Val);
-            Set_Is_Static_Expression (Lbound);
-            Set_Is_Static_Expression (Ubound);
-            Analyze_And_Resolve (Lbound, Any_Integer);
-            Analyze_And_Resolve (Ubound, Any_Integer);
-
-            Bounds := Make_Range (Dloc, Lbound, Ubound);
-            Set_Etype (Bounds, Base_Typ);
-
-            Set_Scalar_Range (Implicit_Base, Bounds);
-         end;
-
-      else
-         Set_Scalar_Range (Implicit_Base, Scalar_Range (Base_Typ));
-      end if;
+      Set_Scalar_Range (Implicit_Base, Scalar_Range (Base_Typ));
 
       Set_Size_Info      (T,                (Implicit_Base));
       Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));

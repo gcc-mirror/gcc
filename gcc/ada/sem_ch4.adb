@@ -3690,20 +3690,21 @@ package body Sem_Ch4 is
          Error_Msg_N ("?T?unused variable &", Loop_Id);
       end if;
 
-      --  Diagnose a possible misuse of the "some" existential quantifier. When
+      --  Diagnose a possible misuse of the SOME existential quantifier. When
       --  we have a quantified expression of the form:
 
       --    for some X => (if P then Q [else True])
 
-      --  the if expression will not hold and render the quantified expression
-      --  trivially True.
+      --  any value for X that makes P False results in the if expression being
+      --  trivially True, and so also results in the the quantified expression
+      --  being trivially True.
 
-      if Formal_Extensions
+      if Warn_On_Suspicious_Contract
         and then not All_Present (N)
         and then Nkind (Cond) = N_If_Expression
         and then No_Else_Or_Trivial_True (Cond)
       then
-         Error_Msg_N ("?suspicious expression", N);
+         Error_Msg_N ("?T?suspicious expression", N);
          Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
          Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
       end if;
