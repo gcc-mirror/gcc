@@ -1,4 +1,4 @@
-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -21903,14 +21903,14 @@ package body Sem_Prag is
 
             procedure Collect_Abstract_States (States : Elist_Id) is
                State_Elmt : Elmt_Id;
-
             begin
-               State_Elmt := First_Elmt (States);
-               while Present (State_Elmt) loop
-                  Add_Item (Node (State_Elmt), Hidden_States);
-
-                  Next_Elmt (State_Elmt);
-               end loop;
+               if Present (States) then
+                  State_Elmt := First_Elmt (States);
+                  while Present (State_Elmt) loop
+                     Add_Item (Node (State_Elmt), Hidden_States);
+                     Next_Elmt (State_Elmt);
+                  end loop;
+               end if;
             end Collect_Abstract_States;
 
             --  Local variables
@@ -22147,7 +22147,8 @@ package body Sem_Prag is
                         and then Nam_In (Nam, Name_Assert,
                                               Name_Assert_And_Cut,
                                               Name_Assume,
-                                              Name_Loop_Invariant))
+                                              Name_Loop_Invariant,
+                                              Name_Loop_Variant))
             then
                case (Chars (Get_Pragma_Arg (Last (PPA)))) is
                   when Name_On | Name_Check =>
@@ -22207,10 +22208,11 @@ package body Sem_Prag is
             if Ename = Pnm
               or else Pnm = Name_Assertion
               or else (Pnm = Name_Statement_Assertions
-                        and then (Ename = Name_Assert         or else
-                                  Ename = Name_Assert_And_Cut or else
-                                  Ename = Name_Assume         or else
-                                  Ename = Name_Loop_Invariant))
+                        and then Nam_In (Ename, Name_Assert,
+                                                Name_Assert_And_Cut,
+                                                Name_Assume,
+                                                Name_Loop_Invariant,
+                                                Name_Loop_Variant))
             then
                Policy := Chars (Get_Pragma_Arg (Last (PPA)));
 
