@@ -1995,8 +1995,8 @@ package Opt is
    Frame_Condition_Mode : Boolean := False;
    --  Specific mode to be used in combination with GNATprove_Mode. If set to
    --  true, ALI files containing the frame conditions (global effects) are
-   --  generated, and Why files are *not* generated. If not true, Why files
-   --  are generated. Set by debug flag -gnatd.G.
+   --  generated, and analysis is *not* performed. If not true, analysis is
+   --  performed. Set by debug flag -gnatd.G.
 
    Formal_Extensions : Boolean := False;
    --  When this flag is set, new aspects/pragmas/attributes are accepted,
@@ -2008,12 +2008,11 @@ package Opt is
    --  in a configuration file such as gnat.adc.
 
    GNATprove_Mode : Boolean := False;
-   --  Specific compiling mode targeting formal verification through the
-   --  generation of Why code for those parts of the input code that belong to
-   --  the SPARK 2014 subset of Ada. Set True by the gnat2why executable or by
-   --  use of the -gnatd.F debug switch. Note that this is completely separate
-   --  from the SPARK restriction defined in GNAT to detect violations of a
-   --  subset of SPARK 2005 rules.
+   --  Specific compiling mode targeting formal verification for those parts
+   --  of the input code that belong to the SPARK 2014 subset of Ada. Set True
+   --  by the gnat2why executable or by use of the -gnatd.F debug switch. Note
+   --  that this is completely separate from the SPARK restriction defined in
+   --  GNAT to detect violations of a subset of SPARK 2005 rules.
 
    SPARK_Strict_Mode : Boolean := False;
    --  Interpret compiler permissions as strictly as possible. E.g. base ranges

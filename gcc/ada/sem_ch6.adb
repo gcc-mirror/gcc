@@ -10513,6 +10513,16 @@ package body Sem_Ch6 is
             if Scope (E) /= Current_Scope then
                null;
 
+            --  A function can overload the name of an abstract state. The
+            --  state can be viewed as a function with a profile that cannot
+            --  be matched by anything.
+
+            elsif Ekind (S) = E_Function
+              and then Ekind (E) = E_Abstract_State
+            then
+               Enter_Overloaded_Entity (S);
+               return;
+
             --  Ada 2012 (AI05-0165): For internally generated bodies of null
             --  procedures locate the internally generated spec. We enforce
             --  mode conformance since a tagged type may inherit from

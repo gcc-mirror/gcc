@@ -606,9 +606,9 @@ package body Debug is
    --       ALI files to compute effects of subprograms. Note that ALI files
    --       are only written when option d.G is also given.
 
-   --  d.G  Frame condition mode for gnat2why. In this mode, gnat2why will not
-   --       generate Why code. Instead, it generates ALI files with an extra
-   --       section which contains the effects of subprograms.
+   --  d.G  Frame condition mode for gnat2why. In this mode, gnat2why will
+   --       generate ALI files with an extra section which contains the effects
+   --       of subprograms.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
