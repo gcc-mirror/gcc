@@ -389,7 +389,7 @@ namespace __debug
 			    { return __it == __victim; });
 	    this->_M_invalidate_local_if(
 			    [__victim](_Base_const_local_iterator __it)
-			    { return __it._M_cur == __victim._M_cur; });
+			    { return __it._M_curr() == __victim._M_cur; });
 	    size_type __bucket_count = this->bucket_count();
 	    _Base::erase(__victim);
 	    _M_check_rehashed(__bucket_count);
@@ -407,7 +407,7 @@ namespace __debug
 			{ return __it == __victim; });
 	this->_M_invalidate_local_if(
 			[__victim](_Base_const_local_iterator __it)
-			{ return __it._M_cur == __victim._M_cur; });
+			{ return __it._M_curr() == __victim._M_cur; });
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__it.base()); 
 	_M_check_rehashed(__bucket_count);
@@ -433,7 +433,7 @@ namespace __debug
 			    { return __it == __tmp; });
 	    this->_M_invalidate_local_if(
 			    [__tmp](_Base_const_local_iterator __it)
-			    { return __it._M_cur == __tmp._M_cur; });
+			    { return __it._M_curr() == __tmp._M_cur; });
 	  }
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__first.base(), __last.base());
@@ -842,7 +842,7 @@ namespace __debug
 			    { return __it == __victim; });
 	    this->_M_invalidate_local_if(
 			    [__victim](_Base_const_local_iterator __it)
-			    { return __it._M_cur == __victim._M_cur; });
+			    { return __it._M_curr() == __victim._M_cur; });
 	    _Base::erase(__victim++);
 	    ++__ret;
 	  }
@@ -859,7 +859,7 @@ namespace __debug
 			{ return __it == __victim; });
 	this->_M_invalidate_local_if(
 			[__victim](_Base_const_local_iterator __it)
-			{ return __it._M_cur == __victim._M_cur; });
+			{ return __it._M_curr() == __victim._M_cur; });
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__it.base());
 	_M_check_rehashed(__bucket_count);
@@ -885,7 +885,7 @@ namespace __debug
 			    { return __it == __tmp; });
 	    this->_M_invalidate_local_if(
 			    [__tmp](_Base_const_local_iterator __it)
-			    { return __it._M_cur == __tmp._M_cur; });
+			    { return __it._M_curr() == __tmp._M_cur; });
 	  }
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __next = _Base::erase(__first.base(), __last.base());
