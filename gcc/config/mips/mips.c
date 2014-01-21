@@ -11883,6 +11883,7 @@ mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
   switch (from)
     {
+    case M16_REGS:
     case GENERAL_REGS:
       /* A MIPS16 MOVE instruction, or a non-MIPS16 MOVE macro.  */
       return 2;
@@ -11919,6 +11920,7 @@ mips_move_from_gpr_cost (enum machine_mode mode, reg_class_t to)
 {
   switch (to)
     {
+    case M16_REGS:
     case GENERAL_REGS:
       /* A MIPS16 MOVE instruction, or a non-MIPS16 MOVE macro.  */
       return 2;

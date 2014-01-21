@@ -1,3 +1,8 @@
+2014-01-21  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_move_to_gpr_cost): Add M16_REGS case.
+	(mips_move_from_gpr_cost): Likewise.
+
 2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59858
