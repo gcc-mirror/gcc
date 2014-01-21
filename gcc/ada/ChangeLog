@@ -1,3 +1,43 @@
+2014-01-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): For
+	derivations of interfaces, do not move the the initialization
+	of the _parent field since such assignment is not generated.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Rewrite_Renamed_Operator): Do not replace entity
+	with the operator it renames if we are within an expression of
+	a pre/postcondition, because the expression will be reanalyzed
+	at a later point, and the analysis of the renaming may affect
+	the visibility of the operator when in an instance.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, sinfo.adb: Change Do_Discriminant_Check to use new Flag1.
+	Add this flag to type conversion nodes and assignment nodes.
+	* treepr.adb: Deal properly with Flag 1,2,3.
+	* treeprs.adt: Minor comment update.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Known_Value): Add Ignore_CRT
+	parameter.
+	* sem_eval.ads (Compile_Time_Known_Value): Add Ignore_CRT
+	parameter, completely rewrite spec.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Install_Withed_Unit): If the unit is a subprogram
+	instance that is inlined, it may have been rewritten as a wrapper
+	package. In that case the unit that must be made visible is the
+	related instance of the package.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Selective_Accept.Add_Accept): Refine
+	previous change in codepeer mode.
+
 2014-01-21  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Selective_Accept.Add_Accept): Always add

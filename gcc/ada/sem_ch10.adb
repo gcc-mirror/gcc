@@ -5156,6 +5156,14 @@ package body Sem_Ch10 is
 
             Set_Is_Visible_Lib_Unit (Uname);
 
+            --  If the unit is a wrapper package for a compilation unit that is
+            --  a subprogrm instance, indicate that the instance itself is a
+            --  visible unit. This is necessary if the instance is inlined.
+
+            if Is_Wrapper_Package (Uname) then
+               Set_Is_Visible_Lib_Unit (Related_Instance (Uname));
+            end if;
+
             --  If the child unit appears in the context of its parent, it is
             --  immediately visible.
 
@@ -6447,6 +6455,7 @@ package body Sem_Ch10 is
 
       --  If the unit is a wrapper package, the subprogram instance is
       --  what must be removed from visibility.
+      --  Should we use Related_Instance instead???
 
       if Is_Wrapper_Package (Unit_Name) then
          Set_Is_Immediately_Visible (Current_Entity (Unit_Name), False);

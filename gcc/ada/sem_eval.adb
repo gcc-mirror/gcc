@@ -1287,7 +1287,10 @@ package body Sem_Eval is
    -- Compile_Time_Known_Value --
    ------------------------------
 
-   function Compile_Time_Known_Value (Op : Node_Id) return Boolean is
+   function Compile_Time_Known_Value
+     (Op         : Node_Id;
+      Ignore_CRT : Boolean := False) return Boolean
+   is
       K      : constant Node_Kind := Nkind (Op);
       CV_Ent : CV_Entry renames CV_Cache (Nat (Op) mod CV_Cache_Size);
 
@@ -1311,9 +1314,9 @@ package body Sem_Eval is
       --  time. This avoids anomalies where whether something is allowed with a
       --  given configurable run-time library depends on how good the compiler
       --  is at optimizing and knowing that things are constant when they are
-      --  nonstatic.
+      --  nonstatic. This check is suppressed if Ignore_CRT is True
 
-      if Configurable_Run_Time_Mode
+      if (Configurable_Run_Time_Mode and not Ignore_CRT)
         and then K /= N_Null
         and then not Is_Static_Expression (Op)
       then
@@ -1326,7 +1329,6 @@ package body Sem_Eval is
            and then Etype (Entity (Op)) = Standard_Boolean
          then
             null;
-
          else
             return False;
          end if;

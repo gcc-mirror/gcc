@@ -930,8 +930,10 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Selected_Component);
-      return Flag13 (N);
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Selected_Component
+        or else NT (N).Nkind = N_Type_Conversion);
+      return Flag1 (N);
    end Do_Discriminant_Check;
 
    function Do_Division_Check
@@ -4078,8 +4080,10 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Selected_Component);
-      Set_Flag13 (N, Val);
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Selected_Component
+        or else NT (N).Nkind = N_Type_Conversion);
+      Set_Flag1 (N, Val);
    end Set_Do_Discriminant_Check;
 
    procedure Set_Do_Division_Check

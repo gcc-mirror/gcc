@@ -10301,6 +10301,14 @@ package body Sem_Res is
       Op_Node   : Node_Id;
 
    begin
+      --  Do not perform this transformation within a pre/postcondition,
+      --  because the expression will be re-analyzed, and the transformation
+      --  might affect the visibility of the operator, e.g. in an instance.
+
+      if In_Assertion_Expr > 0 then
+         return;
+      end if;
+
       --  Rewrite the operator node using the real operator, not its renaming.
       --  Exclude user-defined intrinsic operations of the same name, which are
       --  treated separately and rewritten as calls.
