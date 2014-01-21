@@ -3677,13 +3677,20 @@ package body Sem_Ch4 is
                --  The parser cannot distinguish between a loop specification
                --  and an iterator specification. If after pre-analysis the
                --  proper form has been recognized, rewrite the expression to
-               --  reflect the right kind. The analysis of the loop has been
-               --  performed on a copy that has the proper iterator form. This
-               --  is needed in particular for ASIS navigation.
+               --  reflect the right kind. This is needed for proper ASIS
+               --  navigation. If expansion is enabled, the transformation is
+               --  performed when the expression is rewritten as a loop.
 
-               Set_Loop_Parameter_Specification (N, Empty);
                Set_Iterator_Specification (N,
                  New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+
+               Set_Defining_Identifier (Iterator_Specification (N),
+                 Relocate_Node (Defining_Identifier (Loop_Par)));
+               Set_Name (Iterator_Specification (N),
+                 Relocate_Node (Discrete_Subtype_Definition (Loop_Par)));
+               Set_Comes_From_Source (Iterator_Specification (N),
+                 Comes_From_Source (Loop_Parameter_Specification (N)));
+               Set_Loop_Parameter_Specification (N, Empty);
             end if;
          end;
       end if;

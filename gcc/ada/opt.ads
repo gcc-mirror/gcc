@@ -1272,6 +1272,11 @@ package Opt is
    --  GNAT
    --  Current SPARK mode setting
 
+   SPARK_Switches_File_Name : String_Ptr := null;
+   --  GNAT
+   --  Set to non-null file name by use of the -gnates switch to specify
+   --  SPARK (gnat2why) specific switches in the given file name.
+
    Special_Exception_Package_Used : Boolean := False;
    --  GNAT
    --  Set to True if either of the unit GNAT.Most_Recent_Exception or

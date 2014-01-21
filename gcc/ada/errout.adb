@@ -2976,13 +2976,13 @@ package body Errout is
 
       elsif Msg = "size for& too small, minimum allowed is ^" then
 
-         --  Suppress "size too small" errors in CodePeer mode and SPARK mode,
-         --  since pragma Pack is also ignored in these configurations.
+         --  Suppress "size too small" errors in CodePeer mode, since code may
+         --  be analyzed in a different configuration than the one used for
+         --  compilation. Even when the configurations match, this message
+         --  may be issued on correct code, because pragma Pack is ignored
+         --  in CodePeer mode.
 
-         --  At least the comment is bogus, since you can have this message
-         --  with no pragma Pack in sight! ???
-
-         if CodePeer_Mode or GNATprove_Mode then
+         if CodePeer_Mode then
             return True;
 
          --  When a size is wrong for a frozen type there is no explicit size

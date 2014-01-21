@@ -373,12 +373,6 @@ procedure Gnat1drv is
 
          Operating_Mode := Check_Semantics;
 
-         --  Skip call to gigi
-
-         --  This debug flag is not documented, AARGH! ???
-
-         Debug_Flag_HH := True;
-
          --  Enable assertions, since they give valuable extra information for
          --  formal verification.
 

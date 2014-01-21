@@ -1,3 +1,37 @@
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* atree.adb, atree.ads (Num_Extension_Nodes): Switch to Node_Id, since
+	this is value is used in Node_Id arithmetic operations.
+	(Copy_Node, Exchange_Entities): Use loops indexed by Num_Extension_Nodes
+	instead of hard-coded unrolled code.
+
+2014-01-21  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb: Minor code cleanup, removing useless code.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads (SPARK_Switches_File_Name): New.
+	* switch-c.adb (Scan_Front_End_Switches): Add handling of -gnates=xxx *
+	* usage.adb (Usage): Document -gnates, in gnatprove mode only.
+	* gnat_ugn.texi: Document -gnates.
+
+2014-01-21  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Special_Msg_Delete): Update comment. Remove
+	special case for GNATprove which should not ignore mismatch
+	in sizes for representation clauses.
+	* sem_prag.adb (Analyze_Pragma): Remove special case for GNATprove
+	which should not ignore pragma Pack.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: Code clean up.
+
+2014-01-21  Steve Baird  <baird@adacore.com>
+
+	* gnat_rm.texi: Improve GNAT RM description of SPARK_Mode pragma.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* gcc-interface/gigi.h: Get Flags array address.
