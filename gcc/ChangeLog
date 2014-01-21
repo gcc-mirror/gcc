@@ -1,3 +1,9 @@
+2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59896
+	* lra-constraints.c (process_alt_operands): Check unused note for
+	matched operands of insn with no output reloads.
+
 2014-01-21  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_move_to_gpr_cost): Add M16_REGS case.
