@@ -1127,7 +1127,7 @@ package body Exp_Pakd is
 
       --  The name of the packed array subtype is
 
-      --    ttt___Xsss
+      --    ttt___XPsss
 
       --  where sss is the component size in bits and ttt is the name of
       --  the parent packed type.
@@ -1565,7 +1565,7 @@ package body Exp_Pakd is
          declare
             T : constant Entity_Id := Etype (Obj);
          begin
-            New_Lhs := Duplicate_Subexpr (Obj, True);
+            New_Lhs := Duplicate_Subexpr (Obj, Name_Req => True);
             New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
             Set_Etype (Obj, T);
             Set_Etype (New_Lhs, T);

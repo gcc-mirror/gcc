@@ -11117,18 +11117,17 @@ package body Sem_Ch6 is
             Null_Exclusion_Static_Checks (Param_Spec);
          end if;
 
-         --  The following check is only relevant in formal verification mode
-         --  as it is not a standard Ada legality rule. A function cannot have
-         --  a volatile formal parameter.
+         --  A function cannot have a volatile formal parameter. The following
+         --  check is relevant when SPARK_Mode is on as it is not a standard
+         --  Ada legality rule.
 
-         --  Need to mention this is a SPARK rule, with SPARK RM reference ???
-
-         if GNATprove_Mode
+         if SPARK_Mode = On
            and then Is_Volatile_Object (Formal)
            and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
          then
             Error_Msg_N
-              ("function cannot have a volatile formal parameter", Formal);
+              ("function cannot have a volatile formal parameter (SPARK RM "
+               & "7.1.3(6))", Formal);
          end if;
 
       <<Continue>>

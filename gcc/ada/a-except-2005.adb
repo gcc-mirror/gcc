@@ -315,12 +315,9 @@ package body Ada.Exceptions is
    --  occurrence and in addition a column and a string message M may be
    --  appended to this (if not null/0).
 
-   procedure Raise_Constraint_Error
-     (File : System.Address;
-      Line : Integer);
+   procedure Raise_Constraint_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Constraint_Error);
-   pragma Export
-     (C, Raise_Constraint_Error, "__gnat_raise_constraint_error");
+   pragma Export (C, Raise_Constraint_Error, "__gnat_raise_constraint_error");
    --  Raise constraint error with file:line information
 
    procedure Raise_Constraint_Error_Msg
@@ -333,12 +330,9 @@ package body Ada.Exceptions is
      (C, Raise_Constraint_Error_Msg, "__gnat_raise_constraint_error_msg");
    --  Raise constraint error with file:line:col + msg information
 
-   procedure Raise_Program_Error
-     (File : System.Address;
-      Line : Integer);
+   procedure Raise_Program_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Program_Error);
-   pragma Export
-     (C, Raise_Program_Error, "__gnat_raise_program_error");
+   pragma Export (C, Raise_Program_Error, "__gnat_raise_program_error");
    --  Raise program error with file:line information
 
    procedure Raise_Program_Error_Msg
@@ -350,12 +344,9 @@ package body Ada.Exceptions is
      (C, Raise_Program_Error_Msg, "__gnat_raise_program_error_msg");
    --  Raise program error with file:line + msg information
 
-   procedure Raise_Storage_Error
-     (File : System.Address;
-      Line : Integer);
+   procedure Raise_Storage_Error (File : System.Address; Line : Integer);
    pragma No_Return (Raise_Storage_Error);
-   pragma Export
-     (C, Raise_Storage_Error, "__gnat_raise_storage_error");
+   pragma Export (C, Raise_Storage_Error, "__gnat_raise_storage_error");
    --  Raise storage error with file:line information
 
    procedure Raise_Storage_Error_Msg
@@ -372,10 +363,10 @@ package body Ada.Exceptions is
    --  graph below illustrates the relations between the Raise_ subprograms
    --  and identifies the points where basic flags such as Exception_Raised
    --  are initialized.
-   --
+
    --  (i) signs indicate the flags initialization points. R stands for Raise,
    --  W for With, and E for Exception.
-   --
+
    --                   R_No_Msg    R_E   R_Pe  R_Ce  R_Se
    --                       |        |     |     |     |
    --                       +--+  +--+     +---+ | +---+
@@ -391,10 +382,10 @@ package body Ada.Exceptions is
    procedure Reraise;
    pragma No_Return (Reraise);
    pragma Export (C, Reraise, "__gnat_reraise");
-   --  Reraises the exception referenced by the Current_Excep field of
-   --  the TSD (all fields of this exception occurrence are set). Abort
-   --  is deferred before the reraise operation.
-   --  Called from System.Tasking.RendezVous.Exceptional_Complete_RendezVous
+   --  Reraises the exception referenced by the Current_Excep field
+   --  of the TSD (all fields of this exception occurrence are set).
+   --  Abort is deferred before the reraise operation. Called from
+   --  System.Tasking.RendezVous.Exceptional_Complete_RendezVous
 
    procedure Transfer_Occurrence
      (Target : Exception_Occurrence_Access;
@@ -774,9 +765,9 @@ package body Ada.Exceptions is
    begin
       if X.Id = Null_Id then
          raise Constraint_Error;
+      else
+         return Exception_Data.Exception_Information (X);
       end if;
-
-      return Exception_Data.Exception_Information (X);
    end Exception_Information;
 
    -----------------------
@@ -787,9 +778,9 @@ package body Ada.Exceptions is
    begin
       if X.Id = Null_Id then
          raise Constraint_Error;
+      else
+         return X.Msg (1 .. X.Msg_Length);
       end if;
-
-      return X.Msg (1 .. X.Msg_Length);
    end Exception_Message;
 
    --------------------
@@ -800,9 +791,9 @@ package body Ada.Exceptions is
    begin
       if Id = null then
          raise Constraint_Error;
+      else
+         return To_Ptr (Id.Full_Name) (1 .. Id.Name_Length - 1);
       end if;
-
-      return To_Ptr (Id.Full_Name) (1 .. Id.Name_Length - 1);
    end Exception_Name;
 
    function Exception_Name (X : Exception_Occurrence) return String is
@@ -839,8 +830,8 @@ package body Ada.Exceptions is
    --------------------
 
    package body Exception_Data is separate;
-   --  This package can be easily dummied out if we do not want the
-   --  basic support for exception messages (such as in Ada 83).
+   --  This package can be easily dummied out if we do not want the basic
+   --  support for exception messages (such as in Ada 83).
 
    ---------------------------
    -- Exception_Propagation --
@@ -856,10 +847,10 @@ package body Ada.Exceptions is
    ----------------------
 
    package body Exception_Traces is separate;
-   --  Depending on the underlying support for IO the implementation
-   --  will differ. Moreover we would like to dummy out this package
-   --  in case we do not want any exception tracing support. This is
-   --  why this package is separated.
+   --  Depending on the underlying support for IO the implementation will
+   --  differ. Moreover we would like to dummy out this package in case we
+   --  do not want any exception tracing support. This is why this package
+   --  is separated.
 
    --------------------------------------
    -- Get_Exception_Machine_Occurrence --
@@ -1011,6 +1002,7 @@ package body Ada.Exceptions is
       Message : String := "")
    is
       X : constant EOA := Exception_Propagation.Allocate_Occurrence;
+
    begin
       Exception_Data.Set_Exception_Msg (X, E, Message);
 
@@ -1029,10 +1021,11 @@ package body Ada.Exceptions is
       Prefix             : constant String := "adjust/finalize raised ";
       Orig_Msg           : constant String := Exception_Message (X);
       Orig_Prefix_Length : constant Natural :=
-        Integer'Min (Prefix'Length, Orig_Msg'Length);
-      Orig_Prefix        : String renames Orig_Msg
-        (Orig_Msg'First ..
-         Orig_Msg'First + Orig_Prefix_Length - 1);
+                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+
+      Orig_Prefix : String renames
+        Orig_Msg (Orig_Msg'First .. Orig_Msg'First + Orig_Prefix_Length - 1);
+
    begin
       --  Message already has the proper prefix, just re-raise
 
@@ -1526,6 +1519,7 @@ package body Ada.Exceptions is
    procedure Reraise is
       Excep    : constant EOA := Exception_Propagation.Allocate_Occurrence;
       Saved_MO : constant System.Address := Excep.Machine_Occurrence;
+
    begin
       if not ZCX_By_Default then
          Abort_Defer.all;
@@ -1542,9 +1536,11 @@ package body Ada.Exceptions is
 
    procedure Reraise_Library_Exception_If_Any is
       LE : Exception_Occurrence;
+
    begin
       if Library_Exception_Set then
          LE := Library_Exception;
+
          if LE.Id = Null_Id then
             Raise_Exception_No_Defer
               (E       => Program_Error'Identity,
@@ -1563,9 +1559,9 @@ package body Ada.Exceptions is
    begin
       if X.Id = null then
          return;
+      else
+         Reraise_Occurrence_Always (X);
       end if;
-
-      Reraise_Occurrence_Always (X);
    end Reraise_Occurrence;
 
    -------------------------------
@@ -1646,10 +1642,8 @@ package body Ada.Exceptions is
 
    procedure To_Stderr (C : Character) is
       type int is new Integer;
-
       procedure put_char_stderr (C : int);
       pragma Import (C, put_char_stderr, "put_char_stderr");
-
    begin
       put_char_stderr (Character'Pos (C));
    end To_Stderr;
@@ -1681,7 +1675,6 @@ package body Ada.Exceptions is
 
    function Triggered_By_Abort return Boolean is
       Ex : constant Exception_Occurrence_Access := Get_Current_Excep.all;
-
    begin
       return Ex /= null
         and then Exception_Identity (Ex.all) = Standard'Abort_Signal'Identity;

@@ -1877,14 +1877,17 @@ package body Sem_Prag is
                Check_Mode_Restriction_In_Enclosing_Context (Item, Item_Id);
             end if;
 
-            --  A volatile object cannot appear as a global item of a function
+            --  A volatile object cannot appear as a global item of a function.
+            --  This check is only relevant when SPARK_Mode is on as it is not
+            --  a standard Ada legality rule.
 
-            if Is_Volatile_Object (Item)
+            if SPARK_Mode = On
+              and then Is_Volatile_Object (Item)
               and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
             then
                Error_Msg_N
-                 ("volatile object cannot act as global item of a function",
-                  Item);
+                 ("volatile object cannot act as global item of a function "
+                  & "(SPARK RM 7.1.3(5))", Item);
             end if;
 
             --  The same entity might be referenced through various way. Check

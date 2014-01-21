@@ -2157,6 +2157,22 @@ package body Sem_Ch13 is
 
                      Prepend_To (Decls, Aitem);
                      goto Continue;
+
+                  --  When the aspect is associated with package declaration,
+                  --  insert the generated pragma at the top of the visible
+                  --  declarations to emulate the behavior of a source pragma.
+
+                  elsif Nkind (N) = N_Package_Declaration then
+                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decls := Visible_Declarations (Specification (N));
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (Specification (N), Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+                     goto Continue;
                   end if;
                end SPARK_Mode;
 

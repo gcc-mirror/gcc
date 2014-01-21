@@ -1,3 +1,25 @@
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Update comment, minor reformatting.
+
+2014-01-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Variable_Contract): Trigger the volatile
+	object check when SPARK_Mode is on.
+	* sem_ch6.adb (Process_Formals): Trigger the volatile object
+	check when SPARK_Mode is on.
+	* sem_ch12.adb (Instantiate_Object): Trigger the volatile object
+	check when SPARK_Mode is on.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Insert the
+	corresponding pragma of aspect SPARK_Mode in the visible
+	declarations of a package declaration.
+	* sem_prag.adb (Analyze_Pragma): Trigger the volatile object
+	check when SPARK_Mode is on.
+	* sem_res.adb (Resolve_Actuals): Trigger the volatile object
+	check when SPARK_Mode is on.
+	(Resolve_Entity_Name): Trigger
+	the volatile object check when SPARK_Mode is on.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_prag.adb, sem_prag.ads, sem_ch12.adb, sem_res.adb,
