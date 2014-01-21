@@ -1,3 +1,7 @@
+2014-01-21  Barch Siach <barch@tkos.co.il>
+
+	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
+
 2014-01-09  Rong Xu  <xur@google.com>
 
 	* libgcov-driver.c (this_prg): make it local to save
