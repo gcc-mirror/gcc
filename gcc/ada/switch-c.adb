@@ -686,7 +686,9 @@ package body Switch.C is
                   --  -gnateS (generate SCO information)
 
                   --  Include Source Coverage Obligation information in ALI
-                  --  files for use by source coverage analysis tools (xcov).
+                  --  files for use by source coverage analysis tools
+                  --  (gnatcov) (equivalent to -fdump-scos, provided for
+                  --  backwards compatibility).
 
                   when 'S' =>
                      Generate_SCO := True;

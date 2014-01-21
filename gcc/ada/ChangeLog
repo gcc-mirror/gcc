@@ -1,3 +1,28 @@
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb: Fix comment.
+	* switch-c.adb: Minor comment update.
+	* exp_ch3.adb: Minor reformatting.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* back_end.adb (Scan_Compiler_Arguments): Do not store object
+	filename in gnatprove mode.
+
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads (No_Ctrl_Actions): Clarify documentation (flag also
+	suppresses usage of primitive _assign for tagged types).
+	* exp_aggr.adb (Build_Array_Aggr_Code.Gen_Assign): Set
+	No_Ctrl_Actions for a tagged type that does not require
+	finalization, as we want to disable usage of _assign (which
+	may cause undesirable discriminant checks on an uninitialized,
+	invalid target).
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: Reject invariant'class on completion.
+
 2014-01-21  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Build_Init_Procedure): For
