@@ -1,3 +1,13 @@
+2014-01-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_External_Property): Add processing for "others".
+	(Analyze_Pragma): Update the grammar of pragma Abstract_State to
+	include "others".
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Minor updates.
+
 2014-01-21  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_pakd.adb: Update comment, minor reformatting.
