@@ -9840,6 +9840,16 @@ package body Sem_Ch12 is
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
+      --  The following check is only relevant in formal verification mode as
+      --  it is not a standard Ada legality rule. A volatile object cannot be
+      --  used as an actual in a generic instantiation.
+
+      if GNATprove_Mode and then Is_Volatile_Object (Actual) then
+         Error_Msg_N
+           ("volatile object cannot act as actual in generic instantiation",
+            Actual);
+      end if;
+
       return List;
    end Instantiate_Object;
 

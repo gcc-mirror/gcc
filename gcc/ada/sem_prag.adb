@@ -1637,6 +1637,53 @@ package body Sem_Prag is
       end if;
    end Analyze_Depends_In_Decl_Part;
 
+   -----------------------------------------
+   -- Analyze_External_State_In_Decl_Part --
+   -----------------------------------------
+
+   procedure Analyze_External_State_In_Decl_Part
+     (N        : Node_Id;
+      Expr_Val : out Boolean)
+   is
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Obj  : constant Node_Id := Get_Pragma_Arg (Arg1);
+      Expr : constant Node_Id := Get_Pragma_Arg (Next (Arg1));
+
+   begin
+      Error_Msg_Name_1 := Pragma_Name (N);
+
+      --  The Async / Effective pragmas must apply to a volatile object other
+      --  than a formal subprogram parameter.
+
+      if Is_Volatile_Object (Obj) then
+         if Is_Entity_Name (Obj)
+           and then Present (Entity (Obj))
+           and then Is_Formal (Entity (Obj))
+         then
+            Error_Msg_N
+              ("external state % cannot apply to a formal parameter", N);
+         end if;
+      else
+         Error_Msg_N ("external state % must apply to a volatile object", N);
+      end if;
+
+      --  Ensure that the expression (if present) is static Boolean. A missing
+      --  argument defaults the value to True.
+
+      Expr_Val := True;
+
+      if Present (Expr) then
+         Analyze_And_Resolve (Expr, Standard_Boolean);
+
+         if Is_Static_Expression (Expr) then
+            Expr_Val := Is_True (Expr_Value (Expr));
+         else
+            Error_Msg_Name_1 := Pragma_Name (N);
+            Error_Msg_N ("expression of % must be static", Expr);
+         end if;
+      end if;
+   end Analyze_External_State_In_Decl_Part;
+
    ---------------------------------
    -- Analyze_Global_In_Decl_Part --
    ---------------------------------
@@ -1828,6 +1875,16 @@ package body Sem_Prag is
 
             if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                Check_Mode_Restriction_In_Enclosing_Context (Item, Item_Id);
+            end if;
+
+            --  A volatile object cannot appear as a global item of a function
+
+            if Is_Volatile_Object (Item)
+              and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+            then
+               Error_Msg_N
+                 ("volatile object cannot act as global item of a function",
+                  Item);
             end if;
 
             --  The same entity might be referenced through various way. Check
@@ -9429,28 +9486,48 @@ package body Sem_Prag is
          --  ABSTRACT_STATE_LIST ::=
          --    null
          --  | STATE_NAME_WITH_OPTIONS
-         --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS})
+         --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS} )
 
          --  STATE_NAME_WITH_OPTIONS ::=
-         --    state_NAME
-         --  | (state_NAME with OPTION_LIST)
+         --    STATE_NAME
+         --  | (STATE_NAME with OPTION_LIST)
 
          --  OPTION_LIST ::= OPTION {, OPTION}
 
-         --  OPTION ::= SIMPLE_OPTION | NAME_VALUE_OPTION
+         --  OPTION ::=
+         --    SIMPLE_OPTION
+         --  | NAME_VALUE_OPTION
 
-         --  SIMPLE_OPTION ::=
-         --    External | Non_Volatile | Input_Only | Output_Only
+         --  SIMPLE_OPTION ::= identifier
 
-         --  NAME_VALUE_OPTION ::= Part_Of => abstract_state_NAME
+         --  NAME_VALUE_OPTION ::=
+         --    Part_Of => ABSTRACT_STATE
+         --  | External [=> EXTERNAL_PROPERTY_LIST]
+
+         --  EXTERNAL_PROPERTY_LIST ::=
+         --    EXTERNAL_PROPERTY
+         --  | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
+
+         --  EXTERNAL_PROPERTY ::=
+         --    Async_Readers    [=> boolean_EXPRESSION]
+         --  | Async_Writers    [=> boolean_EXPRESSION]
+         --  | Effective_Reads  [=> boolean_EXPRESSION]
+         --  | Effective_Writes [=> boolean_EXPRESSION]
+
+         --  STATE_NAME ::= defining_identifier
+
+         --  ABSTRACT_STATE ::= name
 
          when Pragma_Abstract_State => Abstract_State : declare
-            Pack_Id : Entity_Id;
 
             --  Flags used to verify the consistency of states
 
             Non_Null_Seen : Boolean := False;
             Null_Seen     : Boolean := False;
+
+            Pack_Id : Entity_Id;
+            --  The entity of the related package when pragma Abstract_State
+            --  appears.
 
             procedure Analyze_Abstract_State (State : Node_Id);
             --  Verify the legality of a single state declaration. Create and
@@ -9462,12 +9539,200 @@ package body Sem_Prag is
             ----------------------------
 
             procedure Analyze_Abstract_State (State : Node_Id) is
+
+               --  Flags used to verify the consistency of options
+
+               AR_Seen       : Boolean := False;
+               AW_Seen       : Boolean := False;
+               ER_Seen       : Boolean := False;
+               EW_Seen       : Boolean := False;
+               External_Seen : Boolean := False;
+               Part_Of_Seen  : Boolean := False;
+
+               --  Flags used to store the static value of all external states'
+               --  expressions.
+
+               AR_Val : Boolean := False;
+               AW_Val : Boolean := False;
+               ER_Val : Boolean := False;
+               EW_Val : Boolean := False;
+
+               procedure Analyze_External_Option (Opt : Node_Id);
+               --  Verify the legality of option External
+
+               procedure Analyze_External_Property
+                 (Prop : Node_Id;
+                  Expr : Node_Id := Empty);
+               --  Verify the legailty of a single external property. Prop
+               --  denotes the external property. Expr is the expression used
+               --  to set the property.
+
+               procedure Analyze_Part_Of_Option (Opt : Node_Id);
+               --  Verify the legality of option Part_Of
+
                procedure Check_Duplicate_Option
                  (Opt    : Node_Id;
                   Status : in out Boolean);
                --  Flag Status denotes whether a particular option has been
                --  seen while processing a state. This routine verifies that
                --  Opt is not a duplicate property and sets the flag Status.
+
+               -----------------------------
+               -- Analyze_External_Option --
+               -----------------------------
+
+               procedure Analyze_External_Option (Opt : Node_Id) is
+                  Errors : constant Nat := Serious_Errors_Detected;
+                  Prop   : Node_Id;
+                  Props  : Node_Id := Empty;
+
+               begin
+                  Check_Duplicate_Option (Opt, External_Seen);
+
+                  if Nkind (Opt) = N_Component_Association then
+                     Props := Expression (Opt);
+                  end if;
+
+                  --  External state with properties
+
+                  if Present (Props) then
+
+                     --  Multiple properties appear as an aggregate
+
+                     if Nkind (Props) = N_Aggregate then
+
+                        --  Simple property form
+
+                        Prop := First (Expressions (Props));
+                        while Present (Prop) loop
+                           Analyze_External_Property (Prop);
+                           Next (Prop);
+                        end loop;
+
+                        --  Property with expression form
+
+                        Prop := First (Component_Associations (Props));
+                        while Present (Prop) loop
+                           Analyze_External_Property
+                             (Prop => First (Choices (Prop)),
+                              Expr => Expression (Prop));
+
+                           Next (Prop);
+                        end loop;
+
+                     --  Single property
+
+                     else
+                        Analyze_External_Property (Props);
+                     end if;
+
+                  --  An external state defined without any properties defaults
+                  --  all properties to True.
+
+                  else
+                     AR_Val := True;
+                     AW_Val := True;
+                     ER_Val := True;
+                     EW_Val := True;
+                  end if;
+
+                  --  Once all external properties have been processed, verify
+                  --  their mutual interaction. Do not perform the check when
+                  --  at least one of the properties is illegal as this will
+                  --  produce a bogus error.
+
+                  if Errors = Serious_Errors_Detected then
+                     Check_External_Properties
+                       (State, AR_Val, AW_Val, ER_Val, EW_Val);
+                  end if;
+               end Analyze_External_Option;
+
+               -------------------------------
+               -- Analyze_External_Property --
+               -------------------------------
+
+               procedure Analyze_External_Property
+                 (Prop : Node_Id;
+                  Expr : Node_Id := Empty)
+               is
+                  Expr_Val : Boolean;
+
+               begin
+                  --  The external property must be one of the predefined four
+                  --  reader / writer choices.
+
+                  if Nkind (Prop) /= N_Identifier
+                    or else not Nam_In (Chars (Prop), Name_Async_Readers,
+                                                      Name_Async_Writers,
+                                                      Name_Effective_Reads,
+                                                      Name_Effective_Writes)
+                  then
+                     Error_Msg_N ("invalid external state property", Prop);
+                     return;
+                  end if;
+
+                  --  Ensure that the expression of the external state property
+                  --  is static Boolean (if applicable).
+
+                  if Present (Expr) then
+                     Analyze_And_Resolve (Expr, Standard_Boolean);
+
+                     if Is_Static_Expression (Expr) then
+                        Expr_Val := Is_True (Expr_Value (Expr));
+                     else
+                        Error_Msg_N
+                          ("expression of external state property must be "
+                           & "static", Expr);
+                     end if;
+
+                  --  The lack of expression defaults the property to True
+
+                  else
+                     Expr_Val := True;
+                  end if;
+
+                  if Chars (Prop) = Name_Async_Readers then
+                     Check_Duplicate_Option (Prop, AR_Seen);
+                     AR_Val := Expr_Val;
+
+                  elsif Chars (Prop) = Name_Async_Writers then
+                     Check_Duplicate_Option (Prop, AW_Seen);
+                     AW_Val := Expr_Val;
+
+                  elsif Chars (Prop) = Name_Effective_Reads then
+                     Check_Duplicate_Option (Prop, ER_Seen);
+                     ER_Val := Expr_Val;
+
+                  else
+                     Check_Duplicate_Option (Prop, EW_Seen);
+                     EW_Val := Expr_Val;
+                  end if;
+               end Analyze_External_Property;
+
+               ----------------------------
+               -- Analyze_Part_Of_Option --
+               ----------------------------
+
+               procedure Analyze_Part_Of_Option (Opt : Node_Id) is
+                  Par_State : constant Node_Id := Expression (Opt);
+
+               begin
+                  Check_Duplicate_Option (Opt, Part_Of_Seen);
+
+                  Analyze (Par_State);
+
+                  --  The expression of option Part_Of must denote an abstract
+                  --  state.
+
+                  if not Is_Entity_Name (Par_State)
+                    or else No (Entity (Par_State))
+                    or else Ekind (Entity (Par_State)) /= E_Abstract_State
+                  then
+                     Error_Msg_N
+                       ("option Part_Of must denote an abstract state",
+                        Par_State);
+                  end if;
+               end Analyze_Part_Of_Option;
 
                ----------------------------
                -- Check_Duplicate_Option --
@@ -9489,20 +9754,11 @@ package body Sem_Prag is
 
                Errors    : constant Nat := Serious_Errors_Detected;
                Loc       : constant Source_Ptr := Sloc (State);
-               Assoc     : Node_Id;
-               Id        : Entity_Id;
                Is_Null   : Boolean := False;
-               Name      : Name_Id;
                Opt       : Node_Id;
-               Par_State : Node_Id;
-
-               --  Flags used to verify the consistency of options
-
-               External_Seen     : Boolean := False;
-               Input_Seen        : Boolean := False;
-               Non_Volatile_Seen : Boolean := False;
-               Output_Seen       : Boolean := False;
-               Part_Of_Seen      : Boolean := False;
+               Opt_Nam   : Node_Id;
+               State_Id  : Entity_Id;
+               State_Nam : Name_Id;
 
             --  Start of processing for Analyze_Abstract_State
 
@@ -9517,7 +9773,7 @@ package body Sem_Prag is
                --  Null states appear as internally generated entities
 
                elsif Nkind (State) = N_Null then
-                  Name := New_Internal_Name ('S');
+                  State_Nam := New_Internal_Name ('S');
                   Is_Null   := True;
                   Null_Seen := True;
 
@@ -9533,7 +9789,7 @@ package body Sem_Prag is
                --  Simple state declaration
 
                elsif Nkind (State) = N_Identifier then
-                  Name := Chars (State);
+                  State_Nam     := Chars (State);
                   Non_Null_Seen := True;
 
                --  State declaration with various options. This construct
@@ -9541,7 +9797,7 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Extension_Aggregate then
                   if Nkind (Ancestor_Part (State)) = N_Identifier then
-                     Name := Chars (Ancestor_Part (State));
+                     State_Nam     := Chars (Ancestor_Part (State));
                      Non_Null_Seen := True;
                   else
                      Error_Msg_N
@@ -9549,28 +9805,39 @@ package body Sem_Prag is
                         Ancestor_Part (State));
                   end if;
 
-                  --  Process options External, Input_Only, Output_Only and
-                  --  Volatile. Ensure that none of them appear more than once.
+                  --  Catch an attempt to introduce a simple option which is
+                  --  currently not allowed. An exception to this is External
+                  --  defined without any properties.
 
                   Opt := First (Expressions (State));
                   while Present (Opt) loop
-                     if Nkind (Opt) = N_Identifier then
-                        if Chars (Opt) = Name_External then
-                           Check_Duplicate_Option (Opt, External_Seen);
-                        elsif Chars (Opt) = Name_Input_Only then
-                           Check_Duplicate_Option (Opt, Input_Seen);
-                        elsif Chars (Opt) = Name_Output_Only then
-                           Check_Duplicate_Option (Opt, Output_Seen);
-                        elsif Chars (Opt) = Name_Non_Volatile then
-                           Check_Duplicate_Option (Opt, Non_Volatile_Seen);
+                     if Nkind (Opt) = N_Identifier
+                       and then Chars (Opt) = Name_External
+                     then
+                        Analyze_External_Option (Opt);
+                     else
+                        Error_Msg_N
+                          ("simple option not allowed in state declaration",
+                           Opt);
+                     end if;
 
-                        --  Ensure that the abstract state component of option
-                        --  Part_Of has not been omitted.
+                     Next (Opt);
+                  end loop;
 
-                        elsif Chars (Opt) = Name_Part_Of then
-                           Error_Msg_N
-                             ("option Part_Of requires an abstract state",
-                              Opt);
+                  --  Options External and Part_Of appear as component
+                  --  associations.
+
+                  Opt := First (Component_Associations (State));
+                  while Present (Opt) loop
+                     Opt_Nam := First (Choices (Opt));
+
+                     if Nkind (Opt_Nam) = N_Identifier then
+                        if Chars (Opt_Nam) = Name_External then
+                           Analyze_External_Option (Opt);
+
+                        elsif Chars (Opt_Nam) = Name_Part_Of then
+                           Analyze_Part_Of_Option (Opt);
+
                         else
                            Error_Msg_N ("invalid state option", Opt);
                         end if;
@@ -9579,71 +9846,6 @@ package body Sem_Prag is
                      end if;
 
                      Next (Opt);
-                  end loop;
-
-                  --  External may appear on its own or with exactly one option
-                  --  Input_Only or Output_Only, but not both.
-
-                  if External_Seen
-                    and then Input_Seen
-                    and then Output_Seen
-                  then
-                     Error_Msg_N
-                       ("option External requires exactly one option "
-                        & "Input_Only or Output_Only", State);
-                  end if;
-
-                  --  Either Input_Only or Output_Only require External
-
-                  if (Input_Seen or Output_Seen)
-                    and then not External_Seen
-                  then
-                     Error_Msg_N
-                       ("options Input_Only and Output_Only require option "
-                        & "External", State);
-                  end if;
-
-                  --  Option Part_Of appears as a component association
-
-                  Assoc := First (Component_Associations (State));
-                  while Present (Assoc) loop
-                     Opt := First (Choices (Assoc));
-                     while Present (Opt) loop
-                        if Nkind (Opt) = N_Identifier
-                          and then Chars (Opt) = Name_Part_Of
-                        then
-                           Check_Duplicate_Option (Opt, Part_Of_Seen);
-                        else
-                           Error_Msg_N ("invalid state option", Opt);
-                        end if;
-
-                        Next (Opt);
-                     end loop;
-
-                     --  Part_Of must denote a parent state. Ensure that the
-                     --  tree is not malformed by checking the expression of
-                     --  the component association.
-
-                     Par_State := Expression (Assoc);
-                     pragma Assert (Present (Par_State));
-
-                     Analyze (Par_State);
-
-                     --  Part_Of specified a legal state, this automatically
-                     --  makes the state a constituent.
-
-                     if Is_Entity_Name (Par_State)
-                       and then Present (Entity (Par_State))
-                       and then Ekind (Entity (Par_State)) = E_Abstract_State
-                     then
-                        null;
-                     else
-                        Error_Msg_N
-                         ("option Part_Of must denote an abstract state",
-                          Par_State);
-                     end if;
-
-                     Next (Assoc);
                   end loop;
 
                --  Any other attempt to declare a state is erroneous
@@ -9662,27 +9864,29 @@ package body Sem_Prag is
                --  The generated state abstraction reuses the same characters
                --  from the original state declaration. Decorate the entity.
 
-               Id := Make_Defining_Identifier (Loc, New_External_Name (Name));
-               Set_Comes_From_Source       (Id, not Is_Null);
-               Set_Parent                  (Id, State);
-               Set_Ekind                   (Id, E_Abstract_State);
-               Set_Etype                   (Id, Standard_Void_Type);
-               Set_Refined_State           (Id, Empty);
-               Set_Refinement_Constituents (Id, New_Elmt_List);
+               State_Id :=
+                 Make_Defining_Identifier (Loc, New_External_Name (State_Nam));
+
+               Set_Comes_From_Source       (State_Id, not Is_Null);
+               Set_Parent                  (State_Id, State);
+               Set_Ekind                   (State_Id, E_Abstract_State);
+               Set_Etype                   (State_Id, Standard_Void_Type);
+               Set_Refined_State           (State_Id, Empty);
+               Set_Refinement_Constituents (State_Id, New_Elmt_List);
 
                --  Every non-null state must be nameable and resolvable the
                --  same way a constant is.
 
                if not Is_Null then
                   Push_Scope (Pack_Id);
-                  Enter_Name (Id);
+                  Enter_Name (State_Id);
                   Pop_Scope;
                end if;
 
                --  Verify whether the state introduces an illegal hidden state
                --  within a package subject to a null abstract state.
 
-               Check_No_Hidden_State (Id);
+               Check_No_Hidden_State (State_Id);
 
                --  Associate the state with its related package
 
@@ -9690,7 +9894,7 @@ package body Sem_Prag is
                   Set_Abstract_States (Pack_Id, New_Elmt_List);
                end if;
 
-               Append_Elmt (Id, Abstract_States (Pack_Id));
+               Append_Elmt (State_Id, Abstract_States (Pack_Id));
             end Analyze_Abstract_State;
 
             --  Local variables
@@ -9733,7 +9937,6 @@ package body Sem_Prag is
                State := First (Expressions (State));
                while Present (State) loop
                   Analyze_Abstract_State (State);
-
                   Next (State);
                end loop;
 
@@ -10454,6 +10657,73 @@ package body Sem_Prag is
                Set_Is_AST_Entry (Ent);
             end if;
          end AST_Entry;
+
+         ------------------------------------------------------------------
+         -- Async_Readers/Async_Writers/Effective_Reads/Effective_Writes --
+         ------------------------------------------------------------------
+
+         --  pragma Asynch_Readers   ( identifier [, boolean_EXPRESSION] );
+         --  pragma Asynch_Writers   ( identifier [, boolean_EXPRESSION] );
+         --  pragma Effective_Reads  ( identifier [, boolean_EXPRESSION] );
+         --  pragma Effective_Writes ( identifier [, boolean_EXPRESSION] );
+
+         when Pragma_Async_Readers    |
+              Pragma_Async_Writers    |
+              Pragma_Effective_Reads  |
+              Pragma_Effective_Writes =>
+         Async_Effective : declare
+            Duplic : Node_Id;
+            Obj_Id : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments  (2);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Arg1 := Get_Pragma_Arg (Arg1);
+
+            --  Perform minimal verification to ensure that the argument is at
+            --  least a variable. Subsequent finer grained checks will be done
+            --  at the end of the declarative region the contains the pragma.
+
+            if Is_Entity_Name (Arg1) and then Present (Entity (Arg1)) then
+               Obj_Id := Entity (Get_Pragma_Arg (Arg1));
+
+               --  It is not efficient to examine preceding statements in order
+               --  to detect duplicate pragmas as Boolean aspects may appear
+               --  anywhere between the related object declaration and its
+               --  freeze point. As an alternative, inspect the contents of the
+               --  variable contract.
+
+               if Ekind (Obj_Id) = E_Variable then
+                  Duplic := Get_Pragma (Obj_Id, Prag_Id);
+
+                  if Present (Duplic) then
+                     Error_Msg_Name_1 := Pname;
+                     Error_Msg_Sloc   := Sloc (Duplic);
+                     Error_Msg_N ("pragma % duplicates pragma declared #", N);
+
+                  --  Chain the pragma on the contract for further processing.
+                  --  This also aids in detecting duplicates.
+
+                  else
+                     Add_Contract_Item (N, Obj_Id);
+                  end if;
+
+                  --  The minimum legality requirements have been met, do not
+                  --  fall through to the error message.
+
+                  return;
+               end if;
+            end if;
+
+            --  If we get here, then the pragma applies to a non-object
+            --  construct, issue a generic error.
+
+            Error_Pragma ("pragma % must apply to a volatile object");
+         end Async_Effective;
 
          ------------------
          -- Asynchronous --
@@ -18208,7 +18478,6 @@ package body Sem_Prag is
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
                      Set_SPARK_Aux_Pragma           (Spec_Id, N);
                      Set_SPARK_Aux_Pragma_Inherited (Spec_Id, True);
-
                      return;
 
                   --  The pragma applies to a subprogram declaration
@@ -22244,6 +22513,56 @@ package body Sem_Prag is
       return False;
    end Appears_In;
 
+   -------------------------------
+   -- Check_External_Properties --
+   -------------------------------
+
+   procedure Check_External_Properties
+     (Item : Node_Id;
+      AR   : Boolean;
+      AW   : Boolean;
+      ER   : Boolean;
+      EW   : Boolean)
+   is
+   begin
+      --  All properties enabled
+
+      if AR and then AW and then ER and then EW then
+         null;
+
+      --  Async_Readers + Effective_Writes
+      --  Async_Readers + Async_Writers + Effective_Writes
+
+      elsif AR and then EW and then not ER then
+         null;
+
+      --  Async_Writers + Effective_Reads
+      --  Async_Readers + Async_Writers + Effective_Reads
+
+      elsif AW and then ER and then not EW then
+         null;
+
+      --  Async_Readers + Async_Writers
+
+      elsif AR and then AW and then not ER and then not EW then
+         null;
+
+      --  Async_Readers
+
+      elsif AR and then not AW and then not ER and then not EW then
+         null;
+
+      --  Async_Writers
+
+      elsif AW and then not AR and then not ER and then not EW then
+         null;
+
+      else
+         Error_Msg_N
+           ("illegal combination of external state properties", Item);
+      end if;
+   end Check_External_Properties;
+
    ----------------
    -- Check_Kind --
    ----------------
@@ -22995,18 +23314,20 @@ package body Sem_Prag is
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
       Pragma_All_Calls_Remote               => -1,
-      Pragma_Allow_Integer_Address          => 0,
+      Pragma_Allow_Integer_Address          =>  0,
       Pragma_Annotate                       => -1,
       Pragma_Assert                         => -1,
       Pragma_Assert_And_Cut                 => -1,
       Pragma_Assertion_Policy               =>  0,
       Pragma_Assume                         => -1,
       Pragma_Assume_No_Invalid_Values       =>  0,
-      Pragma_Attribute_Definition           => +3,
+      Pragma_Async_Readers                  =>  0,
+      Pragma_Async_Writers                  =>  0,
       Pragma_Asynchronous                   => -1,
       Pragma_Atomic                         =>  0,
       Pragma_Atomic_Components              =>  0,
       Pragma_Attach_Handler                 => -1,
+      Pragma_Attribute_Definition           => +3,
       Pragma_Check                          => 99,
       Pragma_Check_Float_Overflow           =>  0,
       Pragma_Check_Name                     =>  0,
@@ -23038,6 +23359,8 @@ package body Sem_Prag is
       Pragma_Disable_Atomic_Synchronization => -1,
       Pragma_Discard_Names                  =>  0,
       Pragma_Dispatching_Domain             => -1,
+      Pragma_Effective_Reads                =>  0,
+      Pragma_Effective_Writes               =>  0,
       Pragma_Elaborate                      => -1,
       Pragma_Elaborate_All                  => -1,
       Pragma_Elaborate_Body                 => -1,

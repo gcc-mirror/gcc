@@ -113,6 +113,13 @@ package body Sem_Util is
    --  components in the selected variant to determine whether all of them
    --  have a default.
 
+   function Has_Enabled_Property
+     (Extern   : Node_Id;
+      Prop_Nam : Name_Id) return Boolean;
+   --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
+   --  Given pragma External, determine whether it contains a property denoted
+   --  by its name Prop_Nam and if it does, whether its expression is True.
+
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
    --  If the parent type is fully initialized, T can be treated as such.
@@ -342,6 +349,27 @@ package body Sem_Util is
          else
             raise Program_Error;
          end if;
+
+      --  Contract items related to variables. The applicable pragmas are:
+      --    Async_Readers
+      --    Async_Writers
+      --    Effective_Reads
+      --    Effective_Writes
+
+      elsif Ekind (Id) = E_Variable then
+         if Nam_In (Nam, Name_Async_Readers,
+                         Name_Async_Writers,
+                         Name_Effective_Reads,
+                         Name_Effective_Writes)
+         then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
       end if;
    end Add_Contract_Item;
 
@@ -524,6 +552,40 @@ package body Sem_Util is
          Set_Is_Static_Expression (N);
       end if;
    end Apply_Compile_Time_Constraint_Error;
+
+   ---------------------------
+   -- Async_Readers_Enabled --
+   ---------------------------
+
+   function Async_Readers_Enabled (Id : Entity_Id) return Boolean is
+   begin
+      if Ekind (Id) = E_Abstract_State then
+         return
+           Has_Enabled_Property
+             (Extern   => Get_Pragma (Id, Pragma_External),
+              Prop_Nam => Name_Async_Readers);
+
+      else pragma Assert (Ekind (Id) = E_Variable);
+         return Present (Get_Pragma (Id, Pragma_Async_Readers));
+      end if;
+   end Async_Readers_Enabled;
+
+   ---------------------------
+   -- Async_Writers_Enabled --
+   ---------------------------
+
+   function Async_Writers_Enabled (Id : Entity_Id) return Boolean is
+   begin
+      if Ekind (Id) = E_Abstract_State then
+         return
+           Has_Enabled_Property
+             (Extern   => Get_Pragma (Id, Pragma_External),
+              Prop_Nam => Name_Async_Writers);
+
+      else pragma Assert (Ekind (Id) = E_Variable);
+         return Present (Get_Pragma (Id, Pragma_Async_Writers));
+      end if;
+   end Async_Writers_Enabled;
 
    --------------------------------------
    -- Available_Full_View_Of_Component --
@@ -4730,6 +4792,40 @@ package body Sem_Util is
       end if;
    end Effective_Extra_Accessibility;
 
+   -----------------------------
+   -- Effective_Reads_Enabled --
+   -----------------------------
+
+   function Effective_Reads_Enabled (Id : Entity_Id) return Boolean is
+   begin
+      if Ekind (Id) = E_Abstract_State then
+         return
+           Has_Enabled_Property
+             (Extern   => Get_Pragma (Id, Pragma_External),
+              Prop_Nam => Name_Effective_Reads);
+
+      else pragma Assert (Ekind (Id) = E_Variable);
+         return Present (Get_Pragma (Id, Pragma_Effective_Reads));
+      end if;
+   end Effective_Reads_Enabled;
+
+   ------------------------------
+   -- Effective_Writes_Enabled --
+   ------------------------------
+
+   function Effective_Writes_Enabled (Id : Entity_Id) return Boolean is
+   begin
+      if Ekind (Id) = E_Abstract_State then
+         return
+           Has_Enabled_Property
+             (Extern   => Get_Pragma (Id, Pragma_External),
+              Prop_Nam => Name_Effective_Writes);
+
+      else pragma Assert (Ekind (Id) = E_Variable);
+         return Present (Get_Pragma (Id, Pragma_Effective_Writes));
+      end if;
+   end Effective_Writes_Enabled;
+
    ------------------------------
    -- Enclosing_Comp_Unit_Node --
    ------------------------------
@@ -7061,6 +7157,76 @@ package body Sem_Util is
 
       return False;
    end Has_Discriminant_Dependent_Constraint;
+
+   --------------------------
+   -- Has_Enabled_Property --
+   --------------------------
+
+   function Has_Enabled_Property
+     (Extern   : Node_Id;
+      Prop_Nam : Name_Id) return Boolean
+   is
+      Prop  : Node_Id;
+      Props : Node_Id := Empty;
+
+   begin
+      --  The related abstract state or variable do not have an Extern pragma,
+      --  the property in question cannot be set.
+
+      if No (Extern) then
+         return False;
+
+      elsif Nkind (Extern) = N_Component_Association then
+         Props := Expression (Extern);
+      end if;
+
+      --  External state with properties
+
+      if Present (Props) then
+
+         --  Multiple properties appear as an aggregate
+
+         if Nkind (Props) = N_Aggregate then
+
+            --  Simple property form
+
+            Prop := First (Expressions (Props));
+            while Present (Prop) loop
+               if Chars (Prop) = Prop_Nam then
+                  return True;
+               end if;
+
+               Next (Prop);
+            end loop;
+
+            --  Property with expression form
+
+            Prop := First (Component_Associations (Props));
+            while Present (Prop) loop
+               if Chars (Prop) = Prop_Nam then
+                  return Is_True (Expr_Value (Expression (Prop)));
+               end if;
+
+               Next (Prop);
+            end loop;
+
+            --  Pragma Extern contains properties, but not the one we want
+
+            return False;
+
+         --  Single property
+
+         else
+            return Chars (Prop) = Prop_Nam;
+         end if;
+
+      --  An external state defined without any properties defaults all
+      --  properties to True;
+
+      else
+         return True;
+      end if;
+   end Has_Enabled_Property;
 
    --------------------
    -- Has_Infinities --
@@ -10669,6 +10835,31 @@ package body Sem_Util is
       return (U /= 0);
    end Is_True;
 
+   --------------------------------------
+   -- Is_Unchecked_Conversion_Instance --
+   --------------------------------------
+
+   function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean is
+      Gen_Par : Entity_Id;
+
+   begin
+      --  Look for a function whose generic parent is the predefined intrinsic
+      --  function Unchecked_Conversion.
+
+      if Ekind (Id) = E_Function then
+         Gen_Par := Generic_Parent (Parent (Id));
+
+         return
+           Present (Gen_Par)
+             and then Chars (Gen_Par) = Name_Unchecked_Conversion
+             and then Is_Intrinsic_Subprogram (Gen_Par)
+             and then Is_Predefined_File_Name
+                        (Unit_File_Name (Get_Source_Unit (Gen_Par)));
+      end if;
+
+      return False;
+   end Is_Unchecked_Conversion_Instance;
+
    -------------------------------
    -- Is_Universal_Numeric_Type --
    -------------------------------
@@ -11017,11 +11208,11 @@ package body Sem_Util is
 
    function Is_Volatile_Object (N : Node_Id) return Boolean is
 
-      function Object_Has_Volatile_Components (N : Node_Id) return Boolean;
-      --  Determines if given object has volatile components
-
       function Is_Volatile_Prefix (N : Node_Id) return Boolean;
       --  If prefix is an implicit dereference, examine designated type
+
+      function Object_Has_Volatile_Components (N : Node_Id) return Boolean;
+      --  Determines if given object has volatile components
 
       ------------------------
       -- Is_Volatile_Prefix --
@@ -11077,7 +11268,13 @@ package body Sem_Util is
    --  Start of processing for Is_Volatile_Object
 
    begin
-      if Is_Volatile (Etype (N))
+      if Nkind (N) = N_Defining_Identifier then
+         return Is_Volatile (N) or else Is_Volatile (Etype (N));
+
+      elsif Nkind (N) = N_Expanded_Name then
+         return Is_Volatile_Object (Entity (N));
+
+      elsif Is_Volatile (Etype (N))
         or else (Is_Entity_Name (N) and then Is_Volatile (Entity (N)))
       then
          return True;

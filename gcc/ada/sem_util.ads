@@ -47,8 +47,12 @@ package Sem_Util is
    --  Add pragma Prag to the contract of an entry, a package [body] or a
    --  subprogram [body] denoted by Id. The following are valid pragmas:
    --    Abstract_States
+   --    Async_Readers
+   --    Async_Writers
    --    Contract_Cases
    --    Depends
+   --    Effective_Reads
+   --    Effective_Writes
    --    Global
    --    Initial_Condition
    --    Initializes
@@ -119,6 +123,16 @@ package Sem_Util is
    --  True then the message is treated as a warning even though it does
    --  not end with a ? (this is used when the caller wants to parameterize
    --  whether an error or warning is given.
+
+   function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of an abstract state or a variable, determine whether
+   --  Id is subject to external property Async_Readers and if it is, the
+   --  related expression evaluates to True.
+
+   function Async_Writers_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of an abstract state or a variable, determine whether
+   --  Id is subject to external property Async_Writers and if it is, the
+   --  related expression evaluates to True.
 
    function Available_Full_View_Of_Component (T : Entity_Id) return Boolean;
    --  If at the point of declaration an array type has a private or limited
@@ -484,6 +498,16 @@ package Sem_Util is
    function Effective_Extra_Accessibility (Id : Entity_Id) return Entity_Id;
    --  Same as Einfo.Extra_Accessibility except thtat object renames
    --  are looked through.
+
+   function Effective_Reads_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of an abstract state or a variable, determine whether
+   --  Id is subject to external property Effective_Reads and if it is, the
+   --  related expression evaluates to True.
+
+   function Effective_Writes_Enabled (Id : Entity_Id) return Boolean;
+   --  Given the entity of an abstract state or a variable, determine whether
+   --  Id is subject to external property Effective_Writes and if it is, the
+   --  related expression evaluates to True.
 
    function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
    --  Returns the enclosing N_Compilation_Unit Node that is the root of a
@@ -1163,6 +1187,10 @@ package Sem_Util is
    --  The argument is a Uint value which is the Boolean'Pos value of a Boolean
    --  operand (i.e. is either 0 for False, or 1 for True). This function tests
    --  if it is True (i.e. non-zero).
+
+   function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
+   --  Determine whether an arbitrary entity denotes an instance of function
+   --  Ada.Unchecked_Conversion.
 
    function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
    pragma Inline (Is_Universal_Numeric_Type);

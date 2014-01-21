@@ -755,6 +755,17 @@ package Atree is
       V7 : Entity_Kind) return Boolean;
 
    function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind) return Boolean;
+
+   function Ekind_In
      (T  : Entity_Kind;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean;
@@ -798,6 +809,17 @@ package Atree is
       V5 : Entity_Kind;
       V6 : Entity_Kind;
       V7 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind) return Boolean;
 
    pragma Inline (Ekind_In);
    --  Inline all above functions
@@ -1211,6 +1233,9 @@ package Atree is
 
       function Node33 (N : Node_Id) return Node_Id;
       pragma Inline (Node33);
+
+      function Node34 (N : Node_Id) return Node_Id;
+      pragma Inline (Node34);
 
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
@@ -2514,6 +2539,9 @@ package Atree is
 
       procedure Set_Node33 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node33);
+
+      procedure Set_Node34 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node34);
 
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);

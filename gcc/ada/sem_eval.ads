@@ -224,23 +224,21 @@ package Sem_Eval is
    --  Determine whether two types T1, T2, which have the same base type,
    --  are statically matching subtypes (RM 4.9.1(1-2)).
 
-   function Compile_Time_Known_Value
-     (Op         : Node_Id;
-      Ignore_CRT : Boolean := False) return Boolean;
+   function Compile_Time_Known_Value (Op : Node_Id) return Boolean;
    --  Returns true if Op is an expression not raising Constraint_Error whose
    --  value is known at compile time and for which a call to Expr_Value can
    --  be used to determine this value. This is always true if Op is a static
    --  expression, but can also be true for expressions which are technically
-   --  non-static but which are in fact known at compile time. Some possible
-   --  examples of such expressions might be the static lower bound of a
-   --  non-static range or the value of a constant object whose initial
-   --  value is itself compile time known in the sense of this routine. Note
-   --  that this routine is defended against unanalyzed expressions. Such
-   --  expressions will not cause a blowup, they may cause pessimistic (i.e.
-   --  False) results to be returned. In general we take a pessimistic view.
-   --  False does not mean the value could not be known at compile time, but
-   --  True means that absolutely definition it is known at compile time and
-   --  it is safe to call Expr_Value on the expression Op.
+   --  non-static but which are in fact known at compile time. Some examples of
+   --  such expressions are the static lower bound of a non-static range or the
+   --  value of a constant object whose initial value is itself compile time
+   --  known in the sense of this routine. Note that this routine is defended
+   --  against unanalyzed expressions. Such expressions will not cause a
+   --  blowup, they may cause pessimistic (i.e. False) results to be returned.
+   --  In general we take a pessimistic view. False does not mean the value
+   --  could not be known at compile time, but True means that absolutely
+   --  definition it is known at compile time and it is safe to call
+   --  Expr_Value on the expression Op.
    --
    --  Note that we don't define precisely the set of expressions that return
    --  True. Callers should not make any assumptions regarding the value that
@@ -250,9 +248,11 @@ package Sem_Eval is
    --  efficiency optimization purposes. The code generated can often be more
    --  efficient with compile time known values, e.g. range analysis for the
    --  purpose of removing checks is more effective if we know precise bounds.
-   --
-   --  The Ignore_CRT parameter has to do with the special case of configurable
-   --  runtime mode. Consider the following example:
+
+   function CRT_Safe_Compile_Time_Known_Value (Op : Node_Id) return Boolean;
+   --  In the case of configurable run-times, there may be an issue calling
+   --  Compile_Time_Known_Value with non-static expressions where the legality
+   --  of the program is not well-defined. Consider this example:
    --
    --    X := B ** C;
    --
@@ -266,18 +266,10 @@ package Sem_Eval is
    --  then what we say is that exponentiation is permitted if the exponent is
    --  officially static and has a value in the range 0 .. 4.
    --
-   --  However, in the normal case, we want efficient code in the case where
-   --  a non-static exponent is known at compile time. To take care of this,
-   --  the normal default behavior is that in configurable run-time mode most
-   --  expressions are considered known at compile time ONLY in the case where
-   --  they are officially static. An exception is boolean objects which may
-   --  be considered known at compile time even in configurable run-time mode.
-   --
-   --  That loses optimization opportunities, and it would be better to look
-   --  case by case at each use of Compile_Time_Known_Value to see if this
-   --  configurable run-time mode special processing is needed. The Ignore_CRT
-   --  parameter can be set to True to ignore this special handling in cases
-   --  where it is known to be safe to do so.
+   --  In a case like this, we use CRT_Safe_Compile_Time_Known_Value to avoid
+   --  this effect. This routine will return False for a non-static expression
+   --  if we are in configurable run-time mode, even if the expression would
+   --  normally be considered compile-time known.
 
    function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean;
    --  Similar to Compile_Time_Known_Value, but also returns True if the value

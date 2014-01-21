@@ -1109,6 +1109,8 @@ begin
 
       when Pragma_Abort_Defer                    |
            Pragma_Abstract_State                 |
+           Pragma_Async_Readers                  |
+           Pragma_Async_Writers                  |
            Pragma_Assertion_Policy               |
            Pragma_Assume                         |
            Pragma_Assume_No_Invalid_Values       |
@@ -1153,6 +1155,8 @@ begin
            Pragma_Disable_Atomic_Synchronization |
            Pragma_Discard_Names                  |
            Pragma_Dispatching_Domain             |
+           Pragma_Effective_Reads                |
+           Pragma_Effective_Writes               |
            Pragma_Eliminate                      |
            Pragma_Elaborate                      |
            Pragma_Elaborate_All                  |

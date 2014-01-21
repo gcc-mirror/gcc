@@ -7240,7 +7240,11 @@ package Sinfo is
       --  establish dependencies between subprogram or package inputs and
       --  outputs. Currently the following pragmas appear in this list:
       --    Abstract_States
+      --    Async_Readers
+      --    Async_Writers
       --    Depends
+      --    Effective_Reads
+      --    Effective_Writes
       --    Global
       --    Initial_Condition
       --    Initializes

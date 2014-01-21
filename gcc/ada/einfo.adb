@@ -214,7 +214,6 @@ package body Einfo is
    --    Stored_Constraint               Elist23
 
    --    Related_Expression              Node24
-   --    Contract                        Node24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -252,7 +251,7 @@ package body Einfo is
 
    --    SPARK_Aux_Pragma                Node33
 
-   --    (unused)                        Node34
+   --    Contract                        Node34
 
    --    (unused)                        Node35
 
@@ -1079,10 +1078,11 @@ package body Einfo is
                        E_Generic_Package,
                        E_Package,
                        E_Package_Body,
-                       E_Subprogram_Body)
+                       E_Subprogram_Body,
+                       E_Variable)
           or else Is_Generic_Subprogram (Id)
           or else Is_Subprogram (Id));
-      return Node24 (Id);
+      return Node34 (Id);
    end Contract;
 
    function Entry_Parameters_Type (Id : E) return E is
@@ -3727,10 +3727,11 @@ package body Einfo is
                        E_Package,
                        E_Package_Body,
                        E_Subprogram_Body,
+                       E_Variable,
                        E_Void)
           or else Is_Generic_Subprogram (Id)
           or else Is_Subprogram (Id));
-      Set_Node24 (Id, V);
+      Set_Node34 (Id, V);
    end Set_Contract;
 
    procedure Set_Entry_Parameters_Type (Id : E; V : E) is
@@ -6395,7 +6396,11 @@ package body Einfo is
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
       Is_CDG  : constant Boolean :=
                   Id = Pragma_Abstract_State    or else
+                  Id = Pragma_Async_Readers     or else
+                  Id = Pragma_Async_Writers     or else
                   Id = Pragma_Depends           or else
+                  Id = Pragma_Effective_Reads   or else
+                  Id = Pragma_Effective_Writes  or else
                   Id = Pragma_Global            or else
                   Id = Pragma_Initial_Condition or else
                   Id = Pragma_Initializes       or else
@@ -9216,16 +9221,6 @@ package body Einfo is
               Type_Kind                                    =>
             Write_Str ("Related_Expression");
 
-         when E_Entry                                      |
-              E_Entry_Family                               |
-              E_Generic_Package                            |
-              E_Package                                    |
-              E_Package_Body                               |
-              E_Subprogram_Body                            |
-              Generic_Subprogram_Kind                      |
-              Subprogram_Kind                              =>
-            Write_Str ("Contract");
-
          when others                                       =>
             Write_Str ("Field24???");
       end case;
@@ -9468,6 +9463,17 @@ package body Einfo is
    procedure Write_Field34_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Entry                                      |
+              E_Entry_Family                               |
+              E_Generic_Package                            |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Subprogram_Body                            |
+              E_Variable                                   |
+              Generic_Subprogram_Kind                      |
+              Subprogram_Kind                              =>
+            Write_Str ("Contract");
+
          when others                                       =>
             Write_Str ("Field34??");
       end case;
