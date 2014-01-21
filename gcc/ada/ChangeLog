@@ -1,3 +1,54 @@
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
+2014-01-21  Johannes Kanig  <kanig@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv) remove obsolete reference to -gnatd.H.
+
+2014-01-21  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document the "checks" attribute in gnat2xml.
+
+2014-01-21  Steve Baird  <baird@adacore.com>
+
+	* gnat_rm.texi: Improve description of SPARK_Mode pragma.
+
+2014-01-21  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse_Single_Project): Accept to extend a project
+	if it has only be imported by an project being extended. When a
+	project that has only been imported by a project being extended
+	is imported by another project that is not being extended,
+	reset the previous indication, so that it will be an error if
+	this project is extended later.
+	* prj-tree.adb (Create_Project): Include component From_Extended
+	in table Projects_HT
+	* prj-tree.ads (Project_Name_And_Node): New Boolean component
+	From_Extended
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb: Add Node33 and Set_Node33.
+	* einfo.ads, einfo.adb (SPARK_Pragma): New field (SPARK_Aux_Pragma):
+	New field (SPARK_Pragma_Inherited): New flag
+	(SPARK_Aux_Pragma_Inherited): New flag (SPARK_Mode_Pragmas):
+	Removed.
+	* lib.ads, lib.adb: Remove SPARK_Mode_Pragma, no longer used.
+	* opt.ads (SPARK_Mode_Pragma): New global variable.
+	* sem.ads: Add Save_SPARK_Mode_Pragma field to Scope_Stack_Entry.
+	* sem_ch3.adb: Use new SPARK_Mode data structures.
+	* sem_ch6.adb: Set SPARK_Mode fields in subprogram specs and bodies.
+	* sem_ch7.adb: Set SPARK_Mode fields in package spec and body entities.
+	* sem_ch8.adb (Push_Scope): Save SPARK_Mode_Pragma.
+	(Pop_Scope): Restore SPARK_Mode_Pragma.
+	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Rewrite for
+	new data structures.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* back_end.adb: Undo previous change, not needed. Minor reformatting.
+
 2014-01-21  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch5.adb: Fix comment.

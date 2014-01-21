@@ -6287,7 +6287,8 @@ an implicit argument of On is assumed.
 
 A SPARK_Mode pragma may be used as a configuration pragma and then has the
 semantics described below. A SPARK_Mode pragma which is not used as a
-configuration pragma shall not have an argument of Auto.
+configuration pragma (or an equivalent SPARK_Mode aspect_specification)
+shall not have an argument of Auto.
 
 A SPARK_Mode pragma can be used as a local pragma only
 in the following contexts:

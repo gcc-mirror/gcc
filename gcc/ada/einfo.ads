@@ -3801,10 +3801,35 @@ package Einfo is
 --       Small of the type, either as given in a representation clause, or
 --       as computed (as a power of two) by the compiler.
 
---    SPARK_Mode_Pragmas (Node32)
+--    SPARK_Aux_Pragma (Node33)
+--       Present in package spec and body entities. For a package spec entity
+--       it relates to the SPARK mode setting for the private part. This field
+--       points to the N_Pragma node that applies to the private part. This is
+--       either set with a local SPARK_Mode pragma in the private part or it is
+--       inherited from the SPARK mode that applies to the rest of the spec.
+--       For a package body, it similarly applies to the SPARK mode setting for
+--       the elaboration sequence after the BEGIN. In the case where the pragma
+--       is inherited, the SPARK_Aux_Pragma_Inherited flag is set in the
+--       package spec or body entity.
+
+--    SPARK_Aux_Pragma_Inherited (Flag266)
+--       Present in the entities of subprogram specs and bodies as well as
+--       in package specs and bodies. Set if the SPARK_Aux_Pragma field
+--       points to a pragma that is inherited, rather than a local one.
+
+--    SPARK_Pragma (Node32)
 --       Present in the entities of subprogram specs and bodies as well as in
---       package specs and bodies. Points to a list of SPARK_Mode pragmas that
---       apply to the related construct. Add note of what this is used for ???
+--       package specs and bodies. Points to the N_Pragma node that applies to
+--       the spec or body. This is either set by a local SPARK_Mode pragma or
+--       is inherited from the context (from an outer scope for the spec case
+--       or from the spec for the body case). In the case where it is inherited
+--       the flag SPARK_Pragma_Inherited is set. Empty if no SPARK_Mode pragma
+--       is applicable.
+
+--    SPARK_Pragma_Inherited (Flag265)
+--       Present in the entities of subprogram specs and bodies as well as in
+--       package specs and bodies. Set if the SPARK_Pragma field points to a
+--       pragma that is inherited, rather than a local one.
 
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package
@@ -5455,7 +5480,7 @@ package Einfo is
    --    Subprograms_For_Type                (Node29)
    --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
-   --    SPARK_Mode_Pragmas                  (Node32)
+   --    SPARK_Pragma                        (Node32)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5493,6 +5518,7 @@ package Einfo is
    --    Return_Present                      (Flag54)
    --    Returns_By_Ref                      (Flag90)
    --    Sec_Stack_Needed_For_Return         (Flag167)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Uses_Sec_Stack                      (Flag95)
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
@@ -5655,7 +5681,8 @@ package Einfo is
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
    --    Finalizer                           (Node28)   (non-generic case only)
-   --    SPARK_Mode_Pragmas                  (Node32)
+   --    SPARK_Aux_Pragma                    (Node33)
+   --    SPARK_Pragma                        (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Discard_Names                       (Flag88)
@@ -5674,6 +5701,8 @@ package Einfo is
    --    Is_Private_Descendant               (Flag53)
    --    Is_Visible_Lib_Unit                 (Flag116)
    --    Renamed_In_Spec                     (Flag231)  (non-generic case only)
+   --    SPARK_Aux_Pragma_Inherited          (Flag266)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Static_Elaboration_Desired          (Flag77)   (non-generic case only)
    --    Has_Null_Abstract_State             (synth)
    --    Is_Wrapper_Package                  (synth)    (non-generic case only)
@@ -5688,9 +5717,12 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Contract                            (Node24)
    --    Finalizer                           (Node28)   (non-generic case only)
-   --    SPARK_Mode_Pragmas                  (Node32)
+   --    SPARK_Aux_Pragma                    (Node33)
+   --    SPARK_Pragma                        (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
+   --    SPARK_Aux_Pragma_Inherited          (Flag266)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
 
    --  E_Private_Type
@@ -5735,7 +5767,7 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Static_Initialization               (Node30)   (init_proc only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
-   --    SPARK_Mode_Pragmas                  (Node32)
+   --    SPARK_Pragma                        (Node32)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
@@ -5774,6 +5806,7 @@ package Einfo is
    --    No_Return                           (Flag113)
    --    Requires_Overriding                 (Flag213)  (non-generic case only)
    --    Sec_Stack_Needed_For_Return         (Flag167)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Address_Clause                      (synth)
    --    First_Formal                        (synth)
    --    First_Formal_With_Extras            (synth)
@@ -5907,7 +5940,8 @@ package Einfo is
    --    Scope_Depth_Value                   (Uint22)
    --    Contract                            (Node24)
    --    Extra_Formals                       (Node28)
-   --    SPARK_Mode_Pragmas                  (Node32)
+   --    SPARK_Pragma                        (Node32)
+   --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
@@ -6609,7 +6643,10 @@ package Einfo is
    function Size_Depends_On_Discriminant        (Id : E) return B;
    function Size_Known_At_Compile_Time          (Id : E) return B;
    function Small_Value                         (Id : E) return R;
-   function SPARK_Mode_Pragmas                  (Id : E) return N;
+   function SPARK_Aux_Pragma                    (Id : E) return N;
+   function SPARK_Aux_Pragma_Inherited          (Id : E) return B;
+   function SPARK_Pragma                        (Id : E) return N;
+   function SPARK_Pragma_Inherited              (Id : E) return B;
    function Spec_Entity                         (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
@@ -7232,7 +7269,10 @@ package Einfo is
    procedure Set_Size_Depends_On_Discriminant    (Id : E; V : B := True);
    procedure Set_Size_Known_At_Compile_Time      (Id : E; V : B := True);
    procedure Set_Small_Value                     (Id : E; V : R);
-   procedure Set_SPARK_Mode_Pragmas              (Id : E; V : N);
+   procedure Set_SPARK_Aux_Pragma                (Id : E; V : N);
+   procedure Set_SPARK_Aux_Pragma_Inherited      (Id : E; V : B := True);
+   procedure Set_SPARK_Pragma                    (Id : E; V : N);
+   procedure Set_SPARK_Pragma_Inherited          (Id : E; V : B := True);
    procedure Set_Spec_Entity                     (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
@@ -7994,7 +8034,10 @@ package Einfo is
    pragma Inline (Size_Depends_On_Discriminant);
    pragma Inline (Size_Known_At_Compile_Time);
    pragma Inline (Small_Value);
-   pragma Inline (SPARK_Mode_Pragmas);
+   pragma Inline (SPARK_Aux_Pragma);
+   pragma Inline (SPARK_Aux_Pragma_Inherited);
+   pragma Inline (SPARK_Pragma);
+   pragma Inline (SPARK_Pragma_Inherited);
    pragma Inline (Spec_Entity);
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
@@ -8414,7 +8457,10 @@ package Einfo is
    pragma Inline (Set_Size_Depends_On_Discriminant);
    pragma Inline (Set_Size_Known_At_Compile_Time);
    pragma Inline (Set_Small_Value);
-   pragma Inline (Set_SPARK_Mode_Pragmas);
+   pragma Inline (Set_SPARK_Aux_Pragma);
+   pragma Inline (Set_SPARK_Aux_Pragma_Inherited);
+   pragma Inline (Set_SPARK_Pragma);
+   pragma Inline (Set_SPARK_Pragma_Inherited);
    pragma Inline (Set_Spec_Entity);
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);

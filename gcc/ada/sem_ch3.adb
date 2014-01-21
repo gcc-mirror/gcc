@@ -2162,15 +2162,15 @@ package body Sem_Ch3 is
          --  it is and the mode is Off, the package body is considered to be in
          --  regular Ada and does not require refinement.
 
-         elsif Mode_Is_Off (SPARK_Mode_Pragmas (Body_Id)) then
+         elsif Mode_Is_Off (SPARK_Pragma (Body_Id)) then
             return False;
 
          --  The body's SPARK_Mode may be inherited from a similar pragma that
          --  appears in the private declarations of the spec. The pragma we are
-         --  interested appears as the second entry in SPARK_Mode_Pragmas.
+         --  interested appears as the second entry in SPARK_Pragma.
 
-         elsif Present (SPARK_Mode_Pragmas (Spec_Id))
-           and then Mode_Is_Off (Next_Pragma (SPARK_Mode_Pragmas (Spec_Id)))
+         elsif Present (SPARK_Pragma (Spec_Id))
+           and then Mode_Is_Off (Next_Pragma (SPARK_Pragma (Spec_Id)))
          then
             return False;
 

@@ -1321,8 +1321,7 @@ package body Prj.Tree is
    begin
       pragma Assert
         (Present (Node)
-          and then
-            In_Tree.Project_Nodes.Table (Node).Kind = N_Term);
+          and then In_Tree.Project_Nodes.Table (Node).Kind = N_Term);
       return In_Tree.Project_Nodes.Table (Node).Field2;
    end Next_Term;
 
@@ -1332,18 +1331,17 @@ package body Prj.Tree is
 
    function Next_Variable
      (Node    : Project_Node_Id;
-      In_Tree : Project_Node_Tree_Ref)
-      return Project_Node_Id
+      In_Tree : Project_Node_Tree_Ref) return Project_Node_Id
    is
    begin
       pragma Assert
         (Present (Node)
           and then
-           (In_Tree.Project_Nodes.Table (Node).Kind =
-              N_Typed_Variable_Declaration
+            (In_Tree.Project_Nodes.Table (Node).Kind =
+                                                  N_Typed_Variable_Declaration
                or else
-            In_Tree.Project_Nodes.Table (Node).Kind =
-              N_Variable_Declaration));
+             In_Tree.Project_Nodes.Table (Node).Kind =
+                                                  N_Variable_Declaration));
 
       return In_Tree.Project_Nodes.Table (Node).Field3;
    end Next_Variable;
@@ -2925,6 +2923,7 @@ package body Prj.Tree is
                Canonical_Path => No_Path,
                Node           => Project,
                Extended       => False,
+               From_Extended  => False,
                Proj_Qualifier => Qualifier));
       end if;
 

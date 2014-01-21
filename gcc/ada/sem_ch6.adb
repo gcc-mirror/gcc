@@ -1186,6 +1186,9 @@ package body Sem_Ch6 is
             end loop;
          end;
 
+         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (Body_Id, True);
+
          Analyze_Declarations (Declarations (N));
          Check_Completion;
          Analyze (Handled_Statement_Sequence (N));
@@ -2923,6 +2926,8 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
+         Set_Ekind (Body_Id, E_Subprogram_Body);
+
          if Nkind (N) = N_Subprogram_Body_Stub then
             Set_Corresponding_Spec_Of_Stub (N, Spec_Id);
 
@@ -2989,9 +2994,17 @@ package body Sem_Ch6 is
 
             --  Set SPARK_Mode from spec if spec had a SPARK_Mode pragma
 
-            if Present (SPARK_Mode_Pragmas (Spec_Id)) then
-               SPARK_Mode :=
-                 Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragmas (Spec_Id));
+            if Present (SPARK_Pragma (Spec_Id)) then
+               SPARK_Mode_Pragma := SPARK_Pragma (Spec_Id);
+               SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragma);
+               Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
+               Set_SPARK_Pragma_Inherited (Body_Id, True);
+
+            --  Otherwise set from context
+
+            else
+               Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+               Set_SPARK_Pragma_Inherited (Body_Id, True);
             end if;
 
             --  Make sure that the subprogram is immediately visible. For
@@ -3003,7 +3016,6 @@ package body Sem_Ch6 is
 
          Set_Corresponding_Body (Unit_Declaration_Node (Spec_Id), Body_Id);
          Set_Contract (Body_Id, Make_Contract (Sloc (Body_Id)));
-         Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
 
@@ -3550,8 +3562,9 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
-      Scop       : constant Entity_Id  := Current_Scope;
+      Scop       : constant Entity_Id := Current_Scope;
       Designator : Entity_Id;
+
       Is_Completion : Boolean;
       --  Indicates whether a null procedure declaration is a completion
 
@@ -3584,6 +3597,9 @@ package body Sem_Ch6 is
       --  declarations that are the rewriting of an expression function.
 
       Generate_Definition (Designator);
+
+      Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Designator, True);
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");

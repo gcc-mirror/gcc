@@ -183,7 +183,6 @@ package body Back_End is
    -----------------------------
 
    procedure Scan_Compiler_Arguments is
-
       Next_Arg : Positive;
       --  Next argument to be scanned
 
@@ -247,7 +246,6 @@ package body Back_End is
             elsif Switch_Chars (First .. Last) = "fdump-scos" then
                Opt.Generate_SCO := True;
                Opt.Generate_SCO_Instance_Table := True;
-
             end if;
          end if;
       end Scan_Back_End_Switches;
@@ -255,7 +253,7 @@ package body Back_End is
       --  Local variables
 
       Arg_Count : constant Natural := Natural (save_argc - 1);
-      Args : Argument_List (1 .. Arg_Count);
+      Args      : Argument_List (1 .. Arg_Count);
 
    --  Start of processing for Scan_Compiler_Arguments
 
@@ -271,7 +269,7 @@ package body Back_End is
             Argv_Ptr : constant Big_String_Ptr := save_argv (Arg);
             Argv_Len : constant Nat            := Len_Arg (Arg);
             Argv     : constant String         :=
-              Argv_Ptr (1 .. Natural (Argv_Len));
+                         Argv_Ptr (1 .. Natural (Argv_Len));
          begin
             Args (Positive (Arg)) := new String'(Argv);
          end;
@@ -289,20 +287,9 @@ package body Back_End is
             --  flag (that is we have seen a -gnatO), then the next argument
             --  is the name of the output object file.
 
-            if Output_File_Name_Present
-              and then not Output_File_Name_Seen
-            then
+            if Output_File_Name_Present and then not Output_File_Name_Seen then
                if Is_Switch (Argv) then
                   Fail ("Object file name missing after -gnatO");
-
-               --  In GNATprove_Mode, such an object file is never written, and
-               --  the call to Set_Output_Object_File_Name may fail (e.g. when
-               --  the object file name does not have the expected suffix). So
-               --  we skip that call when GNATprove_Mode is set.
-
-               elsif GNATprove_Mode then
-                  Output_File_Name_Seen := True;
-
                else
                   Set_Output_Object_File_Name (Argv);
                   Output_File_Name_Seen := True;
@@ -320,7 +307,9 @@ package body Back_End is
                   Search_Directory_Present := False;
                end if;
 
-            elsif not Is_Switch (Argv) then -- must be a file name
+            --  If not a switch, must be a file name
+
+            elsif not Is_Switch (Argv) then
                Add_File (Argv);
 
             --  We must recognize -nostdinc to suppress visibility on the
