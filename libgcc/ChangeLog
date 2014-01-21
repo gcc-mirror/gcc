@@ -1,3 +1,7 @@
+2014-01-21  Barch Siach <barch@tkos.co.il>
+
+	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
+
 2014-01-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/ibm-ldouble.c (__gcc_qdiv): Scale up arguments in
