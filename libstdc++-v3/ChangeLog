@@ -1,3 +1,9 @@
+2014-01-21  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.tcc: Remove incorrect `nosubs` handling.
+	* include/bits/regex_scanner.tcc: Handle `nosubs` correctly.
+	* testsuite/28_regex/constants/syntax_option_type.cc: Add a test case.
+
 2014-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56267

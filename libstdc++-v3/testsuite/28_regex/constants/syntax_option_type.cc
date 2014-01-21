@@ -1,5 +1,4 @@
 // { dg-options "-std=c++0x" }
-// { dg-do compile }
 //
 // 2009-06-17  Stephen M. Webb  <stephen.webb@xandros.com>
 //
@@ -23,6 +22,7 @@
 // 28.5.1 
 
 #include <regex>
+#include <testsuite_hooks.h>
 
 void
 test01()
@@ -82,10 +82,21 @@ test04_constexpr()
   constexpr auto a3 __attribute__((unused)) = ~grep;
 }
 
+void
+test05()
+{
+  using namespace std;
+  using namespace regex_constants;
+  regex re("((a)(s))", nosubs | ECMAScript);
+  VERIFY(re.mark_count() == 0);
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04_constexpr();
+  test05();
   return 0;
 }

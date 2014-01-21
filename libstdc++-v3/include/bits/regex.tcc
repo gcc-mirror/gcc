@@ -126,8 +126,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __suf.second = __e;
 	      __suf.matched = (__suf.first != __suf.second);
 	    }
-	  if (__re.flags() & regex_constants::nosubs)
-	    __res.resize(3);
 	}
       return __ret;
     }
