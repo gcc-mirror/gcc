@@ -1,3 +1,7 @@
+2014-01-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/round_3.f08: Add more cases.
+	
 2014-01-20  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* lib/target-supports.exp (force_conventional_output_for): New
