@@ -1263,7 +1263,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
       if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
         add_to_hard_reg_set (&reg_rename_p->unavailable_hard_regs, 
-			     Pmode, HARD_FRAME_POINTER_IS_FRAME_POINTER);
+			     Pmode, HARD_FRAME_POINTER_REGNUM);
     }
 
 #ifdef STACK_REGS
