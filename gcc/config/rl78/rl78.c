@@ -3426,7 +3426,8 @@ rl78_propogate_register_origins (void)
 	    {
 	      rtx clobber = XVECEXP (pat, 0, 1);
 	      pat = XVECEXP (pat, 0, 0);
-	      if (GET_CODE (clobber) == CLOBBER)
+	      if (GET_CODE (clobber) == CLOBBER
+		  && GET_CODE (XEXP (clobber, 0)) == REG)
 		{
 		  int cr = REGNO (XEXP (clobber, 0));
 		  int mb = GET_MODE_SIZE (GET_MODE (XEXP (clobber, 0)));
@@ -3569,7 +3570,8 @@ rl78_propogate_register_origins (void)
 		    }
 		}
 	    }
-	  else if (GET_CODE (pat) == CLOBBER)
+	  else if (GET_CODE (pat) == CLOBBER
+		   && GET_CODE (XEXP (pat, 0)) == REG)
 	    {
 	      if (REG_P (XEXP (pat, 0)))
 		{

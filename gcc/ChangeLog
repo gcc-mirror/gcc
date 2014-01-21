@@ -1,3 +1,8 @@
+2014-01-20  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_propogate_register_origins): Verify
+	that CLOBBERs are REGs before propogating their values.
+
 2014-01-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/59789
