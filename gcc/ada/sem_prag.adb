@@ -9487,12 +9487,12 @@ package body Sem_Prag is
          --  pragma Abstract_State (ABSTRACT_STATE_LIST)
 
          --  ABSTRACT_STATE_LIST ::=
-         --    null
-         --  | STATE_NAME_WITH_OPTIONS
+         --     null
+         --  |  STATE_NAME_WITH_OPTIONS
          --  | (STATE_NAME_WITH_OPTIONS {, STATE_NAME_WITH_OPTIONS} )
 
          --  STATE_NAME_WITH_OPTIONS ::=
-         --    STATE_NAME
+         --     STATE_NAME
          --  | (STATE_NAME with OPTION_LIST)
 
          --  OPTION_LIST ::= OPTION {, OPTION}
@@ -9508,7 +9508,7 @@ package body Sem_Prag is
          --  | External [=> EXTERNAL_PROPERTY_LIST]
 
          --  EXTERNAL_PROPERTY_LIST ::=
-         --    EXTERNAL_PROPERTY
+         --     EXTERNAL_PROPERTY
          --  | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
 
          --  EXTERNAL_PROPERTY ::=
@@ -9516,6 +9516,7 @@ package body Sem_Prag is
          --  | Async_Writers    [=> boolean_EXPRESSION]
          --  | Effective_Reads  [=> boolean_EXPRESSION]
          --  | Effective_Writes [=> boolean_EXPRESSION]
+         --    others            => boolean_EXPRESSION
 
          --  STATE_NAME ::= defining_identifier
 
@@ -9549,6 +9550,7 @@ package body Sem_Prag is
                ER_Seen       : Boolean := False;
                EW_Seen       : Boolean := False;
                External_Seen : Boolean := False;
+               Others_Seen   : Boolean := False;
                Part_Of_Seen  : Boolean := False;
 
                --  Flags used to store the static value of all external states'
@@ -9660,15 +9662,36 @@ package body Sem_Prag is
                   Expr_Val : Boolean;
 
                begin
-                  --  The external property must be one of the predefined four
-                  --  reader/writer choices.
+                  --  Check the placement of "others" (if available)
 
-                  if Nkind (Prop) /= N_Identifier
-                    or else not Nam_In (Chars (Prop), Name_Async_Readers,
-                                                      Name_Async_Writers,
-                                                      Name_Effective_Reads,
-                                                      Name_Effective_Writes)
+                  if Nkind (Prop) = N_Others_Choice then
+                     if Others_Seen then
+                        Error_Msg_N
+                          ("only one others choice allowed in option External",
+                           Prop);
+                     else
+                        Others_Seen := True;
+                     end if;
+
+                  elsif Others_Seen then
+                     Error_Msg_N
+                       ("others must be the last property in option External",
+                        Prop);
+
+                  --  The only remaining legal options are the four predefined
+                  --  external properties.
+
+                  elsif Nkind (Prop) = N_Identifier
+                    and then Nam_In (Chars (Prop), Name_Async_Readers,
+                                                   Name_Async_Writers,
+                                                   Name_Effective_Reads,
+                                                   Name_Effective_Writes)
                   then
+                     null;
+
+                  --  Otherwise the construct is not a valid property
+
+                  else
                      Error_Msg_N ("invalid external state property", Prop);
                      return;
                   end if;
@@ -9693,21 +9716,47 @@ package body Sem_Prag is
                      Expr_Val := True;
                   end if;
 
-                  if Chars (Prop) = Name_Async_Readers then
-                     Check_Duplicate_Option (Prop, AR_Seen);
-                     AR_Val := Expr_Val;
+                  --  Named properties
 
-                  elsif Chars (Prop) = Name_Async_Writers then
-                     Check_Duplicate_Option (Prop, AW_Seen);
-                     AW_Val := Expr_Val;
+                  if Nkind (Prop) = N_Identifier then
+                     if Chars (Prop) = Name_Async_Readers then
+                        Check_Duplicate_Option (Prop, AR_Seen);
+                        AR_Val := Expr_Val;
 
-                  elsif Chars (Prop) = Name_Effective_Reads then
-                     Check_Duplicate_Option (Prop, ER_Seen);
-                     ER_Val := Expr_Val;
+                     elsif Chars (Prop) = Name_Async_Writers then
+                        Check_Duplicate_Option (Prop, AW_Seen);
+                        AW_Val := Expr_Val;
+
+                     elsif Chars (Prop) = Name_Effective_Reads then
+                        Check_Duplicate_Option (Prop, ER_Seen);
+                        ER_Val := Expr_Val;
+
+                     else
+                        Check_Duplicate_Option (Prop, EW_Seen);
+                        EW_Val := Expr_Val;
+                     end if;
+
+                  --  The handling of property "others" must take into account
+                  --  all other named properties that have been encountered so
+                  --  far. Only those that have not been seen are affected by
+                  --  "others".
 
                   else
-                     Check_Duplicate_Option (Prop, EW_Seen);
-                     EW_Val := Expr_Val;
+                     if not AR_Seen then
+                        AR_Val := Expr_Val;
+                     end if;
+
+                     if not AW_Seen then
+                        AW_Val := Expr_Val;
+                     end if;
+
+                     if not ER_Seen then
+                        ER_Val := Expr_Val;
+                     end if;
+
+                     if not EW_Seen then
+                        EW_Val := Expr_Val;
+                     end if;
                   end if;
                end Analyze_External_Property;
 
