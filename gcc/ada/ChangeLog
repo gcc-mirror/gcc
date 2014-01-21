@@ -1,3 +1,20 @@
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Selective_Accept.Add_Accept): Always add
+	call to Abort_Undefer, as expected by the runtime.
+	* s-tasren.adb (Local_Complete_Rendezvous): Replace
+	Defer_Abort_Nestable by Defer_Abort, since we do not expect abort to be
+	deferred at this point. Update comments.
+
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb, exp_ch5.adb, checks.adb: Minor reformatting.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb, usage.adb, gnat_ugn.texi: Mark -gnates as internal,
+	remove from doc.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* switch-c.adb, usage.adb, atree.adb, atree.ads: Minor reformatting.

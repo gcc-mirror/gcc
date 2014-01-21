@@ -236,10 +236,7 @@ begin
    Write_Switch_Char ("eP");
    Write_Line ("Pure/Prelaborate errors generate warnings rather than errors");
 
-   --  Line for -gnates switch
-
-   Write_Switch_Char ("es=?");
-   Write_Line ("Specify extra switches for gnat2why");
+   --  No line for -gnates=? : internal switch
 
    --  Line for -gnateS switch
 
