@@ -80,6 +80,20 @@ sub remove_suffixes ($) {
 	return $filename;
 }
 
+# Check if line can be a function declaration:
+# First pattern cut extra symbols added by diff
+# second pattern checks that line is not a comment or brace
+sub is_function  {
+	my ($function, $is_context_diff) = (@_);
+	if ($is_context_diff) {
+		$function =~ s/^..//;
+	} else {
+		$function =~ s/^.//;
+	}
+	return $function
+	&& ($function !~ /^[\s{}]/);
+}
+
 # For every file in the .diff print all the function names in ChangeLog
 # format.
 %cl_entries = ();
@@ -87,7 +101,10 @@ $change_msg = undef;
 $look_for_funs = 0;
 $clname = get_clname('');
 open (DFILE, $diff) or die "Could not open file $diff for reading";
-while (<DFILE>) {
+chomp (my @diff_lines = <DFILE>);
+close (DFILE);
+$line_idx = 0;
+foreach (@diff_lines) {
     # Stop processing functions if we found a new file
 	# Remember both left and right names because one may be /dev/null.
     if (/^[+*][+*][+*] +(\S+)/) {
@@ -150,6 +167,17 @@ while (<DFILE>) {
         $look_for_funs = 0;
     }
 
+    # Mark if we met doubtfully changed function.
+    $doubtfunc = 0;
+    $is_context_diff = 0;
+    if ($diff_lines[$line_idx] =~ /^@@ .* @@ ([a-zA-Z0-9_].*)/) {
+	    $doubtfunc = 1;
+    }
+    elsif ($diff_lines[$line_idx] =~ /^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/) {
+	    $doubtfunc = 1;
+	    $is_context_diff = 1;
+    }
+
     # If we find a new function, print it in brackets.  Special case if
     # this is the first function in a file.  
     #
@@ -187,7 +215,18 @@ while (<DFILE>) {
 	    1 while ($fn =~ s/<[^<>]*>//);
 	    $fn =~ s/[ \t]*$//;
 	}
-	if ($fn && $seen_names{$fn} == 0) {
+	# Check is function really modified
+	$no_real_change = 0;
+	if ($doubtfunc) {
+		$idx = $line_idx;
+	# Check all lines till the first change
+	# for the presence of really changed function
+		do {
+			++$idx;
+			$no_real_change = is_function ($diff_lines[$idx], $is_context_diff);
+		} while (!$no_real_change && ($diff_lines[$idx] !~  /^[\+\-\!]/))
+	}
+	if ($fn && !$seen_names{$fn} && !$no_real_change) {
 	    # If this is the first function in the file, we display it next
 	    # to the filename, so we need an extra space before the opening
 	    # brace.
@@ -201,9 +240,8 @@ while (<DFILE>) {
 	    $seen_names{$fn} = 1;
 	}
     }
+	$line_idx++;
 }
-
-close (DFILE);
 
 # If we have not seen any function names (ie, $change_msg is empty), we just
 # write out a ':'. This happens when there is only one file with no
