@@ -1,3 +1,9 @@
+2014-01-20  Jerry DeLisle  <jvdelisle@gcc.gnu>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* io/write_float.def (output_float): Remove inadvertent test
+	code from previous patch.
+
 2014-01-19  Jerry DeLisle  <jvdelisle@gcc.gnu>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
