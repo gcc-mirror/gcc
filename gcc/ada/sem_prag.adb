@@ -16168,11 +16168,11 @@ package body Sem_Prag is
 
                if not Rep_Item_Too_Late (Typ, N) then
 
-                  --  In the context of static code analysis, we do not need
-                  --  complex front-end expansions related to pragma Pack,
-                  --  so disable handling of pragma Pack in these cases.
+                  --  In CodePeer mode, we do not need complex front-end
+                  --  expansions related to pragma Pack, so disable handling
+                  --  of pragma Pack.
 
-                  if CodePeer_Mode or GNATprove_Mode then
+                  if CodePeer_Mode then
                      null;
 
                   --  Don't attempt any packing for VM targets. We possibly

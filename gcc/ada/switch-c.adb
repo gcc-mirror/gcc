@@ -666,6 +666,25 @@ package body Switch.C is
                   --  files for the benefit of source coverage analysis tools
                   --  (xcov).
 
+                  when 's' =>
+                     if not First_Switch then
+                        Osint.Fail
+                          ("-gnates must not be combined with other switches");
+                     end if;
+
+                     --  Check for '='
+
+                     Ptr := Ptr + 1;
+
+                     if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
+                        Bad_Switch ("-gnates");
+                     else
+                        SPARK_Switches_File_Name :=
+                          new String'(Switch_Chars (Ptr + 1 .. Max));
+                     end if;
+
+                     return;
+
                   when 'S' =>
                      Generate_SCO := True;
                      Generate_SCO_Instance_Table := True;

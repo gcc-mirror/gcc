@@ -3821,6 +3821,12 @@ these errors become warnings (which can be ignored, or suppressed in the usual
 manner). This can be useful in some specialized circumstances such as the
 temporary use of special test software.
 
+@item -gnates=@var{path}
+@cindex @option{-gnates=file} (@command{gcc})
+Only relevant to the SPARK toolset (gnat2why), where gnatprove passes
+extra switches via a response file to gnat2why via this switch.
+This switch is otherwise ignored by gcc.
+
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
 Synonym of @option{-fdump-scos}, kept for backwards compatibility.

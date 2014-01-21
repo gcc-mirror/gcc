@@ -598,8 +598,8 @@ package body Atree is
       if With_Extension then
          if Present (Src) and then Has_Extension (Src) then
             for J in 1 .. Num_Extension_Nodes loop
-               Nodes.Append (Nodes.Table (Src + Node_Id (J)));
-               Flags.Append (Flags.Table (Src + Node_Id (J)));
+               Nodes.Append (Nodes.Table (Src + J));
+               Flags.Append (Flags.Table (Src + J));
             end loop;
          else
             for J in 1 .. Num_Extension_Nodes loop
@@ -739,11 +739,9 @@ package body Atree is
 
       if Has_Extension (Source) then
          pragma Assert (Has_Extension (Destination));
-         Nodes.Table (Destination + 1) := Nodes.Table (Source + 1);
-         Nodes.Table (Destination + 2) := Nodes.Table (Source + 2);
-         Nodes.Table (Destination + 3) := Nodes.Table (Source + 3);
-         Nodes.Table (Destination + 4) := Nodes.Table (Source + 4);
-         Nodes.Table (Destination + 5) := Nodes.Table (Source + 5);
+         for J in 1 .. Num_Extension_Nodes loop
+            Nodes.Table (Destination + J) := Nodes.Table (Source + J);
+         end loop;
 
       else
          pragma Assert (not Has_Extension (Source));
@@ -1107,36 +1105,19 @@ package body Atree is
       Temp_Flg : Flags_Byte;
 
    begin
-      pragma Assert (Has_Extension (E1)
+      pragma Assert (True
+        and then Has_Extension (E1)
         and then Has_Extension (E2)
         and then not Nodes.Table (E1).In_List
         and then not Nodes.Table (E2).In_List);
 
       --  Exchange the contents of the two entities
 
-      Temp_Ent := Nodes.Table (E1);
-      Nodes.Table (E1) := Nodes.Table (E2);
-      Nodes.Table (E2) := Temp_Ent;
-
-      Temp_Ent := Nodes.Table (E1 + 1);
-      Nodes.Table (E1 + 1) := Nodes.Table (E2 + 1);
-      Nodes.Table (E2 + 1) := Temp_Ent;
-
-      Temp_Ent := Nodes.Table (E1 + 2);
-      Nodes.Table (E1 + 2) := Nodes.Table (E2 + 2);
-      Nodes.Table (E2 + 2) := Temp_Ent;
-
-      Temp_Ent := Nodes.Table (E1 + 3);
-      Nodes.Table (E1 + 3) := Nodes.Table (E2 + 3);
-      Nodes.Table (E2 + 3) := Temp_Ent;
-
-      Temp_Ent := Nodes.Table (E1 + 4);
-      Nodes.Table (E1 + 4) := Nodes.Table (E2 + 4);
-      Nodes.Table (E2 + 4) := Temp_Ent;
-
-      Temp_Ent := Nodes.Table (E1 + 5);
-      Nodes.Table (E1 + 5) := Nodes.Table (E2 + 5);
-      Nodes.Table (E2 + 5) := Temp_Ent;
+      for J in 0 .. Num_Extension_Nodes loop
+         Temp_Ent := Nodes.Table (E1 + J);
+         Nodes.Table (E1 + J) := Nodes.Table (E2 + J);
+         Nodes.Table (E2 + J) := Temp_Ent;
+      end loop;
 
       --  Exchange flag bytes for first component. No need to do the exchange
       --  for the other components, since the flag bytes are always zero.

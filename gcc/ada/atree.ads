@@ -73,7 +73,7 @@ package Atree is
    --  nodes, considered as a single record. The following definition gives
    --  the number of extension nodes.
 
-   Num_Extension_Nodes : Int := 5;
+   Num_Extension_Nodes : Node_Id := 5;
    --  This value is increased by one if debug flag -gnatd.N is set. This is
    --  for testing performance impact of adding a new extension node.
 

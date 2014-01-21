@@ -2366,7 +2366,7 @@ See @ref{Interfacing to C++} for related information.
 Syntax:
 
 @smallexample @c ada
-pragma CPU (EXPRESSSION);
+pragma CPU (EXPRESSION);
 @end smallexample
 
 @noindent
@@ -5915,7 +5915,7 @@ section 7.2.2.
 Syntax:
 
 @smallexample @c ada
-pragma Relative_Deadline (time_span_EXPRESSSION);
+pragma Relative_Deadline (time_span_EXPRESSION);
 @end smallexample
 
 @noindent
@@ -6273,76 +6273,125 @@ pragma SPARK_Mode [ (On | Off | Auto) ] ;
 @end smallexample
 
 @noindent
-This pragma is used to designate whether a contract and its implementation must
-follow the SPARK 2014 programming language syntactic and semantic rules. The
-pragma is intended for use with formal verification tools and has no effect on
-the generated code.
+This pragma is used to specify whether a construct must
+satisfy the syntactic and semantic rules of the SPARK 2014 programming
+language. The pragma is intended for use with formal verification tools
+and has no effect on the generated code.
 
-When used as a configuration pragma over a whole compilation or in a particular
-compilation unit, it sets the mode of the units involved, in particular:
+The SPARK_Mode pragma is used to specify the value of the SPARK_Mode aspect
+(a three-valued aspect having values of On, Off, or Auto) of an entity.
+More precisely, it is used to specify the aspect value of a ``section''
+of an entity (the term ``section'' is defined below).
+If a Spark_Mode pragma's (optional) argument is omitted,
+an implicit argument of On is assumed.
 
-@itemize @bullet
+A SPARK_Mode pragma may be used as a configuration pragma and then has the
+semantics described below. A SPARK_Mode pragma which is not used as a
+configuration pragma shall not have an argument of Auto.
 
-@item
-@code{On}: All entities in the units must follow the SPARK 2014 language, and
-an error will be generated if not, unless locally overridden by a local
-SPARK_Mode pragma or aspect. @code{On} is the default mode when pragma
-SPARK_Mode is used without an argument.
-
-@item
-@code{Off}: The units are considered to be in Ada by default and therefore not
-part of SPARK 2014 unless overridden locally. These units may be called by
-SPARK 2014 units.
-
-@item
-@code{Auto}: The formal verification tools will automatically detect whether
-each entity is in SPARK 2014 or in Ada.
-
-@end itemize
-
-Pragma SPARK_Mode can be used as a local pragma with the following semantics:
+A SPARK_Mode pragma can be used as a local pragma only
+in the following contexts:
 
 @itemize @bullet
-
-@item
-Auto cannot be used as a mode argument.
 
 @item
 When the pragma is at the start of the visible declarations (preceded only
-by other pragmas) of a package declaration, it marks the whole package
-(declaration and body) in or out of SPARK 2014.
+by other pragmas) of a package declaration, it marks the visible part
+of the package as being in or out of SPARK 2014.
 
 @item
 When the pragma appears at the start of the private declarations of a
-package (only other pragmas can appear between the @code{private} keyword
-and the @code{SPARK_Mode} pragma), it marks the private part in or
-out of SPARK 2014 (overriding the default mode of the visible part).
+package (preceded only by other pragmas), it marks the private part
+of the package as being in or out of SPARK 2014.
 
 @item
-When the pragma appears immediately at the start of the declarations of a
+When the pragma appears at the start of the declarations of a
 package body (preceded only by other pragmas),
-it marks the whole body in or out of SPARK 2014 (overriding the default
-mode set by the declaration).
+it marks the declaration list of the package body body as being
+in or out of SPARK 2014.
 
 @item
 When the pragma appears at the start of the elaboration statements of
-a package body (only other pragmas can appear between the @code{begin}
-keyword and the @code{SPARK_Mode} pragma),
-it marks the elaboration statements in or out of SPARK 2014 (overriding
-the default mode of the package body).
+a package body (preceded only by other pragmas),
+it marks the handled_sequence_of_statements of the package body
+as being in or out of SPARK 2014.
 
 @item
 When the pragma appears after a subprogram declaration (with only other
-pragmas intervening), it marks the whole
-subprogram (spec and body) in or out of SPARK 2014.
+pragmas intervening), it marks the subprogram's specification as
+being in or out of SPARK 2014.
 
 @item
 When the pragma appears at the start of the declarations of a subprogram
-body (preceded only by other pragmas), it marks the whole body in or out
-of SPARK 2014 (overriding the default mode set by the declaration).
+body (preceded only by other pragmas), it marks the subprogram body
+as being in or out of SPARK 2014. For a subprogram body which is
+not a completion of another declaration, it also applies to the
+specification of the subprogram.
+
+@end itemize
+
+A package is defined to have 4 ``sections'': its visible part, its private
+part, its body's declaration list, and its body's
+handled_sequence_of_statements. Any other construct which requires a
+completion is defined to have 2 ``sections'': its declaration and its
+completion. Any other construct is defined to have 1 section.
+
+The SPARK_Mode aspect value of an arbitrary section of an arbitrary Ada entity
+or construct is then defined to be the following value (except if this yields
+a result of Auto for a non-package; see below):
+
+@itemize
 
 @item
-Any other use of the pragma is illegal.
+If SPARK_Mode has been specified for the given section of the given entity or
+construct, then the specified value;
+
+@item
+else if SPARK_Mode has been specified for at least one preceding section of
+the same entity, then the SPARK_Mode of the immediately preceding section;
+
+@item
+else for any of the visible part or body declarations of a library unit package
+or either section of a library unit subprogram, if there is an applicable
+SPARK_Mode configuration pragma then the value specified by the
+pragma; if no such configuration pragma applies, then an implicit
+specification of Auto is assumed;
+
+@item
+else for any subsequent (i.e., not the first) section of a library unit
+package, the SPARK_Mode of the preceding section;
+
+@item
+else the SPARK_Mode of the enclosing section of the nearest enclosing package
+or subprogram;
+
+@end itemize
+
+If the above computation yields a result of Auto for any construct other than
+one of the four sections of a package, then a result of On or Off is
+determined instead based on the legality (with respect to the rules of
+SPARK 2014) of the construct. The construct's SPARK_Mode is On if and only
+if the construct is in SPARK 2014. [A SPARK_Mode of
+Auto is therefore only possible for sections of a package.]
+
+If an earlier section of an entity has a Spark_Mode of Off, then the
+Spark_Mode aspect of any later section of that entity shall not be
+specified to be On. For example,
+if the specification of a subprogram has a Spark_Mode of Off, then the
+body of the subprogram shall not have a Spark_Mode of On.
+
+The following rules apply to SPARK code (i.e., constructs which
+have a SPARK_Mode aspect value of On):
+
+@itemize
+
+@item
+SPARK code shall only reference SPARK declarations, but a SPARK declaration
+which requires a completion may have a non-SPARK completion.
+
+@item
+SPARK code shall only enclose SPARK code, except that SPARK code may enclose
+a non-SPARK completion of an enclosed SPARK declaration.
 
 @end itemize
 
@@ -7858,7 +7907,9 @@ This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
 @unnumberedsec Aspect SPARK_Mode
 @findex SPARK_Mode
 @noindent
-This aspect is equivalent to pragma @code{SPARK_Mode}.
+This aspect is equivalent to pragma @code{SPARK_Mode} and
+may be specified for either or both of the specification and body
+of a subprogram or package.
 
 @node Aspect Suppress_Debug_Info
 @unnumberedsec Aspect Suppress_Debug_Info
