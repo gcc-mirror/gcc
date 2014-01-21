@@ -23397,16 +23397,24 @@ expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
     }
 
   destmem = offset_address (destmem, count, 1);
-  destmem = offset_address (destmem, GEN_INT (-size - GET_MODE_SIZE (mode)),
+  destmem = offset_address (destmem, GEN_INT (-2 * size),
 			    GET_MODE_SIZE (mode));
-  if (issetmem)
-    emit_move_insn (destmem, gen_lowpart (mode, value));
-  else
+  if (!issetmem)
     {
       srcmem = offset_address (srcmem, count, 1);
-      srcmem = offset_address (srcmem, GEN_INT (-size - GET_MODE_SIZE (mode)),
+      srcmem = offset_address (srcmem, GEN_INT (-2 * size),
 			       GET_MODE_SIZE (mode));
-      emit_move_insn (destmem, srcmem);
+    }
+  for (n = 0; n * GET_MODE_SIZE (mode) < size; n++)
+    {
+      if (issetmem)
+	emit_move_insn (destmem, gen_lowpart (mode, value));
+      else
+	{
+	  emit_move_insn (destmem, srcmem);
+	  srcmem = offset_address (srcmem, modesize, GET_MODE_SIZE (mode));
+	}
+      destmem = offset_address (destmem, modesize, GET_MODE_SIZE (mode));
     }
   emit_jump_insn (gen_jump (done_label));
   emit_barrier ();

@@ -1,3 +1,11 @@
+2014-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59003
+	* config/i386/i386.c (expand_small_movmem_or_setmem): If mode is
+	smaller than size, perform several stores or loads and stores
+	at dst + count - size to store or copy all of size bytes, rather
+	than just last modesize bytes.
+
 2014-01-20  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (rl78_propogate_register_origins): Verify
