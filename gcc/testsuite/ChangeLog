@@ -1,3 +1,9 @@
+2014-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59860
+	* gcc.dg/strlenopt-4.c: Expect the same counts on s390*-* as on all
+	other targets.
+
 2014-01-20  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/round_3.f08: Add more cases.
