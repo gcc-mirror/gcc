@@ -9840,17 +9840,14 @@ package body Sem_Ch12 is
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
-      --  The following check is only relevant in formal verification mode as
-      --  it is not a standard Ada legality rule. A volatile object cannot be
-      --  used as an actual in a generic instantiation.
+      --  A volatile object cannot be used as an actual in a generic instance.
+      --  The following check is only relevant when SPARK_Mode is on as it is
+      --  not a standard Ada legality rule.
 
-      --  Should mention that this is a rule for SPARK only, perhaps with
-      --  a SPARK RM reference???
-
-      if GNATprove_Mode and then Is_Volatile_Object (Actual) then
+      if SPARK_Mode = On and then Is_Volatile_Object (Actual) then
          Error_Msg_N
-           ("volatile object cannot act as actual in generic instantiation",
-            Actual);
+           ("volatile object cannot act as actual in generic instantiation "
+            & "(SPARK RM 7.1.3(4))", Actual);
       end if;
 
       return List;

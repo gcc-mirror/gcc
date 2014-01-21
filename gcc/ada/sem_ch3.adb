@@ -4801,16 +4801,17 @@ package body Sem_Ch3 is
       Seen   : Boolean := False;
 
    begin
-      --  The following check is only relevant in formal verification mode as
-      --  it is not standard Ada legality rule. The declaration of a volatile
-      --  variable must appear at the library level.
+      --  The declaration of a volatile variable must appear at the library
+      --  level. The check is only relevant when SPARK_Mode is on as it is not
+      --  standard Ada legality rule.
 
-      if GNATprove_Mode
+      if SPARK_Mode = On
         and then Is_Volatile_Object (Var_Id)
         and then not Is_Library_Level_Entity (Var_Id)
       then
          Error_Msg_N
-           ("volatile variable & must be declared at library level", Var_Id);
+           ("volatile variable & must be declared at library level (SPARK RM "
+            & "7.1.3(3))", Var_Id);
       end if;
 
       --  Examine the contract

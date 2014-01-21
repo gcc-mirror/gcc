@@ -4249,10 +4249,10 @@ package body Sem_Res is
                Check_Unset_Reference (A);
             end if;
 
-            --  The following checks are only relevant in formal verification
-            --  mode as they are not standard Ada legality rule.
+            --  The following checks are only relevant when SPARK_Mode is on as
+            --  they are not standard Ada legality rule.
 
-            if GNATprove_Mode
+            if SPARK_Mode = On
               and then Is_Volatile_Object (A)
             then
                --  A volatile object may act as an actual parameter when the
@@ -4270,11 +4270,9 @@ package body Sem_Res is
                   null;
 
                else
-                  --  Error message should mention SPARK, and perhaps give
-                  --  a SPARK RM reference ???
-
                   Error_Msg_N
-                    ("volatile object cannot act as actual in a call", A);
+                    ("volatile object cannot act as actual in a call (SPARK "
+                     & "RM 7.1.3(8))", A);
                end if;
             end if;
 
@@ -6459,12 +6457,12 @@ package body Sem_Res is
          Eval_Entity_Name (N);
       end if;
 
-      --  The following checks are only relevant in formal verification mode as
-      --  they are not standard Ada legality rule. A volatile object subject to
-      --  enabled properties Async_Writers or Effective_Reads must appear in a
-      --  specific context.
+      --  A volatile object subject to enabled properties Async_Writers or
+      --  Effective_Reads must appear in a specific context. The following
+      --  checks are only relevant when SPARK_Mode is on as they are not
+      --  standard Ada legality rules.
 
-      if GNATprove_Mode
+      if SPARK_Mode = On
         and then Ekind (E) = E_Variable
         and then Is_Volatile_Object (E)
         and then
@@ -6520,10 +6518,10 @@ package body Sem_Res is
             Par  := Parent (Par);
          end loop;
 
-         --  Message should mention SPARK, and perhaps SPARK RM ref ???
-
          if not Usage_OK then
-            Error_Msg_N ("volatile object cannot appear in this context", N);
+            Error_Msg_N
+              ("volatile object cannot appear in this context (SPARK RM "
+               & "7.1.3(9))", N);
          end if;
       end if;
    end Resolve_Entity_Name;
