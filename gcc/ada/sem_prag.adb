@@ -18055,7 +18055,7 @@ package body Sem_Prag is
 
          --  pragma SPARK_Mode [(On | Off | Auto)];
 
-         when Pragma_SPARK_Mode => SPARK_Mod : declare
+         when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
             Body_Id : Entity_Id;
             Context : Node_Id;
             Mode    : Name_Id;
@@ -18070,8 +18070,7 @@ package body Sem_Prag is
             --  verify that the new mode is less restrictive than the old mode.
             --  For example, if the old mode is ON, then the new mode can be
             --  anything. But if the old mode is OFF, then the only allowed
-            --  new mode is also OFF. If there is no error, this routine also
-            --  sets SPARK_Mode_Pragma to N, and SPARK_Mode to Mode_Id.
+            --  new mode is also OFF.
 
             function Get_SPARK_Mode_Name (Id : SPARK_Mode_Type) return Name_Id;
             --  Convert a value of type SPARK_Mode_Type to corresponding name
@@ -18085,29 +18084,20 @@ package body Sem_Prag is
                if Present (Old_Pragma) then
                   pragma Assert (Nkind (Old_Pragma) = N_Pragma);
 
-                  declare
-                     Gov_M : constant SPARK_Mode_Type :=
-                                Get_SPARK_Mode_From_Pragma (Old_Pragma);
+                  --  New mode less restrictive than the established mode
 
-                  begin
-                     --  New mode less restrictive than the established mode
+                  if Get_SPARK_Mode_From_Pragma (Old_Pragma) < Mode_Id then
+                     Error_Msg_Name_1 := Mode;
+                     Error_Msg_N ("cannot define 'S'P'A'R'K mode %", Arg1);
 
-                     if Gov_M < Mode_Id then
-                        Error_Msg_Name_1 := Mode;
-                        Error_Msg_N ("cannot define 'S'P'A'R'K mode %", Arg1);
-
-                        Error_Msg_Name_1 := Get_SPARK_Mode_Name (SPARK_Mode);
-                        Error_Msg_Sloc   := Sloc (SPARK_Mode_Pragma);
-                        Error_Msg_N
-                          ("\mode is less restrictive than mode "
-                           & "% defined #", Arg1);
-                        raise Pragma_Exit;
-                     end if;
-                  end;
+                     Error_Msg_Name_1 := Get_SPARK_Mode_Name (SPARK_Mode);
+                     Error_Msg_Sloc   := Sloc (SPARK_Mode_Pragma);
+                     Error_Msg_N
+                       ("\mode is less restrictive than mode "
+                        & "% defined #", Arg1);
+                     raise Pragma_Exit;
+                  end if;
                end if;
-
-               SPARK_Mode_Pragma := N;
-               SPARK_Mode := Mode_Id;
             end Check_Pragma_Conformance;
 
             -------------------------
@@ -18132,7 +18122,7 @@ package body Sem_Prag is
                end if;
             end Get_SPARK_Mode_Name;
 
-         --  Start of processing for SPARK_Mod
+         --  Start of processing for Do_SPARK_Mode
 
          begin
             GNAT_Pragma;
@@ -18177,7 +18167,7 @@ package body Sem_Prag is
             --  The pragma applies to a [library unit] subprogram or package
 
             else
-               --  Mode "Auto" cannot be used in nested subprograms or packages
+               --  Mode "Auto" can only be used in a configuration pragma
 
                if Mode_Id = Auto then
                   Error_Pragma_Arg
@@ -18283,6 +18273,9 @@ package body Sem_Prag is
 
                   if List_Containing (N) = Private_Declarations (Context) then
                      Check_Pragma_Conformance (SPARK_Aux_Pragma (Spec_Id));
+                     SPARK_Mode_Pragma := N;
+                     SPARK_Mode := Mode_Id;
+
                      Set_SPARK_Aux_Pragma           (Spec_Id, N);
                      Set_SPARK_Aux_Pragma_Inherited (Spec_Id, False);
 
@@ -18290,6 +18283,9 @@ package body Sem_Prag is
 
                   else
                      Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
+                     SPARK_Mode_Pragma := N;
+                     SPARK_Mode := Mode_Id;
+
                      Set_SPARK_Pragma               (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
                      Set_SPARK_Aux_Pragma           (Spec_Id, N);
@@ -18318,6 +18314,8 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Body_Id := Defining_Entity (Context);
                   Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
+                  SPARK_Mode_Pragma := N;
+                  SPARK_Mode := Mode_Id;
 
                   Set_SPARK_Pragma               (Body_Id, N);
                   Set_SPARK_Pragma_Inherited     (Body_Id, False);
@@ -18334,6 +18332,8 @@ package body Sem_Prag is
                   Context := Specification (Context);
                   Body_Id := Defining_Entity (Context);
                   Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
+                  SPARK_Mode_Pragma := N;
+                  SPARK_Mode := Mode_Id;
 
                   Set_SPARK_Pragma           (Body_Id, N);
                   Set_SPARK_Pragma_Inherited (Body_Id, False);
@@ -18351,6 +18351,8 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Body_Id := Defining_Unit_Name (Context);
                   Check_Pragma_Conformance (SPARK_Aux_Pragma (Body_Id));
+                  SPARK_Mode_Pragma := N;
+                  SPARK_Mode := Mode_Id;
 
                   Set_SPARK_Aux_Pragma           (Body_Id, N);
                   Set_SPARK_Aux_Pragma_Inherited (Body_Id, False);
@@ -18361,7 +18363,7 @@ package body Sem_Prag is
                   Pragma_Misplaced;
                end if;
             end if;
-         end SPARK_Mod;
+         end Do_SPARK_Mode;
 
          --------------------------------
          -- Static_Elaboration_Desired --

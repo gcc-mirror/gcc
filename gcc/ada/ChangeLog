@@ -1,5 +1,11 @@
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Fix problem
+	with pragma or aspect that applies to package spec or subprogram
+	spec.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
 	* exp_aggr.adb: Minor reformatting.
 
 2014-01-21  Johannes Kanig  <kanig@adacore.com>
