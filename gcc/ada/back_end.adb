@@ -87,6 +87,7 @@ package body Back_End is
          max_gnat_node                 : Int;
          number_name                   : Nat;
          nodes_ptr                     : Address;
+         flags_ptr                     : Address;
 
          next_node_ptr                 : Address;
          prev_node_ptr                 : Address;
@@ -141,6 +142,7 @@ package body Back_End is
          max_gnat_node      => Int (Last_Node_Id - First_Node_Id + 1),
          number_name        => Name_Entries_Count,
          nodes_ptr          => Nodes_Address,
+         flags_ptr          => Flags_Address,
 
          next_node_ptr      => Next_Node_Address,
          prev_node_ptr      => Prev_Node_Address,

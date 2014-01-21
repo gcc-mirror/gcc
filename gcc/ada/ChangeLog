@@ -1,3 +1,25 @@
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* gcc-interface/gigi.h: Get Flags array address.
+	* gcc-interface/trans.c: Acquire Flags array address.
+	* atree.adb: Add support for Flags array and Flag0,1,2,3.
+	* atree.ads: Add support for Flags array and Flag0,1,2,3.
+	* atree.h: Add support for Flags array and Flag0,1,2,3.
+	* back_end.adb: Pass Flags array address to gigi.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Attribute_Renaming): Transfer original attribute
+	reference to generated body so that legality checks on stream
+	attributes are properly applied. If type is tagged and already
+	frozen, insert generated body at the point of the renaming
+	declaration.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb: Code clean up.
+	* sem_ch8.adb: Minor reformatting
+
 2014-01-20  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb: Check SPARK_Mode instead of GNATProve_Mode for

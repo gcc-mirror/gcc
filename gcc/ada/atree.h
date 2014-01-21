@@ -359,6 +359,21 @@ extern struct Node *Nodes_Ptr;
 #define Parent atree__parent
 extern Node_Id Parent (Node_Id);
 
+/* The auxiliary flags array which is allocated in parallel to Nodes */
+
+struct Flags
+{
+    Boolean      Flag0  : 1;
+    Boolean      Flag1  : 1;
+    Boolean      Flag2  : 1;
+    Boolean      Flag3  : 1;
+    Boolean      Spare0 : 1;
+    Boolean      Spare1 : 1;
+    Boolean      Spare2 : 1;
+    Boolean      Spare3 : 1;
+};
+extern struct Flags *Flags_Ptr;
+
 /* Overloaded Functions:
 
    These functions are overloaded in the original Ada source, but there is
@@ -530,6 +545,11 @@ extern Node_Id Current_Error_Node;
 #define Has_Aspects(N)       (Nodes_Ptr[(N) - First_Node_Id].U.K.has_aspects)
 #define Convention(N) \
     (Nodes_Ptr[(N) - First_Node_Id + 2].V.EX.U.fw.convention)
+
+#define Flag0(N)      (Flags_Ptr[(N) - First_Node_Id].Flag0)
+#define Flag1(N)      (Flags_Ptr[(N) - First_Node_Id].Flag1)
+#define Flag2(N)      (Flags_Ptr[(N) - First_Node_Id].Flag2)
+#define Flag3(N)      (Flags_Ptr[(N) - First_Node_Id].Flag3)
 
 #define Flag4(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag4)
 #define Flag5(N)      (Nodes_Ptr[(N) - First_Node_Id].U.K.flag5)
