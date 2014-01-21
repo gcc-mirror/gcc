@@ -2082,7 +2082,7 @@ package body Exp_Ch5 is
                --  by a dispatching call to _assign. It is suppressed in the
                --  case of assignments created by the expander that correspond
                --  to initializations, where we do want to copy the tag
-               --  (Expand_Ctrl_Actions flag is set True in this case). It is
+               --  (Expand_Ctrl_Actions flag is set False in this case). It is
                --  also suppressed if restriction No_Dispatching_Calls is in
                --  force because in that case predefined primitives are not
                --  generated.

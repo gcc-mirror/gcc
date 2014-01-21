@@ -1684,8 +1684,10 @@ package Sinfo is
    --  No_Ctrl_Actions (Flag7-Sem)
    --    Present in N_Assignment_Statement to indicate that no Finalize nor
    --    Adjust should take place on this assignment even though the RHS is
-   --    controlled. This is used in init procs and aggregate expansions where
-   --    the generated assignments are initializations, not real assignments.
+   --    controlled. Also indicates that the primitive _assign should not be
+   --    used for a tagged assignment. This is used in init procs and aggregate
+   --    expansions where the generated assignments are initializations, not
+   --    real assignments.
 
    --  No_Elaboration_Check (Flag14-Sem)
    --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates

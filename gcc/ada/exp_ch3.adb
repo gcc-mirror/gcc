@@ -1863,9 +1863,7 @@ package body Exp_Ch3 is
          --  Suppress the tag adjustment when VM_Target because VM tags are
          --  represented implicitly in objects.
 
-         if Is_Tagged_Type (Typ)
-           and then Tagged_Type_Expansion
-         then
+         if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
             Append_To (Res,
               Make_Assignment_Statement (N_Loc,
                 Name       =>
