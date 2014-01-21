@@ -663,8 +663,7 @@ package body Switch.C is
                   --  -gnateS (generate SCO information)
 
                   --  Include Source Coverage Obligation information in ALI
-                  --  files for the benefit of source coverage analysis tools
-                  --  (xcov).
+                  --  files for use by source coverage analysis tools (xcov).
 
                   when 's' =>
                      if not First_Switch then

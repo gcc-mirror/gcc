@@ -75,7 +75,8 @@ package Atree is
 
    Num_Extension_Nodes : Node_Id := 5;
    --  This value is increased by one if debug flag -gnatd.N is set. This is
-   --  for testing performance impact of adding a new extension node.
+   --  for testing performance impact of adding a new extension node. We make
+   --  this of type Node_Id for easy reference in loops using this value.
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --

@@ -739,6 +739,7 @@ package body Atree is
 
       if Has_Extension (Source) then
          pragma Assert (Has_Extension (Destination));
+
          for J in 1 .. Num_Extension_Nodes loop
             Nodes.Table (Destination + J) := Nodes.Table (Source + J);
          end loop;
