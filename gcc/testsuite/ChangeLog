@@ -1,3 +1,8 @@
+2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59858
+	* gcc.target/arm/pr59858.c: New.
+
 2014-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59003

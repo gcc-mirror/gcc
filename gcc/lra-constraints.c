@@ -688,9 +688,10 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 
 /* True if C is a non-empty register class that has too few registers
    to be safely used as a reload target class.	*/
-#define SMALL_REGISTER_CLASS_P(C)					\
-  (reg_class_size [(C)] == 1						\
-   || (reg_class_size [(C)] >= 1 && targetm.class_likely_spilled_p (C)))
+#define SMALL_REGISTER_CLASS_P(C)		\
+  (ira_class_hard_regs_num [(C)] == 1		\
+   || (ira_class_hard_regs_num [(C)] >= 1	\
+       && targetm.class_likely_spilled_p (C)))
 
 /* If REG is a reload pseudo, try to make its class satisfying CL.  */
 static void
@@ -2113,17 +2114,25 @@ process_alt_operands (int only_alternative)
 		}
 	      /* If the operand is dying, has a matching constraint,
 		 and satisfies constraints of the matched operand
-		 which failed to satisfy the own constraints, we do
-		 not need to generate a reload insn for this
-		 operand.  */
-	      if (!(this_alternative_matches >= 0
-		    && !curr_alt_win[this_alternative_matches]
-		    && REG_P (op)
-		    && find_regno_note (curr_insn, REG_DEAD, REGNO (op))
-		    && (hard_regno[nop] >= 0
-			? in_hard_reg_set_p (this_alternative_set,
-					     mode, hard_regno[nop])
-			: in_class_p (op, this_alternative, NULL))))
+		 which failed to satisfy the own constraints, probably
+		 the reload for this operand will be gone.  */
+	      if (this_alternative_matches >= 0
+		  && !curr_alt_win[this_alternative_matches]
+		  && REG_P (op)
+		  && find_regno_note (curr_insn, REG_DEAD, REGNO (op))
+		  && (hard_regno[nop] >= 0
+		      ? in_hard_reg_set_p (this_alternative_set,
+					   mode, hard_regno[nop])
+		      : in_class_p (op, this_alternative, NULL)))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Dying matched operand reload: reject++\n",
+		       nop);
+		  reject++;
+		}
+	      else
 		{
 		  /* Strict_low_part requires to reload the register
 		     not the sub-register.  In this case we should

@@ -1,3 +1,10 @@
+2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59858
+	* lra-constraints.c (SMALL_REGISTER_CLASS_P): Use
+	ira_class_hard_regs_num.
+	(process_alt_operands): Increase reject for dying matched operand.
+
 2014-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59003
