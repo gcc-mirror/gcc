@@ -1,3 +1,28 @@
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi (Scalar_Storage_Order): Update documentation.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Set_Instance_Env): In Ada 2012 mode, preserve
+	the value of Assertions_Enabled flag when compiling an instance of
+	an internal unit. This facilitates the use of pre/postconditions
+	in generic internal units, such as the new elementary function
+	libraries.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+	* sem_attr.adb: Minor reformatting.
+	* sem_res.adb: Minor comment addition.
+	* einfo.adb: Minor comment updates.
+	* freeze.adb: Minor reformatting and code reorganization.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_If_Expression): Handle more gracefully an
+	elsif clause that does not have an else part.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb, sem_util.ads, sem_ch4.adb: Minor reformatting.
