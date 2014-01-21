@@ -1,3 +1,11 @@
+2014-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* ansidecl.h (ANSI_PROTOTYPES, PTRCONST, LONG_DOUBLE, PARAMS)
+	(VPARAMS, VA_START, VA_OPEN, VA_CLOSE, VA_FIXEDARG, CONST)
+	(VOLATILE, SIGNED, PROTO, EXFUN, DEFUN, DEFUN_VOID, AND, DOTS)
+	(NOARGS): Don't define.
+	* libiberty.h (expandargv, writeargv): Don't use PARAMS.
+
 2013-12-23  Bill Maddox  <maddox@google.com>
 
 	* demangle.h (enum gnu_v3_ctor_kinds):

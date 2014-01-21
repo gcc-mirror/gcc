@@ -1,3 +1,13 @@
+2014-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* _doprint.c (checkit): Use stdarg, not VA_* macros.
+	* asprintf.c (asprintf): Use stdarg, not VA_* macros.
+	* concat.c (concat_length, concat_copy, concat_copy2, concat)
+	(reconcat): Use stdarg, not VA_* macros.
+	* snprintf.c (snprintf): Use stdarg, not VA_* macros.
+	* vasprintf.c (checkit): Use stdarg, not VA_* macros.
+	* vsnprintf.c (checkit): Use stdarg, not VA_* macros.
+
 2014-01-06  Mike Frysinger  <vapier@gentoo.org>
 
 	PR other/56780
