@@ -2199,7 +2199,13 @@ process_alt_operands (int only_alternative)
 		  || (curr_static_id->operand[nop].type != OP_OUT
 		      && no_input_reloads_p && ! const_to_mem)
 		  || (this_alternative_matches >= 0
-		      && (no_input_reloads_p || no_output_reloads_p)))
+		      && (no_input_reloads_p
+			  || (no_output_reloads_p
+			      && (curr_static_id->operand
+				  [this_alternative_matches].type != OP_IN)
+			      && ! find_reg_note (curr_insn, REG_UNUSED,
+						  no_subreg_reg_operand
+						  [this_alternative_matches])))))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
