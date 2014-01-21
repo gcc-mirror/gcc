@@ -1,3 +1,90 @@
+2014-01-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add entries for Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes in table Canonical_Aspect.
+	* aspects.ads Add entries for Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes in tables Aspect_Id,
+	Aspect_Names, Aspect_Delay and Implementation_Defined_Aspect.
+	* atree.adb (Ekind_In): New version with 8 parameters.
+	(Node34): New routine.
+	(Set_Node34): New routine.
+	* atree.ads (Ekind_In): New version with 8 parameters.
+	(Node34): New routine.
+	(Set_Node34): New routine.
+	* einfo.adb Contract is now Node34.
+	(Contract): Update the assertion and node usage.
+	(Get_Pragma): Include pragmas Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes.
+	(Set_Contract): Update the assertion and node usage.
+	(Write_Field24_Name): Remove the output for a contract.
+	(Write_Field34_Name): Add output for a contract.
+	* einfo.ads Contract is now Node34. Update the comment on
+	attribute usage and related node structures.
+	(Get_Pragma): Update the comment on usage.
+	* par-prag.adb (Prag): Pragmas Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes do not require special
+	processing by the parser.
+	* sem_ch3.adb (Analyze_Variable_Contract): New routine.
+	(Analyze_Declarations): Analyze the contract of a variable at
+	the end of the declarative region.
+	(Analyze_Object_Declaration): Create a contract for a variable.
+	* sem_ch6.adb (Analyze_Subprogram_Contract): Update the retrieval
+	of classification pragmas.
+	(Process_Formals): Detect an illegal
+	use of a volatile object as a formal in a function.
+	* sem_ch12.adb (Instantiate_Object): Detect an illegal use of
+	a volatile object as an actual in generic instantiation.
+	* sem_prag.adb Add entries for Async_Readers, Async_Writers,
+	Effective_Reads and Effective_Writes in table Sig_Flags.
+	(Analyze_External_State_In_Decl_Part): New routine.
+	(Analyze_Global_Item): Detect an illegal use of a volatile object
+	as a global item of a function.
+	(Analyze_Pragma): Reimplement
+	pragma Abstract_State. Add support for pragmas Async_Readers,
+	Async_Writers, Effective_Reads and Effective_Writes.
+	(Check_External_Properties): New routine.
+	* sem_prag.ads (Analyze_External_State_In_Decl_Part): New routine.
+	(Check_External_Properties): New routine.
+	* sem_res.adb (Resolve_Actuals): Detect an illegal use of a
+	volatile object as an actual in a call.
+	(Resolve_Entity_Name):
+	Add local variables Par, Prev and Usage_OK. Detect illegal
+	contexts of volatile objects.
+	* sem_util.adb (Add_Contract_Item): Add support for
+	pragmas associated with the contract of a variable.
+	(Async_Readers_Enabled): New routine.
+	(Async_Writers_Enabled): New routine.
+	(Effective_Reads_Enabled): New routine.
+	(Effective_Writes_Enabled): New routine.
+	(Has_Enabled_Property):
+	New routine.
+	(Is_Unchecked_Conversion_Instance): New routine.
+	(Is_Volatile_Object): Add support for entities that may denote
+	a volatile object.
+	* sem_util.ads (Add_Contract_Item): Update the
+	comment on usage.
+	(Async_Readers_Enabled): New routine.
+	(Async_Writers_Enabled): New routine.
+	(Effective_Reads_Enabled): New routine.
+	(Effective_Writes_Enabled): New routine.
+	(Is_Unchecked_Conversion_Instance): New routine.
+	* sinfo.ads Update the comment on the structure of N_Contract.
+	* snames.ads-tmpl Add predefined names for Async_Readers,
+	Async_Writers, Effective_Reads and Effective_Writes. Add
+	pragma ids for Async_Readers, Async_Writers, Effective_Reads
+	and Effective_Writes.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Eval_Op_Expon): Use CRT_Safe_Compile_Time_Known_Value
+	* sem_eval.adb (Compile_Time_Known_Value): Remove special
+	handling of CRT mode (CRT_Safe_Compile_Time_Known_Value): New
+	function (Eval_Op_Expon): Add CRT_Safe in call to Test_Foldable
+	(Test_Foldable): Add CRT_Safe parameter
+	* sem_eval.ads (Compile_Time_Known_Value): Remove special
+	handling of CRT mode.
+	(CRT_Safe_Compile_Time_Known_Value): New function.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Fix problem

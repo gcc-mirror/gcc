@@ -1027,11 +1027,11 @@ package Einfo is
 --       accept statement for a member of the family, and in the prefix of
 --       'COUNT when it applies to a family member.
 
---    Contract (Node24)
+--    Contract (Node34)
 --       Defined in entry, entry family, package, package body, subprogram and
---       subprogram body entities as well as their respective generic forms.
---       Points to the contract of the entity, holding various assertion items
---       and data classifiers.
+--       subprogram body entities as well as their respective generic forms. A
+--       contract is also applicable to a variable. Points to the contract of
+--       the entity, holding various assertion items and data classifiers.
 
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
@@ -5369,9 +5369,9 @@ package Einfo is
    --    Accept_Address                      (Elist21)
    --    Scope_Depth_Value                   (Uint22)
    --    Protection_Object                   (Node23)   (protected kind)
-   --    Contract                            (Node24)
    --    PPC_Wrapper                         (Node25)
    --    Extra_Formals                       (Node28)
+   --    Contract                            (Node34)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
    --    Is_AST_Entry                        (Flag132)  (for entry only)
@@ -5472,7 +5472,6 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Contract                            (Node24)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
@@ -5481,6 +5480,7 @@ package Einfo is
    --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
    --    SPARK_Pragma                        (Node32)
+   --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5631,9 +5631,9 @@ package Einfo is
    --    Alias                               (Node18)
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
-   --    Contract                            (Node24)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
+   --    Contract                            (Node34)
    --    Has_Invariants                      (Flag232)
    --    Has_Postconditions                  (Flag240)
    --    Is_Machine_Code_Subprogram          (Flag137)
@@ -5676,13 +5676,13 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Limited_View                        (Node23)   (non-generic/instance)
-   --    Contract                            (Node24)
    --    Abstract_States                     (Elist25)
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
    --    Finalizer                           (Node28)   (non-generic case only)
    --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
+   --    Contract                            (Node34)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Discard_Names                       (Flag88)
@@ -5715,10 +5715,10 @@ package Einfo is
    --    Spec_Entity                         (Node19)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
-   --    Contract                            (Node24)
    --    Finalizer                           (Node28)   (non-generic case only)
    --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
+   --    Contract                            (Node34)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -5760,7 +5760,6 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Contract                            (Node24)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)   (never for init proc)
    --    Wrapped_Entity                      (Node27)   (non-generic case only)
@@ -5768,6 +5767,7 @@ package Einfo is
    --    Static_Initialization               (Node30)   (init_proc only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
    --    SPARK_Pragma                        (Node32)
+   --    Contract                            (Node34)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
@@ -5938,10 +5938,10 @@ package Einfo is
    --    Corresponding_Protected_Entry       (Node18)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
-   --    Contract                            (Node24)
    --    Extra_Formals                       (Node28)
    --    SPARK_Pragma                        (Node32)
    --    SPARK_Pragma_Inherited              (Flag265)
+   --    Contract                            (Node34)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
@@ -6001,6 +6001,7 @@ package Einfo is
    --    Last_Assignment                     (Node26)
    --    Related_Type                        (Node27)
    --    Initialization_Statements           (Node28)
+   --    Contract                            (Node34)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -7494,8 +7495,13 @@ package Einfo is
    --  with the given pragma Id. If found, the value returned is the N_Pragma
    --  node, otherwise Empty is returned. The following contract pragmas that
    --  appear in N_Contract nodes are also handled by this routine:
+   --    Abstract_State
+   --    Async_Readers
+   --    Async_Writers
    --    Contract_Cases
    --    Depends
+   --    Effective_Reads
+   --    Effective_Writes
    --    Global
    --    Initial_Condition
    --    Initializes
@@ -7503,6 +7509,7 @@ package Einfo is
    --    Postcondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_State
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record

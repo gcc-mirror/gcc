@@ -161,10 +161,14 @@ package Aspects is
 
       Aspect_Ada_2005,                      -- GNAT
       Aspect_Ada_2012,                      -- GNAT
+      Aspect_Async_Readers,                 -- GNAT
+      Aspect_Async_Writers,                 -- GNAT
       Aspect_Asynchronous,
       Aspect_Atomic,
       Aspect_Atomic_Components,
       Aspect_Discard_Names,
+      Aspect_Effective_Reads,               -- GNAT
+      Aspect_Effective_Writes,              -- GNAT
       Aspect_Export,
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Independent,
@@ -215,11 +219,15 @@ package Aspects is
      (Aspect_Abstract_State           => True,
       Aspect_Ada_2005                 => True,
       Aspect_Ada_2012                 => True,
+      Aspect_Async_Readers            => True,
+      Aspect_Async_Writers            => True,
       Aspect_Compiler_Unit            => True,
       Aspect_Contract_Cases           => True,
       Aspect_Depends                  => True,
       Aspect_Dimension                => True,
       Aspect_Dimension_System         => True,
+      Aspect_Effective_Reads          => True,
+      Aspect_Effective_Writes         => True,
       Aspect_Favor_Top_Level          => True,
       Aspect_Global                   => True,
       Aspect_Inline_Always            => True,
@@ -368,6 +376,8 @@ package Aspects is
       Aspect_Address                      => Name_Address,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
+      Aspect_Async_Readers                => Name_Async_Readers,
+      Aspect_Async_Writers                => Name_Async_Writers,
       Aspect_Asynchronous                 => Name_Asynchronous,
       Aspect_Atomic                       => Name_Atomic,
       Aspect_Atomic_Components            => Name_Atomic_Components,
@@ -388,6 +398,8 @@ package Aspects is
       Aspect_Discard_Names                => Name_Discard_Names,
       Aspect_Dispatching_Domain           => Name_Dispatching_Domain,
       Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
+      Aspect_Effective_Reads              => Name_Effective_Reads,
+      Aspect_Effective_Writes             => Name_Effective_Writes,
       Aspect_Elaborate_Body               => Name_Elaborate_Body,
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
@@ -575,6 +587,8 @@ package Aspects is
      (No_Aspect                           => Always_Delay,
       Aspect_Address                      => Always_Delay,
       Aspect_All_Calls_Remote             => Always_Delay,
+      Aspect_Async_Readers                => Always_Delay,
+      Aspect_Async_Writers                => Always_Delay,
       Aspect_Asynchronous                 => Always_Delay,
       Aspect_Attach_Handler               => Always_Delay,
       Aspect_Compiler_Unit                => Always_Delay,
@@ -588,6 +602,8 @@ package Aspects is
       Aspect_Discard_Names                => Always_Delay,
       Aspect_Dispatching_Domain           => Always_Delay,
       Aspect_Dynamic_Predicate            => Always_Delay,
+      Aspect_Effective_Reads              => Always_Delay,
+      Aspect_Effective_Writes             => Always_Delay,
       Aspect_Elaborate_Body               => Always_Delay,
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,

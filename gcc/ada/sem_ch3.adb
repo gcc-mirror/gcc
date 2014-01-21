@@ -91,6 +91,15 @@ package body Sem_Ch3 is
    --  abstract interface types implemented by a record type or a derived
    --  record type.
 
+   procedure Analyze_Variable_Contract (Var_Id : Entity_Id);
+   --  Analyze all delayed aspects chained on the contract of variable Var_Id
+   --  as if they appeared at the end of the declarative region. The aspects in
+   --  consideration are:
+   --    Async_Readers
+   --    Async_Writers
+   --    Effective_Reads
+   --    Effective_Writes
+
    procedure Build_Derived_Type
      (N             : Node_Id;
       Parent_Type   : Entity_Id;
@@ -2353,8 +2362,9 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Analyze the contracts of a subprogram declaration or a body now due
-      --  to delayed visibility requirements of aspects.
+      --  Analyze the contracts of subprogram declarations, subprogram bodies
+      --  and variables now due to the delayed visibility requirements of their
+      --  aspects.
 
       Decl := First (L);
       while Present (Decl) loop
@@ -2363,6 +2373,11 @@ package body Sem_Ch3 is
 
          elsif Nkind (Decl) = N_Subprogram_Declaration then
             Analyze_Subprogram_Contract (Defining_Entity (Decl));
+
+         elsif Nkind (Decl) = N_Object_Declaration
+           and then Ekind (Defining_Entity (Decl)) = E_Variable
+         then
+            Analyze_Variable_Contract (Defining_Entity (Decl));
          end if;
 
          Next (Decl);
@@ -3698,6 +3713,8 @@ package body Sem_Ch3 is
          if Present (E) then
             Set_Has_Initial_Value (Id, True);
          end if;
+
+         Set_Contract (Id, Make_Contract (Sloc (Id)));
       end if;
 
       --  Initialize alignment and size and capture alignment setting
@@ -4768,6 +4785,72 @@ package body Sem_Ch3 is
          Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
+
+   -------------------------------
+   -- Analyze_Variable_Contract --
+   -------------------------------
+
+   procedure Analyze_Variable_Contract (Var_Id : Entity_Id) is
+      Items  : constant Node_Id := Contract (Var_Id);
+      AR_Val : Boolean := False;
+      AW_Val : Boolean := False;
+      ER_Val : Boolean := False;
+      EW_Val : Boolean := False;
+      Nam    : Name_Id;
+      Prag   : Node_Id;
+      Seen   : Boolean := False;
+
+   begin
+      --  The following check is only relevant in formal verification mode as
+      --  it is not standard Ada legality rule. The declaration of a volatile
+      --  variable must appear at the library level.
+
+      if GNATprove_Mode
+        and then Is_Volatile_Object (Var_Id)
+        and then not Is_Library_Level_Entity (Var_Id)
+      then
+         Error_Msg_N
+           ("volatile variable & must be declared at library level", Var_Id);
+      end if;
+
+      --  Examine the contract
+
+      if Present (Items) then
+
+         --  Analyze classification pragmas
+
+         Prag := Classifications (Items);
+         while Present (Prag) loop
+            Nam := Pragma_Name (Prag);
+
+            if Nam = Name_Async_Readers then
+               Analyze_External_State_In_Decl_Part (Prag, AR_Val);
+               Seen := True;
+
+            elsif Nam = Name_Async_Writers then
+               Analyze_External_State_In_Decl_Part (Prag, AW_Val);
+               Seen := True;
+
+            elsif Nam = Name_Effective_Reads then
+               Analyze_External_State_In_Decl_Part (Prag, ER_Val);
+               Seen := True;
+
+            else pragma Assert (Nam = Name_Effective_Writes);
+               Analyze_External_State_In_Decl_Part (Prag, EW_Val);
+               Seen := True;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end if;
+
+      --  Once all external properties have been processed, verify their mutual
+      --  interaction.
+
+      if Seen then
+         Check_External_Properties (Var_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+      end if;
+   end Analyze_Variable_Contract;
 
    --------------------------
    -- Analyze_Variant_Part --

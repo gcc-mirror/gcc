@@ -3503,7 +3503,7 @@ package body Sem_Ch6 is
 
          --  Analyze classification pragmas
 
-         Prag := Classifications (Contract (Subp));
+         Prag := Classifications (Items);
          while Present (Prag) loop
             Nam := Pragma_Name (Prag);
 
@@ -11115,6 +11115,18 @@ package body Sem_Ch6 is
            and then Can_Never_Be_Null (Etype (Formal))
          then
             Null_Exclusion_Static_Checks (Param_Spec);
+         end if;
+
+         --  The following check is only relevant in formal verification mode
+         --  as it is not a standard Ada legality rule. A function cannot have
+         --  a volatile formal parameter.
+
+         if GNATprove_Mode
+           and then Is_Volatile_Object (Formal)
+           and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
+         then
+            Error_Msg_N
+              ("function cannot have a volatile formal parameter", Formal);
          end if;
 
       <<Continue>>

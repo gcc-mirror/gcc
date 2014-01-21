@@ -4249,6 +4249,32 @@ package body Sem_Res is
                Check_Unset_Reference (A);
             end if;
 
+            --  The following checks are only relevant in formal verification
+            --  mode as they are not standard Ada legality rule.
+
+            if GNATprove_Mode
+              and then Is_Volatile_Object (A)
+            then
+               --  A volatile object may act as an actual parameter when the
+               --  corresponding formal is of a non-scalar volatile type.
+
+               if Is_Volatile (Etype (F))
+                 and then not Is_Scalar_Type (Etype (F))
+               then
+                  null;
+
+               --  A volatile object may act as an actual parameter in a call
+               --  to an instance of Unchecked_Conversion.
+
+               elsif Is_Unchecked_Conversion_Instance (Nam) then
+                  null;
+
+               else
+                  Error_Msg_N
+                    ("volatile object cannot act as actual in a call", A);
+               end if;
+            end if;
+
             Next_Actual (A);
 
          --  Case where actual is not present
@@ -6322,7 +6348,12 @@ package body Sem_Res is
    --  Used to resolve identifiers and expanded names
 
    procedure Resolve_Entity_Name (N : Node_Id; Typ : Entity_Id) is
-      E : constant Entity_Id := Entity (N);
+      E    : constant Entity_Id := Entity (N);
+      Par  : Node_Id;
+      Prev : Node_Id;
+
+      Usage_OK : Boolean := False;
+      --  Flag set when the use of a volatile object agrees with its context
 
    begin
       --  If garbage from errors, set to Any_Type and return
@@ -6424,6 +6455,72 @@ package body Sem_Res is
          end if;
 
          Eval_Entity_Name (N);
+      end if;
+
+      --  The following checks are only relevant in formal verification mode as
+      --  they are not standard Ada legality rule. A volatile object subject to
+      --  enabled properties Async_Writers or Effective_Reads must appear in a
+      --  specific context.
+
+      if GNATprove_Mode
+        and then Ekind (E) = E_Variable
+        and then Is_Volatile_Object (E)
+        and then
+          (Async_Writers_Enabled (E)
+             or else Effective_Reads_Enabled (E))
+      then
+         Par  := Parent (N);
+         Prev := N;
+         while Present (Par) loop
+
+            --  The variable can appear on either side of an assignment
+
+            if Nkind (Par) = N_Assignment_Statement then
+               Usage_OK := True;
+               exit;
+
+            --  The variable is part of the initialization expression of an
+            --  object. Ensure that the climb of the parent chain came from the
+            --  expression side and not from the name side.
+
+            elsif Nkind (Par) = N_Object_Declaration
+              and then Present (Expression (Par))
+              and then Prev = Expression (Par)
+            then
+               Usage_OK := True;
+               exit;
+
+            --  The variable appears as an actual parameter in a call to an
+            --  instance of Unchecked_Conversion whose result is renamed.
+
+            elsif Nkind (Par) = N_Function_Call
+              and then Is_Unchecked_Conversion_Instance (Entity (Name (Par)))
+              and then Nkind (Parent (Par)) = N_Object_Renaming_Declaration
+            then
+               Usage_OK := True;
+               exit;
+
+            --  Assume that references to volatile objects that appear as
+            --  actual parameters in a procedure call are always legal. The
+            --  full legality check is done when the actuals are resolved.
+
+            elsif Nkind (Par) = N_Procedure_Call_Statement then
+               Usage_OK := True;
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Prev := Par;
+            Par  := Parent (Par);
+         end loop;
+
+         if not Usage_OK then
+            Error_Msg_N ("volatile object cannot appear in this context", N);
+         end if;
       end if;
    end Resolve_Entity_Name;
 

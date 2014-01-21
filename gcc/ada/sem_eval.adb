@@ -227,13 +227,17 @@ package body Sem_Eval is
    --    Is_Static_Expression flag from the operands.
 
    procedure Test_Expression_Is_Foldable
-     (N    : Node_Id;
-      Op1  : Node_Id;
-      Op2  : Node_Id;
-      Stat : out Boolean;
-      Fold : out Boolean);
+     (N        : Node_Id;
+      Op1      : Node_Id;
+      Op2      : Node_Id;
+      Stat     : out Boolean;
+      Fold     : out Boolean;
+      CRT_Safe : Boolean := False);
    --  Same processing, except applies to an expression N with two operands
-   --  Op1 and Op2. The result is static only if both operands are static.
+   --  Op1 and Op2. The result is static only if both operands are static. If
+   --  CRT_Safe is set True, then CRT_Safe_Compile_Time_Known_Value is used
+   --  for the tests that the two operands are known at compile time. See
+   --  spec of this routine for further details.
 
    function Test_In_Range
      (N            : Node_Id;
@@ -1287,10 +1291,7 @@ package body Sem_Eval is
    -- Compile_Time_Known_Value --
    ------------------------------
 
-   function Compile_Time_Known_Value
-     (Op         : Node_Id;
-      Ignore_CRT : Boolean := False) return Boolean
-   is
+   function Compile_Time_Known_Value (Op : Node_Id) return Boolean is
       K      : constant Node_Kind := Nkind (Op);
       CV_Ent : CV_Entry renames CV_Cache (Nat (Op) mod CV_Cache_Size);
 
@@ -1307,31 +1308,6 @@ package body Sem_Eval is
         or else Raises_Constraint_Error (Op)
       then
          return False;
-      end if;
-
-      --  If this is not a static expression or a null literal, and we are in
-      --  configurable run-time mode, then we consider it not known at compile
-      --  time. This avoids anomalies where whether something is allowed with a
-      --  given configurable run-time library depends on how good the compiler
-      --  is at optimizing and knowing that things are constant when they are
-      --  nonstatic. This check is suppressed if Ignore_CRT is True
-
-      if (Configurable_Run_Time_Mode and not Ignore_CRT)
-        and then K /= N_Null
-        and then not Is_Static_Expression (Op)
-      then
-         --  We make an exception for expressions that evaluate to True/False,
-         --  to suppress spurious checks in ZFP mode. So far we have not seen
-         --  any negative consequences of this exception.
-
-         if Is_Entity_Name (Op)
-           and then Ekind (Entity (Op)) = E_Enumeration_Literal
-           and then Etype (Entity (Op)) = Standard_Boolean
-         then
-            null;
-         else
-            return False;
-         end if;
       end if;
 
       --  If we have an entity name, then see if it is the name of a constant
@@ -1487,6 +1463,21 @@ package body Sem_Eval is
       end if;
    end Compile_Time_Known_Value_Or_Aggr;
 
+   ---------------------------------------
+   -- CRT_Safe_Compile_Time_Known_Value --
+   ---------------------------------------
+
+   function CRT_Safe_Compile_Time_Known_Value (Op : Node_Id) return Boolean is
+   begin
+      if (Configurable_Run_Time_Mode or No_Run_Time_Mode)
+        and then not Is_OK_Static_Expression (Op)
+      then
+         return False;
+      else
+         return Compile_Time_Known_Value (Op);
+      end if;
+   end CRT_Safe_Compile_Time_Known_Value;
+
    -----------------
    -- Eval_Actual --
    -----------------
@@ -1541,6 +1532,8 @@ package body Sem_Eval is
       if not Fold then
          return;
       end if;
+
+      --  Otherwise attempt to fold
 
       if Is_Universal_Numeric_Type (Etype (Left))
            and then
@@ -2537,9 +2530,16 @@ package body Sem_Eval is
    begin
       --  If not foldable we are done
 
-      Test_Expression_Is_Foldable (N, Left, Right, Stat, Fold);
+      Test_Expression_Is_Foldable
+        (N, Left, Right, Stat, Fold, CRT_Safe => True);
+
+      --  Return if not foldable
 
       if not Fold then
+         return;
+      end if;
+
+      if Configurable_Run_Time_Mode and not Stat then
          return;
       end if;
 
@@ -5214,11 +5214,12 @@ package body Sem_Eval is
    --  Two operand case
 
    procedure Test_Expression_Is_Foldable
-     (N    : Node_Id;
-      Op1  : Node_Id;
-      Op2  : Node_Id;
-      Stat : out Boolean;
-      Fold : out Boolean)
+     (N        : Node_Id;
+      Op1      : Node_Id;
+      Op2      : Node_Id;
+      Stat     : out Boolean;
+      Fold     : out Boolean;
+      CRT_Safe : Boolean := False)
    is
       Rstat : constant Boolean := Is_Static_Expression (Op1)
                                     and then Is_Static_Expression (Op2);
@@ -5281,8 +5282,15 @@ package body Sem_Eval is
       elsif not Rstat then
          Check_Non_Static_Context (Op1);
          Check_Non_Static_Context (Op2);
-         Fold := Compile_Time_Known_Value (Op1)
-                   and then Compile_Time_Known_Value (Op2);
+
+         if CRT_Safe then
+            Fold := CRT_Safe_Compile_Time_Known_Value (Op1)
+                      and then CRT_Safe_Compile_Time_Known_Value (Op2);
+         else
+            Fold := Compile_Time_Known_Value (Op1)
+                      and then Compile_Time_Known_Value (Op2);
+         end if;
+
          return;
 
       --  Else result is static and foldable. Both operands are static, and
