@@ -264,8 +264,6 @@ package body Einfo is
    --  sense for them to be set true for certain subsets of entity kinds. See
    --  the spec of Einfo for further details.
 
-   --  Note: Flag1-Flag3 are not used, for historical reasons
-
    --    Is_Frozen                       Flag4
    --    Has_Discriminants               Flag5
    --    Is_Dispatching_Operation        Flag6
@@ -555,6 +553,10 @@ package body Einfo is
    --    Has_Body_References             Flag264
    --    SPARK_Pragma_Inherited          Flag265
    --    SPARK_Aux_Pragma_Inherited      Flag266
+
+   --    (unused)                        Flag1
+   --    (unused)                        Flag2
+   --    (unused)                        Flag3
 
    --    (unused)                        Flag267
    --    (unused)                        Flag268

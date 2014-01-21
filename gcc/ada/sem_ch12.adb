@@ -13796,6 +13796,8 @@ package body Sem_Ch12 is
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id)
    is
+      Assertion_Status : constant Boolean := Assertions_Enabled;
+
    begin
       --  Regardless of the current mode, predefined units are analyzed in the
       --  most current Ada mode, and earlier version Ada checks do not apply
@@ -13807,6 +13809,16 @@ package body Sem_Ch12 is
             Renamings_Included => True)
       then
          Set_Opt_Config_Switches (True, Current_Sem_Unit = Main_Unit);
+
+         --  In Ada2012 we may want to enable assertions in an instance of a
+         --  predefined unit, in which case we need to preserve the current
+         --  setting for the Assertions_Enabled flag. This will become more
+         --  critical when pre/postconditions are added to predefined units,
+         --  as is already the case for some numeric libraries.
+
+         if Ada_Version >= Ada_2012 then
+            Assertions_Enabled := Assertion_Status;
+         end if;
       end if;
 
       Current_Instantiated_Parent :=

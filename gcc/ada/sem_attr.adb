@@ -9788,8 +9788,9 @@ package body Sem_Attr is
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
                  and then Attr_Id = Attribute_Access
                then
-                  --  In an instance, this is a runtime check, but one we
-                  --  know will fail, so generate an appropriate warning.
+                  --  In an instance, this is a runtime check, but one we know
+                  --  will fail, so generate an appropriate warning. As usual,
+                  --  this kind of warning is an error in SPARK mode.
 
                   if In_Instance_Body then
                      Error_Msg_Warn := SPARK_Mode /= On;

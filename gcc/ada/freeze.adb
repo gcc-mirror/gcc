@@ -233,7 +233,7 @@ package body Freeze is
 
       --  Note that it is legal for a renaming_as_body to rename an intrinsic
       --  subprogram, as long as the renaming occurs before the new entity
-      --  is frozen. See RM 8.5.4 (5).
+      --  is frozen (RM 8.5.4 (5)).
 
       if Nkind (Body_Decl) = N_Subprogram_Renaming_Declaration
         and then Is_Entity_Name (Name (Body_Decl))
@@ -1174,7 +1174,6 @@ package body Freeze is
                Error_Msg_N
                  ("type of non-byte-aligned component must have same scalar "
                   & "storage order as enclosing composite", Err_Node);
-
             end if;
          end if;
 
@@ -1257,9 +1256,7 @@ package body Freeze is
 
       --  Do not attempt to analyze case where range was in error
 
-      if No (Scalar_Range (E))
-        or else Error_Posted (Scalar_Range (E))
-      then
+      if No (Scalar_Range (E)) or else Error_Posted (Scalar_Range (E)) then
          return;
       end if;
 
@@ -1284,7 +1281,6 @@ package body Freeze is
          Lo_Bound := Type_Low_Bound (Ancestor);
 
          if Compile_Time_Known_Value (Lo_Bound) then
-
             if Expr_Rep_Value (Lo_Bound) >= 0 then
                Set_Is_Unsigned_Type (E, True);
             end if;
@@ -1452,10 +1448,8 @@ package body Freeze is
                end if;
 
             elsif Ekind (E) in Task_Kind
-              and then
-                (Nkind (Parent (E)) = N_Task_Type_Declaration
-                   or else
-                 Nkind (Parent (E)) = N_Single_Task_Declaration)
+              and then Nkind_In (Parent (E), N_Task_Type_Declaration,
+                                             N_Single_Task_Declaration)
             then
                Push_Scope (E);
                Freeze_All (First_Entity (E), After);
@@ -1626,10 +1620,8 @@ package body Freeze is
             end if;
 
          elsif Ekind (E) in Task_Kind
-           and then
-             (Nkind (Parent (E)) = N_Task_Type_Declaration
-                or else
-              Nkind (Parent (E)) = N_Single_Task_Declaration)
+           and then Nkind_In (Parent (E), N_Task_Type_Declaration,
+                                          N_Single_Task_Declaration)
          then
             declare
                Ent : Entity_Id;
@@ -2075,11 +2067,12 @@ package body Freeze is
             --  If packing was requested or if the component size was
             --  set explicitly, then see if bit packing is required. This
             --  processing is only done for base types, since all of the
-            --  representation aspects involved are type-related. This is not
-            --  just an optimization, if we start processing the subtypes, they
-            --  interfere with the settings on the base type (this is because
-            --  Is_Packed has a slightly different meaning before and after
-            --  freezing).
+            --  representation aspects involved are type-related.
+
+            --  This is not just an optimization, if we start processing the
+            --  subtypes, they interfere with the settings on the base type
+            --  (this is because Is_Packed has a slightly different meaning
+            --  before and after freezing).
 
             declare
                Csiz : Uint;
@@ -2240,10 +2233,11 @@ package body Freeze is
             --  Check for Atomic_Components or Aliased with unsuitable packing
             --  or explicit component size clause given.
 
-            if (Has_Atomic_Components (Arr)
-                 or else Has_Aliased_Components (Arr))
-              and then (Has_Component_Size_Clause (Arr)
-                         or else Is_Packed (Arr))
+            if (Has_Atomic_Components  (Arr)
+                  or else
+                Has_Aliased_Components (Arr))
+              and then
+                (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
             then
                Alias_Atomic_Check : declare
 
@@ -2343,19 +2337,13 @@ package body Freeze is
                   & "accessible by separate tasks??", Clause, Arr);
 
                if Has_Component_Size_Clause (Arr) then
-                  Error_Msg_Sloc :=
-                    Sloc
-                      (Get_Attribute_Definition_Clause
-                           (FS, Attribute_Component_Size));
-                  Error_Msg_N
-                    ("\because of component size clause#??",
-                     Clause);
+                  Error_Msg_Sloc := Sloc (Get_Attribute_Definition_Clause
+                                           (FS, Attribute_Component_Size));
+                  Error_Msg_N ("\because of component size clause#??", Clause);
 
                elsif Has_Pragma_Pack (Arr) then
-                  Error_Msg_Sloc :=
-                    Sloc (Get_Rep_Pragma (FS, Name_Pack));
-                  Error_Msg_N
-                    ("\because of pragma Pack#??", Clause);
+                  Error_Msg_Sloc := Sloc (Get_Rep_Pragma (FS, Name_Pack));
+                  Error_Msg_N ("\because of pragma Pack#??", Clause);
                end if;
             end if;
 
@@ -2433,8 +2421,7 @@ package body Freeze is
                   end loop;
 
                   if Elmts > Intval (High_Bound
-                                     (Scalar_Range
-                                        (Standard_Integer))) + 1
+                                       (Scalar_Range (Standard_Integer))) + 1
                   then
                      Error_Msg_N
                        ("bit packed array type may not have "
@@ -2780,7 +2767,7 @@ package body Freeze is
 
                   if Is_Itype (Etype (Comp))
                     and then Is_Record_Type (Underlying_Type
-                                             (Scope (Etype (Comp))))
+                                               (Scope (Etype (Comp))))
                   then
                      Undelay_Type (Etype (Comp));
                   end if;
@@ -2820,20 +2807,24 @@ package body Freeze is
                   --  Check for error of component clause given for variable
                   --  sized type. We have to delay this test till this point,
                   --  since the component type has to be frozen for us to know
-                  --  if it is variable length. We omit this test in a generic
-                  --  context, it will be applied at instantiation time.
-
-                  --  We also omit this test in CodePeer mode, since we do not
-                  --  have sufficient info on size and representation clauses.
+                  --  if it is variable length.
 
                   if Present (CC) then
                      Placed_Component := True;
 
+                     --  We omit this test in a generic context, it will be
+                     --  applied at instantiation time.
+
                      if Inside_A_Generic then
                         null;
 
+                     --  Also omit this test in CodePeer mode, since we do not
+                     --  have sufficient info on size and rep clauses.
+
                      elsif CodePeer_Mode then
                         null;
+
+                     --  Do the check
 
                      elsif not
                        Size_Known_At_Compile_Time
@@ -3011,11 +3002,11 @@ package body Freeze is
               and then Present (Expression (Parent (Comp)))
               and then Nkind (Expression (Parent (Comp))) = N_Aggregate
               and then Is_Fully_Defined
-                 (Designated_Type (Component_Type (Etype (Comp))))
+                         (Designated_Type (Component_Type (Etype (Comp))))
             then
                Freeze_And_Append
                  (Designated_Type
-                   (Component_Type (Etype (Comp))), N, Result);
+                    (Component_Type (Etype (Comp))), N, Result);
             end if;
 
             Prev := Comp;
@@ -3816,9 +3807,9 @@ package body Freeze is
 
                         elsif (Is_Tagged_Type (R_Type)
                                 or else (Is_Access_Type (R_Type)
-                                           and then
-                                             Is_Tagged_Type
-                                               (Designated_Type (R_Type))))
+                                          and then
+                                            Is_Tagged_Type
+                                              (Designated_Type (R_Type))))
                           and then Convention (E) = Convention_C
                           and then not Has_Warnings_Off (E)
                           and then not Has_Warnings_Off (R_Type)
@@ -4118,13 +4109,8 @@ package body Freeze is
 
             --  Remaining step is to layout objects
 
-            if Ekind (E) = E_Variable
-                 or else
-               Ekind (E) = E_Constant
-                 or else
-               Ekind (E) = E_Loop_Parameter
-                 or else
-               Is_Formal (E)
+            if Ekind_In (E, E_Variable, E_Constant, E_Loop_Parameter)
+              or else Is_Formal (E)
             then
                Layout_Object (E);
             end if;
@@ -4449,8 +4435,7 @@ package body Freeze is
 
          elsif Is_Concurrent_Type (E) then
             if Present (Corresponding_Record_Type (E)) then
-               Freeze_And_Append
-                 (Corresponding_Record_Type (E), N, Result);
+               Freeze_And_Append (Corresponding_Record_Type (E), N, Result);
             end if;
 
             Comp := First_Entity (E);
@@ -4596,9 +4581,7 @@ package body Freeze is
             --  amendment type, so diagnosis is at the point of use and the
             --  type might be frozen later.
 
-            elsif E /= Base_Type (E)
-              or else Is_Derived_Type (E)
-            then
+            elsif E /= Base_Type (E) or else Is_Derived_Type (E) then
                null;
 
             else
@@ -4813,8 +4796,7 @@ package body Freeze is
                --  be an array type, or a nonlimited record type).
 
                if Has_Private_Declaration (E) then
-                  if (not Is_Record_Type (E)
-                       or else not Is_Limited_View (E))
+                  if (not Is_Record_Type (E) or else not Is_Limited_View (E))
                     and then not Is_Private_Type (E)
                   then
                      Error_Msg_Name_1 := Name_Simple_Storage_Pool_Type;
@@ -4845,7 +4827,8 @@ package body Freeze is
                   --  Upon return, Pool_Op_Formal will be updated to the next
                   --  formal, if any.
 
-                  procedure Validate_Simple_Pool_Operation (Op_Name : Name_Id);
+                  procedure Validate_Simple_Pool_Operation
+                    (Op_Name : Name_Id);
                   --  Search for and validate a simple pool operation with the
                   --  name Op_Name. If the name is Allocate, then there must be
                   --  exactly one such primitive operation for the simple pool
@@ -6784,18 +6767,16 @@ package body Freeze is
             --  directly.
 
             if Nkind (Dcopy) = N_Identifier
-              or else Nkind (Dcopy) = N_Expanded_Name
-              or else Nkind (Dcopy) = N_Integer_Literal
+              or else Nkind_In (Dcopy, N_Expanded_Name,
+                                       N_Integer_Literal,
+                                       N_Character_Literal,
+                                       N_String_Literal)
               or else (Nkind (Dcopy) = N_Real_Literal
                         and then not Vax_Float (Etype (Dcopy)))
-              or else Nkind (Dcopy) = N_Character_Literal
-              or else Nkind (Dcopy) = N_String_Literal
-              or else Known_Null (Dcopy)
               or else (Nkind (Dcopy) = N_Attribute_Reference
-                        and then
-                       Attribute_Name (Dcopy) = Name_Null_Parameter)
+                        and then Attribute_Name (Dcopy) = Name_Null_Parameter)
+              or else Known_Null (Dcopy)
             then
-
                --  If there is no default function, we must still do a full
                --  analyze call on the default value, to ensure that all error
                --  checks are performed, e.g. those associated with static

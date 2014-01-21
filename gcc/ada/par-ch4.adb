@@ -3078,6 +3078,7 @@ package body Ch4 is
    function P_If_Expression return Node_Id is
       Exprs : constant List_Id    := New_List;
       Loc   : constant Source_Ptr := Token_Ptr;
+      Cond  : Node_Id;
       Expr  : Node_Id;
       State : Saved_Scan_State;
 
@@ -3085,9 +3086,17 @@ package body Ch4 is
       Inside_If_Expression := Inside_If_Expression + 1;
       Error_Msg_Ada_2012_Feature ("|if expression", Token_Ptr);
       Scan; -- past IF or ELSIF
-      Append_To (Exprs, P_Condition);
-      TF_Then;
-      Append_To (Exprs, P_Expression);
+      Cond := P_Condition;
+
+      if Token = Tok_Then then
+         Scan;  --  past THEN
+         Append_To (Exprs, Cond);
+         Append_To (Exprs, P_Expression);
+
+      else
+         Error_Msg ("ELSIF should be ELSE", Loc);
+         return Cond;
+      end if;
 
       --  We now have scanned out IF expr THEN expr
 
@@ -3110,7 +3119,14 @@ package body Ch4 is
 
       if Token = Tok_Elsif then
          Expr := P_If_Expression;
-         Set_Is_Elsif (Expr);
+
+         if Nkind (Expr) = N_If_Expression then
+            Set_Is_Elsif (Expr);
+
+            --  Otherwise, this is an incomplete ELSIF as reported earlier,
+            --  so treat the expression as a final ELSE for better recovery.
+         end if;
+
          Append_To (Exprs, Expr);
 
       --  Scan out ELSE phrase if present
