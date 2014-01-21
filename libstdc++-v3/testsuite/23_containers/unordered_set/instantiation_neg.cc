@@ -19,7 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "with noexcept" "" { target *-*-* } 270 }
+// { dg-error "with noexcept" "" { target *-*-* } 266 }
 
 #include <unordered_set>
 

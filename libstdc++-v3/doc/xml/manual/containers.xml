@@ -420,7 +420,7 @@
       the hash code every time it's needed can improve performance, but the
       additional memory overhead can also reduce performance, so whether an
       unordered associative container caches the hash code or not depends on
-      a number of factors. The caching policy for GCC 4.8 is described below.
+      the properties described below.
     </para>
     <para>
       The C++ standard requires that <code>erase</code> and <code>swap</code>
@@ -432,23 +432,8 @@
       or <code>throw()</code>.
     </para>
     <para>
-      Secondly, libstdc++ also needs the hash code in the implementation of
-      <code>local_iterator</code> and <code>const_local_iterator</code> in
-      order to know when the iterator has reached the end of the bucket.
-      This means that the local iterator types will embed a copy of the hash
-      function when possible.
-      Because the local iterator types must be DefaultConstructible and
-      CopyAssignable, if the hash function type does not model those concepts
-      then it cannot be embedded and so the hash code must be cached.
-      Note that a hash function might not be safe to use when
-      default-constructed (e.g if it a function pointer) so a hash
-      function that is contained in a local iterator won't be used until
-      the iterator is valid, so the hash function has been copied from a
-      correctly-initialized object.
-    </para>
-    <para>
-      If the hash function is non-throwing, DefaultConstructible and
-      CopyAssignable then libstdc++ doesn't need to cache the hash code for
+      If the hash function is non-throwing then libstdc++ doesn't need to
+      cache the hash code for
       correctness, but might still do so for performance if computing a
       hash code is an expensive operation, as it may be for arbitrarily
       long strings.

@@ -1,3 +1,15 @@
+2014-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56267
+	* include/bits/hashtable.h (__cache_default): Do not depend on
+	whether the hash function is DefaultConstructible or CopyAssignable.
+	(_Hashtable): Adjust static assertions.
+	* doc/xml/manual/containers.xml (containers.unordered.cache): Update.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Remove.
+
 2014-01-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* scripts/create_testsuite_files: Add testsuite/experimental in
