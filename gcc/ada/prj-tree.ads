@@ -1476,6 +1476,10 @@ package Prj.Tree is
          Extended : Boolean;
          --  True when the project is being extended by another project
 
+         From_Extended : Boolean;
+         --  True when the project is only imported by projects that are
+         --  extended.
+
          Proj_Qualifier : Project_Qualifier;
          --  The project qualifier of the project, if any
       end record;
@@ -1486,6 +1490,7 @@ package Prj.Tree is
          Node           => Empty_Node,
          Canonical_Path => No_Path,
          Extended       => True,
+         From_Extended  => False,
          Proj_Qualifier => Unspecified);
 
       package Projects_Htable is new GNAT.Dynamic_HTables.Simple_HTable

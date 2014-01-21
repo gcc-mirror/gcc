@@ -371,10 +371,6 @@ package Lib is
    --      Set when the entry is created by a call to Lib.Load and then cannot
    --      be changed.
 
-   --    SPARK_Mode_Pragma
-   --      Pointer to the configuration pragma SPARK_Mode that applies to the
-   --      whole unit. Add note of what this is used for ???
-
    --    Unit_File_Name
    --      The name of the source file containing the unit. Set when the entry
    --      is created by a call to Lib.Load, and then cannot be changed.
@@ -426,7 +422,6 @@ package Lib is
    function Munit_Index       (U : Unit_Number_Type) return Nat;
    function OA_Setting        (U : Unit_Number_Type) return Character;
    function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
-   function SPARK_Mode_Pragma (U : Unit_Number_Type) return Node_Id;
    function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
@@ -445,7 +440,6 @@ package Lib is
    procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
    procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
-   procedure Set_SPARK_Mode_Pragma (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
    --  Set value of named field for given units table entry. Note that we
    --  do not have an entry for each possible field, since some of the fields
@@ -749,10 +743,8 @@ private
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
    pragma Inline (Set_OA_Setting);
-   pragma Inline (Set_SPARK_Mode_Pragma);
    pragma Inline (Set_Unit_Name);
    pragma Inline (Source_Index);
-   pragma Inline (SPARK_Mode_Pragma);
    pragma Inline (Unit_File_Name);
    pragma Inline (Unit_Name);
 

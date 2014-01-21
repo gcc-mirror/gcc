@@ -1325,11 +1325,20 @@ package body Prj.Part is
                         "cannot extend the same project file several times",
                         Token_Ptr);
                   end if;
-               else
+               elsif not A_Project_Name_And_Node.From_Extended then
                   Error_Msg
                     (Env.Flags,
                      "cannot extend an already imported project file",
                      Token_Ptr);
+
+               else
+                  --  Register this project as being extended
+
+                  A_Project_Name_And_Node.Extended := True;
+                  Tree_Private_Part.Projects_Htable.Set
+                    (In_Tree.Projects_HT,
+                     A_Project_Name_And_Node.Name,
+                     A_Project_Name_And_Node);
                end if;
 
             elsif A_Project_Name_And_Node.Extended then
@@ -1372,6 +1381,16 @@ package body Prj.Part is
                      "cannot import an already extended project file",
                      Token_Ptr);
                end if;
+
+            elsif A_Project_Name_And_Node.From_Extended then
+               --  This project is now imported from a non extending project.
+               --  Indicate this in has table Projects.HT.
+
+               A_Project_Name_And_Node.From_Extended := False;
+               Tree_Private_Part.Projects_Htable.Set
+                 (In_Tree.Projects_HT,
+                  A_Project_Name_And_Node.Name,
+                  A_Project_Name_And_Node);
             end if;
 
             Project := A_Project_Name_And_Node.Node;
@@ -1933,6 +1952,7 @@ package body Prj.Part is
                   Node           => Project,
                   Canonical_Path => Canonical_Path_Name,
                   Extended       => Extended,
+                  From_Extended  => From_Extended /= None,
                   Proj_Qualifier => Project_Qualifier_Of (Project, In_Tree)));
       end if;
 

@@ -1164,8 +1164,8 @@ package body Exp_Aggr is
             elsif Is_Access_Type (Ctype) then
                Append_To (L,
                   Make_Assignment_Statement (Loc,
-                     Name => Indexed_Comp,
-                     Expression => Make_Null (Loc)));
+                    Name       => Indexed_Comp,
+                    Expression => Make_Null (Loc)));
             end if;
 
             if Needs_Finalization (Ctype) then
@@ -1205,14 +1205,15 @@ package body Exp_Aggr is
             --  assignment in a block.
 
             if Present (Comp_Type)
-                 and then Needs_Finalization (Comp_Type)
-                 and then Is_Array_Type (Comp_Type)
-                 and then Present (Expr)
+              and then Needs_Finalization (Comp_Type)
+              and then Is_Array_Type (Comp_Type)
+              and then Present (Expr)
             then
-               A := Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => New_List (A)));
+               A :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (A)));
             end if;
 
             Append_To (L, A);
@@ -1231,9 +1232,9 @@ package body Exp_Aggr is
                begin
                   A :=
                     Make_OK_Assignment_Statement (Loc,
-                      Name =>
+                      Name       =>
                         Make_Selected_Component (Loc,
-                          Prefix =>  New_Copy_Tree (Indexed_Comp),
+                          Prefix        =>  New_Copy_Tree (Indexed_Comp),
                           Selector_Name =>
                             New_Reference_To
                               (First_Tag_Component (Full_Typ), Loc)),

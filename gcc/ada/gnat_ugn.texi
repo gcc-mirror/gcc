@@ -15393,6 +15393,17 @@ mode indicates that the parameter is of mode 'in', 'in out', or 'out'.
 @end itemize
 
 @noindent
+All elements other than Not_An_Element have this attribute:
+
+@itemize @bullet
+@item
+checks is a comma-separated list of run-time checks that are needed
+for that element. The possible checks are: do_accessibility_check,
+do_discriminant_check,do_division_check,do_length_check,
+do_overflow_check,do_range_check,do_storage_check,do_tag_check.
+@end itemize
+
+@noindent
 The "kind" part of the "def" and "ref" attributes is taken from the ASIS
 enumeration type Flat_Declaration_Kinds, declared in
 Asis.Extensions.Flat_Kinds, with the leading "An_" or "A_" removed, and

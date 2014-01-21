@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                SPARK                                          --
+--                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                                  O P T                                   --
@@ -1272,6 +1272,11 @@ package Opt is
    --  GNAT
    --  Current SPARK mode setting
 
+   SPARK_Mode_Pragma : Node_Id := Empty;
+   --  GNAT
+   --  If the current SPARK_Mode (above) was set by a pragma, this records
+   --  the pragma that set this mode.
+
    SPARK_Switches_File_Name : String_Ptr := null;
    --  GNAT
    --  Set to non-null file name by use of the -gnates switch to specify
@@ -1909,7 +1914,12 @@ package Opt is
    --  start of analyzing each unit.
 
    SPARK_Mode_Config : SPARK_Mode_Type := None;
+   --  GNAT
    --  The setting of SPARK_Mode from configuration pragmas
+
+   SPARK_Mode_Pragma_Config : Node_Id := Empty;
+   --  If a SPARK_Mode pragma appeared in the configuration pragmas (setting
+   --  SPARK_Mode_Config appropriately), then this points to the N_Pragma node.
 
    Use_VADS_Size_Config : Boolean;
    --  GNAT
@@ -2056,6 +2066,7 @@ private
       Polling_Required               : Boolean;
       Short_Descriptors              : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
+      SPARK_Mode_Pragma              : Node_Id;
       Use_VADS_Size                  : Boolean;
    end record;
 

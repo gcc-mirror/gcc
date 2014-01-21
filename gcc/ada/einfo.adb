@@ -248,9 +248,9 @@ package body Einfo is
 
    --    Thunk_Entity                    Node31
 
-   --    SPARK_Mode_Pragmas              Node32
+   --    SPARK_Pragma                    Node32
 
-   --    (unused)                        Node33
+   --    SPARK_Aux_Pragma                Node33
 
    --    (unused)                        Node34
 
@@ -554,9 +554,9 @@ package body Einfo is
    --    May_Inherit_Delayed_Rep_Aspects Flag262
    --    Has_Visible_Refinement          Flag263
    --    Has_Body_References             Flag264
+   --    SPARK_Pragma_Inherited          Flag265
+   --    SPARK_Aux_Pragma_Inherited      Flag266
 
-   --    (unused)                        Flag265
-   --    (unused)                        Flag266
    --    (unused)                        Flag267
    --    (unused)                        Flag268
    --    (unused)                        Flag269
@@ -2835,7 +2835,25 @@ package body Einfo is
       return Ureal21 (Id);
    end Small_Value;
 
-   function SPARK_Mode_Pragmas (Id : E) return N is
+   function SPARK_Aux_Pragma (Id : E) return N is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Node33 (Id);
+   end SPARK_Aux_Pragma;
+
+   function SPARK_Aux_Pragma_Inherited (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Flag266 (Id);
+   end SPARK_Aux_Pragma_Inherited;
+
+   function SPARK_Pragma (Id : E) return N is
    begin
       pragma Assert
         (Ekind_In (Id, E_Function,         --  subprogram variants
@@ -2848,7 +2866,22 @@ package body Einfo is
                        E_Package,
                        E_Package_Body));
       return Node32 (Id);
-   end SPARK_Mode_Pragmas;
+   end SPARK_Pragma;
+
+   function SPARK_Pragma_Inherited (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Flag265 (Id);
+   end SPARK_Pragma_Inherited;
 
    function Spec_Entity (Id : E) return E is
    begin
@@ -5527,7 +5560,27 @@ package body Einfo is
       Set_Ureal21 (Id, V);
    end Set_Small_Value;
 
-   procedure Set_SPARK_Mode_Pragmas (Id : E; V : N) is
+   procedure Set_SPARK_Aux_Pragma (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+
+      Set_Node33 (Id, V);
+   end Set_SPARK_Aux_Pragma;
+
+   procedure Set_SPARK_Aux_Pragma_Inherited (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+
+      Set_Flag266 (Id, V);
+   end Set_SPARK_Aux_Pragma_Inherited;
+
+   procedure Set_SPARK_Pragma (Id : E; V : N) is
    begin
       pragma Assert
         (Ekind_In (Id, E_Function,         --  subprogram variants
@@ -5541,7 +5594,23 @@ package body Einfo is
                        E_Package_Body));
 
       Set_Node32 (Id, V);
-   end Set_SPARK_Mode_Pragmas;
+   end Set_SPARK_Pragma;
+
+   procedure Set_SPARK_Pragma_Inherited (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+
+      Set_Flag265 (Id, V);
+   end Set_SPARK_Pragma_Inherited;
 
    procedure Set_Spec_Entity (Id : E; V : E) is
    begin
@@ -8227,6 +8296,8 @@ package body Einfo is
       W ("Sec_Stack_Needed_For_Return",     Flag167 (Id));
       W ("Size_Depends_On_Discriminant",    Flag177 (Id));
       W ("Size_Known_At_Compile_Time",      Flag92  (Id));
+      W ("SPARK_Aux_Pragma_Inherited",      Flag266 (Id));
+      W ("SPARK_Pragma_Inherited",          Flag265 (Id));
       W ("Static_Elaboration_Desired",      Flag77  (Id));
       W ("Strict_Alignment",                Flag145 (Id));
       W ("Suppress_Elaboration_Warnings",   Flag148 (Id));
@@ -9366,7 +9437,7 @@ package body Einfo is
               E_Package_Body                               |
               E_Procedure                                  |
               E_Subprogram_Body                            =>
-            Write_Str ("SPARK_Mode_Pragmas");
+            Write_Str ("SPARK_Pragma");
 
          when others                                       =>
             Write_Str ("Field32??");
@@ -9380,6 +9451,11 @@ package body Einfo is
    procedure Write_Field33_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Generic_Package                            |
+              E_Package                                    |
+              E_Package_Body                               =>
+            Write_Str ("SPARK_Aux_Pragma");
+
          when others                                       =>
             Write_Str ("Field33??");
       end case;
