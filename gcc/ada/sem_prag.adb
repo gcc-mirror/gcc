@@ -10206,8 +10206,17 @@ package body Sem_Prag is
 
          when Pragma_Allow_Integer_Address =>
             GNAT_Pragma;
+            Check_Valid_Configuration_Pragma;
             Check_Arg_Count (0);
-            Opt.Allow_Integer_Address := True;
+
+            --  If Address is a private type, then set the flag to allow
+            --  integer address values. If Address is not private (e.g. on
+            --  VMS, where it is an integer type), then this pragma has no
+            --  purpose, so it is simply ignored.
+
+            if Is_Private_Type (RTE (RE_Address)) then
+               Opt.Allow_Integer_Address := True;
+            end if;
 
          --------------
          -- Annotate --

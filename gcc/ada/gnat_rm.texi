@@ -1284,6 +1284,15 @@ package AddrAsInt is
 end AddrAsInt;
 @end smallexample
 
+@noindent
+Note that pragma @code{Allow_Integer_Address} is ignored if
+@code{System.Address}
+is not a private type. In implementations of @code{GNAT} where
+System.Address is a visible integer type (notably the implementations
+for @code{OpenVMS}), this pragma serves no purpose but is ignored
+rather than rejected to allow common sets of sources to be used
+in the two situations.
+
 @node Pragma Annotate
 @unnumberedsec Pragma Annotate
 @findex Annotate

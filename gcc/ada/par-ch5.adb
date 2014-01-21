@@ -1256,11 +1256,12 @@ package body Ch5 is
    --  CONDITION ::= boolean_EXPRESSION
 
    function P_Condition return Node_Id is
-      Cond : Node_Id;
-
    begin
-      Cond := P_Expression_No_Right_Paren;
+      return P_Condition (P_Expression_No_Right_Paren);
+   end P_Condition;
 
+   function P_Condition (Cond : Node_Id) return Node_Id is
+   begin
       --  It is never possible for := to follow a condition, so if we get
       --  a := we assume it is a mistyped equality. Note that we do not try
       --  to reconstruct the tree correctly in this case, but we do at least
@@ -1278,7 +1279,7 @@ package body Ch5 is
 
       --  Otherwise check for redundant parentheses
 
-      --  If the  condition is a conditional or a quantified expression, it is
+      --  If the condition is a conditional or a quantified expression, it is
       --  parenthesized in the context of a condition, because of a separate
       --  syntax rule.
 
