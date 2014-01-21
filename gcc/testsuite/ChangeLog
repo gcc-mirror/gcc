@@ -1,5 +1,8 @@
 2014-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59003
+	* gcc.dg/tree-prof/pr59003.c: New test.
+
 	PR middle-end/59860
 	* gcc.dg/strlenopt-4.c: Expect the same counts on s390*-* as on all
 	other targets.
