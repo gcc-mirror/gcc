@@ -8045,7 +8045,7 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 't':
       {
 	int truth = (code == NE) == (letter == 'T');
-	fputc ("zfnt"[truth * 2 + (GET_MODE (op) == CCmode)], file);
+	fputc ("zfnt"[truth * 2 + ST_REG_P (REGNO (XEXP (op, 0)))], file);
       }
       break;
 
