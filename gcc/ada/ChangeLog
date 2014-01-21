@@ -1,3 +1,21 @@
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (P_If_Expression): Rewritten to improve error recovery.
+	* par-ch5.adb (P_Condition): New version with expression prescanned.
+	* par.adb (P_Condition): New version with expression prescanned.
+
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that Allow_Integer_Address is ignored
+	if Address is not a private type.
+	* sem_prag.adb (Analyze_Pragma, case Allow_Integer_Address):
+	Ignore pragma if System.Address is not a private type.
+
+2014-01-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* namet.ads (Name_Len): Initialize to 0 to avoid accessing an
+	uninitialized value.
+
 2014-01-21  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi (Scalar_Storage_Order): Update documentation.

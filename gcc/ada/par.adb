@@ -737,7 +737,13 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    package Ch5 is
       function P_Condition return Node_Id;
-      --  Scan out and return a condition
+      --  Scan out and return a condition. Note that an error is given if
+      --  the condition is followed by a right parenthesis.
+
+      function P_Condition (Cond : Node_Id) return Node_Id;
+      --  Similar to the above, but the caller has already scanned out the
+      --  conditional expression and passes it as an argument. This form of
+      --  the call does not check for a following right parenthesis.
 
       function P_Loop_Parameter_Specification return Node_Id;
       --  Used in loop constructs and quantified expressions.
