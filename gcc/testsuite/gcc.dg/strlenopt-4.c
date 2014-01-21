@@ -66,16 +66,10 @@ main ()
   return 0;
 }
 
-/* For targets providing a movstr pattern strcat is already decomposed
-   into strlen + strcpy by fold_builtin_strcat.  */
-
-/* { dg-final { scan-tree-dump-times "strlen \\(" 3 "strlen" { target { ! s390*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "strlen \\(" 6 "strlen" { target s390*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 3 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "memcpy \\(" 4 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 3 "strlen" { target { ! s390*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "strcpy \\(" 6 "strlen" { target s390*-*-* } } } */
-/* { dg-final { scan-tree-dump-times "strcat \\(" 3 "strlen" { target { ! s390*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" { target s390*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "strcpy \\(" 3 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strcat \\(" 3 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
 /* { dg-final { cleanup-tree-dump "strlen" } } */
