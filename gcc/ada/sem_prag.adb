@@ -9526,8 +9526,7 @@ package body Sem_Prag is
             Null_Seen     : Boolean := False;
 
             Pack_Id : Entity_Id;
-            --  The entity of the related package when pragma Abstract_State
-            --  appears.
+            --  Entity of related package when pragma Abstract_State appears
 
             procedure Analyze_Abstract_State (State : Node_Id);
             --  Verify the legality of a single state declaration. Create and
@@ -9659,7 +9658,7 @@ package body Sem_Prag is
 
                begin
                   --  The external property must be one of the predefined four
-                  --  reader / writer choices.
+                  --  reader/writer choices.
 
                   if Nkind (Prop) /= N_Identifier
                     or else not Nam_In (Chars (Prop), Name_Async_Readers,
@@ -9721,8 +9720,7 @@ package body Sem_Prag is
 
                   Analyze (Par_State);
 
-                  --  The expression of option Part_Of must denote an abstract
-                  --  state.
+                  --  Expression of option Part_Of must denote abstract state
 
                   if not Is_Entity_Name (Par_State)
                     or else No (Entity (Par_State))
@@ -22527,34 +22525,34 @@ package body Sem_Prag is
    begin
       --  All properties enabled
 
-      if AR and then AW and then ER and then EW then
+      if AR and AW and ER and EW then
          null;
 
       --  Async_Readers + Effective_Writes
       --  Async_Readers + Async_Writers + Effective_Writes
 
-      elsif AR and then EW and then not ER then
+      elsif AR and EW and not ER then
          null;
 
       --  Async_Writers + Effective_Reads
       --  Async_Readers + Async_Writers + Effective_Reads
 
-      elsif AW and then ER and then not EW then
+      elsif AW and ER and not EW then
          null;
 
       --  Async_Readers + Async_Writers
 
-      elsif AR and then AW and then not ER and then not EW then
+      elsif AR and AW and not ER and not EW then
          null;
 
       --  Async_Readers
 
-      elsif AR and then not AW and then not ER and then not EW then
+      elsif AR and not AW and not ER and not EW then
          null;
 
       --  Async_Writers
 
-      elsif AW and then not AR and then not ER and then not EW then
+      elsif AW and not AR and not ER and not EW then
          null;
 
       else

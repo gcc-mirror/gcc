@@ -991,11 +991,14 @@ package body Ada.Exceptions is
       Message : String := "")
    is
       X : constant EOA := Exception_Propagation.Allocate_Occurrence;
+
    begin
       Exception_Data.Set_Exception_Msg (X, E, Message);
+
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Complete_And_Propagate_Occurrence (X);
    end Raise_Exception_Always;
 
@@ -1527,6 +1530,7 @@ package body Ada.Exceptions is
       if not ZCX_By_Default then
          Abort_Defer.all;
       end if;
+
       Save_Occurrence (Excep.all, Get_Current_Excep.all.all);
       Excep.Machine_Occurrence := Saved_MO;
       Complete_And_Propagate_Occurrence (Excep);

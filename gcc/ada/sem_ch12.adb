@@ -9844,6 +9844,9 @@ package body Sem_Ch12 is
       --  it is not a standard Ada legality rule. A volatile object cannot be
       --  used as an actual in a generic instantiation.
 
+      --  Should mention that this is a rule for SPARK only, perhaps with
+      --  a SPARK RM reference???
+
       if GNATprove_Mode and then Is_Volatile_Object (Actual) then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation",
