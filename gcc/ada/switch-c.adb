@@ -660,10 +660,9 @@ package body Switch.C is
                   when 'P' =>
                      Treat_Categorization_Errors_As_Warnings := True;
 
-                  --  -gnateS (generate SCO information)
+                  --  -gnates=file (specify extra file switches for gnat2why)
 
-                  --  Include Source Coverage Obligation information in ALI
-                  --  files for use by source coverage analysis tools (xcov).
+                  --  This is an internal switch
 
                   when 's' =>
                      if not First_Switch then
@@ -683,6 +682,11 @@ package body Switch.C is
                      end if;
 
                      return;
+
+                  --  -gnateS (generate SCO information)
+
+                  --  Include Source Coverage Obligation information in ALI
+                  --  files for use by source coverage analysis tools (xcov).
 
                   when 'S' =>
                      Generate_SCO := True;

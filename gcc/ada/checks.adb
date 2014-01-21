@@ -1508,7 +1508,7 @@ package body Checks is
          return;
       end if;
 
-      --  Suppress checks if the subtypes are the same. the check must be
+      --  Suppress checks if the subtypes are the same. The check must be
       --  preserved in an assignment to a formal, because the constraint is
       --  given by the actual.
 
@@ -1552,7 +1552,7 @@ package body Checks is
       --  the constraints are constants. In this case, we can do the check
       --  successfully at compile time.
 
-      --  We skip this check for the case where the node is rewritten`as
+      --  We skip this check for the case where the node is rewritten as
       --  an allocator, because it already carries the context subtype,
       --  and extracting the discriminants from the aggregate is messy.
 
@@ -1569,7 +1569,7 @@ package body Checks is
          begin
             --  S_Typ may not have discriminants in the case where it is a
             --  private type completed by a default discriminated type. In that
-            --  case, we need to get the constraints from the underlying_type.
+            --  case, we need to get the constraints from the underlying type.
             --  If the underlying type is unconstrained (i.e. has no default
             --  discriminants) no check is needed.
 
