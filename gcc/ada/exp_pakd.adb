@@ -1378,12 +1378,6 @@ package body Exp_Pakd is
       --  contains the value. Otherwise Rhs_Val_Known is set False, and
       --  the Rhs_Val is undefined.
 
-      Require_Byte_Swapping : Boolean := False;
-      --  True if byte swapping required, for the Reverse_Storage_Order case
-      --  when the packed array is a free-standing object. (If it is part
-      --  of a composite type, and therefore potentially not aligned on a byte
-      --  boundary, the swapping is done by the back-end).
-
       function Get_Shift return Node_Id;
       --  Function used to get the value of Shift, making sure that it
       --  gets duplicated if the function is called more than once.
@@ -1562,25 +1556,8 @@ package body Exp_Pakd is
          --  array type on Obj to get lost. So we save the type of Obj, and
          --  make sure it is reset properly.
 
-         declare
-            T : constant Entity_Id := Etype (Obj);
-         begin
-            New_Lhs := Duplicate_Subexpr (Obj, Name_Req => True);
-            New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
-            Set_Etype (Obj, T);
-            Set_Etype (New_Lhs, T);
-            Set_Etype (New_Rhs, T);
-
-            if Reverse_Storage_Order (Base_Type (Atyp))
-              and then Esize (T) > 8
-              and then not In_Reverse_Storage_Order_Object (Obj)
-            then
-               Require_Byte_Swapping := True;
-               New_Rhs := Byte_Swap (New_Rhs,
-                            Left_Justify  => Bytes_Big_Endian,
-                            Right_Justify => not Bytes_Big_Endian);
-            end if;
-         end;
+         New_Lhs := Duplicate_Subexpr (Obj, Name_Req => True);
+         New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
 
          --  First we deal with the "and"
 
@@ -1703,27 +1680,11 @@ package body Exp_Pakd is
                   Set_Etype (New_Rhs, Etype (Left_Opnd (New_Rhs)));
                end if;
 
-               --  If New_Rhs has been byte swapped, need to convert Or_Rhs
-               --  to the return type of the byte swapping function now.
-
-               if Require_Byte_Swapping then
-                  Or_Rhs := Unchecked_Convert_To (Etype (New_Rhs), Or_Rhs);
-               end if;
-
                New_Rhs :=
                  Make_Op_Or (Loc,
                    Left_Opnd  => New_Rhs,
                    Right_Opnd => Or_Rhs);
             end;
-         end if;
-
-         if Require_Byte_Swapping then
-            Set_Etype (New_Rhs, Etype (Obj));
-            New_Rhs :=
-              Unchecked_Convert_To (Etype (Obj),
-                Byte_Swap (New_Rhs,
-                             Left_Justify  => not Bytes_Big_Endian,
-                             Right_Justify => Bytes_Big_Endian));
          end if;
 
          --  Now do the rewrite
@@ -2043,11 +2004,6 @@ package body Exp_Pakd is
       Lit   : Node_Id;
       Arg   : Node_Id;
 
-      Byte_Swapped : Boolean;
-      --  Set true if bytes were swapped for the purpose of extracting the
-      --  element, in which case we must swap back if the component type is
-      --  a composite type with reverse scalar storage order.
-
    begin
       --  If the node is an actual in a call, the prefix has not been fully
       --  expanded, to account for the additional expansion for in-out actuals
@@ -2106,23 +2062,6 @@ package body Exp_Pakd is
          Lit := Make_Integer_Literal (Loc, Cmask);
          Set_Print_In_Hex (Lit);
 
-         --  Byte swapping required for the Reverse_Storage_Order case, but
-         --  only for a free-standing object (see note on Require_Byte_Swapping
-         --  in Expand_Bit_Packed_Element_Set).
-
-         if Reverse_Storage_Order (Atyp)
-           and then Esize (Atyp) > 8
-           and then not In_Reverse_Storage_Order_Object (Obj)
-         then
-            Obj := Byte_Swap (Obj,
-                     Left_Justify  => Bytes_Big_Endian,
-                     Right_Justify => not Bytes_Big_Endian);
-            Byte_Swapped := True;
-
-         else
-            Byte_Swapped := False;
-         end if;
-
          --  We generate a shift right to position the field, followed by a
          --  masking operation to extract the bit field, and we finally do an
          --  unchecked conversion to convert the result to the required target.
@@ -2137,12 +2076,16 @@ package body Exp_Pakd is
            Make_Op_And (Loc,
              Left_Opnd  => Make_Shift_Right (Obj, Shift),
              Right_Opnd => Lit);
-
-         --  Swap back if necessary
-
          Set_Etype (Arg, Ctyp);
 
-         if Byte_Swapped
+         --  Component extraction is performed on a native endianness scalar
+         --  value: if Atyp has reverse storage order, then it has been byte
+         --  swapped, and if the component being extracted is itself of a
+         --  composite type with reverse storage order, then we need to swap
+         --  it back to its expected endianness after extraction.
+
+         if Reverse_Storage_Order (Atyp)
+           and then Esize (Atyp) > 8
            and then (Is_Record_Type (Ctyp) or else Is_Array_Type (Ctyp))
            and then Reverse_Storage_Order (Ctyp)
          then

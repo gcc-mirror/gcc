@@ -86,6 +86,9 @@ package body Checks is
    --  the ability to emit constraint error warning for static expressions
    --  even when we are not generating code.
 
+   --  The above is modified in gnatprove mode to ensure that proper check
+   --  flags are always placed, even if expansion is off.
+
    -------------------------------------
    -- Suppression of Redundant Checks --
    -------------------------------------
@@ -3540,17 +3543,16 @@ package body Checks is
          else
             Dref :=
               Make_Selected_Component (Loc,
-                Prefix =>
+                Prefix        =>
                   Duplicate_Subexpr_No_Checks (N, Name_Req => True),
-                Selector_Name =>
-                  Make_Identifier (Loc, Chars (Disc_Ent)));
+                Selector_Name => Make_Identifier (Loc, Chars (Disc_Ent)));
 
             Set_Is_In_Discriminant_Check (Dref);
          end if;
 
          Evolve_Or_Else (Cond,
            Make_Op_Ne (Loc,
-             Left_Opnd => Dref,
+             Left_Opnd  => Dref,
              Right_Opnd => Dval));
 
          Next_Elmt (Disc);
@@ -3584,10 +3586,9 @@ package body Checks is
       function Left_Expression (Op : Node_Id) return Node_Id is
          LE : Node_Id := Left_Opnd (Op);
       begin
-         while Nkind_In (LE,
-                 N_Qualified_Expression,
-                 N_Type_Conversion,
-                 N_Expression_With_Actions)
+         while Nkind_In (LE, N_Qualified_Expression,
+                             N_Type_Conversion,
+                             N_Expression_With_Actions)
          loop
             LE := Expression (LE);
          end loop;
@@ -3650,7 +3651,7 @@ package body Checks is
             exit when (N = Right_Opnd (P)
                         or else
                           (Is_List_Member (N)
-                             and then List_Containing (N) = Actions (P)))
+                            and then List_Containing (N) = Actions (P)))
               and then Nkind (Left_Expression (P)) = N_Op_Ne;
          end if;
 
@@ -3669,9 +3670,7 @@ package body Checks is
 
       --  Left operand of test must match original variable
 
-      if Nkind (L) not in N_Has_Entity
-        or else Entity (L) /= Entity (Nod)
-      then
+      if Nkind (L) not in N_Has_Entity or else Entity (L) /= Entity (Nod) then
          return True;
       end if;
 
@@ -3961,6 +3960,7 @@ package body Checks is
 
       else
          Num_Saved_Checks := Saved_Checks_Stack (Saved_Checks_TOS);
+
          if Debug_Flag_CC then
             w ("Conditional_Statements_End: Num_Saved_Checks = ",
                Num_Saved_Checks);
@@ -4287,7 +4287,6 @@ package body Checks is
                then
                   Lor := Lo_Left / Lo_Right;
                   Hir := Hi_Left / Lo_Right;
-
                else
                   OK1 := False;
                end if;
@@ -4782,8 +4781,8 @@ package body Checks is
       end if;
 
    --  If we get an exception, then something went wrong, probably because of
-   --  an error in the structure of the tree due to an incorrect program. Or it
-   --  may be a bug in the optimization circuit. In either case the safest
+   --  an error in the structure of the tree due to an incorrect program. Or
+   --  it may be a bug in the optimization circuit. In either case the safest
    --  thing is simply to set the check flag unconditionally.
 
    exception
@@ -4832,9 +4831,7 @@ package body Checks is
 
       --  No check if range checks suppressed for type of node
 
-      if Present (Etype (N))
-        and then Range_Checks_Suppressed (Etype (N))
-      then
+      if Present (Etype (N)) and then Range_Checks_Suppressed (Etype (N)) then
          return;
 
       --  No check if node is an entity name, and range checks are suppressed
@@ -4842,7 +4839,7 @@ package body Checks is
 
       elsif Is_Entity_Name (N)
         and then (Range_Checks_Suppressed (Entity (N))
-                    or else Range_Checks_Suppressed (Etype (Entity (N))))
+                   or else Range_Checks_Suppressed (Etype (Entity (N))))
       then
          return;
 
@@ -5180,9 +5177,8 @@ package body Checks is
                   --  formal is not OUT). This test also filters out the
                   --  generic case.
 
-                  if Is_Non_Empty_List (L)
-                    and then Is_Subprogram (E)
-                  then
+                  if Is_Non_Empty_List (L) and then Is_Subprogram (E) then
+
                      --  This is the loop through parameters, looking for an
                      --  OUT parameter for which we are the argument.
 
@@ -5294,26 +5290,18 @@ package body Checks is
       --  Integer and character literals always have valid values, where
       --  appropriate these will be range checked in any case.
 
-      elsif Nkind (Expr) = N_Integer_Literal
-              or else
-            Nkind (Expr) = N_Character_Literal
-      then
+      elsif Nkind_In (Expr, N_Integer_Literal, N_Character_Literal) then
          return True;
 
       --  Real literals are assumed to be valid in VM targets
 
-      elsif VM_Target /= No_VM
-        and then Nkind (Expr) = N_Real_Literal
-      then
+      elsif VM_Target /= No_VM and then Nkind (Expr) = N_Real_Literal then
          return True;
 
       --  If we have a type conversion or a qualification of a known valid
       --  value, then the result will always be valid.
 
-      elsif Nkind (Expr) = N_Type_Conversion
-              or else
-            Nkind (Expr) = N_Qualified_Expression
-      then
+      elsif Nkind_In (Expr, N_Type_Conversion, N_Qualified_Expression) then
          return Expr_Known_Valid (Expression (Expr));
 
       --  The result of any operator is always considered valid, since we
@@ -5324,10 +5312,9 @@ package body Checks is
       elsif Nkind (Expr) in N_Op then
          if Is_Floating_Point_Type (Typ)
             and then Validity_Check_Floating_Point
-            and then
-              (Nkind (Parent (Expr)) = N_Assignment_Statement
-                or else Nkind (Parent (Expr)) = N_Function_Call
-                or else Nkind (Parent (Expr)) = N_Parameter_Association)
+            and then (Nkind_In (Parent (Expr), N_Assignment_Statement,
+                                               N_Function_Call,
+                                               N_Parameter_Association))
          then
             return False;
          else
@@ -5468,7 +5455,6 @@ package body Checks is
       for J in reverse 1 .. Num_Saved_Checks loop
          declare
             SC : Saved_Check renames Saved_Checks (J);
-
          begin
             if SC.Killed = False
               and then SC.Entity = Ent
@@ -5532,10 +5518,10 @@ package body Checks is
 
       --  Force evaluation of the prefix, so that it does not get evaluated
       --  twice (once for the check, once for the actual reference). Such a
-      --  double evaluation is always a potential source of inefficiency,
-      --  and is functionally incorrect in the volatile case, or when the
-      --  prefix may have side-effects. An entity or a component of an
-      --  entity requires no evaluation.
+      --  double evaluation is always a potential source of inefficiency, and
+      --  is functionally incorrect in the volatile case, or when the prefix
+      --  may have side-effects. A non-volatile entity or a component of a
+      --  non-volatile entity requires no evaluation.
 
       if Is_Entity_Name (Pref) then
          if Treat_As_Volatile (Entity (Pref)) then
@@ -5543,7 +5529,7 @@ package body Checks is
          end if;
 
       elsif Treat_As_Volatile (Etype (Pref)) then
-            Force_Evaluation (Pref, Name_Req => True);
+         Force_Evaluation (Pref, Name_Req => True);
 
       elsif Nkind (Pref) = N_Selected_Component
         and then Is_Entity_Name (Prefix (Pref))
@@ -5629,7 +5615,7 @@ package body Checks is
         Make_Raise_Constraint_Error (Loc,
           Condition =>
             Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (Discr_Fct, Loc),
+              Name                   => New_Occurrence_Of (Discr_Fct, Loc),
               Parameter_Associations => Args),
           Reason => CE_Discriminant_Check_Failed));
    end Generate_Discriminant_Check;
@@ -5680,8 +5666,7 @@ package body Checks is
       --  for array object or type.
 
       if not Is_Array_Type (Etype (A))
-        or else (Present (A_Ent)
-                  and then Index_Checks_Suppressed (A_Ent))
+        or else (Present (A_Ent) and then Index_Checks_Suppressed (A_Ent))
         or else Index_Checks_Suppressed (Etype (A))
       then
          return;
@@ -6088,7 +6073,7 @@ package body Checks is
 
          else
             pragma Assert (not Is_Unsigned_Type (Source_Base_Type)
-                             and then Is_Unsigned_Type (Target_Base_Type));
+                            and then Is_Unsigned_Type (Target_Base_Type));
 
             --  If the source is signed and the target is unsigned, then we
             --  know that the target is not shorter than the source (otherwise
@@ -6141,7 +6126,7 @@ package body Checks is
                            Right_Opnd =>
                              New_Occurrence_Of (Target_Type, Loc))),
 
-                   Reason => Reason)),
+                   Reason     => Reason)),
                  Suppress => All_Checks);
 
                --  Set the Etype explicitly, because Insert_Actions may have
@@ -6205,7 +6190,6 @@ package body Checks is
       while Present (Sc) loop
          if Sc = Standard_Standard then
             return Bound;
-
          elsif Ekind (Sc) = E_Protected_Type then
             exit;
          end if;
@@ -6236,8 +6220,8 @@ package body Checks is
       Warn_Node  : Node_Id   := Empty) return Check_Result
    is
    begin
-      return Selected_Range_Checks
-        (Ck_Node, Target_Typ, Source_Typ, Warn_Node);
+      return
+        Selected_Range_Checks (Ck_Node, Target_Typ, Source_Typ, Warn_Node);
    end Get_Range_Checks;
 
    ------------------
@@ -6256,6 +6240,7 @@ package body Checks is
 
       if Nkind (Ck_Node) = N_Allocator then
          return Cond;
+
       else
          return
            Make_And_Then (Loc,
@@ -6475,7 +6460,7 @@ package body Checks is
 
          if Is_Entity_Name (Exp)
            and then Nkind (Parent (Entity (Exp))) =
-                      N_Object_Renaming_Declaration
+                                                 N_Object_Renaming_Declaration
          then
             declare
                Old_Exp : constant Node_Id := Name (Parent (Entity (Exp)));
@@ -6602,9 +6587,9 @@ package body Checks is
                   return False;
                end if;
 
-               --  If we are in a case expression, and not part of the
-               --  expression, then we return False, since a particular
-               --  dependent expression may not always be elaborated
+               --  If within a case expression, and not part of the expression,
+               --  then return False, since a particular dependent expression
+               --  may not always be elaborated
 
                if Nkind (P) = N_Case_Expression
                  and then N /= Expression (P)
@@ -6612,9 +6597,8 @@ package body Checks is
                   return False;
                end if;
 
-               --  While traversing the parent chain, we find that N
-               --  belongs to a statement, thus it may never appear in
-               --  a declarative region.
+               --  While traversing the parent chain, if node N belongs to a
+               --  statement, then it may never appear in a declarative region.
 
                if Nkind (P) in N_Statement_Other_Than_Procedure_Call
                  or else Nkind (P) = N_Procedure_Call_Statement
@@ -6696,9 +6680,11 @@ package body Checks is
 
       if Known_Null (N) then
 
-         --  Avoid generating warning message inside init procs
+         --  Avoid generating warning message inside init procs. In SPARK mode
+         --  we can go ahead and call Apply_Compile_Time_Constraint_Error
+         --  since it will be truned into an error in any case.
 
-         if not Inside_Init_Proc then
+         if not Inside_Init_Proc or else SPARK_Mode = On then
             Apply_Compile_Time_Constraint_Error
               (N, "null value not allowed here??", CE_Access_Check_Failed);
          else
@@ -7163,7 +7149,7 @@ package body Checks is
          end if;
 
          --  If we don't have a binary operator, all we have to do is to set
-         --  the Hi/Lo range, so we are done
+         --  the Hi/Lo range, so we are done.
 
          return;
 
@@ -7329,7 +7315,7 @@ package body Checks is
 
       --  If we have an arithmetic operator we make recursive calls on the
       --  operands to get the ranges (and to properly process the subtree
-      --  that lies below us!)
+      --  that lies below us).
 
       Minimize_Eliminate_Overflows
         (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
@@ -8134,7 +8120,8 @@ package body Checks is
       begin
          if Present (N) then
 
-            --  For now, ignore attempt to place more than 2 checks ???
+            --  For now, ignore attempt to place more than two checks ???
+            --  This is really worrisome, are we really discarding checks ???
 
             if Num_Checks = 2 then
                return;
@@ -9003,7 +8990,6 @@ package body Checks is
                then
                   HB := T_HB;
                   Known_HB := True;
-
                else
                   Known_HB := False;
                end if;
@@ -9158,9 +9144,7 @@ package body Checks is
          --  and replace the literal with a raise constraint error
          --  expression. As usual, skip this for access types
 
-         elsif Compile_Time_Known_Value (Ck_Node)
-           and then not Do_Access
-         then
+         elsif Compile_Time_Known_Value (Ck_Node) and then not Do_Access then
             declare
                LB : constant Node_Id := Type_Low_Bound (T_Typ);
                UB : constant Node_Id := Type_High_Bound (T_Typ);
@@ -9442,9 +9426,9 @@ package body Checks is
         and then Checks_May_Be_Suppressed (E)
       then
          return Is_Check_Suppressed (E, Tag_Check);
+      else
+         return Scope_Suppress.Suppress (Tag_Check);
       end if;
-
-      return Scope_Suppress.Suppress (Tag_Check);
    end Tag_Checks_Suppressed;
 
    --------------------------

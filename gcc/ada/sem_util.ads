@@ -122,7 +122,7 @@ package Sem_Util is
    --  is present, this is used instead. Warn is normally False. If it is
    --  True then the message is treated as a warning even though it does
    --  not end with a ? (this is used when the caller wants to parameterize
-   --  whether an error or warning is given.
+   --  whether an error or warning is given).
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean;
    --  Given the entity of an abstract state or a variable, determine whether
