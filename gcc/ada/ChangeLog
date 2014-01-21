@@ -1,3 +1,20 @@
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_prag.adb, sem_prag.ads, sem_ch12.adb, sem_res.adb,
+	sem_ch6.adb, a-except-2005.adb: Minor reformatting.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): When a class-wide
+	object is declared, it is rewritten as a renaming of an dynamic
+	expression that wraps the initial value.  The renaming declaration
+	is first given an internal name, to prevent collisions with the
+	entity already declared, and then the name is modified to reflect
+	the original one. the modification of the name must preserve
+	the source location of the original, to prevent spurious errors
+	when compiling with style checks if the declaration involves
+	more than one entity.
+
 2014-01-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb Add entries for Async_Readers, Async_Writers,

@@ -5504,7 +5504,9 @@ package body Exp_Ch3 is
                   --  itypes may have been generated already, and the full
                   --  chain must be preserved for final freezing. Finally,
                   --  preserve Comes_From_Source setting, so that debugging
-                  --  and cross-referencing information is properly kept.
+                  --  and cross-referencing information is properly kept, and
+                  --  preserve source location, to prevent spurious errors when
+                  --  entities are declared (they must have their own Sloc).
 
                   declare
                      New_Id    : constant Entity_Id := Defining_Identifier (N);
@@ -5519,6 +5521,7 @@ package body Exp_Ch3 is
                      Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
                      Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
+                     Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
                      Exchange_Entities (Defining_Identifier (N), Def_Id);

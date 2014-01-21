@@ -11121,6 +11121,8 @@ package body Sem_Ch6 is
          --  as it is not a standard Ada legality rule. A function cannot have
          --  a volatile formal parameter.
 
+         --  Need to mention this is a SPARK rule, with SPARK RM reference ???
+
          if GNATprove_Mode
            and then Is_Volatile_Object (Formal)
            and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)

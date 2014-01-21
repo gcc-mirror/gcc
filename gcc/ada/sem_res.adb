@@ -4270,6 +4270,9 @@ package body Sem_Res is
                   null;
 
                else
+                  --  Error message should mention SPARK, and perhaps give
+                  --  a SPARK RM reference ???
+
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call", A);
                end if;
@@ -5518,12 +5521,11 @@ package body Sem_Res is
         and then
           ((Is_Array_Type (Etype (Nam))
              and then Covers (Typ, Component_Type (Etype (Nam))))
-             or else (Is_Access_Type (Etype (Nam))
-                       and then Is_Array_Type (Designated_Type (Etype (Nam)))
-                       and then
-                         Covers
-                          (Typ,
-                           Component_Type (Designated_Type (Etype (Nam))))))
+           or else
+             (Is_Access_Type (Etype (Nam))
+               and then Is_Array_Type (Designated_Type (Etype (Nam)))
+               and then
+                 Covers (Typ, Component_Type (Designated_Type (Etype (Nam))))))
       then
          declare
             Index_Node : Node_Id;
@@ -6517,6 +6519,8 @@ package body Sem_Res is
             Prev := Par;
             Par  := Parent (Par);
          end loop;
+
+         --  Message should mention SPARK, and perhaps SPARK RM ref ???
 
          if not Usage_OK then
             Error_Msg_N ("volatile object cannot appear in this context", N);

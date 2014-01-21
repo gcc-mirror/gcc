@@ -93,8 +93,8 @@ package body Sem_Ch3 is
 
    procedure Analyze_Variable_Contract (Var_Id : Entity_Id);
    --  Analyze all delayed aspects chained on the contract of variable Var_Id
-   --  as if they appeared at the end of the declarative region. The aspects in
-   --  consideration are:
+   --  as if they appeared at the end of the declarative region. The aspects
+   --  to be considered are:
    --    Async_Readers
    --    Async_Writers
    --    Effective_Reads

@@ -136,8 +136,8 @@ package Sem_Prag is
       EW   : Boolean);
    --  Flags AR, AW, ER and EW denote the static values of external properties
    --  Async_Readers, Async_Writers, Effective_Reads and Effective_Writes. Item
-   --  is the related variable or state. Ensure the legality of the permutation
-   --  and if this is not the case, issue an error.
+   --  is the related variable or state. Ensure legality of the combination and
+   --  issue an error for an illegal combination.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such
