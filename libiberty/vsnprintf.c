@@ -1,5 +1,5 @@
 /* Implement the vsnprintf function.
-   Copyright (C) 2003, 2004, 2005, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2011, 2013 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.  This library is free
@@ -95,12 +95,10 @@ static int ATTRIBUTE_PRINTF_3
 checkit (char *s, size_t n, const char *format, ...)
 {
   int result;
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, char *, s);
-  VA_FIXEDARG (ap, size_t, n);
-  VA_FIXEDARG (ap, const char *, format);
+  va_list ap;
+  va_start (ap, format);
   result = vsnprintf (s, n, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   return result;
 }
 
