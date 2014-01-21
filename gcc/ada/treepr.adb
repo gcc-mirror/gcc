@@ -1184,10 +1184,9 @@ package body Treepr is
             when F_Field5 =>
                Field_To_Be_Printed := Field5 (N) /= Union_Id (Empty);
 
-            --  Flag3 is obsolete, so this probably gets removed ???
-
-            when F_Flag3 => Field_To_Be_Printed := Has_Aspects (N);
-
+            when F_Flag1  => Field_To_Be_Printed := Flag1  (N);
+            when F_Flag2  => Field_To_Be_Printed := Flag2  (N);
+            when F_Flag3  => Field_To_Be_Printed := Flag3  (N);
             when F_Flag4  => Field_To_Be_Printed := Flag4  (N);
             when F_Flag5  => Field_To_Be_Printed := Flag5  (N);
             when F_Flag6  => Field_To_Be_Printed := Flag6  (N);
@@ -1203,11 +1202,6 @@ package body Treepr is
             when F_Flag16 => Field_To_Be_Printed := Flag16 (N);
             when F_Flag17 => Field_To_Be_Printed := Flag17 (N);
             when F_Flag18 => Field_To_Be_Printed := Flag18 (N);
-
-            --  Flag1,2 are no longer used
-
-            when F_Flag1  => raise Program_Error;
-            when F_Flag2  => raise Program_Error;
          end case;
 
          --  Print field if it is to be printed
@@ -1233,14 +1227,15 @@ package body Treepr is
                --  Special case End_Span = Uint5
 
                when F_Field5 =>
-                  if Nkind (N) = N_Case_Statement
-                    or else Nkind (N) = N_If_Statement
-                  then
+                  if Nkind_In (N, N_Case_Statement, N_If_Statement) then
                      Print_End_Span (N);
                   else
                      Print_Field (Field5 (N), Fmt);
                   end if;
 
+               when F_Flag1  => Print_Flag  (Flag1 (N));
+               when F_Flag2  => Print_Flag  (Flag2 (N));
+               when F_Flag3  => Print_Flag  (Flag3 (N));
                when F_Flag4  => Print_Flag  (Flag4 (N));
                when F_Flag5  => Print_Flag  (Flag5 (N));
                when F_Flag6  => Print_Flag  (Flag6 (N));
@@ -1256,15 +1251,6 @@ package body Treepr is
                when F_Flag16 => Print_Flag  (Flag16 (N));
                when F_Flag17 => Print_Flag  (Flag17 (N));
                when F_Flag18 => Print_Flag  (Flag18 (N));
-
-               --  Flag1,2 are no longer used
-
-               when F_Flag1  => raise Program_Error;
-               when F_Flag2  => raise Program_Error;
-
-               --  Not clear why we need the following ???
-
-               when F_Flag3  => Print_Flag (Has_Aspects (N));
             end case;
 
             Print_Eol;

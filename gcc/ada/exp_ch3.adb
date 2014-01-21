@@ -2386,10 +2386,16 @@ package body Exp_Ch3 is
                               Component_List (Record_Extension_Node));
 
                begin
-                  --  The parent field must be initialized first because
-                  --  the offset of the new discriminants may depend on it
+                  --  The parent field must be initialized first because the
+                  --  offset of the new discriminants may depend on it. This is
+                  --  not needed if the parent is an interface type because in
+                  --  such case the initialization of the _parent field was not
+                  --  generated.
 
-                  Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  if not Is_Interface (Etype (Rec_Ent)) then
+                     Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  end if;
+
                   Append_List_To (Body_Stmts, Stmts);
                end;
             end if;

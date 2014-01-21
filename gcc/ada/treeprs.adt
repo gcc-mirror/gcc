@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,9 @@ package Treeprs is
    --  The following characters identify the field. These are characters which
    --  could never occur in a field name, so they also mark the end of the
    --  previous name.
+
+   --  Note the following definitions do not include Flag0. This will have to
+   --  be addressed if we ever need to use Flag0 (it's not currently used).
 
    subtype Fchar is Character range '#' .. '9';
 
