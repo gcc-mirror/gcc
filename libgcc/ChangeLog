@@ -1,4 +1,4 @@
-2014-01-21  Barch Siach <barch@tkos.co.il>
+2014-01-21  Baruch Siach <barch@tkos.co.il>
 
 	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
 
