@@ -238,10 +238,14 @@ extern "C" {
 
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
-extern void gigi (Node_Id gnat_root, int max_gnat_node,
+extern void gigi (Node_Id gnat_root,
+	          int max_gnat_node,
                   int number_name ATTRIBUTE_UNUSED,
-                  struct Node *nodes_ptr, Node_Id *next_node_ptr,
-                  Node_Id *prev_node_ptr, struct Elist_Header *elists_ptr,
+		  struct Node *nodes_ptr,
+		  struct Flags *Flags_Ptr,
+		  Node_Id *next_node_ptr,
+		  Node_Id *prev_node_ptr,
+		  struct Elist_Header *elists_ptr,
                   struct Elmt_Item *elmts_ptr,
                   struct String_Entry *strings_ptr,
                   Char_Code *strings_chars_ptr,

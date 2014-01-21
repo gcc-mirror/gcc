@@ -568,14 +568,17 @@ package body Atree is
         and then Src = Nodes.Last
       then
          New_Id := Src;
+
       else
          --  We are allocating a new node, or extending a node
          --  other than Nodes.Last.
 
          if Present (Src) then
             Nodes.Append (Nodes.Table (Src));
+            Flags.Append (Flags.Table (Src));
          else
             Nodes.Append (Default_Node);
+            Flags.Append (Default_Flags);
          end if;
 
          New_Id := Nodes.Last;
@@ -596,10 +599,12 @@ package body Atree is
          if Present (Src) and then Has_Extension (Src) then
             for J in 1 .. Num_Extension_Nodes loop
                Nodes.Append (Nodes.Table (Src + Node_Id (J)));
+               Flags.Append (Flags.Table (Src + Node_Id (J)));
             end loop;
          else
             for J in 1 .. Num_Extension_Nodes loop
                Nodes.Append (Default_Node_Extension);
+               Flags.Append (Default_Flags);
             end loop;
          end if;
       end if;
@@ -680,6 +685,8 @@ package body Atree is
       Nodes.Table (N).Nkind             := New_Node_Kind;
       Nodes.Table (N).Error_Posted      := Save_Posted;
 
+      Flags.Table (N) := Default_Flags;
+
       if New_Node_Kind in N_Subexpr then
          Set_Paren_Count (N, Par_Count);
       end if;
@@ -718,6 +725,8 @@ package body Atree is
       Nodes.Table (Destination).In_List := Save_In_List;
       Nodes.Table (Destination).Link    := Save_Link;
 
+      Flags.Table (Destination) := Flags.Table (Source);
+
       --  Specifically set Paren_Count to make sure auxiliary table entry
       --  gets correctly made if the parentheses count is at the max value.
 
@@ -725,7 +734,8 @@ package body Atree is
          Set_Paren_Count (Destination, Paren_Count (Source));
       end if;
 
-      --  Deal with copying extension nodes if present
+      --  Deal with copying extension nodes if present. No need to copy flags
+      --  table entries, since they are always zero for extending components.
 
       if Has_Extension (Source) then
          pragma Assert (Has_Extension (Destination));
@@ -1094,6 +1104,7 @@ package body Atree is
 
    procedure Exchange_Entities (E1 : Entity_Id; E2 : Entity_Id) is
       Temp_Ent : Node_Record;
+      Temp_Flg : Flags_Byte;
 
    begin
       pragma Assert (Has_Extension (E1)
@@ -1126,6 +1137,13 @@ package body Atree is
       Temp_Ent := Nodes.Table (E1 + 5);
       Nodes.Table (E1 + 5) := Nodes.Table (E2 + 5);
       Nodes.Table (E2 + 5) := Temp_Ent;
+
+      --  Exchange flag bytes for first component. No need to do the exchange
+      --  for the other components, since the flag bytes are always zero.
+
+      Temp_Flg := Flags.Table (E1);
+      Flags.Table (E1) := Flags.Table (E2);
+      Flags.Table (E2) := Temp_Flg;
 
       --  That exchange exchanged the parent pointers as well, which is what
       --  we want, but we need to patch up the defining identifier pointers
@@ -1231,6 +1249,15 @@ package body Atree is
       Fix_Parent (Field5 (Fix_Node));
    end Fix_Parents;
 
+   -------------------
+   -- Flags_Address --
+   -------------------
+
+   function Flags_Address return System.Address is
+   begin
+      return Flags.Table (First_Node_Id)'Address;
+   end Flags_Address;
+
    -----------------------------------
    -- Get_Comes_From_Source_Default --
    -----------------------------------
@@ -1270,6 +1297,7 @@ package body Atree is
    begin
       Node_Count := 0;
       Atree_Private_Part.Nodes.Init;
+      Atree_Private_Part.Flags.Init;
       Orig_Nodes.Init;
       Paren_Counts.Init;
 
@@ -1320,8 +1348,10 @@ package body Atree is
    procedure Lock is
    begin
       Nodes.Locked := True;
+      Flags.Locked := True;
       Orig_Nodes.Locked := True;
       Nodes.Release;
+      Flags.Release;
       Orig_Nodes.Release;
    end Lock;
 
@@ -2157,6 +2187,7 @@ package body Atree is
    begin
       Tree_Read_Int (Node_Count);
       Nodes.Tree_Read;
+      Flags.Tree_Read;
       Orig_Nodes.Tree_Read;
       Paren_Counts.Tree_Read;
    end Tree_Read;
@@ -2169,6 +2200,7 @@ package body Atree is
    begin
       Tree_Write_Int (Node_Count);
       Nodes.Tree_Write;
+      Flags.Tree_Write;
       Orig_Nodes.Tree_Write;
       Paren_Counts.Tree_Write;
    end Tree_Write;
@@ -3005,6 +3037,30 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return From_Union (Nodes.Table (N + 3).Field8);
       end Ureal21;
+
+      function Flag0 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         return Flags.Table (N).Flag0;
+      end Flag0;
+
+      function Flag1 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         return Flags.Table (N).Flag1;
+      end Flag1;
+
+      function Flag2 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         return Flags.Table (N).Flag2;
+      end Flag2;
+
+      function Flag3 (N : Node_Id) return Boolean is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         return Flags.Table (N).Flag3;
+      end Flag3;
 
       function Flag4 (N : Node_Id) return Boolean is
       begin
@@ -5563,6 +5619,30 @@ package body Atree is
          Nodes.Table (N + 3).Field8 := To_Union (Val);
       end Set_Ureal21;
 
+      procedure Set_Flag0 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         Flags.Table (N).Flag0 := Val;
+      end Set_Flag0;
+
+      procedure Set_Flag1 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         Flags.Table (N).Flag1 := Val;
+      end Set_Flag1;
+
+      procedure Set_Flag2 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         Flags.Table (N).Flag2 := Val;
+      end Set_Flag2;
+
+      procedure Set_Flag3 (N : Node_Id; Val : Boolean) is
+      begin
+         pragma Assert (N <= Nodes.Last);
+         Flags.Table (N).Flag3 := Val;
+      end Set_Flag3;
+
       procedure Set_Flag4 (N : Node_Id; Val : Boolean) is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -7924,6 +8004,7 @@ package body Atree is
    procedure Unlock is
    begin
       Nodes.Locked := False;
+      Flags.Locked := False;
       Orig_Nodes.Locked := False;
    end Unlock;
 

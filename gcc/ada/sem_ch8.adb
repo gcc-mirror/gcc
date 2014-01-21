@@ -3437,13 +3437,12 @@ package body Sem_Ch8 is
       --  a list of expressions corresponding to the subprogram formals.
       --  A renaming declaration is not a freeze point, and the analysis of
       --  the attribute reference should not freeze the type of the prefix.
+      --  We use the original node in the renaming so that its source location
+      --  is preserved, and checks on stream attributes are properly applied.
 
       else
-         Attr_Node :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => Prefix (Nam),
-             Attribute_Name => Aname,
-             Expressions    => Expr_List);
+         Attr_Node := Relocate_Node (Nam);
+         Set_Expressions (Attr_Node, Expr_List);
 
          Set_Must_Not_Freeze (Attr_Node);
          Set_Must_Not_Freeze (Prefix (Nam));
@@ -3459,8 +3458,8 @@ package body Sem_Ch8 is
 
          Find_Type (Result_Definition (Spec));
          Rewrite (Result_Definition (Spec),
-             New_Reference_To (
-               Base_Type (Entity (Result_Definition (Spec))), Loc));
+           New_Reference_To
+             (Base_Type (Entity (Result_Definition (Spec))), Loc));
 
          Body_Node :=
            Make_Subprogram_Body (Loc,
@@ -3522,7 +3521,12 @@ package body Sem_Ch8 is
                Find_Type (P);
             end if;
 
-            if Is_Tagged_Type (Etype (P)) then
+            --  If the target type is not yet frozen, add the body to the
+            --  actions to be elaborated at freeze time.
+
+            if Is_Tagged_Type (Etype (P))
+              and then In_Open_Scopes (Scope (Etype (P)))
+            then
                Ensure_Freeze_Node (Etype (P));
                Append_Freeze_Action (Etype (P), Body_Node);
             else
