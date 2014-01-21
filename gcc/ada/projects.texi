@@ -3171,8 +3171,8 @@ The following packages are currently supported in project files
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item ^Gnatls^Gnatls^
-  This package the options to use when invoking @command{gnatls} via the
-  @command{gnat} driver.
+  This package specifies the options to use when invoking @command{gnatls}
+  via the @command{gnat} driver.
 @item ^Gnatstub^Gnatstub^
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes

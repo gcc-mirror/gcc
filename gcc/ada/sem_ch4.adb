@@ -4652,15 +4652,16 @@ package body Sem_Ch4 is
                      Set_Etype (Sel, Etype (Comp));
                      Set_Etype (N,   Etype (Comp));
 
-                     --  Emit appropriate message. Gigi will replace the node
-                     --  subsequently with the appropriate Raise.
+                     --  Emit appropriate message. The node will be replaced
+                     --  by an appropriate raise statement.
 
-                     --  In SPARK mode, this is made into an error to simplify
-                     --  the processing of the formal verification backend.
+                     --  Note that in SPARK mode, as with all calls to apply a
+                     --  compile time constraint error, this will be made into
+                     --  an error to simplify the processing of the formal
+                     --  verification backend.
 
-                     Error_Msg_Warn := SPARK_Mode /= On;
                      Apply_Compile_Time_Constraint_Error
-                       (N, "component not present in }<<",
+                       (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
                         Ent => Prefix_Type, Rep => False);
 

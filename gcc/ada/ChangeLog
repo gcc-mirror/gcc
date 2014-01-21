@@ -1,3 +1,34 @@
+2014-01-21  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb, sem_util.ads, sem_ch4.adb: Minor reformatting.
+	* gcc-interface/Makefile.in: clean up target pairs.
+
+2014-01-21  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Minor typo fix.
+
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): If a record type
+	has an explicit Scalar_Storage_Order attribute definition clause,
+	reject any component that itself is of a composite type and does
+	not have one.
+
+2014-01-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Generate_Parent_Reference): Make public so it
+	can be used to generate proper cross-reference information for
+	the parent units of proper bodies.
+
+2014-01-21  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Element_Set,
+	Expand_Packed_Element_Reference): No byte swapping required in
+	the front-end for the case of a reverse storage order array,
+	as this is now handled uniformly in the back-end.  However we
+	still need to swap back an extracted element if it is itself a
+	nested composite with reverse storage order.
+
 2014-01-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_External_Property): Add processing for "others".

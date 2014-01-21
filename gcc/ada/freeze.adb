@@ -1083,6 +1083,10 @@ package body Freeze is
       --  Set True for the record case, when Comp starts on a byte boundary
       --  (in which case it is allowed to have different storage order).
 
+      Comp_SSO_Differs  : Boolean;
+      --  Set True when the component is a nested composite, and it does not
+      --  have the same scalar storage order as Encl_Type.
+
       Component_Aliased : Boolean;
 
    begin
@@ -1136,28 +1140,42 @@ package body Freeze is
       --  attribute on Comp_Type if composite.
 
       elsif Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
+         Comp_SSO_Differs :=
+           Reverse_Storage_Order (Encl_Type)
+             /=
+           Reverse_Storage_Order (Comp_Type);
+
          if Present (Comp) and then Chars (Comp) = Name_uParent then
-            if Reverse_Storage_Order (Encl_Type)
-                 /=
-               Reverse_Storage_Order (Comp_Type)
-            then
+            if Comp_SSO_Differs then
                Error_Msg_N
                  ("record extension must have same scalar storage order as "
                   & "parent", Err_Node);
             end if;
 
-         elsif No (ADC) then
+         elsif No (Comp_ADC) then
             Error_Msg_N ("nested composite must have explicit scalar "
                          & "storage order", Err_Node);
 
-         elsif (Reverse_Storage_Order (Encl_Type)
-                  /=
-                Reverse_Storage_Order (Comp_Type))
-           and then not Comp_Byte_Aligned
-         then
-            Error_Msg_N
-              ("type of non-byte-aligned component must have same scalar "
-               & "storage order as enclosing composite", Err_Node);
+         elsif Comp_SSO_Differs then
+
+            --  Component SSO differs from enclosing composite:
+
+            --  Reject if component is a packed array, as it may be represented
+            --  as a scalar internally.
+
+            if Is_Packed (Comp_Type) then
+               Error_Msg_N
+                 ("type of packed component must have same scalar "
+                  & "storage order as enclosing composite", Err_Node);
+
+            --  Reject if not byte aligned
+
+            elsif not Comp_Byte_Aligned then
+               Error_Msg_N
+                 ("type of non-byte-aligned component must have same scalar "
+                  & "storage order as enclosing composite", Err_Node);
+
+            end if;
          end if;
 
       --  Enclosing type has explicit SSO, non-composite component must not
