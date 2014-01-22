@@ -1,3 +1,14 @@
+2014-01-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59597
+	* tree-ssa-threadupdate.c (dump_jump_thread_path): Move to earlier
+	in file.  Accept new argument REGISTERING and use it to modify
+	dump output appropriately.
+	(register_jump_thread): Corresponding changes.
+	(mark_threaded_blocks): Reinstate code to cancel unprofitable
+	thread paths involving joiner blocks.  Add code to dump cancelled
+	jump threading paths.
+
 2014-01-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59477
