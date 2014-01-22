@@ -19845,7 +19845,17 @@ cp_parser_class_head (cp_parser* parser,
 
   /* Get the list of base-classes, if there is one.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    bases = cp_parser_base_clause (parser);
+    {
+      /* PR59482: enter the class scope so that base-specifiers are looked
+	 up correctly */
+      if (type)
+	pushclass (type);
+      bases = cp_parser_base_clause (parser);
+      /* PR59482: get out of the previously pushed class scope so that the
+	 subsequent pops pop the right thing */
+      if (type)
+	popclass ();
+    }
   else
     bases = NULL_TREE;
 
