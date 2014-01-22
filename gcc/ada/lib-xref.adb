@@ -1309,6 +1309,22 @@ package body Lib.Xref is
                         Right := '>';
                      end if;
 
+                  --  For a synchronized type that implements an interface, we
+                  --  treat the first progenitor as the parent. This is only
+                  --  needed when compiling a package declaration on its own,
+                  --  if the body is present interfaces are handled properly.
+
+                  elsif Is_Concurrent_Type (Tref)
+                    and then Is_Tagged_Type (Tref)
+                    and then not Expander_Active
+                  then
+                     if Left /= '(' then
+                        Left := '<';
+                        Right := '>';
+                     end if;
+
+                     Tref := Entity (First (Interface_List (Parent (Tref))));
+
                   --  If the completion of a private type is itself a derived
                   --  type, we need the parent of the full view.
 

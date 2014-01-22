@@ -1,3 +1,30 @@
+2014-01-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): A subprogram
+	body generated for an expression function within a protected body
+	needs a set of renaming declarations if the expression function
+	comes from source.
+
+2014-01-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Get_Type_Reference): In semantics-only mode,
+	list interface progenitor of a tagged concurrent type, for better
+	source navigation.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* lib.adb (In_Extended_Main_Code_Unit): Return False for
+	Standard_Location.
+	(In_Extended_Main_Source_Unit): Return False for Standard_Location.
+	* lib.ads (In_Extended_Main_Code_Unit): Add documentation on
+	treatment of Slocs No_Location and Standard_Location.
+	* restrict.adb (Check_Restriction_No_Dependence): Explicitly
+	check for entity with Standard_Location Sloc, rather than relying
+	on Lib routines to do that.
+	* sem_res.adb (Resolve_Call): Implement SPARK_05 restriction
+	that a call cannot occur before a later occuring body within
+	the same unit.
+
 2014-01-22  Thomas Quinot  <quinot@adacore.com>
 
 	* rtsfind.adb: Update comment.

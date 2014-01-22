@@ -718,7 +718,7 @@ package body Lib is
    is
    begin
       if Sloc (N) = Standard_Location then
-         return True;
+         return False;
 
       elsif Sloc (N) = No_Location then
          return False;
@@ -750,7 +750,7 @@ package body Lib is
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean is
    begin
       if Loc = Standard_Location then
-         return True;
+         return False;
 
       elsif Loc = No_Location then
          return False;
@@ -787,7 +787,7 @@ package body Lib is
       --  Special value cases
 
       elsif Nloc = Standard_Location then
-         return True;
+         return False;
 
       elsif Nloc = No_Location then
          return False;
@@ -826,7 +826,7 @@ package body Lib is
       --  Special value cases
 
       elsif Loc = Standard_Location then
-         return True;
+         return False;
 
       elsif Loc = No_Location then
          return False;

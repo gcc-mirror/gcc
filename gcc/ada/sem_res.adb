@@ -5468,6 +5468,30 @@ package body Sem_Res is
          end if;
       end if;
 
+      --  If the SPARK_05 restriction is active, we are not allowed
+      --  to have a call to a subprogram before we see its completion.
+
+      if not Has_Completion (Nam)
+        and then Restriction_Check_Required (SPARK_05)
+
+        --  Don't flag strange internal calls
+
+        and then Comes_From_Source (N)
+        and then Comes_From_Source (Nam)
+
+        --  Only flag calls in extended main source
+
+        and then In_Extended_Main_Source_Unit (Nam)
+        and then In_Extended_Main_Source_Unit (N)
+
+        --  Exclude enumeration literals from this processing
+
+        and then Ekind (Nam) /= E_Enumeration_Literal
+      then
+         Check_SPARK_Restriction
+           ("call to subprogram cannot appear before its body", N);
+      end if;
+
       --  Check that this is not a call to a protected procedure or entry from
       --  within a protected function.
 

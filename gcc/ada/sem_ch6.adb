@@ -3218,13 +3218,13 @@ package body Sem_Ch6 is
       --  family index (if applicable). This form of early expansion is done
       --  when the Expander is active because Install_Private_Data_Declarations
       --  references entities which were created during regular expansion. The
-      --  body may be the rewritting of an expression function, and we need to
-      --  verify that the original node is in the source.
+      --  subprogram entity must come from source, and not be an internally
+      --  generated subprogram.
 
       if Expander_Active
-        and then Comes_From_Source (Original_Node (N))
         and then Present (Prot_Typ)
         and then Present (Spec_Id)
+        and then Comes_From_Source (Spec_Id)
         and then not Is_Eliminated (Spec_Id)
       then
          Install_Private_Data_Declarations
