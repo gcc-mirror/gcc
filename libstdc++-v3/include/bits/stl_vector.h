@@ -246,7 +246,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Creates a %vector with no elements.
        */
-      vector() _GLIBCXX_NOEXCEPT : _Base() { }
+      vector()
+#if __cplusplus >= 201103L
+      noexcept(is_nothrow_default_constructible<_Alloc>::value)
+#endif
+      : _Base() { }
 
       /**
        *  @brief  Creates a %vector with no elements.

@@ -65,6 +65,29 @@
 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
 	Likewise.
 
+	PR libstdc++/58764 (again)
+	* include/bits/stl_list.h (list): Make default constructor's exception
+	specification conditional.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Add noexcept
+	to default constructor.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2014-01-21  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.tcc: Remove incorrect `nosubs` handling.

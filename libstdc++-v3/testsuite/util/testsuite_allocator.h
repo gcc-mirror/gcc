@@ -454,7 +454,7 @@ namespace __gnu_test
     {
       typedef Tp value_type;
 
-      SimpleAllocator() { }
+      SimpleAllocator() noexcept { }
 
       template <class T>
         SimpleAllocator(const SimpleAllocator<T>& other) { }

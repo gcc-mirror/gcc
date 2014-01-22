@@ -530,7 +530,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**
        *  @brief  Creates a %list with no elements.
        */
-      list() _GLIBCXX_NOEXCEPT
+      list()
+#if __cplusplus >= 201103L
+      noexcept(is_nothrow_default_constructible<_Node_alloc_type>::value)
+#endif
       : _Base() { }
 
       /**
