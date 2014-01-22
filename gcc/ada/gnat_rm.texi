@@ -5060,6 +5060,9 @@ desired.  If the argument @code{No} is present, the task must not be
 optimized.  GNAT does not attempt to optimize any tasks in this manner
 (since protected objects are available in place of passive tasks).
 
+For more information on the subject of passive tasks, see the section
+``Passive Task Optimization'' in the GNAT Users Guide.
+
 @node Pragma Persistent_BSS
 @unnumberedsec Pragma Persistent_BSS
 @findex Persistent_BSS
