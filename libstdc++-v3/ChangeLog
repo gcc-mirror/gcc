@@ -1,3 +1,7 @@
+2014-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_deque.h (_Deque_impl): Move comment.
+
 2014-01-21  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.tcc: Remove incorrect `nosubs` handling.
