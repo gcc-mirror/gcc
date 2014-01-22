@@ -3132,6 +3132,10 @@ package VMS_Data is
                                                "-gnatwi "                  &
                                             "NOIMPLEMENTATION "            &
                                                "-gnatwI "                  &
+                                            "OVERLAPPING_ACTUALS "         &
+                                               "-gnatw.i "                 &
+                                            "NOOVERLAPPING_ACTUALS "       &
+                                               "-gnatw.I "                 &
                                             "OBSOLESCENT "                 &
                                                "-gnatwj "                  &
                                             "NOOBSOLESCENT "               &
@@ -3148,6 +3152,10 @@ package VMS_Data is
                                                "-gnatwl "                  &
                                             "NOELABORATION "               &
                                                "-gnatwL "                  &
+                                            "INHERITED_ASPECTS "           &
+                                               "-gnatw.l "                 &
+                                            "NOINHERITED_ASPECTS "         &
+                                               "-gnatw.L "                 &
                                             "MODIFIED_UNREF "              &
                                                "-gnatwm "                  &
                                             "NOMODIFIED_UNREF "            &
@@ -3158,6 +3166,10 @@ package VMS_Data is
                                                "-gnatw.M "                 &
                                             "NORMAL "                      &
                                                "-gnatwn "                  &
+                                            "ATOMIC_SYNCHRONIZATION "      &
+                                               "-gnatw.n "                 &
+                                            "NOATOMIC_SYNCHRONIZATION "    &
+                                               "-gnatw.N "                 &
                                             "OVERLAYS "                    &
                                                "-gnatwo "                  &
                                             "NOOVERLAYS "                  &
@@ -3170,12 +3182,12 @@ package VMS_Data is
                                                "-gnatwp "                  &
                                             "NOINEFFECTIVE_INLINE "        &
                                                "-gnatwP "                  &
-                                            "MISSING_PARENS "              &
-                                               "-gnatwq "                  &
                                             "PARAMETER_ORDER "             &
                                                "-gnatw.p "                 &
                                             "NOPARAMETER_ORDER "           &
                                                "-gnatw.P "                 &
+                                            "MISSING_PARENS "              &
+                                               "-gnatwq "                  &
                                             "NOMISSING_PARENS "            &
                                                "-gnatwQ "                  &
                                             "REDUNDANT "                   &
@@ -3196,6 +3208,10 @@ package VMS_Data is
                                                "-gnatwt "                  &
                                             "NODELETED_CODE "              &
                                                "-gnatwT "                  &
+                                            "SUSPICIOUS_CONTRACT "         &
+                                               "-gnatw.t "                 &
+                                            "NOSUSPICIOUS_CONTRACT "       &
+                                               "-gnatw.T "                 &
                                             "UNINITIALIZED "               &
                                                "-Wuninitialized "          &
                                             "UNUSED "                      &
@@ -3230,9 +3246,9 @@ package VMS_Data is
                                                "-gnatw.x "                 &
                                             "NOLOCAL_RAISE_HANDLING "      &
                                                "-gnatw.X "                 &
-                                            "ADA_2005_COMPATIBILITY "      &
+                                            "ADA_COMPATIBILITY "           &
                                                "-gnatwy "                  &
-                                            "NOADA_2005_COMPATIBILITY "    &
+                                            "NOADA_COMPATIBILITY "         &
                                                "-gnatwY "                  &
                                             "WHY_SPEC_NEEDS_BODY "         &
                                                "-gnatw.y "                 &
@@ -3256,272 +3272,382 @@ package VMS_Data is
    --   error. Second, if the compiler detects a situation that is sure to
    --   raise an exception at runtime, it generates a warning message.
    --
-   --   You may specify the following keywords to change this behavior:
+   --   You may specify the following keywords to change this behavior.
    --
-   --   DEFAULT (D)             The default behavior above.
+   --   DEFAULT (D)               The default behavior. This includes the
+   --                             following categories of warnings:
    --
-   --   ALL                     Activate all optional warnings.
-   --                           Activates most optional warning messages,
-   --                           see remaining list in this section for
-   --                           details on optional warning messages that
-   --                           can be individually controlled.
-   --                           The warnings that are not turned on by
-   --                           this option are BIASED_ROUNDING,
-   --                           IMPLICIT_DEREFERENCE, HIDING and
-   --                           ELABORATION. All other optional Ada
-   --                           warnings are turned on.
+   --                               ADA_COMPATIBILITY
+   --                               ADDRESS_CLAUSE_OVERLAY
+   --                               BIASED_REPRESENTATION
+   --                               IMPORT_EXPORT_PRAGMAS
+   --                               FAILING_ASSERTIONS
+   --                               IMPLEMENTATION
+   --                               LOWBOUND_ASSUMED
+   --                               MISSING_PARENS
+   --                               OVERLAPPING_ACTUALS
+   --                               REVERSE_BIT_ORDER
+   --                               SUSPICIOUS_CONTRACT
+   --                               SUSPICIOUS_MODULUS
+   --                               UNCHECKED_CONVERSIONS
+   --                               UNRECOGNIZED_PRAGMA
+   --                               VARIABLES_UNINITIALIZED
    --
-   --   EVERY                   Activate every optional warning.
-   --                           Activates all optional warnings, including
-   --                           those listed above as exceptions for ALL.
+   --                             as well as all warnings that cannot be
+   --                             individually suppressed.
    --
-   --   NOALL                   Suppress all optional errors.
-   --                           Suppresses all optional warning messages
-   --                           that can be activated by option ALL.
+   --   ALL                       Activate all optional warnings.
+   --                             Activates the most commong used optional
+   --                             warning messages. The warnings that are not
+   --                             turned on by this are:
    --
-   --   ALL_GCC                 Request additional messages from the GCC
-   --                           backend.  Most of these are not relevant
-   --                           to Ada.
+   --                               ADDRESS_CLAUSE_OVERLAY
+   --                               ATOMIC_SYNCHRONIZATION
+   --                               AVOID_GAPS
+   --                               BAD_FIXED_VALUE
+   --                               BIASED_ROUNDING
+   --                               DELETED_CODE
+   --                               ELABORATION
+   --                               HIDING
+   --                               IMPLICIT_DEREFERENCE
+   --                               INHERITED_ASPECTS
+   --                               OUT_PARAM_UNREF
+   --                               OVERLAPPING_ACTUALS
+   --                               OVERRIDING_SIZE
+   --                               STANDARD_REDEFINITION
+   --                               SUSPICIOUS_MODULUS
+   --                               UNORDERED_ENUMERATION
+   --                               WARNINGS_OFF_PRAGMAS
+   --                               WHY_BODY_NEEDED
    --
-   --   CONDITIONALS            Activate warnings for conditional
-   --                           Expressions used in tests that are known
-   --                           to be True or False at compile time. The
-   --                           default is that such warnings are not
-   --                           generated.
+   --                             All other optional warnings are turned on.
    --
-   --   NOCONDITIONALS          Suppress warnings for conditional
-   --                           expressions used in tests that are known
-   --                           to be True or False at compile time.
+   --   OPTIONAL                  Turn on standard optional warnings.
+   --                             This has the same effect as ALL.
    --
-   --   IMPLICIT_DEREFERENCE    Activate warnings on implicit dereferencing.
-   --                           The use of a prefix of an access type in an
-   --                           indexed component, slice, or selected component
-   --                           without an explicit .all will generate
-   --                           a warning. With this warning enabled, access
-   --                           checks occur only at points where an explicit
-   --                           .all appears in the source code (assuming no
-   --                           warnings are generated as a result of this
-   --                           option). The default is that such warnings are
-   --                           not generated. Note that /WARNINGS=ALL does not
-   --                           affect the setting of this warning option.
+   --   NOALL                     Suppress all optional errors.
+   --                             Suppresses all optional warning messages
+   --                             including those not activated by ALL.
    --
-   --   NOIMPLICIT_DEREFERENCE  Suppress warnings on implicit dereferencing.
-   --                           in indexed components, slices, and selected
-   --                           components.
+   --   NOOPTIONAL                Turn off standard optional warnings.
+   --                             This has the same effect as NOALL
    --
-   --   ELABORATION             Activate warnings on missing pragma
-   --                           Elaborate_All statements. The default is
-   --                           that such warnings are not generated.
+   --   EVERY                     Activate every optional warning.
+   --                             Activates all optional warnings, including
+   --                             those listed above as exceptions for ALL.
    --
-   --   NOELABORATION           Suppress warnings on missing pragma
-   --                           Elaborate_All statements.
+   --   ALL_GCC                   Request additional messages from the GCC
+   --                             backend. Most of these are not Ada-relevant.
    --
-   --   ERRORS                  Warning messages are to be treated as errors.
-   --                           The warning string still appears, but the
-   --                           warning messages are counted as errors, and
-   --                           prevent the generation of an object file.
+   --   UNINITIALIZED             Activate warnings for uninitialized
+   --                             variables. This is a GCC option, not an Ada
+   --                             option. You must also specify the /OPTIMIZE
+   --                             qualifier with a value other than NONE (in
+   --                             other words, this option is effective only
+   --                             if optimization is turned on).
+
+   --   ERRORS                    Warning messages are to be treated as errors.
+   --                             The warning string still appears, but the
+   --                             warning messages are counted as errors, and
+   --                             prevent the generation of an object file.
+   --
+   --   SUPPRESS                  Completely suppress the output of all warning
+   --                             messages. Same as /NOWARNINGS.
+   --
+   --   NORMAL                    Sets normal warning mode, in which enabled
+   --                             warnings are issued and treated as warnings
+   --                             rather than errors. This is the default mode.
+   --                             It can be used to cancel the effect of an
+   --                             explicit /WARNINGS=SUPPRESS or
+   --                             /WARNINGS=ERRORS. It also cancels the effect
+   --                             of the implicit /WARNINGS=ERRORS that is
+   --                             activated by the use of /STYLE=GNAT.
+   --
+   --   TAG_WARNINGS              Causes the string [xxx] to be added to
+   --                             warnings that are controlled by the warning
+   --                             switch -gnat??. See below for list of these
+   --                             equivalent switch names.
+   --
+   --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
+   --
+   --   The remaining entries control individual warning categories. If one
+   --   of these options is preceded by NO (e.g. NOAVOID_GAPS), then the
+   --   corresponding class of warnings is suppressed. The -gnatwxx tag
+   --   below the name indicates the non-VMS warning switch option. This is
+   --   used in the warning tags generated by TAG_WARNINGS (above)
+   --
+   --   ADA_COMPATIBILITY       Activate warnings for Ada compatibility issues.
+   --   (-gnatwy)               This generates warnings for usages which are
+   --                           legal, but may cause difficulties with later
+   --                           Ada versions (e.g. the use of INTERFACE as an
+   --                           identifier, which is legal in Ada 85, but in
+   --                           Ada 2005, this is a reserved word).
+   --
+   --   ATOMIC_SYNCHRONIZATION  Activate info msgs for atomic synchronization.
+   --   (-gnatw.n)              This generates information messages when an
+   --                           access to an atomic variable requires the
+   --                           generation of atomic synchronization code.
+   --
+   --   AVOID_GAPS              Activate warnings for gaps in records.
+   --   (-gnatw.h)              This outputs a warning if a representation
+   --                           clause for a record leaves unallocated bits.
+   --
+   --   BAD_FIXED_VALUES        Activate warnings on bad fixed values.
+   --   (-gnatwb)               When this is enabled, a fixed-type literal
+   --                           will generate a warning if its value does not
+   --                           correspond to an exact value of the type and
+   --                           is thus subject to rounding.
+   --
+   --   BIASED_REPRESENTATION   Activate warnings for biased representations.
+   --   (-gnatw.b)              A warning will be generated if a size clause
+   --                           or a component clause forces use of a biased
+   --                           representation (e.g. range 1..5 with size 2).
+   --
+   --   CONDITIONALS            Activate warnings for conditional expressions
+   --   (-gnatwc)               in tests where the expression is known to
+   --                           be True or False at compile time.
+   --
+   --   DELETED_CODE            Activate warning for conditional deleted code.
+   --   (-gnatwt)               This option generates warnings for tracking of
+   --                           code in conditionals (IF and CASE statements)
+   --                           that is detected to be dead code which cannot
+   --                           be executed, and which is removed by the
+   --                           front end. This may be useful for detecting
+   --                           deactivated code in certified applications.
+   --
+   --   CONSTANT_VARIABLES      Activate warnings on constant variables.
+   --   (-gnatwk)               A warning is output for a variable which could
+   --                           have been declared as a constant.
+   --
+   --   ELABORATION             Activate warnings on missing pragma Elaborate
+   --   (-gnatwl)               and Elaborate_All statements.
+   --
+   --   FAILING_ASSERTIONS      Activate warnings on failing assertions.
+   --   (-gnatw.a)              Generates a warning for assertions that are
+   --                           sure to fail.
    --
    --   HIDING                  Activate warnings on hiding declarations.
-   --                           A declaration is considered hiding if it is
-   --                           for a non-overloadable entity, and it declares
+   --   (-gnatwh)               A declaration is considered hiding if it is
+   --                           for a non-overloadable entity, and declares
    --                           an entity with the same name as some other
-   --                           entity that is directly or use-visible. The
-   --                           default is that such warnings are not
-   --                           generated.
+   --                           entity that is directly or use-visible.
    --
-   --   NOHIDING                Suppress warnings on hiding declarations.
+   --   IMPORT_EXPORT_PRAGMAS   Activate warnings on import-export pragmas.
+   --   (-gnatwx)               This generates a warning on an Export or Import
+   --                           pragma when the compiler detects a possible
+   --                           conflict between the Ada and foreign language
+   --                           calling sequences. For example, the use of
+   --                           default parameters in a convention C procedure
+   --                           is dubious because the C compiler cannot supply
+   --                           the proper default, so a warning is issued.
    --
    --   IMPLEMENTATION          Activate warnings for a with of an internal
-   --                           GNAT implementation unit, defined as any unit
-   --                           from the Ada, Interfaces, GNAT, DEC or
-   --                           System hierarchies that is not documented in
-   --                           either the Ada Reference Manual or the GNAT
-   --                           Programmer's Reference Manual. Such units are
-   --                           intended only for internal implementation
-   --                           purposes and should not be with'ed by user
-   --                           programs. The default is that such warnings
-   --                           are generated.
+   --   (-gnatwi)               GNAT implementation unit, defined as any unit
+   --                           from the Ada, Interfaces, GNAT, DEC or System
+   --                           hierarchies that is not documented in the
+   --                           Ada Reference Manual or the GNAT Programmer's
+   --                           Reference Manual. Such units are intended only
+   --                           for internal implementation purposes and may
+   --                           change from version to veresion, and should
+   --                           not be with'ed by user programs.
    --
-   --   NOIMPLEMENTATION        Disables warnings for a with of an internal
-   --                           GNAT implementation unit.
+   --   IMPLICIT_DEREFERENCE    Activate warnings on implicit dereferencing.
+   --   (-gnatwd)               The use of a prefix of an access type in an
+   --                           indexed component, slice, or selected component
+   --                           without an explicit .all will generate a
+   --                           warning. When this warning is enabled, and no
+   --                           warnings of this type are generated, access
+   --                           checks occur only at points where the source
+   --                           program contains an explicit use of .all.
    --
-   --   INEFFECTIVE_INLINE      Activate warnings on ineffective pragma Inlines
-   --                           Activates warnings for failure of front end
-   --                           inlining (activated by /INLINE=FULL) to inline
-   --                           a particular call. There are many reasons for
-   --                           not being able to inline a call, including most
+   --   INEFFECTIVE_INLINE      Activate warnings on ineffective Inlines.
+   --   (-gnatwp)               Activates warnings for failure of front end
+   --                           inlining (activated by /INLINE=FULL) to
+   --                           inline a particular call when a pragma Inline
+   --                           applies. There are many reasons for not
+   --                           being able to inline a call, including most
    --                           commonly that the call is too complex to
    --                           inline. This warning can also be turned on
    --                           using /INLINE=FULL.
    --
-   --   NOINEFFECTIVE_INLINE    Suppress warnings on ineffective pragma Inlines
-   --                           Suppresses warnings on ineffective pragma
-   --                           Inlines. If the inlining mechanism cannot
-   --                           inline a call, it will simply ignore the
-   --                           request silently.
+   --   INHERITED_ASPECTS       Activate info messages for inherited aspects.
+   --   (-gantw.l)              Outputs information messages for tagged types
+   --                           that inherit aspects from a parent.
+   --
+   --   LOCAL_RAISE_HANDLING    Activate warnings for No_Exception_Propagation.
+   --   (-gnatw.x)              This generates warnings for exception usage
+   --                           when the No_Exception_Propagation restriction
+   --                           is in effect. Warnings are given for implicit
+   --                           or explicit exception raises which are not
+   --                           covered by a local handler, and for exception
+   --                           handlers which do not cover a local raise.
+   --
+   --   LOWBOUND_ASSUMED        Activate warnings for low bound assumptions.
+   --   (-gnatww)               Outputs warnings if code appears to depend on
+   --                           an assumption about the lower bound of one of
+   --                           the subprogram parameters (for example using
+   --                           S(1 .. 5) instead of S(S'First .. S'First + 4).
    --
    --   MISSING_COMPONENT_CLAUSES
-   --                           Activate warnings for cases when there are
-   --                           component clauses for a record type, but not
-   --                           for every component of the record.
+   --   (-gnatw.c)              Activate warnings for unrepped component.
+   --                           Generates a warning for a record component
+   --                           which does not have a component clause if
+   --                           at least one component claused is present
+   --                           for some other component of the record.
    --
-   --   NOMISSING_COMPONENT_CLAUSES
-   --                           Suppress warnings for cases when there are
-   --                           missing component clauses for a record type.
-   --
-   --   MISSING_PARENS
-   --                           Activate warnings for cases where parentheses
+   --   MISSING_PARENS          Activate warnings for missing parentheses.
+   --   (-gnatwq)               Outputs a warning for cases where parentheses
    --                           are not used and the result is potential
    --                           ambiguity from a reader's point of view.
    --                           For example (not a > b) when a and b are
    --                           modular means (not (a) > b) and very likely
    --                           the programmer intended (not (a > b)).
    --
-   --   NOMISSING_PARENS
-   --                           Suppress warnings for cases where parentheses
-   --                           are not used and the result is potential
-   --                           ambiguity from a reader's point of view.
-   --
-   --   MODIFIED_UNREF          Activates warnings for variables that are
-   --                           assigned (using an initialization value or with
-   --                           one or more assignment statements) but whose
-   --                           value is never read. The warning is suppressed
-   --                           for volatile variables and also for variables
+   --   MODIFIED_UNREF          Activate warning for assigned but not read.
+   --   (-gnatwm)               Outputs a warning for variables that are
+   --                           assigned (using an initialization value or an
+   --                           assignment statements) but whose value is
+   --                           never read. The warning is suppressed for
+   --                           volatile variables and also for variables
    --                           that are renamings of other variables or for
-   --                           which an address clause is given. This warning
-   --                           can also be turned on using /WARNINGS/OPTIONAL.
-   --
-   --   NOMODIFIED_UNREF        Disables warnings for variables that are
-   --                           assigned or initialized, but never read.
-   --
-   --   NORMAL                  Sets normal warning mode, in which enabled
-   --                           warnings are issued and treated as warnings
-   --                           rather than errors. This is the default mode.
-   --                           It can be used to cancel the effect of an
-   --                           explicit /WARNINGS=SUPPRESS or
-   --                           /WARNINGS=ERRORS. It also cancels the effect
-   --                           of the implicit /WARNINGS=ERRORS that is
-   --                           activated by the use of /STYLE=GNAT.
-   --
-   --   OBSOLESCENT             Activates warnings for calls to subprograms
-   --                           marked with pragma Obsolescent and for use of
-   --                           features in Annex J of the Ada Reference
-   --                           Manual. In the case of Annex J, not all
-   --                           features are flagged. In particular use of the
-   --                           renamed packages (like Text_IO), use of package
-   --                           ASCII and use of the attribute 'Constrained are
-   --                           not flagged, since these are very common and
-   --                           would generate many annoying positive warnings.
-   --                           The default is that such warnings are not
-   --                           generated.
-   --
-   --   NOOBSOLESCENT           Disables warnings on use of obsolescent
-   --                           features.
+   --                           which an address clause is given.
    --
    --   OBJECT_RENAME           Activate warnings for non limited objects
-   --                           renaming parameterless functions.
+   --   (-gnatw.r)              renaming parameterless functions.
    --
-   --   NOOBJECT_RENAME         Suppress warnings for non limited objects
-   --                           renaming parameterless functions.
+   --   OBSOLESCENT             Activates warnings for calls to subprograms
+   --   (-gnatwj)               marked with pragma Obsolescent and for use of
+   --                           features in Annex J of the Ada Reference
+   --                           Manual. In the case of Annex J, not all
+   --                           features are flagged. In particular use of
+   --                           the renamed packages (like Text_IO), use of
+   --                           package ASCII,  and use of the attribute
+   --                           'Constrained are not flagged, since these are
+   --                           common and would generate many annoying
+   --                           false-positive warnings.
    --
-   --   OPTIONAL                Equivalent to ALL.
+   --   OUT_PARAM_UNREF         Activate warnings on unreferenced OUT params.
+   --   (-gantw.o)              This switch activates warnings for variables
+   --                           that are modified by using them as actuals for
+   --                           a call to a procedure with an out mode formal,
+   --                           where the resulting assigned value is never
+   --                           read. It is applicable in the case where there
+   --                           is more than one out mode formal. If there is
+   --                           only one out mode formal, the warning is issued
+   --                           by default (controlled by UNUSED). The warning
+   --                           is suppressed for volatile variables and also
+   --                           for variables that are renamings of other
+   --                           variables or for which an address clause
+   --                           is given.
    --
-   --   NOOPTIONAL              Equivalent to NOALL.
+   --   OVERLAPPING_ACTUALS     Activate warnings on overlapping actuals.
+   --   (-gnatw.i)              Enables a warning on statically detectable
+   --                           overlapping actuals in a subprogram call,
+   --                           when one of the actuals is an in-out
+   --                           parameter, and the types of the actuals
+   --                           are not by-copy types.
    --
    --   OVERLAYS                Activate warnings for possibly unintended
-   --                           initialization effects of defining address
-   --                           clauses that cause one variable to overlap
-   --                           another. The default is that such warnings
-   --                           are generated.
-   --
-   --   NOOVERLAYS              Suppress warnings on possibly unintended
-   --                           initialization effects of defining address
+   --   (-gnatwo)               initialization effects of defining address
    --                           clauses that cause one variable to overlap
    --                           another.
    --
+   --   OVERRIDING_SIZE         Activate warning on overridden size clause.
+   --   (-gnatw.s)              Generates a warning if an explicit size clause
+   --                           is overridden by a component clause in a record
+   --                           or a component size in an array.
+   --
+   --   PARAMETER_ORDER         Activate warnings for suspicious parameter
+   --   (-gnatw.p)              ordering. A warning is generated if positional
+   --                           ordering is used and the actuals match the
+   --                           formal names, but are in the wrong order (e.g.
+   --                           GEN (B, A), when the formals of GEN are A, B.)
+   --                           No warning is generated for named parameters,
+   --                           so GEN (A => B, B => A) would be allowed.
+   --
    --   REDUNDANT               Activate warnings for redundant constructs.
-   --                           In particular assignments of a variable to
+   --   (-gnatwr)               In particular assignments of a variable to
    --                           itself, and a type conversion that converts
-   --                           an object to its own type. The default
-   --                           is that such warnings are not generated.
+   --                           an object to its own type.
    --
-   --   NOREDUNDANT             Suppress warnings for redundant constructs.
+   --   REVERSE_BIT_ORDER       Activates info messages for reverse bit order.
+   --   (-gnatw.v)              Generates information messages that show the
+   --                           effect of specifying reverse bit order for
+   --                           a record on individual components.
    --
-   --   SUPPRESS                Completely suppress the output of all warning
-   --                           messages.  Same as /NOWARNINGS.
+   --   STANDARD_REDEFINITION   Activate warnings on standard redefinition.
+   --   (-gnatw.k)              Generates a warning message if a declaration
+   --                           declares an identifier that matches one that
+   --                           is declared in package Standard (e.g. Float).
+   --
+   --   SUSPICIOUS_CONTRACT     Activate warnings on suspicious postconditions.
+   --   (-gnatw.t)              This generates warnings if a postcondition for
+   --                           a function does not mention the result, or if
+   --                           a postcondition for a procedure depends only on
+   --                           the entry values of the parameters.
+   --
+   --   SUSPICIOUS_MODULUS      Warn on suspicious modulus values, for
+   --   (-gnatw.m)              example "mod 7" is suspicious for a size with
+   --                           7 bits, since it was likely intended to be
+   --                           "mod 2**7". Similarly "mod 32" is considered
+   --                           suspicious, since it was likely intended to
+   --                           be "mod 2**32".
    --
    --   UNCHECKED_CONVERSIONS   Activates warnings on unchecked conversions.
-   --                           Causes warnings to be generated for
-   --                           unchecked conversions when the two types are
-   --                           known at compile time to have different sizes.
-   --                           The default is that such warnings are
-   --                           generated.
+   --   (-gnatwz)               Causes warnings to be generated for unchecked
+   --                           conversions between types that are known at
+   --                           compile time to have different sizes.
    --
-   --   NOUNCHECKED_CONVERSIONS Suppress warnings for unchecked conversions.
+   --   UNORDERED_ENUMERATION   Activate warnings for unordered enumeration.
+   --   (-gnatw.u)              Causes warnings to be generated if for an
+   --                           enumeration type that does not have a pragma
+   --                           Ordered that applies, if a subtype with a
+   --                           range is used, or a comparison other than
+   --                           [in]equality appears for values of the type.
    --
-   --   UNINITIALIZED           Generate warnings for uninitialized variables.
-   --                           This is a GCC option, not an Ada option.
-   --                           You must also specify the /OPTIMIZE qualifier
-   --                           with a value other than NONE (in other words,
-   --                           this keyword works only if optimization is
-   --                           turned on).
+   --   UNRECOGNIZED_PRAGMAS    Activate warnings for unrecognized pragmas.
+   --   (-gnatwg)               Such pragmas are ignored other than generating
+   --                           these warnings.
    --
    --   UNREFERENCED_FORMALS    Activate warnings on unreferenced formals.
-   --                           Causes a warning to be generated if a formal
+   --   (-gnatwf)               Causes a warning to be generated if a formal
    --                           parameter is not referenced in the body of
-   --                           the subprogram. This warning can also be turned
-   --                           on using option ALL or UNUSED.
-   --
-   --   NOUNREFERENCED_FORMALS  Suppress warnings on unreferenced formals.
-   --                           Suppresses warnings for unreferenced formal
-   --                           parameters. Note that the combination UNUSED
-   --                           followed by NOUNREFERENCED_FORMALS has the
-   --                           effect of warning on unreferenced entities
-   --                           other than subprogram formals.
+   --                           the subprogram. Note that the combination
+   --                           UNUSED followed by NOUNREFERENCED_FORMALS
+   --                           has the effect of warning on unreferenced
+   --                           entities other than subprogram formals.
    --
    --   UNUSED                  Activates warnings to be generated for entities
-   --                           that are defined but not referenced, and for
+   --   (-gantwu)               that are defined but not referenced, and for
    --                           units that are with'ed and not referenced. In
    --                           the case of packages, a warning is also
    --                           generated if no entities in the package are
    --                           referenced. This means that if the package
    --                           is referenced but the only references are in
-   --                           use clauses or renames declarations, a warning
-   --                           is still generated. A warning is also generated
-   --                           for a generic package that is with'ed but never
-   --                           instantiated.  In the case where a package or
-   --                           subprogram body is compiled, and there is a
-   --                           with on the corresponding spec that is only
-   --                           referenced in the body, a warning is also
-   --                           generated, noting that the with can be moved
-   --                           to the body. The default is that such warnings
-   --                           are not generated.
-   --
-   --   NOUNUSED                Suppress warnings for unused entities and
-   --                           packages.
+   --                           in use clauses or renames declarations, a
+   --                           warning is still generated. A warning is also
+   --                           generated for a generic package that is
+   --                           with'ed but never instantiated. In the case
+   --                           where a package or subprogram body is
+   --                           compiled, and there is a with on the
+   --                           corresponding spec that is only referenced
+   --                           in the body, a warning is also generated,
+   --                           noting the with can be moved to the body.
    --
    --   VARIABLES_UNINITIALIZED Activates warnings on unassigned variables.
-   --                           Causes warnings to be generated when a variable
-   --                           is accessed which may not be properly
-   --                           uninitialized. The default is that such
-   --                           warnings are generated.
+   --   (-gnatwv)               Causes warnings to be generated when a
+   --                           variable is accessed which may not be
+   --                           properly initialized.
    --
-   --   NOVARIABLES_UNINITIALIZED
-   --                           Suppress warnings for uninitialized variables.
-   --
-   --   TAG_WARNINGS            Causes the string [xxx] to be added to warnings
-   --                           that are controlled by the warning string xxx,
-   --                           e.g. [REDUNDANT], or if the warning is enabled
-   --                           by default, the tag is [enabled by default].
-   --
-   --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
+   --   WARNINGS_OFF_PRAGMAS    Activates warnings for pragma Warnings (Off).
+   --   (-gnatw.w)              This generates a warning if the specific string
+   --                           version the pragma is used as a local pragma
+   --                           (i.e. not a configuration pragma) and no
+   --                           warning is suppressed as a result.
    --
    --   WHY_SPEC_NEEDS_BODY     Generates information messages showing why a
-   --                           package specification requires a body.
+   --   (-gnatw.y)              package specification requires a body.
    --
-   --   NO_WHY_SPEC_NEEDS_BODY  Turns off information messages showing why a
-   --                           package specification requires a body.
-
    S_GCC_WarnX   : aliased constant S := "/NOWARNINGS "                    &
                                             "-gnatws";
    --  NODOC (see /WARNINGS)

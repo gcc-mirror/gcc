@@ -1,3 +1,14 @@
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Check_Use_Clause): Don't give no entities used
+	msg if errors found.
+	(Check_One_Unit): Same change.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* ug_words: Add missing/wrong entries for VMS warning switches.
+	* sem_prag.adb (Check_Duplicate_Pragma): Avoid flagging parent type.
+
 2014-01-22  Jerome Guitton  <guitton@adacore.com>
 
 	* mlib-tgt-specific-vxworks.adb (Get_Target_Suffix): Replace xscale by

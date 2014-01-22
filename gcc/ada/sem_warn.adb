@@ -2130,11 +2130,18 @@ package body Sem_Warn is
                   Nam := First (Names (N));
                   while Present (Nam) loop
                      if Entity (Nam) = Pack then
-                        Error_Msg_Qual_Level := 1;
-                        Error_Msg_NE -- CODEFIX
-                          ("?u?no entities of package& are referenced!",
-                             Nam, Pack);
-                        Error_Msg_Qual_Level := 0;
+
+                        --  Suppress message if any serious errors detected
+                        --  that turn off expansion, and thus result in false
+                        --  positives for this warning.
+
+                        if Serious_Errors_Detected = 0 then
+                           Error_Msg_Qual_Level := 1;
+                           Error_Msg_NE -- CODEFIX
+                             ("?u?no entities of package& are referenced!",
+                                Nam, Pack);
+                           Error_Msg_Qual_Level := 0;
+                        end if;
                      end if;
 
                      Next (Nam);
@@ -2402,8 +2409,13 @@ package body Sem_Warn is
                            --  Else give the warning
 
                            else
-                              if not
-                                Has_Unreferenced (Entity (Name (Item)))
+                              --  Warn if we unreferenced flag set and we have
+                              --  not had serious errors. The reason we inhibit
+                              --  the message if there are errors is to prevent
+                              --  false positives from disabling expansion.
+
+                              if not Has_Unreferenced (Entity (Name (Item)))
+                                and then Serious_Errors_Detected = 0
                               then
                                  Error_Msg_N -- CODEFIX
                                    ("?u?no entities of & are referenced!",
@@ -2541,6 +2553,8 @@ package body Sem_Warn is
    --  Start of processing for Check_Unused_Withs
 
    begin
+      --  Immediate return if no semantics or warning flag not set
+
       if not Opt.Check_Withs or else Operating_Mode = Check_Syntax then
          return;
       end if;
