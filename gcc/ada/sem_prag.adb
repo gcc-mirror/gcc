@@ -2635,8 +2635,14 @@ package body Sem_Prag is
 
       Collect_States_And_Variables;
 
+      --  All done if result is null
+
+      if Nkind (Inits) = N_Null then
+         return;
+      end if;
+
       --  Single and multiple initialization clauses must appear as an
-      --  aggregate. If this is not the case, then either the parser of
+      --  aggregate. If this is not the case, then either the parser or
       --  the analysis of the pragma failed to produce an aggregate.
 
       pragma Assert (Nkind (Inits) = N_Aggregate);

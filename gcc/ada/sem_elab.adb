@@ -47,8 +47,6 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -2891,6 +2889,9 @@ package body Sem_Elab is
       Nod : Node_Id;
       Loc : constant Source_Ptr := Sloc (N);
 
+      Chk : Node_Id;
+      --  The check (N_Raise_Program_Error) node to be inserted
+
    begin
       --  If expansion is disabled, do not generate any checks. Also
       --  skip checks if any subunits are missing because in either
@@ -2914,106 +2915,35 @@ package body Sem_Elab is
          Nod := N;
       end if;
 
+      --  Build check node, possibly with condition
+
+      Chk := Make_Raise_Program_Error (Loc,
+               Reason => PE_Access_Before_Elaboration);
+      if Present (C) then
+         Set_Condition (Chk,
+           Make_Op_Not (Loc, Right_Opnd => C));
+      end if;
+
       --  If we are inserting at the top level, insert in Aux_Decls
 
       if Nkind (Parent (Nod)) = N_Compilation_Unit then
          declare
             ADN : constant Node_Id := Aux_Decls_Node (Parent (Nod));
-            R   : Node_Id;
 
          begin
-            if No (C) then
-               R :=
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Access_Before_Elaboration);
-            else
-               R :=
-                 Make_Raise_Program_Error (Loc,
-                   Condition => Make_Op_Not (Loc, C),
-                   Reason    => PE_Access_Before_Elaboration);
-            end if;
-
             if No (Declarations (ADN)) then
-               Set_Declarations (ADN, New_List (R));
+               Set_Declarations (ADN, New_List (Chk));
             else
-               Append_To (Declarations (ADN), R);
+               Append_To (Declarations (ADN), Chk);
             end if;
 
-            Analyze (R);
+            Analyze (Chk);
          end;
 
-      --  Otherwise just insert before the node in question. However, if
-      --  the context of the call has already been analyzed, an insertion
-      --  will not work if it depends on subsequent expansion (e.g. a call in
-      --  a branch of a short-circuit). In that case we replace the call with
-      --  an if expression, or with a Raise if it is unconditional.
-
-      --  Unfortunately this does not work if the call has a dynamic size,
-      --  because gigi regards it as a dynamic-sized temporary. If such a call
-      --  appears in a short-circuit expression, the elaboration check will be
-      --  missed (rare enough ???). Otherwise, the code below inserts the check
-      --  at the appropriate place before the call. Same applies in the even
-      --  rarer case the return type has a known size but is unconstrained.
+      --  Otherwise just insert as an action on the node in question
 
       else
-         if Nkind (N) = N_Function_Call
-           and then Analyzed (Parent (N))
-           and then Size_Known_At_Compile_Time (Etype (N))
-           and then
-            (not Has_Discriminants (Etype (N))
-              or else Is_Constrained (Etype (N)))
-
-         then
-            declare
-               Typ : constant Entity_Id := Etype (N);
-               Chk : constant Boolean   := Do_Range_Check (N);
-
-               R  : constant Node_Id :=
-                      Make_Raise_Program_Error (Loc,
-                         Reason => PE_Access_Before_Elaboration);
-
-               Reloc_N : Node_Id;
-
-            begin
-               Set_Etype (R, Typ);
-
-               if No (C) then
-                  Rewrite (N, R);
-
-               else
-                  Reloc_N := Relocate_Node (N);
-                  Save_Interps (N, Reloc_N);
-                  Rewrite (N,
-                    Make_If_Expression (Loc,
-                      Expressions => New_List (C, Reloc_N, R)));
-               end if;
-
-               Analyze_And_Resolve (N, Typ);
-
-               --  If the original call requires a range check, so does the
-               --  if expression.
-
-               if Chk then
-                  Enable_Range_Check (N);
-               else
-                  Set_Do_Range_Check (N, False);
-               end if;
-            end;
-
-         else
-            if No (C) then
-               Insert_Action (Nod,
-                  Make_Raise_Program_Error (Loc,
-                    Reason => PE_Access_Before_Elaboration));
-            else
-               Insert_Action (Nod,
-                  Make_Raise_Program_Error (Loc,
-                    Condition =>
-                      Make_Op_Not (Loc,
-                        Right_Opnd => C),
-                    Reason => PE_Access_Before_Elaboration));
-            end if;
-         end if;
+         Insert_Action (Nod, Chk);
       end if;
    end Insert_Elab_Check;
 

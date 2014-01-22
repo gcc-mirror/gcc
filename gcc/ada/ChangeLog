@@ -1,5 +1,46 @@
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Analyze_Initializes_In_Decl_Part): Handle null
+	initializes case.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* snames.ads-tmpl: Update header.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb (Insert_Actions): When inserting actions on a
+	short circuit operator that has already been analyzed, do not park
+	actions in node; instead introduce an N_Expression_With_Actions
+	and insert actions immediately.
+	Add guard for unexpected case of climbing up through statement
+	in Actions list of an N_Expression_With_Actions.
+	* sem_elab.adb (Insert_Elab_Check): Remove complex
+	specialized circuitry for the case where the context is already
+	analyzed, as it is not needed and introduces irregularities in
+	finalization. Instead rely on the above change to Insert_Actions
+	to ensure that late insertion on short circuit operators works
+	as expected.
+
+2014-01-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Improve error message when an
+	operand of concatenation is an access type.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Identifier): Add guard against
+	cascaded error.
+
+2014-01-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Handle properly the case
+	of an expanded name in a proper body, whose prefix is a package
+	in the context of the proper body, when there is a homonym of
+	the package declared in the parent unit.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
 	* sem_warn.adb (Check_Use_Clause): Don't give no entities used
 	msg if errors found.
 	(Check_One_Unit): Same change.
