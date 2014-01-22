@@ -487,13 +487,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       ~_Deque_base() _GLIBCXX_NOEXCEPT;
 
     protected:
-      //This struct encapsulates the implementation of the std::deque
-      //standard container and at the same time makes use of the EBO
-      //for empty allocators.
       typedef typename _Alloc::template rebind<_Tp*>::other _Map_alloc_type;
 
       typedef typename _Alloc::template rebind<_Tp>::other  _Tp_alloc_type;
 
+      //This struct encapsulates the implementation of the std::deque
+      //standard container and at the same time makes use of the EBO
+      //for empty allocators.
       struct _Deque_impl
       : public _Tp_alloc_type
       {
