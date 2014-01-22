@@ -1,3 +1,12 @@
+2014-01-22  Jerome Guitton  <guitton@adacore.com>
+
+	* mlib-tgt-specific-vxworks.adb (Get_Target_Suffix): Replace xscale by
+	arm.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Document passive task optimization
+
 2014-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Minor fixes.

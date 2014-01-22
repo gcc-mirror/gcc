@@ -10154,6 +10154,7 @@ some guidelines on debugging optimized code.
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
 * Aliased Variables and Optimization::
+* Passive Task Optimization::
 
 @ifset vms
 * Coverage Analysis::
@@ -10998,6 +10999,48 @@ be going on. The optimizer recognizes the aliased keyword and
 inhibits optimizations that assume the value cannot be assigned.
 This means that the above example will in fact "work" reliably,
 that is, it will produce the expected results.
+
+@node Passive Task Optimization
+@subsection Passive Task Optimization
+@cindex Passive Task
+
+A passive task is one which is sufficiently simple that
+in theory a compiler could recognize it an implement it
+efficiently without creating a new thread. The original design
+of Ada 83 had in mind this kind of passive task optimization, but
+only a few Ada 83 compilers attempted it. The problem was that
+it was difficult to determine the exact conditions under which
+the optimization was possible. The result is a very fragile
+optimization where a very minor change in the program can
+suddenly silently make a task non-optimizable.
+
+With the revisiting of this issue in Ada 95, there was general
+agreement that this approach was fundamentally flawed, and the
+notion of protected types was introduced. When using protected
+types, the restrictions are well defined, and you KNOW that the
+operations will be optimized, and furthermore this optimized
+performance is fully portable.
+
+Although it would theoretically be possible for GNAT to attempt to
+do this optimization, but it really doesn't make sense in the
+context of Ada 95, and none of the Ada 95 compilers implement
+this optimization as far as we know. In particular GNAT never
+attempts to perform this optimization.
+
+In any new Ada 95 code that is written, you should always
+use protected types in place of tasks that might be able to
+be optimized in this manner.
+Of course this does not help if you have legacy Ada 83 code
+that depends on this optimization, but it is unusual to encounter
+a case where the performance gains from this optimization
+are significant.
+
+Your program should work correctly without this optimization. If
+you have performance problems, then the most practical
+approach is to figure out exactly where these performance problems
+arise, and update those particular tasks to be protected types. Note
+that typically clients of the tasks who call entries, will not have
+to be modified, only the task definition itself.
 
 @ifset vms
 @node Coverage Analysis
