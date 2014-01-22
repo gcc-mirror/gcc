@@ -112,6 +112,10 @@ package body Sem_Ch13 is
    --  list is stored in Static_Predicate (Typ), and the Expr is rewritten as
    --  a canonicalized membership operation.
 
+   procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
+   --  Called if both Storage_Pool and Storage_Size attribute definition
+   --  clauses (SP and SS) are present for entity Ent. Issue error message.
+
    procedure Freeze_Entity_Checks (N : Node_Id);
    --  Called from Analyze_Freeze_Entity and Analyze_Generic_Freeze Entity
    --  to generate appropriate semantic checks that are delayed until this
@@ -1698,8 +1702,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  If the type is private, indicate that its completion
-                  --  has a freeze node, because that is the one that will be
-                  --  visible at freeze time.
+                  --  has a freeze node, because that is the one that will
+                  --  be visible at freeze time.
 
                   if Is_Private_Type (E) and then Present (Full_View (E)) then
                      Set_Has_Predicates (Full_View (E));
@@ -4629,6 +4633,20 @@ package body Sem_Ch13 is
                return;
             end if;
 
+            --  Check for Storage_Size previously given
+
+            declare
+               SS : constant Node_Id :=
+                      Get_Attribute_Definition_Clause
+                        (U_Ent, Attribute_Storage_Size);
+            begin
+               if Present (SS) then
+                  Check_Pool_Size_Clash (U_Ent, N, SS);
+               end if;
+            end;
+
+            --  Storage_Pool case
+
             if Id = Attribute_Storage_Pool then
                Analyze_And_Resolve
                  (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
@@ -4788,10 +4806,21 @@ package body Sem_Ch13 is
                Analyze_And_Resolve (Expr, Any_Integer);
 
                if Is_Access_Type (U_Ent) then
-                  if Present (Associated_Storage_Pool (U_Ent)) then
-                     Error_Msg_N ("storage pool already given for &", Nam);
-                     return;
-                  end if;
+
+                  --  Check for Storage_Pool previously given
+
+                  declare
+                     SP : constant Node_Id :=
+                            Get_Attribute_Definition_Clause
+                              (U_Ent, Attribute_Storage_Pool);
+
+                  begin
+                     if Present (SP) then
+                        Check_Pool_Size_Clash (U_Ent, SP, N);
+                     end if;
+                  end;
+
+                  --  Special case of for x'Storage_Size use 0
 
                   if Is_OK_Static_Expression (Expr)
                     and then Expr_Value (Expr) = 0
@@ -8307,6 +8336,33 @@ package body Sem_Ch13 is
       end if;
    end Check_Constant_Address_Clause;
 
+   ---------------------------
+   -- Check_Pool_Size_Clash --
+   ---------------------------
+
+   procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id) is
+      Post : Node_Id;
+
+   begin
+      --  We need to find out which one came first. Note that in the case of
+      --  aspects mixed with pragmas there are cases where the processing order
+      --  is reversed, which is why we do the check here.
+
+      if Sloc (SP) < Sloc (SS) then
+         Error_Msg_Sloc := Sloc (SP);
+         Post := SS;
+         Error_Msg_NE ("Storage_Pool previously given for&#", Post, Ent);
+
+      else
+         Error_Msg_Sloc := Sloc (SS);
+         Post := SP;
+         Error_Msg_NE ("Storage_Size previously given for&#", Post, Ent);
+      end if;
+
+      Error_Msg_N
+        ("\cannot have Storage_Size and Storage_Pool (RM 13.11(3))", Post);
+   end Check_Pool_Size_Clash;
+
    ----------------------------------------
    -- Check_Record_Representation_Clause --
    ----------------------------------------
@@ -9580,7 +9636,6 @@ package body Sem_Ch13 is
    -------------------------------------
 
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id) is
-
       function Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
         (Rep_Item : Node_Id) return Boolean;
       --  This routine checks if Rep_Item is either a pragma or an aspect
