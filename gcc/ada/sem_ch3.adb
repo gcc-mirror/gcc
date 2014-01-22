@@ -733,7 +733,7 @@ package body Sem_Ch3 is
          return Empty;
       end if;
 
-      --  Ada 2005: for an object declaration the corresponding anonymous
+      --  Ada 2005: For an object declaration the corresponding anonymous
       --  type is declared in the current scope.
 
       --  If the access definition is the return type of another access to
@@ -912,7 +912,7 @@ package body Sem_Ch3 is
          Set_Has_Delayed_Freeze (Current_Scope);
       end if;
 
-      --  Ada 2005: if the designated type is an interface that may contain
+      --  Ada 2005: If the designated type is an interface that may contain
       --  tasks, create a Master entity for the declaration. This must be done
       --  before expansion of the full declaration, because the declaration may
       --  include an expression that is an allocator, whose expansion needs the
@@ -3241,11 +3241,11 @@ package body Sem_Ch3 is
 
          --  Protected objects with interrupt handlers must be at library level
 
-         --  Ada 2005: this test is not needed (and the corresponding clause
+         --  Ada 2005: This test is not needed (and the corresponding clause
          --  in the RM is removed) because accessibility checks are sufficient
          --  to make handlers not at the library level illegal.
 
-         --  AI05-0303: the AI is in fact a binding interpretation, and thus
+         --  AI05-0303: The AI is in fact a binding interpretation, and thus
          --  applies to the '95 version of the language as well.
 
          if Has_Interrupt_Handler (T) and then Ada_Version < Ada_95 then
@@ -3637,7 +3637,7 @@ package body Sem_Ch3 is
          if No (E) then
             Act_T := Build_Default_Subtype (T, N);
          else
-            --  Ada 2005: a limited object may be initialized by means of an
+            --  Ada 2005: A limited object may be initialized by means of an
             --  aggregate. If the type has default discriminants it has an
             --  unconstrained nominal type, Its actual subtype will be obtained
             --  from the aggregate, and not from the default discriminants.
@@ -11173,7 +11173,7 @@ package body Sem_Ch3 is
          --  from a private type) has no discriminants. (Defect Report
          --  8652/0008, Technical Corrigendum 1, checked by ACATS B371001).
 
-         --  Rule updated for Ada 2005: the private type is said to have
+         --  Rule updated for Ada 2005: The private type is said to have
          --  a constrained partial view, given that objects of the type
          --  can be declared. Furthermore, the rule applies to all access
          --  types, unlike the rule concerning default discriminants (see
@@ -20127,7 +20127,7 @@ package body Sem_Ch3 is
 
       Final_Storage_Only := not Is_Controlled (T);
 
-      --  Ada 2005: check whether an explicit Limited is present in a derived
+      --  Ada 2005: Check whether an explicit Limited is present in a derived
       --  type declaration.
 
       if Nkind (Parent (Def)) = N_Derived_Type_Definition

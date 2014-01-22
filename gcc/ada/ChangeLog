@@ -1,5 +1,16 @@
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, errout.adb, erroutc.adb: Minor reformatting.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Check_Pool_Size_Clash): New procedure
+	(Analyze_Attribute_Definition_Clause, case Storage_Pool): call
+	Check_Pool_Size_Clash (Analyze_Attribute_Definition_Clause,
+	case Storage_Size): call Check_Pool_Size_Clash.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, exp_util.adb, sem_dim.adb, sem_elab.adb, sem_ch8.adb,
 	sem_eval.ads: Minor reformatting.
 
