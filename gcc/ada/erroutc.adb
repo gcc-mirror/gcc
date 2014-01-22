@@ -1207,14 +1207,18 @@ package body Erroutc is
          return;
       end if;
 
-      --  Nothing to do unless command line switch to suppress all warnings
-      --  is off, and the last entry in the warnings table covers this
-      --  pragma Warnings (On), in which case adjust the end point.
+      --  Nothing to do unless command line switch to suppress all warnings is
+      --  off or we are in GNATprove_Mode, and the last entry in the warnings
+      --  table covers this pragma Warnings (On), in which case adjust the end
+      --  point.
 
       if (Warnings.Last >= Warnings.First
            and then Warnings.Table (Warnings.Last).Start <= Loc
            and then Loc <= Warnings.Table (Warnings.Last).Stop)
-        and then Warning_Mode /= Suppress
+        and then
+          (Warning_Mode /= Suppress
+             or else
+           GNATprove_Mode)
       then
          Warnings.Table (Warnings.Last).Stop := Loc;
       end if;

@@ -282,7 +282,7 @@ package Sem_Eval is
 
    function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean;
    --  If T is an array whose index bounds are all known at compile time, then
-   --  True is returned, if T is not an array, or one or more of its index
+   --  True is returned. If T is not an array type, or one or more of its index
    --  bounds is not known at compile time, then False is returned.
 
    function Expr_Value (N : Node_Id) return Uint;

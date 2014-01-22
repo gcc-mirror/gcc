@@ -2917,11 +2917,11 @@ package body Sem_Elab is
 
       --  Build check node, possibly with condition
 
-      Chk := Make_Raise_Program_Error (Loc,
-               Reason => PE_Access_Before_Elaboration);
+      Chk :=
+        Make_Raise_Program_Error (Loc, Reason => PE_Access_Before_Elaboration);
+
       if Present (C) then
-         Set_Condition (Chk,
-           Make_Op_Not (Loc, Right_Opnd => C));
+         Set_Condition (Chk, Make_Op_Not (Loc, Right_Opnd => C));
       end if;
 
       --  If we are inserting at the top level, insert in Aux_Decls

@@ -5981,21 +5981,18 @@ package body Sem_Ch8 is
       begin
          Comp_Unit := N;
          while Present (Comp_Unit)
-            and then Nkind (Comp_Unit) /= N_Compilation_Unit
+           and then Nkind (Comp_Unit) /= N_Compilation_Unit
          loop
             Comp_Unit := Parent (Comp_Unit);
          end loop;
 
-         if No (Comp_Unit)
-           or else Nkind (Unit (Comp_Unit)) /= N_Subunit
-         then
+         if No (Comp_Unit) or else Nkind (Unit (Comp_Unit)) /= N_Subunit then
             return False;
          end if;
 
          --  Now check whether the package is in the context of the subunit
 
          Clause := First (Context_Items (Comp_Unit));
-
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause
               and then Entity (Name (Clause)) = P_Name
@@ -6008,6 +6005,8 @@ package body Sem_Ch8 is
 
          return False;
       end Is_Reference_In_Subunit;
+
+   --  Start of processing for Find_Selected_Component
 
    begin
       Analyze (P);
@@ -6036,9 +6035,7 @@ package body Sem_Ch8 is
       --  in the expansion of record equality).
 
       if Present (Entity (Selector_Name (N))) then
-         if No (Etype (N))
-           or else Etype (N) = Any_Type
-         then
+         if No (Etype (N)) or else Etype (N) = Any_Type then
             declare
                Sel_Name : constant Node_Id   := Selector_Name (N);
                Selector : constant Entity_Id := Entity (Sel_Name);
@@ -6065,8 +6062,7 @@ package body Sem_Ch8 is
                      Save_Interps (P, Nam);
                   end if;
 
-                  Rewrite (P,
-                    Make_Function_Call (Sloc (P), Name => Nam));
+                  Rewrite (P, Make_Function_Call (Sloc (P), Name => Nam));
                   Analyze_Call (P);
                   Analyze_Selected_Component (N);
                   return;
@@ -6088,13 +6084,12 @@ package body Sem_Ch8 is
                       ((RTE_Available (RE_Dispatch_Table_Wrapper)
                          and then Scope (Selector) =
                                      RTE (RE_Dispatch_Table_Wrapper))
-                         or else
-                           (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                             and then Scope (Selector) =
-                                        RTE (RE_No_Dispatch_Table_Wrapper)))
+                        or else
+                          (RTE_Available (RE_No_Dispatch_Table_Wrapper)
+                            and then Scope (Selector) =
+                                     RTE (RE_No_Dispatch_Table_Wrapper)))
                   then
                      C_Etype := Empty;
-
                   else
                      C_Etype :=
                        Build_Actual_Subtype_Of_Component
@@ -6292,10 +6287,8 @@ package body Sem_Ch8 is
                      if Present (P_Name) then
                         if not Is_Reference_In_Subunit then
                            Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
-
                            Error_Msg_NE
-                             ("package& is hidden by declaration#",
-                               N, P_Name);
+                             ("package& is hidden by declaration#", N, P_Name);
                         end if;
 
                         Set_Entity (Prefix (N), P_Name);

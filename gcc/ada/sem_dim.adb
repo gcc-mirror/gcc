@@ -1908,10 +1908,11 @@ package body Sem_Dim is
       elsif Nkind (N) = N_Identifier then
          Analyze_Dimension_Identifier : declare
             Id : constant Entity_Id := Entity (N);
-         begin
-            if No (Id) then
-               --  Abnormal tree, assume previous error
 
+         begin
+            --  If Id is missing, abnormal tree, assume previous error
+
+            if No (Id) then
                Check_Error_Detected;
                return;
 
