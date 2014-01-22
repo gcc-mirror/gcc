@@ -1,3 +1,8 @@
+2014-01-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59597
+	* gcc.dg/tree-ssa/pr59597.c: New test.
+
 2014-01-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59477
