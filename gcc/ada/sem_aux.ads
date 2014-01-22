@@ -246,6 +246,10 @@ package Sem_Aux is
    --  the given names then True is returned, otherwise False indicates that no
    --  matching entry was found.
 
+   function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
+   --  True if T has discriminants and is unconstrained, or is an array type
+   --  whose element type Has_Unconstrained_Elements.
+
    function In_Generic_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id appears inside a generic body
 

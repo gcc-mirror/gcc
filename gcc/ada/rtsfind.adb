@@ -225,11 +225,18 @@ package body Rtsfind is
       --  Entity is available
 
       else
-         --  If in No_Run_Time mode and entity is not in one of the
-         --  specially permitted units, raise the exception.
+         --  If in No_Run_Time mode and entity is neither in the current unit
+         --  nor in one of the specially permitted units, raise the exception.
 
          if No_Run_Time_Mode
            and then not OK_No_Run_Time_Unit (U_Id)
+
+           --  If the entity being referenced is defined in the current scope,
+           --  using it is always fine as such usage can never introduce any
+           --  dependency on an additional unit.
+           --  Why do we need to do this test ???
+
+           and then Scope (Eid) /= Current_Scope
          then
             Entity_Not_Defined (E);
             raise RE_Not_Available;

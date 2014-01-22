@@ -596,10 +596,16 @@ package body Debug is
 
    --  d.E  Turn selected errors into warnings. This debug switch causes a
    --       specific set of error messages into warnings. Setting this switch
-   --       causes Opt.Error_To_Warning to be set to True. Right now the only
-   --       error affected is the case of overlapping subprogram parameters
-   --       which has become illegal in Ada 2012, but only generates a warning
-   --       in earlier versions of Ada.
+   --       causes Opt.Error_To_Warning to be set to True. The intention is
+   --       that this be used for messages representing upwards incompatible
+   --       changes to Ada 2012 that cause previously correct programs to be
+   --       treated as illegal now. The following cases are affected:
+   --
+   --          Errors relating to overlapping subprogram parameters for cases
+   --          other than IN OUT parameters to functions.
+   --
+   --          Errors relating to the new rules about not defining equality
+   --          too late so that composition of equality can be assured.
 
    --  d.F  Sets GNATprove_Mode to True. This allows debugging the frontend in
    --       the special mode used by GNATprove.

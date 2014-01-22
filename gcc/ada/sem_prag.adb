@@ -1114,11 +1114,57 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
+            Typ : constant Entity_Id := Etype (Item_Id);
+
          begin
+            --  Input case
+
             if Is_Input then
                Error_Msg_NE
                  ("item & must appear in at least one input list of aspect "
                   & "Depends", Item, Item_Id);
+
+               --  Case of OUT parameter for which Is_Input is set
+
+               if Nkind (Item) = N_Defining_Identifier
+                 and then Ekind (Item) = E_Out_Parameter
+               then
+                  --  One case is an unconstrained array where the bounds
+                  --  must be read, if we have this case, output a message
+                  --  indicating why the OUT parameter is read.
+
+                  if Is_Array_Type (Typ)
+                    and then not Is_Constrained (Typ)
+                  then
+                     Error_Msg_NE
+                       ("\& is an unconstrained array type, so bounds must be "
+                        & "read", Item, Typ);
+
+                  --  Another case is an unconstrained discriminated record
+                  --  type where the constrained flag must be read (and if
+                  --  set, the discriminants). Again output a message.
+
+                  elsif Is_Record_Type (Typ)
+                    and then Has_Discriminants (Typ)
+                    and then not Is_Constrained (Typ)
+                  then
+                     Error_Msg_NE
+                       ("\& is an unconstrained discriminated record type",
+                        Item, Typ);
+                     Error_Msg_N
+                       ("\constrained flag and possible discriminants must be "
+                        & "read", Item);
+
+                  --  Not clear if there are other cases. Anyway, we will
+                  --  simply ignore any other cases.
+
+                  else
+                     null;
+                  end if;
+               end if;
+
+            --  Output case
+
             else
                Error_Msg_NE
                  ("item & must appear in exactly one output list of aspect "

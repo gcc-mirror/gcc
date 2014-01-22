@@ -3368,7 +3368,8 @@ package VMS_Data is
    --                             switch -gnat??. See below for list of these
    --                             equivalent switch names.
    --
-   --   NOTAG_WARNINGS          Turns off warning tag output (default setting).
+   --   NOTAG_WARNINGS            Turns off warning tag output (default
+   --                             setting).
    --
    --   The remaining entries control individual warning categories. If one
    --   of these options is preceded by NO (e.g. NOAVOID_GAPS), then the

@@ -5279,8 +5279,7 @@ package body Sem_Res is
       is
          Subp_Alias : constant Entity_Id := Alias (S);
       begin
-         return S = E
-           or else (Present (Subp_Alias) and then Subp_Alias = E);
+         return S = E or else (Present (Subp_Alias) and then Subp_Alias = E);
       end Same_Or_Aliased_Subprograms;
 
    --  Start of processing for Resolve_Call
@@ -5629,6 +5628,16 @@ package body Sem_Res is
 
       if Comes_From_Source (N) then
          Scop := Current_Scope;
+
+         --  Check violation of SPARK_05 restriction which does not permit
+         --  a subprogram body to contain a call to the subprogram directly.
+
+         if Restriction_Check_Required (SPARK_05)
+           and then Same_Or_Aliased_Subprograms (Nam, Scop)
+         then
+            Check_SPARK_Restriction
+              ("subprogram may not contain direct call to itself", N);
+         end if;
 
          --  Issue warning for possible infinite recursion in the absence
          --  of the No_Recursion restriction.

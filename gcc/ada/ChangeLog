@@ -1,5 +1,47 @@
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aux.adb, sem_aux.ads, sem_ch3.adb (Has_Unconstrained_Elements):
+	Moved to sem_aux.adb.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* vms_data.ads: Minor reformatting.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document messages affected by -gnatd.E including
+	the new ones that relate to late definition of equality.
+	* sem_ch6.adb (Check_Untagged_Equality): In Ada 2012 mode, if
+	debug flag -gnatd.E is set, then generate warnings rather than
+	errors.
+	(Check_Untagged_Equality): In earlier versions of Ada,
+	generate warnings if Warn_On_Ada_2012_Incompatibility flag is set.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Usage_Error): Output additional messages for
+	unconstrained OUT parameters lacking an input dependency.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads: Minor reformatting.
+	* sem_res.adb (Resolve_Call): Check for SPARK_05 restriction that
+	forbids a call from within a subprogram to the same subprogram.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* a-stream.ads (Read_SEA, Write_SEA): New subprograms, optimized
+	stream attributes for Stream_Element_Array.
+	* a-stream.adb (Read_SEA, Write_SEA): Bodies for the above.
+	* rtsfind.adb (Check_CRT): Do not reject a reference to an entity
+	defined in the current scope.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
 	* debug.adb, exp_ch4.adb, erroutc.adb: Minor reformatting.
 
 2014-01-22  Thomas Quinot  <quinot@adacore.com>
