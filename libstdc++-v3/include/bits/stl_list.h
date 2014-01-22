@@ -526,12 +526,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       // [23.2.2.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
+
+      /**
+       *  @brief  Creates a %list with no elements.
+       */
+      list() _GLIBCXX_NOEXCEPT
+      : _Base() { }
+
       /**
        *  @brief  Creates a %list with no elements.
        *  @param  __a  An allocator object.
        */
       explicit
-      list(const allocator_type& __a = allocator_type()) _GLIBCXX_NOEXCEPT
+      list(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _Base(_Node_alloc_type(__a)) { }
 
 #if __cplusplus >= 201103L

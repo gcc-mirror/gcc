@@ -67,8 +67,13 @@ namespace __profile
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.3.1.1 construct/copy/destroy:
+
+      map()
+      : _Base()
+      { __profcxx_map_to_unordered_map_construct(this); }
+
       explicit
-      map(const _Compare& __comp = _Compare(),
+      map(const _Compare& __comp,
 	  const _Allocator& __a = _Allocator())
       : _Base(__comp, __a)
       { __profcxx_map_to_unordered_map_construct(this); }

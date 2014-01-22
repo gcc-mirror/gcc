@@ -781,12 +781,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       // [23.2.1.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
+
+      /**
+       *  @brief  Creates a %deque with no elements.
+       */
+      deque() : _Base() { }
+
       /**
        *  @brief  Creates a %deque with no elements.
        *  @param  __a  An allocator object.
        */
       explicit
-      deque(const allocator_type& __a = allocator_type())
+      deque(const allocator_type& __a)
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L

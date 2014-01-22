@@ -1,6 +1,4 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
-
-// Copyright (C) 2007-2014 Free Software Foundation, Inc.
+// Copyright (C) 2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,18 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1605 }
+// { dg-options "-std=gnu++11" }
 
-#include <list>
+// libstdc++/58764
 
-struct A
+#include <map>
+
+void test01()
 {
-  explicit A(int) { }
-};
-
-void f()
-{
-  typedef std::list<A> list_type;
-  list_type l;
-  l.insert(l.begin(), 10, 1);
+  std::map<int, int> a = {};
 }

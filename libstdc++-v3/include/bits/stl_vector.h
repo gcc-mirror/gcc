@@ -242,12 +242,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     public:
       // [23.2.4.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
+
+      /**
+       *  @brief  Creates a %vector with no elements.
+       */
+      vector() _GLIBCXX_NOEXCEPT : _Base() { }
+
       /**
        *  @brief  Creates a %vector with no elements.
        *  @param  __a  An allocator object.
        */
       explicit
-      vector(const allocator_type& __a = allocator_type()) _GLIBCXX_NOEXCEPT
+      vector(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L
