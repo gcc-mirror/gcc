@@ -1,3 +1,7 @@
+2014-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in: Minor fixes.
+
 2014-01-21  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch4.adb (P_If_Expression): Rewritten to improve error recovery.

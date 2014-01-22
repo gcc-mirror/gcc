@@ -637,7 +637,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor)
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
-  ifeq ($(strip $(filter-out e500%, $(arch))),)
+  ifeq ($(strip $(filter-out e500%, $(target_alias))),)
     LIBGNAT_TARGET_PAIRS += system.ads<system-vxworks-e500-vthread.ads
   else
     LIBGNAT_TARGET_PAIRS += system.ads<system-vxworks-ppc-vthread.ads
@@ -751,7 +751,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(target_cpu) $(target_
   s-vxwext.adb<s-vxwext-noints.adb \
   s-vxwext.ads<s-vxwext-vthreads.ads \
   s-vxwork.ads<s-vxwork-x86.ads \
-  system.ads<system-vxworks-x86.ads \
+  system.ads<system-vxworks-x86-vthread.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
@@ -762,7 +762,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(target_cpu) $(target_
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
-  EXTRA_LIBGNAT_OBJS+=vx_stack_info.o # sigtramp-ppcvxw.o
+  EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
   GNATRTL_SOCKETS_OBJS =
 
   # Extra pairs for the vthreads runtime
@@ -1740,6 +1740,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
     EXTRA_GNATRTL_NONTASKING_OBJS = \
 	s-win32.o s-winext.o g-regist.o g-sse.o g-ssvety.o
     EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
+    EXTRA_LIBGNAT_SRCS+=mingw32.h
 
     MISCLIB = -lws2_32
 
