@@ -1,3 +1,8 @@
+2014-01-22  Jan Hubicka  <jh@suse.cz>
+
+	* combine-stack-adj.c (combine_stack_adjustments_for_block): Remove
+	ARG_SIZE note when adjustment was eliminated.
+
 2014-01-22  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/59597
