@@ -259,6 +259,9 @@ package Sem_Aux is
    --  or subtype. This is true if Suppress_Initialization is set either for
    --  the subtype itself, or for the corresponding base type.
 
+   function Is_Body (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node denotes a body
+
    function Is_By_Copy_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Returns True if Ent is a type entity where the type
    --  is required to be passed by copy, as defined in (RM 6.2(3)).

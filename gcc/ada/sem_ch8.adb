@@ -4168,10 +4168,11 @@ package body Sem_Ch8 is
       --  generate the precise error message.
 
       function From_Actual_Package (E : Entity_Id) return Boolean;
-      --  Returns true if the entity is declared in a package that is
+      --  Returns true if the entity is an actual for a package that is itself
       --  an actual for a formal package of the current instance. Such an
-      --  entity requires special handling because it may be use-visible
-      --  but hides directly visible entities defined outside the instance.
+      --  entity requires special handling because it may be use-visible but
+      --  hides directly visible entities defined outside the instance, because
+      --  the corresponding formal did so in the generic.
 
       function Is_Actual_Parameter return Boolean;
       --  This function checks if the node N is an identifier that is an actual
@@ -4214,11 +4215,57 @@ package body Sem_Ch8 is
 
       function From_Actual_Package (E : Entity_Id) return Boolean is
          Scop : constant Entity_Id := Scope (E);
-         Act  : Entity_Id;
+         --  Declared scope of candidate entity
+
+         Act : Entity_Id;
+
+         function Declared_In_Actual (Pack : Entity_Id) return Boolean;
+         --  Recursive function that does the work and examines actuals of
+         --  actual packages of current instance.
+
+         ------------------------
+         -- Declared_In_Actual --
+         ------------------------
+
+         function Declared_In_Actual (Pack : Entity_Id) return Boolean is
+            Act : Entity_Id;
+
+         begin
+            if No (Associated_Formal_Package (Pack)) then
+               return False;
+
+            else
+               Act := First_Entity (Pack);
+               while Present (Act) loop
+                  if Renamed_Object (Pack) = Scop then
+                     return True;
+
+                  --  Check for end of list of actuals.
+
+                  elsif Ekind (Act) = E_Package
+                    and then Renamed_Object (Act) = Pack
+                  then
+                     return False;
+
+                  elsif Ekind (Act) = E_Package
+                    and then Declared_In_Actual (Act)
+                  then
+                     return True;
+                  end if;
+
+                  Next_Entity (Act);
+               end loop;
+
+               return False;
+            end if;
+         end Declared_In_Actual;
+
+      --  Start of processing for From_Actual_Package
 
       begin
          if not In_Instance then
             return False;
+
          else
             Inst := Current_Scope;
             while Present (Inst)
@@ -4234,27 +4281,13 @@ package body Sem_Ch8 is
 
             Act := First_Entity (Inst);
             while Present (Act) loop
-               if Ekind (Act) = E_Package then
-
-                  --  Check for end of actuals list
-
-                  if Renamed_Object (Act) = Inst then
-                     return False;
-
-                  elsif Present (Associated_Formal_Package (Act))
-                    and then Renamed_Object (Act) = Scop
-                  then
-                     --  Entity comes from (instance of) formal package
-
-                     return True;
-
-                  else
-                     Next_Entity (Act);
-                  end if;
-
-               else
-                  Next_Entity (Act);
+               if Ekind (Act) = E_Package
+                 and then Declared_In_Actual (Act)
+               then
+                  return True;
                end if;
+
+               Next_Entity (Act);
             end loop;
 
             return False;

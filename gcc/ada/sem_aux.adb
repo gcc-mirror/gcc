@@ -698,6 +698,21 @@ package body Sem_Aux is
       Obsolescent_Warnings.Init;
    end Initialize;
 
+   -------------
+   -- Is_Body --
+   -------------
+
+   function Is_Body (N : Node_Id) return Boolean is
+   begin
+      return
+        Nkind (N) in N_Body_Stub
+          or else Nkind_In (N, N_Entry_Body,
+                               N_Package_Body,
+                               N_Protected_Body,
+                               N_Subprogram_Body,
+                               N_Task_Body);
+   end Is_Body;
+
    ---------------------
    -- Is_By_Copy_Type --
    ---------------------
