@@ -5963,6 +5963,52 @@ package body Sem_Ch8 is
 
       Nam : Node_Id;
 
+      function Is_Reference_In_Subunit return Boolean;
+      --  In a subunit, the scope depth is not a proper measure of hiding,
+      --  because the context of the proper body may itself hide entities in
+      --  parent units. This rare case requires inspecting the tree directly
+      --  because the proper body is inserted in the main unit and its context
+      --  is simply added to that of the parent.
+
+      -----------------------------
+      -- Is_Reference_In_Subunit --
+      -----------------------------
+
+      function Is_Reference_In_Subunit return Boolean is
+         Clause    : Node_Id;
+         Comp_Unit : Node_Id;
+
+      begin
+         Comp_Unit := N;
+         while Present (Comp_Unit)
+            and then Nkind (Comp_Unit) /= N_Compilation_Unit
+         loop
+            Comp_Unit := Parent (Comp_Unit);
+         end loop;
+
+         if No (Comp_Unit)
+           or else Nkind (Unit (Comp_Unit)) /= N_Subunit
+         then
+            return False;
+         end if;
+
+         --  Now check whether the package is in the context of the subunit
+
+         Clause := First (Context_Items (Comp_Unit));
+
+         while Present (Clause) loop
+            if Nkind (Clause) = N_With_Clause
+              and then Entity (Name (Clause)) = P_Name
+            then
+               return True;
+            end if;
+
+            Clause := Next (Clause);
+         end loop;
+
+         return False;
+      end Is_Reference_In_Subunit;
+
    begin
       Analyze (P);
 
@@ -6244,11 +6290,13 @@ package body Sem_Ch8 is
                      end loop;
 
                      if Present (P_Name) then
-                        Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
+                        if not Is_Reference_In_Subunit then
+                           Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
 
-                        Error_Msg_NE
-                          ("package& is hidden by declaration#",
-                            N, P_Name);
+                           Error_Msg_NE
+                             ("package& is hidden by declaration#",
+                               N, P_Name);
+                        end if;
 
                         Set_Entity (Prefix (N), P_Name);
                         Find_Expanded_Name (N);

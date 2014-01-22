@@ -6151,7 +6151,8 @@ package body Sem_Ch4 is
             --  In an instance a generic actual may be a numeric type even if
             --  the formal in the generic unit was not. In that case, the
             --  predefined operator was not a possible interpretation in the
-            --  generic, and cannot be one in the instance.
+            --  generic, and cannot be one in the instance, unless the operator
+            --  is an actual of an instance.
 
             if In_Instance
               and then
@@ -6576,6 +6577,17 @@ package body Sem_Ch4 is
                         if Nkind (N) /= N_Op_Concat then
                            Error_Msg_NE ("\left operand has}!",  N, Etype (L));
                            Error_Msg_NE ("\right operand has}!", N, Etype (R));
+
+                        --  For concatenation operators it is more difficult to
+                        --  determine which is the wrong operand. It is worth
+                        --  flagging explicitly an access type, for those who
+                        --  might think that a dereference happens here.
+
+                        elsif Is_Access_Type (Etype (L)) then
+                           Error_Msg_N ("\left operand is access type", N);
+
+                        elsif Is_Access_Type (Etype (R)) then
+                           Error_Msg_N ("\right operand is access type", N);
                         end if;
                      end if;
                   end if;

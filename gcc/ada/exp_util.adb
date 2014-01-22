@@ -3317,7 +3317,21 @@ package body Exp_Util is
 
                   Kill_Current_Values;
 
-                  if Present (Actions (P)) then
+                  --  If P has already been expanded, we can't park new actions
+                  --  on it, so we need to expand them immediately, introducing
+                  --  an Expression_With_Actions. N can't be an expression
+                  --  with actions, or else then the actions would have been
+                  --  inserted at an inner level.
+
+                  if Analyzed (P) then
+                     pragma Assert (Nkind (N) /= N_Expression_With_Actions);
+                     Rewrite (N,
+                       Make_Expression_With_Actions (Sloc (N),
+                         Actions    => Ins_Actions,
+                         Expression => Relocate_Node (N)));
+                     Analyze_And_Resolve (N);
+
+                  elsif Present (Actions (P)) then
                      Insert_List_After_And_Analyze
                        (Last (Actions (P)), Ins_Actions);
                   else
@@ -3407,8 +3421,12 @@ package body Exp_Util is
             --  the new actions come from the expression of the expression with
             --  actions, they must be added to the existing actions. The other
             --  alternative is when the new actions are related to one of the
-            --  existing actions of the expression with actions. In that case
-            --  they must be inserted further up the tree.
+            --  existing actions of the expression with actions, and should
+            --  never reach here: if actions are inserted on a statement within
+            --  the Actions of an expression with actions, or on some
+            --  sub-expression of such a statement, then the outermost proper
+            --  insertion point is right before the statement, and we should
+            --  never climb up as far as the N_Expression_With_Actions itself.
 
             when N_Expression_With_Actions =>
                if N = Expression (P) then
@@ -3420,6 +3438,9 @@ package body Exp_Util is
                        (Last (Actions (P)), Ins_Actions);
                   end if;
                   return;
+
+               else
+                  raise Program_Error;
                end if;
 
             --  Case of appearing in the condition of a while expression or

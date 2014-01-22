@@ -1909,7 +1909,13 @@ package body Sem_Dim is
          Analyze_Dimension_Identifier : declare
             Id : constant Entity_Id := Entity (N);
          begin
-            if Ekind (Id) = E_Constant
+            if No (Id) then
+               --  Abnormal tree, assume previous error
+
+               Check_Error_Detected;
+               return;
+
+            elsif Ekind (Id) = E_Constant
               and then Exists (Dimensions_Of (Id))
             then
                Set_Dimensions (N, Dimensions_Of (Id));
