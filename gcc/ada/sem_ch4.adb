@@ -1045,14 +1045,14 @@ package body Sem_Ch4 is
            and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
            and then
              (not Name_Denotes_Function
-                or else Nkind (N) = N_Procedure_Call_Statement
-                or else
-                  (Nkind (Parent (N)) /= N_Explicit_Dereference
-                     and then Is_Entity_Name (Nam)
-                     and then No (First_Formal (Entity (Nam)))
-                     and then not
-                       Is_Array_Type (Etype (Designated_Type (Etype (Nam))))
-                     and then Present (Actuals)))
+               or else Nkind (N) = N_Procedure_Call_Statement
+               or else
+                 (Nkind (Parent (N)) /= N_Explicit_Dereference
+                   and then Is_Entity_Name (Nam)
+                   and then No (First_Formal (Entity (Nam)))
+                   and then not
+                     Is_Array_Type (Etype (Designated_Type (Etype (Nam))))
+                   and then Present (Actuals)))
          then
             Nam_Ent := Designated_Type (Etype (Nam));
             Insert_Explicit_Dereference (Nam);

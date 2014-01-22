@@ -4,9 +4,9 @@
 --                                                                          --
 --                           A D A . S T R E A M S                          --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--             Copyright (C) 2013, Free Software Foundation, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,52 +33,36 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Streams is
-   pragma Pure;
+with Ada.IO_Exceptions;
 
-   type Root_Stream_Type is abstract tagged limited private;
-   pragma Preelaborable_Initialization (Root_Stream_Type);
+package body Ada.Streams is
 
-   type Stream_Element is mod 2 ** Standard'Storage_Unit;
-
-   type Stream_Element_Offset is range
-     -(2 ** (Standard'Address_Size - 1)) ..
-     +(2 ** (Standard'Address_Size - 1)) - 1;
-
-   subtype Stream_Element_Count is
-      Stream_Element_Offset range 0 .. Stream_Element_Offset'Last;
-
-   type Stream_Element_Array is
-      array (Stream_Element_Offset range <>) of aliased Stream_Element;
-
-   procedure Read
-     (Stream : in out Root_Stream_Type;
-      Item   : out Stream_Element_Array;
-      Last   : out Stream_Element_Offset)
-   is abstract;
-
-   procedure Write
-     (Stream : in out Root_Stream_Type;
-      Item   : Stream_Element_Array)
-   is abstract;
-
-private
-
-   type Root_Stream_Type is abstract tagged limited null record;
-
-   --  Stream attributes for Stream_Element_Array: trivially call the
-   --  corresponding stream primitive for the whole array, instead of doing
-   --  so element by element.
+   --------------
+   -- Read_SEA --
+   --------------
 
    procedure Read_SEA
      (S : access Root_Stream_Type'Class;
-      V : out Stream_Element_Array);
+      V : out Stream_Element_Array)
+   is
+      Last : Stream_Element_Offset;
+   begin
+      Read (S.all, V, Last);
+      if Last /= V'Last then
+         raise Ada.IO_Exceptions.End_Error;
+      end if;
+   end Read_SEA;
+
+   ---------------
+   -- Write_SEA --
+   ---------------
 
    procedure Write_SEA
      (S : access Root_Stream_Type'Class;
-      V : Stream_Element_Array);
-
-   for Stream_Element_Array'Read use Read_SEA;
-   for Stream_Element_Array'Write use Write_SEA;
+      V : Stream_Element_Array)
+   is
+   begin
+      Write (S.all, V);
+   end Write_SEA;
 
 end Ada.Streams;
