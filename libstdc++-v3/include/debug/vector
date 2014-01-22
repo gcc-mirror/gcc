@@ -76,8 +76,12 @@ namespace __debug
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.4.1 construct/copy/destroy:
+
+      vector() _GLIBCXX_NOEXCEPT
+      : _Base(), _M_guaranteed_capacity(0) { }
+
       explicit
-      vector(const _Allocator& __a = _Allocator()) _GLIBCXX_NOEXCEPT
+      vector(const _Allocator& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a), _M_guaranteed_capacity(0) { }
 
 #if __cplusplus >= 201103L

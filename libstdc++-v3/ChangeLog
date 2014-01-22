@@ -2,6 +2,69 @@
 
 	* include/bits/stl_deque.h (_Deque_impl): Move comment.
 
+	PR libstdc++/58764
+	* include/bits/stl_deque.h (deque::deque(const allocator_type&):
+	Split into separate default constructor and constructor taking
+	allocator.
+	* include/bits/stl_list.h (list::list(const allocator_type&): Likewise.
+	* include/bits/stl_vector.h (vector::vector(const allocator_type&):
+	Likewise.
+	* include/debug/deque (deque::deque(const allocator_type&)): Likewise.
+	* include/debug/list (list::list(const _Allocator&)): Likewise.
+	* include/debug/map.h (map::map(const _Compare&, const _Allocator&)):
+	Likewise.
+	* include/debug/multimap.h
+	(multimap::multimap(const _Compare&, const _Allocator&)): Likewise.
+	* include/debug/set.h (set::set(const _Compare&, const _Allocator&)):
+	Likewise.
+	* include/debug/multiset.h
+	(multiset::multiset(const _Compare&, const _Allocator&)): Likewise.
+	* include/debug/vector (vector::vector(const allocator_type&)):
+	Likewise.
+	* include/profile/deque (deque::deque(const _Allocator&)): Likewise.
+	* include/profile/list (list::list(const _Allocator&)): Likewise.
+	* include/profile/map.h
+	(map::map(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/multimap.h
+	(multimap::multimap(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/set.h
+	(set::set(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/multiset.h
+	(multiset::multiset(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/vector (vector::vector(const _Allocator&)):
+	Likewise.
+	* testsuite/23_containers/deque/58764.cc: New.
+	* testsuite/23_containers/list/58764.cc: New.
+	* testsuite/23_containers/map/58764.cc: New.
+	* testsuite/23_containers/multimap/58764.cc: New.
+	* testsuite/23_containers/set/58764.cc: New.
+	* testsuite/23_containers/multiset/58764.cc: New.
+	* testsuite/23_containers/vector/58764.cc: New.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2014-01-21  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.tcc: Remove incorrect `nosubs` handling.

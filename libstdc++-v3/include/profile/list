@@ -64,8 +64,16 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.2.1 construct/copy/destroy:
+
+      list() _GLIBCXX_NOEXCEPT
+      : _Base()
+      {
+        __profcxx_list_construct(this); 	// list2slist
+        __profcxx_list_construct2(this); 	// list2vector
+      }
+
       explicit
-      list(const _Allocator& __a = _Allocator()) _GLIBCXX_NOEXCEPT
+      list(const _Allocator& __a) _GLIBCXX_NOEXCEPT
       : _Base(__a) 
       {
         __profcxx_list_construct(this); 	// list2slist
