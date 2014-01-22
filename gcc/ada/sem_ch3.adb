@@ -2075,6 +2075,12 @@ package body Sem_Ch3 is
       --  (They have the sloc of the label as found in the source, and that
       --  is ahead of the current declarative part).
 
+      procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id);
+      --  Determine whether Body_Decl denotes the body of a late controlled
+      --  primitive (either Initialize, Adjust or Finalize). If this is the
+      --  case, add a proper spec if the body lacks one. The spec is inserted
+      --  before Body_Decl and immedately analyzed.
+
       procedure Remove_Visible_Refinements (Spec_Id : Entity_Id);
       --  Spec_Id is the entity of a package that may define abstract states.
       --  If the states have visible refinement, remove the visibility of each
@@ -2098,6 +2104,70 @@ package body Sem_Ch3 is
             Prev (Decl);
          end loop;
       end Adjust_Decl;
+
+      --------------------------------------
+      -- Handle_Late_Controlled_Primitive --
+      --------------------------------------
+
+      procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id) is
+         Body_Spec : constant Node_Id    := Specification (Body_Decl);
+         Body_Id   : constant Entity_Id  := Defining_Entity (Body_Spec);
+         Loc       : constant Source_Ptr := Sloc (Body_Id);
+         Params    : constant List_Id    :=
+                       Parameter_Specifications (Body_Spec);
+         Spec      : Node_Id;
+         Spec_Id   : Entity_Id;
+
+         Dummy : Entity_Id;
+         pragma Unreferenced (Dummy);
+         --  A dummy variable used to capture the unused result of subprogram
+         --  spec analysis.
+
+      begin
+         --  Consider only procedure bodies whose name matches one of type
+         --  [Limited_]Controlled's primitives.
+
+         if Nkind (Body_Spec) /= N_Procedure_Specification
+           or else not Nam_In (Chars (Body_Id), Name_Adjust,
+                                                Name_Finalize,
+                                                Name_Initialize)
+         then
+            return;
+
+         --  A controlled primitive must have exactly one formal whose type
+         --  derives from [Limited_]Controlled.
+
+         elsif List_Length (Params) /= 1 then
+            return;
+         end if;
+
+         Dummy := Analyze_Subprogram_Specification (Body_Spec);
+
+         if not Is_Controlled (Etype (Defining_Entity (First (Params)))) then
+            return;
+         end if;
+
+         Spec_Id := Find_Corresponding_Spec (Body_Decl, Post_Error => False);
+
+         --  The body has a matching spec, therefore it cannot be a late
+         --  primitive.
+
+         if Present (Spec_Id) then
+            return;
+         end if;
+
+         --  At this point the body is known to be a late controlled primitive.
+         --  Generate a matching spec and insert it before the body.
+
+         Spec := New_Copy_Tree (Body_Spec);
+
+         Set_Defining_Unit_Name
+           (Spec, Make_Defining_Identifier (Loc, Chars (Body_Id)));
+
+         Insert_Before_And_Analyze (Body_Decl,
+           Make_Subprogram_Declaration (Loc,
+             Specification => Spec));
+      end Handle_Late_Controlled_Primitive;
 
       --------------------------------
       -- Remove_Visible_Refinements --
@@ -2200,6 +2270,9 @@ package body Sem_Ch3 is
       Prag        : Node_Id;
       Spec_Id     : Entity_Id;
 
+      Body_Seen : Boolean := False;
+      --  Flag set when the first body [stub] is encountered
+
       In_Package_Body : Boolean := False;
       --  Flag set when the current declaration list belongs to a package body
 
@@ -2294,15 +2367,28 @@ package body Sem_Ch3 is
          --  care to attach the bodies at a proper place in the tree so as to
          --  not cause unwanted freezing at that point.
 
-         elsif not Analyzed (Next_Decl)
-           and then (Nkind_In (Next_Decl, N_Subprogram_Body,
-                                          N_Entry_Body,
-                                          N_Package_Body,
-                                          N_Protected_Body,
-                                          N_Task_Body)
-                       or else
-                     Nkind (Next_Decl) in N_Body_Stub)
-         then
+         elsif not Analyzed (Next_Decl) and then Is_Body (Next_Decl) then
+
+            --  When a controlled type is frozen, the expander generates stream
+            --  and controlled type support routines. If the freeze is caused
+            --  by the stand alone body of Initialize, Adjust and Finalize, the
+            --  expander will end up using the wrong version of these routines
+            --  as the body has not been processed yet. To remedy this, detect
+            --  a late controlled primitive and create a proper spec for it.
+            --  This ensures that the primitive will override its inherited
+            --  counterpart before the freeze takes place.
+
+            --  ??? a cleaner approach may be possible and/or this solution
+            --  could be extended to general-purpose late primitives, TBD.
+
+            if not Body_Seen and then not Is_Body (Decl) then
+               Body_Seen := True;
+
+               if Nkind (Next_Decl) = N_Subprogram_Body then
+                  Handle_Late_Controlled_Primitive (Next_Decl);
+               end if;
+            end if;
+
             Adjust_Decl;
             Freeze_All (Freeze_From, Decl);
             Freeze_From := Last_Entity (Current_Scope);

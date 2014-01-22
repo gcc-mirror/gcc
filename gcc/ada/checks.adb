@@ -5257,6 +5257,10 @@ package body Checks is
 
       elsif Is_Entity_Name (Expr)
         and then Is_Known_Valid (Entity (Expr))
+
+        --  Exclude volatile variables
+
+        and then not Treat_As_Volatile (Entity (Expr))
       then
          return True;
 

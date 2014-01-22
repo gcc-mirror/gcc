@@ -702,12 +702,12 @@ package Opt is
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.
    --  The possible settings are:
-   --    '1'  Latin-5 (ISO-8859-1)
-   --    '2'  Latin-5 (ISO-8859-2)
-   --    '3'  Latin-5 (ISO-8859-3)
-   --    '4'  Latin-5 (ISO-8859-4)
-   --    '5'  Latin-5 (ISO-8859-5, Cyrillic)
-   --    '9'  Latin-5 (ISO-8859-9)
+   --    '1'  Latin-1 (ISO-8859-1)
+   --    '2'  Latin-2 (ISO-8859-2)
+   --    '3'  Latin-3 (ISO-8859-3)
+   --    '4'  Latin-4 (ISO-8859-4)
+   --    '5'  Latin-Cyrillic (ISO-8859-5)
+   --    '9'  Latin-9 (ISO-8859-15)
    --    'p'  PC (US, IBM page 437)
    --    '8'  PC (European, IBM page 850)
    --    'f'  Full upper set (all distinct)

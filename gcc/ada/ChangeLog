@@ -1,3 +1,41 @@
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.adb: Update comment.
+
+2014-01-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_aux.ads, sem_aux.adb (Is_Body): New routine.
+	* sem_ch3.adb (Analyze_Declarations): Add local variable
+	Body_Seen. Generate the spec of a late controlled
+	primitive body that is about to freeze its related type.
+	(Handle_Late_Controlled_Primitive): New routine.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* a-stream.adb: Minor reformatting.
+
+2014-01-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (From_Actual_Package): Introduce a recursive
+	sub-procedure Declared_In_Actual to handle properly the visibility
+	of actuals in actual packages, that are themselves actuals to a
+	actual package of the current instance. This mimics properly the
+	visibility of formals of formal packages declared with a box,
+	within the corresponding generic unit.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Do not assume that a volatile variable is valid.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* g-catiio.ads (Image, Value): Clarify that these functions
+	operate in the local time zone.  Minor documentation update.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* csets.adb, csets.ads, opt.ads: Minor documentation fixes.
+
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aux.adb, sem_aux.ads, sem_ch3.adb (Has_Unconstrained_Elements):

@@ -233,8 +233,8 @@ package body Rtsfind is
 
            --  If the entity being referenced is defined in the current scope,
            --  using it is always fine as such usage can never introduce any
-           --  dependency on an additional unit.
-           --  Why do we need to do this test ???
+           --  dependency on an additional unit. The presence of this test
+           --  helps generating meaningful error messages for CRT violations.
 
            and then Scope (Eid) /= Current_Scope
          then

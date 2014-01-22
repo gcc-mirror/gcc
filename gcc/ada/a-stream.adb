@@ -46,8 +46,10 @@ package body Ada.Streams is
       V : out Stream_Element_Array)
    is
       Last : Stream_Element_Offset;
+
    begin
       Read (S.all, V, Last);
+
       if Last /= V'Last then
          raise Ada.IO_Exceptions.End_Error;
       end if;
