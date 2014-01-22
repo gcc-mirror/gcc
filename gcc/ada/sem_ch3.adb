@@ -3637,7 +3637,7 @@ package body Sem_Ch3 is
          if No (E) then
             Act_T := Build_Default_Subtype (T, N);
          else
-            --  Ada 2005:  a limited object may be initialized by means of an
+            --  Ada 2005: a limited object may be initialized by means of an
             --  aggregate. If the type has default discriminants it has an
             --  unconstrained nominal type, Its actual subtype will be obtained
             --  from the aggregate, and not from the default discriminants.

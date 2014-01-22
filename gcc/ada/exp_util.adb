@@ -3422,8 +3422,8 @@ package body Exp_Util is
             --  actions, they must be added to the existing actions. The other
             --  alternative is when the new actions are related to one of the
             --  existing actions of the expression with actions, and should
-            --  never reach here: if actions are inserted on a statement within
-            --  the Actions of an expression with actions, or on some
+            --  never reach here: if actions are inserted on a statement
+            --  within the Actions of an expression with actions, or on some
             --  sub-expression of such a statement, then the outermost proper
             --  insertion point is right before the statement, and we should
             --  never climb up as far as the N_Expression_With_Actions itself.
@@ -3437,6 +3437,7 @@ package body Exp_Util is
                      Insert_List_After_And_Analyze
                        (Last (Actions (P)), Ins_Actions);
                   end if;
+
                   return;
 
                else

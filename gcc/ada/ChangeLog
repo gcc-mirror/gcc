@@ -1,5 +1,24 @@
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, exp_util.adb, sem_dim.adb, sem_elab.adb, sem_ch8.adb,
+	sem_eval.ads: Minor reformatting.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Known_Bounds): Return False for
+	Any_Composite to prevent cascaded errors.
+
+2014-01-22  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Initialize): Do not insert special entry in Warnings
+	table in GNATprove_Mode.
+	* erroutc.adb (Set_Warnings_Mode_On): Add info in Warnings table in
+	GNATprove_Mode.
+	* gnat1drv.adb (Adjust_Global_Switches): Do not suppress frontend
+	warnings anymore.
+
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (Analyze_Initializes_In_Decl_Part): Handle null
 	initializes case.
 

@@ -383,11 +383,6 @@ procedure Gnat1drv is
 
          Reset_Style_Check_Options;
 
-         --  Suppress compiler warnings, since what we are interested in here
-         --  is what formal verification can find out.
-
-         Warning_Mode := Suppress;
-
          --  Suppress the generation of name tables for enumerations, which are
          --  not needed for formal verification, and fall outside the SPARK
          --  subset (use of pointers).

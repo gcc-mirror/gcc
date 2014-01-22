@@ -1259,7 +1259,7 @@ package body Sem_Eval is
       Typ  : Entity_Id;
 
    begin
-      if not Is_Array_Type (T) then
+      if T = Any_Composite or else not Is_Array_Type (T) then
          return False;
       end if;
 
