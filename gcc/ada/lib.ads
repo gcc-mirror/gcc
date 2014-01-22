@@ -520,6 +520,14 @@ package Lib is
    --  instantiations are included in the extended main unit for this call.
    --  If the main unit is itself a subunit, then the extended main code unit
    --  includes its parent unit, and the parent unit spec if it is separate.
+   --
+   --  This routine (and the following three routines) all return False if
+   --  Sloc (N) is No_Location or Standard_Location. In an earlier version,
+   --  they returned True for Standard_Location, but this was odd, and some
+   --  archeology indicated that this was done for the sole benefit of the
+   --  call in Restrict.Check_Restriction_No_Dependence, so we have moved
+   --  the special case check to that routine. This avoids some difficulties
+   --  with some other calls that malfunctioned with the odd return of True.
 
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer rather
