@@ -1,3 +1,10 @@
+2014-01-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/insert-vsx-be-order.c: New.
+	* gcc.dg/vmx/extract-vsx.c: New.
+	* gcc.dg/vmx/extract-vsx-be-order.c: New.
+	* gcc.dg/vmx/insert-vsx.c: New.
+
 2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59896
