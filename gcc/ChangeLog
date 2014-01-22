@@ -1,3 +1,11 @@
+2014-01-22  Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59880
+	* config/i386/i386.c (ix86_avoid_lea_for_addr): Return false
+	for SImode_address_operand operands.  Return false
+	if operands[1] is a REG.
+
 2014-01-21  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
