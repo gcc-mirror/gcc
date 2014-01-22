@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              S E M . C H 8                               --
+--                              S E M _ C H 8                               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --

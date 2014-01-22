@@ -7330,7 +7330,6 @@ package body Exp_Ch4 is
          declare
             Bt : constant Entity_Id := Root_Type (Underlying_Type (Bastyp));
             Et : constant Entity_Id := Root_Type (Underlying_Type (Exptyp));
-
          begin
             Rewrite (N,
               Unchecked_Convert_To (Typ,
@@ -7610,7 +7609,7 @@ package body Exp_Ch4 is
       then
          Rewrite (N,
            Make_Function_Call (Loc,
-             Name => New_Reference_To (RTE (Rent), Loc),
+             Name                   => New_Reference_To (RTE (Rent), Loc),
              Parameter_Associations => New_List (Base, Exp)));
 
       --  Otherwise we have to introduce conversions (conversions are also

@@ -596,7 +596,10 @@ package body Debug is
 
    --  d.E  Turn selected errors into warnings. This debug switch causes a
    --       specific set of error messages into warnings. Setting this switch
-   --       causes Opt.Error_To_Warning to be set to True.
+   --       causes Opt.Error_To_Warning to be set to True. Right now the only
+   --       error affected is the case of overlapping subprogram parameters
+   --       which has become illegal in Ada 2012, but only generates a warning
+   --       in earlier versions of Ada.
 
    --  d.F  Sets GNATprove_Mode to True. This allows debugging the frontend in
    --       the special mode used by GNATprove.
