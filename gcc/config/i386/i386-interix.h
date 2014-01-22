@@ -195,7 +195,7 @@ do {									\
  */
 #define MULTIPLE_SYMBOL_SPACES	1
 
-extern void i386_pe_unique_section PARAMS ((tree, int));
+extern void i386_pe_unique_section (tree, int);
 #define TARGET_ASM_UNIQUE_SECTION i386_pe_unique_section
 
 /* Switch into a generic section.  */

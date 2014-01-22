@@ -68,7 +68,7 @@ enum cr16_addrtype
   CR16_ABSOLUTE
 };
 
-extern void notice_update_cc PARAMS ((rtx));
+extern void notice_update_cc (rtx);
 extern int cr16_operand_bit_pos (int val, int bitval);
 extern void cr16_decompose_const (rtx x, int *code,
 				  enum data_model_type *data,

@@ -1,3 +1,9 @@
+2014-01-22  Tom Tromey  <tromey@redhat.com>
+
+	* config/i386/i386-interix.h (i386_pe_unique_section): Don't use
+	PARAMS.
+	* config/cr16/cr16-protos.h (notice_update_cc): Don't use PARAMS.
+
 2014-01-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59896
