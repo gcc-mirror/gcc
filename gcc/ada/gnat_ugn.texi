@@ -5339,6 +5339,22 @@ an explicit @option{-gnatws} or
 implicit @option{-gnatwe} that is activated by the
 use of @option{-gnatg}.
 
+@item -gnatw.n
+@emph{Activate warnings on atomic synchronization.}
+@cindex @option{-gnatw.n} (@command{gcc})
+@cindex Atomic Synchronization, warnings
+This switch actives warnings when an access to an atomic variable
+requires the generation of atomic synchronization code. These
+warnings are off by default and this warning is not included
+in @code{-gnatwa}.
+
+@item -gnatw.N
+@emph{Suppress warnings on atomic synchronization.}
+@cindex @option{-gnatw.n} (@command{gcc})
+@cindex Atomic Synchronization, warnings
+This switch suppresses warnings when an access to an atomic variable
+requires the generation of atomic synchronization code.
+
 @item -gnatwo
 @emph{Activate warnings on address clause overlays.}
 @cindex @option{-gnatwo} (@command{gcc})

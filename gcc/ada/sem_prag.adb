@@ -2823,6 +2823,8 @@ package body Sem_Prag is
       --  Check if a rep item of the same name as the current pragma is already
       --  chained as a rep pragma to the given entity. If so give a message
       --  about the duplicate, and then raise Pragma_Exit so does not return.
+      --  Note that if E is a type, then this routine avoids flagging a pragma
+      --  which applies to a parent type from which E is derived.
 
       procedure Check_Duplicated_Export_Name (Nam : Node_Id);
       --  Nam is an N_String_Literal node containing the external name set by
@@ -3924,6 +3926,36 @@ package body Sem_Prag is
          P := Get_Rep_Item (E, Pragma_Name (N), Check_Parents => False);
 
          if Present (P) then
+
+            --  If the entity is a type, then we have to make sure that the
+            --  ostensible duplicate is not for a parent type from which this
+            --  type is derived.
+
+            if Is_Type (E) then
+               if Nkind (P) = N_Pragma then
+                  declare
+                     Args : constant List_Id :=
+                              Pragma_Argument_Associations (P);
+                  begin
+                     if Present (Args)
+                       and then Is_Entity_Name (Expression (First (Args)))
+                       and then Is_Type (Entity (Expression (First (Args))))
+                       and then Entity (Expression (First (Args))) /= E
+                     then
+                        return;
+                     end if;
+                  end;
+
+               elsif Nkind (P) = N_Aspect_Specification
+                 and then Is_Type (Entity (P))
+                 and then Entity (P) /= E
+               then
+                  return;
+               end if;
+            end if;
+
+            --  Here we have a definite duplicate
+
             Error_Msg_Name_1 := Pragma_Name (N);
             Error_Msg_Sloc := Sloc (P);
 
