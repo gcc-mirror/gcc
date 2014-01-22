@@ -2991,6 +2991,11 @@ package body Sem_Ch3 is
       --  or a variant record type is encountered, Check_Restrictions is called
       --  indicating the count is unknown.
 
+      function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
+      --  True if T has discriminants and is unconstrained, or is an array
+      --  type whose element type Has_Unconstrained_Elements. Shouldn't this
+      --  be in sem_util???
+
       -----------------
       -- Count_Tasks --
       -----------------
@@ -3044,6 +3049,24 @@ package body Sem_Ch3 is
             return Uint_0;
          end if;
       end Count_Tasks;
+
+      --------------------------------
+      -- Has_Unconstrained_Elements --
+      --------------------------------
+
+      function Has_Unconstrained_Elements (T : Entity_Id) return Boolean is
+         U_T : constant Entity_Id := Underlying_Type (T);
+      begin
+         if No (U_T) then
+            return False;
+         elsif Is_Record_Type (U_T) then
+            return Has_Discriminants (U_T) and then not Is_Constrained (U_T);
+         elsif Is_Array_Type (U_T) then
+            return Has_Unconstrained_Elements (Component_Type (U_T));
+         else
+            return False;
+         end if;
+      end Has_Unconstrained_Elements;
 
    --  Start of processing for Analyze_Object_Declaration
 
@@ -3647,16 +3670,15 @@ package body Sem_Ch3 is
 
          Rewrite (Object_Definition (N), New_Occurrence_Of (Act_T, Loc));
 
-      elsif Present (Underlying_Type (T))
-        and then not Is_Constrained (Underlying_Type (T))
-        and then Has_Discriminants (Underlying_Type (T))
-        and then Nkind (E) = N_Function_Call
+      elsif Nkind (E) = N_Function_Call
         and then Constant_Present (N)
+        and then Has_Unconstrained_Elements (Etype (E))
       then
          --  The back-end has problems with constants of a discriminated type
          --  with defaults, if the initial value is a function call. We
-         --  generate an intermediate temporary for the result of the call.
-         --  It is unclear why this should make it acceptable to gcc. ???
+         --  generate an intermediate temporary that will receive a reference
+         --  to the result of the call. The initialization expression then
+         --  becomes a dereference of that temporary.
 
          Remove_Side_Effects (E);
 

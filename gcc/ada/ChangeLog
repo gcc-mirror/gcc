@@ -1,3 +1,19 @@
+2014-01-22  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb, exp_ch4.adb, erroutc.adb: Minor reformatting.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch7.adb, sem_ch8.adb, exp_ch3.adb: Minor reformatting.
+
+2014-01-22  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): For a constant
+	declaration initialized with a function call, whose type
+	has variable size, need to remove side effects so that the
+	initialization expression becomes a dereference of a temporary
+	reference to the function result.
+
 2014-01-22  Yannick Moy  <moy@adacore.com>
 
 	* errout.adb (Initialize): Remove trick to add dummy entry

@@ -5561,7 +5561,7 @@ package body Exp_Ch3 is
                   Apply_Constraint_Check (Expr, Typ);
 
                   --  If the expression has been marked as requiring a range
-                  --  generate it now and reset the flag.
+                  --  check, generate it now and reset the flag.
 
                   if Do_Range_Check (Expr) then
                      Set_Do_Range_Check (Expr, False);

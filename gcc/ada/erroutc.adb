@@ -1180,26 +1180,27 @@ package body Erroutc is
         and then not GNATprove_Mode
       then
          return;
+      end if;
 
       --  If last entry in table already covers us, this is a redundant pragma
       --  Warnings (Off) and can be ignored.
 
-      elsif Warnings.Last >= Warnings.First
+      if Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
         and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
          return;
-
-      --  Otherwise establish a new entry, extending from the location of the
-      --  pragma to the end of the current source file. This ending point will
-      --  be adjusted by a subsequent pragma Warnings (On).
-
-      else
-         Warnings.Increment_Last;
-         Warnings.Table (Warnings.Last).Start := Loc;
-         Warnings.Table (Warnings.Last).Stop :=
-           Source_Last (Current_Source_File);
       end if;
+
+      --  If none of those special conditions holds, establish a new entry,
+      --  extending from the location of the pragma to the end of the current
+      --  source file. This ending point will be adjusted by a subsequent
+      --  corresponding pragma Warnings (On).
+
+      Warnings.Increment_Last;
+      Warnings.Table (Warnings.Last).Start := Loc;
+      Warnings.Table (Warnings.Last).Stop :=
+        Source_Last (Current_Source_File);
    end Set_Warnings_Mode_Off;
 
    --------------------------
@@ -1223,11 +1224,12 @@ package body Erroutc is
         and then not GNATprove_Mode
       then
          return;
+      end if;
 
       --  If the last entry in the warnings table covers this pragma, then
       --  we adjust the end point appropriately.
 
-      elsif Warnings.Last >= Warnings.First
+      if Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
         and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
