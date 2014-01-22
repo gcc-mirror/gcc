@@ -1,3 +1,13 @@
+2014-01-22  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb (Initialize): Remove trick to add dummy entry
+	in Warnings table.
+	* erroutc.adb (Set_Warnings_Mode_Off,
+	Set_Warnings_Mode_On): Do nothing if warnings are suppressed by
+	command line switch.
+	* opt.ads (Warning_Mode): Document behavior
+	wrt pragma Warnings, in normal mode and in GNATprove_Mode.
+
 2014-01-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, errout.adb, erroutc.adb: Minor reformatting.

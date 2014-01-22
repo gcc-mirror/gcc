@@ -1737,8 +1737,11 @@ package Opt is
    --  GNAT, GNATBIND
    --  Controls treatment of warning messages. If set to Suppress, warning
    --  messages are not generated at all. In Normal mode, they are generated
-   --  but do not count as errors. In Treat_As_Error mode, warning messages
-   --  are generated and are treated as errors.
+   --  but do not count as errors. In Treat_As_Error mode, warning messages are
+   --  generated and are treated as errors. Note that Warning_Mode = Suppress
+   --  causes pragma Warnings to be ignored (except for legality checks),
+   --  unless we are in GNATprove_Mode, which requires pragma Warnings to
+   --  be stored for the formal verification backend.
 
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
    --  GNAT, GNATBIND
