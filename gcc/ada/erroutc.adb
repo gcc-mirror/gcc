@@ -1172,11 +1172,19 @@ package body Erroutc is
          return;
       end if;
 
-      --  If last entry in table already covers us, this is a redundant pragma
-      --  Warnings (Off) and can be ignored. This also handles the case where
-      --  all warnings are suppressed by command line switch.
+      --  If all warnings are suppressed by command line switch, this can
+      --  be ignored, unless we are in GNATprove_Mode which requires pragma
+      --  Warnings to be stored for the formal verification backend.
 
-      if Warnings.Last >= Warnings.First
+      if Warning_Mode = Suppress
+        and then not GNATprove_Mode
+      then
+         return;
+
+      --  If last entry in table already covers us, this is a redundant pragma
+      --  Warnings (Off) and can be ignored.
+
+      elsif Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
         and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
@@ -1207,20 +1215,23 @@ package body Erroutc is
          return;
       end if;
 
+      --  If all warnings are suppressed by command line switch, this can
+      --  be ignored, unless we are in GNATprove_Mode which requires pragma
+      --  Warnings to be stored for the formal verification backend.
+
+      if Warning_Mode = Suppress
+        and then not GNATprove_Mode
+      then
+         return;
+
       --  If the last entry in the warnings table covers this pragma, then
       --  we adjust the end point appropriately.
 
-      if Warnings.Last >= Warnings.First
+      elsif Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
         and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
-         --  We can normally skip this adjustment if we are suppressing all
-         --  warnings, but we do want to do it in gnatprove mode even then,
-         --  since we use the warning mechanism in gnatprove itself.
-
-         if Warning_Mode /= Suppress or else GNATprove_Mode then
-            Warnings.Table (Warnings.Last).Stop := Loc;
-         end if;
+         Warnings.Table (Warnings.Last).Stop := Loc;
       end if;
    end Set_Warnings_Mode_On;
 

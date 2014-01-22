@@ -1503,18 +1503,6 @@ package body Errout is
 
       Warnings.Init;
       Specific_Warnings.Init;
-
-      --  As an optimization, if all warnings are suppressed, we supply an
-      --  initial dummy entry covering all possible source locations, which
-      --  avoids taking into account pragma Warnings in the source. In
-      --  GNATprove_Mode, this optimization is disabled, as we rely on
-      --  the Warnings table to be correctly filled for use of the warning
-      --  mechanism for gnatprove itself.
-
-      if not GNATprove_Mode and then Warning_Mode = Suppress then
-         Warnings.Append
-           ((Start => Source_Ptr'First, Stop => Source_Ptr'Last));
-      end if;
    end Initialize;
 
    -----------------
