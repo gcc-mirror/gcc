@@ -1,3 +1,9 @@
+2014-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59891
+	* c-typeck.c (build_conditional_expr): Call c_fully_fold instead
+	of remove_c_maybe_const_expr on op1 and op2.
+
 2014-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/58943
