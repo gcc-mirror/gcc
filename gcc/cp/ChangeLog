@@ -1,3 +1,9 @@
+2014-01-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/59482
+	* parser.c (cp_parser_class_head): Push the class before parsing
+	the base-clause, pop after it.
+
 2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl2.c (cpp_check): Revert prototype change.
