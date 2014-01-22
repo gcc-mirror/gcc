@@ -1,3 +1,10 @@
+2014-01-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59477
+	* lra-constraints.c (inherit_in_ebb): Process call for living hard
+	regs.  Update reloads_num and potential_reload_hard_regs for all
+	insns.
+
 2014-01-22  Tom Tromey  <tromey@redhat.com>
 
 	* config/i386/i386-interix.h (i386_pe_unique_section): Don't use

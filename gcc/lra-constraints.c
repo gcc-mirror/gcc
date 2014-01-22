@@ -5007,7 +5007,7 @@ static bool
 inherit_in_ebb (rtx head, rtx tail)
 {
   int i, src_regno, dst_regno, nregs;
-  bool change_p, succ_p;
+  bool change_p, succ_p, update_reloads_num_p;
   rtx prev_insn, next_usage_insns, set, last_insn;
   enum reg_class cl;
   struct lra_insn_reg *reg;
@@ -5078,6 +5078,7 @@ inherit_in_ebb (rtx head, rtx tail)
 	  src_regno = REGNO (SET_SRC (set));
 	  dst_regno = REGNO (SET_DEST (set));
 	}
+      update_reloads_num_p = true;
       if (src_regno < lra_constraint_new_regno_start
 	  && src_regno >= FIRST_PSEUDO_REGISTER
 	  && reg_renumber[src_regno] < 0
@@ -5086,6 +5087,7 @@ inherit_in_ebb (rtx head, rtx tail)
 	{
 	  /* 'reload_pseudo <- original_pseudo'.  */
 	  reloads_num++;
+	  update_reloads_num_p = false;
 	  succ_p = false;
 	  if (usage_insns[src_regno].check == curr_usage_insns_check
 	      && (next_usage_insns = usage_insns[src_regno].insns) != NULL_RTX)
@@ -5109,6 +5111,7 @@ inherit_in_ebb (rtx head, rtx tail)
 		   = usage_insns[dst_regno].insns) != NULL_RTX)
 	{
 	  reloads_num++;
+	  update_reloads_num_p = false;
 	  /* 'original_pseudo <- reload_pseudo'.  */
 	  if (! JUMP_P (curr_insn)
 	      && inherit_reload_reg (true, dst_regno, cl,
@@ -5297,6 +5300,14 @@ inherit_in_ebb (rtx head, rtx tail)
 		      add_next_usage_insn (src_regno, use_insn, reloads_num);
 		    }
 		}
+	  /* Process call args.  */
+	  if (curr_id->arg_hard_regs != NULL)
+	    for (i = 0; (src_regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	      if (src_regno < FIRST_PSEUDO_REGISTER)
+		{
+	           SET_HARD_REG_BIT (live_hard_regs, src_regno);
+	           add_next_usage_insn (src_regno, curr_insn, reloads_num);
+		}
 	  for (i = 0; i < to_inherit_num; i++)
 	    {
 	      src_regno = to_inherit[i].regno;
@@ -5305,6 +5316,26 @@ inherit_in_ebb (rtx head, rtx tail)
 		change_p = true;
 	      else
 		setup_next_usage_insn (src_regno, curr_insn, reloads_num, false);
+	    }
+	}
+      if (update_reloads_num_p
+	  && NONDEBUG_INSN_P (curr_insn)
+          && (set = single_set (curr_insn)) != NULL_RTX)
+	{
+	  int regno = -1;
+	  if ((REG_P (SET_DEST (set))
+	       && (regno = REGNO (SET_DEST (set))) >= lra_constraint_new_regno_start
+	       && reg_renumber[regno] < 0
+	       && (cl = lra_get_allocno_class (regno)) != NO_REGS)
+	      || (REG_P (SET_SRC (set))
+	          && (regno = REGNO (SET_SRC (set))) >= lra_constraint_new_regno_start
+	          && reg_renumber[regno] < 0
+	          && (cl = lra_get_allocno_class (regno)) != NO_REGS))
+	    {
+	      reloads_num++;
+	      if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
+		IOR_HARD_REG_SET (potential_reload_hard_regs,
+	                          reg_class_contents[cl]);
 	    }
 	}
       /* We reached the start of the current basic block.  */
