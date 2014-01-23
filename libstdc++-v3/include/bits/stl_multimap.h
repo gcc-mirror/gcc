@@ -295,8 +295,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Multimap move assignment operator.
        *  @param  __x  A %multimap of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this multimap (without copying).
-       *  @a __x is a valid, but unspecified multimap.
+       *  The contents of @a __x are moved into this multimap (without copying
+       *  if the allocators compare equal or get moved on assignment).
+       *  Afterwards @a __x is in a valid, but unspecified state.
        */
       multimap&
       operator=(multimap&& __x) noexcept(_Alloc_traits::_S_nothrow_move())

@@ -271,8 +271,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief %Set move assignment operator.
        *  @param __x  A %set of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this %set (without copying).
-       *  @a __x is a valid, but unspecified %set.
+       *  The contents of @a __x are moved into this %set (without copying
+       *  if the allocators compare equal or get moved on assignment).
+       *  Afterwards @a __x is in a valid, but unspecified state.
        */
       set&
       operator=(set&& __x) noexcept(_Alloc_traits::_S_nothrow_move())

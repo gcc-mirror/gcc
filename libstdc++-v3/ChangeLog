@@ -3,6 +3,20 @@
 	* doc/xml/faq.xml (a-how_to_set_paths): Expand FAQ answer.
 	* doc/xml/manual/abi.xml (abi.versioning.history): Correct symver.
 
+	PR libstdc++/59872
+	* include/bits/stl_map.h (map::operator=(map&&)): Fix comment.
+	* include/bits/stl_multimap.h (multimap::operator=(multimap&&)):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset::operator=(multiset&&)):
+	Likewise.
+	* include/bits/stl_set.h (set::operator=(set&&)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_M_move_data): New overloaded
+	functions to perform moving or copying of elements from rvalue tree.
+	(_Rb_tree::_Rb_tree(_Rb_tree&&)): Use _M_move_data.
+	(_Rb_tree::_Rb_tree(_Rb_tree&&, _Node_allocator&&)): Likewise.
+	* testsuite/23_containers/map/59872.cc: New.
+	* testsuite/23_containers/map/56613.cc: Remove duplicate include.
+
 2014-01-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_deque.h (_Deque_impl): Move comment.

@@ -267,9 +267,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Multiset move assignment operator.
        *  @param  __x  A %multiset of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this %multiset
-       *  (without copying).  @a __x is a valid, but unspecified
-       *  %multiset.
+       *  The contents of @a __x are moved into this %multiset (without
+       *  copying if the allocators compare equal or get moved on assignment).
+       *  Afterwards @a __x is in a valid, but unspecified state.
        */
       multiset&
       operator=(multiset&& __x) noexcept(_Alloc_traits::_S_nothrow_move())

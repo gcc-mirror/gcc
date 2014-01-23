@@ -301,8 +301,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Map move assignment operator.
        *  @param  __x  A %map of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this map (without copying).
-       *  @a __x is a valid, but unspecified %map.
+       *  The contents of @a __x are moved into this map (without copying
+       *  if the allocators compare equal or get moved on assignment).
+       *  Afterwards @a __x is in a valid, but unspecified state.
        */
       map&
       operator=(map&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
