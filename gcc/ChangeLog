@@ -1,3 +1,29 @@
+2014-01-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_dup_lane<mode>): Correct lane number on big-endian.
+	(aarch64_dup_lane_<vswap_widthi_name><mode>): Likewise.
+	(*aarch64_mul3_elt<mode>): Likewise.
+	(*aarch64_mul3_elt<vswap_width_name><mode>): Likewise.
+	(*aarch64_mul3_elt_to_64v2df): Likewise.
+	(*aarch64_mla_elt<mode>): Likewise.
+	(*aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_mls_elt<mode>): Likewise.
+	(*aarch64_mls_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_fma4_elt<mode>): Likewise.
+	(*aarch64_fma4_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_fma4_elt_to_64v2df): Likewise.
+	(*aarch64_fnma4_elt<mode>): Likewise.
+	(*aarch64_fnma4_elt_<vswap_width_name><mode>): Likewise.
+	(*aarch64_fnma4_elt_to_64v2df): Likewise.
+	(aarch64_sq<r>dmulh_lane<mode>): Likewise.
+	(aarch64_sq<r>dmulh_laneq<mode>): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l_lane<mode>_internal): Likewise.
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull_lane<mode>_internal): Likewise.
+	(aarch64_sqdmull2_lane<mode>_internal): Likewise.
+
 2013-01-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd.md
