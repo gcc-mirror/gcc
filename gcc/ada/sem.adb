@@ -530,9 +530,6 @@ package body Sem is
          when N_Subprogram_Declaration =>
             Analyze_Subprogram_Declaration (N);
 
-         when N_Subprogram_Info =>
-            Analyze_Subprogram_Info (N);
-
          when N_Subprogram_Renaming_Declaration =>
             Analyze_Subprogram_Renaming (N);
 

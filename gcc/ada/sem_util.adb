@@ -13344,7 +13344,6 @@ package body Sem_Util is
 
       Exp := N;
       loop
-         <<Continue>>
          Ent := Empty;
 
          if Is_Entity_Name (Exp) then
@@ -13370,8 +13369,7 @@ package body Sem_Util is
                end if;
 
                if Nkind (P) = N_Selected_Component
-                 and then
-                   Present (Entry_Formal (Entity (Selector_Name (P))))
+                 and then Present (Entry_Formal (Entity (Selector_Name (P))))
                then
                   --  Case of a reference to an entry formal
 
@@ -13380,8 +13378,8 @@ package body Sem_Util is
                elsif Nkind (P) = N_Identifier
                  and then Nkind (Parent (Entity (P))) = N_Object_Declaration
                  and then Present (Expression (Parent (Entity (P))))
-                 and then Nkind (Expression (Parent (Entity (P))))
-                   = N_Reference
+                 and then Nkind (Expression (Parent (Entity (P)))) =
+                                                               N_Reference
                then
                   --  Case of a reference to a value on which side effects have
                   --  been removed.
@@ -13391,7 +13389,6 @@ package body Sem_Util is
 
                else
                   return;
-
                end if;
             end;
 
@@ -13405,8 +13402,24 @@ package body Sem_Util is
                               N_Indexed_Component,
                               N_Selected_Component)
          then
-            Exp := Prefix (Exp);
-            goto Continue;
+            --  Special check, if the prefix is an access type, then return
+            --  since we are modifying the thing pointed to, not the prefix.
+            --  When we are expanding, most usually the prefix is replaced
+            --  by an explicit dereference, and this test is not needed, but
+            --  in some cases (notably -gnatc mode and generics) when we do
+            --  not do full expansion, we need this special test.
+
+            if Is_Access_Type (Etype (Prefix (Exp))) then
+               return;
+
+            --  Otherwise go to prefix and keep going
+
+            else
+               Exp := Prefix (Exp);
+               goto Continue;
+            end if;
+
+         --  All other cases, not a modification
 
          else
             return;
@@ -13539,6 +13552,9 @@ package body Sem_Util is
 
             return;
          end if;
+
+      <<Continue>>
+         null;
       end loop;
    end Note_Possible_Modification;
 

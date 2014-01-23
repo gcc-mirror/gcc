@@ -2378,10 +2378,22 @@ package body Sem_Ch3 is
             --  This ensures that the primitive will override its inherited
             --  counterpart before the freeze takes place.
 
+            --  If the declaration we just processed is a body, do not attempt
+            --  to examine Next_Decl as the late primitive idiom can only apply
+            --  to the first encountered body.
+
+            --  The spec of the late primitive is not generated in ASIS mode to
+            --  ensure a consistent list of primitives that indicates the true
+            --  semantic structure of the program (which is not relevant when
+            --  generating executable code.
+
             --  ??? a cleaner approach may be possible and/or this solution
             --  could be extended to general-purpose late primitives, TBD.
 
-            if not Body_Seen and then not Is_Body (Decl) then
+            if not ASIS_Mode
+              and then not Body_Seen
+              and then not Is_Body (Decl)
+            then
                Body_Seen := True;
 
                if Nkind (Next_Decl) = N_Subprogram_Body then

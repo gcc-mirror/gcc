@@ -1425,12 +1425,7 @@ package body Prj.Conf is
          Write_Line (Config_File_Path.all);
       end if;
 
-      if On_Load_Config /= null then
-         On_Load_Config
-           (Config_File       => Config_Project_Node,
-            Project_Node_Tree => Project_Node_Tree);
-
-      elsif Config_File_Path /= null then
+      if Config_File_Path /= null then
          Prj.Part.Parse
            (In_Tree           => Project_Node_Tree,
             Project           => Config_Project_Node,
@@ -1442,6 +1437,12 @@ package body Prj.Conf is
             Env               => Env);
       else
          Config_Project_Node := Empty_Node;
+      end if;
+
+      if On_Load_Config /= null then
+         On_Load_Config
+           (Config_File       => Config_Project_Node,
+            Project_Node_Tree => Project_Node_Tree);
       end if;
 
       if Config_Project_Node /= Empty_Node then

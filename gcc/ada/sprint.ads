@@ -81,7 +81,6 @@ package Sprint is
    --    Reference                           expression'reference
    --    Shift nodes                         shift_name!(expr, count)
    --    Static declaration                  name : static xxx
-   --    Subprogram_Info                     subprog'Subprogram_Info
    --    Unchecked conversion                target_type!(source_expression)
    --    Unchecked expression                `(expression)
    --    Validate_Unchecked_Conversion       validate unchecked_conversion
