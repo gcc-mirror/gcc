@@ -1,3 +1,7 @@
+2014-01-22  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
+
 2014-01-22  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/x86-tune.def (X86_TUNE_ACCUMULATE_OUTGOING_ARGS):
