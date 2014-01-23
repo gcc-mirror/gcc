@@ -132,6 +132,24 @@ AM_CONDITIONAL(USING_MAC_INTERPOSE, $MAC_INTERPOSE)
 
 backtrace_supported=yes
 
+AC_MSG_CHECKING([for necessary platform features])
+case "$target" in
+  *-*-linux*)
+    # Some old Linux distributions miss required syscalls.
+    sanitizer_supported=no
+    AC_TRY_COMPILE([#include <sys/syscall.h>],[
+      syscall (__NR_gettid);
+      syscall (__NR_futex);
+      syscall (__NR_exit_group);
+    ], [sanitizer_supported=yes])
+    ;;
+  *)
+    sanitizer_supported=yes
+    ;;
+esac
+AC_MSG_RESULT($sanitizer_supported)
+AM_CONDITIONAL(SANITIZER_SUPPORTED, test "$sanitizer_supported" = yes)
+
 # Test for __sync support.
 AC_CACHE_CHECK([__sync extensions],
 [libsanitizer_cv_sys_sync],
