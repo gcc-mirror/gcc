@@ -3994,13 +3994,23 @@ package body Sem_Attr is
          Check_References_In_Prefix (Loop_Id);
 
          --  The prefix must denote a static entity if the pragma does not
-         --  apply to the innermost enclosing loop statement.
+         --  apply to the innermost enclosing loop statement, or if it appears
+         --  within a potentially unevaluated epxression.
 
-         if Present (Enclosing_Loop)
-           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
-           and then not Is_Entity_Name (P)
+         if Is_Entity_Name (P)
+           or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
          then
-            Error_Attr_P ("prefix of attribute % must denote an entity");
+            null;
+
+         elsif Present (Enclosing_Loop)
+                 and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+         then
+            Error_Attr_P ("prefix of attribute % that applies to "
+              & "outer loop must denote an entity");
+
+         elsif Is_Potentially_Unevaluated (P) then
+            Error_Attr_P ("prefix of attribute % that is potentially "
+              & "unevaluated must denote an entity");
          end if;
       end Loop_Entry;
 
@@ -4525,9 +4535,8 @@ package body Sem_Attr is
            and then Is_Potentially_Unevaluated (N)
            and then not Is_Entity_Name (P)
          then
-            Error_Msg_N
-              ("prefix that is potentially unevaluated must denote an entity",
-               N);
+            Error_Attr_P ("prefix of attribute % that is potentially "
+                 & "unevaluated must denote an entity");
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to

@@ -64,6 +64,7 @@ package body Opt is
       Polling_Required_Config               := Polling_Required;
       Short_Descriptors_Config              := Short_Descriptors;
       SPARK_Mode_Config                     := SPARK_Mode;
+      SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
       Use_VADS_Size_Config                  := Use_VADS_Size;
 
       --  Reset the indication that Optimize_Alignment was set locally, since

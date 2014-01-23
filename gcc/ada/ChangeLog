@@ -1,3 +1,18 @@
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* opt.adb (Register_Opt_Config_Switches): Save SPARK_Mode_Pragma
+	setting.
+
+2014-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Predicate only
+	applies to expressions that come from source.
+	* sem_attr.adb (Analyze_Attribute, case 'Old): Improve error
+	message.
+	(Analyze_Attribute, case 'Loop_Entry): Apply SPARK 2014 legality
+	rule regarding potentially unevaluated expressions, to prefix
+	of attribute.
+
 2014-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_util.adb (Make_Invqriant_Call): If type of expression is
