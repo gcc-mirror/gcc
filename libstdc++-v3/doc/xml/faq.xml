@@ -344,7 +344,7 @@
     <para>
     Depending on your platform and library version, the error message might
     be similar to one of the following:
-    </para> 
+    </para>
 
     <screen>
     ./a.out: error while loading shared libraries: libstdc++.so.6: cannot open shared object file: No such file or directory
@@ -358,11 +358,34 @@
     executable is run the linker finds and loads the required shared
     libraries by searching a pre-configured list of directories. If
     the directory where you've installed libstdc++ is not in this list
-    then the libraries won't be found. The simplest way to fix this is
+    then the libraries won't be found.
+    </para>
+
+    <para>
+    If you already have an older version of libstdc++ installed then the
+    error might look like one of the following instead:
+    </para>
+
+    <screen>
+    ./a.out: /usr/lib/libstdc++.so.6: version `GLIBCXX_3.4.20' not found
+    ./a.out: /usr/lib/libstdc++.so.6: version `CXXABI_1.3.8' not found
+    </screen>
+
+    <para>
+    This means the linker found <filename>/usr/lib/libstdc++.so.6</filename>
+    but that library belongs to an older version of GCC than was used to
+    compile and link the program <filename>a.out</filename> (or some part
+    of it). The program depends on code defined in the newer libstdc++
+    that belongs to the newer version of GCC, so the linker must be told
+    how to find the newer libstdc++ shared library.
+    </para>
+
+    <para>
+    The simplest way to fix this is
     to use the <literal>LD_LIBRARY_PATH</literal> environment variable,
     which is a colon-separated list of directories in which the linker
     will search for shared libraries:
-    </para> 
+    </para>
 
     <screen>
     LD_LIBRARY_PATH=${prefix}/lib:$LD_LIBRARY_PATH
@@ -370,6 +393,11 @@
     </screen>
 
     <para>
+    Here the shell variable <command>${prefix}</command> is assumed to contain
+    the directory prefix where GCC was installed to. The directory containing
+    the library might depend on whether you want the 32-bit or 64-bit copy
+    of the library, so for example would be
+    <filename>${prefix}/lib64</filename> on some systems.
     The exact environment variable to use will depend on your
     platform, e.g. DYLD_LIBRARY_PATH for Darwin,
     LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit
@@ -379,7 +407,8 @@
     See the man pages for <command>ld</command>, <command>ldd</command>
     and <command>ldconfig</command> for more information. The dynamic
     linker has different names on different platforms but the man page
-    is usually called something such as <filename>ld.so/rtld/dld.so</filename>.
+    is usually called something such as <filename>ld.so</filename>,
+    <filename>rtld</filename> or <filename>dld.so</filename>.
     </para>
     <para>
     Using LD_LIBRARY_PATH is not always the best solution, <link linkend="manual.intro.using.linkage.dynamic">Finding Dynamic or Shared

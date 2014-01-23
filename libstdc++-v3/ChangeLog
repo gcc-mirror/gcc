@@ -1,3 +1,8 @@
+2014-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml (a-how_to_set_paths): Expand FAQ answer.
+	* doc/xml/manual/abi.xml (abi.versioning.history): Correct symver.
+
 2014-01-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_deque.h (_Deque_impl): Move comment.

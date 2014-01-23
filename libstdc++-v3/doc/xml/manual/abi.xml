@@ -328,7 +328,7 @@ compatible.
     <listitem><para>GCC 4.7.0: GLIBCXX_3.4.17, CXXABI_1.3.6</para></listitem>
     <listitem><para>GCC 4.8.0: GLIBCXX_3.4.18, CXXABI_1.3.7</para></listitem>
     <listitem><para>GCC 4.8.3: GLIBCXX_3.4.19, CXXABI_1.3.7</para></listitem>
-    <listitem><para>GCC 4.9.0: GLIBCXX_3.4.20, CXXABI_1.3.7</para></listitem>
+    <listitem><para>GCC 4.9.0: GLIBCXX_3.4.20, CXXABI_1.3.8</para></listitem>
     </itemizedlist>
     </listitem>
 
