@@ -1,3 +1,7 @@
+2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/vld1-vst1_1.c: New test_case.
+
 2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* gcc.target/microblaze/others/builtin-trap.c: New test,
