@@ -1,5 +1,19 @@
 2014-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55189
+	* cp-tree.h (struct language_function): Add infinite_loop and
+	infinite_loops.
+	(current_function_infinite_loop): New.
+	* semantics.c (begin_maybe_infinite_loop, end_maybe_infinite_loop)
+	(break_maybe_infinite_loop): New.
+	(finish_while_stmt_cond, finish_while_stmt, begin_do_stmt)
+	(finish_do_stmt, finish_for_cond, finish_for_stmt)
+	(begin_range_for_stmt): Use them.
+	* decl.c (finish_function): Don't warn about missing return
+	if current_function_infinite_loop.
+	* pt.c (instantiate_decl): Copy current_function_infinite_loop.
+	* parser.c (cp_parser_jump_statement): Call break_maybe_infinite_loop.
+
 	* call.c (build_op_delete_call): Use make_tree_vector and
 	release_tree_vector.
 

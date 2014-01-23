@@ -486,6 +486,62 @@ push_cleanup (tree decl, tree cleanup, bool eh_only)
   CLEANUP_BODY (stmt) = push_stmt_list ();
 }
 
+/* Simple infinite loop tracking for -Wreturn-type.  We keep a stack of all
+   the current loops, represented by 'NULL_TREE' if we've seen a possible
+   exit, and 'error_mark_node' if not.  This is currently used only to
+   suppress the warning about a function with no return statements, and
+   therefore we don't bother noting returns as possible exits.  We also
+   don't bother with gotos.  */
+
+static void
+begin_maybe_infinite_loop (tree cond)
+{
+  /* Only track this while parsing a function, not during instantiation.  */
+  if (!cfun || (DECL_TEMPLATE_INSTANTIATION (current_function_decl)
+		&& !processing_template_decl))
+    return;
+  bool maybe_infinite = true;
+  if (cond)
+    {
+      cond = fold_non_dependent_expr (cond);
+      cond = maybe_constant_value (cond);
+      maybe_infinite = integer_nonzerop (cond);
+    }
+  vec_safe_push (cp_function_chain->infinite_loops,
+		 maybe_infinite ? error_mark_node : NULL_TREE);
+
+}
+
+/* A break is a possible exit for the current loop.  */
+
+void
+break_maybe_infinite_loop (void)
+{
+  if (!cfun)
+    return;
+  cp_function_chain->infinite_loops->last() = NULL_TREE;
+}
+
+/* If we reach the end of the loop without seeing a possible exit, we have
+   an infinite loop.  */
+
+static void
+end_maybe_infinite_loop (tree cond)
+{
+  if (!cfun || (DECL_TEMPLATE_INSTANTIATION (current_function_decl)
+		&& !processing_template_decl))
+    return;
+  tree current = cp_function_chain->infinite_loops->pop();
+  if (current != NULL_TREE)
+    {
+      cond = fold_non_dependent_expr (cond);
+      cond = maybe_constant_value (cond);
+      if (integer_nonzerop (cond))
+	current_function_infinite_loop = 1;
+    }
+}
+
+
 /* Begin a conditional that might contain a declaration.  When generating
    normal code, we want the declaration to appear before the statement
    containing the conditional.  When generating template code, we want the
@@ -732,7 +788,9 @@ begin_while_stmt (void)
 void
 finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
 {
-  finish_cond (&WHILE_COND (while_stmt), maybe_convert_cond (cond));
+  cond = maybe_convert_cond (cond);
+  finish_cond (&WHILE_COND (while_stmt), cond);
+  begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
     WHILE_COND (while_stmt) = build2 (ANNOTATE_EXPR,
 				      TREE_TYPE (WHILE_COND (while_stmt)),
@@ -747,6 +805,7 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep)
 void
 finish_while_stmt (tree while_stmt)
 {
+  end_maybe_infinite_loop (boolean_true_node);
   WHILE_BODY (while_stmt) = do_poplevel (WHILE_BODY (while_stmt));
 }
 
@@ -757,6 +816,7 @@ tree
 begin_do_stmt (void)
 {
   tree r = build_stmt (input_location, DO_STMT, NULL_TREE, NULL_TREE);
+  begin_maybe_infinite_loop (boolean_true_node);
   add_stmt (r);
   DO_BODY (r) = push_stmt_list ();
   return r;
@@ -784,6 +844,7 @@ void
 finish_do_stmt (tree cond, tree do_stmt, bool ivdep)
 {
   cond = maybe_convert_cond (cond);
+  end_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
     cond = build2 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_ivdep_kind));
@@ -891,7 +952,9 @@ finish_for_init_stmt (tree for_stmt)
 void
 finish_for_cond (tree cond, tree for_stmt, bool ivdep)
 {
-  finish_cond (&FOR_COND (for_stmt), maybe_convert_cond (cond));
+  cond = maybe_convert_cond (cond);
+  finish_cond (&FOR_COND (for_stmt), cond);
+  begin_maybe_infinite_loop (cond);
   if (ivdep && cond != error_mark_node)
     FOR_COND (for_stmt) = build2 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
@@ -940,6 +1003,8 @@ finish_for_expr (tree expr, tree for_stmt)
 void
 finish_for_stmt (tree for_stmt)
 {
+  end_maybe_infinite_loop (boolean_true_node);
+
   if (TREE_CODE (for_stmt) == RANGE_FOR_STMT)
     RANGE_FOR_BODY (for_stmt) = do_poplevel (RANGE_FOR_BODY (for_stmt));
   else
@@ -967,6 +1032,8 @@ tree
 begin_range_for_stmt (tree scope, tree init)
 {
   tree r;
+
+  begin_maybe_infinite_loop (boolean_false_node);
 
   r = build_stmt (input_location, RANGE_FOR_STMT,
 		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
