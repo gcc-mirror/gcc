@@ -11713,7 +11713,8 @@ c_finish_omp_clauses (tree clauses)
 	  need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == NULL_TREE
-	      && FLOAT_TYPE_P (TREE_TYPE (t)))
+	      && (FLOAT_TYPE_P (TREE_TYPE (t))
+		  || TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE))
 	    {
 	      enum tree_code r_code = OMP_CLAUSE_REDUCTION_CODE (c);
 	      const char *r_name = NULL;
@@ -11723,8 +11724,14 @@ c_finish_omp_clauses (tree clauses)
 		case PLUS_EXPR:
 		case MULT_EXPR:
 		case MINUS_EXPR:
+		  break;
 		case MIN_EXPR:
+		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		    r_name = "min";
+		  break;
 		case MAX_EXPR:
+		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		    r_name = "max";
 		  break;
 		case BIT_AND_EXPR:
 		  r_name = "&";
@@ -11736,10 +11743,12 @@ c_finish_omp_clauses (tree clauses)
 		  r_name = "|";
 		  break;
 		case TRUTH_ANDIF_EXPR:
-		  r_name = "&&";
+		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		    r_name = "&&";
 		  break;
 		case TRUTH_ORIF_EXPR:
-		  r_name = "||";
+		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		    r_name = "||";
 		  break;
 		default:
 		  gcc_unreachable ();
