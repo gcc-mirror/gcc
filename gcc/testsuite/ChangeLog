@@ -1,5 +1,10 @@
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59846
+	* gcc.dg/pr59846.c: New test.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58346
 	* c-c++-common/pr58346-1.c: New test.
 	* c-c++-common/pr58346-2.c: New test.

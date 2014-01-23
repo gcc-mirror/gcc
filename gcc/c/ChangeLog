@@ -1,5 +1,12 @@
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59846
+	* c-typeck.c (parser_build_binary_op): Use location instead of
+	input_location.
+	(build_binary_op): Pass location to shorten_compare.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58346
 	* c-typeck.c (pointer_diff): Give an error on arithmetic on pointer to
 	an empty aggregate.

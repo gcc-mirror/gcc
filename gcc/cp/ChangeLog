@@ -1,5 +1,10 @@
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59846
+	* typeck.c (cp_build_binary_op): Pass location to shorten_compare.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58346
 	* typeck.c (pointer_diff): Give an error on arithmetic on pointer to
 	an empty aggregate.

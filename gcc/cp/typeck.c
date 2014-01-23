@@ -4838,7 +4838,8 @@ cp_build_binary_op (location_t location,
 	  tree xop0 = op0, xop1 = op1, xresult_type = result_type;
 	  enum tree_code xresultcode = resultcode;
 	  tree val
-	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
+	    = shorten_compare (location, &xop0, &xop1, &xresult_type,
+			       &xresultcode);
 	  if (val != 0)
 	    return cp_convert (boolean_type_node, val, complain);
 	  op0 = xop0, op1 = xop1;

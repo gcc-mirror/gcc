@@ -1,5 +1,11 @@
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/59846
+	* c-common.c (shorten_compare): Add location_t parameter.
+	* c-common.h (shorten_binary_op): Adjust declaration.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
 	PR c/58346
 	* c-common.c (pointer_to_zero_sized_aggr_p): New function.
 	* c-common.h: Declare it.
