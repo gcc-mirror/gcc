@@ -1,3 +1,15 @@
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Check for suspicious executable file
+	names on windows.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* a-ngelfu.ads: Remove bad uses of AND which should be AND THEN.
+	* sem_res.adb (Check_No_Direct_Boolean_Operators): Don't give
+	style errors in instances.
+	* g-dynhta.ads (Static_HTable): Comment updates.
+
 2014-01-23  Vincent Celier  <celier@adacore.com>
 
 	* prj-conf.adb (Get_Or_Create_Configuration_File): Do not attempt

@@ -103,27 +103,27 @@ package Ada.Numerics.Generic_Elementary_Functions is
      (Y : Float_Type'Base;
       X : Float_Type'Base := 1.0) return Float_Type'Base
    with
-     Post => (if X > 0.0 and Y = 0.0 then Arctan'Result = 0.0);
+     Post => (if X > 0.0 and then Y = 0.0 then Arctan'Result = 0.0);
 
    function Arctan
      (Y     : Float_Type'Base;
       X     : Float_Type'Base := 1.0;
       Cycle : Float_Type'Base) return Float_Type'Base
    with
-     Post => (if X > 0.0 and Y = 0.0 then Arctan'Result = 0.0);
+     Post => (if X > 0.0 and then Y = 0.0 then Arctan'Result = 0.0);
 
    function Arccot
      (X   : Float_Type'Base;
       Y   : Float_Type'Base := 1.0) return Float_Type'Base
    with
-     Post => (if X > 0.0 and Y = 0.0 then Arccot'Result = 0.0);
+     Post => (if X > 0.0 and then Y = 0.0 then Arccot'Result = 0.0);
 
    function Arccot
      (X     : Float_Type'Base;
       Y     : Float_Type'Base := 1.0;
       Cycle : Float_Type'Base) return Float_Type'Base
    with
-     Post => (if X > 0.0 and Y = 0.0 then Arccot'Result = 0.0);
+     Post => (if X > 0.0 and then Y = 0.0 then Arccot'Result = 0.0);
 
    function Sinh (X : Float_Type'Base) return Float_Type'Base with
      Post => (if X = 0.0 then Sinh'Result = 0.0);

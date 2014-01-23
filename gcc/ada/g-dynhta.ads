@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,12 +54,11 @@ package GNAT.Dynamic_HTables is
    -------------------
 
    --  A low-level Hash-Table abstraction, not as easy to instantiate as
-   --  Simple_HTable but designed to allow complete control over the
-   --  allocation of necessary data structures. Particularly useful when
-   --  dynamic allocation is not desired. The model is that each Element
-   --  contains its own Key that can be retrieved by Get_Key. Furthermore,
-   --  Element provides a link that can be used by the HTable for linking
-   --  elements with same hash codes:
+   --  Simple_HTable. This mirrors the interface of GNAT.HTable.Static_HTable,
+   --  but does require dynamic allocation (since we allow multiple instances
+   --  of the table. The model is that each Element contains its own Key that
+   --  can be retrieved by Get_Key. Furthermore, Element provides a link that
+   --  can be used by the HTable for linking elements with same hash codes:
 
    --       Element
 
@@ -133,11 +132,9 @@ package GNAT.Dynamic_HTables is
       --  elements of the Htable will be traversed.
 
    private
-
       type Instance_Data;
       type Instance is access all Instance_Data;
       Nil : constant Instance := null;
-
    end Static_HTable;
 
    -------------------
