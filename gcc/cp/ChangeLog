@@ -1,3 +1,9 @@
+2014-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58980
+	* parser.c (cp_parser_enum_specifier): Handle TYPENAME_TYPE as
+	nested_name_specifier.
+
 2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* parser.c (cp_parser_direct_declarator): When Cilk Plus is enabled

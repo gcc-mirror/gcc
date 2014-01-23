@@ -15474,9 +15474,18 @@ cp_parser_enum_specifier (cp_parser* parser)
 	    error_at (type_start_token->location, "cannot add an enumerator "
 		      "list to a template instantiation");
 
+	  if (TREE_CODE (nested_name_specifier) == TYPENAME_TYPE)
+	    {
+	      error_at (type_start_token->location,
+			"%<%T::%E%> has not been declared",
+			TYPE_CONTEXT (nested_name_specifier),
+			nested_name_specifier);
+	      type = error_mark_node;
+	    }
 	  /* If that scope does not contain the scope in which the
 	     class was originally declared, the program is invalid.  */
-	  if (prev_scope && !is_ancestor (prev_scope, nested_name_specifier))
+	  else if (prev_scope && !is_ancestor (prev_scope,
+					       nested_name_specifier))
 	    {
 	      if (at_namespace_scope_p ())
 		error_at (type_start_token->location,
@@ -15485,7 +15494,8 @@ cp_parser_enum_specifier (cp_parser* parser)
 			  type, prev_scope, nested_name_specifier);
 	      else
 		error_at (type_start_token->location,
-			  "declaration of %qD in %qD which does not enclose %qD",
+			  "declaration of %qD in %qD which does not "
+			  "enclose %qD",
 			  type, prev_scope, nested_name_specifier);
 	      type = error_mark_node;
 	    }
@@ -19877,12 +19887,12 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       /* PR59482: enter the class scope so that base-specifiers are looked
-	 up correctly */
+	 up correctly.  */
       if (type)
 	pushclass (type);
       bases = cp_parser_base_clause (parser);
       /* PR59482: get out of the previously pushed class scope so that the
-	 subsequent pops pop the right thing */
+	 subsequent pops pop the right thing.  */
       if (type)
 	popclass ();
     }
