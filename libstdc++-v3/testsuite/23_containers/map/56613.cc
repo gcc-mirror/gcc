@@ -24,7 +24,6 @@
 // { dg-options "-std=gnu++11" }
 
 // libstdc++/56613
-#include <map>
 
 // A conforming C++03 allocator, should still work in C++11 mode.
 template<typename T>
