@@ -1,4 +1,61 @@
 2014-01-23  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/arm_neon.h (vaddv_s8): __LANE0 cleanup.
+	(vaddv_s16): Likewise.
+	(vaddv_s32): Likewise.
+	(vaddv_u8): Likewise.
+	(vaddv_u16): Likewise.
+	(vaddv_u32): Likewise.
+	(vaddvq_s8): Likewise.
+	(vaddvq_s16): Likewise.
+	(vaddvq_s32): Likewise.
+	(vaddvq_s64): Likewise.
+	(vaddvq_u8): Likewise.
+	(vaddvq_u16): Likewise.
+	(vaddvq_u32): Likewise.
+	(vaddvq_u64): Likewise.
+	(vaddv_f32): Likewise.
+	(vaddvq_f32): Likewise.
+	(vaddvq_f64): Likewise.
+	(vmaxv_f32): Likewise.
+	(vmaxv_s8): Likewise.
+	(vmaxv_s16): Likewise.
+	(vmaxv_s32): Likewise.
+	(vmaxv_u8): Likewise.
+	(vmaxv_u16): Likewise.
+	(vmaxv_u32): Likewise.
+	(vmaxvq_f32): Likewise.
+	(vmaxvq_f64): Likewise.
+	(vmaxvq_s8): Likewise.
+	(vmaxvq_s16): Likewise.
+	(vmaxvq_s32): Likewise.
+	(vmaxvq_u8): Likewise.
+	(vmaxvq_u16): Likewise.
+	(vmaxvq_u32): Likewise.
+	(vmaxnmv_f32): Likewise.
+	(vmaxnmvq_f32): Likewise.
+	(vmaxnmvq_f64): Likewise.
+	(vminv_f32): Likewise.
+	(vminv_s8): Likewise.
+	(vminv_s16): Likewise.
+	(vminv_s32): Likewise.
+	(vminv_u8): Likewise.
+	(vminv_u16): Likewise.
+	(vminv_u32): Likewise.
+	(vminvq_f32): Likewise.
+	(vminvq_f64): Likewise.
+	(vminvq_s8): Likewise.
+	(vminvq_s16): Likewise.
+	(vminvq_s32): Likewise.
+	(vminvq_u8): Likewise.
+	(vminvq_u16): Likewise.
+	(vminvq_u32): Likewise.
+	(vminnmv_f32): Likewise.
+	(vminnmvq_f32): Likewise.
+	(vminnmvq_f64): Likewise.
+
+2014-01-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md
 	(aarch64_dup_lane<mode>): Correct lane number on big-endian.
