@@ -1,3 +1,9 @@
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59871
+	* gcc.dg/20020220-2.c: Adjust dg-warning message.
+	* gcc.dg/pr59871.c: New test.
+
 2014-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58980

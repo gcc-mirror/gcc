@@ -1,3 +1,10 @@
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59871
+	* c-typeck.c (build_compound_expr): Warn even for right-hand operand
+	of a comma expression.
+	(emit_side_effect_warnings): Likewise.
+
 2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/59825
