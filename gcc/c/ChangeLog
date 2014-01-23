@@ -1,5 +1,13 @@
 2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	PR c/59825
+	* c-array-notation.c (expand_array_notation_exprs): Rewrote this
+	function to use walk_tree and moved a lot of its functionality to
+	expand_array_notations.
+	(expand_array_notations): New function.
+
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
 	* c-parser.c (c_finish_omp_declare_simd): Made "cilk simd function"
 	attribute an attribute without value.
 
