@@ -1,3 +1,12 @@
+2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/avx512f-vmovdqu32-1.c: Fix intrinsic name.
+	* gcc.target/i386/avx512f-vmovdqu32-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpud-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpuq-2.c: Ditto.
+
 2014-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/52125

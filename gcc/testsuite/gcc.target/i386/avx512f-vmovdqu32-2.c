@@ -33,8 +33,8 @@ TEST (void)
     }
 
 #if AVX512F_LEN == 512
-  res1.x = _mm512_loadu_si512 (s1.a);
-  _mm512_storeu_si512 (res2.a, s2.x);
+  res1.x = _mm512_loadu_epi32 (s1.a);
+  _mm512_storeu_epi32 (res2.a, s2.x);
 #endif
   res3.x = INTRINSIC (_mask_loadu_epi32) (res3.x, mask, s1.a);
   res4.x = INTRINSIC (_maskz_loadu_epi32) (mask, s1.a);
