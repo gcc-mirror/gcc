@@ -1,5 +1,6 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
+if SANITIZER_SUPPORTED
 SUBDIRS = sanitizer_common
 if !USING_MAC_INTERPOSE
 SUBDIRS += interception
@@ -10,6 +11,7 @@ endif
 SUBDIRS += lsan asan ubsan
 if TSAN_SUPPORTED
 SUBDIRS += tsan
+endif
 endif
 
 ## May be used by toolexeclibdir.

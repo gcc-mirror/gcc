@@ -35,9 +35,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@USING_MAC_INTERPOSE_FALSE@am__append_1 = interception
-@LIBBACKTRACE_SUPPORTED_TRUE@am__append_2 = libbacktrace
-@TSAN_SUPPORTED_TRUE@am__append_3 = tsan
+@SANITIZER_SUPPORTED_TRUE@@USING_MAC_INTERPOSE_FALSE@am__append_1 = interception
+@LIBBACKTRACE_SUPPORTED_TRUE@@SANITIZER_SUPPORTED_TRUE@am__append_2 = libbacktrace
+@SANITIZER_SUPPORTED_TRUE@@TSAN_SUPPORTED_TRUE@am__append_3 = tsan
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -250,8 +250,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
-SUBDIRS = sanitizer_common $(am__append_1) $(am__append_2) lsan asan \
-	ubsan $(am__append_3)
+@SANITIZER_SUPPORTED_TRUE@SUBDIRS = sanitizer_common $(am__append_1) \
+@SANITIZER_SUPPORTED_TRUE@	$(am__append_2) lsan asan ubsan \
+@SANITIZER_SUPPORTED_TRUE@	$(am__append_3)
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
