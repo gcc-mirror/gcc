@@ -40,6 +40,12 @@ package Prj.Conf is
    --  is set to Empty_Node when this procedure is called. You can then decide
    --  to create a new config file if you need.
 
+   No_Configuration_File : constant String := "/";
+   --  When specified as a parameter Config_File_Name in the procedures below,
+   --  no existing configuration project file is parsed. This is used by
+   --  gnatmake, gnatclean and the GNAT driver to avoid parsing an existing
+   --  default configuration project file.
+
    procedure Parse_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
       User_Project_Node          : out Prj.Tree.Project_Node_Id;
@@ -67,6 +73,10 @@ package Prj.Conf is
    --  If the processing fails, Main_Project is set to No_Project. If the error
    --  happened while parsing the project itself (i.e. creating the tree),
    --  User_Project_Node is also set to Empty_Node.
+   --
+   --  If Config_File_Name is No_Configuration_File, then no configuration
+   --  project file is parsed. Normally, in this case On_Load_Config is not
+   --  null, and it is used to create a configuration project file in memory.
    --
    --  Autoconf_Specified indicates whether the user has specified --autoconf.
    --  If this is the case, the config file might be (re)generated, as

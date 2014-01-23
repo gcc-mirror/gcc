@@ -4384,11 +4384,11 @@ Index is a language name. Indicates the kind of the language, either file based
 or unit based. Only authorized case-insensitive values are "unit_based" and
 "file_based" (the default).
 
-@item @b{Dependency_Kind}: : single, indexed, case-insensitive index
+@item @b{Dependency_Kind}: single, indexed, case-insensitive index
 
 Index is a language name. Indicates how the dependencies are handled for the
 language. Only authorized case-insensitive values are "makefile", "ali_file",
-"ali_closure" or "none" (the default.
+"ali_closure" or "none" (the default).
 
 @item @b{Required_Switches}: list, indexed, case-insensitive index
 
