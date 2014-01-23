@@ -1116,6 +1116,9 @@ package Sem_Util is
    --  if Include_Implicit is False, these cases do not count as making the
    --  type be partially initialized.
 
+   function Is_Potentially_Unevaluated (N : Node_Id) return Boolean;
+   --  Predicate to implement definition given in RM 6.1.1 (20/3)
+
    function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
    --  Determines if type T is a potentially persistent type. A potentially
    --  persistent type is defined (recursively) as a scalar type, a non-tagged

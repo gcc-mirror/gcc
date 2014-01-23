@@ -1069,6 +1069,27 @@ package body Lib.Xref is
                 Ref_Scope => Empty,
                 Ent_Scope => Empty),
                Ent_Scope_File => No_Unit);
+
+            --  Generate reference to the first private entity
+
+            if Typ = 'e'
+              and then Comes_From_Source (E)
+              and then Nkind (Ent) = N_Defining_Identifier
+              and then (Is_Package_Or_Generic_Package (Ent)
+                         or else Is_Concurrent_Type (Ent))
+              and then Present (First_Private_Entity (E))
+              and then In_Extended_Main_Source_Unit (N)
+            then
+               Add_Entry
+                 ((Ent       => Ent,
+                   Loc       => Sloc (First_Private_Entity (E)),
+                   Typ       => 'E',
+                   Eun       => Get_Source_Unit (Def),
+                   Lun       => Get_Source_Unit (Ref),
+                   Ref_Scope => Empty,
+                   Ent_Scope => Empty),
+                  Ent_Scope_File => No_Unit);
+            end if;
          end if;
       end if;
    end Generate_Reference;

@@ -14504,12 +14504,12 @@ Display usage, then exit disregarding all other options.
 @item --pp-off=@var{xxx}
 @cindex @option{--pp-off} @command{gnatpp}
 Use @code{--xxx} as the command to turn off pretty printing, instead
-of the default @code{--&pp off}.
+of the default @code{--!pp off}.
 
 @item --pp-on=@var{xxx}
 @cindex @option{--pp-on} @command{gnatpp}
 Use @code{--xxx} as the command to turn pretty printing back on, instead
-of the default @code{--&pp on}.
+of the default @code{--!pp on}.
 
 @item --pp-old
 @cindex @option{--pp-old} @command{gnatpp}
@@ -14559,22 +14559,36 @@ They provide the detailed descriptions of the switches shown above.
 Pretty printing is highly heuristic in nature, and sometimes doesn't
 do exactly what you want. If you wish to format a certain region of
 code by hand, you can turn off pretty printing in that region by
-surrounding it with the special comments @code{--&pp off} and
-@code{--&pp on}. The text in that region will then be reproduced
+surrounding it with special comments that start with @code{--!pp off}
+and @code{--!pp on}. The text in that region will then be reproduced
 verbatim in the output with no formatting.
 
-To disable pretty printing for the whole file, put @code{--&pp off} at
-the top, with no following @code{--&pp on}.
+To disable pretty printing for the whole file, put @code{--!pp off} at
+the top, with no following @code{--!pp on}.
 
 The comments must appear on a line by themselves, with nothing
-preceding except spaces, and they must appear exactly as shown (case
-sensitive). For example, @code{--&pp off -- Turn off pp because ...}
-will not be recognized as a valid @code{--&pp off} command.
+preceding except spaces. The initial text of the comment must be
+exactly @code{--!pp off} or @code{--!pp on} (case sensitive), but may
+be followed by arbitrary additional text. For example:
+
+@smallexample @c ada
+@cartouche
+package Interrupts is
+   --!pp off -- turn off pretty printing so "Interrupt_Kind" lines up
+   type Interrupt_Kind is
+     (Asynchronous_Interrupt_Kind,
+       Synchronous_Interrupt_Kind,
+             Green_Interrupt_Kind);
+   --!pp on -- reenable pretty printing
+
+   ...
+@end cartouche
+@end smallexample
 
 You can specify different comment strings using the gnatpp
 @code{--pp-off} and @code{--pp-on} switches. For example, if you say
 @code{gnatpp --pp-off=' pp-' *.ad?} then gnatpp will recognize
-comments of the form @code{-- pp-}, instead of @code{--&pp off} for
+comments of the form @code{-- pp-} instead of @code{--!pp off} for
 disabling pretty printing. Note that the leading @code{--} of the
 comment is not included in the argument to these switches.
 

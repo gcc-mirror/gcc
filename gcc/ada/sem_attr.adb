@@ -4337,6 +4337,8 @@ package body Sem_Attr is
          --  During pre-analysis, Prag is the enclosing pragma node if any
 
       begin
+         Prag := Empty;
+
          --  Find enclosing scopes, excluding loops
 
          CS := Current_Scope;
@@ -4513,6 +4515,18 @@ package body Sem_Attr is
          then
             Error_Msg_N
               ("??attribute Old applied to constant has no effect", P);
+         end if;
+
+         --  Check that the prefix of 'Old is an entity, when it appears in
+         --  a postcondition and may be potentially unevaluated (6.1.1 (27/3)).
+
+         if Present (Prag)
+           and then Get_Pragma_Id (Prag) = Pragma_Postcondition
+           and then Is_Potentially_Unevaluated (N)
+           and then not Is_Entity_Name (P)
+         then
+            Error_Msg_N ("prefix that is potentially unevaluated must "
+               & "denote an entity", N);
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to
