@@ -1,3 +1,26 @@
+2014-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Make_Invqriant_Call): If type of expression is
+	a private extension, get invariant from base type.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, sem_attr.adb: Minor reformatting.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* opt.adb (Save_Opt_Config_Switches): Save SPARK_Mode_Pragma
+	(Restore_Opt_Config_Switches): Restore SPARK_Mode_Pragma.
+	* sem.adb (Semantics): Remove save/restore of
+	SPARK_Mode[_Pragma]. Not needed since already done in
+	Save/Restore_Opt_Config_Switches.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi, einfo.adb, einfo.ads, sem_prag.adb, gnat_ugn.texi,
+	freeze.adb, repinfo.adb, aspects.adb, aspects.ads, sem_ch13.adb:
+	Linker_Section enhancements.
+
 2014-01-23  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat_rm.texi: Minor editing.

@@ -100,6 +100,7 @@ package body Opt is
       Polling_Required               := Save.Polling_Required;
       Short_Descriptors              := Save.Short_Descriptors;
       SPARK_Mode                     := Save.SPARK_Mode;
+      SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
       Use_VADS_Size                  := Save.Use_VADS_Size;
 
       --  Update consistently the value of Init_Or_Norm_Scalars. The value of
@@ -137,6 +138,7 @@ package body Opt is
       Save.Polling_Required               := Polling_Required;
       Save.Short_Descriptors              := Short_Descriptors;
       Save.SPARK_Mode                     := SPARK_Mode;
+      Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 

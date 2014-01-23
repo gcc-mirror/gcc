@@ -2283,7 +2283,6 @@ package body Freeze is
                   --  Start of processing for Alias_Atomic_Check
 
                begin
-
                   --  If object size of component type isn't known, we cannot
                   --  be sure so we defer to the back end.
 
@@ -4044,6 +4043,19 @@ package body Freeze is
 
                if Is_Imported (E) and then No (Address_Clause (E)) then
                   Set_Is_Public (E);
+               end if;
+
+               --  For source objects that are not Imported and are library
+               --  level, if no linker section pragma was given inherit the
+               --  appropriate linker section from the corresponding type.
+
+               if Comes_From_Source (E)
+                 and then not Is_Imported (E)
+                 and then Is_Library_Level_Entity (E)
+                 and then No (Linker_Section_Pragma (E))
+               then
+                  Set_Linker_Section_Pragma
+                    (E, Linker_Section_Pragma (Etype (E)));
                end if;
 
                --  For convention C objects of an enumeration type, warn if

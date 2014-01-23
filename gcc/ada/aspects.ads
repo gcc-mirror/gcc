@@ -103,6 +103,7 @@ package Aspects is
       Aspect_Invariant,                     -- GNAT
       Aspect_Iterator_Element,
       Aspect_Link_Name,
+      Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
       Aspect_Object_Size,                   -- GNAT
       Aspect_Output,
@@ -325,6 +326,7 @@ package Aspects is
       Aspect_Invariant               => Expression,
       Aspect_Iterator_Element        => Name,
       Aspect_Link_Name               => Expression,
+      Aspect_Linker_Section          => Expression,
       Aspect_Machine_Radix           => Expression,
       Aspect_Object_Size             => Expression,
       Aspect_Output                  => Name,
@@ -420,6 +422,7 @@ package Aspects is
       Aspect_Invariant                    => Name_Invariant,
       Aspect_Iterator_Element             => Name_Iterator_Element,
       Aspect_Link_Name                    => Name_Link_Name,
+      Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_No_Return                    => Name_No_Return,
@@ -624,6 +627,7 @@ package Aspects is
       Aspect_Invariant                    => Always_Delay,
       Aspect_Iterator_Element             => Always_Delay,
       Aspect_Link_Name                    => Always_Delay,
+      Aspect_Linker_Section               => Always_Delay,
       Aspect_Lock_Free                    => Always_Delay,
       Aspect_No_Return                    => Always_Delay,
       Aspect_Output                       => Always_Delay,

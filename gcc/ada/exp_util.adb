@@ -5566,11 +5566,12 @@ package body Exp_Util is
       Typ := Etype (Expr);
 
       --  Subtypes may be subject to invariants coming from their respective
-      --  base types.
+      --  base types. The subtype may be fully or partially private.
 
       if Ekind_In (Typ, E_Array_Subtype,
                         E_Private_Subtype,
-                        E_Record_Subtype)
+                        E_Record_Subtype,
+                        E_Record_Subtype_With_Private)
       then
          Typ := Base_Type (Typ);
       end if;
