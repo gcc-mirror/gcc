@@ -2418,8 +2418,8 @@ package body Lib.Xref is
                      --  including synchronized tagged types.
 
                      declare
-                        Typ      : constant Entity_Id := XE.Key.Ent;
-                        Elmt     : Elmt_Id;
+                        Typ  : constant Entity_Id := XE.Key.Ent;
+                        Elmt : Elmt_Id;
 
                      begin
                         if Is_Record_Type (Typ)
