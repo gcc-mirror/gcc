@@ -1,3 +1,7 @@
+2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/sshr64_1.c: New testcase.
+
 2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* g++.dg/cilk-plus/cilk-plus.exp: Called the C/C++ common tests for

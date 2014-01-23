@@ -86,6 +86,10 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) < 64")))
 
+(define_predicate "aarch64_shift_imm64_di"
+  (and (match_code "const_int")
+       (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) <= 64")))
+
 (define_predicate "aarch64_reg_or_shift_imm_si"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_shift_imm_si")))
