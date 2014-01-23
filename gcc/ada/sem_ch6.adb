@@ -2997,7 +2997,9 @@ package body Sem_Ch6 is
 
             --  Set SPARK_Mode from spec if spec had a SPARK_Mode pragma
 
-            if Present (SPARK_Pragma (Spec_Id)) then
+            if Present (SPARK_Pragma (Spec_Id))
+              and then not SPARK_Pragma_Inherited (Spec_Id)
+            then
                SPARK_Mode_Pragma := SPARK_Pragma (Spec_Id);
                SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragma);
                Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
@@ -3055,6 +3057,12 @@ package body Sem_Ch6 is
             Generate_Reference
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
             Install_Formals (Body_Id);
+
+            --  Set SPARK_Mode from context
+
+            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+            Set_SPARK_Pragma_Inherited (Body_Id, True);
+
             Push_Scope (Body_Id);
          end if;
 

@@ -1101,9 +1101,9 @@ procedure Gnatlink is
             --  The following test needs comments, why is it VMS specific.
             --  The above comment looks out of date ???
 
-            elsif not (OpenVMS_On_Target
-                         and then
-                       Is_Option_Present (Next_Line (Nfirst .. Nlast)))
+            elsif not
+              (OpenVMS_On_Target
+                and then Is_Option_Present (Next_Line (Nfirst .. Nlast)))
             then
                if Nlast > Nfirst + 2 and then
                  Next_Line (Nfirst .. Nfirst + 1) = "-L"
@@ -1832,6 +1832,7 @@ begin
 
       if FN'Length > 5
         and then FN (FN'Last - 3 .. FN'Last) = ".exe"
+        and then not OpenVMS_On_Target
       then
          Check_File_Name ("install");
          Check_File_Name ("setup");

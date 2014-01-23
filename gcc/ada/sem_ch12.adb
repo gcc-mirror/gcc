@@ -9844,7 +9844,10 @@ package body Sem_Ch12 is
       --  The following check is only relevant when SPARK_Mode is on as it is
       --  not a standard Ada legality rule.
 
-      if SPARK_Mode = On and then Is_Volatile_Object (Actual) then
+      if SPARK_Mode = On
+        and then Present (Actual)
+        and then Is_Volatile_Object (Actual)
+      then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation "
             & "(SPARK RM 7.1.3(4))", Actual);

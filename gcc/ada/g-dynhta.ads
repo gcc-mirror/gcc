@@ -56,7 +56,7 @@ package GNAT.Dynamic_HTables is
    --  A low-level Hash-Table abstraction, not as easy to instantiate as
    --  Simple_HTable. This mirrors the interface of GNAT.HTable.Static_HTable,
    --  but does require dynamic allocation (since we allow multiple instances
-   --  of the table. The model is that each Element contains its own Key that
+   --  of the table). The model is that each Element contains its own Key that
    --  can be retrieved by Get_Key. Furthermore, Element provides a link that
    --  can be used by the HTable for linking elements with same hash codes:
 
