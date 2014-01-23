@@ -1,3 +1,7 @@
+2014-01-23  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document the new "--&pp off" feature of gnatpp.
+
 2014-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* gnatlink.adb (Gnatlink): Fix problem of generating bad name
