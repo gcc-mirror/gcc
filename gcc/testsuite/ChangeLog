@@ -1,3 +1,8 @@
+2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	Backport from mainline.
+	* gcc.target/microblaze/others/builtin-trap.c: New test.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
