@@ -1291,9 +1291,20 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
        && ! LRA_SUBREG_P (operand))
       || CONSTANT_P (reg) || GET_CODE (reg) == PLUS || MEM_P (reg))
     {
-      /* The class will be defined later in curr_insn_transform.  */
-      enum reg_class rclass
-	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
+      enum reg_class rclass;
+
+      if (REG_P (reg)
+	  && curr_insn_set != NULL_RTX
+	  && (REG_P (SET_SRC (curr_insn_set))
+	      || GET_CODE (SET_SRC (curr_insn_set)) == SUBREG))
+	/* There is big probability that we will get the same class
+	   for the new pseudo and we will get the same insn which
+	   means infinite looping.  So spill the new pseudo.  */
+	rclass = NO_REGS;
+      else
+	/* The class will be defined later in curr_insn_transform.  */
+	rclass
+	  = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
 			  rclass, "subreg reg", &new_reg))

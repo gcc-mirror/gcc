@@ -1,3 +1,9 @@
+2014-01-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR regression/59915
+	* lra-constraints.c (simplify_operand_subreg): Spill pseudo if
+	there is a danger of looping.
+
 2014-01-23  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
