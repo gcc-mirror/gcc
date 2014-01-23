@@ -1,3 +1,9 @@
+2014-01-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Get_Or_Create_Configuration_File): Never parse
+	a config project file if On_Load_Config is not null.
+	* prj-pars.adb: Minor comment changes.
+
 2014-01-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* lib-xref.adb (Output_References): Output progenitors of
