@@ -1,3 +1,12 @@
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2013-10-21  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/58809
+	* fold-const.c (fold_range_test): Return 0 if the type is not
+	an integral type.
+
 2014-01-22  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
