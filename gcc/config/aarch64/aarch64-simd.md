@@ -3544,6 +3544,24 @@
    (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
 )
 
+(define_insn "aarch64_be_ld1<mode>"
+  [(set (match_operand:VALLDI 0	"register_operand" "=w")
+	(unspec:VALLDI [(match_operand:VALLDI 1 "aarch64_simd_struct_operand" "Utv")]
+	UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%0<Vmtype>}, %1"
+  [(set_attr "type" "neon_load1_1reg<q>")]
+)
+
+(define_insn "aarch64_be_st1<mode>"
+  [(set (match_operand:VALLDI 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VALLDI [(match_operand:VALLDI 1 "register_operand" "w")]
+	UNSPEC_ST1))]
+  "TARGET_SIMD"
+  "st1\\t{%1<Vmtype>}, %0"
+  [(set_attr "type" "neon_store1_1reg<q>")]
+)
+
 (define_split
   [(set (match_operand:OI 0 "register_operand" "")
 	(match_operand:OI 1 "register_operand" ""))]
@@ -3762,7 +3780,11 @@
 {
   enum machine_mode mode = <VALL:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
-  emit_move_insn (operands[0], mem);
+
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_aarch64_be_ld1<VALL:mode> (operands[0], mem));
+  else
+    emit_move_insn (operands[0], mem);
   DONE;
 })
 
@@ -3988,7 +4010,11 @@
 {
   enum machine_mode mode = <VALL:MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[0]);
-  emit_move_insn (mem, operands[1]);
+
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_aarch64_be_st1<VALL:mode> (mem, operands[1]));
+  else
+    emit_move_insn (mem, operands[1]);
   DONE;
 })
 

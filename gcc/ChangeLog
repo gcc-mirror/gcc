@@ -1,3 +1,13 @@
+2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_be_ld1<mode>):
+	New define_insn.
+	(aarch64_be_st1<mode>): Likewise.
+	(aarch_ld1<VALL:mode>): Define_expand modified.
+	(aarch_st1<VALL:mode>): Likewise.
+	* config/aarch64/aarch64.md (UNSPEC_LD1): New unspec definition.
+	(UNSPEC_ST1): Likewise.
+
 2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Add trap insn and attribute
