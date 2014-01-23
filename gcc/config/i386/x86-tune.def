@@ -146,7 +146,7 @@ DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel",
    use of the frame pointer in 32bit mode.  */
 DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args",
 	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_INTEL
-	  | m_AMD_MULTIPLE | m_GENERIC)
+	  | m_ATHLON_K8)
 
 /* X86_TUNE_PROLOGUE_USING_MOVE: Do not use push/pop in prologues that are
    considered on critical path.  */
