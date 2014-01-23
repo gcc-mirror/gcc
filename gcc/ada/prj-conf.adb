@@ -1372,19 +1372,27 @@ package body Prj.Conf is
       Get_Project_Target;
       Check_Builder_Switches;
 
-      if Conf_File_Name'Length > 0 then
-         Config_File_Path := Locate_Config_File (Conf_File_Name.all);
-      else
-         Config_File_Path := Locate_Config_File (Default_File_Name);
-      end if;
+      --  Do not attempt to find a configuration project file when
+      --  Config_File_Name is No_Configuration_File.
 
-      if Config_File_Path = null then
-         if not Allow_Automatic_Generation
-           and then Conf_File_Name'Length > 0
-         then
-            Raise_Invalid_Config
-              ("could not locate main configuration project "
-               & Conf_File_Name.all);
+      if Config_File_Name = No_Configuration_File then
+         Config_File_Path := null;
+
+      else
+         if Conf_File_Name'Length > 0 then
+            Config_File_Path := Locate_Config_File (Conf_File_Name.all);
+         else
+            Config_File_Path := Locate_Config_File (Default_File_Name);
+         end if;
+
+         if Config_File_Path = null then
+            if not Allow_Automatic_Generation
+              and then Conf_File_Name'Length > 0
+            then
+               Raise_Invalid_Config
+                 ("could not locate main configuration project "
+                  & Conf_File_Name.all);
+            end if;
          end if;
       end if;
 
@@ -1415,22 +1423,18 @@ package body Prj.Conf is
         and then On_Load_Config = null
       then
          Write_Line
-           ("warning: --RTS is taken into account only in auto-configuration");
+           ("warning: " &
+              "--RTS is taken into account only in auto-configuration");
       end if;
 
       --  Parse the configuration file
 
-      if Verbose_Mode
-        and then Config_File_Path /= null
-        and then On_Load_Config = null
-      then
+      if Verbose_Mode and then Config_File_Path /= null then
          Write_Str  ("Checking configuration ");
          Write_Line (Config_File_Path.all);
       end if;
 
-      --  Add comment for On_Load_Config test ???
-
-      if Config_File_Path /= null and then On_Load_Config = null then
+      if Config_File_Path /= null then
          Prj.Part.Parse
            (In_Tree           => Project_Node_Tree,
             Project           => Config_Project_Node,

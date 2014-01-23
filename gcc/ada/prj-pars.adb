@@ -86,7 +86,7 @@ package body Prj.Pars is
             Process_Project_And_Apply_Config
               (Main_Project               => The_Project,
                User_Project_Node          => Project_Node,
-               Config_File_Name           => "",
+               Config_File_Name           => No_Configuration_File,
                Autoconf_Specified         => False,
                Project_Tree               => In_Tree,
                Project_Node_Tree          => Project_Node_Tree,

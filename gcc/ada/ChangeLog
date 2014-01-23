@@ -1,5 +1,18 @@
 2014-01-23  Vincent Celier  <celier@adacore.com>
 
+	* prj-conf.adb (Get_Or_Create_Configuration_File): Do not attempt
+	to find a configuration project file when Config_File_Name is
+	No_Configuration_File.
+	* prj-conf.ads (No_Configuration_File): New constant String.
+	* prj-pars.adb (Parse): Call Get_Or_Create_Configuration_File
+	with Config_File_Name set to No_Configuration_File, so that
+	no existing configuration project file will be used, and the
+	configuration project will be only created in memory when
+	Add_Default_GNAT_Naming_Scheme is called.
+	* projects.texi: Minor reformatting.
+
+2014-01-23  Vincent Celier  <celier@adacore.com>
+
 	* prj-conf.adb (Get_Or_Create_Configuration_File): Never parse
 	a config project file if On_Load_Config is not null.
 	* prj-pars.adb: Minor comment changes.
