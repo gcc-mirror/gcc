@@ -457,7 +457,7 @@ typedef struct poly16x8x4_t
 
 #define __aarch64_vget_lane_any(__size, __cast_ret, __cast_a, __a, __b) \
   (__cast_ret								\
-     __builtin_aarch64_get_lane##__size (__cast_a __a, __b))
+     __builtin_aarch64_be_checked_get_lane##__size (__cast_a __a, __b))
 
 #define __aarch64_vget_lane_f32(__a, __b) \
   __aarch64_vget_lane_any (v2sf, , , __a, __b)

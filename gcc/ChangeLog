@@ -1,3 +1,13 @@
+2013-01-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_be_checked_get_lane<mode>): New define_expand.
+	* config/aarch64/aarch64-simd-builtins.def
+	(BUILTIN_VALL (GETLANE, be_checked_get_lane, 0):
+	New builtin definition.
+	* config/aarch64/arm_neon.h: (__aarch64_vget_lane_any):
+	Use new safe be builtin.
+
 2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_be_ld1<mode>):
