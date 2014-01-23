@@ -1,3 +1,10 @@
+2014-01-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR PR preprocessor/58580
+	* include/line-map.h (linemap_get_file_highest_location): Declare
+	new function.
+	* line-map.c (linemap_get_file_highest_location): Define it.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
