@@ -137,7 +137,9 @@ namespace std
   using ::sprintf;
   using ::sscanf;
   using ::tmpfile;
+#if _GLIBCXX_USE_TMPNAM
   using ::tmpnam;
+#endif
   using ::ungetc;
   using ::vfprintf;
   using ::vprintf;

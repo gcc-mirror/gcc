@@ -20120,6 +20120,81 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# Check for tmpnam which is obsolescent in POSIX.1-2008
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for tmpnam" >&5
+$as_echo_n "checking for tmpnam... " >&6; }
+  if test "${glibcxx_cv_TMPNAM+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+char *tmp = tmpnam(NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_TMPNAM=yes
+else
+  glibcxx_cv_TMPNAM=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdio.h>
+int
+main ()
+{
+char *tmp = tmpnam(NULL);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_TMPNAM=yes
+else
+  glibcxx_cv_TMPNAM=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_TMPNAM = yes; then
+
+$as_echo "#define _GLIBCXX_USE_TMPNAM 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_TMPNAM" >&5
+$as_echo "$glibcxx_cv_TMPNAM" >&6; }
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 
   ac_fn_c_check_header_mongrel "$LINENO" "locale.h" "ac_cv_header_locale_h" "$ac_includes_default"
 if test "x$ac_cv_header_locale_h" = x""yes; then :
