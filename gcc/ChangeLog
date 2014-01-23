@@ -1,3 +1,11 @@
+2014-01-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.h (ASM_SPEC): Pass the -mcpu as -mcpu.
+	(LIB_SPEC): Drop use of memory.ld and peripherals.ld scripts in
+	favour of mcu specific scripts.
+	* config/msp430/t-msp430 (MULTILIB_MATCHES): Add more matches for
+	430x multilibs.
+
 2014-01-23  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Alex Velenko  <Alex.Velenko@arm.com>
 
