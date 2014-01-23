@@ -18485,6 +18485,9 @@ package body Sem_Prag is
             --  anything. But if the old mode is OFF, then the only allowed
             --  new mode is also OFF.
 
+            procedure Check_Library_Level_Entity (E : Entity_Id);
+            --  Verify that pragma is applied to library-level entity E
+
             function Get_SPARK_Mode_Name (Id : SPARK_Mode_Type) return Name_Id;
             --  Convert a value of type SPARK_Mode_Type to corresponding name
 
@@ -18512,6 +18515,34 @@ package body Sem_Prag is
                   end if;
                end if;
             end Check_Pragma_Conformance;
+
+            --------------------------------
+            -- Check_Library_Level_Entity --
+            --------------------------------
+
+            procedure Check_Library_Level_Entity (E : Entity_Id) is
+               MsgF : String := "incorrect placement of pragma%";
+
+            begin
+               if not Is_Library_Level_Entity (E) then
+                  Error_Msg_Name_1 := Pname;
+                  Fix_Error (MsgF);
+                  Error_Msg_N (MsgF, N);
+
+                  if Ekind_In (E, E_Generic_Package,
+                                  E_Package,
+                                  E_Package_Body)
+                  then
+                     Error_Msg_NE
+                       ("\& is not a library-level package", N, E);
+                  else
+                     Error_Msg_NE
+                       ("\& is not a library-level subprogram", N, E);
+                  end if;
+
+                  raise Pragma_Exit;
+               end if;
+            end Check_Library_Level_Entity;
 
             -------------------------
             -- Get_SPARK_Mode_Name --
@@ -18614,7 +18645,8 @@ package body Sem_Prag is
                   elsif Nkind_In (Stmt, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                   then
-                     Spec_Id := Defining_Unit_Name (Specification (Stmt));
+                     Spec_Id := Defining_Entity (Stmt);
+                     Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
 
                      Set_SPARK_Pragma               (Spec_Id, N);
@@ -18628,7 +18660,8 @@ package body Sem_Prag is
                   elsif Nkind_In (Stmt, N_Generic_Subprogram_Declaration,
                                         N_Subprogram_Declaration)
                   then
-                     Spec_Id := Defining_Unit_Name (Specification (Stmt));
+                     Spec_Id := Defining_Entity (Stmt);
+                     Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
 
                      Set_SPARK_Pragma               (Spec_Id, N);
@@ -18679,11 +18712,12 @@ package body Sem_Prag is
                --      pragma SPARK_Mode;
 
                if Nkind (Context) = N_Package_Specification then
-                  Spec_Id := Defining_Unit_Name (Context);
+                  Spec_Id := Defining_Entity (Context);
 
                   --  Pragma applies to private part
 
                   if List_Containing (N) = Private_Declarations (Context) then
+                     Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance (SPARK_Aux_Pragma (Spec_Id));
                      SPARK_Mode_Pragma := N;
                      SPARK_Mode := Mode_Id;
@@ -18694,6 +18728,7 @@ package body Sem_Prag is
                   --  Pragma applies to public part
 
                   else
+                     Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
                      SPARK_Mode_Pragma := N;
                      SPARK_Mode := Mode_Id;
@@ -18711,7 +18746,8 @@ package body Sem_Prag is
                elsif Nkind_In (Context, N_Function_Specification,
                                         N_Procedure_Specification)
                then
-                  Spec_Id := Defining_Unit_Name (Context);
+                  Spec_Id := Defining_Entity (Context);
+                  Check_Library_Level_Entity (Spec_Id);
                   Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
 
                   Set_SPARK_Pragma           (Spec_Id, N);
@@ -18725,6 +18761,7 @@ package body Sem_Prag is
                elsif Nkind (Context) = N_Package_Body then
                   Spec_Id := Corresponding_Spec (Context);
                   Body_Id := Defining_Entity (Context);
+                  Check_Library_Level_Entity (Body_Id);
                   Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;
@@ -18743,6 +18780,7 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Context := Specification (Context);
                   Body_Id := Defining_Entity (Context);
+                  Check_Library_Level_Entity (Body_Id);
                   Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;
@@ -18761,7 +18799,8 @@ package body Sem_Prag is
                then
                   Context := Parent (Context);
                   Spec_Id := Corresponding_Spec (Context);
-                  Body_Id := Defining_Unit_Name (Context);
+                  Body_Id := Defining_Entity (Context);
+                  Check_Library_Level_Entity (Body_Id);
                   Check_Pragma_Conformance (SPARK_Aux_Pragma (Body_Id));
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;

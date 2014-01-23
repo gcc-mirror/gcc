@@ -1,5 +1,25 @@
 2014-01-23  Robert Dewar  <dewar@adacore.com>
 
+	* gnatlink.adb (Gnatlink): Fix problem of generating bad name
+	msg on VMS.
+
+2014-01-23  Bob Duff  <duff@adacore.com>
+
+	* g-dynhta.ads: Minor comment fix.
+
+2014-01-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Inherit SPARK_Mode
+	from spec on body only when not already inherited on spec. Set
+	SPARK_Mode from context on body without previous spec.	*
+	* sem_prag.adb (Analyze_Pragma): Check placement of pragma on
+	library-level entities.  Correct retrieval of entity from
+	declaration, for cases where the declaration is not a unit.
+	* sem_ch12.adb (Instantiate_Object): Avoid
+	calling Is_Volatile_Object on an empty node.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
 	* gnatlink.adb (Gnatlink): Check for suspicious executable file
 	names on windows.
 
