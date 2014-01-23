@@ -1218,22 +1218,21 @@ fix_return_expr (tree expr)
   return new_mod_list;
 }
 
-/* Walks through tree node T and find all the call-statements that do not return
-   anything and fix up any array notations they may carry.  The return value
-   is the same type as T but with all array notations replaced with appropriate
-   STATEMENT_LISTS.  */
+/* Callback for walk_tree.  Expands all array notations in *TP.  *WALK_SUBTREES
+   is set to 1 unless *TP contains no array notation expressions.  */
 
-tree
-expand_array_notation_exprs (tree t)
+static tree
+expand_array_notations (tree *tp, int *walk_subtrees, void *)
 {
-  if (!contains_array_notation_expr (t))
-    return t;
-
-  switch (TREE_CODE (t))
+  if (!contains_array_notation_expr (*tp))
     {
-    case BIND_EXPR:
-      t = expand_array_notation_exprs (BIND_EXPR_BODY (t));
-      return t;
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+  *walk_subtrees = 1;
+
+  switch (TREE_CODE (*tp))
+    {
     case TRUTH_ORIF_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_OR_EXPR:
@@ -1241,61 +1240,63 @@ expand_array_notation_exprs (tree t)
     case TRUTH_XOR_EXPR:
     case TRUTH_NOT_EXPR:
     case COND_EXPR:
-      t = fix_conditional_array_notations (t);
-
-      /* After the expansion if they are still a COND_EXPR, we go into its
-	 subtrees.  */
-      if (TREE_CODE (t) == COND_EXPR)
-	{
-	  if (COND_EXPR_THEN (t))
-	    COND_EXPR_THEN (t) =
-	      expand_array_notation_exprs (COND_EXPR_THEN (t));
-	  if (COND_EXPR_ELSE (t))
-	    COND_EXPR_ELSE (t) =
-	      expand_array_notation_exprs (COND_EXPR_ELSE (t));
-	}
-      return t;
-    case STATEMENT_LIST:
-      {
-	tree_stmt_iterator ii_tsi;
-	for (ii_tsi = tsi_start (t); !tsi_end_p (ii_tsi); tsi_next (&ii_tsi))
-	  *tsi_stmt_ptr (ii_tsi) = 
-	    expand_array_notation_exprs (*tsi_stmt_ptr (ii_tsi));
-      }
-      return t;
+      *tp = fix_conditional_array_notations (*tp);
+      break;
     case MODIFY_EXPR:
       {
-	location_t loc = EXPR_HAS_LOCATION (t) ? EXPR_LOCATION (t) :
+	location_t loc = EXPR_HAS_LOCATION (*tp) ? EXPR_LOCATION (*tp) :
 	  UNKNOWN_LOCATION;
-	tree lhs = TREE_OPERAND (t, 0);
-	tree rhs = TREE_OPERAND (t, 1);
+	tree lhs = TREE_OPERAND (*tp, 0);
+	tree rhs = TREE_OPERAND (*tp, 1);
 	location_t rhs_loc = EXPR_HAS_LOCATION (rhs) ? EXPR_LOCATION (rhs) :
 	  UNKNOWN_LOCATION;
-	t = build_array_notation_expr (loc, lhs, TREE_TYPE (lhs), NOP_EXPR,
-				       rhs_loc, rhs, TREE_TYPE (rhs));
-	return t;
+	*tp = build_array_notation_expr (loc, lhs, TREE_TYPE (lhs), NOP_EXPR,
+					 rhs_loc, rhs, TREE_TYPE (rhs));
       }
+      break;
     case CALL_EXPR:
-      t = fix_array_notation_call_expr (t);
-      return t;
+      *tp = fix_array_notation_call_expr (*tp);
+      break;
     case RETURN_EXPR:
-      if (contains_array_notation_expr (t))
-	t = fix_return_expr (t);
-      return t;
+      *tp = fix_return_expr (*tp);
+      break;
+    case COMPOUND_EXPR:
+      if (TREE_CODE (TREE_OPERAND (*tp, 0)) == SAVE_EXPR)
+	{
+	  /* In here we are calling expand_array_notations because
+	     we need to be able to catch the return value and check if
+	     it is an error_mark_node.  */
+	  expand_array_notations (&TREE_OPERAND (*tp, 1), walk_subtrees, NULL);
+
+	  /* SAVE_EXPR cannot have an error_mark_node inside it.  This check
+	     will make sure that if there is an error in expanding of
+	     array notations (e.g. rank mismatch) then replace the entire
+	     SAVE_EXPR with an error_mark_node.  */
+	  if (TREE_OPERAND (*tp, 1) == error_mark_node)
+	    *tp = error_mark_node;
+	}
+      break;
     case ARRAY_NOTATION_REF:
-      /* IF we are here, then we are dealing with cases like this:
+      /* If we are here, then we are dealing with cases like this:
 	 A[:];
 	 A[x:y:z];
 	 A[x:y];
 	 Replace those with just void zero node.  */
-      t = void_zero_node;
+      *tp = void_zero_node;
     default:
-      for (int ii = 0; ii < TREE_CODE_LENGTH (TREE_CODE (t)); ii++)
-	if (contains_array_notation_expr (TREE_OPERAND (t, ii)))
-	  TREE_OPERAND (t, ii) =
-	    expand_array_notation_exprs (TREE_OPERAND (t, ii));
-      return t;
+      break;
     }
+  return NULL_TREE;
+} 
+
+/* Walks through tree node T and expands all array notations in its subtrees.
+   The return value is the same type as T but with all array notations 
+   replaced with appropriate ARRAY_REFS with a loop around it.  */
+
+tree
+expand_array_notation_exprs (tree t)
+{
+  walk_tree (&t, expand_array_notations, NULL, NULL);
   return t;
 }
 
