@@ -10334,7 +10334,13 @@ package body Sem_Util is
          Expr := Par;
          Par  := Parent (Par);
 
-         if Nkind (Par) not in N_Subexpr then
+         --  If the context is not an expression, or if is the result of
+         --  expansion of an enclosing construct (such as another attribute)
+         --  the predicate does not apply.
+
+         if Nkind (Par) not in N_Subexpr
+           or else not Comes_From_Source (Par)
+         then
             return False;
          end if;
       end loop;
