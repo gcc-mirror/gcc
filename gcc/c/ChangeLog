@@ -1,3 +1,9 @@
+2014-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58809
+	* c-typeck.c (c_finish_omp_clause): Reject MIN_EXPR, MAX_EXPR,
+	BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR on COMPLEX_TYPEs.
+
 2014-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59891
