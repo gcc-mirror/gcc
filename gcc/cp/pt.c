@@ -19670,6 +19670,10 @@ instantiate_decl (tree d, int defer_ok,
 	     so that finish_function knows where we are.  */
 	  input_location
 	    = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+
+	  /* Remember if we saw an infinite loop in the template.  */
+	  current_function_infinite_loop
+	    = DECL_STRUCT_FUNCTION (code_pattern)->language->infinite_loop;
 	}
 
       /* We don't need the local specializations any more.  */

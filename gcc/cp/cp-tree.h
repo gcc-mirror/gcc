@@ -1127,6 +1127,7 @@ struct GTY(()) language_function {
   BOOL_BITFIELD returns_value : 1;
   BOOL_BITFIELD returns_null : 1;
   BOOL_BITFIELD returns_abnormally : 1;
+  BOOL_BITFIELD infinite_loop: 1;
   BOOL_BITFIELD x_in_function_try_handler : 1;
   BOOL_BITFIELD x_in_base_initializer : 1;
 
@@ -1136,6 +1137,9 @@ struct GTY(()) language_function {
   htab_t GTY((param_is(struct named_label_entry))) x_named_labels;
   cp_binding_level *bindings;
   vec<tree, va_gc> *x_local_names;
+  /* Tracking possibly infinite loops.  This is a vec<tree> only because
+     vec<bool> doesn't work with gtype.  */
+  vec<tree, va_gc> *infinite_loops;
   htab_t GTY((param_is (struct cxx_int_tree_map))) extern_decl_map;
 };
 
@@ -1193,6 +1197,12 @@ struct GTY(()) language_function {
 
 #define current_function_returns_abnormally \
   cp_function_chain->returns_abnormally
+
+/* Set to 0 at beginning of a function definition, set to 1 if we see an
+   obvious infinite loop.  This can have false positives and false
+   negatives, so it should only be used as a heuristic.  */
+
+#define current_function_infinite_loop cp_function_chain->infinite_loop
 
 /* Nonzero if we are processing a base initializer.  Zero elsewhere.  */
 #define in_base_initializer cp_function_chain->x_in_base_initializer
@@ -5671,6 +5681,7 @@ extern bool perform_or_defer_access_check	(tree, tree, tree,
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);
+extern void break_maybe_infinite_loop		(void);
 extern void add_decl_expr			(tree);
 extern tree maybe_cleanup_point_expr_void	(tree);
 extern tree finish_expr_stmt			(tree);

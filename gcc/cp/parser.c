@@ -10641,6 +10641,8 @@ cp_parser_jump_statement (cp_parser* parser)
 	  gcc_assert ((in_statement & IN_SWITCH_STMT)
 		      || in_statement == IN_ITERATION_STMT);
 	  statement = finish_break_stmt ();
+	  if (in_statement == IN_ITERATION_STMT)
+	    break_maybe_infinite_loop ();
 	  break;
 	case IN_OMP_BLOCK:
 	  error_at (token->location, "invalid exit from OpenMP structured block");
