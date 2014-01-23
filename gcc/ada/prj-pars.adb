@@ -83,9 +83,6 @@ package body Prj.Pars is
             --  However, we will simulate one that only contains the default
             --  GNAT naming scheme.
 
-            --  We pass an invalid config_file_name, to prevent reading a
-            --  default.cgpr that might happen to be in the current directory.
-
             Process_Project_And_Apply_Config
               (Main_Project               => The_Project,
                User_Project_Node          => Project_Node,

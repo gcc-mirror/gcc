@@ -1420,12 +1420,17 @@ package body Prj.Conf is
 
       --  Parse the configuration file
 
-      if Verbose_Mode and then Config_File_Path /= null then
+      if Verbose_Mode
+        and then Config_File_Path /= null
+        and then On_Load_Config = null
+      then
          Write_Str  ("Checking configuration ");
          Write_Line (Config_File_Path.all);
       end if;
 
-      if Config_File_Path /= null then
+      --  Add comment for On_Load_Config test ???
+
+      if Config_File_Path /= null and then On_Load_Config = null then
          Prj.Part.Parse
            (In_Tree           => Project_Node_Tree,
             Project           => Config_Project_Node,
