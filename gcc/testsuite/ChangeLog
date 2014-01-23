@@ -1,3 +1,8 @@
+2014-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58980
+	* g++.dg/parse/enum11.C: New.
+
 2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/sshr64_1.c: New testcase.
