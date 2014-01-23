@@ -1,3 +1,9 @@
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* c-common.c (pointer_to_zero_sized_aggr_p): New function.
+	* c-common.h: Declare it.
+
 2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.h (dump_ada_specs): Revert prototype change.

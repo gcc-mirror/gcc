@@ -5043,6 +5043,14 @@ pointer_diff (tree op0, tree op1, tree ptrtype, tsubst_flags_t complain)
 	return error_mark_node;
     }
 
+  if (pointer_to_zero_sized_aggr_p (TREE_TYPE (op1)))
+    {
+      if (complain & tf_error)
+	error ("arithmetic on pointer to an empty aggregate");
+      else
+	return error_mark_node;
+    }
+
   op1 = (TYPE_PTROB_P (ptrtype)
 	 ? size_in_bytes (target_type)
 	 : integer_one_node);

@@ -1,5 +1,12 @@
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
+	PR c/58346
+	* c-c++-common/pr58346-1.c: New test.
+	* c-c++-common/pr58346-2.c: New test.
+	* c-c++-common/pr58346-3.c: New test.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
 	PR c/59871
 	* gcc.dg/20020220-2.c: Adjust dg-warning message.
 	* gcc.dg/pr59871.c: New test.
