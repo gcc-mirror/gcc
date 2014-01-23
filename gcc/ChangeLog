@@ -1,3 +1,33 @@
+2014-01-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/58580
+	* input.h (location_get_source_line): Take an additional line_size
+	parameter.
+	(void diagnostics_file_cache_fini): Declare new function.
+	* input.c (struct fcache): New type.
+	(fcache_tab_size, fcache_buffer_size, fcache_line_record_size):
+	New static constants.
+	(diagnostic_file_cache_init, total_lines_num)
+	(lookup_file_in_cache_tab, evicted_cache_tab_entry)
+	(add_file_to_cache_tab, lookup_or_add_file_to_cache_tab)
+	(needs_read, needs_grow, maybe_grow, read_data, maybe_read_data)
+	(get_next_line, read_next_line, goto_next_line, read_line_num):
+	New static function definitions.
+	(diagnostic_file_cache_fini): New function.
+	(location_get_source_line): Take an additional output line_len
+	parameter.  Re-write using lookup_or_add_file_to_cache_tab and
+	read_line_num.
+	* diagnostic.c (diagnostic_finish): Call
+	diagnostic_file_cache_fini.
+	(adjust_line): Take an additional input parameter for the length
+	of the line, rather than calculating it with strlen.
+	(diagnostic_show_locus): Adjust the use of
+	location_get_source_line and adjust_line with respect to their new
+	signature.  While displaying a line now, do not stop at the first
+	null byte.  Rather, display the zero byte as a space and keep
+	going until we reach the size of the line.
+	* Makefile.in: Add vec.o to OBJS-libcommon
+
 2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm512_loadu_si512): Rename.

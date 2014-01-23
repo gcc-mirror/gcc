@@ -1471,7 +1471,8 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o input.o version.o
+OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o \
+	vec.o  input.o version.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
