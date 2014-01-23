@@ -1311,6 +1311,8 @@ package body Sem is
       S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
       S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
       S_Style_Check       : constant Boolean          := Style_Check;
+      S_SPARK_Mode        : constant SPARK_Mode_Type  := SPARK_Mode;
+      S_SPARK_Mode_Pragma : constant Node_Id          := SPARK_Mode_Pragma;
 
       Generic_Main : constant Boolean :=
                        Nkind (Unit (Cunit (Main_Unit)))
@@ -1418,7 +1420,6 @@ package body Sem is
       Inside_A_Generic   := False;
       In_Assertion_Expr  := 0;
       In_Spec_Expression := False;
-
       Set_Comes_From_Source_Default (False);
 
       --  Save current config switches and reset then appropriately
@@ -1511,6 +1512,8 @@ package body Sem is
       Inside_A_Generic     := S_Inside_A_Generic;
       Outer_Generic_Scope  := S_Outer_Gen_Scope;
       Style_Check          := S_Style_Check;
+      SPARK_Mode           := S_SPARK_Mode;
+      SPARK_Mode_Pragma    := S_SPARK_Mode_Pragma;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
 

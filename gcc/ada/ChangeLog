@@ -1,3 +1,34 @@
+2014-01-23  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Minor editing.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* opt.adb (Set_Opt_Config_Switches): Reset SPARK mode for
+	with'ed internal units.
+	* sem.adb (Semantics): Save and restore SPARK_Mode[_Pragma].
+
+2014-01-23  Javier Miranda  <miranda@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): As part of processing the
+	"end-of-spec" reference generate an extra reference to the first
+	private entity of the package.
+	* xr_tabls.adb (Add_Reference): No action needed for the extra
+	'E' reference associated; similar to the processing of the
+	'e' reference.
+
+2014-01-23  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Change "--&pp off" to "--!pp off".
+
+2014-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_Potentially_Unevaluated): new
+	predicate to implement rule given in 6.1.1 (20/3).
+	* sem_attr.adb (Analyze_Attribute, case 'Old): Reject prefix of
+	'Old in a postcondition, if it is potentially unevaluated and
+	it is not an entity name.
+
 2014-01-23  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi: Document the new "--&pp off" feature of gnatpp.
