@@ -1,5 +1,10 @@
 2014-01-22  Jan Hubicka  <jh@suse.cz>
 
+	* config/i386/x86-tune.def (X86_TUNE_ACCUMULATE_OUTGOING_ARGS):
+	Enable for generic and recent AMD targets.
+
+2014-01-22  Jan Hubicka  <jh@suse.cz>
+
 	* combine-stack-adj.c (combine_stack_adjustments_for_block): Remove
 	ARG_SIZE note when adjustment was eliminated.
 
