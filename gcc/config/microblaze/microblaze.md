@@ -365,7 +365,8 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
         (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
   "TARGET_REORDER"
-  "swaph %0, %1"
+  "swapb %0, %1
+   swaph %0, %0"
 )
 
 ;;----------------------------------------------------------------
