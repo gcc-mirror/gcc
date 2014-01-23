@@ -1,3 +1,8 @@
+2014-01-23  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	force flag_ira_loop_pressure if set via command line.
+
 2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (ashr): DI mode removed.

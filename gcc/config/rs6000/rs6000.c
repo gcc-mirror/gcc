@@ -3039,7 +3039,8 @@ rs6000_option_override_internal (bool global_init_p)
      calculation works better for RTL loop invariant motion on targets
      with enough (>= 32) registers.  It is an expensive optimization.
      So it is on only for peak performance.  */
-  if (optimize >= 3 && global_init_p)
+  if (optimize >= 3 && global_init_p
+      && !global_options_set.x_flag_ira_loop_pressure)
     flag_ira_loop_pressure = 1;
 
   /* Set the pointer size.  */
