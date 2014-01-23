@@ -1,3 +1,9 @@
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* typeck.c (pointer_diff): Give an error on arithmetic on pointer to
+	an empty aggregate.
+
 2014-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55189

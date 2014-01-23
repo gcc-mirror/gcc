@@ -11823,4 +11823,15 @@ cxx_fundamental_alignment_p  (unsigned align)
 			 TYPE_ALIGN (long_double_type_node)));
 }
 
+/* Return true if T is a pointer to a zero-sized aggregate.  */
+
+bool
+pointer_to_zero_sized_aggr_p (tree t)
+{
+  if (!POINTER_TYPE_P (t))
+    return false;
+  t = TREE_TYPE (t);
+  return (TYPE_SIZE (t) && integer_zerop (TYPE_SIZE (t)));
+}
+
 #include "gt-c-family-c-common.h"

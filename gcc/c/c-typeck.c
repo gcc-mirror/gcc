@@ -3536,6 +3536,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
   /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
 
+  if (pointer_to_zero_sized_aggr_p (TREE_TYPE (orig_op1)))
+    error_at (loc, "arithmetic on pointer to an empty aggregate");
+
   /* Divide by the size, in easiest possible way.  */
   result = fold_build2_loc (loc, EXACT_DIV_EXPR, inttype,
 			    op0, convert (inttype, op1));
