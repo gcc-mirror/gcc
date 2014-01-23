@@ -362,6 +362,13 @@ typedef struct GTY(()) cp_parser {
      data structure with everything needed for parsing the clauses.  */
   cp_omp_declare_simd_data * GTY((skip)) omp_declare_simd;
 
+  /* When parsing the vector attribute in Cilk Plus SIMD-enabled function,
+     this is a pointer to data structure with everything needed for parsing
+     the clauses.  The cp_omp_declare_simd_data struct will hold all the
+     necessary information, so creating another struct for this is not
+     necessary.  */
+  cp_omp_declare_simd_data * GTY((skip)) cilk_simd_fn_info;
+
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
   bool auto_is_implicit_function_template_parm_p;

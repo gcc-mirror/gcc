@@ -1,3 +1,32 @@
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* parser.c (cp_parser_direct_declarator): When Cilk Plus is enabled
+	see if there is an attribute after function decl.  If so, then
+	parse them now.
+	(cp_parser_late_return_type_opt): Handle parsing of Cilk Plus SIMD
+	enabled function late parsing.
+	(cp_parser_gnu_attribute_list): Parse all the tokens for the vector
+	attribute for a SIMD-enabled function.
+	(cp_parser_omp_all_clauses): Skip parsing to the end of pragma when
+	the function is used by SIMD-enabled function (indicated by NULL
+	pragma token).   Added 3 new clauses: PRAGMA_CILK_CLAUSE_MASK,
+	PRAGMA_CILK_CLAUSE_NOMASK and PRAGMA_CILK_CLAUSE_VECTORLENGTH
+	(cp_parser_cilk_simd_vectorlength): Modified this function to handle
+	vectorlength clause in SIMD-enabled function and #pragma SIMD's
+	vectorlength clause.  Added a new bool parameter to differentiate
+	between the two.
+	(cp_parser_cilk_simd_fn_vector_attrs): New function.
+	(is_cilkplus_vector_p): Likewise.
+	(cp_parser_late_parsing_elem_fn_info): Likewise.
+	(cp_parser_omp_clause_name): Added a check for "mask", "nomask"
+	and "vectorlength" clauses when Cilk Plus is enabled.
+	(cp_parser_omp_clause_linear): Added a new parameter of type bool
+	and emit a sorry message when step size is a parameter.
+	* parser.h (cp_parser::cilk_simd_fn_info): New field.
+	* decl.c (grokfndecl): Added flag_enable_cilkplus along with
+	flag_openmp.
+	* pt.c (apply_late_template_attributes): Likewise.
+
 2014-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58809

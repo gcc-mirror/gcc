@@ -8613,7 +8613,7 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	    {
 	      *p = TREE_CHAIN (t);
 	      TREE_CHAIN (t) = NULL_TREE;
-	      if (flag_openmp
+	      if ((flag_openmp || flag_enable_cilkplus)
 		  && is_attribute_p ("omp declare simd",
 				     get_attribute_name (t))
 		  && TREE_VALUE (t))

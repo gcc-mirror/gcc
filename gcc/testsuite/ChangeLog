@@ -1,3 +1,13 @@
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/cilk-plus.exp: Called the C/C++ common tests for
+	SIMD enabled function.
+	* g++.dg/cilk-plus/ef_test.C: New test.
+        * c-c++-common/cilk-plus/ef_error3.c: Made certain messages C specific
+        and added C++ ones.
+	* c-c++-common/cilk-plus/vlength_errors.c: Added new dg-error tags
+	to differenciate C error messages from C++ ones.
+
 2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/vld1-vst1_1.c: New test_case.
