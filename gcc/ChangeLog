@@ -1,3 +1,13 @@
+2014-01-23  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (ashr): DI mode removed.
+	(ashr_simd): New builtin handling DI mode.
+	* config/aarch64/aarch64-simd.md (aarch64_ashr_simddi): New pattern.
+	(aarch64_sshr_simddi): New match pattern.
+	* config/aarch64/arm_neon.h (vshr_n_s32): Builtin call modified.
+	(vshrd_n_s64): Likewise.
+	* config/aarch64/predicates.md (aarch64_shift_imm64_di): New predicate.
+
 2014-01-23  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.h (ASM_SPEC): Pass the -mcpu as -mcpu.

@@ -23340,7 +23340,7 @@ vshr_n_s32 (int32x2_t __a, const int __b)
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshr_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_ashrdi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashr_simddi (__a, __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -23418,7 +23418,7 @@ vshrq_n_u64 (uint64x2_t __a, const int __b)
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vshrd_n_s64 (int64x1_t __a, const int __b)
 {
-  return (int64x1_t) __builtin_aarch64_ashrdi (__a, __b);
+  return (int64x1_t) __builtin_aarch64_ashr_simddi (__a, __b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))

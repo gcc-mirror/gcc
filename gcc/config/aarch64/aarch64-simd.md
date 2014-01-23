@@ -685,6 +685,32 @@
   DONE;
 })
 
+;; DI vector shift
+(define_expand "aarch64_ashr_simddi"
+  [(match_operand:DI 0 "register_operand" "=w")
+   (match_operand:DI 1 "register_operand" "w")
+   (match_operand:QI 2 "aarch64_shift_imm64_di" "")]
+  "TARGET_SIMD"
+  {
+    if (INTVAL (operands[2]) == 64)
+      emit_insn (gen_aarch64_sshr_simddi (operands[0], operands[1]));
+    else
+      emit_insn (gen_ashrdi3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
+;; SIMD shift by 64.  This pattern is a special case as standard pattern does
+;; not handle NEON shifts by 64.
+(define_insn "aarch64_sshr_simddi"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+        (unspec:DI
+          [(match_operand:DI 1 "register_operand" "w")] UNSPEC_SSHR64))]
+  "TARGET_SIMD"
+  "sshr\t%d0, %d1, 64"
+  [(set_attr "type" "neon_shift_imm")]
+)
+
 (define_expand "vlshr<mode>3"
  [(match_operand:VQ_S 0 "register_operand" "")
   (match_operand:VQ_S 1 "register_operand" "")
