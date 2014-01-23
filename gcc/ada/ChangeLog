@@ -1,3 +1,30 @@
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, sinfo.adb, sinfo.ads, sem.adb, sem_res.adb,
+	expander.adb, exp_ch11.adb, exp_ch11.ads, sem_ch11.adb, sem_ch11.ads,
+	sprint.adb, sprint.ads: Remove unused node N_Subprogram_Info.
+
+2014-01-23  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-conf.adb (Get_Or_Create_Configuration_File): call
+	On_Load_Config later.
+
+2014-01-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Do not
+	generate the spec of the late primitive in ASIS mode. Add two
+	comments to explain the special cases when the expansion is
+	not performed.
+
+2014-01-23  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Note_Possible_Modification): Fix error of
+	misbehaving for implicit dereference cases in -gnatc mode.
+
+2014-01-23  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-pars.adb: Minor reformatting.
+
 2014-01-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): A subprogram

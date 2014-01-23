@@ -201,7 +201,6 @@ package body Sem_Res is
    procedure Resolve_Short_Circuit             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Slice                     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_String_Literal            (N : Node_Id; Typ : Entity_Id);
-   procedure Resolve_Subprogram_Info           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Type_Conversion           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Unary_Op                  (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Unchecked_Expression      (N : Node_Id; Typ : Entity_Id);
@@ -2896,9 +2895,6 @@ package body Sem_Res is
 
             when N_String_Literal
                              => Resolve_String_Literal           (N, Ctx_Type);
-
-            when N_Subprogram_Info
-                             => Resolve_Subprogram_Info          (N, Ctx_Type);
 
             when N_Type_Conversion
                              => Resolve_Type_Conversion          (N, Ctx_Type);
@@ -9779,15 +9775,6 @@ package body Sem_Res is
          Analyze_And_Resolve (N, Typ);
       end;
    end Resolve_String_Literal;
-
-   -----------------------------
-   -- Resolve_Subprogram_Info --
-   -----------------------------
-
-   procedure Resolve_Subprogram_Info (N : Node_Id; Typ : Entity_Id) is
-   begin
-      Set_Etype (N, Typ);
-   end Resolve_Subprogram_Info;
 
    -----------------------------
    -- Resolve_Type_Conversion --

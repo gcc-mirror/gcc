@@ -1627,8 +1627,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
         or else NT (N).Nkind = N_Label
         or else NT (N).Nkind = N_Loop_Statement
-        or else NT (N).Nkind = N_Record_Representation_Clause
-        or else NT (N).Nkind = N_Subprogram_Info);
+        or else NT (N).Nkind = N_Record_Representation_Clause);
       return Node1 (N);
    end Identifier;
 
@@ -4768,8 +4767,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
         or else NT (N).Nkind = N_Label
         or else NT (N).Nkind = N_Loop_Statement
-        or else NT (N).Nkind = N_Record_Representation_Clause
-        or else NT (N).Nkind = N_Subprogram_Info);
+        or else NT (N).Nkind = N_Record_Representation_Clause);
       Set_Node1_With_Parent (N, Val);
    end Set_Identifier;
 

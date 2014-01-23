@@ -1882,27 +1882,6 @@ package body Exp_Ch11 is
       end;
    end Possible_Local_Raise;
 
-   ------------------------------
-   -- Expand_N_Subprogram_Info --
-   ------------------------------
-
-   procedure Expand_N_Subprogram_Info (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
-   begin
-      --  For now, we replace an Expand_N_Subprogram_Info node with an
-      --  attribute reference that gives the address of the procedure.
-      --  This is because gigi does not yet recognize this node, and
-      --  for the initial targets, this is the right value anyway.
-
-      Rewrite (N,
-        Make_Attribute_Reference (Loc,
-          Prefix         => Identifier (N),
-          Attribute_Name => Name_Code_Address));
-
-      Analyze_And_Resolve (N, RTE (RE_Code_Loc));
-   end Expand_N_Subprogram_Info;
-
    ------------------------
    -- Find_Local_Handler --
    ------------------------

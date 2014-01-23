@@ -3091,10 +3091,6 @@ package body Sprint is
 
             Write_Char (';');
 
-         when N_Subprogram_Info =>
-            Sprint_Node (Identifier (Node));
-            Write_Str_With_Col_Check_Sloc ("'subprogram_info");
-
          when N_Subprogram_Renaming_Declaration =>
             Write_Indent;
             Sprint_Node (Specification (Node));

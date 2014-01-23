@@ -433,9 +433,6 @@ package body Expander is
                   when N_Subprogram_Declaration =>
                      Expand_N_Subprogram_Declaration (N);
 
-                  when N_Subprogram_Info =>
-                     Expand_N_Subprogram_Info (N);
-
                   when N_Task_Body =>
                      Expand_N_Task_Body (N);
 

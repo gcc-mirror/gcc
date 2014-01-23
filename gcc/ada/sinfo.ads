@@ -7683,23 +7683,6 @@ package Sinfo is
       --  with the N_In node (or a rewriting thereof) corresponding to a
       --  classwide membership test.
 
-      ---------------------
-      -- Subprogram_Info --
-      ---------------------
-
-      --  This node generates the appropriate Subprogram_Info value for a
-      --  given procedure. See Ada.Exceptions for further details
-
-      --  Sprint syntax: subprog'subprogram_info
-
-      --  N_Subprogram_Info
-      --  Sloc points to the entity for the procedure
-      --  Identifier (Node1) identifier referencing the procedure
-      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc)
-
-      --  Note: in the case where a debug source file is generated, the Sloc
-      --  for this node points to the quote in the Sprint file output.
-
       --------------------------
       -- Unchecked Expression --
       --------------------------
@@ -7977,7 +7960,6 @@ package Sinfo is
       N_Reference,
       N_Selected_Component,
       N_Slice,
-      N_Subprogram_Info,
       N_Type_Conversion,
       N_Unchecked_Expression,
       N_Unchecked_Type_Conversion,
@@ -12077,13 +12059,6 @@ package Sinfo is
        (1 => False,   --  unused
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,   --  unused
-        5 => False),  --  Etype (Node5-Sem)
-
-     N_Subprogram_Info =>
-       (1 => True,    --  Identifier (Node1)
-        2 => False,   --  unused
-        3 => False,   --  unused
         4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
 

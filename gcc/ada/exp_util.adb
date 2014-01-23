@@ -3829,7 +3829,6 @@ package body Exp_Util is
                N_Single_Protected_Declaration           |
                N_Slice                                  |
                N_String_Literal                         |
-               N_Subprogram_Info                        |
                N_Subtype_Indication                     |
                N_Subunit                                |
                N_Task_Definition                        |
