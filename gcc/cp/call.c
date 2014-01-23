@@ -5714,13 +5714,12 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       else
 	{
 	  tree ret;
-	  vec<tree, va_gc> *args;
-	  vec_alloc (args, 2);
+	  vec<tree, va_gc> *args = make_tree_vector ();
 	  args->quick_push (addr);
 	  if (FUNCTION_ARG_CHAIN (fn) != void_list_node)
 	    args->quick_push (size);
 	  ret = cp_build_function_call_vec (fn, &args, complain);
-	  vec_free (args);
+	  release_tree_vector (args);
 	  return ret;
 	}
     }
