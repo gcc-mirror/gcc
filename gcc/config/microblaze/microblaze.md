@@ -74,7 +74,7 @@
 ;; bshift 	Shift operations
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt"
+  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt,trap"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -2200,6 +2200,14 @@
   [(set_attr "type"	"nop")
   (set_attr "mode"	"none")
   (set_attr "length"	"4")])
+
+;; Trap instruction pattern for __builtin_trap. Same as the glibc ABORT_INSTRUCTION
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "brki\tr0,-1"
+ [(set_attr "type" "trap")]
+)
 
 ;; The insn to set GOT. The hardcoded number "8" accounts for $pc difference
 ;; between "mfs" and "addik" instructions.

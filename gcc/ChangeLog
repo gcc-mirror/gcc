@@ -1,3 +1,7 @@
+2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md: Add trap insn and attribute
+
 2014-01-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/58580
