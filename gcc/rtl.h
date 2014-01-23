@@ -2169,6 +2169,7 @@ extern rtx extract_asm_operands (rtx);
 extern int asm_noperands (const_rtx);
 extern const char *decode_asm_operands (rtx, rtx *, rtx **, const char **,
 					enum machine_mode *, location_t *);
+extern void get_referenced_operands (const char *, bool *, unsigned int);
 
 extern enum reg_class reg_preferred_class (int);
 extern enum reg_class reg_alternate_class (int);

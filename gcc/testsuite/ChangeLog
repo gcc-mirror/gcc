@@ -1,3 +1,9 @@
+2014-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/52125
+	* gcc.dg/pr48774.c: Remove skip for mips_rel.
+	* gcc.target/mips/pr52125.c: New test.
+
 2014-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59891

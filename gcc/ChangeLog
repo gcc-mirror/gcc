@@ -1,3 +1,11 @@
+2014-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/52125
+	* rtl.h (get_referenced_operands): Declare.
+	* recog.c (get_referenced_operands): New function.
+	* config/mips/mips.c (mips_reorg_process_insns): Check which asm
+	operands have been referenced when recording LO_SUM references.
+
 2014-01-22  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
