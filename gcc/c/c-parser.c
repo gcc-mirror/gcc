@@ -12924,7 +12924,8 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
 	c = tree_cons (NULL_TREE, c, NULL_TREE);
       if (is_cilkplus_cilk_simd_fn) 
 	{ 
-	  tree k = build_tree_list (get_identifier ("cilk simd function"), c);
+	  tree k = build_tree_list (get_identifier ("cilk simd function"), 
+				    NULL_TREE);
 	  TREE_CHAIN (k) = DECL_ATTRIBUTES (fndecl);
 	  DECL_ATTRIBUTES (fndecl) = k;
 	} 
