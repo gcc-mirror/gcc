@@ -4778,6 +4778,23 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
 			"left-hand operand of comma expression has no effect");
 	}
     }
+  else if (TREE_CODE (expr1) == COMPOUND_EXPR
+	   && warn_unused_value)
+    {
+      tree r = expr1;
+      location_t cloc = loc;
+      while (TREE_CODE (r) == COMPOUND_EXPR)
+        {
+	  if (EXPR_HAS_LOCATION (r))
+	    cloc = EXPR_LOCATION (r);
+	  r = TREE_OPERAND (r, 1);
+	}
+      if (!TREE_SIDE_EFFECTS (r)
+	  && !VOID_TYPE_P (TREE_TYPE (r))
+	  && !CONVERT_EXPR_P (r))
+	warning_at (cloc, OPT_Wunused_value,
+	            "right-hand operand of comma expression has no effect");
+    }
 
   /* With -Wunused, we should also warn if the left-hand operand does have
      side-effects, but computes a value which is not used.  For example, in
@@ -9642,6 +9659,23 @@ emit_side_effect_warnings (location_t loc, tree expr)
     {
       if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
 	warning_at (loc, OPT_Wunused_value, "statement with no effect");
+    }
+  else if (TREE_CODE (expr) == COMPOUND_EXPR)
+    {
+      tree r = expr;
+      location_t cloc = loc;
+      while (TREE_CODE (r) == COMPOUND_EXPR)
+	{
+	  if (EXPR_HAS_LOCATION (r))
+	    cloc = EXPR_LOCATION (r);
+	  r = TREE_OPERAND (r, 1);
+	}
+      if (!TREE_SIDE_EFFECTS (r)
+	  && !VOID_TYPE_P (TREE_TYPE (r))
+	  && !CONVERT_EXPR_P (r)
+	  && !TREE_NO_WARNING (expr))
+	warning_at (cloc, OPT_Wunused_value,
+		    "right-hand operand of comma expression has no effect");
     }
   else
     warn_if_unused_value (expr, loc);
