@@ -1,3 +1,8 @@
+2014-01-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Output_References): Output progenitors of
+	synchronized tagged types, for source navigation.
+
 2014-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, sinfo.adb, sinfo.ads, sem.adb, sem_res.adb,

@@ -1309,22 +1309,6 @@ package body Lib.Xref is
                         Right := '>';
                      end if;
 
-                  --  For a synchronized type that implements an interface, we
-                  --  treat the first progenitor as the parent. This is only
-                  --  needed when compiling a package declaration on its own,
-                  --  if the body is present interfaces are handled properly.
-
-                  elsif Is_Concurrent_Type (Tref)
-                    and then Is_Tagged_Type (Tref)
-                    and then not Expander_Active
-                  then
-                     if Left /= '(' then
-                        Left := '<';
-                        Right := '>';
-                     end if;
-
-                     Tref := Entity (First (Interface_List (Parent (Tref))));
-
                   --  If the completion of a private type is itself a derived
                   --  type, we need the parent of the full view.
 
@@ -2430,25 +2414,42 @@ package body Lib.Xref is
 
                      Check_Type_Reference (XE.Key.Ent, False);
 
-                     --  Additional information for types with progenitors
+                     --  Additional information for types with progenitors,
+                     --  including synchronized tagged types.
 
-                     if Is_Record_Type (XE.Key.Ent)
-                       and then Present (Interfaces (XE.Key.Ent))
-                     then
-                        declare
-                           Elmt : Elmt_Id :=
-                                    First_Elmt (Interfaces (XE.Key.Ent));
-                        begin
-                           while Present (Elmt) loop
-                              Check_Type_Reference (Node (Elmt), True);
-                              Next_Elmt (Elmt);
-                           end loop;
-                        end;
+                     declare
+                        Typ      : constant Entity_Id := XE.Key.Ent;
+                        Elmt     : Elmt_Id;
+
+                     begin
+                        if Is_Record_Type (Typ)
+                          and then Present (Interfaces (Typ))
+                        then
+                           Elmt := First_Elmt (Interfaces (Typ));
+
+                        elsif Is_Concurrent_Type (Typ)
+                          and then Present (Corresponding_Record_Type (Typ))
+                          and then Present (
+                            Interfaces (Corresponding_Record_Type (Typ)))
+                        then
+                           Elmt :=
+                             First_Elmt (
+                              Interfaces (Corresponding_Record_Type (Typ)));
+
+                        else
+                           Elmt := No_Elmt;
+                        end if;
+
+                        while Present (Elmt) loop
+                           Check_Type_Reference (Node (Elmt), True);
+                           Next_Elmt (Elmt);
+                        end loop;
+                     end;
 
                      --  For array types, list index types as well. (This is
                      --  not C, indexes have distinct types).
 
-                     elsif Is_Array_Type (XE.Key.Ent) then
+                     if Is_Array_Type (XE.Key.Ent) then
                         declare
                            Indx : Node_Id;
                         begin
