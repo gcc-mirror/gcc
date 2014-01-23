@@ -1,3 +1,12 @@
+2014-01-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+	    Steve Ellcey  <sellcey@mips.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_TMPNAM): New check for tmpnam
+	function.
+	* configure.ac: Use GLIBCXX_CHECK_TMPNAM.
+	* (configure, config.h.in): Regenerate.
+	* include/c_global/cstdio: Guard ::tmpnam with _GLIBCXX_USE_TMPNAM
+
 2014-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/faq.xml (a-how_to_set_paths): Expand FAQ answer.

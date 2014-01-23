@@ -3771,6 +3771,33 @@ AC_DEFUN([GLIBCXX_ENABLE_WERROR], [
   GLIBCXX_CONDITIONAL(ENABLE_WERROR, test $enable_werror = yes)
 ])
 
+dnl
+dnl Check whether obsolescent tmpnam is available in <stdio.h>,
+dnl and define _GLIBCXX_USE_TMPNAM.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_TMPNAM], [dnl
+dnl
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+dnl
+  AC_MSG_CHECKING([for tmpnam])
+  AC_CACHE_VAL(glibcxx_cv_TMPNAM, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <stdio.h>],
+      [char *tmp = tmpnam(NULL);],
+      [glibcxx_cv_TMPNAM=yes],
+      [glibcxx_cv_TMPNAM=no])
+  ])
+  if test $glibcxx_cv_TMPNAM = yes; then
+    AC_DEFINE(_GLIBCXX_USE_TMPNAM, 1, [Define if obsolescent tmpnam is available in <stdio.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_TMPNAM)
+dnl
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
 
 dnl
 dnl Check to see if sys/sdt.h exists and that it is suitable for use.
