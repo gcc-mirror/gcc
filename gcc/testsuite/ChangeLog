@@ -1,3 +1,9 @@
+2014-01-23  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR sanitizer/59897
+	* c-c++-common/asan/use-after-return-1.c: Fixed
+	to pass on darwin.
+
 2014-01-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/58580
