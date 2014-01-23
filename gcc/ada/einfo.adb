@@ -249,6 +249,7 @@ package body Einfo is
 
    --    SPARK_Pragma                    Node32
 
+   --    Linker_Section_Pragma           Node33
    --    SPARK_Aux_Pragma                Node33
 
    --    Contract                        Node34
@@ -2386,6 +2387,13 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package);
       return Node23 (Id);
    end Limited_View;
+
+   function Linker_Section_Pragma (Id : E) return N is
+   begin
+      pragma Assert
+        (Is_Type (Id) or else Is_Object (Id) or else Is_Subprogram (Id));
+      return Node33 (Id);
+   end Linker_Section_Pragma;
 
    function Lit_Indexes (Id : E) return E is
    begin
@@ -5094,6 +5102,14 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Package);
       Set_Node23 (Id, V);
    end Set_Limited_View;
+
+   procedure Set_Linker_Section_Pragma (Id : E; V : N) is
+   begin
+      pragma Assert (Is_Type (Id)
+        or else Ekind_In (Id, E_Constant, E_Variable)
+        or else Is_Subprogram (Id));
+      Set_Node33 (Id, V);
+   end Set_Linker_Section_Pragma;
 
    procedure Set_Lit_Indexes (Id : E; V : E) is
    begin
@@ -9452,6 +9468,12 @@ package body Einfo is
               E_Package                                    |
               E_Package_Body                               =>
             Write_Str ("SPARK_Aux_Pragma");
+
+         when E_Constant                                   |
+              E_Variable                                   |
+              Subprogram_Kind                              |
+              Type_Kind                                    =>
+            Write_Str ("Linker_Section_Pragma");
 
          when others                                       =>
             Write_Str ("Field33??");

@@ -294,6 +294,7 @@ Implementation Defined Aspects
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Linker_Section::
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -4249,12 +4250,30 @@ pragma Linker_Section (
 @end smallexample
 
 @noindent
-@var{LOCAL_NAME} must refer to an object that is
+@var{LOCAL_NAME} must refer to an object, type, or subprogram that is
 declared at the library level. This pragma specifies the name of the
 linker section for the given entity. It is equivalent to
 @code{__attribute__((section))} in GNU C and causes @var{LOCAL_NAME} to
 be placed in the @var{static_string_EXPRESSION} section of the
 executable (assuming the linker doesn't rename the section).
+GNAT also provides an implementation defined aspect of the same name.
+
+In the case of specifying this aspect for a type, the effect is to
+specify the corresponding for all library level objects of the type which
+do not have an explicit linker section set. Note that this only applies to
+whole objects, not to components of composite objects.
+
+In the case of a subprogram, the linker section applies to all previously
+declared matching overloaded subprograms in the current declarative part
+which do not already have a linker section assigned. The linker section
+aspect is useful in this case for specifying different linker sections
+for different elements of such an overloaded set.
+
+Note that an empty string specifies that no linker section is specified.
+This is not quite the same as omitting the pragma or aspect, since it
+can be used to specify that one element of an overloaded set of subprograms
+has the default linker section, or that one object of a type for which a
+linker section is specified should has the default linker section.
 
 The compiler normally places library-level entities in standard sections
 depending on the class: procedures and functions generally go in the
@@ -4283,6 +4302,12 @@ package IO_Card is
   Port_B : Integer;
   pragma Volatile (Port_B);
   pragma Linker_Section (Port_B, ".bss.port_b");
+
+  type Port_Type is new Integer with Linker_Section => ".bss";
+  PA : Port_Type with Linker_Section => ".bss.PA";
+  PB : Port_Type; --  ends up in linker section ".bss"
+
+  procedure Q with Linker_Section => "Qsection";
 end IO_Card;
 @end smallexample
 
@@ -7631,6 +7656,7 @@ clause.
 * Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
@@ -7823,6 +7849,12 @@ This aspect is equivalent to pragma @code{Inline_Always}.
 This aspect is equivalent to pragma @code{Invariant}. It is a
 synonym for the language defined aspect @code{Type_Invariant} except
 that it is separately controllable using pragma @code{Assertion_Policy}.
+
+@node Aspect Linker_Section
+@unnumberedsec Aspect Linker_Section
+@findex Linker_Section
+@noindent
+This aspect is equivalent to an @code{Linker_Section} pragma.
 
 @node Aspect Lock_Free
 @unnumberedsec Aspect Lock_Free

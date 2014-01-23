@@ -4525,8 +4525,9 @@ package body Sem_Attr is
            and then Is_Potentially_Unevaluated (N)
            and then not Is_Entity_Name (P)
          then
-            Error_Msg_N ("prefix that is potentially unevaluated must "
-               & "denote an entity", N);
+            Error_Msg_N
+              ("prefix that is potentially unevaluated must denote an entity",
+               N);
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to

@@ -10249,48 +10249,6 @@ package body Sem_Util is
       end if;
    end Is_Partially_Initialized_Type;
 
-   --------------------------------
-   -- Is_Potentially_Unevaluated --
-   --------------------------------
-
-   function Is_Potentially_Unevaluated (N : Node_Id) return Boolean is
-      Par  : Node_Id;
-      Expr : Node_Id;
-
-   begin
-      Expr := N;
-      Par  := Parent (N);
-      while not Nkind_In (Par, N_If_Expression,
-                                N_Case_Expression,
-                                N_And_Then,
-                                N_Or_Else,
-                                N_In,
-                                N_Not_In)
-      loop
-         Expr := Par;
-         Par  := Parent (Par);
-         if Nkind (Par) not in N_Subexpr then
-            return False;
-         end if;
-      end loop;
-
-      if Nkind (Par) = N_If_Expression then
-         return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
-
-      elsif Nkind (Par) = N_Case_Expression then
-         return Expr /= Expression (Par);
-
-      elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
-         return Expr = Right_Opnd (Par);
-
-      elsif Nkind_In (Par, N_In, N_Not_In) then
-         return Expr /= Left_Opnd (Par);
-
-      else
-         return False;
-      end if;
-   end Is_Potentially_Unevaluated;
-
    ------------------------------------
    -- Is_Potentially_Persistent_Type --
    ------------------------------------
@@ -10354,6 +10312,49 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Potentially_Persistent_Type;
+
+   --------------------------------
+   -- Is_Potentially_Unevaluated --
+   --------------------------------
+
+   function Is_Potentially_Unevaluated (N : Node_Id) return Boolean is
+      Par  : Node_Id;
+      Expr : Node_Id;
+
+   begin
+      Expr := N;
+      Par  := Parent (N);
+      while not Nkind_In (Par, N_If_Expression,
+                                N_Case_Expression,
+                                N_And_Then,
+                                N_Or_Else,
+                                N_In,
+                                N_Not_In)
+      loop
+         Expr := Par;
+         Par  := Parent (Par);
+
+         if Nkind (Par) not in N_Subexpr then
+            return False;
+         end if;
+      end loop;
+
+      if Nkind (Par) = N_If_Expression then
+         return Is_Elsif (Par) or else Expr /= First (Expressions (Par));
+
+      elsif Nkind (Par) = N_Case_Expression then
+         return Expr /= Expression (Par);
+
+      elsif Nkind_In (Par, N_And_Then, N_Or_Else) then
+         return Expr = Right_Opnd (Par);
+
+      elsif Nkind_In (Par, N_In, N_Not_In) then
+         return Expr /= Left_Opnd (Par);
+
+      else
+         return False;
+      end if;
+   end Is_Potentially_Unevaluated;
 
    ---------------------------------
    -- Is_Protected_Self_Reference --

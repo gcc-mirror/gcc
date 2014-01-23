@@ -1633,10 +1633,11 @@ package body Sem_Ch13 is
                --  referring to the entity, and the second argument is the
                --  aspect definition expression.
 
-               --  Suppress/Unsuppress
+               --  Linker_Section/Suppress/Unsuppress
 
-               when Aspect_Suppress   |
-                    Aspect_Unsuppress =>
+               when Aspect_Linker_Section |
+                    Aspect_Suppress       |
+                    Aspect_Unsuppress     =>
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
@@ -7940,6 +7941,9 @@ package body Sem_Ch13 is
               Aspect_Stream_Size    |
               Aspect_Value_Size     =>
             T := Any_Integer;
+
+         when Aspect_Linker_Section =>
+            T := Standard_String;
 
          when Aspect_Synchronization =>
             return;

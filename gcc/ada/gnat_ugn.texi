@@ -7430,7 +7430,12 @@ the @option{-gnatR} switch). For @option{-gnatR1} (which is the default,
 so @option{-gnatR} with no parameter has the same effect), size and alignment
 information is listed for declared array and record types. For
 @option{-gnatR2}, size and alignment information is listed for all
-declared types and objects. Finally @option{-gnatR3} includes symbolic
+declared types and objects. The @code{Linker_Section} is also listed for any
+entity for which the @code{Linker_Section} is set explicitly or implicitly (the
+latter case occurs for objects of a type for which a @code{Linker_Section}
+is set).
+
+Finally @option{-gnatR3} includes symbolic
 expressions for values that are computed at run time for
 variant records. These symbolic expressions have a mostly obvious
 format with #n being used to represent the value of the n'th
