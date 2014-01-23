@@ -4249,14 +4249,15 @@ pragma Linker_Section (
 @end smallexample
 
 @noindent
-@var{LOCAL_NAME} must refer to an object that is declared at the library
-level. This pragma specifies the name of the linker section for the given
-entity. It is equivalent to @code{__attribute__((section))} in GNU C and
-causes @var{LOCAL_NAME} to be placed in the @var{static_string_EXPRESSION}
-section of the executable (assuming the linker doesn't rename the section).
+@var{LOCAL_NAME} must refer to an object or a subprogram that is
+declared at the library level. This pragma specifies the name of the
+linker section for the given entity. It is equivalent to
+@code{__attribute__((section))} in GNU C and causes @var{LOCAL_NAME} to
+be placed in the @var{static_string_EXPRESSION} section of the
+executable (assuming the linker doesn't rename the section).
 
-The compiler normally places library-level objects in standard sections
-depending on their type: procedures and functions generally go in the
+The compiler normally places library-level entities in standard sections
+depending on the class: procedures and functions generally go in the
 @code{.text} section, initialized variables in the @code{.data} section
 and uninitialized variables in the @code{.bss} section.
 
