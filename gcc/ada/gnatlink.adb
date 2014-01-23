@@ -294,8 +294,9 @@ procedure Gnatlink is
       for J in Units.Table'First .. Units.Last loop
          Sfile := Units.Table (J).Sfile;
          if Sfile = Efile then
-            Exit_With_Error ("executable name """ & File_Name & """ matches "
-              & "source file name """ & Get_Name_String (Sfile) & """");
+            Exit_With_Error
+              ("executable name """ & File_Name & """ matches "
+               & "source file name """ & Get_Name_String (Sfile) & """");
          end if;
       end loop;
 
@@ -1779,14 +1780,64 @@ begin
    --  on Unix. On non-Unix systems executables have a suffix, so the warning
    --  will not appear. However, do not warn in the case of a cross compiler.
 
-   --  Assume this is a cross tool if the executable name is not gnatlink
+   --  Assume this is a cross tool if the executable name is not gnatlink.
+   --  Note that the executable name is also gnatlink on windows, but in that
+   --  case the output file name will be test.exe rather than test.
 
    if Base_Command_Name.all = "gnatlink"
      and then Output_File_Name.all = "test"
    then
       Error_Msg ("warning: executable name """ & Output_File_Name.all
-                   & """ may conflict with shell command");
+                 & """ may conflict with shell command");
    end if;
+
+   --  Special warnings for worrisome file names on windows
+
+   --  Windows-7 will not allow an executable file whose name contains any
+   --  of the substrings "install", "setup", or "update" to load without
+   --  special administration privileges. This rather incredible behavior
+   --  is Microsoft's idea of a useful security precaution.
+
+   Bad_File_Names_On_Windows : declare
+      FN : String := Output_File_Name.all;
+
+      procedure Check_File_Name (S : String);
+      --  Warn if file name has the substring S
+
+      procedure Check_File_Name (S : String) is
+      begin
+         for J in 1 .. FN'Length - (S'Length - 1) loop
+            if FN (J .. J + (S'Length - 1)) = S then
+               Error_Msg
+                 ("warning: possible problem with executable name """
+                  & Output_File_Name.all & '"');
+               Error_Msg
+                 ("file name contains substring """ & S & '"');
+               Error_Msg
+                 ("admin privileges may be required on Windows 7 "
+                  & "to load this file");
+            end if;
+         end loop;
+      end Check_File_Name;
+
+   --  Start of processing for Bad_File_Names_On_Windows
+
+   begin
+      for J in FN'Range loop
+            FN (J) := Csets.Fold_Lower (FN (J));
+      end loop;
+
+      --  For now we detect windows by an output executable name ending with
+      --  the suffix .exe (excluding VMS which might use that same name).
+
+      if FN'Length > 5
+        and then FN (FN'Last - 3 .. FN'Last) = ".exe"
+      then
+         Check_File_Name ("install");
+         Check_File_Name ("setup");
+         Check_File_Name ("update");
+      end if;
+   end Bad_File_Names_On_Windows;
 
    --  If -M switch was specified, add the switches to create the map file
 
