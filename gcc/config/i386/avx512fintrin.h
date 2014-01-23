@@ -12688,6 +12688,13 @@ _mm_mask_cmp_ss_mask (__mmask8 __M, __m128 __X, __m128 __Y, const int __P)
 					 M,_MM_FROUND_CUR_DIRECTION))
 #endif
 
+extern __inline __mmask16
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_kmov (__mmask16 __A)
+{
+  return __builtin_ia32_kmov16 (__A);
+}
+
 #ifdef __DISABLE_AVX512F__
 #undef __DISABLE_AVX512F__
 #pragma GCC pop_options

@@ -29,6 +29,15 @@
 	* Makefile.in: Add vec.o to OBJS-libcommon
 
 2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar     <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_kmov): New.
+	* config/i386/i386.c (IX86_BUILTIN_KMOV16): Ditto.
+	(__builtin_ia32_kmov16): Ditto.
+	* config/i386/i386.md (UNSPEC_KMOV): New.
+	(kmovw): Ditto.
+
+2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm512_loadu_si512): Rename.
 	(_mm512_storeu_si512): Ditto.
