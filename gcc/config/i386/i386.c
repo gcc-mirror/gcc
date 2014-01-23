@@ -28376,6 +28376,7 @@ enum ix86_builtins
   IX86_BUILTIN_KUNPCKBW,
   IX86_BUILTIN_KXNOR16,
   IX86_BUILTIN_KXOR16,
+  IX86_BUILTIN_KMOV16,
 
   /* Alternate 4 and 8 element gather/scatter for the vectorizer
      where all operands are 32-byte or 64-byte wide respectively.  */
@@ -30083,6 +30084,7 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_kunpckhi, "__builtin_ia32_kunpckhi", IX86_BUILTIN_KUNPCKBW, UNKNOWN, (int) HI_FTYPE_HI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_kxnorhi, "__builtin_ia32_kxnorhi", IX86_BUILTIN_KXNOR16, UNKNOWN, (int) HI_FTYPE_HI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_xorhi3, "__builtin_ia32_kxorhi", IX86_BUILTIN_KXOR16, UNKNOWN, (int) HI_FTYPE_HI_HI },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_kmovw, "__builtin_ia32_kmov16", IX86_BUILTIN_KMOV16, UNKNOWN, (int) HI_FTYPE_HI },
 
   /* SHA */
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sha1msg1, 0, IX86_BUILTIN_SHA1MSG1, UNKNOWN, (int) V4SI_FTYPE_V4SI_V4SI },
