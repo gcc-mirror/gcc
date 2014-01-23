@@ -49,6 +49,7 @@
 
   BUILTIN_VALL (GETLANE, get_lane, 0)
   VAR1 (GETLANE, get_lane, 0, di)
+  BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)
 
   BUILTIN_VD_RE (REINTERP, reinterpretdi, 0)
   BUILTIN_VDC (REINTERP, reinterpretv8qi, 0)
