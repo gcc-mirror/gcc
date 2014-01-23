@@ -1,3 +1,7 @@
+2014-01-22  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
+
 2014-01-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
