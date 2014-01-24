@@ -777,11 +777,12 @@ package body Exp_Disp is
 
          Param := First_Actual (Call_Node);
          while Present (Param) loop
-            --  Cases in which we may have generated runtime checks
 
-            if Param = Ctrl_Arg
-              or else Subp = Eq_Prim_Op
-            then
+            --  Cases in which we may have generated run-time checks. Note that
+            --  we strip any qualification from Param before comparing with the
+            --  already-stripped controlling argument.
+
+            if Unqualify (Param) = Ctrl_Arg or else Subp = Eq_Prim_Op then
                Append_To (New_Params,
                  Duplicate_Subexpr_Move_Checks (Param));
 
