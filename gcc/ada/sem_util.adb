@@ -3723,6 +3723,12 @@ package body Sem_Util is
          else
             Item_Id := Entity_Of (Item);
 
+            --  Defend against junk
+
+            if No (Item_Id) then
+               return False;
+            end if;
+
             return
               Ekind (Item_Id) = E_Abstract_State
                 and then Has_Visible_Refinement (Item_Id);

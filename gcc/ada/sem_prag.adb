@@ -783,9 +783,9 @@ package body Sem_Prag is
 
                Item_Id := Entity_Of (Item);
 
-               Record_Possible_Body_Reference (Item, Item_Id);
-
                if Present (Item_Id) then
+                  Record_Possible_Body_Reference (Item, Item_Id);
+
                   if Ekind_In (Item_Id, E_Abstract_State,
                                         E_In_Parameter,
                                         E_In_Out_Parameter,
