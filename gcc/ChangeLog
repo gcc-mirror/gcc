@@ -1,3 +1,10 @@
+2014-01-24  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common/config/aarch64/aarch64-common.c
+	(aarch64_rewrite_mcpu): Handle multiple names.
+	* config/aarch64/aarch64.h
+	(BIG_LITTLE_SPEC): Do not discard mcpu switches.
+
 2014-01-24  Dodji Seketeli  <dodji@redhat.com>
 
 	* input.c (add_file_to_cache_tab): Handle the case where fopen
