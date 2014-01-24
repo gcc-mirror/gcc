@@ -82,7 +82,7 @@ public:
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* The symbol will be assumed to be used in an invisiable way (like 
+  /* The symbol will be assumed to be used in an invisible way (like
      by an toplevel asm statement).  */
   unsigned force_output : 1;
   /* Like FORCE_OUTPUT, but in the case it is ABI requiring the symbol to be
