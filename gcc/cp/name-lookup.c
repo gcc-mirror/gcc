@@ -5683,9 +5683,9 @@ static tree
 push_using_directive (tree used)
 {
   tree ret;
-  timevar_start (TV_NAME_LOOKUP);
+  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   ret = push_using_directive_1 (used);
-  timevar_stop (TV_NAME_LOOKUP);
+  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ret;
 }
 

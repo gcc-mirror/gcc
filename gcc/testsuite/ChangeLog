@@ -1,3 +1,8 @@
+2014-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57524
+	* g++.dg/ext/timevar2.C: New.
+
 2014-01-24  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/pr59846.c (fn1, fn2): Use ULL suffix.
