@@ -1,3 +1,8 @@
+2014-01-24  Dodji Seketeli  <dodji@redhat.com>
+
+	* input.c (add_file_to_cache_tab): Handle the case where fopen
+	returns NULL.
+
 2014-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59929
