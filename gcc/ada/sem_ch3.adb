@@ -11104,10 +11104,13 @@ package body Sem_Ch3 is
       --  If previous full declaration or a renaming declaration exists, or if
       --  a homograph is present, let Enter_Name handle it, either with an
       --  error or with the removal of an overridden implicit subprogram.
+      --  The previous one is a full declaration if it has an expression
+      --  (which in the case of an aggregate is indicated by the Init flag).
 
       if Ekind (Prev) /= E_Constant
         or else Nkind (Parent (Prev)) = N_Object_Renaming_Declaration
         or else Present (Expression (Parent (Prev)))
+        or else Has_Init_Expression (Parent (Prev))
         or else Present (Full_View (Prev))
       then
          Enter_Name (Id);

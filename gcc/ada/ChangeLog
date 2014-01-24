@@ -1,3 +1,35 @@
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads: Documentation update.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Constant_Redeclaration): New declaration is
+	illegal if previous one has an initial expression that is an
+	aggregate expanded into assignments.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Small
+	code reorganization to remove spurious warning on a loop with
+	an array element iterator that has a null range.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Binding_Phase): When setting the Ada paths, use
+	the library ALI dir, not the object dir in libraries.
+
+2014-01-24  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Add documentation of check flag fields.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): If an actual is a view
+	conversion of a discriminated object, and the formal type is
+	discriminated and constrained, apply a discriminant check to
+	the object itself.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* prj.adb, prj-env.adb, back_end.adb: Add comment, minor code clean ups.

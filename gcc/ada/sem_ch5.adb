@@ -2457,9 +2457,11 @@ package body Sem_Ch5 is
 
       --  Check for null or possibly null range and issue warning. We suppress
       --  such messages in generic templates and instances, because in practice
-      --  they tend to be dubious in these cases.
+      --  they tend to be dubious in these cases. The check applies as well to
+      --  rewritten array element loops where a null range may be detected
+      --  statically.
 
-      if Nkind (DS) = N_Range and then Comes_From_Source (N) then
+      if Nkind (DS) = N_Range then
          declare
             L : constant Node_Id := Low_Bound  (DS);
             H : constant Node_Id := High_Bound (DS);
@@ -2481,21 +2483,23 @@ package body Sem_Ch5 is
                   if Compile_Time_Compare
                        (L, H, Assume_Valid => False) = GT
                   then
-                     Error_Msg_N
-                       ("??loop range is null, loop will not execute", DS);
-
                      --  Since we know the range of the loop is null, set the
                      --  appropriate flag to remove the loop entirely during
                      --  expansion.
 
                      Set_Is_Null_Loop (Loop_Nod);
 
-                  --  Here is where the loop could execute because of invalid
-                  --  values, so issue appropriate message and in this case we
-                  --  do not set the Is_Null_Loop flag since the loop may
-                  --  execute.
+                     if Comes_From_Source (N) then
+                        Error_Msg_N
+                          ("??loop range is null, loop will not execute", DS);
+                     end if;
 
-                  else
+                     --  Here is where the loop could execute because of
+                     --  invalid values, so issue appropriate message and in
+                     --  this case we do not set the Is_Null_Loop flag since
+                     --  the loop may execute.
+
+                  elsif Comes_From_Source (N) then
                      Error_Msg_N
                        ("??loop range may be null, loop may not execute",
                         DS);
