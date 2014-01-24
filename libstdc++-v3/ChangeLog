@@ -1,3 +1,39 @@
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/59531
+	* testsuite/experimental/string_view/operations/copy/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/copy/wchar_t/1.cc: New.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59531
+	* include/experimental/string_view
+	(copy(_CharT*, size_type, size_type) const): Correct throw string.
+	Correct copy start location.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59530
+	* include/experimental/string_view (operator[](size_type) const):
+	Fix one-off index error in debug check.
+	* testsuite/experimental/string_view/element_access/char/1.cc: Don't
+	test basic_string_view at size().
+	* testsuite/experimental/string_view/element_access/wchar_t/1.cc: Ditto.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59529
+	* include/experimental/string_view
+	(basic_string_view(const _CharT*, size_type)): Don't care if len == 0.
+	* testsuite/experimental/string_view/operations/substr/char/1.cc:
+	Comment out catch of out_of_range; No terminating null
+	in basic_string_view.  Check begin == end.
+	* testsuite/experimental/string_view/operations/substr/wchar_t/1.cc:
+	Ditto.
+
 2014-01-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59548

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++1y" }
 
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// basic_string_view::substr
+// basic_string_view::copy
 
 #include <experimental/string_view>
 #include <stdexcept>
@@ -29,47 +29,15 @@ test01()
   bool test [[gnu::unused]] = true;
 
   typedef std::experimental::wstring_view::size_type csize_type;
-  typedef std::experimental::wstring_view::const_reference cref;
-  typedef std::experimental::wstring_view::reference ref;
   csize_type csz01;
 
-  const wchar_t str_lit01[] = L"rockaway, pacifica";
+  const wchar_t str_lit01[] = L"123456789A";
   const std::experimental::wstring_view str01(str_lit01);
-  std::experimental::wstring_view str02;
+  wchar_t buffer[4] = { 0 };
 
-  // basic_string_view<charT, _Traits, _Alloc>
-  //  substr(size_type pos = 0, size_type n = npos) const;
-  csz01 = str01.size();
-  str02 = str01.substr(0, 1);
-  VERIFY( str02 == L"r" );
-  str02 = str01.substr(10);
-  VERIFY( str02 == L"pacifica" );
-
-  try
-  {
-    str02 = str01.substr(csz01 + 1);
-    VERIFY( false ); 
-  }
-  catch(std::out_of_range& fail)
-  {
-    VERIFY( true );
-  }
-  catch(...)
-  {
-    VERIFY( false );
-  }
-
-  try
-  {
-    str02 = str01.substr(csz01);
-    VERIFY( str02.size() == 0 );
-    VERIFY( str02.begin() == str01.end() );
-    VERIFY( true );
-  }
-  catch(...)
-  {
-    VERIFY( false );
-  }
+  csize_type len = str01.copy(buffer, sizeof(buffer), 8);
+  VERIFY( 2 == len );
+  VERIFY( L'9' == buffer[0] );
 
   return test;
 }
