@@ -1290,17 +1290,14 @@ package Opt is
 
    Sprint_Line_Limit : Nat := 72;
    --  GNAT
-   --  Limit values for chopping long lines in Sprint output, can be reset
-   --  by use of NNN parameter with -gnatG or -gnatD switches.
+   --  Limit values for chopping long lines in Sprint output, can be reset by
+   --  use of NNN parameter with -gnatG or -gnatD switches.
 
-   Stack_Checking_Enabled : Boolean;
+   Stack_Checking_Enabled : Boolean := False;
    --  GNAT
-   --  Set to indicate if -fstack-check switch is set for the compilation. True
-   --  means that the switch is set, so that stack checking is enabled. False
-   --  means that the switch is not set (no stack checking). This value is
-   --  obtained from the external imported value flag_stack_check in the gcc
-   --  backend (see Frontend) and may be referenced throughout the compilation
-   --  phases.
+   --  Set to indicate if stack checking is enabled for the compilation. This
+   --  is set directly from the value in the gcc back end in the body of the
+   --  gcc version of back_end.adb.
 
    Style_Check : Boolean := False;
    --  GNAT

@@ -10793,7 +10793,7 @@ package body Sem_Ch13 is
 
         --  Don't do this if Short_Enums on target
 
-        and then not Short_Enums_On_Target
+        and then not Target_Short_Enums
       then
          Init_Esize (T, Standard_Integer_Size);
       else

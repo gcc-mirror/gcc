@@ -5278,7 +5278,7 @@ package body Freeze is
 
         --  Don't do this if Short_Enums on target
 
-        and then not Short_Enums_On_Target
+        and then not Target_Short_Enums
       then
          Init_Esize (Typ, Standard_Integer_Size);
          Set_Alignment (Typ, Alignment (Standard_Integer));
@@ -5301,7 +5301,7 @@ package body Freeze is
 
            --  Don't do this if Short_Enums on target
 
-           and then not Short_Enums_On_Target
+           and then not Target_Short_Enums
          then
             Error_Msg_N
               ("C enum types have the size of a C int??", Size_Clause (Typ));

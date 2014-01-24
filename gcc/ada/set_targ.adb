@@ -60,6 +60,7 @@ package body Set_Targ is
    S_Maximum_Alignment          : constant Str := "Maximum_Alignment";
    S_Max_Unaligned_Field        : constant Str := "Max_Unaligned_Field";
    S_Pointer_Size               : constant Str := "Pointer_Size";
+   S_Short_Enums                : constant Str := "Short_Enums";
    S_Short_Size                 : constant Str := "Short_Size";
    S_Strict_Alignment           : constant Str := "Strict_Alignment";
    S_System_Allocator_Alignment : constant Str := "System_Allocator_Alignment";
@@ -88,6 +89,7 @@ package body Set_Targ is
           S_Maximum_Alignment          'Unrestricted_Access,
           S_Max_Unaligned_Field        'Unrestricted_Access,
           S_Pointer_Size               'Unrestricted_Access,
+          S_Short_Enums                'Unrestricted_Access,
           S_Short_Size                 'Unrestricted_Access,
           S_Strict_Alignment           'Unrestricted_Access,
           S_System_Allocator_Alignment 'Unrestricted_Access,
@@ -114,6 +116,7 @@ package body Set_Targ is
           Maximum_Alignment          'Address,
           Max_Unaligned_Field        'Address,
           Pointer_Size               'Address,
+          Short_Enums                'Address,
           Short_Size                 'Address,
           Strict_Alignment           'Address,
           System_Allocator_Alignment 'Address,

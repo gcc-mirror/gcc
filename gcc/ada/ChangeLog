@@ -1,3 +1,19 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* back_end.adb: Remove Short_Enums handling (handled in
+	Ttypes/Get_Targ now) Minor added comments.
+	* freeze.adb: Change name Short_Enums_On_Target to
+	Target_Short_Enums.
+	* get_targ.ads, get_targ.adb (Get_Short_Enums): New function.
+	* opt.ads: Minor comment updates.
+	* sem_ch13.adb: Change name Short_Enums_On_Target to
+	Target_Short_Enums.
+	* set_targ.adb: Set Short_Enums from gcc back end.
+	* set_targ.ads (Short_Enums): New variable.
+	* targparm.ads, targparm.adb: Remove Short_Enums entries (handled in
+	Ttypes/Get_Targ now).
+	* ttypes.ads (Target_Short_Enums): New constant boolean switch
+
 2014-01-24  Pascal Obry  <obry@adacore.com>
 
 	* g-sercom-mingw.adb: Fix serial port name for port number > 10.
