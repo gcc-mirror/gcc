@@ -1,3 +1,8 @@
+2014-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57524
+	* name-lookup.c (push_using_directive): Use timevar_cond_start.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59846
