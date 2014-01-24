@@ -1,3 +1,7 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* prj.adb, prj-env.adb, back_end.adb: Add comment, minor code clean ups.
+
 2014-01-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Declarations): At the end of an

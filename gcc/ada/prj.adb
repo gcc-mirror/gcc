@@ -1488,8 +1488,8 @@ package body Prj is
             if Project.Object_Directory = No_Path_Information
               or else
                 (Including_Libraries
-                 and then
-                 Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name))
+                  and then
+                    Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name))
             then
                return Project.Library_ALI_Dir.Display_Name;
             else

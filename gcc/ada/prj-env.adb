@@ -40,7 +40,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 package body Prj.Env is
 
    Buffer_Initial : constant := 1_000;
-   --  Initial size of Buffer
+   --  Initial arbitrary size of buffers
 
    Uninitialized_Prefix : constant String := '#' & Path_Separator;
    --  Prefix to indicate that the project path has not been initialized yet.
@@ -151,7 +151,7 @@ package body Prj.Env is
          --  this project, compute the source path
 
          if Project.Ada_Include_Path = null then
-            Buffer := new String (1 .. 4096);
+            Buffer := new String (1 .. Buffer_Initial);
             For_All_Projects
               (Project, In_Tree, Dummy, Include_Aggregated => True);
             Project.Ada_Include_Path := new String'(Buffer (1 .. Buffer_Last));
@@ -161,7 +161,7 @@ package body Prj.Env is
          return Project.Ada_Include_Path.all;
 
       else
-         Buffer := new String (1 .. 4096);
+         Buffer := new String (1 .. Buffer_Initial);
          Add_To_Path
            (Project.Source_Dirs, In_Tree.Shared, Buffer, Buffer_Last);
 
@@ -236,14 +236,13 @@ package body Prj.Env is
          return Project.Ada_Objects_Path_No_Libs;
 
       else
-         Buffer := new String (1 .. 4096);
+         Buffer := new String (1 .. Buffer_Initial);
          For_All_Projects (Project, In_Tree, Dummy);
          Result := new String'(Buffer (1 .. Buffer_Last));
          Free (Buffer);
 
          if Including_Libraries then
             Project.Ada_Objects_Path := Result;
-
          else
             Project.Ada_Objects_Path_No_Libs := Result;
          end if;

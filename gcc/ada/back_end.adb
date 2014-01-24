@@ -268,6 +268,8 @@ package body Back_End is
       Opt.Stack_Checking_Enabled := (flag_stack_check /= 0);
 
       --  Acquire short enums flag directly from GCC
+      --  This needs documentation in the spec ???
+      --  So does the one above! ???
 
       Targparm.Short_Enums_On_Target := (flag_short_enums /= 0);
 
