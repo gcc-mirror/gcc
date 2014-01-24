@@ -219,21 +219,37 @@ package body Prj.Env is
 
       Dummy : Boolean := False;
 
+      Result : String_Access;
+
    --  Start of processing for Ada_Objects_Path
 
    begin
       --  If it is the first time we call this function for
       --  this project, compute the objects path
 
-      if Project.Ada_Objects_Path = null then
+      if Including_Libraries and then Project.Ada_Objects_Path /= null then
+         return Project.Ada_Objects_Path;
+
+      elsif not Including_Libraries
+        and then Project.Ada_Objects_Path_No_Libs /= null
+      then
+         return Project.Ada_Objects_Path_No_Libs;
+
+      else
          Buffer := new String (1 .. 4096);
          For_All_Projects (Project, In_Tree, Dummy);
-
-         Project.Ada_Objects_Path := new String'(Buffer (1 .. Buffer_Last));
+         Result := new String'(Buffer (1 .. Buffer_Last));
          Free (Buffer);
-      end if;
 
-      return Project.Ada_Objects_Path;
+         if Including_Libraries then
+            Project.Ada_Objects_Path := Result;
+
+         else
+            Project.Ada_Objects_Path_No_Libs := Result;
+         end if;
+
+         return Result;
+      end if;
    end Ada_Objects_Path;
 
    -------------------

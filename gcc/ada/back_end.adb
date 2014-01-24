@@ -40,6 +40,7 @@ with Switch;    use Switch;
 with Switch.C;  use Switch.C;
 with System;    use System;
 with Types;     use Types;
+with Targparm;
 
 with System.OS_Lib; use System.OS_Lib;
 
@@ -52,6 +53,10 @@ package body Back_End is
    flag_stack_check : Int;
    pragma Import (C, flag_stack_check);
    --  Indicates if stack checking is enabled, imported from misc.c
+
+   flag_short_enums : Int;
+   pragma Import (C, flag_short_enums);
+   --  Indicates if C enumerations are packed, imported from misc.c
 
    save_argc : Nat;
    pragma Import (C, save_argc);
@@ -261,6 +266,10 @@ package body Back_End is
       --  Acquire stack checking mode directly from GCC
 
       Opt.Stack_Checking_Enabled := (flag_stack_check /= 0);
+
+      --  Acquire short enums flag directly from GCC
+
+      Targparm.Short_Enums_On_Target := (flag_short_enums /= 0);
 
       --  Put the arguments in Args
 

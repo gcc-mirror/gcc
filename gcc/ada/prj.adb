@@ -1105,6 +1105,7 @@ package body Prj is
          Free (Project.Ada_Include_Path);
          Free (Project.Objects_Path);
          Free (Project.Ada_Objects_Path);
+         Free (Project.Ada_Objects_Path_No_Libs);
          Free_List (Project.Imported_Projects, Free_Project => False);
          Free_List (Project.All_Imported_Projects, Free_Project => False);
          Free_List (Project.Languages);
@@ -1485,7 +1486,10 @@ package body Prj is
 
          if Project.Library then
             if Project.Object_Directory = No_Path_Information
-              or else Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name)
+              or else
+                (Including_Libraries
+                 and then
+                 Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name))
             then
                return Project.Library_ALI_Dir.Display_Name;
             else

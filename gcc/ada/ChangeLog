@@ -1,5 +1,45 @@
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch7.adb: Minor change of Indices to Indexes (preferred
+	terminology in compiler).
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* scans.ads: Remove Tok_Raise from Sterm, Eterm, After_SM
+	categories, now that Ada 95 supports raise expressions.
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Enumeration_Type): Use new target parameter
+	Short_Enums_On_Target.
+	* sem_ch13.adb (Set_Enum_Esize): Take Short_Enums_On_Target
+	into account.
+	* targparm.ads, targparm.adb: Add new target parameter Short_Enums.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): If subtype
+	indication is given explicity, check that it matches the array
+	component type or the container element type of the domain
+	of iteration.
+
+2014-01-24  Tristan Gingold  <gingold@adacore.com>
+
+	* back_end.adb (Scan_Compiler_Arguments): Set Short_Enums_On_Target.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (Ada_Objects_Path): Use Ada_Objects_Path_No_Libs
+	to cache the result when Including_Libraries is False.
+	* prj-env.ads (Ada_Objects_Path): Update documentation
+	* prj.adb (Free (Project_Id)): Also free Ada_Objects_Path_No_Libs
+	(Get_Object_Directory): Return the Library_Ali_Dir only when
+	when Including_Libraries is True.
+	* prj.ads (Get_Object_Directory): Fix and complete documentation
+	(Project_Data): New component Ada_Objects_Path_No_Libs
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Expr_Known_Valid): Result of fpt operator never
 	considered valid.
 

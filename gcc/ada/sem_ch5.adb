@@ -1680,12 +1680,21 @@ package body Sem_Ch5 is
 
       Ent : Entity_Id;
       Typ : Entity_Id;
+      Bas : Entity_Id;
 
    begin
       Enter_Name (Def_Id);
 
       if Present (Subt) then
          Analyze (Subt);
+
+         --  Save type of subtype indication for subsequent check.
+
+         if Nkind (Subt) = N_Subtype_Indication then
+            Bas := Entity (Subtype_Mark (Subt));
+         else
+            Bas := Entity (Subt);
+         end if;
       end if;
 
       Preanalyze_Range (Iter_Name);
@@ -1804,6 +1813,13 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
 
+            if Present (Subt)
+              and then Bas /= Base_Type (Component_Type (Typ))
+            then
+               Error_Msg_N
+                 ("subtype indication does not match component type", Subt);
+            end if;
+
          --  Here we have a missing Range attribute
 
          else
@@ -1848,6 +1864,17 @@ package body Sem_Ch5 is
                   return;
                else
                   Set_Etype (Def_Id, Entity (Element));
+
+                  --  If subtype indication was given, verify that it matches
+                  --  element type of container.
+
+                  if Present (Subt)
+                     and then Bas /= Base_Type (Etype (Def_Id))
+                  then
+                     Error_Msg_N
+                       ("subtype indication does not match element type",
+                          Subt);
+                  end if;
 
                   --  If the container has a variable indexing aspect, the
                   --  element is a variable and is modifiable in the loop.

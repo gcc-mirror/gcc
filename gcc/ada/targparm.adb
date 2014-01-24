@@ -63,6 +63,7 @@ package body Targparm is
       SCD,  --   Stack_Check_Default
       SCL,  --   Stack_Check_Limits
       SCP,  --   Stack_Check_Probes
+      SHE,  --   Short_Enums
       SLS,  --   Support_Long_Shifts
       SNZ,  --   Signed_Zeros
       SSL,  --   Suppress_Standard_Library
@@ -101,6 +102,7 @@ package body Targparm is
    SCD_Str : aliased constant Source_Buffer := "Stack_Check_Default";
    SCL_Str : aliased constant Source_Buffer := "Stack_Check_Limits";
    SCP_Str : aliased constant Source_Buffer := "Stack_Check_Probes";
+   SHE_Str : aliased constant Source_Buffer := "Short_Enums";
    SLS_Str : aliased constant Source_Buffer := "Support_Long_Shifts";
    SNZ_Str : aliased constant Source_Buffer := "Signed_Zeros";
    SSL_Str : aliased constant Source_Buffer := "Suppress_Standard_Library";
@@ -139,6 +141,7 @@ package body Targparm is
       SCD_Str'Access,
       SCL_Str'Access,
       SCP_Str'Access,
+      SHE_Str'Access,
       SLS_Str'Access,
       SNZ_Str'Access,
       SSL_Str'Access,
@@ -587,6 +590,7 @@ package body Targparm is
                      when EXS => Exit_Status_Supported_On_Target     := Result;
                      when FEL => Frontend_Layout_On_Target           := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
+
                      when JVM =>
                         if Result then
                            VM_Target := JVM_Target;
@@ -608,6 +612,7 @@ package body Targparm is
                      when SCD => Stack_Check_Default_On_Target       := Result;
                      when SCL => Stack_Check_Limits_On_Target        := Result;
                      when SCP => Stack_Check_Probes_On_Target        := Result;
+                     when SHE => Short_Enums_On_Target               := Result;
                      when SLS => Support_Long_Shifts_On_Target       := Result;
                      when SSL => Suppress_Standard_Library_On_Target := Result;
                      when SNZ => Signed_Zeros_On_Target              := Result;
