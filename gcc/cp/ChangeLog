@@ -1,3 +1,10 @@
+2014-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59886
+	PR c++/59659
+	* typeck2.c (process_init_constructor_array): Don't create
+	RANGE_EXPR yet.
+
 2014-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck2.c (split_nonconstant_init_1): Fix num_split_elts
