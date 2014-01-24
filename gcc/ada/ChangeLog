@@ -1,3 +1,17 @@
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Document that aggregate projects are only
+	supported by gprbuild, but not by gnatmake.  Document that the
+	only attribute Switches in package Binder of aggregate projects
+	will be ignored if its index is not others.  Document that
+	attribute Global_Config_File is allowed in package Binder of
+	aggregate projects.
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor code reorganization.
+	* sem_util.adb: Minor fix of potential latent bug in Is_LHS.
+
 2014-01-24  Pascal Obry  <obry@adacore.com>
 
 	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add Excluded_Patterns

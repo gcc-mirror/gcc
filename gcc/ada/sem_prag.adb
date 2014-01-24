@@ -15565,14 +15565,10 @@ package body Sem_Prag is
 
             case Ekind (Ent) is
 
-               --  Objects (constants and variables)
+               --  Objects (constants and variables) and types. For these cases
+               --  all we need to do is to set the Linker_Section_pragma field.
 
-               when E_Constant | E_Variable =>
-                  Set_Linker_Section_Pragma (Ent, N);
-
-               --  Types
-
-               when Type_Kind =>
+               when E_Constant | E_Variable | Type_Kind =>
                   Set_Linker_Section_Pragma (Ent, N);
 
                --  Subprograms
