@@ -110,13 +110,15 @@ aarch64_rewrite_selected_cpu (const char *name)
 
 /* Called by the driver to rewrite a name passed to the -mcpu
    argument in preparation to be passed to the assembler.  The
-   name will be in ARGV[0], ARGC should always be 1.  */
+   names passed from the commend line will be in ARGV, we want
+   to use the right-most argument, which should be in
+   ARGV[ARGC - 1].  ARGC should always be greater than 0.  */
 
 const char *
 aarch64_rewrite_mcpu (int argc, const char **argv)
 {
-  gcc_assert (argc == 1);
-  return aarch64_rewrite_selected_cpu (argv[0]);
+  gcc_assert (argc);
+  return aarch64_rewrite_selected_cpu (argv[argc - 1]);
 }
 
 #undef AARCH64_CPU_NAME_LENGTH
