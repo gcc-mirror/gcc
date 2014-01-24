@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---      Copyright (C) 2007-2009  Free Software Foundation, Inc.             --
+--          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,9 @@
 ------------------------------------------------------------------------------
 
 with Ada.Numerics.Long_Elementary_Functions;
-use Ada.Numerics.Long_Elementary_Functions;
+use  Ada.Numerics.Long_Elementary_Functions;
 with Ada.Unchecked_Conversion;
+
 with System.Random_Numbers; use System.Random_Numbers;
 
 package body GNAT.Random_Numbers is
@@ -87,6 +88,40 @@ package body GNAT.Random_Numbers is
       return F (Gen.Rep, Min, Max);
    end Random_Discrete;
 
+   --------------------------
+   -- Random_Decimal_Fixed --
+   --------------------------
+
+   function Random_Decimal_Fixed
+     (Gen : Generator;
+      Min : Result_Subtype := Default_Min;
+      Max : Result_Subtype := Result_Subtype'Last) return Result_Subtype
+   is
+      subtype IntV is Integer_64 range
+        Integer_64'Integer_Value (Min) ..
+        Integer_64'Integer_Value (Max);
+      function R is new Random_Discrete (Integer_64, IntV'First);
+   begin
+      return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+   end Random_Decimal_Fixed;
+
+   ---------------------------
+   -- Random_Ordinary_Fixed --
+   ---------------------------
+
+   function Random_Ordinary_Fixed
+     (Gen : Generator;
+      Min : Result_Subtype := Default_Min;
+      Max : Result_Subtype := Result_Subtype'Last) return Result_Subtype
+   is
+      subtype IntV is Integer_64 range
+        Integer_64'Integer_Value (Min) ..
+        Integer_64'Integer_Value (Max);
+      function R is new Random_Discrete (Integer_64, IntV'First);
+   begin
+      return Result_Subtype'Fixed_Value (R (Gen, IntV'First, IntV'Last));
+   end Random_Ordinary_Fixed;
+
    ------------
    -- Random --
    ------------
@@ -137,7 +172,7 @@ package body GNAT.Random_Numbers is
    -- Random_Float --
    ------------------
 
-   function Random_Float (Gen   : Generator) return Result_Subtype is
+   function Random_Float (Gen : Generator) return Result_Subtype is
       function F is new System.Random_Numbers.Random_Float (Result_Subtype);
    begin
       return F (Gen.Rep);

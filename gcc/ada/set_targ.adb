@@ -573,6 +573,7 @@ begin
       Maximum_Alignment          := Get_Maximum_Alignment;
       Max_Unaligned_Field        := Get_Max_Unaligned_Field;
       Pointer_Size               := Get_Pointer_Size;
+      Short_Enums                := Get_Short_Enums;
       Short_Size                 := Get_Short_Size;
       Strict_Alignment           := Get_Strict_Alignment;
       System_Allocator_Alignment := Get_System_Allocator_Alignment;

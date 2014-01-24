@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---      Copyright (C) 2007-2009  Free Software Foundation, Inc.             --
+--          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,9 +79,27 @@ package GNAT.Random_Numbers is
    --  Returns pseudo-random numbers uniformly distributed on Min .. Max
 
    generic
+      type Result_Subtype is delta <>;
+      Default_Min : Result_Subtype := 0.0;
+   function Random_Ordinary_Fixed
+     (Gen   : Generator;
+      Min   : Result_Subtype := Default_Min;
+      Max   : Result_Subtype := Result_Subtype'Last) return Result_Subtype;
+   --  Returns pseudo-random numbers uniformly distributed on Min .. Max
+
+   generic
+      type Result_Subtype is delta <> digits <>;
+      Default_Min : Result_Subtype := 0.0;
+   function Random_Decimal_Fixed
+     (Gen   : Generator;
+      Min   : Result_Subtype := Default_Min;
+      Max   : Result_Subtype := Result_Subtype'Last) return Result_Subtype;
+   --  Returns pseudo-random numbers uniformly distributed on Min .. Max
+
+   generic
       type Result_Subtype is digits <>;
    function Random_Float (Gen   : Generator) return Result_Subtype;
-   --  Returns pseudo-random numbers uniformly distributed on [0 .. 1)
+   --  Returns pseudo-random numbers uniformly distributed on [0.0 .. 1.0)
 
    function Random_Gaussian (Gen : Generator) return Long_Float;
    function Random_Gaussian (Gen : Generator) return Float;
