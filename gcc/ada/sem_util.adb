@@ -2618,7 +2618,13 @@ package body Sem_Util is
             elsif Nkind_In (N, N_Expanded_Name, N_Identifier) then
                Ent := Entity (N);
 
-               if No (Ent) or else Ekind (Ent) in Assignable_Kind then
+               --  The entity may be modifiable through an implicit dereference
+
+               if No (Ent)
+                 or else Ekind (Ent) in Assignable_Kind
+                 or else (Is_Access_Type (Etype (Ent))
+                           and then Nkind (Parent (N)) = N_Selected_Component)
+               then
                   Post_State_Seen := True;
                   return Abandon;
                end if;

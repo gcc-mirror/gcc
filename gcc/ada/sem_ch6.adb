@@ -2995,9 +2995,17 @@ package body Sem_Ch6 is
 
             Push_Scope (Spec_Id);
 
-            --  Set SPARK_Mode from spec if spec had a SPARK_Mode pragma
+            --  Set SPARK_Mode
 
-            if Present (SPARK_Pragma (Spec_Id))
+            --  For internally generated subprogram, always off
+
+            if not Comes_From_Source (Spec_Id) then
+               SPARK_Mode := Off;
+               SPARK_Mode_Pragma := Empty;
+
+            --  Inherited from spec
+
+            elsif Present (SPARK_Pragma (Spec_Id))
               and then not SPARK_Pragma_Inherited (Spec_Id)
             then
                SPARK_Mode_Pragma := SPARK_Pragma (Spec_Id);
@@ -3058,12 +3066,19 @@ package body Sem_Ch6 is
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
             Install_Formals (Body_Id);
 
-            --  Set SPARK_Mode from context
-
-            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-            Set_SPARK_Pragma_Inherited (Body_Id, True);
-
             Push_Scope (Body_Id);
+
+            --  Set SPARK_Mode from context or OFF for internal routine
+
+            if Comes_From_Source (Body_Id) then
+               Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+               Set_SPARK_Pragma_Inherited (Body_Id, True);
+            else
+               Set_SPARK_Pragma (Body_Id, Empty);
+               Set_SPARK_Pragma_Inherited (Body_Id, False);
+               SPARK_Mode := Off;
+               SPARK_Mode_Pragma := Empty;
+            end if;
          end if;
 
          --  For stubs and bodies with no previous spec, generate references to
@@ -3609,8 +3624,16 @@ package body Sem_Ch6 is
 
       Generate_Definition (Designator);
 
-      Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited (Designator, True);
+      --  Set SPARK mode, always off for internal routines, otherwise set
+      --  from current context (may be overwritten later with explicit pragma)
+
+      if Comes_From_Source (Designator) then
+         Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (Designator, True);
+      else
+         Set_SPARK_Pragma (Designator, Empty);
+         Set_SPARK_Pragma_Inherited (Designator, False);
+      end if;
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");

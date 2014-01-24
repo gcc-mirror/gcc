@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,6 +253,16 @@ package body Prj.Dect is
               or else Name = Snames.Name_Exec_Dir
               or else Name = Snames.Name_Source_Dirs
               or else Name = Snames.Name_Inherit_Source_Path
+              or else
+                (Qualif = Aggregate and then Name = Snames.Name_Library_Dir)
+              or else
+                (Qualif = Aggregate and then Name = Snames.Name_Library_Name)
+              or else Name = Snames.Name_Main
+              or else Name = Snames.Name_Roots
+              or else Name = Snames.Name_Externally_Built
+              or else Name = Snames.Name_Executable
+              or else Name = Snames.Name_Executable_Suffix
+              or else Name = Snames.Name_Default_Switches
             then
                Error_Msg_Name_1 := Name;
                Error_Msg
