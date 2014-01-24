@@ -1,3 +1,53 @@
+2014-01-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59909
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mquad-memory-atomic.  Update -mquad-memory documentation to say
+	it is only used for non-atomic loads/stores.
+
+	* config/rs6000/predicates.md (quad_int_reg_operand): Allow either
+	-mquad-memory or -mquad-memory-atomic switches.
+
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Add
+	-mquad-memory-atomic to ISA 2.07 support.
+
+	* config/rs6000/rs6000.opt (-mquad-memory-atomic): Add new switch
+	to separate support of normal quad word memory operations (ldq,
+	stq) from the atomic quad word memory operations.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	support to separate non-atomic quad word operations from atomic
+	quad word operations.  Disable non-atomic quad word operations in
+	little endian mode so that we don't have to swap words after the
+	load and before the store.
+	(quad_load_store_p): Add comment about atomic quad word support.
+	(rs6000_opt_masks): Add -mquad-memory-atomic to the list of
+	options printed with -mdebug=reg.
+
+	* config/rs6000/rs6000.h (TARGET_SYNC_TI): Use
+	-mquad-memory-atomic as the test for whether we have quad word
+	atomic instructions.
+	(TARGET_SYNC_HI_QI): If either -mquad-memory-atomic,
+	-mquad-memory, or -mp8-vector are used, allow byte/half-word
+	atomic operations.
+
+	* config/rs6000/sync.md (load_lockedti): Insure that the address
+	is a proper indexed or indirect address for the lqarx instruction.
+	On little endian systems, swap the hi/lo registers after the lqarx
+	instruction.
+	(load_lockedpti): Use indexed_or_indirect_operand predicate to
+	insure the address is valid for the lqarx instruction.
+	(store_conditionalti): Insure that the address is a proper indexed
+	or indirect address for the stqcrx. instruction.  On little endian
+	systems, swap the hi/lo registers before doing the stqcrx.
+	instruction.
+	(store_conditionalpti): Use indexed_or_indirect_operand predicate to
+	insure the address is valid for the stqcrx. instruction.
+
+	* gcc/config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Define __QUAD_MEMORY__ and __QUAD_MEMORY_ATOMIC__ based on what
+	type of quad memory support is available.
+
 2014-01-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR regression/59915

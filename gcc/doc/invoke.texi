@@ -919,6 +919,7 @@ See RS/6000 and PowerPC Options.
 -mpower8-fusion -mno-mpower8-fusion -mpower8-vector -mno-power8-vector @gol
 -mcrypto -mno-crypto -mdirect-move -mno-direct-move @gol
 -mquad-memory -mno-quad-memory @gol
+-mquad-memory-atomic -mno-quad-memory-atomic @gol
 -mcompat-align-parm -mno-compat-align-parm}
 
 @emph{RX Options}
@@ -18853,7 +18854,8 @@ following options:
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
--mcrypto -mdirect-move -mpower8-fusion -mpower8-vector -mquad-memory}
+-mcrypto -mdirect-move -mpower8-fusion -mpower8-vector @gol
+-mquad-memory -mquad-memory-atomic}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -19040,8 +19042,16 @@ the vector instructions.
 @itemx -mno-quad-memory
 @opindex mquad-memory
 @opindex mno-quad-memory
-Generate code that uses (does not use) the quad word memory
+Generate code that uses (does not use) the non-atomic quad word memory
 instructions.  The @option{-mquad-memory} option requires use of
+64-bit mode.
+
+@item -mquad-memory-atomic
+@itemx -mno-quad-memory-atomic
+@opindex mquad-memory-atomic
+@opindex mno-quad-memory-atomic
+Generate code that uses (does not use) the atomic quad word memory
+instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
 
 @item -mfloat-gprs=@var{yes/single/double/no}

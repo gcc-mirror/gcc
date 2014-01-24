@@ -270,7 +270,7 @@
 {
   HOST_WIDE_INT r;
 
-  if (!TARGET_QUAD_MEMORY)
+  if (!TARGET_QUAD_MEMORY && !TARGET_QUAD_MEMORY_ATOMIC)
     return 0;
 
   if (GET_CODE (op) == SUBREG)
@@ -624,6 +624,7 @@
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
 ;; Return 1 if the operand is suitable for load/store quad memory.
+;; This predicate only checks for non-atomic loads/stores.
 (define_predicate "quad_memory_operand"
   (match_code "mem")
 {
