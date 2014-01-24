@@ -6117,6 +6117,7 @@ package body Sem_Attr is
                                 (Low_Bound (Index), Etype (Index_Type));
                               Analyze_And_Resolve
                                 (High_Bound (Index), Etype (Index_Type));
+                              Set_Etype (Index, Etype (Index_Type));
 
                            else
                               Analyze_And_Resolve (Index, Etype (Index_Type));
