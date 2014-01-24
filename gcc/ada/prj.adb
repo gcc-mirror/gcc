@@ -1083,8 +1083,24 @@ package body Prj is
    ----------------------------
 
    procedure Add_Aggregated_Project
-     (Project : Project_Id; Path : Path_Name_Type) is
+     (Project : Project_Id;
+      Path    : Path_Name_Type)
+   is
+      Aggregated : Aggregated_Project_List;
+
    begin
+      --  Check if the project is already in the aggregated project list. If it
+      --  is, do not add it again.
+
+      Aggregated := Project.Aggregated_Projects;
+      while Aggregated /= null loop
+         if Path = Aggregated.Path then
+            return;
+         else
+            Aggregated := Aggregated.Next;
+         end if;
+      end loop;
+
       Project.Aggregated_Projects := new Aggregated_Project'
         (Path    => Path,
          Project => No_Project,

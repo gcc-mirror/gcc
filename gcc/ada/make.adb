@@ -4556,14 +4556,13 @@ package body Make is
 
       if Main_Project /= No_Project then
 
-         --  Put all the source directories in ADA_INCLUDE_PATH,
-         --  and all the object directories in ADA_OBJECTS_PATH,
-         --  except those of library projects.
+         --  Put all the source directories in ADA_INCLUDE_PATH, and all the
+         --  object directories in ADA_OBJECTS_PATH.
 
          Prj.Env.Set_Ada_Paths
            (Project             => Main_Project,
             In_Tree             => Project_Tree,
-            Including_Libraries => False,
+            Including_Libraries => True,
             Include_Path        => Use_Include_Path_File);
 
          --  If switch -C was specified, create a binder mapping file

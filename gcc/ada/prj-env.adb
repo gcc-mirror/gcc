@@ -147,8 +147,8 @@ package body Prj.Env is
    begin
       if Recursive then
 
-         --  If it is the first time we call this function for
-         --  this project, compute the source path
+         --  If it is the first time we call this function for this project,
+         --  compute the source path
 
          if Project.Ada_Include_Path = null then
             Buffer := new String (1 .. Buffer_Initial);

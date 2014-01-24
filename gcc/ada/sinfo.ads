@@ -517,7 +517,7 @@ package Sinfo is
    --  form that meets additional requirements.
 
    --  This light expansion does two transformations of the tree that cannot
-   --  be postponed after semantic analysis:
+   --  be postponed till after semantic analysis:
 
    --    1. Replace object renamings by renamed object. This requires the
    --       introduction of temporaries at the point of the renaming, which
@@ -555,15 +555,15 @@ package Sinfo is
 
    --  The following flag fields appear in expression nodes:
 
-   --  Do_Division_Check
-   --  Do_Overflow_Check
-   --  Do_Range_Check
+   --    Do_Division_Check
+   --    Do_Overflow_Check
+   --    Do_Range_Check
 
    --  These three flags are always set by the front end during semantic
    --  analysis, on expression nodes that may trigger the corresponding
-   --  check. The front end then inserts or not the check during expansion.
-   --  In particular, these flags should also be correctly set in ASIS mode
-   --  and GNATprove mode.
+   --  check. The front end then inserts or not the check during expansion. In
+   --  particular, these flags should also be correctly set in ASIS mode and
+   --  GNATprove mode.
 
    --  Note that this accounts for all nodes that trigger the corresponding
    --  checks, except for range checks on subtype_indications, which may be
@@ -572,11 +572,11 @@ package Sinfo is
 
    --  The following flag fields appear in various nodes:
 
-   --  Do_Accessibility_Check
-   --  Do_Discriminant_Check
-   --  Do_Length_Check
-   --  Do_Storage_Check
-   --  Do_Tag_Check
+   --    Do_Accessibility_Check
+   --    Do_Discriminant_Check
+   --    Do_Length_Check
+   --    Do_Storage_Check
+   --    Do_Tag_Check
 
    --  These flags are used in some specific cases by the front end, either
    --  during semantic analysis or during expansion, and cannot be expected

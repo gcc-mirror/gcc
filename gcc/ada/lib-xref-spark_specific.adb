@@ -1023,25 +1023,18 @@ package body SPARK_Specific is
             when N_Pragma =>
 
                --  The enclosing subprogram for a precondition, postcondition,
-               --  or contract case should be the subprogram to which the
-               --  pragma is attached, which can be found by following
-               --  previous elements in the list to which the pragma belongs.
+               --  or contract case should be the declaration preceding the
+               --  pragma (skipping any other pragmas between this pragma and
+               --  this declaration.
 
-               if Get_Pragma_Id (Result) = Pragma_Precondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Postcondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Contract_Cases
-               then
-                  if Is_List_Member (Result)
-                    and then Present (Prev (Result))
-                  then
-                     Result := Prev (Result);
-                  else
-                     Result := Parent (Result);
-                  end if;
+               while Nkind (Result) = N_Pragma
+                 and then Is_List_Member (Result)
+                 and then Present (Prev (Result))
+               loop
+                  Result := Prev (Result);
+               end loop;
 
-               else
+               if Nkind (Result) = N_Pragma then
                   Result := Parent (Result);
                end if;
 

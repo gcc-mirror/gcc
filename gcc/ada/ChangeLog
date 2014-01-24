@@ -1,3 +1,23 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, make.adb, prj-env.adb: Minor reformatting.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Add_Aggregated_Project): Do not add a project in
+	the list if it is already there.
+
+2014-01-24  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Enclosing_Subprogram_Or_Package):
+	Correct the search for a subrogram declaration to which a pragma is
+	attached.
+
+2014-01-24  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Document --decimal-grouping and
+	--based-grouping switches in gnatpp.
+
 2014-01-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads: Documentation update.
