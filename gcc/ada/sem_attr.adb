@@ -6013,6 +6013,11 @@ package body Sem_Attr is
             Comp_Or_Discr := First_Entity (Typ);
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
+
+                  --  Record component entity in the given aggregate choice,
+                  --  for subsequent resolution.
+
+                  Set_Entity (Comp, Comp_Or_Discr);
                   exit;
                end if;
 
@@ -6086,6 +6091,7 @@ package body Sem_Attr is
          Assoc := First (Component_Associations (E1));
          while Present (Assoc) loop
             Comp := First (Choices (Assoc));
+            Analyze (Expression (Assoc));
             while Present (Comp) loop
                if Nkind (Comp) = N_Others_Choice then
                   Error_Attr
@@ -8826,12 +8832,8 @@ package body Sem_Attr is
 
       --  Attribute Update is never static
 
-      ------------
-      -- Update --
-      ------------
-
       when Attribute_Update =>
-         null;
+         return;
 
       ---------------
       -- VADS_Size --
@@ -10408,6 +10410,57 @@ package body Sem_Attr is
          -------------------------
 
          --  Processing is shared with Access
+
+         ------------
+         -- Update --
+         ------------
+
+         --  Resolve aggregate components in component associations
+
+         when Attribute_Update =>
+            declare
+               Aggr  : constant Node_Id   := First (Expressions (N));
+               Typ   : constant Entity_Id := Etype (Prefix (N));
+               Assoc : Node_Id;
+               Comp  : Node_Id;
+
+            begin
+               --  Set the Etype of the aggregate to that of the prefix, even
+               --  though the aggregate may not be a proper representation of a
+               --  value of the type (missing or duplicated associations, etc.)
+
+               Set_Etype (Aggr, Typ);
+
+               --  For an array type, resolve expressions with the component
+               --  type of the array.
+
+               if Is_Array_Type (Typ) then
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Resolve (Expression (Assoc), Component_Type (Typ));
+                     Next (Assoc);
+                  end loop;
+
+               --  For a record type, use type of each component, which is
+               --  recorded during analysis.
+
+               else
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Comp := First (Choices (Assoc));
+                     if Nkind (Comp) /= N_Others_Choice
+                       and then not Error_Posted (Comp)
+                     then
+                        Resolve (Expression (Assoc), Etype (Entity (Comp)));
+                     end if;
+                     Next (Assoc);
+                  end loop;
+               end if;
+            end;
+
+            --  Premature return requires comment ???
+
+            return;
 
          ---------
          -- Val --

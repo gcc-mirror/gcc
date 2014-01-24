@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,12 +66,39 @@ package body Prj.Ext is
      (Self          : External_References;
       External_Name : String;
       Value         : String;
-      Source        : External_Source := External_Source'First)
+      Source        : External_Source := External_Source'First;
+      Silent        : Boolean := False)
    is
       Key : Name_Id;
       N   : Name_To_Name_Ptr;
 
    begin
+      --  For external attribute, set the environment variable
+
+      if Source = From_External_Attribute and then External_Name /= "" then
+         declare
+            Env_Var : String_Access := Getenv (External_Name);
+
+         begin
+            if Env_Var = null or else Env_Var.all = "" then
+               Setenv (Name => External_Name, Value => Value);
+
+               if not Silent then
+                  Debug_Output
+                    ("Environment variable """ & External_Name
+                     & """ = """ & Value & '"');
+               end if;
+
+            elsif not Silent then
+               Debug_Output
+                 ("Not overriding existing environment variable """
+                  & External_Name & """, value is """ & Env_Var.all & '"');
+            end if;
+
+            Free (Env_Var);
+         end;
+      end if;
+
       Name_Len := External_Name'Length;
       Name_Buffer (1 .. Name_Len) := External_Name;
       Canonical_Case_Env_Var_Name (Name_Buffer (1 .. Name_Len));
@@ -87,11 +114,13 @@ package body Prj.Ext is
             if External_Source'Pos (N.Source) <
                External_Source'Pos (Source)
             then
-               if Current_Verbosity = High then
+               if not Silent then
                   Debug_Output
-                    ("Not overridding existing variable '" & External_Name
-                     & "', value was defined in " & N.Source'Img);
+                    ("Not overridding existing external reference '"
+                     & External_Name & "', value was defined in "
+                     & N.Source'Img);
                end if;
+
                return;
             end if;
          end if;
@@ -105,7 +134,7 @@ package body Prj.Ext is
                   Value  => Name_Find,
                   Next   => null);
 
-      if Current_Verbosity = High then
+      if not Silent then
          Debug_Output ("Add external (" & External_Name & ") is", N.Value);
       end if;
 

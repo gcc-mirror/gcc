@@ -1838,7 +1838,7 @@ package body Prj is
 
    procedure Debug_Output (Str : String; Str2 : Name_Id) is
    begin
-      if Current_Verbosity = High then
+      if Current_Verbosity > Default then
          Debug_Indent;
          Set_Standard_Error;
          Write_Str (Str);

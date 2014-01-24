@@ -1,3 +1,65 @@
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): Analyze
+	expressions in each component association, and for records note
+	the entity in each association choice, for subsequent resolution.
+	(Resolve_Attribute, case 'Update): Complete resolution of
+	expressions in each component association.
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem.adb (Sem): Avoid premature reference to Current_Sem_Unit
+	(this was causing Is_Main_Unit_Or_Main_Unit_Spec to be set wrong,
+	leading to wrong handling of SPARK_Mode for library units).
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set SPARK_Mode
+	on generic instances (do not consider them to be internally
+	generated)
+
+2014-01-24  Doug Rupp  <rupp@adacore.com>
+
+	* s-osinte-android.ads (pthread_sigmask): Import sigprocmask
+	vice pthread_sigmask.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Debug_Output (Str, Str2)): Output if verbosity is
+	not default.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj-ext.adb (Add): Do not output anything when Silent is True,
+	whatever the verbosity. When Source is From_External_Attribute,
+	set the corresponding environment variable if it is not already set.
+	* prj-ext.ads (Add): New Boolean parameter Silent, defaulted
+	to False
+	* prj-proc.adb (Process_Expression_For_Associative_Array):
+	For attribute External, call Prj.Ext.Add with Silent set to
+	True for the child environment, to avoid useless output in non
+	default verbosity.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Set_Slice_Subtype): Handle properly a discrete
+	range given by a subtype indication, and force evaluation of
+	the bounds, as for a simple range.
+	* exp_util.adb (Evaluate_Slice_Bounds): Utility to force evaluation
+	of bounds of slice for various kinds of discrete ranges.
+	(Evaluate_Name, Evaluate_Subtype_From_Expr): use
+	Evaluate_Slice_Bounds.
+
+2014-01-24  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads (Activator): Make this Atomic, because
+	Activation_Is_Complete reads it, and that can be called
+	from any task. Previously, this component was only
+	modified by the activator before activation, and by
+	Self after activation.
+	* a-taside.ads, a-taside.adb (Environment_Task,
+	Activation_Is_Complete): Implement these missing functions.
+
 2014-01-24  Doug Rupp  <rupp@adacore.com>
 
 	* init.c: Add a handler section for Android.

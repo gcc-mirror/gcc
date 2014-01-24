@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -53,6 +53,9 @@ package Ada.Task_Identification is
    function Current_Task return Task_Id;
    pragma Inline (Current_Task);
 
+   function Environment_Task return Task_Id;
+   pragma Inline (Environment_Task);
+
    procedure Abort_Task (T : Task_Id);
    pragma Inline (Abort_Task);
    --  Note: parameter is mode IN, not IN OUT, per AI-00101
@@ -62,6 +65,8 @@ package Ada.Task_Identification is
 
    function Is_Callable (T : Task_Id) return Boolean;
    pragma Inline (Is_Callable);
+
+   function Activation_Is_Complete (T : Task_Id) return Boolean;
 
 private
 

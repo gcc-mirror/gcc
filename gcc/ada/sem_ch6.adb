@@ -2997,9 +2997,13 @@ package body Sem_Ch6 is
 
             --  Set SPARK_Mode
 
-            --  For internally generated subprogram, always off
+            --  For internally generated subprogram, always off. But generic
+            --  instances are not generated implicitly, so are never considered
+            --  as internal, even though Comes_From_Source is false.
 
-            if not Comes_From_Source (Spec_Id) then
+            if not Comes_From_Source (Spec_Id)
+              and then not Is_Generic_Instance (Spec_Id)
+            then
                SPARK_Mode := Off;
                SPARK_Mode_Pragma := Empty;
 

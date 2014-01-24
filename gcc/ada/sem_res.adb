@@ -10518,6 +10518,8 @@ package body Sem_Res is
       Drange        : constant Node_Id := Discrete_Range (N);
 
    begin
+      Index_Type := Base_Type (Etype (Drange));
+
       if Is_Entity_Name (Drange) then
          Index_Subtype := Entity (Drange);
 
@@ -10531,9 +10533,19 @@ package body Sem_Res is
          if Nkind (Drange) = N_Range then
             Force_Evaluation (Low_Bound (Drange));
             Force_Evaluation (High_Bound (Drange));
-         end if;
 
-         Index_Type := Base_Type (Etype (Drange));
+         --  If the discrete range is given by a subtype indication, the
+         --  type of the slice is the base of the subtype mark.
+
+         elsif Nkind (Drange) = N_Subtype_Indication then
+            declare
+               R : constant Node_Id := Range_Expression (Constraint (Drange));
+            begin
+               Index_Type := Base_Type (Entity (Subtype_Mark (Drange)));
+               Force_Evaluation (Low_Bound  (R));
+               Force_Evaluation (High_Bound (R));
+            end;
+         end if;
 
          Index_Subtype := Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
 
