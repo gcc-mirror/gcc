@@ -643,6 +643,8 @@ split_nonconstant_init_1 (tree dest, tree init)
 		  code = build_vec_init (sub, max, value, false, 0,
 					 tf_warning_or_error);
 		  add_stmt (code);
+		  if (tree_fits_shwi_p (max))
+		    num_split_elts += tree_to_shwi (max);
 		}
 	      else
 		{
