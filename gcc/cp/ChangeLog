@@ -1,5 +1,9 @@
 2014-01-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58550
+	* decl.c (grokdeclarator): Turn pedwarn about auto return type in
+	c++11 into error.
+
 	PR c++/59886
 	PR c++/59659
 	* typeck2.c (process_init_constructor_array): Don't create
