@@ -1201,42 +1201,40 @@ process_init_constructor_array (tree type, tree init,
       flags |= picflag_from_initializer (ce->value);
     }
 
-  /* No more initializers. If the array is unbounded, or we've initialized
-     all the elements, we are done. Otherwise, we must add initializers
-     ourselves.  */
-  if (!unbounded && i < len)
-    {
-      tree next;
+  /* No more initializers. If the array is unbounded, we are done. Otherwise,
+     we must add initializers ourselves.  */
+  if (!unbounded)
+    for (; i < len; ++i)
+      {
+	tree next;
 
-      if (type_build_ctor_call (TREE_TYPE (type)))
-	{
-	  /* If this type needs constructors run for default-initialization,
-	     we can't rely on the back end to do it for us, so make the
-	     initialization explicit by list-initializing from {}.  */
-	  next = build_constructor (init_list_type_node, NULL);
-	  next = massage_init_elt (TREE_TYPE (type), next, complain);
-	  if (initializer_zerop (next))
-	    /* The default zero-initialization is fine for us; don't
-	       add anything to the CONSTRUCTOR.  */
-	    next = NULL_TREE;
-	}
-      else if (!zero_init_p (TREE_TYPE (type)))
-	next = build_zero_init (TREE_TYPE (type),
-				/*nelts=*/NULL_TREE,
-				/*static_storage_p=*/false);
-      else
-	/* The default zero-initialization is fine for us; don't
-	   add anything to the CONSTRUCTOR.  */
-	next = NULL_TREE;
+	if (type_build_ctor_call (TREE_TYPE (type)))
+	  {
+	    /* If this type needs constructors run for default-initialization,
+	       we can't rely on the back end to do it for us, so make the
+	       initialization explicit by list-initializing from {}.  */
+	    next = build_constructor (init_list_type_node, NULL);
+	    next = massage_init_elt (TREE_TYPE (type), next, complain);
+	    if (initializer_zerop (next))
+	      /* The default zero-initialization is fine for us; don't
+		 add anything to the CONSTRUCTOR.  */
+	      next = NULL_TREE;
+	  }
+	else if (!zero_init_p (TREE_TYPE (type)))
+	  next = build_zero_init (TREE_TYPE (type),
+				  /*nelts=*/NULL_TREE,
+				  /*static_storage_p=*/false);
+	else
+	  /* The default zero-initialization is fine for us; don't
+	     add anything to the CONSTRUCTOR.  */
+	  next = NULL_TREE;
 
-      if (next)
-	{
-	  flags |= picflag_from_initializer (next);
-	  tree index = build2 (RANGE_EXPR, sizetype, size_int (i),
-			       size_int (len - 1));
-	  CONSTRUCTOR_APPEND_ELT (v, index, next);
-	}
-    }
+	if (next)
+	  {
+	    flags |= picflag_from_initializer (next);
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (i), next);
+	  }
+      }
 
   CONSTRUCTOR_ELTS (init) = v;
   return flags;
