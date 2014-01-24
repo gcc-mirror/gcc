@@ -30140,22 +30140,6 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
       vmode = GET_MODE (target);
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
       dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
-
-      /* For little endian, swap operands and invert/swap selectors
-	 to get the correct xxpermdi.  The operand swap sets up the
-	 inputs as a little endian array.  The selectors are swapped
-	 because they are defined to use big endian ordering.  The
-	 selectors are inverted to get the correct doublewords for
-	 little endian ordering.  */
-      if (!BYTES_BIG_ENDIAN)
-	{
-	  int n;
-	  perm0 = 3 - perm0;
-	  perm1 = 3 - perm1;
-	  n = perm0, perm0 = perm1, perm1 = n;
-	  x = op0, op0 = op1, op1 = x;
-	}
-
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
       x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
