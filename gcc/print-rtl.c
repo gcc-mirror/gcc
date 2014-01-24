@@ -51,6 +51,8 @@ static int sawclose = 0;
 
 static int indent;
 
+static bool in_call_function_usage;
+
 static void print_rtx (const_rtx);
 
 /* String printed at beginning of each RTL when it is dumped.
@@ -153,7 +155,8 @@ print_rtx (const_rtx in_rtx)
       if ((GET_CODE (in_rtx) == EXPR_LIST
 	   || GET_CODE (in_rtx) == INSN_LIST
 	   || GET_CODE (in_rtx) == INT_LIST)
-	  && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
+	  && (int)GET_MODE (in_rtx) < REG_NOTE_MAX
+	  && !in_call_function_usage)
 	fprintf (outfile, ":%s",
 		 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
 
@@ -350,7 +353,14 @@ print_rtx (const_rtx in_rtx)
 		   print_rtx_head, indent * 2, "");
 	if (!sawclose)
 	  fprintf (outfile, " ");
-	print_rtx (XEXP (in_rtx, i));
+	if (i == 8 && CALL_P (in_rtx))
+	  {
+	    in_call_function_usage = true;
+	    print_rtx (XEXP (in_rtx, i));
+	    in_call_function_usage = false;
+	  }
+	else
+	  print_rtx (XEXP (in_rtx, i));
 	indent -= 2;
 	break;
 
