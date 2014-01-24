@@ -1,3 +1,21 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Expr_Known_Valid): Result of fpt operator never
+	considered valid.
+
+2014-01-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* back_end.adb: Minor fix in comment.
+
+2014-01-24  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Code reestructuration
+	required to report the error in case of task types.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Additional index checking.
+
 2014-01-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case 'Update): Analyze
