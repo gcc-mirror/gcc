@@ -516,12 +516,12 @@ package Sinfo is
    --  expansion is performed and the analysis must generate a tree in a
    --  form that meets additional requirements.
 
-   --  This light expansion does two transformations of the tree, that cannot
-   --  be postponed after the frontend semantic analysis:
+   --  This light expansion does two transformations of the tree that cannot
+   --  be postponed after semantic analysis:
 
    --    1. Replace object renamings by renamed object. This requires the
-   --       introdtion of temporaries at the point of the renaming, which must
-   --       be properly analyzed.
+   --       introduction of temporaries at the point of the renaming, which
+   --       must be properly analyzed.
 
    --    2. Fully qualify entity names. This is needed to generate suitable
    --       local effects and call-graphs in ALI files, with the completely
@@ -548,6 +548,39 @@ package Sinfo is
    --  cross-references should be generated in this mode, even those that would
    --  not make sense from a user point-of-view, and that cross-references that
    --  do not lead to data dependences for subprograms can be safely ignored.
+
+   -----------------------
+   -- Check Flag Fields --
+   -----------------------
+
+   --  The following flag fields appear in expression nodes:
+
+   --  Do_Division_Check
+   --  Do_Overflow_Check
+   --  Do_Range_Check
+
+   --  These three flags are always set by the front end during semantic
+   --  analysis, on expression nodes that may trigger the corresponding
+   --  check. The front end then inserts or not the check during expansion.
+   --  In particular, these flags should also be correctly set in ASIS mode
+   --  and GNATprove mode.
+
+   --  Note that this accounts for all nodes that trigger the corresponding
+   --  checks, except for range checks on subtype_indications, which may be
+   --  required to check that a range_constraint is compatible with the given
+   --  subtype (RM 3.2.2(11)).
+
+   --  The following flag fields appear in various nodes:
+
+   --  Do_Accessibility_Check
+   --  Do_Discriminant_Check
+   --  Do_Length_Check
+   --  Do_Storage_Check
+   --  Do_Tag_Check
+
+   --  These flags are used in some specific cases by the front end, either
+   --  during semantic analysis or during expansion, and cannot be expected
+   --  to be set on all nodes that trigger the corresponding check.
 
    ------------------------
    -- Common Flag Fields --
@@ -2430,12 +2463,14 @@ package Sinfo is
       --  Etype (Node5-Sem)
       --  Must_Not_Freeze (Flag8-Sem)
 
-      --  Note: Etype is a copy of the Etype field of the Subtype_Mark. The
-      --  reason for this redundancy is so that in a list of array index types,
-      --  the Etype can be uniformly accessed to determine the subscript type.
-      --  This means that no Itype is constructed for the actual subtype that
-      --  is created by the subtype indication. If such an Itype is required,
-      --  it is constructed in the context in which the indication appears.
+      --  Note: Depending on context, the Etype is either the entity of the
+      --  Subtype_Mark field, or it is an itype constructed to reify the
+      --  subtype indication. In particular, such itypes are created for a
+      --  subtype indication that appears in an array type declaration. This
+      --  simplifies constraint checking in indexed components.
+
+      --  For subtype indications that appear in scalar type and subtype
+      --  declarations, the Etype is the entity of the subtype mark.
 
       -------------------------
       -- 3.2.2  Subtype Mark --
@@ -7325,7 +7360,7 @@ package Sinfo is
       --  N_Expression_With_Actions has type Standard_Void_Type. However some
       --  backends do not support such expression-with-actions occurring
       --  outside of a proper (non-void) expression, so this should just be
-      --  used as an intermediate representation within the front-end. Also
+      --  used as an intermediate representation within the front end. Also
       --  note that this is really an irregularity (expressions and statements
       --  are not interchangeable, and in particular an N_Null_Statement is
       --  not a proper expression), and in the long term all cases of this
@@ -7746,7 +7781,7 @@ package Sinfo is
       --  e.g. involving unconstrained array types.
 
       --  For the case of the standard gigi backend, this means that all
-      --  checks are done in the front-end.
+      --  checks are done in the front end.
 
       --  However, in the case of specialized back-ends, notably the JVM
       --  backend for JGNAT, additional requirements and restrictions apply
