@@ -1,3 +1,9 @@
+2014-01-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): Call Unqualify on Param when
+	comparing it with Ctrl_Arg, since Ctrl_Arg may have had qualification
+	stripped off.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads, make.adb, prj-env.adb: Minor reformatting.
