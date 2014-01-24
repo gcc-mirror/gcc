@@ -1,3 +1,14 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Output): Add missing error check
+	for junk operand.
+	* sem_util.adb (Is_Refined_State): Add defense against junk
+	tree from error.
+
+2014-01-24  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Removes Build_Slaves attribute documentation.
+
 2014-01-23  Robert Dewar  <dewar@adacore.com>
 
 	* opt.adb (Register_Opt_Config_Switches): Save SPARK_Mode_Pragma

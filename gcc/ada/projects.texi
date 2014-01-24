@@ -4963,10 +4963,7 @@ invoking @code{gnatpp} for the source.
 
 @itemize @bullet
 
-@item @b{Build_Slaves}: list
 
-Value is the list of machine names that are to be used in distributed
-compilation.
 
 @item @b{Root_Dir}: single
 
