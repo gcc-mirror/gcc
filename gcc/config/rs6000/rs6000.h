@@ -533,8 +533,11 @@ extern int rs6000_vector_align[];
 /* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
    in power7, so conditionalize them on p8 features.  TImode syncs need quad
    memory support.  */
-#define TARGET_SYNC_HI_QI	(TARGET_QUAD_MEMORY || TARGET_DIRECT_MOVE)
-#define TARGET_SYNC_TI		TARGET_QUAD_MEMORY
+#define TARGET_SYNC_HI_QI	(TARGET_QUAD_MEMORY			\
+				 || TARGET_QUAD_MEMORY_ATOMIC		\
+				 || TARGET_DIRECT_MOVE)
+
+#define TARGET_SYNC_TI		TARGET_QUAD_MEMORY_ATOMIC
 
 /* Power7 has both 32-bit load and store integer for the FPRs, so we don't need
    to allocate the SDmode stack slot to get the value into the proper location

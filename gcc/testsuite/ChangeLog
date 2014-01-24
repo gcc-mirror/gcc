@@ -1,3 +1,9 @@
+2014-01-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/59909
+	* gcc.target/powerpc/quad-atomic.c: New file to test power8 quad
+	word atomic functions at runtime.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59846
