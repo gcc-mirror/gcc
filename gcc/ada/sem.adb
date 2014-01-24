@@ -1312,18 +1312,19 @@ package body Sem is
       S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
       S_Style_Check       : constant Boolean          := Style_Check;
 
+      Curunit : constant Unit_Number_Type := Get_Cunit_Unit_Number (Comp_Unit);
+      --  New value of Current_Sem_Unit
+
       Generic_Main : constant Boolean :=
-                       Nkind (Unit (Cunit (Main_Unit)))
-                         in N_Generic_Declaration;
+        Nkind (Unit (Cunit (Main_Unit))) in N_Generic_Declaration;
       --  If the main unit is generic, every compiled unit, including its
       --  context, is compiled with expansion disabled.
 
       Is_Main_Unit_Or_Main_Unit_Spec : constant Boolean :=
-         Current_Sem_Unit = Main_Unit
+         Curunit = Main_Unit
            or else
              (Nkind (Unit (Cunit (Main_Unit))) = N_Package_Body
-               and then Library_Unit (Cunit (Main_Unit)) =
-                  Cunit (Current_Sem_Unit));
+               and then Library_Unit (Cunit (Main_Unit)) = Cunit (Curunit));
       --  Configuration flags have special settings when compiling a predefined
       --  file as a main unit. This applies to its spec as well.
 
@@ -1393,7 +1394,7 @@ package body Sem is
       end if;
 
       Compiler_State   := Analyzing;
-      Current_Sem_Unit := Get_Cunit_Unit_Number (Comp_Unit);
+      Current_Sem_Unit := Curunit;
 
       --  Compile predefined units with GNAT_Mode set to True, to properly
       --  process the categorization stuff. However, do not set GNAT_Mode

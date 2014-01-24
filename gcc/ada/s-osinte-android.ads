@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -354,7 +354,10 @@ package System.OS_Interface is
      (how  : int;
       set  : access sigset_t;
       oset : access sigset_t) return int;
-   pragma Import (C, pthread_sigmask, "pthread_sigmask");
+   pragma Import (C, pthread_sigmask, "sigprocmask");
+   --  pthread_sigmask maybe be broken due to mismatch between sigset_t and
+   --  kernel_sigset_t, substitute sigprocmask temporarily.  ???
+   --  pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
    --------------------------
    -- POSIX.1c  Section 11 --

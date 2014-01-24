@@ -1969,7 +1969,8 @@ package body Prj.Proc is
                Add (Env.External,
                     External_Name => Get_Name_String (Index_Name),
                     Value         => Get_Name_String (New_Value.Value),
-                    Source        => From_External_Attribute);
+                    Source        => From_External_Attribute,
+                    Silent        => True);
             else
                if Current_Verbosity = High then
                   Debug_Output

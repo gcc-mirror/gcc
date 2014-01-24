@@ -106,6 +106,10 @@ package body Exp_Util is
    --  record with task components, or for a dynamically created task that is
    --  assigned to a selected component.
 
+   procedure Evaluate_Slice_Bounds (Slice : Node_Id);
+   --  Force evaluation of bounds of a slice, which may be given by a range
+   --  or by a subtype indication with or without a constraint.
+
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -1835,28 +1839,7 @@ package body Exp_Util is
 
       elsif K = N_Slice then
          Evaluate_Name (Prefix (Nam));
-
-         declare
-            DR     : constant Node_Id := Discrete_Range (Nam);
-            Constr : Node_Id;
-            Rexpr  : Node_Id;
-
-         begin
-            if Nkind (DR) = N_Range then
-               Force_Evaluation (Low_Bound (DR));
-               Force_Evaluation (High_Bound (DR));
-
-            elsif Nkind (DR) = N_Subtype_Indication then
-               Constr := Constraint (DR);
-
-               if Nkind (Constr) = N_Range_Constraint then
-                  Rexpr := Range_Expression (Constr);
-
-                  Force_Evaluation (Low_Bound (Rexpr));
-                  Force_Evaluation (High_Bound (Rexpr));
-               end if;
-            end if;
-         end;
+         Evaluate_Slice_Bounds (Nam);
 
       --  For a type conversion, the expression of the conversion must be the
       --  name of an object, and we simply need to evaluate this name.
@@ -1877,6 +1860,32 @@ package body Exp_Util is
          return;
       end if;
    end Evaluate_Name;
+
+   ---------------------------
+   -- Evaluate_Slice_Bounds --
+   ---------------------------
+
+   procedure Evaluate_Slice_Bounds (Slice : Node_Id) is
+      DR     : constant Node_Id := Discrete_Range (Slice);
+      Constr : Node_Id;
+      Rexpr  : Node_Id;
+
+   begin
+      if Nkind (DR) = N_Range then
+         Force_Evaluation (Low_Bound (DR));
+         Force_Evaluation (High_Bound (DR));
+
+      elsif Nkind (DR) = N_Subtype_Indication then
+         Constr := Constraint (DR);
+
+         if Nkind (Constr) = N_Range_Constraint then
+            Rexpr := Range_Expression (Constr);
+
+            Force_Evaluation (Low_Bound (Rexpr));
+            Force_Evaluation (High_Bound (Rexpr));
+         end if;
+      end if;
+   end Evaluate_Slice_Bounds;
 
    ---------------------
    -- Evolve_And_Then --
@@ -2067,8 +2076,7 @@ package body Exp_Util is
             --  we better make sure that if a variable was used as a bound of
             --  of the original slice, its value is frozen.
 
-            Force_Evaluation (Low_Bound (Scalar_Range (Slice_Type)));
-            Force_Evaluation (High_Bound (Scalar_Range (Slice_Type)));
+            Evaluate_Slice_Bounds (Exp);
          end;
 
       elsif Ekind (Exp_Typ) = E_String_Literal_Subtype then
