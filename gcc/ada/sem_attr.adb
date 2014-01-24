@@ -6097,6 +6097,52 @@ package body Sem_Attr is
                   Error_Attr
                     ("others choice not allowed in attribute %", Comp);
 
+               elsif Is_Array_Type (P_Type) then
+                  declare
+                     Index      : Node_Id;
+                     Index_Type : Entity_Id;
+
+                  begin
+                     if Nkind (First (Choices (Assoc))) /= N_Aggregate then
+
+                        --  Choices denote separate components of one-
+                        --  dimensional array.
+
+                        Index_Type := First_Index (P_Type);
+                        Index := First (Choices (Assoc));
+                        while Present (Index) loop
+                           if Nkind (Index) = N_Range then
+                              Analyze_And_Resolve (
+                                Low_Bound (Index), Etype (Index_Type));
+                              Analyze_And_Resolve (
+                               High_Bound (Index), Etype (Index_Type));
+
+                           else
+                              Analyze_And_Resolve (Index, Etype (Index_Type));
+                           end if;
+                           Next (Index);
+                        end loop;
+
+                     else
+                        --  Choice is a sequence of indices for each dimension
+
+                        Index_Type := First_Index (P_Type);
+                        Index := First (Expressions (First (Choices (Assoc))));
+                        while Present (Index_Type)
+                          and then Present (Index)
+                        loop
+                           Analyze_And_Resolve (Index, Etype (Index_Type));
+                           Next_Index (Index_Type);
+                           Next (Index);
+                        end loop;
+
+                        if Present (Index) or else Present (Index_Type) then
+                           Error_Msg_N (
+                            "dimension mismatch in index list", Assoc);
+                        end if;
+                     end if;
+                  end;
+
                elsif Is_Record_Type (P_Type) then
                   Check_Component_Reference (Comp, P_Type);
                end if;

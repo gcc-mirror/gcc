@@ -5308,22 +5308,26 @@ package body Checks is
       elsif Nkind_In (Expr, N_Type_Conversion, N_Qualified_Expression) then
          return Expr_Known_Valid (Expression (Expr));
 
-      --  The result of any operator is always considered valid, since we
-      --  assume the necessary checks are done by the operator. For operators
-      --  on floating-point operations, we must also check when the operation
-      --  is the right-hand side of an assignment, or is an actual in a call.
+      --  Case of expression is a non-floating-point operator. In this case we
+      --  can assume the result is valid the generated code for the operator
+      --  will include whatever checks are needed (e.g. range checks) to ensure
+      --  validity. This assumption does not hold for the floating-point case,
+      --  since floating-point operators can generate Infinite or NaN results
+      --  which are considered invalid.
 
-      elsif Nkind (Expr) in N_Op then
-         if Is_Floating_Point_Type (Typ)
-            and then Validity_Check_Floating_Point
-            and then (Nkind_In (Parent (Expr), N_Assignment_Statement,
-                                               N_Function_Call,
-                                               N_Parameter_Association))
-         then
-            return False;
-         else
-            return True;
-         end if;
+      --  Historical note: in older versions, the exemption of floating-point
+      --  types from this assumption was done only in cases where the parent
+      --  was an assignment, function call or parameter association. Presumably
+      --  the idea was that in other contexts, the result would be checked
+      --  elsewhere, but this list of cases was missing tests (at least the
+      --  N_Object_Declaration case, as shown by a reported missing validity
+      --  check), and it is not clear why function calls but not procedure
+      --  calls were tested for. It really seems more accurate and much
+      --  safer to recognize that expressions which are the result of a
+      --  floating-point operator can never be assumed to be valid.
+
+      elsif Nkind (Expr) in N_Op and then not Is_Floating_Point_Type (Typ) then
+         return True;
 
       --  The result of a membership test is always valid, since it is true or
       --  false, there are no other possibilities.

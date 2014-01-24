@@ -51,7 +51,7 @@ package body Back_End is
 
    flag_stack_check : Int;
    pragma Import (C, flag_stack_check);
-   --  Indicates if stack checking is enabled, imported from decl.c
+   --  Indicates if stack checking is enabled, imported from misc.c
 
    save_argc : Nat;
    pragma Import (C, save_argc);

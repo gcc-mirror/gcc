@@ -9684,18 +9684,17 @@ package body Sem_Ch3 is
                elsif Is_Concurrent_Record_Type (T)
                  and then Present (Interfaces (T))
                then
-                  --  The controlling formal of Subp must be of mode "out",
-                  --  "in out" or an access-to-variable to be overridden.
+                  --  If an inherited subprogram is implemented by a protected
+                  --  procedure or an entry, then the first parameter of the
+                  --  inherited subprogram shall be of mode out or in out, or
+                  --  an access-to-variable parameter (RM 9.4(11.9/3))
 
-                  if Ekind (First_Formal (Subp)) = E_In_Parameter
+                  if Is_Protected_Type (Corresponding_Concurrent_Type (T))
+                    and then Ekind (First_Formal (Subp)) = E_In_Parameter
                     and then Ekind (Subp) /= E_Function
+                    and then not Is_Predefined_Dispatching_Operation (Subp)
                   then
-                     if not Is_Predefined_Dispatching_Operation (Subp)
-                       and then Is_Protected_Type
-                                  (Corresponding_Concurrent_Type (T))
-                     then
-                        Error_Msg_PT (T, Subp);
-                     end if;
+                     Error_Msg_PT (T, Subp);
 
                   --  Some other kind of overriding failure
 
