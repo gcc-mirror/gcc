@@ -9599,9 +9599,14 @@ grokdeclarator (const cp_declarator *declarator,
 			    && LAMBDA_TYPE_P (current_class_type))
 			  /* OK for C++11 lambdas.  */;
 			else if (cxx_dialect < cxx1y)
-			  pedwarn (input_location, 0, "%qs function uses "
+			  {
+			    error ("%qs function uses "
 				   "%<auto%> type specifier without trailing "
 				   "return type", name);
+			    inform (input_location, "deduced return type "
+				    "only available with -std=c++1y or "
+				    "-std=gnu++1y");
+			  }
 			else if (virtualp)
 			  permerror (input_location, "virtual function cannot "
 				     "have deduced return type");
