@@ -432,6 +432,7 @@ package body Lib.Xref is
       --  ??? There are several routines here and there that perform a similar
       --      (but subtly different) computation, which should be factored:
 
+      --      Sem_Util.Is_LHS
       --      Sem_Util.May_Be_Lvalue
       --      Sem_Util.Known_To_Be_Assigned
       --      Exp_Ch2.Expand_Entry_Parameter.In_Assignment_Context
@@ -473,20 +474,27 @@ package body Lib.Xref is
 
             --  ??? case of a slice assignment?
 
-            --  ??? Note that in some cases this is called too early
-            --  (see comments in Sem_Ch8.Find_Direct_Name), at a point where
-            --  the tree is not fully typed yet. In that case we may lack
-            --  an Etype for N, and we must disable the check for an implicit
-            --  dereference. If the dereference is on an LHS, this causes a
-            --  false positive.
-
             elsif (K = N_Selected_Component or else K = N_Indexed_Component)
               and then Prefix (P) = N
-              and then not (Present (Etype (N))
-                              and then
-                            Is_Access_Type (Etype (N)))
             then
-               N := P;
+               --  Check for access type. First a kludge, In some cases this is
+               --  called too early (see comments in Sem_Ch8.Find_Direct_Name),
+               --  at a point where the tree is not fully typed yet. In that
+               --  case we may lack an Etype for N, and we can't check the
+               --  Etype. For now, we always return False in such a case,
+               --  but this is clearly not right in all cases ???
+
+               if No (Etype (N)) then
+                  return False;
+
+               elsif Is_Access_Type (Etype (N)) then
+                  return False;
+
+               --  Access type case dealt with, keep going
+
+               else
+                  N := P;
+               end if;
 
             --  All other cases, definitely not on left side
 
