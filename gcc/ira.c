@@ -2405,7 +2405,7 @@ ira_setup_eliminable_regset (void)
        || (SUPPORTS_STACK_ALIGNMENT && crtl->stack_realign_needed)
        /* We need a frame pointer for all Cilk Plus functions that use
 	  Cilk keywords.  */
-       || (flag_enable_cilkplus && cfun->is_cilk_function)
+       || (flag_cilkplus && cfun->is_cilk_function)
        || targetm.frame_pointer_required ());
 
     /* The chance that FRAME_POINTER_NEEDED is changed from inspecting

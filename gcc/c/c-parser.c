@@ -1919,7 +1919,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
       fnbody = c_parser_compound_statement (parser);
-      if (flag_enable_cilkplus && contains_array_notation_expr (fnbody))
+      if (flag_cilkplus && contains_array_notation_expr (fnbody))
 	fnbody = expand_array_notation_exprs (fnbody);
       if (nested)
 	{
@@ -3340,7 +3340,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	      dimen.value = NULL_TREE;
 	      star_seen = false;
 	    }
-	  else if (flag_enable_cilkplus
+	  else if (flag_cilkplus
 		   && c_parser_next_token_is (parser, CPP_COLON))
 	    {
 	      dimen.value = error_mark_node;
@@ -3371,7 +3371,7 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	}
       if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 	c_parser_consume_token (parser);
-      else if (flag_enable_cilkplus
+      else if (flag_cilkplus
 	       && c_parser_next_token_is (parser, CPP_COLON))
 	{
 	  error_at (c_parser_peek_token (parser)->location,
@@ -3783,7 +3783,7 @@ c_parser_attribute_any_word (c_parser *parser)
 static inline bool
 is_cilkplus_vector_p (tree name)
 { 
-  if (flag_enable_cilkplus && is_attribute_p ("vector", name)) 
+  if (flag_cilkplus && is_attribute_p ("vector", name)) 
     return true;
   return false;
 }
@@ -4009,7 +4009,7 @@ c_parser_attributes (c_parser *parser)
       parser->lex_untranslated_string = false;
     }
 
-  if (flag_enable_cilkplus && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
+  if (flag_cilkplus && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
     c_finish_cilk_simd_fn_tokens (parser);
   return attrs;
 }
@@ -4461,7 +4461,7 @@ c_parser_compound_statement (c_parser *parser)
   c_parser_compound_statement_nostart (parser);
 
   /* If the compound stmt contains array notations, then we expand them.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (stmt))
+  if (flag_cilkplus && contains_array_notation_expr (stmt))
     stmt = expand_array_notation_exprs (stmt);
   return c_end_compound_stmt (brace_loc, stmt, true);
 }
@@ -4881,7 +4881,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	case RID_CILK_SYNC:
 	  c_parser_consume_token (parser);
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
-	  if (!flag_enable_cilkplus) 
+	  if (!flag_cilkplus) 
 	    error_at (loc, "-fcilkplus must be enabled to use %<_Cilk_sync%>");
 	  else 
 	    add_stmt (build_cilk_sync ());
@@ -5151,7 +5151,7 @@ c_parser_if_statement (c_parser *parser)
   if_stmt = c_end_compound_stmt (loc, block, flag_isoc99);
 
   /* If the if statement contains array notations, then we expand them.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (if_stmt))
+  if (flag_cilkplus && contains_array_notation_expr (if_stmt))
     if_stmt = fix_conditional_array_notations (if_stmt);
   add_stmt (if_stmt);
 }
@@ -5178,7 +5178,7 @@ c_parser_switch_statement (c_parser *parser)
       ce = c_parser_expression (parser);
       ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, false);
       expr = ce.value;
-      if (flag_enable_cilkplus && contains_array_notation_expr (expr))
+      if (flag_cilkplus && contains_array_notation_expr (expr))
 	{
 	  error_at (switch_cond_loc,
 		    "array notations cannot be used as a condition for switch "
@@ -5224,7 +5224,7 @@ c_parser_while_statement (c_parser *parser, bool ivdep)
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   cond = c_parser_paren_condition (parser);
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       error_at (loc, "array notations cannot be used as a condition for while "
 		"statement");
@@ -5276,7 +5276,7 @@ c_parser_do_statement (c_parser *parser, bool ivdep)
   new_cont = c_cont_label;
   c_cont_label = save_cont;
   cond = c_parser_paren_condition (parser);
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       error_at (loc, "array notations cannot be used as a condition for a "
 		"do-while statement");
@@ -5474,7 +5474,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep)
 	  else
 	    {
 	      cond = c_parser_condition (parser);
-	      if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+	      if (flag_cilkplus && contains_array_notation_expr (cond))
 		{
 		  error_at (loc, "array notations cannot be used in a "
 			    "condition for a for-loop");
@@ -6370,7 +6370,7 @@ c_parser_unary_expression (c_parser *parser)
       op = c_parser_cast_expression (parser, NULL);
 
       /* If there is array notations in op, we expand them.  */
-      if (flag_enable_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
+      if (flag_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
 	return fix_array_notation_expr (exp_loc, PREINCREMENT_EXPR, op);
       else
 	{
@@ -6383,7 +6383,7 @@ c_parser_unary_expression (c_parser *parser)
       op = c_parser_cast_expression (parser, NULL);
       
       /* If there is array notations in op, we expand them.  */
-      if (flag_enable_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
+      if (flag_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
 	return fix_array_notation_expr (exp_loc, PREDECREMENT_EXPR, op);
       else
 	{
@@ -7493,7 +7493,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  break;
 	case RID_CILK_SPAWN:
 	  c_parser_consume_token (parser);
-	  if (!flag_enable_cilkplus)
+	  if (!flag_cilkplus)
 	    {
 	      error_at (loc, "-fcilkplus must be enabled to use "
 			"%<_Cilk_spawn%>");
@@ -7645,7 +7645,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_OPEN_SQUARE:
 	  /* Array reference.  */
 	  c_parser_consume_token (parser);
-	  if (flag_enable_cilkplus
+	  if (flag_cilkplus
 	      && c_parser_peek_token (parser)->type == CPP_COLON)
 	    /* If we are here, then we have something like this:
 	       Array [ : ]
@@ -7664,7 +7664,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 		 For 2 and 3 we handle it like we handle array notations.  The
 		 idx value we have above becomes the initial/start index.
 	      */
-	      if (flag_enable_cilkplus
+	      if (flag_cilkplus
 		  && c_parser_peek_token (parser)->type == CPP_COLON)
 		expr.value = c_parser_array_notation (expr_loc, parser, idx, 
 						      expr.value);
@@ -7783,7 +7783,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  /* Postincrement.  */
 	  c_parser_consume_token (parser);
 	  /* If the expressions have array notations, we expand them.  */
-	  if (flag_enable_cilkplus
+	  if (flag_cilkplus
 	      && TREE_CODE (expr.value) == ARRAY_NOTATION_REF)
 	    expr = fix_array_notation_expr (expr_loc, POSTINCREMENT_EXPR, expr);
 	  else
@@ -7799,7 +7799,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  /* Postdecrement.  */
 	  c_parser_consume_token (parser);
 	  /* If the expressions have array notations, we expand them.  */
-	  if (flag_enable_cilkplus
+	  if (flag_cilkplus
 	      && TREE_CODE (expr.value) == ARRAY_NOTATION_REF)
 	    expr = fix_array_notation_expr (expr_loc, POSTDECREMENT_EXPR, expr);
 	  else
@@ -9626,7 +9626,7 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_MAP;
 	  else if (!strcmp ("mergeable", p))
 	    result = PRAGMA_OMP_CLAUSE_MERGEABLE;
-	  else if (flag_enable_cilkplus && !strcmp ("mask", p))
+	  else if (flag_cilkplus && !strcmp ("mask", p))
 	    result = PRAGMA_CILK_CLAUSE_MASK;
 	  break;
 	case 'n':
@@ -9638,7 +9638,7 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_NUM_TEAMS;
 	  else if (!strcmp ("num_threads", p))
 	    result = PRAGMA_OMP_CLAUSE_NUM_THREADS;
-	  else if (flag_enable_cilkplus && !strcmp ("nomask", p))
+	  else if (flag_cilkplus && !strcmp ("nomask", p))
 	    result = PRAGMA_CILK_CLAUSE_NOMASK;
 	  break;
 	case 'o':
@@ -9684,7 +9684,7 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_UNTIED;
 	  break;
 	case 'v':
-	  if (flag_enable_cilkplus && !strcmp ("vectorlength", p))
+	  if (flag_cilkplus && !strcmp ("vectorlength", p))
 	    result = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
 	  break;
 	}
@@ -12850,7 +12850,7 @@ static void
 c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
 			   vec<c_token> clauses)
 {
-  if (flag_enable_cilkplus
+  if (flag_cilkplus
       && clauses.exists () && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
     {
       error ("%<#pragma omp declare simd%> cannot be used in the same "
@@ -12887,7 +12887,7 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
   gcc_assert (parser->tokens == &parser->tokens_buf[0]);
   bool is_cilkplus_cilk_simd_fn = false;
   
-  if (flag_enable_cilkplus && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
+  if (flag_cilkplus && !vec_safe_is_empty (parser->cilk_simd_fn_tokens))
     {
       parser->tokens = parser->cilk_simd_fn_tokens->address ();
       parser->tokens_avail = vec_safe_length (parser->cilk_simd_fn_tokens);
@@ -13517,7 +13517,7 @@ static bool
 c_parser_cilk_verify_simd (c_parser *parser,
 				  enum pragma_context context)
 {
-  if (!flag_enable_cilkplus)
+  if (!flag_cilkplus)
     {
       warning (0, "pragma simd ignored because -fcilkplus is not enabled");
       c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);

@@ -1,3 +1,10 @@
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-common.c (c_define_builtins): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+	* c-pragma.c (init_pragma): Likewise.
+	* c.opt: Likewise.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59846

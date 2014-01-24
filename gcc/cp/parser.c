@@ -5808,7 +5808,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	postfix_expression = 
 	  cp_parser_postfix_expression (parser, false, false, 
 					false, false, &idk);
-	if (!flag_enable_cilkplus)
+	if (!flag_cilkplus)
 	  {
 	    error_at (token->location, "-fcilkplus must be enabled to use"
 		      " %<_Cilk_spawn%>");
@@ -5833,7 +5833,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
       }
       
     case RID_CILK_SYNC:
-      if (flag_enable_cilkplus)
+      if (flag_cilkplus)
 	{ 
 	  tree sync_expr = build_cilk_sync ();
 	  SET_EXPR_LOCATION (sync_expr, 
@@ -6373,7 +6373,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 	  bool expr_nonconst_p;
 	  maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 	  index = cp_parser_braced_list (parser, &expr_nonconst_p);
-	  if (flag_enable_cilkplus
+	  if (flag_cilkplus
 	      && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
 	    {
 	      error_at (cp_lexer_peek_token (parser->lexer)->location,
@@ -6383,7 +6383,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 	      return error_mark_node;
 	    }
 	}
-      else if (flag_enable_cilkplus)
+      else if (flag_cilkplus)
 	{
 	  /* Here are have these two options:
 	     ARRAY[EXP : EXP]        - Array notation expr with default
@@ -17141,7 +17141,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* In here, we handle cases where attribute is used after
 		     the function declaration.  For example:
 		     void func (int x) __attribute__((vector(..)));  */
-		  if (flag_enable_cilkplus
+		  if (flag_cilkplus
 		      && cp_next_tokens_can_be_gnu_attribute_p (parser))
 		    {
 		      cp_parser_parse_tentatively (parser);
@@ -21565,7 +21565,7 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
 static inline bool
 is_cilkplus_vector_p (tree name)
 { 
-  if (flag_enable_cilkplus && is_attribute_p ("vector", name)) 
+  if (flag_cilkplus && is_attribute_p ("vector", name)) 
     return true;
   return false;
 }
@@ -26934,7 +26934,7 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_MAP;
 	  else if (!strcmp ("mergeable", p))
 	    result = PRAGMA_OMP_CLAUSE_MERGEABLE;
-	  else if (flag_enable_cilkplus && !strcmp ("mask", p))
+	  else if (flag_cilkplus && !strcmp ("mask", p))
 	    result = PRAGMA_CILK_CLAUSE_MASK;
 	  break;
 	case 'n':
@@ -26942,7 +26942,7 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_NOTINBRANCH;
 	  else if (!strcmp ("nowait", p))
 	    result = PRAGMA_OMP_CLAUSE_NOWAIT;
-	  else if (flag_enable_cilkplus && !strcmp ("nomask", p))
+	  else if (flag_cilkplus && !strcmp ("nomask", p))
 	    result = PRAGMA_CILK_CLAUSE_NOMASK;
 	  else if (!strcmp ("num_teams", p))
 	    result = PRAGMA_OMP_CLAUSE_NUM_TEAMS;
@@ -26990,7 +26990,7 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_UNTIED;
 	  break;
 	case 'v':
-	  if (flag_enable_cilkplus && !strcmp ("vectorlength", p))
+	  if (flag_cilkplus && !strcmp ("vectorlength", p))
 	    result = PRAGMA_CILK_CLAUSE_VECTORLENGTH;
 	  break;
 	}
@@ -28319,7 +28319,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
  saw_error:
   /* In Cilk Plus SIMD enabled functions there is no pragma_token, so
      no reason to skip to the end.  */
-  if (!(flag_enable_cilkplus && pragma_tok == NULL))
+  if (!(flag_cilkplus && pragma_tok == NULL))
     cp_parser_skip_to_pragma_eol (parser, pragma_tok);
   if (finish_p)
     return finish_omp_clauses (clauses);

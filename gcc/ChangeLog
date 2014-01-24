@@ -1,3 +1,18 @@
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* builtins.c (is_builtin_name): Renamed flag_enable_cilkplus to
+	flag_cilkplus.
+	* builtins.def: Likewise.
+	* cilk.h (fn_contains_cilk_spawn_p): Likewise.
+	* cppbuiltin.c (define_builtin_macros_for_compilation_flags): Likewise.
+	* ira.c (ira_setup_eliminable_regset): Likewise.
+	* omp-low.c (gate_expand_omp): Likewise.
+	(execute_lower_omp): Likewise.
+	(diagnose_sb_0): Likewise.
+	(gate_diagnose_omp_blocks): Likewise.
+	(simd_clone_clauses_extract): Likewise.
+	(gate): Likewise.
+
 2014-01-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Remove

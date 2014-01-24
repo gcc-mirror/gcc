@@ -1,3 +1,32 @@
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Replaced
+	flag_enable_cilkplus with flag_cilkplus.
+	(c_parser_direct_declarator_inner): Likewise.
+	(c_parser_attribute_any_word): Likewise.
+	(c_parser_attributes): Likewise.
+	(c_parser_compound_statement): Likewise.
+	(c_parser_statement_after_labels): Likewise.
+	(c_parser_if_statement): Likewise.
+	(c_parser_switch_statement): Likewise.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_unary_expression): Likewise.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_omp_clause_name): Likewise.
+	(c_finish_omp_declare_simd): Likewise.
+	(c_parser_cilk_verify_simd): Likewise.
+	* c-typeck.c (build_array_ref): Likewise.
+	(build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+	(build_compound_expr): Likewise.
+	(c_finish_return): Likewise.
+	(c_finish_if_stmt): Likewise.
+	(c_finish_loop): Likewise.
+	(build_binary_op): Likewise.
+
 2014-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59846

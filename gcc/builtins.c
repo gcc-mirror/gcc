@@ -244,7 +244,7 @@ is_builtin_name (const char *name)
     return true;
   if (strncmp (name, "__atomic_", 9) == 0)
     return true;
-  if (flag_enable_cilkplus 
+  if (flag_cilkplus 
       && (!strcmp (name, "__cilkrts_detach")   
 	  || !strcmp (name, "__cilkrts_pop_frame")))
     return true;
