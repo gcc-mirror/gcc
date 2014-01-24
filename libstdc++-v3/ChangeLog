@@ -1,3 +1,13 @@
+2014-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59548
+	* include/debug/safe_base.h (_Safe_sequence_base): Define copy
+	constructor to prevent it being implicitly defined as deleted, but
+	do not copy anything.
+	* include/debug/safe_unordered_base.h (_Safe_unordered_container_base):
+	Define copy and move constructors similar to _Safe_sequence_base's.
+	* testsuite/23_containers/unordered_map/59548.cc: New.
+
 2014-01-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 	    Steve Ellcey  <sellcey@mips.com>
 
