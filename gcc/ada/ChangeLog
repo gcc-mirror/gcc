@@ -1,3 +1,7 @@
+2014-01-24  Pascal Obry  <obry@adacore.com>
+
+	* g-sercom-mingw.adb: Fix serial port name for port number > 10.
+
 2014-01-24  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_disp.adb (Expand_Dispatching_Call): Call Unqualify on Param when
