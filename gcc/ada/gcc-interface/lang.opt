@@ -1,6 +1,5 @@
 ; Options for the Ada front end.
-; Copyright (C) 2003, 2007, 2008, 2010, 2011, 2012
-; Free Software Foundation, Inc.
+; Copyright (C) 2003-2013 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -17,7 +16,6 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
-
 
 ; See the GCC internals manual for a description of this file's format.
 
@@ -73,6 +71,10 @@ Do not look for object files in standard path
 fRTS=
 Ada AdaWhy AdaSCIL Joined RejectNegative
 Select the runtime
+
+fshort-enums
+Ada AdaWhy AdaSCIL
+Use the narrowest integer type possible for enumeration types
 
 gant
 Ada AdaWhy AdaSCIL Joined Undocumented

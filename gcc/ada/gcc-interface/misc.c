@@ -151,6 +151,10 @@ gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
       /* These are handled by the front-end.  */
       break;
 
+    case OPT_fshort_enums:
+      /* This is handled by the middle-end.  */
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -259,12 +263,13 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   optimize_size = global_options.x_optimize_size;
   flag_compare_debug = global_options.x_flag_compare_debug;
   flag_stack_check = global_options.x_flag_stack_check;
-
-  /* Unfortunately the post_options hook is called before setting the
-     short_enums flag. Set it now.  */
-  if (global_options.x_flag_short_enums == 2)
-    global_options.x_flag_short_enums = targetm.default_short_enums ();
   flag_short_enums = global_options.x_flag_short_enums;
+
+  /* Unfortunately the post_options hook is called before the value of
+     flag_short_enums is autodetected, if need be.  Mimic the process
+     for our private flag_short_enums.  */
+  if (flag_short_enums == 2)
+    flag_short_enums = targetm.default_short_enums ();
 
   return false;
 }

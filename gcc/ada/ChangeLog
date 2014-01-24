@@ -1,3 +1,17 @@
+2014-01-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* set_targ.adb: Set Short_Enums.
+	* gcc-interface/lang.opt (fshort-enums): New option.
+	* gcc-interface/misc.c (gnat_handle_option): Handle it.
+	(gnat_post_options): Do not modify the global settings.
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* g-rannum.ads, g-rannum.adb (Random_Ordinary_Fixed): New generic
+	function.
+	(Random_Decimal_Fixed): New generic function.
+	* s-rannum.ads: Minor comment clarifications.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* back_end.adb: Remove Short_Enums handling (handled in
