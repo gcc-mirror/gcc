@@ -197,7 +197,7 @@ package Targparm is
    ----------------------------
 
    --  The great majority of GNAT ports are based on GCC. The switches in
-   --  This section indicate the use of some non-standard target back end
+   --  this section indicate the use of some non-standard target back end
    --  or other special targetting requirements.
 
    AAMP_On_Target : Boolean := False;
@@ -604,6 +604,24 @@ package Targparm is
 
    Frontend_Layout_On_Target : Boolean := False;
    --  Set True if front end does layout
+
+   Short_Enums_On_Target : Boolean := False;
+   --  In most C ABI's, enumeration types always have int size. If this switch
+   --  is False, which is the default, that's what the front end implements for
+   --  enumeration types with a foreign convention (includ C and C++). However
+   --  on some ABI's (notably the ARM-EABI), enumeration types have sizes that
+   --  are minimal for the range of values. For such cases this switch is set
+   --  True (in the appropriate System file), and the front-end uses the normal
+   --  Ada rules for sizing enumeration types (which correspond to this method
+   --  of selecting the shortest signed or unsigned integer representation that
+   --  can accomodate the number of items in the type, or the range of values
+   --  if an enumeration representation clause is used.
+   --  the same size as C int, or Ada Integer. That's the most common case, but
+   --  there are targets (most notably those following the ARM-EABI) where the
+   --  size for enumeration types is the same as in Ada (i.e. the smallest
+   --  integer type that accomodates the number of enumeration choices, or the
+   --  range of values in an enumeration-representation clause). For such cases
+   --  this switch is set to False in the corresponding System file.
 
    -----------------
    -- Subprograms --

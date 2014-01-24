@@ -5275,9 +5275,15 @@ package body Freeze is
         and then not Has_Size_Clause (Typ)
         and then not Has_Size_Clause (Base_Type (Typ))
         and then Esize (Typ) < Standard_Integer_Size
+
+        --  Don't do this if Short_Enums on target
+
+        and then not Short_Enums_On_Target
       then
          Init_Esize (Typ, Standard_Integer_Size);
          Set_Alignment (Typ, Alignment (Standard_Integer));
+
+      --  Normal Ada case or size clause present or not Long_C_Enums on target
 
       else
          --  If the enumeration type interfaces to C, and it has a size clause
@@ -5292,6 +5298,10 @@ package body Freeze is
            and then Esize (Typ) /= Esize (Standard_Integer)
            and then not Is_Boolean_Type (Typ)
            and then not Is_Character_Type (Typ)
+
+           --  Don't do this if Short_Enums on target
+
+           and then not Short_Enums_On_Target
          then
             Error_Msg_N
               ("C enum types have the size of a C int??", Size_Clause (Typ));

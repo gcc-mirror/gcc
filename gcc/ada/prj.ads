@@ -973,11 +973,12 @@ package Prj is
       Only_If_Ada         : Boolean := False) return Path_Name_Type;
    --  Return the object directory to use for the project. This depends on
    --  whether we have a library project or a standard project. This function
-   --  might return No_Name when no directory applies.
-   --  If we have a library project file and Including_Libraries is True then
-   --  the library dir is returned instead of the object dir.
-   --  If Only_If_Ada is True, then No_Name will be returned when the project
-   --  doesn't Ada sources.
+   --  might return No_Name when no directory applies. If the project is a
+   --  library project file and Including_Libraries is True then the library
+   --  ALI dir is returned instead of the object dir, except when there is no
+   --  ALI files in the Library ALI dir and the object directory exists. If
+   --  Only_If_Ada is True, then No_Name is returned when the project doesn't
+   --  include any Ada source.
 
    procedure Compute_All_Imported_Projects
      (Root_Project : Project_Id;
@@ -1400,9 +1401,14 @@ package Prj is
       -------------------
 
       Ada_Objects_Path : String_Access := null;
-      --  The cached value of ADA_OBJECTS_PATH for this project file. Do not
-      --  use this field directly outside of the compiler, use
-      --  Prj.Env.Ada_Objects_Path instead.
+      --  The cached value of ADA_OBJECTS_PATH for this project file, with
+      --  library ALI directories for library projects instead of object
+      --  directories. Do not use this field directly outside of the
+      --  compiler, use Prj.Env.Ada_Objects_Path instead.
+
+      Ada_Objects_Path_No_Libs : String_Access := null;
+      --  The cached value of ADA_OBJECTS_PATH for this project file with all
+      --  object directories (no library ALI dir for library projects).
 
       Libgnarl_Needed : Yes_No_Unknown := Unknown;
       --  Set to True when libgnarl is needed to link

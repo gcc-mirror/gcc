@@ -10790,6 +10790,10 @@ package body Sem_Ch13 is
 
       if Has_Foreign_Convention (T)
         and then Esize (T) < Standard_Integer_Size
+
+        --  Don't do this if Short_Enums on target
+
+        and then not Short_Enums_On_Target
       then
          Init_Esize (T, Standard_Integer_Size);
       else

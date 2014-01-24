@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,15 @@ package Scans is
       Tok_Others,          -- OTHERS
       Tok_Null,            -- NULL
 
+      --  Note: Tok_Raise is in no categories now, it used to be Cterm, Eterm,
+      --  After_SM, but now that Ada 2012 has added raise expressions, the
+      --  raise token can appear anywhere. Note in particular that Tok_Raise
+      --  being in Eterm stopped the parser from recognizing "return raise
+      --  exception-name". This degrades error recovery slightly, and perhaps
+      --  we could do better, but not worth the effort.
+
+      Tok_Raise,           -- RAISE
+
       Tok_Dot,             -- .            Namext
       Tok_Apostrophe,      -- '            Namext
 
@@ -148,7 +157,6 @@ package Scans is
       Tok_Goto,            -- GOTO         Eterm, Sterm, After_SM
       Tok_If,              -- IF           Eterm, Sterm, After_SM
       Tok_Pragma,          -- PRAGMA       Eterm, Sterm, After_SM
-      Tok_Raise,           -- RAISE        Eterm, Sterm, After_SM
       Tok_Requeue,         -- REQUEUE      Eterm, Sterm, After_SM
       Tok_Return,          -- RETURN       Eterm, Sterm, After_SM
       Tok_Select,          -- SELECT       Eterm, Sterm, After_SM

@@ -5157,14 +5157,14 @@ package body Exp_Ch7 is
          Exceptions_OK : constant Boolean :=
                            not Restriction_Active (No_Exception_Propagation);
 
-         procedure Build_Indices;
-         --  Generate the indices used in the dimension loops
+         procedure Build_Indexes;
+         --  Generate the indexes used in the dimension loops
 
          -------------------
-         -- Build_Indices --
+         -- Build_Indexes --
          -------------------
 
-         procedure Build_Indices is
+         procedure Build_Indexes is
          begin
             --  Generate the following identifiers:
             --    Jnn  -  for initialization
@@ -5173,14 +5173,14 @@ package body Exp_Ch7 is
                Append_To (Index_List,
                  Make_Defining_Identifier (Loc, New_External_Name ('J', Dim)));
             end loop;
-         end Build_Indices;
+         end Build_Indexes;
 
       --  Start of processing for Build_Adjust_Or_Finalize_Statements
 
       begin
          Finalizer_Decls := New_List;
 
-         Build_Indices;
+         Build_Indexes;
          Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          Comp_Ref :=
@@ -5335,8 +5335,8 @@ package body Exp_Ch7 is
          function Build_Finalization_Call return Node_Id;
          --  Generate a deep finalization call for an array element
 
-         procedure Build_Indices;
-         --  Generate the initialization and finalization indices used in the
+         procedure Build_Indexes;
+         --  Generate the initialization and finalization indexes used in the
          --  dimension loops.
 
          function Build_Initialization_Call return Node_Id;
@@ -5411,10 +5411,10 @@ package body Exp_Ch7 is
          end Build_Finalization_Call;
 
          -------------------
-         -- Build_Indices --
+         -- Build_Indexes --
          -------------------
 
-         procedure Build_Indices is
+         procedure Build_Indexes is
          begin
             --  Generate the following identifiers:
             --    Jnn  -  for initialization
@@ -5427,7 +5427,7 @@ package body Exp_Ch7 is
                Append_To (Final_List,
                  Make_Defining_Identifier (Loc, New_External_Name ('F', Dim)));
             end loop;
-         end Build_Indices;
+         end Build_Indexes;
 
          -------------------------------
          -- Build_Initialization_Call --
@@ -5454,7 +5454,7 @@ package body Exp_Ch7 is
          Counter_Id := Make_Temporary (Loc, 'C');
          Finalizer_Decls := New_List;
 
-         Build_Indices;
+         Build_Indexes;
          Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          --  Generate the block which houses the finalization call, the index

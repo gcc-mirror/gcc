@@ -9686,7 +9686,7 @@ package body Sem_Ch3 is
                then
                   --  If an inherited subprogram is implemented by a protected
                   --  procedure or an entry, then the first parameter of the
-                  --  inherited subprogram shall be of mode out or in out, or
+                  --  inherited subprogram shall be of mode OUT or IN OUT, or
                   --  an access-to-variable parameter (RM 9.4(11.9/3))
 
                   if Is_Protected_Type (Corresponding_Concurrent_Type (T))

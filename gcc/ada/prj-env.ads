@@ -90,9 +90,12 @@ package Prj.Env is
      (Project             : Project_Id;
       In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean := True) return String_Access;
-   --  Get the ADA_OBJECTS_PATH of a Project file. For the first call, compute
-   --  it and cache it. When Including_Libraries is False, do not include the
-   --  object directories of the library projects, and do not cache the result.
+   --  Get the ADA_OBJECTS_PATH of a Project file. For the first call with the
+   --  exact same parameters, compute it and cache it. When Including_Libraries
+   --  is False, the object directory of a library project is replaced with the
+   --  library ALI directory of this project (usually the library directory of
+   --  the project, except when attribute Library_ALI_Dir is declared) except
+   --  when the library ALI directory does not contain any ALI file.
 
    procedure Set_Ada_Paths
      (Project             : Project_Id;

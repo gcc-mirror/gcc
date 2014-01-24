@@ -6109,23 +6109,25 @@ package body Sem_Attr is
                         --  dimensional array.
 
                         Index_Type := First_Index (P_Type);
+
                         Index := First (Choices (Assoc));
                         while Present (Index) loop
                            if Nkind (Index) = N_Range then
-                              Analyze_And_Resolve (
-                                Low_Bound (Index), Etype (Index_Type));
-                              Analyze_And_Resolve (
-                               High_Bound (Index), Etype (Index_Type));
+                              Analyze_And_Resolve
+                                (Low_Bound (Index), Etype (Index_Type));
+                              Analyze_And_Resolve
+                                (High_Bound (Index), Etype (Index_Type));
 
                            else
                               Analyze_And_Resolve (Index, Etype (Index_Type));
                            end if;
+
                            Next (Index);
                         end loop;
 
-                     else
-                        --  Choice is a sequence of indices for each dimension
+                     --  Choice is a sequence of indexes for each dimension
 
+                     else
                         Index_Type := First_Index (P_Type);
                         Index := First (Expressions (First (Choices (Assoc))));
                         while Present (Index_Type)
@@ -6137,8 +6139,8 @@ package body Sem_Attr is
                         end loop;
 
                         if Present (Index) or else Present (Index_Type) then
-                           Error_Msg_N (
-                            "dimension mismatch in index list", Assoc);
+                           Error_Msg_N
+                             ("dimension mismatch in index list", Assoc);
                         end if;
                      end if;
                   end;
