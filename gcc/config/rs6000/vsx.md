@@ -1634,9 +1634,32 @@
 		     (match_operand 4 "const_2_to_3_operand" "")])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  int mask = (INTVAL (operands[3]) << 1) | (INTVAL (operands[4]) - 2);
+  int op3, op4, mask;
+
+  /* For little endian, swap operands and invert/swap selectors
+     to get the correct xxpermdi.  The operand swap sets up the
+     inputs as a little endian array.  The selectors are swapped
+     because they are defined to use big endian ordering.  The
+     selectors are inverted to get the correct doublewords for
+     little endian ordering.  */
+  if (BYTES_BIG_ENDIAN)
+    {
+      op3 = INTVAL (operands[3]);
+      op4 = INTVAL (operands[4]);
+    }
+  else
+    {
+      op3 = 3 - INTVAL (operands[4]);
+      op4 = 3 - INTVAL (operands[3]);
+    }
+
+  mask = (op3 << 1) | (op4 - 2);
   operands[3] = GEN_INT (mask);
-  return "xxpermdi %x0,%x1,%x2,%3";
+
+  if (BYTES_BIG_ENDIAN)
+    return "xxpermdi %x0,%x1,%x2,%3";
+  else
+    return "xxpermdi %x0,%x2,%x1,%3";
 }
   [(set_attr "type" "vecperm")])
 
