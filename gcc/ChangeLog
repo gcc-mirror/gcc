@@ -1,3 +1,10 @@
+2014-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59561
+	* cfgloopmanip.c (copy_loop_info): If
+	loop->warned_aggressive_loop_optimizations, make sure
+	the flag is set in target loop too.
+
 2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* builtins.c (is_builtin_name): Renamed flag_enable_cilkplus to
