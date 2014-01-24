@@ -14324,9 +14324,23 @@ line indentation is also 1)
 
 @noindent
 These switches control the inclusion of missing end/exit labels, and
-the indentation level in @b{case} statements.
+the indentation level in @b{case} statements, etc.
 
 @table @option
+@item --decimal-grouping=@var{n}
+@cindex @option{--decimal-grouping} @command{gnatpp}
+Put underscores in decimal literals (numeric literals without a base)
+every @var{n} characters. If a literal already has one or more
+underscores, it is not modified. For example, with
+@code{--decimal-grouping=3}, @code{1000000} will be changed to
+@code{1_000_000}.
+
+@item --based-grouping=@var{n}
+@cindex @option{--based-grouping} @command{gnatpp}
+Same as @code{--decimal-grouping}, but for based literals. For
+example, with @code{--based-grouping=4}, @code{16#0001FFFE#} will be
+changed to @code{16#0001_FFFE#}.
+
 @item ^-e^/NO_MISSED_LABELS^
 @cindex @option{^-e^/NO_MISSED_LABELS^} (@command{gnatpp})
 Do not insert missing end/exit labels. An end label is the name of
