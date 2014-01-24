@@ -1,3 +1,8 @@
+2014-01-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59919
+	* gcc.c-torture/compile/pr59919.c: New test.
+
 2014-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57524

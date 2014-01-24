@@ -1,3 +1,9 @@
+2014-01-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/59919
+	* tree-vrp.c (find_assert_locations_1): Do not register asserts
+	for non-returning calls.
+
 2014-01-24  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* common/config/aarch64/aarch64-common.c

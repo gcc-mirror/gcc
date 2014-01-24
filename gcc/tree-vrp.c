@@ -4534,12 +4534,21 @@ infer_value_range (gimple stmt, tree op, enum tree_code *comp_code_p, tree *val_
   if (stmt_could_throw_p (stmt))
     return false;
 
-  /* If STMT is the last statement of a basic block with no
+  /* If STMT is the last statement of a basic block with no normal
      successors, there is no point inferring anything about any of its
      operands.  We would not be able to find a proper insertion point
      for the assertion, anyway.  */
-  if (stmt_ends_bb_p (stmt) && EDGE_COUNT (gimple_bb (stmt)->succs) == 0)
-    return false;
+  if (stmt_ends_bb_p (stmt))
+    {
+      edge_iterator ei;
+      edge e;
+
+      FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
+	if (!(e->flags & EDGE_ABNORMAL))
+	  break;
+      if (e == NULL)
+	return false;
+    }
 
   if (infer_nonnull_range (stmt, op, true, true))
     {
