@@ -2221,6 +2221,11 @@ package body Sem_Type is
       then
          return Etype (R);
 
+      --  If one operand is a raise_expression, use type of other operand
+
+      elsif Nkind (L) = N_Raise_Expression then
+         return Etype (R);
+
       else
          return Specific_Type (T, Etype (R));
       end if;

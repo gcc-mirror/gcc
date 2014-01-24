@@ -13451,6 +13451,7 @@ package body Exp_Ch9 is
       L           : constant List_Id := New_List;
       Has_Entry   : constant Boolean := Has_Entries (Ptyp);
       Prio_Type   : Entity_Id;
+      Prio_Var    : Entity_Id := Empty;
       Restricted  : constant Boolean := Restricted_Profile;
 
    begin
@@ -13509,7 +13510,6 @@ package body Exp_Ch9 is
                                  (Ptyp, Name_Priority, Check_Parents => False);
 
                Prio : Node_Id;
-               Temp : Entity_Id;
 
             begin
                --  Pragma Priority
@@ -13539,37 +13539,21 @@ package body Exp_Ch9 is
                   Prio := Expression (Prio_Clause);
                end if;
 
-               --  If priority is a static expression, then we can duplicate it
-               --  with no problem and simply append it to the argument list.
-               --  However, it has only be pre-analyzed, so we need to check
-               --  now that it is in the bounds of the priority type.
+               --  Always create a locale variable to capture the priority.
+               --  The priority is also passed to Install_Restriced_Handlers.
+               --  Note that it is really necessary to create this variable
+               --  explicitly. It might be thought that removing side effects
+               --  would the appropriate approach, but that could generate
+               --  declarations improperly placed in the enclosing scope.
 
-               if Is_Static_Expression (Prio) then
-                  Set_Analyzed (Prio, False);
-                  Append_To (Args,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark => New_Occurrence_Of (Prio_Type, Loc),
-                      Expression   => Duplicate_Subexpr (Prio)));
+               Prio_Var := Make_Temporary (Loc, 'R', Prio);
+               Append_To (L,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Prio_Var,
+                   Object_Definition   => New_Occurrence_Of (Prio_Type,  Loc),
+                   Expression          => Relocate_Node (Prio)));
 
-               --  Otherwise, the priority may be a per-object expression, if
-               --  it depends on a discriminant of the type. In this case,
-               --  create local variable to capture the expression. Note that
-               --  it is really necessary to create this variable explicitly.
-               --  It might be thought that removing side effects would the
-               --  appropriate approach, but that could generate declarations
-               --  improperly placed in the enclosing scope.
-
-               else
-                  Temp := Make_Temporary (Loc, 'R', Prio);
-                  Append_To (L,
-                     Make_Object_Declaration (Loc,
-                        Defining_Identifier => Temp,
-                        Object_Definition   =>
-                          New_Occurrence_Of (Prio_Type,  Loc),
-                        Expression          => Relocate_Node (Prio)));
-
-                  Append_To (Args, New_Occurrence_Of (Temp, Loc));
-               end if;
+               Append_To (Args, New_Occurrence_Of (Prio_Var, Loc));
             end;
 
          --  When no priority is specified but an xx_Handler pragma is, we
@@ -13714,7 +13698,7 @@ package body Exp_Ch9 is
          --  or, in the case of Ravenscar:
 
          --  Install_Restricted_Handlers
-         --    ((Expr1, Proc1'access), ...., (ExprN, ProcN'access));
+         --    (Prio, (Expr1, Proc1'access), ...., (ExprN, ProcN'access));
 
          declare
             Args  : constant List_Id := New_List;
@@ -13722,6 +13706,24 @@ package body Exp_Ch9 is
             Ritem : Node_Id          := First_Rep_Item (Ptyp);
 
          begin
+            --  Build the Priority parameter (only for ravenscar)
+
+            if Restricted then
+
+               --  Priority comes from a pragma
+
+               if Present (Prio_Var) then
+                  Append_To (Args, New_Occurrence_Of (Prio_Var, Loc));
+
+               --  Priority is the default one
+
+               else
+                  Append_To (Args,
+                    New_Reference_To
+                      (RTE (RE_Default_Interrupt_Priority), Loc));
+               end if;
+            end if;
+
             --  Build the Attach_Handler table argument
 
             while Present (Ritem) loop

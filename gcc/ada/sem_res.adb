@@ -193,6 +193,7 @@ package body Sem_Res is
    procedure Resolve_Op_Expon                  (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Op_Not                    (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Qualified_Expression      (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Raise_Expression          (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Range                     (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Real_Literal              (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Reference                 (N : Node_Id; Typ : Entity_Id);
@@ -2876,11 +2877,8 @@ package body Sem_Res is
             when N_Quantified_Expression
                              => null;
 
-            --  Nothing to do for Raise_Expression, since we took care of
-            --  setting the Etype earlier, and no other processing is needed.
-
             when N_Raise_Expression
-                             => null;
+                             => Resolve_Raise_Expression         (N, Ctx_Type);
 
             when N_Raise_xxx_Error
                              => Set_Etype (N, Ctx_Type);
@@ -3453,13 +3451,16 @@ package body Sem_Res is
 
          --  If we have an error in any actual or formal, indicated by a type
          --  of Any_Type, then abandon resolution attempt, and set result type
-         --  to Any_Type.
+         --  to Any_Type. Skip this if the actual is a Raise_Expression, whose
+         --  type is imposed from context.
 
          elsif (Present (A) and then Etype (A) = Any_Type)
            or else Etype (F) = Any_Type
          then
-            Set_Etype (N, Any_Type);
-            return;
+            if Nkind (A) /= N_Raise_Expression then
+               Set_Etype (N, Any_Type);
+               return;
+            end if;
          end if;
 
          --  Case where actual is present
@@ -8750,6 +8751,15 @@ package body Sem_Res is
       Analyze_Dimension (N);
       Eval_Qualified_Expression (N);
    end Resolve_Qualified_Expression;
+
+   ------------------------------
+   -- Resolve_Raise_Expression --
+   ------------------------------
+
+   procedure Resolve_Raise_Expression (N : Node_Id; Typ : Entity_Id) is
+   begin
+      Set_Etype (N, Typ);
+   end Resolve_Raise_Expression;
 
    -------------------
    -- Resolve_Range --

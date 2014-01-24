@@ -7051,7 +7051,9 @@ package body Prj.Nmsc is
             --  Check if it is OK to have the same file name in several
             --  source directories.
 
-            if Source_Dir_Rank = Name_Loc.Source.Source_Dir_Rank then
+            if Name_Loc.Source /= No_Source
+              and then Source_Dir_Rank = Name_Loc.Source.Source_Dir_Rank
+            then
                Error_Msg_File_1 := File_Name;
                Error_Msg
                  (Data.Flags,
