@@ -15570,19 +15570,6 @@ package body Sem_Prag is
                when E_Constant | E_Variable =>
                   Set_Linker_Section_Pragma (Ent, N);
 
-                  --  For now, for objects, we also link onto the rep item
-                  --  chain and set the gigi rep item flag. This is here for
-                  --  transition purposes only. When the processing for the
-                  --  Linker_Section_Pragma field is completed, this can be
-                  --  removed, since it will no longer be used.
-
-                  --  This is accomplished by the call to Rep_Item_Too_Late
-                  --  (when no error is detected and False is returned).
-
-                  if not Rep_Item_Too_Late (Ent, N) then
-                     Set_Has_Gigi_Rep_Item (Ent);
-                  end if;
-
                --  Types
 
                when Type_Kind =>

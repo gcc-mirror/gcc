@@ -1290,7 +1290,6 @@ package Einfo is
 --
 --          Machine_Attribute pragma
 --          Link_Alias pragma
---          Linker_Section pragma
 --          Linker_Constructor pragma
 --          Linker_Destructor pragma
 --          Weak_External pragma
@@ -1298,10 +1297,6 @@ package Einfo is
 --
 --       If any of these items are present, then the flag Has_Gigi_Rep_Item is
 --       set, indicating that Gigi should search the chain.
---
---       Note that in the case of Linker_Section, this is set only for objects,
---       and only for transitional use until the new Linker_Section_Pragma
---       field is properly processed by the back end.
 --
 --       Other representation items are included in the chain so that error
 --       messages can easily locate the relevant nodes for posting errors.
@@ -1559,7 +1554,6 @@ package Einfo is
 --
 --          Machine_Attribute pragma
 --          Linker_Alias pragma
---          Linker_Section pragma
 --          Linker_Constructor pragma
 --          Linker_Destructor pragma
 --          Weak_External pragma
@@ -1569,10 +1563,6 @@ package Einfo is
 --       process any of these items that appear. At least one such item will
 --       be present.
 --
---       Note that in the case of Linker_Section, this is set only for objects,
---       and only for transitional use until the new Linker_Section_Pragma
---       field is properly processed by the back end.
-
 --    Has_Homonym (Flag56)
 --       Defined in all entities. Set if an entity has a homonym in the same
 --       scope. Used by Gigi to generate unique names for such entities.

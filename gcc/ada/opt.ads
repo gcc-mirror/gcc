@@ -1956,7 +1956,7 @@ package Opt is
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
    --  This procedure restores a set of switch values previously saved by a
-   --  call to Save_Opt_Switches.
+   --  call to Save_Opt_Config_Switches (Save).
 
    procedure Register_Opt_Config_Switches;
    --  This procedure is called after processing the gnat.adc file and other

@@ -130,9 +130,10 @@ static GTY ((if_marked ("tree_int_map_marked_p"),
 	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
 
 static bool allocatable_size_p (tree, bool);
-static void prepend_one_attribute_to (struct attrib **,
-				      enum attr_type, tree, tree, Node_Id);
-static void prepend_attributes (Entity_Id, struct attrib **);
+static void prepend_one_attribute (struct attrib **,
+				   enum attr_type, tree, tree, Node_Id);
+static void prepend_one_attribute_pragma (struct attrib **, Node_Id);
+static void prepend_attributes (struct attrib **, Entity_Id);
 static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
 static bool type_has_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, tree, bool, bool);
@@ -363,7 +364,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
   /* Handle any attributes directly attached to the entity.  */
   if (Has_Gigi_Rep_Item (gnat_entity))
-    prepend_attributes (gnat_entity, &attr_list);
+    prepend_attributes (&attr_list, gnat_entity);
 
   /* Do some common processing for types.  */
   if (is_type)
@@ -377,8 +378,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (Base_Type (gnat_entity) != gnat_entity
 	  && !Is_First_Subtype (gnat_entity)
 	  && Has_Gigi_Rep_Item (First_Subtype (Base_Type (gnat_entity))))
-	prepend_attributes (First_Subtype (Base_Type (gnat_entity)),
-			    &attr_list);
+	prepend_attributes (&attr_list,
+			    First_Subtype (Base_Type (gnat_entity)));
 
       /* Compute a default value for the size of an elementary type.  */
       if (Known_Esize (gnat_entity) && Is_Elementary_Type (gnat_entity))
@@ -1469,6 +1470,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 && !tree_fits_uhwi_p (TYPE_SIZE_UNIT
 				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
 	  static_p = true;
+
+	/* Deal with a pragma Linker_Section on a constant or variable.  */
+	if ((kind == E_Constant || kind == E_Variable)
+	    && Present (Linker_Section_Pragma (gnat_entity)))
+	  prepend_one_attribute_pragma (&attr_list,
+					Linker_Section_Pragma (gnat_entity));
 
 	/* Now create the variable or the constant and set various flags.  */
 	gnu_decl
@@ -4575,26 +4582,33 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 	  }
 
+	/* Deal with platform-specific calling conventions.  */
 	if (Has_Stdcall_Convention (gnat_entity))
-	  prepend_one_attribute_to
+	  prepend_one_attribute
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
 	else if (Has_Thiscall_Convention (gnat_entity))
-	  prepend_one_attribute_to
+	  prepend_one_attribute
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("thiscall"), NULL_TREE,
 	     gnat_entity);
 
 	/* If we should request stack realignment for a foreign convention
-	   subprogram, do so.  Note that this applies to task entry points in
-	   particular.  */
+	   subprogram, do so.  Note that this applies to task entry points
+	   in particular.  */
 	if (FOREIGN_FORCE_REALIGN_STACK
 	    && Has_Foreign_Convention (gnat_entity))
-	  prepend_one_attribute_to
+	  prepend_one_attribute
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
 	     get_identifier ("force_align_arg_pointer"), NULL_TREE,
 	     gnat_entity);
+
+	/* Deal with a pragma Linker_Section on a subprogram.  */
+	if ((kind == E_Function || kind == E_Procedure)
+	    && Present (Linker_Section_Pragma (gnat_entity)))
+	  prepend_one_attribute_pragma (&attr_list,
+					Linker_Section_Pragma (gnat_entity));
 
 	/* The lists have been built in reverse.  */
 	gnu_param_list = nreverse (gnu_param_list);
@@ -5456,13 +5470,13 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
   gnu_ext_name = create_concat_name (gnat_entity, NULL);
 
   if (Has_Stdcall_Convention (gnat_entity))
-    prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
-			      get_identifier ("stdcall"), NULL_TREE,
-			      gnat_entity);
+    prepend_one_attribute (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+			   get_identifier ("stdcall"), NULL_TREE,
+			   gnat_entity);
   else if (Has_Thiscall_Convention (gnat_entity))
-    prepend_one_attribute_to (&attr_list, ATTR_MACHINE_ATTRIBUTE,
-			      get_identifier ("thiscall"), NULL_TREE,
-			      gnat_entity);
+    prepend_one_attribute (&attr_list, ATTR_MACHINE_ATTRIBUTE,
+			   get_identifier ("thiscall"), NULL_TREE,
+			   gnat_entity);
 
   if (No (Interface_Name (gnat_entity)) && gnu_ext_name == gnu_entity_name)
     gnu_ext_name = NULL_TREE;
@@ -6071,11 +6085,11 @@ allocatable_size_p (tree gnu_size, bool static_p)
    NAME, ARGS and ERROR_POINT.  */
 
 static void
-prepend_one_attribute_to (struct attrib ** attr_list,
-			  enum attr_type attr_type,
-			  tree attr_name,
-			  tree attr_args,
-			  Node_Id attr_error_point)
+prepend_one_attribute (struct attrib **attr_list,
+		       enum attr_type attr_type,
+		       tree attr_name,
+		       tree attr_args,
+		       Node_Id attr_error_point)
 {
   struct attrib * attr = (struct attrib *) xmalloc (sizeof (struct attrib));
 
@@ -6088,100 +6102,103 @@ prepend_one_attribute_to (struct attrib ** attr_list,
   *attr_list = attr;
 }
 
+/* Prepend to ATTR_LIST an entry for an attribute provided by GNAT_PRAGMA.  */
+
+static void
+prepend_one_attribute_pragma (struct attrib **attr_list, Node_Id gnat_pragma)
+{
+  const Node_Id gnat_arg = Pragma_Argument_Associations (gnat_pragma);
+  tree gnu_arg0 = NULL_TREE, gnu_arg1 = NULL_TREE;
+  enum attr_type etype;
+
+  /* Map the pragma at hand.  Skip if this isn't one we know how to handle.  */
+  switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_pragma))))
+    {
+    case Pragma_Machine_Attribute:
+      etype = ATTR_MACHINE_ATTRIBUTE;
+      break;
+
+    case Pragma_Linker_Alias:
+      etype = ATTR_LINK_ALIAS;
+      break;
+
+    case Pragma_Linker_Section:
+      etype = ATTR_LINK_SECTION;
+      break;
+
+    case Pragma_Linker_Constructor:
+      etype = ATTR_LINK_CONSTRUCTOR;
+      break;
+
+    case Pragma_Linker_Destructor:
+      etype = ATTR_LINK_DESTRUCTOR;
+      break;
+
+    case Pragma_Weak_External:
+      etype = ATTR_WEAK_EXTERNAL;
+      break;
+
+    case Pragma_Thread_Local_Storage:
+      etype = ATTR_THREAD_LOCAL_STORAGE;
+      break;
+
+    default:
+      return;
+    }
+
+  /* See what arguments we have and turn them into GCC trees for attribute
+     handlers.  These expect identifier for strings.  We handle at most two
+     arguments and static expressions only.  */
+  if (Present (gnat_arg) && Present (First (gnat_arg)))
+    {
+      Node_Id gnat_arg0 = Next (First (gnat_arg));
+      Node_Id gnat_arg1 = Empty;
+
+      if (Present (gnat_arg0) && Is_Static_Expression (Expression (gnat_arg0)))
+	{
+	  gnu_arg0 = gnat_to_gnu (Expression (gnat_arg0));
+
+	  if (TREE_CODE (gnu_arg0) == STRING_CST)
+	    {
+	      gnu_arg0 = get_identifier (TREE_STRING_POINTER (gnu_arg0));
+	      if (IDENTIFIER_LENGTH (gnu_arg0) == 0)
+		return;
+	    }
+
+	  gnat_arg1 = Next (gnat_arg0);
+	}
+
+      if (Present (gnat_arg1) && Is_Static_Expression (Expression (gnat_arg1)))
+	{
+	  gnu_arg1 = gnat_to_gnu (Expression (gnat_arg1));
+
+	  if (TREE_CODE (gnu_arg1) == STRING_CST)
+	   gnu_arg1 = get_identifier (TREE_STRING_POINTER (gnu_arg1));
+	}
+    }
+
+  /* Prepend to the list.  Make a list of the argument we might have, as GCC
+     expects it.  */
+  prepend_one_attribute (attr_list, etype, gnu_arg0,
+			 gnu_arg1
+			 ? build_tree_list (NULL_TREE, gnu_arg1) : NULL_TREE,
+			 Present (Next (First (gnat_arg)))
+			 ? Expression (Next (First (gnat_arg))) : gnat_pragma);
+}
+
 /* Prepend to ATTR_LIST the list of attributes for GNAT_ENTITY, if any.  */
 
 static void
-prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
+prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
 {
   Node_Id gnat_temp;
 
   /* Attributes are stored as Representation Item pragmas.  */
-
-  for (gnat_temp = First_Rep_Item (gnat_entity); Present (gnat_temp);
+  for (gnat_temp = First_Rep_Item (gnat_entity);
+       Present (gnat_temp);
        gnat_temp = Next_Rep_Item (gnat_temp))
     if (Nkind (gnat_temp) == N_Pragma)
-      {
-	tree gnu_arg0 = NULL_TREE, gnu_arg1 = NULL_TREE;
-	Node_Id gnat_assoc = Pragma_Argument_Associations (gnat_temp);
-	enum attr_type etype;
-
-	/* Map the kind of pragma at hand.  Skip if this is not one
-	   we know how to handle.  */
-
-	switch (Get_Pragma_Id (Chars (Pragma_Identifier (gnat_temp))))
-	  {
-	  case Pragma_Machine_Attribute:
-	    etype = ATTR_MACHINE_ATTRIBUTE;
-	    break;
-
-	  case Pragma_Linker_Alias:
-	    etype = ATTR_LINK_ALIAS;
-	    break;
-
-	  case Pragma_Linker_Section:
-	    etype = ATTR_LINK_SECTION;
-	    break;
-
-	  case Pragma_Linker_Constructor:
-	    etype = ATTR_LINK_CONSTRUCTOR;
-	    break;
-
-	  case Pragma_Linker_Destructor:
-	    etype = ATTR_LINK_DESTRUCTOR;
-	    break;
-
-	  case Pragma_Weak_External:
-	    etype = ATTR_WEAK_EXTERNAL;
-	    break;
-
-	  case Pragma_Thread_Local_Storage:
-	    etype = ATTR_THREAD_LOCAL_STORAGE;
-	    break;
-
-	  default:
-	    continue;
-	  }
-
-	/* See what arguments we have and turn them into GCC trees for
-	   attribute handlers.  These expect identifier for strings.  We
-	   handle at most two arguments, static expressions only.  */
-
-	if (Present (gnat_assoc) && Present (First (gnat_assoc)))
-	  {
-	    Node_Id gnat_arg0 = Next (First (gnat_assoc));
-	    Node_Id gnat_arg1 = Empty;
-
-	    if (Present (gnat_arg0)
-		&& Is_Static_Expression (Expression (gnat_arg0)))
-	      {
-		gnu_arg0 = gnat_to_gnu (Expression (gnat_arg0));
-
-		if (TREE_CODE (gnu_arg0) == STRING_CST)
-		  gnu_arg0 = get_identifier (TREE_STRING_POINTER (gnu_arg0));
-
-		gnat_arg1 = Next (gnat_arg0);
-	      }
-
-	    if (Present (gnat_arg1)
-		&& Is_Static_Expression (Expression (gnat_arg1)))
-	      {
-		gnu_arg1 = gnat_to_gnu (Expression (gnat_arg1));
-
-		if (TREE_CODE (gnu_arg1) == STRING_CST)
-		  gnu_arg1 = get_identifier (TREE_STRING_POINTER (gnu_arg1));
-	      }
-	  }
-
-	/* Prepend to the list now.  Make a list of the argument we might
-	   have, as GCC expects it.  */
-	prepend_one_attribute_to
-	  (attr_list,
-	   etype, gnu_arg0,
-	   (gnu_arg1 != NULL_TREE)
-	   ? build_tree_list (NULL_TREE, gnu_arg1) : NULL_TREE,
-	   Present (Next (First (gnat_assoc)))
-	   ? Expression (Next (First (gnat_assoc))) : gnat_temp);
-      }
+      prepend_one_attribute_pragma (attr_list, gnat_temp);
 }
 
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
