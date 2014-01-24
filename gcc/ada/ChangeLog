@@ -1,3 +1,34 @@
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Post_State): In a postcondition, a selected
+	component that denotes an implicit dereference is a reference
+	to the post state of the subprogram.
+
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): SPARK_Mode OFF
+	for generated subprograms.
+	(Analyze_Subprogram_Specification): Ditto.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Check_Attribute_Allowed): Detect more forbidden
+	attributes in package Builder of aggregate and aggregate library
+	projects.
+	* prj-nmsc.adb (Process_Naming_Scheme.Check.Check_Aggregate):
+	Remove procedure (Process_Naming_Scheme.Check.Check_Aggregated):
+	Remove parameters.  Change error message from "... externally
+	build library ..." to "... externally built project ...".
+	(Process_Naming_Scheme.Check): Do not do any check in aggregate
+	project, as attribute Library_Dir and Library_Name have already
+	been detected as forbidden.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.adb (Find_Project): If cached project path is not in
+	project directory, look in current directory first and use cached
+	project path only if project is not found in project directory.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, lib-xref.adb: Correct false positive warnings.
