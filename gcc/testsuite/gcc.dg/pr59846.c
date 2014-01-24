@@ -5,13 +5,13 @@
 _Bool
 fn1 (unsigned int p)
 {
-  return 0UL > p; /* { dg-warning "14:comparison is always false due to limited range of data type" } */
+  return 0ULL > p; /* { dg-warning "15:comparison is always false due to limited range of data type" } */
 }
 
 _Bool
 fn2 (unsigned int p)
 {
-  return 0UL <= p; /* { dg-warning "14:comparison is always true due to limited range of data type" } */
+  return 0ULL <= p; /* { dg-warning "15:comparison is always true due to limited range of data type" } */
 }
 
 _Bool
