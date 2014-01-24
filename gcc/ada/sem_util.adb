@@ -9882,7 +9882,12 @@ package body Sem_Util is
          --  a reference as a modification. It is not clear if there are any
          --  other bad consequences. ???
 
-         if Present (Etype (N)) and then Is_Access_Type (Etype (N)) then
+         if No (Etype (N)) then
+            return False;
+
+         --  We have an Etype set, so we can check it
+
+         elsif Is_Access_Type (Etype (N)) then
             return False;
 
          --  OK, not access type case, so just test whole expression

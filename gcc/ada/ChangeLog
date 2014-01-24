@@ -1,3 +1,7 @@
+2014-01-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, lib-xref.adb: Correct false positive warnings.
+
 2014-01-24  Vincent Celier  <celier@adacore.com>
 
 	* projects.texi: Document that aggregate projects are only
