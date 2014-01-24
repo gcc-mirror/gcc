@@ -1,5 +1,9 @@
 2014-01-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* print-rtl.c (in_call_function_usage): New var.
+	(print_rtx): When in CALL_INSN_FUNCTION_USAGE, always print
+	EXPR_LIST mode as mode and not as reg note name.
+
 	PR middle-end/59561
 	* cfgloopmanip.c (copy_loop_info): If
 	loop->warned_aggressive_loop_optimizations, make sure
