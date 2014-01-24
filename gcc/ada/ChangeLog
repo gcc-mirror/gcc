@@ -1,3 +1,41 @@
+2014-01-24  Doug Rupp  <rupp@adacore.com>
+
+	* init.c: Add a handler section for Android.
+
+2014-01-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* i-cexten.ads (Unsigned_33..64, Unsigned_33..64): New types.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): If one operand is a
+	Raise_Expression, set its type to that of the other operand.
+	* sem_res.adb (Resolve_Raise_Expression): new procedure.
+	(Resolve_Actuals): For an actual that is a Raise_Expression,
+	set the type to that of the formal.
+	* sem_type.adb (Find_Unique_Type): If one of the operands is a
+	Raise_Expression, return type of the other operand.
+
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If a scalar
+	component of the record has a type with a default aspect, and
+	the corresponding aggregate component is initiaized with a box,
+	use the default value in the rewritten aggregate.
+
+2014-01-24  Tristan Gingold  <gingold@adacore.com>
+
+	* s-interr.ads, s-interr.adb, s-interr-hwint.adb, s-interr-vms.adb,
+	s-interr-sigaction.adb,
+	s-interr-dummy.adb (Install_Restricted_Handlers): Add Prio parameter.
+	* exp_ch9.adb (Make_Initialize_Protection): Add Prio parameter
+	to the call to Install_Restricted_Handlers.
+
+2014-01-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_File): Add protection when the source is
+	not fully initialized.
+
 2014-01-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Post_State): In a postcondition, a selected

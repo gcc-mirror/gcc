@@ -4204,6 +4204,17 @@ package body Sem_Aggr is
                      end;
                   end if;
 
+               --  Ada 2012: If component is scalar with default value, use it
+
+               elsif Is_Scalar_Type (Ctyp)
+                 and then Has_Default_Aspect (Ctyp)
+               then
+                  Add_Association
+                    (Component  => Component,
+                     Expr       => Default_Aspect_Value
+                                     (First_Subtype (Underlying_Type (Ctyp))),
+                     Assoc_List => New_Assoc_List);
+
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active
                then

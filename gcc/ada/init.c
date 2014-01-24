@@ -2320,6 +2320,83 @@ __gnat_install_handler (void)
   __gnat_handler_installed = 1;
 }
 
+#elif defined(__ANDROID__)
+
+/*******************/
+/* Android Section */
+/*******************/
+
+#include <signal.h>
+#include <stdlib.h>
+
+static void
+__gnat_error_handler (int sig,
+		      siginfo_t *si ATTRIBUTE_UNUSED,
+		      void *ucontext ATTRIBUTE_UNUSED)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch (sig)
+    {
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+  Raise_From_Signal_Handler (exception, msg);
+}
+
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+char __gnat_alternate_stack[16 * 1024];
+
+void
+__gnat_install_handler (void)
+{
+  struct sigaction act;
+
+  /* Set up signal handler to map synchronous signals to appropriate
+     exceptions.  Make sure that the handler isn't interrupted by another
+     signal that might cause a scheduling event!  Also setup an alternate
+     stack region for the handler execution so that stack overflows can be
+     handled properly, avoiding a SEGV generation from stack usage by the
+     handler itself.  */
+
+  stack_t stack;
+  stack.ss_sp = __gnat_alternate_stack;
+  stack.ss_size = sizeof (__gnat_alternate_stack);
+  stack.ss_flags = 0;
+  sigaltstack (&stack, NULL);
+
+  act.sa_sigaction = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
+  sigemptyset (&act.sa_mask);
+
+  sigaction (SIGABRT, &act, NULL);
+  sigaction (SIGFPE,  &act, NULL);
+  sigaction (SIGILL,  &act, NULL);
+  sigaction (SIGBUS,  &act, NULL);
+  act.sa_flags |= SA_ONSTACK;
+  sigaction (SIGSEGV, &act, NULL);
+
+  __gnat_handler_installed = 1;
+}
+
 #else
 
 /* For all other versions of GNAT, the handler does nothing.  */

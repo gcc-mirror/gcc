@@ -6298,6 +6298,19 @@ package body Sem_Ch4 is
               or else Etype (R) = Any_Type
               or else (Nkind (N) in N_Binary_Op and then Etype (L) = Any_Type)
             then
+               --  For the rather unusual case where one of the operands is
+               --  a Raise_Expression, whose initial type is Any_Type, use
+               --  the type of the other operand.
+
+               if Nkind (L) = N_Raise_Expression then
+                  Set_Etype (L, Etype (R));
+                  Set_Etype (N, Etype (R));
+
+               elsif Nkind (R) = N_Raise_Expression then
+                  Set_Etype (R, Etype (L));
+                  Set_Etype (N, Etype (L));
+               end if;
+
                return;
 
             --  We explicitly check for the case of concatenation of component
