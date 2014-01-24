@@ -435,7 +435,11 @@ package body Sem_Ch6 is
          --  To prevent premature freeze action, insert the new body at the end
          --  of the current declarations, or at the end of the package spec.
          --  However, resolve usage names now, to prevent spurious visibility
-         --  on later entities.
+         --  on later entities. Note that the function can now be called in
+         --  the current declarative part, which will appear to be prior to
+         --  the presence of the body in the code. There are nevertheless no
+         --  order of elaboration issues because all name resolution has taken
+         --  place at the point of declaration.
 
          declare
             Decls : List_Id            := List_Containing (N);

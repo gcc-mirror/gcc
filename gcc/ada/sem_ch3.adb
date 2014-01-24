@@ -2333,8 +2333,14 @@ package body Sem_Ch3 is
                   Freeze_From := First_Entity (Current_Scope);
                end if;
 
+               --  There may have been several freezing points previously,
+               --  for example object declarations or subprogram bodies, but
+               --  at the end of a declarative part we check freezing from
+               --  the beginning, even though entities may already be frozen,
+               --  in order to perform visibility checks on delayed aspects.
+
                Adjust_Decl;
-               Freeze_All (Freeze_From, Decl);
+               Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
 
             elsif Scope (Current_Scope) /= Standard_Standard
@@ -2348,7 +2354,7 @@ package body Sem_Ch3 is
                or else Is_Empty_List (Private_Declarations (Parent (L)))
             then
                Adjust_Decl;
-               Freeze_All (Freeze_From, Decl);
+               Freeze_All (First_Entity (Current_Scope), Decl);
                Freeze_From := Last_Entity (Current_Scope);
             end if;
 

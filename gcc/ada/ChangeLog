@@ -1,3 +1,15 @@
+2014-01-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): At the end of an
+	appropriate declarative part, call Freeze_All from the first
+	declaration in the scope, not from the first unfrozen one. This
+	is necessary to apply visibility checks to entities with delayed
+	aspects. Otherwise, in the presence of instantiations and cleanups
+	that they may generate, the delayed aspects may be analyzed too
+	late and produce spurious visibility errors.
+	* sem_attr.adb: Place etype on range.
+	* sem_ch6.adb: Documentation expression functions.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb: Minor change of Indices to Indexes (preferred
