@@ -8328,7 +8328,7 @@ static bool
 gate_expand_omp (void)
 {
   return ((flag_openmp != 0 || flag_openmp_simd != 0
-	   || flag_enable_cilkplus != 0) && !seen_error ());
+	   || flag_cilkplus != 0) && !seen_error ());
 }
 
 namespace {
@@ -10139,7 +10139,7 @@ execute_lower_omp (void)
 
   /* This pass always runs, to provide PROP_gimple_lomp.
      But there is nothing to do unless -fopenmp is given.  */
-  if (flag_openmp == 0 && flag_openmp_simd == 0 && flag_enable_cilkplus == 0)
+  if (flag_openmp == 0 && flag_openmp_simd == 0 && flag_cilkplus == 0)
     return 0;
 
   all_contexts = splay_tree_new (splay_tree_compare_pointers, 0,
@@ -10258,7 +10258,7 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
 #endif
 
   bool cilkplus_block = false;
-  if (flag_enable_cilkplus)
+  if (flag_cilkplus)
     {
       if ((branch_ctx
 	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
@@ -10587,7 +10587,7 @@ diagnose_omp_structured_block_errors (void)
 static bool
 gate_diagnose_omp_blocks (void)
 {
-  return flag_openmp || flag_enable_cilkplus;
+  return flag_openmp || flag_cilkplus;
 }
 
 namespace {
@@ -10696,7 +10696,7 @@ simd_clone_clauses_extract (struct cgraph_node *node, tree clauses,
      be cloned have a distinctive artificial label in addition to "omp
      declare simd".  */
   bool cilk_clone
-    = (flag_enable_cilkplus
+    = (flag_cilkplus
        && lookup_attribute ("cilk simd function",
 			    DECL_ATTRIBUTES (node->decl)));
 
@@ -11781,7 +11781,7 @@ public:
 
   /* opt_pass methods: */
   bool gate () { return ((flag_openmp || flag_openmp_simd
-			  || flag_enable_cilkplus || (in_lto_p && !flag_wpa))
+			  || flag_cilkplus || (in_lto_p && !flag_wpa))
 			 && (targetm.simd_clone.compute_vecsize_and_simdlen
 			     != NULL)); }
   unsigned int execute () { return ipa_omp_simd_clone (); }

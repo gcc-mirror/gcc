@@ -1,3 +1,20 @@
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* call.c (magic_varargs_p): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+	* cp-gimplify.c (cp_genericize): Likewise.
+	* decl.c (grokfndecl): Likewise.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(is_cilkplus_vector_p): Likewise.
+	(cp_parser_omp_clause_name): Likewise.
+	(cp_parser_omp_all_clauses): Likewise.
+	* pt.c (apply_late_template_attributes): Likewise.
+	* typeck.c (cp_build_array_ref): Likewise.
+	(cp_build_compound_expr): Likewise.
+	(check_return_expr): Likewise.
+
 2014-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58550

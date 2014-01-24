@@ -2423,7 +2423,7 @@ build_array_ref (location_t loc, tree array, tree index)
       || TREE_TYPE (index) == error_mark_node)
     return error_mark_node;
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (index))
+  if (flag_cilkplus && contains_array_notation_expr (index))
     {
       size_t rank = 0;
       if (!find_rank (loc, index, index, true, &rank))
@@ -2853,7 +2853,7 @@ build_function_call_vec (location_t loc, tree function,
       if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
         origtypes = NULL;
 
-      if (flag_enable_cilkplus
+      if (flag_cilkplus
 	  && is_cilkplus_reduce_builtin (function))
 	origtypes = NULL;
     }
@@ -3061,7 +3061,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
 	  break;
 	}
     }
-  if (flag_enable_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
+  if (flag_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
     return vec_safe_length (values);
 
   /* Scan the given expressions and types, producing individual
@@ -4739,7 +4739,7 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
   tree eptype = NULL_TREE;
   tree ret;
 
-  if (flag_enable_cilkplus
+  if (flag_cilkplus
       && (TREE_CODE (expr1) == CILK_SPAWN_STMT
 	  || TREE_CODE (expr2) == CILK_SPAWN_STMT))
     {
@@ -9136,7 +9136,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
     warning_at (loc, 0,
 		"function declared %<noreturn%> has a %<return%> statement");
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (retval))
+  if (flag_cilkplus && contains_array_notation_expr (retval))
     {
       /* Array notations are allowed in a return statement if it is inside a
 	 built-in array notation reduction function.  */
@@ -9149,7 +9149,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  return error_mark_node;
 	}
     }
-  if (flag_enable_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
     {
       error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
 		"allowed");
@@ -9450,7 +9450,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
      else_block must be either 0 or be equal to the rank of the condition.  If
      the condition does not have array notations then break them up as it is
      broken up in a normal expression.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       size_t then_rank = 0, cond_rank = 0, else_rank = 0;
       if (!find_rank (if_locus, cond, cond, true, &cond_rank))
@@ -9525,7 +9525,7 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       error_at (start_locus, "array notation expression cannot be used in a "
 		"loop%'s condition");
@@ -10074,12 +10074,12 @@ build_binary_op (location_t location, enum tree_code code,
   /* When Cilk Plus is enabled and there are array notations inside op0, then
      we check to see if there are builtin array notation functions.  If
      so, then we take on the type of the array notation inside it.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (op0)) 
+  if (flag_cilkplus && contains_array_notation_expr (op0)) 
     orig_type0 = type0 = find_correct_array_notation_type (op0);
   else
     orig_type0 = type0 = TREE_TYPE (op0);
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (op1))
+  if (flag_cilkplus && contains_array_notation_expr (op1))
     orig_type1 = type1 = find_correct_array_notation_type (op1);
   else 
     orig_type1 = type1 = TREE_TYPE (op1);

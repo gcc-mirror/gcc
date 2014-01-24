@@ -1,3 +1,8 @@
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* lto-lang.c (lto_init): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+
 2014-01-09  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (gimple_canonical_types_compatible_p): Fix comment.

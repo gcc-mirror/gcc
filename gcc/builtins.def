@@ -174,7 +174,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef DEF_CILKPLUS_BUILTIN
 #define DEF_CILKPLUS_BUILTIN(ENUM, NAME, TYPE, ATTRS)  \
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_FN_INT_VAR, BT_LAST, \
-  	       false, false, false, ATTRS, false, flag_enable_cilkplus) 
+  	       false, false, false, ATTRS, false, flag_cilkplus) 
 
 /* Define an attribute list for math functions that are normally
    "impure" because some of them may write into global memory for
