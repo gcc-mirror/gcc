@@ -1,3 +1,7 @@
+2014-01-24  Chris Manghane  <cmang@google.com>
+
+	* go-gcc.cc (Gcc_backend::unary_expression): New function.
+
 2014-01-16  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::conditional_expression): Add btype

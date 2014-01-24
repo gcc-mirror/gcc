@@ -403,6 +403,11 @@ class Expression
   is_constant() const
   { return this->do_is_constant(); }
 
+  // Return whether this is an immutable expression.
+  bool
+  is_immutable() const
+  { return this->do_is_immutable(); }
+
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
   bool
@@ -756,6 +761,11 @@ class Expression
   // Return whether this is a constant expression.
   virtual bool
   do_is_constant() const
+  { return false; }
+
+  // Return whether this is an immutable expression.
+  virtual bool
+  do_is_immutable() const
   { return false; }
 
   // Return whether this is a constant expression of numeric type, and
@@ -1193,6 +1203,10 @@ class String_expression : public Expression
  protected:
   bool
   do_is_constant() const
+  { return true; }
+
+  bool
+  do_is_immutable() const
   { return true; }
 
   bool
