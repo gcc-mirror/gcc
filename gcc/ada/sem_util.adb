@@ -9850,20 +9850,48 @@ package body Sem_Util is
    ------------
 
    --  We seem to have a lot of overlapping functions that do similar things
-   --  (testing for left hand sides or lvalues???). Anyway, since this one is
-   --  purely syntactic, it should be in Sem_Aux I would think???
+   --  (testing for left hand sides or lvalues???).
 
    function Is_LHS (N : Node_Id) return Boolean is
       P : constant Node_Id := Parent (N);
 
    begin
+      --  Return True if we are the left hand side of an assignment statement
+
       if Nkind (P) = N_Assignment_Statement then
          return Name (P) = N;
 
-      elsif
-        Nkind_In (P, N_Indexed_Component, N_Selected_Component, N_Slice)
+      --  Case of prefix of indexed or selected component or slice
+
+      elsif Nkind_In (P, N_Indexed_Component, N_Selected_Component, N_Slice)
+        and then N = Prefix (P)
       then
-         return N = Prefix (P) and then Is_LHS (P);
+         --  Here we have the case where the parent P is N.Q or N(Q .. R).
+         --  If P is an LHS, then N is also effectively an LHS, but there
+         --  is an important exception. If N is of an access type, then
+         --  what we really have is N.all.Q (or N.all(Q .. R)). In either
+         --  case this makes N.all a left hand side but not N itself!
+
+         --  Here follows a worrisome kludge. If Etype (N) is not set, which
+         --  for sure happens in the call from Find_Direct_Name, that means we
+         --  don't know if N is of an access type, so we can't give an accurate
+         --  answer. For now, we assume we do not have an access type, which
+         --  means for example that P.Q.R := X will look like a modification
+         --  of P, even if P.Q eventually turns out to be an access type. The
+         --  consequence is at least that in some cases we incorrectly identify
+         --  a reference as a modification. It is not clear if there are any
+         --  other bad consequences. ???
+
+         if Present (Etype (N)) and then Is_Access_Type (Etype (N)) then
+            return False;
+
+         --  OK, not access type case, so just test whole expression
+
+         else
+            return Is_LHS (P);
+         end if;
+
+      --  All other cases are not left hand sides
 
       else
          return False;

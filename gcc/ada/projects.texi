@@ -2365,6 +2365,9 @@ aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main will not be built when
 building the aggregate project.
 
+Aggregate projects are only supported with @command{gprbuild}, but not with
+@command{gnatmake}.
+
 @c ---------------------------------------------------------
 @node Building a set of projects with a single command
 @subsection Building a set of projects with a single command
@@ -2404,8 +2407,8 @@ with Annex E.
 @subsection Define a build environment
 @c ---------------------------------------------
 
-The environment variables at the time you launch @command{gprbuild} or
-@command{gnatmake} will influence the view these tools have of the project
+The environment variables at the time you launch @command{gprbuild}
+will influence the view these tools have of the project
 (PATH to find the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
 projects, environment variables that are referenced in project files
 through the "external" statement,...). Several command line switches
@@ -2462,12 +2465,12 @@ end MyProject;
 @subsection Performance improvements in builder
 @c --------------------------------------------
 
-The loading of aggregate projects is optimized in @command{gprbuild} and
-@command{gnatmake}, so that all files are searched for only once on the disk
+The loading of aggregate projects is optimized in @command{gprbuild},
+so that all files are searched for only once on the disk
 (thus reducing the number of system calls and contributing to faster
 compilation times especially on systems with sources on remote
-servers). As part of the loading, @command{gprbuild} and @command{gnatmake}
-compute how and where a source file should be compiled, and even if it is found
+servers). As part of the loading, @command{gprbuild}
+computes how and where a source file should be compiled, and even if it is found
 several times in the aggregated projects it will be compiled only
 once.
 
@@ -2663,15 +2666,15 @@ These override the value given by the attribute, so that
 users can override the value set in the (presumably shared
 with others in his team) aggregate project.
 
-@item The -X command line switch to @command{gprbuild} and @command{gnatmake}
+@item The -X command line switch to @command{gprbuild}
 
 This always takes precedence.
 
 @end itemize
 
 This attribute is only taken into account in the main aggregate
-project (i.e. the one specified on the command line to @command{gprbuild} or
-@command{gnatmake}), and ignored in other aggregate projects. It is invalid
+project (i.e. the one specified on the command line to @command{gprbuild}),
+and ignored in other aggregate projects. It is invalid
 in standard projects.
 The goal is to have a consistent value in all
 projects that are built through the aggregate, which would not
@@ -2695,13 +2698,15 @@ are valid:
 @table @asis
 @item @b{^Switches^Switches^}:
 @cindex @code{^Switches^Switches^}
-This attribute gives the list of switches to use for the builder
-(@command{gprbuild} or @command{gnatmake}), depending on the language of the
-main file. For instance,
+This attribute gives the list of switches to use for @command{gprbuild}.
+Because no mains can be specified for aggregate projects, the only possible
+index for attribute @code{Switches} is @code{others}. All other indexes will
+be ignored.
+
+Example:
 
 @smallexample @c projectfile
-for ^Switches^Switches^ ("Ada") use ("-d", "-p");
-for ^Switches^Switches^ ("C")   use ("-p");
+for ^Switches^Switches^ (other) use ("-v", "-k", "-j8");
 @end smallexample
 
 These switches are only read from the main aggregate project (the
@@ -2797,13 +2802,20 @@ B), the switches used by the compiler are unambiguous.
 @cindex @code{Global_Configuration_Pragmas}
 
 This attribute can be used to specify a file containing
-configuration pragmas, to be passed to the compiler.  Since we
+configuration pragmas, to be passed to the Ada compiler.  Since we
 ignore the package Builder in other aggregate projects and projects,
 only those pragmas defined in the main aggregate project will be
 taken into account.
 
 Projects can locally add to those by using the
 @code{Compiler.Local_Configuration_Pragmas} attribute if they need.
+
+@item @b{Global_Config_File}
+@cindex @code{Global_Config_File}
+
+This attribute, indexed with a language name, can be used to specify a config
+when compiling sources of the language. For Ada, these files are configuration
+pragmas files.
 
 @end table
 
