@@ -26,6 +26,8 @@
 2014-01-24  Tristan Gingold  <gingold@adacore.com>
 
 	* back_end.adb (Scan_Compiler_Arguments): Set Short_Enums_On_Target.
+	* gcc-interface/misc.c (flag_short_enums): Declare.
+	(gnat_post_options): Set it.
 
 2014-01-24  Vincent Celier  <celier@adacore.com>
 
