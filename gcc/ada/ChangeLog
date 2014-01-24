@@ -1,3 +1,36 @@
+2014-01-24  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add Excluded_Patterns
+	attribute definition.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Queue.Insert_No_Roots): In gprbuild, do not put
+	in the Queue the same source (same path, same multi-source index)
+	from the same project file, to avoid compiling several times
+	the same source.
+
+2014-01-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (First_Rep_Item): Remove obsolete stuff.
+	(Has_Gigi_Rep_Item): Likewise.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Linker_Section>: Do not set
+	Has_Gigi_Rep_Item for objects.
+	* gcc-interface/decl.c (prepend_one_attribute_to): Rename into...
+	(prepend_one_attribute): ...this.
+	(prepend_one_attribute_pragma): New function extracted from...
+	(prepend_attributes): ...here.  Swap the parameters for consistency.
+	(gnat_to_gnu_entity): Adjust calls to prepend_one_attribute_to and to
+	prepend_attributes.
+	<object>: Deal with a pragma Linker_Section on a constant
+	or variable.  <E_Function>: Deal with a pragma Linker_Section
+	on a subprogram.
+	(get_minimal_subprog_decl): Adjust calls to prepend_one_attribute_to.
+
+2014-01-24  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads: Minor comment update.
+
 2014-01-24  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Analyze_Input_Output): Add missing error check

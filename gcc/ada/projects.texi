@@ -4963,7 +4963,12 @@ invoking @code{gnatpp} for the source.
 
 @itemize @bullet
 
+@item @b{Excluded_Patterns}: list
 
+Set of patterns to ignore when synchronizing sources from the build
+master to the slaves. A set of predefined patterns are supported
+(e.g. *.o, *.ali, *.exe, etc.), this attributes make it possible to
+add some more patterns.
 
 @item @b{Root_Dir}: single
 

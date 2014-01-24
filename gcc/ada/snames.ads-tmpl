@@ -1263,6 +1263,7 @@ package Snames is
    Name_Excluded_Source_List_File          : constant Name_Id := N + $;
    Name_Exec_Dir                           : constant Name_Id := N + $;
    Name_Exec_Subdir                        : constant Name_Id := N + $;
+   Name_Excluded_Patterns                  : constant Name_Id := N + $;
    Name_Executable                         : constant Name_Id := N + $;
    Name_Executable_Suffix                  : constant Name_Id := N + $;
    Name_Extends                            : constant Name_Id := N + $;

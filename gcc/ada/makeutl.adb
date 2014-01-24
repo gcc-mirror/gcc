@@ -2485,6 +2485,24 @@ package body Makeutl is
             return False;
          end if;
 
+         --  For gprbuild, check if a source has already been inserted in the
+         --  queue from the same project in a different project tree.
+
+         if Source.Format = Format_Gprbuild then
+            for J in 1 .. Q.Last loop
+               if Source.Id.Path.Name = Q.Table (J).Info.Id.Path.Name
+                 and then Source.Id.Index = Q.Table (J).Info.Id.Index
+                 and then Source.Id.Project.Path.Name =
+                          Q.Table (J).Info.Id.Project.Path.Name
+               then
+                  --  No need to insert this source in the queue, but still
+                  --  return True as we may need to insert its roots.
+
+                  return True;
+               end if;
+            end loop;
+         end if;
+
          if Current_Verbosity = High then
             Write_Str ("Adding """);
             Debug_Display (Source);
