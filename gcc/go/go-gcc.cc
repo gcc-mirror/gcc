@@ -254,6 +254,9 @@ class Gcc_backend : public Backend
                          Location);
 
   Bexpression*
+  unary_expression(Operator, Bexpression*, Location);
+
+  Bexpression*
   binary_expression(Operator, Bexpression*, Bexpression*, Location);
 
   // Statements.
@@ -1078,6 +1081,47 @@ Gcc_backend::conditional_expression(Btype* btype, Bexpression* condition,
     return this->error_expression();
   tree ret = build3_loc(location.gcc_location(), COND_EXPR, type_tree,
                         cond_tree, then_tree, else_tree);
+  return this->make_expression(ret);
+}
+
+// Return an expression for the unary operation OP EXPR.
+
+Bexpression*
+Gcc_backend::unary_expression(Operator op, Bexpression* expr, Location location)
+{
+  tree expr_tree = expr->get_tree();
+  if (expr_tree == error_mark_node
+      || TREE_TYPE(expr_tree) == error_mark_node)
+    return this->error_expression();
+
+  tree type_tree = TREE_TYPE(expr_tree);
+  enum tree_code code;
+  switch (op)
+    {
+    case OPERATOR_MINUS:
+      {
+        tree computed_type = excess_precision_type(type_tree);
+        if (computed_type != NULL_TREE)
+          {
+            expr_tree = convert(computed_type, expr_tree);
+            type_tree = computed_type;
+          }
+        code = NEGATE_EXPR;
+        break;
+      }
+    case OPERATOR_NOT:
+      code = TRUTH_NOT_EXPR;
+      break;
+    case OPERATOR_XOR:
+      code = BIT_NOT_EXPR;
+      break;
+    default:
+      gcc_unreachable();
+      break;
+    }
+
+  tree ret = fold_build1_loc(location.gcc_location(), code, type_tree,
+                             expr_tree);
   return this->make_expression(ret);
 }
 

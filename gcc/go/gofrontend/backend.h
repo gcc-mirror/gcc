@@ -298,6 +298,12 @@ class Backend
                          Bexpression* then_expr, Bexpression* else_expr,
                          Location) = 0;
 
+  // Return an expression for the unary operation OP EXPR.
+  // Supported values of OP are (from operators.h):
+  //    MINUS, NOT, XOR.
+  virtual Bexpression*
+  unary_expression(Operator op, Bexpression* expr, Location) = 0;
+
   // Return an expression for the binary operation LEFT OP RIGHT.
   // Supported values of OP are (from operators.h):
   //    EQEQ, NOTEQ, LT, LE, GT, GE, PLUS, MINUS, OR, XOR, MULT, DIV, MOD,
