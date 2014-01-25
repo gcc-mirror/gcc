@@ -1,3 +1,8 @@
+2014-01-25  Robert Dewar  <dewar@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Make sure an Out parameter
+	with Default_Value aspect is passed in by copy.
+
 2014-01-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* set_targ.adb: Set Short_Enums.
