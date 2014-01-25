@@ -1,5 +1,10 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/sync.md (atomic_fetch_sub): Fix negation and
+	avoid clobbering a live register.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins): 
 	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2}.
 	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins): 
