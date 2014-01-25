@@ -1,5 +1,15 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (tilegx_function_arg): Start 16-byte
+	arguments on even registers.
+	(tilegx_gimplify_va_arg_expr): Align 16-byte var args to
+	STACK_BOUNDARY.
+	* config/tilegx/tilegx.h (STACK_BOUNDARY): Change to 16 bytes.
+	(BIGGEST_ALIGNMENT): Ditto.
+	(BIGGEST_FIELD_ALIGNMENT): Ditto.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_gen_bundles): Delete barrier
 	insns before bundling.
 	* config/tilegx/tilegx.md (tile_network_barrier): Update
