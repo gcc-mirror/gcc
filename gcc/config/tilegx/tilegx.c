@@ -4401,10 +4401,12 @@ tilegx_gen_bundles (void)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      rtx insn, next;
+      rtx insn, next, prev;
       rtx end = NEXT_INSN (BB_END (bb));
 
-      for (insn = next_insn_to_bundle (BB_HEAD (bb), end); insn; insn = next)
+      prev = NULL_RTX;
+      for (insn = next_insn_to_bundle (BB_HEAD (bb), end); insn;
+	   prev = insn, insn = next)
 	{
 	  next = next_insn_to_bundle (NEXT_INSN (insn), end);
 
@@ -4429,6 +4431,18 @@ tilegx_gen_bundles (void)
 		  PUT_MODE (insn, SImode);
 		}
 	    }
+
+	  /* Delete barrier insns, because they can mess up the
+	     emitting of bundle braces.  If it is end-of-bundle, then
+	     the previous insn must be marked end-of-bundle.  */
+	  if (get_attr_type (insn) == TYPE_NOTHING) {
+	    if (GET_MODE (insn) == QImode && prev != NULL
+		&& GET_MODE (prev) == SImode)
+	      {
+		PUT_MODE (prev, QImode);
+	      }
+	    delete_insn (insn);
+	  }
 	}
     }
 }

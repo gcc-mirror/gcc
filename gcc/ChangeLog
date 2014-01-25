@@ -1,5 +1,12 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (tilegx_gen_bundles): Delete barrier
+	insns before bundling.
+	* config/tilegx/tilegx.md (tile_network_barrier): Update
+	comment.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_expand_builtin): Set
 	PREFETCH_SCHEDULE_BARRIER_P to true for prefetches.
 	* config/tilepro/tilepro.c (tilepro_expand_builtin): Ditto.
