@@ -795,7 +795,7 @@
 
 (define_expand "ctzdi2"
   [(set (match_operand:DI 0 "register_operand" "")
-	(ctz:DI (match_operand:DI 1 "reg_or_0_operand" "")))]
+	(ctz:DI (match_operand:DI 1 "register_operand" "")))]
   ""
 {
   rtx lo, hi, ctz_lo, ctz_hi, ctz_hi_plus_32, result;
@@ -823,7 +823,7 @@
 
 (define_expand "clzdi2"
   [(set (match_operand:DI 0 "register_operand" "")
-	(clz:DI (match_operand:DI 1 "reg_or_0_operand" "")))]
+	(clz:DI (match_operand:DI 1 "register_operand" "")))]
   ""
 {
   rtx lo, hi, clz_lo, clz_hi, clz_lo_plus_32, result;
@@ -851,7 +851,7 @@
 
 (define_expand "ffsdi2"
   [(set (match_operand:DI 0 "register_operand" "")
-	(ffs:DI (match_operand:DI 1 "reg_or_0_operand" "")))]
+	(ffs:DI (match_operand:DI 1 "register_operand" "")))]
   ""
 {
   rtx lo, hi, ctz_lo, ctz_hi, ctz_hi_plus_32, ctz, ctz_plus_1,ctz_cond;
