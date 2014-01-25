@@ -5842,7 +5842,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
      Out parameters with discriminants or implicit initial values to be
      handled like In Out parameters.  These type are normally built as
      aggregates, hence passed by reference, except for some packed arrays
-     which end up encoded in special integer types.
+     which end up encoded in special integer types.  Note that scalars can
+     be given implicit initial values using the Default_Value aspect.
 
      The exception we need to make is then for packed arrays of records
      with discriminants or implicit initial values.  We have no light/easy
@@ -5856,7 +5857,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	  || (mech != By_Descriptor
               && mech != By_Short_Descriptor
 	      && !POINTER_TYPE_P (gnu_param_type)
-	      && !AGGREGATE_TYPE_P (gnu_param_type)))
+	      && !AGGREGATE_TYPE_P (gnu_param_type)
+	      && !Has_Default_Aspect (Etype (gnat_param))))
       && !(Is_Array_Type (Etype (gnat_param))
 	   && Is_Packed (Etype (gnat_param))
 	   && Is_Composite_Type (Component_Type (Etype (gnat_param)))))
