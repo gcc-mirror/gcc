@@ -1,3 +1,13 @@
+2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/constraints.md (kl): Delete.
+	* config/mips/mips.md (divmod<mode>4, udivmod<mode>4): Turn into
+	define expands, using...
+	(divmod<mode>4_mips16, udivmod<mode>4_mips16): ...these new
+	instructions for MIPS16.
+	(*divmod<mode>4, *udivmod<mode>4): New patterns, taken from the
+	non-MIPS16 version of the old divmod<mode>4 and udivmod<mode>4.
+
 2014-01-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilepro/tilepro.md (ctzdi2): Use register_operand
