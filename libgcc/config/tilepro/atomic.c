@@ -21,10 +21,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
+#include "tconfig.h"
 #include "coretypes.h"
 #include "atomic.h"
+
+#define bool unsigned char
 
 /* This code should be inlined by the compiler, but for now support
    it as out-of-line methods in libgcc.  */
