@@ -1,3 +1,7 @@
+2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/unroll_1.c: Add -fenable-rtl-loop2.
+
 2014-01-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/vect/vect-nop-move.c (main): Check for vect runtime.
