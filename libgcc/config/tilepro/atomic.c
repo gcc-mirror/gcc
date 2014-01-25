@@ -135,6 +135,12 @@ __atomic_exchange_##size(volatile type* ptr, type val, int model)	\
 __atomic_exchange_methods (int, 4)
 __atomic_exchange_methods (long long, 8)
 
+#ifdef __LITTLE_ENDIAN__
+#define BIT_OFFSET(n, type) ((n) * 8)
+#else
+#define BIT_OFFSET(n, type) ((4 - sizeof(type) - (n)) * 8)
+#endif
+
 /* Subword methods require the same approach for both TILEPro and
    TILE-Gx.  We load the background data for the word, insert the
    desired subword piece, then compare-and-exchange it into place.  */
@@ -150,7 +156,7 @@ __atomic_compare_exchange_##size(volatile type* ptr, type* guess,	\
 {									\
   pre_atomic_barrier(models);						\
   unsigned int *p = (unsigned int *)((unsigned long)ptr & ~3UL);	\
-  const int shift = ((unsigned long)ptr & 3UL) * 8;			\
+  const int shift = BIT_OFFSET((unsigned long)ptr & 3UL, type);		\
   const unsigned int valmask = (1 << (sizeof(type) * 8)) - 1;		\
   const unsigned int bgmask = ~(valmask << shift);			\
   unsigned int oldword = *p;						\
@@ -177,7 +183,7 @@ proto									\
 {									\
   top									\
   unsigned int *p = (unsigned int *)((unsigned long)ptr & ~3UL);	\
-  const int shift = ((unsigned long)ptr & 3UL) * 8;			\
+  const int shift = BIT_OFFSET((unsigned long)ptr & 3UL, type);		\
   const unsigned int valmask = (1 << (sizeof(type) * 8)) - 1;		\
   const unsigned int bgmask = ~(valmask << shift);			\
   unsigned int oldword, xword = *p;					\
