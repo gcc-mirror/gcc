@@ -575,9 +575,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* Simple variables, loop variables, Out parameters and exceptions.  */
     object:
       {
+	/* Always create a variable for volatile objects and variables seen
+	   constant but with a Linker_Section pragma.  */
 	bool const_flag
 	  = ((kind == E_Constant || kind == E_Variable)
 	     && Is_True_Constant (gnat_entity)
+	     && !(kind == E_Variable
+		  && Present (Linker_Section_Pragma (gnat_entity)))
 	     && !Treat_As_Volatile (gnat_entity)
 	     && (((Nkind (Declaration_Node (gnat_entity))
 		   == N_Object_Declaration)
