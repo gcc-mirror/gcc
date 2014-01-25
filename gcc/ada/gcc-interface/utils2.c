@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1850,6 +1850,7 @@ tree
 gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
 {
   bool allconstant = (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST);
+  bool read_only = true;
   bool side_effects = false;
   tree result, obj, val;
   unsigned int n_elmts;
@@ -1867,6 +1868,9 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
 	  || !initializer_constant_valid_p (val, TREE_TYPE (val)))
 	allconstant = false;
 
+      if (!TREE_READONLY (val))
+	read_only = false;
+
       if (TREE_SIDE_EFFECTS (val))
 	side_effects = true;
     }
@@ -1881,7 +1885,7 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
   CONSTRUCTOR_NO_CLEARING (result) = 1;
   TREE_CONSTANT (result) = TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
-  TREE_READONLY (result) = TYPE_READONLY (type) || allconstant;
+  TREE_READONLY (result) = TYPE_READONLY (type) || read_only || allconstant;
   return result;
 }
 
@@ -2814,7 +2818,7 @@ object:
   if (!TREE_READONLY (t))
     return NULL_TREE;
 
-  if (TREE_CODE (t) == PARM_DECL)
+  if (TREE_CODE (t) == CONSTRUCTOR || TREE_CODE (t) == PARM_DECL)
     return fold_convert (type, expr);
 
   if (TREE_CODE (t) == VAR_DECL
