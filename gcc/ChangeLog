@@ -1,5 +1,12 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins): 
+	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2}.
+	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins): 
+	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2,4,8}.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_function_arg): Start 16-byte
 	arguments on even registers.
 	(tilegx_gimplify_va_arg_expr): Align 16-byte var args to
