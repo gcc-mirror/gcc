@@ -220,9 +220,17 @@ tilegx_function_arg (cumulative_args_t cum_v,
   CUMULATIVE_ARGS cum = *get_cumulative_args (cum_v);
   int byte_size = ((mode == BLKmode)
 		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
+  bool doubleword_aligned_p;
 
   if (cum >= TILEGX_NUM_ARG_REGS)
     return NULL_RTX;
+
+  /* See whether the argument has doubleword alignment.  */
+  doubleword_aligned_p =
+    tilegx_function_arg_boundary (mode, type) > BITS_PER_WORD;
+
+  if (doubleword_aligned_p)
+    cum += cum & 1;
 
   /* The ABI does not allow parameters to be passed partially in reg
      and partially in stack.  */
@@ -245,6 +253,14 @@ tilegx_function_arg_advance (cumulative_args_t cum_v,
   int byte_size = ((mode == BLKmode)
 		   ? int_size_in_bytes (type) : GET_MODE_SIZE (mode));
   int word_size = (byte_size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  bool doubleword_aligned_p;
+
+  /* See whether the argument has doubleword alignment.  */
+  doubleword_aligned_p =
+    tilegx_function_arg_boundary (mode, type) > BITS_PER_WORD;
+
+  if (doubleword_aligned_p)
+    *cum += *cum & 1;
 
   /* If the current argument does not fit in the pretend_args space,
      skip over it.  */
@@ -417,7 +433,7 @@ tilegx_setup_incoming_varargs (cumulative_args_t cum,
 
    generates code equivalent to:
   
-    paddedsize = (sizeof(TYPE) + 3) & -4;
+    paddedsize = (sizeof(TYPE) + 7) & -8;
     if (  (VALIST.__args + paddedsize > VALIST.__skip)
 	& (VALIST.__args <= VALIST.__skip))
       addr = VALIST.__skip + STACK_POINTER_OFFSET;
@@ -457,9 +473,23 @@ tilegx_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   size = int_size_in_bytes (type);
   rsize = ((size + UNITS_PER_WORD - 1) / UNITS_PER_WORD) * UNITS_PER_WORD;
 
-  /* Assert alignment assumption.  */
-  gcc_assert (STACK_BOUNDARY == PARM_BOUNDARY);
+  /* If the alignment of the type is greater than the default for a
+     parameter, align to the STACK_BOUNDARY. */
+  if (TYPE_ALIGN (type) > PARM_BOUNDARY)
+    {
+      /* Assert the only case we generate code for: when
+	 stack boundary = 2 * parm boundary. */
+      gcc_assert (STACK_BOUNDARY == PARM_BOUNDARY * 2);
 
+      tmp = build2 (BIT_AND_EXPR, sizetype,
+		    fold_convert (sizetype, unshare_expr (args)),
+		    size_int (PARM_BOUNDARY / 8));
+      tmp = build2 (POINTER_PLUS_EXPR, ptr_type_node,
+		    unshare_expr (args), tmp);
+
+      gimplify_assign (unshare_expr (args), tmp, pre_p);
+    }
+ 
   /* Build conditional expression to calculate addr. The expression
      will be gimplified later.  */
   tmp = fold_build_pointer_plus_hwi (unshare_expr (args), rsize);
