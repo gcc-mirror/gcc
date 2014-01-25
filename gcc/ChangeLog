@@ -1,5 +1,11 @@
-2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx.c (tilegx_expand_builtin): Set
+	PREFETCH_SCHEDULE_BARRIER_P to true for prefetches.
+	* config/tilepro/tilepro.c (tilepro_expand_builtin): Ditto.
+
+2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
+	
 	* config/mips/constraints.md (kl): Delete.
 	* config/mips/mips.md (divmod<mode>4, udivmod<mode>4): Turn into
 	define expands, using...

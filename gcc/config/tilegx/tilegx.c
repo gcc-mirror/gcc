@@ -3570,6 +3570,12 @@ tilegx_expand_builtin (tree exp,
     }
   if (!pat)
     return NULL_RTX;
+
+  /* If we are generating a prefetch, tell the scheduler not to move
+     it around.  */
+  if (GET_CODE (pat) == PREFETCH)
+    PREFETCH_SCHEDULE_BARRIER_P (pat) = true;
+
   emit_insn (pat);
 
   if (nonvoid)
