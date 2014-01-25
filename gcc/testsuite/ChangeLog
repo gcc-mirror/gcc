@@ -1,3 +1,11 @@
+2014-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline.
+	2014-01-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59929
+	* gcc.target/i386/pr59929.c: New test.
+
 2014-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57524

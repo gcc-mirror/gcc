@@ -1,3 +1,12 @@
+2014-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-01-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59929
+	* config/i386/i386.md (pushsf splitter): Get stack adjustment
+	from push operand if code of push isn't PRE_DEC.
+
 2014-01-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	Backport from mainline.
