@@ -1528,6 +1528,119 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   s-interr.adb<s-interr-hwint.adb
 endif
 
+# LynxOS 4
+ifeq ($(strip $(filter-out lynxos,$(target_os))),)
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
+  indepsw.adb<indepsw-gnu.adb
+
+  ifeq ($(strip $(filter-out %86 lynxos,$(target_cpu) $(target_os))),)
+    LIBGNAT_TARGET_PAIRS = \
+    a-intnam.ads<a-intnam-lynxos.ads \
+    g-soliop.ads<g-soliop-lynxos.ads \
+    s-inmaop.adb<s-inmaop-posix.adb \
+    s-intman.adb<s-intman-posix.adb \
+    s-osinte.adb<s-osinte-lynxos.adb \
+    s-osinte.ads<s-osinte-lynxos.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-posix.adb \
+    s-taspri.ads<s-taspri-posix.ads \
+    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    $(ATOMICS_TARGET_PAIRS) \
+    $(X86_TARGET_PAIRS) \
+    system.ads<system-lynxos-x86.ads
+
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    a-intnam.ads<a-intnam-lynxos.ads \
+    g-soliop.ads<g-soliop-lynxos.ads \
+    s-inmaop.adb<s-inmaop-posix.adb \
+    s-intman.adb<s-intman-posix.adb \
+    s-osinte.adb<s-osinte-lynxos.adb \
+    s-osinte.ads<s-osinte-lynxos.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-posix.adb \
+    s-taspri.ads<s-taspri-posix.ads \
+    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    system.ads<system-lynxos-ppc.ads
+  endif
+endif
+
+# LynxOS 5
+ifeq ($(strip $(filter-out lynxos5,$(target_os))),)
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
+  indepsw.adb<indepsw-gnu.adb
+
+  ifeq ($(strip $(filter-out %86,$(target_cpu))),)
+    LIBGNAT_TARGET_PAIRS = \
+    a-intnam.ads<a-intnam-lynxos.ads \
+    g-soliop.ads<g-soliop-lynxos.ads \
+    s-inmaop.adb<s-inmaop-posix.adb \
+    s-intman.adb<s-intman-posix.adb \
+    s-osinte.adb<s-osinte-lynxos-5.adb \
+    s-osinte.ads<s-osinte-lynxos-5.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-posix.adb \
+    s-taspri.ads<s-taspri-posix.ads \
+    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    $(ATOMICS_TARGET_PAIRS) \
+    $(X86_TARGET_PAIRS) \
+    system.ads<system-lynxos-x86.ads
+
+  else
+    LIBGNAT_TARGET_PAIRS = \
+    a-intnam.ads<a-intnam-lynxos.ads \
+    g-soliop.ads<g-soliop-lynxos.ads \
+    s-inmaop.adb<s-inmaop-posix.adb \
+    s-intman.adb<s-intman-posix.adb \
+    s-osinte.adb<s-osinte-lynxos-5.adb \
+    s-osinte.ads<s-osinte-lynxos-5.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-posix.adb \
+    s-taspri.ads<s-taspri-posix.ads \
+    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    system.ads<system-lynxos-ppc.ads
+  endif
+endif
+
+# LynxOS 178
+ifeq ($(strip $(filter-out lynxos178,$(target_os))),)
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
+  indepsw.adb<indepsw-gnu.adb
+  LIBGNAT_TARGET_PAIRS = \
+  a-intnam.ads<a-intnam-lynxos.ads \
+  g-soliop.ads<g-soliop-lynxos.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-intman.adb<s-intman-posix.adb \
+  s-osinte.adb<s-osinte-lynxos-5.adb \
+  s-osinte.ads<s-osinte-lynxos178.ads \
+  s-osprim.adb<s-osprim-posix.adb \
+  s-taprop.adb<s-taprop-posix.adb \
+  s-taspri.ads<s-taspri-posix.ads \
+  s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+  system.ads<system-lynxos178-ppc.ads
+endif
+
+# RTEMS
+ifeq ($(strip $(filter-out rtems%,$(target_os))),)
+  LIBGNAT_TARGET_PAIRS = \
+  system.ads<system-rtems.ads \
+  a-intnam.ads<a-intnam-rtems.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-intman.adb<s-intman-posix.adb \
+  s-osinte.adb<s-osinte-rtems.adb \
+  s-osinte.ads<s-osinte-rtems.ads \
+  s-osprim.adb<s-osprim-posix.adb \
+  s-parame.adb<s-parame-rtems.adb \
+  s-taprop.adb<s-taprop-posix.adb \
+  s-taspri.ads<s-taspri-posix.ads \
+  s-tpopsp.adb<s-tpopsp-rtems.adb \
+  s-stchop.adb<s-stchop-rtems.adb \
+  s-interr.adb<s-interr-hwint.adb
+endif
+
 # OpenVMS (host)
 ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(host_cpu) $(host_vendor) $(host_os))),)
 
@@ -1741,7 +1854,6 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
 	s-win32.o s-winext.o g-regist.o g-sse.o g-ssvety.o
     EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
     EXTRA_LIBGNAT_SRCS+=mingw32.h
-
     MISCLIB = -lws2_32
 
     # ??? This will be replaced by gnatlib-shared-dual-win32 when GNAT
