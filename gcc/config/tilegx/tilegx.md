@@ -5171,10 +5171,8 @@
 
 ;; Network intrinsics
 
-;; Note the "pseudo" text is handled specially by the
-;; asm_output_opcode routine.  If the output is an empty string, the
-;; instruction would bypass the asm_output_opcode routine, bypassing
-;; the bundle handling code.
+;; Note the this barrier is of type "nothing," which is deleted after
+;; the final scheduling pass so that nothing is emitted for it.
 (define_insn "tilegx_network_barrier"
   [(unspec_volatile:SI [(const_int 0)] UNSPEC_NETWORK_BARRIER)]
   ""
