@@ -1,3 +1,11 @@
+2014-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert_to_fat_pointer): Un-obfuscate the
+	conversion from a thin pointer with a shifted value.
+	* gcc-interface/utils2.c (gnat_build_constructor): Propagate the
+	read-only flag from the values onto the result.
+	(gnat_invariant_expr): Accept read-only CONSTRUCTORs.
+
 2014-01-25  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Always build a variable
