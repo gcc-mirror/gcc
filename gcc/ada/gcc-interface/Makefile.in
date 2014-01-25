@@ -1510,24 +1510,6 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   GMEM_LIB = gmemlib
 endif
 
-# RTEMS
-ifeq ($(strip $(filter-out rtems%,$(target_os))),)
-  LIBGNAT_TARGET_PAIRS = \
-  system.ads<system-rtems.ads \
-  a-intnam.ads<a-intnam-rtems.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-osinte.adb<s-osinte-rtems.adb \
-  s-osinte.ads<s-osinte-rtems.ads \
-  s-osprim.adb<s-osprim-posix.adb \
-  s-parame.adb<s-parame-rtems.adb \
-  s-taprop.adb<s-taprop-posix.adb \
-  s-taspri.ads<s-taspri-posix.ads \
-  s-tpopsp.adb<s-tpopsp-rtems.adb \
-  s-stchop.adb<s-stchop-rtems.adb \
-  s-interr.adb<s-interr-hwint.adb
-endif
-
 # LynxOS 4
 ifeq ($(strip $(filter-out lynxos,$(target_os))),)
   TOOLS_TARGET_PAIRS = \
