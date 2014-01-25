@@ -719,6 +719,16 @@ tilegx_init_expanders (void)
 }
 
 
+/* Implement TARGET_EXPAND_TO_RTL_HOOK.  */
+static void
+tilegx_expand_to_rtl_hook (void)
+{
+  /* Exclude earlier sets of crtl->uses_pic_offset_table, because we
+     only care about uses actually emitted.  */
+  crtl->uses_pic_offset_table = 0;
+}
+
+
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  DImode shifts use the mode
    matching insns and therefore guarantee that the shift count is
    modulo 64.  SImode shifts sometimes use the 64 bit version so do
@@ -5514,6 +5524,9 @@ tilegx_file_end (void)
 
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS tilegx_rtx_costs
+
+#undef  TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK tilegx_expand_to_rtl_hook
 
 #undef  TARGET_SHIFT_TRUNCATION_MASK
 #define TARGET_SHIFT_TRUNCATION_MASK tilegx_shift_truncation_mask

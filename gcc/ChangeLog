@@ -1,3 +1,8 @@
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/tilegx.c (tilegx_expand_to_rtl_hook): New.
+	(TARGET_EXPAND_TO_RTL_HOOK): Define.
+
 2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* rtlanal.c (canonicalize_condition): Split out duplicated mode check.
