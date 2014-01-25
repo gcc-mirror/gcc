@@ -1,5 +1,12 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilepro/tilepro.md (ctzdi2): Use register_operand
+	predicate.
+	(clzdi2): Ditto.
+	(ffsdi2): Ditto.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_expand_to_rtl_hook): New.
 	(TARGET_EXPAND_TO_RTL_HOOK): Define.
 
