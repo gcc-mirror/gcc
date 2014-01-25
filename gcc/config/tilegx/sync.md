@@ -150,15 +150,22 @@
    (match_operand:SI 3 "const_int_operand" "")]         ;; model
   ""
 {
+  rtx addend;
   enum memmodel model = (enum memmodel) INTVAL (operands[3]);
 
   if (operands[2] != const0_rtx)
-    emit_move_insn (operands[2], gen_rtx_NEG (<MODE>mode, operands[2]));
+    {
+       addend = gen_reg_rtx (<MODE>mode);
+       emit_move_insn (addend,
+                       gen_rtx_MINUS (<MODE>mode, const0_rtx, operands[2]));
+    }
+  else
+    addend = operands[2];
 
   tilegx_pre_atomic_barrier (model);
   emit_insn (gen_atomic_fetch_add_bare<mode> (operands[0],
                                               operands[1],
-                                              operands[2]));
+                                              addend));
   tilegx_post_atomic_barrier (model);
   DONE;
 })
