@@ -1,5 +1,9 @@
 2014-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Makefile.in: Fix oversight.
+
+2014-01-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (convert_to_fat_pointer): Un-obfuscate the
 	conversion from a thin pointer with a shifted value.
 	* gcc-interface/utils2.c (gnat_build_constructor): Propagate the
