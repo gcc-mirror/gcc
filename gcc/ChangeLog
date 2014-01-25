@@ -3,6 +3,16 @@
 	Backport from mainline
 	2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins): 
+	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2}.
+	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins): 
+	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2,4,8}.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilegx/tilegx.c (tilegx_gen_bundles): Delete barrier
 	insns before bundling.
 	* config/tilegx/tilegx.md (tile_network_barrier): Update

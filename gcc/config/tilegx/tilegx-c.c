@@ -47,6 +47,9 @@ tilegx_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (TARGET_32BIT)
     builtin_define ("__tilegx32__");
 
+  builtin_define ("__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1");
+  builtin_define ("__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2");
+
   TILEGX_CPU_CPP_ENDIAN_BUILTINS ();
   GNU_USER_TARGET_OS_CPP_BUILTINS ();
 }
