@@ -1,3 +1,10 @@
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c (__atomic_do_and_fetch): Add
+	a prefix op argument.
+	(__atomic_nand_fetch_4): Add prefix op.
+	(__atomic_nand_fetch_8): Ditto.
+
 2014-01-21  Baruch Siach <barch@tkos.co.il>
 
 	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
