@@ -1,5 +1,87 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilepro/atomic.c (pre_atomic_barrier): Mark inline.
+	(post_atomic_barrier): Ditto.
+	(__fetch_and_do): New macro.
+	(__atomic_fetch_and_do): Use __fetch_and_do.
+	(__sync_fetch_and_do): New macro.
+	(__sync_fetch_and_add_4): New function.
+	(__sync_fetch_and_sub_4): New function.
+	(__sync_fetch_and_or_4): New function.
+	(__sync_fetch_and_and_4): New function.
+	(__sync_fetch_and_xor_4): New function.
+	(__sync_fetch_and_nand_4): New function.
+	(__sync_fetch_and_add_8): New function.
+	(__sync_fetch_and_sub_8): New function.
+	(__sync_fetch_and_or_8): New function.
+	(__sync_fetch_and_and_8): New function.
+	(__sync_fetch_and_xor_8): New function.
+	(__sync_fetch_and_nand_8): New function.
+	(__do_and_fetch): New macro.
+	(__atomic_do_and_fetch): Use __do_and_fetch.
+	(__sync_do_and_fetch): New macro.
+	(__sync_add_and_fetch_4): New function.
+	(__sync_sub_and_fetch_4): New function.
+	(__sync_or_and_fetch_4): New function.
+	(__sync_and_and_fetch_4): New function.
+	(__sync_xor_and_fetch_4): New function.
+	(__sync_nand_and_fetch_4): New function.
+	(__sync_add_and_fetch_8): New function.
+	(__sync_sub_and_fetch_8): New function.
+	(__sync_or_and_fetch_8): New function.
+	(__sync_and_and_fetch_8): New function.
+	(__sync_xor_and_fetch_8): New function.
+	(__sync_nand_and_fetch_8): New function.
+	(__sync_exchange_methods): New macro.
+	(__sync_val_compare_and_swap_4): New function.
+	(__sync_bool_compare_and_swap_4): New function.
+	(__sync_lock_test_and_test_4): New function.
+	(__sync_val_compare_and_swap_8): New function.
+	(__sync_bool_compare_and_swap_8): New function.
+	(__sync_lock_test_and_test_8): New function.
+	(__subword_cmpxchg_body): New macro.
+	(__atomic_compare_exchange_1): Use __subword_cmpxchg_body.
+	(__atomic_compare_exchange_2): Ditto.
+	(__sync_subword_cmpxchg): New macro.
+	(__sync_val_compare_and_swap_1): New function.
+	(__sync_bool_compare_and_swap_1): New function.
+	(__sync_val_compare_and_swap_2): New function.
+	(__sync_bool_compare_and_swap_2): New function.
+	(__atomic_subword): Rename to ...
+	(__subword): ... New name.
+	(__atomic_subword_fetch): Use __subword.
+	(__sync_subword_fetch): New macro.
+	(__sync_fetch_and_add_1): New function.
+	(__sync_fetch_and_sub_1): New function.
+	(__sync_fetch_and_or_1): New function.
+	(__sync_fetch_and_and_1): New function.
+	(__sync_fetch_and_xor_1): New function.
+	(__sync_fetch_and_nand_1): New function.
+	(__sync_fetch_and_add_2): New function.
+	(__sync_fetch_and_sub_2): New function.
+	(__sync_fetch_and_or_2): New function.
+	(__sync_fetch_and_and_2): New function.
+	(__sync_fetch_and_xor_2): New function.
+	(__sync_fetch_and_nand_2): New function.
+	(__sync_add_and_fetch_1): New function.
+	(__sync_sub_and_fetch_1): New function.
+	(__sync_or_and_fetch_1): New function.
+	(__sync_and_and_fetch_1): New function.
+	(__sync_xor_and_fetch_1): New function.
+	(__sync_nand_and_fetch_1): New function.
+	(__sync_add_and_fetch_2): New function.
+	(__sync_sub_and_fetch_2): New function.
+	(__sync_or_and_fetch_2): New function.
+	(__sync_and_and_fetch_2): New function.
+	(__sync_xor_and_fetch_2): New function.
+	(__sync_nand_and_fetch_2): New function.
+	(__atomic_subword_lock): Use __subword.
+	(__sync_subword_lock): New macro.
+	(__sync_lock_test_and_set_1): New function.
+	(__sync_lock_test_and_set_2): New function.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilepro/atomic.c (BIT_OFFSET): Define.
 	(__atomic_subword_cmpxchg): Use BIT_OFFSET.
 	(__atomic_subword): Ditto.
