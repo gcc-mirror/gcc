@@ -29,7 +29,7 @@
 /* This code should be inlined by the compiler, but for now support
    it as out-of-line methods in libgcc.  */
 
-static void
+static inline void
 pre_atomic_barrier (int model)
 {
   switch ((enum memmodel) model)
@@ -45,7 +45,7 @@ pre_atomic_barrier (int model)
   return;
 }
 
-static void
+static inline void
 post_atomic_barrier (int model)
 {
   switch ((enum memmodel) model)
@@ -63,15 +63,20 @@ post_atomic_barrier (int model)
 
 #define __unused __attribute__((unused))
 
-#define __atomic_fetch_and_do(type, size, opname)		\
-type								\
-__atomic_fetch_##opname##_##size(type* p, type i, int model)	\
+#define __fetch_and_do(proto, type, size, opname, top, bottom)	\
+proto								\
 {								\
-  pre_atomic_barrier(model);					\
+  top;								\
   type rv = arch_atomic_##opname(p, i);				\
-  post_atomic_barrier(model);					\
+  bottom;							\
   return rv;							\
 }
+
+#define __atomic_fetch_and_do(type, size, opname)			\
+  __fetch_and_do(type __atomic_fetch_##opname##_##size(type* p, type i, int model), \
+		 type, size, opname,					\
+		 pre_atomic_barrier(model),				\
+		 post_atomic_barrier(model))				\
 
 __atomic_fetch_and_do (int, 4, add)
 __atomic_fetch_and_do (int, 4, sub)
@@ -86,15 +91,40 @@ __atomic_fetch_and_do (long long, 8, and)
 __atomic_fetch_and_do (long long, 8, xor)
 __atomic_fetch_and_do (long long, 8, nand)
 
-#define __atomic_do_and_fetch(type, size, opname, op, op2)	\
-type								\
-__atomic_##opname##_fetch_##size(type* p, type i, int model)	\
-{								\
-  pre_atomic_barrier(model);					\
-  type rv = op2 (arch_atomic_##opname(p, i) op i);		\
-  post_atomic_barrier(model);					\
-  return rv;							\
+#define __sync_fetch_and_do(type, size, opname)				\
+  __fetch_and_do(type __sync_fetch_and_##opname##_##size(type* p, type i), \
+		 type, size, opname,					\
+		 arch_atomic_write_barrier(),				\
+		 arch_atomic_read_barrier())
+
+__sync_fetch_and_do (int, 4, add)
+__sync_fetch_and_do (int, 4, sub)
+__sync_fetch_and_do (int, 4, or)
+__sync_fetch_and_do (int, 4, and)
+__sync_fetch_and_do (int, 4, xor)
+__sync_fetch_and_do (int, 4, nand)
+__sync_fetch_and_do (long long, 8, add)
+__sync_fetch_and_do (long long, 8, sub)
+__sync_fetch_and_do (long long, 8, or)
+__sync_fetch_and_do (long long, 8, and)
+__sync_fetch_and_do (long long, 8, xor)
+__sync_fetch_and_do (long long, 8, nand)
+
+#define __do_and_fetch(proto, type, size, opname, op, op2, top, bottom)	\
+proto									\
+{									\
+  top;									\
+  type rv = op2 (arch_atomic_##opname(p, i) op i);			\
+  bottom;								\
+  return rv;								\
 }
+
+#define __atomic_do_and_fetch(type, size, opname, op, op2)		\
+  __do_and_fetch(type __atomic_##opname##_fetch_##size(type* p, type i, int model), \
+		 type, size, opname, op, op2,				\
+		 pre_atomic_barrier(model),				\
+		 post_atomic_barrier(model))				\
+
 __atomic_do_and_fetch (int, 4, add, +, )
 __atomic_do_and_fetch (int, 4, sub, -, )
 __atomic_do_and_fetch (int, 4, or, |, )
@@ -107,6 +137,25 @@ __atomic_do_and_fetch (long long, 8, or, |, )
 __atomic_do_and_fetch (long long, 8, and, &, )
 __atomic_do_and_fetch (long long, 8, xor, |, )
 __atomic_do_and_fetch (long long, 8, nand, &, ~)
+
+#define __sync_do_and_fetch(type, size, opname, op, op2)		\
+  __do_and_fetch(type __sync_##opname##_and_fetch_##size(type* p, type i), \
+		 type, size, opname, op, op2,				\
+		 arch_atomic_write_barrier(),				\
+		 arch_atomic_read_barrier())				\
+
+__sync_do_and_fetch (int, 4, add, +, )
+__sync_do_and_fetch (int, 4, sub, -, )
+__sync_do_and_fetch (int, 4, or, |, )
+__sync_do_and_fetch (int, 4, and, &, )
+__sync_do_and_fetch (int, 4, xor, |, )
+__sync_do_and_fetch (int, 4, nand, &, ~)
+__sync_do_and_fetch (long long, 8, add, +, )
+__sync_do_and_fetch (long long, 8, sub, -, )
+__sync_do_and_fetch (long long, 8, or, |, )
+__sync_do_and_fetch (long long, 8, and, &, )
+__sync_do_and_fetch (long long, 8, xor, |, )
+__sync_do_and_fetch (long long, 8, nand, &, ~)
 
 #define __atomic_exchange_methods(type, size)				\
 bool									\
@@ -135,6 +184,36 @@ __atomic_exchange_##size(volatile type* ptr, type val, int model)	\
 __atomic_exchange_methods (int, 4)
 __atomic_exchange_methods (long long, 8)
 
+#define __sync_exchange_methods(type, size)				\
+type									\
+__sync_val_compare_and_swap_##size(type* ptr, type oldval, type newval)	\
+{									\
+  arch_atomic_write_barrier();						\
+  type retval = arch_atomic_val_compare_and_exchange(ptr, oldval, newval); \
+  arch_atomic_read_barrier();						\
+  return retval;							\
+}									\
+									\
+bool									\
+__sync_bool_compare_and_swap_##size(type* ptr, type oldval, type newval) \
+{									\
+  arch_atomic_write_barrier();						\
+  bool retval = arch_atomic_bool_compare_and_exchange(ptr, oldval, newval); \
+  arch_atomic_read_barrier();						\
+  return retval;							\
+}									\
+									\
+type									\
+__sync_lock_test_and_set_##size(type* ptr, type val)			\
+{									\
+  type retval = arch_atomic_exchange(ptr, val);				\
+  arch_atomic_acquire_barrier_value(retval);				\
+  return retval;							\
+}
+
+__sync_exchange_methods (int, 4)
+__sync_exchange_methods (long long, 8)
+
 #ifdef __LITTLE_ENDIAN__
 #define BIT_OFFSET(n, type) ((n) * 8)
 #else
@@ -147,38 +226,66 @@ __atomic_exchange_methods (long long, 8)
 #define u8 unsigned char
 #define u16 unsigned short
 
+#define __subword_cmpxchg_body(type, size, ptr, guess, val)		\
+  ({									\
+    unsigned int *p = (unsigned int *)((unsigned long)ptr & ~3UL);	\
+    const int shift = BIT_OFFSET((unsigned long)ptr & 3UL, type);	\
+    const unsigned int valmask = (1 << (sizeof(type) * 8)) - 1;		\
+    const unsigned int bgmask = ~(valmask << shift);			\
+    unsigned int oldword = *p;						\
+    type oldval = (oldword >> shift) & valmask;				\
+    if (__builtin_expect((oldval == guess), 1)) {			\
+      unsigned int word = (oldword & bgmask) | ((val & valmask) << shift); \
+      oldword = arch_atomic_val_compare_and_exchange(p, oldword, word);	\
+      oldval = (oldword >> shift) & valmask;				\
+    }									\
+    oldval;								\
+  })									\
+
 #define __atomic_subword_cmpxchg(type, size)				\
   									\
 bool									\
-__atomic_compare_exchange_##size(volatile type* ptr, type* guess,	\
+__atomic_compare_exchange_##size(volatile type* ptr, type* guess_ptr,	\
 				 type val, bool weak __unused, int models, \
 				 int modelf __unused)			\
 {									\
   pre_atomic_barrier(models);						\
-  unsigned int *p = (unsigned int *)((unsigned long)ptr & ~3UL);	\
-  const int shift = BIT_OFFSET((unsigned long)ptr & 3UL, type);		\
-  const unsigned int valmask = (1 << (sizeof(type) * 8)) - 1;		\
-  const unsigned int bgmask = ~(valmask << shift);			\
-  unsigned int oldword = *p;						\
-  type oldval = (oldword >> shift) & valmask;				\
-  if (__builtin_expect((oldval == *guess), 1)) {			\
-    unsigned int word = (oldword & bgmask) | ((val & valmask) << shift); \
-    oldword = arch_atomic_val_compare_and_exchange(p, oldword, word);	\
-    oldval = (oldword >> shift) & valmask;				\
-  }									\
+  type guess = *guess_ptr;						\
+  type oldval = __subword_cmpxchg_body(type, size, ptr, guess, val);	\
   post_atomic_barrier(models);						\
-  bool success = (oldval == *guess);					\
-  *guess = oldval;							\
+  bool success = (oldval == guess);					\
+  *guess_ptr = oldval;							\
   return success;							\
 }
 
 __atomic_subword_cmpxchg (u8, 1)
 __atomic_subword_cmpxchg (u16, 2)
 
+#define __sync_subword_cmpxchg(type, size)				\
+  									\
+type									\
+__sync_val_compare_and_swap_##size(type* ptr, type guess, type val)	\
+{									\
+  arch_atomic_write_barrier();						\
+  type oldval = __subword_cmpxchg_body(type, size, ptr, guess, val);	\
+  arch_atomic_read_barrier();						\
+  return oldval;							\
+}									\
+									\
+bool									\
+__sync_bool_compare_and_swap_##size(type* ptr, type guess, type val)	\
+{									\
+  type oldval = __sync_val_compare_and_swap_##size(ptr, guess, val);	\
+  return oldval == guess;						\
+}
+
+__sync_subword_cmpxchg (u8, 1)
+__sync_subword_cmpxchg (u16, 2)
+
 /* For the atomic-update subword methods, we use the same approach as
    above, but we retry until we succeed if the compare-and-exchange
    fails.  */
-#define __atomic_subword(type, proto, top, expr, bottom)		\
+#define __subword(type, proto, top, expr, bottom)			\
 proto									\
 {									\
   top									\
@@ -199,11 +306,11 @@ proto									\
 }
 
 #define __atomic_subword_fetch(type, funcname, expr, retval)		\
-  __atomic_subword(type,						\
-		   type __atomic_ ## funcname(volatile type *ptr, type i, int model), \
-		   pre_atomic_barrier(model);,				\
-		   expr,						\
-		   post_atomic_barrier(model); return retval;)
+  __subword(type,							\
+	    type __atomic_ ## funcname(volatile type *ptr, type i, int model), \
+	    pre_atomic_barrier(model);,					\
+	    expr,							\
+	    post_atomic_barrier(model); return retval;)
 
 __atomic_subword_fetch (u8, fetch_add_1, oldval + i, oldval)
 __atomic_subword_fetch (u8, fetch_sub_1, oldval - i, oldval)
@@ -233,13 +340,57 @@ __atomic_subword_fetch (u16, and_fetch_2, oldval & i, val)
 __atomic_subword_fetch (u16, xor_fetch_2, oldval ^ i, val)
 __atomic_subword_fetch (u16, nand_fetch_2, ~(oldval & i), val)
 
+#define __sync_subword_fetch(type, funcname, expr, retval)	\
+  __subword(type,						\
+	    type __sync_ ## funcname(type *ptr, type i),	\
+	    arch_atomic_read_barrier();,			\
+	    expr,						\
+	    arch_atomic_write_barrier(); return retval;)
+
+__sync_subword_fetch (u8, fetch_and_add_1, oldval + i, oldval)
+__sync_subword_fetch (u8, fetch_and_sub_1, oldval - i, oldval)
+__sync_subword_fetch (u8, fetch_and_or_1, oldval | i, oldval)
+__sync_subword_fetch (u8, fetch_and_and_1, oldval & i, oldval)
+__sync_subword_fetch (u8, fetch_and_xor_1, oldval ^ i, oldval)
+__sync_subword_fetch (u8, fetch_and_nand_1, ~(oldval & i), oldval)
+
+__sync_subword_fetch (u16, fetch_and_add_2, oldval + i, oldval)
+__sync_subword_fetch (u16, fetch_and_sub_2, oldval - i, oldval)
+__sync_subword_fetch (u16, fetch_and_or_2, oldval | i, oldval)
+__sync_subword_fetch (u16, fetch_and_and_2, oldval & i, oldval)
+__sync_subword_fetch (u16, fetch_and_xor_2, oldval ^ i, oldval)
+__sync_subword_fetch (u16, fetch_and_nand_2, ~(oldval & i), oldval)
+
+__sync_subword_fetch (u8, add_and_fetch_1, oldval + i, val)
+__sync_subword_fetch (u8, sub_and_fetch_1, oldval - i, val)
+__sync_subword_fetch (u8, or_and_fetch_1, oldval | i, val)
+__sync_subword_fetch (u8, and_and_fetch_1, oldval & i, val)
+__sync_subword_fetch (u8, xor_and_fetch_1, oldval ^ i, val)
+__sync_subword_fetch (u8, nand_and_fetch_1, ~(oldval & i), val)
+
+__sync_subword_fetch (u16, add_and_fetch_2, oldval + i, val)
+__sync_subword_fetch (u16, sub_and_fetch_2, oldval - i, val)
+__sync_subword_fetch (u16, or_and_fetch_2, oldval | i, val)
+__sync_subword_fetch (u16, and_and_fetch_2, oldval & i, val)
+__sync_subword_fetch (u16, xor_and_fetch_2, oldval ^ i, val)
+__sync_subword_fetch (u16, nand_and_fetch_2, ~(oldval & i), val)
+
 #define __atomic_subword_lock(type, size)				\
-									\
-__atomic_subword(type,							\
-		 type __atomic_exchange_##size(volatile type* ptr, type nval, int model), \
-	         pre_atomic_barrier(model);,				\
-	         nval,							\
-	         post_atomic_barrier(model); return oldval;)
+  __subword(type,							\
+	    type __atomic_exchange_##size(volatile type* ptr, type nval, int model), \
+	    pre_atomic_barrier(model);,					\
+	    nval,							\
+	    post_atomic_barrier(model); return oldval;)
 
 __atomic_subword_lock (u8, 1)
 __atomic_subword_lock (u16, 2)
+
+#define __sync_subword_lock(type, size)					\
+  __subword(type,							\
+	    type __sync_lock_test_and_set_##size(type* ptr, type nval), \
+	    ,								\
+	    nval,							\
+	    arch_atomic_acquire_barrier_value(oldval); return oldval;)
+
+__sync_subword_lock (u8, 1)
+__sync_subword_lock (u16, 2)
