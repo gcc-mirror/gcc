@@ -85,27 +85,29 @@ __atomic_fetch_and_do (long long, 8, or)
 __atomic_fetch_and_do (long long, 8, and)
 __atomic_fetch_and_do (long long, 8, xor)
 __atomic_fetch_and_do (long long, 8, nand)
-#define __atomic_do_and_fetch(type, size, opname, op)		\
+
+#define __atomic_do_and_fetch(type, size, opname, op, op2)	\
 type								\
 __atomic_##opname##_fetch_##size(type* p, type i, int model)	\
 {								\
   pre_atomic_barrier(model);					\
-  type rv = arch_atomic_##opname(p, i) op i;			\
+  type rv = op2 (arch_atomic_##opname(p, i) op i);		\
   post_atomic_barrier(model);					\
   return rv;							\
 }
-__atomic_do_and_fetch (int, 4, add, +)
-__atomic_do_and_fetch (int, 4, sub, -)
-__atomic_do_and_fetch (int, 4, or, |)
-__atomic_do_and_fetch (int, 4, and, &)
-__atomic_do_and_fetch (int, 4, xor, |)
-__atomic_do_and_fetch (int, 4, nand, &)
-__atomic_do_and_fetch (long long, 8, add, +)
-__atomic_do_and_fetch (long long, 8, sub, -)
-__atomic_do_and_fetch (long long, 8, or, |)
-__atomic_do_and_fetch (long long, 8, and, &)
-__atomic_do_and_fetch (long long, 8, xor, |)
-__atomic_do_and_fetch (long long, 8, nand, &)
+__atomic_do_and_fetch (int, 4, add, +, )
+__atomic_do_and_fetch (int, 4, sub, -, )
+__atomic_do_and_fetch (int, 4, or, |, )
+__atomic_do_and_fetch (int, 4, and, &, )
+__atomic_do_and_fetch (int, 4, xor, |, )
+__atomic_do_and_fetch (int, 4, nand, &, ~)
+__atomic_do_and_fetch (long long, 8, add, +, )
+__atomic_do_and_fetch (long long, 8, sub, -, )
+__atomic_do_and_fetch (long long, 8, or, |, )
+__atomic_do_and_fetch (long long, 8, and, &, )
+__atomic_do_and_fetch (long long, 8, xor, |, )
+__atomic_do_and_fetch (long long, 8, nand, &, ~)
+
 #define __atomic_exchange_methods(type, size)				\
 bool									\
 __atomic_compare_exchange_##size(volatile type* ptr, type* oldvalp,	\
@@ -129,6 +131,7 @@ __atomic_exchange_##size(volatile type* ptr, type val, int model)	\
   post_atomic_barrier(model);						\
   return retval;							\
 }
+
 __atomic_exchange_methods (int, 4)
 __atomic_exchange_methods (long long, 8)
 
@@ -137,6 +140,7 @@ __atomic_exchange_methods (long long, 8)
    desired subword piece, then compare-and-exchange it into place.  */
 #define u8 unsigned char
 #define u16 unsigned short
+
 #define __atomic_subword_cmpxchg(type, size)				\
   									\
 bool									\
@@ -161,8 +165,10 @@ __atomic_compare_exchange_##size(volatile type* ptr, type* guess,	\
   *guess = oldval;							\
   return success;							\
 }
+
 __atomic_subword_cmpxchg (u8, 1)
 __atomic_subword_cmpxchg (u16, 2)
+
 /* For the atomic-update subword methods, we use the same approach as
    above, but we retry until we succeed if the compare-and-exchange
    fails.  */
@@ -185,36 +191,42 @@ proto									\
   } while (__builtin_expect(xword != oldword, 0));			\
   bottom								\
 }
+
 #define __atomic_subword_fetch(type, funcname, expr, retval)		\
   __atomic_subword(type,						\
 		   type __atomic_ ## funcname(volatile type *ptr, type i, int model), \
 		   pre_atomic_barrier(model);,				\
 		   expr,						\
 		   post_atomic_barrier(model); return retval;)
+
 __atomic_subword_fetch (u8, fetch_add_1, oldval + i, oldval)
 __atomic_subword_fetch (u8, fetch_sub_1, oldval - i, oldval)
 __atomic_subword_fetch (u8, fetch_or_1, oldval | i, oldval)
 __atomic_subword_fetch (u8, fetch_and_1, oldval & i, oldval)
 __atomic_subword_fetch (u8, fetch_xor_1, oldval ^ i, oldval)
 __atomic_subword_fetch (u8, fetch_nand_1, ~(oldval & i), oldval)
+
 __atomic_subword_fetch (u16, fetch_add_2, oldval + i, oldval)
 __atomic_subword_fetch (u16, fetch_sub_2, oldval - i, oldval)
 __atomic_subword_fetch (u16, fetch_or_2, oldval | i, oldval)
 __atomic_subword_fetch (u16, fetch_and_2, oldval & i, oldval)
 __atomic_subword_fetch (u16, fetch_xor_2, oldval ^ i, oldval)
 __atomic_subword_fetch (u16, fetch_nand_2, ~(oldval & i), oldval)
+
 __atomic_subword_fetch (u8, add_fetch_1, oldval + i, val)
 __atomic_subword_fetch (u8, sub_fetch_1, oldval - i, val)
 __atomic_subword_fetch (u8, or_fetch_1, oldval | i, val)
 __atomic_subword_fetch (u8, and_fetch_1, oldval & i, val)
 __atomic_subword_fetch (u8, xor_fetch_1, oldval ^ i, val)
 __atomic_subword_fetch (u8, nand_fetch_1, ~(oldval & i), val)
+
 __atomic_subword_fetch (u16, add_fetch_2, oldval + i, val)
 __atomic_subword_fetch (u16, sub_fetch_2, oldval - i, val)
 __atomic_subword_fetch (u16, or_fetch_2, oldval | i, val)
 __atomic_subword_fetch (u16, and_fetch_2, oldval & i, val)
 __atomic_subword_fetch (u16, xor_fetch_2, oldval ^ i, val)
 __atomic_subword_fetch (u16, nand_fetch_2, ~(oldval & i), val)
+
 #define __atomic_subword_lock(type, size)				\
 									\
 __atomic_subword(type,							\
@@ -222,5 +234,6 @@ __atomic_subword(type,							\
 	         pre_atomic_barrier(model);,				\
 	         nval,							\
 	         post_atomic_barrier(model); return oldval;)
+
 __atomic_subword_lock (u8, 1)
 __atomic_subword_lock (u16, 2)
