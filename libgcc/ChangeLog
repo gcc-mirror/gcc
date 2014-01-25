@@ -1,5 +1,11 @@
 2014-01-25  Walter Lee  <walt@tilera.com>
 
+	* config/tilepro/atomic.c: Include tconfig.h.  Don't include
+	config.h or system.h.
+	(bool) Define.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
 	* config/tilepro/atomic.c (pre_atomic_barrier): Mark inline.
 	(post_atomic_barrier): Ditto.
 	(__fetch_and_do): New macro.
