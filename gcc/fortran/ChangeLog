@@ -1,3 +1,8 @@
+2014-01-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/58007
+	* module.c (read_module): Assert for component name correctness.
+
 2014-01-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/58007

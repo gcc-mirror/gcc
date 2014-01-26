@@ -4613,6 +4613,7 @@ read_module (void)
 	  for (c = sym->components; c; c = c->next)
 	    {
 	      pointer_info *p;
+	      const char *comp_name;
 	      int n;
 
 	      mio_lparen (); /* component opening.  */
@@ -4620,6 +4621,8 @@ read_module (void)
 	      p = get_integer (n);
 	      if (p->u.pointer == NULL)
 		associate_integer_pointer (p, c);
+	      mio_pool_string (&comp_name);
+	      gcc_assert (comp_name == c->name);
 	      skip_list (1); /* component end.  */
 	    }
 	  mio_rparen (); /* component list closing.  */
