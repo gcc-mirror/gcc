@@ -386,37 +386,6 @@ get_integer (int integer)
 }
 
 
-/* Recursive function to find a pointer within a tree by brute force.  */
-
-static pointer_info *
-fp2 (pointer_info *p, const void *target)
-{
-  pointer_info *q;
-
-  if (p == NULL)
-    return NULL;
-
-  if (p->u.pointer == target)
-    return p;
-
-  q = fp2 (p->left, target);
-  if (q != NULL)
-    return q;
-
-  return fp2 (p->right, target);
-}
-
-
-/* During reading, find a pointer_info node from the pointer value.
-   This amounts to a brute-force search.  */
-
-static pointer_info *
-find_pointer2 (void *p)
-{
-  return fp2 (pi_root, p);
-}
-
-
 /* Resolve any fixups using a known pointer.  */
 
 static void
@@ -2522,45 +2491,13 @@ mio_pointer_ref (void *gp)
    the namespace and is not loaded again.  */
 
 static void
-mio_component_ref (gfc_component **cp, gfc_symbol *sym)
+mio_component_ref (gfc_component **cp)
 {
-  char name[GFC_MAX_SYMBOL_LEN + 1];
-  gfc_component *q;
   pointer_info *p;
 
   p = mio_pointer_ref (cp);
   if (p->type == P_UNKNOWN)
     p->type = P_COMPONENT;
-
-  if (iomode == IO_OUTPUT)
-    mio_pool_string (&(*cp)->name);
-  else
-    {
-      mio_internal_string (name);
-
-      if (sym && sym->attr.is_class)
-	sym = sym->components->ts.u.derived;
-
-      /* It can happen that a component reference can be read before the
-	 associated derived type symbol has been loaded. Return now and
-	 wait for a later iteration of load_needed.  */
-      if (sym == NULL)
-	return;
-
-      if (sym->components != NULL && p->u.pointer == NULL)
-	{
-	  /* Symbol already loaded, so search by name.  */
-	  q = gfc_find_component (sym, name, true, true);
-
-	  if (q)
-	    associate_integer_pointer (p, q);
-	}
-
-      /* Make sure this symbol will eventually be loaded.  */
-      p = find_pointer2 (sym);
-      if (p->u.rsym.state == UNUSED)
-	p->u.rsym.state = NEEDED;
-    }
 }
 
 
@@ -2917,7 +2854,7 @@ mio_ref (gfc_ref **rp)
 
     case REF_COMPONENT:
       mio_symbol_ref (&r->u.c.sym);
-      mio_component_ref (&r->u.c.component, r->u.c.sym);
+      mio_component_ref (&r->u.c.component);
       break;
 
     case REF_SUBSTRING:
@@ -3772,7 +3709,9 @@ mio_full_f2k_derived (gfc_symbol *sym)
 
 
 /* Unlike most other routines, the address of the symbol node is already
-   fixed on input and the name/module has already been filled in.  */
+   fixed on input and the name/module has already been filled in.
+   If you update the symbol format here, don't forget to update read_module
+   as well (look for "seek to the symbol's component list").   */
 
 static void
 mio_symbol (gfc_symbol *sym)
@@ -3782,6 +3721,7 @@ mio_symbol (gfc_symbol *sym)
   mio_lparen ();
 
   mio_symbol_attribute (&sym->attr);
+
   mio_typespec (&sym->ts);
   if (sym->ts.type == BT_CLASS)
     sym->attr.class_ok = 1;
@@ -3812,7 +3752,6 @@ mio_symbol (gfc_symbol *sym)
 
   /* Note that components are always saved, even if they are supposed
      to be private.  Component access is checked during searching.  */
-
   mio_component_list (&sym->components, sym->attr.vtype);
 
   if (sym->components != NULL)
@@ -3914,14 +3853,17 @@ find_symbol (gfc_symtree *st, const char *name,
 }
 
 
-/* Skip a list between balanced left and right parens.  */
+/* Skip a list between balanced left and right parens.
+   By setting NEST_LEVEL one assumes that a number of NEST_LEVEL opening parens
+   have been already parsed by hand, and the remaining of the content is to be
+   skipped here.  The default value is 0 (balanced parens).  */
 
 static void
-skip_list (void)
+skip_list (int nest_level = 0)
 {
   int level;
 
-  level = 0;
+  level = nest_level;
   do
     {
       switch (parse_atom ())
@@ -4555,7 +4497,6 @@ read_module (void)
       info->u.rsym.ns = atom_int;
 
       get_module_locus (&info->u.rsym.where);
-      skip_list ();
 
       /* See if the symbol has already been loaded by a previous module.
 	 If so, we reference the existing symbol and prevent it from
@@ -4566,10 +4507,56 @@ read_module (void)
 
       if (sym == NULL
 	  || (sym->attr.flavor == FL_VARIABLE && info->u.rsym.ns !=1))
-	continue;
+	{
+	  skip_list ();
+	  continue;
+	}
 
       info->u.rsym.state = USED;
       info->u.rsym.sym = sym;
+      /* The current symbol has already been loaded, so we can avoid loading
+	 it again.  However, if it is a derived type, some of its components
+	 can be used in expressions in the module.  To avoid the module loading
+	 failing, we need to associate the module's component pointer indexes
+	 with the existing symbol's component pointers.  */
+      if (sym->attr.flavor == FL_DERIVED)
+	{
+	  gfc_component *c;
+
+	  /* First seek to the symbol's component list.  */
+	  mio_lparen (); /* symbol opening.  */
+	  skip_list (); /* skip symbol attribute.  */
+	  skip_list (); /* typespec.  */
+	  require_atom (ATOM_INTEGER); /* namespace ref.  */
+	  require_atom (ATOM_INTEGER); /* common ref.  */
+	  skip_list (); /* formal args.  */
+	  /* no value.  */
+	  skip_list (); /* array_spec.  */
+	  require_atom (ATOM_INTEGER); /* result.  */
+	  /* not a cray pointer.  */
+
+	  mio_lparen (); /* component list opening.  */
+	  for (c = sym->components; c; c = c->next)
+	    {
+	      pointer_info *p;
+	      const char *comp_name;
+	      int n;
+
+	      mio_lparen (); /* component opening.  */
+	      mio_integer (&n);
+	      p = get_integer (n);
+	      if (p->u.pointer == NULL)
+		associate_integer_pointer (p, c);
+	      mio_pool_string (&comp_name);
+	      gcc_assert (comp_name == c->name);
+	      skip_list (1); /* component end.  */
+	    }
+	  mio_rparen (); /* component list closing.  */
+
+	  skip_list (1); /* symbol end.  */
+	}
+      else
+	skip_list ();
 
       /* Some symbols do not have a namespace (eg. formal arguments),
 	 so the automatic "unique symtree" mechanism must be suppressed
