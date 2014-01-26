@@ -922,7 +922,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
   # undefined and fake C99 facilities - like pre-standard snprintf - may be
   # spuriously enabled.
-  # Long term, -std=c++0x could be even better, could manage to explicitely
+  # Long term, -std=c++0x could be even better, could manage to explicitly
   # request C99 facilities to the underlying C headers.
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++98"

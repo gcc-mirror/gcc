@@ -9,6 +9,9 @@
 	* testsuite/23_containers/multiset/modifiers/emplace/1.cc: Likewise.
 	* testsuite/23_containers/set/modifiers/emplace/1.cc: Likewise.
 
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Fix typo.
+	* configure: Regenerate.
+
 2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/59531
