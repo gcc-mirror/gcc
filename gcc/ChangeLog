@@ -1,3 +1,11 @@
+2014-01-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_attr_length_indirect_call): Adjust length of
+	portable runtime and PIC indirect calls.
+	(pa_output_indirect_call): Remove unnecessary nop from portable runtime
+	and PIC call sequences.  Use ldo instead of blr to set return register
+	in PIC call sequence.
+
 2014-01-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/sync.md (atomic_fetch_sub): Fix negation and
