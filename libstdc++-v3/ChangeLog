@@ -1,3 +1,14 @@
+2014-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h: Remove anachronistic comment.
+	* include/bits/stl_multimap.h: Add whitespace.
+	* testsuite/23_containers/map/modifiers/emplace/1.cc: Use
+	-std=gnu++11 instead of -std=c++11.
+	* testsuite/23_containers/map/operators/2.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/emplace/1.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/emplace/1.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/emplace/1.cc: Likewise.
+
 2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/59531

@@ -153,6 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // [23.3.2] construct/copy/destroy
       // (get_allocator() is also listed in this section)
+
       /**
        *  @brief  Default constructor creates no elements.
        */
