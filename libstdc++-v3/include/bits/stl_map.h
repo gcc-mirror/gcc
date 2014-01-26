@@ -154,8 +154,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
       // [23.3.1.1] construct/copy/destroy
-      // (get_allocator() is normally listed in this section, but seems to have
-      // been accidentally omitted in the printed standard)
+      // (get_allocator() is also listed in this section)
+
       /**
        *  @brief  Default constructor creates no elements.
        */
