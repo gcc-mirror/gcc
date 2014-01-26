@@ -1,5 +1,9 @@
 2014-01-26  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/pa.md (call): Generate indirect long calls to non-local
+	functions when outputing 32-bit code.
+	(call_value): Likewise except for special call to buggy powf function.
+
 	* config/pa/pa.c (pa_attr_length_indirect_call): Adjust length of
 	portable runtime and PIC indirect calls.
 	(pa_output_indirect_call): Remove unnecessary nop from portable runtime
