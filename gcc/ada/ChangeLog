@@ -1,3 +1,11 @@
+2014-01-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-intnam-lynxos.ads, mlib-tgt-specific-lynxos.adb,
+	s-osinte-lynxos-3.adb, s-osinte-lynxos-3.ads, s-osinte-lynxos.adb,
+	s-osinte-lynxos.ads, s-taprop-lynxos.adb, s-tpopsp-lynxos.adb,
+	system-lynxos-ppc.ads, system-lynxos-x86.ads: Removed, no longer
+	maintained.
+
 2014-01-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Fix oversight.
