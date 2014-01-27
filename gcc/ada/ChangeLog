@@ -1,3 +1,14 @@
+2014-01-27  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor clarifications.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Avoid complaining
+	about call that is generated as part of an Initial_Condition
+	check.
+	* sem_prag.adb: Minor spelling correction.
+
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Set_Convention_From_Pragma): Check that

@@ -2155,18 +2155,52 @@ package body Sem_Elab is
 
       declare
          P : Node_Id;
+         O : Node_Id;
+
       begin
          P := Parent (N);
          loop
+            --  Keep looking at parents if we are still in the subexpression
+
             if Nkind (P) in N_Subexpr then
                P := Parent (P);
-            elsif Nkind (P) = N_If_Statement
-              and then Nkind (Original_Node (P)) = N_Pragma
-              and then Present (Corresponding_Aspect (Original_Node (P)))
-            then
-               return;
+
+            --  Here P is the parent of the expression, check for special case
+
             else
-               exit;
+               O := Original_Node (P);
+
+               --  Definitely not the special case if orig node is not a pragma
+
+               exit when Nkind (O) /= N_Pragma;
+
+               --  Check we have an If statement or a null statement (happens
+               --  when the If has been expanded to be True).
+
+               exit when not Nkind_In (P, N_If_Statement, N_Null_Statement);
+
+               --  Our special case will be indicated either by the pragma
+               --  coming from an aspect ...
+
+               if Present (Corresponding_Aspect (O)) then
+                  return;
+
+               --  Or, in the case of an initial condition, specifically by a
+               --  Check pragma specifying an Initial_Condition check.
+
+               elsif Pragma_Name (O) = Name_Check
+                 and then
+                   Chars
+                     (Expression (First (Pragma_Argument_Associations (O)))) =
+                                                       Name_Initial_Condition
+               then
+                  return;
+
+               --  For anything else, we have an error
+
+               else
+                  exit;
+               end if;
             end if;
          end loop;
       end;
