@@ -26,8 +26,6 @@ included in the section entitled ``GNU Free Documentation License''.
 @end copying
 
 @set EDITION GNAT
-@set DEFAULTLANGUAGEVERSION Ada 2005
-@set NONDEFAULTLANGUAGEVERSION Ada 95
 
 @settitle GNAT Reference Manual
 
@@ -697,15 +695,15 @@ This manual contains useful information in writing programs using the
 characteristics of @value{EDITION}, including all the information required by
 Annex M of the Ada language standard.
 
-@value{EDITION} implements Ada 95 and Ada 2005, and it may also be invoked in
-Ada 83 compatibility mode.
-By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
+@value{EDITION} implements Ada 95, Ada 2005 and Ada 2012, and it may also be
+invoked in Ada 83 compatibility mode.
+By default, @value{EDITION} assumes Ada 2012,
 but you can override with a compiler switch
 to explicitly specify the language version.
 (Please refer to @ref{Compiling Different Versions of Ada,,, gnat_ugn,
 @value{EDITION} User's Guide}, for details on these switches.)
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both the Ada 95 and Ada 2005 versions of the language.
+apply to all the Ada versions of the language.
 
 Ada is designed to be highly portable.
 In general, a program will have the same effect even when compiled by
@@ -2972,11 +2970,11 @@ You can use this pragma either to access a predefined @code{System}
 extension supplied with the compiler, for example @code{Aux_DEC} or
 you can construct your own extension unit following the above
 definition.  Note that such a package is a child of @code{System}
-and thus is considered part of the implementation.  To compile
-it you will have to use the appropriate switch for compiling
-system units.
-@xref{Top, @value{EDITION} User's Guide, About This Guide, gnat_ugn, @value{EDITION} User's Guide},
-for details.
+and thus is considered part of the implementation.
+To compile it you will have to use the @option{-gnatg} switch,
+or the @option{/GNAT_INTERNAL} qualifier on OpenVMS,
+for compiling System units, as explained in the
+@value{EDITION} User's Guide.
 
 @node Pragma Extensions_Allowed
 @unnumberedsec Pragma Extensions_Allowed

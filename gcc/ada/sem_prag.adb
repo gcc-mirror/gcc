@@ -2358,7 +2358,7 @@ package body Sem_Prag is
       end if;
 
       --  The expression is preanalyzed because it has not been moved to its
-      --  final place yet. A direct analysis may generate sife effects and this
+      --  final place yet. A direct analysis may generate side effects and this
       --  is not desired at this point.
 
       Preanalyze_And_Resolve (Expr, Standard_Boolean);
