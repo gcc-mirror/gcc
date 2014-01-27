@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_BUILDER_H
 #define GCC_GIMPLE_BUILDER_H
 
-tree create_gimple_tmp (tree, tree lhs = NULL_TREE);
 gimple build_assign (enum tree_code, tree, int, tree lhs = NULL_TREE);
 gimple build_assign (enum tree_code, gimple, int, tree lhs = NULL_TREE);
 gimple build_assign (enum tree_code, tree, tree, tree lhs = NULL_TREE);

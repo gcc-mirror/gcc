@@ -1,3 +1,7 @@
+2014-01-27  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gimple-builder.h (create_gimple_tmp): Delete.
+
 2014-01-27  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Fix remaining bytes after
