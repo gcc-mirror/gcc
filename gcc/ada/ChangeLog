@@ -1,3 +1,59 @@
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_smem.adb: Minor reformatting.
+
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* a-calfor.ads: Fix incorrect reference to operator "-" in comment.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): In ASIS mode, relocate
+	nodes for operands to the original node for the call, to preserve
+	Original_Node pointers within the resolved operands, given that
+	they may have been rewritten as well. Previous approach copied
+	the operands into a new tree and lost those pointers.
+
+2014-01-27  Claire Dross  <dross@adacore.com>
+
+
+	* a-cofove.adb, a-cofove.ads: Add Strict_Equal function to the API.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Check_Internal_Protected_Use): A call through
+	an anonymous access parameter of the current protected function
+	is not a potential modification of the current object.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cobove.adb (Reserve_Capacity): Procedure raises
+	Capacity_Error, not Constraint_Error, when request cannot be
+	satisfied.
+
+2014-01-27  Vincent Celier  <celier@adacore.com>
+
+	* a-coorma.adb, a-cohama.adb (Assign): Copy the Source to the Target,
+	not the Target to itself.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): If the target of the
+	concatenation is a library-level entity, always use the off-line
+	version of concatenation, regardless of optimization level. This
+	is space-efficient, and prevents linking problems when some
+	units are compiled with different optimization levels.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Code clean up.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch5.adb (P_Iterator_Specification): Improve error recovery
+	when an array or container iterator includes a subtype indication,
+	which is only legal in an element iterator.
+
 2014-01-27  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch7.adb: Minor reformatting.

@@ -45,8 +45,9 @@
 --    which is not possible if cursors encapsulate an access to the underlying
 --    container.
 
---    There are two new functions:
+--    There are three new functions:
 
+--      function Strict_Equal (Left, Right : Vector) return Boolean;
 --      function Left  (Container : Vector; Position : Cursor) return Vector;
 --      function Right (Container : Vector; Position : Cursor) return Vector;
 
@@ -348,6 +349,11 @@ package Ada.Containers.Formal_Vectors is
       procedure Merge (Target : in out Vector; Source : in out Vector);
 
    end Generic_Sorting;
+
+   function Strict_Equal (Left, Right : Vector) return Boolean;
+   --  Strict_Equal returns True if the containers are physically equal, i.e.
+   --  they are structurally equal (function "=" returns True) and that they
+   --  have the same set of cursors.
 
    function Left (Container : Vector; Position : Cursor) return Vector with
      Pre => Has_Element (Container, Position) or else Position = No_Element;

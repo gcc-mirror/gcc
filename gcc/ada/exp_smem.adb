@@ -195,7 +195,7 @@ package body Exp_Smem is
    procedure Add_Write_After (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Entity_Id  := Entity (N);
-      Par : constant Node_Id := Insert_Node;
+      Par : constant Node_Id    := Insert_Node;
    begin
       if Present (Shared_Var_Procs_Instance (Ent)) then
          if Nkind (Insert_Node) = N_Function_Call then

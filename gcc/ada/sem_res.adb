@@ -1585,17 +1585,20 @@ package body Sem_Res is
 
       --  If in ASIS_Mode, propagate operand types to original actuals of
       --  function call, which would otherwise not be fully resolved. If
-      --  the call has already been constant-folded, nothing to do.
+      --  the call has already been constant-folded, nothing to do. We
+      --  relocate the operand nodes rather than copy them, to preserve
+      --  original_node pointers, given that the operands themselves may
+      --  have been rewritten.
 
       if ASIS_Mode and then Nkind (N) in N_Op then
          if Is_Binary then
             Rewrite (First (Parameter_Associations (Original_Node (N))),
-               New_Copy_Tree (Left_Opnd (N)));
+               Relocate_Node (Left_Opnd (N)));
             Rewrite (Next (First (Parameter_Associations (Original_Node (N)))),
-               New_Copy_Tree (Right_Opnd (N)));
+               Relocate_Node (Right_Opnd (N)));
          else
             Rewrite (First (Parameter_Associations (Original_Node (N))),
-               New_Copy_Tree (Right_Opnd (N)));
+               Relocate_Node (Right_Opnd (N)));
          end if;
 
          Set_Parent (Original_Node (N), Parent (N));

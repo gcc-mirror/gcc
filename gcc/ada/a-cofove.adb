@@ -1506,6 +1506,19 @@ package body Ada.Containers.Formal_Vectors is
       end;
    end Set_Length;
 
+   ------------------
+   -- Strict_Equal --
+   ------------------
+
+   function Strict_Equal (Left, Right : Vector) return Boolean is
+   begin
+      --  On bounded vectors, cursors are indexes. As a consequence, two
+      --  vectors always have the same cursor at the same position and
+      --  Strict_Equal is simply =
+
+      return Left = Right;
+   end Strict_Equal;
+
    ----------
    -- Swap --
    ----------
