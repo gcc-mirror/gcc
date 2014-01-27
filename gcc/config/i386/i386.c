@@ -31348,18 +31348,27 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      priority = P_PROC_SSSE3;
 	      break;
 	    case PROCESSOR_NEHALEM:
-	      /* We translate "arch=corei7" and "arch=nehelam" to
-		 "corei7" so that it will be mapped to M_INTEL_COREI7
-		 as cpu type to cover all M_INTEL_COREI7_XXXs.  */
-	      arg_str = "corei7";
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
+		arg_str = "westmere";
+	      else
+		/* We translate "arch=corei7" and "arch=nehalem" to
+		   "corei7" so that it will be mapped to M_INTEL_COREI7
+		   as cpu type to cover all M_INTEL_COREI7_XXXs.  */
+		arg_str = "corei7";
 	      priority = P_PROC_SSE4_2;
 	      break;
 	    case PROCESSOR_SANDYBRIDGE:
-	      arg_str = "sandybridge";
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_F16C)
+		arg_str = "ivybridge";
+	      else
+		arg_str = "sandybridge";
 	      priority = P_PROC_AVX;
 	      break;
 	    case PROCESSOR_HASWELL:
-	      arg_str = "haswell";
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_ADX)
+		arg_str = "broadwell";
+	      else
+		arg_str = "haswell";
 	      priority = P_PROC_AVX2;
 	      break;
 	    case PROCESSOR_BONNELL:
