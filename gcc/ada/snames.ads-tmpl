@@ -724,7 +724,6 @@ package Snames is
    Name_In_Out                         : constant Name_Id := N + $;
    Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
-   Name_Input_Only                     : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
@@ -761,7 +760,6 @@ package Snames is
    Name_Non_Volatile                   : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
-   Name_Output_Only                    : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
    Name_Part_Of                        : constant Name_Id := N + $;

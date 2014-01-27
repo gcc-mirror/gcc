@@ -4041,6 +4041,16 @@ package body Sem_Res is
                then
                   Apply_Discriminant_Check (A, F_Typ);
 
+                  --  For view conversions of a discriminated object, apply
+                  --  check to object itself, the conversion alreay has the
+                  --  proper type.
+
+                  if Nkind (A) = N_Type_Conversion
+                    and then Is_Constrained (Etype (Expression (A)))
+                  then
+                     Apply_Discriminant_Check (Expression (A), F_Typ);
+                  end if;
+
                elsif Is_Access_Type (F_Typ)
                  and then Is_Array_Type (Designated_Type (F_Typ))
                  and then Is_Constrained (Designated_Type (F_Typ))
@@ -4254,7 +4264,7 @@ package body Sem_Res is
             --  they are not standard Ada legality rule.
 
             if SPARK_Mode = On
-              and then Is_Volatile_Object (A)
+              and then Is_SPARK_Volatile_Object (A)
             then
                --  A volatile object may act as an actual parameter when the
                --  corresponding formal is of a non-scalar volatile type.
@@ -4273,7 +4283,7 @@ package body Sem_Res is
                else
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
-                     & "RM 7.1.3(8))", A);
+                     & "RM 7.1.3(12))", A);
                end if;
             end if;
 
@@ -6497,8 +6507,7 @@ package body Sem_Res is
       --  standard Ada legality rules.
 
       if SPARK_Mode = On
-        and then Ekind (E) = E_Variable
-        and then Is_Volatile_Object (E)
+        and then Is_SPARK_Volatile_Object (E)
         and then
           (Async_Writers_Enabled (E)
              or else Effective_Reads_Enabled (E))
@@ -6555,7 +6564,7 @@ package body Sem_Res is
          if not Usage_OK then
             Error_Msg_N
               ("volatile object cannot appear in this context (SPARK RM "
-               & "7.1.3(9))", N);
+               & "7.1.3(13))", N);
          end if;
       end if;
    end Resolve_Entity_Name;

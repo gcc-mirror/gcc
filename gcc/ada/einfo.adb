@@ -6912,28 +6912,6 @@ package body Einfo is
       end if;
    end Is_Ghost_Subprogram;
 
-   -------------------------
-   -- Is_Input_Only_State --
-   -------------------------
-
-   function Is_Input_Only_State (Id : E) return B is
-   begin
-      return
-        Ekind (Id) = E_Abstract_State
-          and then Has_Option (Id, Name_Input_Only);
-   end Is_Input_Only_State;
-
-   ---------------------------
-   -- Is_Non_Volatile_State --
-   ---------------------------
-
-   function Is_Non_Volatile_State (Id : E) return B is
-   begin
-      return
-        Ekind (Id) = E_Abstract_State
-          and then Has_Option (Id, Name_Non_Volatile);
-   end Is_Non_Volatile_State;
-
    -------------------
    -- Is_Null_State --
    -------------------
@@ -6943,17 +6921,6 @@ package body Einfo is
       return
         Ekind (Id) = E_Abstract_State and then Nkind (Parent (Id)) = N_Null;
    end Is_Null_State;
-
-   ---------------------
-   -- Is_Output_State --
-   ---------------------
-
-   function Is_Output_Only_State (Id : E) return B is
-   begin
-      return
-        Ekind (Id) = E_Abstract_State
-          and then Has_Option (Id, Name_Output_Only);
-   end Is_Output_Only_State;
 
    -----------------------------------
    -- Is_Package_Or_Generic_Package --

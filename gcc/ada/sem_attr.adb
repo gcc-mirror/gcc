@@ -6064,6 +6064,7 @@ package body Sem_Attr is
 
       begin
          Check_E1;
+         Check_Ada_2012_Attribute;
 
          if not Is_Object_Reference (P) then
             Error_Attr_P ("prefix of attribute % must denote an object");
@@ -10477,8 +10478,11 @@ package body Sem_Attr is
                --  Set the Etype of the aggregate to that of the prefix, even
                --  though the aggregate may not be a proper representation of a
                --  value of the type (missing or duplicated associations, etc.)
+               --  Complete resolution of the prefix. Note that in Ada 2012 it
+               --  can be a qualified expression that is e.g. an aggregate.
 
                Set_Etype (Aggr, Typ);
+               Resolve (Prefix (N), Typ);
 
                --  For an array type, resolve expressions with the component
                --  type of the array.

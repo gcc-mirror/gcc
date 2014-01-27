@@ -9846,11 +9846,11 @@ package body Sem_Ch12 is
 
       if SPARK_Mode = On
         and then Present (Actual)
-        and then Is_Volatile_Object (Actual)
+        and then Is_SPARK_Volatile_Object (Actual)
       then
          Error_Msg_N
            ("volatile object cannot act as actual in generic instantiation "
-            & "(SPARK RM 7.1.3(4))", Actual);
+            & "(SPARK RM 7.1.3(8))", Actual);
       end if;
 
       return List;
