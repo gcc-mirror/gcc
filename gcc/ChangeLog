@@ -1,3 +1,9 @@
+2014-01-27  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* config/i386/i386.c (get_builtin_code_for_version): Separate
+	Westmere from Nehalem, Ivy Bridge from Sandy Bridge and
+	Broadwell from Haswell.
+
 2014-01-27  Steve Ellcey  <sellcey@mips.com>
 
 	* common/config/mips/mips-common.c (TARGET_DEFAULT_TARGET_FLAGS):
@@ -5,8 +11,8 @@
 	* config/mips/mips.c (mips_option_override): Change setting
 	of TARGET_DSP.
 	* config/mips/mips.h (TARGET_FP_EXCEPTIONS_DEFAULT): Remove.
-	* config/mips/mips.opt (DSP, DSPR2, FP_EXCEPTIONS, FUSED_MADD,
-	MIPS3D) Change from Mask to Var.
+	* config/mips/mips.opt (DSP, DSPR2, FP_EXCEPTIONS, FUSED_MADD, MIPS3D):
+	Change from Mask to Var.
 
 2014-01-27  Jeff Law  <law@redhat.com>
 
@@ -89,7 +95,8 @@
 
 2014-01-27  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd): New.
+        * config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd):
+	New.
 	(_mm512_mask_prefetch_i64gather_pd): Ditto.
 	(_mm512_prefetch_i32scatter_pd): Ditto.
 	(_mm512_mask_prefetch_i32scatter_pd): Ditto.
@@ -102,7 +109,8 @@
 	(_mm512_prefetch_i64scatter_ps): Ditto.
 	(_mm512_mask_prefetch_i64scatter_ps): Ditto.
 	* config/i386/i386-builtin-types.def: Define
-	VOID_FTYPE_QI_V8SI_PCINT64_INT_INT and VOID_FTYPE_QI_V8DI_PCINT64_INT_INT.
+	VOID_FTYPE_QI_V8SI_PCINT64_INT_INT
+	and VOID_FTYPE_QI_V8DI_PCINT64_INT_INT.
 	* config/i386/i386.c (ix86_builtins): Define IX86_BUILTIN_GATHERPFQPD,
 	IX86_BUILTIN_GATHERPFDPD, IX86_BUILTIN_SCATTERPFDPD,
 	IX86_BUILTIN_SCATTERPFQPD.
@@ -185,8 +193,7 @@
 
 	* config/tilegx/tilegx.c (tilegx_gen_bundles): Delete barrier
 	insns before bundling.
-	* config/tilegx/tilegx.md (tile_network_barrier): Update
-	comment.
+	* config/tilegx/tilegx.md (tile_network_barrier): Update comment.
 
 2014-01-25  Walter Lee  <walt@tilera.com>
 
@@ -206,8 +213,7 @@
 
 2014-01-25  Walter Lee  <walt@tilera.com>
 
-	* config/tilepro/tilepro.md (ctzdi2): Use register_operand
-	predicate.
+	* config/tilepro/tilepro.md (ctzdi2): Use register_operand predicate.
 	(clzdi2): Ditto.
 	(ffsdi2): Ditto.
 
@@ -292,8 +298,8 @@
 	-mquad-memory-atomic to ISA 2.07 support.
 
 	* config/rs6000/rs6000.opt (-mquad-memory-atomic): Add new switch
-	to separate support of normal quad word memory operations (ldq,
-	stq) from the atomic quad word memory operations.
+	to separate support of normal quad word memory operations (ldq, stq)
+	from the atomic quad word memory operations.
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
 	support to separate non-atomic quad word operations from atomic
@@ -307,9 +313,8 @@
 	* config/rs6000/rs6000.h (TARGET_SYNC_TI): Use
 	-mquad-memory-atomic as the test for whether we have quad word
 	atomic instructions.
-	(TARGET_SYNC_HI_QI): If either -mquad-memory-atomic,
-	-mquad-memory, or -mp8-vector are used, allow byte/half-word
-	atomic operations.
+	(TARGET_SYNC_HI_QI): If either -mquad-memory-atomic, -mquad-memory,
+	or -mp8-vector are used, allow byte/half-word atomic operations.
 
 	* config/rs6000/sync.md (load_lockedti): Insure that the address
 	is a proper indexed or indirect address for the lqarx instruction.
@@ -445,7 +450,7 @@
 	* config/aarch64/aarch64-simd.md
 	(aarch64_be_checked_get_lane<mode>): New define_expand.
 	* config/aarch64/aarch64-simd-builtins.def
-	(BUILTIN_VALL (GETLANE, be_checked_get_lane, 0):
+	(BUILTIN_VALL (GETLANE, be_checked_get_lane, 0)):
 	New builtin definition.
 	* config/aarch64/arm_neon.h: (__aarch64_vget_lane_any):
 	Use new safe be builtin.
@@ -545,8 +550,7 @@
 
 	PR rtl-optimization/59477
 	* lra-constraints.c (inherit_in_ebb): Process call for living hard
-	regs.  Update reloads_num and potential_reload_hard_regs for all
-	insns.
+	regs.  Update reloads_num and potential_reload_hard_regs for all insns.
 
 2014-01-22  Tom Tromey  <tromey@redhat.com>
 
@@ -600,14 +604,13 @@
 	MAX_INLINE_INSNS_AUTO_LIMIT, INLINE_UNIT_GROWTH_LIMIT,
 	RECURSIVE_INLINING, UNLIKELY_CALL, NOT_DECLARED_INLINED,
 	OPTIMIZING_FOR_SIZE, ORIGINALLY_INDIRECT_CALL,
-	INDIRECT_UNKNOWN_CALL, USES_COMDAT_LOCAL. 
+	INDIRECT_UNKNOWN_CALL, USES_COMDAT_LOCAL.
 	Add CIF_FINAL_ERROR to UNSPECIFIED, BODY_NOT_AVAILABLE,
 	FUNCTION_NOT_INLINABLE, OVERWRITABLE, MISMATCHED_ARGUMENTS,
 	EH_PERSONALITY, NON_CALL_EXCEPTIONS, TARGET_OPTION_MISMATCH,
 	OPTIMIZATION_MISMATCH.
 	* tree-inline.c (expand_call_inline): Emit errors during
-	early_inlining if cgraph_inline_failed_type returns
-	CIF_FINAL_ERROR.
+	early_inlining if cgraph_inline_failed_type returns CIF_FINAL_ERROR.
 
 2014-01-20  Uros Bizjak  <ubizjak@gmail.com>
 

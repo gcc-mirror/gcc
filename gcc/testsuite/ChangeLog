@@ -1,3 +1,7 @@
+2014-01-27  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* g++.dg/ext/mv16.C: New tests.
+
 2014-01-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512f-vexpandpd-1.c: Also test _mm512_expand_pd.
