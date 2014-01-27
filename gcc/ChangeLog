@@ -1,3 +1,13 @@
+2014-01-27  Steve Ellcey  <sellcey@mips.com>
+
+	* common/config/mips/mips-common.c (TARGET_DEFAULT_TARGET_FLAGS):
+	Remove TARGET_FP_EXCEPTIONS_DEFAULT and MASK_FUSED_MADD.
+	* config/mips/mips.c (mips_option_override): Change setting
+	of TARGET_DSP.
+	* config/mips/mips.h (TARGET_FP_EXCEPTIONS_DEFAULT): Remove.
+	* config/mips/mips.opt (DSP, DSPR2, FP_EXCEPTIONS, FUSED_MADD,
+	MIPS3D) Change from Mask to Var.
+
 2014-01-27  Jeff Law  <law@redhat.com>
 
 	* ipa-inline.c (inline_small_functions): Fix typo.
