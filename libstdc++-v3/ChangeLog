@@ -1,3 +1,12 @@
+2014-01-27  Jason Merrill  <jason@redhat.com>
+
+	Core DR 475
+	PR c++/41174
+	PR c++/59224
+	* libsupc++/eh_throw.cc (__cxa_throw): Set uncaughtExceptions.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception)
+	(__cxa_allocate_exception): Don't set it here.
+
 2013-12-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.

@@ -62,6 +62,9 @@ __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
 {
   PROBE2 (throw, obj, tinfo);
 
+  __cxa_eh_globals *globals = __cxa_get_globals ();
+  globals->uncaughtExceptions += 1;
+
   // Definitely a primary.
   __cxa_refcounted_exception *header
     = __get_refcounted_exception_header_from_obj (obj);
