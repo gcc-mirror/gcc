@@ -1,5 +1,11 @@
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb (Set_Convention_From_Pragma): Check that
+	convention Ghost can only apply to functions.
+	* einfo.ads, einfo.adb (Is_Ghost_Subprogram): Add clarifying comment.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Add Short_Enums to documentation of
 	-gnatet/-gnateT.
 

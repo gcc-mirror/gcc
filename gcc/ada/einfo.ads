@@ -2343,11 +2343,15 @@ package Einfo is
 
 --    Is_Ghost_Entity (synthesized)
 --       Applies to all entities. Yields True for a subprogram or a whole
---       object that has convention Ghost.
+--       object that has convention Ghost. For now only functions can have
+--       Ghost convention, so this will be false for other than functions,
+--       but we expect that to change in the future.
 
 --    Is_Ghost_Subprogram (synthesized)
 --       Applies to all entities. Yields True for a subprogram that has a Ghost
---       convention.
+--       convention. Note: for now, only ghost functions are allowed, so this
+--       will always be false for procedures, but that is expected to change in
+--       the future.
 
 --    Is_Hidden (Flag57)
 --       Defined in all entities. Set for all entities declared in the
