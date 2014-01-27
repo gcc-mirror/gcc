@@ -1,3 +1,7 @@
+2014-01-27  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/mips/pr52125.c: Add -mno-optgp option.
+
 2014-01-27  Allan Sandfeld Jensen  <sandfeld@kde.org>
 
 	* g++.dg/ext/mv16.C: New tests.
