@@ -1,3 +1,8 @@
+2014-01-27  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/sh-mem.cc (sh_expand_cmpnstr): Fix remaining bytes after
+	words comparisons.
+
 2014-01-26  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (call): Generate indirect long calls to non-local
@@ -17,9 +22,9 @@
 
 2014-01-25  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins): 
+	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins):
 	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2}.
-	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins): 
+	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins):
 	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2,4,8}.
 
 2014-01-25  Walter Lee  <walt@tilera.com>
@@ -46,7 +51,7 @@
 	* config/tilepro/tilepro.c (tilepro_expand_builtin): Ditto.
 
 2014-01-25  Richard Sandiford  <rdsandiford@googlemail.com>
-	
+
 	* config/mips/constraints.md (kl): Delete.
 	* config/mips/mips.md (divmod<mode>4, udivmod<mode>4): Turn into
 	define expands, using...
