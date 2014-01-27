@@ -19,7 +19,7 @@ static void
 TEST (void)
 {
   UNION_TYPE (AVX512F_LEN, i_q) s2, res1, res2;
-  EVAL(unaligned_array, AVX512F_LEN,) s1, res3;
+  EVAL(unaligned_array, AVX512F_LEN,) s1, res3, res4;
   MASK_TYPE mask = MASK_VALUE;
   int i, sign = 1;
 
@@ -35,6 +35,7 @@ TEST (void)
   res1.x = INTRINSIC (_mask_loadu_epi64) (res1.x, mask, s1.a);
   res2.x = INTRINSIC (_maskz_loadu_epi64) (mask, s1.a);
   INTRINSIC (_mask_storeu_epi64) (res3.a, mask, s2.x);
+  INTRINSIC (_storeu_epi64) (res4.a, s2.x);
 
   MASK_MERGE (i_q) (s1.a, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res1, s1.a))
@@ -42,6 +43,9 @@ TEST (void)
 
   MASK_ZERO (i_q) (s1.a, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_q) (res2, s1.a))
+    abort ();
+
+  if (UNION_CHECK (AVX512F_LEN, i_q) (s2, res4.a))
     abort ();
 
   MASK_MERGE (i_q) (s2.a, mask, SIZE);
