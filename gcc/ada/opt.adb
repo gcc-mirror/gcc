@@ -186,7 +186,7 @@ package body Opt is
             Assertions_Enabled       := False;
             Assume_No_Invalid_Values := False;
             Check_Policy_List        := Empty;
-            SPARK_Mode               := Off;
+            SPARK_Mode               := None;
             SPARK_Mode_Pragma        := Empty;
          end if;
 

@@ -1264,9 +1264,9 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
 
-   type SPARK_Mode_Type is (None, Off, Auto, On);
-   pragma Ordered (SPARK_Mode_Type);
-   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode
+   type SPARK_Mode_Type is (None, Off, On);
+   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode, as
+   --  well as the value None, which indicates no such pragma/aspect applies.
 
    SPARK_Mode : SPARK_Mode_Type := None;
    --  GNAT

@@ -535,6 +535,66 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
      Table_Increment      => 100,
      Table_Name           => "Scope");
 
+   ------------------------------------------
+   -- Table for Handling Suspicious Labels --
+   ------------------------------------------
+
+   --  This is a special data structure which is used to deal very spefifically
+   --  with the following error case
+
+   --     label;
+   --     loop
+   --       ...
+   --     end loop label;
+
+   --  Similar cases apply to FOR, WHILE, DECLARE, or BEGIN
+
+   --  In each case the opening line looks like a procedure call because of
+   --  the semicolon. And the end line looks illegal because of an unexpected
+   --  label. If we did nothing special, we would just diagnose the label on
+   --  the end as unexpected. But that does not help point to the real error
+   --  which is that the semicolon after label should be a colon.
+
+   --  To deal with this, we build an entry in the Suspicious_Labels table
+   --  whenever we encounter an identifier followed by a semicolon, followed
+   --  by one of LOOP, FOR, WHILE, DECLARE, BEGIN. Then this entry is used to
+   --  issue the right message when we hit the END that confirms that this was
+   --  a bad label.
+
+   type Suspicious_Label_Entry is record
+      Proc_Call : Node_Id;
+      --  Node for the procedure call statement built for the label; construct
+
+      Semicolon_Loc : Source_Ptr;
+      --  Location of the possibly wrong semicolon
+
+      Start_Token : Source_Ptr;
+      --  Source location of the LOOP, FOR, WHILE, DECLARE, BEGIN token
+   end record;
+
+   package Suspicious_Labels is new Table.Table (
+     Table_Component_Type => Suspicious_Label_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 50,
+     Table_Increment      => 100,
+     Table_Name           => "Suspicious_Labels");
+
+   --  Now when we are about to issue a message complaining about an END label
+   --  that should not be there because it appears to end a construct that has
+   --  no label, we first search the suspicious labels table entry, using the
+   --  source location stored in the scope table as a key. If we find a match,
+   --  then we check that the label on the end matches the name in the call,
+   --  and if so, we issue a message saying the semicolon should be a colon.
+
+   --  Quite a bit of work, but really helpful in the case where it helps, and
+   --  the need for this is based on actual experience with tracking down this
+   --  kind of error (the eye often easily mistakes semicolon for colon!)
+
+   --  Note: we actually have enough information to patch up the tree, but
+   --  this may not be worth the effort! Also we could deal with the same
+   --  situation for EXIT with a label, but for now don't bother with that!
+
    ---------------------------------
    -- Parsing Routines by Chapter --
    ---------------------------------

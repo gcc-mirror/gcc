@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -711,17 +711,67 @@ package body Endh is
    ------------------------
 
    procedure Evaluate_End_Entry (SS_Index : Nat) is
-   begin
-      Column_OK := (End_Column = Scope.Table (SS_Index).Ecol);
+      STE : Scope_Table_Entry renames Scope.Table (SS_Index);
 
-      Token_OK  := (End_Type = Scope.Table (SS_Index).Etyp or else
-                     (End_Type = E_Name and then
-                       Scope.Table (SS_Index).Etyp >= E_Name));
+   begin
+      Column_OK := (End_Column = STE.Ecol);
+
+      Token_OK  := (End_Type = STE.Etyp
+                     or else (End_Type = E_Name and then STE.Etyp >= E_Name));
 
       Label_OK := End_Labl_Present
-                    and then
-                      (Same_Label (End_Labl, Scope.Table (SS_Index).Labl)
-                        or else Scope.Table (SS_Index).Labl = Error);
+                    and then (Same_Label (End_Labl, STE.Labl)
+                               or else STE.Labl = Error);
+
+      --  Special case to consider. Suppose we have the suspicious label case,
+      --  e.g. a situation like:
+
+      --    My_Label;
+      --    declare
+      --       ...
+      --    begin
+      --       ...
+      --    end My_Label;
+
+      --  This is the case where we want to use the entry in the suspicous
+      --  label table to flag the semicolon saying it should be a colon.
+
+      --  Label_OK will be false because the label does not match (we have
+      --  My_Label on the end line, and the generated name for the scope). Also
+      --  End_Labl_Present will be True.
+
+      if not Label_OK
+        and then End_Labl_Present
+        and then not Comes_From_Source (Scope.Table (SS_Index).Labl)
+      then
+         --  Here is where we will search the suspicious labels table
+
+         for J in 1 .. Suspicious_Labels.Last loop
+            declare
+               SLE : Suspicious_Label_Entry renames
+                       Suspicious_Labels.Table (J);
+            begin
+               --  See if character name of label matches
+
+               if Chars (Name (SLE.Proc_Call)) = Chars (End_Labl)
+
+                 --  And first token of loop/block identifies this entry
+
+                 and then SLE.Start_Token = STE.Sloc
+               then
+                  --  We have the special case, issue the error message
+
+                  Error_Msg -- CODEFIX
+                    (""";"" should be "":""", SLE.Semicolon_Loc);
+
+                  --  And indicate we consider the Label OK after all
+
+                  Label_OK := True;
+                  exit;
+               end if;
+            end;
+         end loop;
+      end if;
 
       --  Compute setting of Syntax_OK. We definitely have a syntax error
       --  if the Token does not match properly or if P_End_Scan detected
