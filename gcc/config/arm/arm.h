@@ -2356,7 +2356,7 @@ extern int making_const_table;
 #define MAX_LDM_STM_OPS 4
 
 #define BIG_LITTLE_SPEC \
-   " %{mcpu=*:%<mcpu=* -mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}" \
+   " %{mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})}"
 
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
 #define BIG_LITTLE_CPU_SPEC_FUNCTIONS \
