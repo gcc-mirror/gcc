@@ -1,3 +1,10 @@
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: sem_ch6.adb (Set_Actual_Subtypes): If the type
+	has a dynamic predicate, generate freeze node for Actual_Subtype
+	at once, because the declaration of the corresponding predicate
+	function will make reference to it.
+
 2014-01-27  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_ch7.adb, exp_ch9.adb: Adjust comments.
