@@ -1,3 +1,7 @@
+2014-01-27  Jeff Law  <law@redhat.com>
+
+	* ipa-inline.c (inline_small_functions): Fix typo.
+
 2014-01-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm512_mask_cvtepi32_storeu_epi8): New.
