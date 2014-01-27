@@ -532,11 +532,8 @@ package body Exp_Ch7 is
             pragma Assert (Present (Param));
 
             --  Historical note: In earlier versions of GNAT, there was code
-            --  at this point to generate stuff to service entry queues. But
-            --  that was wrong thinking. This was useless and resulted in
-            --  incoherencies between code generated with and without -gnatp.
-
-            --  All that is needed at this stage is a normal cleanup call
+            --  at this point to generate stuff to service entry queues. It is
+            --  now abstracted in Build_Protected_Subprogram_Call_Cleanup.
 
             Build_Protected_Subprogram_Call_Cleanup
               (Specification (N), Conc_Typ, Loc, Stmts);

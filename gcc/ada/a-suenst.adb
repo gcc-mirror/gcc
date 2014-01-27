@@ -154,16 +154,19 @@ package body Ada.Strings.UTF_Encoding.Strings is
          end if;
 
          Len := Len + 1;
+
+         --  The value may still be out of range of Standard.Character. We make
+         --  the check explicit because the library is typically compiled with
+         --  range checks disabled.
+
+         if R > Character'Pos (Character'Last) then
+            Raise_Encoding_Error (Iptr - 1);
+         end if;
+
          Result (Len) := Character'Val (R);
       end loop;
 
       return Result (1 .. Len);
-
-   exception
-      --  'Val may have been out of range
-
-      when others =>
-         Raise_Encoding_Error (Iptr - 1);
    end Decode;
 
    --  Decode UTF-16 input to String

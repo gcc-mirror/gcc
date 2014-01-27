@@ -4278,6 +4278,10 @@ package body Exp_Ch9 is
             Append (Unprot_Call, Stmts);
          end if;
 
+         --  Historical note: Previously, call the the cleanup was inserted
+         --  here. This is now done by Build_Protected_Subprogram_Call_Cleanup,
+         --  which is also shared by the 'not Exc_Safe' path.
+
          Build_Protected_Subprogram_Call_Cleanup (Op_Spec, Pid, Loc, Stmts);
 
          if Nkind (Op_Spec) = N_Function_Specification then
@@ -4297,6 +4301,10 @@ package body Exp_Ch9 is
           Specification => P_Op_Spec,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
+
+      --  Mark this subprogram as a protected subprogram body so that the
+      --  cleanup will be inserted. This is done only in the 'not Exc_Safe'
+      --  path as otherwise the cleanup has already been inserted.
 
       if not Exc_Safe then
          Set_Is_Protected_Subprogram_Body (Sub_Body);

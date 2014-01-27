@@ -1290,7 +1290,7 @@ package body ALI is
 
                   begin
                      R := Restriction_Id'First;
-                     while R < Not_A_Restriction_Id loop
+                     while R /= Not_A_Restriction_Id loop
                         if Restriction_Id'Image (R) = RN then
                            goto R_Found;
                         end if;
