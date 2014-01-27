@@ -6886,6 +6886,10 @@ package body Einfo is
    -- Is_Ghost_Entity --
    ---------------------
 
+   --  Note: coding below allows for ghost variables. They are not currently
+   --  implemented, so we will always get False for variables, but that is
+   --  expected to change in the future.
+
    function Is_Ghost_Entity (Id : E) return B is
    begin
       if Present (Id) and then Ekind (Id) = E_Variable then

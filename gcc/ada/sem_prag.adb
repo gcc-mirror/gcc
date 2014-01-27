@@ -6029,7 +6029,8 @@ package body Sem_Prag is
          --  Set convention in entity E, and also flag that the entity has a
          --  convention pragma. If entity is for a private or incomplete type,
          --  also set convention and flag on underlying type. This procedure
-         --  also deals with the special case of C_Pass_By_Copy convention.
+         --  also deals with the special case of C_Pass_By_Copy convention,
+         --  and error checks for inappropriate convention specification.
 
          -------------------------------
          -- Diagnose_Multiple_Pragmas --
@@ -6191,6 +6192,16 @@ package body Sem_Prag is
 
          procedure Set_Convention_From_Pragma (E : Entity_Id) is
          begin
+            --  Ghost convention is allowed only for functions
+
+            if Ekind (E) /= E_Function and then C = Convention_Ghost then
+               Error_Msg_N
+                 ("& may not have Ghost convention", E);
+               Error_Msg_N
+                 ("\only functions are permitted to have Ghost convention", E);
+               return;
+            end if;
+
             --  Ada 2005 (AI-430): Check invalid attempt to change convention
             --  for an overridden dispatching operation. Technically this is
             --  an amendment and should only be done in Ada 2005 mode. However,
@@ -6201,11 +6212,11 @@ package body Sem_Prag is
               and then Present (Overridden_Operation (E))
               and then C /= Convention (Overridden_Operation (E))
             then
-               --  An attempt to override a subprogram with a ghost subprogram
+               --  An attempt to override a function with a ghost function
                --  appears as a mismatch in conventions.
 
                if C = Convention_Ghost then
-                  Error_Msg_N ("ghost subprogram & cannot be overriding", E);
+                  Error_Msg_N ("ghost function & cannot be overriding", E);
                else
                   Error_Pragma_Arg
                     ("cannot change convention for overridden dispatching "
@@ -6401,7 +6412,7 @@ package body Sem_Prag is
          if Is_Ghost_Subprogram (E)
            and then Present (Overridden_Operation (E))
          then
-            Error_Msg_N ("ghost subprogram & cannot be overriding", E);
+            Error_Msg_N ("ghost function & cannot be overriding", E);
          end if;
 
          --  Go to renamed subprogram if present, since convention applies to
