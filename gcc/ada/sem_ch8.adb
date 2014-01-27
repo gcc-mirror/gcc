@@ -6296,8 +6296,9 @@ package body Sem_Ch8 is
                --  If no interpretation as an expanded name is possible, it
                --  must be a selected component of a record returned by a
                --  function call. Reformat prefix as a function call, the rest
-               --  is done by type resolution. If the prefix is procedure or
-               --  entry, as is P.X; this is an error.
+               --  is done by type resolution.
+
+               --  Error if the prefix is procedure or entry, as is P.X
 
                if Ekind (P_Name) /= E_Function
                  and then
@@ -6309,7 +6310,6 @@ package body Sem_Ch8 is
                   --  chain, the candidate package may be anywhere on it.
 
                   if Present (Homonym (Current_Entity (P_Name))) then
-
                      P_Name := Current_Entity (P_Name);
 
                      while Present (P_Name) loop
@@ -6327,6 +6327,7 @@ package body Sem_Ch8 is
                         Set_Entity (Prefix (N), P_Name);
                         Find_Expanded_Name (N);
                         return;
+
                      else
                         P_Name := Entity (Prefix (N));
                      end if;
@@ -6338,11 +6339,27 @@ package body Sem_Ch8 is
                   Set_Entity (N, Any_Id);
                   Set_Etype (N, Any_Type);
 
+               --  Here we have a function call, so do the reformatting
+
                else
                   Nam := New_Copy (P);
                   Save_Interps (P, Nam);
-                  Rewrite (P,
+
+                  --  We use Replace here because this is one of those cases
+                  --  where the parser has missclassified the node, and we
+                  --  fix things up and then do the semantic analysis on the
+                  --  fixed up node. Normally we do this using one of the
+                  --  Sinfo.CN routines, but this is too tricky for that.
+
+                  --  Note that using Rewrite would be wrong, because we
+                  --  would have a tree where the original node is unanalyzed,
+                  --  and this violates the required interface for ASIS.
+
+                  Replace (P,
                     Make_Function_Call (Sloc (P), Name => Nam));
+
+                  --  Now analyze the reformatted node
+
                   Analyze_Call (P);
                   Analyze_Selected_Component (N);
                end if;

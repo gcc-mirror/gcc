@@ -589,10 +589,10 @@ package body Einfo is
    -----------------------
 
    function Has_Option
-     (State   : Entity_Id;
-      Opt_Nam : Name_Id) return Boolean;
-   --  Determine whether abstract state State has a particular option denoted
-   --  by the name Opt_Nam.
+     (State_Id   : Entity_Id;
+      Option_Nam : Name_Id) return Boolean;
+   --  Determine whether abstract state State_Id has particular option denoted
+   --  by the name Option_Nam.
 
    ---------------
    -- Float_Rep --
@@ -609,32 +609,55 @@ package body Einfo is
    ----------------
 
    function Has_Option
-     (State   : Entity_Id;
-      Opt_Nam : Name_Id) return Boolean
+     (State_Id   : Entity_Id;
+      Option_Nam : Name_Id) return Boolean
    is
-      Par : constant Node_Id := Parent (State);
-      Opt : Node_Id;
+      Decl    : constant Node_Id := Parent (State_Id);
+      Opt     : Node_Id;
+      Opt_Nam : Node_Id;
 
    begin
-      pragma Assert (Ekind (State) = E_Abstract_State);
+      pragma Assert (Ekind (State_Id) = E_Abstract_State);
 
-      --  States with options appear as extension aggregates in the tree
+      --  The declaration of abstract states with options appear as an
+      --  extension aggregate. If this is not the case, the option is not
+      --  available.
 
-      if Nkind (Par) = N_Extension_Aggregate then
-         if Opt_Nam = Name_Part_Of then
-            return Present (Component_Associations (Par));
-
-         else
-            Opt := First (Expressions (Par));
-            while Present (Opt) loop
-               if Chars (Opt) = Opt_Nam then
-                  return True;
-               end if;
-
-               Next (Opt);
-            end loop;
-         end if;
+      if Nkind (Decl) /= N_Extension_Aggregate then
+         return False;
       end if;
+
+      --  Simple options
+
+      Opt := First (Expressions (Decl));
+      while Present (Opt) loop
+
+         --  Currently the only simple option allowed is External
+
+         if Nkind (Opt) = N_Identifier
+           and then Chars (Opt) = Name_External
+           and then Chars (Opt) = Option_Nam
+         then
+            return True;
+         end if;
+
+         Next (Opt);
+      end loop;
+
+      --  Complex options with various specifiers
+
+      Opt := First (Component_Associations (Decl));
+      while Present (Opt) loop
+         Opt_Nam := First (Choices (Opt));
+
+         if Nkind (Opt_Nam) = N_Identifier
+           and then Chars (Opt_Nam) = Option_Nam
+         then
+            return True;
+         end if;
+
+         Next (Opt);
+      end loop;
 
       return False;
    end Has_Option;

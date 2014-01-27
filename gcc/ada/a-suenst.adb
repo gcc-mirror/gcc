@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2010-2012, Free Software Foundation, Inc.      --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,6 +158,12 @@ package body Ada.Strings.UTF_Encoding.Strings is
       end loop;
 
       return Result (1 .. Len);
+
+   exception
+      --  'Val may have been out of range
+
+      when others =>
+         Raise_Encoding_Error (Iptr - 1);
    end Decode;
 
    --  Decode UTF-16 input to String
