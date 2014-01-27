@@ -6305,7 +6305,7 @@ is needed for error messages issued by all phases of the compiler.
 Syntax:
 
 @smallexample @c ada
-pragma SPARK_Mode [ (On | Off | Auto) ] ;
+pragma SPARK_Mode [(On | Off)] ;
 @end smallexample
 
 @noindent
@@ -6315,16 +6315,14 @@ language. The pragma is intended for use with formal verification tools
 and has no effect on the generated code.
 
 The SPARK_Mode pragma is used to specify the value of the SPARK_Mode aspect
-(a three-valued aspect having values of On, Off, or Auto) of an entity.
+(either Off or On) of an entity.
 More precisely, it is used to specify the aspect value of a ``section''
 of an entity (the term ``section'' is defined below).
 If a Spark_Mode pragma's (optional) argument is omitted,
 an implicit argument of On is assumed.
 
 A SPARK_Mode pragma may be used as a configuration pragma and then has the
-semantics described below. A SPARK_Mode pragma which is not used as a
-configuration pragma (or an equivalent SPARK_Mode aspect_specification)
-shall not have an argument of Auto.
+semantics described below.
 
 A SPARK_Mode pragma can be used as a local pragma only
 in the following contexts:
@@ -6374,8 +6372,7 @@ completion is defined to have 2 ``sections'': its declaration and its
 completion. Any other construct is defined to have 1 section.
 
 The SPARK_Mode aspect value of an arbitrary section of an arbitrary Ada entity
-or construct is then defined to be the following value (except if this yields
-a result of Auto for a non-package; see below):
+or construct is then defined to be the following value:
 
 @itemize
 
@@ -6392,7 +6389,7 @@ else for any of the visible part or body declarations of a library unit package
 or either section of a library unit subprogram, if there is an applicable
 SPARK_Mode configuration pragma then the value specified by the
 pragma; if no such configuration pragma applies, then an implicit
-specification of Auto is assumed;
+specification of Off is assumed;
 
 @item
 else for any subsequent (i.e., not the first) section of a library unit
@@ -6404,12 +6401,11 @@ or subprogram;
 
 @end itemize
 
-If the above computation yields a result of Auto for any construct other than
-one of the four sections of a package, then a result of On or Off is
-determined instead based on the legality (with respect to the rules of
-SPARK 2014) of the construct. The construct's SPARK_Mode is On if and only
-if the construct is in SPARK 2014. [A SPARK_Mode of
-Auto is therefore only possible for sections of a package.]
+If the above computation does not specify a SPARK_Mode setting for any
+construct other than one of the four sections of a package, then a result of On
+or Off is determined instead based on the legality (with respect to the rules
+of SPARK 2014) of the construct. The construct's SPARK_Mode is On if and only
+if the construct is in SPARK 2014.
 
 If an earlier section of an entity has a Spark_Mode of Off, then the
 Spark_Mode aspect of any later section of that entity shall not be
@@ -12472,7 +12468,7 @@ See A.3.5(3).
 @end cartouche
 @noindent
 @code{Ada.Wide_Characters.Handling.Character_Set_Version} returns
-the string "Unicode 6.2", referring to version 6.2.x of the
+the string "Unicode 4.0", referring to version 4.0 of the
 Unicode specification.
 
 @sp 1
