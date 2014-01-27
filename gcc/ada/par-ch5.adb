@@ -1739,14 +1739,13 @@ package body Ch5 is
       elsif Prev_Token = Tok_In
         and then Present (Subtype_Indication (Node1))
       then
-
          --  Simplest recovery is to transform it into an element iterator.
          --  Error message on 'in" has already been emitted when parsing the
          --  optional constraint.
 
          Set_Of_Present (Node1);
          Error_Msg_N
-           ("subtype indication is only legal on on element iterator",
+           ("subtype indication is only legal on an element iterator",
               Subtype_Indication (Node1));
 
       else

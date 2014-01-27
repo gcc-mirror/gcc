@@ -22214,24 +22214,44 @@ package body Sem_Prag is
       -------------------------------
 
       procedure Analyze_Refinement_Clause (Clause : Node_Id) is
-         State_Id : Entity_Id := Empty;
-         --  The entity of the state being refined in the current clause
+         AR_Constit : Entity_Id := Empty;
+         AW_Constit : Entity_Id := Empty;
+         ER_Constit : Entity_Id := Empty;
+         EW_Constit : Entity_Id := Empty;
+         --  The entities of external constituents that contain one of the
+         --  following enabled properties: Async_Readers, Async_Writers,
+         --  Effective_Reads and Effective_Writes.
+
+         External_Constit_Seen : Boolean := False;
+         --  Flag used to mark when at least one external constituent is part
+         --  of the state refinement.
 
          Non_Null_Seen : Boolean := False;
          Null_Seen     : Boolean := False;
          --  Flags used to detect multiple uses of null in a single clause or a
          --  mixture of null and non-null constituents.
 
+         State    : Node_Id;
+         State_Id : Entity_Id;
+         --  The state being refined in the current clause
+
          procedure Analyze_Constituent (Constit : Node_Id);
          --  Perform full analysis of a single constituent
 
-         procedure Check_Matching_State
-           (State    : Node_Id;
-            State_Id : Entity_Id);
-         --  Determine whether state State denoted by its name State_Id appears
-         --  in Abstr_States. Emit an error when attempting to re-refine the
-         --  state or when the state is not defined in the package declaration.
-         --  Otherwise remove the state from Abstr_States.
+         procedure Check_External_Property
+           (Prop_Nam : Name_Id;
+            Enabled  : Boolean;
+            Constit  : Entity_Id);
+         --  Determine whether a property denoted by name Prop_Nam is present
+         --  in both the refined state and constituent Constit. Flag Enabled
+         --  should be set when the property applies to the refined state. If
+         --  this is not the case, emit an error message.
+
+         procedure Check_Matching_State;
+         --  Determine whether the state being refined appears in Abstr_States.
+         --  Emit an error when attempting to re-refine the state or when the
+         --  state is not defined in the package declaration. Otherwise remove
+         --  the state from Abstr_States.
 
          -------------------------
          -- Analyze_Constituent --
@@ -22276,6 +22296,29 @@ package body Sem_Prag is
                   --  body declarations end (see routine Analyze_Declarations).
 
                   Set_Has_Visible_Refinement (State_Id);
+
+                  --  When the constituent is external, save its relevant
+                  --  property for further checks.
+
+                  if Async_Readers_Enabled (Constit_Id) then
+                     AR_Constit := Constit_Id;
+                     External_Constit_Seen := True;
+                  end if;
+
+                  if Async_Writers_Enabled (Constit_Id) then
+                     AW_Constit := Constit_Id;
+                     External_Constit_Seen := True;
+                  end if;
+
+                  if Effective_Reads_Enabled (Constit_Id) then
+                     ER_Constit := Constit_Id;
+                     External_Constit_Seen := True;
+                  end if;
+
+                  if Effective_Writes_Enabled (Constit_Id) then
+                     EW_Constit := Constit_Id;
+                     External_Constit_Seen := True;
+                  end if;
                end Collect_Constituent;
 
                --  Local variables
@@ -22426,14 +22469,44 @@ package body Sem_Prag is
             end if;
          end Analyze_Constituent;
 
+         -----------------------------
+         -- Check_External_Property --
+         -----------------------------
+
+         procedure Check_External_Property
+           (Prop_Nam : Name_Id;
+            Enabled  : Boolean;
+            Constit  : Entity_Id)
+         is
+         begin
+            Error_Msg_Name_1 := Prop_Nam;
+
+            --  The property is enabled in the related Abstract_State pragma
+            --  that defines the state.
+
+            if Enabled then
+               if No (Constit) then
+                  Error_Msg_NE
+                    ("external state & requires at least one constituent with "
+                     & "property % (SPARK RM 7.2.8(3))", State, State_Id);
+               end if;
+
+            --  The property is missing in the declaration of the state, but a
+            --  constituent is introducing it in the state refinement.
+
+            elsif Present (Constit) then
+               Error_Msg_Name_2 := Chars (Constit);
+               Error_Msg_NE
+                 ("external state & lacks property % set by constituent % "
+                  & "(SPARK RM 7.2.8(3))", State, State_Id);
+            end if;
+         end Check_External_Property;
+
          --------------------------
          -- Check_Matching_State --
          --------------------------
 
-         procedure Check_Matching_State
-           (State    : Node_Id;
-            State_Id : Entity_Id)
-         is
+         procedure Check_Matching_State is
             State_Elmt : Elmt_Id;
 
          begin
@@ -22478,8 +22551,10 @@ package body Sem_Prag is
 
          --  Local declarations
 
-         Constit : Node_Id;
-         State   : Node_Id;
+         Body_Ref      : Node_Id;
+         Body_Ref_Elmt : Elmt_Id;
+         Constit       : Node_Id;
+         Extra_State   : Node_Id;
 
       --  Start of processing for Analyze_Refinement_Clause
 
@@ -22487,67 +22562,60 @@ package body Sem_Prag is
          --  Analyze the state name of a refinement clause
 
          State := First (Choices (Clause));
-         while Present (State) loop
-            if Present (State_Id) then
-               Error_Msg_N
-                 ("refinement clause cannot cover multiple states", State);
 
+         Analyze       (State);
+         Resolve_State (State);
+
+         --  Ensure that the state name denotes a valid abstract state that is
+         --  defined in the spec of the related package.
+
+         if Is_Entity_Name (State) then
+            State_Id := Entity_Of (State);
+
+            --  Catch any attempts to re-refine a state or refine a state that
+            --  is not defined in the package declaration.
+
+            if Ekind (State_Id) = E_Abstract_State then
+               Check_Matching_State;
             else
-               Analyze       (State);
-               Resolve_State (State);
-
-               --  Ensure that the state name denotes a valid abstract state
-               --  that is defined in the spec of the related package.
-
-               if Is_Entity_Name (State) then
-                  State_Id := Entity_Of (State);
-
-                  --  Catch any attempts to re-refine a state or refine a
-                  --  state that is not defined in the package declaration.
-
-                  if Ekind (State_Id) = E_Abstract_State then
-                     Check_Matching_State (State, State_Id);
-                  else
-                     Error_Msg_NE
-                       ("& must denote an abstract state", State, State_Id);
-                  end if;
-
-                  --  A global item cannot denote a state abstraction whose
-                  --  refinement is visible, in other words a state abstraction
-                  --  cannot be named within its enclosing package's body other
-                  --  than in its refinement.
-
-                  if Has_Body_References (State_Id) then
-                     declare
-                        Ref      : Node_Id;
-                        Ref_Elmt : Elmt_Id;
-
-                     begin
-                        Ref_Elmt := First_Elmt (Body_References (State_Id));
-                        while Present (Ref_Elmt) loop
-                           Ref := Node (Ref_Elmt);
-
-                           Error_Msg_N
-                             ("global reference to & not allowed (SPARK RM "
-                              & "6.1.4(8))", Ref);
-                           Error_Msg_Sloc := Sloc (State);
-                           Error_Msg_N ("\refinement of & is visible#", Ref);
-
-                           Next_Elmt (Ref_Elmt);
-                        end loop;
-                     end;
-                  end if;
-
-               --  The state name is illegal
-
-               else
-                  Error_Msg_N
-                    ("malformed state name in refinement clause", State);
-               end if;
+               Error_Msg_NE
+                 ("& must denote an abstract state", State, State_Id);
             end if;
 
-            Next (State);
-         end loop;
+            --  A global item cannot denote a state abstraction whose
+            --  refinement is visible, in other words a state abstraction
+            --  cannot be named within its enclosing package's body other than
+            --  in its refinement.
+
+            if Has_Body_References (State_Id) then
+               Body_Ref_Elmt := First_Elmt (Body_References (State_Id));
+               while Present (Body_Ref_Elmt) loop
+                  Body_Ref := Node (Body_Ref_Elmt);
+
+                  Error_Msg_N
+                    ("global reference to & not allowed (SPARK RM 6.1.4(8))",
+                     Body_Ref);
+                  Error_Msg_Sloc := Sloc (State);
+                  Error_Msg_N ("\refinement of & is visible#", Body_Ref);
+
+                  Next_Elmt (Body_Ref_Elmt);
+               end loop;
+            end if;
+
+            --  The state name is illegal
+
+         else
+            Error_Msg_N ("malformed state name in refinement clause", State);
+         end if;
+
+         --  A refinement clause may only refine one state at a time
+
+         Extra_State := Next (State);
+
+         if Present (Extra_State) then
+            Error_Msg_N
+              ("refinement clause cannot cover multiple states", Extra_State);
+         end if;
 
          --  Analyze all constituents of the refinement. Multiple constituents
          --  appear as an aggregate.
@@ -22574,6 +22642,60 @@ package body Sem_Prag is
 
          else
             Analyze_Constituent (Constit);
+         end if;
+
+         --  A refined external state is subject to special rules with respect
+         --  to its properties and constituents.
+
+         if Is_External_State (State_Id) then
+
+            --  The set of properties that all external constituents yield must
+            --  match that of the refined state. There are two cases to detect:
+            --  the refined state lacks a property or has an extra property.
+
+            if External_Constit_Seen then
+               Check_External_Property
+                 (Prop_Nam => Name_Async_Readers,
+                  Enabled  => Async_Readers_Enabled (State_Id),
+                  Constit  => AR_Constit);
+
+               Check_External_Property
+                 (Prop_Nam => Name_Async_Writers,
+                  Enabled  => Async_Writers_Enabled (State_Id),
+                  Constit  => AW_Constit);
+
+               Check_External_Property
+                 (Prop_Nam => Name_Effective_Reads,
+                  Enabled  => Effective_Reads_Enabled (State_Id),
+                  Constit  => ER_Constit);
+
+               Check_External_Property
+                 (Prop_Nam => Name_Effective_Writes,
+                  Enabled  => Effective_Writes_Enabled (State_Id),
+                  Constit  => EW_Constit);
+
+            --  An external state may be refined to null (SPARK RM 7.2.8(2))
+
+            elsif Null_Seen then
+               null;
+
+            --  The external state has constituents, but none of them are
+            --  external.
+
+            else
+               Error_Msg_NE
+                 ("external state & requires at least one external "
+                  & "constituent or null refinement (SPARK RM 7.2.8(2))",
+                  State, State_Id);
+            end if;
+
+         --  When a refined state is not external, it should not have external
+         --  constituents.
+
+         elsif External_Constit_Seen then
+            Error_Msg_NE
+              ("non-external state & cannot contain external constituents in "
+               & "refinement (SPARK RM 7.2.8(1))", State, State_Id);
          end if;
       end Analyze_Refinement_Clause;
 

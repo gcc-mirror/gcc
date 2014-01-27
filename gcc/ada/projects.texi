@@ -1616,6 +1616,10 @@ implementation part of the library implies minimal post-compilation actions on
 the complete system and potentially no action at all for the rest of the
 system in the case of dynamic SALs.
 
+There is a restriction on shared library projects: by default, they are only
+allowed to import other shared library projects. They are not allowed to
+import non library projects or static library projects.
+
 The GNAT Project Manager takes complete care of the library build, rebuild and
 installation tasks, including recompilation of the source files for which
 objects do not exist or are not up to date, assembly of the library archive, and

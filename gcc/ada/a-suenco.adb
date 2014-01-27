@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,9 +41,12 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM    : Boolean := False) return UTF_String
    is
    begin
-      --  Nothing to do if identical schemes
+      --  Nothing to do if identical schemes, but for UTF_8 we need to
+      --  exclude overlong encodings, so need to do the full conversion.
 
-      if Input_Scheme = Output_Scheme then
+      if Input_Scheme = Output_Scheme
+        and then Input_Scheme /= UTF_8
+      then
          return Item;
 
       --  For remaining cases, one or other of the operands is UTF-16BE/LE

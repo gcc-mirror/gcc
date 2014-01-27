@@ -1,3 +1,53 @@
+2014-01-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Has_Option): Reimplemented.
+	* sem_prag.adb (Analyze_Refinement_Clause): Add global
+	variables AR_Constit, AW_Constit, ER_Constit, EW_Constit,
+	External_Constit_Seen and State. Add local variables Body_Ref,
+	Body_Ref_Elmt and Extra_State. Reimplement part of the logic to
+	avoid a cumbersome while pool. Verify the legality of an external
+	state and relevant properties.
+	(Check_External_Property): New routine.
+	(Check_Matching_State): Remove parameter profile
+	and update comment on usage.
+	(Collect_Constituent): Store the
+	relevant external property of a constituent.
+	* sem_util.adb (Async_Readers_Enabled): Update the call to
+	Has_Enabled_Property.
+	(Async_Writers_Enabled): Update the call to Has_Enabled_Property.
+	(Effective_Reads_Enabled): Update the call to Has_Enabled_Property.
+	(Effective_Writes_Enabled): Update the call to Has_Enabled_Property.
+	(Has_Enabled_Property): Rename formal parameter Extern to State_Id.
+	Update comment on usage. Reimplement the logic to recognize the various
+	formats of properties.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch5.adb: Minor reformatting.
+
+2014-01-27  Tristan Gingold  <gingold@adacore.com>
+
+	* s-tposen.ads: Harmonize style and comments.
+
+2014-01-27  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Document that shared library projects, by
+	default, cannot import projects that are not shared library
+	projects.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Use Replace instead
+	of Rewrite.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-suenco.adb, a-suenst.adb (Decode): Raise encoding error if
+	any other exception is raised.
+	(Convert): If both Input_Scheme and Output_Scheme are UTF_8 it is
+	still necessary to perform a conversion in order to remove overlong
+	encodings.
+
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
 	* exp_smem.adb: Minor reformatting.
