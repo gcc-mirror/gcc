@@ -16100,6 +16100,25 @@ package body Sem_Util is
       return Is_Init_Proc (S);
    end Within_Init_Proc;
 
+   ------------------
+   -- Within_Scope --
+   ------------------
+
+   function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean is
+      SE : Entity_Id;
+   begin
+      SE := Scope (E);
+      loop
+         if SE = S then
+            return True;
+         elsif SE = Standard_Standard then
+            return False;
+         else
+            SE := Scope (SE);
+         end if;
+      end loop;
+   end Within_Scope;
+
    ----------------
    -- Wrong_Type --
    ----------------

@@ -1,3 +1,14 @@
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add Short_Enums to documentation of
+	-gnatet/-gnateT.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Item): Correct check for input
+	item in same package.
+	* sem_util.ads, sem_util.adb (Within_Scope): New function.
+
 2014-01-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* a-intnam-lynxos.ads, mlib-tgt-specific-lynxos.adb,

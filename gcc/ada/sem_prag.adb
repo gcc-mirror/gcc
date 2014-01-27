@@ -2551,11 +2551,11 @@ package body Sem_Prag is
                      --  The input cannot denote states or variables declared
                      --  within the related package.
 
-                     if In_Same_Code_Unit (Item, Input_Id) then
+                     if Within_Scope (Input_Id, Current_Scope) then
                         Error_Msg_Name_1 := Chars (Pack_Id);
                         Error_Msg_NE
                           ("input item & cannot denote a visible variable or "
-                           & "state of package %", Input, Input_Id);
+                           & "state in package %", Input, Input_Id);
 
                      --  Detect a duplicate use of the same input item
 
