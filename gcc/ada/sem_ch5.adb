@@ -1814,7 +1814,7 @@ package body Sem_Ch5 is
             Set_Etype (Def_Id, Component_Type (Typ));
 
             if Present (Subt)
-              and then Bas /= Base_Type (Component_Type (Typ))
+              and then Base_Type (Bas) /= Base_Type (Component_Type (Typ))
             then
                Error_Msg_N
                  ("subtype indication does not match component type", Subt);

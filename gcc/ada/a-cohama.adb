@@ -167,7 +167,7 @@ package body Ada.Containers.Hashed_Maps is
          Target.Reserve_Capacity (Source.Length);
       end if;
 
-      Insert_Items (Target.HT);
+      Insert_Items (Source.HT);
    end Assign;
 
    --------------

@@ -2240,7 +2240,19 @@ package body Sem_Util is
       end loop;
 
       if Scope (Nam) = Prot and then Ekind (Nam) /= E_Function then
-         if Nkind (N) = N_Subprogram_Renaming_Declaration then
+
+         --  An indirect function call (e.g. a callback within a protected
+         --  function body) is not statically illegal. If the access type is
+         --  anonymous and is the type of an access parameter, the scope of Nam
+         --  will be the protected type, but it is not a protected operation.
+
+         if Ekind (Nam) = E_Subprogram_Type
+           and then
+             Nkind (Associated_Node_For_Itype (Nam)) = N_Function_Specification
+         then
+            null;
+
+         elsif Nkind (N) = N_Subprogram_Renaming_Declaration then
             Error_Msg_N
               ("within protected function cannot use protected "
                & "procedure in renaming or as generic actual", N);
