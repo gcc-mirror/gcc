@@ -62,9 +62,7 @@ static const struct default_options mips_option_optimization_table[] =
   (TARGET_DEFAULT				\
    | TARGET_CPU_DEFAULT				\
    | TARGET_ENDIAN_DEFAULT			\
-   | TARGET_FP_EXCEPTIONS_DEFAULT		\
-   | MASK_CHECK_ZERO_DIV			\
-   | MASK_FUSED_MADD)
+   | MASK_CHECK_ZERO_DIV)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION mips_handle_option
 
