@@ -1,5 +1,47 @@
 2014-01-27  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch7.adb: Minor reformatting.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* opt.adb (SPARK_Mode): Default for library units is None rather
+	than Off.
+	* opt.ads: Remove AUTO from SPARK_Mode_Type SPARK_Mode_Type is
+	no longer ordered.
+	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Remove AUTO
+	possibility.
+	* snames.ads-tmpl (Name_Auto): Removed, no longer used.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch5.adb (P_Sequence_Of_Statements): Make entry in
+	Suspicious_Labels table if we have identifier; followed by loop
+	or block.
+	* par-endh.adb (Evaluate_End_Entry): Search Suspicious_Labels table.
+	* par.adb (Suspicious_Labels): New table.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb (Check_Bounds): Reason is range check, not
+	length check.
+
+2014-01-27  Yannick Moy  <moy@adacore.com>
+
+	* get_spark_xrefs.adb (Get_SPARK_Xrefs): Accept new type 'c' for
+	reference.
+	* lib-xref-spark_specific.adb (Is_Global_Constant): Remove useless
+	function now.
+	(Add_SPARK_Xrefs): Include references to constants.
+	* spark_xrefs.ads Document new character 'c' for references to
+	constants.
+
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_smem.adb (Add_Write_After): For a function call, insert write as
+	an after action in a transient scope.
+
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_smem.adb (Expand_Shared_Passive_Variable): For a reference
 	to a shared variable as an OUT formal in a call to an init proc,
 	the 'Read call must be emitted after, not before, the call.

@@ -506,6 +506,24 @@ package body Ch5 is
                      Scan; -- past semicolon
                      Statement_Required := False;
 
+                     --  Here is the special test for a suspicious label, more
+                     --  accurately a suspicious name, which we think perhaps
+                     --  should have been a label. If next token is one of
+                     --  LOOP, FOR, WHILE, DECLARE, BEGIN, then make an entry
+                     --  in the suspicious label table.
+
+                     if Token = Tok_Loop    or else
+                        Token = Tok_For     or else
+                        Token = Tok_While   or else
+                        Token = Tok_Declare or else
+                        Token = Tok_Begin
+                     then
+                        Suspicious_Labels.Append
+                          ((Proc_Call     => Id_Node,
+                            Semicolon_Loc => Prev_Token_Ptr,
+                            Start_Token   => Token_Ptr));
+                     end if;
+
                   --  Check for case of "go to" in place of "goto"
 
                   elsif Token = Tok_Identifier

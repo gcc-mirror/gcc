@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -58,8 +59,10 @@ package body Exp_Smem is
    procedure Add_Write_After (N : Node_Id);
    --  Insert a Shared_Var_WOpen call for variable after the node Insert_Node,
    --  as recorded by On_Lhs_Of_Assignment (where it points to the assignment
-   --  statement) or Is_Out_Actual (where it points to the procedure call
-   --  statement).
+   --  statement) or Is_Out_Actual (where it points to the subprogram call).
+   --  When Insert_Node is a function call, establish a transient scope around
+   --  the expression, and insert the write as an after-action of the transient
+   --  scope.
 
    procedure Build_Full_Name (E : Entity_Id; N : out String_Id);
    --  Build the fully qualified string name of a shared variable
@@ -191,12 +194,18 @@ package body Exp_Smem is
 
    procedure Add_Write_After (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
-      Ent : constant Node_Id    := Entity (N);
-
+      Ent : constant Entity_Id  := Entity (N);
+      Par : constant Node_Id := Insert_Node;
    begin
       if Present (Shared_Var_Procs_Instance (Ent)) then
-         Insert_After_And_Analyze (Insert_Node,
-           Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write));
+         if Nkind (Insert_Node) = N_Function_Call then
+            Establish_Transient_Scope (Insert_Node, Sec_Stack => False);
+            Store_After_Actions_In_Scope (New_List (
+              Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write)));
+         else
+            Insert_After_And_Analyze (Par,
+              Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write));
+         end if;
       end if;
    end Add_Write_After;
 

@@ -4141,7 +4141,7 @@ package body Exp_Aggr is
             Insert_Action (N,
               Make_Raise_Constraint_Error (Loc,
                 Condition => Cond,
-                Reason    => CE_Length_Check_Failed));
+                Reason    => CE_Range_Check_Failed));
          end if;
       end Check_Bounds;
 

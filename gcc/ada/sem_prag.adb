@@ -18587,7 +18587,7 @@ package body Sem_Prag is
          -- SPARK_Mode --
          ----------------
 
-         --  pragma SPARK_Mode [(On | Off | Auto)];
+         --  pragma SPARK_Mode [(On | Off)];
 
          when Pragma_SPARK_Mode => Do_SPARK_Mode : declare
             Body_Id : Entity_Id;
@@ -18609,9 +18609,6 @@ package body Sem_Prag is
             procedure Check_Library_Level_Entity (E : Entity_Id);
             --  Verify that pragma is applied to library-level entity E
 
-            function Get_SPARK_Mode_Name (Id : SPARK_Mode_Type) return Name_Id;
-            --  Convert a value of type SPARK_Mode_Type to corresponding name
-
             ------------------------------
             -- Check_Pragma_Conformance --
             ------------------------------
@@ -18623,15 +18620,13 @@ package body Sem_Prag is
 
                   --  New mode less restrictive than the established mode
 
-                  if Get_SPARK_Mode_From_Pragma (Old_Pragma) < Mode_Id then
-                     Error_Msg_Name_1 := Mode;
-                     Error_Msg_N ("cannot define 'S'P'A'R'K mode %", Arg1);
-
-                     Error_Msg_Name_1 := Get_SPARK_Mode_Name (SPARK_Mode);
-                     Error_Msg_Sloc   := Sloc (SPARK_Mode_Pragma);
+                  if Get_SPARK_Mode_From_Pragma (Old_Pragma) = Off
+                    and then Mode_Id = On
+                  then
                      Error_Msg_N
-                       ("\mode is less restrictive than mode "
-                        & "% defined #", Arg1);
+                       ("cannot change 'S'P'A'R'K_Mode from Off to On", Arg1);
+                     Error_Msg_Sloc := Sloc (SPARK_Mode_Pragma);
+                     Error_Msg_N ("\'S'P'A'R'K_Mode was set to Off#", Arg1);
                      raise Pragma_Exit;
                   end if;
                end if;
@@ -18665,28 +18660,6 @@ package body Sem_Prag is
                end if;
             end Check_Library_Level_Entity;
 
-            -------------------------
-            -- Get_SPARK_Mode_Name --
-            -------------------------
-
-            function Get_SPARK_Mode_Name
-              (Id : SPARK_Mode_Type) return Name_Id
-            is
-            begin
-               if Id = On then
-                  return Name_On;
-               elsif Id = Off then
-                  return Name_Off;
-               elsif Id = Auto then
-                  return Name_Auto;
-
-               --  Mode "None" should never be used in error message generation
-
-               else
-                  raise Program_Error;
-               end if;
-            end Get_SPARK_Mode_Name;
-
          --  Start of processing for Do_SPARK_Mode
 
          begin
@@ -18697,7 +18670,7 @@ package body Sem_Prag is
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
-               Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_Auto);
+               Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
                Mode := Chars (Get_Pragma_Arg (Arg1));
             else
                Mode := Name_On;
@@ -18732,14 +18705,6 @@ package body Sem_Prag is
             --  The pragma applies to a [library unit] subprogram or package
 
             else
-               --  Mode "Auto" can only be used in a configuration pragma
-
-               if Mode_Id = Auto then
-                  Error_Pragma_Arg
-                    ("mode `Auto` is only allowed when pragma % appears as "
-                     & "a configuration pragma", Arg1);
-               end if;
-
                --  Verify the placement of the pragma with respect to package
                --  or subprogram declarations and detect duplicates.
 
@@ -23513,8 +23478,6 @@ package body Sem_Prag is
          return On;
       elsif N = Name_Off then
          return Off;
-      elsif N = Name_Auto then
-         return Auto;
 
       --  Any other argument is erroneous
 
