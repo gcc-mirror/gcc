@@ -60,7 +60,7 @@ package Sem_Prag is
    --  Perform full analysis of delayed pragma Depends. This routine is also
    --  capable of performing basic analysis of pragma Refined_Depends.
 
-   procedure Analyze_External_State_In_Decl_Part
+   procedure Analyze_External_Property_In_Decl_Part
      (N        : Node_Id;
       Expr_Val : out Boolean);
    --  Perform full analysis of delayed pragmas Async_Readers, Async_Writers,

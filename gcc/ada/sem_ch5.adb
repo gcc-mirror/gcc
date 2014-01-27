@@ -1921,6 +1921,14 @@ package body Sem_Ch5 is
             end loop;
          end if;
       end if;
+
+      --  A loop parameter cannot be volatile. This check is peformed only when
+      --  SPARK_Mode is on as it is not a standard Ada legality check.
+
+      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Ent) then
+         Error_Msg_N
+           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
+      end if;
    end Analyze_Iterator_Specification;
 
    -------------------
@@ -2549,6 +2557,14 @@ package body Sem_Ch5 is
                end if;
             end if;
          end;
+      end if;
+
+      --  A loop parameter cannot be volatile. This check is peformed only when
+      --  SPARK_Mode is on as it is not a standard Ada legality check.
+
+      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
+         Error_Msg_N
+           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 

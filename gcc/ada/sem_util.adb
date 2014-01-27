@@ -3729,14 +3729,9 @@ package body Sem_Util is
          else
             Item_Id := Entity_Of (Item);
 
-            --  Defend against junk
-
-            if No (Item_Id) then
-               return False;
-            end if;
-
             return
-              Ekind (Item_Id) = E_Abstract_State
+              Present (Item_Id)
+                and then Ekind (Item_Id) = E_Abstract_State
                 and then Has_Visible_Refinement (Item_Id);
          end if;
       end Is_Refined_State;
@@ -8097,6 +8092,34 @@ package body Sem_Util is
       end if;
    end Has_Tagged_Component;
 
+   ----------------------------
+   -- Has_Volatile_Component --
+   ----------------------------
+
+   function Has_Volatile_Component (Typ : Entity_Id) return Boolean is
+      Comp : Entity_Id;
+
+   begin
+      if Has_Volatile_Components (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ) then
+         return Is_Volatile (Component_Type (Typ));
+
+      elsif Is_Record_Type (Typ) then
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            if Is_Volatile_Object (Comp) then
+               return True;
+            end if;
+
+            Comp := Next_Component (Comp);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Volatile_Component;
+
    -------------------------
    -- Implementation_Kind --
    -------------------------
@@ -10826,6 +10849,37 @@ package body Sem_Util is
          end case;
       end if;
    end Is_SPARK_Object_Reference;
+
+   ------------------------------
+   -- Is_SPARK_Volatile_Object --
+   ------------------------------
+
+   function Is_SPARK_Volatile_Object (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Defining_Identifier then
+         return Is_Volatile (N) or else Is_Volatile (Etype (N));
+
+      elsif Is_Entity_Name (N) then
+         return
+           Is_SPARK_Volatile_Object (Entity (N))
+             or else Is_Volatile (Etype (N));
+
+      elsif Nkind (N) = N_Expanded_Name then
+         return Is_SPARK_Volatile_Object (Entity (N));
+
+      elsif Nkind (N) = N_Indexed_Component then
+         return Is_SPARK_Volatile_Object (Prefix (N));
+
+      elsif Nkind (N) = N_Selected_Component then
+         return
+           Is_SPARK_Volatile_Object (Prefix (N))
+             or else
+           Is_SPARK_Volatile_Object (Selector_Name (N));
+
+      else
+         return False;
+      end if;
+   end Is_SPARK_Volatile_Object;
 
    ------------------
    -- Is_Statement --

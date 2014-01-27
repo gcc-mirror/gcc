@@ -91,10 +91,10 @@ package body Sem_Ch3 is
    --  abstract interface types implemented by a record type or a derived
    --  record type.
 
-   procedure Analyze_Variable_Contract (Var_Id : Entity_Id);
-   --  Analyze all delayed aspects chained on the contract of variable Var_Id
-   --  as if they appeared at the end of the declarative region. The aspects
-   --  to be considered are:
+   procedure Analyze_Object_Contract (Obj_Id : Entity_Id);
+   --  Analyze all delayed aspects chained on the contract of object Obj_Id as
+   --  if they appeared at the end of the declarative region. The aspects to be
+   --  considered are:
    --    Async_Readers
    --    Async_Writers
    --    Effective_Reads
@@ -2478,10 +2478,8 @@ package body Sem_Ch3 is
          elsif Nkind (Decl) = N_Subprogram_Declaration then
             Analyze_Subprogram_Contract (Defining_Entity (Decl));
 
-         elsif Nkind (Decl) = N_Object_Declaration
-           and then Ekind (Defining_Entity (Decl)) = E_Variable
-         then
-            Analyze_Variable_Contract (Defining_Entity (Decl));
+         elsif Nkind (Decl) = N_Object_Declaration then
+            Analyze_Object_Contract (Defining_Entity (Decl));
          end if;
 
          Next (Decl);
@@ -3070,6 +3068,106 @@ package body Sem_Ch3 is
          Set_Etype (E, Any_Type);
       end if;
    end Analyze_Number_Declaration;
+
+   -----------------------------
+   -- Analyze_Object_Contract --
+   -----------------------------
+
+   procedure Analyze_Object_Contract (Obj_Id : Entity_Id) is
+      AR_Val : Boolean := False;
+      AW_Val : Boolean := False;
+      ER_Val : Boolean := False;
+      EW_Val : Boolean := False;
+      Items  : Node_Id;
+      Nam    : Name_Id;
+      Prag   : Node_Id;
+      Seen   : Boolean := False;
+
+   begin
+      if Ekind (Obj_Id) = E_Constant then
+
+         --  A constant cannot be volatile. This check is only relevant when
+         --  SPARK_Mode is on as it is not standard Ada legality rule. Do not
+         --  flag internally-generated constants that map generic formals to
+         --  actuals in instantiations.
+
+         if SPARK_Mode = On
+           and then Is_SPARK_Volatile_Object (Obj_Id)
+           and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
+         then
+            Error_Msg_N
+              ("constant cannot be volatile (SPARK RM 7.1.3(4))", Obj_Id);
+         end if;
+
+      else pragma Assert (Ekind (Obj_Id) = E_Variable);
+
+         --  The following checks are only relevant when SPARK_Mode is on as
+         --  they are not standard Ada legality rules.
+
+         if SPARK_Mode = On then
+
+            --  A non-volatile object cannot have volatile components
+
+            if not Is_SPARK_Volatile_Object (Obj_Id)
+              and then Has_Volatile_Component (Etype (Obj_Id))
+            then
+               Error_Msg_N
+                 ("non-volatile variable & cannot have volatile components "
+                  & "(SPARK RM 7.1.3(6))", Obj_Id);
+
+            --  The declaration of a volatile object must appear at the library
+            --  level.
+
+            elsif Is_SPARK_Volatile_Object (Obj_Id)
+              and then not Is_Library_Level_Entity (Obj_Id)
+            then
+               Error_Msg_N
+                 ("volatile variable & must be declared at library level "
+                  & "(SPARK RM 7.1.3(5))", Obj_Id);
+            end if;
+         end if;
+
+         --  Examine the contract
+
+         Items := Contract (Obj_Id);
+
+         if Present (Items) then
+
+            --  Analyze classification pragmas
+
+            Prag := Classifications (Items);
+            while Present (Prag) loop
+               Nam := Pragma_Name (Prag);
+
+               if Nam = Name_Async_Readers then
+                  Analyze_External_Property_In_Decl_Part (Prag, AR_Val);
+                  Seen := True;
+
+               elsif Nam = Name_Async_Writers then
+                  Analyze_External_Property_In_Decl_Part (Prag, AW_Val);
+                  Seen := True;
+
+               elsif Nam = Name_Effective_Reads then
+                  Analyze_External_Property_In_Decl_Part (Prag, ER_Val);
+                  Seen := True;
+
+               else pragma Assert (Nam = Name_Effective_Writes);
+                  Analyze_External_Property_In_Decl_Part (Prag, EW_Val);
+                  Seen := True;
+               end if;
+
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end if;
+
+         --  Once all external properties have been processed, verify their
+         --  mutual interaction.
+
+         if Seen then
+            Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
+         end if;
+      end if;
+   end Analyze_Object_Contract;
 
    --------------------------------
    -- Analyze_Object_Declaration --
@@ -4888,73 +4986,6 @@ package body Sem_Ch3 is
          Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
-
-   -------------------------------
-   -- Analyze_Variable_Contract --
-   -------------------------------
-
-   procedure Analyze_Variable_Contract (Var_Id : Entity_Id) is
-      Items  : constant Node_Id := Contract (Var_Id);
-      AR_Val : Boolean := False;
-      AW_Val : Boolean := False;
-      ER_Val : Boolean := False;
-      EW_Val : Boolean := False;
-      Nam    : Name_Id;
-      Prag   : Node_Id;
-      Seen   : Boolean := False;
-
-   begin
-      --  The declaration of a volatile variable must appear at the library
-      --  level. The check is only relevant when SPARK_Mode is on as it is not
-      --  standard Ada legality rule.
-
-      if SPARK_Mode = On
-        and then Is_Volatile_Object (Var_Id)
-        and then not Is_Library_Level_Entity (Var_Id)
-      then
-         Error_Msg_N
-           ("volatile variable & must be declared at library level (SPARK RM "
-            & "7.1.3(3))", Var_Id);
-      end if;
-
-      --  Examine the contract
-
-      if Present (Items) then
-
-         --  Analyze classification pragmas
-
-         Prag := Classifications (Items);
-         while Present (Prag) loop
-            Nam := Pragma_Name (Prag);
-
-            if Nam = Name_Async_Readers then
-               Analyze_External_State_In_Decl_Part (Prag, AR_Val);
-               Seen := True;
-
-            elsif Nam = Name_Async_Writers then
-               Analyze_External_State_In_Decl_Part (Prag, AW_Val);
-               Seen := True;
-
-            elsif Nam = Name_Effective_Reads then
-               Analyze_External_State_In_Decl_Part (Prag, ER_Val);
-               Seen := True;
-
-            else pragma Assert (Nam = Name_Effective_Writes);
-               Analyze_External_State_In_Decl_Part (Prag, EW_Val);
-               Seen := True;
-            end if;
-
-            Prag := Next_Pragma (Prag);
-         end loop;
-      end if;
-
-      --  Once all external properties have been processed, verify their mutual
-      --  interaction.
-
-      if Seen then
-         Check_External_Properties (Var_Id, AR_Val, AW_Val, ER_Val, EW_Val);
-      end if;
-   end Analyze_Variable_Contract;
 
    --------------------------
    -- Analyze_Variant_Part --
@@ -18074,6 +18105,16 @@ package body Sem_Ch3 is
                   Error_Msg_N ("\cannot have defaults", Expression (Discr));
                end if;
             end if;
+         end if;
+
+         --  A discriminant cannot be volatile. This check is only relevant
+         --  when SPARK_Mode is on as it is not standard Ada legality rule.
+
+         if SPARK_Mode = On
+           and then Is_SPARK_Volatile_Object (Defining_Identifier (Discr))
+         then
+            Error_Msg_N
+              ("discriminant cannot be volatile (SPARK RM 7.1.3(6))", Discr);
          end if;
 
          Next (Discr);

@@ -1,3 +1,130 @@
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* a-wichha.adb (Character_Set_Version): Change to output proper
+	value.
+
+2014-01-27  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Is_Input_Only_State): Removed.
+	(Is_Non_Volatile_State): Removed.
+	(Is_Output_State): Removed.
+	* einfo.ads (Is_Input_Only_State): Remove attribute and
+	subprogram. Update related entity.
+	(Is_Non_Volatile_State):
+	Remove attribute and subprogram. Update related entity.
+	(Is_Output_State): Removed attribute and subprogram. Update
+	related entity.
+	* exp_ch6.adb (Expand_Subprogram_Contract): Update comment on
+	generated code.
+	* sem_ch3.adb (Analyze_Declarations): Analyze the contract of
+	an object, not just variables.
+	(Analyze_Object_Contract): New routine.
+	(Analyze_Variable_Contract): Removed.
+	(Process_Discriminants): Detect an illegal use of volatile
+	discriminant in SPARK mode.
+	* sem_ch5.adb (Analyze_Iterator_Specification):
+	Detect an illegal use of volatile loop variable.
+	(Analyze_Loop_Parameter_Specification): Detect an illegal use
+	of volatile loop variable.
+	* sem_ch6.adb (Process_Formals): Update the volatile object
+	detection. Detect an illegal formal of mode IN OUT or OUT in
+	SPARK mode. Enhance the error messages with references.
+	* sem_ch12.adb (Instantiate_Object): Update the volatile object
+	detection. Enhance the error messages with references.
+	* sem_prag.adb (Analyze_Abstract_State): Enhance the error
+	messages with references.
+	(Analyze_Contract_Case): Enhance the error messages with references.
+	(Analyze_External_Property): Call Check_Duplicate_Property to process
+	an external property.
+	(Analyze_External_Property_In_Decl_Part): New routine.
+	(Analyze_External_State_In_Decl_Part): Removed.
+	(Analyze_Global_Item): Detect an illegal
+	use of a volatile constant. Detect an illegal use
+	of a variable with enabled Effective_Reads. Enhance
+	the error messages with references. Remove obsolete
+	checks concerning Input_Only and Output_Only states.
+	(Analyze_Initialization_Item): Enhance the error messages
+	with references.
+	(Analyze_Initializes_In_Decl_Part): Do not
+	collect the states and variables when the initialization list
+	is null.
+	(Analyze_Input_Item): Enhance the error messages with references.
+	(Analyze_Input_Output): Enhance the error messages with references.
+	(Analyze_Pragma): Enhance the error messages with references.
+	(Analyze_Refinement_Clause): Code reformatting.
+	(Analyze_Refined_Depends_In_Decl_Part):
+	Rename global variable Global to Reg_Global and update all
+	occurrences. Add local variables D7 and D8. Update the error
+	messages with references. Update the call to Collect_Global_Items.
+	(Analyze_Refined_Global_In_Decl_Part): Add local variables
+	Has_Proof_In_State, Proof_In_Constits and Proof_In_Items. Update
+	the call to Collect_Global_Items.  Account for a Proof_In state
+	in null / useless refinement checks. Verify the coverage of
+	Proof_In states.
+	(Check_Dependency_Clause): Remove local variable
+	Out_Constits. Remove the retrieval and removal of constituents
+	for an Output_Only state. Remove the reporting of unused
+	Output_Only state constituents.
+	(Check_Duplicate_Mode): Enhance
+	the error message with a reference.
+	(Check_Duplicate_Property): New routine.
+	(Check_Duplicate_Option): Enhance the error message with a reference.
+	(Check_External_Properties): Enhance the error message with a reference.
+	(Check_Function_Return): Enhance the error message with a reference.
+	(Check_In_Out_States): Update
+	comment on usage. Add a specialized error message for Proof_In
+	constituents. Enhance the error message with a reference.
+	(Check_Input_States): Update comment on usage. Account for
+	possible Proof_In constituents. Enhance the error message
+	with a areference.
+	(Check_Matching_Constituent): Enhance the error message with a
+	reference.
+	(Check_Matching_State): Enchance the error message with a reference.
+	(Check_Mode): Add local variable From_Global. Update the call to
+	Find_Mode.  Emit more precise error messages concerning extra items
+	(Check_Mode_Restriction_In_Enclosing_Context): Consider
+	pragma Refined_Global.	Enhance the error message with a
+	reference.
+	(Check_Mode_Restriction_In_Function): Enhance the error message with
+	a reference.
+	(Check_Output_States): Update comment on usage. Add local variable
+	Posted.  Account for possible Proof_In constituents. Produce a detailed
+	list of missing constituents.
+	(Check_Proof_In_States): New routine.
+	(Check_Refined_Global_Item): Handle Proof_In
+	constituents. Enchance the error message with a reference.
+	(Collect_Global_Items): Add formal parameters Proof_In_Items
+	and Has_Proof_In_State. Update the comment on usage. Account
+	for Proof_In items.
+	(Create_Or_Modify_Clause): Enchance
+	the error message with a reference.
+	(Find_Mode): Add
+	formal parameter From_Global. Update the comment on usage.
+	Detect when the mode is governed by pragma [Refined_]Global.
+	(Output_Constituents): Removed.
+	(Report_Extra_Constituents):
+	Report extra Proof_In constituents.
+	(Report_Unused_Constituents): Removed.
+	(Usage_Error): Code reformatting. Enhance the error
+	messages with reference.
+	* sem_prag.ads (Analyze_External_Property_In_Decl_Part): New routine.
+	(Analyze_External_State_In_Decl_Part): Removed.
+	* sem_res.adb (Resolve_Actuals): Update the volatile object
+	detection. Enhance the error message with a reference.
+	(Resolve_Entity_Name): Update the volatile object
+	detection. Enhance the error message with a reference.
+	* sem_util.adb (Is_Refined_State): Add a guard to avoid a crash.
+	(Is_SPARK_Volatile_Object): New routine.
+	(Has_Volatile_Component): New routine.
+	* sem_util.ads (Is_Delegate): Alphabetized.
+	(Is_SPARK_Volatile_Object): New routine.
+	(Has_Volatile_Component): New routine.
+	* snames.ads-tmpl: Remove names Name_Input_Only and Name_Output_Only.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Resolve fully prefix of 'Update.
+
 2014-01-27  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Minor clarifications.

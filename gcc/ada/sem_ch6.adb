@@ -11233,17 +11233,26 @@ package body Sem_Ch6 is
             Null_Exclusion_Static_Checks (Param_Spec);
          end if;
 
-         --  A function cannot have a volatile formal parameter. The following
-         --  check is relevant when SPARK_Mode is on as it is not a standard
-         --  Ada legality rule.
+         --  The following checks are relevant when SPARK_Mode is on as these
+         --  are not standard Ada legality rules.
 
          if SPARK_Mode = On
-           and then Is_Volatile_Object (Formal)
            and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
          then
-            Error_Msg_N
-              ("function cannot have a volatile formal parameter (SPARK RM "
-               & "7.1.3(6))", Formal);
+            --  A function cannot have a parameter of mode IN OUT or OUT
+
+            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+               Error_Msg_N
+                 ("function cannot have parameter of mode `OUT` or `IN OUT` "
+                  & "(SPARK RM 6.1)", Formal);
+
+            --  A function cannot have a volatile formal parameter
+
+            elsif Is_SPARK_Volatile_Object (Formal) then
+               Error_Msg_N
+                 ("function cannot have a volatile formal parameter (SPARK RM "
+                  & "7.1.3(10))", Formal);
+            end if;
          end if;
 
       <<Continue>>
