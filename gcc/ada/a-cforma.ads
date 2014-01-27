@@ -92,7 +92,7 @@ package Ada.Containers.Formal_Ordered_Maps is
      Pre => Target.Capacity >= Length (Source);
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map with
-     Pre => Capacity >= Source.Capacity;
+     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
 
    function Key (Container : Map; Position : Cursor) return Key_Type with
      Pre => Has_Element (Container, Position);

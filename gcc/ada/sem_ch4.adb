@@ -3943,6 +3943,7 @@ package body Sem_Ch4 is
       --  searches have failed. When the match is found (it always will be),
       --  the Etype of both N and Sel are set from this component, and the
       --  entity of Sel is set to reference this component.
+      --  ??? no longer true that a match is found ???
 
       function Has_Mode_Conformant_Spec (Comp : Entity_Id) return Boolean;
       --  It is known that the parent of N denotes a subprogram call. Comp
@@ -3971,9 +3972,7 @@ package body Sem_Ch4 is
             Next_Component (Comp);
          end loop;
 
-         --  This must succeed because code was legal in the generic
-
-         raise Program_Error;
+         --  Need comment on what is going on when we fall through ???
       end Find_Component_In_Instance;
 
       ------------------------------
@@ -4607,27 +4606,47 @@ package body Sem_Ch4 is
             Analyze_Selected_Component (N);
             return;
 
-         --  Similarly, if this is the actual for a formal derived type, the
-         --  component inherited from the generic parent may not be visible
-         --  in the actual, but the selected component is legal.
+         --  Similarly, if this is the actual for a formal derived type, or
+         --  a derived type thereof, the component inherited from the generic
+         --  parent may not be visible in the actual, but the selected
+         --  component is legal. Climb up the derivation chain of the generic
+         --  parent type until we find the proper ancestor type.
 
-         elsif Ekind (Prefix_Type) = E_Record_Subtype_With_Private
-           and then Is_Generic_Actual_Type (Prefix_Type)
-           and then Present (Full_View (Prefix_Type))
-         then
-            Find_Component_In_Instance
-              (Generic_Parent_Type (Parent (Prefix_Type)));
-            return;
+         elsif In_Instance and then Is_Tagged_Type (Prefix_Type) then
+            declare
+               Par : Entity_Id := Prefix_Type;
+            begin
+               --  Climb up derivation chain to generic actual subtype
 
-         --  Finally, the formal and the actual may be private extensions,
-         --  but the generic is declared in a child unit of the parent, and
-         --  an additional step is needed to retrieve the proper scope.
+               while not Is_Generic_Actual_Type (Par) loop
+                  if Ekind (Par) = E_Record_Type then
+                     Par := Parent_Subtype (Par);
+                     exit when No (Par);
+                  else
+                     exit when Par = Etype (Par);
+                     Par := Etype (Par);
+                  end if;
+               end loop;
 
-         elsif In_Instance
-           and then Present (Parent_Subtype (Etype (Base_Type (Prefix_Type))))
-         then
-            Find_Component_In_Instance
-              (Parent_Subtype (Etype (Base_Type (Prefix_Type))));
+               if Present (Par) and then Is_Generic_Actual_Type (Par) then
+                  --  Now look for component in ancestor types
+
+                  Par := Generic_Parent_Type (Declaration_Node (Par));
+                  loop
+                     Find_Component_In_Instance (Par);
+                     exit when Present (Entity (Sel))
+                       or else Par = Etype (Par);
+                     Par := Etype (Par);
+                  end loop;
+               end if;
+            end;
+
+            --  The search above must have eventually succeeded, since the
+            --  selected component was legal in the generic.
+
+            if No (Entity (Sel)) then
+               raise Program_Error;
+            end if;
             return;
 
          --  Component not found, specialize error message when appropriate

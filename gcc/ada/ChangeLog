@@ -1,3 +1,25 @@
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Comparison_Op): Add type name/location
+	to unordered msg.
+	(Resolve_Range): Add type name/location to unordered msg.
+
+2014-01-27  Claire Dross  <dross@adacore.com>
+
+	* a-cofove.adb/s (Copy): Add precondition so that Copy (Source,
+	Capacity) is only called with Capacity >= Length (Source) and
+	Capacity in Capacity_Range.
+	* a-cfdlli.adb/s, a-cfhase.adb/s, a-cfhama.adb/s, a-cforse.adb/s,
+	a-cforma.adb/s (Copy): Add precondition so that Copy (Source, Capacity)
+	is only called with Capacity >= Source.Capacity. Raise Capacity_Error
+	in the code is this is not the case.
+
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Fix handling of
+	selected component in an instance where the component of the
+	actual is not visibile at instantiation.
+
 2014-01-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb: sem_ch6.adb (Set_Actual_Subtypes): If the type

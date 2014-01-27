@@ -301,10 +301,10 @@ package body Ada.Containers.Formal_Vectors is
    begin
       if Capacity = 0 then
          C := LS;
-      elsif Capacity >= LS then
+      elsif Capacity >= LS and then Capacity in Capacity_Range then
          C := Capacity;
       else
-         raise Constraint_Error;
+         raise Capacity_Error;
       end if;
 
       return Target : Vector (C) do
