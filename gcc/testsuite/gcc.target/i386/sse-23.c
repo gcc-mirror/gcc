@@ -365,6 +365,10 @@
 #define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, 1)
 #define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, 1)
 #define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, 1)
+#define __builtin_ia32_gatherpfdpd(A, B, C, D, E) __builtin_ia32_gatherpfdpd(A, B, C, 1, 1)
+#define __builtin_ia32_gatherpfqpd(A, B, C, D, E) __builtin_ia32_gatherpfqpd(A, B, C, 1, 1)
+#define __builtin_ia32_scatterpfdpd(A, B, C, D, E) __builtin_ia32_scatterpfdpd(A, B, C, 1, 1)
+#define __builtin_ia32_scatterpfqpd(A, B, C, D, E) __builtin_ia32_scatterpfqpd(A, B, C, 1, 1)
 
 /* avx512erintrin.h */
 #define __builtin_ia32_exp2pd_mask(A, B, C, D) __builtin_ia32_exp2pd_mask (A, B, C, 5)

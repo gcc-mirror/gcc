@@ -1,3 +1,19 @@
+2014-01-27  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/avx512pf-vgatherpf0dpd-1.c: New.
+	* gcc.target/i386/avx512pf-vgatherpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qpd-1.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add new built-ins, fix AVX-512ER
+	built-ins roudning immediate.
+	* gcc.target/i386/sse-22.c: Add new built-ins.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+
 2014-01-27  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.target/sh/torture/strncmp.c: New tests.

@@ -417,6 +417,7 @@
   [V32QI V16HI V8SI (V8DI "TARGET_AVX512F") (V16SI "TARGET_AVX512F")])
 (define_mode_iterator VI48_256 [V8SI V4DI])
 (define_mode_iterator VI48_512 [V16SI V8DI])
+(define_mode_iterator VI4_256_8_512 [V8SI V8DI])
 
 ;; Int-float size matches
 (define_mode_iterator VI4F_128 [V4SI V4SF])
@@ -12495,10 +12496,14 @@
    (set_attr "btver2_decode" "vector,vector,vector,vector")
    (set_attr "mode" "TI")])
 
-(define_expand "avx512pf_gatherpf<mode>"
+;; Packed float variants
+(define_mode_attr GATHER_SCATTER_SF_MEM_MODE
+		      [(V8DI "V8SF") (V16SI "V16SF")])
+
+(define_expand "avx512pf_gatherpf<mode>sf"
   [(unspec
      [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
-      (mem:<ssescalarmode>
+      (mem:<GATHER_SCATTER_SF_MEM_MODE>
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
 	   (match_operand:VI48_512 1 "register_operand")
@@ -12512,10 +12517,10 @@
 					operands[3]), UNSPEC_VSIBADDR);
 })
 
-(define_insn "*avx512pf_gatherpf<mode>_mask"
+(define_insn "*avx512pf_gatherpf<mode>sf_mask"
   [(unspec
      [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
-      (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
+      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 5 "vsib_mem_operator"
 	[(unspec:P
 	   [(match_operand:P 2 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 1 "register_operand" "v")
@@ -12539,10 +12544,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "*avx512pf_gatherpf<mode>"
+(define_insn "*avx512pf_gatherpf<mode>sf"
   [(unspec
      [(const_int -1)
-      (match_operator:<ssescalarmode> 4 "vsib_mem_operator"
+      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 4 "vsib_mem_operator"
 	[(unspec:P
 	   [(match_operand:P 1 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 0 "register_operand" "v")
@@ -12566,10 +12571,83 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_expand "avx512pf_scatterpf<mode>"
+;; Packed double variants
+(define_expand "avx512pf_gatherpf<mode>df"
   [(unspec
      [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
-      (mem:<ssescalarmode>
+      (mem:V8DF
+	(match_par_dup 5
+	  [(match_operand 2 "vsib_address_operand")
+	   (match_operand:VI4_256_8_512 1 "register_operand")
+	   (match_operand:SI 3 "const1248_operand")]))
+      (match_operand:SI 4 "const_0_to_1_operand")]
+     UNSPEC_GATHER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  operands[5]
+    = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[2], operands[1],
+					operands[3]), UNSPEC_VSIBADDR);
+})
+
+(define_insn "*avx512pf_gatherpf<mode>df_mask"
+  [(unspec
+     [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
+      (match_operator:V8DF 5 "vsib_mem_operator"
+	[(unspec:P
+	   [(match_operand:P 2 "vsib_address_operand" "Tv")
+	    (match_operand:VI4_256_8_512 1 "register_operand" "v")
+	    (match_operand:SI 3 "const1248_operand" "n")]
+	   UNSPEC_VSIBADDR)])
+      (match_operand:SI 4 "const_0_to_1_operand" "n")]
+     UNSPEC_GATHER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  switch (INTVAL (operands[4]))
+    {
+    case 0:
+      return "vgatherpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+    case 1:
+      return "vgatherpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "*avx512pf_gatherpf<mode>df"
+  [(unspec
+     [(const_int -1)
+      (match_operator:V8DF 4 "vsib_mem_operator"
+	[(unspec:P
+	   [(match_operand:P 1 "vsib_address_operand" "Tv")
+	    (match_operand:VI4_256_8_512 0 "register_operand" "v")
+	    (match_operand:SI 2 "const1248_operand" "n")]
+	   UNSPEC_VSIBADDR)])
+      (match_operand:SI 3 "const_0_to_1_operand" "n")]
+     UNSPEC_GATHER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  switch (INTVAL (operands[3]))
+    {
+    case 0:
+      return "vgatherpf0<ssemodesuffix>pd\t{%4|%4}";
+    case 1:
+      return "vgatherpf1<ssemodesuffix>pd\t{%4|%4}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+;; Packed float variants
+(define_expand "avx512pf_scatterpf<mode>sf"
+  [(unspec
+     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+      (mem:<GATHER_SCATTER_SF_MEM_MODE>
 	(match_par_dup 5
 	  [(match_operand 2 "vsib_address_operand")
 	   (match_operand:VI48_512 1 "register_operand")
@@ -12583,10 +12661,10 @@
 					operands[3]), UNSPEC_VSIBADDR);
 })
 
-(define_insn "*avx512pf_scatterpf<mode>_mask"
+(define_insn "*avx512pf_scatterpf<mode>sf_mask"
   [(unspec
      [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
-      (match_operator:<ssescalarmode> 5 "vsib_mem_operator"
+      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 5 "vsib_mem_operator"
 	[(unspec:P
 	   [(match_operand:P 2 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 1 "register_operand" "v")
@@ -12610,10 +12688,10 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "*avx512pf_scatterpf<mode>"
+(define_insn "*avx512pf_scatterpf<mode>sf"
   [(unspec
      [(const_int -1)
-      (match_operator:<ssescalarmode> 4 "vsib_mem_operator"
+      (match_operator:<GATHER_SCATTER_SF_MEM_MODE> 4 "vsib_mem_operator"
 	[(unspec:P
 	   [(match_operand:P 1 "vsib_address_operand" "Tv")
 	    (match_operand:VI48_512 0 "register_operand" "v")
@@ -12629,6 +12707,78 @@
       return "vscatterpf0<ssemodesuffix>ps\t{%4|%4}";
     case 1:
       return "vscatterpf1<ssemodesuffix>ps\t{%4|%4}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+;; Packed double variants
+(define_expand "avx512pf_scatterpf<mode>df"
+  [(unspec
+     [(match_operand:<avx512fmaskmode> 0 "register_or_constm1_operand")
+      (mem:V8DF
+	(match_par_dup 5
+	  [(match_operand 2 "vsib_address_operand")
+	   (match_operand:VI4_256_8_512 1 "register_operand")
+	   (match_operand:SI 3 "const1248_operand")]))
+      (match_operand:SI 4 "const_0_to_1_operand")]
+     UNSPEC_SCATTER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  operands[5]
+    = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, operands[2], operands[1],
+					operands[3]), UNSPEC_VSIBADDR);
+})
+
+(define_insn "*avx512pf_scatterpf<mode>df_mask"
+  [(unspec
+     [(match_operand:<avx512fmaskmode> 0 "register_operand" "k")
+      (match_operator:V8DF 5 "vsib_mem_operator"
+	[(unspec:P
+	   [(match_operand:P 2 "vsib_address_operand" "Tv")
+	    (match_operand:VI4_256_8_512 1 "register_operand" "v")
+	    (match_operand:SI 3 "const1248_operand" "n")]
+	   UNSPEC_VSIBADDR)])
+      (match_operand:SI 4 "const_0_to_1_operand" "n")]
+     UNSPEC_SCATTER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  switch (INTVAL (operands[4]))
+    {
+    case 0:
+      return "vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+    case 1:
+      return "vscatterpf1<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "sse")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "*avx512pf_scatterpf<mode>df"
+  [(unspec
+     [(const_int -1)
+      (match_operator:V8DF 4 "vsib_mem_operator"
+	[(unspec:P
+	   [(match_operand:P 1 "vsib_address_operand" "Tv")
+	    (match_operand:VI4_256_8_512 0 "register_operand" "v")
+	    (match_operand:SI 2 "const1248_operand" "n")]
+	   UNSPEC_VSIBADDR)])
+      (match_operand:SI 3 "const_0_to_1_operand" "n")]
+     UNSPEC_SCATTER_PREFETCH)]
+  "TARGET_AVX512PF"
+{
+  switch (INTVAL (operands[3]))
+    {
+    case 0:
+      return "vscatterpf0<ssemodesuffix>pd\t{%4|%4}";
+    case 1:
+      return "vscatterpf1<ssemodesuffix>pd\t{%4|%4}";
     default:
       gcc_unreachable ();
     }
