@@ -13,7 +13,7 @@ struct Check {
 
 static Check const data[] = {
   { 0, 0, false },	// construct [0]
-  { 1, 0, true  },	// [1] = [0]
+  { 1, 0, false  },	// [1] = [0]
   { 0, 0, true  },	// destruct [0]
   { 2, 1, true  },	// [2] = [1]
   { 2, 2, true  },      // destruct [2]
