@@ -125,7 +125,7 @@ package Ada.Containers.Formal_Vectors is
      (Source   : Vector;
       Capacity : Count_Type := 0) return Vector
    with
-     Pre => Length (Source) <= Capacity;
+     Pre => Length (Source) <= Capacity and then Capacity in Capacity_Range;
 
    function To_Cursor
      (Container : Vector;

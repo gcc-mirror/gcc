@@ -6287,7 +6287,10 @@ package body Sem_Res is
       --  Check comparison on unordered enumeration
 
       if Bad_Unordered_Enumeration_Reference (N, Etype (L)) then
-         Error_Msg_N ("comparison on unordered enumeration type?U?", N);
+         Error_Msg_Sloc := Sloc (Etype (L));
+         Error_Msg_NE
+           ("comparison on unordered enumeration type& declared#?U?",
+            N, Etype (L));
       end if;
 
       --  Evaluate the relation (note we do this after the above check since
@@ -8830,7 +8833,9 @@ package body Sem_Res is
 
         and then not First_Last_Ref
       then
-         Error_Msg ("subrange of unordered enumeration type?U?", Sloc (N));
+         Error_Msg_Sloc := Sloc (Typ);
+         Error_Msg_NE
+           ("subrange of unordered enumeration type& declared#?U?", N, Typ);
       end if;
 
       Check_Unset_Reference (L);
