@@ -3860,12 +3860,12 @@ find_symbol (gfc_symtree *st, const char *name,
 
 
 /* Skip a list between balanced left and right parens.
-   By setting NEST_LEVEL one assumes that a number of NEST_LEVEL opening parens
-   have been already parsed by hand, and the remaining of the content is to be
-   skipped here.  The default value is 0 (balanced parens).  */
+   By setting NEST_LEVEL to a non-zero value one assumes that a number of
+   NEST_LEVEL opening parens have been already parsed by hand, and the remaining
+   of the content is to be skipped here.   */
 
 static void
-skip_list (int nest_level = 0)
+skip_list (int nest_level)
 {
   int level;
 
@@ -4228,7 +4228,7 @@ load_derived_extensions (void)
       if (!info || !derived)
 	{
 	  while (peek_atom () != ATOM_RPAREN)
-	    skip_list ();
+	    skip_list (0);
 	  continue;
 	}
 
@@ -4465,18 +4465,18 @@ read_module (void)
   gfc_symbol *sym;
 
   get_module_locus (&operator_interfaces);	/* Skip these for now.  */
-  skip_list ();
+  skip_list (0);
 
   get_module_locus (&user_operators);
-  skip_list ();
-  skip_list ();
+  skip_list (0);
+  skip_list (0);
 
   /* Skip commons, equivalences and derived type extensions for now.  */
-  skip_list ();
-  skip_list ();
+  skip_list (0);
+  skip_list (0);
 
   get_module_locus (&extensions);
-  skip_list ();
+  skip_list (0);
 
   mio_lparen ();
 
@@ -4514,7 +4514,7 @@ read_module (void)
       if (sym == NULL
 	  || (sym->attr.flavor == FL_VARIABLE && info->u.rsym.ns !=1))
 	{
-	  skip_list ();
+	  skip_list (0);
 	  continue;
 	}
 
@@ -4531,13 +4531,13 @@ read_module (void)
 
 	  /* First seek to the symbol's component list.  */
 	  mio_lparen (); /* symbol opening.  */
-	  skip_list (); /* skip symbol attribute.  */
-	  skip_list (); /* typespec.  */
+	  skip_list (0); /* skip symbol attribute.  */
+	  skip_list (0); /* typespec.  */
 	  require_atom (ATOM_INTEGER); /* namespace ref.  */
 	  require_atom (ATOM_INTEGER); /* common ref.  */
-	  skip_list (); /* formal args.  */
+	  skip_list (0); /* formal args.  */
 	  /* no value.  */
-	  skip_list (); /* array_spec.  */
+	  skip_list (0); /* array_spec.  */
 	  require_atom (ATOM_INTEGER); /* result.  */
 	  /* not a cray pointer.  */
 
@@ -4562,7 +4562,7 @@ read_module (void)
 	  skip_list (1); /* symbol end.  */
 	}
       else
-	skip_list ();
+	skip_list (0);
 
       /* Some symbols do not have a namespace (eg. formal arguments),
 	 so the automatic "unique symtree" mechanism must be suppressed
@@ -4725,7 +4725,7 @@ read_module (void)
 
 	  if (u == NULL)
 	    {
-	      skip_list ();
+	      skip_list (0);
 	      continue;
 	    }
 

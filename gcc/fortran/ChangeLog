@@ -1,3 +1,9 @@
+2014-01-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/58007
+	* module.c (skip_list): Don't use default argument value.
+	(load_derived_extensions, read_module): Update callers.
+
 2014-01-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/58007
