@@ -4150,7 +4150,6 @@ package body Exp_Ch9 is
       Sub_Body     : Node_Id;
       Lock_Name    : Node_Id;
       Lock_Stmt    : Node_Id;
-      Service_Name : Node_Id;
       R            : Node_Id;
       Return_Stmt  : Node_Id := Empty;    -- init to avoid gcc 3 warning
       Pre_Stmts    : List_Id := No_List;  -- init to avoid gcc 3 warning
@@ -4235,15 +4234,12 @@ package body Exp_Ch9 is
       case Corresponding_Runtime_Package (Pid) is
          when System_Tasking_Protected_Objects_Entries =>
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entries), Loc);
-            Service_Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
 
          when System_Tasking_Protected_Objects_Single_Entry =>
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entry), Loc);
-            Service_Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
 
          when System_Tasking_Protected_Objects =>
             Lock_Name := New_Reference_To (RTE (Lock_Kind), Loc);
-            Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
 
          when others =>
             raise Program_Error;
@@ -4282,20 +4278,7 @@ package body Exp_Ch9 is
             Append (Unprot_Call, Stmts);
          end if;
 
-         Append (
-           Make_Procedure_Call_Statement (Loc,
-             Name => Service_Name,
-             Parameter_Associations =>
-               New_List (New_Copy_Tree (Object_Parm))),
-           Stmts);
-
-         if Abort_Allowed then
-            Append (
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc),
-                Parameter_Associations => Empty_List),
-              Stmts);
-         end if;
+         Build_Protected_Subprogram_Call_Cleanup (Op_Spec, Pid, Loc, Stmts);
 
          if Nkind (Op_Spec) = N_Function_Specification then
             Append (Return_Stmt, Stmts);
@@ -4387,6 +4370,91 @@ package body Exp_Ch9 is
          Add_Shared_Var_Lock_Procs (N);
       end if;
    end Build_Protected_Subprogram_Call;
+
+   ---------------------------------------------
+   -- Build_Protected_Subprogram_Call_Cleanup --
+   ---------------------------------------------
+
+   procedure Build_Protected_Subprogram_Call_Cleanup
+     (Op_Spec   : Node_Id;
+      Conc_Typ  : Node_Id;
+      Loc       : Source_Ptr;
+      Stmts     : List_Id)
+   is
+      Nam       : Node_Id;
+
+   begin
+      --  If the associated protected object has entries, a protected
+      --  procedure has to service entry queues. In this case generate:
+
+      --    Service_Entries (_object._object'Access);
+
+      if Nkind (Op_Spec) = N_Procedure_Specification
+        and then Has_Entries (Conc_Typ)
+      then
+         case Corresponding_Runtime_Package (Conc_Typ) is
+            when System_Tasking_Protected_Objects_Entries =>
+               Nam := New_Reference_To (RTE (RE_Service_Entries), Loc);
+
+            when System_Tasking_Protected_Objects_Single_Entry =>
+               Nam := New_Reference_To (RTE (RE_Service_Entry), Loc);
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Append_To (Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   => Nam,
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => Make_Identifier (Loc, Name_uObject),
+                     Selector_Name => Make_Identifier (Loc, Name_uObject)),
+                 Attribute_Name => Name_Unchecked_Access))));
+
+      else
+         --  Generate:
+         --    Unlock (_object._object'Access);
+
+         case Corresponding_Runtime_Package (Conc_Typ) is
+            when System_Tasking_Protected_Objects_Entries =>
+               Nam := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
+
+            when System_Tasking_Protected_Objects_Single_Entry =>
+               Nam := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
+
+            when System_Tasking_Protected_Objects =>
+               Nam := New_Reference_To (RTE (RE_Unlock), Loc);
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         Append_To (Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   => Nam,
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix         =>
+                   Make_Selected_Component (Loc,
+                     Prefix        => Make_Identifier (Loc, Name_uObject),
+                     Selector_Name => Make_Identifier (Loc, Name_uObject)),
+                 Attribute_Name => Name_Unchecked_Access))));
+      end if;
+
+      --  Generate:
+      --    Abort_Undefer;
+
+      if Abort_Allowed then
+         Append_To (Stmts,
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Reference_To (RTE (RE_Abort_Undefer), Loc),
+             Parameter_Associations => Empty_List));
+      end if;
+   end Build_Protected_Subprogram_Call_Cleanup;
 
    -------------------------
    -- Build_Selected_Name --

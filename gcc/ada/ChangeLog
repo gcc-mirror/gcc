@@ -1,3 +1,23 @@
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* scn.adb (Check_End_Of_Line): Removed.
+	(Error_Long_Line): Removed.
+	(Determine_License): Use versions of above routines from Scanner.
+	* scng.adb (Check_End_Of_Line): Moved to spec.
+	(Error_Long_Line): Removed, no longer used.
+	* scng.ads (Check_End_Of_Line): Moved here from body.
+
+2014-01-27  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.adb (Build_Cleanup_Statements): Call
+	Build_Protected_Subprogram_Call_Cleanup to insert the cleanup
+	for protected body.
+	* exp_ch9.adb (Build_Protected_Subprogram_Body): Likewise.
+	 Remove Service_Name variable.
+	(Build_Protected_SUbprogam_Call_Cleanup): New procedure that
+	factorize code from the above subprograms.
+	* exp_ch9.ads (Build_Protected_Subprogram_Call_Cleanup): New procedure.
+
 2014-01-27  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Has_Option): Reimplemented.
