@@ -7469,12 +7469,16 @@ package body Exp_Ch4 is
       --  a non-binary modulus in the multiplication case, since we get a wrong
       --  result if the shift causes an overflow before the modular reduction.
 
+      --  Note: we used to check that Exptyp was an unsigned type. But that is
+      --  an unnecessary check, since if Exp is negative, we have a run-time
+      --  error that is either caught (so we get the right result) or we have
+      --  suppressed the check, in which case the code is erroneous anyway.
+
       if Nkind (Base) = N_Integer_Literal
         and then CRT_Safe_Compile_Time_Known_Value (Base)
         and then Expr_Value (Base) = Uint_2
         and then Is_Integer_Type (Root_Type (Exptyp))
         and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
-        and then Is_Unsigned_Type (Exptyp)
         and then not Ovflo
       then
          --  First the multiply and divide cases

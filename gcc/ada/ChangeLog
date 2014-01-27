@@ -1,3 +1,33 @@
+2014-01-27  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch7.adb, exp_ch9.adb: Adjust comments.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): Remove unsigned type test
+	for 2**X optimization.
+
+2014-01-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-suenst.adb: strings.utf_encoding.strings (Decode): Check
+	explicitly whether value is in range of Character, because the
+	library is typically compiled with range checks disabled, and
+	we cannot rely on the implicit check on the argument of 'Val.
+
+2014-01-27  Vincent Celier  <celier@adacore.com>
+
+	* a-ciorma.adb, a-cihama.adb (Assign): Copy the Source to the Target,
+	not the Target to itself.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* vms_conv.ads, ali.adb, sem_ch6.ads, opt.ads, vms_cmds.ads: Minor
+	changes to avoid incorrect use of unordered enum types.
+
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
 	* scn.adb (Check_End_Of_Line): Removed.
