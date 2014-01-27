@@ -1597,7 +1597,7 @@ inline_small_functions (void)
   max_size = compute_max_insns (overall_size);
   min_size = overall_size;
 
-  /* Populate the heeap with all edges we might inline.  */
+  /* Populate the heap with all edges we might inline.  */
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
