@@ -1,5 +1,12 @@
 2014-01-27  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* common/config/arm/arm-common.c
+	(arm_rewrite_mcpu): Handle multiple names.
+	* config/arm/arm.h
+	(BIG_LITTLE_SPEC): Do not discard mcpu switches.
+
+2014-01-27  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gimple-builder.h (create_gimple_tmp): Delete.
 
 2014-01-27  Christian Bruel  <christian.bruel@st.com>
