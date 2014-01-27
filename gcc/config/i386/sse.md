@@ -105,6 +105,7 @@
   UNSPEC_COMPRESS
   UNSPEC_COMPRESS_STORE
   UNSPEC_EXPAND
+  UNSPEC_EXPAND_NOMASK
   UNSPEC_MASKED_EQ
   UNSPEC_MASKED_GT
 
@@ -7457,6 +7458,15 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_expand "avx512f_<code><pmov_src_lower><mode>2_mask_store"
+  [(set (match_operand:PMOV_DST_MODE 0 "memory_operand")
+    (vec_merge:PMOV_DST_MODE
+      (any_truncate:PMOV_DST_MODE
+        (match_operand:<pmov_src_mode> 1 "register_operand"))
+      (match_dup 0)
+      (match_operand:<avx512fmaskmode> 2 "register_operand")))]
+  "TARGET_AVX512F")
+
 (define_insn "*avx512f_<code>v8div16qi2"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(vec_concat:V16QI
@@ -7513,7 +7523,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx512f_<code>v8div16qi2_store_mask"
+(define_insn "avx512f_<code>v8div16qi2_mask_store"
   [(set (match_operand:V16QI 0 "memory_operand" "=m")
     (vec_concat:V16QI
       (vec_merge:V8QI
@@ -15350,6 +15360,18 @@
 	  UNSPEC_EXPAND))]
   "TARGET_AVX512F"
   "operands[2] = CONST0_RTX (<MODE>mode);")
+
+(define_insn "avx512f_expand<mode>"
+  [(set (match_operand:VI48F_512 0 "register_operand" "=v,v")
+	(unspec:VI48F_512
+	  [(match_operand:VI48F_512 1 "nonimmediate_operand" "v,m")]
+	  UNSPEC_EXPAND_NOMASK))]
+  "TARGET_AVX512F"
+  "v<sseintprefix>expand<ssemodesuffix>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "none,load")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "avx512f_expand<mode>_mask"
   [(set (match_operand:VI48F_512 0 "register_operand" "=v,v")

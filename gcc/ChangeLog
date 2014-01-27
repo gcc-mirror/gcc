@@ -1,3 +1,78 @@
+2014-01-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_mask_cvtepi32_storeu_epi8): New.
+	(_mm512_mask_cvtsepi32_storeu_epi8): Ditto.
+	(_mm512_mask_cvtusepi32_storeu_epi8): Ditto.
+	(_mm512_mask_cvtepi32_storeu_epi16): Ditto.
+	(_mm512_mask_cvtsepi32_storeu_epi16): Ditto.
+	(_mm512_mask_cvtusepi32_storeu_epi16): Ditto.
+	(_mm512_mask_cvtepi64_storeu_epi32): Ditto.
+	(_mm512_mask_cvtsepi64_storeu_epi32): Ditto.
+	(_mm512_mask_cvtusepi64_storeu_epi32): Ditto.
+	(_mm512_mask_cvtepi64_storeu_epi16): Ditto.
+	(_mm512_mask_cvtsepi64_storeu_epi16): Ditto.
+	(_mm512_mask_cvtusepi64_storeu_epi16): Ditto.
+	(_mm512_mask_cvtepi64_storeu_epi8): Ditto.
+	(_mm512_mask_cvtsepi64_storeu_epi8): Ditto.
+	(_mm512_mask_cvtusepi64_storeu_epi8): Ditto.
+	(_mm512_storeu_epi64): Ditto.
+	(_mm512_cmpge_epi32_mask): Ditto.
+	(_mm512_cmpge_epu32_mask): Ditto.
+	(_mm512_cmpge_epi64_mask): Ditto.
+	(_mm512_cmpge_epu64_mask): Ditto.
+	(_mm512_cmple_epi32_mask): Ditto.
+	(_mm512_cmple_epu32_mask): Ditto.
+	(_mm512_cmple_epi64_mask): Ditto.
+	(_mm512_cmple_epu64_mask): Ditto.
+	(_mm512_cmplt_epi32_mask): Ditto.
+	(_mm512_cmplt_epu32_mask): Ditto.
+	(_mm512_cmplt_epi64_mask): Ditto.
+	(_mm512_cmplt_epu64_mask): Ditto.
+	(_mm512_cmpneq_epi32_mask): Ditto.
+	(_mm512_cmpneq_epu32_mask): Ditto.
+	(_mm512_cmpneq_epi64_mask): Ditto.
+	(_mm512_cmpneq_epu64_mask): Ditto.
+	(_mm512_expand_pd): Ditto.
+	(_mm512_expand_ps): Ditto.
+	* config/i386/i386-builtin-types.def: Add PV16QI, PV16QI, PV16HI,
+	VOID_PV8SI_V8DI_QI, VOID_PV8HI_V8DI_QI, VOID_PV16QI_V8DI_QI,
+	VOID_PV16QI_V16SI_HI, VOID_PV16HI_V16SI_HI.
+	* config/i386/i386.c (ix86_builtins): Add
+	IX86_BUILTIN_EXPANDPD512_NOMASK, IX86_BUILTIN_EXPANDPS512_NOMASK,
+	IX86_BUILTIN_PMOVDB512_MEM, IX86_BUILTIN_PMOVDW512_MEM,
+	IX86_BUILTIN_PMOVQB512_MEM, IX86_BUILTIN_PMOVQD512_MEM,
+	IX86_BUILTIN_PMOVQW512_MEM, IX86_BUILTIN_PMOVSDB512_MEM,
+	IX86_BUILTIN_PMOVSDW512_MEM, IX86_BUILTIN_PMOVSQB512_MEM,
+	IX86_BUILTIN_PMOVSQD512_MEM, IX86_BUILTIN_PMOVSQW512_MEM,
+	IX86_BUILTIN_PMOVUSDB512_MEM, IX86_BUILTIN_PMOVUSDW512_MEM,
+	IX86_BUILTIN_PMOVUSQB512_MEM, IX86_BUILTIN_PMOVUSQD512_MEM,
+	IX86_BUILTIN_PMOVUSQW512_MEM.
+	(bdesc_special_args): Add __builtin_ia32_pmovusqd512mem_mask,
+	__builtin_ia32_pmovsqd512mem_mask,
+	__builtin_ia32_pmovqd512mem_mask,
+	__builtin_ia32_pmovusqw512mem_mask,
+	__builtin_ia32_pmovsqw512mem_mask,
+	__builtin_ia32_pmovqw512mem_mask,
+	__builtin_ia32_pmovusdw512mem_mask,
+	__builtin_ia32_pmovsdw512mem_mask,
+	__builtin_ia32_pmovdw512mem_mask,
+	__builtin_ia32_pmovqb512mem_mask,
+	__builtin_ia32_pmovusqb512mem_mask,
+	__builtin_ia32_pmovsqb512mem_mask,
+	__builtin_ia32_pmovusdb512mem_mask,
+	__builtin_ia32_pmovsdb512mem_mask,
+	__builtin_ia32_pmovdb512mem_mask.
+	(bdesc_args): Add __builtin_ia32_expanddf512,
+	__builtin_ia32_expandsf512.
+	(ix86_expand_special_args_builtin): Handle VOID_FTYPE_PV8SI_V8DI_QI,
+	VOID_FTYPE_PV8HI_V8DI_QI, VOID_FTYPE_PV16HI_V16SI_HI,
+	VOID_FTYPE_PV16QI_V8DI_QI, VOID_FTYPE_PV16QI_V16SI_HI.
+	* config/i386/sse.md (unspec): Add UNSPEC_EXPAND_NOMASK.
+	(avx512f_<code><pmov_src_lower><mode>2_mask_store): New.
+	(*avx512f_<code>v8div16qi2_store_mask): Renamed to ...
+	(avx512f_<code>v8div16qi2_mask_store): This.
+	(avx512f_expand<mode>): New.
+
 2014-01-27  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd): New.

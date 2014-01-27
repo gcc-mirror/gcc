@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
+/* { dg-final { scan-assembler-times "vpmovusdw\[ \\t\]+\[^\n\]*" 4 } } */
 /* { dg-final { scan-assembler-times "vpmovusdw\[ \\t\]+\[^\n\]*%ymm\[0-9\]\[^\{\]" 1 } } */
 /* { dg-final { scan-assembler-times "vpmovusdw\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 1 } } */
 /* { dg-final { scan-assembler-times "vpmovusdw\[ \\t\]+\[^\n\]*%ymm\[0-9\]\{%k\[1-7\]\}\{z\}" 1 } } */
@@ -16,4 +17,5 @@ avx512f_test (void)
   res = _mm512_cvtusepi32_epi16 (s);
   res = _mm512_mask_cvtusepi32_epi16 (res, m, s);
   res = _mm512_maskz_cvtusepi32_epi16 (m, s);
+  _mm512_mask_cvtusepi32_storeu_epi16 ((void *) &res, m, s);
 }
