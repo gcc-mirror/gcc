@@ -1,3 +1,10 @@
+2014-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/59934
+	* expmed.h (expmed_mode_index): Rework so that analysis and optimziers
+	know when the MODE_PARTIAL_INT and MODE_VECTOR_INT cases can never be
+	reached.
+
 2014-01-27  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* common/config/arm/arm-common.c
