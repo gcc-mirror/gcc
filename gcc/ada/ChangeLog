@@ -1,3 +1,13 @@
+2014-01-27  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_smem.adb (Expand_Shared_Passive_Variable): For a reference
+	to a shared variable as an OUT formal in a call to an init proc,
+	the 'Read call must be emitted after, not before, the call.
+
+2014-01-27  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Remove mention of AUTO mode for SPARK_Mode pragma.
+
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
 	* a-wichha.adb (Character_Set_Version): Change to output proper
