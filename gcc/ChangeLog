@@ -1,3 +1,40 @@
+2014-01-27  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd): New.
+	(_mm512_mask_prefetch_i64gather_pd): Ditto.
+	(_mm512_prefetch_i32scatter_pd): Ditto.
+	(_mm512_mask_prefetch_i32scatter_pd): Ditto.
+	(_mm512_prefetch_i64scatter_pd): Ditto.
+	(_mm512_mask_prefetch_i64scatter_pd): Ditto.
+	(_mm512_mask_prefetch_i32gather_ps): Fix operand type.
+	(_mm512_mask_prefetch_i64gather_ps): Ditto.
+	(_mm512_prefetch_i32scatter_ps): Ditto.
+	(_mm512_mask_prefetch_i32scatter_ps): Ditto.
+	(_mm512_prefetch_i64scatter_ps): Ditto.
+	(_mm512_mask_prefetch_i64scatter_ps): Ditto.
+	* config/i386/i386-builtin-types.def: Define
+	VOID_FTYPE_QI_V8SI_PCINT64_INT_INT and VOID_FTYPE_QI_V8DI_PCINT64_INT_INT.
+	* config/i386/i386.c (ix86_builtins): Define IX86_BUILTIN_GATHERPFQPD,
+	IX86_BUILTIN_GATHERPFDPD, IX86_BUILTIN_SCATTERPFDPD,
+	IX86_BUILTIN_SCATTERPFQPD.
+	(ix86_init_mmx_sse_builtins): Define __builtin_ia32_gatherpfdpd,
+	__builtin_ia32_gatherpfdps, __builtin_ia32_gatherpfqpd,
+	__builtin_ia32_gatherpfqps, __builtin_ia32_scatterpfdpd,
+	__builtin_ia32_scatterpfdps, __builtin_ia32_scatterpfqpd,
+	__builtin_ia32_scatterpfqps.
+	(ix86_expand_builtin): Expand new built-ins.
+	* config/i386/sse.md (avx512pf_gatherpf<mode>): Add SF suffix,
+	fix memory access data type.
+	(*avx512pf_gatherpf<mode>_mask): Ditto.
+	(*avx512pf_gatherpf<mode>): Ditto.
+	(avx512pf_scatterpf<mode>): Ditto.
+	(*avx512pf_scatterpf<mode>_mask): Ditto.
+	(*avx512pf_scatterpf<mode>): Ditto.
+	(GATHER_SCATTER_SF_MEM_MODE): New.
+	(avx512pf_gatherpf<mode>df): Ditto.
+	(*avx512pf_gatherpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df): Ditto.
+
 2014-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/59934

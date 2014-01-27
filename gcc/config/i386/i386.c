@@ -28406,9 +28406,13 @@ enum ix86_builtins
   IX86_BUILTIN_SCATTERSIV8DI,
 
   /* AVX512PF */
+  IX86_BUILTIN_GATHERPFQPD,
   IX86_BUILTIN_GATHERPFDPS,
+  IX86_BUILTIN_GATHERPFDPD,
   IX86_BUILTIN_GATHERPFQPS,
+  IX86_BUILTIN_SCATTERPFDPD,
   IX86_BUILTIN_SCATTERPFDPS,
+  IX86_BUILTIN_SCATTERPFQPD,
   IX86_BUILTIN_SCATTERPFQPS,
 
   /* AVX-512ER */
@@ -30939,15 +30943,27 @@ ix86_init_mmx_sse_builtins (void)
 	       IX86_BUILTIN_SCATTERDIV8DI);
 
   /* AVX512PF */
+  def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdpd",
+	       VOID_FTYPE_QI_V8SI_PCINT64_INT_INT,
+	       IX86_BUILTIN_GATHERPFDPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfdps",
 	       VOID_FTYPE_HI_V16SI_PCINT_INT_INT,
 	       IX86_BUILTIN_GATHERPFDPS);
+  def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfqpd",
+	       VOID_FTYPE_QI_V8DI_PCINT64_INT_INT,
+	       IX86_BUILTIN_GATHERPFQPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_gatherpfqps",
 	       VOID_FTYPE_QI_V8DI_PCINT_INT_INT,
 	       IX86_BUILTIN_GATHERPFQPS);
+  def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfdpd",
+	       VOID_FTYPE_QI_V8SI_PCINT64_INT_INT,
+	       IX86_BUILTIN_SCATTERPFDPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfdps",
 	       VOID_FTYPE_HI_V16SI_PCINT_INT_INT,
 	       IX86_BUILTIN_SCATTERPFDPS);
+  def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfqpd",
+	       VOID_FTYPE_QI_V8DI_PCINT64_INT_INT,
+	       IX86_BUILTIN_SCATTERPFQPD);
   def_builtin (OPTION_MASK_ISA_AVX512PF, "__builtin_ia32_scatterpfqps",
 	       VOID_FTYPE_QI_V8DI_PCINT_INT_INT,
 	       IX86_BUILTIN_SCATTERPFQPS);
@@ -35593,17 +35609,30 @@ addcarryx:
     case IX86_BUILTIN_SCATTERDIV8DI:
       icode = CODE_FOR_avx512f_scatterdiv8di;
       goto scatter_gen;
+
+    case IX86_BUILTIN_GATHERPFDPD:
+      icode = CODE_FOR_avx512pf_gatherpfv8sidf;
+      goto vec_prefetch_gen;
     case IX86_BUILTIN_GATHERPFDPS:
-      icode = CODE_FOR_avx512pf_gatherpfv16si;
+      icode = CODE_FOR_avx512pf_gatherpfv16sisf;
+      goto vec_prefetch_gen;
+    case IX86_BUILTIN_GATHERPFQPD:
+      icode = CODE_FOR_avx512pf_gatherpfv8didf;
       goto vec_prefetch_gen;
     case IX86_BUILTIN_GATHERPFQPS:
-      icode = CODE_FOR_avx512pf_gatherpfv8di;
+      icode = CODE_FOR_avx512pf_gatherpfv8disf;
+      goto vec_prefetch_gen;
+    case IX86_BUILTIN_SCATTERPFDPD:
+      icode = CODE_FOR_avx512pf_scatterpfv8sidf;
       goto vec_prefetch_gen;
     case IX86_BUILTIN_SCATTERPFDPS:
-      icode = CODE_FOR_avx512pf_scatterpfv16si;
+      icode = CODE_FOR_avx512pf_scatterpfv16sisf;
+      goto vec_prefetch_gen;
+    case IX86_BUILTIN_SCATTERPFQPD:
+      icode = CODE_FOR_avx512pf_scatterpfv8didf;
       goto vec_prefetch_gen;
     case IX86_BUILTIN_SCATTERPFQPS:
-      icode = CODE_FOR_avx512pf_scatterpfv8di;
+      icode = CODE_FOR_avx512pf_scatterpfv8disf;
       goto vec_prefetch_gen;
 
     gather_gen:
