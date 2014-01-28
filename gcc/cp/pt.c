@@ -3854,6 +3854,7 @@ template_parm_to_arg (tree t)
 	  SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
 	    (vec, TREE_VEC_LENGTH (vec));
 #endif
+	  t = convert_from_reference (t);
 	  TREE_VEC_ELT (vec, 0) = make_pack_expansion (t);
 
 	  t  = make_node (NONTYPE_ARGUMENT_PACK);
@@ -9281,10 +9282,6 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		       /*integral_constant_expression_p=*/true);
       if (!(complain & tf_warning))
 	--c_inhibit_evaluation_warnings;
-      /* Preserve the raw-reference nature of T.  */
-      if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
-	  && REFERENCE_REF_P (r))
-	r = TREE_OPERAND (r, 0);
     }
   return r;
 }
