@@ -1,5 +1,9 @@
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58504
+	* pt.c (tsubst_copy_and_build) [TRAIT_EXPR]: Use tsubst for
+	types.
+
 	PR c++/58606
 	* pt.c (template_parm_to_arg): Call convert_from_reference.
 	(tsubst_template_arg): Don't strip reference refs.
