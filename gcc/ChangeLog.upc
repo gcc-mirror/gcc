@@ -1,3 +1,7 @@
+2014-01-28 Gary Funck  <gary@intrepid.com>
+
+	* c/gupcspec.c (match_suffix): Remove use of PARAMS.
+
 2014-01-20 Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 206847 into gupc branch.

@@ -49,7 +49,7 @@ static const char *const standard_exec_prefix = STANDARD_EXEC_PREFIX;
 /* By default the linker is always invoked.  */
 static int invoke_linker = 1;
 
-static int match_suffix PARAMS ((const char *s, const char *suffix));
+static int match_suffix (const char *s, const char *suffix);
 
 #define END_ARGS ((char *) 0)
 
