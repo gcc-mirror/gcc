@@ -1,3 +1,12 @@
+2014-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/45364
+	PR rtl-optimization/59890
+	* var-tracking.c (local_get_addr_clear_given_value): Handle
+	already cleared slot.
+	(val_reset): Handle not allocated local_get_addr_cache.
+	(vt_find_locations): Use post-order on the inverted CFG.
+
 2014-01-28  Alan Modra  <amodra@gmail.com>
 
 	* Makefile.in (BUILD_CPPFLAGS): Do not use ALL_CPPFLAGS.
