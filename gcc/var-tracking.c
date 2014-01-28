@@ -2481,8 +2481,7 @@ static bool
 local_get_addr_clear_given_value (const void *v ATTRIBUTE_UNUSED,
 				  void **slot, void *x)
 {
-  if (*slot != NULL
-      && vt_get_canonicalize_base ((rtx)*slot) == x)
+  if (vt_get_canonicalize_base ((rtx)*slot) == x)
     *slot = NULL;
   return true;
 }
@@ -2502,8 +2501,7 @@ val_reset (dataflow_set *set, decl_or_value dv)
 
   gcc_assert (var->n_var_parts == 1);
 
-  if (var->onepart == ONEPART_VALUE
-      && local_get_addr_cache != NULL)
+  if (var->onepart == ONEPART_VALUE)
     {
       rtx x = dv_as_value (dv);
       void **slot;
@@ -6936,12 +6934,12 @@ vt_find_locations (void)
   bool success = true;
 
   timevar_push (TV_VAR_TRACKING_DATAFLOW);
-  /* Compute reverse top sord order of the inverted CFG
+  /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
-  rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  rc_order = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
   bb_order = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  int num = inverted_post_order_compute (rc_order);
-  for (i = 0; i < num; i++)
+  pre_and_rev_post_order_compute (NULL, rc_order, false);
+  for (i = 0; i < n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS; i++)
     bb_order[rc_order[i]] = i;
   free (rc_order);
 
