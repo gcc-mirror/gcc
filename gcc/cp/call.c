@@ -5879,9 +5879,11 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && convs->kind != ck_ambig
       && (convs->kind != ck_ref_bind
 	  || convs->user_conv_p)
-      && convs->kind != ck_rvalue
+      && (convs->kind != ck_rvalue
+	  || SCALAR_TYPE_P (totype))
       && convs->kind != ck_base)
     {
+      bool complained = false;
       conversion *t = convs;
 
       /* Give a helpful error if this is bad because of excess braces.  */
@@ -5889,7 +5891,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && SCALAR_TYPE_P (totype)
 	  && CONSTRUCTOR_NELTS (expr) > 0
 	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
-	permerror (loc, "too many braces around initializer for %qT", totype);
+	{
+	  complained = permerror (loc, "too many braces around initializer "
+				  "for %qT", totype);
+	  while (BRACE_ENCLOSED_INITIALIZER_P (expr)
+		 && CONSTRUCTOR_NELTS (expr) == 1)
+	    expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	}
 
       for (; t ; t = next_conversion (t))
 	{
@@ -5925,9 +5933,10 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else if (t->kind == ck_identity)
 	    break;
 	}
-       if (permerror (loc, "invalid conversion from %qT to %qT",
-                    TREE_TYPE (expr), totype)
-	   && fn)
+      if (!complained)
+	complained = permerror (loc, "invalid conversion from %qT to %qT",
+				TREE_TYPE (expr), totype);
+      if (complained && fn)
 	inform (DECL_SOURCE_LOCATION (fn),
 		"initializing argument %P of %qD", argnum, fn);
 

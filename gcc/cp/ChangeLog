@@ -1,5 +1,10 @@
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58812
+	PR c++/58651
+	* call.c (convert_like_real): Give helpful error about excess braces
+	for ck_rvalue of scalar type.
+
 	Core DR 1288
 	* call.c (reference_binding): Only elide braces if the single
 	element is reference-related.
