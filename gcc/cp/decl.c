@@ -11982,7 +11982,10 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 
   if (decl
       && (DECL_CLASS_TEMPLATE_P (decl)
-	  || DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))
+	  /* If scope is ts_current we're defining a class, so ignore a
+	     template template parameter.  */
+	  || (scope != ts_current
+	      && DECL_TEMPLATE_TEMPLATE_PARM_P (decl))))
     decl = DECL_TEMPLATE_RESULT (decl);
 
   if (decl && TREE_CODE (decl) == TYPE_DECL)
