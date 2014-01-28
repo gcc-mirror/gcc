@@ -1,5 +1,9 @@
 2014-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59818
+	* pt.c (tsubst_function_type): Make sure we keep the same function
+	quals.
+
 	PR c++/58701
 	* semantics.c (build_anon_member_initialization): Stop walking
 	when we run out of COMPONENT_REFs.

@@ -11189,6 +11189,8 @@ tsubst_function_type (tree t,
   else
     {
       tree r = TREE_TYPE (TREE_VALUE (arg_types));
+      /* Don't pick up extra function qualifiers from the basetype.  */
+      r = cp_build_qualified_type_real (r, type_memfn_quals (t), complain);
       if (! MAYBE_CLASS_TYPE_P (r))
 	{
 	  /* [temp.deduct]
