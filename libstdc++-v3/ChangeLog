@@ -1,3 +1,20 @@
+2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
+	    Kyle Lippincott  <spectral@google.com>
+
+	PR libstdc++/59656
+	* include/bits/shared_ptr.h (shared_ptr): Add new non-throwing
+	constructor and grant friendship to weak_ptr.
+	(weak_ptr::lock()): Use new constructor.
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base::_M_add_ref_lock_nothrow()): Declare new function
+	and define specializations.
+	(__shared_count): Add new non-throwing constructor.
+	(__shared_ptr): Add new non-throwing constructor and grant friendship
+	to __weak_ptr.
+	(__weak_ptr::lock()): Use new constructor.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
 2014-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59215
