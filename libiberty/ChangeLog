@@ -1,3 +1,8 @@
+2014-01-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cp-demangle.c (d_demangle_callback): Put an abort call in place,
+	to help the compiler.
+
 2014-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* _doprint.c (checkit): Use stdarg, not VA_* macros.
