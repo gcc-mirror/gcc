@@ -1,5 +1,7 @@
 2014-01-28  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (duplicate_decls): Tweak.
+
 	PR c++/53756
 	* mangle.c (write_unqualified_name): Handle operator auto.
 
