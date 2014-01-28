@@ -1,3 +1,7 @@
+2014-01-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.target/arm/thumb-cbranchqi.c: Accept bls also.
+
 2014-01-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/59935
