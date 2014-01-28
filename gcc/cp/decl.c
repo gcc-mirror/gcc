@@ -1923,13 +1923,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	maybe_instantiate_noexcept (olddecl);
 
-      /* Merge the data types specified in the two decls.  */
-      newtype = merge_types (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
-
       /* For typedefs use the old type, as the new type's DECL_NAME points
 	 at newdecl, which will be ggc_freed.  */
       if (TREE_CODE (newdecl) == TYPE_DECL)
 	newtype = oldtype;
+      else
+	/* Merge the data types specified in the two decls.  */
+	newtype = merge_types (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
 
       if (VAR_P (newdecl))
 	{
