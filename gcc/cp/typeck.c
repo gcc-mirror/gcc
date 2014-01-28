@@ -5010,7 +5010,10 @@ tree
 cp_truthvalue_conversion (tree expr)
 {
   tree type = TREE_TYPE (expr);
-  if (TYPE_PTRDATAMEM_P (type))
+  if (TYPE_PTRDATAMEM_P (type)
+      /* Avoid ICE on invalid use of non-static member function.  */
+      || (TREE_CODE (expr) == FUNCTION_DECL
+	  && DECL_NONSTATIC_MEMBER_FUNCTION_P (expr)))
     return build_binary_op (EXPR_LOCATION (expr),
 			    NE_EXPR, expr, nullptr_node, 1);
   else if (TYPE_PTR_P (type) || TYPE_PTRMEMFUNC_P (type))
