@@ -1,3 +1,9 @@
+2014-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58742
+	* tree-ssa-forwprop.c (associate_plusminus): Handle
+	pointer subtraction of the form (T)(P + A) - (T)P.
+
 2014-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c (arm_new_rtx_costs): Remove useless statement
