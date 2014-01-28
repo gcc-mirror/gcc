@@ -1,5 +1,9 @@
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
+	Core DR 1288
+	* call.c (reference_binding): Only elide braces if the single
+	element is reference-related.
+
 	PR c++/58814
 	* typeck.c (cp_build_modify_expr): Make the RHS an rvalue before
 	stabilizing.

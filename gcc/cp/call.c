@@ -1460,16 +1460,29 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+      /* DR 1288: Otherwise, if the initializer list has a single element
+	 of type E and ... [T's] referenced type is reference-related to E,
+	 the object or reference is initialized from that element... */
+      if (CONSTRUCTOR_NELTS (expr) == 1)
+	{
+	  tree elt = CONSTRUCTOR_ELT (expr, 0)->value;
+	  if (error_operand_p (elt))
+	    return NULL;
+	  tree etype = TREE_TYPE (elt);
+	  if (reference_related_p (to, etype))
+	    {
+	      expr = elt;
+	      from = etype;
+	      goto skip;
+	    }
+	}
+      /* Otherwise, if T is a reference type, a prvalue temporary of the
+	 type referenced by T is copy-list-initialized or
+	 direct-list-initialized, depending on the kind of initialization
+	 for the reference, and the reference is bound to that temporary. */
       conv = implicit_conversion (to, from, expr, c_cast_p,
 				  flags, complain);
-      if (!CLASS_TYPE_P (to)
-	  && CONSTRUCTOR_NELTS (expr) == 1)
-	{
-	  expr = CONSTRUCTOR_ELT (expr, 0)->value;
-	  if (error_operand_p (expr))
-	    return NULL;
-	  from = TREE_TYPE (expr);
-	}
+    skip:;
     }
 
   if (TREE_CODE (from) == REFERENCE_TYPE)
