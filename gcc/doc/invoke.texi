@@ -680,7 +680,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
--m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
+-m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -mstack-protector-guard=@var{guard}}
@@ -15635,10 +15635,12 @@ on x86-64 processors in 64-bit environments.
 @item -m32
 @itemx -m64
 @itemx -mx32
+@itemx -m16
 @opindex m32
 @opindex m64
 @opindex mx32
-Generate code for a 32-bit or 64-bit environment.
+@opindex m16
+Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
 generates code that runs on any i386 system.
@@ -15651,6 +15653,10 @@ and @option{-mdynamic-no-pic} options.
 The @option{-mx32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
 generates code for the x86-64 architecture.
+
+The @option{-m16} option is the same as @option{-m32}, except for that
+it outputs the @code{.code16gcc} assembly directive at the beginning of
+the assembly output so that the binary can run in 16-bit mode.
 
 @item -mno-red-zone
 @opindex mno-red-zone

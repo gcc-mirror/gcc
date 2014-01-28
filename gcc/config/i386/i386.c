@@ -3342,6 +3342,10 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_ix86_isa_flags |= OPTION_MASK_ISA_64BIT;
       opts->x_ix86_isa_flags &= ~OPTION_MASK_ABI_64;
     }
+  else if (TARGET_16BIT_P (opts->x_ix86_isa_flags))
+    opts->x_ix86_isa_flags &= ~(OPTION_MASK_ISA_64BIT
+				| OPTION_MASK_ABI_X32
+				| OPTION_MASK_ABI_64);
   else if (TARGET_LP64_P (opts->x_ix86_isa_flags))
     {
       /* Always turn on OPTION_MASK_ISA_64BIT and turn off
@@ -38892,6 +38896,8 @@ static void
 x86_file_start (void)
 {
   default_file_start ();
+  if (TARGET_16BIT)
+    fputs ("\t.code16gcc\n", asm_out_file);
 #if TARGET_MACHO
   darwin_file_start ();
 #endif
