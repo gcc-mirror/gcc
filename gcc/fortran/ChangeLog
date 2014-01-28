@@ -1,3 +1,13 @@
+2014-01-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59414
+	* trans-stmt.c (gfc_trans_allocate): Before the pointer
+	assignment to transfer the source _vptr to a class allocate
+	expression, the final class reference should be exposed. The
+	tail that includes the _data and array references is stored.
+	This reduced expression is transferred to 'lhs' and the _vptr
+	added. Then the tail is restored to the allocate expression.
+
 2014-01-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/58007

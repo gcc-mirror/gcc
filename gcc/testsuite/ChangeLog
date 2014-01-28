@@ -1,6 +1,7 @@
-2014-01-28  Kazu Hirata  <kazu@codesourcery.com>
+2014-01-28  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gcc.target/arm/thumb-cbranchqi.c: Accept bls also.
+	PR fortran/59414
+	* gfortran.dg/allocate_class_3.f90 : New test
 
 2014-01-28  Dodji Seketeli  <dodji@redhat.com>
 
@@ -707,7 +708,7 @@
 
 	PR ipa/58252
 	PR ipa/59226
-	* g++.dg/ipa/devirt-20.C: New testcase.	
+	* g++.dg/ipa/devirt-20.C: New testcase.
 	* g++.dg/torture/pr58252.C: Likewise.
 	* g++.dg/torture/pr59226.C: Likewise.
 
