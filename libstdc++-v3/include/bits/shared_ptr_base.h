@@ -134,7 +134,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   
       void
       _M_add_ref_lock();
-      
+
+      bool
+      _M_add_ref_lock_nothrow();
+
       void
       _M_release() noexcept
       {
@@ -244,6 +247,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (!__atomic_compare_exchange_n(&_M_use_count, &__count, __count + 1,
 					  true, __ATOMIC_ACQ_REL, 
 					  __ATOMIC_RELAXED));
+    }
+
+  template<>
+    inline bool
+    _Sp_counted_base<_S_single>::
+    _M_add_ref_lock_nothrow()
+    {
+      if (_M_use_count == 0)
+	return false;
+      ++_M_use_count;
+      return true;
+    }
+
+  template<>
+    inline bool
+    _Sp_counted_base<_S_mutex>::
+    _M_add_ref_lock_nothrow()
+    {
+      __gnu_cxx::__scoped_lock sentry(*this);
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, 1) == 0)
+	{
+	  _M_use_count = 0;
+	  return false;
+	}
+      return true;
+    }
+
+  template<>
+    inline bool
+    _Sp_counted_base<_S_atomic>::
+    _M_add_ref_lock_nothrow()
+    {
+      // Perform lock-free add-if-not-zero operation.
+      _Atomic_word __count = _M_get_use_count();
+      do
+	{
+	  if (__count == 0)
+	    return false;
+	  // Replace the current counter value with the old value + 1, as
+	  // long as it's not changed meanwhile.
+	}
+      while (!__atomic_compare_exchange_n(&_M_use_count, &__count, __count + 1,
+					  true, __ATOMIC_ACQ_REL,
+					  __ATOMIC_RELAXED));
+      return true;
     }
 
   template<>
@@ -609,6 +657,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Throw bad_weak_ptr when __r._M_get_use_count() == 0.
       explicit __shared_count(const __weak_count<_Lp>& __r);
 
+      // Does not throw if __r._M_get_use_count() == 0, caller must check.
+      explicit __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t);
+
       ~__shared_count() noexcept
       {
 	if (_M_pi != nullptr)
@@ -761,15 +812,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Now that __weak_count is defined we can define this constructor:
   template<_Lock_policy _Lp>
-    inline __shared_count<_Lp>:: __shared_count(const __weak_count<_Lp>& __r)
+    inline
+    __shared_count<_Lp>::__shared_count(const __weak_count<_Lp>& __r)
     : _M_pi(__r._M_pi)
     {
-      if (_M_pi != 0)
+      if (_M_pi != nullptr)
 	_M_pi->_M_add_ref_lock();
       else
 	__throw_bad_weak_ptr();
     }
 
+  // Now that __weak_count is defined we can define this constructor:
+  template<_Lock_policy _Lp>
+    inline
+    __shared_count<_Lp>::
+    __shared_count(const __weak_count<_Lp>& __r, std::nothrow_t)
+    : _M_pi(__r._M_pi)
+    {
+      if (_M_pi != nullptr)
+	if (!_M_pi->_M_add_ref_lock_nothrow())
+	  _M_pi = nullptr;
+    }
 
   // Support for enable_shared_from_this.
 
@@ -1077,6 +1140,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	friend __shared_ptr<_Tp1, _Lp1>
 	__allocate_shared(const _Alloc& __a, _Args&&... __args);
 
+      // This constructor is used by __weak_ptr::lock() and
+      // shared_ptr::shared_ptr(const weak_ptr&, std::nothrow_t).
+      __shared_ptr(const __weak_ptr<_Tp, _Lp>& __r, std::nothrow_t)
+      : _M_refcount(__r._M_refcount, std::nothrow)
+      {
+	_M_ptr = _M_refcount._M_get_use_count() ? __r._M_ptr : nullptr;
+      }
+
+      friend class __weak_ptr<_Tp, _Lp>;
+
     private:
       void*
       _M_get_deleter(const std::type_info& __ti) const noexcept
@@ -1322,31 +1395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __shared_ptr<_Tp, _Lp>
       lock() const noexcept
-      {
-#ifdef __GTHREADS
-	// Optimization: avoid throw overhead.
-	if (expired())
-	  return __shared_ptr<element_type, _Lp>();
-
-	__try
-	  {
-	    return __shared_ptr<element_type, _Lp>(*this);
-	  }
-	__catch(const bad_weak_ptr&)
-	  {
-	    // Q: How can we get here?
-	    // A: Another thread may have invalidated r after the
-	    //    use_count test above.
-	    return __shared_ptr<element_type, _Lp>();
-	  }
-
-#else
-	// Optimization: avoid try/catch overhead when single threaded.
-	return expired() ? __shared_ptr<element_type, _Lp>()
-			 : __shared_ptr<element_type, _Lp>(*this);
-
-#endif
-      } // XXX MT
+      { return __shared_ptr<element_type, _Lp>(*this, std::nothrow); }
 
       long
       use_count() const noexcept
