@@ -1,5 +1,9 @@
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58814
+	* typeck.c (cp_build_modify_expr): Make the RHS an rvalue before
+	stabilizing.
+
 	PR c++/58837
 	* typeck.c (cp_truthvalue_conversion): Use explicit comparison for
 	FUNCTION_DECL.
