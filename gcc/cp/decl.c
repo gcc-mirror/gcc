@@ -8262,7 +8262,9 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	      abi_1_itype = error_mark_node;
 	    }
 
-	  size = maybe_constant_value (size);
+	  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+	    size = maybe_constant_value (size);
+
 	  if (!TREE_CONSTANT (size))
 	    size = osize;
 	}
