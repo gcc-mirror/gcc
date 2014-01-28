@@ -1,5 +1,9 @@
 2014-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58701
+	* semantics.c (build_anon_member_initialization): Stop walking
+	when we run out of COMPONENT_REFs.
+
 	PR c++/58632
 	* decl.c (lookup_and_check_tag): Ignore template parameters if
 	scope == ts_current.

@@ -7515,7 +7515,8 @@ build_anon_member_initialization (tree member, tree init,
       fields.safe_push (TREE_OPERAND (member, 1));
       member = TREE_OPERAND (member, 0);
     }
-  while (ANON_AGGR_TYPE_P (TREE_TYPE (member)));
+  while (ANON_AGGR_TYPE_P (TREE_TYPE (member))
+	 && TREE_CODE (member) == COMPONENT_REF);
 
   /* VEC has the constructor elements vector for the context of FIELD.
      If FIELD is an anonymous aggregate, we will push inside it.  */
