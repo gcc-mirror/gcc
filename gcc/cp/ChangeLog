@@ -1,3 +1,9 @@
+2014-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59097
+	* decl.c (compute_array_index_type): Don't call
+	maybe_constant_value for a non-integral expression.
+
 2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* call.c (magic_varargs_p): Replaced flag_enable_cilkplus with
