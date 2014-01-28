@@ -1,3 +1,18 @@
+2014-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59672
+	* config/i386/gnu-user64.h (SPEC_32): Add "m16|" to "m32".
+	(SPEC_X32): Likewise.
+	(SPEC_64): Likewise.
+	* config/i386/i386.c (ix86_option_override_internal): Turn off
+	OPTION_MASK_ISA_64BIT, OPTION_MASK_ABI_X32 and OPTION_MASK_ABI_64
+	for TARGET_16BIT.
+	(x86_file_start): Output .code16gcc for TARGET_16BIT.
+	* config/i386/i386.h (TARGET_16BIT): New macro.
+	(TARGET_16BIT_P): Likewise.
+	* config/i386/i386.opt: Add m16.
+	* doc/invoke.texi: Document -m16.
+
 2014-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/59935

@@ -558,8 +558,12 @@ Target RejectNegative Negative(mx32) Report Mask(ABI_64) Var(ix86_isa_flags) Sav
 Generate 64bit x86-64 code
 
 mx32
-Target RejectNegative Negative(m32) Report Mask(ABI_X32) Var(ix86_isa_flags) Save
+Target RejectNegative Negative(m16) Report Mask(ABI_X32) Var(ix86_isa_flags) Save
 Generate 32bit x86-64 code
+
+m16
+Target RejectNegative Negative(m32) Report Mask(CODE16) InverseMask(ISA_64BIT) Var(ix86_isa_flags) Save
+Generate 16bit i386 code
 
 mmmx
 Target Report Mask(ISA_MMX) Var(ix86_isa_flags) Save
