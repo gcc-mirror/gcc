@@ -1,3 +1,10 @@
+2014-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/59935
+	* input.c (location_get_source_line): Bail out on when line number
+	is zero, and test the return value of
+	lookup_or_add_file_to_cache_tab.
+
 2014-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58742
