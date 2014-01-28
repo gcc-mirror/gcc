@@ -1,3 +1,9 @@
+2014-01-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR preprocessor/59935
+	* c-c++-common/cpp/warning-zero-location.c: New test.
+	* c-c++-common/cpp/warning-zero-location-2.c: Likewise.
+
 2014-01-27  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.target/mips/pr52125.c: Add -mno-optgp option.
