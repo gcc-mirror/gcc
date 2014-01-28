@@ -10390,7 +10390,6 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
     const_int_cost:
       if (mode == SImode)
 	{
-	  *cost += 0;
 	  *cost += COSTS_N_INSNS (arm_gen_constant (outer_code, SImode, NULL,
 						    INTVAL (x), NULL, NULL,
 						    0, 0));
