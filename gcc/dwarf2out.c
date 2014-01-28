@@ -247,6 +247,9 @@ static GTY(()) bool cold_text_section_used = false;
 /* The default cold text section.  */
 static GTY(()) section *cold_text_section;
 
+/* The DIE for C++1y 'auto' in a function return type.  */
+static GTY(()) dw_die_ref auto_die;
+
 /* Forward declarations for functions defined in this file.  */
 
 static char *stripattributes (const char *);
@@ -17999,6 +18002,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    add_AT_file (subr_die, DW_AT_decl_file, file_index);
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line) != (unsigned) s.line)
 	    add_AT_unsigned (subr_die, DW_AT_decl_line, s.line);
+
+	  /* If the prototype had an 'auto' return type, emit the real
+	     type on the definition die.  */
+	  if (is_cxx() && debug_info_level > DINFO_LEVEL_TERSE
+	      && get_AT_ref (old_die, DW_AT_type) == auto_die)
+	    add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
+				0, 0, context_die);
 	}
     }
   else
@@ -19820,6 +19830,25 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       break;
 
     default:
+      // A C++ function with deduced return type can have
+      // a TEMPLATE_TYPE_PARM named 'auto' in its type.
+      if (is_cxx ())
+	{
+	  tree name = TYPE_NAME (type);
+	  if (TREE_CODE (name) == TYPE_DECL)
+	    name = DECL_NAME (name);
+	  if (name == get_identifier ("auto"))
+	    {
+	      if (!auto_die)
+		{
+		  auto_die = new_die (DW_TAG_unspecified_type,
+				      comp_unit_die (), NULL_TREE);
+		  add_name_attribute (auto_die, "auto");
+		}
+	      equate_type_number_to_die (type, auto_die);
+	      break;
+	    }
+	}
       gcc_unreachable ();
     }
 

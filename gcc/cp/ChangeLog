@@ -1,3 +1,8 @@
+2014-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53756
+	* mangle.c (write_unqualified_name): Handle operator auto.
+
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59823

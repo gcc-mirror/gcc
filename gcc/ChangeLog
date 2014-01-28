@@ -1,3 +1,11 @@
+2014-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53756
+	* dwarf2out.c (auto_die): New static.
+	(gen_type_die_with_usage): Handle C++1y 'auto'.
+	(gen_subprogram_die): If in-class DIE had 'auto', emit type again
+	on definition.
+
 2014-01-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59672
