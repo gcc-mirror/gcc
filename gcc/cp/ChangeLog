@@ -1,5 +1,12 @@
 2014-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59823
+	Core DR 1138
+	* call.c (reference_binding): Pass LOOKUP_NO_TEMP_BIND for
+	list-initialization.  A conversion to rvalue ref that involves
+	an lvalue-rvalue conversion is bad.
+	(convert_like_real): Give helpful error message.
+
 	PR c++/54652
 	* decl.c (duplicate_decls): Always use oldtype for TYPE_DECL.
 

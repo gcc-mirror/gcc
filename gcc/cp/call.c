@@ -1484,7 +1484,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	 direct-list-initialized, depending on the kind of initialization
 	 for the reference, and the reference is bound to that temporary. */
       conv = implicit_conversion (to, from, expr, c_cast_p,
-				  flags, complain);
+				  flags|LOOKUP_NO_TEMP_BIND, complain);
     skip:;
     }
 
@@ -1637,9 +1637,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
   /* [dcl.init.ref]
 
-     Otherwise, the reference shall be to a non-volatile const type.
-
-     Under C++0x, [8.5.3/5 dcl.init.ref] it may also be an rvalue reference */
+     Otherwise, the reference shall be an lvalue reference to a
+     non-volatile const type, or the reference shall be an rvalue
+     reference.  */
   if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
     return NULL;
 
@@ -1677,7 +1677,16 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   /* This reference binding, unlike those above, requires the
      creation of a temporary.  */
   conv->need_temporary_p = true;
-  conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
+  if (TYPE_REF_IS_RVALUE (rto))
+    {
+      conv->rvaluedness_matches_p = 1;
+      /* In the second case, if the reference is an rvalue reference and
+	 the second standard conversion sequence of the user-defined
+	 conversion sequence includes an lvalue-to-rvalue conversion, the
+	 program is ill-formed.  */
+      if (conv->user_conv_p && next_conversion (conv)->kind == ck_rvalue)
+	conv->bad_p = 1;
+    }
 
   return conv;
 }
@@ -5881,7 +5890,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && convs->kind != ck_list
       && convs->kind != ck_ambig
       && (convs->kind != ck_ref_bind
-	  || convs->user_conv_p)
+	  || (convs->user_conv_p && next_conversion (convs)->bad_p))
       && (convs->kind != ck_rvalue
 	  || SCALAR_TYPE_P (totype))
       && convs->kind != ck_base)
@@ -6173,7 +6182,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
 	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
-			&& real_lvalue_p (expr));
+			&& (real_lvalue_p (expr)
+			    || next_conversion(convs)->kind == ck_rvalue));
 
 	    error_at (loc, "cannot bind %qT lvalue to %qT",
 		      TREE_TYPE (expr), totype);
