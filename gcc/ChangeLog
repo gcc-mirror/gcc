@@ -1,3 +1,11 @@
+2014-01-28  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.in (BUILD_CPPFLAGS): Do not use ALL_CPPFLAGS.
+	* configure.ac <recursive call for build != host>: Define
+	GENERATOR_FILE.  Comment.  Use CXX_FOR_BUILD, CXXFLAGS_FOR_BUILD
+	and LD_FOR_BUILD too.
+	* configure: Regenerate.
+
 2014-01-27  Allan Sandfeld Jensen  <sandfeld@kde.org>
 
 	* config/i386/i386.c (get_builtin_code_for_version): Separate

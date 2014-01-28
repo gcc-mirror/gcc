@@ -1529,8 +1529,13 @@ else
 	/* | [A-Za-z]:[\\/]* ) realsrcdir=${srcdir};;
 	*) realsrcdir=../${srcdir};;
 	esac
+	# Clearing GMPINC is necessary to prevent host headers being
+	# used by the build compiler.  Defining GENERATOR_FILE stops
+	# system.h from including gmp.h.
 	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
-	LDFLAGS="${LDFLAGS_FOR_BUILD}" GMPINC="" \
+	CXX="${CXX_FOR_BUILD}" CXXFLAGS="${CXXFLAGS_FOR_BUILD}" \
+	LD="${LD_FOR_BUILD}" LDFLAGS="${LDFLAGS_FOR_BUILD}" \
+	GMPINC="" CPPFLAGS="${CPPFLAGS} -DGENERATOR_FILE" \
 	${realsrcdir}/configure \
 		--enable-languages=${enable_languages-all} \
 		--target=$target_alias --host=$build_alias --build=$build_alias
