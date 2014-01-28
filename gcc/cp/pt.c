@@ -14974,12 +14974,12 @@ tsubst_copy_and_build (tree t,
 
     case TRAIT_EXPR:
       {
-	tree type1 = tsubst_copy (TRAIT_EXPR_TYPE1 (t), args,
-				  complain, in_decl);
+	tree type1 = tsubst (TRAIT_EXPR_TYPE1 (t), args,
+			     complain, in_decl);
 
 	tree type2 = TRAIT_EXPR_TYPE2 (t);
 	if (type2)
-	  type2 = tsubst_copy (type2, args, complain, in_decl);
+	  type2 = tsubst (type2, args, complain, in_decl);
 	
 	RETURN (finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2));
       }
