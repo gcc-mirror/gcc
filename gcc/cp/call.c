@@ -894,6 +894,9 @@ build_aggr_conv (tree type, tree ctor, int flags)
 
       if (i < CONSTRUCTOR_NELTS (ctor))
 	val = CONSTRUCTOR_ELT (ctor, i)->value;
+      else if (TREE_CODE (ftype) == REFERENCE_TYPE)
+	/* Value-initialization of reference is ill-formed.  */
+	return NULL;
       else
 	{
 	  if (empty_ctor == NULL_TREE)

@@ -1,3 +1,8 @@
+2014-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58639
+	* call.c (build_aggr_conv): Reject value-initialization of reference.
+
 2013-10-25  Tom de Vries  <tom@codesourcery.com>
 
 	PR c++/58282
