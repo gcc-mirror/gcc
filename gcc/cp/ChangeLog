@@ -1,5 +1,9 @@
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59916
+	* optimize.c (maybe_thunk_body): Build a RETURN_EXPR for
+	cdtor_returns_this case.
+
 	PR c++/59315
 	* decl.c (cxx_maybe_build_cleanup): Call mark_used.
 
