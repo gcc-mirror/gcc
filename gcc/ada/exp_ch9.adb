@@ -13425,9 +13425,7 @@ package body Exp_Ch9 is
    --  Start of processing for Is_Exception_Safe
 
    begin
-
-      --  When exceptions can not be propagated, the subprogram will always
-      --  return normaly.
+      --  When exceptions can't be propagated, the subprogram returns normally
 
       if No_Exception_Handlers_Set then
          return True;
