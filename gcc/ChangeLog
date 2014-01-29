@@ -1,5 +1,14 @@
 2014-01-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58742
+	* tree-ssa-forwprop.c (associate_pointerplus): Rename to
+	associate_pointerplus_align.
+	(associate_pointerplus_diff): New function.
+	(associate_pointerplus): Likewise.  Call associate_pointerplus_align
+	and associate_pointerplus_diff.
+
+2014-01-29  Richard Biener  <rguenther@suse.de>
+
 	* lto-streamer.h (LTO_major_version): Bump to 3.
 	(LTO_minor_version): Reset to 0.
 

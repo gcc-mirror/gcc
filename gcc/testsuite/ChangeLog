@@ -1,3 +1,10 @@
+2014-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58742
+	* gcc.dg/pr58742-1.c: New testcase.
+	* gcc.dg/pr58742-2.c: Likewise.
+	* gcc.dg/pr58742-3.c: Likewise.
+
 2014-01-29  Renlin Li  <Renlin.Li@arm.com>
 
 	* gcc.target/arm/ftest-armv7ve-arm.c: New.
