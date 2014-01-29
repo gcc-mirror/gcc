@@ -24,6 +24,20 @@
 	New.
 	* testsuite/20_util/allocator_traits/requirements/typedefs2.cc: New.
 
+	PR libstdc++/59829
+	* include/bits/stl_vector.h (vector::data()): Call _M_data_ptr.
+	(vector::_M_data_ptr): New overloaded functions to ensure empty
+	vectors do not dereference the pointer.
+	* testsuite/23_containers/vector/59829.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
 	    Kyle Lippincott  <spectral@google.com>
 

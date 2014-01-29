@@ -888,7 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       pointer
 #endif
       data() _GLIBCXX_NOEXCEPT
-      { return std::__addressof(front()); }
+      { return _M_data_ptr(this->_M_impl._M_start); }
 
 #if __cplusplus >= 201103L
       const _Tp*
@@ -896,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_pointer
 #endif
       data() const _GLIBCXX_NOEXCEPT
-      { return std::__addressof(front()); }
+      { return _M_data_ptr(this->_M_impl._M_start); }
 
       // [23.2.4.3] modifiers
       /**
@@ -1469,6 +1469,23 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    __x.clear();
 	  }
       }
+#endif
+
+#if __cplusplus >= 201103L
+      template<typename _Up>
+	_Up*
+	_M_data_ptr(_Up* __ptr) const
+	{ return __ptr; }
+
+      template<typename _Ptr>
+	typename std::pointer_traits<_Ptr>::element_type*
+	_M_data_ptr(_Ptr __ptr) const
+	{ return empty() ? nullptr : std::__addressof(*__ptr); }
+#else
+      template<typename _Ptr>
+	_Ptr
+	_M_data_ptr(_Ptr __ptr) const
+	{ return __ptr; }
 #endif
     };
 
