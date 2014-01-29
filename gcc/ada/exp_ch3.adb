@@ -9632,7 +9632,8 @@ package body Exp_Ch3 is
 
       --  If the parent is an interface type then it has defined all the
       --  predefined primitives abstract and we need to check if the type
-      --  has some user defined "=" function to avoid generating it.
+      --  has some user defined "=" function which matches the profile of
+      --  the Ada predefined equality operator to avoid generating it.
 
       elsif Is_Interface (Etype (Tag_Typ)) then
          Eq_Needed := True;
@@ -9644,7 +9645,8 @@ package body Exp_Ch3 is
               and then not Is_Internal (Node (Prim))
               and then Present (First_Entity (Node (Prim)))
 
-              --  Following tests need a comment ???
+              --  The predefined equality primitive must have exactly two
+              --  formals whose type is this tagged type
 
               and then Present (Last_Entity (Node (Prim)))
               and then Next_Entity (First_Entity (Node (Prim)))
