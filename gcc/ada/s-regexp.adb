@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2012, AdaCore                     --
+--                     Copyright (C) 1999-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,10 +30,18 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+with Ada.Text_IO; use Ada.Text_IO;
 
 with System.Case_Util;
 
 package body System.Regexp is
+
+   Initial_Max_States_In_Primary_Table : constant := 100;
+   --  Initial size for the number of states in the indefinite state
+   --  machine. The number of states will be increased as needed.
+   --
+   --  This is also used as the maximal number of meta states (groups of
+   --  states) in the secondary table.
 
    Open_Paren    : constant Character := '(';
    Close_Paren   : constant Character := ')';
@@ -68,6 +76,56 @@ package body System.Regexp is
       Case_Sensitive : Boolean;
    end record;
    --  Deterministic finite-state machine
+
+   procedure Dump
+      (Table         : Regexp_Array_Access;
+       Map           : Mapping;
+       Alphabet_Size : Column_Index;
+       Num_States    : State_Index;
+       Start_State   : State_Index;
+       End_State     : State_Index);
+   --  Display the state machine (indeterministic, from the first pass) on
+   --  stdout.
+
+   ----------
+   -- Dump --
+   ----------
+
+   procedure Dump
+      (Table         : Regexp_Array_Access;
+       Map           : Mapping;
+       Alphabet_Size : Column_Index;
+       Num_States    : State_Index;
+       Start_State   : State_Index;
+       End_State     : State_Index)
+   is
+      Empty_Char : constant Column_Index := Alphabet_Size + 1;
+      Col : Column_Index;
+   begin
+      for S in Table'First (1) .. Num_States loop
+         if S = Start_State then
+            Put ("Start" & S'Img & " => ");
+         elsif S = End_State then
+            Put ("End  " & S'Img);
+         else
+            Put ("State" & S'Img & " => ");
+         end if;
+
+         for C in Map'Range loop
+            Col := Map (C);
+            if Table (S, Col) /= 0 then
+               Put (Table (S, Col)'Img & "(" & C'Img & ")");
+            end if;
+         end loop;
+
+         for Col in Empty_Char .. Table'Last (2) loop
+            exit when Table (S, Col) = 0;
+            Put (Table (S, Col)'Img & " (empty)");
+         end loop;
+
+         New_Line;
+      end loop;
+   end Dump;
 
    -----------------------
    -- Local Subprograms --
@@ -1373,52 +1431,104 @@ package body System.Regexp is
          Start_State : State_Index;
          End_State   : State_Index) return Regexp
       is
-         pragma Warnings (Off, Num_States);
-
          Last_Index : constant State_Index := First_Table'Last (1);
-         type Meta_State is array (1 .. Last_Index) of Boolean;
 
-         Table : Regexp_Array (1 .. Last_Index, 0 .. Alphabet_Size) :=
-                   (others => (others => 0));
+         type Meta_State is array (0 .. Last_Index) of Boolean;
+         pragma Pack (Meta_State);
+         --  Whether a state from first_table belongs to a metastate.
 
-         Meta_States : array (1 .. Last_Index + 1) of Meta_State :=
-                         (others => (others => False));
+         No_States : constant Meta_State := (others => False);
+
+         type Meta_States_Array is array (State_Index range <>) of Meta_State;
+         type Meta_States_List is access all Meta_States_Array;
+         procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+            (Meta_States_Array, Meta_States_List);
+         Meta_States : Meta_States_List;
+         --  Components of meta-states. A given state might belong to
+         --  several meta-states.
+         --  This array grows dynamically.
+
+         type Char_To_State is array (0 .. Alphabet_Size) of State_Index;
+         type Meta_States_Transition_Arr is
+            array (State_Index range <>) of Char_To_State;
+         type Meta_States_Transition is access all Meta_States_Transition_Arr;
+         procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+           (Meta_States_Transition_Arr, Meta_States_Transition);
+         Table : Meta_States_Transition;
+         --  Documents the transitions between each meta-state. The
+         --  first index is the meta-state, the second column is the
+         --  character seen in the input, the value is the new meta-state.
 
          Temp_State_Not_Null : Boolean;
 
-         Is_Final : Boolean_Array (1 .. Last_Index) := (others => False);
-
          Current_State       : State_Index := 1;
+         --  The current meta-state we are creating
+
          Nb_State            : State_Index := 1;
+         --  The total number of meta-states created so far.
 
          procedure Closure
-           (State : in out Meta_State;
-            Item  :        State_Index);
+           (Meta_State : State_Index;
+            State      : State_Index);
          --  Compute the closure of the state (that is every other state which
          --  has a empty-character transition) and add it to the state
+
+         procedure Ensure_Meta_State (Meta : State_Index);
+         --  grows the Meta_States array as needed to make sure that there
+         --  is enough space to store the new meta state.
+
+         -----------------------
+         -- Ensure_Meta_State --
+         -----------------------
+
+         procedure Ensure_Meta_State (Meta : State_Index) is
+            Tmp : Meta_States_List := Meta_States;
+            Tmp2 : Meta_States_Transition := Table;
+         begin
+            if Meta_States = null then
+               Meta_States := new Meta_States_Array
+                  (1 .. State_Index'Max (Last_Index, Meta) + 1);
+               Meta_States (Meta_States'Range) := (others => No_States);
+
+               Table := new Meta_States_Transition_Arr
+                  (1 .. State_Index'Max (Last_Index, Meta) + 1);
+               Table.all := (others => (others => 0));
+
+            elsif Meta > Meta_States'Last then
+               Meta_States := new Meta_States_Array
+                  (1 .. State_Index'Max (2 * Tmp'Last, Meta));
+               Meta_States (Tmp'Range) := Tmp.all;
+               Meta_States (Tmp'Last + 1 .. Meta_States'Last) :=
+                  (others => No_States);
+               Unchecked_Free (Tmp);
+
+               Table := new Meta_States_Transition_Arr
+                  (1 .. State_Index'Max (2 * Tmp2'Last, Meta) + 1);
+               Table (Tmp2'Range) := Tmp2.all;
+               Table (Tmp2'Last + 1 .. Table'Last) :=
+                  (others => (others => 0));
+               Unchecked_Free (Tmp2);
+            end if;
+         end Ensure_Meta_State;
 
          -------------
          -- Closure --
          -------------
 
          procedure Closure
-           (State : in out Meta_State;
-            Item  : State_Index)
-         is
+           (Meta_State : State_Index;
+            State      : State_Index) is
          begin
-            if State (Item) then
-               return;
+            if not Meta_States (Meta_State)(State) then
+               Meta_States (Meta_State)(State) := True;
+
+               --  For each transition on empty-character
+
+               for Column in Alphabet_Size + 1 .. First_Table'Last (2) loop
+                  exit when First_Table (State, Column) = 0;
+                  Closure (Meta_State, First_Table (State, Column));
+               end loop;
             end if;
-
-            State (Item) := True;
-
-            for Column in Alphabet_Size + 1 .. First_Table'Last (2) loop
-               if First_Table (Item, Column) = 0 then
-                  return;
-               end if;
-
-               Closure (State, First_Table (Item, Column));
-            end loop;
          end Closure;
 
       --  Start of processing for Create_Secondary_Table
@@ -1426,30 +1536,29 @@ package body System.Regexp is
       begin
          --  Create a new state
 
-         Closure (Meta_States (Current_State), Start_State);
+         Ensure_Meta_State (Current_State);
+         Closure (Current_State, Start_State);
+
+         if False then
+            Dump (First_Table, Map, Alphabet_Size, Num_States,
+                  Start_State, End_State);
+         end if;
 
          while Current_State <= Nb_State loop
-
-            --  If this new meta-state includes the primary table end state,
-            --  then this meta-state will be a final state in the regexp
-
-            if Meta_States (Current_State)(End_State) then
-               Is_Final (Current_State) := True;
-            end if;
+            --  We will be trying, below, to create the next meta-state
+            Ensure_Meta_State (Nb_State + 1);
 
             --  For every character in the regexp, calculate the possible
             --  transitions from Current_State
 
             for Column in 0 .. Alphabet_Size loop
-               Meta_States (Nb_State + 1) := (others => False);
                Temp_State_Not_Null := False;
 
                for K in Meta_States (Current_State)'Range loop
                   if Meta_States (Current_State)(K)
                     and then First_Table (K, Column) /= 0
                   then
-                     Closure
-                       (Meta_States (Nb_State + 1), First_Table (K, Column));
+                     Closure (Nb_State + 1, First_Table (K, Column));
                      Temp_State_Not_Null := True;
                   end if;
                end loop;
@@ -1462,16 +1571,20 @@ package body System.Regexp is
 
                   for K in 1 .. Nb_State loop
                      if Meta_States (K) = Meta_States (Nb_State + 1) then
-                        Table (Current_State, Column) := K;
+                        Table (Current_State)(Column) := K;
+
+                        --  reset data, for the next time we try that state
+                        Meta_States (Nb_State + 1) := No_States;
                         exit;
                      end if;
                   end loop;
 
                   --  If not, create a new state
 
-                  if Table (Current_State, Column) = 0 then
+                  if Table (Current_State)(Column) = 0 then
                      Nb_State := Nb_State + 1;
-                     Table (Current_State, Column) := Nb_State;
+                     Ensure_Meta_State (Nb_State + 1);
+                     Table (Current_State)(Column) := Nb_State;
                   end if;
                end if;
             end loop;
@@ -1488,14 +1601,20 @@ package body System.Regexp is
             R := new Regexp_Value (Alphabet_Size => Alphabet_Size,
                                    Num_States    => Nb_State);
             R.Map            := Map;
-            R.Is_Final       := Is_Final (1 .. Nb_State);
             R.Case_Sensitive := Case_Sensitive;
+
+            for S in 1 .. Nb_State loop
+               R.Is_Final (S) := Meta_States (S)(End_State);
+            end loop;
 
             for State in 1 .. Nb_State loop
                for K in 0 .. Alphabet_Size loop
-                  R.States (State, K) := Table (State, K);
+                  R.States (State, K) := Table (State)(K);
                end loop;
             end loop;
+
+            Unchecked_Free (Meta_States);
+            Unchecked_Free (Table);
 
             return (Ada.Finalization.Controlled with R => R);
          end;
@@ -1546,7 +1665,7 @@ package body System.Regexp is
          R           : Regexp;
 
       begin
-         Table := new Regexp_Array (1 .. 100,
+         Table := new Regexp_Array (1 .. Initial_Max_States_In_Primary_Table,
                                     0 .. Alphabet_Size + 10);
          if not Glob then
             Create_Primary_Table (Table, Num_States, Start_State, End_State);
@@ -1558,7 +1677,7 @@ package body System.Regexp is
          --  Creates the secondary table
 
          R := Create_Secondary_Table
-           (Table, Num_States, Start_State, End_State);
+            (Table, Num_States, Start_State, End_State);
          Free (Table);
          return R;
       end;

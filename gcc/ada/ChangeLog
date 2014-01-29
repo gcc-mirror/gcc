@@ -1,3 +1,14 @@
+2014-01-29  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regexp.adb (Create_Secondary_Table): Automatically grow the state
+	machine as needed.
+	(Dump): New subprogram.
+
+2014-01-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Add
+	Expand_Entry_Declaration to factorize code.
+
 2014-01-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb: minor clarification.

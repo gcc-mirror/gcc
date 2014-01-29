@@ -8795,8 +8795,6 @@ package body Exp_Ch9 is
       Comp_Id      : Entity_Id;
       Sub          : Node_Id;
       Current_Node : Node_Id := N;
-      Bdef         : Entity_Id := Empty; -- avoid uninit warning
-      Edef         : Entity_Id := Empty; -- avoid uninit warning
       Entries_Aggr : Node_Id;
       Body_Id      : Entity_Id;
       Body_Arr     : Node_Id;
@@ -8807,6 +8805,10 @@ package body Exp_Ch9 is
       --  If the original operation has a pragma Inline, propagate the flag
       --  to the internal body, for possible inlining later on. The source
       --  operation is invisible to the back-end and is never actually called.
+
+      procedure Expand_Entry_Declaration (Comp : Entity_Id);
+      --  Create the subprograms for the barrier and for the body, and append
+      --  then to Entry_Bodies_Array.
 
       function Static_Component_Size (Comp : Entity_Id) return Boolean;
       --  When compiling under the Ravenscar profile, private components must
@@ -8864,6 +8866,67 @@ package body Exp_Ch9 is
             return True;
          end if;
       end Static_Component_Size;
+
+      ------------------------------
+      -- Expand_Entry_Declaration --
+      ------------------------------
+
+      procedure Expand_Entry_Declaration (Comp : Entity_Id) is
+         Bdef : Entity_Id;
+         Edef : Entity_Id;
+      begin
+         E_Count := E_Count + 1;
+         Comp_Id := Defining_Identifier (Comp);
+
+         Edef :=
+           Make_Defining_Identifier (Loc,
+             Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
+         Sub :=
+           Make_Subprogram_Declaration (Loc,
+             Specification =>
+               Build_Protected_Entry_Specification (Loc, Edef, Comp_Id));
+
+         Insert_After (Current_Node, Sub);
+         Analyze (Sub);
+
+         --  Build wrapper procedure for pre/postconditions
+
+         Build_PPC_Wrapper (Comp_Id, N);
+
+         Set_Protected_Body_Subprogram
+           (Defining_Identifier (Comp),
+            Defining_Unit_Name (Specification (Sub)));
+
+         Current_Node := Sub;
+
+         Bdef :=
+           Make_Defining_Identifier (Loc,
+             Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'B'));
+         Sub :=
+           Make_Subprogram_Declaration (Loc,
+             Specification =>
+               Build_Barrier_Function_Specification (Loc, Bdef));
+
+         Insert_After (Current_Node, Sub);
+         Analyze (Sub);
+         Set_Protected_Body_Subprogram (Bdef, Bdef);
+         Set_Barrier_Function (Comp_Id, Bdef);
+         Set_Scope (Bdef, Scope (Comp_Id));
+         Current_Node := Sub;
+
+         --  Collect pointers to the protected subprogram and the barrier
+         --  of the current entry, for insertion into Entry_Bodies_Array.
+
+         Append_To (Expressions (Entries_Aggr),
+           Make_Aggregate (Loc,
+             Expressions => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Reference_To (Bdef, Loc),
+                 Attribute_Name => Name_Unrestricted_Access),
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Reference_To (Edef, Loc),
+                 Attribute_Name => Name_Unrestricted_Access))));
+      end Expand_Entry_Declaration;
 
       ----------------------
       -- Register_Handler --
@@ -9054,7 +9117,7 @@ package body Exp_Ch9 is
          end loop;
       end if;
 
-      --  Except for the lock-free implementation, prepend the _Object field
+      --  Except for the lock-free implementation, append the _Object field
       --  with the right type to the component list. We need to compute the
       --  number of entries, and in some cases the number of Attach_Handler
       --  pragmas.
@@ -9258,57 +9321,9 @@ package body Exp_Ch9 is
             end if;
 
          elsif Nkind (Comp) = N_Entry_Declaration then
-            E_Count := E_Count + 1;
-            Comp_Id := Defining_Identifier (Comp);
 
-            Edef :=
-              Make_Defining_Identifier (Loc,
-                Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
-            Sub :=
-              Make_Subprogram_Declaration (Loc,
-                Specification =>
-                  Build_Protected_Entry_Specification (Loc, Edef, Comp_Id));
+            Expand_Entry_Declaration (Comp);
 
-            Insert_After (Current_Node, Sub);
-            Analyze (Sub);
-
-            --  Build wrapper procedure for pre/postconditions
-
-            Build_PPC_Wrapper (Comp_Id, N);
-
-            Set_Protected_Body_Subprogram
-              (Defining_Identifier (Comp),
-               Defining_Unit_Name (Specification (Sub)));
-
-            Current_Node := Sub;
-
-            Bdef :=
-              Make_Defining_Identifier (Loc,
-                Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'B'));
-            Sub :=
-              Make_Subprogram_Declaration (Loc,
-                Specification =>
-                  Build_Barrier_Function_Specification (Loc, Bdef));
-
-            Insert_After (Current_Node, Sub);
-            Analyze (Sub);
-            Set_Protected_Body_Subprogram (Bdef, Bdef);
-            Set_Barrier_Function (Comp_Id, Bdef);
-            Set_Scope (Bdef, Scope (Comp_Id));
-            Current_Node := Sub;
-
-            --  Collect pointers to the protected subprogram and the barrier
-            --  of the current entry, for insertion into Entry_Bodies_Array.
-
-            Append_To (Expressions (Entries_Aggr),
-              Make_Aggregate (Loc,
-                Expressions => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Reference_To (Bdef, Loc),
-                    Attribute_Name => Name_Unrestricted_Access),
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Reference_To (Edef, Loc),
-                    Attribute_Name => Name_Unrestricted_Access))));
          end if;
 
          Next (Comp);
@@ -9321,54 +9336,7 @@ package body Exp_Ch9 is
          Comp := First (Private_Declarations (Pdef));
          while Present (Comp) loop
             if Nkind (Comp) = N_Entry_Declaration then
-               E_Count := E_Count + 1;
-               Comp_Id := Defining_Identifier (Comp);
-
-               Edef :=
-                 Make_Defining_Identifier (Loc,
-                  Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Protected_Entry_Specification (Loc, Edef, Comp_Id));
-
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
-
-               Set_Protected_Body_Subprogram
-                 (Defining_Identifier (Comp),
-                  Defining_Unit_Name (Specification (Sub)));
-
-               Current_Node := Sub;
-
-               Bdef :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
-
-               Sub :=
-                 Make_Subprogram_Declaration (Loc,
-                   Specification =>
-                     Build_Barrier_Function_Specification (Loc, Bdef));
-
-               Insert_After (Current_Node, Sub);
-               Analyze (Sub);
-               Set_Protected_Body_Subprogram (Bdef, Bdef);
-               Set_Barrier_Function (Comp_Id, Bdef);
-               Set_Scope (Bdef, Scope (Comp_Id));
-               Current_Node := Sub;
-
-               --  Collect pointers to the protected subprogram and the barrier
-               --  of the current entry, for insertion into Entry_Bodies_Array.
-
-               Append_To (Expressions (Entries_Aggr),
-                 Make_Aggregate (Loc,
-                   Expressions => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix => New_Reference_To (Bdef, Loc),
-                       Attribute_Name => Name_Unrestricted_Access),
-                     Make_Attribute_Reference (Loc,
-                       Prefix => New_Reference_To (Edef, Loc),
-                       Attribute_Name => Name_Unrestricted_Access))));
+               Expand_Entry_Declaration (Comp);
             end if;
 
             Next (Comp);
@@ -9406,15 +9374,7 @@ package body Exp_Ch9 is
                  Aliased_Present => True,
                  Object_Definition => New_Reference_To
                                         (RTE (RE_Entry_Body), Loc),
-                 Expression =>
-                   Make_Aggregate (Loc,
-                     Expressions => New_List (
-                       Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Bdef, Loc),
-                         Attribute_Name => Name_Unrestricted_Access),
-                       Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Edef, Loc),
-                         Attribute_Name => Name_Unrestricted_Access))));
+                 Expression => Remove_Head (Expressions (Entries_Aggr)));
 
             when others =>
                raise Program_Error;
