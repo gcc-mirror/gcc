@@ -1927,9 +1927,10 @@ package body System.OS_Lib is
    --  Start of processing for Normalize_Pathname
 
    begin
-      --  Special case, if name is null, then return null
+      --  Special case, return null if name is null, or if it is bigger than
+      --  the biggest name allowed.
 
-      if Name'Length = 0 then
+      if Name'Length = 0 or else Name'Length > Max_Path then
          return "";
       end if;
 

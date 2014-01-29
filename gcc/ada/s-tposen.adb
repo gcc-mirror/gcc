@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---         Copyright (C) 1998-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -277,20 +277,6 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -----------------------
    -- Restricted GNARLI --
    -----------------------
-
-   --------------------------------
-   -- Complete_Single_Entry_Body --
-   --------------------------------
-
-   procedure Complete_Single_Entry_Body (Object : Protection_Entry_Access) is
-      pragma Warnings (Off, Object);
-
-   begin
-      --  Nothing needs to do (Object.Call_In_Progress.Exception_To_Raise
-      --  has already been set to Null_Id).
-
-      null;
-   end Complete_Single_Entry_Body;
 
    --------------------------------------------
    -- Exceptional_Complete_Single_Entry_Body --

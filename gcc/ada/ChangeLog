@@ -1,3 +1,21 @@
+2014-01-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Do not call
+	Complete_Entry_Body anymore.
+	* rtsfind.ads (RE_Complete_Single_Entry_Body): Remove.
+	* s-tposen.ads, s-tposen.adb (Complete_Single_Entry_Body): Remove.
+
+2014-01-29  Pierre-Marie Derodat  <derodat@adacore.com>
+
+	* s-os_lib.adb, s-os_lib.ads (Normalize_Pathname): Return an empty
+	string when the Name input bigger than allowed. Adapt the function
+	specification.
+
+2014-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Install_Null_Excluding_Check): Do not emit warning
+	if expression is within a case_expression of if_expression.
+
 2014-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb, inline.ads: Minor reformatting.

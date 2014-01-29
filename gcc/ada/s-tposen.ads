@@ -250,12 +250,6 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  Same as the Protected_Entry_Call but with time-out specified.
    --  This routine is used to implement timed entry calls.
 
-   procedure Complete_Single_Entry_Body
-     (Object : Protection_Entry_Access);
-   pragma Inline (Complete_Single_Entry_Body);
-   --  Called from within an entry body procedure, indicates that the
-   --  corresponding entry call has been serviced.
-
    procedure Exceptional_Complete_Single_Entry_Body
      (Object : Protection_Entry_Access;
       Ex     : Ada.Exceptions.Exception_Id);
