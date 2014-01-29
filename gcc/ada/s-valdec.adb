@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package body System.Val_Dec is
    --  For decimal types where Size < Integer'Size, it is fine to use
    --  the floating-point circuit, since it certainly has sufficient
    --  precision for any reasonable hardware, and we just don't support
-   --  things on junk hardware!
+   --  things on junk hardware.
 
    function Scan_Decimal
      (Str   : String;

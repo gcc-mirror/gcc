@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -310,7 +310,8 @@ package body Exp_Imgv is
          Tent := Rtyp;
 
       --  For standard character, we have to select the version which handles
-      --  soft hyphen correctly, based on the version of Ada in use (ugly!)
+      --  soft hyphen correctly, based on the version of Ada in use (this is
+      --  ugly, but we have no choice).
 
       elsif Rtyp = Standard_Character then
          if Ada_Version < Ada_2005 then

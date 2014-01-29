@@ -249,7 +249,7 @@ private
    ADA_GNAT : constant Boolean := True;
    pragma Export_Object (ADA_GNAT, "ADA$GNAT");
    --  Ubiquitous global symbol identifying a GNAT compiled image to VMS Debug.
-   --  Do not remove!
+   --  Do not remove.
 
    pragma Ident ("GNAT"); --  Gnat_Static_Version_String
    --  Default ident for all VMS images.

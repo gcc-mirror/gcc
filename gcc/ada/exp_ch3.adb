@@ -3406,7 +3406,7 @@ package body Exp_Ch3 is
          --     the client will think an initialization procedure is present
          --     and call it, when in fact no such procedure is required, but
          --     since the call is generated, there had better be a routine
-         --     at the other end of the call, even if it does nothing!)
+         --     at the other end of the call, even if it does nothing).
 
          --  Note: the reason we exclude the CPP_Class case is because in this
          --  case the initialization is performed by the C++ constructors, and
@@ -5298,7 +5298,7 @@ package body Exp_Ch3 is
          elsif Is_Interface (Typ)
 
            --  Avoid never-ending recursion because if Equivalent_Type is set
-           --  then we've done it already and must not do it again!
+           --  then we've done it already and must not do it again.
 
            and then not
              (Nkind (Object_Definition (N)) = N_Identifier
@@ -5746,7 +5746,7 @@ package body Exp_Ch3 is
             --  We do not analyze this renaming declaration, because all its
             --  components have already been analyzed, and if we were to go
             --  ahead and analyze it, we would in effect be trying to generate
-            --  another declaration of X, which won't do!
+            --  another declaration of X, which won't do.
 
             Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
             Set_Analyzed (N);
@@ -6295,7 +6295,7 @@ package body Exp_Ch3 is
 
       --  Note: if exceptions are not supported, then we suppress the raise
       --  and return -1 unconditionally (this is an erroneous program in any
-      --  case and there is no obligation to raise Constraint_Error here!) We
+      --  case and there is no obligation to raise Constraint_Error here). We
       --  also do this if pragma Restrictions (No_Exceptions) is active.
 
       --  Is this right??? What about No_Exception_Propagation???
@@ -9795,7 +9795,7 @@ package body Exp_Ch3 is
             Append_To (Res, Decl);
          end if;
 
-         --  Body for inequality (if required!)
+         --  Body for inequality (if required)
 
          Decl := Make_Neq_Body (Tag_Typ);
 

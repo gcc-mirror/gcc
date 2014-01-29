@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1248,10 +1248,10 @@ package body System.Tasking.Debug is
    is
       Task_Value : Task_Id;
       Task_Index : constant Integer := Integer (Event_Value) - 1;
-   begin
 
+   begin
       --  At least one event enabled, any and all events will cause a
-      --  condition to be raised and checked. Major tasking slowdown!
+      --  condition to be raised and checked. Major tasking slowdown.
 
       Global_Task_Debug_Event_Set := True;
       Events_Enabled_Count := Events_Enabled_Count + 1;
@@ -1284,8 +1284,8 @@ package body System.Tasking.Debug is
        Event_Entry : out Unsigned_Longword;
        Status      : out Cond_Value_Type)
    is
-      K_SUCCESS        : constant := 1;
-      K_NO_SUCH_EVENT  : constant := 9;
+      K_SUCCESS       : constant := 1;
+      K_NO_SUCH_EVENT : constant := 9;
 
    begin
       Trace_Output ("Looking for Event: ");
@@ -1313,8 +1313,8 @@ package body System.Tasking.Debug is
        Event_Entry : out Unsigned_Longword;
        Status      : out Cond_Value_Type)
    is
-      K_SUCCESS        : constant := 1;
-      K_NO_SUCH_EVENT  : constant := 9;
+      K_SUCCESS       : constant := 1;
+      K_NO_SUCH_EVENT : constant := 9;
 
       Event_Name_Cstr : constant ASCIC := To_AASCIC (Event_Name).all;
    begin
@@ -1384,7 +1384,7 @@ package body System.Tasking.Debug is
                   Task_Image : ASCIC :=
                    (Entry_Call.Self.Common.Task_Image_Len,
                     Entry_Call.Self.Common.Task_Image
-                     (1 .. Entry_Call.Self.Common.Task_Image_Len));
+                      (1 .. Entry_Call.Self.Common.Task_Image_Len));
                begin
                   Print_Routine (Print_FAO, Print_Newline,
                     To_UL (DoAC ("              %TASK !UI, type: !AC")),

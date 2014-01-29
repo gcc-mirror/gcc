@@ -407,7 +407,7 @@ begin
 
          --  We unconditionally make a List_On entry for the pragma, so that
          --  in the List (Off) case, the pragma will print even in a region
-         --  of code with listing turned off (this is required!)
+         --  of code with listing turned off (this is required).
 
          List_Pragmas.Increment_Last;
          List_Pragmas.Table (List_Pragmas.Last) :=

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ package body Sync is
       Resync_Init;
 
       --  Loop till we get a token that terminates a choice. Note that EOF is
-      --  one such token, so we are sure to get out of this loop eventually!
+      --  one such token, so we are sure to get out of this loop eventually.
 
       while Token not in Token_Class_Cterm loop
          Scan;
@@ -135,7 +135,7 @@ package body Sync is
       --  loop resynchronizing and getting nowhere. If we are called to do a
       --  resynchronize and we are exactly at the same point that we left off
       --  on the last resynchronize call, then we force at least one token to
-      --  be skipped so that we make progress!
+      --  be skipped so that we make progress.
 
       if Token_Ptr = Last_Resync_Point then
          Scan; -- to skip at least one token

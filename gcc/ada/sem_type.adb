@@ -1255,7 +1255,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  Otherwise, types are not compatible!
+      --  Otherwise, types are not compatible
 
       else
          return False;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -342,7 +342,7 @@ package body System.Fat_Gen is
 
    --  The trick with Machine is to force the compiler to store the result
    --  in memory so that we do not have extra precision used. The compiler
-   --  is clever, so we have to outwit its possible optimizations! We do
+   --  is clever, so we have to outwit its possible optimizations. We do
    --  this by using an intermediate pragma Volatile location.
 
    function Machine (X : T) return T is

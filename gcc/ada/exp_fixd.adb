@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,7 +122,7 @@ package body Exp_Fixd is
    --  both integer types, which need not be the same. Build_Rem converts the
    --  operand with the smaller sized type to match the type of the other
    --  operand and sets this as the result type. The result is never rounded
-   --  (rem operations cannot be rounded in any case!) On return, the resulting
+   --  (rem operations cannot be rounded in any case). On return, the resulting
    --  node is analyzed and has its Etype set.
 
    function Build_Scaled_Divide
@@ -407,7 +407,7 @@ package body Exp_Fixd is
 
    begin
       --  If denominator fits in 64 bits, we can build the operations directly
-      --  without causing any intermediate overflow, so that's what we do!
+      --  without causing any intermediate overflow, so that's what we do.
 
       if Int'Max (Y_Size, Z_Size) <= 32 then
          return
@@ -787,7 +787,7 @@ package body Exp_Fixd is
 
    begin
       --  If numerator fits in 64 bits, we can build the operations directly
-      --  without causing any intermediate overflow, so that's what we do!
+      --  without causing any intermediate overflow, so that's what we do.
 
       if Int'Max (X_Size, Y_Size) <= 32 then
          return

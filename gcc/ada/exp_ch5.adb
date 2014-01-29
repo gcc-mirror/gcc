@@ -631,7 +631,7 @@ package body Exp_Ch5 is
             --  Otherwise, we assume the worst, which is that the two arrays
             --  are the same array. There is no need to check if we know that
             --  is the case, because if we don't know it, we still have to
-            --  assume it!
+            --  assume it.
 
             --  Generally if the same array is involved, then we have an
             --  overlapping case. We will have to really assume the worst (i.e.
@@ -697,7 +697,7 @@ package body Exp_Ch5 is
 
          --    Note: the above code MUST be analyzed with checks off, because
          --    otherwise the Succ could overflow. But in any case this is more
-         --    efficient!
+         --    efficient.
 
          --  Forwards_OK = False, Backwards_OK = True
 
@@ -709,7 +709,7 @@ package body Exp_Ch5 is
 
          --    Note: the above code MUST be analyzed with checks off, because
          --    otherwise the Pred could overflow. But in any case this is more
-         --    efficient!
+         --    efficient.
 
          --  Forwards_OK = Backwards_OK = False
 
@@ -1775,7 +1775,7 @@ package body Exp_Ch5 is
             --  We do not need to reanalyze that assignment, and we do not need
             --  to worry about references to the temporary, but we do need to
             --  make sure that the temporary is not marked as a true constant
-            --  since we now have a generated assignment to it!
+            --  since we now have a generated assignment to it.
 
             Set_Is_True_Constant (Tnn, False);
          end;

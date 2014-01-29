@@ -1496,7 +1496,7 @@ package body Lib.Writ is
       end if;
 
       --  Output final blank line and we are done. This final blank line is
-      --  probably junk, but we don't feel like making an incompatible change!
+      --  probably junk, but we don't feel like making an incompatible change.
 
       Write_Info_Terminate;
       Close_Output_Library_Info;

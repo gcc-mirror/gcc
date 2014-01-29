@@ -153,7 +153,7 @@ package Stand is
       S_RS,             -- 16#1E#
       S_US,             -- 16#1F#
 
-      --  Here are the ones for Colonel Whitaker's O26 keypunch!
+      --  Here are the ones for Colonel Whitaker's O26 keypunch
 
       S_Exclam,         -- 16#21#
       S_Quotation,      -- 16#22#

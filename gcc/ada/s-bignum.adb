@@ -364,7 +364,7 @@ package body System.Bignums is
                   Free_Bignum (XY2);
 
                   --  Raise storage error if intermediate value is getting too
-                  --  large, which we arbitrarily define as 200 words for now!
+                  --  large, which we arbitrarily define as 200 words for now.
 
                   if XY2S.Len > 200 then
                      Free_Bignum (XY2S);
@@ -708,7 +708,7 @@ package body System.Bignums is
 
       --  If both X and Y are less than 2**63-1, we can use Long_Long_Integer
       --  arithmetic. Note it is good not to do an accurate range check against
-      --  Long_Long_Integer since -2**63 / -1 overflows!
+      --  Long_Long_Integer since -2**63 / -1 overflows.
 
       elsif (X.Len <= 1 or else (X.Len = 2 and then X.D (1) < 2**31))
               and then

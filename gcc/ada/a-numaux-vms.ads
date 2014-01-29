@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                             (VMS Version)                                --
 --                                                                          --
---          Copyright (C) 2003-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package Ada.Numerics.Aux is
    --  since we use the IEEE version of the C library with VMS.
 
    --  We import these functions directly from C. Note that we label them
-   --  all as pure functions, because indeed all of them are in fact pure!
+   --  all as pure functions, because indeed all of them are in fact pure.
 
    function Sin (X : Double) return Double;
    pragma Import (C, Sin, "MATH$SIN_T");

@@ -1287,11 +1287,11 @@ package body Exp_Disp is
                Selector_Name => New_Occurrence_Of (Iface_Tag, Loc))));
 
       else
-         --  Build internal function to handle the case in which the
-         --  actual is null. If the actual is null returns null because
-         --  no displacement is required; otherwise performs a type
-         --  conversion that will be expanded in the code that returns
-         --  the value of the displaced actual. That is:
+         --  Build internal function to handle the case in which the actual is
+         --  null. If the actual is null returns null because no displacement
+         --  is required; otherwise performs a type conversion that will be
+         --  expanded in the code that returns the value of the displaced
+         --  actual. That is:
 
          --     function Func (O : Address) return Iface_Typ is
          --        type Op_Typ is access all Operand_Typ;
@@ -5050,7 +5050,7 @@ package body Exp_Disp is
 
       --  Of course this value will only be valid if the tagged type is still
       --  in scope, but it clearly must be erroneous to compute the internal
-      --  tag of a tagged type that is out of scope!
+      --  tag of a tagged type that is out of scope.
 
       --  We don't do this processing if an explicit external tag has been
       --  specified. That's an odd case for which we have already issued a
@@ -7217,7 +7217,7 @@ package body Exp_Disp is
       --  the decoration required by the backend.
 
       --  Odd comment, the back end cannot require anything not properly
-      --  documented in einfo! ???
+      --  documented in einfo. ???
 
       Set_Is_Dispatch_Table_Entity (RTE (RE_Prim_Ptr));
       Set_Is_Dispatch_Table_Entity (RTE (RE_Predef_Prims_Table_Ptr));

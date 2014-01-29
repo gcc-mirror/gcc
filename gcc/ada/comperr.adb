@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -115,15 +115,15 @@ package body Comperr is
 
       Abort_In_Progress := True;
 
-      --  Generate a "standard" error message instead of a bug box in case of
-      --  .NET compiler, since we do not support all constructs of the
-      --  language. Of course ideally, we should detect this before bombing
-      --  on e.g. an assertion error, but in practice most of these bombs
-      --  are due to a legitimate case of a construct not being supported (in
-      --  a sense they all are, since for sure we are not supporting something
-      --  if we bomb!) By giving this message, we provide a more reasonable
-      --  practical interface, since giving scary bug boxes on unsupported
-      --  features is definitely not helpful.
+      --  Generate a "standard" error message instead of a bug box in case
+      --  of .NET compiler, since we do not support all constructs of the
+      --  language. Of course ideally, we should detect this before bombing on
+      --  e.g. an assertion error, but in practice most of these bombs are due
+      --  to a legitimate case of a construct not being supported (in a sense
+      --  they all are, since for sure we are not supporting something if we
+      --  bomb). By giving this message, we provide a more reasonable practical
+      --  interface, since giving scary bug boxes on unsupported features is
+      --  definitely not helpful.
 
       --  Similarly if we are generating SCIL, an error message is sufficient
       --  instead of generating a bug box.

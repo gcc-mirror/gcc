@@ -5314,13 +5314,13 @@ package body Sem_Util is
 
             --  If entity is in standard, then we are in trouble, because it
             --  means that we have a library package with a duplicated name.
-            --  That's hard to recover from, so abort!
+            --  That's hard to recover from, so abort.
 
             if S = Standard_Standard then
                raise Unrecoverable_Error;
 
             --  Otherwise we continue with the declaration. Having two
-            --  identical declarations should not cause us too much trouble!
+            --  identical declarations should not cause us too much trouble.
 
             else
                null;
@@ -9624,7 +9624,7 @@ package body Sem_Util is
 
          --  An interesting case, if we have a constrained type one of whose
          --  bounds is known to be null, then there are no elements to be
-         --  initialized, so all the elements are initialized!
+         --  initialized, so all the elements are initialized.
 
          if Is_Constrained (Typ) then
             declare
@@ -9977,7 +9977,7 @@ package body Sem_Util is
          --  If P is an LHS, then N is also effectively an LHS, but there
          --  is an important exception. If N is of an access type, then
          --  what we really have is N.all.Q (or N.all(Q .. R)). In either
-         --  case this makes N.all a left hand side but not N itself!
+         --  case this makes N.all a left hand side but not N itself.
 
          --  Here follows a worrisome kludge. If Etype (N) is not set, which
          --  for sure happens in the call from Find_Direct_Name, that means we
@@ -13318,7 +13318,7 @@ package body Sem_Util is
       --  need Report to be True, and also we do not report errors caused
       --  by calls to init procs that occur within other init procs. Such
       --  errors must always be cascaded errors, since if all the types are
-      --  declared correctly, the compiler will certainly build decent calls!
+      --  declared correctly, the compiler will certainly build decent calls.
 
       -----------
       -- Chain --

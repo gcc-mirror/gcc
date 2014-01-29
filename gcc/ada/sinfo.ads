@@ -1491,7 +1491,7 @@ package Sinfo is
    --    that the reference occurs within a discriminant check. The
    --    significance is that optimizations based on assuming that the
    --    discriminant check has a correct value cannot be performed in this
-   --    case (or the discriminant check may be optimized away!)
+   --    case (or the discriminant check may be optimized away).
 
    --  Is_Machine_Number (Flag11-Sem)
    --    This flag is set in an N_Real_Literal node to indicate that the value
@@ -2655,7 +2655,7 @@ package Sinfo is
       --  appears directly in the tree as an attribute reference.
 
       --  Note: the field name for a reference to a range is Range_Expression
-      --  rather than Range, because range is a reserved keyword in Ada!
+      --  rather than Range, because range is a reserved keyword in Ada.
 
       --  Note: the reason that this node has expression fields is that a
       --  range can appear as an operand of a membership test. The Etype
@@ -4942,7 +4942,7 @@ package Sinfo is
       -------------------------
 
       --  This is an Ada 2012 extension, we put it here for now, to be labeled
-      --  and put in its proper section when we know exactly where that is!
+      --  and put in its proper section when we know exactly where that is.
 
       --  EXPRESSION_FUNCTION ::=
       --    FUNCTION SPECIFICATION IS (EXPRESSION)
@@ -4965,7 +4965,7 @@ package Sinfo is
       --  that it semantically resembles an expression, e.g. overloading is
       --  allowed and a type is concocted for semantic processing purposes.
       --  Certain of these fields, such as Parens are not relevant, but it
-      --  is easier to just supply all of them together!
+      --  is easier to just supply all of them together.
 
       --  N_Procedure_Call_Statement
       --  Sloc points to first token of name or prefix

@@ -259,7 +259,7 @@ package body Sem_Ch8 is
    --  of use clauses consists in setting this flag on all visible entities
    --  defined in the corresponding package. On exit from the scope of the use
    --  clause, the corresponding flag must be reset. However, a package may
-   --  appear in several nested use clauses (pathological but legal, alas!)
+   --  appear in several nested use clauses (pathological but legal, alas)
    --  which forces us to use a slightly more involved scheme:
 
    --    a) The defining occurrence for a package holds a flag -In_Use- to
@@ -1197,7 +1197,7 @@ package body Sem_Ch8 is
 
       --  Initialize the object size and alignment. Note that we used to call
       --  Init_Size_Align here, but that's wrong for objects which have only
-      --  an Esize, not an RM_Size field!
+      --  an Esize, not an RM_Size field.
 
       Init_Object_Size_Align (Id);
 
@@ -3333,7 +3333,7 @@ package body Sem_Ch8 is
       --  This procedure is called in the context of subprogram renaming, and
       --  thus the attribute must be one that is a subprogram. All of those
       --  have at least one formal parameter, with the exceptions of AST_Entry
-      --  (which is a real oddity, it is odd that this can be renamed at all!)
+      --  (which is a real oddity, it is odd that this can be renamed at all)
       --  and the GNAT attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
@@ -4785,7 +4785,7 @@ package body Sem_Ch8 is
       --  If no entries on homonym chain that were potentially visible,
       --  and no entities reasonably considered as non-visible, then
       --  we have a plain undefined reference, with no additional
-      --  explanation required!
+      --  explanation required.
 
       if not Nvis_Entity then
          Undefined (Nvis => False);
@@ -5511,7 +5511,7 @@ package body Sem_Ch8 is
 
                --  If this is a selection from a dummy package, then suppress
                --  the error message, of course the entity is missing if the
-               --  package is missing!
+               --  package is missing.
 
                elsif Sloc (Error_Msg_Node_2) = No_Location then
                   null;

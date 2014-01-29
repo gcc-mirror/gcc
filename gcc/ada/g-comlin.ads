@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2012, AdaCore                     --
+--                     Copyright (C) 1999-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@
 --           when 'b' => Put_Line ("Got b + " & Parameter);
 
 --           when others =>
---              raise Program_Error;         -- cannot occur!
+--              raise Program_Error; -- cannot occur
 --        end case;
 --     end loop;
 

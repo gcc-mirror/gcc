@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,7 +168,7 @@ package Output is
    --  The following procedures are intended only for debugging purposes,
    --  for temporary insertion into the text in environments where a debugger
    --  is not available. They all have non-standard very short lower case
-   --  names, precisely to make sure that they are only used for debugging!
+   --  names, precisely to make sure that they are only used for debugging.
 
    procedure w (C : Character);
    --  Dump quote, character, quote, followed by line return

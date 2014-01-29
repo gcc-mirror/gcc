@@ -39,7 +39,7 @@ with Ada.Unchecked_Conversion;
 pragma Warnings (Off);
 --  Allow withing of non-Preelaborated units in Ada 2005 mode where this
 --  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
+--  It is safe in the context of the run-time to violate the rules.
 
 with System.Tasking.Utilities;
 

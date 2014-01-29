@@ -929,7 +929,7 @@ package body Repinfo is
 
             else
                --  For the packed case, we don't know the bit positions if we
-               --  don't know the starting position!
+               --  don't know the starting position.
 
                if Is_Packed (Ent) then
                   Write_Line ("?? range  ? .. ??;");

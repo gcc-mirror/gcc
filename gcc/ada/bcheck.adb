@@ -889,7 +889,7 @@ package body Bcheck is
                   declare
                      M1 : constant String := "{ has restriction ";
                      S  : constant String := Restriction_Id'Image (R);
-                     M2 : String (1 .. 2000); -- big enough!
+                     M2 : String (1 .. 2000); -- big enough
                      P  : Integer;
 
                   begin

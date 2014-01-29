@@ -260,7 +260,7 @@ package Lib.Writ is
 
    --    Note: The P line must be present. Even in Ignore_Errors mode, Scan_ALI
    --    insists on finding a P line. So if changes are made to the ALI format,
-   --    they should not include removing the P line!
+   --    they should not include removing the P line.
 
    --  ---------------------
    --  -- R  Restrictions --

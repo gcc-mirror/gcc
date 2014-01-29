@@ -122,10 +122,10 @@ package body Atree is
    --  Count allocated nodes for Num_Nodes function
 
    use Unchecked_Access;
-   --  We are allowed to see these from within our own body!
+   --  We are allowed to see these from within our own body
 
    use Atree_Private_Part;
-   --  We are also allowed to see our private data structures!
+   --  We are also allowed to see our private data structures
 
    --  Functions used to store Entity_Kind value in Nkind field
 
@@ -1326,7 +1326,7 @@ package body Atree is
       Set_Name1 (Empty, No_Name);
 
       --  Allocate Error node, and set Error_Posted, since we certainly
-      --  only generate an Error node if we do post some kind of error!
+      --  only generate an Error node if we do post some kind of error.
 
       Dummy := New_Node (N_Error, No_Location);
       Set_Name1 (Error, Error_Name);

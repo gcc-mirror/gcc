@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (Apple OS X Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,7 +58,7 @@ package Ada.Numerics.Aux is
    pragma Inline (Cos);
 
    --  We import these functions directly from C. Note that we label them
-   --  all as pure functions, because indeed all of them are in fact pure!
+   --  all as pure functions, because indeed all of them are in fact pure.
 
    function Tan (X : Double) return Double;
    pragma Import (C, Tan, "tan");

@@ -180,7 +180,7 @@ package body Sem_Ch5 is
             end if;
 
          else
-            --  If we fall through, we have no special message to issue!
+            --  If we fall through, we have no special message to issue
 
             Error_Msg_N ("left hand side of assignment must be a variable", N);
          end if;
@@ -2865,7 +2865,7 @@ package body Sem_Ch5 is
    ----------------------------
 
    --  Note: the semantics of the null statement is implemented by a single
-   --  null statement, too bad everything isn't as simple as this!
+   --  null statement, too bad everything isn't as simple as this.
 
    procedure Analyze_Null_Statement (N : Node_Id) is
       pragma Warnings (Off, N);
@@ -2885,7 +2885,7 @@ package body Sem_Ch5 is
       --  The labels declared in the statement list are reachable from
       --  statements in the list. We do this as a prepass so that any goto
       --  statement will be properly flagged if its target is not reachable.
-      --  This is not required, but is nice behavior!
+      --  This is not required, but is nice behavior.
 
       S := First (L);
       while Present (S) loop
@@ -2989,7 +2989,7 @@ package body Sem_Ch5 is
             then
                --  Special very annoying exception. If we have a return that
                --  follows a raise, then we allow it without a warning, since
-               --  the Ada RM annoyingly requires a useless return here!
+               --  the Ada RM annoyingly requires a useless return here.
 
                if Nkind (Original_Node (N)) /= N_Raise_Statement
                  or else Nkind (Nxt) /= N_Simple_Return_Statement

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2011, AdaCore                     --
+--                     Copyright (C) 1998-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1081,7 +1081,7 @@ package body GNAT.Spitbol.Patterns is
       --  control. One might be tempted to think that at this point, the
       --  history stack entries made by matching P can just be removed since
       --  they certainly are not going to be used for rematching (that is
-      --  whole point of Fence after all!) However, this is wrong, because
+      --  whole point of Fence after all). However, this is wrong, because
       --  it would result in the loss of possible assign-on-match entries
       --  for deferred pattern assignments.
 

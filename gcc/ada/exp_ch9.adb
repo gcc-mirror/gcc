@@ -5701,7 +5701,7 @@ package body Exp_Ch9 is
          --  Mark NULL statement as coming from source so that it is not
          --  eliminated by GIGI.
 
-         --  Another covert channel! If this is a requirement, it must be
+         --  Another covert channel. If this is a requirement, it must be
          --  documented in sinfo/einfo ???
 
          Set_Comes_From_Source (Stmt, True);
@@ -11228,7 +11228,7 @@ package body Exp_Ch9 is
    --  Single task declarations should never be present after semantic
    --  analysis, since we expect them to be replaced by a declaration of an
    --  anonymous task type, followed by a declaration of the task object. We
-   --  include this routine to make sure that is happening!
+   --  include this routine to make sure that is happening.
 
    procedure Expand_N_Single_Task_Declaration (N : Node_Id) is
    begin

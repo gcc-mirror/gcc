@@ -229,7 +229,7 @@ package body Prj is
                   --  Make sure that we don't have a config file for this
                   --  project, in case there are several mains. In this case,
                   --  we will recreate another config file: we cannot reuse the
-                  --  one that we just deleted!
+                  --  one that we just deleted.
 
                   Proj.Project.Config_Checked   := False;
                   Proj.Project.Config_File_Name := No_Path;

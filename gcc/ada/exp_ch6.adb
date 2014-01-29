@@ -825,7 +825,7 @@ package body Exp_Ch6 is
 
       --  We must have a call, since Has_Recursive_Call was set. If not just
       --  ignore (this is only an error check, so if we have a funny situation,
-      --  due to bugs or errors, we do not want to bomb!)
+      --  due to bugs or errors, we do not want to bomb).
 
       elsif Is_Empty_Elmt_List (Call_List) then
          return;
@@ -2043,7 +2043,7 @@ package body Exp_Ch6 is
          procedure Do_Backend_Inline is
          begin
             --  No extra test needed for init subprograms since we know they
-            --  are available to the backend!
+            --  are available to the backend.
 
             if Is_Init_Proc (Subp) then
                Add_Inlined_Body (Subp);
@@ -3108,7 +3108,7 @@ package body Exp_Ch6 is
          --  For an OUT or IN OUT parameter, if the actual is an entity, then
          --  clear current values, since they can be clobbered. We are probably
          --  doing this in more places than we need to, but better safe than
-         --  sorry when it comes to retaining bad current values!
+         --  sorry when it comes to retaining bad current values.
 
          if Ekind (Formal) /= E_In_Parameter
            and then Is_Entity_Name (Actual)
@@ -3122,7 +3122,7 @@ package body Exp_Ch6 is
                --  For an OUT or IN OUT parameter that is an assignable entity,
                --  we do not want to clobber the Last_Assignment field, since
                --  if it is set, it was precisely because it is indeed an OUT
-               --  or IN OUT parameter! We do reset the Is_Known_Valid flag
+               --  or IN OUT parameter. We do reset the Is_Known_Valid flag
                --  since the subprogram could have returned in invalid value.
 
                if Ekind_In (Formal, E_Out_Parameter, E_In_Out_Parameter)
@@ -3746,7 +3746,7 @@ package body Exp_Ch6 is
 
       --  If this is a call to an intrinsic subprogram, then perform the
       --  appropriate expansion to the corresponding tree node and we
-      --  are all done (since after that the call is gone!)
+      --  are all done (since after that the call is gone).
 
       --  In the case where the intrinsic is to be processed by the back end,
       --  the call to Expand_Intrinsic_Call will do nothing, which is fine,
@@ -4056,7 +4056,7 @@ package body Exp_Ch6 is
                begin
                   --  First step, remove all the named parameters from the
                   --  list (they are still chained using First_Named_Actual
-                  --  and Next_Named_Actual, so we have not lost them!)
+                  --  and Next_Named_Actual, so we have not lost them).
 
                   Temp := First (Parameter_Associations (Call_Node));
 
@@ -5665,7 +5665,7 @@ package body Exp_Ch6 is
 
       if Is_Unc_Decl then
 
-         --  No action needed since return statement has been already removed!
+         --  No action needed since return statement has been already removed
 
          null;
 
@@ -7634,7 +7634,7 @@ package body Exp_Ch6 is
    -----------------------------------
 
    --  The "simple" comes from the syntax rule simple_return_statement. The
-   --  semantics are not at all simple!
+   --  semantics are not at all simple.
 
    procedure Expand_Simple_Function_Return (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);

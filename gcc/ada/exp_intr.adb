@@ -420,7 +420,7 @@ package body Exp_Intr is
                   New_Occurrence_Of (Choice_Parameter (P), Loc))));
             exit;
 
-         --  Keep climbing!
+         --  Keep climbing
 
          else
             P := Parent (P);
@@ -747,7 +747,7 @@ package body Exp_Intr is
 
          --  Loop to output the name
 
-         --  is this right wrt wide char encodings ??? (no!)
+         --  This is not right wrt wide char encodings ??? ()
 
          SDef := Sloc (E);
          while TDef (SDef) in '0' .. '9'

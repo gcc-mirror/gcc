@@ -844,7 +844,7 @@ package body System.OS_Lib is
                      --  temp file names. Return Invalid_FD. There is almost
                      --  no chance that this code will be ever be executed,
                      --  since it would mean that there are one million temp
-                     --  files in the same directory!
+                     --  files in the same directory.
 
                      SSL.Unlock_Task.all;
                      FD := Invalid_FD;
@@ -1718,7 +1718,7 @@ package body System.OS_Lib is
 
                --  If argument is terminated by '\', then double it. Otherwise
                --  the ending quote will be taken as-is. This is quite strange
-               --  spawn behavior from Windows, but this is what we see!
+               --  spawn behavior from Windows, but this is what we see.
 
                else
                   if Res (J) = '\' then

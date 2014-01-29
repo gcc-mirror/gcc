@@ -160,9 +160,9 @@ package body Ada.Exceptions is
       --  The Exception_Name and Message lines are omitted in the abort
       --  signal case, since this is not really an exception.
 
-      --  !! If the format of the generated string is changed, please note
-      --  !! that an equivalent modification to the routine String_To_EO must
-      --  !! be made to preserve proper functioning of the stream attributes.
+      --  Note: If the format of the generated string is changed, please note
+      --  that an equivalent modification to the routine String_To_EO must be
+      --  made to preserve proper functioning of the stream attributes.
 
       ---------------------------------------
       -- Exception backtracing subprograms --
@@ -573,7 +573,7 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_CE_Range_Check_Ext,
                   "__gnat_rcheck_CE_Range_Check_ext");
 
-   --  None of these procedures ever returns (they raise an exception!). By
+   --  None of these procedures ever returns (they raise an exception). By
    --  using pragma No_Return, we ensure that any junk code after the call,
    --  such as normal return epilog stuff, can be eliminated).
 
@@ -690,7 +690,7 @@ package body Ada.Exceptions is
 
    --  This function gives us the start of the PC range for addresses
    --  within the exception unit itself. We hope that gigi/gcc keep all the
-   --  procedures in their original order!
+   --  procedures in their original order.
 
    function Code_Address_For_AAA return System.Address is
    begin
@@ -1746,7 +1746,7 @@ package body Ada.Exceptions is
 
    --  This function gives us the end of the PC range for addresses
    --  within the exception unit itself. We hope that gigi/gcc keeps all the
-   --  procedures in their original order!
+   --  procedures in their original order.
 
    function Code_Address_For_ZZZ return System.Address is
    begin

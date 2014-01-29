@@ -1171,7 +1171,7 @@ package body Sem_Ch10 is
                Set_Elaboration_Entity_Required (Spec_Id, False);
 
             --  Case of elaboration entity is required for access before
-            --  elaboration checking (so certainly we must build it!)
+            --  elaboration checking (so certainly we must build it).
 
             else
                Set_Elaboration_Entity_Required (Spec_Id, True);

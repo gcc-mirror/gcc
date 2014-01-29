@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,7 @@ package body Ada.Wide_Wide_Text_IO is
    --  correct filename length.
    --
    --  Note: the names for these files are bogus, and probably it would be
-   --  better for these files to have no names, but the ACVC tests insist!
+   --  better for these files to have no names, but the ACVC tests insist.
    --  We use names that are bound to fail in open etc.
 
    Null_Str : aliased constant String := "";
@@ -668,7 +668,7 @@ package body Ada.Wide_Wide_Text_IO is
             --  official page marks can only follow a line mark. The whole
             --  page business is pretty much nonsense anyway, so we do not
             --  want to waste time trying to make sense out of non-standard
-            --  page marks in the file! This means that the behavior of
+            --  page marks in the file. This means that the behavior of
             --  Get_Line is different from repeated Get of a character, but
             --  that's too bad. We only promise that page numbers etc make
             --  sense if the file is formatted in a standard manner.

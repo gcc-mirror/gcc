@@ -447,7 +447,7 @@ package body Ch5 is
 
                   --  Otherwise we treat THEN as some kind of mess where we did
                   --  not see the associated IF, but we pick up assuming it had
-                  --  been there!
+                  --  been there.
 
                   Restore_Scan_State (Scan_State); -- to THEN
                   Append_To (Statement_List, P_If_Statement);
@@ -570,7 +570,7 @@ package body Ch5 is
 
                            --  We will set Error_name as the Block_Label since
                            --  we really don't know which of the labels might
-                           --  be used at the end of the loop or block!
+                           --  be used at the end of the loop or block.
 
                            Block_Label := Error_Name;
 

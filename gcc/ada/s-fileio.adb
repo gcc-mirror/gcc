@@ -348,7 +348,7 @@ package body System.File_IO is
 
          --  Now unlink the external file. Note that we use the full name in
          --  this unlink, because the working directory may have changed since
-         --  we did the open, and we want to unlink the right file!
+         --  we did the open, and we want to unlink the right file.
 
          if unlink (Filename'Address) = -1 then
             raise Use_Error with Errno_Message;
@@ -492,7 +492,7 @@ package body System.File_IO is
    --  initial call will be made by the caller to first open the file in "r"
    --  mode to be sure that it exists. The real open, in "w" mode, will then
    --  destroy this file. This is peculiar, but that's what Ada semantics
-   --  require and the ACATS tests insist on!
+   --  require and the ACATS tests insist on.
 
    --  If text file translation is required, then either "b" or "t" is appended
    --  to the mode, depending on the setting of Text.
@@ -1238,7 +1238,7 @@ package body System.File_IO is
 
             --  Note: for a corresponding delete, we will use the full name,
             --  since by the time of the delete, the current working directory
-            --  may have changed and we do not want to delete a different file!
+            --  may have changed and we do not want to delete a different file.
 
             if VMS_Formstr = null then
                Stream := fopen (Namestr'Address, Fopstr'Address, Encoding,

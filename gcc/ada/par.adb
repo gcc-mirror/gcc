@@ -589,11 +589,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    --  Quite a bit of work, but really helpful in the case where it helps, and
    --  the need for this is based on actual experience with tracking down this
-   --  kind of error (the eye often easily mistakes semicolon for colon!)
+   --  kind of error (the eye often easily mistakes semicolon for colon).
 
    --  Note: we actually have enough information to patch up the tree, but
-   --  this may not be worth the effort! Also we could deal with the same
-   --  situation for EXIT with a label, but for now don't bother with that!
+   --  this may not be worth the effort. Also we could deal with the same
+   --  situation for EXIT with a label, but for now don't bother with that.
 
    ---------------------------------
    -- Parsing Routines by Chapter --

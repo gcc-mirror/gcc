@@ -511,7 +511,7 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_SE_Object_Too_Large,
                   "__gnat_rcheck_SE_Object_Too_Large");
 
-   --  None of these procedures ever returns (they raise an exception!). By
+   --  None of these procedures ever returns (they raise an exception). By
    --  using pragma No_Return, we ensure that any junk code after the call,
    --  such as normal return epilog stuff, can be eliminated).
 
@@ -629,7 +629,7 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_34, "__gnat_rcheck_34");
    pragma Export (C, Rcheck_35, "__gnat_rcheck_35");
 
-   --  None of these procedures ever returns (they raise an exception!). By
+   --  None of these procedures ever returns (they raise an exception). By
    --  using pragma No_Return, we ensure that any junk code after the call,
    --  such as normal return epilog stuff, can be eliminated).
 
@@ -962,7 +962,7 @@ package body Ada.Exceptions is
       --  the parameter value in a local variable, and add a pragma Volatile to
       --  make sure it is spilled. The pragma Warnings (Off) is needed because
       --  the compiler knows that Id is not referenced and that this use of
-      --  pragma Volatile is peculiar!
+      --  pragma Volatile is peculiar.
 
    begin
       Debug_Raise_Exception (E => SSL.Exception_Data_Ptr (E));

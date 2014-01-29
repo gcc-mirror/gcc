@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,7 +180,7 @@ package body System.Stack_Checking.Operations is
          raise Standard'Abort_Signal;
       end if;
 
-      --  Never trust the cached value, but return local copy!
+      --  Never trust the cached value, but return local copy
 
       return My_Stack;
    end Set_Stack_Info;
@@ -233,7 +233,7 @@ package body System.Stack_Checking.Operations is
       declare
          My_Stack : constant Stack_Access := Set_Stack_Info (Cache'Access);
          --  At this point Stack.all might already be invalid, so
-         --  it is essential to use our local copy of Stack!
+         --  it is essential to use our local copy of Stack.
 
       begin
          if (Stack_Grows_Down and then

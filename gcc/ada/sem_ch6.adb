@@ -3362,7 +3362,7 @@ package body Sem_Ch6 is
 
       --  Here the purpose of X is simply to satisfy the annoying requirement
       --  in Ada that there be at least one return, and we certainly do not
-      --  want to go posting warnings on X that it is not initialized! On
+      --  want to go posting warnings on X that it is not initialized. On
       --  the other hand, if X is entirely unreferenced that should still
       --  get a warning.
 
@@ -4541,7 +4541,7 @@ package body Sem_Ch6 is
 
             --  Emit a warning if this is a call to a runtime subprogram
             --  which is located inside a generic. Previously this call
-            --  was silently skipped!
+            --  was silently skipped.
 
             if Is_Generic_Instance (Subp) then
                declare
@@ -5284,7 +5284,7 @@ package body Sem_Ch6 is
          --  Compiling with optimizations enabled
 
          else
-            --  Procedures are never frontend inlined in this case!
+            --  Procedures are never frontend inlined in this case
 
             if Ekind (Subp) /= E_Function then
                return False;
@@ -5671,7 +5671,7 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  Build the body to inline only if really needed!
+      --  Build the body to inline only if really needed
 
       if Check_Body_To_Inline (N, Spec_Id)
         and then Serious_Errors_Detected = 0
@@ -5881,7 +5881,7 @@ package body Sem_Ch6 is
       --  Note: we use the entity information, rather than going directly
       --  to the specification in the tree. This is not only simpler, but
       --  absolutely necessary for some cases of conformance tests between
-      --  operators, where the declaration tree simply does not exist!
+      --  operators, where the declaration tree simply does not exist.
 
       Old_Formal := First_Formal (Old_Id);
       New_Formal := First_Formal (New_Id);
@@ -7230,7 +7230,7 @@ package body Sem_Ch6 is
                --  Note: if both ECA and DCA are missing the return, then we
                --  post only one message, should be enough to fix the bugs.
                --  If not we will get a message next time on the DCA when the
-               --  ECA is fixed!
+               --  ECA is fixed.
 
                elsif No (Statements (DCA)) then
                   Last_Stm := DCA;
@@ -8662,7 +8662,7 @@ package body Sem_Ch6 is
          end if;
 
          --  Compare two lists, skipping rewrite insertions (we want to compare
-         --  the original trees, not the expanded versions!)
+         --  the original trees, not the expanded versions).
 
          loop
             if Is_Rewrite_Insertion (N1) then
@@ -8718,7 +8718,7 @@ package body Sem_Ch6 is
    begin
       --  Non-conformant if paren count does not match. Note: if some idiot
       --  complains that we don't do this right for more than 3 levels of
-      --  parentheses, they will be treated with the respect they deserve!
+      --  parentheses, they will be treated with the respect they deserve.
 
       if Paren_Count (E1) /= Paren_Count (E2) then
          return False;
@@ -11394,7 +11394,7 @@ package body Sem_Ch6 is
             AS_Needed := False;
 
          --  If we have unknown discriminants, then we do not need an actual
-         --  subtype, or more accurately we cannot figure it out! Note that
+         --  subtype, or more accurately we cannot figure it out. Note that
          --  all class-wide types have unknown discriminants.
 
          elsif Has_Unknown_Discriminants (T) then

@@ -2216,7 +2216,7 @@ package body ALI is
       else
          --  Deal with body only and spec only cases, note that the reason we
          --  do our own checking of the name (rather than using Is_Body_Name)
-         --  is that Uname drags in far too much compiler junk!
+         --  is that Uname drags in far too much compiler junk.
 
          Get_Name_String (Units.Table (Units.Last).Uname);
 

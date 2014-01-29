@@ -429,7 +429,7 @@ package body Scng is
       procedure Error_Illegal_Wide_Character;
       --  Give illegal wide character message. On return, Scan_Ptr is bumped
       --  past the illegal character, which may still leave us pointing to
-      --  junk, not much we can do if the escape sequence is messed up!
+      --  junk, not much we can do if the escape sequence is messed up.
 
       procedure Error_No_Double_Underline;
       --  Signal error of two underline or punctuation characters in a row.
@@ -2511,7 +2511,7 @@ package body Scng is
 
             --  Left bracket not followed by a quote terminates an identifier.
             --  This is an error, but we don't want to give a junk error msg
-            --  about wide characters in this case!
+            --  about wide characters in this case.
 
             elsif Source (Scan_Ptr) = '['
               and then Source (Scan_Ptr + 1) /= '"'

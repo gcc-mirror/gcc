@@ -4804,7 +4804,7 @@ package body Sem_Ch13 is
          begin
             if Is_Task_Type (U_Ent) then
 
-               --  Check obsolescent (but never obsolescent if from aspect!)
+               --  Check obsolescent (but never obsolescent if from aspect)
 
                if not From_Aspect_Specification (N) then
                   Check_Restriction (No_Obsolescent_Features, N);
@@ -5392,7 +5392,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      --  We repeat the too late test in case it froze itself!
+      --  We repeat the too late test in case it froze itself
 
       if Rep_Item_Too_Late (Enumtype, N) then
          null;
@@ -6795,7 +6795,7 @@ package body Sem_Ch13 is
 
                --  Build the body, we declare the boolean expression before
                --  doing the return, because we are not really confident of
-               --  what happens if a return appears within a return!
+               --  what happens if a return appears within a return.
 
                BTemp :=
                  Make_Defining_Identifier (Loc,
@@ -9602,10 +9602,10 @@ package body Sem_Ch13 is
                --  on the modified variant part, since its only effect would be
                --  to compute the Others_Discrete_Choices node laboriously, and
                --  of course we already know the list of choices corresponding
-               --  to the others choice (it's the list we're replacing!)
+               --  to the others choice (it's the list we're replacing).
 
                --  We only want to do this if the expander is active, since
-               --  we do not want to clobber the ASIS tree!
+               --  we do not want to clobber the ASIS tree.
 
                if Expander_Active then
                   declare
@@ -11226,7 +11226,7 @@ package body Sem_Ch13 is
 
       --  If we are dealing with private types, then do the check on their
       --  fully declared counterparts if the full declarations have been
-      --  encountered (they don't have to be visible, but they must exist!)
+      --  encountered (they don't have to be visible, but they must exist).
 
       Source := Ancestor_Subtype (Etype (First_Formal (Act_Unit)));
 
