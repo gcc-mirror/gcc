@@ -6309,124 +6309,75 @@ pragma SPARK_Mode [(On | Off)] ;
 @end smallexample
 
 @noindent
-This pragma is used to specify whether a construct must
-satisfy the syntactic and semantic rules of the SPARK 2014 programming
-language. The pragma is intended for use with formal verification tools
-and has no effect on the generated code.
+In general a program can have some parts that are in SPARK 2014 (and
+follow all the rules in the SPARK Reference Manual), and some parts
+that are full Ada 2012.
 
-The SPARK_Mode pragma is used to specify the value of the SPARK_Mode aspect
-(either Off or On) of an entity.
-More precisely, it is used to specify the aspect value of a ``section''
-of an entity (the term ``section'' is defined below).
-If a Spark_Mode pragma's (optional) argument is omitted,
-an implicit argument of On is assumed.
-
-A SPARK_Mode pragma may be used as a configuration pragma and then has the
-semantics described below.
-
-A SPARK_Mode pragma can be used as a local pragma only
-in the following contexts:
+The SPARK_Mode pragma is used to identify which parts are in SPARK
+2014 (by default programs are in full Ada). The SPARK_Mode pragma can
+be used in the following places:
 
 @itemize @bullet
 
 @item
-When the pragma is at the start of the visible declarations (preceded only
-by other pragmas) of a package declaration, it marks the visible part
-of the package as being in or out of SPARK 2014.
+As a configuration pragma, in which case it sets the default mode for
+all units compiled with this pragma.
 
 @item
-When the pragma appears at the start of the private declarations of a
-package (preceded only by other pragmas), it marks the private part
-of the package as being in or out of SPARK 2014.
+Immediately following a library-level subprogram spec
 
 @item
-When the pragma appears at the start of the declarations of a
-package body (preceded only by other pragmas),
-it marks the declaration list of the package body body as being
-in or out of SPARK 2014.
+Immediately within a library-level package body
 
 @item
-When the pragma appears at the start of the elaboration statements of
-a package body (preceded only by other pragmas),
-it marks the handled_sequence_of_statements of the package body
-as being in or out of SPARK 2014.
+Immediately following the @code{private} keyword of a library-level
+package spec
 
 @item
-When the pragma appears after a subprogram declaration (with only other
-pragmas intervening), it marks the subprogram's specification as
-being in or out of SPARK 2014.
+Immediately following the @code{begin} keyword of a library-level
+package body
 
 @item
-When the pragma appears at the start of the declarations of a subprogram
-body (preceded only by other pragmas), it marks the subprogram body
-as being in or out of SPARK 2014. For a subprogram body which is
-not a completion of another declaration, it also applies to the
-specification of the subprogram.
+Immediately within a library-level subprogram body
 
 @end itemize
 
-A package is defined to have 4 ``sections'': its visible part, its private
-part, its body's declaration list, and its body's
-handled_sequence_of_statements. Any other construct which requires a
-completion is defined to have 2 ``sections'': its declaration and its
-completion. Any other construct is defined to have 1 section.
+@noindent
+Normally a subprogram or package spec/body inherits the current mode
+that is active at the point it is declared. But this can be overridden
+by pragma within the spec or body as above.
 
-The SPARK_Mode aspect value of an arbitrary section of an arbitrary Ada entity
-or construct is then defined to be the following value:
+The basic consistency rule is that you can't turn SPARK_Mode back
+@code{On}, once you have explicitly (with a pragma) turned if
+@code{Off}. So the following rules apply:
+
+@noindent
+If a subprogram spec has SPARK_Mode @code{Off}, then the body must
+also have SPARK_Mode @code{Off}.
+
+@noindent
+For a package, we have four parts:
 
 @itemize
-
 @item
-If SPARK_Mode has been specified for the given section of the given entity or
-construct, then the specified value;
-
+the package public declarations
 @item
-else if SPARK_Mode has been specified for at least one preceding section of
-the same entity, then the SPARK_Mode of the immediately preceding section;
-
+the package private part
 @item
-else for any of the visible part or body declarations of a library unit package
-or either section of a library unit subprogram, if there is an applicable
-SPARK_Mode configuration pragma then the value specified by the
-pragma; if no such configuration pragma applies, then an implicit
-specification of Off is assumed;
-
+the body of the package
 @item
-else for any subsequent (i.e., not the first) section of a library unit
-package, the SPARK_Mode of the preceding section;
-
-@item
-else the SPARK_Mode of the enclosing section of the nearest enclosing package
-or subprogram;
-
+the elaboration code after @code{begin}
 @end itemize
 
-If the above computation does not specify a SPARK_Mode setting for any
-construct other than one of the four sections of a package, then a result of On
-or Off is determined instead based on the legality (with respect to the rules
-of SPARK 2014) of the construct. The construct's SPARK_Mode is On if and only
-if the construct is in SPARK 2014.
-
-If an earlier section of an entity has a Spark_Mode of Off, then the
-Spark_Mode aspect of any later section of that entity shall not be
-specified to be On. For example,
-if the specification of a subprogram has a Spark_Mode of Off, then the
-body of the subprogram shall not have a Spark_Mode of On.
-
-The following rules apply to SPARK code (i.e., constructs which
-have a SPARK_Mode aspect value of On):
-
-@itemize
-
-@item
-SPARK code shall only reference SPARK declarations, but a SPARK declaration
-which requires a completion may have a non-SPARK completion.
-
-@item
-SPARK code shall only enclose SPARK code, except that SPARK code may enclose
-a non-SPARK completion of an enclosed SPARK declaration.
-
-@end itemize
+@noindent
+For a package, the rule is that if you explicitly turn SPARK_Mode
+@code{Off} for any part, then all the following parts must have
+SPARK_Mode @code{Off}. Note that this may require repeating a pragma
+SPARK_Mode (@code{Off}) in the body. For example, if we have a
+configuration pragma SPARK_Mode (@code{On}) that turns the mode on by
+default everywhere, and one particular package spec has pragma
+SPARK_Mode (@code{Off}), then that pragma will need to be repeated in
+the package body.
 
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired

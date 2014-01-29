@@ -8436,7 +8436,6 @@ package body Exp_Ch9 is
       Current_Node : Node_Id;
       Disp_Op_Body : Node_Id;
       New_Op_Body  : Node_Id;
-      Num_Entries  : Natural := 0;
       Op_Body      : Node_Id;
       Op_Id        : Entity_Id;
 
@@ -8625,8 +8624,6 @@ package body Exp_Ch9 is
 
             when N_Entry_Body =>
                Op_Id := Defining_Identifier (Op_Body);
-               Num_Entries := Num_Entries + 1;
-
                New_Op_Body := Build_Protected_Entry (Op_Body, Op_Id, Pid);
 
                Insert_After (Current_Node, New_Op_Body);

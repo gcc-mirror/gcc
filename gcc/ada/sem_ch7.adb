@@ -349,6 +349,7 @@ package body Sem_Ch7 is
       --  Set SPARK_Mode only for non-generic package
 
       if Ekind (Spec_Id) = E_Package then
+
          --  Set SPARK_Mode from context
 
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
@@ -391,9 +392,9 @@ package body Sem_Ch7 is
          Inspect_Deferred_Constant_Completion (Declarations (N));
       end if;
 
-      --  After declarations have been analyzed, the body has been set
-      --  its final value of SPARK_Mode. Check that SPARK_Mode for body
-      --  is consistent with SPARK_Mode for spec.
+      --  After declarations have been analyzed, the body has been set to have
+      --  the final value of SPARK_Mode. Check that the SPARK_Mode for the body
+      --  is consistent with the SPARK_Mode for the spec.
 
       if Present (SPARK_Pragma (Body_Id)) then
          if Present (SPARK_Aux_Pragma (Spec_Id)) then
@@ -404,16 +405,16 @@ package body Sem_Ch7 is
                Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
                Error_Msg_N ("incorrect application of SPARK_Mode#", N);
                Error_Msg_Sloc := Sloc (SPARK_Aux_Pragma (Spec_Id));
-               Error_Msg_NE ("\value Off was set for SPARK_Mode on & #",
-                             N, Spec_Id);
+               Error_Msg_NE
+                 ("\value Off was set for SPARK_Mode on & #", N, Spec_Id);
             end if;
 
          else
             Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
             Error_Msg_N ("incorrect application of SPARK_Mode#", N);
             Error_Msg_Sloc := Sloc (Spec_Id);
-            Error_Msg_NE ("\no value was set for SPARK_Mode on & #",
-                          N, Spec_Id);
+            Error_Msg_NE
+              ("\no value was set for SPARK_Mode on & #", N, Spec_Id);
          end if;
       end if;
 
@@ -539,12 +540,13 @@ package body Sem_Ch7 is
             function Has_Referencer
               (L     : List_Id;
                Outer : Boolean) return  Boolean;
-            --  Traverse the given list of declarations in reverse order.
-            --  Return True if a referencer is present. Return False if none is
-            --  found. The Outer parameter is True for the outer level call and
-            --  False for inner level calls for nested packages. If Outer is
-            --  True, then any entities up to the point of hitting a referencer
-            --  get their Is_Public flag cleared, so that the entities will be
+            --  Traverse given list of declarations in reverse order. Return
+            --  True if a referencer is present. Return False if none is found.
+            --
+            --  The Outer parameter is True for the outer level call and False
+            --  for inner level calls for nested packages. If Outer is True,
+            --  then any entities up to the point of hitting a referencer get
+            --  their Is_Public flag cleared, so that the entities will be
             --  treated as static entities in the C sense, and need not have
             --  fully qualified names. Furthermore, if the referencer is an
             --  inlined subprogram that doesn't reference other subprograms,
