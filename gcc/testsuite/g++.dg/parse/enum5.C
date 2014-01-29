@@ -10,7 +10,7 @@ struct D {
         enum EE : sizeof(EE) * CHAR_BIT; // not OK
         enum EE xxxx : sizeof(EE) * CHAR_BIT; // OK
         T x : sizeof(unsigned int) * CHAR_BIT; // OK
-        enum FF {ff} : sizeof(int) * CHAR_BIT; // OK
+        enum FF {ff} : sizeof(FF) * CHAR_BIT; // OK
 } element;
 
 enum EE xx;
