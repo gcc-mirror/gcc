@@ -16,7 +16,7 @@
 // .uleb128 0x9    # (DIE (0x87) DW_TAG_base_type)
 // .ascii "int\0"  # DW_AT_name
 
-// { dg-final { scan-assembler "a1.*(0x\[0-9a-f\]+)\[ \t\]*# DW_AT_type.*\\1. DW_TAG_unspecified_type.*DW_AT_specification\[\n\r\]{1,2}\[^\n\r\]*(0x\[0-9a-f\]+)\[ \t\]*# DW_AT_type.*\\2. DW_TAG_base_type" } }
+// { dg-final { scan-assembler "a1.*(0x\[0-9a-f]+)\[^\n\r]*DW_AT_type.*\\1. DW_TAG_unspecified_type.*DW_AT_specification\[\n\r]{1,2}\[^\n\r]*(0x\[0-9a-f]+)\[^\n\r]*DW_AT_type.*\\2. DW_TAG_base_type" } }
 
 struct A
 {
