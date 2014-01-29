@@ -15258,6 +15258,9 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
       return NULL_TREE;
     }
 
+  if (targ_ptr == error_mark_node)
+    return error_mark_node;
+
   /* Check to see if we already have this specialization.  */
   gen_tmpl = most_general_template (tmpl);
   if (tmpl != gen_tmpl)
