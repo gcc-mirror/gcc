@@ -1812,6 +1812,15 @@ package body Sem_Ch7 is
                   end if;
 
                   Next_Entity (Prim_Op);
+
+                  --  Derived operations appear immediately after the type
+                  --  declaration (or the following subtype indication for
+                  --  a derived scalar type). Further declarations cannot
+                  --  include inherited operations of the type.
+
+                  if Present (Prim_Op) then
+                     exit when Ekind (Prim_Op) not in Overloadable_Kind;
+                  end if;
                end loop;
             end if;
          end if;

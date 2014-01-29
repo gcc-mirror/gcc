@@ -6694,8 +6694,9 @@ package body Checks is
 
          if (not Inside_Init_Proc or else SPARK_Mode = On)
 
-           --  Do not emit the warning within a conditional expression
-           --  Why not ???
+           --  Do not emit the warning within a conditional expression,
+           --  where the expression might not be evaluated, and the warning
+           --  appear as extraneous noise.
 
            and then not Within_Case_Or_If_Expression (N)
          then
