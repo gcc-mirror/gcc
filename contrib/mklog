@@ -80,18 +80,16 @@ sub remove_suffixes ($) {
 	return $filename;
 }
 
-# Check if line can be a function declaration:
-# First pattern cut extra symbols added by diff
-# second pattern checks that line is not a comment or brace
-sub is_function  {
+# Check if line is a top-level declaration.
+# TODO: ignore preprocessor directives except maybe #define ?
+sub is_top_level {
 	my ($function, $is_context_diff) = (@_);
 	if ($is_context_diff) {
 		$function =~ s/^..//;
 	} else {
 		$function =~ s/^.//;
 	}
-	return $function
-	&& ($function !~ /^[\s{}]/);
+	return $function && $function !~ /^[\s{}]/;
 }
 
 # For every file in the .diff print all the function names in ChangeLog
@@ -105,13 +103,14 @@ chomp (my @diff_lines = <DFILE>);
 close (DFILE);
 $line_idx = 0;
 foreach (@diff_lines) {
-    # Stop processing functions if we found a new file
+    # Stop processing functions if we found a new file.
 	# Remember both left and right names because one may be /dev/null.
-    if (/^[+*][+*][+*] +(\S+)/) {
+    # Don't be fooled by line markers in case of context diff.
+    if (!/\*\*\*$/ && /^[+*][+*][+*] +(\S+)/) {
 		$left = remove_suffixes ($1);
 		$look_for_funs = 0;
 	}
-    if (/^--- +(\S+)?/) {
+    if (!/---$/ && /^--- +(\S+)?/) {
 		$right = remove_suffixes ($1);
 		$look_for_funs = 0;
 	}
@@ -120,7 +119,7 @@ foreach (@diff_lines) {
 	# We should now have both left and right name,
 	# so we can decide filename.
 
-    if ($left && (/^\*{15}$/ || /^@@ /)) {
+    if ($left && (/^\*{15}/ || /^@@ /)) {
 	# If we have not seen any function names in the previous file (ie,
 	# $change_msg is empty), we just write out a ':' before starting the next
 	# file.
@@ -145,9 +144,15 @@ foreach (@diff_lines) {
 	$look_for_funs = $filename =~ '\.(c|cpp|C|cc|h|inc|def)$';
     }
 
-    # Remember the last line in a unified diff block that might start
+    # Context diffs have extra whitespace after first char;
+    # remove it to make matching easier.
+    if ($is_context_diff) {
+      s/^([-+! ]) /\1/;
+    }
+
+    # Remember the last line in a diff block that might start
     # a new function.
-    if (/^[-+ ]([a-zA-Z0-9_].*)/) {
+    if (/^[-+! ]([a-zA-Z0-9_].*)/) {
         $save_fn = $1;
     }
 
@@ -169,9 +174,9 @@ foreach (@diff_lines) {
 
     # Mark if we met doubtfully changed function.
     $doubtfunc = 0;
-    $is_context_diff = 0;
     if ($diff_lines[$line_idx] =~ /^@@ .* @@ ([a-zA-Z0-9_].*)/) {
 	    $doubtfunc = 1;
+        $is_context_diff = 0;
     }
     elsif ($diff_lines[$line_idx] =~ /^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/) {
 	    $doubtfunc = 1;
@@ -184,17 +189,16 @@ foreach (@diff_lines) {
     # Note that we don't try too hard to find good matches.  This should
     # return a superset of the actual set of functions in the .diff file.
     #
-    # The first two patterns work with context diff files (diff -c). The
-    # third pattern works with unified diff files (diff -u).
+    # The first pattern works with context diff files (diff -c). The
+    # second pattern works with unified diff files (diff -u).
     #
-    # The fourth pattern looks for the starts of functions or classes
-    # within a unified diff block.
+    # The third pattern looks for the starts of functions or classes
+    # within a diff block both for context and unified diff files.
 
     if ($look_for_funs
         && (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
-        || /^[\-\+\!] ([a-zA-Z0-9_]+)[ \t]*\(.*/
 	|| /^@@ .* @@ ([a-zA-Z0-9_].*)/
-	|| /^[-+ ](\{)/))
+	|| /^[-+! ](\{)/))
       {
 	$_ = $1;
 	my $fn;
@@ -219,12 +223,16 @@ foreach (@diff_lines) {
 	$no_real_change = 0;
 	if ($doubtfunc) {
 		$idx = $line_idx;
+	# Skip line info in context diffs.
+		while ($is_context_diff && $diff_lines[$idx + 1] =~ /^[-\*]{3} [0-9]/) {
+			++$idx;
+		}
 	# Check all lines till the first change
 	# for the presence of really changed function
 		do {
 			++$idx;
-			$no_real_change = is_function ($diff_lines[$idx], $is_context_diff);
-		} while (!$no_real_change && ($diff_lines[$idx] !~  /^[\+\-\!]/))
+			$no_real_change = is_top_level ($diff_lines[$idx], $is_context_diff);
+		} while (!$no_real_change && ($diff_lines[$idx] !~ /^[-+!]/))
 	}
 	if ($fn && !$seen_names{$fn} && !$no_real_change) {
 	    # If this is the first function in the file, we display it next
@@ -246,7 +254,7 @@ foreach (@diff_lines) {
 # If we have not seen any function names (ie, $change_msg is empty), we just
 # write out a ':'. This happens when there is only one file with no
 # functions.
-$cl_entries{$clname} .= $change_msg ? ": $change_msg\n" : ":\n";
+$cl_entries{$clname} .= $change_msg ? "$change_msg\n" : ":\n";
 
 $temp = `mktemp /tmp/$basename.XXXXXX` || exit 1; chop ($temp);
 open (CLFILE, ">$temp") or die "Could not open file $temp for writing";
