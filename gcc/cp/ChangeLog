@@ -1,5 +1,11 @@
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58846
+	* decl.c (get_dso_handle_node): Don't crash if dso_handle_node
+	== error_mark_node.
+
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58674
 	* pt.c (instantiate_template_1): Check for error_mark_node the second
 	argument too.
