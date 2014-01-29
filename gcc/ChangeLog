@@ -1,3 +1,8 @@
+2014-01-29  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (LTO_major_version): Bump to 3.
+	(LTO_minor_version): Reset to 0.
+
 2014-01-29  Renlin Li  <Renlin.Li@arm.com>
 
 	* config/arm/arm-arches.def (ARM_ARCH): Add armv7ve arch.
