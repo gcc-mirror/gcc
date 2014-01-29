@@ -1,3 +1,10 @@
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58561
+	* dwarf2out.c (is_cxx_auto): New.
+	(is_base_type): Use it.
+	(gen_type_die_with_usage): Likewise.
+
 2014-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const):  Use
