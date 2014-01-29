@@ -1080,9 +1080,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  clear();
 	  if (__x._M_root() != 0)
 	    _M_move_data(__x, std::true_type());
-	  if (_Alloc_traits::_S_propagate_on_move_assign())
-	    std::__alloc_on_move(_M_get_Node_allocator(),
-				 __x._M_get_Node_allocator());
+	  std::__alloc_on_move(_M_get_Node_allocator(),
+			       __x._M_get_Node_allocator());
 	  return true;
 	}
       return false;
