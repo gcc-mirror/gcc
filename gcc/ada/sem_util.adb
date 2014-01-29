@@ -5851,7 +5851,8 @@ package body Sem_Util is
    begin
       --  Assume that the item does not appear in the state space of a package
 
-      Pack_Id := Empty;
+      Placement := Not_In_Package;
+      Pack_Id   := Empty;
 
       --  Climb the scope stack and examine the enclosing context
 
