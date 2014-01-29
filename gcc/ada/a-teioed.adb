@@ -1445,7 +1445,7 @@ package body Ada.Text_IO.Editing is
       -- Leading_Pound --
       -------------------
 
-      --  This one is complex!  A Leading_Pound can be fixed or floating,
+      --  This one is complex.  A Leading_Pound can be fixed or floating,
       --  but in some cases the decision has to be deferred until we leave
       --  this procedure. Also note that Leading_Pound can be called in
       --  either State.

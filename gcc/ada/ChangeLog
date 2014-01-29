@@ -1,3 +1,14 @@
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Has_Enabled_Property): Compare the character field of
+	the sole property.
+
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_intr.adb, a-ztexio.ads, sinfo.ads, sem_res.adb, gnatlink.adb,
+	vms_conv.adb, a-except.ads, a-except-2005.ads, a-teioed.adb,
+	sem_warn.ads, treepr.ads, erroutc.ads, a-excach.adb: Minor reformatting.
+
 2014-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.ads, sem_util.adb (In_Pragma_Expression): New function.

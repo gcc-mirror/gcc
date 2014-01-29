@@ -1598,7 +1598,7 @@ begin
          --  Read it. Note that we ignore errors, since we only want very
          --  limited information from the ali file, and likely a slightly
          --  wrong version will be just fine, though in normal operation
-         --  we don't expect this to happen!
+         --  we don't expect this to happen.
 
          A := Scan_ALI
                (F,
