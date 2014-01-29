@@ -38,6 +38,9 @@
 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
 	Likewise.
 
+	PR libstdc++/21609
+	* include/ext/array_allocator.h: Add deprecated attribute.
+
 2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
 	    Kyle Lippincott  <spectral@google.com>
 
