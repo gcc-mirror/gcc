@@ -1,3 +1,8 @@
+2014-01-29  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/sfp-machine.h (_FP_I_TYPE): Define
+	as long long.
+
 2014-01-25  Walter Lee  <walt@tilera.com>
 
 	* config/tilepro/atomic.c: Include tconfig.h.  Don't include
