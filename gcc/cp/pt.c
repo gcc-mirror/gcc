@@ -3471,7 +3471,7 @@ expand_template_argument_pack (tree args)
           for (i = 0; i < num_packed; ++i, ++out_arg)
             TREE_VEC_ELT (result_args, out_arg) = TREE_VEC_ELT(packed, i);
 	  if (non_default_args_count > 0)
-	    non_default_args_count += num_packed;
+	    non_default_args_count += num_packed - 1;
         }
       else
         {
