@@ -1,3 +1,10 @@
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, sem_ch7.ads, s-regexp.adb, sem_ch13.adb: Minor
+	reformatting and code clean up.
+	* gnat_ugn.texi: Add documentation section on Atomic Variables
+	and Optimization.
+
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb Flag264 is now unused.

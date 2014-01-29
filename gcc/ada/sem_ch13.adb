@@ -2242,8 +2242,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Global);
 
-                  Decorate_Aspect_And_Pragma
-                    (Aspect, Aitem, Delayed => True);
+                  Decorate_Aspect_And_Pragma (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
