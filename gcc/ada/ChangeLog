@@ -1,5 +1,10 @@
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_util.adb (Find_Placement_In_State_Space): Assume that the default
+	placement is not in a package.
+
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Has_Enabled_Property): Compare the character field of
 	the sole property.
 
