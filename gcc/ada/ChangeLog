@@ -1,3 +1,7 @@
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, inline.ads: Minor reformatting.
+
 2014-01-29  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_ch9.adb (Is_Exception_Safe): Return true if no exceptions.
