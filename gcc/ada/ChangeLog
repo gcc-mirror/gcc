@@ -1,3 +1,12 @@
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* expander.adb: Minor reformatting.
+
+2014-01-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Predefined_Primitive_Bodies): Adding documentation to
+	previous patch.
+
 2014-01-29  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Predefined_Primitive_Bodies): Complete the code
