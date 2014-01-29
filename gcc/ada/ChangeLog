@@ -1,3 +1,20 @@
+2014-01-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Is_Exception_Safe): Return true if no exceptions.
+
+2014-01-29  Yannick Moy  <moy@adacore.com>
+
+	* inline.ads (Pending_Body_Info): Add SPARK_Mode and
+	SPARK_Mode_Pragma components to be able to analyze generic
+	instance.
+	* sem_ch12.adb (Analyze_Package_Instantiation,
+	Inline_Instance_Body, Need_Subprogram_Instance_Body,
+	Load_Parent_Of_Generic): Pass in SPARK_Mode from instantiation
+	for future analysis of the instance.
+	(Instantiate_Package_Body,
+	Instantiate_Subprogram_Body, Set_Instance_Inv): Set SPARK_Mode
+	from instantiation to analyze the instance.
+
 2014-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch7.adb, sem_prag.adb, sem_ch4.adb, sem_ch6.adb: Minor code

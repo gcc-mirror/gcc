@@ -3899,7 +3899,9 @@ package body Sem_Ch12 is
                    Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                    Version                  => Ada_Version,
                    Version_Pragma           => Ada_Version_Pragma,
-                   Warnings                 => Save_Warnings));
+                   Warnings                 => Save_Warnings,
+                   SPARK_Mode               => SPARK_Mode,
+                   SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
             end if;
          end if;
 
@@ -4245,7 +4247,9 @@ package body Sem_Ch12 is
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
                Version_Pragma           => Ada_Version_Pragma,
-               Warnings                 => Save_Warnings)),
+               Warnings                 => Save_Warnings,
+               SPARK_Mode               => SPARK_Mode,
+               SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4363,7 +4367,9 @@ package body Sem_Ch12 is
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
                Version_Pragma           => Ada_Version_Pragma,
-               Warnings                 => Save_Warnings)),
+               Warnings                 => Save_Warnings,
+               SPARK_Mode               => SPARK_Mode,
+               SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -4421,7 +4427,9 @@ package body Sem_Ch12 is
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version,
              Version_Pragma           => Ada_Version_Pragma,
-             Warnings                 => Save_Warnings));
+             Warnings                 => Save_Warnings,
+             SPARK_Mode               => SPARK_Mode,
+             SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
          return True;
 
       --  Here if not inlined, or we ignore the inlining
@@ -9913,6 +9921,8 @@ package body Sem_Ch12 is
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
+      Opt.SPARK_Mode           := Body_Info.SPARK_Mode;
+      Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -10203,6 +10213,8 @@ package body Sem_Ch12 is
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
+      Opt.SPARK_Mode           := Body_Info.SPARK_Mode;
+      Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
 
@@ -12091,7 +12103,9 @@ package body Sem_Ch12 is
                                 Local_Suppress_Stack_Top,
                               Version                  => Ada_Version,
                               Version_Pragma           => Ada_Version_Pragma,
-                              Warnings                 => Save_Warnings);
+                              Warnings                 => Save_Warnings,
+                              SPARK_Mode               => SPARK_Mode,
+                              SPARK_Mode_Pragma        => SPARK_Mode_Pragma);
 
                            --  Package instance
 
@@ -12133,7 +12147,9 @@ package body Sem_Ch12 is
                          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                          Version                  => Ada_Version,
                          Version_Pragma           => Ada_Version_Pragma,
-                         Warnings                 => Save_Warnings)),
+                         Warnings                 => Save_Warnings,
+                         SPARK_Mode               => SPARK_Mode,
+                         SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
                      Body_Optional => Body_Optional);
                end;
             end if;
@@ -13799,7 +13815,9 @@ package body Sem_Ch12 is
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id)
    is
-      Assertion_Status : constant Boolean := Assertions_Enabled;
+      Assertion_Status       : constant Boolean := Assertions_Enabled;
+      Save_SPARK_Mode        : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SPARK_Mode_Pragma : constant Node_Id := SPARK_Mode_Pragma;
 
    begin
       --  Regardless of the current mode, predefined units are analyzed in the
@@ -13822,6 +13840,12 @@ package body Sem_Ch12 is
          if Ada_Version >= Ada_2012 then
             Assertions_Enabled := Assertion_Status;
          end if;
+
+         --  SPARK_Mode for an instance is the one applicable at the point of
+         --  instantiation.
+
+         SPARK_Mode := Save_SPARK_Mode;
+         SPARK_Mode_Pragma := Save_SPARK_Mode_Pragma;
       end if;
 
       Current_Instantiated_Parent :=
