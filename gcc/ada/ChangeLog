@@ -1,5 +1,19 @@
 2014-01-29  Vincent Celier  <celier@adacore.com>
 
+	* clean.adb (Gnatclean): Fail if main project is an aggregate
+	project or if there is an aggregate library project in the
+	project tree.
+	* gnatcmd.adb: Fail if the main project is an aggregate project
+	or if there is an aggegate library project in the project tree.
+	* make.adb (Initialize): : Fail if main project is an aggregate
+	project or if there is an aggregate library project in the
+	project tree.
+	* makeutl.ads (Aggregate_Libraries_In): New Boolean function.
+	* prj-makr.adb (Initialize): Fail if the main project is an
+	aggregate project or an aggregate library project.
+
+2014-01-29  Vincent Celier  <celier@adacore.com>
+
 	* prj-part.adb (Check_Import_Aggregate): New procedure
 	to check if an imported project is an aggregate project.
 	(Parse_Single_Project): Call Check_Import_Aggregate

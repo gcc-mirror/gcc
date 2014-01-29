@@ -1939,6 +1939,12 @@ begin
 
          if Project = Prj.No_Project then
             Fail ("""" & Project_File.all & """ processing failed");
+
+         elsif Project.Qualifier = Aggregate then
+            Fail ("aggregate projects are not supported");
+
+         elsif Aggregate_Libraries_In (Project_Tree) then
+            Fail ("aggregate library projects are not supported");
          end if;
 
          --  Check if a package with the name of the tool is in the project
