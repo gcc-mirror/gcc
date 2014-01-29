@@ -1,3 +1,9 @@
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.ads, sem_util.adb (In_Pragma_Expression): New function.
+	* sem_warn.adb (Check_References): Suppress warnings if inside
+	Initial_Condition pragma.
+
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Missing_Part_Of): List all values of

@@ -1006,15 +1006,18 @@ package Sem_Util is
    function In_Parameter_Specification (N : Node_Id) return Boolean;
    --  Returns True if node N belongs to a parameter specification
 
+   function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
+   --  Returns true if the expression N occurs within a pragma with name Nam
+
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
    --  array that has Reverse_Storage_Order.
 
    function In_Subprogram_Or_Concurrent_Unit return Boolean;
    --  Determines if the current scope is within a subprogram compilation unit
-   --  (inside a subprogram declaration, subprogram body, or generic
-   --  subprogram declaration) or within a task or protected body. The test is
-   --  for appearing anywhere within such a construct (that is it does not need
+   --  (inside a subprogram declaration, subprogram body, or generic subprogram
+   --  declaration) or within a task or protected body. The test is for
+   --  appearing anywhere within such a construct (that is it does not need
    --  to be directly within).
 
    function In_Visible_Part (Scope_Id : Entity_Id) return Boolean;
