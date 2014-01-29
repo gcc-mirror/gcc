@@ -1106,27 +1106,22 @@ branch_prob (void)
 	      gimple first;
 	      tree fndecl;
 
-	      gsi = gsi_after_labels (bb);
+	      gsi = gsi_start_nondebug_after_labels_bb (bb);
 	      gcc_checking_assert (!gsi_end_p (gsi));
 	      first = gsi_stmt (gsi);
-	      if (is_gimple_debug (first))
-		{
-		  gsi_next_nondebug (&gsi);
-		  gcc_checking_assert (!gsi_end_p (gsi));
-		  first = gsi_stmt (gsi);
-		}
 	      /* Don't split the bbs containing __builtin_setjmp_receiver
-		 or __builtin_setjmp_dispatcher calls.  These are very
+		 or ABNORMAL_DISPATCHER calls.  These are very
 		 special and don't expect anything to be inserted before
 		 them.  */
 	      if (is_gimple_call (first)
 		  && (((fndecl = gimple_call_fndecl (first)) != NULL
 		       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
 		       && (DECL_FUNCTION_CODE (fndecl)
-			   == BUILT_IN_SETJMP_RECEIVER
-			   || (DECL_FUNCTION_CODE (fndecl)
-			       == BUILT_IN_SETJMP_DISPATCHER)))
-		      || gimple_call_flags (first) & ECF_RETURNS_TWICE))
+			   == BUILT_IN_SETJMP_RECEIVER))
+		      || (gimple_call_flags (first) & ECF_RETURNS_TWICE)
+		      || (gimple_call_internal_p (first)
+			  && (gimple_call_internal_fn (first)
+			      == IFN_ABNORMAL_DISPATCHER))))
 		continue;
 
 	      if (dump_file)

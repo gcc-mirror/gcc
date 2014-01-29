@@ -783,7 +783,6 @@ DEF_BUILTIN_STUB (BUILT_IN_NONLOCAL_GOTO, "__builtin_nonlocal_goto")
 
 /* Implementing __builtin_setjmp.  */
 DEF_BUILTIN_STUB (BUILT_IN_SETJMP_SETUP, "__builtin_setjmp_setup")
-DEF_BUILTIN_STUB (BUILT_IN_SETJMP_DISPATCHER, "__builtin_setjmp_dispatcher")
 DEF_BUILTIN_STUB (BUILT_IN_SETJMP_RECEIVER, "__builtin_setjmp_receiver")
 
 /* Implementing variable sized local variables.  */

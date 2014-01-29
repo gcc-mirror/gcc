@@ -9977,12 +9977,6 @@ build_common_builtin_nodes (void)
 			BUILT_IN_SETJMP_SETUP,
 			"__builtin_setjmp_setup", ECF_NOTHROW);
 
-  ftype = build_function_type_list (ptr_type_node, ptr_type_node, NULL_TREE);
-  local_define_builtin ("__builtin_setjmp_dispatcher", ftype,
-			BUILT_IN_SETJMP_DISPATCHER,
-			"__builtin_setjmp_dispatcher",
-			ECF_PURE | ECF_NOTHROW);
-
   ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   local_define_builtin ("__builtin_setjmp_receiver", ftype,
 			BUILT_IN_SETJMP_RECEIVER,

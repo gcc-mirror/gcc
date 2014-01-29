@@ -1,5 +1,13 @@
 2014-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59917
+	PR tree-optimization/59920
+	* gcc.dg/pr59920-1.c: New test.
+	* gcc.dg/pr59920-2.c: New test.
+	* gcc.dg/pr59920-3.c: New test.
+	* c-c++-common/gomp/pr59917-1.c: New test.
+	* c-c++-common/gomp/pr59917-2.c: New test.
+
 	PR tree-optimization/59594
 	* gcc.dg/vect/no-vfa-vect-depend-2.c: New test.
 	* gcc.dg/vect/no-vfa-vect-depend-3.c: New test.

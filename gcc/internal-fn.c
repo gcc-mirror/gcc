@@ -857,6 +857,11 @@ expand_MASK_STORE (gimple stmt)
   expand_insn (optab_handler (maskstore_optab, TYPE_MODE (type)), 3, ops);
 }
 
+static void
+expand_ABNORMAL_DISPATCHER (gimple)
+{
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 

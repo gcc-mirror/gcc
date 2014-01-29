@@ -1,5 +1,54 @@
 2014-01-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59917
+	PR tree-optimization/59920
+	* tree.c (build_common_builtin_nodes): Remove
+	__builtin_setjmp_dispatcher initialization.
+	* omp-low.h (make_gimple_omp_edges): Add a new int * argument.
+	* profile.c (branch_prob): Use gsi_start_nondebug_after_labels_bb
+	instead of gsi_after_labels + manually skipping debug stmts.
+	Don't ignore bbs with BUILT_IN_SETJMP_DISPATCHER, instead
+	ignore bbs with IFN_ABNORMAL_DISPATCHER.
+	* tree-inline.c (copy_edges_for_bb): Remove
+	can_make_abnormal_goto argument, instead add abnormal_goto_dest
+	argument.  Ignore computed_goto_p stmts.  Don't call
+	make_abnormal_goto_edges.  If a call might need abnormal edges
+	for non-local gotos, see if it already has an edge to
+	IFN_ABNORMAL_DISPATCHER or if it is IFN_ABNORMAL_DISPATCHER
+	with true argument, don't do anything then, otherwise add
+	EDGE_ABNORMAL from the call's bb to abnormal_goto_dest.
+	(copy_cfg_body): Compute abnormal_goto_dest, adjust copy_edges_for_bb
+	caller.
+	* gimple-low.c (struct lower_data): Remove calls_builtin_setjmp.
+	(lower_function_body): Don't emit __builtin_setjmp_dispatcher.
+	(lower_stmt): Don't set data->calls_builtin_setjmp.
+	(lower_builtin_setjmp): Adjust comment.
+	* builtins.def (BUILT_IN_SETJMP_DISPATCHER): Remove.
+	* tree-cfg.c (found_computed_goto): Remove.
+	(factor_computed_gotos): Remove.
+	(make_goto_expr_edges): Return bool, true for computed gotos.
+	Don't call make_abnormal_goto_edges.
+	(build_gimple_cfg): Don't set found_computed_goto, don't call
+	factor_computed_gotos.
+	(computed_goto_p): No longer static.
+	(make_blocks): Don't set found_computed_goto.
+	(get_abnormal_succ_dispatcher, handle_abnormal_edges): New functions.
+	(make_edges): If make_goto_expr_edges returns true, push bb
+	into ab_edge_goto vector, for stmt_can_make_abnormal_goto calls
+	instead of calling make_abnormal_goto_edges push bb into ab_edge_call
+	vector.  Record mapping between bbs and OpenMP regions if there
+	are any, adjust make_gimple_omp_edges caller.  Call
+	handle_abnormal_edges.
+	(make_abnormal_goto_edges): Remove.
+	* tree-cfg.h (make_abnormal_goto_edges): Remove.
+	(computed_goto_p, get_abnormal_succ_dispatcher): New prototypes.
+	* internal-fn.c (expand_ABNORMAL_DISPATCHER): New function.
+	* builtins.c (expand_builtin): Don't handle
+	BUILT_IN_SETJMP_DISPATCHER.
+	* internal-fn.def (ABNORMAL_DISPATCHER): New.
+	* omp-low.c (make_gimple_omp_edges): Add region_idx argument, when
+	filling *region also set *region_idx to (*region)->entry->index.
+
 	PR other/58712
 	* read-rtl.c (read_rtx_code): Clear all of RTX_CODE_SIZE (code).
 	For REGs set ORIGINAL_REGNO.
