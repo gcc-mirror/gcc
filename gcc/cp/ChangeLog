@@ -1,5 +1,9 @@
 2014-01-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59791
+	* pt.c (tsubst_decl) [VAR_DECL]: Allow in unevaluated context.
+	(tsubst_copy): Use it if lookup fails.
+
 	PR c++/59818
 	* pt.c (tsubst_function_type): Make sure we keep the same function
 	quals.

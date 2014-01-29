@@ -10990,9 +10990,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
 	  }
-	else if (cp_unevaluated_operand)
-	  gcc_unreachable ();
-	else
+	else if (!cp_unevaluated_operand)
 	  register_local_specialization (r, t);
 
 	DECL_CHAIN (r) = NULL_TREE;
@@ -12481,6 +12479,11 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		}
 	      else
 		{
+		  /* This can happen for a variable used in a late-specified
+		     return type of a local lambda.  Just make a dummy decl
+		     since it's only used for its type.  */
+		  if (cp_unevaluated_operand)
+		    return tsubst_decl (t, args, complain);
 		  gcc_assert (errorcount || sorrycount);
 		  return error_mark_node;
 		}
