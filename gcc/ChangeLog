@@ -1,3 +1,9 @@
+2014-01-29  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_mov_immediate)
+	(aarch64_legitimate_address_p, aarch64_class_max_nregs): Adjust
+	whitespace.
+
 2014-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58742
