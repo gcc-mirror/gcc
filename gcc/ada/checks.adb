@@ -2780,7 +2780,7 @@ package body Checks is
       end if;
 
       --  Do not set range checks for any values from System.Scalar_Values
-      --  since the whole idea of such values is to avoid checking them!
+      --  since the whole idea of such values is to avoid checking them.
 
       if Is_Entity_Name (Expr)
         and then Is_RTU (Scope (Entity (Expr)), System_Scalar_Values)
@@ -3267,7 +3267,7 @@ package body Checks is
          --  An unconstrained derived type may have inherited discriminant.
          --  Build an actual discriminant constraint list using the stored
          --  constraint, to verify that the expression of the parent type
-         --  satisfies the constraints imposed by the (unconstrained!)
+         --  satisfies the constraints imposed by the (unconstrained)
          --  derived type. This applies to value conversions, not to view
          --  conversions of tagged types.
 
@@ -3618,7 +3618,7 @@ package body Checks is
          --  such as itype declarations in this context, to keep the loop going
          --  since we may well have generated such stuff in complex situations.
          --  Also done if no parent (probably an error condition, but no point
-         --  in behaving nasty if we find it!)
+         --  in behaving nasty if we find it).
 
          if No (P)
            or else (K not in N_Subexpr and then Comes_From_Source (P))
@@ -3758,7 +3758,7 @@ package body Checks is
       --  Only do this check for expressions that come from source. We assume
       --  that expander generated assignments explicitly include any necessary
       --  checks. Note that this is not just an optimization, it avoids
-      --  infinite recursions!
+      --  infinite recursions.
 
       elsif not Comes_From_Source (Expr) then
          return;
@@ -4022,7 +4022,7 @@ package body Checks is
 
    Cache_Size : constant := 2 ** 10;
    type Cache_Index is range 0 .. Cache_Size - 1;
-   --  Determine size of below cache (power of 2 is more efficient!)
+   --  Determine size of below cache (power of 2 is more efficient)
 
    Determine_Range_Cache_N  : array (Cache_Index) of Node_Id;
    Determine_Range_Cache_V  : array (Cache_Index) of Boolean;
@@ -4144,7 +4144,7 @@ package body Checks is
       OK := True;
 
       --  If value is compile time known, then the possible range is the one
-      --  value that we know this expression definitely has!
+      --  value that we know this expression definitely has.
 
       if Compile_Time_Known_Value (N) then
          Lo := Expr_Value (N);
@@ -4705,7 +4705,7 @@ package body Checks is
       --  is not worth the effort to eliminate checks for other than discrete
       --  types. In addition, we take this same path if we have stored the
       --  maximum number of checks possible already (a very unlikely situation,
-      --  but we do not want to blow up!)
+      --  but we do not want to blow up).
 
       if Optimization_Level = 0
         or else not Is_Discrete_Type (Etype (N))
@@ -4810,7 +4810,7 @@ package body Checks is
 
    begin
       --  Return if unchecked type conversion with range check killed. In this
-      --  case we never set the flag (that's what Kill_Range_Check is about!)
+      --  case we never set the flag (that's what Kill_Range_Check is about).
 
       if Nkind (N) = N_Unchecked_Type_Conversion
         and then Kill_Range_Check (N)
@@ -4874,7 +4874,7 @@ package body Checks is
       --  is not worth the effort to eliminate checks for other than discrete
       --  types. In addition, we take this same path if we have stored the
       --  maximum number of checks possible already (a very unlikely situation,
-      --  but we do not want to blow up!)
+      --  but we do not want to blow up).
 
       if Optimization_Level = 0
         or else No (Etype (N))
@@ -5061,7 +5061,7 @@ package body Checks is
 
       --  No check required if expression is from the expander, we assume the
       --  expander will generate whatever checks are needed. Note that this is
-      --  not just an optimization, it avoids infinite recursions!
+      --  not just an optimization, it avoids infinite recursions.
 
       --  Unchecked conversions must be checked, unless they are initialized
       --  scalar values, as in a component assignment in an init proc.
@@ -5843,7 +5843,7 @@ package body Checks is
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
       --  stopped Do_Range_Check from being set in the first place, but better
-      --  late than never in preventing junk code!
+      --  late than never in preventing junk code.
 
       if In_Subrange_Of (Source_Type, Target_Type)
 
@@ -6019,7 +6019,7 @@ package body Checks is
             --  With these two checks out of the way, we can do the check
             --  using the source type safely
 
-            --  This is definitely the most annoying case!
+            --  This is definitely the most annoying case.
 
             --    [constraint_error
             --       when (Target_Type'First >= 0
@@ -6454,7 +6454,7 @@ package body Checks is
 
          --  Insert the validity check. Note that we do this with validity
          --  checks turned off, to avoid recursion, we do not want validity
-         --  checks on the validity checking code itself!
+         --  checks on the validity checking code itself.
 
          Insert_Action (Expr, CE, Suppress => Validity_Check);
 
@@ -6488,7 +6488,7 @@ package body Checks is
          --  when a range check is present, but that's not the case, because
          --  the back end is allowed to assume for the range check that the
          --  operand is within its declared range (an assumption that validity
-         --  checking is all about NOT assuming!)
+         --  checking is all about NOT assuming).
 
          --  Note: no need to worry about Possible_Local_Raise here, it will
          --  already have been called if original node has Do_Range_Check set.
@@ -6645,7 +6645,7 @@ package body Checks is
          if Is_Entity_Name (N) then
 
             --  For sure, we want to clear an indication that this is known to
-            --  be null, since if we get past this check, it definitely is not!
+            --  be null, since if we get past this check, it definitely is not.
 
             Set_Is_Known_Null (Entity (N), False);
 
@@ -7023,7 +7023,7 @@ package body Checks is
       --  This is called when we have modified the node and we therefore need
       --  to reanalyze it. It is important that we reset the mode to STRICT for
       --  this reanalysis, since if we leave it in MINIMIZED or ELIMINATED mode
-      --  we would reenter this routine recursively which would not be good!
+      --  we would reenter this routine recursively which would not be good.
       --  The argument Suppress is set True if we also want to suppress
       --  overflow checking for the reexpansion (this is set when we know
       --  overflow is not possible). Typ is the type for the reanalysis.
@@ -7154,7 +7154,7 @@ package body Checks is
          --  Use the normal Determine_Range routine to get the range. We
          --  don't require operands to be valid, invalid values may result in
          --  rubbish results where the result has not been properly checked for
-         --  overflow, that's fine!
+         --  overflow, that's fine.
 
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => False);
 
@@ -7204,7 +7204,7 @@ package body Checks is
             --  If at least one of our operands is now Bignum, we must rebuild
             --  the if expression to use Bignum operands. We will analyze the
             --  rebuilt if expression with overflow checks off, since once we
-            --  are in bignum mode, we are all done with overflow checks!
+            --  are in bignum mode, we are all done with overflow checks.
 
             if Bignum_Operands then
                Rewrite (N,
@@ -7681,7 +7681,7 @@ package body Checks is
          --  here because it will cause recursion into the whole MINIMIZED/
          --  ELIMINATED overflow processing which is not what we want. Here
          --  we are at the top level, and we need a check against the result
-         --  mode (i.e. we want to use STRICT mode). So do exactly that!
+         --  mode (i.e. we want to use STRICT mode). So do exactly that.
          --  Also, we have not modified the node, so this is a case where
          --  we need to reexpand, but not reanalyze.
 
@@ -7821,7 +7821,7 @@ package body Checks is
 
       --  Here we will do the operation in Long_Long_Integer. We do this even
       --  if we know an overflow check is required, better to do this in long
-      --  long integer mode, since we are less likely to overflow!
+      --  long integer mode, since we are less likely to overflow.
 
       --  Convert right or only operand to Long_Long_Integer, except that
       --  we do not touch the exponentiation right operand.
@@ -7849,7 +7849,7 @@ package body Checks is
       --  setting of the Do_Division_Check flag).
 
       --  We do this reanalysis in STRICT mode to avoid recursion into the
-      --  MINIMIZED/ELIMINATED handling, since we are now done with that!
+      --  MINIMIZED/ELIMINATED handling, since we are now done with that.
 
       declare
          SG : constant Overflow_Mode_Type :=

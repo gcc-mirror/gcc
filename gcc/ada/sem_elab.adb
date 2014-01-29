@@ -976,7 +976,7 @@ package body Sem_Elab is
                --  elaboration Boolean for the unit containing the entity.
 
                --  Note that for this case, we do check the real unit (the one
-               --  from following renamings, since that is the issue!)
+               --  from following renamings, since that is the issue).
 
                --  Could this possibly miss a useless but required PE???
 
@@ -2043,7 +2043,7 @@ package body Sem_Elab is
          --  we go in unconditionally. This is not so terrible, it means the
          --  error backtrace is not quite complete, and we are too eager to
          --  scan bodies of tasks that are unused, but this is hardly very
-         --  significant!
+         --  significant.
 
          elsif Nkind (N) = N_Subprogram_Body
            and then Comes_From_Source (N)

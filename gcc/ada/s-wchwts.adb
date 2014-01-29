@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package body System.WCh_WtS is
      (S  : Wide_String;
       EM : WC_Encoding_Method) return String
    is
-      R  : String (S'First .. S'First + 5 * S'Length); -- worst case length!
+      R  : String (S'First .. S'First + 5 * S'Length); -- worst case length
       RP : Natural;
 
    begin
@@ -106,7 +106,7 @@ package body System.WCh_WtS is
      (S  : Wide_Wide_String;
       EM : WC_Encoding_Method) return String
    is
-      R  : String (S'First .. S'First + 7 * S'Length); -- worst case length!
+      R  : String (S'First .. S'First + 7 * S'Length); -- worst case length
       RP : Natural;
 
    begin

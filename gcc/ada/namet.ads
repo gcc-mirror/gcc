@@ -128,7 +128,7 @@ package Namet is
    --  This buffer is used to set the name to be stored in the table for the
    --  Name_Find call, and to retrieve the name for the Get_Name_String call.
    --  The limit here is intended to be an infinite value that ensures that we
-   --  never overflow the buffer (names this long are too absurd to worry!)
+   --  never overflow the buffer (names this long are too absurd to worry).
 
    Name_Len : Natural := 0;
    --  Length of name stored in Name_Buffer. Used as an input parameter for

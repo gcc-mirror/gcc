@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Warning! Error messages can be generated during Gigi processing by direct
+--  Warning: Error messages can be generated during Gigi processing by direct
 --  calls to error message routines, so it is essential that the processing
 --  in this body be consistent with the requirements for the Gigi processing
 --  environment, and that in particular, no disallowed table expansion is
@@ -3113,7 +3113,7 @@ package body Errout is
          --  but it makes too much noise to be accurate and add 'Base in all
          --  cases. Note that we only do this is the first named subtype is not
          --  itself an internal name. This avoids the obvious loop (subtype ->
-         --  basetype -> subtype) which would otherwise occur!)
+         --  basetype -> subtype) which would otherwise occur).
 
          else
             declare
@@ -3152,7 +3152,7 @@ package body Errout is
          --  If we are stuck in a loop, get out and settle for the internal
          --  name after all. In this case we set to kill the message if it is
          --  not the first error message (we really try hard not to show the
-         --  dirty laundry of the implementation to the poor user!)
+         --  dirty laundry of the implementation to the poor user).
 
          if Ent = Old_Ent then
             Kill_Message := True;

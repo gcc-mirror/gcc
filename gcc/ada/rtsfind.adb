@@ -710,7 +710,7 @@ package body Rtsfind is
       --  of diagnostics, since we will take care of it here.
 
       --  We save style checking switches and turn off style checking for
-      --  loading the unit, since we don't want any style checking!
+      --  loading the unit, since we don't want any style checking.
 
       declare
          Save_Style_Check : constant Boolean := Style_Check;
@@ -1088,7 +1088,7 @@ package body Rtsfind is
       --  declaration and otherwise do a regular find.
 
       --  Not pleasant, but these kinds of annoying recursion when
-      --  writing an Ada compiler in Ada have to be broken somewhere!
+      --  writing an Ada compiler in Ada have to be broken somewhere.
 
       if Present (Main_Unit_Entity)
         and then Chars (Main_Unit_Entity) = Name_System

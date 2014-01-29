@@ -3877,7 +3877,7 @@ package body Sem_Ch3 is
 
          --  If not library level entity, then indicate we don't know max
          --  tasks and also check task hierarchy restriction and blocking
-         --  operation (since starting a task is definitely blocking!)
+         --  operation (since starting a task is definitely blocking).
 
          else
             Check_Restriction (Max_Tasks, N);
@@ -4742,7 +4742,7 @@ package body Sem_Ch3 is
       --  record.
 
       elsif Ekind (Scope (Id)) /= E_Protected_Type
-        and then Present (Scope (Scope (Id))) -- error defense!
+        and then Present (Scope (Scope (Id))) -- error defense
         and then Ekind (Scope (Scope (Id))) /= E_Protected_Type
       then
          Conditional_Delay (Id, T);
@@ -9145,8 +9145,8 @@ package body Sem_Ch3 is
       --  be unanalyzed at this point? and if it is, what business do we
       --  have messing around with it? and why is the base type of the
       --  parent type the right type for the resolution. It probably is
-      --  not! It is OK for the new bound we are creating, but not for
-      --  the old one??? Still if it never happens, no problem!
+      --  not. It is OK for the new bound we are creating, but not for
+      --  the old one??? Still if it never happens, no problem.
 
       Analyze_And_Resolve (Bound, Base_Type (Par_T));
 
@@ -10680,7 +10680,7 @@ package body Sem_Ch3 is
       Set_Is_Itype         (Full);
 
       --  A subtype of a private-type-without-discriminants, whose full-view
-      --  has discriminants with default expressions, is not constrained!
+      --  has discriminants with default expressions, is not constrained.
 
       if not Has_Discriminants (Priv) then
          Set_Is_Constrained (Full, Is_Constrained (Full_Base));
@@ -12066,7 +12066,7 @@ package body Sem_Ch3 is
       procedure Fixup_Bad_Constraint;
       --  This is called after finding a bad constraint, and after having
       --  posted an appropriate error message. The mission is to leave the
-      --  entity T in as reasonable state as possible!
+      --  entity T in as reasonable state as possible.
 
       --------------------------
       -- Fixup_Bad_Constraint --
@@ -12241,7 +12241,7 @@ package body Sem_Ch3 is
 
          --  Check that digits value is in range. Obviously we can do this
          --  at compile time, but it is strictly a runtime check, and of
-         --  course there is an ACVC test that checks this!
+         --  course there is an ACVC test that checks this.
 
          if Digits_Value (Def_Id) > Digits_Value (T) then
             Error_Msg_Uint_1 := Digits_Value (T);
@@ -12468,7 +12468,7 @@ package body Sem_Ch3 is
 
          --  Check that delta value is in range. Obviously we can do this
          --  at compile time, but it is strictly a runtime check, and of
-         --  course there is an ACVC test that checks this!
+         --  course there is an ACVC test that checks this.
 
          if Delta_Value (Def_Id) < Delta_Value (T) then
             Error_Msg_N ("??delta value is too small", D);
@@ -12844,7 +12844,7 @@ package body Sem_Ch3 is
          --  Set the parent so we have a proper link for freezing etc. This is
          --  not a real parent pointer, since of course our parent does not own
          --  up to us and reference us, we are an illegitimate child of the
-         --  original parent!
+         --  original parent.
 
          Set_Parent (New_Compon, Parent (Old_Compon));
 
@@ -17345,7 +17345,7 @@ package body Sem_Ch3 is
 
    begin
       --  If the mod expression is (exactly) 2 * literal, where literal is
-      --  64 or less,then almost certainly the * was meant to be **. Warn!
+      --  64 or less,then almost certainly the * was meant to be **. Warn.
 
       if Warn_On_Suspicious_Modulus_Value
         and then Nkind (Mod_Expr) = N_Op_Multiply
@@ -17391,7 +17391,7 @@ package body Sem_Ch3 is
 
       --  Properly analyze the literals for the range. We do this manually
       --  because we can't go calling Resolve, since we are resolving these
-      --  bounds with the type, and this type is certainly not complete yet!
+      --  bounds with the type, and this type is certainly not complete yet.
 
       Set_Etype (Low_Bound  (Scalar_Range (T)), T);
       Set_Etype (High_Bound (Scalar_Range (T)), T);

@@ -607,7 +607,7 @@ begin
 
          Buffer : String (1 .. 2000);
          Buflen : Natural;
-         --  File information and length (2000 easily enough!)
+         --  File information and length (2000 easily enough)
 
          Nam_Buf : String (1 .. 40);
          Nam_Len : Natural;

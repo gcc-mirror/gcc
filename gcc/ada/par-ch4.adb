@@ -1512,7 +1512,7 @@ package body Ch4 is
 
          --  If we are at an expression terminator, something is seriously
          --  wrong, so let's get out now, before we start eating up stuff
-         --  that doesn't belong to us!
+         --  that doesn't belong to us.
 
          if Token in Token_Class_Eterm then
             Error_Msg_AP
@@ -1992,7 +1992,7 @@ package body Ch4 is
 
             --  If range attribute, then we return with Token pointing to the
             --  apostrophe. Note: avoid the normal error check on exit. We
-            --  know that the expression really is complete in this case!
+            --  know that the expression really is complete in this case.
 
             else -- Token = Tok_Range then
                Restore_Scan_State (Scan_State); -- to apostrophe
@@ -2634,7 +2634,7 @@ package body Ch4 is
                end if;
 
             --  Minus may well be an improper attempt at a unary minus. Give
-            --  a message, skip the minus and keep going!
+            --  a message, skip the minus and keep going.
 
             when Tok_Minus =>
                Error_Msg_SC ("parentheses required for unary minus");
@@ -2893,7 +2893,7 @@ package body Ch4 is
 
    --  Parsed by P_Factor (4.4)
 
-   --  Note: this rule is not in fact used by the grammar at any point!
+   --  Note: this rule is not in fact used by the grammar at any point
 
    --------------------------
    -- 4.6  Type Conversion --

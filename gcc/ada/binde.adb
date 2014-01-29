@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,7 +124,7 @@ package body Binde is
    --  than the spec link) to the spec. Then when then the spec gets chosen,
    --  we choose the body right afterwards. We mark the links that get moved
    --  from the body to the spec by setting their Elab_Body flag True, so
-   --  that we can understand what is going on!
+   --  that we can understand what is going on.
 
    Succ_First : constant := 1;
 
@@ -580,7 +580,7 @@ package body Binde is
       Elab_Order.Table (Elab_Order.Last) := Chosen;
 
       --  Remove from No_Pred list. This is a little inefficient and may
-      --  be we should doubly link the list, but it will do for now!
+      --  be we should doubly link the list, but it will do for now.
 
       if No_Pred = Chosen then
          No_Pred := UNR.Table (Chosen).Nextnp;
@@ -849,7 +849,7 @@ package body Binde is
 
       --  Try to find cycles starting with any of the remaining nodes that have
       --  not yet been chosen. There must be at least one (there is some reason
-      --  we are being called!)
+      --  we are being called).
 
       for U in Units.First .. Units.Last loop
          if UNR.Table (U).Elab_Position = 0 then
@@ -1314,7 +1314,7 @@ package body Binde is
                      end if;
 
                   --  A limited_with does not establish an elaboration
-                  --  dependence (that's the whole point!).
+                  --  dependence (that's the whole point)..
 
                   elsif Withs.Table (W).Limited_With then
                      null;
@@ -1470,7 +1470,7 @@ package body Binde is
          return False;
 
       --  Prefer anything else to a waiting body. We want to make bodies wait
-      --  as long as possible, till we are forced to choose them!
+      --  as long as possible, till we are forced to choose them.
 
       elsif Is_Waiting_Body (U1) and then not Is_Waiting_Body (U2) then
          if Debug_Flag_B then
@@ -1486,7 +1486,7 @@ package body Binde is
 
          return True;
 
-      --  Prefer a spec to a body (!)
+      --  Prefer a spec to a body (this is mandatory)
 
       elsif Is_Body_Unit (U1) and then not Is_Body_Unit (U2) then
          if Debug_Flag_B then

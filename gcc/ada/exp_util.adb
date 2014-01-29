@@ -4691,7 +4691,7 @@ package body Exp_Util is
             --  The following code is historical, it used to be present but it
             --  is too cautious, because the front-end does not know the proper
             --  default alignments for the target. Also, if the alignment is
-            --  not known, the front end can't know in any case! If a copy is
+            --  not known, the front end can't know in any case. If a copy is
             --  needed, the back-end will take care of it. This whole section
             --  including this comment can be removed later ???
 
@@ -6225,7 +6225,7 @@ package body Exp_Util is
             end;
 
          --  For a slice, test the prefix, if that is possibly misaligned,
-         --  then for sure the slice is!
+         --  then for sure the slice is.
 
          when N_Slice =>
             return Possible_Bit_Aligned_Component (Prefix (N));
@@ -7958,7 +7958,7 @@ package body Exp_Util is
       --  We need the last guard because we don't want to raise CE for empty
       --  arrays since no out of range values result. (Empty arrays with a
       --  component type of True .. True -- very useful -- even the ACATS
-      --  does not test that marginal case!)
+      --  does not test that marginal case).
 
       Insert_Action (N,
         Make_Raise_Constraint_Error (Loc,
@@ -8009,7 +8009,7 @@ package body Exp_Util is
       --  We need the last guard because we don't want to raise CE for empty
       --  arrays since no out of range values result (Empty arrays with a
       --  component type of True .. True -- very useful -- even the ACATS
-      --  does not test that marginal case!).
+      --  does not test that marginal case).
 
       Insert_Action (N,
         Make_Raise_Constraint_Error (Loc,
@@ -8039,7 +8039,7 @@ package body Exp_Util is
 
    Integer_Sized_Small : Ureal;
    --  Set to 2.0 ** -(Integer'Size - 1) the first time that this function is
-   --  called (we don't want to compute it more than once!)
+   --  called (we don't want to compute it more than once).
 
    Long_Integer_Sized_Small : Ureal;
    --  Set to 2.0 ** -(Long_Integer'Size - 1) the first time that this function

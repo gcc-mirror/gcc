@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,7 +161,7 @@ package body System.Secondary_Stack is
    --  Well it is not quite true that we never allocate an object of the
    --  type. This dummy object is allocated for the purpose of getting the
    --  offset of the Mem field via the 'Position attribute (such a nuisance
-   --  that we cannot apply this to a field of a type!)
+   --  that we cannot apply this to a field of a type).
 
    type Fixed_Stack_Ptr is access Fixed_Stack_Id;
    --  Pointer to record used to describe statically allocated sec stack

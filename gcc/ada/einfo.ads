@@ -127,7 +127,7 @@ package Einfo is
 -- Handling of Type'Size Values --
 ----------------------------------
 
---  The Ada 95 RM contains some rather peculiar (to us!) rules on the value
+--  The Ada 95 RM contains some rather peculiar (to us) rules on the value
 --  of type'Size (see RM 13.3(55)). We have found that attempting to use
 --  these RM Size values generally, and in particular for determining the
 --  default size of objects, creates chaos, and major incompatibilities in
@@ -3738,7 +3738,7 @@ package Einfo is
 --    Scope_Depth_Set (synthesized)
 --       Applies to a special predicate function that returns a Boolean value
 --       indicating whether or not the Scope_Depth field has been set. It is
---       needed, since returns an invalid value in this case!
+--       needed, since returns an invalid value in this case.
 
 --    Sec_Stack_Needed_For_Return (Flag167)
 --       Defined in scope entities (blocks, functions, procedures, tasks,
@@ -4570,7 +4570,7 @@ package Einfo is
    );
 
    for Entity_Kind'Size use 8;
-   --  The data structures in Atree assume this!
+   --  The data structures in Atree assume this
 
    --------------------------
    -- Subtype Declarations --
@@ -6076,7 +6076,7 @@ package Einfo is
    --  computation. Of course, from the point of view of a user of this
    --  package, the distinction is not visible (even the field information
    --  provided below should be disregarded, as it is subject to  change
-   --  without notice!). A number of  attributes appear as lists: lists of
+   --  without notice). A number of  attributes appear as lists: lists of
    --  formals,  lists of actuals, of discriminants, etc. For these, pairs
    --  of functions are defined, which take the form:
 

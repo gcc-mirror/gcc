@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Warning! Error messages can be generated during Gigi processing by direct
+--  Warning: Error messages can be generated during Gigi processing by direct
 --  calls to error message routines, so it is essential that the processing
 --  in this body be consistent with the requirements for the Gigi processing
 --  environment, and that in particular, no disallowed table expansion is
@@ -185,7 +185,7 @@ package body Erroutc is
             return;
 
          --  Otherwise see if continuations are the same, if not, keep both
-         --  sequences, a curious case, but better to keep everything!
+         --  sequences, a curious case, but better to keep everything.
 
          elsif not Same_Error (N1, N2) then
             return;

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Compiler Version)                            --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -163,7 +163,7 @@ private
    Use_Ada_Main_Program_Name : constant Boolean := False;
    ZCX_By_Default            : constant Boolean := False;
 
-   --  Obsolete entries, to be removed eventually (bootstrap issues!)
+   --  Obsolete entries, to be removed eventually (bootstrap issues)
 
    Front_End_ZCX_Support     : constant Boolean := False;
    High_Integrity_Mode       : constant Boolean := False;

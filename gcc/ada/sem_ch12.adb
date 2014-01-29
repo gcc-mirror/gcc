@@ -98,7 +98,7 @@ package body Sem_Ch12 is
    --  tree and the copy, in order to recognize non-local references within
    --  the generic, and propagate them to each instance (recall that name
    --  resolution is done on the generic declaration: generics are not really
-   --  macros!). This is summarized in the following diagram:
+   --  macros). This is summarized in the following diagram:
 
    --              .-----------.               .----------.
    --              |  semantic |<--------------|  generic |
@@ -6773,7 +6773,7 @@ package body Sem_Ch12 is
       --  If the node is a compilation unit, it is the subunit of a stub, which
       --  has been loaded already (see code below). In this case, the library
       --  unit field of N points to the parent unit (which is a compilation
-      --  unit) and need not (and cannot!) be copied.
+      --  unit) and need not (and cannot) be copied.
 
       --  When the proper body of the stub is analyzed, the library_unit link
       --  is used to establish the proper context (see sem_ch10).

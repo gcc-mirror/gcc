@@ -307,7 +307,7 @@ package body Sem_Warn is
                return;
 
             --  Forget it if function name is suspicious. A strange test
-            --  but warning generation is in the heuristics business!
+            --  but warning generation is in the heuristics business.
 
             elsif Is_Suspicious_Function_Name (Entity (Name (N))) then
                return;
@@ -495,7 +495,7 @@ package body Sem_Warn is
                      --  going on (perhaps a node with no parent that should
                      --  have one but does not?) As always, for a warning we
                      --  prefer to just abandon the warning than get into the
-                     --  business of complaining about the tree structure here!
+                     --  business of complaining about the tree structure here.
 
                      if No (P)
                        or else Nkind (P) = N_Procedure_Call_Statement
@@ -1144,7 +1144,7 @@ package body Sem_Warn is
                   --  No warning if fully initialized type, except that for
                   --  this purpose we do not consider access types to qualify
                   --  as fully initialized types (relying on an access type
-                  --  variable being null when it is never set is a bit odd!)
+                  --  variable being null when it is never set is a bit odd).
 
                   --  Also we generate warning for an out parameter that is
                   --  never referenced, since again it seems odd to rely on
@@ -1507,7 +1507,7 @@ package body Sem_Warn is
                and then Ekind (E1) /= E_Class_Wide_Type
 
                --  Objects other than parameters of task types are allowed to
-               --  be non-referenced, since they start up tasks!
+               --  be non-referenced, since they start up tasks.
 
                and then ((Ekind (E1) /= E_Variable
                            and then Ekind (E1) /= E_Constant
@@ -1768,7 +1768,7 @@ package body Sem_Warn is
                   --  allow the reference to appear in a loop, block, or
                   --  package spec that is nested within the declaring scope.
                   --  As always, it is possible to construct cases where the
-                  --  warning is wrong, that is why it is a warning!
+                  --  warning is wrong, that is why it is a warning.
 
                   Potential_Unset_Reference : declare
                      SR : Entity_Id;
@@ -2341,7 +2341,7 @@ package body Sem_Warn is
                   end if;
 
                --  If main unit is a renaming of this unit, then we consider
-               --  the with to be OK (obviously it is needed in this case!)
+               --  the with to be OK (obviously it is needed in this case).
                --  This may be transitive: the unit in the with_clause may
                --  itself be a renaming, in which case both it and the main
                --  unit rename the same ultimate package.
@@ -3004,7 +3004,7 @@ package body Sem_Warn is
             E      : Node_Id renames Wentry.E;
 
          begin
-            --  Turn off Warnings_Off, or we won't get the warning!
+            --  Turn off Warnings_Off, or we won't get the warning
 
             Set_Warnings_Off (E, False);
 
@@ -3632,7 +3632,7 @@ package body Sem_Warn is
          --  Nothing to do if subscript does not come from source (we don't
          --  want to give garbage warnings on compiler expanded code, e.g. the
          --  loops generated for slice assignments. Such junk warnings would
-         --  be placed on source constructs with no subscript in sight!)
+         --  be placed on source constructs with no subscript in sight).
 
          if not Comes_From_Source (Original_Node (X)) then
             return;
@@ -3730,7 +3730,7 @@ package body Sem_Warn is
                      end if;
 
                      --  If we have a 'Range reference, then this is a case
-                     --  where we cannot easily give a replacement. Don't try!
+                     --  where we cannot easily give a replacement. Don't try.
 
                      if Tref (Sref .. Sref + 4) = "range"
                        and then Tref (Sref - 1) < 'A'

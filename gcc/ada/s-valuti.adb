@@ -222,7 +222,7 @@ package body System.Val_Util is
       P : Natural := Ptr.all;
 
    begin
-      --  Deal with case of null string (all blanks!). As per spec, we raise
+      --  Deal with case of null string (all blanks). As per spec, we raise
       --  constraint error, with Ptr unchanged, and thus > Max.
 
       if P > Max then

@@ -122,8 +122,7 @@ begin
 
    --  Individual lines for switches. Write_Switch_Char outputs fourteen
    --  characters, so the remaining message is allowed to be a maximum
-   --  of 65 characters to be comfortable on an 80 character device.
-   --  If the Write_Str fits on one line, it is short enough!
+   --  of 65 characters to be comfortable in an 80 character window.
 
    --  Line for -gnata switch
 

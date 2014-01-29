@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -225,7 +225,7 @@ package body Osint.C is
 
    function Debug_File_Eol_Length return Nat is
    begin
-      --  There has to be a cleaner way to do this! ???
+      --  There has to be a cleaner way to do this ???
 
       if Directory_Separator = '/' then
          return 1;

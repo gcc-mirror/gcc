@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,7 @@ package body Eval_Fat is
 
       Uintp_Mark : Uintp.Save_Mark;
       --  The code is divided into blocks that systematically release
-      --  intermediate values (this routine generates lots of junk!)
+      --  intermediate values (this routine generates lots of junk).
 
    begin
       if N = Uint_0 then

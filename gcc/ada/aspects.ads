@@ -559,7 +559,7 @@ package Aspects is
       --  identifier, and there is no issue of evaluating it and thus no
       --  issue of delaying the evaluation. The second case is implementation
       --  defined aspects where we have decided that we don't want to allow
-      --  delays (and for our own aspects we can do what we like!).
+      --  delays (and for our own aspects we can do what we like).
 
       Rep_Aspect);
       --  These are the cases of representation aspects that are in general

@@ -514,7 +514,7 @@ package body Ch10 is
          return Error;
       end if;
 
-      --  Only try this if we got an OK unit!
+      --  Only try this if we got an OK unit
 
       if Unit_Node /= Error then
          if Nkind (Unit_Node) = N_Subunit then
@@ -577,7 +577,7 @@ package body Ch10 is
          Set_Sloc (Comp_Unit_Node, Sloc (Name_Node));
          Set_Sloc (Aux_Decls_Node (Comp_Unit_Node), Sloc (Name_Node));
 
-         --  Set Entity field in file table. Easier now that we have name!
+         --  Set Entity field in file table. Easier now that we have name.
          --  Note that this is also skipped if we had a bad unit
 
          if Nkind (Name_Node) = N_Defining_Program_Unit_Name then
@@ -601,7 +601,7 @@ package body Ch10 is
 
       --  Clear away any missing semicolon indication, we are done with that
       --  unit, so what's done is done, and we don't want anything hanging
-      --  around from the attempt to parse it!
+      --  around from the attempt to parse it.
 
       SIS_Entry_Active := False;
 

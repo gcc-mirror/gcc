@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,7 +158,7 @@ package body System.Img_Real is
       Field_Max : constant := 255;
       --  This should be the same value as Ada.[Wide_]Text_IO.Field'Last.
       --  It is not worth dragging in Ada.Text_IO to pick up this value,
-      --  since it really should never be necessary to change it!
+      --  since it really should never be necessary to change it.
 
       Digs : String (1 .. 2 * Field_Max + 16);
       --  Array used to hold digits of converted integer value. This is a

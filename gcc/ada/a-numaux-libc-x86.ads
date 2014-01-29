@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                       (C Library Version for x86)                        --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package Ada.Numerics.Aux is
    type Double is digits 18;
 
    --  We import these functions directly from C. Note that we label them
-   --  all as pure functions, because indeed all of them are in fact pure!
+   --  all as pure functions, because indeed all of them are in fact pure.
 
    function Sin (X : Double) return Double;
    pragma Import (C, Sin, "sinl");

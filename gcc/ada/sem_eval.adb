@@ -758,7 +758,7 @@ package body Sem_Eval is
       end if;
 
       --  If either operand could raise constraint error, then we cannot
-      --  know the result at compile time (since CE may be raised!)
+      --  know the result at compile time (since CE may be raised).
 
       if not (Cannot_Raise_Constraint_Error (L)
                 and then
@@ -1707,7 +1707,7 @@ package body Sem_Eval is
    -- Eval_Character_Literal --
    ----------------------------
 
-   --  Nothing to be done!
+   --  Nothing to be done
 
    procedure Eval_Character_Literal (N : Node_Id) is
       pragma Warnings (Off, N);
@@ -2791,7 +2791,7 @@ package body Sem_Eval is
       --  will be false because the lengths of one or more index subtypes are
       --  compile time known and different, then we can replace the entire
       --  result by False. We only do this for one dimensional arrays, because
-      --  the case of multi-dimensional arrays is rare and too much trouble! If
+      --  the case of multi-dimensional arrays is rare and too much trouble. If
       --  one of the operands is an illegal aggregate, its type might still be
       --  an arbitrary composite type, so nothing to do.
 
@@ -3425,7 +3425,7 @@ package body Sem_Eval is
             --  string literal is not marked as static (happens in some cases
             --  of folding strings known at compile time, but not static).
             --  Furthermore in such cases, we reword the message, since there
-            --  is no string literal in the source program!
+            --  is no string literal in the source program.
 
             if Is_Static_Expression (N) then
                Apply_Compile_Time_Constraint_Error
@@ -5331,7 +5331,7 @@ package body Sem_Eval is
          return In_Range;
 
       --  Never known if not scalar type. Don't know if this can actually
-      --  happen, but our spec allows it, so we must check!
+      --  happen, but our spec allows it, so we must check.
 
       elsif not Is_Scalar_Type (Typ) then
          return Unknown;

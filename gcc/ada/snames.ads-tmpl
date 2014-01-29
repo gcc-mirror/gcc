@@ -52,7 +52,7 @@ package Snames is
    --  cause a duplicate, then list it only once in this table, and adjust the
    --  definition of the functions for testing for pragma names and attribute
    --  names, and returning their ID values. Of course everything is simpler if
-   --  no such duplications occur!
+   --  no such duplications occur.
 
    --  First we have the one character names used to optimize the lookup
    --  process for one character identifiers (to avoid the hashing in this

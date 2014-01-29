@@ -589,8 +589,8 @@ package body Sem_Ch4 is
                                N_Index_Or_Discriminant_Constraint
                   then
                      Error_Msg_N -- CODEFIX
-                       ("if qualified expression was meant, " &
-                           "use apostrophe!", Constraint (E));
+                       ("if qualified expression was meant, "
+                        & "use apostrophe!", Constraint (E));
                   end if;
 
                   E := New_Occurrence_Of (Def_Id, Loc);
@@ -1247,33 +1247,33 @@ package body Sem_Ch4 is
 
                   if Is_Signed_Integer_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Integer_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Integer_'I'O!", Nam);
 
                   elsif Is_Modular_Integer_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Modular_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Modular_'I'O!", Nam);
 
                   elsif Is_Floating_Point_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Float_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Float_'I'O!", Nam);
 
                   elsif Is_Ordinary_Fixed_Point_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Fixed_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Fixed_'I'O!", Nam);
 
                   elsif Is_Decimal_Fixed_Point_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Decimal_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Decimal_'I'O!", Nam);
 
                   elsif Is_Enumeration_Type (Typ) then
                      Error_Msg_N
-                       ("possible missing instantiation of " &
-                          "'Text_'I'O.'Enumeration_'I'O!", Nam);
+                       ("possible missing instantiation of "
+                        & "'Text_'I'O.'Enumeration_'I'O!", Nam);
                   end if;
                end;
             end if;
@@ -3273,9 +3273,9 @@ package body Sem_Ch4 is
                                   Defining_Identifier
                                     (Associated_Node_For_Itype (Nam));
                            begin
-                              Error_Msg_NE (
-                                "\\  =='> in call to dereference of &#!",
-                                Actual, Access_To_Subprogram_Typ);
+                              Error_Msg_NE
+                                ("\\  =='> in call to dereference of &#!",
+                                 Actual, Access_To_Subprogram_Typ);
                            end;
 
                         else
@@ -5347,7 +5347,7 @@ package body Sem_Ch4 is
    begin
       --  All the components of the prefix of selector Sel are matched against
       --  Sel and a count is maintained of possible misspellings. When at
-      --  the end of the analysis there are one or two (not more!) possible
+      --  the end of the analysis there are one or two (not more) possible
       --  misspellings, these misspellings will be suggested as possible
       --  correction.
 

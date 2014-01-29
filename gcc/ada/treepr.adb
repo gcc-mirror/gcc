@@ -51,7 +51,7 @@ package body Treepr is
    use Atree.Unchecked_Access;
    --  This module uses the unchecked access functions in package Atree
    --  since it does an untyped traversal of the tree (we do not want to
-   --  count on the structure of the tree being correct in this routine!)
+   --  count on the structure of the tree being correct in this routine).
 
    ----------------------------------
    -- Approach Used for Tree Print --
@@ -100,7 +100,7 @@ package body Treepr is
    --  set proper node numbers in the hash table, and during the printing
    --  phase to make sure that a given node is not printed more than once.
    --  (nodes are printed in order during the printing phase, that's the
-   --  point of numbering them in the first place!)
+   --  point of numbering them in the first place).
 
    Printing_Descendants : Boolean;
    --  True if descendants are being printed, False if not. In the false case,
@@ -1935,7 +1935,7 @@ package body Treepr is
 
                --  If we successfully fall through all the above tests (which
                --  execute a return if the node is not to be visited), we can
-               --  go ahead and visit the node!
+               --  go ahead and visit the node.
 
                if No_Indent then
                   Visit_Node (Nod, Prefix_Str, Prefix_Char);

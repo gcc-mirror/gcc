@@ -3793,7 +3793,7 @@ package Atree is
          --     Fifth entry:  holds 8 additional flags (Flag247-254)
          --     Sixth entry:  holds 8 additional flags (Flag310-317)
 
-         --  Now finally (on an 32-bit boundary!) comes the variant part
+         --  Now finally (on an 32-bit boundary) comes the variant part
 
          case Is_Extension is
 

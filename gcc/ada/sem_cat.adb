@@ -1066,7 +1066,7 @@ package body Sem_Cat is
       --  Note that the 10.2.1(9) restrictions are not relevant to us anyway.
       --  We have to enforce them for RM compatibility, but we have no trouble
       --  accepting these objects and doing the right thing. Note that there is
-      --  no requirement that Preelaborate not actually generate any code!
+      --  no requirement that Preelaborate not actually generate any code.
 
       if In_Preelaborated_Unit
         and then not Debug_Flag_PP

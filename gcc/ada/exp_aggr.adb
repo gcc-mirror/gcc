@@ -4933,7 +4933,7 @@ package body Exp_Aggr is
       --  Here we test for is packed array aggregate that we can handle at
       --  compile time. If so, return with transformation done. Note that we do
       --  this even if the aggregate is nested, because once we have done this
-      --  processing, there is no more nested aggregate!
+      --  processing, there is no more nested aggregate.
 
       if Packed_Array_Aggregate_Handled (N) then
          return;
@@ -5279,7 +5279,7 @@ package body Exp_Aggr is
          --  form (others => 'x'), with a single choice and no expressions,
          --  and N is less than 80 (an arbitrary limit for now), then replace
          --  the aggregate by the equivalent string literal (but do not mark
-         --  it as static since it is not!)
+         --  it as static since it is not).
 
          --  Note: this entire circuit is redundant with respect to code in
          --  Expand_Array_Aggregate that collapses others choices to positional
@@ -5303,7 +5303,7 @@ package body Exp_Aggr is
 
          --       But it succeeds (DH looks static to pragma Export)
 
-         --    To be sorted out! ???
+         --    To be sorted out ???
 
          if Present (Component_Associations (N)) then
             declare

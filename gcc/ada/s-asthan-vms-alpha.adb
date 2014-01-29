@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -399,7 +399,7 @@ package body System.AST_Handling is
 
          STI.Undefer_Abort (Self_Id);
 
-         --  We are awake, there is something to do!
+         --  We are awake, there is something to do
 
          Lock_AST (Self_Id);
          Num_Waiting_AST_Servers := Num_Waiting_AST_Servers - 1;

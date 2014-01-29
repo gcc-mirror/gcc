@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -558,11 +558,11 @@ package body Tchk is
               or else Token = Tok_Semicolon
               or else Token = Tok_EOF
             then
-               Restore_Scan_State (Scan_State); -- to where we were!
+               Restore_Scan_State (Scan_State); -- to where we were
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Arrow then
                Scan; -- past arrow
@@ -600,11 +600,11 @@ package body Tchk is
               or else Token = Tok_Semicolon
               or else Token = Tok_EOF
             then
-               Restore_Scan_State (Scan_State); -- to where we were!
+               Restore_Scan_State (Scan_State); -- to where we were
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Is
               or else Token = Tok_Of
@@ -642,11 +642,11 @@ package body Tchk is
               or else Token = Tok_Semicolon
               or else Token = Tok_EOF
             then
-               Restore_Scan_State (Scan_State); -- to where we were!
+               Restore_Scan_State (Scan_State); -- to where we were
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Loop or else Token = Tok_Then then
                Scan; -- past loop or then (message already generated)
@@ -677,11 +677,11 @@ package body Tchk is
               or else Token = Tok_Semicolon
               or else Token = Tok_EOF
             then
-               Restore_Scan_State (Scan_State); -- to where we were!
+               Restore_Scan_State (Scan_State); -- to where we were
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Return then
                Scan; -- past RETURN
@@ -784,7 +784,7 @@ package body Tchk is
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Then then
                Scan; -- past THEN
@@ -818,7 +818,7 @@ package body Tchk is
                return;
             end if;
 
-            Scan; -- continue search!
+            Scan; -- continue search
 
             if Token = Tok_Use then
                Scan; -- past use

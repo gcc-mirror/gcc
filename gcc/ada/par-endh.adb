@@ -700,7 +700,7 @@ package body Endh is
 
          --  Extra statements past the bogus END are discarded. This is not
          --  ideal for maximum error recovery, but it's too much trouble to
-         --  find an appropriate place to put them!
+         --  find an appropriate place to put them.
 
          Discard_Junk_List (P_Sequence_Of_Statements (SS_None));
       end loop;
@@ -973,7 +973,7 @@ package body Endh is
 
       --  The other possibility is a missing END for a subprogram with a
       --  suspicious IS (that probably should have been a semicolon). The
-      --  missing IS confirms the suspicion!
+      --  missing IS confirms the suspicion.
 
       else -- End_Type = E_Suspicious_Is or E_Bad_Is
          Scope.Table (Scope.Last).Etyp := E_Bad_Is;
