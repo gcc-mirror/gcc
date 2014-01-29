@@ -523,6 +523,7 @@ package body Aspects is
     Aspect_Object_Size                  => Aspect_Object_Size,
     Aspect_Output                       => Aspect_Output,
     Aspect_Pack                         => Aspect_Pack,
+    Aspect_Part_Of                      => Aspect_Part_Of,
     Aspect_Persistent_BSS               => Aspect_Persistent_BSS,
     Aspect_Post                         => Aspect_Post,
     Aspect_Postcondition                => Aspect_Post,

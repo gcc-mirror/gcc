@@ -5532,8 +5532,9 @@ package body Sem_Ch10 is
          Set_Ekind                   (Ent, E_Abstract_State);
          Set_Etype                   (Ent, Standard_Void_Type);
          Set_Scope                   (Ent, Scop);
-         Set_Refined_State           (Ent, Empty);
+         Set_Encapsulating_State     (Ent, Empty);
          Set_Refinement_Constituents (Ent, New_Elmt_List);
+         Set_Part_Of_Constituents    (Ent, New_Elmt_List);
       end Decorate_State;
 
       -------------------

@@ -174,6 +174,31 @@ package body Sem_Ch7 is
       end if;
    end Analyze_Package_Body;
 
+   -----------------------------------
+   -- Analyze_Package_Body_Contract --
+   -----------------------------------
+
+   procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id) is
+      Spec_Id : constant Entity_Id := Spec_Entity (Body_Id);
+      Prag    : Node_Id;
+
+   begin
+      Prag := Get_Pragma (Body_Id, Pragma_Refined_State);
+
+      --  The analysis of pragma Refined_State detects whether the spec has
+      --  abstract states available for refinement.
+
+      if Present (Prag) then
+         Analyze_Refined_State_In_Decl_Part (Prag);
+
+      --  State refinement is required when the package declaration has
+      --  abstract states. Null states are not considered.
+
+      elsif Requires_State_Refinement (Spec_Id, Body_Id) then
+         Error_Msg_N ("package & requires state refinement", Spec_Id);
+      end if;
+   end Analyze_Package_Body_Contract;
+
    ---------------------------------
    -- Analyze_Package_Body_Helper --
    ---------------------------------
@@ -800,6 +825,41 @@ package body Sem_Ch7 is
          end if;
       end if;
    end Analyze_Package_Body_Helper;
+
+   ------------------------------
+   -- Analyze_Package_Contract --
+   ------------------------------
+
+   procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
+      Prag : Node_Id;
+
+   begin
+      --  Analyze the initialization related pragmas. Initializes must come
+      --  before Initial_Condition due to item dependencies.
+
+      Prag := Get_Pragma (Pack_Id, Pragma_Initializes);
+
+      if Present (Prag) then
+         Analyze_Initializes_In_Decl_Part (Prag);
+      end if;
+
+      Prag := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
+
+      if Present (Prag) then
+         Analyze_Initial_Condition_In_Decl_Part (Prag);
+      end if;
+
+      --  Check whether the lack of indicator Part_Of agrees with the placement
+      --  of the package instantiation with respect to the state space.
+
+      if Is_Generic_Instance (Pack_Id) then
+         Prag := Get_Pragma (Pack_Id, Pragma_Part_Of);
+
+         if No (Prag) then
+            Check_Missing_Part_Of (Pack_Id);
+         end if;
+      end if;
+   end Analyze_Package_Contract;
 
    ---------------------------------
    -- Analyze_Package_Declaration --
@@ -2850,8 +2910,7 @@ package body Sem_Ch7 is
           not Is_Null_State (Node (First_Elmt (Abstract_States (P))))
       then
          Error_Msg_N
-           ("?Y?info: & requires body (non-null abstract state aspect)",
-            P);
+           ("?Y?info: & requires body (non-null abstract state aspect)", P);
       end if;
 
       --  Otherwise search entity chain for entity requiring completion

@@ -1,3 +1,157 @@
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb Add an entry for aspect Part_Of in table
+	Canonical_Aspect.
+	* aspects.ads Add an entry for aspect Part_Of in tables Aspect_Id,
+	Aspect_Argument, Aspect_Names and Aspect_Delay.
+	* atree.h Define Elist9.
+	* atree.adb (Elist9): New routine.
+	(Set_Elist9): New routine.
+	* atree.ads (Elist9): New routine.
+	(Set_Elist9): New routine.
+	* einfo.adb Add Part_Of_Constituents and Encapsulating_State to
+	the list of node usage.  Remove Refined_State from the list of
+	node usage.
+	(Encapsulating_State): New routine.
+	(Get_Pragma):
+	Handle pragma Part_Of; (Part_Of_Constituents): New routine.
+	(Refined_State): Removed.
+	(Set_Encapsulating_State): New routine.
+	(Set_Part_Of_Constituents): New routine.
+	(Set_Refined_State): Removed.
+	(Write_Field9_Name): Add an entry
+	for Part_Of_Constituents (Write_Field10_Name): Add an entry for
+	Encapsulating_State. Remove the entry for Refined_State.
+	* einfo.ads Add new attributes Encapsulating_State
+	and Part_Of_Constituents alond with their usage in
+	entities. Remove attribute Refined_State along with its
+	usage in entities.
+	(Encapsulating_State): New routine and
+	pragma Inline.	(Get_Pragma): Update the comment on usage.
+	(Part_Of_Constituents): New routine and pragma Inline.
+	(Refined_State): Removed along with pragma Inline.
+	(Set_Encapsulating_State): New routine and pragma Inline.
+	(Set_Part_Of_Constituents): New routine and pragma Inline.
+	(Set_Refined_State): Removed along with pragma Inline.
+	* par-prag.adb Pragma Part_Of does not need any special processing
+	by the parser.
+	* sem_ch3.adb (Analyze_Declarations): Remove local variables
+	Body_Id and Prag. Call separate routines to analyze the
+	contract of a package [body].
+	(Analyze_Object_Contract):
+	Update the comment on usage. Remove local variables
+	Items and Nam. Use Get_Pragma rather than traversing the
+	classification list.  Verify whether the lack of indicator
+	Part_Of agrees with the placement of the variable in state space.
+	(Analyze_Object_Declaration): Initialize the encapsulating state
+	of a variable.	(Requires_State_Refinement): Moved to sem_util.
+	* sem_ch7.adb (Analyze_Package_Body_Contract): New routine.
+	(Analyze_Package_Contract): New routine.
+	* sem_ch7.ads (Analyze_Package_Body_Contract): New routine.
+	(Analyze_Package_Contract): New routine.
+	* sem_ch10.adb (Decorate_State): Initialize the encapsulating
+	state and Part_Of constituents.
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	Add processing for aspect Part_Of. Update all
+	calls to Decorate_Delayed_Aspect_And_Pragma.
+	(Check_Aspect_At_Freeze_Point): Aspect Part_Of does
+	not need any special processing at freeze time.
+	(Decorate_Delayed_Aspect_And_Pragma): Renamed to
+	Decorate_Aspect_And_Pragma.  Add formal parameter Delayed and
+	update the associated comment.
+	* sem_prag.adb Add an entry for pragma Part_Of in table Sig_Flags.
+	(Analyze_Abstract_State): Add new global variable State_Id. Remove
+	local constants Errors and Loc. Remove local variables Is_Null
+	and State_Nam. Create the entity of the abstract state on the
+	spot, before all remaining checks are performed. Verify that a
+	missing Part_Of option agrees with the placement of the abstract
+	state within the state space.
+	(Analyze_Depends_In_Decl_Part):
+	Add new global variables Constits_Seen and States_Seen. Check
+	that a state and a corresponding constituent do not appear
+	in pragma [Refined_]Depends.
+	(Analyze_Global_In_Decl_Part):
+	Add new global variables Constits_Seen and States_Seen. Check
+	that a state and a corresponding constituent do not appear
+	in pragma [Refined_]Global.
+	(Analyze_Global_Item):
+	Remove the now obsolete code that deals with Part_Of.
+	Add the entity of the global item to the list of processed
+	items.	(Analyze_Initializes_In_Decl_Part): Add new global
+	variables Constits_Seen and States_Seen. Check that a state
+	and a corresponding constituent do not appear in pragma
+	Initializes.
+	(Analyze_Initialization_Item): Add the entity
+	of the initialization item to the list of processed items.
+	(Analyze_Input_Item): Add the entity of the initialization
+	item to the list of processed items.
+	(Analyze_Input_Output):
+	Remove the now obsolete code that deals with Part_Of.  Add the
+	entity of the input/output to the list of processed items.
+	(Analyze_Part_Of): New routine.
+	(Analyze_Part_Of_Option): Remove
+	local constant Par_State. Add local constant Encaps and local
+	variables Encaps_Id and Legal. Use Analyze_Part of to analyze
+	the option. Turn the related state into a Part_Of constituent
+	if the option is legal.
+	(Analyze_Pragma): Add processing
+	for pragma Part_Of.
+	(Analyze_Refined_State_In_Decl_Part):
+	Remove global constants Pack_Body and Spec_Id. Remove
+	global variables Abstr_States and Hidden_States. Add new
+	global variables Available_States, Body_Id, Body_States and
+	Spec_Id. Add new local constant Body_Decl. Reimplement the
+	logic that extracts the states available for refinement from
+	the related package and the body hidden states of the said
+	package.
+	(Analyze_Refinement_Clause): Add local variable Part_Of_Constits.
+	(Check_Applicable_Policy): Alphabetize body.
+	(Check_Dependency_Clause): Replace Refined_State
+	with Encapsulating_State.
+	(Check_Matching_Constituent):
+	Reimplement the logic that determines whether an item is a valid
+	/ invalid constituent of the current refined state. Return when
+	a construct does not denote a valid abstract state. Extract the
+	list of Part_Of constituents for further analysis. Check that all
+	Part_Of constituents of a state have been used in its refinement.
+	(Check_Matching_State): Update the comment on usage. Operate
+	on the list of available states.
+	(Check_Missing_Part_Of): New routine.
+	(Check_Refined_Global_Item): Replace Refined_State
+	with Encapsulating_State.
+	(Check_State_And_Constituent_Use): New routine.
+	(Create_Abstract_State): New routine.
+	(Is_Matching_Input): Replace Refined_State with Encapsulating_State.
+	(Is_Part_Of): Removed.
+	(Collect_Body_States): New routine.
+	(Collect_Constituent): Replace Refined_State with Encapsulating_State.
+	(Collect_Hidden_States): Removed.
+	(Report_Unrefined_States): Change the profile of the procedure along
+	with the comment on usage.
+	(Report_Unused_Constituents): New routine.
+	(Report_Unused_Hidden_States): Removed.
+	(Report_Unused_States): New routine.
+	* sem_prag.ads (Check_Missing_Part_Of): New routine.
+	* sem_util.adb (Add_Contract_Item): Pragma Part_Of can now
+	appear in the classification pragmas of a package instantiation
+	or a variable.
+	(Find_Placement_In_State_Space): New routine.
+	(Is_Child): Removed.
+	(Is_Child_Or_Sibling): Remove formal
+	parameter Private_Child. Remove the private child checks.
+	(Requires_State_Refinement): Moved from sem_ch3.
+	* sem_util.ads Add new type State_Space_Kind along with
+	comment on its usage and values.
+	(Add_Contract_Item): Update the comment on usage.
+	(Find_Body_Discriminal): Alphabetize spec.
+	(Find_Placement_In_State_Space): New routine.
+	(Is_Child_Or_Sibling): Remove formal parameter Private_Child
+	and update the comment on usage.
+	(Requires_State_Refinement): Moved from sem_ch3.
+	* sinfo.ads: Update the documentation of N_Contract.
+	* snames.ads-tmpl The predefined name for Part_Of is now used
+	to denote a pragma. Add Pragma_Id for Part_Of.
+
 2014-01-29  Emmanuel Briot  <briot@adacore.com>
 
 	* s-regexp.adb (Create_Secondary_Table): Automatically grow the state
