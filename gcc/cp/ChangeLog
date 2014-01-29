@@ -1,5 +1,8 @@
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58466
+	* pt.c (unify_pack_expansion): Call expand_template_argument_pack.
+
 	PR c++/59956
 	* friend.c (do_friend): Pass the TEMPLATE_DECL to add_friend if we
 	have a friend template in a class template.
