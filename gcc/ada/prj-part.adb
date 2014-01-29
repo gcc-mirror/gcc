@@ -151,6 +151,13 @@ package body Prj.Part is
       Project : Project_Node_Id);
    --  Check that an aggregate project only imports abstract projects
 
+   procedure Check_Import_Aggregate
+     (Flags   : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id);
+   --  Check that a non aggregate project does not import any aggregate
+   --  project.
+
    procedure Create_Virtual_Extending_Project
      (For_Project     : Project_Node_Id;
       Main_Project    : Project_Node_Id;
@@ -1101,6 +1108,35 @@ package body Prj.Part is
    end Check_Aggregate_Imports;
 
    ----------------------------
+   -- Check_Import_Aggregate --
+   ----------------------------
+
+   procedure Check_Import_Aggregate
+     (Flags   : Processing_Flags;
+      In_Tree : Project_Node_Tree_Ref;
+      Project : Project_Node_Id)
+   is
+      With_Clause, Imported : Project_Node_Id;
+   begin
+      if Project_Qualifier_Of (Project, In_Tree) /= Aggregate then
+         With_Clause := First_With_Clause_Of (Project, In_Tree);
+
+         while Present (With_Clause) loop
+            Imported := Project_Node_Of (With_Clause, In_Tree);
+
+            if Project_Qualifier_Of (Imported, In_Tree) = Aggregate then
+               Error_Msg_Name_1 := Name_Id (Path_Name_Of (Imported, In_Tree));
+               Error_Msg (Flags, "cannot import aggregate project %%",
+                          Token_Ptr);
+               exit;
+            end if;
+
+            With_Clause := Next_With_Clause_Of (With_Clause, In_Tree);
+         end loop;
+      end if;
+   end Check_Import_Aggregate;
+
+   ----------------------------
    -- Read_Project_Qualifier --
    ----------------------------
 
@@ -1767,6 +1803,7 @@ package body Prj.Part is
 
       Check_Extending_All_Imports (Env.Flags, In_Tree, Project);
       Check_Aggregate_Imports (Env.Flags, In_Tree, Project);
+      Check_Import_Aggregate (Env.Flags, In_Tree, Project);
 
       --  Check that a project with a name including a dot either imports
       --  or extends the project whose name precedes the last dot.
