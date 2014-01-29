@@ -1,4 +1,4 @@
-2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
+2014-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (allocator_traits::_S_allocate): Do
 	not use varargs when argument could be non-POD.
