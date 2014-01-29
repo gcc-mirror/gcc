@@ -1,3 +1,9 @@
+2014-01-29  Bingfeng Mei  <bmei@broadcom.com>
+
+	* doc/md.texi: Mention that a target shouldn't implement 
+	vec_widen_(s|u)mul_even/odd pair if it is less efficient
+	than hi/lo pair.
+
 2014-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/59594
