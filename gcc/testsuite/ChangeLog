@@ -1,3 +1,8 @@
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58674
+	* g++.dg/cpp0x/pr58674.C: New.
+
 2014-01-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         PR target/59617
