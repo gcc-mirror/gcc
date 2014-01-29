@@ -1,5 +1,10 @@
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58561
+	* g++.dg/cpp1y/auto-fn23.C: New.
+
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58846
 	* g++.dg/init/dso_handle2.C: New.
 

@@ -10219,6 +10219,23 @@ base_type_die (tree type)
   return base_type_result;
 }
 
+/* A C++ function with deduced return type can have a TEMPLATE_TYPE_PARM
+   named 'auto' in its type: return true for it, false otherwise.  */
+
+static inline bool
+is_cxx_auto (tree type)
+{
+  if (is_cxx ())
+    {
+      tree name = TYPE_NAME (type);
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NAME (name);
+      if (name == get_identifier ("auto"))
+	return true;
+    }
+  return false;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return nonzero if the
    given input type is a Dwarf "fundamental" type.  Otherwise return null.  */
 
@@ -10252,6 +10269,8 @@ is_base_type (tree type)
       return 0;
 
     default:
+      if (is_cxx_auto (type))
+	return 0;
       gcc_unreachable ();
     }
 
@@ -19830,24 +19849,16 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       break;
 
     default:
-      // A C++ function with deduced return type can have
-      // a TEMPLATE_TYPE_PARM named 'auto' in its type.
-      if (is_cxx ())
+      if (is_cxx_auto (type))
 	{
-	  tree name = TYPE_NAME (type);
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
-	  if (name == get_identifier ("auto"))
+	  if (!auto_die)
 	    {
-	      if (!auto_die)
-		{
-		  auto_die = new_die (DW_TAG_unspecified_type,
-				      comp_unit_die (), NULL_TREE);
-		  add_name_attribute (auto_die, "auto");
-		}
-	      equate_type_number_to_die (type, auto_die);
-	      break;
+	      auto_die = new_die (DW_TAG_unspecified_type,
+				  comp_unit_die (), NULL_TREE);
+	      add_name_attribute (auto_die, "auto");
 	    }
+	  equate_type_number_to_die (type, auto_die);
+	  break;
 	}
       gcc_unreachable ();
     }
