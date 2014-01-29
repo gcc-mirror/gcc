@@ -1403,6 +1403,12 @@ package body Exp_Util is
                          Low_Bound => Make_Integer_Literal (Loc, 1),
                          High_Bound => New_Occurrence_Of (Len, Loc)))))));
 
+      --  Indicate that the result is an internal temporary, so it does not
+      --  receive a bogus initialization when declaration is expanded. This
+      --  is both efficient, and prevents anomalies in the handling of
+      --  dynamic objects on the secondary stack.
+
+      Set_Is_Internal (Res);
       Pos := Make_Temporary (Loc, 'P');
 
       Append_To (Decls,

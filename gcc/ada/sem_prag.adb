@@ -18597,14 +18597,26 @@ package body Sem_Prag is
             Spec_Id : Entity_Id;
             Stmt    : Node_Id;
 
-            procedure Check_Pragma_Conformance (Old_Pragma : Node_Id);
-            --  Verify the monotonicity of SPARK modes between the new pragma
-            --  N, and the old pragma, Old_Pragma, that was inherited. If
-            --  Old_Pragma is Empty, the call has no effect, otherwise we
-            --  verify that the new mode is less restrictive than the old mode.
-            --  For example, if the old mode is ON, then the new mode can be
-            --  anything. But if the old mode is OFF, then the only allowed
-            --  new mode is also OFF.
+            procedure Check_Pragma_Conformance
+              (Context_Pragma : Node_Id;
+               Entity_Pragma  : Node_Id;
+               Entity         : Entity_Id);
+            --  If Context_Pragma is not Empty, verify that the new pragma N
+            --  is compatible with the pragma Context_Pragma that was inherited
+            --  from the context:
+            --  . if Context_Pragma is ON, then the new mode can be anything
+            --  . if Context_Pragma is OFF, then the only allowed new mode is
+            --    also OFF.
+            --
+            --  If Entity is not Empty, verify that the new pragma N is
+            --  compatible with Entity_Pragma, the SPARK_Mode previously set
+            --  for Entity (which may be Empty):
+            --  . if Entity_Pragma is ON, then the new mode can be anything
+            --  . if Entity_Pragma is OFF, then the only allowed new mode is
+            --    also OFF.
+            --  . if Entity_Pragma is Empty, we always issue an error, as this
+            --    corresponds to a case where a previous section of Entity
+            --    had no SPARK_Mode set.
 
             procedure Check_Library_Level_Entity (E : Entity_Id);
             --  Verify that pragma is applied to library-level entity E
@@ -18613,20 +18625,44 @@ package body Sem_Prag is
             -- Check_Pragma_Conformance --
             ------------------------------
 
-            procedure Check_Pragma_Conformance (Old_Pragma : Node_Id) is
+            procedure Check_Pragma_Conformance
+              (Context_Pragma : Node_Id;
+               Entity_Pragma  : Node_Id;
+               Entity         : Entity_Id) is
             begin
-               if Present (Old_Pragma) then
-                  pragma Assert (Nkind (Old_Pragma) = N_Pragma);
+               if Present (Context_Pragma) then
+                  pragma Assert (Nkind (Context_Pragma) = N_Pragma);
 
                   --  New mode less restrictive than the established mode
 
-                  if Get_SPARK_Mode_From_Pragma (Old_Pragma) = Off
+                  if Get_SPARK_Mode_From_Pragma (Context_Pragma) = Off
                     and then Mode_Id = On
                   then
                      Error_Msg_N
-                       ("cannot change 'S'P'A'R'K_Mode from Off to On", Arg1);
+                       ("cannot change SPARK_Mode from Off to On", Arg1);
                      Error_Msg_Sloc := Sloc (SPARK_Mode_Pragma);
-                     Error_Msg_N ("\'S'P'A'R'K_Mode was set to Off#", Arg1);
+                     Error_Msg_N ("\SPARK_Mode was set to Off#", Arg1);
+                     raise Pragma_Exit;
+                  end if;
+               end if;
+
+               if Present (Entity) then
+                  if Present (Entity_Pragma) then
+                     if Get_SPARK_Mode_From_Pragma (Entity_Pragma) = Off
+                       and then Mode_Id = On
+                     then
+                        Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                        Error_Msg_Sloc := Sloc (Entity_Pragma);
+                        Error_Msg_NE
+                          ("\value Off was set for SPARK_Mode on & #",
+                           Arg1, Entity);
+                        raise Pragma_Exit;
+                     end if;
+                  else
+                     Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                     Error_Msg_Sloc := Sloc (Entity);
+                     Error_Msg_NE ("\no value was set for SPARK_Mode on & #",
+                                   Arg1, Entity);
                      raise Pragma_Exit;
                   end if;
                end if;
@@ -18733,7 +18769,10 @@ package body Sem_Prag is
                   then
                      Spec_Id := Defining_Entity (Stmt);
                      Check_Library_Level_Entity (Spec_Id);
-                     Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Spec_Id),
+                        Entity_Pragma  => Empty,
+                        Entity         => Empty);
 
                      Set_SPARK_Pragma               (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
@@ -18748,7 +18787,10 @@ package body Sem_Prag is
                   then
                      Spec_Id := Defining_Entity (Stmt);
                      Check_Library_Level_Entity (Spec_Id);
-                     Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Spec_Id),
+                        Entity_Pragma  => Empty,
+                        Entity         => Empty);
 
                      Set_SPARK_Pragma               (Spec_Id, N);
                      Set_SPARK_Pragma_Inherited     (Spec_Id, False);
@@ -18804,7 +18846,10 @@ package body Sem_Prag is
 
                   if List_Containing (N) = Private_Declarations (Context) then
                      Check_Library_Level_Entity (Spec_Id);
-                     Check_Pragma_Conformance (SPARK_Aux_Pragma (Spec_Id));
+                     Check_Pragma_Conformance
+                       (Context_Pragma => Empty,
+                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
+                        Entity         => Spec_Id);
                      SPARK_Mode_Pragma := N;
                      SPARK_Mode := Mode_Id;
 
@@ -18815,7 +18860,10 @@ package body Sem_Prag is
 
                   else
                      Check_Library_Level_Entity (Spec_Id);
-                     Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Spec_Id),
+                        Entity_Pragma  => Empty,
+                        Entity         => Empty);
                      SPARK_Mode_Pragma := N;
                      SPARK_Mode := Mode_Id;
 
@@ -18834,8 +18882,10 @@ package body Sem_Prag is
                then
                   Spec_Id := Defining_Entity (Context);
                   Check_Library_Level_Entity (Spec_Id);
-                  Check_Pragma_Conformance (SPARK_Pragma (Spec_Id));
-
+                  Check_Pragma_Conformance
+                    (Context_Pragma => SPARK_Pragma (Spec_Id),
+                     Entity_Pragma  => Empty,
+                     Entity         => Empty);
                   Set_SPARK_Pragma           (Spec_Id, N);
                   Set_SPARK_Pragma_Inherited (Spec_Id, False);
 
@@ -18848,7 +18898,10 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Body_Id := Defining_Entity (Context);
                   Check_Library_Level_Entity (Body_Id);
-                  Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
+                  Check_Pragma_Conformance
+                    (Context_Pragma => SPARK_Pragma (Body_Id),
+                     Entity_Pragma  => SPARK_Aux_Pragma (Spec_Id),
+                     Entity         => Spec_Id);
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;
 
@@ -18867,7 +18920,19 @@ package body Sem_Prag is
                   Context := Specification (Context);
                   Body_Id := Defining_Entity (Context);
                   Check_Library_Level_Entity (Body_Id);
-                  Check_Pragma_Conformance (SPARK_Pragma (Body_Id));
+
+                  if Present (Spec_Id) then
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Body_Id),
+                        Entity_Pragma  => SPARK_Pragma (Spec_Id),
+                        Entity         => Spec_Id);
+                  else
+                     Check_Pragma_Conformance
+                       (Context_Pragma => SPARK_Pragma (Body_Id),
+                        Entity_Pragma  => Empty,
+                        Entity         => Empty);
+                  end if;
+
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;
 
@@ -18887,7 +18952,10 @@ package body Sem_Prag is
                   Spec_Id := Corresponding_Spec (Context);
                   Body_Id := Defining_Entity (Context);
                   Check_Library_Level_Entity (Body_Id);
-                  Check_Pragma_Conformance (SPARK_Aux_Pragma (Body_Id));
+                  Check_Pragma_Conformance
+                    (Context_Pragma => Empty,
+                     Entity_Pragma  => SPARK_Pragma (Body_Id),
+                     Entity         => Body_Id);
                   SPARK_Mode_Pragma := N;
                   SPARK_Mode := Mode_Id;
 

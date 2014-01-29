@@ -346,28 +346,19 @@ package body Sem_Ch7 is
 
       Push_Scope (Spec_Id);
 
-      --  Set SPARK_Mode from private part of spec if it has a SPARK pragma.
-      --  Note that in the default case, SPARK_Aux_Pragma will be a copy of
-      --  SPARK_Pragma in the spec, so this properly handles the case where
-      --  there is no explicit SPARK_Pragma mode in the private part.
+      --  Set SPARK_Mode only for non-generic package
 
-      if Present (SPARK_Pragma (Spec_Id)) then
-         SPARK_Mode_Pragma := SPARK_Aux_Pragma (Spec_Id);
-         SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragma);
+      if Ekind (Spec_Id) = E_Package then
+         --  Set SPARK_Mode from context
+
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id, True);
 
-      --  Otherwise set from context
+         --  Set elaboration code SPARK mode the same for now
 
-      else
-         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited (Body_Id, True);
+         Set_SPARK_Aux_Pragma (Body_Id, SPARK_Pragma (Body_Id));
+         Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
       end if;
-
-      --  Set elaboration code SPARK mode the same for now
-
-      Set_SPARK_Aux_Pragma (Body_Id, SPARK_Pragma (Body_Id));
-      Set_SPARK_Aux_Pragma_Inherited (Body_Id, True);
 
       Set_Categorization_From_Pragmas (N);
 
@@ -398,6 +389,32 @@ package body Sem_Ch7 is
       if Present (Declarations (N)) then
          Analyze_Declarations (Declarations (N));
          Inspect_Deferred_Constant_Completion (Declarations (N));
+      end if;
+
+      --  After declarations have been analyzed, the body has been set
+      --  its final value of SPARK_Mode. Check that SPARK_Mode for body
+      --  is consistent with SPARK_Mode for spec.
+
+      if Present (SPARK_Pragma (Body_Id)) then
+         if Present (SPARK_Aux_Pragma (Spec_Id)) then
+            if Get_SPARK_Mode_From_Pragma (SPARK_Aux_Pragma (Spec_Id)) = Off
+                 and then
+               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+            then
+               Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+               Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+               Error_Msg_Sloc := Sloc (SPARK_Aux_Pragma (Spec_Id));
+               Error_Msg_NE ("\value Off was set for SPARK_Mode on & #",
+                             N, Spec_Id);
+            end if;
+
+         else
+            Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+            Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+            Error_Msg_Sloc := Sloc (Spec_Id);
+            Error_Msg_NE ("\no value was set for SPARK_Mode on & #",
+                          N, Spec_Id);
+         end if;
       end if;
 
       --  Analyze_Declarations has caused freezing of all types. Now generate
@@ -814,12 +831,14 @@ package body Sem_Ch7 is
       Set_Etype    (Id, Standard_Void_Type);
       Set_Contract (Id, Make_Contract (Sloc (Id)));
 
-      --  Inherit spark mode from context for now
+      --  Set SPARK_Mode from context only for non-generic package
 
-      Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
-      Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
-      Set_SPARK_Pragma_Inherited     (Id, True);
-      Set_SPARK_Aux_Pragma_Inherited (Id, True);
+      if Ekind (Id) = E_Package then
+         Set_SPARK_Pragma               (Id, SPARK_Mode_Pragma);
+         Set_SPARK_Aux_Pragma           (Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited     (Id, True);
+         Set_SPARK_Aux_Pragma_Inherited (Id, True);
+      end if;
 
       --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.

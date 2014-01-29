@@ -2999,34 +2999,10 @@ package body Sem_Ch6 is
 
             Push_Scope (Spec_Id);
 
-            --  Set SPARK_Mode
+            --  Set SPARK_Mode from context
 
-            --  For internally generated subprogram, always off. But generic
-            --  instances are not generated implicitly, so are never considered
-            --  as internal, even though Comes_From_Source is false.
-
-            if not Comes_From_Source (Spec_Id)
-              and then not Is_Generic_Instance (Spec_Id)
-            then
-               SPARK_Mode := Off;
-               SPARK_Mode_Pragma := Empty;
-
-            --  Inherited from spec
-
-            elsif Present (SPARK_Pragma (Spec_Id))
-              and then not SPARK_Pragma_Inherited (Spec_Id)
-            then
-               SPARK_Mode_Pragma := SPARK_Pragma (Spec_Id);
-               SPARK_Mode := Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragma);
-               Set_SPARK_Pragma (Body_Id, SPARK_Pragma (Spec_Id));
-               Set_SPARK_Pragma_Inherited (Body_Id, True);
-
-            --  Otherwise set from context
-
-            else
-               Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-               Set_SPARK_Pragma_Inherited (Body_Id, True);
-            end if;
+            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+            Set_SPARK_Pragma_Inherited (Body_Id, True);
 
             --  Make sure that the subprogram is immediately visible. For
             --  child units that have no separate spec this is indispensable.
@@ -3076,17 +3052,10 @@ package body Sem_Ch6 is
 
             Push_Scope (Body_Id);
 
-            --  Set SPARK_Mode from context or OFF for internal routine
+            --  Set SPARK_Mode from context
 
-            if Comes_From_Source (Body_Id) then
-               Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-               Set_SPARK_Pragma_Inherited (Body_Id, True);
-            else
-               Set_SPARK_Pragma (Body_Id, Empty);
-               Set_SPARK_Pragma_Inherited (Body_Id, False);
-               SPARK_Mode := Off;
-               SPARK_Mode_Pragma := Empty;
-            end if;
+            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+            Set_SPARK_Pragma_Inherited (Body_Id, True);
          end if;
 
          --  For stubs and bodies with no previous spec, generate references to
@@ -3276,6 +3245,35 @@ package body Sem_Ch6 is
       --  of the _Postconditions procedure).
 
       Analyze_Declarations (Declarations (N));
+
+      --  After declarations have been analyzed, the body has been set
+      --  its final value of SPARK_Mode. Check that SPARK_Mode for body
+      --  is consistent with SPARK_Mode for spec.
+
+      if Present (Spec_Id) and then Present (SPARK_Pragma (Body_Id)) then
+         if Present (SPARK_Pragma (Spec_Id)) then
+            if Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) = Off
+                 and then
+               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+            then
+               Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+               Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+               Error_Msg_Sloc := Sloc (SPARK_Pragma (Spec_Id));
+               Error_Msg_NE
+                 ("\value Off was set for SPARK_Mode on & #", N, Spec_Id);
+            end if;
+
+         elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
+            null;
+
+         else
+            Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+            Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+            Error_Msg_Sloc := Sloc (Spec_Id);
+            Error_Msg_NE
+              ("\no value was set for SPARK_Mode on & #", N, Spec_Id);
+         end if;
+      end if;
 
       --  Check completion, and analyze the statements
 
@@ -3632,16 +3630,11 @@ package body Sem_Ch6 is
 
       Generate_Definition (Designator);
 
-      --  Set SPARK mode, always off for internal routines, otherwise set
-      --  from current context (may be overwritten later with explicit pragma)
+      --  Set SPARK mode from current context (may be overwritten later with
+      --  explicit pragma).
 
-      if Comes_From_Source (Designator) then
-         Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
-         Set_SPARK_Pragma_Inherited (Designator, True);
-      else
-         Set_SPARK_Pragma (Designator, Empty);
-         Set_SPARK_Pragma_Inherited (Designator, False);
-      end if;
+      Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Designator, True);
 
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");

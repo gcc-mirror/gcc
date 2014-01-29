@@ -1,3 +1,28 @@
+2014-01-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb (Find_Component_In_Instance): Update comment.
+
+2014-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Build_Task_Image_Prefix): Indicate that the
+	resulting string is an internal entity. and thus requires no
+	initialization. This is relevant when Initialize_ Scalars is
+	enabled, because the resultant spurious initialization may lead to
+	secondary stack anomalies that produce a mangled name for a task.
+
+2014-01-29  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): SPARK_Mode
+	not inherited from spec anymore. Check consistency
+	rules after processing of declarations.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): SPARK_Mode not inherited
+	from spec anymore. Check consistency rules after processing of
+	declarations.
+	(Analyze_Package_Declaration): Set SPARK_Mode only for non-generic
+	packages.
+	* sem_prag.adb (Analyze_Pragma/Pragma_SPARK_Mode): Implement new
+	consistency rules.
+
 2014-01-27  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Resolve_Comparison_Op): Add type name/location
