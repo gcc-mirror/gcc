@@ -14353,6 +14353,13 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
      destructor call instead.  */
   if (cleanup != NULL && EXPR_P (cleanup))
     SET_EXPR_LOCATION (cleanup, UNKNOWN_LOCATION);
+
+  if (cleanup
+      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+    /* Treat objects with destructors as used; the destructor may do
+       something substantive.  */
+    mark_used (decl);
+
   return cleanup;
 }
 
