@@ -3940,10 +3940,10 @@ package body Sem_Ch4 is
       --  In an instance, a component of a private extension may not be visible
       --  while it was visible in the generic. Search candidate scope for a
       --  component with the proper identifier. This is only done if all other
-      --  searches have failed. When the match is found (it always will be),
-      --  the Etype of both N and Sel are set from this component, and the
-      --  entity of Sel is set to reference this component.
-      --  ??? no longer true that a match is found ???
+      --  searches have failed. If a match is found, the Etype of both N and
+      --  Sel are set from this component, and the entity of Sel is set to
+      --  reference this component. If no match is found, Entity (Sel) remains
+      --  unset.
 
       function Has_Mode_Conformant_Spec (Comp : Entity_Id) return Boolean;
       --  It is known that the parent of N denotes a subprogram call. Comp
