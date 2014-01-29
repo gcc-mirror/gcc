@@ -155,8 +155,7 @@ package body Prj.Part is
      (Flags   : Processing_Flags;
       In_Tree : Project_Node_Tree_Ref;
       Project : Project_Node_Id);
-   --  Check that a non aggregate project does not import any aggregate
-   --  project.
+   --  Check that a non aggregate project does not import an aggregate project
 
    procedure Create_Virtual_Extending_Project
      (For_Project     : Project_Node_Id;
@@ -1116,18 +1115,19 @@ package body Prj.Part is
       In_Tree : Project_Node_Tree_Ref;
       Project : Project_Node_Id)
    is
-      With_Clause, Imported : Project_Node_Id;
+      With_Clause : Project_Node_Id;
+      Imported    : Project_Node_Id;
+
    begin
       if Project_Qualifier_Of (Project, In_Tree) /= Aggregate then
          With_Clause := First_With_Clause_Of (Project, In_Tree);
-
          while Present (With_Clause) loop
             Imported := Project_Node_Of (With_Clause, In_Tree);
 
             if Project_Qualifier_Of (Imported, In_Tree) = Aggregate then
                Error_Msg_Name_1 := Name_Id (Path_Name_Of (Imported, In_Tree));
-               Error_Msg (Flags, "cannot import aggregate project %%",
-                          Token_Ptr);
+                  Error_Msg
+                    (Flags, "cannot import aggregate project %%", Token_Ptr);
                exit;
             end if;
 
