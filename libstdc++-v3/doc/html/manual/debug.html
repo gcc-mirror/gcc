@@ -178,8 +178,8 @@
   recommended: the other parts of this manual.
 </p><p>
   These settings can either be switched on in at the GDB command line,
-  or put into a .gdbint file to establish default debugging
-  characteristics, like so:
+  or put into a <code class="filename">.gdbinit</code> file to establish default
+  debugging characteristics, like so:
 </p><pre class="programlisting">
    set print pretty on
    set print object on
@@ -189,32 +189,22 @@
    set demangle-style gnu-v3
 </pre><p>
   Starting with version 7.0, GDB includes support for writing
-  pretty-printers in Python.  Pretty printers for STL classes are
-  distributed with GCC from version 4.5.0.  The most recent version of
-  these printers are always found in libstdc++ svn repository.
-  To enable these printers, check-out the latest printers to a local
-  directory:
-</p><pre class="programlisting">
-  svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python
-</pre><p>
-  Next, add the following section to your ~/.gdbinit  The path must
-  match the location where the Python module above was checked-out.
-  So if checked out to: /home/maude/gdb_printers/, the path would be as
-  written in the example below.
-</p><pre class="programlisting">
-  python
-  import sys
-  sys.path.insert(0, '/home/maude/gdb_printers/python')
-  from libstdcxx.v6.printers import register_libstdcxx_printers
-  register_libstdcxx_printers (None)
-  end
-</pre><p>
-  The path should be the only element that needs to be adjusted in the
-  example.  Once loaded, STL classes that the printers support
+  pretty-printers in Python.  Pretty printers for containers and other
+  classes are distributed with GCC from version 4.5.0 and should be installed
+  alongside the libstdc++ shared library files and found automatically by
+  GDB.
+</p><p>
+  Depending where libstdc++ is installed, GDB might refuse to auto-load
+  the python printers and print a warning instead.
+  If this happens the python printers can be enabled by following the
+  instructions GDB gives for setting your <code class="code">auto-load safe-path</code>
+  in your <code class="filename">.gdbinit</code> configuration file.
+</p><p>
+  Once loaded, standard library classes that the printers support
   should print in a more human-readable format.  To print the classes
-  in the old style, use the /r (raw) switch in the print command
-  (i.e., print /r foo).  This will print the classes as if the Python
-  pretty-printers were not loaded.
+  in the old style, use the <strong class="userinput"><code>/r</code></strong> (raw) switch in the
+  print command (i.e., <strong class="userinput"><code>print /r foo</code></strong>).  This will
+  print the classes as if the Python pretty-printers were not loaded.
 </p><p>
   For additional information on STL support and GDB please visit:
   <a class="link" href="http://sourceware.org/gdb/wiki/STLSupport" target="_top"> "GDB Support
@@ -227,14 +217,13 @@
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
   The <a class="link" href="termination.html#support.termination.verbose" title="Verbose Terminate Handler">verbose
   termination handler</a> gives information about uncaught
-  exceptions which are killing the program.  It is described in the
-  linked-to page.
+  exceptions which kill the program.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">Debug Mode</a>
   has compile and run-time checks for many containers.
   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile-Time
-  Checks</a> Extension has compile-time checks for many algorithms.
+  Checks</a> extension has compile-time checks for many algorithms.
   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.profile_mode"></a>Profile-based Performance Analysis</h3></div></div></div><p> The <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">Profile-based
-  Performance Analysis</a> Extension has performance checks for many
+  Performance Analysis</a> extension has performance checks for many
   algorithms.
   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="std_contents.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exceptions </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. 
     Standard Contents

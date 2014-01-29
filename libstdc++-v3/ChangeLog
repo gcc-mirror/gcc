@@ -41,6 +41,12 @@
 	PR libstdc++/21609
 	* include/ext/array_allocator.h: Add deprecated attribute.
 
+	PR libstdc++/57226
+	* doc/xml/manual/debug.xml (debug.gdb): Update documentation for
+	installation and use of python printers.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/*: Regenerate.
+
 2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
 	    Kyle Lippincott  <spectral@google.com>
 

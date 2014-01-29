@@ -512,16 +512,23 @@ AC_DEFUN([AC_HEADER_EXT_HASH_SET], [
   fi
 ])
 </pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.nocreate_noreplace"></a>No <code class="code">ios::nocreate/ios::noreplace</code>.
-</h4></div></div></div><p> The existence of <code class="code">ios::nocreate</code> being used for
-input-streams has been confirmed, most probably because the author
-thought it would be more correct to specify nocreate explicitly.  So
-it can be left out for input-streams.
-</p><p>For output streams, <span class="quote">“<span class="quote">nocreate</span>”</span> is probably the default,
-unless you specify <code class="code">std::ios::trunc</code> ? To be safe, you can
-open the file for reading, check if it has been opened, and then
-decide whether you want to create/replace or not. To my knowledge,
-even older implementations support <code class="code">app</code>, <code class="code">ate</code>
-and <code class="code">trunc</code> (except for <code class="code">app</code> ?).
+</h4></div></div></div><p>Historically these flags were used with iostreams to control whether
+new files are created or not when opening a file stream, similar to the
+<code class="code">O_CREAT</code> and <code class="code">O_EXCL</code> flags for the
+<code class="function">open(2)</code> system call. Because iostream modes correspond
+to <code class="function">fopen(3)</code> modes these flags are not supported.
+For input streams a new file will not be created anyway, so
+<code class="code">ios::nocreate</code> is not needed.
+For output streams, a new file will be created if it does not exist, which is
+consistent with the behaviour of <code class="function">fopen</code>.
+</p><p>When one of these flags is needed a possible alternative is to attempt
+to open the file using <span class="type">std::ifstream</span> first to determine whether
+the file already exists or not. This may not be reliable however, because
+whether the file exists or not could change between opening the
+<span class="type">std::istream</span> and re-opening with an output stream. If you need
+to check for existence and open a file as a single operation then you will
+need to use OS-specific facilities outside the C++ standard library, such
+as <code class="function">open(2)</code>.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="backwards.third.streamattach"></a>
 No <code class="code">stream::attach(int fd)</code>
 </h4></div></div></div><p>
@@ -940,15 +947,15 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   This is a change in behavior from older versions. Now, most
   <span class="type">iterator_type</span> typedefs in container classes are POD
   objects, not <span class="type">value_type</span> pointers.
-</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="idm140623063472640"></a><p><span class="title"><em>
+</p></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="backwards.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="idm234595452352"></a><p><span class="title"><em>
 	<a class="link" href="http://www.kegel.com/gcc/gcc4.html" target="_top">
       Migrating to GCC 4.1
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="idm140623063469856"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Dan</span> <span class="surname">Kegel</span>. </span></p></div><div class="biblioentry"><a id="idm234595449568"></a><p><span class="title"><em>
 	<a class="link" href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html" target="_top">
       Building the Whole Debian Archive with GCC 4.1: A Summary
 	</a>
-      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="idm140623063467008"></a><p><span class="title"><em>
+      </em>. </span><span class="author"><span class="firstname">Martin</span> <span class="surname">Michlmayr</span>. </span></p></div><div class="biblioentry"><a id="idm234595446720"></a><p><span class="title"><em>
 	<a class="link" href="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html" target="_top">
       Migration guide for GCC-3.2
 	</a>
