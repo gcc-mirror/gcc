@@ -1,3 +1,9 @@
+2014-01-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        PR target/59617
+	* gcc.target/i386/avx512f-gather-2.c: Remove XPASS.
+	* gcc.target/i386/avx512f-gather-5.c: Ditto.
+
 2014-01-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/merge-be-order.c: New.
