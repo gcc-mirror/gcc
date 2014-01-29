@@ -1,3 +1,8 @@
+2014-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59315
+	* decl.c (cxx_maybe_build_cleanup): Call mark_used.
+
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58702
