@@ -171,6 +171,26 @@ package body Makeutl is
       end;
    end Absolute_Path;
 
+   ----------------------------
+   -- Aggregate_Libraries_In --
+   ----------------------------
+
+   function Aggregate_Libraries_In (Tree : Project_Tree_Ref) return Boolean is
+      List : Project_List;
+
+   begin
+      List := Tree.Projects;
+      while List /= null loop
+         if List.Project.Qualifier = Aggregate_Library then
+            return True;
+         end if;
+
+         List := List.Next;
+      end loop;
+
+      return False;
+   end Aggregate_Libraries_In;
+
    -------------------------
    -- Base_Name_Index_For --
    -------------------------

@@ -889,6 +889,14 @@ package body Prj.Makr is
             if No (Project_Node) then
                Prj.Com.Fail ("parsing of existing project file failed");
 
+            elsif Project_Qualifier_Of (Project_Node, Tree) = Aggregate then
+               Prj.Com.Fail ("aggregate projects are not supported");
+
+            elsif Project_Qualifier_Of (Project_Node, Tree) =
+                                                    Aggregate_Library
+            then
+               Prj.Com.Fail ("aggregate library projects are not supported");
+
             else
                --  If parsing was successful, remove the components that are
                --  automatically generated, if any, so that they will be

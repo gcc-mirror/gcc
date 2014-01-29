@@ -6617,6 +6617,13 @@ package body Make is
               ("""" & Project_File_Name.all & """ processing failed");
          end if;
 
+         if Main_Project.Qualifier = Aggregate then
+            Make_Failed ("aggregate projects are not supported");
+
+         elsif Aggregate_Libraries_In (Project_Tree) then
+            Make_Failed ("aggregate library projects are not supported");
+         end if;
+
          Create_Mapping_File := True;
 
          if Verbose_Mode then
