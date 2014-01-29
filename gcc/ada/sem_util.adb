@@ -345,9 +345,14 @@ package body Sem_Util is
       --  are:
       --    Refined_Depends
       --    Refined_Global
+      --    Refined_Post
 
       elsif Ekind (Id) = E_Subprogram_Body then
-         if Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
+         if Nam = Name_Refined_Post then
+            Set_Next_Pragma (Prag, Pre_Post_Conditions (Items));
+            Set_Pre_Post_Conditions (Items, Prag);
+
+         elsif Nam_In (Nam, Name_Refined_Depends, Name_Refined_Global) then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
 

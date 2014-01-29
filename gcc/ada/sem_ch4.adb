@@ -5892,6 +5892,9 @@ package body Sem_Ch4 is
 
          --  In Ada 2005, the equality on anonymous access types is declared
          --  in Standard, and is always visible.
+         --  In an instance, the type may have been immediately visible.
+         --  Either the types are compatible, or one operand is universal
+         --  (numeric or null).
 
          elsif In_Open_Scopes (Scope (Bas))
            or else Is_Potentially_Use_Visible (Bas)
@@ -5900,6 +5903,7 @@ package body Sem_Ch4 is
            or else (In_Instance
                      and then
                        (First_Subtype (T1) = First_Subtype (Etype (R))
+                         or else Nkind (R) = N_Null
                          or else
                            (Is_Numeric_Type (T1)
                              and then Is_Universal_Numeric_Type (Etype (R)))))

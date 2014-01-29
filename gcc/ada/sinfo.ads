@@ -7260,6 +7260,7 @@ package Sinfo is
       --    Postcondition
       --    Pre
       --    Precondition
+      --    Refined_Post
       --  The ordering in the list is in LIFO fashion.
 
       --  Note that there might be multiple preconditions or postconditions
