@@ -1,3 +1,11 @@
+2014-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58742
+	* tree-ssa-forwprop.c (associate_plusminus): Return true
+	if we changed sth, defer EH cleanup to ...
+	(ssa_forward_propagate_and_combine): ... here.  Call simplify_mult.
+	(simplify_mult): New function.
+
 2014-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59917
