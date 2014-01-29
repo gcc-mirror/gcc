@@ -2792,9 +2792,7 @@ out:
     {
       fold_stmt_inplace (gsi);
       update_stmt (stmt);
-      if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
-	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
-	return true;
+      return true;
     }
 
   return false;
@@ -3425,6 +3423,53 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Simplify multiplications.
+   Return true if a transformation applied, otherwise return false.  */
+
+static bool
+simplify_mult (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree arg1 = gimple_assign_rhs1 (stmt);
+  tree arg2 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (arg1) != SSA_NAME)
+    return false;
+
+  gimple def_stmt = SSA_NAME_DEF_STMT (arg1);
+  if (!is_gimple_assign (def_stmt))
+    return false;
+
+  /* Look through a sign-changing conversion.  */
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+    {
+      if (TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (def_stmt)))
+	  != TYPE_PRECISION (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))
+	  || TREE_CODE (gimple_assign_rhs1 (def_stmt)) != SSA_NAME)
+	return false;
+      def_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
+      if (!is_gimple_assign (def_stmt))
+	return false;
+    }
+
+  if (gimple_assign_rhs_code (def_stmt) == EXACT_DIV_EXPR)
+    {
+      if (operand_equal_p (gimple_assign_rhs2 (def_stmt), arg2, 0))
+	{
+	  tree res = gimple_assign_rhs1 (def_stmt);
+	  if (useless_type_conversion_p (TREE_TYPE (arg1), TREE_TYPE (res)))
+	    gimple_assign_set_rhs_with_ops (gsi, TREE_CODE (res), res,
+					    NULL_TREE);
+	  else
+	    gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, res, NULL_TREE);
+	  gcc_assert (gsi_stmt (*gsi) == stmt);
+	  update_stmt (stmt);
+	  return true;
+	}
+    }
+
+  return false;
+}
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -3576,9 +3621,23 @@ ssa_forward_propagate_and_combine (void)
 			 || code == BIT_IOR_EXPR
 			 || code == BIT_XOR_EXPR)
 		  changed = simplify_bitwise_binary (&gsi);
+		else if (code == MULT_EXPR)
+		  {
+		    changed = simplify_mult (&gsi);
+		    if (changed
+			&& maybe_clean_or_replace_eh_stmt (stmt, stmt)
+			&& gimple_purge_dead_eh_edges (bb))
+		      cfg_changed = true;
+		  }
 		else if (code == PLUS_EXPR
 			 || code == MINUS_EXPR)
-		  changed = associate_plusminus (&gsi);
+		  {
+		    changed = associate_plusminus (&gsi);
+		    if (changed
+			&& maybe_clean_or_replace_eh_stmt (stmt, stmt)
+			&& gimple_purge_dead_eh_edges (bb))
+		      cfg_changed = true;
+		  }
 		else if (code == POINTER_PLUS_EXPR)
 		  changed = associate_pointerplus (&gsi);
 		else if (CONVERT_EXPR_CODE_P (code)
