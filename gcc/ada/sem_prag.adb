@@ -23732,8 +23732,56 @@ package body Sem_Prag is
    ---------------------------
 
    procedure Check_Missing_Part_Of (Item_Id : Entity_Id) is
+      function Has_Visible_State (Pack_Id : Entity_Id) return Boolean;
+      --  Determine whether a package denoted by Pack_Id declares at least one
+      --  visible state.
+
+      -----------------------
+      -- Has_Visible_State --
+      -----------------------
+
+      function Has_Visible_State (Pack_Id : Entity_Id) return Boolean is
+         Item_Id : Entity_Id;
+
+      begin
+         --  Traverse the entity chain of the package trying to find at least
+         --  one visible abstract state, variable or a package [instantiation]
+         --  that declares a visible state.
+
+         Item_Id := First_Entity (Pack_Id);
+         while Present (Item_Id)
+           and then not In_Private_Part (Item_Id)
+         loop
+            --  Do not consider internally generated items
+
+            if not Comes_From_Source (Item_Id) then
+               null;
+
+            --  A visible state has been found
+
+            elsif Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+               return True;
+
+            --  Recursively peek into nested packages and instantiations
+
+            elsif Ekind (Item_Id) = E_Package
+              and then Has_Visible_State (Item_Id)
+            then
+               return True;
+            end if;
+
+            Next_Entity (Item_Id);
+         end loop;
+
+         return False;
+      end Has_Visible_State;
+
+      --  Local variables
+
       Pack_Id   : Entity_Id;
       Placement : State_Space_Kind;
+
+   --  Start of processing for Check_Missing_Part_Of
 
    begin
       --  Do not consider internally generated entities as these can never
@@ -23761,37 +23809,76 @@ package body Sem_Prag is
       --  do not require a Part_Of indicator because they can never act as a
       --  hidden state.
 
+      if Placement = Not_In_Package then
+         null;
+
       --  An item declared in the body state space of a package always act as a
       --  constituent and does not need explicit Part_Of indicator.
+
+      elsif Placement = Body_State_Space then
+         null;
 
       --  In general an item declared in the visible state space of a package
       --  does not require a Part_Of indicator. The only exception is when the
       --  related package is a private child unit in which case Part_Of must
       --  denote a state in the parent unit or in one of its descendants.
 
-      if Placement = Visible_State_Space then
+      elsif Placement = Visible_State_Space then
          if Is_Child_Unit (Pack_Id)
            and then Is_Private_Descendant (Pack_Id)
          then
-            Error_Msg_N
-              ("indicator Part_Of is required in this context (SPARK RM "
-               & "7.2.6(3))", Item_Id);
-            Error_Msg_Name_1 := Chars (Pack_Id);
-            Error_Msg_N
-              ("\& is declared in the visible part of private child unit %",
-               Item_Id);
+            --  A package instantiation does not need a Part_Of indicator when
+            --  the related generic template has no visible state.
+
+            if Ekind (Item_Id) = E_Package
+              and then Is_Generic_Instance (Item_Id)
+              and then not Has_Visible_State (Item_Id)
+            then
+               null;
+
+            --  All other cases require Part_Of
+
+            else
+               Error_Msg_N
+                 ("indicator Part_Of is required in this context (SPARK RM "
+                  & "7.2.6(3))", Item_Id);
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               Error_Msg_N
+                 ("\& is declared in the visible part of private child unit %",
+                  Item_Id);
+            end if;
          end if;
 
       --  When the item appears in the private state space of a packge, it must
       --  be a part of some state declared by the said package.
 
-      elsif Placement = Private_State_Space then
-         Error_Msg_N
-           ("indicator Part_Of is required in this context (SPARK RM "
-            & "7.2.6(2))", Item_Id);
-         Error_Msg_Name_1 := Chars (Pack_Id);
-         Error_Msg_N
-           ("\& is declared in the private part of package %", Item_Id);
+      else pragma Assert (Placement = Private_State_Space);
+
+         --  The related package does not declare a state, the item cannot act
+         --  as a Part_Of constituent.
+
+         if No (Get_Pragma (Pack_Id, Pragma_Abstract_State)) then
+            null;
+
+         --  A package instantiation does not need a Part_Of indicator when the
+         --  related generic template has no visible state.
+
+         elsif Ekind (Pack_Id) = E_Package
+           and then Is_Generic_Instance (Pack_Id)
+           and then not Has_Visible_State (Pack_Id)
+         then
+            null;
+
+         --  All other cases require Part_Of
+
+         else
+            Error_Msg_N
+              ("indicator Part_Of is required in this context (SPARK RM "
+               & "7.2.6(2))", Item_Id);
+            Error_Msg_Name_1 := Chars (Pack_Id);
+            Error_Msg_N
+              ("\& is declared in the private part of package %", Item_Id);
+         end if;
       end if;
    end Check_Missing_Part_Of;
 

@@ -1,3 +1,16 @@
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Missing_Part_Of): List all values of
+	State_Space_Kind for readability reasons. Do not emit an error on
+	a private item when the enclosing package lacks aspect/pragma
+	Abstract_State. Do not emit an error on a private package
+	instantiation when the corresponding generic template lacks
+	visible state.
+	(Has_Visible_State): New routine.
+	* sem_util.adb (Find_Placement_In_State_Space): The visible
+	declarations of any kind of child units in general act as proper
+	placement location.
+
 2014-01-29  Robert Dewar  <dewar@adacore.com>
 
 	* a-except-2005.adb, a-except.adb, a-excpol-abort.adb, a-exstat.adb,
