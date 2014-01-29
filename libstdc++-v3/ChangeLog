@@ -1,4 +1,30 @@
 2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::_S_allocate): Do
+	not use varargs when argument could be non-POD.
+	(__alloctr_rebind_helper): Eliminate static const bool member by
+	using true_type and false_type.
+	(allocator_traits::__allocate_helper): Likewise.
+	(allocator_traits::__construct_helper): Likewise.
+	(allocator_traits::__destroy_helper): Likewise.
+	(allocator_traits::__maxsize_helper): Likewise.
+	(allocator_traits::__select_helper): Likewise.
+	* include/bits/ptr_traits.h (__ptrtr_rebind_helper): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::operator=(const _Rb_tree&)):
+	Remove redundant condition.
+	* include/bits/stl_vector.h (vector::operator=(const vector&)):
+	Likewise.
+	(_Vector_impl::_M_allocate, _Vector_impl::_M_deallocate): Use
+	indirection through __alloc_traits.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal):
+	Eliminate static const bool members by using true_type and false_type.
+	(__gnu_cxx::__alloc_traits::__is_custom_pointer): Optimize.
+	* testsuite/util/testsuite_allocator.h (PointerBase): Define.
+	* testsuite/20_util/allocator_traits/members/allocate_hint_nonpod.cc:
+	New.
+	* testsuite/20_util/allocator_traits/requirements/typedefs2.cc: New.
+
+2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
 	    Kyle Lippincott  <spectral@google.com>
 
 	PR libstdc++/59656
