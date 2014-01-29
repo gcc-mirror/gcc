@@ -6709,8 +6709,11 @@ get_dso_handle_node (void)
 					ptr_type_node);
 
 #ifdef HAVE_GAS_HIDDEN
-  DECL_VISIBILITY (dso_handle_node) = VISIBILITY_HIDDEN;
-  DECL_VISIBILITY_SPECIFIED (dso_handle_node) = 1;
+  if (dso_handle_node != error_mark_node)
+    {
+      DECL_VISIBILITY (dso_handle_node) = VISIBILITY_HIDDEN;
+      DECL_VISIBILITY_SPECIFIED (dso_handle_node) = 1;
+    }
 #endif
 
   return dso_handle_node;
