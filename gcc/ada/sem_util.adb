@@ -5884,12 +5884,10 @@ package body Sem_Util is
             else
                Placement := Visible_State_Space;
 
-               --  The visible state space of a private child unit acts as the
-               --  proper placement of an item.
+               --  The visible state space of a child unit acts as the proper
+               --  placement of an item.
 
-               if Is_Child_Unit (Context)
-                 and then Is_Private_Descendant (Context)
-               then
+               if Is_Child_Unit (Context) then
                   return;
                end if;
             end if;
