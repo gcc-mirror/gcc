@@ -6672,7 +6672,7 @@ package body Checks is
    begin
       pragma Assert (Is_Access_Type (Typ));
 
-      --  No check inside a generic (why not???)
+      --  No check inside a generic, check will be emitted in instance
 
       if Inside_A_Generic then
          return;
@@ -6690,11 +6690,20 @@ package body Checks is
 
          --  Avoid generating warning message inside init procs. In SPARK mode
          --  we can go ahead and call Apply_Compile_Time_Constraint_Error
-         --  since it will be truned into an error in any case.
+         --  since it will be turned into an error in any case.
 
-         if not Inside_Init_Proc or else SPARK_Mode = On then
+         if (not Inside_Init_Proc or else SPARK_Mode = On)
+
+           --  Do not emit the warning within a conditional expression
+           --  Why not ???
+
+           and then not Within_Case_Or_If_Expression (N)
+         then
             Apply_Compile_Time_Constraint_Error
               (N, "null value not allowed here??", CE_Access_Check_Failed);
+
+         --  Remaining cases, where we silently insert the raise
+
          else
             Insert_Action (N,
               Make_Raise_Constraint_Error (Loc,

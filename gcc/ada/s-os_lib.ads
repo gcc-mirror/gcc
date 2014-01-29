@@ -445,9 +445,10 @@ package System.OS_Lib is
    --  directory pointed to. This is slightly less efficient, since it
    --  requires system calls.
    --
-   --  If Name cannot be resolved or is null on entry (for example if there is
-   --  symbolic link circularity, e.g. A is a symbolic link for B, and B is a
-   --  symbolic link for A), then Normalize_Pathname returns an empty  string.
+   --  If Name cannot be resolved, is invalid (for example if it is too big) or
+   --  is null on entry (for example if there is symbolic link circularity,
+   --  e.g. A is a symbolic link for B, and B is a symbolic link for A), then
+   --  Normalize_Pathname returns an empty string.
    --
    --  In VMS, if Name follows the VMS syntax file specification, it is first
    --  converted into Unix syntax. If the conversion fails, Normalize_Pathname
