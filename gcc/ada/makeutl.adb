@@ -1654,9 +1654,11 @@ package body Makeutl is
                      end if;
                   end if;
 
-               elsif Source.Kind = Spec then
-                  --  A spec needs to be taken into account unless there is
-                  --  also a body. So we delay the decision for them.
+               elsif Source.Kind = Spec
+                 and then Source.Language.Config.Kind = Unit_Based
+               then
+                  --  An Ada spec needs to be taken into account unless there
+                  --  is also a body. So we delay the decision for them.
 
                   Get_Name_String (Source.File);
 
@@ -1785,7 +1787,7 @@ package body Makeutl is
 
                         if Source = No_Source then
                            Source := Find_File_Add_Extension
-                             (Tree, Get_Name_String (Main_Id));
+                             (File.Tree, Get_Name_String (Main_Id));
                         end if;
 
                         if Is_Absolute
@@ -1852,10 +1854,10 @@ package body Makeutl is
                            --  reported later.
 
                            Error_Msg_File_1 := Main_Id;
-                           Error_Msg_Name_1 := Root_Project.Name;
+                           Error_Msg_Name_1 := File.Project.Name;
                            Prj.Err.Error_Msg
                              (Flags, "{ is not a source of project %%",
-                              File.Location, Project);
+                              File.Location, File.Project);
                         end if;
                      end if;
                   end;

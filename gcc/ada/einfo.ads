@@ -494,10 +494,10 @@ package Einfo is
 --       when the unit is part of a standalone library.
 
 --    Body_References (Elist16)
---       Defined in abstract state entities. Only set if Has_Body_References
---       flag is set True, in which case it contains an element list of global
---       references (identifiers) in the current package body to this abstract
---       state that are illegal if the abstract state has a visible refinement.
+--       Defined in abstract state entities. Contains an element list of
+--       references (identifiers) that appear in a package body whose spec
+--       defines the related state. If the body refines the said state, all
+--       references on this list are illegal due to the visible refinement.
 
 --    C_Pass_By_Copy (Flag125) [implementation base type only]
 --       Defined in record types. Set if a pragma Convention for the record
@@ -1406,10 +1406,6 @@ package Einfo is
 --       the type is unbiased, but the object specifies a smaller size than the
 --       size of the type, forcing biased representation for the object, but
 --       the subtype is still an unbiased type.
-
---    Has_Body_References (Flag264)
---       Defined in entities for abstract states. Set if Body_References has
---       at least one entry.
 
 --    Has_Completion (Flag26)
 --       Defined in all entities that require a completion (functions,
@@ -5155,7 +5151,6 @@ package Einfo is
    --    Body_References                     (Elist16)
    --    Non_Limited_View                    (Node17)
    --    From_Limited_With                   (Flag159)
-   --    Has_Body_References                 (Flag264)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Null_Refinement             (synth)
    --    Has_Null_Refinement                 (synth)
@@ -6378,7 +6373,6 @@ package Einfo is
    function Has_Anonymous_Master                (Id : E) return B;
    function Has_Atomic_Components               (Id : E) return B;
    function Has_Biased_Representation           (Id : E) return B;
-   function Has_Body_References                 (Id : E) return B;
    function Has_Completion                      (Id : E) return B;
    function Has_Completion_In_Body              (Id : E) return B;
    function Has_Complex_Representation          (Id : E) return B;
@@ -6999,7 +6993,6 @@ package Einfo is
    procedure Set_Has_Anonymous_Master            (Id : E; V : B := True);
    procedure Set_Has_Atomic_Components           (Id : E; V : B := True);
    procedure Set_Has_Biased_Representation       (Id : E; V : B := True);
-   procedure Set_Has_Body_References             (Id : E; V : B := True);
    procedure Set_Has_Completion                  (Id : E; V : B := True);
    procedure Set_Has_Completion_In_Body          (Id : E; V : B := True);
    procedure Set_Has_Complex_Representation      (Id : E; V : B := True);
@@ -7731,7 +7724,6 @@ package Einfo is
    pragma Inline (Has_Anonymous_Master);
    pragma Inline (Has_Atomic_Components);
    pragma Inline (Has_Biased_Representation);
-   pragma Inline (Has_Body_References);
    pragma Inline (Has_Completion);
    pragma Inline (Has_Completion_In_Body);
    pragma Inline (Has_Complex_Representation);
@@ -8199,7 +8191,6 @@ package Einfo is
    pragma Inline (Set_Has_Anonymous_Master);
    pragma Inline (Set_Has_Atomic_Components);
    pragma Inline (Set_Has_Biased_Representation);
-   pragma Inline (Set_Has_Body_References);
    pragma Inline (Set_Has_Completion);
    pragma Inline (Set_Has_Completion_In_Body);
    pragma Inline (Set_Has_Complex_Representation);

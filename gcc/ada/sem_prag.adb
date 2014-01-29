@@ -280,11 +280,13 @@ package body Sem_Prag is
    --  spec expressions (i.e. similar to a default expression).
 
    procedure Record_Possible_Body_Reference
-     (Item    : Node_Id;
-      Item_Id : Entity_Id);
-   --  Given an entity reference (Item) and the corresponding Entity (Item_Id),
-   --  determines if we have a body reference to an abstract state, which may
-   --  be illegal if the state is refined within the body.
+     (State_Id : Entity_Id;
+      Ref      : Node_Id);
+   --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
+   --  Global. Given an abstract state denoted by State_Id and a reference Ref
+   --  to it, determine whether the reference appears in a package body that
+   --  will eventually refine the state. If this is the case, record the
+   --  reference for future checks (see Analyze_Refined_State_In_Decls).
 
    procedure Resolve_State (N : Node_Id);
    --  Handle the overloading of state names by functions. When N denotes a
@@ -799,8 +801,6 @@ package body Sem_Prag is
                Item_Id := Entity_Of (Item);
 
                if Present (Item_Id) then
-                  Record_Possible_Body_Reference (Item, Item_Id);
-
                   if Ekind_In (Item_Id, E_Abstract_State,
                                         E_In_Parameter,
                                         E_In_Out_Parameter,
@@ -842,14 +842,28 @@ package body Sem_Prag is
                         Add_Item (Item_Id, All_Inputs_Seen);
                      end if;
 
-                     if Ekind (Item_Id) = E_Abstract_State
-                       and then Has_Visible_Refinement (Item_Id)
-                     then
-                        Error_Msg_NE
-                          ("cannot mention state & in global refinement, use "
-                           & "its constituents instead (SPARK RM 6.1.5(3))",
-                           Item, Item_Id);
-                        return;
+                     --  State related checks
+
+                     if Ekind (Item_Id) = E_Abstract_State then
+                        if Has_Visible_Refinement (Item_Id) then
+                           Error_Msg_NE
+                             ("cannot mention state & in global refinement",
+                              Item, Item_Id);
+                           Error_Msg_N
+                              ("\use its constituents instead (SPARK RM "
+                               & "6.1.5(3))", Item);
+                           return;
+
+                        --  If the reference to the abstract state appears in
+                        --  an enclosing package body that will eventually
+                        --  refine the state, record the reference for future
+                        --  checks.
+
+                        else
+                           Record_Possible_Body_Reference
+                             (State_Id => Item_Id,
+                              Ref      => Item);
+                        end if;
                      end if;
 
                      --  When the item renames an entire object, replace the
@@ -1871,7 +1885,6 @@ package body Sem_Prag is
             Item_Id := Entity_Of (Item);
 
             if Present (Item_Id) then
-               Record_Possible_Body_Reference (Item, Item_Id);
 
                --  A global item may denote a formal parameter of an enclosing
                --  subprogram. Do this check first to provide a better error
@@ -1917,6 +1930,15 @@ package body Sem_Prag is
                         & "constituents instead (SPARK RM 6.1.4(8))",
                         Item, Item_Id);
                      return;
+
+                  --  If the reference to the abstract state appears in an
+                  --  enclosing package body that will eventually refine the
+                  --  state, record the reference for future checks.
+
+                  else
+                     Record_Possible_Body_Reference
+                       (State_Id => Item_Id,
+                        Ref      => Item);
                   end if;
 
                --  Variable related checks
@@ -22786,7 +22808,7 @@ package body Sem_Prag is
 
                procedure Collect_Constituent is
                begin
-                  --  Add the constituent to the lis of processed items to aid
+                  --  Add the constituent to the list of processed items to aid
                   --  with the detection of duplicates.
 
                   Add_Item (Constit_Id, Constituents_Seen);
@@ -23077,10 +23099,10 @@ package body Sem_Prag is
 
                   if Ekind (Constit_Id) = E_Abstract_State then
                      Error_Msg_NE
-                       ("\  abstract state & defined #", State, Constit_Id);
+                       ("\\  abstract state & defined #", State, Constit_Id);
                   else
                      Error_Msg_NE
-                       ("\  variable & defined #", State, Constit_Id);
+                       ("\\  variable & defined #", State, Constit_Id);
                   end if;
 
                   Next_Elmt (Constit_Elmt);
@@ -23122,18 +23144,20 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  A global item cannot denote a state abstraction whose
-            --  refinement is visible, in other words a state abstraction
-            --  cannot be named within its enclosing package's body other than
-            --  in its refinement.
+            --  References to a state with visible refinement are illegal. In
+            --  the case where nested packages are involved, detecting such
+            --  references is tricky because pragma Refined_State is analyzed
+            --  later than the offending pragma Depends or Global. References
+            --  that occur in such nested context are stored in a list. Emit
+            --  errors for all references found in Body_References.
 
-            if Has_Body_References (State_Id) then
+            if Present (Body_References (State_Id)) then
                Body_Ref_Elmt := First_Elmt (Body_References (State_Id));
                while Present (Body_Ref_Elmt) loop
                   Body_Ref := Node (Body_Ref_Elmt);
 
                   Error_Msg_N
-                    ("global reference to & not allowed (SPARK RM 6.1.4(8))",
+                    ("reference to & not allowed (SPARK RM 6.1.4(8))",
                      Body_Ref);
                   Error_Msg_Sloc := Sloc (State);
                   Error_Msg_N ("\refinement of & is visible#", Body_Ref);
@@ -23389,9 +23413,10 @@ package body Sem_Prag is
 
                if Ekind (State_Id) = E_Abstract_State then
                   Error_Msg_NE
-                    ("\  abstract state & defined #", Body_Id, State_Id);
+                    ("\\  abstract state & defined #", Body_Id, State_Id);
                else
-                  Error_Msg_NE ("\  variable & defined #", Body_Id, State_Id);
+                  Error_Msg_NE
+                    ("\\  variable & defined #", Body_Id, State_Id);
                end if;
 
                Next_Elmt (State_Elmt);
@@ -25072,20 +25097,43 @@ package body Sem_Prag is
    ------------------------------------
 
    procedure Record_Possible_Body_Reference
-     (Item    : Node_Id;
-      Item_Id : Entity_Id)
+     (State_Id : Entity_Id;
+      Ref      : Node_Id)
    is
+      Context : Node_Id;
+      Spec_Id : Entity_Id;
+
    begin
-      if Is_Body_Name (Unit_Name (Get_Source_Unit (Item)))
-        and then Ekind (Item_Id) = E_Abstract_State
-      then
-         if not Has_Body_References (Item_Id) then
-            Set_Has_Body_References (Item_Id, True);
-            Set_Body_References (Item_Id, New_Elmt_List);
+      --  Ensure that we are dealing with a reference to a state
+
+      pragma Assert (Ekind (State_Id) = E_Abstract_State);
+
+      --  Climb the tree starting from the reference looking for a package body
+      --  whose spec declares the referenced state. This criteria automatically
+      --  excludes references in package specs which are legal. Note that it is
+      --  not wise to emit an error now as the package body may lack pragma
+      --  Refined_State or the referenced state may not be mentioned in the
+      --  refinement. This approach avoids the generation of misleading errors.
+
+      Context := Ref;
+      while Present (Context) loop
+         if Nkind (Context) = N_Package_Body then
+            Spec_Id := Corresponding_Spec (Context);
+
+            if Present (Abstract_States (Spec_Id))
+              and then Contains (Abstract_States (Spec_Id), State_Id)
+            then
+               if No (Body_References (State_Id)) then
+                  Set_Body_References (State_Id, New_Elmt_List);
+               end if;
+
+               Append_Elmt (Ref, Body_References (State_Id));
+               exit;
+            end if;
          end if;
 
-         Append_Elmt (Item, Body_References (Item_Id));
-      end if;
+         Context := Parent (Context);
+      end loop;
    end Record_Possible_Body_Reference;
 
    ------------------------------

@@ -1,5 +1,33 @@
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb Flag264 is now unused.
+	(Has_Body_References): Removed.
+	(Set_Has_Body_References): Removed.
+	(Write_Entity_Flags): Remove the output for flag Has_Body_References.
+	* einfo.ads Update the comment on usage of attribute
+	Body_References. Remove attribute Has_Body_References and its
+	usage in nodes.
+	(Has_Body_References): Removed along with pragma Inline.
+	(Set_Has_Body_References): Removed along with pragma Inline.
+	* sem_prag.adb (Analyze_Global_Item): Move the call to
+	Record_Possible_Body_Reference in the state related checks
+	section. Add a comment intended function.
+	(Analyze_Input_Output): Move the call to Record_Possible_Body_Reference
+	in the state related checks section. Add a comment intended function.
+	(Analyze_Refinement_Clause): Cleanup the illegal body reference
+	reporting. Add a comment on timing of error reporting.
+	(Record_Possible_Body_Reference): Reimplement the routine.
+
+2014-01-29  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Mains.Find_File_Add_Extension): Only look for specs for
+	unit-based languages.
+	(Mains.Complete_Mains.Do_Complete): Use the source file project
+	tree when calling Find_File_Add_Extension. Use the correct
+	project name when reporting an error.
+
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* aspects.adb Add an entry for aspect Part_Of in table
 	Canonical_Aspect.
 	* aspects.ads Add an entry for aspect Part_Of in tables Aspect_Id,
