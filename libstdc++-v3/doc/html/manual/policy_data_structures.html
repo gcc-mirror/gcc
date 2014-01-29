@@ -248,7 +248,7 @@
 		these invariants, one must supply some policy that is aware
 		of these changes.  Without this, it would be better to use a
 		linked list (in itself very efficient for these purposes).
-	      </p></li></ol></div><div class="figure"><a id="idm140623069271200"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
+	      </p></li></ol></div><div class="figure"><a id="idm234601255184"></a><p class="title"><strong>Figure 22.1. Node Invariants</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_node_invariants.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="motivation.associative.underlying"></a>Underlying Data Structures</h5></div></div></div><p>
 	    The standard C++ library contains associative containers based on
 	    red-black trees and collision-chaining hash tables. These are
 	    very useful, but they are not ideal for all types of
@@ -256,7 +256,7 @@
 	  </p><p>
 	    The figure below shows the different underlying data structures
 	    currently supported in this library.
-	  </p><div class="figure"><a id="idm140623069264544"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idm234601248528"></a><p class="title"><strong>Figure 22.2. Underlying Associative Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_1.png" align="middle" alt="Underlying Associative Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    A shows a collision-chaining hash-table, B shows a probing
 	    hash-table, C shows a red-black tree, D shows a splay tree, E shows
 	    a tree based on an ordered vector(implicit in the order of the
@@ -375,7 +375,7 @@
 	      no guarantee that the elements traversed will coincide with the
 	      <span class="emphasis"><em>logical</em></span> elements between 1 and 5, as in
 	      label B.
-	    </p><div class="figure"><a id="idm140623069232832"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idm234601216896"></a><p class="title"><strong>Figure 22.3. Range Iteration in Different Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_1.png" align="middle" alt="Node Invariants" /></div></div></div><br class="figure-break" /><p>
 	      In our opinion, this problem is not caused just because
 	      red-black trees are order preserving while
 	      collision-chaining hash tables are (generally) not - it
@@ -426,7 +426,7 @@
 	      list, as in the graphic below, label B.  Here the iterators are as
 	      light as can be, but the hash-table's operations are more
 	      complicated.
-	    </p><div class="figure"><a id="idm140623069217984"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
+	    </p><div class="figure"><a id="idm234601202048"></a><p class="title"><strong>Figure 22.4. Point Iteration in Hash Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_point_iterators_range_ops_2.png" align="middle" alt="Point Iteration in Hash Data Structures" /></div></div></div><br class="figure-break" /><p>
 	      It should be noted that containers based on collision-chaining
 	      hash-tables are not the only ones with this type of behavior;
 	      many other self-organizing data structures display it as well.
@@ -442,7 +442,7 @@
 	      container. The graphic below shows three cases: A1 and A2 show
 	      a red-black tree; B1 and B2 show a probing hash-table; C1 and C2
 	      show a collision-chaining hash table.
-	    </p><div class="figure"><a id="idm140623069208720"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
+	    </p><div class="figure"><a id="idm234601192784"></a><p class="title"><strong>Figure 22.5. Effect of erase in different underlying data structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_invalidation_guarantee_erase.png" align="middle" alt="Effect of erase in different underlying data structures" /></div></div></div><br class="figure-break" /><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
 		  Erasing 5 from A1 yields A2. Clearly, an iterator to 3 can
 		  be de-referenced and incremented. The sequence of iterators
 		  changed, but in a way that is well-defined by the interface.
@@ -678,7 +678,7 @@
 	    typically less structured than an associative container's tree;
 	    the third simply uses an associative container. These are
 	    shown in the figure below with labels A1 and A2, B, and C.
-	  </p><div class="figure"><a id="idm140623069141200"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
+	  </p><div class="figure"><a id="idm234601125200"></a><p class="title"><strong>Figure 22.6. Underlying Priority Queue Data Structures</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_different_underlying_dss_2.png" align="middle" alt="Underlying Priority Queue Data Structures" /></div></div></div><br class="figure-break" /><p>
 	    No single implementation can completely replace any of the
 	    others. Some have better <code class="function">push</code>
 	    and <code class="function">pop</code> amortized performance, some have

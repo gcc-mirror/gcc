@@ -224,7 +224,14 @@
      to standard error for certain events such as calling a pure virtual
      function or the invocation of the standard terminate handler.  Those
      messages cause the library to depend on the demangler and standard I/O
-     facilites, which might be undesirable in a low-memory environment or
+     facilities, which might be undesirable in a low-memory environment or
      when standard error is not available.  This option disables those
      messages.  This option does not change the library ABI.
-   </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>
+   </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
+    runtime with instrumentation for vtable verification. All virtual
+    functions in the standard library will be verified at runtime.
+    Types impacted include <code class="classname">locale</code> and
+    <code class="classname">iostream</code>, and others.  Disabling means that
+    the C++ runtime is compiled without support for vtable
+    verification. By default, this option is off.
+     </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="setup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="setup.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="make.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Setup </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Make</td></tr></table></div></body></html>
