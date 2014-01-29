@@ -16897,6 +16897,9 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
   tree pattern = PACK_EXPANSION_PATTERN (parm);
   tree pack, packs = NULL_TREE;
   int i, start = TREE_VEC_LENGTH (packed_parms) - 1;
+
+  packed_args = expand_template_argument_pack (packed_args);
+
   int len = TREE_VEC_LENGTH (packed_args);
 
   /* Determine the parameter packs we will be deducing from the
