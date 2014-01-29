@@ -1,3 +1,9 @@
+2014-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/58712
+	* read-rtl.c (read_rtx_code): Clear all of RTX_CODE_SIZE (code).
+	For REGs set ORIGINAL_REGNO.
+
 2014-01-29  Bingfeng Mei  <bmei@broadcom.com>
 
 	* doc/md.texi: Mention that a target shouldn't implement 

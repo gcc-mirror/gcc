@@ -1131,6 +1131,7 @@ read_rtx_code (const char *code_name)
   /* If we end up with an insn expression then we free this space below.  */
   return_rtx = rtx_alloc (code);
   format_ptr = GET_RTX_FORMAT (code);
+  memset (return_rtx, 0, RTX_CODE_SIZE (code));
   PUT_CODE (return_rtx, code);
 
   if (iterator)
@@ -1154,6 +1155,8 @@ read_rtx_code (const char *code_name)
 	/* 0 means a field for internal use only.
 	   Don't expect it to be present in the input.  */
       case '0':
+	if (code == REG)
+	  ORIGINAL_REGNO (return_rtx) = REGNO (return_rtx);
 	break;
 
       case 'e':
