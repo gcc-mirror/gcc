@@ -35,13 +35,13 @@ package Sem_Ch7 is
    procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id);
    --  Analyze all delayed aspects chained on the contract of package body
    --  Body_Id as if they appeared at the end of a declarative region. The
-   --  aspects in consideration are:
+   --  aspects that are considered are:
    --    Refined_State
 
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id);
    --  Analyze all delayed aspects chained on the contract of package Pack_Id
-   --  as if they appeared at the end of a declarative region. The aspects in
-   --  consideration are:
+   --  as if they appeared at the end of a declarative region. The aspects
+   --  that are considered are:
    --    Initial_Condition
    --    Initializes
    --    Part_Of
@@ -59,7 +59,7 @@ package Sem_Ch7 is
 
    --  On entrance to a package body, make declarations in package spec
    --  immediately visible.
-
+   --
    --  When compiling the body of a package,  both routines are called in
    --  succession. When compiling the body of a child package, the call
    --  to Install_Private_Declaration is immediate for private children,
@@ -86,17 +86,16 @@ package Sem_Ch7 is
    --  calling stubs.
 
    procedure New_Private_Type (N : Node_Id; Id : Entity_Id; Def : Node_Id);
-   --  Common processing for private type declarations and for formal
-   --  private type declarations. For private types, N and Def are the type
-   --  declaration node; for formal private types, Def is the formal type
-   --  definition.
+   --  Common processing for private type declarations and for formal private
+   --  type declarations. For private types, N and Def are the type declaration
+   --  node; for formal private types, Def is the formal type definition.
 
    procedure Uninstall_Declarations (P : Entity_Id);
-   --  At the end of a package declaration or body, declarations in the
-   --  visible part are no longer immediately visible, and declarations in
-   --  the private part are not visible at all. For inner packages, place
-   --  visible entities at the end of their homonym chains. For compilation
-   --  units, make all entities invisible. In both cases, exchange private
-   --  and visible declarations to restore order of elaboration.
+   --  At the end of a package declaration or body, declarations in the visible
+   --  part are no longer immediately visible, and declarations in the private
+   --  part are not visible at all. For inner packages, place visible entities
+   --  at the end of their homonym chains. For compilation units, make
+   --  all entities invisible. In both cases, exchange private and visible
+   --  declarations to restore order of elaboration.
 
 end Sem_Ch7;

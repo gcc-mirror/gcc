@@ -8874,13 +8874,14 @@ package body Exp_Ch9 is
       procedure Expand_Entry_Declaration (Comp : Entity_Id) is
          Bdef : Entity_Id;
          Edef : Entity_Id;
+
       begin
          E_Count := E_Count + 1;
          Comp_Id := Defining_Identifier (Comp);
 
          Edef :=
            Make_Defining_Identifier (Loc,
-             Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
+             Chars => Build_Selected_Name (Prot_Typ, Comp_Id, 'E'));
          Sub :=
            Make_Subprogram_Declaration (Loc,
              Specification =>

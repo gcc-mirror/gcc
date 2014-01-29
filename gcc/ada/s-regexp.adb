@@ -30,8 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
-with Ada.Text_IO; use Ada.Text_IO;
-
 with System.Case_Util;
 
 package body System.Regexp is
@@ -53,13 +51,12 @@ package body System.Regexp is
 
    type Regexp_Array is array
      (State_Index range <>, Column_Index range <>) of State_Index;
-   --  First index is for the state number
-   --  Second index is for the character type
-   --  Contents is the new State
+   --  First index is for the state number. Second index is for the character
+   --  type. Contents is the new State.
 
    type Regexp_Array_Access is access Regexp_Array;
-   --  Use this type through the functions Set below, so that it
-   --  can grow dynamically depending on the needs.
+   --  Use this type through the functions Set below, so that it can grow
+   --  dynamically depending on the needs.
 
    type Mapping is array (Character'Range) of Column_Index;
    --  Mapping between characters and column in the Regexp_Array
@@ -77,56 +74,6 @@ package body System.Regexp is
    end record;
    --  Deterministic finite-state machine
 
-   procedure Dump
-      (Table         : Regexp_Array_Access;
-       Map           : Mapping;
-       Alphabet_Size : Column_Index;
-       Num_States    : State_Index;
-       Start_State   : State_Index;
-       End_State     : State_Index);
-   --  Display the state machine (indeterministic, from the first pass) on
-   --  stdout.
-
-   ----------
-   -- Dump --
-   ----------
-
-   procedure Dump
-      (Table         : Regexp_Array_Access;
-       Map           : Mapping;
-       Alphabet_Size : Column_Index;
-       Num_States    : State_Index;
-       Start_State   : State_Index;
-       End_State     : State_Index)
-   is
-      Empty_Char : constant Column_Index := Alphabet_Size + 1;
-      Col : Column_Index;
-   begin
-      for S in Table'First (1) .. Num_States loop
-         if S = Start_State then
-            Put ("Start" & S'Img & " => ");
-         elsif S = End_State then
-            Put ("End  " & S'Img);
-         else
-            Put ("State" & S'Img & " => ");
-         end if;
-
-         for C in Map'Range loop
-            Col := Map (C);
-            if Table (S, Col) /= 0 then
-               Put (Table (S, Col)'Img & "(" & C'Img & ")");
-            end if;
-         end loop;
-
-         for Col in Empty_Char .. Table'Last (2) loop
-            exit when Table (S, Col) = 0;
-            Put (Table (S, Col)'Img & " (empty)");
-         end loop;
-
-         New_Line;
-      end loop;
-   end Dump;
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -142,10 +89,9 @@ package body System.Regexp is
    function Get
      (Table  : Regexp_Array_Access;
       State  : State_Index;
-      Column : Column_Index)
-      return   State_Index;
-   --  Returns the value in the table at (State, Column).
-   --  If this index does not exist in the table, returns 0
+      Column : Column_Index) return State_Index;
+   --  Returns the value in the table at (State, Column). If this index does
+   --  not exist in the table, returns zero.
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Regexp_Array, Regexp_Array_Access);
@@ -156,7 +102,6 @@ package body System.Regexp is
 
    procedure Adjust (R : in out Regexp) is
       Tmp : Regexp_Access;
-
    begin
       if R.R /= null then
          Tmp := new Regexp_Value (Alphabet_Size => R.R.Alphabet_Size,
@@ -173,8 +118,7 @@ package body System.Regexp is
    function Compile
      (Pattern        : String;
       Glob           : Boolean := False;
-      Case_Sensitive : Boolean := True)
-      return           Regexp
+      Case_Sensitive : Boolean := True) return Regexp
    is
       S : String := Pattern;
       --  The pattern which is really compiled (when the pattern is case
@@ -210,10 +154,10 @@ package body System.Regexp is
       --  parenthesis sub-expressions.
       --
       --  Table : at the end of the procedure : Column 0 is for any character
-      --  ('.') and the last columns are for no character (closure)
-      --  Num_States is set to the number of states in the table
-      --  Start_State is the number of the starting state in the regexp
-      --  End_State is the number of the final state when the regexp matches
+      --  ('.') and the last columns are for no character (closure). Num_States
+      --  is set to the number of states in the table Start_State is the number
+      --  of the starting state in the regexp End_State is the number of the
+      --  final state when the regexp matches.
 
       procedure Create_Primary_Table_Glob
         (Table       : out Regexp_Array_Access;
@@ -226,10 +170,8 @@ package body System.Regexp is
 
       function Create_Secondary_Table
         (First_Table : Regexp_Array_Access;
-         Num_States  : State_Index;
          Start_State : State_Index;
-         End_State   : State_Index)
-         return        Regexp;
+         End_State   : State_Index) return Regexp;
       --  Creates the definitive table representing the regular expression
       --  This is actually a transformation of the primary table First_Table,
       --  where every state is grouped with the states in its 'no-character'
@@ -601,8 +543,8 @@ package body System.Regexp is
                      J := J + 1;
                   end loop;
 
-                  --  A close bracket must follow a open_bracket,
-                  --  and cannot be found alone on the line
+                  --  A close bracket must follow a open_bracket and cannot be
+                  --  found alone on the line
 
                when Close_Bracket =>
                   Raise_Exception
@@ -614,7 +556,7 @@ package body System.Regexp is
                      Add_In_Map (S (J));
 
                   else
-                     --  \ not allowed at the end of the regexp
+                     --  Back slash \ not allowed at the end of the regexp
 
                      Raise_Exception
                        ("Incorrect character '\' in regular expression", J);
@@ -748,11 +690,11 @@ package body System.Regexp is
             End_Index   : Integer;
             Start_State : out State_Index;
             End_State   : out State_Index);
-         --  Fill the table for the regexp Simple.
-         --  This is the recursive procedure called to handle () expressions
-         --  If End_State = 0, then the call to Create_Simple creates an
-         --  independent regexp, not a concatenation
-         --  Start_Index .. End_Index is the starting index in the string S.
+         --  Fill the table for the regexp Simple. This is the recursive
+         --  procedure called to handle () expressions If End_State = 0, then
+         --  the call to Create_Simple creates an independent regexp, not a
+         --  concatenation Start_Index .. End_Index is the starting index in
+         --  the string S.
          --
          --  Warning: it may look like we are creating too many empty-string
          --  transitions, but they are needed to get the correct regexp.
@@ -799,8 +741,7 @@ package body System.Regexp is
 
          function Next_Sub_Expression
            (Start_Index : Integer;
-            End_Index   : Integer)
-            return        Integer;
+            End_Index   : Integer) return Integer;
          --  Returns the index of the last character of the next sub-expression
          --  in Simple. Index cannot be greater than End_Index.
 
@@ -1096,8 +1037,7 @@ package body System.Regexp is
 
          function Next_Sub_Expression
            (Start_Index : Integer;
-            End_Index   : Integer)
-            return        Integer
+            End_Index   : Integer) return Integer
          is
             J              : Integer := Start_Index;
             Start_On_Alter : Boolean := False;
@@ -1188,15 +1128,15 @@ package body System.Regexp is
            (State    : State_Index;
             To_State : State_Index)
          is
-            J : Column_Index := Empty_Char;
+            J : Column_Index;
 
          begin
+            J := Empty_Char;
             while Get (Table, State, J) /= 0 loop
                J := J + 1;
             end loop;
 
-            Set (Table, State, J,
-                 Value => To_State);
+            Set (Table, State, J, Value => To_State);
          end Add_Empty_Char;
 
          -------------------
@@ -1209,13 +1149,14 @@ package body System.Regexp is
             Start_State : out State_Index;
             End_State   : out State_Index)
          is
-            J          : Integer := Start_Index;
+            J          : Integer;
             Last_Start : State_Index := 0;
 
          begin
             Start_State := 0;
             End_State   := 0;
 
+            J := Start_Index;
             while J <= End_Index loop
                case S (J) is
 
@@ -1256,6 +1197,7 @@ package body System.Regexp is
                            then
                               declare
                                  Start : constant Integer := J - 1;
+
                               begin
                                  J := J + 1;
 
@@ -1427,7 +1369,6 @@ package body System.Regexp is
 
       function Create_Secondary_Table
         (First_Table : Regexp_Array_Access;
-         Num_States  : State_Index;
          Start_State : State_Index;
          End_State   : State_Index) return Regexp
       is
@@ -1482,8 +1423,9 @@ package body System.Regexp is
          -----------------------
 
          procedure Ensure_Meta_State (Meta : State_Index) is
-            Tmp : Meta_States_List := Meta_States;
+            Tmp  : Meta_States_List       := Meta_States;
             Tmp2 : Meta_States_Transition := Table;
+
          begin
             if Meta_States = null then
                Meta_States := new Meta_States_Array
@@ -1517,7 +1459,8 @@ package body System.Regexp is
 
          procedure Closure
            (Meta_State : State_Index;
-            State      : State_Index) is
+            State      : State_Index)
+         is
          begin
             if not Meta_States (Meta_State)(State) then
                Meta_States (Meta_State)(State) := True;
@@ -1539,17 +1482,14 @@ package body System.Regexp is
          Ensure_Meta_State (Current_State);
          Closure (Current_State, Start_State);
 
-         if False then
-            Dump (First_Table, Map, Alphabet_Size, Num_States,
-                  Start_State, End_State);
-         end if;
-
          while Current_State <= Nb_State loop
+
             --  We will be trying, below, to create the next meta-state
+
             Ensure_Meta_State (Nb_State + 1);
 
             --  For every character in the regexp, calculate the possible
-            --  transitions from Current_State
+            --  transitions from Current_State.
 
             for Column in 0 .. Alphabet_Size loop
                Temp_State_Not_Null := False;
@@ -1573,7 +1513,8 @@ package body System.Regexp is
                      if Meta_States (K) = Meta_States (Nb_State + 1) then
                         Table (Current_State)(Column) := K;
 
-                        --  reset data, for the next time we try that state
+                        --  Reset data, for the next time we try that state
+
                         Meta_States (Nb_State + 1) := No_States;
                         exit;
                      end if;
@@ -1634,6 +1575,7 @@ package body System.Regexp is
    begin
       --  Special case for the empty string: it always matches, and the
       --  following processing would fail on it.
+
       if S = "" then
          return (Ada.Finalization.Controlled with
                  R => new Regexp_Value'
@@ -1676,8 +1618,7 @@ package body System.Regexp is
 
          --  Creates the secondary table
 
-         R := Create_Secondary_Table
-            (Table, Num_States, Start_State, End_State);
+         R := Create_Secondary_Table (Table, Start_State, End_State);
          Free (Table);
          return R;
       end;
@@ -1690,7 +1631,6 @@ package body System.Regexp is
    procedure Finalize (R : in out Regexp) is
       procedure Free is new
         Ada.Unchecked_Deallocation (Regexp_Value, Regexp_Access);
-
    begin
       Free (R.R);
    end Finalize;
@@ -1766,7 +1706,7 @@ package body System.Regexp is
          Table (State, Column) := Value;
       else
          --  Doubles the size of the table until it is big enough that
-         --  (State, Column) is a valid index
+         --  (State, Column) is a valid index.
 
          New_Lines := Table'Last (1) * (State / Table'Last (1) + 1);
          New_Columns := Table'Last (2) * (Column / Table'Last (2) + 1);

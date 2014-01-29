@@ -10176,6 +10176,7 @@ some guidelines on debugging optimized code.
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
 * Aliased Variables and Optimization::
+* Atomic Variables and Optimization::
 * Passive Task Optimization::
 
 @ifset vms
@@ -11021,6 +11022,80 @@ be going on. The optimizer recognizes the aliased keyword and
 inhibits optimizations that assume the value cannot be assigned.
 This means that the above example will in fact "work" reliably,
 that is, it will produce the expected results.
+
+@node Atomic Variables and Optimization
+@subsection Atomic Variables and Optimization
+@cindex Atomic
+There are two considerations with regard to performance when
+atomic variables are used.
+
+First, the RM only guarantees that access to atomic variables
+be atomic, it has nothing to say about how this is achieved,
+though there is a strong implication that this should not be
+achieved by explicit locking code. Indeed GNAT will never
+generate any locking code for atomic variable access (it will
+simply reject any attempt to make a variable or type atomic
+if the atomic access cannot be achieved without such locking code).
+
+That being said, it is important to understand that you cannot
+assume that the entire variable will always be accessed. Consider
+this example:
+
+@smallexample @c ada
+type R is record
+   A,B,C,D : Character;
+end record;
+for R'Size use 32;
+for R'Alignment use 4;
+
+RV : R;
+pragma Atomic (RV);
+X : Character;
+...
+X := RV.B;
+@end smallexample
+
+@noindent
+You cannot assume that the reference to @code{RV.B}
+will read the entire 32-bit
+variable with a single load instruction. It is perfectly legitimate if
+the hardware allows it to do a byte read of just the B field. This read
+is still atomic, which is all the RM requires. GNAT can and does take
+advantage of this, depending on the architecture and optimization level.
+Any assumption to the contrary is non-portable and risky. Even if you
+examine the assembly language and see a full 32-bit load, this might
+change in a future version of the compiler.
+
+If your application requires that all accesses to @code{RV} in this
+example be full 32-bit loads, you need to make a copy for the access
+as in:
+
+@smallexample @c ada
+declare
+   RV_Copy : constant R := RV;
+begin
+   X := RV_Copy.B;
+end;
+@end smallexample
+
+
+@noindent
+Now the reference to RV must read the whole variable.
+Actually one can imagine some compiler which figures
+out that the whole copy is not required (because only
+the B field is actually accessed), but GNAT
+certainly won't do that, and we don't know of any
+compiler that would not handle this right, and the
+above code will in practice work portably across
+all architectures (that permit the Atomic declaration).
+
+The second issue with atomic variables has to do with
+the possible requirement of generating synchronization
+code. For more details on this, consult the sections on
+the pragmas Enable/Disable_Atomic_Synchronization in the
+GNAT Reference Manual. If performance is critical, and
+such synchronization code is not required, it may be
+useful to disable it.
 
 @node Passive Task Optimization
 @subsection Passive Task Optimization
