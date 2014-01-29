@@ -1315,6 +1315,14 @@ package body Sem_Warn is
                      UR := Expression (UR);
                   end loop;
 
+                  --  Don't issue warning if appearing inside Initial_Condition
+                  --  pragma or aspect, since that expression is not evaluated
+                  --  at the point where it occurs in the source.
+
+                  if In_Pragma_Expression (UR, Name_Initial_Condition) then
+                     goto Continue;
+                  end if;
+
                   --  Here we issue the warning, all checks completed
 
                   --  If we have a return statement, this was a case of an OUT
@@ -1380,7 +1388,6 @@ package body Sem_Warn is
                               end if;
                            end if;
                         end if;
-
                         --  All other cases of unset reference active
 
                      elsif not Warnings_Off_E1 then

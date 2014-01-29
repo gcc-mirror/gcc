@@ -8447,6 +8447,25 @@ package body Sem_Util is
       return False;
    end In_Parameter_Specification;
 
+   --------------------------
+   -- In_Pragma_Expression --
+   --------------------------
+
+   function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean is
+      P : Node_Id;
+   begin
+      P := Parent (N);
+      loop
+         if No (P) then
+            return False;
+         elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
+            return True;
+         else
+            P := Parent (P);
+         end if;
+      end loop;
+   end In_Pragma_Expression;
+
    -------------------------------------
    -- In_Reverse_Storage_Order_Object --
    -------------------------------------
