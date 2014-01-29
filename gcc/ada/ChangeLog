@@ -1,3 +1,18 @@
+2014-01-29  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Predefined_Primitive_Bodies): Complete the code
+	that checks if an interface types defines the predefined "="
+	function because the compiler was erroneously not generating the
+	predefined "=" primitive as soon as the name of some interface
+	primitive is "=" (formals were not checked).
+
+2014-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* expander.adb (Expander): In GNATprove mode, do not process
+	transient scopes: they are in general not created in this mode,
+	and an attempt to examine them will lead to constraint errors when
+	processing configuration pragmas that have analyzable expressions.
+
 2014-01-29  Vincent Celier  <celier@adacore.com>
 
 	* clean.adb (Gnatclean): Fail if main project is an aggregate

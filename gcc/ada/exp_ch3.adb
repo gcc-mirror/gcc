@@ -9642,6 +9642,15 @@ package body Exp_Ch3 is
          while Present (Prim) loop
             if Chars (Node (Prim)) = Name_Op_Eq
               and then not Is_Internal (Node (Prim))
+              and then Present (First_Entity (Node (Prim)))
+
+              --  Following tests need a comment ???
+
+              and then Present (Last_Entity (Node (Prim)))
+              and then Next_Entity (First_Entity (Node (Prim)))
+                         = Last_Entity (Node (Prim))
+              and then Etype (First_Entity (Node (Prim))) = Tag_Typ
+              and then Etype (Last_Entity (Node (Prim))) = Tag_Typ
             then
                Eq_Needed := False;
                Eq_Name := No_Name;
