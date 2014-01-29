@@ -59,6 +59,17 @@ package Back_End is
    --
    --  Any processed switches that influence the result of a compilation must
    --  be added to the Compilation_Arguments table.
+   --
+   --  This routine is expected to set the following to True if necessary (the
+   --  default for all of these in Opt is False).
+   --
+   --    Opt.Suppress_All_Inlining
+   --    Opt.Suppress_Control_Float_Optimizations
+   --    Opt.Generate_SCO
+   --    Opt.Generate_SCO_Instance_Table
+   --    Opt.Stack_Checking_Enabled
+   --    Opt.No_Stdinc
+   --    Opt.No_Stdlib
 
    procedure Gen_Or_Update_Object_File;
    --  Is used to generate the object file (if generated directly by gnat1), or
