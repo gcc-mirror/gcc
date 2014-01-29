@@ -96,6 +96,11 @@ package Inline is
 
       Warnings : Warning_Record;
       --  Capture values of warning flags
+
+      SPARK_Mode        : SPARK_Mode_Type;
+      SPARK_Mode_Pragma : Node_Id;
+      --  SPARK_Mode for an instance is the one applicable at the point of
+      --  instantiation.
    end record;
 
    package Pending_Instantiations is new Table.Table (
