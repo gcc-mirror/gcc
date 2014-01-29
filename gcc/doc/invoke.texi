@@ -12301,9 +12301,12 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv5}, @samp{armv5t}, @samp{armv5e}, @samp{armv5te},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
-@samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
+@samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m}, @samp{armv7ve},
 @samp{armv8-a}, @samp{armv8-a+crc},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=armv7ve} is the armv7-a architecture with virtualization
+extensions.
 
 @option{-march=armv8-a+crc} enables code generation for the ARMv8-A
 architecture together with the optional CRC32 extensions.

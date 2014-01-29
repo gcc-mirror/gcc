@@ -1,3 +1,9 @@
+2014-01-29  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/ftest-armv7ve-arm.c: New.
+	* gcc.target/arm/ftest-armv7ve-thumb.c: New.
+	* lib/target-supports.exp: New armfunc, armflag and armdef for armv7ve.
+
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58702
