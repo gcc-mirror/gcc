@@ -6513,6 +6513,7 @@ package body Sem_Res is
       --  standard Ada legality rules.
 
       if SPARK_Mode = On
+        and then Ekind_In (E, E_Abstract_State, E_Variable)
         and then Is_SPARK_Volatile_Object (E)
         and then
           (Async_Writers_Enabled (E)

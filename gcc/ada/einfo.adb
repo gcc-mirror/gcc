@@ -6455,7 +6455,8 @@ package body Einfo is
                   Id = Pragma_Test_Case;
       Is_PPC : constant Boolean :=
                   Id = Pragma_Precondition      or else
-                  Id = Pragma_Postcondition;
+                  Id = Pragma_Postcondition     or else
+                  Id = Pragma_Refined_Post;
 
       In_Contract : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
 

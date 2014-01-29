@@ -18475,6 +18475,10 @@ package body Sem_Prag is
                        ("pragma % does not mention function result?T?");
                   end if;
                end if;
+
+               --  Chain the pragma on the contract for easy retrieval
+
+               Add_Contract_Item (N, Body_Id);
             end if;
          end Refined_Post;
 

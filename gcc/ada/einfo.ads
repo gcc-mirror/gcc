@@ -7509,7 +7509,9 @@ package Einfo is
    --    Postcondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_Post
    --    Refined_State
+   --    Test_Case
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record

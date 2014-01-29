@@ -1,5 +1,24 @@
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* einfo.adb (Get_Pragma): Handle the retrieval of pragma Refined_Post.
+	* einfo.ads (Get_Pragma): Update the comment on special pragmas
+	handled by this routine.
+	* sem_prag.adb (Analyze_Pragma): Add a legal pragma Refined_Post
+	to the contract of the related subprogram body.
+	* sem_util.adb (Add_Contract_Item): Handle the insertion of
+	pragma Refined_Post into the contract of a subprogram body.
+	* sinfo.ads Update the documentation of node N_Contract.
+	* sem_res.adb (Resolve_Entity_Name): Add a guard
+	to detect abstract states and variables only when checking the
+	SPARK 2014 rules concerning volatile object placement.
+
+2014-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types, Try_One_Interp): within an instance,
+	null is compatible with any access type.
+
+2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Find_Placement_In_State_Space): Assume that the default
 	placement is not in a package.
 
