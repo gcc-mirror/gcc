@@ -1,3 +1,8 @@
+2014-01-29  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (clobber_only_eh_bb_p): New function.
+	(estimate_function_body_sizes): Use it.
+
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58561
