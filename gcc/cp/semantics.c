@@ -5021,7 +5021,9 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
   tree type = TREE_TYPE (t);
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
-  if (ARITHMETIC_TYPE_P (type))
+  if (type == error_mark_node)
+    return true;
+  else if (ARITHMETIC_TYPE_P (type))
     switch (OMP_CLAUSE_REDUCTION_CODE (c))
       {
       case PLUS_EXPR:

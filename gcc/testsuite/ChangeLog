@@ -1,3 +1,8 @@
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58702
+	* g++.dg/gomp/pr58702.C: New.
+
 2014-01-29  Dodji Seketeli  <dodji@redhat.com>
 
 	* c-c++-common/cpp/warning-zero-location-2.c: Fix error message

@@ -1,3 +1,9 @@
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58702
+	* semantics.c (finish_omp_reduction_clause): Check type for
+	error_mark_node.
+
 2014-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59791
