@@ -1,3 +1,8 @@
+2014-01-29  Dodji Seketeli  <dodji@redhat.com>
+
+	* c-c++-common/cpp/warning-zero-location-2.c: Fix error message
+	selector.
+
 2014-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59917

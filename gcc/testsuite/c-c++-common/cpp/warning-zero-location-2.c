@@ -7,4 +7,4 @@
 #include <xxxxxxxxxxxx.h>
 int main() { return 0; }
 
-/* { dg-error "No such file or directory" { target *-*-* } 4636 } */
+/* { dg-message "" "#include" {target *-*-* } 0 }
