@@ -18628,7 +18628,8 @@ package body Sem_Prag is
             procedure Check_Pragma_Conformance
               (Context_Pragma : Node_Id;
                Entity_Pragma  : Node_Id;
-               Entity         : Entity_Id) is
+               Entity         : Entity_Id)
+            is
             begin
                if Present (Context_Pragma) then
                   pragma Assert (Nkind (Context_Pragma) = N_Pragma);
@@ -18654,15 +18655,17 @@ package body Sem_Prag is
                         Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
                         Error_Msg_Sloc := Sloc (Entity_Pragma);
                         Error_Msg_NE
-                          ("\value Off was set for SPARK_Mode on & #",
+                          ("\value Off was set for SPARK_Mode on&#",
                            Arg1, Entity);
                         raise Pragma_Exit;
                      end if;
+
                   else
                      Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
                      Error_Msg_Sloc := Sloc (Entity);
-                     Error_Msg_NE ("\no value was set for SPARK_Mode on & #",
-                                   Arg1, Entity);
+                     Error_Msg_NE
+                       ("\no value was set for SPARK_Mode on&#",
+                        Arg1, Entity);
                      raise Pragma_Exit;
                   end if;
                end if;

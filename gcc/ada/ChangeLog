@@ -1,3 +1,16 @@
+2014-01-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb, sem_prag.adb, sem_ch4.adb, sem_ch6.adb: Minor code
+	reorganization.
+
+2014-01-29  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Update description of SPARK_Mode pragma.
+
+2014-01-29  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Body): Remove Num_Entries.
+
 2014-01-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch4.adb (Find_Component_In_Instance): Update comment.

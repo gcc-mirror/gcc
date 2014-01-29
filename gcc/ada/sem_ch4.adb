@@ -3972,7 +3972,9 @@ package body Sem_Ch4 is
             Next_Component (Comp);
          end loop;
 
-         --  Need comment on what is going on when we fall through ???
+         --  If we fall through, no match, so no changes made
+
+         return;
       end Find_Component_In_Instance;
 
       ------------------------------
