@@ -1,3 +1,10 @@
+2014-01-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb: minor clarification.
+	* sem_ch7.adb (Declare_Inherited_Private_Subprograms): Limit
+	search for primitive operations to the entities that immediately
+	follow the type declaration.
+
 2014-01-29  Tristan Gingold  <gingold@adacore.com>
 
 	* exp_ch9.adb (Build_Protected_Entry): Do not call
