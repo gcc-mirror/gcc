@@ -1967,7 +1967,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 
 static bool
 copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
-		   bool can_make_abnormal_goto)
+		   basic_block abnormal_goto_dest)
 {
   basic_block new_bb = (basic_block) bb->aux;
   edge_iterator ei;
@@ -2021,7 +2021,9 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
       can_throw = stmt_can_throw_internal (copy_stmt);
-      nonlocal_goto = stmt_can_make_abnormal_goto (copy_stmt);
+      nonlocal_goto
+	= (stmt_can_make_abnormal_goto (copy_stmt)
+	   && !computed_goto_p (copy_stmt));
 
       if (can_throw || nonlocal_goto)
 	{
@@ -2052,9 +2054,26 @@ copy_edges_for_bb (basic_block bb, gcov_type count_scale, basic_block ret_bb,
       /* If the call we inline cannot make abnormal goto do not add
          additional abnormal edges but only retain those already present
 	 in the original function body.  */
-      nonlocal_goto &= can_make_abnormal_goto;
+      if (abnormal_goto_dest == NULL)
+	nonlocal_goto = false;
       if (nonlocal_goto)
-	make_abnormal_goto_edges (gimple_bb (copy_stmt), true);
+	{
+	  basic_block copy_stmt_bb = gimple_bb (copy_stmt);
+
+	  if (get_abnormal_succ_dispatcher (copy_stmt_bb))
+	    nonlocal_goto = false;
+	  /* ABNORMAL_DISPATCHER (1) is for longjmp/setjmp or nonlocal gotos
+	     in OpenMP regions which aren't allowed to be left abnormally.
+	     So, no need to add abnormal edge in that case.  */
+	  else if (is_gimple_call (copy_stmt)
+		   && gimple_call_internal_p (copy_stmt)
+		   && (gimple_call_internal_fn (copy_stmt)
+		       == IFN_ABNORMAL_DISPATCHER)
+		   && gimple_call_arg (copy_stmt, 0) == boolean_true_node)
+	    nonlocal_goto = false;
+	  else
+	    make_edge (copy_stmt_bb, abnormal_goto_dest, EDGE_ABNORMAL);
+	}
 
       if ((can_throw || nonlocal_goto)
 	  && gimple_in_ssa_p (cfun))
@@ -2493,13 +2512,22 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   last = last_basic_block_for_fn (cfun);
 
   /* Now that we've duplicated the blocks, duplicate their edges.  */
-  bool can_make_abormal_goto
-    = id->gimple_call && stmt_can_make_abnormal_goto (id->gimple_call);
+  basic_block abnormal_goto_dest = NULL;
+  if (id->gimple_call
+      && stmt_can_make_abnormal_goto (id->gimple_call))
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (id->gimple_call);
+
+      bb = gimple_bb (id->gimple_call);
+      gsi_next (&gsi);
+      if (gsi_end_p (gsi))
+	abnormal_goto_dest = get_abnormal_succ_dispatcher (bb);
+    }
   FOR_ALL_BB_FN (bb, cfun_to_copy)
     if (!id->blocks_to_copy
 	|| (bb->index > 0 && bitmap_bit_p (id->blocks_to_copy, bb->index)))
       need_debug_cleanup |= copy_edges_for_bb (bb, count_scale, exit_block_map,
-					       can_make_abormal_goto);
+					       abnormal_goto_dest);
 
   if (new_entry)
     {

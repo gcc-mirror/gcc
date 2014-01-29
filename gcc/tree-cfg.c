@@ -106,9 +106,6 @@ struct cfg_stats_d
 
 static struct cfg_stats_d cfg_stats;
 
-/* Nonzero if we found a computed goto while building basic blocks.  */
-static bool found_computed_goto;
-
 /* Hash table to store last discriminator assigned for each locus.  */
 struct locus_discrim_map
 {
@@ -148,14 +145,13 @@ static hash_table <locus_discrim_hasher> discriminator_per_locus;
 
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
-static void factor_computed_gotos (void);
 
 /* Edges.  */
 static void make_edges (void);
 static void assign_discriminators (void);
 static void make_cond_expr_edges (basic_block);
 static void make_gimple_switch_edges (basic_block);
-static void make_goto_expr_edges (basic_block);
+static bool make_goto_expr_edges (basic_block);
 static void make_gimple_asm_edges (basic_block);
 static edge gimple_redirect_edge_and_branch (edge, basic_block);
 static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
@@ -225,16 +221,7 @@ build_gimple_cfg (gimple_seq seq)
 
   init_empty_tree_cfg ();
 
-  found_computed_goto = 0;
   make_blocks (seq);
-
-  /* Computed gotos are hell to deal with, especially if there are
-     lots of them with a large number of destinations.  So we factor
-     them to a common computed goto location before we build the
-     edge list.  After we convert back to normal form, we will un-factor
-     the computed gotos since factoring introduces an unwanted jump.  */
-  if (found_computed_goto)
-    factor_computed_gotos ();
 
   /* Make sure there is always at least one block, even if it's empty.  */
   if (n_basic_blocks_for_fn (cfun) == NUM_FIXED_BLOCKS)
@@ -385,7 +372,7 @@ make_pass_build_cfg (gcc::context *ctxt)
 
 /* Return true if T is a computed goto.  */
 
-static bool
+bool
 computed_goto_p (gimple t)
 {
   return (gimple_code (t) == GIMPLE_GOTO
@@ -437,82 +424,6 @@ assert_unreachable_fallthru_edge_p (edge e)
 }
 
 
-/* Search the CFG for any computed gotos.  If found, factor them to a
-   common computed goto site.  Also record the location of that site so
-   that we can un-factor the gotos after we have converted back to
-   normal form.  */
-
-static void
-factor_computed_gotos (void)
-{
-  basic_block bb;
-  tree factored_label_decl = NULL;
-  tree var = NULL;
-  gimple factored_computed_goto_label = NULL;
-  gimple factored_computed_goto = NULL;
-
-  /* We know there are one or more computed gotos in this function.
-     Examine the last statement in each basic block to see if the block
-     ends with a computed goto.  */
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      gimple_stmt_iterator gsi = gsi_last_bb (bb);
-      gimple last;
-
-      if (gsi_end_p (gsi))
-	continue;
-
-      last = gsi_stmt (gsi);
-
-      /* Ignore the computed goto we create when we factor the original
-	 computed gotos.  */
-      if (last == factored_computed_goto)
-	continue;
-
-      /* If the last statement is a computed goto, factor it.  */
-      if (computed_goto_p (last))
-	{
-	  gimple assignment;
-
-	  /* The first time we find a computed goto we need to create
-	     the factored goto block and the variable each original
-	     computed goto will use for their goto destination.  */
-	  if (!factored_computed_goto)
-	    {
-	      basic_block new_bb = create_empty_bb (bb);
-	      gimple_stmt_iterator new_gsi = gsi_start_bb (new_bb);
-
-	      /* Create the destination of the factored goto.  Each original
-		 computed goto will put its desired destination into this
-		 variable and jump to the label we create immediately
-		 below.  */
-	      var = create_tmp_var (ptr_type_node, "gotovar");
-
-	      /* Build a label for the new block which will contain the
-		 factored computed goto.  */
-	      factored_label_decl = create_artificial_label (UNKNOWN_LOCATION);
-	      factored_computed_goto_label
-		= gimple_build_label (factored_label_decl);
-	      gsi_insert_after (&new_gsi, factored_computed_goto_label,
-				GSI_NEW_STMT);
-
-	      /* Build our new computed goto.  */
-	      factored_computed_goto = gimple_build_goto (var);
-	      gsi_insert_after (&new_gsi, factored_computed_goto, GSI_NEW_STMT);
-	    }
-
-	  /* Copy the original computed goto's destination into VAR.  */
-	  assignment = gimple_build_assign (var, gimple_goto_dest (last));
-	  gsi_insert_before (&gsi, assignment, GSI_SAME_STMT);
-
-	  /* And re-vector the computed goto to the new destination.  */
-	  gimple_goto_set_dest (last, factored_label_decl);
-	}
-    }
-}
-
-
 /* Build a flowgraph for the sequence of stmts SEQ.  */
 
 static void
@@ -545,9 +456,6 @@ make_blocks (gimple_seq seq)
       /* Now add STMT to BB and create the subgraphs for special statement
 	 codes.  */
       gimple_set_bb (stmt, bb);
-
-      if (computed_goto_p (stmt))
-	found_computed_goto = true;
 
       /* If STMT is a basic block terminator, set START_NEW_BLOCK for the
 	 next iteration.  */
@@ -666,6 +574,144 @@ fold_cond_expr_cond (void)
     }
 }
 
+/* If basic block BB has an abnormal edge to a basic block
+   containing IFN_ABNORMAL_DISPATCHER internal call, return
+   that the dispatcher's basic block, otherwise return NULL.  */
+
+basic_block
+get_abnormal_succ_dispatcher (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if ((e->flags & (EDGE_ABNORMAL | EDGE_EH)) == EDGE_ABNORMAL)
+      {
+	gimple_stmt_iterator gsi
+	  = gsi_start_nondebug_after_labels_bb (e->dest);
+	gimple g = gsi_stmt (gsi);
+	if (g
+	    && is_gimple_call (g)
+	    && gimple_call_internal_p (g)
+	    && gimple_call_internal_fn (g) == IFN_ABNORMAL_DISPATCHER)
+	  return e->dest;
+      }
+  return NULL;
+}
+
+/* Helper function for make_edges.  Create a basic block with
+   with ABNORMAL_DISPATCHER internal call in it if needed, and
+   create abnormal edges from BBS to it and from it to FOR_BB
+   if COMPUTED_GOTO is false, otherwise factor the computed gotos.  */
+
+static void
+handle_abnormal_edges (basic_block *dispatcher_bbs,
+		       basic_block for_bb, int *bb_to_omp_idx,
+		       auto_vec<basic_block> *bbs, bool computed_goto)
+{
+  basic_block *dispatcher = dispatcher_bbs + (computed_goto ? 1 : 0);
+  unsigned int idx = 0;
+  basic_block bb;
+  bool inner = false;
+
+  if (bb_to_omp_idx)
+    {
+      dispatcher = dispatcher_bbs + 2 * bb_to_omp_idx[for_bb->index];
+      if (bb_to_omp_idx[for_bb->index] != 0)
+	inner = true;
+    }
+
+  /* If the dispatcher has been created already, then there are basic
+     blocks with abnormal edges to it, so just make a new edge to
+     for_bb.  */
+  if (*dispatcher == NULL)
+    {
+      /* Check if there are any basic blocks that need to have
+	 abnormal edges to this dispatcher.  If there are none, return
+	 early.  */
+      if (bb_to_omp_idx == NULL)
+	{
+	  if (bbs->is_empty ())
+	    return;
+	}
+      else
+	{
+	  FOR_EACH_VEC_ELT (*bbs, idx, bb)
+	    if (bb_to_omp_idx[bb->index] == bb_to_omp_idx[for_bb->index])
+	      break;
+	  if (bb == NULL)
+	    return;
+	}
+
+      /* Create the dispatcher bb.  */
+      *dispatcher = create_basic_block (NULL, NULL, for_bb);
+      if (computed_goto)
+	{
+	  /* Factor computed gotos into a common computed goto site.  Also
+	     record the location of that site so that we can un-factor the
+	     gotos after we have converted back to normal form.  */
+	  gimple_stmt_iterator gsi = gsi_start_bb (*dispatcher);
+
+	  /* Create the destination of the factored goto.  Each original
+	     computed goto will put its desired destination into this
+	     variable and jump to the label we create immediately below.  */
+	  tree var = create_tmp_var (ptr_type_node, "gotovar");
+
+	  /* Build a label for the new block which will contain the
+	     factored computed goto.  */
+	  tree factored_label_decl
+	    = create_artificial_label (UNKNOWN_LOCATION);
+	  gimple factored_computed_goto_label
+	    = gimple_build_label (factored_label_decl);
+	  gsi_insert_after (&gsi, factored_computed_goto_label, GSI_NEW_STMT);
+
+	  /* Build our new computed goto.  */
+	  gimple factored_computed_goto = gimple_build_goto (var);
+	  gsi_insert_after (&gsi, factored_computed_goto, GSI_NEW_STMT);
+
+	  FOR_EACH_VEC_ELT (*bbs, idx, bb)
+	    {
+	      if (bb_to_omp_idx
+		  && bb_to_omp_idx[bb->index] != bb_to_omp_idx[for_bb->index])
+		continue;
+
+	      gsi = gsi_last_bb (bb);
+	      gimple last = gsi_stmt (gsi);
+
+	      gcc_assert (computed_goto_p (last));
+
+	      /* Copy the original computed goto's destination into VAR.  */
+	      gimple assignment
+		= gimple_build_assign (var, gimple_goto_dest (last));
+	      gsi_insert_before (&gsi, assignment, GSI_SAME_STMT);
+
+	      edge e = make_edge (bb, *dispatcher, EDGE_FALLTHRU);
+	      e->goto_locus = gimple_location (last);
+	      gsi_remove (&gsi, true);
+	    }
+	}
+      else
+	{
+	  tree arg = inner ? boolean_true_node : boolean_false_node;
+	  gimple g = gimple_build_call_internal (IFN_ABNORMAL_DISPATCHER,
+						 1, arg);
+	  gimple_stmt_iterator gsi = gsi_after_labels (*dispatcher);
+	  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+
+	  /* Create predecessor edges of the dispatcher.  */
+	  FOR_EACH_VEC_ELT (*bbs, idx, bb)
+	    {
+	      if (bb_to_omp_idx
+		  && bb_to_omp_idx[bb->index] != bb_to_omp_idx[for_bb->index])
+		continue;
+	      make_edge (bb, *dispatcher, EDGE_ABNORMAL);
+	    }
+	}
+    }
+
+  make_edge (*dispatcher, for_bb, EDGE_ABNORMAL);
+}
+
 /* Join all the blocks in the flowgraph.  */
 
 static void
@@ -673,6 +719,10 @@ make_edges (void)
 {
   basic_block bb;
   struct omp_region *cur_region = NULL;
+  auto_vec<basic_block> ab_edge_goto;
+  auto_vec<basic_block> ab_edge_call;
+  int *bb_to_omp_idx = NULL;
+  int cur_omp_region_idx = 0;
 
   /* Create an edge from entry to the first block with executable
      statements in it.  */
@@ -686,13 +736,17 @@ make_edges (void)
       gimple last = last_stmt (bb);
       bool fallthru;
 
+      if (bb_to_omp_idx)
+	bb_to_omp_idx[bb->index] = cur_omp_region_idx;
+
       if (last)
 	{
 	  enum gimple_code code = gimple_code (last);
 	  switch (code)
 	    {
 	    case GIMPLE_GOTO:
-	      make_goto_expr_edges (bb);
+	      if (make_goto_expr_edges (bb))
+		ab_edge_goto.safe_push (bb);
 	      fallthru = false;
 	      break;
 	    case GIMPLE_RETURN:
@@ -720,7 +774,7 @@ make_edges (void)
 		 make edges from this call site to all the nonlocal goto
 		 handlers.  */
 	      if (stmt_can_make_abnormal_goto (last))
-		make_abnormal_goto_edges (bb, true);
+		ab_edge_call.safe_push (bb);
 
 	      /* If this statement has reachable exception handlers, then
 		 create abnormal edges to them.  */
@@ -728,8 +782,10 @@ make_edges (void)
 
 	      /* BUILTIN_RETURN is really a return statement.  */
 	      if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
-		make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0), fallthru =
-	     false;
+		{
+		  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		  fallthru = false;
+		}
 	      /* Some calls are known not to return.  */
 	      else
 	        fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
@@ -749,7 +805,10 @@ make_edges (void)
 	      break;
 
 	    CASE_GIMPLE_OMP:
-	      fallthru = make_gimple_omp_edges (bb, &cur_region);
+	      fallthru = make_gimple_omp_edges (bb, &cur_region,
+						&cur_omp_region_idx);
+	      if (cur_region && bb_to_omp_idx == NULL)
+		bb_to_omp_idx = XCNEWVEC (int, n_basic_blocks_for_fn (cfun));
 	      break;
 
 	    case GIMPLE_TRANSACTION:
@@ -772,6 +831,77 @@ make_edges (void)
       if (fallthru)
 	make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
     }
+
+  /* Computed gotos are hell to deal with, especially if there are
+     lots of them with a large number of destinations.  So we factor
+     them to a common computed goto location before we build the
+     edge list.  After we convert back to normal form, we will un-factor
+     the computed gotos since factoring introduces an unwanted jump.
+     For non-local gotos and abnormal edges from calls to calls that return
+     twice or forced labels, factor the abnormal edges too, by having all
+     abnormal edges from the calls go to a common artificial basic block
+     with ABNORMAL_DISPATCHER internal call and abnormal edges from that
+     basic block to all forced labels and calls returning twice.
+     We do this per-OpenMP structured block, because those regions
+     are guaranteed to be single entry single exit by the standard,
+     so it is not allowed to enter or exit such regions abnormally this way,
+     thus all computed gotos, non-local gotos and setjmp/longjmp calls
+     must not transfer control across SESE region boundaries.  */
+  if (!ab_edge_goto.is_empty () || !ab_edge_call.is_empty ())
+    {
+      gimple_stmt_iterator gsi;
+      basic_block dispatcher_bb_array[2] = { NULL, NULL };
+      basic_block *dispatcher_bbs = dispatcher_bb_array;
+      int count = n_basic_blocks_for_fn (cfun);
+
+      if (bb_to_omp_idx)
+	dispatcher_bbs = XCNEWVEC (basic_block, 2 * count);
+
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple label_stmt = gsi_stmt (gsi);
+	      tree target;
+
+	      if (gimple_code (label_stmt) != GIMPLE_LABEL)
+		break;
+
+	      target = gimple_label_label (label_stmt);
+
+	      /* Make an edge to every label block that has been marked as a
+		 potential target for a computed goto or a non-local goto.  */
+	      if (FORCED_LABEL (target))
+		handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
+				       &ab_edge_goto, true);
+	      if (DECL_NONLOCAL (target))
+		{
+		  handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
+					 &ab_edge_call, false);
+		  break;
+		}
+	    }
+
+	  if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+	    gsi_next_nondebug (&gsi);
+	  if (!gsi_end_p (gsi))
+	    {
+	      /* Make an edge to every setjmp-like call.  */
+	      gimple call_stmt = gsi_stmt (gsi);
+	      if (is_gimple_call (call_stmt)
+		  && ((gimple_call_flags (call_stmt) & ECF_RETURNS_TWICE)
+		      || gimple_call_builtin_p (call_stmt,
+						BUILT_IN_SETJMP_RECEIVER)))
+		handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
+				       &ab_edge_call, false);
+	    }
+	}
+
+      if (bb_to_omp_idx)
+	XDELETE (dispatcher_bbs);
+    }
+
+  XDELETE (bb_to_omp_idx);
 
   free_omp_regions ();
 
@@ -1045,53 +1175,10 @@ label_to_block_fn (struct function *ifun, tree dest)
   return (*ifun->cfg->x_label_to_block_map)[uid];
 }
 
-/* Create edges for an abnormal goto statement at block BB.  If FOR_CALL
-   is true, the source statement is a CALL_EXPR instead of a GOTO_EXPR.  */
+/* Create edges for a goto statement at block BB.  Returns true
+   if abnormal edges should be created.  */
 
-void
-make_abnormal_goto_edges (basic_block bb, bool for_call)
-{
-  basic_block target_bb;
-  gimple_stmt_iterator gsi;
-
-  FOR_EACH_BB_FN (target_bb, cfun)
-    {
-      for (gsi = gsi_start_bb (target_bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple label_stmt = gsi_stmt (gsi);
-	  tree target;
-
-	  if (gimple_code (label_stmt) != GIMPLE_LABEL)
-	    break;
-
-	  target = gimple_label_label (label_stmt);
-
-	  /* Make an edge to every label block that has been marked as a
-	     potential target for a computed goto or a non-local goto.  */
-	  if ((FORCED_LABEL (target) && !for_call)
-	      || (DECL_NONLOCAL (target) && for_call))
-	    {
-	      make_edge (bb, target_bb, EDGE_ABNORMAL);
-	      break;
-	    }
-	}
-      if (!gsi_end_p (gsi)
-	  && is_gimple_debug (gsi_stmt (gsi)))
-	gsi_next_nondebug (&gsi);
-      if (!gsi_end_p (gsi))
-	{
-	  /* Make an edge to every setjmp-like call.  */
-	  gimple call_stmt = gsi_stmt (gsi);
-	  if (is_gimple_call (call_stmt)
-	      && (gimple_call_flags (call_stmt) & ECF_RETURNS_TWICE))
-	    make_edge (bb, target_bb, EDGE_ABNORMAL);
-	}
-    }
-}
-
-/* Create edges for a goto statement at block BB.  */
-
-static void
+static bool
 make_goto_expr_edges (basic_block bb)
 {
   gimple_stmt_iterator last = gsi_last_bb (bb);
@@ -1105,11 +1192,11 @@ make_goto_expr_edges (basic_block bb)
       edge e = make_edge (bb, label_bb, EDGE_FALLTHRU);
       e->goto_locus = gimple_location (goto_t);
       gsi_remove (&last, true);
-      return;
+      return false;
     }
 
   /* A computed GOTO creates abnormal edges.  */
-  make_abnormal_goto_edges (bb, false);
+  return true;
 }
 
 /* Create edges for an asm statement with labels at block BB.  */

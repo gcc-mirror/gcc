@@ -10449,7 +10449,8 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 /* Called from tree-cfg.c::make_edges to create cfg edges for all GIMPLE_OMP
    codes.  */
 bool
-make_gimple_omp_edges (basic_block bb, struct omp_region **region)
+make_gimple_omp_edges (basic_block bb, struct omp_region **region,
+		       int *region_idx)
 {
   gimple last = last_stmt (bb);
   enum gimple_code code = gimple_code (last);
@@ -10556,7 +10557,13 @@ make_gimple_omp_edges (basic_block bb, struct omp_region **region)
     }
 
   if (*region != cur_region)
-    *region = cur_region;
+    {
+      *region = cur_region;
+      if (cur_region)
+	*region_idx = cur_region->entry->index;
+      else
+	*region_idx = 0;
+    }
 
   return fallthru;
 }

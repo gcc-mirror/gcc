@@ -31,7 +31,6 @@ extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
 extern basic_block label_to_block_fn (struct function *, tree);
 #define label_to_block(t) (label_to_block_fn (cfun, t))
-extern void make_abnormal_goto_edges (basic_block, bool);
 extern void cleanup_dead_labels (void);
 extern void group_case_labels_stmt (gimple);
 extern void group_case_labels (void);
@@ -46,7 +45,9 @@ extern void gimple_debug_cfg (int);
 extern void gimple_dump_cfg (FILE *, int);
 extern void dump_cfg_stats (FILE *);
 extern void debug_cfg_stats (void);
+extern bool computed_goto_p (gimple);
 extern bool stmt_can_make_abnormal_goto (gimple);
+extern basic_block get_abnormal_succ_dispatcher (basic_block);
 extern bool is_ctrl_stmt (gimple);
 extern bool is_ctrl_altering_stmt (gimple);
 extern bool simple_goto_p (gimple);
