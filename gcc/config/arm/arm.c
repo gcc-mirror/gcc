@@ -764,11 +764,11 @@ static int thumb_call_reg_needed;
 #define FL_FOR_ARCH6M	(FL_FOR_ARCH6 & ~FL_NOTM)
 #define FL_FOR_ARCH7	((FL_FOR_ARCH6T2 & ~FL_NOTM) | FL_ARCH7)
 #define FL_FOR_ARCH7A	(FL_FOR_ARCH7 | FL_NOTM | FL_ARCH6K)
+#define FL_FOR_ARCH7VE	(FL_FOR_ARCH7A | FL_THUMB_DIV | FL_ARM_DIV)
 #define FL_FOR_ARCH7R	(FL_FOR_ARCH7A | FL_THUMB_DIV)
 #define FL_FOR_ARCH7M	(FL_FOR_ARCH7 | FL_THUMB_DIV)
 #define FL_FOR_ARCH7EM  (FL_FOR_ARCH7M | FL_ARCH7EM)
-#define FL_FOR_ARCH8A	(FL_FOR_ARCH7 | FL_ARCH6K | FL_ARCH8 | FL_THUMB_DIV \
-			 | FL_ARM_DIV | FL_NOTM)
+#define FL_FOR_ARCH8A	(FL_FOR_ARCH7VE | FL_ARCH8)
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -27859,20 +27859,34 @@ arm_file_start (void)
       const char *fpu_name;
       if (arm_selected_arch)
         {
-          const char* pos = strchr (arm_selected_arch->name, '+');
-	  if (pos)
+	  /* armv7ve doesn't support any extensions.  */
+	  if (strcmp (arm_selected_arch->name, "armv7ve") == 0)
 	    {
-	      char buf[15];
-	      gcc_assert (strlen (arm_selected_arch->name)
-	                  <= sizeof (buf) / sizeof (*pos));
-	      strncpy (buf, arm_selected_arch->name,
-	                    (pos - arm_selected_arch->name) * sizeof (*pos));
-	      buf[pos - arm_selected_arch->name] = '\0';
-	      asm_fprintf (asm_out_file, "\t.arch %s\n", buf);
-	      asm_fprintf (asm_out_file, "\t.arch_extension %s\n", pos + 1);
+	      /* Keep backward compatability for assemblers
+		 which don't support armv7ve.  */
+	      asm_fprintf (asm_out_file, "\t.arch armv7-a\n");
+	      asm_fprintf (asm_out_file, "\t.arch_extension virt\n");
+	      asm_fprintf (asm_out_file, "\t.arch_extension idiv\n");
+	      asm_fprintf (asm_out_file, "\t.arch_extension sec\n");
+	      asm_fprintf (asm_out_file, "\t.arch_extension mp\n");
 	    }
 	  else
-	    asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
+	    {
+	      const char* pos = strchr (arm_selected_arch->name, '+');
+	      if (pos)
+		{
+		  char buf[15];
+		  gcc_assert (strlen (arm_selected_arch->name)
+			      <= sizeof (buf) / sizeof (*pos));
+		  strncpy (buf, arm_selected_arch->name,
+				(pos - arm_selected_arch->name) * sizeof (*pos));
+		  buf[pos - arm_selected_arch->name] = '\0';
+		  asm_fprintf (asm_out_file, "\t.arch %s\n", buf);
+		  asm_fprintf (asm_out_file, "\t.arch_extension %s\n", pos + 1);
+		}
+	      else
+		asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
+	    }
         }
       else if (strncmp (arm_selected_cpu->name, "generic", 7) == 0)
 	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_cpu->name + 8);

@@ -2630,6 +2630,7 @@ foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
 				     v6z "-march=armv6z" __ARM_ARCH_6Z__
 				     v6m "-march=armv6-m -mthumb" __ARM_ARCH_6M__
 				     v7a "-march=armv7-a" __ARM_ARCH_7A__
+				     v7ve "-march=armv7ve" __ARM_ARCH_7A__
 				     v7r "-march=armv7-r" __ARM_ARCH_7R__
 				     v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
 				     v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__

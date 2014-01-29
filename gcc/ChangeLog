@@ -1,3 +1,14 @@
+2014-01-29  Renlin Li  <Renlin.Li@arm.com>
+
+	* config/arm/arm-arches.def (ARM_ARCH): Add armv7ve arch.
+	* config/arm/arm.c (FL_FOR_ARCH7VE): New.
+	(arm_file_start): Generate correct asm header for armv7ve.
+	* config/arm/bpabi.h: Add multilib support for armv7ve.
+	* config/arm/driver-arm.c: Change the architectures of cortex-a7
+	and cortex-a15 to armv7ve.
+	* config/arm/t-aprofile: Add multilib support for armv7ve.
+	* doc/invoke.texi: Document -march=armv7ve.
+
 2014-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58742
