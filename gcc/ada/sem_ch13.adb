@@ -1140,33 +1140,35 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
-      procedure Decorate_Delayed_Aspect_And_Pragma
-        (Asp  : Node_Id;
-         Prag : Node_Id);
-      --  Establish the linkages between a delayed aspect and its corresponding
-      --  pragma. Set all delay-related flags on both constructs.
+      procedure Decorate_Aspect_And_Pragma
+        (Asp     : Node_Id;
+         Prag    : Node_Id;
+         Delayed : Boolean := False);
+      --  Establish the linkages between an aspect and its corresponding
+      --  pragma. Flag Delayed should be set when both constructs are delayed.
 
       procedure Insert_Delayed_Pragma (Prag : Node_Id);
       --  Insert a postcondition-like pragma into the tree depending on the
       --  context. Prag must denote one of the following: Pre, Post, Depends,
       --  Global or Contract_Cases.
 
-      ----------------------------------------
-      -- Decorate_Delayed_Aspect_And_Pragma --
-      ----------------------------------------
+      --------------------------------
+      -- Decorate_Aspect_And_Pragma --
+      --------------------------------
 
-      procedure Decorate_Delayed_Aspect_And_Pragma
-        (Asp  : Node_Id;
-         Prag : Node_Id)
+      procedure Decorate_Aspect_And_Pragma
+        (Asp     : Node_Id;
+         Prag    : Node_Id;
+         Delayed : Boolean := False)
       is
       begin
-         Set_Aspect_Rep_Item           (Asp, Prag);
+         Set_Aspect_Rep_Item           (Asp,  Prag);
          Set_Corresponding_Aspect      (Prag, Asp);
          Set_From_Aspect_Specification (Prag);
-         Set_Is_Delayed_Aspect         (Prag);
-         Set_Is_Delayed_Aspect         (Asp);
+         Set_Is_Delayed_Aspect         (Prag, Delayed);
+         Set_Is_Delayed_Aspect         (Asp,  Delayed);
          Set_Parent                    (Prag, Asp);
-      end Decorate_Delayed_Aspect_And_Pragma;
+      end Decorate_Aspect_And_Pragma;
 
       ---------------------------
       -- Insert_Delayed_Pragma --
@@ -2004,7 +2006,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Abstract_State);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2036,7 +2038,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Depends);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2054,7 +2057,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Global);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2079,7 +2083,9 @@ package body Sem_Ch13 is
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  =>
                           Name_Initial_Condition);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decorate_Aspect_And_Pragma
+                       (Aspect, Aitem, Delayed => True);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2117,7 +2123,9 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Initializes);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decorate_Aspect_And_Pragma
+                       (Aspect, Aitem, Delayed => True);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2134,6 +2142,24 @@ package body Sem_Ch13 is
 
                   goto Continue;
                end Initializes;
+
+               --  Part_Of
+
+               when Aspect_Part_Of =>
+                  if Nkind_In (N, N_Object_Declaration,
+                                  N_Package_Instantiation)
+                  then
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Part_Of);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a variable or package "
+                        & "instantiation", Aspect, Id);
+                  end if;
 
                --  SPARK_Mode
 
@@ -2152,7 +2178,8 @@ package body Sem_Ch13 is
                   --  emulate the behavior of a source pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+
                      Decls := Declarations (N);
 
                      if No (Decls) then
@@ -2168,7 +2195,8 @@ package body Sem_Ch13 is
                   --  declarations to emulate the behavior of a source pragma.
 
                   elsif Nkind (N) = N_Package_Declaration then
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+
                      Decls := Visible_Declarations (Specification (N));
 
                      if No (Decls) then
@@ -2195,7 +2223,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Depends);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2213,7 +2242,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Global);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2245,7 +2275,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Refined_State);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2515,7 +2545,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Nam);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -7989,6 +8020,7 @@ package body Sem_Ch13 is
               Aspect_Implicit_Dereference |
               Aspect_Initial_Condition    |
               Aspect_Initializes          |
+              Aspect_Part_Of              |
               Aspect_Post                 |
               Aspect_Postcondition        |
               Aspect_Pre                  |

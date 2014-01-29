@@ -233,17 +233,24 @@ package body Sem_Util is
 
       Nam := Original_Aspect_Name (Prag);
 
-      --  Contract items related to [generic] packages. The applicable pragmas
-      --  are:
+      --  Contract items related to [generic] packages or instantiations. The
+      --  applicable pragmas are:
       --    Abstract_States
       --    Initial_Condition
       --    Initializes
+      --    Part_Of (instantiation only)
 
       if Ekind_In (Id, E_Generic_Package, E_Package) then
          if Nam_In (Nam, Name_Abstract_State,
                          Name_Initial_Condition,
                          Name_Initializes)
          then
+            Set_Next_Pragma (Prag, Classifications (Items));
+            Set_Classifications (Items, Prag);
+
+         --  Indicator Part_Of must be associated with a package instantiation
+
+         elsif Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
 
@@ -355,12 +362,14 @@ package body Sem_Util is
       --    Async_Writers
       --    Effective_Reads
       --    Effective_Writes
+      --    Part_Of
 
       elsif Ekind (Id) = E_Variable then
          if Nam_In (Nam, Name_Async_Readers,
                          Name_Async_Writers,
                          Name_Effective_Reads,
-                         Name_Effective_Writes)
+                         Name_Effective_Writes,
+                         Name_Part_Of)
          then
             Set_Next_Pragma (Prag, Classifications (Items));
             Set_Classifications (Items, Prag);
@@ -4201,6 +4210,7 @@ package body Sem_Util is
                   Set_Defining_Unit_Name (N, Err);
 
                   return Err;
+
                --  If not an entity, get defining identifier
 
                else
@@ -5826,6 +5836,75 @@ package body Sem_Util is
          return Etype (Parameter_Type (Param));
       end if;
    end Find_Parameter_Type;
+
+   -----------------------------------
+   -- Find_Placement_In_State_Space --
+   -----------------------------------
+
+   procedure Find_Placement_In_State_Space
+     (Item_Id   : Entity_Id;
+      Placement : out State_Space_Kind;
+      Pack_Id   : out Entity_Id)
+   is
+      Context : Entity_Id;
+
+   begin
+      --  Assume that the item does not appear in the state space of a package
+
+      Pack_Id := Empty;
+
+      --  Climb the scope stack and examine the enclosing context
+
+      Context := Scope (Item_Id);
+      while Present (Context) and then Context /= Standard_Standard loop
+         if Ekind (Context) = E_Package then
+            Pack_Id := Context;
+
+            --  A package body is a cut off point for the traversal as the item
+            --  cannot be visible to the outside from this point on. Note that
+            --  this test must be done first as a body is also classified as a
+            --  private part.
+
+            if In_Package_Body (Context) then
+               Placement := Body_State_Space;
+               return;
+
+            --  The private part of a package is a cut off point for the
+            --  traversal as the item cannot be visible to the outside from
+            --  this point on.
+
+            elsif In_Private_Part (Context) then
+               Placement := Private_State_Space;
+               return;
+
+            --  When the item appears in the visible state space of a package,
+            --  continue to climb the scope stack as this may not be the final
+            --  state space.
+
+            else
+               Placement := Visible_State_Space;
+
+               --  The visible state space of a private child unit acts as the
+               --  proper placement of an item.
+
+               if Is_Child_Unit (Context)
+                 and then Is_Private_Descendant (Context)
+               then
+                  return;
+               end if;
+            end if;
+
+         --  The item or its enclosing package appear in a construct that has
+         --  no state space.
+
+         else
+            Placement := Not_In_Package;
+            return;
+         end if;
+
+         Context := Scope (Context);
+      end loop;
+   end Find_Placement_In_State_Space;
 
    -----------------------------
    -- Find_Static_Alternative --
@@ -8948,9 +9027,8 @@ package body Sem_Util is
    -------------------------
 
    function Is_Child_Or_Sibling
-     (Pack_1        : Entity_Id;
-      Pack_2        : Entity_Id;
-      Private_Child : Boolean) return Boolean
+     (Pack_1 : Entity_Id;
+      Pack_2 : Entity_Id) return Boolean
    is
       function Distance_From_Standard (Pack : Entity_Id) return Nat;
       --  Given an arbitrary package, return the number of "climbs" necessary
@@ -8963,10 +9041,6 @@ package body Sem_Util is
       --  Given an arbitrary package, its depth and a target depth to reach,
       --  climb the scope chain until the said depth is reached. The pointer
       --  to the package and its depth a modified during the climb.
-
-      function Is_Child (Pack : Entity_Id) return Boolean;
-      --  Given a package Pack, determine whether it is a child package that
-      --  satisfies the privacy requirement (if set).
 
       ----------------------------
       -- Distance_From_Standard --
@@ -9011,26 +9085,6 @@ package body Sem_Util is
          end loop;
       end Equalize_Depths;
 
-      --------------
-      -- Is_Child --
-      --------------
-
-      function Is_Child (Pack : Entity_Id) return Boolean is
-      begin
-         if Is_Child_Unit (Pack) then
-            if Private_Child then
-               return Is_Private_Descendant (Pack);
-            else
-               return True;
-            end if;
-
-         --  The package is nested, it cannot act a child or a sibling
-
-         else
-            return False;
-         end if;
-      end Is_Child;
-
       --  Local variables
 
       P_1       : Entity_Id := Pack_1;
@@ -9062,7 +9116,10 @@ package body Sem_Util is
       --      P_1                P_1
 
       elsif P_1_Depth > P_2_Depth then
-         Equalize_Depths (P_1, P_1_Depth, P_2_Depth);
+         Equalize_Depths
+           (Pack           => P_1,
+            Depth          => P_1_Depth,
+            Depth_To_Reach => P_2_Depth);
          P_1_Child := True;
 
       --        (root)           P_1
@@ -9072,7 +9129,10 @@ package body Sem_Util is
       --             P_2         P_2
 
       elsif P_2_Depth > P_1_Depth then
-         Equalize_Depths (P_2, P_2_Depth, P_1_Depth);
+         Equalize_Depths
+           (Pack           => P_2,
+            Depth          => P_2_Depth,
+            Depth_To_Reach => P_1_Depth);
          P_2_Child := True;
       end if;
 
@@ -9088,9 +9148,10 @@ package body Sem_Util is
 
       if P_1 = P_2 then
          if P_1_Child then
-            return Is_Child (Pack_1);
+            return Is_Child_Unit (Pack_1);
+
          else pragma Assert (P_2_Child);
-            return Is_Child (Pack_2);
+            return Is_Child_Unit (Pack_2);
          end if;
 
       --  The packages may come from the same package chain or from entirely
@@ -9107,7 +9168,7 @@ package body Sem_Util is
             --  The two packages may be siblings
 
             if P_1 = P_2 then
-               return Is_Child (Pack_1) and then Is_Child (Pack_2);
+               return Is_Child_Unit (Pack_1) and then Is_Child_Unit (Pack_2);
             end if;
 
             P_1 := Scope (P_1);
@@ -14553,6 +14614,81 @@ package body Sem_Util is
          end if;
       end if;
    end Require_Entity;
+
+   -------------------------------
+   -- Requires_State_Refinement --
+   -------------------------------
+
+   function Requires_State_Refinement
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean
+   is
+      function Mode_Is_Off (Prag : Node_Id) return Boolean;
+      --  Given pragma SPARK_Mode, determine whether the mode is Off
+
+      -----------------
+      -- Mode_Is_Off --
+      -----------------
+
+      function Mode_Is_Off (Prag : Node_Id) return Boolean is
+         Mode : Node_Id;
+
+      begin
+         --  The default SPARK mode is On
+
+         if No (Prag) then
+            return False;
+         end if;
+
+         Mode := Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
+
+         --  Then the pragma lacks an argument, the default mode is On
+
+         if No (Mode) then
+            return False;
+         else
+            return Chars (Mode) = Name_Off;
+         end if;
+      end Mode_Is_Off;
+
+   --  Start of processing for Requires_State_Refinement
+
+   begin
+      --  A package that does not define at least one abstract state cannot
+      --  possibly require refinement.
+
+      if No (Abstract_States (Spec_Id)) then
+         return False;
+
+      --  The package instroduces a single null state which does not merit
+      --  refinement.
+
+      elsif Has_Null_Abstract_State (Spec_Id) then
+         return False;
+
+      --  Check whether the package body is subject to pragma SPARK_Mode. If
+      --  it is and the mode is Off, the package body is considered to be in
+      --  regular Ada and does not require refinement.
+
+      elsif Mode_Is_Off (SPARK_Pragma (Body_Id)) then
+         return False;
+
+      --  The body's SPARK_Mode may be inherited from a similar pragma that
+      --  appears in the private declarations of the spec. The pragma we are
+      --  interested appears as the second entry in SPARK_Pragma.
+
+      elsif Present (SPARK_Pragma (Spec_Id))
+        and then Mode_Is_Off (Next_Pragma (SPARK_Pragma (Spec_Id)))
+      then
+         return False;
+
+      --  The spec defines at least one abstract state and the body has no way
+      --  of circumventing the refinement.
+
+      else
+         return True;
+      end if;
+   end Requires_State_Refinement;
 
    ------------------------------
    -- Requires_Transient_Scope --

@@ -7283,6 +7283,7 @@ package Sinfo is
       --    Global
       --    Initial_Condition
       --    Initializes
+      --    Part_Of
       --    Refined_Depends
       --    Refined_Global
       --    Refined_States

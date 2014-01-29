@@ -1236,6 +1236,7 @@ begin
            Pragma_Overflow_Mode                  |
            Pragma_Overriding_Renamings           |
            Pragma_Pack                           |
+           Pragma_Part_Of                        |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |

@@ -32,6 +32,20 @@ package Sem_Ch7 is
    procedure Analyze_Package_Specification              (N : Node_Id);
    procedure Analyze_Private_Type_Declaration           (N : Node_Id);
 
+   procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id);
+   --  Analyze all delayed aspects chained on the contract of package body
+   --  Body_Id as if they appeared at the end of a declarative region. The
+   --  aspects in consideration are:
+   --    Refined_State
+
+   procedure Analyze_Package_Contract (Pack_Id : Entity_Id);
+   --  Analyze all delayed aspects chained on the contract of package Pack_Id
+   --  as if they appeared at the end of a declarative region. The aspects in
+   --  consideration are:
+   --    Initial_Condition
+   --    Initializes
+   --    Part_Of
+
    procedure End_Package_Scope (P : Entity_Id);
    --  Calls Uninstall_Declarations, and then pops the scope stack
 

@@ -107,6 +107,7 @@ package Aspects is
       Aspect_Machine_Radix,
       Aspect_Object_Size,                   -- GNAT
       Aspect_Output,
+      Aspect_Part_Of,                       -- GNAT
       Aspect_Post,
       Aspect_Postcondition,
       Aspect_Pre,
@@ -330,6 +331,7 @@ package Aspects is
       Aspect_Machine_Radix           => Expression,
       Aspect_Object_Size             => Expression,
       Aspect_Output                  => Name,
+      Aspect_Part_Of                 => Expression,
       Aspect_Post                    => Expression,
       Aspect_Postcondition           => Expression,
       Aspect_Pre                     => Expression,
@@ -429,6 +431,7 @@ package Aspects is
       Aspect_Object_Size                  => Name_Object_Size,
       Aspect_Output                       => Name_Output,
       Aspect_Pack                         => Name_Pack,
+      Aspect_Part_Of                      => Name_Part_Of,
       Aspect_Persistent_BSS               => Name_Persistent_BSS,
       Aspect_Post                         => Name_Post,
       Aspect_Postcondition                => Name_Postcondition,
@@ -679,6 +682,7 @@ package Aspects is
       Aspect_Convention                   => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
+      Aspect_Part_Of                      => Never_Delay,
       Aspect_Refined_Post                 => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,

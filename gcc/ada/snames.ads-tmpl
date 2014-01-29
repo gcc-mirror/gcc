@@ -565,6 +565,7 @@ package Snames is
    Name_Ordered                        : constant Name_Id := N + $; -- GNAT
    Name_Pack                           : constant Name_Id := N + $;
    Name_Page                           : constant Name_Id := N + $;
+   Name_Part_Of                        : constant Name_Id := N + $; -- GNAT
    Name_Passive                        : constant Name_Id := N + $; -- GNAT
    Name_Post                           : constant Name_Id := N + $; -- GNAT
    Name_Postcondition                  : constant Name_Id := N + $; -- GNAT
@@ -761,7 +762,6 @@ package Snames is
    Name_Optional                       : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
-   Name_Part_Of                        : constant Name_Id := N + $;
    Name_Proof_In                       : constant Name_Id := N + $;
    Name_Reason                         : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
@@ -1870,6 +1870,7 @@ package Snames is
       Pragma_Ordered,
       Pragma_Pack,
       Pragma_Page,
+      Pragma_Part_Of,
       Pragma_Passive,
       Pragma_Post,
       Pragma_Postcondition,

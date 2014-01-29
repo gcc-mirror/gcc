@@ -44,8 +44,9 @@ package Sem_Util is
    --  freeze node of E.
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
-   --  Add pragma Prag to the contract of an entry, a package [body] or a
-   --  subprogram [body] denoted by Id. The following are valid pragmas:
+   --  Add pragma Prag to the contract of an entry, a package [body], a
+   --  subprogram [body] or variable denoted by Id. The following are valid
+   --  pragmas:
    --    Abstract_States
    --    Async_Readers
    --    Async_Writers
@@ -56,6 +57,7 @@ package Sem_Util is
    --    Global
    --    Initial_Condition
    --    Initializes
+   --    Part_Of
    --    Postcondition
    --    Precondition
    --    Refined_Depends
@@ -571,6 +573,12 @@ package Sem_Util is
    --  Call is set to the node for the corresponding call. If the node N is not
    --  an actual parameter then Formal and Call are set to Empty.
 
+   function Find_Body_Discriminal
+     (Spec_Discriminant : Entity_Id) return Entity_Id;
+   --  Given a discriminant of the record type that implements a task or
+   --  protected type, return the discriminal of the corresponding discriminant
+   --  of the actual concurrent type.
+
    function Find_Corresponding_Discriminant
      (Id   : Node_Id;
       Typ  : Entity_Id) return Entity_Id;
@@ -600,16 +608,92 @@ package Sem_Util is
    --  Return the type of formal parameter Param as determined by its
    --  specification.
 
+   --  The following type describes the placement of an arbitrary entity with
+   --  respect to SPARK visible / hidden state space.
+
+   type State_Space_Kind is
+     (Not_In_Package,
+      --  An entity is not in the visible, private or body state space when
+      --  the immediate enclosing construct is not a package.
+
+      Visible_State_Space,
+      --  An entity is in the visible state space when it appears immediately
+      --  within the visible declarations of a package or when it appears in
+      --  the visible state space of a nested package which in turn is declared
+      --  in the visible declarations of an enclosing package:
+
+      --    package Pack is
+      --       Visible_Variable : ...
+      --       package Nested
+      --         with Abstract_State => Visible_State
+      --       is
+      --          Visible_Nested_Variable : ...
+      --       end Nested;
+      --    end Pack;
+
+      --  Entities associated with a package instantiation inherit the state
+      --  space from the instance placement:
+
+      --     generic
+      --     package Gen is
+      --        Generic_Variable : ...
+      --     end Gen;
+
+      --     with Gen;
+      --     package Pack is
+      --        package Inst is new Gen;
+      --        --  Generic_Variable is in the visible state space of Pack
+      --     end Pack;
+
+      Private_State_Space,
+      --  An entity is in the private state space when it appears immediately
+      --  within the private declarations of a package or when it appears in
+      --  the visible state space of a nested package which in turn is declared
+      --  in the private declarations of an enclosing package:
+
+      --    package Pack is
+      --    private
+      --       Private_Variable : ...
+      --       package Nested
+      --         with Abstract_State => Private_State
+      --       is
+      --          Private_Nested_Variable : ...
+      --       end Nested;
+      --    end Pack;
+
+      --  The same placement principle applies to package instantiations
+
+      Body_State_Space);
+      --  An entity is in the body state space when it appears immediately
+      --  within the declarations of a package body or when it appears in the
+      --  visible state space of a nested package which in turn is declared in
+      --  the declarations of an enclosing package body:
+
+      --    package body Pack is
+      --       Body_Variable : ...
+      --       package Nested
+      --         with Abstract_State => Body_State
+      --       is
+      --          Body_Nested_Variable : ...
+      --       end Nested;
+      --    end Pack;
+
+      --  The same placement principle applies to package instantiations
+
+   procedure Find_Placement_In_State_Space
+     (Item_Id   : Entity_Id;
+      Placement : out State_Space_Kind;
+      Pack_Id   : out Entity_Id);
+   --  Determine the state space placement of an item. Item_Id denotes the
+   --  entity of an abstract state, variable or package instantiation.
+   --  Placement captures the precise placement of the item in the enclosing
+   --  state space. If the state space is that of a package, Pack_Id denotes
+   --  its entity, otherwise Pack_Id is Empty.
+
    function Find_Static_Alternative (N : Node_Id) return Node_Id;
    --  N is a case statement whose expression is a compile-time value.
    --  Determine the alternative chosen, so that the code of non-selected
    --  alternatives, and the warnings that may apply to them, are removed.
-
-   function Find_Body_Discriminal
-     (Spec_Discriminant : Entity_Id) return Entity_Id;
-   --  Given a discriminant of the record type that implements a task or
-   --  protected type, return the discriminal of the corresponding discriminant
-   --  of the actual concurrent type.
 
    function First_Actual (Node : Node_Id) return Node_Id;
    --  Node is an N_Function_Call or N_Procedure_Call_Statement node. The
@@ -1006,14 +1090,11 @@ package Sem_Util is
    --  Returns True if N is a call to a CPP constructor
 
    function Is_Child_Or_Sibling
-     (Pack_1        : Entity_Id;
-      Pack_2        : Entity_Id;
-      Private_Child : Boolean) return Boolean;
+     (Pack_1 : Entity_Id;
+      Pack_2 : Entity_Id) return Boolean;
    --  Determine the following relations between two arbitrary packages:
    --    1) One package is the parent of a child package
    --    2) Both packages are siblings and share a common parent
-   --  If flag Private_Child is set, then the child in case 1) or both siblings
-   --  in case 2) must be private.
 
    function Is_Concurrent_Interface (T : Entity_Id) return Boolean;
    --  First determine whether type T is an interface and then check whether
@@ -1539,6 +1620,12 @@ package Sem_Util is
    --  in with Any_Id and ignore. Otherwise signal a program error exception.
    --  This is used as a defense mechanism against ill-formed trees caused by
    --  previous errors (particularly in -gnatq mode).
+
+   function Requires_State_Refinement
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean;
+   --  Determine whether a package denoted by its spec and body entities
+   --  requires refinement of abstract states.
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
    --  Id is a type entity. The result is True when temporaries of this type

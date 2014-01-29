@@ -139,6 +139,11 @@ package Sem_Prag is
    --  is the related variable or state. Ensure legality of the combination and
    --  issue an error for an illegal combination.
 
+   procedure Check_Missing_Part_Of (Item_Id : Entity_Id);
+   --  Determine whether the placement within the state space of an abstract
+   --  state, variable or package instantiation denoted by Item_Id requires the
+   --  use of indicator/option Part_Of. If this is the case, emit an error.
+
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such
    --  pragmas are analyzed when the file is read, before parsing and analyzing
