@@ -4615,7 +4615,8 @@ push_template_decl_real (tree decl, bool is_friend)
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
   /* See if this is a primary template.  */
-  if (is_friend && ctx)
+  if (is_friend && ctx
+      && uses_template_parms_level (ctx, processing_template_decl))
     /* A friend template that specifies a class context, i.e.
          template <typename T> friend void A<T>::f();
        is not primary.  */
@@ -8424,10 +8425,17 @@ tsubst_friend_function (tree decl, tree args)
 
       if (COMPLETE_TYPE_P (context))
 	{
+	  tree fn = new_friend;
+	  /* do_friend adds the TEMPLATE_DECL for any member friend
+	     template even if it isn't a member template, i.e.
+	       template <class T> friend A<T>::f();
+	     Look through it in that case.  */
+	  if (TREE_CODE (fn) == TEMPLATE_DECL
+	      && !PRIMARY_TEMPLATE_P (fn))
+	    fn = DECL_TEMPLATE_RESULT (fn);
 	  /* Check to see that the declaration is really present, and,
 	     possibly obtain an improved declaration.  */
-	  tree fn = check_classfn (context,
-				   new_friend, NULL_TREE);
+	  fn = check_classfn (context, fn, NULL_TREE);
 
 	  if (fn)
 	    new_friend = fn;

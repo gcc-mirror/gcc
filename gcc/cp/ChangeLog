@@ -1,3 +1,12 @@
+2014-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59956
+	* friend.c (do_friend): Pass the TEMPLATE_DECL to add_friend if we
+	have a friend template in a class template.
+	* pt.c (tsubst_friend_function): Look through it.
+	(push_template_decl_real): A friend member template is
+	primary.
+
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58846
