@@ -127,7 +127,7 @@ package Sem_Warn is
    --  the end of the compilation process (see body of this routine for a
    --  discussion of why this is done). This procedure outputs the warnings.
    --  Note: this should be called before Output_Unreferenced_Messages, since
-   --  if we have an IN OUT warning, that's the one we want to see!
+   --  if we have an IN OUT warning, that's the one we want to see.
 
    procedure Output_Obsolescent_Entity_Warnings (N : Node_Id; E : Entity_Id);
    --  N is a reference to obsolescent entity E, for which appropriate warning

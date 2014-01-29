@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -389,7 +389,7 @@ private
       --  there is no convenient way of backing up more than one character,
       --  what we do is to leave ourselves positioned past the LM, but set
       --  this flag, so that we know that from an Ada point of view we are
-      --  in front of the LM, not after it. A bit of a kludge, but it works!
+      --  in front of the LM, not after it. A bit of a kludge, but it works.
 
       Before_LM_PM : Boolean := False;
       --  This flag similarly handles the case of being physically positioned

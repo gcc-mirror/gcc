@@ -7319,7 +7319,7 @@ package body Sem_Util is
             --  Single property
 
             else
-               return Chars (Prop) = Prop_Nam;
+               return Chars (Props) = Prop_Nam;
             end if;
          end if;
 

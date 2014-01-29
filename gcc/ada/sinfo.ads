@@ -8232,7 +8232,7 @@ package Sinfo is
       N_Unused_At_End);
 
    for Node_Kind'Size use 8;
-   --  The data structures in Atree assume this!
+   --  The data structures in Atree assume this
 
    ----------------------------
    -- Node Class Definitions --

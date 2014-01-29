@@ -276,7 +276,7 @@ private
 
    --  Note: this used to be in a separate unit called System.Poll, but that
    --  caused horrible circular elaboration problems between System.Poll and
-   --  Ada.Exceptions. One way of solving such circularities is unification!
+   --  Ada.Exceptions.
 
    procedure Poll;
    --  Check for asynchronous abort. Note that we do not inline the body.

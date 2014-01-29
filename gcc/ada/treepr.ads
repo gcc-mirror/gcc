@@ -82,7 +82,7 @@ package Treepr is
    --  Same as Print_Node_Subtree
 
    --  The following are no longer really needed, now that pn will print
-   --  anything you throw at it!
+   --  anything you throw at it.
 
    procedure pe (E : Elist_Id);
    pragma Export (Ada, pe);

@@ -416,7 +416,7 @@ package body Sem_Intr is
          return;
       end if;
 
-      --  type'Size (not 'Object_Size!) must be one of the allowed values
+      --  type'Size (not 'Object_Size) must be one of the allowed values
 
       Size := UI_To_Int (RM_Size (Typ1));
 
