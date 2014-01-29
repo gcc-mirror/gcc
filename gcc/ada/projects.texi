@@ -2474,8 +2474,8 @@ so that all files are searched for only once on the disk
 (thus reducing the number of system calls and contributing to faster
 compilation times especially on systems with sources on remote
 servers). As part of the loading, @command{gprbuild}
-computes how and where a source file should be compiled, and even if it is found
-several times in the aggregated projects it will be compiled only
+computes how and where a source file should be compiled, and even if it is
+found several times in the aggregated projects it will be compiled only
 once.
 
 Since there is no ambiguity as to which switches should be used, files
@@ -2494,9 +2494,10 @@ recommended extension is still @file{.gpr}. However, a special
 @code{project}.
 
 An aggregate project cannot @code{with} any other project (standard or
-aggregate), except an abstract project which can be used to share
-attribute values. Building other aggregate projects from an aggregate
-project is done through the Project_Files attribute (see below).
+aggregate), except an abstract project which can be used to share attribute
+values. Also, aggregate projects cannot be extended or imported though a
+@code{with} clause by any other project. Building other aggregate projects from
+an aggregate project is done through the Project_Files attribute (see below).
 
 An aggregate project does not have any source files directly (only
 through other standard projects). Therefore a number of the standard
@@ -2548,11 +2549,13 @@ attribute nor the @code{Library_*} attributes, and the result will be to
 build all their source files (not just the ones needed by other
 projects).
 
-The file can include paths (absolute or relative). Paths are
-relative to the location of the aggregate project file itself (if
-you use a base name, we expect to find the .gpr file in the same
-directory as the aggregate project file). The extension @file{.gpr} is
-mandatory, since this attribute contains file names, not project names.
+The file can include paths (absolute or relative). Paths are relative to
+the location of the aggregate project file itself (if you use a base name,
+we expect to find the .gpr file in the same directory as the aggregate
+project file). The environment variables @code{ADA_PROJECT_PATH},
+@code{GPR_PROJECT_PATH} and @code{GPR_PROJECT_PATH_FILE} are not used to find
+the project files. The extension @file{.gpr} is mandatory, since this attribute
+contains file names, not project names.
 
 Paths can also include the @code{"*"} and @code{"**"} globbing patterns. The
 latter indicates that any subdirectory (recursively) will be
@@ -2936,7 +2939,9 @@ The only package that is authorized (albeit optional) is Builder.
 
 The Project_Files attribute (See @pxref{Aggregate Projects}) is used to
 described the aggregated projects whose object files have to be
-included into the aggregate library.
+included into the aggregate library. The environment variables
+@code{ADA_PROJECT_PATH}, @code{GPR_PROJECT_PATH} and
+@code{GPR_PROJECT_PATH_FILE} are not used to find the project files.
 
 @c ---------------------------------------------
 @node Project File Reference
