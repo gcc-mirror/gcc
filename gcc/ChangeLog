@@ -1,3 +1,8 @@
+2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md(cstoresf4, cbranchsf4): Replace
+	comparison_operator with ordered_comparison_operator.
+
 2014-01-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300-protos.h (mn10300_store_multiple_operation_p):
