@@ -1,3 +1,8 @@
+2014-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR c++/58708
+	* parser.c (make_string_pack): Use double_int::from_buffer.
+
 2014-01-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59940
