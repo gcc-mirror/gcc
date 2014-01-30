@@ -1,3 +1,9 @@
+2014-01-30  Savin Zlobec  <savin.zlobec@gmail.com>
+
+	PR target/59784
+	* config/nios2/nios2.c (nios2_fpu_insn_asm): Fix asm output of
+	SFmode to DFmode case.
+
 2014-01-29  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.opt (-minrt): New.
