@@ -1,3 +1,9 @@
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59951
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Skip uses in debug
+	insns.
+
 2014-01-30  Savin Zlobec  <savin.zlobec@gmail.com>
 
 	PR target/59784
