@@ -1,5 +1,9 @@
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59989
+	* pt.c (expand_template_argument_pack): Correct
+	non_default_args_count calculation.
+
 	PR c++/58466
 	* pt.c (unify_pack_expansion): Call expand_template_argument_pack.
 
