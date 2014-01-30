@@ -7521,6 +7521,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 			      tsubst (ENUM_UNDERLYING_TYPE (template_type),
 				      arglist, complain, in_decl),
 			      SCOPED_ENUM_P (template_type), NULL);
+
+	      if (t == error_mark_node)
+		return t;
 	    }
 	  else
             {
