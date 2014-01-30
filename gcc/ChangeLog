@@ -1,4 +1,14 @@
 2014-01-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300-protos.h (mn10300_store_multiple_operation_p):
+	Rename to mn10300_store_multiple_regs.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/mn10300/mn10300.md (store_movm): Fix typo: call
+	store_multiple_regs.
+	* config/mn10300/predicates.md (mn10300_store_multiple_operation):
+	Call mn10300_store_multiple_regs.
+
+2014-01-30  Nick Clifton  <nickc@redhat.com>
 	    DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (register_sizes): Make the "upper half" of

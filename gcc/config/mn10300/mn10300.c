@@ -1239,8 +1239,8 @@ mn10300_expand_epilogue (void)
    parallel.  If OP is a multiple store, return a mask indicating which
    registers it saves.  Return 0 otherwise.  */
 
-int
-mn10300_store_multiple_operation_p (rtx op)
+unsigned int
+mn10300_store_multiple_regs (rtx op)
 {
   int count;
   int mask;

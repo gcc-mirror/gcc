@@ -70,4 +70,4 @@
 
 (define_predicate "mn10300_store_multiple_operation"
   (and (match_code "parallel")
-       (match_test "mn10300_store_multiple_operation_p (op)")))
+       (match_test "mn10300_store_multiple_regs (op) != 0")))
