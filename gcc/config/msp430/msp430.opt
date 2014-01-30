@@ -28,3 +28,7 @@ Optimize opcode sizes at link time
 
 mOs
 Target Undocumented Mask(OPT_SPACE)
+
+minrt
+Target Report Mask(MINRT) RejectNegative
+Use a minimum runtime (no static initializers or ctors) for memory-constrained devices.

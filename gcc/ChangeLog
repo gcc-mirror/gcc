@@ -1,3 +1,10 @@
+2014-01-29  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.opt (-minrt): New.
+	* config/msp430/msp430.h (STARTFILE_SPEC): Link alternate runtime
+	if -minrt given.
+	(ENDFILE_SPEC): Likewise.
+
 2014-01-29  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (clobber_only_eh_bb_p): New function.
