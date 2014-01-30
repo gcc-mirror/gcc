@@ -1243,6 +1243,22 @@ save_template_attributes (tree *attr_p, tree *decl_p)
     }
 }
 
+/* Return true iff ATTRS are acceptable attributes to be applied in-place
+   to a typedef which gives a previously anonymous class or enum a name for
+   linkage purposes.  */
+
+bool
+attributes_naming_typedef_ok (tree attrs)
+{
+  for (; attrs; attrs = TREE_CHAIN (attrs))
+    {
+      tree name = get_attribute_name (attrs);
+      if (is_attribute_p ("vector_size", name))
+	return false;
+    }
+  return true;
+}
+
 /* Like reconstruct_complex_type, but handle also template trees.  */
 
 tree

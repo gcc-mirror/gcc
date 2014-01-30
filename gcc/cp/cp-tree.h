@@ -5296,6 +5296,7 @@ extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
 extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
+extern bool attributes_naming_typedef_ok	(tree);
 extern void cplus_decl_attributes		(tree *, tree, int);
 extern void finish_anon_union			(tree);
 extern void cp_write_global_declarations	(void);

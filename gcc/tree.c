@@ -10817,6 +10817,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+    case VECTOR_TYPE:
       /* We have to worry about mutually recursive pointers.  These can't
 	 be written in C.  They can in Ada.  It's pathological, but
 	 there's an ACATS test (c38102a) that checks it.  Deal with this

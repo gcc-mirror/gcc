@@ -10216,6 +10216,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
 	  && declspecs->type_definition_p
+	  && attributes_naming_typedef_ok (*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree t;
