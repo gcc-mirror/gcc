@@ -2329,7 +2329,6 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
     case INDIRECT_REF:
       if (TYPE_PTR_P (type1)
-	  && !uses_template_parms (TREE_TYPE (type1))
 	  && (TYPE_PTROB_P (type1)
 	      || TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE))
 	break;
@@ -2467,15 +2466,13 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  && TREE_CODE (type2) == ENUMERAL_TYPE)
 	break;
       if (TYPE_PTR_P (type1) 
-	  && null_ptr_cst_p (args[1])
-	  && !uses_template_parms (type1))
+	  && null_ptr_cst_p (args[1]))
 	{
 	  type2 = type1;
 	  break;
 	}
       if (null_ptr_cst_p (args[0]) 
-	  && TYPE_PTR_P (type2)
-	  && !uses_template_parms (type2))
+	  && TYPE_PTR_P (type2))
 	{
 	  type1 = type2;
 	  break;
@@ -2640,6 +2637,28 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
  
     default:
       gcc_unreachable ();
+    }
+
+  /* Make sure we don't create builtin candidates with dependent types.  */
+  bool u1 = uses_template_parms (type1);
+  bool u2 = type2 ? uses_template_parms (type2) : false;
+  if (u1 || u2)
+    {
+      /* Try to recover if one of the types is non-dependent.  But if
+	 there's only one type, there's nothing we can do.  */
+      if (!type2)
+	return;
+      /* And we lose if both are dependent.  */
+      if (u1 && u2)
+	return;
+      /* Or if they have different forms.  */
+      if (TREE_CODE (type1) != TREE_CODE (type2))
+	return;
+
+      if (u1 && !u2)
+	type1 = type2;
+      else if (u2 && !u1)
+	type2 = type1;
     }
 
   /* If we're dealing with two pointer types or two enumeral types,
