@@ -871,6 +871,7 @@
 
   x = gen_rtx_VEC_SELECT (V16QImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrghb_internal"
@@ -930,6 +931,7 @@
 
   x = gen_rtx_VEC_SELECT (V8HImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrghh_internal"
@@ -983,6 +985,7 @@
 
   x = gen_rtx_VEC_SELECT (V4SImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrghw_internal"
@@ -1057,6 +1060,7 @@
 
   x = gen_rtx_VEC_SELECT (V16QImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrglb_internal"
@@ -1116,6 +1120,7 @@
 
   x = gen_rtx_VEC_SELECT (V8HImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrglh_internal"
@@ -1169,6 +1174,7 @@
 
   x = gen_rtx_VEC_SELECT (V4SImode, x, gen_rtx_PARALLEL (VOIDmode, v));
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  DONE;
 })
 
 (define_insn "*altivec_vmrglw_internal"
@@ -1601,9 +1607,9 @@
   [(set_attr "type" "veccomplex")])
 
 (define_expand "altivec_vspltb"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:QI 2 "u5bit_cint_operand" "")]
+  [(use (match_operand:V16QI 0 "register_operand" ""))
+   (use (match_operand:V16QI 1 "register_operand" ""))
+   (use (match_operand:QI 2 "u5bit_cint_operand" ""))]
   "TARGET_ALTIVEC"
 {
   rtvec v;
@@ -1649,9 +1655,9 @@
   [(set_attr "type" "vecperm")])
 
 (define_expand "altivec_vsplth"
-  [(match_operand:V8HI 0 "register_operand" "")
-   (match_operand:V8HI 1 "register_operand" "")
-   (match_operand:QI 2 "u5bit_cint_operand" "")]
+  [(use (match_operand:V8HI 0 "register_operand" ""))
+   (use (match_operand:V8HI 1 "register_operand" ""))
+   (use (match_operand:QI 2 "u5bit_cint_operand" ""))]
   "TARGET_ALTIVEC"
 {
   rtvec v;
@@ -1697,9 +1703,9 @@
   [(set_attr "type" "vecperm")])
 
 (define_expand "altivec_vspltw"
-  [(match_operand:V4SI 0 "register_operand" "")
-   (match_operand:V4SI 1 "register_operand" "")
-   (match_operand:QI 2 "u5bit_cint_operand" "")]
+  [(use (match_operand:V4SI 0 "register_operand" ""))
+   (use (match_operand:V4SI 1 "register_operand" ""))
+   (use (match_operand:QI 2 "u5bit_cint_operand" ""))]
   "TARGET_ALTIVEC"
 {
   rtvec v;
@@ -1745,9 +1751,9 @@
   [(set_attr "type" "vecperm")])
 
 (define_expand "altivec_vspltsf"
-  [(match_operand:V4SF 0 "register_operand" "")
-   (match_operand:V4SF 1 "register_operand" "")
-   (match_operand:QI 2 "u5bit_cint_operand" "")]
+  [(use (match_operand:V4SF 0 "register_operand" ""))
+   (use (match_operand:V4SF 1 "register_operand" ""))
+   (use (match_operand:QI 2 "u5bit_cint_operand" ""))]
   "TARGET_ALTIVEC"
 {
   rtvec v;

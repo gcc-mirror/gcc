@@ -5511,7 +5511,6 @@ rs6000_expand_vector_init (rtx target, rtx vals)
      of 64-bit items is not supported on Altivec.  */
   if (all_same && GET_MODE_SIZE (inner_mode) <= 4)
     {
-      rtx field;
       mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode));
       emit_move_insn (adjust_address_nv (mem, inner_mode, 0),
 		      XVECEXP (vals, 0, 0));
