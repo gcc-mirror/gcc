@@ -4484,14 +4484,14 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	     but the warnings (like Wsign-conversion) have already been
 	     given by the scalar build_conditional_expr_1. We still check
 	     unsafe_conversion_p to forbid truncating long long -> float.  */
-	  if (unsafe_conversion_p (stype, arg2, false))
+	  if (unsafe_conversion_p (loc, stype, arg2, false))
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "conversion of scalar %qT to vector %qT "
 			       "involves truncation", arg2_type, vtype);
 	      return error_mark_node;
 	    }
-	  if (unsafe_conversion_p (stype, arg3, false))
+	  if (unsafe_conversion_p (loc, stype, arg3, false))
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "conversion of scalar %qT to vector %qT "

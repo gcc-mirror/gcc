@@ -1,3 +1,13 @@
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* typeck.c (build_ptrmemfunc1): Call convert_and_check with
+	input_location.
+	* cvt.c (cp_convert_and_check): Call warnings_for_convert_and_check
+	with input_location.
+	* call.c (build_conditional_expr_1): Call unsafe_conversion_p with
+	loc parameter.
+
 2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58843
