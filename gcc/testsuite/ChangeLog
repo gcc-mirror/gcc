@@ -1,3 +1,7 @@
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/Wconversion-real-integer.c: Properly end comment.
+
 2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* gcc.target/microblaze/isa/fcmp4.c: New.
