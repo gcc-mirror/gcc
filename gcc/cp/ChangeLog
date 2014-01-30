@@ -1,5 +1,8 @@
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59707
+	* call.c (add_builtin_candidate): Catch dependent types.
+
 	PR c++/59989
 	* pt.c (expand_template_argument_pack): Correct
 	non_default_args_count calculation.
