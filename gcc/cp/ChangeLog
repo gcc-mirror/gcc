@@ -1,5 +1,10 @@
 2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58843
+	* typeck.c (lookup_destructor): Check dtor_type for error_mark_node.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58649
 	* pt.c (lookup_template_class_1): Check start_enum return value
 	for error_mark_node.

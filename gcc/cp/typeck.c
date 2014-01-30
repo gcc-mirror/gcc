@@ -2486,6 +2486,10 @@ lookup_destructor (tree object, tree scope, tree dtor_name,
   tree dtor_type = TREE_OPERAND (dtor_name, 0);
   tree expr;
 
+  /* We've already complained about this destructor.  */
+  if (dtor_type == error_mark_node)
+    return error_mark_node;
+
   if (scope && !check_dtor_name (scope, dtor_type))
     {
       if (complain & tf_error)
