@@ -1293,11 +1293,8 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
     {
       enum reg_class rclass;
 
-      if (REG_P (reg)
-	  && curr_insn_set != NULL_RTX
-	  && (REG_P (SET_SRC (curr_insn_set))
-	      || GET_CODE (SET_SRC (curr_insn_set)) == SUBREG))
-	/* There is big probability that we will get the same class
+      if (REG_P (reg))
+	/* There is a big probability that we will get the same class
 	   for the new pseudo and we will get the same insn which
 	   means infinite looping.  So spill the new pseudo.  */
 	rclass = NO_REGS;
