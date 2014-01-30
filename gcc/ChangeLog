@@ -1,3 +1,11 @@
+2014-01-30  Nick Clifton  <nickc@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (register_sizes): Make the "upper half" of
+	%fp 2 to keep registers after it properly word-aligned.
+	(rl78_alloc_physical_registers_umul): Handle the case where both
+	input operands are the same.
+
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59903
