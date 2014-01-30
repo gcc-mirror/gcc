@@ -213,6 +213,7 @@
    UNSPEC_VSX_ROUND_I
    UNSPEC_VSX_ROUND_IC
    UNSPEC_VSX_SLDWI
+   UNSPEC_VSX_XXSPLTW
   ])
 
 ;; VSX moves
@@ -1750,6 +1751,20 @@
 	  (match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
 	  (parallel
 	   [(match_operand:QI 2 "u5bit_cint_operand" "i,i")]))))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  if (!BYTES_BIG_ENDIAN)
+    operands[2] = GEN_INT (3 - INTVAL (operands[2]));
+
+  return "xxspltw %x0,%x1,%2";
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "vsx_xxspltw_<mode>_direct"
+  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wf,?wa")
+        (unspec:VSX_W [(match_operand:VSX_W 1 "vsx_register_operand" "wf,wa")
+                       (match_operand:QI 2 "u5bit_cint_operand" "i,i")]
+                      UNSPEC_VSX_XXSPLTW))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "xxspltw %x0,%x1,%2"
   [(set_attr "type" "vecperm")])
