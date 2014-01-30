@@ -338,6 +338,10 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 
       gcc_assert (NONJUMP_INSN_P (insn) || CALL_P (insn));
 
+      /* dwarf2out can't coope with conditional unwind info.  */
+      if (RTX_FRAME_RELATED_P (insn))
+	return FALSE;
+
       /* Remove USE insns that get in the way.  */
       if (reload_completed && GET_CODE (PATTERN (insn)) == USE)
 	{

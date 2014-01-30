@@ -1,3 +1,8 @@
+2014-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59923
+	* gcc.target/arm/pr59923.c: New test.
+
 2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/splat.c: New.

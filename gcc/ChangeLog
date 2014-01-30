@@ -1,3 +1,9 @@
+2014-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59923
+	* ifcvt.c (cond_exec_process_insns): Don't conditionalize
+	frame related instructions.
+
 2014-01-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/59959
