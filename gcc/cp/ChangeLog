@@ -1,3 +1,10 @@
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls, typename_hash, typename_compare):
+	Use TYPE_IDENTIFIER.
+	* error.c (dump_type): Likewise.
+	* mangle.c (dump_substitution_candidates): Likewise.
+
 2014-01-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59633

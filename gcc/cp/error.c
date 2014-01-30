@@ -512,7 +512,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	  pp_cxx_colon_colon (pp);
 	}
       pp_cxx_ws_string (pp, "template");
-      dump_type (pp, DECL_NAME (TYPE_NAME (t)), flags);
+      dump_type (pp, TYPE_IDENTIFIER (t), flags);
       break;
 
     case TYPEOF_TYPE:
