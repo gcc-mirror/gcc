@@ -4840,7 +4840,7 @@ _mm512_cvtusepi64_epi32 (__m512i __A)
 						    (__mmask8) -1);
 }
 
-extern __inline
+extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtusepi64_storeu_epi32 (void* __P, __mmask8 __M, __m512i __A)
 {
