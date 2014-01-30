@@ -1,3 +1,11 @@
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59633
+	* decl2.c (attributes_naming_typedef_ok): New.
+	* cp-tree.h: Declare it.
+	* decl.c (grokdeclarator): Check it.
+	* tree.c (no_linkage_check): Handle VECTOR_TYPE.
+
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59707

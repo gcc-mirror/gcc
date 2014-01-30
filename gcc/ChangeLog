@@ -1,5 +1,8 @@
 2014-01-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59633
+	* tree.c (walk_type_fields): Handle VECTOR_TYPE.
+
 	PR c++/59645
 	* cgraphunit.c (expand_thunk): Copy volatile arg to a temporary.
 
