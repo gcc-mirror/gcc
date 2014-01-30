@@ -16,12 +16,8 @@ typedef struct {
   int a;
 } str_t;
 
-void bar(void)
+void bar(double d, int i, str_t s)
 {
-  double d;
-  int i;
-  str_t s;
-
   d = ((double (*) (int)) foo1) (i);  /* { dg-warning "33:non-compatible|abort" } */
   i = ((int (*) (double)) foo1) (d);  /* { dg-warning "33:non-compatible|abort" } */
   s = ((str_t (*) (int)) foo1) (i);   /* { dg-warning "32:non-compatible|abort" } */
@@ -39,11 +35,15 @@ void bar(void)
 
 int foo1(int arg)
 {
+  /* Prevent the function from becoming const and thus DCEd.  */
+  __asm volatile ("" : "+r" (arg));
   return arg;
 }
 
 int foo2(arg)
   int arg;
 {
+  /* Prevent the function from becoming const and thus DCEd.  */
+  __asm volatile ("" : "+r" (arg));
   return arg;
 }

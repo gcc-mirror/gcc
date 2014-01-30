@@ -11,7 +11,5 @@ void g1 (void) { f_cv (); } /* { dg-error "qualified void" } */
 void g2 (void) { f_s (); } /* { dg-error "invalid use of undefined type" } */
 void g3 (void) { ((const void (*) (void)) f_v) (); } /* { dg-error "qualified void" } */
 /* { dg-warning "function called through a non-compatible type" "cast" { target *-*-* } 12 } */
-/* { dg-message "will abort" "abort" { target *-*-* } 12 } */
 void g4 (void) { ((struct s (*) (void)) f_v) (), (void) 0; } /* { dg-error "invalid use of undefined type" } */
-/* { dg-warning "function called through a non-compatible type" "cast" { target *-*-* } 15 } */
-/* { dg-message "will abort" "abort" { target *-*-* } 15 } */
+/* { dg-warning "function called through a non-compatible type" "cast" { target *-*-* } 14 } */

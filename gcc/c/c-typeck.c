@@ -2907,56 +2907,24 @@ build_function_call_vec (location_t loc, tree function,
     return error_mark_node;
 
   /* Check that the function is called through a compatible prototype.
-     If it is not, replace the call by a trap, wrapped up in a compound
-     expression if necessary.  This has the nice side-effect to prevent
-     the tree-inliner from generating invalid assignment trees which may
-     blow up in the RTL expander later.  */
+     If it is not, warn.  */
   if (CONVERT_EXPR_P (function)
       && TREE_CODE (tem = TREE_OPERAND (function, 0)) == ADDR_EXPR
       && TREE_CODE (tem = TREE_OPERAND (tem, 0)) == FUNCTION_DECL
       && !comptypes (fntype, TREE_TYPE (tem)))
     {
       tree return_type = TREE_TYPE (fntype);
-      tree trap = build_function_call (loc,
-				       builtin_decl_explicit (BUILT_IN_TRAP),
-				       NULL_TREE);
-      int i;
 
       /* This situation leads to run-time undefined behavior.  We can't,
 	 therefore, simply error unless we can prove that all possible
 	 executions of the program must execute the code.  */
-      if (warning_at (loc, 0, "function called through a non-compatible type"))
-	/* We can, however, treat "undefined" any way we please.
-	   Call abort to encourage the user to fix the program.  */
-	inform (loc, "if this code is reached, the program will abort");
-      /* Before the abort, allow the function arguments to exit or
-	 call longjmp.  */
-      for (i = 0; i < nargs; i++)
-	trap = build2 (COMPOUND_EXPR, void_type_node, (*params)[i], trap);
+      warning_at (loc, 0, "function called through a non-compatible type");
 
-      if (VOID_TYPE_P (return_type))
-	{
-	  if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED)
-	    pedwarn (loc, 0,
-		     "function with qualified void return type called");
-	  return trap;
-	}
-      else
-	{
-	  tree rhs;
-
-	  if (AGGREGATE_TYPE_P (return_type))
-	    rhs = build_compound_literal (loc, return_type,
-					  build_constructor (return_type,
-					    NULL),
-					  false);
-	  else
-	    rhs = build_zero_cst (return_type);
-
-	  return require_complete_type (build2 (COMPOUND_EXPR, return_type,
-						trap, rhs));
-	}
-    }
+      if (VOID_TYPE_P (return_type)
+	  && TYPE_QUALS (return_type) != TYPE_UNQUALIFIED)
+	pedwarn (loc, 0,
+		 "function with qualified void return type called");
+     }
 
   argarray = vec_safe_address (params);
 

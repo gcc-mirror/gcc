@@ -1,3 +1,11 @@
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/59905
+	* gcc.dg/cast-function-1.c: Adjust to survive DCE.
+	* gcc.dg/call-diag-2.c: Remove expected warnings about calling
+	abort.
+	* gcc.dg/invalid-call-1.c: Likewise.
+
 2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58561
