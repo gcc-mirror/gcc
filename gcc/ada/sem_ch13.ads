@@ -306,7 +306,7 @@ package Sem_Ch13 is
    --  in these two expressions are the same, by seeing if the two expressions
    --  are fully conformant, and if not, issue appropriate error messages.
 
-   --  Quite an awkward approach, but this is an awkard requirement!
+   --  Quite an awkward approach, but this is an awkard requirement
 
    procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
    --  Analyze all the delayed aspects for entity E at freezing point. This

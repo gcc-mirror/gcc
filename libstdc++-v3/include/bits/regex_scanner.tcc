@@ -139,6 +139,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else
 		__throw_regex_error(regex_constants::error_paren);
 	    }
+	  else if (_M_flags & regex_constants::nosubs)
+	    _M_token = _S_token_subexpr_no_group_begin;
 	  else
 	    _M_token = _S_token_subexpr_begin;
 	}

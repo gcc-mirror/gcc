@@ -84,7 +84,8 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
    procedure Assign (Target : in out List; Source : List) with
      Pre => Target.Capacity >= Length (Source);
 
-   function Copy (Source : List; Capacity : Count_Type := 0) return List;
+   function Copy (Source : List; Capacity : Count_Type := 0) return List with
+     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
 
    function Element
      (Container : List;

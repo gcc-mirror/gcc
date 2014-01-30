@@ -180,7 +180,7 @@ package body Sem_Ch5 is
             end if;
 
          else
-            --  If we fall through, we have no special message to issue!
+            --  If we fall through, we have no special message to issue
 
             Error_Msg_N ("left hand side of assignment must be a variable", N);
          end if;
@@ -1680,12 +1680,21 @@ package body Sem_Ch5 is
 
       Ent : Entity_Id;
       Typ : Entity_Id;
+      Bas : Entity_Id;
 
    begin
       Enter_Name (Def_Id);
 
       if Present (Subt) then
          Analyze (Subt);
+
+         --  Save type of subtype indication for subsequent check.
+
+         if Nkind (Subt) = N_Subtype_Indication then
+            Bas := Entity (Subtype_Mark (Subt));
+         else
+            Bas := Entity (Subt);
+         end if;
       end if;
 
       Preanalyze_Range (Iter_Name);
@@ -1804,6 +1813,13 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
 
+            if Present (Subt)
+              and then Base_Type (Bas) /= Base_Type (Component_Type (Typ))
+            then
+               Error_Msg_N
+                 ("subtype indication does not match component type", Subt);
+            end if;
+
          --  Here we have a missing Range attribute
 
          else
@@ -1849,6 +1865,17 @@ package body Sem_Ch5 is
                else
                   Set_Etype (Def_Id, Entity (Element));
 
+                  --  If subtype indication was given, verify that it matches
+                  --  element type of container.
+
+                  if Present (Subt)
+                     and then Bas /= Base_Type (Etype (Def_Id))
+                  then
+                     Error_Msg_N
+                       ("subtype indication does not match element type",
+                          Subt);
+                  end if;
+
                   --  If the container has a variable indexing aspect, the
                   --  element is a variable and is modifiable in the loop.
 
@@ -1893,6 +1920,14 @@ package body Sem_Ch5 is
                Next_Entity (Ent);
             end loop;
          end if;
+      end if;
+
+      --  A loop parameter cannot be volatile. This check is peformed only when
+      --  SPARK_Mode is on as it is not a standard Ada legality check.
+
+      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Ent) then
+         Error_Msg_N
+           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -2430,9 +2465,11 @@ package body Sem_Ch5 is
 
       --  Check for null or possibly null range and issue warning. We suppress
       --  such messages in generic templates and instances, because in practice
-      --  they tend to be dubious in these cases.
+      --  they tend to be dubious in these cases. The check applies as well to
+      --  rewritten array element loops where a null range may be detected
+      --  statically.
 
-      if Nkind (DS) = N_Range and then Comes_From_Source (N) then
+      if Nkind (DS) = N_Range then
          declare
             L : constant Node_Id := Low_Bound  (DS);
             H : constant Node_Id := High_Bound (DS);
@@ -2454,21 +2491,23 @@ package body Sem_Ch5 is
                   if Compile_Time_Compare
                        (L, H, Assume_Valid => False) = GT
                   then
-                     Error_Msg_N
-                       ("??loop range is null, loop will not execute", DS);
-
                      --  Since we know the range of the loop is null, set the
                      --  appropriate flag to remove the loop entirely during
                      --  expansion.
 
                      Set_Is_Null_Loop (Loop_Nod);
 
-                  --  Here is where the loop could execute because of invalid
-                  --  values, so issue appropriate message and in this case we
-                  --  do not set the Is_Null_Loop flag since the loop may
-                  --  execute.
+                     if Comes_From_Source (N) then
+                        Error_Msg_N
+                          ("??loop range is null, loop will not execute", DS);
+                     end if;
 
-                  else
+                     --  Here is where the loop could execute because of
+                     --  invalid values, so issue appropriate message and in
+                     --  this case we do not set the Is_Null_Loop flag since
+                     --  the loop may execute.
+
+                  elsif Comes_From_Source (N) then
                      Error_Msg_N
                        ("??loop range may be null, loop may not execute",
                         DS);
@@ -2518,6 +2557,14 @@ package body Sem_Ch5 is
                end if;
             end if;
          end;
+      end if;
+
+      --  A loop parameter cannot be volatile. This check is peformed only when
+      --  SPARK_Mode is on as it is not a standard Ada legality check.
+
+      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
+         Error_Msg_N
+           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 
@@ -2818,7 +2865,7 @@ package body Sem_Ch5 is
    ----------------------------
 
    --  Note: the semantics of the null statement is implemented by a single
-   --  null statement, too bad everything isn't as simple as this!
+   --  null statement, too bad everything isn't as simple as this.
 
    procedure Analyze_Null_Statement (N : Node_Id) is
       pragma Warnings (Off, N);
@@ -2838,7 +2885,7 @@ package body Sem_Ch5 is
       --  The labels declared in the statement list are reachable from
       --  statements in the list. We do this as a prepass so that any goto
       --  statement will be properly flagged if its target is not reachable.
-      --  This is not required, but is nice behavior!
+      --  This is not required, but is nice behavior.
 
       S := First (L);
       while Present (S) loop
@@ -2942,7 +2989,7 @@ package body Sem_Ch5 is
             then
                --  Special very annoying exception. If we have a return that
                --  follows a raise, then we allow it without a warning, since
-               --  the Ada RM annoyingly requires a useless return here!
+               --  the Ada RM annoyingly requires a useless return here.
 
                if Nkind (Original_Node (N)) /= N_Raise_Statement
                  or else Nkind (Nxt) /= N_Simple_Return_Statement

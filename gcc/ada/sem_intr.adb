@@ -330,7 +330,7 @@ package body Sem_Intr is
 
       --  We always allow intrinsic specifications in language defined units
       --  and in expanded code. We assume that the GNAT implementors know what
-      --  they are doing, and do not write or generate junk use of intrinsic!
+      --  they are doing, and do not write or generate junk use of intrinsic.
 
       elsif not Comes_From_Source (E)
         or else not Comes_From_Source (N)
@@ -416,7 +416,7 @@ package body Sem_Intr is
          return;
       end if;
 
-      --  type'Size (not 'Object_Size!) must be one of the allowed values
+      --  type'Size (not 'Object_Size) must be one of the allowed values
 
       Size := UI_To_Int (RM_Size (Typ1));
 

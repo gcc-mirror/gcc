@@ -478,6 +478,9 @@ package Sem is
       Save_SPARK_Mode : SPARK_Mode_Type;
       --  Setting of SPARK_Mode on entry to restore on exit
 
+      Save_SPARK_Mode_Pragma : Node_Id;
+      --  Setting of SPARK_Mode_Pragma on entry to restore on exit
+
       Is_Transient : Boolean;
       --  Marks transient scopes (see Exp_Ch7 body for details)
 

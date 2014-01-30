@@ -761,7 +761,7 @@ package body Sem_Aggr is
    begin
       --  All the components of List are matched against Component and a count
       --  is maintained of possible misspellings. When at the end of the the
-      --  analysis there are one or two (not more!) possible misspellings,
+      --  analysis there are one or two (not more) possible misspellings,
       --  these misspellings will be suggested as possible correction.
 
       Component_Elmt := First_Elmt (Elements);
@@ -4203,6 +4203,17 @@ package body Sem_Aggr is
                            Assoc_List => New_Assoc_List);
                      end;
                   end if;
+
+               --  Ada 2012: If component is scalar with default value, use it
+
+               elsif Is_Scalar_Type (Ctyp)
+                 and then Has_Default_Aspect (Ctyp)
+               then
+                  Add_Association
+                    (Component  => Component,
+                     Expr       => Default_Aspect_Value
+                                     (First_Subtype (Underlying_Type (Ctyp))),
+                     Assoc_List => New_Assoc_List);
 
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active

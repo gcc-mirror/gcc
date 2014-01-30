@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2005-2008, Free Software Foundation, Inc.          --
+--         Copyright (C) 2005-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -70,7 +70,7 @@ package Ada.Calendar.Formatting is
       Sub_Second : Second_Duration := 0.0) return Day_Duration;
    --  Returns a Day_Duration value for the combination of the given Hour,
    --  Minute, Second, and Sub_Second. This value can be used in Ada.Calendar.
-   --  Time_Of as well as the argument to Calendar."+" and Calendar."–". If
+   --  Time_Of as well as the argument to Calendar."+" and Calendar."-". If
    --  Seconds_Of is called with a Sub_Second value of 1.0, the value returned
    --  is equal to the value of Seconds_Of for the next second with a Sub_
    --  Second value of 0.0.

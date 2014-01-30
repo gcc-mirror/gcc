@@ -3039,7 +3039,8 @@ rs6000_option_override_internal (bool global_init_p)
      calculation works better for RTL loop invariant motion on targets
      with enough (>= 32) registers.  It is an expensive optimization.
      So it is on only for peak performance.  */
-  if (optimize >= 3 && global_init_p)
+  if (optimize >= 3 && global_init_p
+      && !global_options_set.x_flag_ira_loop_pressure)
     flag_ira_loop_pressure = 1;
 
   /* Set the pointer size.  */
@@ -3356,13 +3357,36 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* The quad memory instructions only works in 64-bit mode. In 32-bit mode,
      silently turn off quad memory mode.  */
-  if (TARGET_QUAD_MEMORY && !TARGET_POWERPC64)
+  if ((TARGET_QUAD_MEMORY || TARGET_QUAD_MEMORY_ATOMIC) && !TARGET_POWERPC64)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
 	warning (0, N_("-mquad-memory requires 64-bit mode"));
 
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) != 0)
+	warning (0, N_("-mquad-memory-atomic requires 64-bit mode"));
+
+      rs6000_isa_flags &= ~(OPTION_MASK_QUAD_MEMORY
+			    | OPTION_MASK_QUAD_MEMORY_ATOMIC);
+    }
+
+  /* Non-atomic quad memory load/store are disabled for little endian, since
+     the words are reversed, but atomic operations can still be done by
+     swapping the words.  */
+  if (TARGET_QUAD_MEMORY && !WORDS_BIG_ENDIAN)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
+	warning (0, N_("-mquad-memory is not available in little endian mode"));
+
       rs6000_isa_flags &= ~OPTION_MASK_QUAD_MEMORY;
     }
+
+  /* Assume if the user asked for normal quad memory instructions, they want
+     the atomic versions as well, unless they explicity told us not to use quad
+     word atomic instructions.  */
+  if (TARGET_QUAD_MEMORY
+      && !TARGET_QUAD_MEMORY_ATOMIC
+      && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
+    rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
 
   /* Enable power8 fusion if we are tuning for power8, even if we aren't
      generating power8 instructions.  */
@@ -5939,7 +5963,8 @@ direct_move_p (rtx op0, rtx op1)
   return false;
 }
 
-/* Return true if this is a load or store quad operation.  */
+/* Return true if this is a load or store quad operation.  This function does
+   not handle the atomic quad memory instructions.  */
 
 bool
 quad_load_store_p (rtx op0, rtx op1)
@@ -29887,22 +29912,28 @@ altivec_expand_vec_perm_const (rtx operands[4])
     { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum,
       {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 } },
     { OPTION_MASK_ALTIVEC, 
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb : CODE_FOR_altivec_vmrglb,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb_direct
+       : CODE_FOR_altivec_vmrglb_direct),
       {  0, 16,  1, 17,  2, 18,  3, 19,  4, 20,  5, 21,  6, 22,  7, 23 } },
     { OPTION_MASK_ALTIVEC,
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghh : CODE_FOR_altivec_vmrglh,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghh_direct
+       : CODE_FOR_altivec_vmrglh_direct),
       {  0,  1, 16, 17,  2,  3, 18, 19,  4,  5, 20, 21,  6,  7, 22, 23 } },
     { OPTION_MASK_ALTIVEC,
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghw : CODE_FOR_altivec_vmrglw,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghw_direct
+       : CODE_FOR_altivec_vmrglw_direct),
       {  0,  1,  2,  3, 16, 17, 18, 19,  4,  5,  6,  7, 20, 21, 22, 23 } },
     { OPTION_MASK_ALTIVEC,
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglb : CODE_FOR_altivec_vmrghb,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglb_direct
+       : CODE_FOR_altivec_vmrghb_direct),
       {  8, 24,  9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31 } },
     { OPTION_MASK_ALTIVEC,
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglh : CODE_FOR_altivec_vmrghh,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglh_direct
+       : CODE_FOR_altivec_vmrghh_direct),
       {  8,  9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31 } },
     { OPTION_MASK_ALTIVEC,
-      BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw : CODE_FOR_altivec_vmrghw,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw_direct
+       : CODE_FOR_altivec_vmrghw_direct),
       {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } },
     { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgew,
       {  0,  1,  2,  3, 16, 17, 18, 19,  8,  9, 10, 11, 24, 25, 26, 27 } },
@@ -30132,22 +30163,6 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
       vmode = GET_MODE (target);
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
       dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
-
-      /* For little endian, swap operands and invert/swap selectors
-	 to get the correct xxpermdi.  The operand swap sets up the
-	 inputs as a little endian array.  The selectors are swapped
-	 because they are defined to use big endian ordering.  The
-	 selectors are inverted to get the correct doublewords for
-	 little endian ordering.  */
-      if (!BYTES_BIG_ENDIAN)
-	{
-	  int n;
-	  perm0 = 3 - perm0;
-	  perm1 = 3 - perm1;
-	  n = perm0, perm0 = perm1, perm1 = n;
-	  x = op0, op0 = op1, op1 = x;
-	}
-
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
       x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
@@ -30770,6 +30785,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "powerpc-gfxopt",		OPTION_MASK_PPC_GFXOPT,		false, true  },
   { "powerpc-gpopt",		OPTION_MASK_PPC_GPOPT,		false, true  },
   { "quad-memory",		OPTION_MASK_QUAD_MEMORY,	false, true  },
+  { "quad-memory-atomic",	OPTION_MASK_QUAD_MEMORY_ATOMIC,	false, true  },
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
   { "string",			OPTION_MASK_STRING,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              S E M . C H 8                               --
+--                              S E M _ C H 8                               --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -259,7 +259,7 @@ package body Sem_Ch8 is
    --  of use clauses consists in setting this flag on all visible entities
    --  defined in the corresponding package. On exit from the scope of the use
    --  clause, the corresponding flag must be reset. However, a package may
-   --  appear in several nested use clauses (pathological but legal, alas!)
+   --  appear in several nested use clauses (pathological but legal, alas)
    --  which forces us to use a slightly more involved scheme:
 
    --    a) The defining occurrence for a package holds a flag -In_Use- to
@@ -1197,7 +1197,7 @@ package body Sem_Ch8 is
 
       --  Initialize the object size and alignment. Note that we used to call
       --  Init_Size_Align here, but that's wrong for objects which have only
-      --  an Esize, not an RM_Size field!
+      --  an Esize, not an RM_Size field.
 
       Init_Object_Size_Align (Id);
 
@@ -3333,7 +3333,7 @@ package body Sem_Ch8 is
       --  This procedure is called in the context of subprogram renaming, and
       --  thus the attribute must be one that is a subprogram. All of those
       --  have at least one formal parameter, with the exceptions of AST_Entry
-      --  (which is a real oddity, it is odd that this can be renamed at all!)
+      --  (which is a real oddity, it is odd that this can be renamed at all)
       --  and the GNAT attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
@@ -3437,13 +3437,12 @@ package body Sem_Ch8 is
       --  a list of expressions corresponding to the subprogram formals.
       --  A renaming declaration is not a freeze point, and the analysis of
       --  the attribute reference should not freeze the type of the prefix.
+      --  We use the original node in the renaming so that its source location
+      --  is preserved, and checks on stream attributes are properly applied.
 
       else
-         Attr_Node :=
-           Make_Attribute_Reference (Loc,
-             Prefix         => Prefix (Nam),
-             Attribute_Name => Aname,
-             Expressions    => Expr_List);
+         Attr_Node := Relocate_Node (Nam);
+         Set_Expressions (Attr_Node, Expr_List);
 
          Set_Must_Not_Freeze (Attr_Node);
          Set_Must_Not_Freeze (Prefix (Nam));
@@ -3459,8 +3458,8 @@ package body Sem_Ch8 is
 
          Find_Type (Result_Definition (Spec));
          Rewrite (Result_Definition (Spec),
-             New_Reference_To (
-               Base_Type (Entity (Result_Definition (Spec))), Loc));
+           New_Reference_To
+             (Base_Type (Entity (Result_Definition (Spec))), Loc));
 
          Body_Node :=
            Make_Subprogram_Body (Loc,
@@ -3522,7 +3521,12 @@ package body Sem_Ch8 is
                Find_Type (P);
             end if;
 
-            if Is_Tagged_Type (Etype (P)) then
+            --  If the target type is not yet frozen, add the body to the
+            --  actions to be elaborated at freeze time.
+
+            if Is_Tagged_Type (Etype (P))
+              and then In_Open_Scopes (Scope (Etype (P)))
+            then
                Ensure_Freeze_Node (Etype (P));
                Append_Freeze_Action (Etype (P), Body_Node);
             else
@@ -4164,10 +4168,11 @@ package body Sem_Ch8 is
       --  generate the precise error message.
 
       function From_Actual_Package (E : Entity_Id) return Boolean;
-      --  Returns true if the entity is declared in a package that is
+      --  Returns true if the entity is an actual for a package that is itself
       --  an actual for a formal package of the current instance. Such an
-      --  entity requires special handling because it may be use-visible
-      --  but hides directly visible entities defined outside the instance.
+      --  entity requires special handling because it may be use-visible but
+      --  hides directly visible entities defined outside the instance, because
+      --  the corresponding formal did so in the generic.
 
       function Is_Actual_Parameter return Boolean;
       --  This function checks if the node N is an identifier that is an actual
@@ -4210,11 +4215,57 @@ package body Sem_Ch8 is
 
       function From_Actual_Package (E : Entity_Id) return Boolean is
          Scop : constant Entity_Id := Scope (E);
-         Act  : Entity_Id;
+         --  Declared scope of candidate entity
+
+         Act : Entity_Id;
+
+         function Declared_In_Actual (Pack : Entity_Id) return Boolean;
+         --  Recursive function that does the work and examines actuals of
+         --  actual packages of current instance.
+
+         ------------------------
+         -- Declared_In_Actual --
+         ------------------------
+
+         function Declared_In_Actual (Pack : Entity_Id) return Boolean is
+            Act : Entity_Id;
+
+         begin
+            if No (Associated_Formal_Package (Pack)) then
+               return False;
+
+            else
+               Act := First_Entity (Pack);
+               while Present (Act) loop
+                  if Renamed_Object (Pack) = Scop then
+                     return True;
+
+                  --  Check for end of list of actuals.
+
+                  elsif Ekind (Act) = E_Package
+                    and then Renamed_Object (Act) = Pack
+                  then
+                     return False;
+
+                  elsif Ekind (Act) = E_Package
+                    and then Declared_In_Actual (Act)
+                  then
+                     return True;
+                  end if;
+
+                  Next_Entity (Act);
+               end loop;
+
+               return False;
+            end if;
+         end Declared_In_Actual;
+
+      --  Start of processing for From_Actual_Package
 
       begin
          if not In_Instance then
             return False;
+
          else
             Inst := Current_Scope;
             while Present (Inst)
@@ -4230,27 +4281,13 @@ package body Sem_Ch8 is
 
             Act := First_Entity (Inst);
             while Present (Act) loop
-               if Ekind (Act) = E_Package then
-
-                  --  Check for end of actuals list
-
-                  if Renamed_Object (Act) = Inst then
-                     return False;
-
-                  elsif Present (Associated_Formal_Package (Act))
-                    and then Renamed_Object (Act) = Scop
-                  then
-                     --  Entity comes from (instance of) formal package
-
-                     return True;
-
-                  else
-                     Next_Entity (Act);
-                  end if;
-
-               else
-                  Next_Entity (Act);
+               if Ekind (Act) = E_Package
+                 and then Declared_In_Actual (Act)
+               then
+                  return True;
                end if;
+
+               Next_Entity (Act);
             end loop;
 
             return False;
@@ -4748,7 +4785,7 @@ package body Sem_Ch8 is
       --  If no entries on homonym chain that were potentially visible,
       --  and no entities reasonably considered as non-visible, then
       --  we have a plain undefined reference, with no additional
-      --  explanation required!
+      --  explanation required.
 
       if not Nvis_Entity then
          Undefined (Nvis => False);
@@ -5474,7 +5511,7 @@ package body Sem_Ch8 is
 
                --  If this is a selection from a dummy package, then suppress
                --  the error message, of course the entity is missing if the
-               --  package is missing!
+               --  package is missing.
 
                elsif Sloc (Error_Msg_Node_2) = No_Location then
                   null;
@@ -5959,6 +5996,51 @@ package body Sem_Ch8 is
 
       Nam : Node_Id;
 
+      function Is_Reference_In_Subunit return Boolean;
+      --  In a subunit, the scope depth is not a proper measure of hiding,
+      --  because the context of the proper body may itself hide entities in
+      --  parent units. This rare case requires inspecting the tree directly
+      --  because the proper body is inserted in the main unit and its context
+      --  is simply added to that of the parent.
+
+      -----------------------------
+      -- Is_Reference_In_Subunit --
+      -----------------------------
+
+      function Is_Reference_In_Subunit return Boolean is
+         Clause    : Node_Id;
+         Comp_Unit : Node_Id;
+
+      begin
+         Comp_Unit := N;
+         while Present (Comp_Unit)
+           and then Nkind (Comp_Unit) /= N_Compilation_Unit
+         loop
+            Comp_Unit := Parent (Comp_Unit);
+         end loop;
+
+         if No (Comp_Unit) or else Nkind (Unit (Comp_Unit)) /= N_Subunit then
+            return False;
+         end if;
+
+         --  Now check whether the package is in the context of the subunit
+
+         Clause := First (Context_Items (Comp_Unit));
+         while Present (Clause) loop
+            if Nkind (Clause) = N_With_Clause
+              and then Entity (Name (Clause)) = P_Name
+            then
+               return True;
+            end if;
+
+            Clause := Next (Clause);
+         end loop;
+
+         return False;
+      end Is_Reference_In_Subunit;
+
+   --  Start of processing for Find_Selected_Component
+
    begin
       Analyze (P);
 
@@ -5986,9 +6068,7 @@ package body Sem_Ch8 is
       --  in the expansion of record equality).
 
       if Present (Entity (Selector_Name (N))) then
-         if No (Etype (N))
-           or else Etype (N) = Any_Type
-         then
+         if No (Etype (N)) or else Etype (N) = Any_Type then
             declare
                Sel_Name : constant Node_Id   := Selector_Name (N);
                Selector : constant Entity_Id := Entity (Sel_Name);
@@ -6015,8 +6095,7 @@ package body Sem_Ch8 is
                      Save_Interps (P, Nam);
                   end if;
 
-                  Rewrite (P,
-                    Make_Function_Call (Sloc (P), Name => Nam));
+                  Rewrite (P, Make_Function_Call (Sloc (P), Name => Nam));
                   Analyze_Call (P);
                   Analyze_Selected_Component (N);
                   return;
@@ -6038,13 +6117,12 @@ package body Sem_Ch8 is
                       ((RTE_Available (RE_Dispatch_Table_Wrapper)
                          and then Scope (Selector) =
                                      RTE (RE_Dispatch_Table_Wrapper))
-                         or else
-                           (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                             and then Scope (Selector) =
-                                        RTE (RE_No_Dispatch_Table_Wrapper)))
+                        or else
+                          (RTE_Available (RE_No_Dispatch_Table_Wrapper)
+                            and then Scope (Selector) =
+                                     RTE (RE_No_Dispatch_Table_Wrapper)))
                   then
                      C_Etype := Empty;
-
                   else
                      C_Etype :=
                        Build_Actual_Subtype_Of_Component
@@ -6218,8 +6296,9 @@ package body Sem_Ch8 is
                --  If no interpretation as an expanded name is possible, it
                --  must be a selected component of a record returned by a
                --  function call. Reformat prefix as a function call, the rest
-               --  is done by type resolution. If the prefix is procedure or
-               --  entry, as is P.X; this is an error.
+               --  is done by type resolution.
+
+               --  Error if the prefix is procedure or entry, as is P.X
 
                if Ekind (P_Name) /= E_Function
                  and then
@@ -6231,7 +6310,6 @@ package body Sem_Ch8 is
                   --  chain, the candidate package may be anywhere on it.
 
                   if Present (Homonym (Current_Entity (P_Name))) then
-
                      P_Name := Current_Entity (P_Name);
 
                      while Present (P_Name) loop
@@ -6240,15 +6318,16 @@ package body Sem_Ch8 is
                      end loop;
 
                      if Present (P_Name) then
-                        Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
-
-                        Error_Msg_NE
-                          ("package& is hidden by declaration#",
-                            N, P_Name);
+                        if not Is_Reference_In_Subunit then
+                           Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
+                           Error_Msg_NE
+                             ("package& is hidden by declaration#", N, P_Name);
+                        end if;
 
                         Set_Entity (Prefix (N), P_Name);
                         Find_Expanded_Name (N);
                         return;
+
                      else
                         P_Name := Entity (Prefix (N));
                      end if;
@@ -6260,11 +6339,27 @@ package body Sem_Ch8 is
                   Set_Entity (N, Any_Id);
                   Set_Etype (N, Any_Type);
 
+               --  Here we have a function call, so do the reformatting
+
                else
                   Nam := New_Copy (P);
                   Save_Interps (P, Nam);
-                  Rewrite (P,
+
+                  --  We use Replace here because this is one of those cases
+                  --  where the parser has missclassified the node, and we
+                  --  fix things up and then do the semantic analysis on the
+                  --  fixed up node. Normally we do this using one of the
+                  --  Sinfo.CN routines, but this is too tricky for that.
+
+                  --  Note that using Rewrite would be wrong, because we
+                  --  would have a tree where the original node is unanalyzed,
+                  --  and this violates the required interface for ASIS.
+
+                  Replace (P,
                     Make_Function_Call (Sloc (P), Name => Nam));
+
+                  --  Now analyze the reformatted node
+
                   Analyze_Call (P);
                   Analyze_Selected_Component (N);
                end if;
@@ -7396,6 +7491,7 @@ package body Sem_Ch8 is
       Check_Policy_List        := SST.Save_Check_Policy_List;
       Default_Pool             := SST.Save_Default_Storage_Pool;
       SPARK_Mode               := SST.Save_SPARK_Mode;
+      SPARK_Mode_Pragma        := SST.Save_SPARK_Mode_Pragma;
 
       if Debug_Flag_W then
          Write_Str ("<-- exiting scope: ");
@@ -7470,6 +7566,7 @@ package body Sem_Ch8 is
          SST.Save_Check_Policy_List        := Check_Policy_List;
          SST.Save_Default_Storage_Pool     := Default_Pool;
          SST.Save_SPARK_Mode               := SPARK_Mode;
+         SST.Save_SPARK_Mode_Pragma        := SPARK_Mode_Pragma;
 
          if Scope_Stack.Last > Scope_Stack.First then
             SST.Component_Alignment_Default := Scope_Stack.Table

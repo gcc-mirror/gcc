@@ -43,7 +43,7 @@
 --  Note: the declarations in this package reflect an expectation that the host
 --  machine has an efficient integer base type with a range at least 32 bits
 --  2s-complement. If there are any machines for which this is not a correct
---  assumption, a significant number of changes will be required!
+--  assumption, a significant number of changes will be required.
 
 with System;
 with Unchecked_Conversion;

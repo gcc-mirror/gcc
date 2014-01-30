@@ -459,7 +459,7 @@ package body System.Tasking.Stages is
 
       Vulnerable_Complete_Task (Self_ID);
 
-      --  All of our dependents have terminated. Never undefer abort again!
+      --  All of our dependents have terminated, never undefer abort again
 
    end Complete_Task;
 
@@ -829,7 +829,7 @@ package body System.Tasking.Stages is
 
          Initialization.Defer_Abort_Nestable (Self_ID);
 
-         --  Never undefer again!!!
+         --  Never undefer again
       end if;
 
       --  This code is only executed by the environment task
@@ -1394,7 +1394,7 @@ package body System.Tasking.Stages is
    --  unlocking, after which the parent was observed to race ahead, deallocate
    --  the ATCB, and then reallocate it to another task. The call to
    --  Undefer_Abort in Task_Unlock by the "terminated" task was overwriting
-   --  the data of the new task that reused the ATCB! To solve this problem, we
+   --  the data of the new task that reused the ATCB. To solve this problem, we
    --  introduced the new operation Final_Task_Unlock.
 
    procedure Terminate_Task (Self_ID : Task_Id) is

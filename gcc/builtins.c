@@ -191,7 +191,6 @@ static tree fold_builtin_varargs (location_t, tree, tree, bool);
 static tree fold_builtin_strpbrk (location_t, tree, tree, tree);
 static tree fold_builtin_strstr (location_t, tree, tree, tree);
 static tree fold_builtin_strrchr (location_t, tree, tree, tree);
-static tree fold_builtin_strcat (location_t, tree, tree);
 static tree fold_builtin_strncat (location_t, tree, tree, tree);
 static tree fold_builtin_strspn (location_t, tree, tree);
 static tree fold_builtin_strcspn (location_t, tree, tree);
@@ -245,7 +244,7 @@ is_builtin_name (const char *name)
     return true;
   if (strncmp (name, "__atomic_", 9) == 0)
     return true;
-  if (flag_enable_cilkplus 
+  if (flag_cilkplus 
       && (!strcmp (name, "__cilkrts_detach")   
 	  || !strcmp (name, "__cilkrts_pop_frame")))
     return true;
@@ -6206,20 +6205,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	}
       break;
 
-    case BUILT_IN_SETJMP_DISPATCHER:
-       /* __builtin_setjmp_dispatcher is passed the dispatcher label.  */
-      if (validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
-	{
-	  tree label = TREE_OPERAND (CALL_EXPR_ARG (exp, 0), 0);
-	  rtx label_r = label_rtx (label);
-
-	  /* Remove the dispatcher label from the list of non-local labels
-	     since the receiver labels have been added to it above.  */
-	  remove_node_from_expr_list (label_r, &nonlocal_goto_handler_labels);
-	  return const0_rtx;
-	}
-      break;
-
     case BUILT_IN_SETJMP_RECEIVER:
        /* __builtin_setjmp_receiver is passed the receiver label.  */
       if (validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
@@ -10787,7 +10772,7 @@ fold_builtin_2 (location_t loc, tree fndecl, tree arg0, tree arg1, bool ignore)
       return fold_builtin_strstr (loc, arg0, arg1, type);
 
     case BUILT_IN_STRCAT:
-      return fold_builtin_strcat (loc, arg0, arg1);
+      return fold_builtin_strcat (loc, arg0, arg1, NULL_TREE);
 
     case BUILT_IN_STRSPN:
       return fold_builtin_strspn (loc, arg0, arg1);
@@ -11736,8 +11721,9 @@ fold_builtin_strpbrk (location_t loc, tree s1, tree s2, tree type)
    COMPOUND_EXPR in the chain will contain the tree for the simplified
    form of the builtin function call.  */
 
-static tree
-fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
+tree
+fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src,
+		     tree len)
 {
   if (!validate_arg (dst, POINTER_TYPE)
       || !validate_arg (src, POINTER_TYPE))
@@ -11755,14 +11741,15 @@ fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
 	  /* See if we can store by pieces into (dst + strlen(dst)).  */
 	  tree newdst, call;
 	  tree strlen_fn = builtin_decl_implicit (BUILT_IN_STRLEN);
-	  tree strcpy_fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+	  tree memcpy_fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
 
-	  if (!strlen_fn || !strcpy_fn)
+	  if (!strlen_fn || !memcpy_fn)
 	    return NULL_TREE;
 
 	  /* If the length of the source string isn't computable don't
-	     split strcat into strlen and strcpy.  */
-	  tree len = c_strlen (src, 1);
+	     split strcat into strlen and memcpy.  */
+	  if (! len)
+	    len = c_strlen (src, 1);
 	  if (! len || TREE_SIDE_EFFECTS (len))
 	    return NULL_TREE;
 
@@ -11776,7 +11763,11 @@ fold_builtin_strcat (location_t loc ATTRIBUTE_UNUSED, tree dst, tree src)
 	  newdst = fold_build_pointer_plus_loc (loc, dst, newdst);
 	  newdst = builtin_save_expr (newdst);
 
-	  call = build_call_expr_loc (loc, strcpy_fn, 2, newdst, src);
+	  len = fold_convert_loc (loc, size_type_node, len);
+	  len = size_binop_loc (loc, PLUS_EXPR, len,
+				build_int_cst (size_type_node, 1));
+
+	  call = build_call_expr_loc (loc, memcpy_fn, 3, newdst, src, len);
 	  return build2 (COMPOUND_EXPR, TREE_TYPE (dst), call, dst);
 	}
       return NULL_TREE;

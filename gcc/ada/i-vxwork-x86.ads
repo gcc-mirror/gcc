@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,9 +85,10 @@ package Interfaces.VxWorks is
    --
    --  with P; use P;
    --  procedure Useint is
-   --     --  Be sure to use a reasonable interrupt number for the target
-   --     --  board!
+   --
+   --     --  Be sure to use a reasonable interrupt number for target board.
    --     --  This one is an unreserved interrupt for the Pentium 3 BSP
+   --
    --     Interrupt : constant := 16#33#;
    --
    --     task T;
@@ -101,6 +102,7 @@ package Interfaces.VxWorks is
    --           delay 1.0;
    --
    --           --  Generate interrupt, using interrupt number
+   --
    --           Asm ("int %0",
    --                Inputs =>
    --                  Ada.Interrupts.Interrupt_ID'Asm_Input
@@ -134,32 +136,32 @@ package Interfaces.VxWorks is
      (vector    : Interrupt_Vector;
       handler   : VOIDFUNCPTR;
       parameter : System.Address := System.Null_Address) return STATUS;
-   --  Binding to the C routine intConnect. Use this to set up an
-   --  user handler. The routine generates a wrapper around the user
-   --  handler to save and restore context
+   --  Binding to the C routine intConnect. Use this to set up an user handler.
+   --  The routine generates a wrapper around the user handler to save and
+   --  restore context
 
    function intContext return int;
-   --  Binding to the C routine intContext. This function returns 1 only
-   --  if the current execution state is in interrupt context.
+   --  Binding to the C routine intContext. This function returns 1 only if the
+   --  current execution state is in interrupt context.
 
    function intVecGet
      (Vector : Interrupt_Vector) return VOIDFUNCPTR;
-   --  Binding to the C routine intVecGet. Use this to get the
-   --  existing handler for later restoral
+   --  Binding to the C routine intVecGet. Use this to get the existing handler
+   --  for later restoral
 
    procedure intVecSet
      (Vector  : Interrupt_Vector;
       Handler : VOIDFUNCPTR);
-   --  Binding to the C routine intVecSet. Use this to restore a
-   --  handler obtained using intVecGet
+   --  Binding to the C routine intVecSet. Use this to restore a handler
+   --  obtained using intVecGet
 
    procedure intVecGet2
      (vector       : Interrupt_Vector;
       pFunction    : out VOIDFUNCPTR;
       pIdtGate     : not null access int;
       pIdtSelector : not null access int);
-   --  Binding to the C routine intVecGet2. Use this to get the
-   --  existing handler for later restoral
+   --  Binding to the C routine intVecGet2. Use this to get the existing
+   --  handler for later restoral
 
    procedure intVecSet2
      (vector       : Interrupt_Vector;
@@ -180,12 +182,11 @@ package Interfaces.VxWorks is
    --  (e.g logMsg ("Interrupt" & ASCII.NUL))
 
    type FP_CONTEXT is private;
-   --  Floating point context save and restore. Handlers using floating
-   --  point must be bracketed with these calls. The pFpContext parameter
-   --  should be an object of type FP_CONTEXT that is
-   --  declared local to the handler.
-   --  See the VxWorks Intel Architecture Supplement regarding
-   --  these routines.
+   --  Floating point context save and restore. Handlers using floating point
+   --  must be bracketed with these calls. The pFpContext parameter should be
+   --  an object of type FP_CONTEXT that is declared local to the handler.
+   --
+   --  See the VxWorks Intel Architecture Supplement regarding these routines
 
    procedure fppRestore (pFpContext : in out FP_CONTEXT);
    --  Restore floating point context - old style

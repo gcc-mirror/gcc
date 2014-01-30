@@ -3994,13 +3994,23 @@ package body Sem_Attr is
          Check_References_In_Prefix (Loop_Id);
 
          --  The prefix must denote a static entity if the pragma does not
-         --  apply to the innermost enclosing loop statement.
+         --  apply to the innermost enclosing loop statement, or if it appears
+         --  within a potentially unevaluated epxression.
 
-         if Present (Enclosing_Loop)
-           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
-           and then not Is_Entity_Name (P)
+         if Is_Entity_Name (P)
+           or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
          then
-            Error_Attr_P ("prefix of attribute % must denote an entity");
+            null;
+
+         elsif Present (Enclosing_Loop)
+                 and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+         then
+            Error_Attr_P ("prefix of attribute % that applies to "
+              & "outer loop must denote an entity");
+
+         elsif Is_Potentially_Unevaluated (P) then
+            Error_Attr_P ("prefix of attribute % that is potentially "
+              & "unevaluated must denote an entity");
          end if;
       end Loop_Entry;
 
@@ -4337,6 +4347,8 @@ package body Sem_Attr is
          --  During pre-analysis, Prag is the enclosing pragma node if any
 
       begin
+         Prag := Empty;
+
          --  Find enclosing scopes, excluding loops
 
          CS := Current_Scope;
@@ -4513,6 +4525,18 @@ package body Sem_Attr is
          then
             Error_Msg_N
               ("??attribute Old applied to constant has no effect", P);
+         end if;
+
+         --  Check that the prefix of 'Old is an entity, when it appears in
+         --  a postcondition and may be potentially unevaluated (6.1.1 (27/3)).
+
+         if Present (Prag)
+           and then Get_Pragma_Id (Prag) = Pragma_Postcondition
+           and then Is_Potentially_Unevaluated (N)
+           and then not Is_Entity_Name (P)
+         then
+            Error_Attr_P ("prefix of attribute % that is potentially "
+                 & "unevaluated must denote an entity");
          end if;
 
          --  The attribute appears within a pre/postcondition, but refers to
@@ -5989,6 +6013,11 @@ package body Sem_Attr is
             Comp_Or_Discr := First_Entity (Typ);
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
+
+                  --  Record component entity in the given aggregate choice,
+                  --  for subsequent resolution.
+
+                  Set_Entity (Comp, Comp_Or_Discr);
                   exit;
                end if;
 
@@ -6035,6 +6064,7 @@ package body Sem_Attr is
 
       begin
          Check_E1;
+         Check_Ada_2012_Attribute;
 
          if not Is_Object_Reference (P) then
             Error_Attr_P ("prefix of attribute % must denote an object");
@@ -6062,10 +6092,60 @@ package body Sem_Attr is
          Assoc := First (Component_Associations (E1));
          while Present (Assoc) loop
             Comp := First (Choices (Assoc));
+            Analyze (Expression (Assoc));
             while Present (Comp) loop
                if Nkind (Comp) = N_Others_Choice then
                   Error_Attr
                     ("others choice not allowed in attribute %", Comp);
+
+               elsif Is_Array_Type (P_Type) then
+                  declare
+                     Index      : Node_Id;
+                     Index_Type : Entity_Id;
+
+                  begin
+                     if Nkind (First (Choices (Assoc))) /= N_Aggregate then
+
+                        --  Choices denote separate components of one-
+                        --  dimensional array.
+
+                        Index_Type := First_Index (P_Type);
+
+                        Index := First (Choices (Assoc));
+                        while Present (Index) loop
+                           if Nkind (Index) = N_Range then
+                              Analyze_And_Resolve
+                                (Low_Bound (Index), Etype (Index_Type));
+                              Analyze_And_Resolve
+                                (High_Bound (Index), Etype (Index_Type));
+                              Set_Etype (Index, Etype (Index_Type));
+
+                           else
+                              Analyze_And_Resolve (Index, Etype (Index_Type));
+                           end if;
+
+                           Next (Index);
+                        end loop;
+
+                     --  Choice is a sequence of indexes for each dimension
+
+                     else
+                        Index_Type := First_Index (P_Type);
+                        Index := First (Expressions (First (Choices (Assoc))));
+                        while Present (Index_Type)
+                          and then Present (Index)
+                        loop
+                           Analyze_And_Resolve (Index, Etype (Index_Type));
+                           Next_Index (Index_Type);
+                           Next (Index);
+                        end loop;
+
+                        if Present (Index) or else Present (Index_Type) then
+                           Error_Msg_N
+                             ("dimension mismatch in index list", Assoc);
+                        end if;
+                     end if;
+                  end;
 
                elsif Is_Record_Type (P_Type) then
                   Check_Component_Reference (Comp, P_Type);
@@ -6103,7 +6183,7 @@ package body Sem_Attr is
 
          --  Note, we need a range check in general, but we wait for the
          --  Resolve call to do this, since we want to let Eval_Attribute
-         --  have a chance to find an static illegality first!
+         --  have a chance to find an static illegality first.
       end Val;
 
       -----------
@@ -6646,7 +6726,7 @@ package body Sem_Attr is
 
          --  Note that the whole point of the E_String_Literal_Subtype is to
          --  avoid this construction of bounds, but the cases in which we
-         --  have to materialize them are rare enough that we don't worry!
+         --  have to materialize them are rare enough that we don't worry.
 
          --  The low bound is simply the low bound of the base type. The
          --  high bound is computed from the length of the string and this
@@ -6696,7 +6776,7 @@ package body Sem_Attr is
             end loop;
 
             --  If no index type, get out (some other error occurred, and
-            --  we don't have enough information to complete the job!)
+            --  we don't have enough information to complete the job).
 
             if No (Indx) then
                Lo_Bound := Error;
@@ -8802,12 +8882,8 @@ package body Sem_Attr is
 
       --  Attribute Update is never static
 
-      ------------
-      -- Update --
-      ------------
-
       when Attribute_Update =>
-         null;
+         return;
 
       ---------------
       -- VADS_Size --
@@ -8999,7 +9075,7 @@ package body Sem_Attr is
 
                         if J > 255 then
 
-                           --  No need to compute this more than once!
+                           --  No need to compute this more than once
 
                            exit;
 
@@ -9788,8 +9864,9 @@ package body Sem_Attr is
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
                  and then Attr_Id = Attribute_Access
                then
-                  --  In an instance, this is a runtime check, but one we
-                  --  know will fail, so generate an appropriate warning.
+                  --  In an instance, this is a runtime check, but one we know
+                  --  will fail, so generate an appropriate warning. As usual,
+                  --  this kind of warning is an error in SPARK mode.
 
                   if In_Instance_Body then
                      Error_Msg_Warn := SPARK_Mode /= On;
@@ -10367,7 +10444,7 @@ package body Sem_Attr is
          -----------------
 
          --  Prefix must not be resolved in this case, since it is not a
-         --  real entity reference. No action of any kind is require!
+         --  real entity reference. No action of any kind is require.
 
          when Attribute_UET_Address =>
             return;
@@ -10383,6 +10460,60 @@ package body Sem_Attr is
          -------------------------
 
          --  Processing is shared with Access
+
+         ------------
+         -- Update --
+         ------------
+
+         --  Resolve aggregate components in component associations
+
+         when Attribute_Update =>
+            declare
+               Aggr  : constant Node_Id   := First (Expressions (N));
+               Typ   : constant Entity_Id := Etype (Prefix (N));
+               Assoc : Node_Id;
+               Comp  : Node_Id;
+
+            begin
+               --  Set the Etype of the aggregate to that of the prefix, even
+               --  though the aggregate may not be a proper representation of a
+               --  value of the type (missing or duplicated associations, etc.)
+               --  Complete resolution of the prefix. Note that in Ada 2012 it
+               --  can be a qualified expression that is e.g. an aggregate.
+
+               Set_Etype (Aggr, Typ);
+               Resolve (Prefix (N), Typ);
+
+               --  For an array type, resolve expressions with the component
+               --  type of the array.
+
+               if Is_Array_Type (Typ) then
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Resolve (Expression (Assoc), Component_Type (Typ));
+                     Next (Assoc);
+                  end loop;
+
+               --  For a record type, use type of each component, which is
+               --  recorded during analysis.
+
+               else
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Comp := First (Choices (Assoc));
+                     if Nkind (Comp) /= N_Others_Choice
+                       and then not Error_Posted (Comp)
+                     then
+                        Resolve (Expression (Assoc), Etype (Entity (Comp)));
+                     end if;
+                     Next (Assoc);
+                  end loop;
+               end if;
+            end;
+
+            --  Premature return requires comment ???
+
+            return;
 
          ---------
          -- Val --
@@ -10402,7 +10533,7 @@ package body Sem_Attr is
 
             --  Eval_Attribute may replace the node with a raise CE, or
             --  fold it to a constant. Obviously we only apply a scalar
-            --  range check if this did not happen!
+            --  range check if this did not happen.
 
             if Nkind (N) = N_Attribute_Reference
               and then Attribute_Name (N) = Name_Val

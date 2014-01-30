@@ -5051,23 +5051,24 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 
 	     ??? This mode check should perhaps look more like the mode check
 	     in simplify_comparison in combine.  */
-
-	  if ((GET_CODE (SET_SRC (set)) == COMPARE
-	       || (((code == NE
-		     || (code == LT
-			 && val_signbit_known_set_p (inner_mode,
-						     STORE_FLAG_VALUE))
+	  if (((GET_MODE_CLASS (mode) == MODE_CC)
+	       != (GET_MODE_CLASS (inner_mode) == MODE_CC))
+	      && mode != VOIDmode
+	      && inner_mode != VOIDmode)
+	    break;
+	  if (GET_CODE (SET_SRC (set)) == COMPARE
+	      || (((code == NE
+		    || (code == LT
+			&& val_signbit_known_set_p (inner_mode,
+						    STORE_FLAG_VALUE))
 #ifdef FLOAT_STORE_FLAG_VALUE
-		     || (code == LT
-			 && SCALAR_FLOAT_MODE_P (inner_mode)
-			 && (fsfv = FLOAT_STORE_FLAG_VALUE (inner_mode),
-			     REAL_VALUE_NEGATIVE (fsfv)))
+		    || (code == LT
+			&& SCALAR_FLOAT_MODE_P (inner_mode)
+			&& (fsfv = FLOAT_STORE_FLAG_VALUE (inner_mode),
+			    REAL_VALUE_NEGATIVE (fsfv)))
 #endif
-		     ))
-		   && COMPARISON_P (SET_SRC (set))))
-	      && (((GET_MODE_CLASS (mode) == MODE_CC)
-		   == (GET_MODE_CLASS (inner_mode) == MODE_CC))
-		  || mode == VOIDmode || inner_mode == VOIDmode))
+		    ))
+		  && COMPARISON_P (SET_SRC (set))))
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
@@ -5080,15 +5081,25 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 			     REAL_VALUE_NEGATIVE (fsfv)))
 #endif
 		     ))
-		   && COMPARISON_P (SET_SRC (set))
-		   && (((GET_MODE_CLASS (mode) == MODE_CC)
-			== (GET_MODE_CLASS (inner_mode) == MODE_CC))
-		       || mode == VOIDmode || inner_mode == VOIDmode))
-
+		   && COMPARISON_P (SET_SRC (set)))
 	    {
 	      reverse_code = 1;
 	      x = SET_SRC (set);
 	    }
+	  else if ((code == EQ || code == NE)
+		   && GET_CODE (SET_SRC (set)) == XOR)
+	    /* Handle sequences like:
+
+	       (set op0 (xor X Y))
+	       ...(eq|ne op0 (const_int 0))...
+
+	       in which case:
+
+	       (eq op0 (const_int 0)) reduces to (eq X Y)
+	       (ne op0 (const_int 0)) reduces to (ne X Y)
+
+	       This is the form used by MIPS16, for example.  */
+	    x = SET_SRC (set);
 	  else
 	    break;
 	}

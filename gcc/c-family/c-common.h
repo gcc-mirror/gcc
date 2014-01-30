@@ -828,6 +828,7 @@ extern bool keyword_is_storage_class_specifier (enum rid);
 extern bool keyword_is_type_qualifier (enum rid);
 extern bool keyword_is_decl_specifier (enum rid);
 extern bool cxx_fundamental_alignment_p (unsigned);
+extern bool pointer_to_zero_sized_aggr_p (tree);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
@@ -838,7 +839,8 @@ extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwis
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
-extern tree shorten_compare (tree *, tree *, tree *, enum tree_code *);
+extern tree shorten_compare (location_t, tree *, tree *, tree *,
+			     enum tree_code *);
 
 extern tree pointer_int_sum (location_t, enum tree_code, tree, tree,
 			     bool = true);

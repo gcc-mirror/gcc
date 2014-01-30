@@ -246,6 +246,10 @@ package Sem_Aux is
    --  the given names then True is returned, otherwise False indicates that no
    --  matching entry was found.
 
+   function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
+   --  True if T has discriminants and is unconstrained, or is an array type
+   --  whose element type Has_Unconstrained_Elements.
+
    function In_Generic_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id appears inside a generic body
 
@@ -254,6 +258,9 @@ package Sem_Aux is
    --  Returns True if initialization should be suppressed for the given type
    --  or subtype. This is true if Suppress_Initialization is set either for
    --  the subtype itself, or for the corresponding base type.
+
+   function Is_Body (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node denotes a body
 
    function Is_By_Copy_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Returns True if Ent is a type entity where the type

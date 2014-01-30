@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Warning! Error messages can be generated during Gigi processing by direct
+--  Warning: Error messages can be generated during Gigi processing by direct
 --  calls to error message routines, so it is essential that the processing
 --  in this body be consistent with the requirements for the Gigi processing
 --  environment, and that in particular, no disallowed table expansion is
@@ -1499,16 +1499,10 @@ package body Errout is
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
 
-      --  Initialize warnings table, if all warnings are suppressed, supply an
-      --  initial dummy entry covering all possible source locations.
+      --  Initialize warnings table
 
       Warnings.Init;
       Specific_Warnings.Init;
-
-      if Warning_Mode = Suppress then
-         Warnings.Append
-           ((Start => Source_Ptr'First, Stop => Source_Ptr'Last));
-      end if;
    end Initialize;
 
    -----------------
@@ -2976,13 +2970,13 @@ package body Errout is
 
       elsif Msg = "size for& too small, minimum allowed is ^" then
 
-         --  Suppress "size too small" errors in CodePeer mode and SPARK mode,
-         --  since pragma Pack is also ignored in these configurations.
+         --  Suppress "size too small" errors in CodePeer mode, since code may
+         --  be analyzed in a different configuration than the one used for
+         --  compilation. Even when the configurations match, this message
+         --  may be issued on correct code, because pragma Pack is ignored
+         --  in CodePeer mode.
 
-         --  At least the comment is bogus, since you can have this message
-         --  with no pragma Pack in sight! ???
-
-         if CodePeer_Mode or GNATprove_Mode then
+         if CodePeer_Mode then
             return True;
 
          --  When a size is wrong for a frozen type there is no explicit size
@@ -3119,7 +3113,7 @@ package body Errout is
          --  but it makes too much noise to be accurate and add 'Base in all
          --  cases. Note that we only do this is the first named subtype is not
          --  itself an internal name. This avoids the obvious loop (subtype ->
-         --  basetype -> subtype) which would otherwise occur!)
+         --  basetype -> subtype) which would otherwise occur).
 
          else
             declare
@@ -3158,7 +3152,7 @@ package body Errout is
          --  If we are stuck in a loop, get out and settle for the internal
          --  name after all. In this case we set to kill the message if it is
          --  not the first error message (we really try hard not to show the
-         --  dirty laundry of the implementation to the poor user!)
+         --  dirty laundry of the implementation to the poor user).
 
          if Ent = Old_Ent then
             Kill_Message := True;

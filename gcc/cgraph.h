@@ -82,7 +82,7 @@ public:
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* The symbol will be assumed to be used in an invisiable way (like 
+  /* The symbol will be assumed to be used in an invisible way (like
      by an toplevel asm statement).  */
   unsigned force_output : 1;
   /* Like FORCE_OUTPUT, but in the case it is ABI requiring the symbol to be
@@ -518,11 +518,17 @@ struct varpool_node_set_iterator
   unsigned index;
 };
 
-#define DEFCIFCODE(code, string)	CIF_ ## code,
+#define DEFCIFCODE(code, type, string)	CIF_ ## code,
 /* Reasons for inlining failures.  */
 enum cgraph_inline_failed_t {
 #include "cif-code.def"
   CIF_N_REASONS
+};
+
+enum cgraph_inline_failed_type_t
+{
+  CIF_FINAL_NORMAL = 0,
+  CIF_FINAL_ERROR
 };
 
 /* Structure containing additional information about an indirect call.  */
@@ -774,6 +780,7 @@ void cgraph_unnest_node (struct cgraph_node *);
 enum availability cgraph_function_body_availability (struct cgraph_node *);
 void cgraph_add_new_function (tree, bool);
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
+cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
 void cgraph_set_nothrow_flag (struct cgraph_node *, bool);
 void cgraph_set_const_flag (struct cgraph_node *, bool, bool);

@@ -2,6 +2,8 @@
 /* { dg-require-effective-target vect_float } */
 /* { dg-additional-options "-fdump-rtl-combine-details" } */
 
+#include "tree-vect.h"
+
 extern void abort (void);
 
 #define NOINLINE __attribute__((noinline))
@@ -48,8 +50,8 @@ foo32x2_le (float32x2_t x)
   return bar (x[0]);
 }
 
-int
-main()
+NOINLINE int
+test (void)
 {
   float32x4_t a = { 0.0f, 1.0f, 2.0f, 3.0f };
   float32x2_t b = { 0.0f, 1.0f };
@@ -67,6 +69,13 @@ main()
     abort ();
 
   return 0;
+}
+
+int
+main ()
+{
+  check_vect ();
+  return test ();
 }
 
 /* { dg-final { scan-rtl-dump "deleting noop move" "combine" { target aarch64*-*-* } } } */

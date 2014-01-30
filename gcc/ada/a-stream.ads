@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          A D A . S T R E A M S                           --
+--                           A D A . S T R E A M S                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -65,5 +65,20 @@ package Ada.Streams is
 private
 
    type Root_Stream_Type is abstract tagged limited null record;
+
+   --  Stream attributes for Stream_Element_Array: trivially call the
+   --  corresponding stream primitive for the whole array, instead of doing
+   --  so element by element.
+
+   procedure Read_SEA
+     (S : access Root_Stream_Type'Class;
+      V : out Stream_Element_Array);
+
+   procedure Write_SEA
+     (S : access Root_Stream_Type'Class;
+      V : Stream_Element_Array);
+
+   for Stream_Element_Array'Read use Read_SEA;
+   for Stream_Element_Array'Write use Write_SEA;
 
 end Ada.Streams;

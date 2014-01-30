@@ -254,7 +254,7 @@ package Restrict is
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False);
-   --  Node N represents a construct not allowed in formal mode. If this is
+   --  Node N represents a construct not allowed in SPARK_05 mode. If this is
    --  a source node, or if the restriction is forced (Force = True), and
    --  the SPARK_05 restriction is set, then an error is issued on N. Msg
    --  is appended to the restriction failure message.

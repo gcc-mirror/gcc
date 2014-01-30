@@ -90,6 +90,7 @@ static location_t block_end_locus_sink;
 
 /* Pointers to front-end tables accessed through macros.  */
 struct Node *Nodes_Ptr;
+struct Flags *Flags_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
 struct Elist_Header *Elists_Ptr;
@@ -273,15 +274,26 @@ static const char *decode_name (const char *) ATTRIBUTE_UNUSED;
    structures and then generates code.  */
 
 void
-gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
-      struct Node *nodes_ptr, Node_Id *next_node_ptr, Node_Id *prev_node_ptr,
-      struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
-      struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
-      struct List_Header *list_headers_ptr, Nat number_file,
+gigi (Node_Id gnat_root,
+      int max_gnat_node,
+      int number_name ATTRIBUTE_UNUSED,
+      struct Node *nodes_ptr,
+      struct Flags *flags_ptr,
+      Node_Id *next_node_ptr,
+      Node_Id *prev_node_ptr,
+      struct Elist_Header *elists_ptr,
+      struct Elmt_Item *elmts_ptr,
+      struct String_Entry *strings_ptr,
+      Char_Code *string_chars_ptr,
+      struct List_Header *list_headers_ptr,
+      Nat number_file,
       struct File_Info_Type *file_info_ptr,
-      Entity_Id standard_boolean, Entity_Id standard_integer,
-      Entity_Id standard_character, Entity_Id standard_long_long_float,
-      Entity_Id standard_exception_type, Int gigi_operating_mode)
+      Entity_Id standard_boolean,
+      Entity_Id standard_integer,
+      Entity_Id standard_character,
+      Entity_Id standard_long_long_float,
+      Entity_Id standard_exception_type,
+      Int gigi_operating_mode)
 {
   Node_Id gnat_iter;
   Entity_Id gnat_literal;
@@ -293,6 +305,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   max_gnat_nodes = max_gnat_node;
 
   Nodes_Ptr = nodes_ptr;
+  Flags_Ptr = flags_ptr;
   Next_Node_Ptr = next_node_ptr;
   Prev_Node_Ptr = prev_node_ptr;
   Elists_Ptr = elists_ptr;

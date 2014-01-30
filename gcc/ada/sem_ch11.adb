@@ -737,13 +737,4 @@ package body Sem_Ch11 is
       end if;
    end Analyze_Raise_xxx_Error;
 
-   -----------------------------
-   -- Analyze_Subprogram_Info --
-   -----------------------------
-
-   procedure Analyze_Subprogram_Info (N : Node_Id) is
-   begin
-      Set_Etype (N, RTE (RE_Code_Loc));
-   end Analyze_Subprogram_Info;
-
 end Sem_Ch11;

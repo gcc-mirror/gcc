@@ -567,7 +567,7 @@ package body Exp_Attr is
       --  of the entities in the Fat packages, but first they have identical
       --  names (so we would have to have lots of renaming declarations to
       --  meet the normal RE rule of separate names for all runtime entities),
-      --  and second there would be an awful lot of them!
+      --  and second there would be an awful lot of them.
 
       Fnm :=
         Make_Selected_Component (Loc,
@@ -2602,7 +2602,7 @@ package body Exp_Attr is
          --  This is simply a direct conversion from the enumeration type to
          --  the target integer type, which is treated by the back end as a
          --  normal integer conversion, treating the enumeration type as an
-         --  integer, which is exactly what we want! We set Conversion_OK to
+         --  integer, which is exactly what we want. We set Conversion_OK to
          --  make sure that the analyzer does not complain about what otherwise
          --  might be an illegal conversion.
 
@@ -2798,7 +2798,7 @@ package body Exp_Attr is
 
       --  Note: it might appear that a properly analyzed unchecked conversion
       --  would be just fine here, but that's not the case, since the full
-      --  range checks performed by the following call are critical!
+      --  range checks performed by the following call are critical.
 
          Apply_Type_Conversion_Checks (N);
       end Fixed_Value;
@@ -3274,7 +3274,7 @@ package body Exp_Attr is
 
       --  Note: it might appear that a properly analyzed unchecked conversion
       --  would be just fine here, but that's not the case, since the full
-      --  range checks performed by the following call are critical!
+      --  range checks performed by the following call are critical.
 
          Apply_Type_Conversion_Checks (N);
       end Integer_Value;
@@ -5775,7 +5775,7 @@ package body Exp_Attr is
          begin
             --  The value whose validity is being checked has been captured in
             --  an object declaration. We certainly don't want this object to
-            --  appear valid because the declaration initializes it!
+            --  appear valid because the declaration initializes it.
 
             if Is_Entity_Name (Temp) then
                Set_Is_Known_Valid (Entity (Temp), False);
@@ -5991,7 +5991,7 @@ package body Exp_Attr is
 
          --  But that's precisely what won't work because of possible
          --  unwanted optimization (and indeed the basic motivation for
-         --  the Valid attribute is exactly that this test does not work!)
+         --  the Valid attribute is exactly that this test does not work).
          --  What will work is:
 
          --     Btyp!(X) >= Btyp!(type(X)'First)

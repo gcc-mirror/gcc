@@ -129,12 +129,6 @@ __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) _GLIBCXX_NOTHROW
 	std::terminate ();
     }
 
-  // We have an uncaught exception as soon as we allocate memory.  This
-  // yields uncaught_exception() true during the copy-constructor that
-  // initializes the exception object.  See Issue 475.
-  __cxa_eh_globals *globals = __cxa_get_globals ();
-  globals->uncaughtExceptions += 1;
-
   memset (ret, 0, sizeof (__cxa_refcounted_exception));
 
   return (void *)((char *)ret + sizeof (__cxa_refcounted_exception));
@@ -190,12 +184,6 @@ __cxxabiv1::__cxa_allocate_dependent_exception() _GLIBCXX_NOTHROW
       if (!ret)
 	std::terminate ();
     }
-
-  // We have an uncaught exception as soon as we allocate memory.  This
-  // yields uncaught_exception() true during the copy-constructor that
-  // initializes the exception object.  See Issue 475.
-  __cxa_eh_globals *globals = __cxa_get_globals ();
-  globals->uncaughtExceptions += 1;
 
   memset (ret, 0, sizeof (__cxa_dependent_exception));
 

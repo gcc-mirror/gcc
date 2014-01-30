@@ -7087,7 +7087,17 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   if (TARGET_PORTABLE_RUNTIME)
     op = force_reg (SImode, XEXP (operands[0], 0));
   else
-    op = XEXP (operands[0], 0);
+    {
+      op = XEXP (operands[0], 0);
+
+      /* Generate indirect long calls to non-local functions. */
+      if (!TARGET_64BIT && TARGET_LONG_CALLS && GET_CODE (op) == SYMBOL_REF)
+	{
+	  tree call_decl = SYMBOL_REF_DECL (op);
+	  if (!(call_decl && targetm.binds_local_p (call_decl)))
+	    op = force_reg (word_mode, op);
+	}
+    }
 
   if (TARGET_64BIT)
     {
@@ -7575,11 +7585,29 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   rtx op;
   rtx dst = operands[0];
   rtx nb = operands[2];
+  bool call_powf = false;
 
   if (TARGET_PORTABLE_RUNTIME)
     op = force_reg (SImode, XEXP (operands[1], 0));
   else
-    op = XEXP (operands[1], 0);
+    {
+      op = XEXP (operands[1], 0);
+      if (GET_CODE (op) == SYMBOL_REF)
+	{
+	  /* Handle special call to buggy powf function.  */
+	  if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
+	      && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)), "powf"))
+	    call_powf = true;
+
+	  /* Generate indirect long calls to non-local functions. */
+	  else if (!TARGET_64BIT && TARGET_LONG_CALLS)
+	    {
+	      tree call_decl = SYMBOL_REF_DECL (op);
+	      if (!(call_decl && targetm.binds_local_p (call_decl)))
+		op = force_reg (word_mode, op);
+	    }
+	}
+    }
 
   if (TARGET_64BIT)
     {
@@ -7639,8 +7667,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       rtx r4 = gen_rtx_REG (word_mode, 4);
       if (GET_CODE (op) == SYMBOL_REF)
 	{
-	  if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
-	      && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)), "powf"))
+	  if (call_powf)
 	    emit_call_insn (gen_call_val_powf_64bit (dst, op, nb, r4));
 	  else
 	    emit_call_insn (gen_call_val_symref_64bit (dst, op, nb, r4));
@@ -7659,18 +7686,14 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
 
-	      if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
-		  && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)),
-			      "powf"))
+	      if (call_powf)
 		emit_call_insn (gen_call_val_powf_pic (dst, op, nb, r4));
 	      else
 		emit_call_insn (gen_call_val_symref_pic (dst, op, nb, r4));
 	    }
 	  else
 	    {
-	      if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
-		  && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)),
-			      "powf"))
+	      if (call_powf)
 		emit_call_insn (gen_call_val_powf (dst, op, nb));
 	      else
 		emit_call_insn (gen_call_val_symref (dst, op, nb));

@@ -2347,6 +2347,54 @@ find_foldable_builtin_expect (basic_block bb)
   return NULL;
 }
 
+/* Return true when the basic blocks contains only clobbers followed by RESX.
+   Such BBs are kept around to make removal of dead stores possible with
+   presence of EH and will be optimized out by optimize_clobbers later in the
+   game. 
+
+   NEED_EH is used to recurse in case the clobber has non-EH predecestors
+   that can be clobber only, too.. When it is false, the RESX is not necessary
+   on the end of basic block.  */
+
+static bool
+clobber_only_eh_bb_p (basic_block bb, bool need_eh = true)
+{
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  edge_iterator ei;
+  edge e;
+
+  if (need_eh)
+    {
+      if (gsi_end_p (gsi))
+	return false;
+      if (gimple_code (gsi_stmt (gsi)) != GIMPLE_RESX)
+        return false;
+      gsi_prev (&gsi);
+    }
+  else if (!single_succ_p (bb))
+    return false;
+
+  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+      if (gimple_clobber_p (stmt))
+	continue;
+      if (gimple_code (stmt) == GIMPLE_LABEL)
+	break;
+      return false;
+    }
+
+  /* See if all predecestors are either throws or clobber only BBs.  */
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (!(e->flags & EDGE_EH)
+	&& !clobber_only_eh_bb_p (e->src, false))
+      return false;
+
+  return true;
+}
+
 /* Compute function body size parameters for NODE.
    When EARLY is true, we compute only simple summaries without
    non-trivial predicates to drive the early inliner.  */
@@ -2410,6 +2458,14 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     {
       bb = BASIC_BLOCK_FOR_FN (cfun, order[n]);
       freq = compute_call_stmt_bb_frequency (node->decl, bb);
+      if (clobber_only_eh_bb_p (bb))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\n Ignoring BB %i;"
+		     " it will be optimized away by cleanup_clobbers\n",
+		     bb->index);
+	  continue;
+	}
 
       /* TODO: Obviously predicates can be propagated down across CFG.  */
       if (parms_info)

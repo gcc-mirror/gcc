@@ -1,3 +1,296 @@
+2014-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::_S_allocate): Do
+	not use varargs when argument could be non-POD.
+	(__alloctr_rebind_helper): Eliminate static const bool member by
+	using true_type and false_type.
+	(allocator_traits::__allocate_helper): Likewise.
+	(allocator_traits::__construct_helper): Likewise.
+	(allocator_traits::__destroy_helper): Likewise.
+	(allocator_traits::__maxsize_helper): Likewise.
+	(allocator_traits::__select_helper): Likewise.
+	* include/bits/ptr_traits.h (__ptrtr_rebind_helper): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::operator=(const _Rb_tree&)):
+	Remove redundant condition.
+	* include/bits/stl_vector.h (vector::operator=(const vector&)):
+	Likewise.
+	(_Vector_impl::_M_allocate, _Vector_impl::_M_deallocate): Use
+	indirection through __alloc_traits.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal):
+	Eliminate static const bool members by using true_type and false_type.
+	(__gnu_cxx::__alloc_traits::__is_custom_pointer): Optimize.
+	* testsuite/util/testsuite_allocator.h (PointerBase): Define.
+	* testsuite/20_util/allocator_traits/members/allocate_hint_nonpod.cc:
+	New.
+	* testsuite/20_util/allocator_traits/requirements/typedefs2.cc: New.
+
+	PR libstdc++/59829
+	* include/bits/stl_vector.h (vector::data()): Call _M_data_ptr.
+	(vector::_M_data_ptr): New overloaded functions to ensure empty
+	vectors do not dereference the pointer.
+	* testsuite/23_containers/vector/59829.cc: New.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+	PR libstdc++/21609
+	* include/ext/array_allocator.h: Add deprecated attribute.
+
+	PR libstdc++/57226
+	* doc/xml/manual/debug.xml (debug.gdb): Update documentation for
+	installation and use of python printers.
+	* doc/xml/manual/status_cxx2011.xml: Update.
+	* doc/html/*: Regenerate.
+
+2014-01-28  Jonathan Wakely  <jwakely@redhat.com>
+	    Kyle Lippincott  <spectral@google.com>
+
+	PR libstdc++/59656
+	* include/bits/shared_ptr.h (shared_ptr): Add new non-throwing
+	constructor and grant friendship to weak_ptr.
+	(weak_ptr::lock()): Use new constructor.
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base::_M_add_ref_lock_nothrow()): Declare new function
+	and define specializations.
+	(__shared_count): Add new non-throwing constructor.
+	(__shared_ptr): Add new non-throwing constructor and grant friendship
+	to __weak_ptr.
+	(__weak_ptr::lock()): Use new constructor.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
+2014-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59215
+	* include/bits/shared_ptr_base.h
+	(_Sp_counted_base<_S_atomic>::_M_add_ref_lock()): Use relaxed atomic
+	load.
+
+2014-01-27  Jason Merrill  <jason@redhat.com>
+
+	Core DR 475
+	PR c++/41174
+	PR c++/59224
+	* libsupc++/eh_throw.cc (__cxa_throw): Set uncaughtExceptions.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_dependent_exception)
+	(__cxa_allocate_exception): Don't set it here.
+
+2014-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h: Remove anachronistic comment.
+	* include/bits/stl_multimap.h: Add whitespace.
+	* testsuite/23_containers/map/modifiers/emplace/1.cc: Use
+	-std=gnu++11 instead of -std=c++11.
+	* testsuite/23_containers/map/operators/2.cc: Likewise.
+	* testsuite/23_containers/multimap/modifiers/emplace/1.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/emplace/1.cc: Likewise.
+	* testsuite/23_containers/set/modifiers/emplace/1.cc: Likewise.
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Fix typo.
+	* configure: Regenerate.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/59531
+	* testsuite/experimental/string_view/operations/copy/char/1.cc: New.
+	* testsuite/experimental/string_view/operations/copy/wchar_t/1.cc: New.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59531
+	* include/experimental/string_view
+	(copy(_CharT*, size_type, size_type) const): Correct throw string.
+	Correct copy start location.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59530
+	* include/experimental/string_view (operator[](size_type) const):
+	Fix one-off index error in debug check.
+	* testsuite/experimental/string_view/element_access/char/1.cc: Don't
+	test basic_string_view at size().
+	* testsuite/experimental/string_view/element_access/wchar_t/1.cc: Ditto.
+
+2014-01-24  Ed Smith-Rowland  <3dw4rd@verizon.net>
+	    Peter A. Bigot <pab@pabigot.com>
+
+	PR libstdc++/59529
+	* include/experimental/string_view
+	(basic_string_view(const _CharT*, size_type)): Don't care if len == 0.
+	* testsuite/experimental/string_view/operations/substr/char/1.cc:
+	Comment out catch of out_of_range; No terminating null
+	in basic_string_view.  Check begin == end.
+	* testsuite/experimental/string_view/operations/substr/wchar_t/1.cc:
+	Ditto.
+
+2014-01-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59548
+	* include/debug/safe_base.h (_Safe_sequence_base): Define copy
+	constructor to prevent it being implicitly defined as deleted, but
+	do not copy anything.
+	* include/debug/safe_unordered_base.h (_Safe_unordered_container_base):
+	Define copy and move constructors similar to _Safe_sequence_base's.
+	* testsuite/23_containers/unordered_map/59548.cc: New.
+
+2014-01-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+	    Steve Ellcey  <sellcey@mips.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_TMPNAM): New check for tmpnam
+	function.
+	* configure.ac: Use GLIBCXX_CHECK_TMPNAM.
+	* (configure, config.h.in): Regenerate.
+	* include/c_global/cstdio: Guard ::tmpnam with _GLIBCXX_USE_TMPNAM
+
+2014-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml (a-how_to_set_paths): Expand FAQ answer.
+	* doc/xml/manual/abi.xml (abi.versioning.history): Correct symver.
+
+	PR libstdc++/59872
+	* include/bits/stl_map.h (map::operator=(map&&)): Fix comment.
+	* include/bits/stl_multimap.h (multimap::operator=(multimap&&)):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset::operator=(multiset&&)):
+	Likewise.
+	* include/bits/stl_set.h (set::operator=(set&&)): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_M_move_data): New overloaded
+	functions to perform moving or copying of elements from rvalue tree.
+	(_Rb_tree::_Rb_tree(_Rb_tree&&)): Use _M_move_data.
+	(_Rb_tree::_Rb_tree(_Rb_tree&&, _Node_allocator&&)): Likewise.
+	* testsuite/23_containers/map/59872.cc: New.
+	* testsuite/23_containers/map/56613.cc: Remove duplicate include.
+
+2014-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_deque.h (_Deque_impl): Move comment.
+
+	PR libstdc++/58764
+	* include/bits/stl_deque.h (deque::deque(const allocator_type&):
+	Split into separate default constructor and constructor taking
+	allocator.
+	* include/bits/stl_list.h (list::list(const allocator_type&): Likewise.
+	* include/bits/stl_vector.h (vector::vector(const allocator_type&):
+	Likewise.
+	* include/debug/deque (deque::deque(const allocator_type&)): Likewise.
+	* include/debug/list (list::list(const _Allocator&)): Likewise.
+	* include/debug/map.h (map::map(const _Compare&, const _Allocator&)):
+	Likewise.
+	* include/debug/multimap.h
+	(multimap::multimap(const _Compare&, const _Allocator&)): Likewise.
+	* include/debug/set.h (set::set(const _Compare&, const _Allocator&)):
+	Likewise.
+	* include/debug/multiset.h
+	(multiset::multiset(const _Compare&, const _Allocator&)): Likewise.
+	* include/debug/vector (vector::vector(const allocator_type&)):
+	Likewise.
+	* include/profile/deque (deque::deque(const _Allocator&)): Likewise.
+	* include/profile/list (list::list(const _Allocator&)): Likewise.
+	* include/profile/map.h
+	(map::map(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/multimap.h
+	(multimap::multimap(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/set.h
+	(set::set(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/multiset.h
+	(multiset::multiset(const _Compare&, const _Allocator&)): Likewise.
+	* include/profile/vector (vector::vector(const _Allocator&)):
+	Likewise.
+	* testsuite/23_containers/deque/58764.cc: New.
+	* testsuite/23_containers/list/58764.cc: New.
+	* testsuite/23_containers/map/58764.cc: New.
+	* testsuite/23_containers/multimap/58764.cc: New.
+	* testsuite/23_containers/set/58764.cc: New.
+	* testsuite/23_containers/multiset/58764.cc: New.
+	* testsuite/23_containers/vector/58764.cc: New.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+	PR libstdc++/58764 (again)
+	* include/bits/stl_list.h (list): Make default constructor's exception
+	specification conditional.
+	* include/bits/stl_vector.h (vector): Likewise.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Add noexcept
+	to default constructor.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2014-01-21  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.tcc: Remove incorrect `nosubs` handling.
+	* include/bits/regex_scanner.tcc: Handle `nosubs` correctly.
+	* testsuite/28_regex/constants/syntax_option_type.cc: Add a test case.
+
+2014-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56267
+	* include/bits/hashtable.h (__cache_default): Do not depend on
+	whether the hash function is DefaultConstructible or CopyAssignable.
+	(_Hashtable): Adjust static assertions.
+	* doc/xml/manual/containers.xml (containers.unordered.cache): Update.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Remove.
+
+2014-01-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* scripts/create_testsuite_files: Add testsuite/experimental in
+	the list of folders to search for tests.
+	* include/experimental/string_view
+	(basic_string_view<>::operator[]): Comment _GLIBCXX_DEBUG_ASSERT,
+	incompatible with constexpr qualifier.
+	(basic_string_view<>::front()): Likewise.
+	(basic_string_view<>::back()): Likewise.
+	* testsuite/experimental/string_view/element_access/wchar_t/2.cc:
+	Merge dg-options directives into one.
+	* testsuite/experimental/string_view/element_access/char/2.cc:
+	Likewise. Remove invalid experimental namespace scope on
+	string_view_type.
+
 2014-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/56267

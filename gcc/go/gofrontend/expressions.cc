@@ -1464,6 +1464,10 @@ class Func_code_reference_expression : public Expression
   do_traverse(Traverse*)
   { return TRAVERSE_CONTINUE; }
 
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type()
   { return Type::make_pointer_type(Type::make_void_type()); }
@@ -2941,6 +2945,10 @@ class Nil_expression : public Expression
   do_is_constant() const
   { return true; }
 
+  bool
+  do_is_immutable() const
+  { return true; }
+
   Type*
   do_type()
   { return Type::make_nil_type(); }
@@ -3682,8 +3690,15 @@ class Unary_expression : public Expression
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
+
   bool
   do_is_constant() const;
+
+  bool
+  do_is_immutable() const
+  { return this->expr_->is_immutable(); }
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
@@ -3806,6 +3821,45 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
   return this;
 }
 
+// Flatten expression if a nil check must be performed and create temporary
+// variables if necessary.
+
+Expression*
+Unary_expression::do_flatten(Gogo* gogo, Named_object*,
+                             Statement_inserter* inserter)
+{
+  Location location = this->location();
+  if (this->op_ == OPERATOR_MULT
+      && !this->expr_->is_variable())
+    {
+      go_assert(this->expr_->type()->points_to() != NULL);
+      Type* ptype = this->expr_->type()->points_to();
+      if (!ptype->is_void_type())
+        {
+          Btype* pbtype = ptype->get_backend(gogo);
+          size_t s = gogo->backend()->type_size(pbtype);
+          if (s >= 4096 || this->issue_nil_check_)
+            {
+              Temporary_statement* temp =
+                  Statement::make_temporary(NULL, this->expr_, location);
+              inserter->insert(temp);
+              this->expr_ =
+                  Expression::make_temporary_reference(temp, location);
+            }
+        }
+    }
+
+  if (this->create_temp_ && !this->expr_->is_variable())
+    {
+      Temporary_statement* temp =
+          Statement::make_temporary(NULL, this->expr_, location);
+      inserter->insert(temp);
+      this->expr_ = Expression::make_temporary_reference(temp, location);
+    }
+
+  return this;
+}
+
 // Return whether a unary expression is a constant.
 
 bool
@@ -3821,8 +3875,8 @@ Unary_expression::do_is_constant() const
   else if (this->op_ == OPERATOR_AND)
     {
       // Taking the address of a variable is constant if it is a
-      // global variable, not constant otherwise.  In other cases
-      // taking the address is probably not a constant.
+      // global variable, not constant otherwise.  In other cases taking the
+      // address is probably not a constant.
       Var_expression* ve = this->expr_->var_expression();
       if (ve != NULL)
 	{
@@ -4151,58 +4205,40 @@ Unary_expression::do_get_tree(Translate_context* context)
 	{
 	  Temporary_statement* temp = sut->temporary();
 	  Bvariable* bvar = temp->get_backend_variable(context);
-	  tree var_tree = var_to_tree(bvar);
-	  Expression* val = sut->expression();
-	  tree val_tree = val->get_tree(context);
-	  if (var_tree == error_mark_node || val_tree == error_mark_node)
-	    return error_mark_node;
-	  tree addr_tree = build_fold_addr_expr_loc(loc.gcc_location(),
-						    var_tree);
-	  return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-			    TREE_TYPE(addr_tree),
-			    build2_loc(sut->location().gcc_location(),
-				       MODIFY_EXPR, void_type_node,
-				       var_tree, val_tree),
-			    addr_tree);
+          Bexpression* bvar_expr = gogo->backend()->var_expression(bvar, loc);
+
+          Expression* val = sut->expression();
+          Bexpression* bval = tree_to_expr(val->get_tree(context));
+
+          Bstatement* bassign =
+              gogo->backend()->assignment_statement(bvar_expr, bval, loc);
+          Bexpression* bvar_addr =
+              gogo->backend()->address_expression(bvar_expr, loc);
+          Bexpression* ret =
+              gogo->backend()->compound_expression(bassign, bvar_addr, loc);
+          return expr_to_tree(ret);
 	}
     }
 
+  Bexpression* ret;
   tree expr = this->expr_->get_tree(context);
-  if (expr == error_mark_node)
-    return error_mark_node;
-
+  Bexpression* bexpr = tree_to_expr(expr);
+  Btype* btype = this->expr_->type()->get_backend(gogo);
   switch (this->op_)
     {
     case OPERATOR_PLUS:
-      return expr;
+      ret = bexpr;
+      break;
 
     case OPERATOR_MINUS:
-      {
-	tree type = TREE_TYPE(expr);
-	tree compute_type = excess_precision_type(type);
-	if (compute_type != NULL_TREE)
-	  expr = ::convert(compute_type, expr);
-	tree ret = fold_build1_loc(loc.gcc_location(), NEGATE_EXPR,
-				   (compute_type != NULL_TREE
-				    ? compute_type
-				    : type),
-				   expr);
-	if (compute_type != NULL_TREE)
-	  ret = ::convert(type, ret);
-	return ret;
-      }
+      ret = gogo->backend()->unary_expression(this->op_, bexpr, loc);
+      ret = gogo->backend()->convert_expression(btype, ret, loc);
+      break;
 
     case OPERATOR_NOT:
-      if (TREE_CODE(TREE_TYPE(expr)) == BOOLEAN_TYPE)
-	return fold_build1_loc(loc.gcc_location(), TRUTH_NOT_EXPR,
-                               TREE_TYPE(expr), expr);
-      else
-	return fold_build2_loc(loc.gcc_location(), NE_EXPR, boolean_type_node,
-                               expr, build_int_cst(TREE_TYPE(expr), 0));
-
     case OPERATOR_XOR:
-      return fold_build1_loc(loc.gcc_location(), BIT_NOT_EXPR, TREE_TYPE(expr),
-                             expr);
+      ret = gogo->backend()->unary_expression(this->op_, bexpr, loc);
+      break;
 
     case OPERATOR_AND:
       if (!this->create_temp_)
@@ -4211,127 +4247,91 @@ Unary_expression::do_get_tree(Translate_context* context)
 	  // where we would see one should have been moved onto the
 	  // heap at parse time.  Taking the address of a nonconstant
 	  // constructor will not do what the programmer expects.
-	  go_assert(TREE_CODE(expr) != CONSTRUCTOR || TREE_CONSTANT(expr));
-	  go_assert(TREE_CODE(expr) != ADDR_EXPR);
+
+          go_assert(!this->expr_->is_composite_literal()
+                    || this->expr_->is_immutable());
+          Unary_expression* ue = static_cast<Unary_expression*>(this->expr_);
+          go_assert(ue == NULL || ue->op() != OPERATOR_AND);
 	}
 
       // Build a decl for a constant constructor.
-      if (TREE_CODE(expr) == CONSTRUCTOR && TREE_CONSTANT(expr))
-	{
-	  tree decl = build_decl(this->location().gcc_location(), VAR_DECL,
-				 create_tmp_var_name("C"), TREE_TYPE(expr));
-	  DECL_EXTERNAL(decl) = 0;
-	  TREE_PUBLIC(decl) = 0;
-	  TREE_READONLY(decl) = 1;
-	  TREE_CONSTANT(decl) = 1;
-	  TREE_STATIC(decl) = 1;
-	  TREE_ADDRESSABLE(decl) = 1;
-	  DECL_ARTIFICIAL(decl) = 1;
-	  DECL_INITIAL(decl) = expr;
-	  rest_of_decl_compilation(decl, 1, 0);
-	  expr = decl;
-	}
+      if ((this->expr_->is_composite_literal()
+           || this->expr_->string_expression() != NULL)
+          && this->expr_->is_immutable())
+        {
+          static unsigned int counter;
+          char buf[100];
+          snprintf(buf, sizeof buf, "C%u", counter);
+          ++counter;
 
-      if (this->create_temp_
-	  && !TREE_ADDRESSABLE(TREE_TYPE(expr))
-	  && (TREE_CODE(expr) == CONST_DECL || !DECL_P(expr))
-	  && TREE_CODE(expr) != INDIRECT_REF
-	  && TREE_CODE(expr) != COMPONENT_REF)
-	{
-	  if (current_function_decl != NULL)
-	    {
-	      tree tmp = create_tmp_var(TREE_TYPE(expr), get_name(expr));
-	      DECL_IGNORED_P(tmp) = 1;
-	      DECL_INITIAL(tmp) = expr;
-	      TREE_ADDRESSABLE(tmp) = 1;
-	      return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-				build_pointer_type(TREE_TYPE(expr)),
-				build1_loc(loc.gcc_location(), DECL_EXPR,
-					   void_type_node, tmp),
-				build_fold_addr_expr_loc(loc.gcc_location(),
-							 tmp));
-	    }
-	  else
-	    {
-	      tree tmp = build_decl(loc.gcc_location(), VAR_DECL,
-				    create_tmp_var_name("A"), TREE_TYPE(expr));
-	      DECL_EXTERNAL(tmp) = 0;
-	      TREE_PUBLIC(tmp) = 0;
-	      TREE_STATIC(tmp) = 1;
-	      DECL_ARTIFICIAL(tmp) = 1;
-	      TREE_ADDRESSABLE(tmp) = 1;
-	      tree make_tmp;
-	      if (!TREE_CONSTANT(expr))
-		make_tmp = fold_build2_loc(loc.gcc_location(), INIT_EXPR,
-					   void_type_node, tmp, expr);
-	      else
-		{
-		  TREE_READONLY(tmp) = 1;
-		  TREE_CONSTANT(tmp) = 1;
-		  DECL_INITIAL(tmp) = expr;
-		  make_tmp = NULL_TREE;
-		}
-	      rest_of_decl_compilation(tmp, 1, 0);
-	      tree addr = build_fold_addr_expr_loc(loc.gcc_location(), tmp);
-	      if (make_tmp == NULL_TREE)
-		return addr;
-	      return build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-				TREE_TYPE(addr), make_tmp, addr);
-	    }
-	}
+          Bvariable* decl =
+              gogo->backend()->immutable_struct(buf, true, false, btype, loc);
+          gogo->backend()->immutable_struct_set_init(decl, buf, true, false,
+                                                     btype, loc, bexpr);
+          bexpr = gogo->backend()->var_expression(decl, loc);
+        }
 
-      return build_fold_addr_expr_loc(loc.gcc_location(), expr);
+      go_assert(!this->create_temp_ || this->expr_->is_variable());
+      ret = gogo->backend()->address_expression(bexpr, loc);
+      break;
 
     case OPERATOR_MULT:
       {
-	go_assert(POINTER_TYPE_P(TREE_TYPE(expr)));
+        go_assert(this->expr_->type()->points_to() != NULL);
 
 	// If we are dereferencing the pointer to a large struct, we
 	// need to check for nil.  We don't bother to check for small
 	// structs because we expect the system to crash on a nil
 	// pointer dereference.	 However, if we know the address of this
 	// expression is being taken, we must always check for nil.
-	tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
-	if (!VOID_TYPE_P(target_type_tree))
+
+        Type* ptype = this->expr_->type()->points_to();
+        Btype* pbtype = ptype->get_backend(gogo);
+        if (!ptype->is_void_type())
 	  {
-	    HOST_WIDE_INT s = int_size_in_bytes(target_type_tree);
-	    if (s == -1 || s >= 4096 || this->issue_nil_check_)
+            size_t s = gogo->backend()->type_size(pbtype);
+	    if (s >= 4096 || this->issue_nil_check_)
 	      {
-		if (!DECL_P(expr))
-		  expr = save_expr(expr);
-		tree compare = fold_build2_loc(loc.gcc_location(), EQ_EXPR,
-					       boolean_type_node,
-					       expr,
-					       fold_convert(TREE_TYPE(expr),
-							    null_pointer_node));
+                go_assert(this->expr_->is_variable());
+
+                Expression* nil_expr = Expression::make_nil(loc);
+                Bexpression* nil = tree_to_expr(nil_expr->get_tree(context));
+                Bexpression* compare =
+                    gogo->backend()->binary_expression(OPERATOR_EQEQ, bexpr,
+                                                       nil, loc);
+
 		Expression* crash_expr =
 		    gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
-		tree crash = crash_expr->get_tree(context);
-		expr = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
-				       TREE_TYPE(expr), build3(COND_EXPR,
-							       void_type_node,
-							       compare, crash,
-							       NULL_TREE),
-				       expr);
+                Bexpression* crash =
+                    tree_to_expr(crash_expr->get_tree(context));
+                bexpr = gogo->backend()->conditional_expression(btype, compare,
+                                                                crash, bexpr,
+                                                                loc);
+
 	      }
 	  }
 
 	// If the type of EXPR is a recursive pointer type, then we
 	// need to insert a cast before indirecting.
-	if (VOID_TYPE_P(target_type_tree))
-	  {
-	    Type* pt = this->expr_->type()->points_to();
-	    tree ind = type_to_tree(pt->get_backend(gogo));
-	    expr = fold_convert_loc(loc.gcc_location(),
+        tree expr = expr_to_tree(bexpr);
+        tree target_type_tree = TREE_TYPE(TREE_TYPE(expr));
+        if (VOID_TYPE_P(target_type_tree))
+          {
+            tree ind = type_to_tree(pbtype);
+            expr = fold_convert_loc(loc.gcc_location(),
                                     build_pointer_type(ind), expr);
-	  }
+            bexpr = tree_to_expr(expr);
+          }
 
-	return build_fold_indirect_ref_loc(loc.gcc_location(), expr);
+        ret = gogo->backend()->indirect_expression(bexpr, false, loc);
       }
+      break;
 
     default:
       go_unreachable();
     }
+
+  return expr_to_tree(ret);
 }
 
 // Export a unary expression.
@@ -12232,6 +12232,9 @@ class Struct_construction_expression : public Expression
   int
   do_traverse(Traverse* traverse);
 
+  bool
+  do_is_immutable() const;
+
   Type*
   do_type()
   { return this->type_; }
@@ -12331,6 +12334,23 @@ Struct_construction_expression::is_constant_struct() const
 	return false;
     }
 
+  return true;
+}
+
+// Return whether this struct is immutable.
+
+bool
+Struct_construction_expression::do_is_immutable() const
+{
+  if (this->vals_ == NULL)
+    return true;
+  for (Expression_list::const_iterator pv = this->vals_->begin();
+       pv != this->vals_->end();
+       ++pv)
+    {
+      if (*pv != NULL && !(*pv)->is_immutable())
+	return false;
+    }
   return true;
 }
 
@@ -12546,6 +12566,9 @@ protected:
   int
   do_traverse(Traverse* traverse);
 
+  bool
+  do_is_immutable() const;
+
   Type*
   do_type()
   { return this->type_; }
@@ -12619,6 +12642,23 @@ Array_construction_expression::is_constant_array() const
 	  && !(*pv)->is_constant()
 	  && (!(*pv)->is_composite_literal()
 	      || (*pv)->is_nonconstant_composite_literal()))
+	return false;
+    }
+  return true;
+}
+
+// Return whether this is an immutable array initializer.
+
+bool
+Array_construction_expression::do_is_immutable() const
+{
+  if (this->vals_ == NULL)
+    return true;
+  for (Expression_list::const_iterator pv = this->vals_->begin();
+       pv != this->vals_->end();
+       ++pv)
+    {
+      if (*pv != NULL && !(*pv)->is_immutable())
 	return false;
     }
   return true;
@@ -14389,6 +14429,10 @@ class Type_descriptor_expression : public Expression
   Type*
   do_type()
   { return Type::make_type_descriptor_ptr_type(); }
+
+  bool
+  do_is_immutable() const
+  { return true; }
 
   void
   do_determine_type(const Type_context*)

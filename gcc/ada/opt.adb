@@ -64,6 +64,7 @@ package body Opt is
       Polling_Required_Config               := Polling_Required;
       Short_Descriptors_Config              := Short_Descriptors;
       SPARK_Mode_Config                     := SPARK_Mode;
+      SPARK_Mode_Pragma_Config              := SPARK_Mode_Pragma;
       Use_VADS_Size_Config                  := Use_VADS_Size;
 
       --  Reset the indication that Optimize_Alignment was set locally, since
@@ -100,6 +101,7 @@ package body Opt is
       Polling_Required               := Save.Polling_Required;
       Short_Descriptors              := Save.Short_Descriptors;
       SPARK_Mode                     := Save.SPARK_Mode;
+      SPARK_Mode_Pragma              := Save.SPARK_Mode_Pragma;
       Use_VADS_Size                  := Save.Use_VADS_Size;
 
       --  Update consistently the value of Init_Or_Norm_Scalars. The value of
@@ -137,6 +139,7 @@ package body Opt is
       Save.Polling_Required               := Polling_Required;
       Save.Short_Descriptors              := Short_Descriptors;
       Save.SPARK_Mode                     := SPARK_Mode;
+      Save.SPARK_Mode_Pragma              := SPARK_Mode_Pragma;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 
@@ -167,20 +170,24 @@ package body Opt is
          Persistent_BSS_Mode         := False;
          Use_VADS_Size               := False;
          Optimize_Alignment_Local    := True;
-         SPARK_Mode                  := Auto;
 
          --  For an internal unit, assertions/debug pragmas are off unless this
          --  is the main unit and they were explicitly enabled. We also make
-         --  sure we do not assume that values are necessarily valid.
+         --  sure we do not assume that values are necessarily valid and that
+         --  SPARK_Mode is set to its configuration value.
 
          if Main_Unit then
             Assertions_Enabled       := Assertions_Enabled_Config;
             Assume_No_Invalid_Values := Assume_No_Invalid_Values_Config;
             Check_Policy_List        := Check_Policy_List_Config;
+            SPARK_Mode               := SPARK_Mode_Config;
+            SPARK_Mode_Pragma        := SPARK_Mode_Pragma_Config;
          else
             Assertions_Enabled       := False;
             Assume_No_Invalid_Values := False;
             Check_Policy_List        := Empty;
+            SPARK_Mode               := None;
+            SPARK_Mode_Pragma        := Empty;
          end if;
 
       --  Case of non-internal unit
@@ -203,6 +210,7 @@ package body Opt is
          Optimize_Alignment_Local    := False;
          Persistent_BSS_Mode         := Persistent_BSS_Mode_Config;
          SPARK_Mode                  := SPARK_Mode_Config;
+         SPARK_Mode_Pragma           := SPARK_Mode_Pragma_Config;
          Use_VADS_Size               := Use_VADS_Size_Config;
 
          --  Update consistently the value of Init_Or_Norm_Scalars. The value

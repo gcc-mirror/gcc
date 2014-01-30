@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,7 +35,7 @@
 
 --  Warning: declarations in this package are ambiguous with respect to the
 --  extra declarations that can be introduced into System using Extend_System.
---  It is a good idea to avoid use clauses for this package!
+--  It is a good idea to avoid use clauses for this package.
 
 pragma Compiler_Unit;
 

@@ -64,7 +64,7 @@ frv port		Alexandre Oliva		aoliva@redhat.com
 h8 port			Jeff Law		law@redhat.com
 h8 port			Kazu Hirata		kazu@codesourcery.com
 hppa port		Jeff Law		law@redhat.com
-hppa port		John David Anglin	dave.anglin@nrc-cnrc.gc.ca
+hppa port		John David Anglin	dave.anglin@bell.net
 i386 port		Richard Henderson	rth@redhat.com
 i386 port		Jan Hubicka		hubicka@ucw.cz
 i386 port		Uros Bizjak		ubizjak@gmail.com
@@ -128,7 +128,7 @@ darwin port		Stan Shebs		stanshebs@earthlink.net
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
 GNU/Hurd		Thomas Schwinge		thomas@schwinge.name
-hpux			John David Anglin	dave.anglin@nrc-cnrc.gc.ca
+hpux			John David Anglin	dave.anglin@bell.net
 hpux			Steve Ellcey		sellcey@mips.com
 solaris			Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org

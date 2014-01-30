@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,7 @@ package body GNAT.MBBS_Discrete_Random is
       S.X2 := Square_Mod_N (S.X2, S.Q);
       Temp := S.X2 - S.X1;
 
-      --  Following duplication is not an error, it is a loop unwinding!
+      --  Following duplication is not an error, it is a loop unwinding
 
       if Temp < 0 then
          Temp := Temp + S.Q;

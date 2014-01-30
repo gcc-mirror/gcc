@@ -405,8 +405,8 @@ maybe_thunk_body (tree fn, bool force)
 	      clone_result = DECL_RESULT (clone);
 	      modify = build2 (MODIFY_EXPR, TREE_TYPE (clone_result),
 			       clone_result, call);
+	      modify = build1 (RETURN_EXPR, void_type_node, modify);
 	      add_stmt (modify);
-	      BLOCK_VARS (block) = clone_result;
 	    }
 	  else
 	    {

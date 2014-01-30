@@ -225,11 +225,18 @@ package body Rtsfind is
       --  Entity is available
 
       else
-         --  If in No_Run_Time mode and entity is not in one of the
-         --  specially permitted units, raise the exception.
+         --  If in No_Run_Time mode and entity is neither in the current unit
+         --  nor in one of the specially permitted units, raise the exception.
 
          if No_Run_Time_Mode
            and then not OK_No_Run_Time_Unit (U_Id)
+
+           --  If the entity being referenced is defined in the current scope,
+           --  using it is always fine as such usage can never introduce any
+           --  dependency on an additional unit. The presence of this test
+           --  helps generating meaningful error messages for CRT violations.
+
+           and then Scope (Eid) /= Current_Scope
          then
             Entity_Not_Defined (E);
             raise RE_Not_Available;
@@ -703,7 +710,7 @@ package body Rtsfind is
       --  of diagnostics, since we will take care of it here.
 
       --  We save style checking switches and turn off style checking for
-      --  loading the unit, since we don't want any style checking!
+      --  loading the unit, since we don't want any style checking.
 
       declare
          Save_Style_Check : constant Boolean := Style_Check;
@@ -1081,7 +1088,7 @@ package body Rtsfind is
       --  declaration and otherwise do a regular find.
 
       --  Not pleasant, but these kinds of annoying recursion when
-      --  writing an Ada compiler in Ada have to be broken somewhere!
+      --  writing an Ada compiler in Ada have to be broken somewhere.
 
       if Present (Main_Unit_Entity)
         and then Chars (Main_Unit_Entity) = Name_System

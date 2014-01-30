@@ -4352,7 +4352,7 @@ convert_to_fat_pointer (tree type, tree expr)
   tree template_type = TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type))));
   tree p_array_type = TREE_TYPE (TYPE_FIELDS (type));
   tree etype = TREE_TYPE (expr);
-  tree template_tree;
+  tree template_addr;
   vec<constructor_elt, va_gc> *v;
   vec_alloc (v, 2);
 
@@ -4395,31 +4395,43 @@ convert_to_fat_pointer (tree type, tree expr)
       tree field = TYPE_FIELDS (TREE_TYPE (etype));
 
       expr = gnat_protect_expr (expr);
-      if (TREE_CODE (expr) == ADDR_EXPR)
-	expr = TREE_OPERAND (expr, 0);
-      else
+
+      /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
+	 the thin pointer value has been shifted so we shift it back to get
+	 the template address.  */
+      if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
 	{
-	  /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
-	     the thin pointer value has been shifted so we first need to shift
-	     it back to get the template address.  */
-	  if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
-	    expr
-	      = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
-				 fold_build1 (NEGATE_EXPR, sizetype,
-					      byte_position
-					      (DECL_CHAIN (field))));
-	  expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	  template_addr
+	    = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
+			       fold_build1 (NEGATE_EXPR, sizetype,
+					    byte_position
+					    (DECL_CHAIN (field))));
+	  template_addr
+	    = fold_convert (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type))),
+			    template_addr);
 	}
 
-      template_tree = build_component_ref (expr, NULL_TREE, field, false);
-      expr = build_unary_op (ADDR_EXPR, NULL_TREE,
-			     build_component_ref (expr, NULL_TREE,
-						  DECL_CHAIN (field), false));
+      /* Otherwise we explicitly take the address of the fields.  */
+      else
+	{
+	  expr = build_unary_op (INDIRECT_REF, NULL_TREE, expr);
+	  template_addr
+	    = build_unary_op (ADDR_EXPR, NULL_TREE,
+			      build_component_ref (expr, NULL_TREE, field,
+						   false));
+	  expr = build_unary_op (ADDR_EXPR, NULL_TREE,
+				 build_component_ref (expr, NULL_TREE,
+						      DECL_CHAIN (field),
+						      false));
+	}
     }
 
   /* Otherwise, build the constructor for the template.  */
   else
-    template_tree = build_template (template_type, TREE_TYPE (etype), expr);
+    template_addr
+      = build_unary_op (ADDR_EXPR, NULL_TREE,
+			build_template (template_type, TREE_TYPE (etype),
+					expr));
 
   /* The final result is a constructor for the fat pointer.
 
@@ -4433,11 +4445,8 @@ convert_to_fat_pointer (tree type, tree expr)
 
      Note that the call to "build_template" above is still fine because it
      will only refer to the provided TEMPLATE_TYPE in this case.  */
-  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
-			  convert (p_array_type, expr));
-  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
-			  build_unary_op (ADDR_EXPR, NULL_TREE,
-					  template_tree));
+  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type), convert (p_array_type, expr));
+  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)), template_addr);
   return gnat_build_constructor (type, v);
 }
 

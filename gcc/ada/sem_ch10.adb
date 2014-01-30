@@ -105,6 +105,11 @@ package body Sem_Ch10 is
    --  N is the compilation unit whose list of context items receives the
    --  implicit with_clauses.
 
+   procedure Generate_Parent_References (N : Node_Id; P_Id : Entity_Id);
+   --  Generate cross-reference information for the parents of child units
+   --  and of subunits. N is a defining_program_unit_name, and P_Id is the
+   --  immediate parent scope.
+
    function Get_Parent_Entity (Unit : Node_Id) return Entity_Id;
    --  Get defining entity of parent unit of a child unit. In most cases this
    --  is the defining entity of the unit, but for a child instance whose
@@ -260,10 +265,6 @@ package body Sem_Ch10 is
       --  clauses, set Context_Items to the context list of the body and
       --  Spec_Context_Items to that of the spec. Parent packages are not
       --  examined for documentation purposes.
-
-      procedure Generate_Parent_References (N : Node_Id; P_Id : Entity_Id);
-      --  Generate cross-reference information for the parents of child units.
-      --  N is a defining_program_unit_name, and P_Id is the immediate parent.
 
       ---------------------------
       -- Check_Redundant_Withs --
@@ -598,45 +599,6 @@ package body Sem_Ch10 is
          end loop;
       end Check_Redundant_Withs;
 
-      --------------------------------
-      -- Generate_Parent_References --
-      --------------------------------
-
-      procedure Generate_Parent_References (N : Node_Id; P_Id : Entity_Id) is
-         Pref   : Node_Id;
-         P_Name : Entity_Id := P_Id;
-
-      begin
-         Pref := Name (Parent (Defining_Entity (N)));
-
-         if Nkind (Pref) = N_Expanded_Name then
-
-            --  Done already, if the unit has been compiled indirectly as
-            --  part of the closure of its context because of inlining.
-
-            return;
-         end if;
-
-         while Nkind (Pref) = N_Selected_Component loop
-            Change_Selected_Component_To_Expanded_Name (Pref);
-            Set_Entity (Pref, P_Name);
-            Set_Etype (Pref, Etype (P_Name));
-            Generate_Reference (P_Name, Pref, 'r');
-            Pref   := Prefix (Pref);
-            P_Name := Scope (P_Name);
-         end loop;
-
-         --  The guard here on P_Name is to handle the error condition where
-         --  the parent unit is missing because the file was not found.
-
-         if Present (P_Name) then
-            Set_Entity (Pref, P_Name);
-            Set_Etype (Pref, Etype (P_Name));
-            Generate_Reference (P_Name, Pref, 'r');
-            Style.Check_Identifier (Pref, P_Name);
-         end if;
-      end Generate_Parent_References;
-
    --  Start of processing for Analyze_Compilation_Unit
 
    begin
@@ -865,9 +827,9 @@ package body Sem_Ch10 is
          if Nkind (Defining_Unit_Name (Specification (Unit_Node))) =
                                              N_Defining_Program_Unit_Name
          then
-            Generate_Parent_References (
-              Specification (Unit_Node),
-                Scope (Defining_Entity (Unit (Lib_Unit))));
+            Generate_Parent_References
+              (Specification (Unit_Node),
+               Scope (Defining_Entity (Unit (Lib_Unit))));
          end if;
       end if;
 
@@ -906,8 +868,8 @@ package body Sem_Ch10 is
 
          --  Set the entities of all parents in the program_unit_name
 
-         Generate_Parent_References (
-           Unit_Node, Get_Parent_Entity (Unit (Parent_Spec (Unit_Node))));
+         Generate_Parent_References
+           (Unit_Node, Get_Parent_Entity (Unit (Parent_Spec (Unit_Node))));
       end if;
 
       --  All components of the context: with-clauses, library unit, ancestors
@@ -1209,7 +1171,7 @@ package body Sem_Ch10 is
                Set_Elaboration_Entity_Required (Spec_Id, False);
 
             --  Case of elaboration entity is required for access before
-            --  elaboration checking (so certainly we must build it!)
+            --  elaboration checking (so certainly we must build it).
 
             else
                Set_Elaboration_Entity_Required (Spec_Id, True);
@@ -2326,6 +2288,7 @@ package body Sem_Ch10 is
          end if;
       end if;
 
+      Generate_Parent_References (Unit (N), Par_Unit);
       Analyze (Proper_Body (Unit (N)));
       Remove_Context (N);
 
@@ -3055,6 +3018,49 @@ package body Sem_Ch10 is
          Expand_With_Clause (Item, Prefix (Nam), N);
       end if;
    end Expand_With_Clause;
+
+   --------------------------------
+   -- Generate_Parent_References --
+   --------------------------------
+
+   procedure Generate_Parent_References (N : Node_Id; P_Id : Entity_Id) is
+      Pref   : Node_Id;
+      P_Name : Entity_Id := P_Id;
+
+   begin
+      if Nkind (N) = N_Subunit then
+         Pref := Name (N);
+      else
+         Pref := Name (Parent (Defining_Entity (N)));
+      end if;
+
+      if Nkind (Pref) = N_Expanded_Name then
+
+         --  Done already, if the unit has been compiled indirectly as
+         --  part of the closure of its context because of inlining.
+
+         return;
+      end if;
+
+      while Nkind (Pref) = N_Selected_Component loop
+         Change_Selected_Component_To_Expanded_Name (Pref);
+         Set_Entity (Pref, P_Name);
+         Set_Etype (Pref, Etype (P_Name));
+         Generate_Reference (P_Name, Pref, 'r');
+         Pref   := Prefix (Pref);
+         P_Name := Scope (P_Name);
+      end loop;
+
+      --  The guard here on P_Name is to handle the error condition where
+      --  the parent unit is missing because the file was not found.
+
+      if Present (P_Name) then
+         Set_Entity (Pref, P_Name);
+         Set_Etype (Pref, Etype (P_Name));
+         Generate_Reference (P_Name, Pref, 'r');
+         Style.Check_Identifier (Pref, P_Name);
+      end if;
+   end Generate_Parent_References;
 
    -----------------------
    -- Get_Parent_Entity --
@@ -5156,6 +5162,14 @@ package body Sem_Ch10 is
 
             Set_Is_Visible_Lib_Unit (Uname);
 
+            --  If the unit is a wrapper package for a compilation unit that is
+            --  a subprogrm instance, indicate that the instance itself is a
+            --  visible unit. This is necessary if the instance is inlined.
+
+            if Is_Wrapper_Package (Uname) then
+               Set_Is_Visible_Lib_Unit (Related_Instance (Uname));
+            end if;
+
             --  If the child unit appears in the context of its parent, it is
             --  immediately visible.
 
@@ -5518,8 +5532,9 @@ package body Sem_Ch10 is
          Set_Ekind                   (Ent, E_Abstract_State);
          Set_Etype                   (Ent, Standard_Void_Type);
          Set_Scope                   (Ent, Scop);
-         Set_Refined_State           (Ent, Empty);
+         Set_Encapsulating_State     (Ent, Empty);
          Set_Refinement_Constituents (Ent, New_Elmt_List);
+         Set_Part_Of_Constituents    (Ent, New_Elmt_List);
       end Decorate_State;
 
       -------------------
@@ -6447,6 +6462,7 @@ package body Sem_Ch10 is
 
       --  If the unit is a wrapper package, the subprogram instance is
       --  what must be removed from visibility.
+      --  Should we use Related_Instance instead???
 
       if Is_Wrapper_Package (Unit_Name) then
          Set_Is_Immediately_Visible (Current_Entity (Unit_Name), False);

@@ -2,13 +2,56 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Unordered Associative</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="containers.html" title="Chapter 9.  Containers" /><link rel="prev" href="associative.html" title="Associative" /><link rel="next" href="containers_and_c.html" title="Interacting with C" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Unordered Associative</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="associative.html">Prev</a> </td><th width="60%" align="center">Chapter 9. 
   Containers
   
-</th><td width="20%" align="right"> <a accesskey="n" href="containers_and_c.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.containers.unordered"></a>Unordered Associative</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="containers.unordered.hash"></a>Hash Code</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="containers.unordered.cache"></a>Hash Code Caching Policy</h4></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="containers_and_c.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.containers.unordered"></a>Unordered Associative</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="containers.unordered.insert_hints"></a>Insertion Hints</h3></div></div></div><p>
+     Here is how the hinting works in the libstdc++ implementation of unordered
+     containers, and the rationale behind this behavior.
+    </p><p>
+      In the following text, the phrase <span class="emphasis"><em>equivalent to</em></span> refer
+      to the result of the invocation of the equal predicate imposed on the
+      container by its <code class="code">key_equal</code> object, which defaults to (basically)
+      <span class="quote">“<span class="quote">==</span>”</span>.
+    </p><p>
+      Unordered containers can be seen as a <code class="code">std::vector</code> of
+      <code class="code">std::forward_list</code>. The <code class="code">std::vector</code> represents
+      the buckets and each <code class="code">std::forward_list</code> is the list of nodes
+      belonging to the same bucket. When inserting an element in such a data
+      structure we first need to compute the element hash code to find the
+      bucket to insert the element to, the second step depends on the uniqueness
+      of elements in the container.
+    </p><p>
+      In the case of <code class="code">std::unordered_set</code> and
+      <code class="code">std::unordered_map</code> you need to look through all bucket's
+      elements for an equivalent one. If there is none the insertion can be
+      achieved, otherwise the insertion fails. As we always need to loop though
+      all bucket's elements, the hint doesn't tell us if the element is already
+      present, and we don't have any constraint on where the new element is to
+      be inserted, the hint won't be of any help and will then be ignored.
+    </p><p>
+      In the case of <code class="code">std::unordered_multiset</code>
+      and <code class="code">std::unordered_multimap</code> equivalent elements must be
+      linked together so that the <code class="code">equal_range(const key_type&amp;)</code>
+      can return the range of iterators pointing to all equivalent elements.
+      This is where hinting can be used to point to another equivalent element
+      already part of the container and so skip all non equivalent elements of
+      the bucket. So to be useful the hint shall point to an element equivalent
+      to the one being inserted. The new element will be then inserted right
+      after the hint. Note that because of an implementation detail inserting
+      after a node can require updating the bucket of the following node. To
+      check if the next bucket is to be modified we need to compute the
+      following node's hash code. So if you want your hint to be really efficient
+      it should be followed by another equivalent element, the implementation
+      will detect this equivalence and won't compute next element hash code.
+    </p><p>
+      It is highly advised to start using unordered containers hints only if you
+      have a benchmark that will demonstrate the benefit of it. If you don't then do
+      not use hints, it might do more harm than good.
+    </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="containers.unordered.hash"></a>Hash Code</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="containers.unordered.cache"></a>Hash Code Caching Policy</h4></div></div></div><p>
       The unordered containers in libstdc++ may cache the hash code for each
       element alongside the element itself. In some cases not recalculating
       the hash code every time it's needed can improve performance, but the
       additional memory overhead can also reduce performance, so whether an
       unordered associative container caches the hash code or not depends on
-      a number of factors. The caching policy for GCC 4.8 is described below.
+      the properties described below.
     </p><p>
       The C++ standard requires that <code class="code">erase</code> and <code class="code">swap</code>
       operations must not throw exceptions. Those operations might need an
@@ -18,22 +61,8 @@
       has a non-throwing exception specification such as <code class="code">noexcept</code>
       or <code class="code">throw()</code>.
     </p><p>
-      Secondly, libstdc++ also needs the hash code in the implementation of
-      <code class="code">local_iterator</code> and <code class="code">const_local_iterator</code> in
-      order to know when the iterator has reached the end of the bucket.
-      This means that the local iterator types will embed a copy of the hash
-      function when possible.
-      Because the local iterator types must be DefaultConstructible and
-      CopyAssignable, if the hash function type does not model those concepts
-      then it cannot be embedded and so the hash code must be cached.
-      Note that a hash function might not be safe to use when
-      default-constructed (e.g if it a function pointer) so a hash
-      function that is contained in a local iterator won't be used until
-      the iterator is valid, so the hash function has been copied from a
-      correctly-initialized object.
-    </p><p>
-      If the hash function is non-throwing, DefaultConstructible and
-      CopyAssignable then libstdc++ doesn't need to cache the hash code for
+      If the hash function is non-throwing then libstdc++ doesn't need to
+      cache the hash code for
       correctness, but might still do so for performance if computing a
       hash code is an expensive operation, as it may be for arbitrarily
       long strings.

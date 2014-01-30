@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define _FP_W_TYPE_SIZE		64
 #define _FP_W_TYPE		unsigned long long
 #define _FP_WS_TYPE		signed long long
-#define _FP_I_TYPE		int
+#define _FP_I_TYPE		long long
 
 typedef int TItype __attribute__ ((mode (TI)));
 typedef unsigned int UTItype __attribute__ ((mode (TI)));

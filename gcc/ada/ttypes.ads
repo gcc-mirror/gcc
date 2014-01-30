@@ -224,6 +224,13 @@ package Ttypes is
    --  and thus relevant only to the back end. Note that this is a variable
    --  rather than a constant, since it can be modified (flipped) by -gnatd8.
 
+   Target_Short_Enums : constant Boolean := Set_Targ.Short_Enums /= 0;
+   --  True if we are in short enums mode, where foreign convention
+   --  (in particular C and C++) enumeration types will be sized as in Ada,
+   --  using the shortest possibility from 8,16,32 bits, signed or unsigned.
+   --  A zero value means Short_Enums are not in use, and in this case all
+   --  foreign convention enumeration types are given the same size as c int.
+
    Target_Strict_Alignment : Boolean :=
                                Set_Targ.Strict_Alignment /= 0;
    --  True if instructions will fail if data is misaligned. Note that this

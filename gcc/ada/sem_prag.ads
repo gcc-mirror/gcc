@@ -60,6 +60,13 @@ package Sem_Prag is
    --  Perform full analysis of delayed pragma Depends. This routine is also
    --  capable of performing basic analysis of pragma Refined_Depends.
 
+   procedure Analyze_External_Property_In_Decl_Part
+     (N        : Node_Id;
+      Expr_Val : out Boolean);
+   --  Perform full analysis of delayed pragmas Async_Readers, Async_Writers,
+   --  Effective_Reads and Effective_Writes. Flag Expr_Val contains the Boolean
+   --  argument of the pragma or a default True if no argument is present.
+
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global. This routine is also
    --  capable of performing basic analysis of pragma Refind_Global.
@@ -120,6 +127,22 @@ package Sem_Prag is
    --  If no matching Check_Policy pragma is found then the effect depends on
    --  whether -gnata was used, if so, then the call has no effect, otherwise
    --  Is_Ignored (but not Is_Disabled) is set True.
+
+   procedure Check_External_Properties
+     (Item : Node_Id;
+      AR   : Boolean;
+      AW   : Boolean;
+      ER   : Boolean;
+      EW   : Boolean);
+   --  Flags AR, AW, ER and EW denote the static values of external properties
+   --  Async_Readers, Async_Writers, Effective_Reads and Effective_Writes. Item
+   --  is the related variable or state. Ensure legality of the combination and
+   --  issue an error for an illegal combination.
+
+   procedure Check_Missing_Part_Of (Item_Id : Entity_Id);
+   --  Determine whether the placement within the state space of an abstract
+   --  state, variable or package instantiation denoted by Item_Id requires the
+   --  use of indicator/option Part_Of. If this is the case, emit an error.
 
    function Delay_Config_Pragma_Analyze (N : Node_Id) return Boolean;
    --  N is a pragma appearing in a configuration pragma file. Most such

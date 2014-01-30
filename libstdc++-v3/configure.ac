@@ -213,6 +213,9 @@ GLIBCXX_CHECK_GETTIMEOFDAY
 # For clock_gettime, nanosleep and sched_yield support.
 GLIBCXX_ENABLE_LIBSTDCXX_TIME
 
+# Check for tmpnam which is obsolescent in POSIX.1-2008
+GLIBCXX_CHECK_TMPNAM
+
 AC_LC_MESSAGES
 
 # For hardware_concurrency

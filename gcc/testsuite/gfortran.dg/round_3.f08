@@ -27,6 +27,11 @@ program pr48615
 
     call checkfmt("(RU,G9.3)",  891.1,  " 892.")      ! pr59836
     call checkfmt("(RD,G9.3)", -891.1,  "-892.")      ! pr59836
+    
+    call checkfmt("(RU,F6.4)",     0.00006,  "0.0001")! 0.
+    call checkfmt("(RU,F5.3)",     0.0007,  "0.001")  ! 0.
+    call checkfmt("(RU,F4.2)",     0.008,  "0.01")    ! 0.
+    call checkfmt("(RU,F3.1)",     0.09,  "0.1")      ! 0.
 
     call checkfmt("(RU,F2.0)",     0.09,  "1.")       ! 0.
     call checkfmt("(RD,F3.0)",     -0.09,  "-1.")     ! -0.

@@ -1502,6 +1502,46 @@ linemap_dump_location (struct line_maps *set,
 	   path, from, l, c, s, (void*)map, e, loc, location);
 }
 
+/* Return the highest location emitted for a given file for which
+   there is a line map in SET.  FILE_NAME is the file name to
+   consider.  If the function returns TRUE, *LOC is set to the highest
+   location emitted for that file.  */
+
+bool
+linemap_get_file_highest_location (struct line_maps *set,
+				   const char *file_name,
+				   source_location *loc)
+{
+  /* If the set is empty or no ordinary map has been created then
+     there is no file to look for ...  */
+  if (set == NULL || set->info_ordinary.used == 0)
+    return false;
+
+  /* Now look for the last ordinary map created for FILE_NAME.  */
+  int i;
+  for (i = set->info_ordinary.used - 1; i >= 0; --i)
+    {
+      const char *fname = set->info_ordinary.maps[i].d.ordinary.to_file;
+      if (fname && !filename_cmp (fname, file_name))
+	break;
+    }
+
+  if (i < 0)
+    return false;
+
+  /* The highest location for a given map is either the starting
+     location of the next map minus one, or -- if the map is the
+     latest one -- the highest location of the set.  */
+  source_location result;
+  if (i == (int) set->info_ordinary.used - 1)
+    result = set->highest_location;
+  else
+    result = set->info_ordinary.maps[i + 1].start_location - 1;
+
+  *loc = result;
+  return true;
+}
+
 /* Compute and return statistics about the memory consumption of some
    parts of the line table SET.  */
 

@@ -68,7 +68,11 @@ namespace __profile
       typedef typename _Base::const_pointer          const_pointer;
 
       // 23.3.3.1 construct/copy/destroy:
-      explicit multiset(const _Compare& __comp = _Compare(),
+
+      multiset()
+      : _Base() { }
+
+      explicit multiset(const _Compare& __comp,
 			const _Allocator& __a = _Allocator())
       : _Base(__comp, __a) { }
 

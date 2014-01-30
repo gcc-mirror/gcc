@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1737,7 +1737,7 @@ package body VMS_Conv is
                   Sw   : Item_Ptr;
                   SwP  : Natural;
                   P2   : Natural;
-                  Endp : Natural := 0; -- avoid warning!
+                  Endp : Natural := 0; -- avoid warning
                   Opt  : Item_Ptr;
 
                begin

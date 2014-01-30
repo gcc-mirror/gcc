@@ -457,32 +457,6 @@ same_access_functions (const struct data_dependence_relation *ddr)
   return true;
 }
 
-/* Return true when DDR is an anti-dependence relation.  */
-
-static inline bool
-ddr_is_anti_dependent (ddr_p ddr)
-{
-  return (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
-	  && DR_IS_READ (DDR_A (ddr))
-	  && DR_IS_WRITE (DDR_B (ddr))
-	  && !same_access_functions (ddr));
-}
-
-/* Return true when DEPENDENCE_RELATIONS contains an anti-dependence.  */
-
-static inline bool
-ddrs_have_anti_deps (vec<ddr_p> dependence_relations)
-{
-  unsigned i;
-  ddr_p ddr;
-
-  for (i = 0; dependence_relations.iterate (i, &ddr); i++)
-    if (ddr_is_anti_dependent (ddr))
-      return true;
-
-  return false;
-}
-
 /* Returns true when all the dependences are computable.  */
 
 inline bool

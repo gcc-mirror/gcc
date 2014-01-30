@@ -1255,7 +1255,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  Otherwise, types are not compatible!
+      --  Otherwise, types are not compatible
 
       else
          return False;
@@ -2219,6 +2219,11 @@ package body Sem_Type is
         and then Is_Access_Type (Etype (L))
         and then Ekind (Etype (L)) /= E_Access_Type
       then
+         return Etype (R);
+
+      --  If one operand is a raise_expression, use type of other operand
+
+      elsif Nkind (L) = N_Raise_Expression then
          return Etype (R);
 
       else

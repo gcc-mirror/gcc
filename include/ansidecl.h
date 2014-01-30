@@ -1,6 +1,6 @@
 /* ANSI and traditional C compatability macros
    Copyright 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2013
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -24,93 +24,16 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 
    Macro		ANSI C definition	Traditional C definition
    -----		---- - ----------	----------- - ----------
-   ANSI_PROTOTYPES	1			not defined
    PTR			`void *'		`char *'
-   PTRCONST		`void *const'		`char *'
-   LONG_DOUBLE		`long double'		`double'
    const		not defined		`'
    volatile		not defined		`'
    signed		not defined		`'
-   VA_START(ap, var)	va_start(ap, var)	va_start(ap)
-
-   Note that it is safe to write "void foo();" indicating a function
-   with no return value, in all K+R compilers we have been able to test.
-
-   For declaring functions with prototypes, we also provide these:
-
-   PARAMS ((prototype))
-   -- for functions which take a fixed number of arguments.  Use this
-   when declaring the function.  When defining the function, write a
-   K+R style argument list.  For example:
-
-	char *strcpy PARAMS ((char *dest, char *source));
-	...
-	char *
-	strcpy (dest, source)
-	     char *dest;
-	     char *source;
-	{ ... }
-
-
-   VPARAMS ((prototype, ...))
-   -- for functions which take a variable number of arguments.  Use
-   PARAMS to declare the function, VPARAMS to define it.  For example:
-
-	int printf PARAMS ((const char *format, ...));
-	...
-	int
-	printf VPARAMS ((const char *format, ...))
-	{
-	   ...
-	}
-
-   For writing functions which take variable numbers of arguments, we
-   also provide the VA_OPEN, VA_CLOSE, and VA_FIXEDARG macros.  These
-   hide the differences between K+R <varargs.h> and C89 <stdarg.h> more
-   thoroughly than the simple VA_START() macro mentioned above.
-
-   VA_OPEN and VA_CLOSE are used *instead of* va_start and va_end.
-   Immediately after VA_OPEN, put a sequence of VA_FIXEDARG calls
-   corresponding to the list of fixed arguments.  Then use va_arg
-   normally to get the variable arguments, or pass your va_list object
-   around.  You do not declare the va_list yourself; VA_OPEN does it
-   for you.
-
-   Here is a complete example:
-
-	int
-	printf VPARAMS ((const char *format, ...))
-	{
-	   int result;
-
-	   VA_OPEN (ap, format);
-	   VA_FIXEDARG (ap, const char *, format);
-
-	   result = vfprintf (stdout, format, ap);
-	   VA_CLOSE (ap);
-
-	   return result;
-	}
-
-
-   You can declare variables either before or after the VA_OPEN,
-   VA_FIXEDARG sequence.  Also, VA_OPEN and VA_CLOSE are the beginning
-   and end of a block.  They must appear at the same nesting level,
-   and any variables declared after VA_OPEN go out of scope at
-   VA_CLOSE.  Unfortunately, with a K+R compiler, that includes the
-   argument list.  You can have multiple instances of VA_OPEN/VA_CLOSE
-   pairs in a single function in case you need to traverse the
-   argument list more than once.
 
    For ease of writing code which uses GCC extensions but needs to be
    portable to other compilers, we provide the GCC_VERSION macro that
    simplifies testing __GNUC__ and __GNUC_MINOR__ together, and various
    wrappers around __attribute__.  Also, __extension__ will be #defined
-   to nothing if it doesn't work.  See below.
-
-   This header also defines a lot of obsolete macros:
-   CONST, VOLATILE, SIGNED, PROTO, EXFUN, DEFUN, DEFUN_VOID,
-   AND, DOTS, NOARGS.  Don't use them.  */
+   to nothing if it doesn't work.  See below.  */
 
 #ifndef	_ANSIDECL_H
 #define _ANSIDECL_H	1
@@ -149,28 +72,8 @@ So instead we use the macro below and test it against specific values.  */
    C++ compilers, does not define __STDC__, though it acts as if this
    was so. (Verified versions: 5.7, 6.2, 6.3, 6.5) */
 
-#define ANSI_PROTOTYPES	1
 #define PTR		void *
-#define PTRCONST	void *const
-#define LONG_DOUBLE	long double
 
-/* PARAMS is often defined elsewhere (e.g. by libintl.h), so wrap it in
-   a #ifndef.  */
-#ifndef PARAMS
-#define PARAMS(ARGS)		ARGS
-#endif
-
-#define VPARAMS(ARGS)		ARGS
-#define VA_START(VA_LIST, VAR)	va_start(VA_LIST, VAR)
-
-/* variadic function helper macros */
-/* "struct Qdmy" swallows the semicolon after VA_OPEN/VA_FIXEDARG's
-   use without inhibiting further decls and without declaring an
-   actual variable.  */
-#define VA_OPEN(AP, VAR)	{ va_list AP; va_start(AP, VAR); { struct Qdmy
-#define VA_CLOSE(AP)		} va_end(AP); }
-#define VA_FIXEDARG(AP, T, N)	struct Qdmy
- 
 #undef const
 #undef volatile
 #undef signed
@@ -188,35 +91,9 @@ So instead we use the macro below and test it against specific values.  */
 # endif
 #endif
 
-/* These are obsolete.  Do not use.  */
-#ifndef IN_GCC
-#define CONST		const
-#define VOLATILE	volatile
-#define SIGNED		signed
-
-#define PROTO(type, name, arglist)	type name arglist
-#define EXFUN(name, proto)		name proto
-#define DEFUN(name, arglist, args)	name(args)
-#define DEFUN_VOID(name)		name(void)
-#define AND		,
-#define DOTS		, ...
-#define NOARGS		void
-#endif /* ! IN_GCC */
-
 #else	/* Not ANSI C.  */
 
-#undef  ANSI_PROTOTYPES
 #define PTR		char *
-#define PTRCONST	PTR
-#define LONG_DOUBLE	double
-
-#define PARAMS(args)		()
-#define VPARAMS(args)		(va_alist) va_dcl
-#define VA_START(va_list, var)	va_start(va_list)
-
-#define VA_OPEN(AP, VAR)		{ va_list AP; va_start(AP); { struct Qdmy
-#define VA_CLOSE(AP)			} va_end(AP); }
-#define VA_FIXEDARG(AP, TYPE, NAME)	TYPE NAME = va_arg(AP, TYPE)
 
 /* some systems define these in header files for non-ansi mode */
 #undef const
@@ -227,20 +104,6 @@ So instead we use the macro below and test it against specific values.  */
 #define volatile
 #define signed
 #define inline
-
-#ifndef IN_GCC
-#define CONST
-#define VOLATILE
-#define SIGNED
-
-#define PROTO(type, name, arglist)	type name ()
-#define EXFUN(name, proto)		name()
-#define DEFUN(name, arglist, args)	name arglist args;
-#define DEFUN_VOID(name)		name()
-#define AND		;
-#define DOTS
-#define NOARGS
-#endif /* ! IN_GCC */
 
 #endif	/* ANSI C.  */
 

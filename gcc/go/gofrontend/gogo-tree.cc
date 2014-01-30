@@ -755,7 +755,6 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 void
 Gogo::write_globals()
 {
-  this->convert_named_types();
   this->build_interface_method_tables();
 
   Bindings* bindings = this->current_bindings();

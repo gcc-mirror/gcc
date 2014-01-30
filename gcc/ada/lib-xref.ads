@@ -175,6 +175,7 @@ package Lib.Xref is
    --              d = discriminant of type
    --              D = object definition
    --              e = end of spec
+   --              E = first private entity
    --              H = abstract type
    --              i = implicit reference
    --              k = implicit reference to parent unit in child unit

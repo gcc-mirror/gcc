@@ -89,11 +89,6 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
     indepsw.adb<indepsw-gnu.adb"
     ;;
-  *-*-lynxos*)
-    TOOLS_TARGET_PAIRS="\
-    mlib-tgt-specific.adb<mlib-tgt-specific-lynxos.adb \
-    indepsw.adb<indepsw-gnu.adb"
-    ;;
   *-*-solaris*)
     TOOLS_TARGET_PAIRS="mlib-tgt-specific.adb<mlib-tgt-specific-solaris.adb"
     ;;

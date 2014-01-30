@@ -197,7 +197,7 @@ package Targparm is
    ----------------------------
 
    --  The great majority of GNAT ports are based on GCC. The switches in
-   --  This section indicate the use of some non-standard target back end
+   --  this section indicate the use of some non-standard target back end
    --  or other special targetting requirements.
 
    AAMP_On_Target : Boolean := False;

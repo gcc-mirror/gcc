@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -241,7 +241,7 @@ package body Uname is
 
                   --  Note: it is of course an error to have a defining
                   --  operator symbol at this point, but this is not where
-                  --  the error is signalled, so we handle it nicely here!
+                  --  the error is signalled, so we handle it nicely here.
 
                   Add_Name (Chars (Node));
 

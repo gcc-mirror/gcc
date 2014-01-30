@@ -27,6 +27,14 @@ MULTILIB_DIRNAMES   = 430x large
 MULTILIB_MATCHES    = mcpu?msp430x=mcpu?msp430X
 MULTILIB_MATCHES   += mcpu?msp430x=mcpu?msp430xv2
 MULTILIB_MATCHES   += mcpu?msp430x=mcpu?msp430Xv2
+MULTILIB_MATCHES   += mcpu?msp430x=mmcu?msp430x
+MULTILIB_MATCHES   += mcpu?msp430x=mmcu?msp430X
+MULTILIB_MATCHES   += mcpu?msp430x=mmcu?msp430xv2
+MULTILIB_MATCHES   += mcpu?msp430x=mmcu?msp430Xv2
+MULTILIB_MATCHES   += mcpu?msp430x=mcpu?430x
+MULTILIB_MATCHES   += mcpu?msp430x=mcpu?430X
+MULTILIB_MATCHES   += mcpu?msp430x=mcpu?430xv2
+MULTILIB_MATCHES   += mcpu?msp430x=mcpu?430Xv2
 
 # Add additional MCU matches like this:
 # MULTILIB_MATCHES += mcpu?msp430x=mmcu?xxxxxxxxxx

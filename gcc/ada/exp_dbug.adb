@@ -488,7 +488,7 @@ package body Exp_Dbug is
 
    --  If we get an exception, just figure it is a case that we cannot
    --  successfully handle using our current approach, since this is
-   --  only for debugging, no need to take the compilation with us!
+   --  only for debugging, no need to take the compilation with us.
 
    exception
       when others =>
@@ -1199,9 +1199,7 @@ package body Exp_Dbug is
 
       function Is_BNPE (S : Entity_Id) return Boolean is
       begin
-         return
-           Ekind (S) = E_Package
-             and then Is_Package_Body_Entity (S);
+         return Ekind (S) = E_Package and then Is_Package_Body_Entity (S);
       end Is_BNPE;
 
       --------------------
@@ -1212,7 +1210,7 @@ package body Exp_Dbug is
       begin
          --  If we got all the way to Standard, then we have certainly
          --  fully qualified the name, so set the flag appropriately,
-         --  and then return False, since we are most certainly done!
+         --  and then return False, since we are most certainly done.
 
          if S = Standard_Standard then
             Set_Has_Fully_Qualified_Name (Ent, True);
@@ -1221,13 +1219,10 @@ package body Exp_Dbug is
          --  Otherwise figure out if further qualification is required
 
          else
-            return
-              Is_Subprogram (Ent)
-                or else
-              Ekind (Ent) = E_Subprogram_Body
-                or else
-                  (Ekind (S) /= E_Block
-                    and then not Is_Dynamic_Scope (S));
+            return Is_Subprogram (Ent)
+              or else Ekind (Ent) = E_Subprogram_Body
+              or else (Ekind (S) /= E_Block
+                        and then not Is_Dynamic_Scope (S));
          end if;
       end Qualify_Needed;
 

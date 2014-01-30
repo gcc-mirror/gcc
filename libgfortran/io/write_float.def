@@ -373,7 +373,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   updown:
 
   rchar = '0';
-  if (ft != FMT_F && nbefore == 0 && w > 0 && d == 0 && p == 0)
+  if  (ft != FMT_F && w > 0 && d == 0 && p == 0)
     nbefore = 1;
   /* Scan for trailing zeros to see if we really need to round it.  */
   for(i = nbefore + nafter; i < ndigits; i++)
@@ -389,7 +389,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     /* Handle the case Fw.0 and value < 1.0 */
     {
       ndigits = 0;
-      if (nzero_real == d && digits[0] >= rchar)
+      if (digits[0] >= rchar)
 	{
 	  /* We rounded to zero but shouldn't have */
 	  nbefore = 1;

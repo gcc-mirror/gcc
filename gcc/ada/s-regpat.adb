@@ -2556,7 +2556,7 @@ package body System.Regpat is
             case Op is
                when EOP =>
                   Dump_Indent := Dump_Indent - 1;
-                  return True;  --  Success !
+                  return True;  --  Success
 
                when BRANCH =>
                   if Program (Next) /= BRANCH then

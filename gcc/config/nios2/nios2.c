@@ -2066,7 +2066,8 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
 	}
       else
 	{
-	  op1 = "%0"; op2 = "%1";
+	  op1 = (dst_mode == DFmode ? "%D0" : "%0");
+	  op2 = "%1";
 	  op3 = (num_operands == 2 ? "zero" : "%2");
 	}
     }

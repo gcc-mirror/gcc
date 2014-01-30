@@ -76,9 +76,6 @@ struct lower_data
 
   /* True if the current statement cannot fall through.  */
   bool cannot_fallthru;
-
-  /* True if the function calls __builtin_setjmp.  */
-  bool calls_builtin_setjmp;
 };
 
 static void lower_stmt (gimple_stmt_iterator *, struct lower_data *);
@@ -99,7 +96,6 @@ lower_function_body (void)
   gimple_seq lowered_body;
   gimple_stmt_iterator i;
   gimple bind;
-  tree t;
   gimple x;
 
   /* The gimplifier should've left a body of exactly one statement,
@@ -144,34 +140,6 @@ lower_function_body (void)
       x = gimple_build_label (t.label);
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
       gsi_insert_after (&i, t.stmt, GSI_CONTINUE_LINKING);
-    }
-
-  /* If the function calls __builtin_setjmp, we need to emit the computed
-     goto that will serve as the unique dispatcher for all the receivers.  */
-  if (data.calls_builtin_setjmp)
-    {
-      tree disp_label, disp_var, arg;
-
-      /* Build 'DISP_LABEL:' and insert.  */
-      disp_label = create_artificial_label (cfun->function_end_locus);
-      /* This mark will create forward edges from every call site.  */
-      DECL_NONLOCAL (disp_label) = 1;
-      cfun->has_nonlocal_label = 1;
-      x = gimple_build_label (disp_label);
-      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
-
-      /* Build 'DISP_VAR = __builtin_setjmp_dispatcher (DISP_LABEL);'
-	 and insert.  */
-      disp_var = create_tmp_var (ptr_type_node, "setjmpvar");
-      arg = build_addr (disp_label, current_function_decl);
-      t = builtin_decl_implicit (BUILT_IN_SETJMP_DISPATCHER);
-      x = gimple_build_call (t, 1, arg);
-      gimple_call_set_lhs (x, disp_var);
-
-      /* Build 'goto DISP_VAR;' and insert.  */
-      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
-      x = gimple_build_goto (disp_var);
-      gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
     }
 
   /* Once the old body has been lowered, replace it with the new
@@ -364,7 +332,6 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	  {
 	    lower_builtin_setjmp (gsi);
 	    data->cannot_fallthru = false;
-	    data->calls_builtin_setjmp = true;
 	    return;
 	  }
 
@@ -689,15 +656,12 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
    all will be used on all machines).  It operates similarly to the C
    library function of the same name, but is more efficient.
 
-   It is lowered into 3 other builtins, namely __builtin_setjmp_setup,
-   __builtin_setjmp_dispatcher and __builtin_setjmp_receiver, but with
-   __builtin_setjmp_dispatcher shared among all the instances; that's
-   why it is only emitted at the end by lower_function_body.
+   It is lowered into 2 other builtins, namely __builtin_setjmp_setup,
+   __builtin_setjmp_receiver.
 
    After full lowering, the body of the function should look like:
 
     {
-      void * setjmpvar.0;
       int D.1844;
       int D.2844;
 
@@ -727,14 +691,13 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
 
       <D3850>:;
       return;
-      <D3853>: [non-local];
-      setjmpvar.0 = __builtin_setjmp_dispatcher (&<D3853>);
-      goto setjmpvar.0;
     }
 
-   The dispatcher block will be both the unique destination of all the
-   abnormal call edges and the unique source of all the abnormal edges
-   to the receivers, thus keeping the complexity explosion localized.  */
+   During cfg creation an extra per-function (or per-OpenMP region)
+   block with ABNORMAL_DISPATCHER internal call will be added, unique
+   destination of all the abnormal call edges and the unique source of
+   all the abnormal edges to the receivers, thus keeping the complexity
+   explosion localized.  */
 
 static void
 lower_builtin_setjmp (gimple_stmt_iterator *gsi)

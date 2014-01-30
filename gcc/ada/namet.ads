@@ -128,11 +128,17 @@ package Namet is
    --  This buffer is used to set the name to be stored in the table for the
    --  Name_Find call, and to retrieve the name for the Get_Name_String call.
    --  The limit here is intended to be an infinite value that ensures that we
-   --  never overflow the buffer (names this long are too absurd to worry!)
+   --  never overflow the buffer (names this long are too absurd to worry).
 
-   Name_Len : Natural;
+   Name_Len : Natural := 0;
    --  Length of name stored in Name_Buffer. Used as an input parameter for
    --  Name_Find, and as an output value by Get_Name_String, or Write_Name.
+   --  Note: in normal usage, all users of Name_Buffer/Name_Len are expected
+   --  to initialize Name_Len appropriately. The reason we preinitialize to
+   --  zero here is that some circuitry (e.g. Osint.Write_Program_Name) does
+   --  a save/restore on Name_Len and Name_Buffer (1 .. Name_Len), and we do
+   --  not want some arbitrary junk value to result in saving an arbitrarily
+   --  long slice which would waste time and blow the stack.
 
    -----------------------------
    -- Types for Namet Package --

@@ -624,6 +624,24 @@ package body Sem_Aux is
       return Present (Get_Rep_Pragma (E, Nam1, Nam2, Check_Parents));
    end Has_Rep_Pragma;
 
+   --------------------------------
+   -- Has_Unconstrained_Elements --
+   --------------------------------
+
+   function Has_Unconstrained_Elements (T : Entity_Id) return Boolean is
+      U_T : constant Entity_Id := Underlying_Type (T);
+   begin
+      if No (U_T) then
+         return False;
+      elsif Is_Record_Type (U_T) then
+         return Has_Discriminants (U_T) and then not Is_Constrained (U_T);
+      elsif Is_Array_Type (U_T) then
+         return Has_Unconstrained_Elements (Component_Type (U_T));
+      else
+         return False;
+      end if;
+   end Has_Unconstrained_Elements;
+
    ---------------------
    -- In_Generic_Body --
    ---------------------
@@ -679,6 +697,21 @@ package body Sem_Aux is
    begin
       Obsolescent_Warnings.Init;
    end Initialize;
+
+   -------------
+   -- Is_Body --
+   -------------
+
+   function Is_Body (N : Node_Id) return Boolean is
+   begin
+      return
+        Nkind (N) in N_Body_Stub
+          or else Nkind_In (N, N_Entry_Body,
+                               N_Package_Body,
+                               N_Protected_Body,
+                               N_Subprogram_Body,
+                               N_Task_Body);
+   end Is_Body;
 
    ---------------------
    -- Is_By_Copy_Type --
@@ -944,7 +977,7 @@ package body Sem_Aux is
       --  Otherwise we will look around to see if there is some other reason
       --  for it to be limited, except that if an error was posted on the
       --  entity, then just assume it is non-limited, because it can cause
-      --  trouble to recurse into a murky erroneous entity!
+      --  trouble to recurse into a murky erroneous entity.
 
       elsif Error_Posted (Ent) then
          return False;

@@ -226,7 +226,7 @@ begin
          end loop;
       end if;
 
-      --  Restore style check, but if config file turned on checks, leave on!
+      --  Restore style check, but if config file turned on checks, leave on
 
       Opt.Style_Check := Save_Style_Check or Style_Check;
 

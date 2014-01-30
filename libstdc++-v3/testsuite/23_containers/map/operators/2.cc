@@ -17,7 +17,7 @@
 
 // This test verifies that the value type of a map need not be default copyable.
 
-// { dg-options "-std=c++11" }
+// { dg-options "-std=gnu++11" }
 
 #include <map>
 #include <testsuite_hooks.h>

@@ -40,7 +40,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 package body Prj.Env is
 
    Buffer_Initial : constant := 1_000;
-   --  Initial size of Buffer
+   --  Initial arbitrary size of buffers
 
    Uninitialized_Prefix : constant String := '#' & Path_Separator;
    --  Prefix to indicate that the project path has not been initialized yet.
@@ -147,11 +147,11 @@ package body Prj.Env is
    begin
       if Recursive then
 
-         --  If it is the first time we call this function for
-         --  this project, compute the source path
+         --  If it is the first time we call this function for this project,
+         --  compute the source path
 
          if Project.Ada_Include_Path = null then
-            Buffer := new String (1 .. 4096);
+            Buffer := new String (1 .. Buffer_Initial);
             For_All_Projects
               (Project, In_Tree, Dummy, Include_Aggregated => True);
             Project.Ada_Include_Path := new String'(Buffer (1 .. Buffer_Last));
@@ -161,7 +161,7 @@ package body Prj.Env is
          return Project.Ada_Include_Path.all;
 
       else
-         Buffer := new String (1 .. 4096);
+         Buffer := new String (1 .. Buffer_Initial);
          Add_To_Path
            (Project.Source_Dirs, In_Tree.Shared, Buffer, Buffer_Last);
 
@@ -219,21 +219,36 @@ package body Prj.Env is
 
       Dummy : Boolean := False;
 
+      Result : String_Access;
+
    --  Start of processing for Ada_Objects_Path
 
    begin
       --  If it is the first time we call this function for
       --  this project, compute the objects path
 
-      if Project.Ada_Objects_Path = null then
-         Buffer := new String (1 .. 4096);
+      if Including_Libraries and then Project.Ada_Objects_Path /= null then
+         return Project.Ada_Objects_Path;
+
+      elsif not Including_Libraries
+        and then Project.Ada_Objects_Path_No_Libs /= null
+      then
+         return Project.Ada_Objects_Path_No_Libs;
+
+      else
+         Buffer := new String (1 .. Buffer_Initial);
          For_All_Projects (Project, In_Tree, Dummy);
-
-         Project.Ada_Objects_Path := new String'(Buffer (1 .. Buffer_Last));
+         Result := new String'(Buffer (1 .. Buffer_Last));
          Free (Buffer);
-      end if;
 
-      return Project.Ada_Objects_Path;
+         if Including_Libraries then
+            Project.Ada_Objects_Path := Result;
+         else
+            Project.Ada_Objects_Path_No_Libs := Result;
+         end if;
+
+         return Result;
+      end if;
    end Ada_Objects_Path;
 
    -------------------
@@ -2229,19 +2244,20 @@ package body Prj.Env is
       Directory          : String;
       Path               : out Namet.Path_Name_Type)
    is
-      File : constant String := Project_File_Name;
-      --  Have to do a copy, in case the parameter is Name_Buffer, which we
-      --  modify below
-
-      function Try_Path_Name is new Find_Name_In_Path
-        (Check_Filename => Is_Regular_File);
-      --  Find a file in the project search path
-
-      --  Local Declarations
-
       Result  : String_Access;
       Has_Dot : Boolean := False;
       Key     : Name_Id;
+
+      File : constant String := Project_File_Name;
+      --  Have to do a copy, in case the parameter is Name_Buffer, which we
+      --  modify below.
+
+      Cached_Path : Namet.Path_Name_Type;
+      --  This should be commented rather than making us guess from the name???
+
+      function Try_Path_Name is new
+        Find_Name_In_Path (Check_Filename => Is_Regular_File);
+      --  Find a file in the project search path
 
    --  Start of processing for Find_Project
 
@@ -2259,12 +2275,7 @@ package body Prj.Env is
       Name_Len := File'Length;
       Name_Buffer (1 .. Name_Len) := File;
       Key := Name_Find;
-      Path := Projects_Paths.Get (Self.Cache, Key);
-
-      if Path /= No_Path then
-         Debug_Decrease_Indent;
-         return;
-      end if;
+      Cached_Path := Projects_Paths.Get (Self.Cache, Key);
 
       --  Check if File contains an extension (a dot before a
       --  directory separator). If it is the case we do not try project file
@@ -2283,13 +2294,42 @@ package body Prj.Env is
 
       if not Is_Absolute_Path (File) then
 
+         --  If we have found project in the cache, check if in the directory
+
+         if Cached_Path /= No_Path then
+            declare
+               Cached : constant String := Get_Name_String (Cached_Path);
+            begin
+               if (not Has_Dot
+                    and then Cached =
+                      GNAT.OS_Lib.Normalize_Pathname
+                        (File & Project_File_Extension,
+                         Directory      => Directory,
+                         Resolve_Links  => Opt.Follow_Links_For_Files,
+                         Case_Sensitive => True))
+                 or else
+                   Cached =
+                     GNAT.OS_Lib.Normalize_Pathname
+                       (File,
+                        Directory      => Directory,
+                        Resolve_Links  => Opt.Follow_Links_For_Files,
+                        Case_Sensitive => True)
+               then
+                  Path := Cached_Path;
+                  Debug_Decrease_Indent;
+                  return;
+               end if;
+            end;
+         end if;
+
          --  First we try <directory>/<file_name>.<extension>
 
          if not Has_Dot then
-            Result := Try_Path_Name
-              (Self,
-               Directory & Directory_Separator &
-               File & Project_File_Extension);
+            Result :=
+              Try_Path_Name
+                (Self,
+                 Directory & Directory_Separator &
+                   File & Project_File_Extension);
          end if;
 
          --  Then we try <directory>/<file_name>
@@ -2298,6 +2338,14 @@ package body Prj.Env is
             Result := Try_Path_Name
                        (Self, Directory & Directory_Separator & File);
          end if;
+      end if;
+
+      --  If we found the path in the cache, this is the one
+
+      if Result = null and then Cached_Path /= No_Path then
+         Path := Cached_Path;
+         Debug_Decrease_Indent;
+         return;
       end if;
 
       --  Then we try <file_name>.<extension>

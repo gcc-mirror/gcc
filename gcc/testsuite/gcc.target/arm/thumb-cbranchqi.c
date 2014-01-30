@@ -12,4 +12,4 @@ int ldrb(unsigned char* p)
 
 
 /* { dg-final { scan-assembler "127" } } */
-/* { dg-final { scan-assembler "bhi" } } */
+/* { dg-final { scan-assembler "bhi|bls" } } */

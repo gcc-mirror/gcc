@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,7 +118,7 @@ package body System.WCh_JIS is
 
    begin
       --  The following is the required algorithm, it's hard to make any
-      --  more intelligent comments! This was copied from a public domain
+      --  more intelligent comments. This was copied from a public domain
       --  C program called etos.c (author unknown).
 
       JIS1 := Byte (Natural (Wide_Character'Pos (J) / 256));
@@ -154,7 +154,7 @@ package body System.WCh_JIS is
 
    begin
       --  The following is the required algorithm, it's hard to make any
-      --  more intelligent comments! This was copied from a public domain
+      --  more intelligent comments. This was copied from a public domain
       --  C program called stoj.c written by shige@csk.JUNET.
 
       SJIS1 := Character'Pos (SJ1);

@@ -11883,6 +11883,7 @@ mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
   switch (from)
     {
+    case M16_REGS:
     case GENERAL_REGS:
       /* A MIPS16 MOVE instruction, or a non-MIPS16 MOVE macro.  */
       return 2;
@@ -11919,6 +11920,7 @@ mips_move_from_gpr_cost (enum machine_mode mode, reg_class_t to)
 {
   switch (to)
     {
+    case M16_REGS:
     case GENERAL_REGS:
       /* A MIPS16 MOVE instruction, or a non-MIPS16 MOVE macro.  */
       return 2;
@@ -16095,7 +16097,23 @@ mips_reorg_process_insns (void)
   for (insn = get_insns (); insn != 0; insn = NEXT_INSN (insn))
     FOR_EACH_SUBINSN (subinsn, insn)
       if (USEFUL_INSN_P (subinsn))
-	for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, &htab);
+	{
+	  rtx body = PATTERN (insn);
+	  int noperands = asm_noperands (body);
+	  if (noperands >= 0)
+	    {
+	      rtx *ops = XALLOCAVEC (rtx, noperands);
+	      bool *used = XALLOCAVEC (bool, noperands);
+	      const char *string = decode_asm_operands (body, ops, NULL, NULL,
+							NULL, NULL);
+	      get_referenced_operands (string, used, noperands);
+	      for (int i = 0; i < noperands; ++i)
+		if (used[i])
+		  for_each_rtx (&ops[i], mips_record_lo_sum, &htab);
+	    }
+	  else
+	    for_each_rtx (&PATTERN (subinsn), mips_record_lo_sum, &htab);
+	}
 
   last_insn = 0;
   hilo_delay = 2;
@@ -17066,9 +17084,9 @@ mips_option_override (void)
       mips_r10k_cache_barrier = R10K_CACHE_BARRIER_NONE;
     }
 
-  /* If TARGET_DSPR2, enable MASK_DSP.  */
+  /* If TARGET_DSPR2, enable TARGET_DSP.  */
   if (TARGET_DSPR2)
-    target_flags |= MASK_DSP;
+    TARGET_DSP = true;
 
   /* .eh_frame addresses should be the same width as a C pointer.
      Most MIPS ABIs support only one pointer size, so the assembler

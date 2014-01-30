@@ -113,6 +113,8 @@ checkV##ARRAY (const TYPE *v, const TYPE *e, int n)     \
   return err;                                           \
 }
 
+CHECK_ARRAY(c, char, "0x%hhx")
+CHECK_ARRAY(s, short, "0x%hx")
 CHECK_ARRAY(i, int, "0x%x")
 CHECK_ARRAY(l, long long, "0x%llx")
 

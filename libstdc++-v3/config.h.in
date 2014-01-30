@@ -867,6 +867,9 @@
 /* Define if sysctl(), CTL_HW and HW_NCPU are available in <sys/sysctl.h>. */
 #undef _GLIBCXX_USE_SYSCTL_HW_NCPU
 
+/* Define if obsolescent tmpnam is available in <stdio.h>. */
+#undef _GLIBCXX_USE_TMPNAM
+
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 

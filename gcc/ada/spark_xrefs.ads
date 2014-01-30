@@ -177,6 +177,7 @@ package SPARK_Xrefs is
 
    --        m = modification
    --        r = reference
+   --        c = reference to constant object
    --        s = subprogram reference in a static call
 
    --  Special entries for reads and writes to memory reference a special
@@ -229,6 +230,7 @@ package SPARK_Xrefs is
       Rtype : Character;
       --  Indicates type of reference, using code used in ALI file:
       --    r = reference
+      --    c = reference to constant object
       --    m = modification
       --    s = call
 

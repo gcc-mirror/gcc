@@ -588,10 +588,6 @@ struct mips_cpu_info {
 #define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
 #endif
 
-#ifndef TARGET_FP_EXCEPTIONS_DEFAULT
-#define TARGET_FP_EXCEPTIONS_DEFAULT MASK_FP_EXCEPTIONS
-#endif
-
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
 /* Make this compile time constant for libgcc2 */

@@ -57,7 +57,7 @@ package body Expander is
    --  The following table is used to save values of the Expander_Active flag
    --  when they are saved by Expander_Mode_Save_And_Set. We use an extendible
    --  table (which is a bit of overkill) because it is easier than figuring
-   --  out a maximum value or bothering with range checks!
+   --  out a maximum value or bothering with range checks.
 
    package Expander_Flags is new Table.Table (
      Table_Component_Type => Boolean,
@@ -132,6 +132,14 @@ package body Expander is
 
             if GNATprove_Mode then
                Expand_SPARK (N);
+               Set_Analyzed (N);
+
+               --  Regular expansion is normally followed by special handling
+               --  for transient scopes for unconstrained results, etc. but
+               --  this is not needed, and in general cannot be done correctly,
+               --  in this mode, so we are all done.
+
+               return;
 
             --  Here for normal non-SPARK mode
 
@@ -432,9 +440,6 @@ package body Expander is
 
                   when N_Subprogram_Declaration =>
                      Expand_N_Subprogram_Declaration (N);
-
-                  when N_Subprogram_Info =>
-                     Expand_N_Subprogram_Info (N);
 
                   when N_Task_Body =>
                      Expand_N_Task_Body (N);

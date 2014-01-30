@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,9 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Nmake;    use Nmake;
 with Namet;    use Namet;
@@ -49,36 +51,40 @@ package body Exp_Smem is
    -- Local Subprograms --
    -----------------------
 
-   procedure Add_Read_Before (N : Node_Id);
-   --  Insert a Shared_Var_ROpen call for variable before node N
+   procedure Add_Read (N : Node_Id; Call : Node_Id := Empty);
+   --  Insert a Shared_Var_ROpen call for variable before node N, unless
+   --  Call is a call to an init-proc, in which case the call is inserted
+   --  after Call.
 
    procedure Add_Write_After (N : Node_Id);
-   --  Insert a Shared_Var_WOpen call for variable after the node
-   --  Insert_Node, as recorded by On_Lhs_Of_Assignment (where it points
-   --  to the assignment statement) or Is_Out_Actual (where it points to
-   --  the procedure call statement).
+   --  Insert a Shared_Var_WOpen call for variable after the node Insert_Node,
+   --  as recorded by On_Lhs_Of_Assignment (where it points to the assignment
+   --  statement) or Is_Out_Actual (where it points to the subprogram call).
+   --  When Insert_Node is a function call, establish a transient scope around
+   --  the expression, and insert the write as an after-action of the transient
+   --  scope.
 
    procedure Build_Full_Name (E : Entity_Id; N : out String_Id);
    --  Build the fully qualified string name of a shared variable
 
    function On_Lhs_Of_Assignment (N : Node_Id) return Boolean;
-   --  Determines if N is on the left hand of the assignment. This means
-   --  that either it is a simple variable, or it is a record or array
-   --  variable with a corresponding selected or indexed component on
-   --  the left side of an assignment. If the result is True, then
-   --  Insert_Node is set to point to the assignment
+   --  Determines if N is on the left hand of the assignment. This means that
+   --  either it is a simple variable, or it is a record or array variable with
+   --  a corresponding selected or indexed component on the left side of an
+   --  assignment. If the result is True, then Insert_Node is set to point
+   --  to the assignment
 
    function Is_Out_Actual (N : Node_Id) return Boolean;
-   --  In a similar manner, this function determines if N appears as an
-   --  OUT or IN OUT parameter to a procedure call. If the result is
-   --  True, then Insert_Node is set to point to the call.
+   --  In a similar manner, this function determines if N appears as an OUT
+   --  or IN OUT parameter to a procedure call. If the result is True, then
+   --  Insert_Node is set to point to the call.
 
    function Build_Shared_Var_Proc_Call
      (Loc : Source_Ptr;
       E   : Node_Id;
       N   : Name_Id) return Node_Id;
-   --  Build a call to support procedure N for shared object E (provided by
-   --  the instance of System.Shared_Storage.Shared_Var_Procs associated to E).
+   --  Build a call to support procedure N for shared object E (provided by the
+   --  instance of System.Shared_Storage.Shared_Var_Procs associated to E).
 
    --------------------------------
    -- Build_Shared_Var_Proc_Call --
@@ -87,7 +93,8 @@ package body Exp_Smem is
    function Build_Shared_Var_Proc_Call
      (Loc : Source_Ptr;
       E   : Entity_Id;
-      N   : Name_Id) return Node_Id is
+      N   : Name_Id) return Node_Id
+   is
    begin
       return Make_Procedure_Call_Statement (Loc,
         Name => Make_Selected_Component (Loc,
@@ -96,18 +103,26 @@ package body Exp_Smem is
           Selector_Name => Make_Identifier (Loc, N)));
    end Build_Shared_Var_Proc_Call;
 
-   ---------------------
-   -- Add_Read_Before --
-   ---------------------
+   --------------
+   -- Add_Read --
+   --------------
 
-   procedure Add_Read_Before (N : Node_Id) is
+   procedure Add_Read (N : Node_Id; Call : Node_Id := Empty) is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Node_Id    := Entity (N);
+      SVC : Node_Id;
+
    begin
       if Present (Shared_Var_Procs_Instance (Ent)) then
-         Insert_Action (N, Build_Shared_Var_Proc_Call (Loc, Ent, Name_Read));
+         SVC := Build_Shared_Var_Proc_Call (Loc, Ent, Name_Read);
+
+         if Present (Call) and then Is_Init_Proc (Name (Call)) then
+            Insert_After_And_Analyze (Call, SVC);
+         else
+            Insert_Action (N, SVC);
+         end if;
       end if;
-   end Add_Read_Before;
+   end Add_Read;
 
    -------------------------------
    -- Add_Shared_Var_Lock_Procs --
@@ -121,10 +136,10 @@ package body Exp_Smem is
 
    begin
       --  We have to add Shared_Var_Lock and Shared_Var_Unlock calls around
-      --  the procedure or function call node. First we locate the right
-      --  place to do the insertion, which is the call itself in the
-      --  procedure call case, or else the nearest non subexpression
-      --  node that contains the function call.
+      --  the procedure or function call node. First we locate the right place
+      --  to do the insertion, which is the call itself in the procedure call
+      --  case, or else the nearest non subexpression node that contains the
+      --  function call.
 
       Inode := N;
       while Nkind (Inode) /= N_Procedure_Call_Statement
@@ -135,11 +150,11 @@ package body Exp_Smem is
 
       --  Now insert the Lock and Unlock calls and the read/write calls
 
-      --  Two concerns here. First we are not dealing with the exception
-      --  case, really we need some kind of cleanup routine to do the
-      --  Unlock. Second, these lock calls should be inside the protected
-      --  object processing, not outside, otherwise they can be done at
-      --  the wrong priority, resulting in dead lock situations ???
+      --  Two concerns here. First we are not dealing with the exception case,
+      --  really we need some kind of cleanup routine to do the Unlock. Second,
+      --  these lock calls should be inside the protected object processing,
+      --  not outside, otherwise they can be done at the wrong priority,
+      --  resulting in dead lock situations ???
 
       Build_Full_Name (Obj, Vnm);
 
@@ -171,7 +186,6 @@ package body Exp_Smem is
          Insert_After_And_Analyze (Inode,
            Build_Shared_Var_Proc_Call (Loc, Obj, Name_Write));
       end if;
-
    end Add_Shared_Var_Lock_Procs;
 
    ---------------------
@@ -180,12 +194,18 @@ package body Exp_Smem is
 
    procedure Add_Write_After (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
-      Ent : constant Node_Id    := Entity (N);
-
+      Ent : constant Entity_Id  := Entity (N);
+      Par : constant Node_Id    := Insert_Node;
    begin
       if Present (Shared_Var_Procs_Instance (Ent)) then
-         Insert_After_And_Analyze (Insert_Node,
-           Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write));
+         if Nkind (Insert_Node) = N_Function_Call then
+            Establish_Transient_Scope (Insert_Node, Sec_Stack => False);
+            Store_After_Actions_In_Scope (New_List (
+              Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write)));
+         else
+            Insert_After_And_Analyze (Par,
+              Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write));
+         end if;
       end if;
    end Add_Write_After;
 
@@ -235,23 +255,41 @@ package body Exp_Smem is
       if Is_Limited_Type (Typ) or else Is_Concurrent_Type (Typ) then
          return;
 
-      --  If we are on the left hand side of an assignment, then we add
-      --  the write call after the assignment.
+      --  If we are on the left hand side of an assignment, then we add the
+      --  write call after the assignment.
 
       elsif On_Lhs_Of_Assignment (N) then
          Add_Write_After (N);
 
-      --  If we are a parameter for an out or in out formal, then put
-      --  the read before and the write after.
+      --  If we are a parameter for an out or in out formal, then in general
+      --  we do:
+
+      --    read
+      --    call
+      --    write
+
+      --  but in the special case of a call to an init proc, we need to first
+      --  call the init proc (to set discriminants), then read (to possibly
+      --  set other components), then write (to record the updated components
+      --  to the backing store):
+
+      --    init-proc-call
+      --    read
+      --    write
 
       elsif Is_Out_Actual (N) then
-         Add_Read_Before (N);
+
+         --  Note: For an init proc call, Add_Read inserts just after the
+         --  call node, and we want to have first the read, then the write,
+         --  so we need to first Add_Write_After, then Add_Read.
+
          Add_Write_After (N);
+         Add_Read (N, Call => Insert_Node);
 
       --  All other cases are simple reads
 
       else
-         Add_Read_Before (N);
+         Add_Read (N);
       end if;
    end Expand_Shared_Passive_Variable;
 
@@ -297,8 +335,7 @@ package body Exp_Smem is
 
       SVP_Instance : constant Entity_Id := Make_Defining_Identifier (Loc,
                        Chars => New_External_Name (Chars (Ent), 'G'));
-      --  Instance of System.Shared_Storage.Shared_Var_Procs associated
-      --  with Ent.
+      --  Instance of Shared_Storage.Shared_Var_Procs associated with Ent
 
       Instantiation : Node_Id;
       --  Package instantiation node for SVP_Instance
@@ -308,9 +345,9 @@ package body Exp_Smem is
    begin
       Build_Full_Name (Ent, Vnm);
 
-      --  We turn off Shared_Passive during construction and analysis of
-      --  the generic package instantiation, to avoid improper attempts to
-      --  process the variable references within these instantiation.
+      --  We turn off Shared_Passive during construction and analysis of the
+      --  generic package instantiation, to avoid improper attempts to process
+      --  the variable references within these instantiation.
 
       Set_Is_Shared_Passive (Ent, False);
 
@@ -376,9 +413,7 @@ package body Exp_Smem is
             return False;
          end if;
 
-      elsif (Nkind (P) = N_Indexed_Component
-               or else
-             Nkind (P) = N_Selected_Component)
+      elsif Nkind_In (P, N_Indexed_Component, N_Selected_Component)
         and then N = Prefix (P)
       then
          return On_Lhs_Of_Assignment (P);

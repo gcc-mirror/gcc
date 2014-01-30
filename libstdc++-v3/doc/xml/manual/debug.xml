@@ -263,8 +263,8 @@
 
 <para>
   These settings can either be switched on in at the GDB command line,
-  or put into a .gdbint file to establish default debugging
-  characteristics, like so:
+  or put into a <filename>.gdbinit</filename> file to establish default
+  debugging characteristics, like so:
 </para>
 
 <programlisting>
@@ -278,40 +278,26 @@
 
 <para>
   Starting with version 7.0, GDB includes support for writing
-  pretty-printers in Python.  Pretty printers for STL classes are
-  distributed with GCC from version 4.5.0.  The most recent version of
-  these printers are always found in libstdc++ svn repository.
-  To enable these printers, check-out the latest printers to a local
-  directory:
+  pretty-printers in Python.  Pretty printers for containers and other
+  classes are distributed with GCC from version 4.5.0 and should be installed
+  alongside the libstdc++ shared library files and found automatically by
+  GDB.
 </para>
 
-<programlisting>
-  svn co svn://gcc.gnu.org/svn/gcc/trunk/libstdc++-v3/python
-</programlisting>
-
 <para>
-  Next, add the following section to your ~/.gdbinit  The path must
-  match the location where the Python module above was checked-out.
-  So if checked out to: /home/maude/gdb_printers/, the path would be as
-  written in the example below.
+  Depending where libstdc++ is installed, GDB might refuse to auto-load
+  the python printers and print a warning instead.
+  If this happens the python printers can be enabled by following the
+  instructions GDB gives for setting your <code>auto-load safe-path</code>
+  in your <filename>.gdbinit</filename> configuration file.
 </para>
 
-<programlisting>
-  python
-  import sys
-  sys.path.insert(0, '/home/maude/gdb_printers/python')
-  from libstdcxx.v6.printers import register_libstdcxx_printers
-  register_libstdcxx_printers (None)
-  end
-</programlisting>
-
 <para>
-  The path should be the only element that needs to be adjusted in the
-  example.  Once loaded, STL classes that the printers support
+  Once loaded, standard library classes that the printers support
   should print in a more human-readable format.  To print the classes
-  in the old style, use the /r (raw) switch in the print command
-  (i.e., print /r foo).  This will print the classes as if the Python
-  pretty-printers were not loaded.
+  in the old style, use the <userinput>/r</userinput> (raw) switch in the
+  print command (i.e., <userinput>print /r foo</userinput>).  This will
+  print the classes as if the Python pretty-printers were not loaded.
 </para>
 
 <para>
@@ -332,8 +318,7 @@
 <para>
   The <link linkend="support.termination.verbose">verbose
   termination handler</link> gives information about uncaught
-  exceptions which are killing the program.  It is described in the
-  linked-to page.
+  exceptions which kill the program.
 </para>
 </section>
 
@@ -347,14 +332,14 @@
 <section xml:id="debug.compile_time_checks"><info><title>Compile Time Checking</title></info>
 
   <para> The <link linkend="manual.ext.compile_checks">Compile-Time
-  Checks</link> Extension has compile-time checks for many algorithms.
+  Checks</link> extension has compile-time checks for many algorithms.
   </para>
 </section>
 
 <section xml:id="debug.profile_mode" xreflabel="debug.profile_mode"><info><title>Profile-based Performance Analysis</title></info>
 
   <para> The <link linkend="manual.ext.profile_mode">Profile-based
-  Performance Analysis</link> Extension has performance checks for many
+  Performance Analysis</link> extension has performance checks for many
   algorithms.
   </para>
 </section>

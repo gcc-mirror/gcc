@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,8 +103,6 @@ package VMS_Conv is
       Prep  => Preprocess,
       Pp    => Pretty);
    --  Mapping of alternate commands to commands
-
-   subtype Real_Command_Type is Command_Type range Bind .. Xref;
 
    type Command_Entry is record
       Cname : String_Ptr;

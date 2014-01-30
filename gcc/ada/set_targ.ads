@@ -75,6 +75,7 @@ package Set_Targ is
    Maximum_Alignment          : Pos; -- Maximum permitted alignment
    Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
    Pointer_Size               : Pos; -- System.Address'Size
+   Short_Enums                : Nat; -- Foreign enums use short size?
    Short_Size                 : Pos; -- Standard.Short_Integer'Size
    Strict_Alignment           : Nat; -- Strict alignment?
    System_Allocator_Alignment : Nat; -- Alignment for malloc calls

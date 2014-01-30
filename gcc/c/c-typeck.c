@@ -2481,7 +2481,7 @@ build_array_ref (location_t loc, tree array, tree index)
       || TREE_TYPE (index) == error_mark_node)
     return error_mark_node;
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (index))
+  if (flag_cilkplus && contains_array_notation_expr (index))
     {
       size_t rank = 0;
       if (!find_rank (loc, index, index, true, &rank))
@@ -2912,7 +2912,7 @@ build_function_call_vec (location_t loc, tree function,
       if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
         origtypes = NULL;
 
-      if (flag_enable_cilkplus
+      if (flag_cilkplus
 	  && is_cilkplus_reduce_builtin (function))
 	origtypes = NULL;
     }
@@ -3120,7 +3120,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
 	  break;
 	}
     }
-  if (flag_enable_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
+  if (flag_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
     return vec_safe_length (values);
 
   /* Scan the given expressions and types, producing individual
@@ -3447,11 +3447,11 @@ parser_build_binary_op (location_t location, enum tree_code code,
   /* Check for cases such as x+y<<z which users are likely
      to misinterpret.  */
   if (warn_parentheses)
-    warn_about_parentheses (input_location, code,
-			    code1, arg1.value, code2, arg2.value);
+    warn_about_parentheses (location, code, code1, arg1.value, code2,
+			    arg2.value);
 
   if (warn_logical_op)
-    warn_logical_operator (input_location, code, TREE_TYPE (result.value),
+    warn_logical_operator (location, code, TREE_TYPE (result.value),
 			   code1, arg1.value, code2, arg2.value);
 
   /* Warn about comparisons against string literals, with the exception
@@ -3617,6 +3617,9 @@ pointer_diff (location_t loc, tree op0, tree op1)
 
   /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
+
+  if (pointer_to_zero_sized_aggr_p (TREE_TYPE (orig_op1)))
+    error_at (loc, "arithmetic on pointer to an empty aggregate");
 
   /* Divide by the size, in easiest possible way.  */
   result = fold_build2_loc (loc, EXACT_DIV_EXPR, inttype,
@@ -4807,8 +4810,10 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
     {
       if (int_operands)
 	{
-	  op1 = remove_c_maybe_const_expr (op1);
-	  op2 = remove_c_maybe_const_expr (op2);
+	  /* Use c_fully_fold here, since C_MAYBE_CONST_EXPR might be
+	     nested inside of the expression.  */
+	  op1 = c_fully_fold (op1, false, NULL);
+	  op2 = c_fully_fold (op2, false, NULL);
 	}
       ret = build3 (COND_EXPR, result_type, ifexp, op1, op2);
       if (int_operands)
@@ -4833,7 +4838,7 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
   tree eptype = NULL_TREE;
   tree ret;
 
-  if (flag_enable_cilkplus
+  if (flag_cilkplus
       && (TREE_CODE (expr1) == CILK_SPAWN_STMT
 	  || TREE_CODE (expr2) == CILK_SPAWN_STMT))
     {
@@ -4874,6 +4879,23 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
 	    warning_at (loc, OPT_Wunused_value,
 			"left-hand operand of comma expression has no effect");
 	}
+    }
+  else if (TREE_CODE (expr1) == COMPOUND_EXPR
+	   && warn_unused_value)
+    {
+      tree r = expr1;
+      location_t cloc = loc;
+      while (TREE_CODE (r) == COMPOUND_EXPR)
+        {
+	  if (EXPR_HAS_LOCATION (r))
+	    cloc = EXPR_LOCATION (r);
+	  r = TREE_OPERAND (r, 1);
+	}
+      if (!TREE_SIDE_EFFECTS (r)
+	  && !VOID_TYPE_P (TREE_TYPE (r))
+	  && !CONVERT_EXPR_P (r))
+	warning_at (cloc, OPT_Wunused_value,
+	            "right-hand operand of comma expression has no effect");
     }
 
   /* With -Wunused, we should also warn if the left-hand operand does have
@@ -9372,7 +9394,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
     warning_at (loc, 0,
 		"function declared %<noreturn%> has a %<return%> statement");
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (retval))
+  if (flag_cilkplus && contains_array_notation_expr (retval))
     {
       /* Array notations are allowed in a return statement if it is inside a
 	 built-in array notation reduction function.  */
@@ -9385,7 +9407,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  return error_mark_node;
 	}
     }
-  if (flag_enable_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
     {
       error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
 		"allowed");
@@ -9699,7 +9721,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
      else_block must be either 0 or be equal to the rank of the condition.  If
      the condition does not have array notations then break them up as it is
      broken up in a normal expression.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       size_t then_rank = 0, cond_rank = 0, else_rank = 0;
       if (!find_rank (if_locus, cond, cond, true, &cond_rank))
@@ -9774,7 +9796,7 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+  if (flag_cilkplus && contains_array_notation_expr (cond))
     {
       error_at (start_locus, "array notation expression cannot be used in a "
 		"loop%'s condition");
@@ -9911,6 +9933,23 @@ emit_side_effect_warnings (location_t loc, tree expr)
     {
       if (!VOID_TYPE_P (TREE_TYPE (expr)) && !TREE_NO_WARNING (expr))
 	warning_at (loc, OPT_Wunused_value, "statement with no effect");
+    }
+  else if (TREE_CODE (expr) == COMPOUND_EXPR)
+    {
+      tree r = expr;
+      location_t cloc = loc;
+      while (TREE_CODE (r) == COMPOUND_EXPR)
+	{
+	  if (EXPR_HAS_LOCATION (r))
+	    cloc = EXPR_LOCATION (r);
+	  r = TREE_OPERAND (r, 1);
+	}
+      if (!TREE_SIDE_EFFECTS (r)
+	  && !VOID_TYPE_P (TREE_TYPE (r))
+	  && !CONVERT_EXPR_P (r)
+	  && !TREE_NO_WARNING (expr))
+	warning_at (cloc, OPT_Wunused_value,
+		    "right-hand operand of comma expression has no effect");
     }
   else
     warn_if_unused_value (expr, loc);
@@ -10306,12 +10345,12 @@ build_binary_op (location_t location, enum tree_code code,
   /* When Cilk Plus is enabled and there are array notations inside op0, then
      we check to see if there are builtin array notation functions.  If
      so, then we take on the type of the array notation inside it.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (op0)) 
+  if (flag_cilkplus && contains_array_notation_expr (op0)) 
     orig_type0 = type0 = find_correct_array_notation_type (op0);
   else
     orig_type0 = type0 = TREE_TYPE (op0);
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (op1))
+  if (flag_cilkplus && contains_array_notation_expr (op1))
     orig_type1 = type1 = find_correct_array_notation_type (op1);
   else 
     orig_type1 = type1 = TREE_TYPE (op1);
@@ -11154,7 +11193,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  tree xop0 = op0, xop1 = op1, xresult_type = result_type;
 	  enum tree_code xresultcode = resultcode;
 	  tree val
-	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
+	    = shorten_compare (location, &xop0, &xop1, &xresult_type,
+			       &xresultcode);
 
 	  if (val != 0)
 	    {
@@ -12012,7 +12052,8 @@ c_finish_omp_clauses (tree clauses)
 	  need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == NULL_TREE
-	      && FLOAT_TYPE_P (TREE_TYPE (t)))
+	      && (FLOAT_TYPE_P (TREE_TYPE (t))
+		  || TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE))
 	    {
 	      enum tree_code r_code = OMP_CLAUSE_REDUCTION_CODE (c);
 	      const char *r_name = NULL;
@@ -12022,8 +12063,14 @@ c_finish_omp_clauses (tree clauses)
 		case PLUS_EXPR:
 		case MULT_EXPR:
 		case MINUS_EXPR:
+		  break;
 		case MIN_EXPR:
+		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		    r_name = "min";
+		  break;
 		case MAX_EXPR:
+		  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE)
+		    r_name = "max";
 		  break;
 		case BIT_AND_EXPR:
 		  r_name = "&";
@@ -12035,10 +12082,12 @@ c_finish_omp_clauses (tree clauses)
 		  r_name = "|";
 		  break;
 		case TRUTH_ANDIF_EXPR:
-		  r_name = "&&";
+		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		    r_name = "&&";
 		  break;
 		case TRUTH_ORIF_EXPR:
-		  r_name = "||";
+		  if (FLOAT_TYPE_P (TREE_TYPE (t)))
+		    r_name = "||";
 		  break;
 		default:
 		  gcc_unreachable ();

@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                SPARK                                          --
+--                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                                  O P T                                   --
@@ -702,12 +702,12 @@ package Opt is
    --  GNAT
    --  This variable indicates the character set to be used for identifiers.
    --  The possible settings are:
-   --    '1'  Latin-5 (ISO-8859-1)
-   --    '2'  Latin-5 (ISO-8859-2)
-   --    '3'  Latin-5 (ISO-8859-3)
-   --    '4'  Latin-5 (ISO-8859-4)
-   --    '5'  Latin-5 (ISO-8859-5, Cyrillic)
-   --    '9'  Latin-5 (ISO-8859-9)
+   --    '1'  Latin-1 (ISO-8859-1)
+   --    '2'  Latin-2 (ISO-8859-2)
+   --    '3'  Latin-3 (ISO-8859-3)
+   --    '4'  Latin-4 (ISO-8859-4)
+   --    '5'  Latin-Cyrillic (ISO-8859-5)
+   --    '9'  Latin-9 (ISO-8859-15)
    --    'p'  PC (US, IBM page 437)
    --    '8'  PC (European, IBM page 850)
    --    'f'  Full upper set (all distinct)
@@ -1064,6 +1064,7 @@ package Opt is
    --  object directory, if project files are used.
 
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
+   pragma Ordered (Operating_Mode_Type);
    Operating_Mode : Operating_Mode_Type := Generate_Code;
    --  GNAT
    --  Indicates the operating mode of the compiler. The default is generate
@@ -1072,7 +1073,8 @@ package Opt is
    --  only mode. Operating_Mode can also be modified as a result of detecting
    --  errors during the compilation process. In particular if any serious
    --  error is detected then this flag is reset from Generate_Code to
-   --  Check_Semantics after generating an error message.
+   --  Check_Semantics after generating an error message. This is an ordered
+   --  type with the semantics that each value does more than the previous one.
 
    Optimize_Alignment : Character := 'O';
    --  Setting of Optimize_Alignment, set to T/S/O for time/space/off. Can
@@ -1264,13 +1266,23 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Descriptors applies to the current unit.
 
-   type SPARK_Mode_Type is (None, Off, Auto, On);
-   pragma Ordered (SPARK_Mode_Type);
-   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode
+   type SPARK_Mode_Type is (None, Off, On);
+   --  Possible legal modes that can be set by aspect/pragma SPARK_Mode, as
+   --  well as the value None, which indicates no such pragma/aspect applies.
 
    SPARK_Mode : SPARK_Mode_Type := None;
    --  GNAT
    --  Current SPARK mode setting
+
+   SPARK_Mode_Pragma : Node_Id := Empty;
+   --  GNAT
+   --  If the current SPARK_Mode (above) was set by a pragma, this records
+   --  the pragma that set this mode.
+
+   SPARK_Switches_File_Name : String_Ptr := null;
+   --  GNAT
+   --  Set to non-null file name by use of the -gnates switch to specify
+   --  SPARK (gnat2why) specific switches in the given file name.
 
    Special_Exception_Package_Used : Boolean := False;
    --  GNAT
@@ -1280,17 +1292,14 @@ package Opt is
 
    Sprint_Line_Limit : Nat := 72;
    --  GNAT
-   --  Limit values for chopping long lines in Sprint output, can be reset
-   --  by use of NNN parameter with -gnatG or -gnatD switches.
+   --  Limit values for chopping long lines in Sprint output, can be reset by
+   --  use of NNN parameter with -gnatG or -gnatD switches.
 
-   Stack_Checking_Enabled : Boolean;
+   Stack_Checking_Enabled : Boolean := False;
    --  GNAT
-   --  Set to indicate if -fstack-check switch is set for the compilation. True
-   --  means that the switch is set, so that stack checking is enabled. False
-   --  means that the switch is not set (no stack checking). This value is
-   --  obtained from the external imported value flag_stack_check in the gcc
-   --  backend (see Frontend) and may be referenced throughout the compilation
-   --  phases.
+   --  Set to indicate if stack checking is enabled for the compilation. This
+   --  is set directly from the value in the gcc back end in the body of the
+   --  gcc version of back_end.adb.
 
    Style_Check : Boolean := False;
    --  GNAT
@@ -1727,8 +1736,11 @@ package Opt is
    --  GNAT, GNATBIND
    --  Controls treatment of warning messages. If set to Suppress, warning
    --  messages are not generated at all. In Normal mode, they are generated
-   --  but do not count as errors. In Treat_As_Error mode, warning messages
-   --  are generated and are treated as errors.
+   --  but do not count as errors. In Treat_As_Error mode, warning messages are
+   --  generated and are treated as errors. Note that Warning_Mode = Suppress
+   --  causes pragma Warnings to be ignored (except for legality checks),
+   --  unless we are in GNATprove_Mode, which requires pragma Warnings to
+   --  be stored for the formal verification backend.
 
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
    --  GNAT, GNATBIND
@@ -1904,7 +1916,12 @@ package Opt is
    --  start of analyzing each unit.
 
    SPARK_Mode_Config : SPARK_Mode_Type := None;
+   --  GNAT
    --  The setting of SPARK_Mode from configuration pragmas
+
+   SPARK_Mode_Pragma_Config : Node_Id := Empty;
+   --  If a SPARK_Mode pragma appeared in the configuration pragmas (setting
+   --  SPARK_Mode_Config appropriately), then this points to the N_Pragma node.
 
    Use_VADS_Size_Config : Boolean;
    --  GNAT
@@ -1938,7 +1955,7 @@ package Opt is
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type);
    --  This procedure restores a set of switch values previously saved by a
-   --  call to Save_Opt_Switches.
+   --  call to Save_Opt_Config_Switches (Save).
 
    procedure Register_Opt_Config_Switches;
    --  This procedure is called after processing the gnat.adc file and other
@@ -2051,6 +2068,7 @@ private
       Polling_Required               : Boolean;
       Short_Descriptors              : Boolean;
       SPARK_Mode                     : SPARK_Mode_Type;
+      SPARK_Mode_Pragma              : Node_Id;
       Use_VADS_Size                  : Boolean;
    end record;
 

@@ -1,7 +1,7 @@
 /* Function declarations for libiberty.
 
    Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011, 2013 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -85,11 +85,11 @@ extern char **dupargv (char **) ATTRIBUTE_MALLOC;
 
 /* Expand "@file" arguments in argv.  */
 
-extern void expandargv PARAMS ((int *, char ***));
+extern void expandargv (int *, char ***);
 
 /* Write argv to an @-file, inserting necessary quoting.  */
 
-extern int writeargv PARAMS ((char **, FILE *));
+extern int writeargv (char **, FILE *);
 
 /* Return the number of elements in argv.  */
 

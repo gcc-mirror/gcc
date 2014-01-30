@@ -1,3 +1,12 @@
+2014-01-23  Yury Gribov  <y.gribov@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/57316
+	* configure.ac: Check for missing syscalls.
+	* Makefile.am: Likewise.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* sanitizer_common/sanitizer_symbolizer_libbacktrace.h

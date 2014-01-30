@@ -680,7 +680,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} -maddress-mode=@var{mode} @gol
--m32 -m64 -mx32 -mlarge-data-threshold=@var{num} @gol
+-m32 -m64 -mx32 -m16 -mlarge-data-threshold=@var{num} @gol
 -msse2avx -mfentry -m8bit-idiv @gol
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -mstack-protector-guard=@var{guard}}
@@ -919,6 +919,7 @@ See RS/6000 and PowerPC Options.
 -mpower8-fusion -mno-mpower8-fusion -mpower8-vector -mno-power8-vector @gol
 -mcrypto -mno-crypto -mdirect-move -mno-direct-move @gol
 -mquad-memory -mno-quad-memory @gol
+-mquad-memory-atomic -mno-quad-memory-atomic @gol
 -mcompat-align-parm -mno-compat-align-parm}
 
 @emph{RX Options}
@@ -12300,9 +12301,12 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv5}, @samp{armv5t}, @samp{armv5e}, @samp{armv5te},
 @samp{armv6}, @samp{armv6j},
 @samp{armv6t2}, @samp{armv6z}, @samp{armv6zk}, @samp{armv6-m},
-@samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m},
+@samp{armv7}, @samp{armv7-a}, @samp{armv7-r}, @samp{armv7-m}, @samp{armv7ve},
 @samp{armv8-a}, @samp{armv8-a+crc},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}.
+
+@option{-march=armv7ve} is the armv7-a architecture with virtualization
+extensions.
 
 @option{-march=armv8-a+crc} enables code generation for the ARMv8-A
 architecture together with the optional CRC32 extensions.
@@ -15634,10 +15638,12 @@ on x86-64 processors in 64-bit environments.
 @item -m32
 @itemx -m64
 @itemx -mx32
+@itemx -m16
 @opindex m32
 @opindex m64
 @opindex mx32
-Generate code for a 32-bit or 64-bit environment.
+@opindex m16
+Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
 generates code that runs on any i386 system.
@@ -15650,6 +15656,10 @@ and @option{-mdynamic-no-pic} options.
 The @option{-mx32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
 generates code for the x86-64 architecture.
+
+The @option{-m16} option is the same as @option{-m32}, except for that
+it outputs the @code{.code16gcc} assembly directive at the beginning of
+the assembly output so that the binary can run in 16-bit mode.
 
 @item -mno-red-zone
 @opindex mno-red-zone
@@ -18853,7 +18863,8 @@ following options:
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
--mcrypto -mdirect-move -mpower8-fusion -mpower8-vector -mquad-memory}
+-mcrypto -mdirect-move -mpower8-fusion -mpower8-vector @gol
+-mquad-memory -mquad-memory-atomic}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -19040,8 +19051,16 @@ the vector instructions.
 @itemx -mno-quad-memory
 @opindex mquad-memory
 @opindex mno-quad-memory
-Generate code that uses (does not use) the quad word memory
+Generate code that uses (does not use) the non-atomic quad word memory
 instructions.  The @option{-mquad-memory} option requires use of
+64-bit mode.
+
+@item -mquad-memory-atomic
+@itemx -mno-quad-memory-atomic
+@opindex mquad-memory-atomic
+@opindex mno-quad-memory-atomic
+Generate code that uses (does not use) the atomic quad word memory
+instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
 
 @item -mfloat-gprs=@var{yes/single/double/no}

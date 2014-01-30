@@ -117,8 +117,8 @@ static int compare_constant (const tree, const tree);
 static tree copy_constant (tree);
 static void output_constant_def_contents (rtx);
 static void output_addressed_constants (tree);
-static unsigned HOST_WIDE_INT array_size_for_constructor (tree);
-static unsigned min_align (unsigned, unsigned);
+static unsigned HOST_WIDE_INT output_constant (tree, unsigned HOST_WIDE_INT,
+					       unsigned int);
 static void globalize_decl (tree);
 static bool decl_readonly_section_1 (enum section_category);
 #ifdef BSS_SECTION_ASM_OP
@@ -4602,7 +4602,7 @@ static unsigned HOST_WIDE_INT
 
    ALIGN is the alignment of the data in bits.  */
 
-unsigned HOST_WIDE_INT
+static unsigned HOST_WIDE_INT
 output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 {
   enum tree_code code;

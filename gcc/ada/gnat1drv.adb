@@ -283,7 +283,7 @@ procedure Gnat1drv is
 
          --  Make the Ada front-end more liberal so that the compiler will
          --  allow illegal code that is allowed by other compilers. CodePeer
-         --  is in the business of finding problems, not enforcing rules!
+         --  is in the business of finding problems, not enforcing rules.
          --  This is useful when using CodePeer mode with other compilers.
 
          Relaxed_RM_Semantics := True;
@@ -373,12 +373,6 @@ procedure Gnat1drv is
 
          Operating_Mode := Check_Semantics;
 
-         --  Skip call to gigi
-
-         --  This debug flag is not documented, AARGH! ???
-
-         Debug_Flag_HH := True;
-
          --  Enable assertions, since they give valuable extra information for
          --  formal verification.
 
@@ -388,11 +382,6 @@ procedure Gnat1drv is
          --  front-end warnings when we are getting SPARK output.
 
          Reset_Style_Check_Options;
-
-         --  Suppress compiler warnings, since what we are interested in here
-         --  is what formal verification can find out.
-
-         Warning_Mode := Suppress;
 
          --  Suppress the generation of name tables for enumerations, which are
          --  not needed for formal verification, and fall outside the SPARK
@@ -452,7 +441,7 @@ procedure Gnat1drv is
 
       --  Deal with forcing OpenVMS switches True if debug flag M is set, but
       --  record the setting of Targparm.Open_VMS_On_Target in True_VMS_Target
-      --  before doing this, so we know if we are in real OpenVMS or not!
+      --  before doing this, so we know if we are in real OpenVMS or not.
 
       Opt.True_VMS_Target := Targparm.OpenVMS_On_Target;
 
@@ -707,8 +696,8 @@ procedure Gnat1drv is
                   --  Remaining cases are packages and generic packages. Here
                   --  we only do the test if there are no previous errors,
                   --  because if there are errors, they may lead us to
-                  --  incorrectly believe that a package does not allow a body
-                  --  when in fact it does.
+                  --  incorrectly believe that a package does not allow a
+                  --  body when in fact it does.
 
                elsif not Compilation_Errors then
                   if Main_Kind = N_Package_Declaration then
@@ -864,34 +853,9 @@ begin
       Original_Operating_Mode := Operating_Mode;
       Frontend;
 
-      --  Exit with errors if the main source could not be parsed. Also, when
-      --  -gnatd.H is present, the source file is not set.
+      --  Exit with errors if the main source could not be parsed.
 
       if Sinput.Main_Source_File = No_Source_File then
-
-         --  Handle -gnatd.H debug mode
-
-         if Debug_Flag_Dot_HH then
-
-            --  For -gnatd.H, lock all the tables to keep the convention that
-            --  the backend needs to unlock the tables it wants to touch.
-
-            Atree.Lock;
-            Elists.Lock;
-            Fname.UF.Lock;
-            Inline.Lock;
-            Lib.Lock;
-            Nlists.Lock;
-            Sem.Lock;
-            Sinput.Lock;
-            Namet.Lock;
-            Stringt.Lock;
-
-            --  And all we need to do is to call the back end
-
-            Back_End.Call_Back_End (Back_End.Generate_Object);
-         end if;
-
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Exit_Program (E_Errors);
@@ -1294,7 +1258,7 @@ begin
       when Storage_Error =>
 
          --  Assume this is a bug. If it is real, the message will in any case
-         --  say Storage_Error, giving a strong hint!
+         --  say Storage_Error, giving a strong hint.
 
          Comperr.Compiler_Abort ("Storage_Error");
    end;

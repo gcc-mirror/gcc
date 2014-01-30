@@ -66,6 +66,7 @@
    |mcpu=cortex-a57					\
    |mcpu=cortex-a57.cortex-a53				\
    |mcpu=generic-armv7-a                                \
+   |march=armv7ve	                                \
    |march=armv7-m|mcpu=cortex-m3                        \
    |march=armv7e-m|mcpu=cortex-m4                       \
    |march=armv6-m|mcpu=cortex-m0                        \
@@ -83,6 +84,7 @@
    |mcpu=cortex-a57.cortex-a53				\
    |mcpu=marvell-pj4					\
    |mcpu=generic-armv7-a                                \
+   |march=armv7ve	                                \
    |march=armv7-m|mcpu=cortex-m3                        \
    |march=armv7e-m|mcpu=cortex-m4                       \
    |march=armv6-m|mcpu=cortex-m0                        \

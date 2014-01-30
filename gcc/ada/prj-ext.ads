@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,11 +68,13 @@ package Prj.Ext is
      (Self          : External_References;
       External_Name : String;
       Value         : String;
-      Source        : External_Source := External_Source'First);
+      Source        : External_Source := External_Source'First;
+      Silent        : Boolean := False);
    --  Add an external reference (or modify an existing one). No overriding is
    --  done if the Source's priority is less than the one used to previously
    --  set the value of the variable. The default for Source is such that
-   --  overriding always occurs.
+   --  overriding always occurs. When Silent is True, nothing is output even
+   --  with non default verbosity.
 
    function Value_Of
      (Self          : External_References;

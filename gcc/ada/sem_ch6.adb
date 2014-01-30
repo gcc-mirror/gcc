@@ -193,7 +193,10 @@ package body Sem_Ch6 is
    --  must appear before the type is frozen, and have the same visibility as
    --  that of the type. This procedure checks that this rule is met, and
    --  otherwise emits an error on the subprogram declaration and a warning
-   --  on the earlier freeze point if it is easy to locate.
+   --  on the earlier freeze point if it is easy to locate. In Ada 2012 mode,
+   --  this routine outputs errors (or warnings if -gnatd.E is set). In earlier
+   --  versions of Ada, warnings are output if Warn_On_Ada_2012_Incompatibility
+   --  is set, otherwise the call has no effect.
 
    procedure Enter_Overloaded_Entity (S : Entity_Id);
    --  This procedure makes S, a new overloaded entity, into the first visible
@@ -432,7 +435,11 @@ package body Sem_Ch6 is
          --  To prevent premature freeze action, insert the new body at the end
          --  of the current declarations, or at the end of the package spec.
          --  However, resolve usage names now, to prevent spurious visibility
-         --  on later entities.
+         --  on later entities. Note that the function can now be called in
+         --  the current declarative part, which will appear to be prior to
+         --  the presence of the body in the code. There are nevertheless no
+         --  order of elaboration issues because all name resolution has taken
+         --  place at the point of declaration.
 
          declare
             Decls : List_Id            := List_Containing (N);
@@ -1185,6 +1192,9 @@ package body Sem_Ch6 is
                Next (Cond);
             end loop;
          end;
+
+         Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (Body_Id, True);
 
          Analyze_Declarations (Declarations (N));
          Check_Completion;
@@ -2923,6 +2933,8 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
+         Set_Ekind (Body_Id, E_Subprogram_Body);
+
          if Nkind (N) = N_Subprogram_Body_Stub then
             Set_Corresponding_Spec_Of_Stub (N, Spec_Id);
 
@@ -2987,12 +2999,10 @@ package body Sem_Ch6 is
 
             Push_Scope (Spec_Id);
 
-            --  Set SPARK_Mode from spec if spec had a SPARK_Mode pragma
+            --  Set SPARK_Mode from context
 
-            if Present (SPARK_Mode_Pragmas (Spec_Id)) then
-               SPARK_Mode :=
-                 Get_SPARK_Mode_From_Pragma (SPARK_Mode_Pragmas (Spec_Id));
-            end if;
+            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+            Set_SPARK_Pragma_Inherited (Body_Id, True);
 
             --  Make sure that the subprogram is immediately visible. For
             --  child units that have no separate spec this is indispensable.
@@ -3003,7 +3013,6 @@ package body Sem_Ch6 is
 
          Set_Corresponding_Body (Unit_Declaration_Node (Spec_Id), Body_Id);
          Set_Contract (Body_Id, Make_Contract (Sloc (Body_Id)));
-         Set_Ekind (Body_Id, E_Subprogram_Body);
          Set_Scope (Body_Id, Scope (Spec_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Spec_Id));
 
@@ -3040,7 +3049,13 @@ package body Sem_Ch6 is
             Generate_Reference
               (Body_Id, Body_Id, 'b', Set_Ref => False, Force => True);
             Install_Formals (Body_Id);
+
             Push_Scope (Body_Id);
+
+            --  Set SPARK_Mode from context
+
+            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+            Set_SPARK_Pragma_Inherited (Body_Id, True);
          end if;
 
          --  For stubs and bodies with no previous spec, generate references to
@@ -3203,13 +3218,13 @@ package body Sem_Ch6 is
       --  family index (if applicable). This form of early expansion is done
       --  when the Expander is active because Install_Private_Data_Declarations
       --  references entities which were created during regular expansion. The
-      --  body may be the rewritting of an expression function, and we need to
-      --  verify that the original node is in the source.
+      --  subprogram entity must come from source, and not be an internally
+      --  generated subprogram.
 
       if Expander_Active
-        and then Comes_From_Source (Original_Node (N))
         and then Present (Prot_Typ)
         and then Present (Spec_Id)
+        and then Comes_From_Source (Spec_Id)
         and then not Is_Eliminated (Spec_Id)
       then
          Install_Private_Data_Declarations
@@ -3230,6 +3245,34 @@ package body Sem_Ch6 is
       --  of the _Postconditions procedure).
 
       Analyze_Declarations (Declarations (N));
+
+      --  After declarations have been analyzed, the body has been set
+      --  its final value of SPARK_Mode. Check that SPARK_Mode for body
+      --  is consistent with SPARK_Mode for spec.
+
+      if Present (Spec_Id) and then Present (SPARK_Pragma (Body_Id)) then
+         if Present (SPARK_Pragma (Spec_Id)) then
+            if Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Spec_Id)) = Off
+                 and then
+               Get_SPARK_Mode_From_Pragma (SPARK_Pragma (Body_Id)) = On
+            then
+               Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+               Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+               Error_Msg_Sloc := Sloc (SPARK_Pragma (Spec_Id));
+               Error_Msg_NE
+                 ("\value Off was set for SPARK_Mode on&#", N, Spec_Id);
+            end if;
+
+         elsif Nkind (Parent (Parent (Spec_Id))) = N_Subprogram_Body_Stub then
+            null;
+
+         else
+            Error_Msg_Sloc := Sloc (SPARK_Pragma (Body_Id));
+            Error_Msg_N ("incorrect application of SPARK_Mode#", N);
+            Error_Msg_Sloc := Sloc (Spec_Id);
+            Error_Msg_NE ("\no value was set for SPARK_Mode on&#", N, Spec_Id);
+         end if;
+      end if;
 
       --  Check completion, and analyze the statements
 
@@ -3304,12 +3347,11 @@ package body Sem_Ch6 is
       --  the body of the procedure. But first we deal with a special case
       --  where we want to modify this check. If the body of the subprogram
       --  starts with a raise statement or its equivalent, or if the body
-      --  consists entirely of a null statement, then it is pretty obvious
-      --  that it is OK to not reference the parameters. For example, this
-      --  might be the following common idiom for a stubbed function:
-      --  statement of the procedure raises an exception. In particular this
-      --  deals with the common idiom of a stubbed function, which might
-      --  appear as something like:
+      --  consists entirely of a null statement, then it is pretty obvious that
+      --  it is OK to not reference the parameters. For example, this might be
+      --  the following common idiom for a stubbed function: statement of the
+      --  procedure raises an exception. In particular this deals with the
+      --  common idiom of a stubbed function, which appears something like:
 
       --     function F (A : Integer) return Some_Type;
       --        X : Some_Type;
@@ -3320,7 +3362,7 @@ package body Sem_Ch6 is
 
       --  Here the purpose of X is simply to satisfy the annoying requirement
       --  in Ada that there be at least one return, and we certainly do not
-      --  want to go posting warnings on X that it is not initialized! On
+      --  want to go posting warnings on X that it is not initialized. On
       --  the other hand, if X is entirely unreferenced that should still
       --  get a warning.
 
@@ -3491,7 +3533,7 @@ package body Sem_Ch6 is
 
          --  Analyze classification pragmas
 
-         Prag := Classifications (Contract (Subp));
+         Prag := Classifications (Items);
          while Present (Prag) loop
             Nam := Pragma_Name (Prag);
 
@@ -3550,8 +3592,9 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
-      Scop       : constant Entity_Id  := Current_Scope;
+      Scop       : constant Entity_Id := Current_Scope;
       Designator : Entity_Id;
+
       Is_Completion : Boolean;
       --  Indicates whether a null procedure declaration is a completion
 
@@ -3585,6 +3628,12 @@ package body Sem_Ch6 is
 
       Generate_Definition (Designator);
 
+      --  Set SPARK mode from current context (may be overwritten later with
+      --  explicit pragma).
+
+      Set_SPARK_Pragma (Designator, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Designator, True);
+
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
          Write_Name (Chars (Designator));
@@ -3598,12 +3647,12 @@ package body Sem_Ch6 is
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
 
-      --  If the type of the first formal of the current subprogram is a
-      --  non-generic tagged private type, mark the subprogram as being a
-      --  private primitive. Ditto if this is a function with controlling
-      --  result, and the return type is currently private. In both cases,
-      --  the type of the controlling argument or result must be in the
-      --  current scope for the operation to be primitive.
+      --  If the type of the first formal of the current subprogram is a non-
+      --  generic tagged private type, mark the subprogram as being a private
+      --  primitive. Ditto if this is a function with controlling result, and
+      --  the return type is currently private. In both cases, the type of the
+      --  controlling argument or result must be in the current scope for the
+      --  operation to be primitive.
 
       if Has_Controlling_Result (Designator)
         and then Is_Private_Type (Etype (Designator))
@@ -4492,7 +4541,7 @@ package body Sem_Ch6 is
 
             --  Emit a warning if this is a call to a runtime subprogram
             --  which is located inside a generic. Previously this call
-            --  was silently skipped!
+            --  was silently skipped.
 
             if Is_Generic_Instance (Subp) then
                declare
@@ -5235,7 +5284,7 @@ package body Sem_Ch6 is
          --  Compiling with optimizations enabled
 
          else
-            --  Procedures are never frontend inlined in this case!
+            --  Procedures are never frontend inlined in this case
 
             if Ekind (Subp) /= E_Function then
                return False;
@@ -5622,7 +5671,7 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  Build the body to inline only if really needed!
+      --  Build the body to inline only if really needed
 
       if Check_Body_To_Inline (N, Spec_Id)
         and then Serious_Errors_Detected = 0
@@ -5832,7 +5881,7 @@ package body Sem_Ch6 is
       --  Note: we use the entity information, rather than going directly
       --  to the specification in the tree. This is not only simpler, but
       --  absolutely necessary for some cases of conformance tests between
-      --  operators, where the declaration tree simply does not exist!
+      --  operators, where the declaration tree simply does not exist.
 
       Old_Formal := First_Formal (Old_Id);
       New_Formal := First_Formal (New_Id);
@@ -7181,7 +7230,7 @@ package body Sem_Ch6 is
                --  Note: if both ECA and DCA are missing the return, then we
                --  post only one message, should be enough to fix the bugs.
                --  If not we will get a message next time on the DCA when the
-               --  ECA is fixed!
+               --  ECA is fixed.
 
                elsif No (Statements (DCA)) then
                   Last_Stm := DCA;
@@ -8182,63 +8231,140 @@ package body Sem_Ch6 is
       Obj_Decl : Node_Id;
 
    begin
-      if Nkind (Decl) = N_Subprogram_Declaration
-        and then Is_Record_Type (Typ)
-        and then not Is_Tagged_Type (Typ)
+      --  This check applies only if we have a subprogram declaration with a
+      --  non-tagged record type.
+
+      if Nkind (Decl) /= N_Subprogram_Declaration
+        or else not Is_Record_Type (Typ)
+        or else Is_Tagged_Type (Typ)
       then
-         --  If the type is not declared in a package, or if we are in the
-         --  body of the package or in some other scope, the new operation is
-         --  not primitive, and therefore legal, though suspicious. If the
-         --  type is a generic actual (sub)type, the operation is not primitive
-         --  either because the base type is declared elsewhere.
+         return;
+      end if;
 
-         if Is_Frozen (Typ) then
-            if Ekind (Scope (Typ)) /= E_Package
-              or else Scope (Typ) /= Current_Scope
-            then
-               null;
+      --  In Ada 2012 case, we will output errors or warnings depending on
+      --  the setting of debug flag -gnatd.E.
 
-            elsif Is_Generic_Actual_Type (Typ) then
-               null;
+      if Ada_Version >= Ada_2012 then
+         Error_Msg_Warn := Debug_Flag_Dot_EE;
 
-            elsif In_Package_Body (Scope (Typ)) then
+      --  In earlier versions of Ada, nothing to do unless we are warning on
+      --  Ada 2012 incompatibilities (Warn_On_Ada_2012_Incompatibility set).
+
+      else
+         if not Warn_On_Ada_2012_Compatibility then
+            return;
+         end if;
+      end if;
+
+      --  Cases where the type has already been frozen
+
+      if Is_Frozen (Typ) then
+
+         --  If the type is not declared in a package, or if we are in the body
+         --  of the package or in some other scope, the new operation is not
+         --  primitive, and therefore legal, though suspicious. Should we
+         --  generate a warning in this case ???
+
+         if Ekind (Scope (Typ)) /= E_Package
+           or else Scope (Typ) /= Current_Scope
+         then
+            return;
+
+         --  If the type is a generic actual (sub)type, the operation is not
+         --  primitive either because the base type is declared elsewhere.
+
+         elsif Is_Generic_Actual_Type (Typ) then
+            return;
+
+         --  Here we have a definite error of declaration after freezing
+
+         else
+            if Ada_Version >= Ada_2012 then
                Error_Msg_NE
-                 ("equality operator must be declared "
-                   & "before type& is frozen", Eq_Op, Typ);
-               Error_Msg_N
-                 ("\move declaration to package spec", Eq_Op);
+                 ("equality operator must be declared before type& is "
+                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)<<", Eq_Op, Typ);
+
+               --  In Ada 2012 mode with error turned to warning, output one
+               --  more warning to warn that the equality operation may not
+               --  compose. This is the consequence of ignoring the error.
+
+               if Error_Msg_Warn then
+                  Error_Msg_N ("\equality operation may not compose??", Eq_Op);
+               end if;
 
             else
                Error_Msg_NE
-                 ("equality operator must be declared "
-                   & "before type& is frozen", Eq_Op, Typ);
+                 ("equality operator must be declared before type& is "
+                  & "frozen (RM 4.5.2 (9.8)) (Ada 2012)?y?", Eq_Op, Typ);
+            end if;
 
+            --  If we are in the package body, we could just move the
+            --  declaration to the package spec, so add a message saying that.
+
+            if In_Package_Body (Scope (Typ)) then
+               if Ada_Version >= Ada_2012 then
+                  Error_Msg_N
+                    ("\move declaration to package spec<<", Eq_Op);
+               else
+                  Error_Msg_N
+                    ("\move declaration to package spec (Ada 2012)?y?", Eq_Op);
+               end if;
+
+            --  Otherwise try to find the freezing point
+
+            else
                Obj_Decl := Next (Parent (Typ));
                while Present (Obj_Decl) and then Obj_Decl /= Decl loop
                   if Nkind (Obj_Decl) = N_Object_Declaration
                     and then Etype (Defining_Identifier (Obj_Decl)) = Typ
                   then
-                     Error_Msg_NE
-                       ("type& is frozen by declaration??", Obj_Decl, Typ);
-                     Error_Msg_N
-                       ("\an equality operator cannot be declared after this "
-                         & "point (RM 4.5.2 (9.8)) (Ada 2012))??", Obj_Decl);
+                     --  Freezing point, output warnings
+
+                     if Ada_Version >= Ada_2012 then
+                        Error_Msg_NE
+                          ("type& is frozen by declaration??", Obj_Decl, Typ);
+                        Error_Msg_N
+                          ("\an equality operator cannot be declared after "
+                           & "this point??",
+                           Obj_Decl);
+                     else
+                        Error_Msg_NE
+                          ("type& is frozen by declaration (Ada 2012)?y?",
+                           Obj_Decl, Typ);
+                        Error_Msg_N
+                          ("\an equality operator cannot be declared after "
+                           & "this point (Ada 2012)?y?",
+                           Obj_Decl);
+                     end if;
+
                      exit;
                   end if;
 
                   Next (Obj_Decl);
                end loop;
             end if;
-
-         elsif not In_Same_List (Parent (Typ), Decl)
-           and then not Is_Limited_Type (Typ)
-         then
-
-            --  This makes it illegal to have a primitive equality declared in
-            --  the private part if the type is visible.
-
-            Error_Msg_N ("equality operator appears too late", Eq_Op);
          end if;
+
+      --  Here if type is not frozen yet. It is illegal to have a primitive
+      --  equality declared in the private part if the type is visible.
+
+      elsif not In_Same_List (Parent (Typ), Decl)
+        and then not Is_Limited_Type (Typ)
+      then
+         --  Shouldn't we give an RM reference here???
+
+         if Ada_Version >= Ada_2012 then
+            Error_Msg_N
+              ("equality operator appears too late<<", Eq_Op);
+         else
+            Error_Msg_N
+              ("equality operator appears too late (Ada 2012)?y?", Eq_Op);
+         end if;
+
+      --  No error detected
+
+      else
+         return;
       end if;
    end Check_Untagged_Equality;
 
@@ -8536,7 +8662,7 @@ package body Sem_Ch6 is
          end if;
 
          --  Compare two lists, skipping rewrite insertions (we want to compare
-         --  the original trees, not the expanded versions!)
+         --  the original trees, not the expanded versions).
 
          loop
             if Is_Rewrite_Insertion (N1) then
@@ -8592,7 +8718,7 @@ package body Sem_Ch6 is
    begin
       --  Non-conformant if paren count does not match. Note: if some idiot
       --  complains that we don't do this right for more than 3 levels of
-      --  parentheses, they will be treated with the respect they deserve!
+      --  parentheses, they will be treated with the respect they deserve.
 
       if Paren_Count (E1) /= Paren_Count (E2) then
          return False;
@@ -10780,10 +10906,7 @@ package body Sem_Ch6 is
            and then not Is_Dispatching_Operation (S)
          then
             Make_Inequality_Operator (S);
-
-            if Ada_Version >= Ada_2012 then
-               Check_Untagged_Equality (S);
-            end if;
+            Check_Untagged_Equality (S);
          end if;
    end New_Overloaded_Entity;
 
@@ -11101,6 +11224,28 @@ package body Sem_Ch6 is
             Null_Exclusion_Static_Checks (Param_Spec);
          end if;
 
+         --  The following checks are relevant when SPARK_Mode is on as these
+         --  are not standard Ada legality rules.
+
+         if SPARK_Mode = On
+           and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
+         then
+            --  A function cannot have a parameter of mode IN OUT or OUT
+
+            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
+               Error_Msg_N
+                 ("function cannot have parameter of mode `OUT` or `IN OUT` "
+                  & "(SPARK RM 6.1)", Formal);
+
+            --  A function cannot have a volatile formal parameter
+
+            elsif Is_SPARK_Volatile_Object (Formal) then
+               Error_Msg_N
+                 ("function cannot have a volatile formal parameter (SPARK RM "
+                  & "7.1.3(10))", Formal);
+            end if;
+         end if;
+
       <<Continue>>
          Next (Param_Spec);
       end loop;
@@ -11249,7 +11394,7 @@ package body Sem_Ch6 is
             AS_Needed := False;
 
          --  If we have unknown discriminants, then we do not need an actual
-         --  subtype, or more accurately we cannot figure it out! Note that
+         --  subtype, or more accurately we cannot figure it out. Note that
          --  all class-wide types have unknown discriminants.
 
          elsif Has_Unknown_Discriminants (T) then
@@ -11336,6 +11481,13 @@ package body Sem_Ch6 is
 
             if Present (First_Stmt) then
                Insert_List_Before_And_Analyze (First_Stmt,
+                 Freeze_Entity (Defining_Identifier (Decl), N));
+
+            --  Ditto if the type has a dynamic predicate, because the
+            --  generated function will mention the actual subtype.
+
+            elsif Has_Dynamic_Predicate_Aspect (T) then
+               Insert_List_Before_And_Analyze (Decl,
                  Freeze_Entity (Defining_Identifier (Decl), N));
             end if;
 

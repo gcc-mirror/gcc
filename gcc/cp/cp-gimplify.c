@@ -1311,7 +1311,7 @@ cp_genericize (tree fndecl)
     return;
 
   /* Expand all the array notations here.  */
-  if (flag_enable_cilkplus 
+  if (flag_cilkplus 
       && contains_array_notation_expr (DECL_SAVED_TREE (fndecl)))
     DECL_SAVED_TREE (fndecl) = 
       expand_array_notation_exprs (DECL_SAVED_TREE (fndecl));

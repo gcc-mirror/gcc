@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,7 +199,7 @@ package body System.Arith_64 is
 
       --  Compute Y * Z. Note that if the result overflows 64 bits unsigned,
       --  then the rounded result is clearly zero (since the dividend is at
-      --  most 2**63 - 1, the extra bit of precision is nice here!)
+      --  most 2**63 - 1, the extra bit of precision is nice here).
 
       if Yhi /= 0 then
          if Zhi /= 0 then

@@ -1126,7 +1126,7 @@ package body CStand is
       --  special insertion character } for types results in special handling
       --  of these type names in any case. The blanks in these names would
       --  trouble in Gigi, but that's OK here, since none of these types
-      --  should ever get through to Gigi! Attributes of these types are
+      --  should ever get through to Gigi. Attributes of these types are
       --  filled out to minimize problems with cascaded errors (for example,
       --  Any_Integer is given reasonable and consistent type and size values)
 
@@ -1812,7 +1812,7 @@ package body CStand is
       Set_Needs_Debug_Info (E);
 
       --  All standard entities are built with fully qualified names, so
-      --  set the flag to prevent an abortive attempt at requalification!
+      --  set the flag to prevent an abortive attempt at requalification.
 
       Set_Has_Qualified_Name (E);
 
@@ -1828,7 +1828,7 @@ package body CStand is
    procedure Print_Standard is
 
       procedure P (Item : String) renames Output.Write_Line;
-      --  Short-hand, since we do a lot of line writes here!
+      --  Short-hand, since we do a lot of line writes here
 
       procedure P_Int_Range (Size : Pos);
       --  Prints the range of an integer based on its Size

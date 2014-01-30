@@ -339,6 +339,10 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__HTM__");
   if ((flags & OPTION_MASK_P8_VECTOR) != 0)
     rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
+  if ((flags & OPTION_MASK_QUAD_MEMORY) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__QUAD_MEMORY__");
+  if ((flags & OPTION_MASK_QUAD_MEMORY_ATOMIC) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__QUAD_MEMORY_ATOMIC__");
   if ((flags & OPTION_MASK_CRYPTO) != 0)
     rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
 

@@ -100,7 +100,7 @@ package Ada.Containers.Formal_Hashed_Maps is
      (Source   : Map;
       Capacity : Count_Type := 0) return Map
    with
-     Pre => Capacity >= Source.Capacity;
+     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
    --  Copy returns a container stricty equal to Source. It must have
    --  the same cursors associated with each element. Therefore:
    --  - capacity=0 means use container.capacity as capacity of target

@@ -688,9 +688,10 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 
 /* True if C is a non-empty register class that has too few registers
    to be safely used as a reload target class.	*/
-#define SMALL_REGISTER_CLASS_P(C)					\
-  (reg_class_size [(C)] == 1						\
-   || (reg_class_size [(C)] >= 1 && targetm.class_likely_spilled_p (C)))
+#define SMALL_REGISTER_CLASS_P(C)		\
+  (ira_class_hard_regs_num [(C)] == 1		\
+   || (ira_class_hard_regs_num [(C)] >= 1	\
+       && targetm.class_likely_spilled_p (C)))
 
 /* If REG is a reload pseudo, try to make its class satisfying CL.  */
 static void
@@ -1290,9 +1291,20 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
        && ! LRA_SUBREG_P (operand))
       || CONSTANT_P (reg) || GET_CODE (reg) == PLUS || MEM_P (reg))
     {
-      /* The class will be defined later in curr_insn_transform.  */
-      enum reg_class rclass
-	= (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
+      enum reg_class rclass;
+
+      if (REG_P (reg)
+	  && curr_insn_set != NULL_RTX
+	  && (REG_P (SET_SRC (curr_insn_set))
+	      || GET_CODE (SET_SRC (curr_insn_set)) == SUBREG))
+	/* There is big probability that we will get the same class
+	   for the new pseudo and we will get the same insn which
+	   means infinite looping.  So spill the new pseudo.  */
+	rclass = NO_REGS;
+      else
+	/* The class will be defined later in curr_insn_transform.  */
+	rclass
+	  = (enum reg_class) targetm.preferred_reload_class (reg, ALL_REGS);
 
       if (get_reload_reg (curr_static_id->operand[nop].type, reg_mode, reg,
 			  rclass, "subreg reg", &new_reg))
@@ -2113,17 +2125,25 @@ process_alt_operands (int only_alternative)
 		}
 	      /* If the operand is dying, has a matching constraint,
 		 and satisfies constraints of the matched operand
-		 which failed to satisfy the own constraints, we do
-		 not need to generate a reload insn for this
-		 operand.  */
-	      if (!(this_alternative_matches >= 0
-		    && !curr_alt_win[this_alternative_matches]
-		    && REG_P (op)
-		    && find_regno_note (curr_insn, REG_DEAD, REGNO (op))
-		    && (hard_regno[nop] >= 0
-			? in_hard_reg_set_p (this_alternative_set,
-					     mode, hard_regno[nop])
-			: in_class_p (op, this_alternative, NULL))))
+		 which failed to satisfy the own constraints, probably
+		 the reload for this operand will be gone.  */
+	      if (this_alternative_matches >= 0
+		  && !curr_alt_win[this_alternative_matches]
+		  && REG_P (op)
+		  && find_regno_note (curr_insn, REG_DEAD, REGNO (op))
+		  && (hard_regno[nop] >= 0
+		      ? in_hard_reg_set_p (this_alternative_set,
+					   mode, hard_regno[nop])
+		      : in_class_p (op, this_alternative, NULL)))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf
+		      (lra_dump_file,
+		       "            %d Dying matched operand reload: reject++\n",
+		       nop);
+		  reject++;
+		}
+	      else
 		{
 		  /* Strict_low_part requires to reload the register
 		     not the sub-register.  In this case we should
@@ -2190,7 +2210,13 @@ process_alt_operands (int only_alternative)
 		  || (curr_static_id->operand[nop].type != OP_OUT
 		      && no_input_reloads_p && ! const_to_mem)
 		  || (this_alternative_matches >= 0
-		      && (no_input_reloads_p || no_output_reloads_p)))
+		      && (no_input_reloads_p
+			  || (no_output_reloads_p
+			      && (curr_static_id->operand
+				  [this_alternative_matches].type != OP_IN)
+			      && ! find_reg_note (curr_insn, REG_UNUSED,
+						  no_subreg_reg_operand
+						  [this_alternative_matches])))))
 		{
 		  if (lra_dump_file != NULL)
 		    fprintf
@@ -4992,7 +5018,7 @@ static bool
 inherit_in_ebb (rtx head, rtx tail)
 {
   int i, src_regno, dst_regno, nregs;
-  bool change_p, succ_p;
+  bool change_p, succ_p, update_reloads_num_p;
   rtx prev_insn, next_usage_insns, set, last_insn;
   enum reg_class cl;
   struct lra_insn_reg *reg;
@@ -5063,6 +5089,7 @@ inherit_in_ebb (rtx head, rtx tail)
 	  src_regno = REGNO (SET_SRC (set));
 	  dst_regno = REGNO (SET_DEST (set));
 	}
+      update_reloads_num_p = true;
       if (src_regno < lra_constraint_new_regno_start
 	  && src_regno >= FIRST_PSEUDO_REGISTER
 	  && reg_renumber[src_regno] < 0
@@ -5071,6 +5098,7 @@ inherit_in_ebb (rtx head, rtx tail)
 	{
 	  /* 'reload_pseudo <- original_pseudo'.  */
 	  reloads_num++;
+	  update_reloads_num_p = false;
 	  succ_p = false;
 	  if (usage_insns[src_regno].check == curr_usage_insns_check
 	      && (next_usage_insns = usage_insns[src_regno].insns) != NULL_RTX)
@@ -5094,6 +5122,7 @@ inherit_in_ebb (rtx head, rtx tail)
 		   = usage_insns[dst_regno].insns) != NULL_RTX)
 	{
 	  reloads_num++;
+	  update_reloads_num_p = false;
 	  /* 'original_pseudo <- reload_pseudo'.  */
 	  if (! JUMP_P (curr_insn)
 	      && inherit_reload_reg (true, dst_regno, cl,
@@ -5282,6 +5311,14 @@ inherit_in_ebb (rtx head, rtx tail)
 		      add_next_usage_insn (src_regno, use_insn, reloads_num);
 		    }
 		}
+	  /* Process call args.  */
+	  if (curr_id->arg_hard_regs != NULL)
+	    for (i = 0; (src_regno = curr_id->arg_hard_regs[i]) >= 0; i++)
+	      if (src_regno < FIRST_PSEUDO_REGISTER)
+		{
+	           SET_HARD_REG_BIT (live_hard_regs, src_regno);
+	           add_next_usage_insn (src_regno, curr_insn, reloads_num);
+		}
 	  for (i = 0; i < to_inherit_num; i++)
 	    {
 	      src_regno = to_inherit[i].regno;
@@ -5290,6 +5327,26 @@ inherit_in_ebb (rtx head, rtx tail)
 		change_p = true;
 	      else
 		setup_next_usage_insn (src_regno, curr_insn, reloads_num, false);
+	    }
+	}
+      if (update_reloads_num_p
+	  && NONDEBUG_INSN_P (curr_insn)
+          && (set = single_set (curr_insn)) != NULL_RTX)
+	{
+	  int regno = -1;
+	  if ((REG_P (SET_DEST (set))
+	       && (regno = REGNO (SET_DEST (set))) >= lra_constraint_new_regno_start
+	       && reg_renumber[regno] < 0
+	       && (cl = lra_get_allocno_class (regno)) != NO_REGS)
+	      || (REG_P (SET_SRC (set))
+	          && (regno = REGNO (SET_SRC (set))) >= lra_constraint_new_regno_start
+	          && reg_renumber[regno] < 0
+	          && (cl = lra_get_allocno_class (regno)) != NO_REGS))
+	    {
+	      reloads_num++;
+	      if (hard_reg_set_subset_p (reg_class_contents[cl], live_hard_regs))
+		IOR_HARD_REG_SET (potential_reload_hard_regs,
+	                          reg_class_contents[cl]);
 	    }
 	}
       /* We reached the start of the current basic block.  */

@@ -1,3 +1,8 @@
+2014-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (*-*-lynxos*): Delete.
+	* configure: Regenerate.
+
 2013-12-12  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 

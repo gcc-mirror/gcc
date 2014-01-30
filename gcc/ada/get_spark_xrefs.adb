@@ -455,6 +455,7 @@ begin
 
                            pragma Assert
                              (Rtype = 'r' or else
+                              Rtype = 'c' or else
                               Rtype = 'm' or else
                               Rtype = 's');
 

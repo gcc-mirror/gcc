@@ -116,11 +116,11 @@ Target Report RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations
 
 mdsp
-Target Report Mask(DSP)
+Target Report Var(TARGET_DSP)
 Use MIPS-DSP instructions
 
 mdspr2
-Target Report Mask(DSPR2)
+Target Report Var(TARGET_DSPR2)
 Use MIPS-DSP REV 2 instructions
 
 mdebug
@@ -190,7 +190,7 @@ Target Report Var(TARGET_4300_MUL_FIX)
 Work around an early 4300 hardware bug
 
 mfp-exceptions
-Target Report Mask(FP_EXCEPTIONS)
+Target Report Var(TARGET_FP_EXCEPTIONS) Init(1)
 FP exceptions are enabled
 
 mfp32
@@ -206,7 +206,7 @@ Target RejectNegative Joined Var(mips_cache_flush_func) Init(CACHE_FLUSH_FUNC)
 -mflush-func=FUNC	Use FUNC to flush the cache before calling stack trampolines
 
 mfused-madd
-Target Report Mask(FUSED_MADD)
+Target Report Var(TARGET_FUSED_MADD) Init(1)
 Generate floating-point multiply-add instructions
 
 mabs=
@@ -264,7 +264,7 @@ Target Report RejectNegative Mask(MIPS16)
 Generate MIPS16 code
 
 mips3d
-Target Report RejectNegative Mask(MIPS3D)
+Target Report RejectNegative Var(TARGET_MIPS3D)
 Use MIPS-3D instructions
 
 mllsc
@@ -324,7 +324,7 @@ Target Report RejectNegative InverseMask(MIPS16)
 Generate normal-mode code
 
 mno-mips3d
-Target Report RejectNegative InverseMask(MIPS3D)
+Target Report RejectNegative Var(TARGET_MIPS3D, 0)
 Do not use MIPS-3D instructions
 
 mpaired-single

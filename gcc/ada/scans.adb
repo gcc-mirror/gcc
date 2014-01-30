@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body Scans is
          --  Set up Token_Type values in Names table entries for reserved
          --  words. We use the Pos value of the Token_Type value. Note that
          --  Is_Keyword_Name relies on the fact that Token_Type'Val (0) is not
-         --  a reserved word!
+         --  a reserved word.
 
          Set_Name_Table_Byte (N, Token_Type'Pos (T));
       end Set_Reserved;

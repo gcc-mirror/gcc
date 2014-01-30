@@ -7051,7 +7051,9 @@ package body Prj.Nmsc is
             --  Check if it is OK to have the same file name in several
             --  source directories.
 
-            if Source_Dir_Rank = Name_Loc.Source.Source_Dir_Rank then
+            if Name_Loc.Source /= No_Source
+              and then Source_Dir_Rank = Name_Loc.Source.Source_Dir_Rank
+            then
                Error_Msg_File_1 := File_Name;
                Error_Msg
                  (Data.Flags,
@@ -8395,71 +8397,14 @@ package body Prj.Nmsc is
          In_Aggregate_Lib : Boolean;
          Data             : in out Tree_Processing_Data)
       is
-         procedure Check_Aggregate
-           (Project : Project_Id;
-            Data    : in out Tree_Processing_Data);
-         --  Check the aggregate project attributes, reject any not supported
-         --  attributes.
-
-         procedure Check_Aggregated
-           (Project : Project_Id;
-            Data    : in out Tree_Processing_Data);
-         --  Check aggregated projects which should not be externally built.
-         --  What is Data??? if same as outer Data, why passed???
-         --  What exact check is performed here??? Seems a bad idea to have
-         --  two procedures with such close names ???
-
-         ---------------------
-         -- Check_Aggregate --
-         ---------------------
-
-         procedure Check_Aggregate
-           (Project : Project_Id;
-            Data    : in out Tree_Processing_Data)
-         is
-            procedure Check_Not_Defined (Name : Name_Id);
-            --  Report an error if Var is defined
-
-            -----------------------
-            -- Check_Not_Defined --
-            -----------------------
-
-            procedure Check_Not_Defined (Name : Name_Id) is
-               Var : constant Prj.Variable_Value :=
-                       Prj.Util.Value_Of
-                         (Name, Project.Decl.Attributes, Data.Tree.Shared);
-            begin
-               if not Var.Default then
-                  Error_Msg_Name_1 := Name;
-                  Error_Msg
-                    (Data.Flags, "wrong attribute %% in aggregate library",
-                     Var.Location, Project);
-               end if;
-            end Check_Not_Defined;
-
-         --  Start of processing for Check_Aggregate
-
-         begin
-            Check_Not_Defined (Snames.Name_Library_Dir);
-            Check_Not_Defined (Snames.Name_Library_Interface);
-            Check_Not_Defined (Snames.Name_Library_Name);
-            Check_Not_Defined (Snames.Name_Library_Ali_Dir);
-            Check_Not_Defined (Snames.Name_Library_Src_Dir);
-            Check_Not_Defined (Snames.Name_Library_Options);
-            Check_Not_Defined (Snames.Name_Library_Standalone);
-            Check_Not_Defined (Snames.Name_Library_Kind);
-            Check_Not_Defined (Snames.Name_Leading_Library_Options);
-            Check_Not_Defined (Snames.Name_Library_Version);
-         end Check_Aggregate;
+         procedure Check_Aggregated;
+         --  Check aggregated projects which should not be externally built
 
          ----------------------
          -- Check_Aggregated --
          ----------------------
 
-         procedure Check_Aggregated
-           (Project : Project_Id;
-            Data    : in out Tree_Processing_Data)
-         is
+         procedure Check_Aggregated is
             L : Aggregated_Project_List;
 
          begin
@@ -8478,7 +8423,7 @@ package body Prj.Nmsc is
                      Error_Msg_Name_1 := L.Project.Display_Name;
                      Error_Msg
                        (Data.Flags,
-                        "cannot aggregate externally build library %%",
+                        "cannot aggregate externally built project %%",
                         Var.Location, Project);
                   end if;
                end;
@@ -8504,10 +8449,10 @@ package body Prj.Nmsc is
 
          case Project.Qualifier is
             when Aggregate =>
-               Check_Aggregated (Project, Data);
+               Check_Aggregated;
 
             when Aggregate_Library =>
-               Check_Aggregated (Project, Data);
+               Check_Aggregated;
 
                if Project.Object_Directory = No_Path_Information then
                   Project.Object_Directory := Project.Directory;
@@ -8532,12 +8477,7 @@ package body Prj.Nmsc is
 
          Check_Configuration (Project, Data);
 
-         --  For aggregate project check no library attributes are defined
-
-         if Project.Qualifier = Aggregate then
-            Check_Aggregate (Project, Data);
-
-         else
+         if Project.Qualifier /= Aggregate then
             Check_Library_Attributes (Project, Data);
             Check_Package_Naming (Project, Data);
 

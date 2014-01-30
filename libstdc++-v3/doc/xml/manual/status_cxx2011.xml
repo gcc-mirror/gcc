@@ -79,7 +79,7 @@ particular release.
       <entry>18.2</entry>
       <entry>Types</entry>
       <entry>Partial</entry>
-      <entry>Missing offsetof, max_align_t</entry>
+      <entry>Missing offsetof</entry>
     </row>
     <row>
       <entry>18.3</entry>
@@ -999,10 +999,9 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>20.12</entry>
       <entry>Scoped allocator adaptor</entry>
-      <entry>Partial</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>
@@ -1113,10 +1112,11 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>21.4</entry>
       <entry>Class template <code>basic_string</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Non-conforming Copy-On-Write implementation</entry>
     </row>
     <row>
       <entry>21.5</entry>
@@ -2133,6 +2133,7 @@ particular release.
         Missing move and swap operations on <code>basic_ios</code>.
         Missing <code>io_errc</code> and <code>iostream_category</code>.
         <code>ios_base::failure</code> is not derived from <code>system_error</code>.
+	Missing <code>ios_base::hexfloat</code>.
       </entry>
     </row>
     <row>

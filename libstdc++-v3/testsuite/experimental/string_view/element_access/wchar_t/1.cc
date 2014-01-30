@@ -41,8 +41,9 @@ test01()
   csz01 = str01.size();
   cref cref1 = str01[csz01 - 1];
   VERIFY( cref1 == L'a' );
-  cref cref2 = str01[csz01];
-  VERIFY( cref2 == wchar_t() );
+  // Undefined behavior at size().
+  //cref cref2 = str01[csz01];
+  //VERIFY( cref2 == wchar_t() );
 
   // const_reference at(size_type pos) const;
   csz01 = str01.size();

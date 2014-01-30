@@ -133,8 +133,18 @@ namespace __gnu_debug
   protected:
     // Initialize with a version number of 1 and no iterators
     _Safe_unordered_container_base()
-    : _M_local_iterators(0), _M_const_local_iterators(0)
+    : _M_local_iterators(nullptr), _M_const_local_iterators(nullptr)
     { }
+
+    // Initialize with a version number of 1 and no iterators
+    _Safe_unordered_container_base(const _Safe_unordered_container_base&)
+    noexcept
+    : _Safe_unordered_container_base() { }
+
+    _Safe_unordered_container_base(_Safe_unordered_container_base&& __x)
+    noexcept
+    : _Safe_unordered_container_base()
+    { this->_M_swap(__x); }
 
     /** Notify all iterators that reference this container that the
 	container is being destroyed. */

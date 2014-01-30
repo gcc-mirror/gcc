@@ -193,6 +193,9 @@ namespace __gnu_debug
     { }
 
 #if __cplusplus >= 201103L
+    _Safe_sequence_base(const _Safe_sequence_base&) noexcept
+      : _Safe_sequence_base() { }
+
     _Safe_sequence_base(_Safe_sequence_base&& __x) noexcept
       : _Safe_sequence_base()
     { _M_swap(__x); }

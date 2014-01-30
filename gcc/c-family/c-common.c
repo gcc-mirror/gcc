@@ -4006,13 +4006,15 @@ expr_original_type (tree expr)
    of build_binary_op: OP0_PTR is &OP0, OP1_PTR is &OP1,
    RESTYPE_PTR is &RESULT_TYPE and RESCODE_PTR is &RESULTCODE.
 
+   LOC is the location of the comparison.
+
    If this function returns nonzero, it means that the comparison has
    a constant value.  What this function returns is an expression for
    that value.  */
 
 tree
-shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
-		 enum tree_code *rescode_ptr)
+shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
+		 tree *restype_ptr, enum tree_code *rescode_ptr)
 {
   tree type;
   tree op0 = *op0_ptr;
@@ -4021,7 +4023,6 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
-  location_t loc = EXPR_LOC_OR_LOC (op0, input_location);
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -5371,7 +5372,7 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 
   build_common_builtin_nodes ();
 
-  if (flag_enable_cilkplus)
+  if (flag_cilkplus)
     cilk_init_builtins ();
 }
 
@@ -11937,6 +11938,17 @@ cxx_fundamental_alignment_p  (unsigned align)
 {
   return (align <=  MAX (TYPE_ALIGN (long_long_integer_type_node),
 			 TYPE_ALIGN (long_double_type_node)));
+}
+
+/* Return true if T is a pointer to a zero-sized aggregate.  */
+
+bool
+pointer_to_zero_sized_aggr_p (tree t)
+{
+  if (!POINTER_TYPE_P (t))
+    return false;
+  t = TREE_TYPE (t);
+  return (TYPE_SIZE (t) && integer_zerop (TYPE_SIZE (t)));
 }
 
 #include "gt-c-family-c-common.h"

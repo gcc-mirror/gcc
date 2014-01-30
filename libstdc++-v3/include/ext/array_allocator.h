@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       destroy(pointer __p) { __p->~_Tp(); }
 #endif
-    };  
+    } _GLIBCXX_DEPRECATED;
 
   /**
    *  @brief  An allocator that uses previously allocated memory.
@@ -128,7 +128,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
      template<typename _Tp1, typename _Array1 = _Array>
         struct rebind
-        { typedef array_allocator<_Tp1, _Array1> other; };
+        {
+	  typedef array_allocator<_Tp1, _Array1> other _GLIBCXX_DEPRECATED;
+	} _GLIBCXX_DEPRECATED;
 
       array_allocator(array_type* __array = 0) _GLIBCXX_USE_NOEXCEPT 
       : _M_array(__array), _M_used(size_type()) { }
@@ -152,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_used += __n;
 	return __ret;
       }
-    };
+    } _GLIBCXX_DEPRECATED;
 
   template<typename _Tp, typename _Array>
     inline bool

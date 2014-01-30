@@ -432,6 +432,7 @@ package body Lib.Xref is
       --  ??? There are several routines here and there that perform a similar
       --      (but subtly different) computation, which should be factored:
 
+      --      Sem_Util.Is_LHS
       --      Sem_Util.May_Be_Lvalue
       --      Sem_Util.Known_To_Be_Assigned
       --      Exp_Ch2.Expand_Entry_Parameter.In_Assignment_Context
@@ -473,20 +474,27 @@ package body Lib.Xref is
 
             --  ??? case of a slice assignment?
 
-            --  ??? Note that in some cases this is called too early
-            --  (see comments in Sem_Ch8.Find_Direct_Name), at a point where
-            --  the tree is not fully typed yet. In that case we may lack
-            --  an Etype for N, and we must disable the check for an implicit
-            --  dereference. If the dereference is on an LHS, this causes a
-            --  false positive.
-
             elsif (K = N_Selected_Component or else K = N_Indexed_Component)
               and then Prefix (P) = N
-              and then not (Present (Etype (N))
-                              and then
-                            Is_Access_Type (Etype (N)))
             then
-               N := P;
+               --  Check for access type. First a kludge, In some cases this is
+               --  called too early (see comments in Sem_Ch8.Find_Direct_Name),
+               --  at a point where the tree is not fully typed yet. In that
+               --  case we may lack an Etype for N, and we can't check the
+               --  Etype. For now, we always return False in such a case,
+               --  but this is clearly not right in all cases ???
+
+               if No (Etype (N)) then
+                  return False;
+
+               elsif Is_Access_Type (Etype (N)) then
+                  return False;
+
+               --  Access type case dealt with, keep going
+
+               else
+                  N := P;
+               end if;
 
             --  All other cases, definitely not on left side
 
@@ -1069,6 +1077,27 @@ package body Lib.Xref is
                 Ref_Scope => Empty,
                 Ent_Scope => Empty),
                Ent_Scope_File => No_Unit);
+
+            --  Generate reference to the first private entity
+
+            if Typ = 'e'
+              and then Comes_From_Source (E)
+              and then Nkind (Ent) = N_Defining_Identifier
+              and then (Is_Package_Or_Generic_Package (Ent)
+                         or else Is_Concurrent_Type (Ent))
+              and then Present (First_Private_Entity (E))
+              and then In_Extended_Main_Source_Unit (N)
+            then
+               Add_Entry
+                 ((Ent       => Ent,
+                   Loc       => Sloc (First_Private_Entity (E)),
+                   Typ       => 'E',
+                   Eun       => Get_Source_Unit (Def),
+                   Lun       => Get_Source_Unit (Ref),
+                   Ref_Scope => Empty,
+                   Ent_Scope => Empty),
+                  Ent_Scope_File => No_Unit);
+            end if;
          end if;
       end if;
    end Generate_Reference;
@@ -2414,25 +2443,42 @@ package body Lib.Xref is
 
                      Check_Type_Reference (XE.Key.Ent, False);
 
-                     --  Additional information for types with progenitors
+                     --  Additional information for types with progenitors,
+                     --  including synchronized tagged types.
 
-                     if Is_Record_Type (XE.Key.Ent)
-                       and then Present (Interfaces (XE.Key.Ent))
-                     then
-                        declare
-                           Elmt : Elmt_Id :=
-                                    First_Elmt (Interfaces (XE.Key.Ent));
-                        begin
-                           while Present (Elmt) loop
-                              Check_Type_Reference (Node (Elmt), True);
-                              Next_Elmt (Elmt);
-                           end loop;
-                        end;
+                     declare
+                        Typ  : constant Entity_Id := XE.Key.Ent;
+                        Elmt : Elmt_Id;
+
+                     begin
+                        if Is_Record_Type (Typ)
+                          and then Present (Interfaces (Typ))
+                        then
+                           Elmt := First_Elmt (Interfaces (Typ));
+
+                        elsif Is_Concurrent_Type (Typ)
+                          and then Present (Corresponding_Record_Type (Typ))
+                          and then Present (
+                            Interfaces (Corresponding_Record_Type (Typ)))
+                        then
+                           Elmt :=
+                             First_Elmt (
+                              Interfaces (Corresponding_Record_Type (Typ)));
+
+                        else
+                           Elmt := No_Elmt;
+                        end if;
+
+                        while Present (Elmt) loop
+                           Check_Type_Reference (Node (Elmt), True);
+                           Next_Elmt (Elmt);
+                        end loop;
+                     end;
 
                      --  For array types, list index types as well. (This is
                      --  not C, indexes have distinct types).
 
-                     elsif Is_Array_Type (XE.Key.Ent) then
+                     if Is_Array_Type (XE.Key.Ent) then
                         declare
                            Indx : Node_Id;
                         begin

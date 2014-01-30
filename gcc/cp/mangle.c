@@ -1231,6 +1231,9 @@ write_unqualified_name (const tree decl)
 	      fn_type = get_mostly_instantiated_function_type (decl);
 	      type = TREE_TYPE (fn_type);
 	    }
+	  else if (FNDECL_USED_AUTO (decl))
+	    type = (DECL_STRUCT_FUNCTION (decl)->language
+		    ->x_auto_return_pattern);
 	  else
 	    type = DECL_CONV_FN_TYPE (decl);
 	  write_conversion_operator_name (type);

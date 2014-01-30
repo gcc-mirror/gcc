@@ -1863,9 +1863,7 @@ package body Exp_Ch3 is
          --  Suppress the tag adjustment when VM_Target because VM tags are
          --  represented implicitly in objects.
 
-         if Is_Tagged_Type (Typ)
-           and then Tagged_Type_Expansion
-         then
+         if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
             Append_To (Res,
               Make_Assignment_Statement (N_Loc,
                 Name       =>
@@ -2386,10 +2384,16 @@ package body Exp_Ch3 is
                               Component_List (Record_Extension_Node));
 
                begin
-                  --  The parent field must be initialized first because
-                  --  the offset of the new discriminants may depend on it
+                  --  The parent field must be initialized first because the
+                  --  offset of the new discriminants may depend on it. This is
+                  --  not needed if the parent is an interface type because in
+                  --  such case the initialization of the _parent field was not
+                  --  generated.
 
-                  Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  if not Is_Interface (Etype (Rec_Ent)) then
+                     Prepend_To (Body_Stmts, Remove_Head (Stmts));
+                  end if;
+
                   Append_List_To (Body_Stmts, Stmts);
                end;
             end if;
@@ -3402,7 +3406,7 @@ package body Exp_Ch3 is
          --     the client will think an initialization procedure is present
          --     and call it, when in fact no such procedure is required, but
          --     since the call is generated, there had better be a routine
-         --     at the other end of the call, even if it does nothing!)
+         --     at the other end of the call, even if it does nothing).
 
          --  Note: the reason we exclude the CPP_Class case is because in this
          --  case the initialization is performed by the C++ constructors, and
@@ -5294,7 +5298,7 @@ package body Exp_Ch3 is
          elsif Is_Interface (Typ)
 
            --  Avoid never-ending recursion because if Equivalent_Type is set
-           --  then we've done it already and must not do it again!
+           --  then we've done it already and must not do it again.
 
            and then not
              (Nkind (Object_Definition (N)) = N_Identifier
@@ -5500,7 +5504,9 @@ package body Exp_Ch3 is
                   --  itypes may have been generated already, and the full
                   --  chain must be preserved for final freezing. Finally,
                   --  preserve Comes_From_Source setting, so that debugging
-                  --  and cross-referencing information is properly kept.
+                  --  and cross-referencing information is properly kept, and
+                  --  preserve source location, to prevent spurious errors when
+                  --  entities are declared (they must have their own Sloc).
 
                   declare
                      New_Id    : constant Entity_Id := Defining_Identifier (N);
@@ -5515,6 +5521,7 @@ package body Exp_Ch3 is
                      Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
                      Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
+                     Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
                      Exchange_Entities (Defining_Identifier (N), Def_Id);
@@ -5554,7 +5561,7 @@ package body Exp_Ch3 is
                   Apply_Constraint_Check (Expr, Typ);
 
                   --  If the expression has been marked as requiring a range
-                  --  generate it now and reset the flag.
+                  --  check, generate it now and reset the flag.
 
                   if Do_Range_Check (Expr) then
                      Set_Do_Range_Check (Expr, False);
@@ -5739,7 +5746,7 @@ package body Exp_Ch3 is
             --  We do not analyze this renaming declaration, because all its
             --  components have already been analyzed, and if we were to go
             --  ahead and analyze it, we would in effect be trying to generate
-            --  another declaration of X, which won't do!
+            --  another declaration of X, which won't do.
 
             Set_Renamed_Object (Defining_Identifier (N), Expr_Q);
             Set_Analyzed (N);
@@ -6288,7 +6295,7 @@ package body Exp_Ch3 is
 
       --  Note: if exceptions are not supported, then we suppress the raise
       --  and return -1 unconditionally (this is an erroneous program in any
-      --  case and there is no obligation to raise Constraint_Error here!) We
+      --  case and there is no obligation to raise Constraint_Error here). We
       --  also do this if pragma Restrictions (No_Exceptions) is active.
 
       --  Is this right??? What about No_Exception_Propagation???
@@ -9625,7 +9632,8 @@ package body Exp_Ch3 is
 
       --  If the parent is an interface type then it has defined all the
       --  predefined primitives abstract and we need to check if the type
-      --  has some user defined "=" function to avoid generating it.
+      --  has some user defined "=" function which matches the profile of
+      --  the Ada predefined equality operator to avoid generating it.
 
       elsif Is_Interface (Etype (Tag_Typ)) then
          Eq_Needed := True;
@@ -9635,6 +9643,16 @@ package body Exp_Ch3 is
          while Present (Prim) loop
             if Chars (Node (Prim)) = Name_Op_Eq
               and then not Is_Internal (Node (Prim))
+              and then Present (First_Entity (Node (Prim)))
+
+              --  The predefined equality primitive must have exactly two
+              --  formals whose type is this tagged type
+
+              and then Present (Last_Entity (Node (Prim)))
+              and then Next_Entity (First_Entity (Node (Prim)))
+                         = Last_Entity (Node (Prim))
+              and then Etype (First_Entity (Node (Prim))) = Tag_Typ
+              and then Etype (Last_Entity (Node (Prim))) = Tag_Typ
             then
                Eq_Needed := False;
                Eq_Name := No_Name;
@@ -9777,7 +9795,7 @@ package body Exp_Ch3 is
             Append_To (Res, Decl);
          end if;
 
-         --  Body for inequality (if required!)
+         --  Body for inequality (if required)
 
          Decl := Make_Neq_Body (Tag_Typ);
 

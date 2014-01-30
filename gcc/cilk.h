@@ -97,7 +97,7 @@ extern tree cilk_call_setjmp (tree);
 inline bool
 fn_contains_cilk_spawn_p (function *f)
 {
-  return (flag_enable_cilkplus 
+  return (flag_cilkplus 
 	  && (f->calls_cilk_spawn || f->cilk_frame_decl != NULL_TREE));
 }
 

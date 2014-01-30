@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Interfaces.CPP is
 
    subtype Vtable_Ptr is Ada.Tags.Tag;
 
-   --  These need commenting (this is not an RM package!)
+   --  These need commenting (this is not an RM package) ???
 
    function Expanded_Name (T : Vtable_Ptr) return String
      renames Ada.Tags.Expanded_Name;

@@ -916,7 +916,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	  if (offset != const0_rtx
 	      && targetm.cannot_force_const_mem (mode, imm))
 	    {
-	      gcc_assert(can_create_pseudo_p ());
+	      gcc_assert (can_create_pseudo_p ());
 	      base = aarch64_force_temporary (mode, dest, base);
 	      base = aarch64_add_offset (mode, NULL, base, INTVAL (offset));
 	      aarch64_emit_move (dest, base);
@@ -3249,7 +3249,7 @@ aarch64_legitimate_address_hook_p (enum machine_mode mode, rtx x, bool strict_p)
    pair operation.  */
 bool
 aarch64_legitimate_address_p (enum machine_mode mode, rtx x,
-			   RTX_CODE outer_code, bool strict_p)
+			      RTX_CODE outer_code, bool strict_p)
 {
   struct aarch64_address_info addr;
 
@@ -4256,7 +4256,7 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
     case FP_LO_REGS:
       return
 	aarch64_vector_mode_p (mode) ? (GET_MODE_SIZE (mode) + 15) / 16 :
- 				       (GET_MODE_SIZE (mode) + 7) / 8;
+				       (GET_MODE_SIZE (mode) + 7) / 8;
     case STACK_REG:
       return 1;
 
