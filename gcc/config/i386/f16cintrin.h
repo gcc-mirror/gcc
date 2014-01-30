@@ -37,7 +37,7 @@
 extern __inline float __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _cvtsh_ss (unsigned short __S)
 {
-  __v8hi __H = __extension__ (__v8hi){ __S, 0, 0, 0, 0, 0, 0, 0 };
+  __v8hi __H = __extension__ (__v8hi){ (short) __S, 0, 0, 0, 0, 0, 0, 0 };
   __v4sf __A = __builtin_ia32_vcvtph2ps (__H);
   return __builtin_ia32_vec_ext_v4sf (__A, 0);
 }

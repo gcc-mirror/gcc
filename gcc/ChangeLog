@@ -1,3 +1,10 @@
+2014-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/f16cintrin.h (_cvtsh_ss): Avoid -Wnarrowing
+	warning.
+	* config/i386/avx512fintrin.h (_mm512_mask_cvtusepi64_storeu_epi32):
+	Add missing return type - void.
+
 2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
