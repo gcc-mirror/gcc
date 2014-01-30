@@ -1,3 +1,9 @@
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/59905
+	* c-typeck.c (build_function_call_vec): Do not replace calls
+	to a function via an incompatible type with a runtime abort.
+
 2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-parser.c (c_parser_declaration_or_fndef): Replaced
