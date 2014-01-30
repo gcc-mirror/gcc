@@ -1,3 +1,12 @@
+2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/splat.c: New.
+	* gcc.dg/vmx/splat-vsx.c: New.
+	* gcc.dg/vmx/splat-be-order.c: New.
+	* gcc.dg/vmx/splat-vsx-be-order.c: New.
+	* gcc.dg/vmx/eg-5.c: Remove special casing for little endian.
+	* gcc.dg/vmx/sn7153.c: Add special casing for little endian.
+
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59993

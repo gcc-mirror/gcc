@@ -1,3 +1,29 @@
+2014-01-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (rs6000_expand_vector_init): Use
+	gen_vsx_xxspltw_v4sf_direct instead of gen_vsx_xxspltw_v4sf;
+	remove element index adjustment for endian (now handled in vsx.md
+	and altivec.md).
+	(altivec_expand_vec_perm_const): Use
+	gen_altivec_vsplt[bhw]_direct instead of gen_altivec_vsplt[bhw].
+	* gcc/config/rs6000/vsx.md (UNSPEC_VSX_XXSPLTW): New unspec.
+	(vsx_xxspltw_<mode>): Adjust element index for little endian.
+	* gcc/config/rs6000/altivec.md (altivec_vspltb): Divide into a
+	define_expand and a new define_insn *altivec_vspltb_internal;
+	adjust for -maltivec=be on a little endian target.
+	(altivec_vspltb_direct): New.
+	(altivec_vsplth): Divide into a define_expand and a new
+	define_insn *altivec_vsplth_internal; adjust for -maltivec=be on a
+	little endian target.
+	(altivec_vsplth_direct): New.
+	(altivec_vspltw): Divide into a define_expand and a new
+	define_insn *altivec_vspltw_internal; adjust for -maltivec=be on a
+	little endian target.
+	(altivec_vspltw_direct): New.
+	(altivec_vspltsf): Divide into a define_expand and a new
+	define_insn *altivec_vspltsf_internal; adjust for -maltivec=be on
+	a little endian target.
+
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59993
