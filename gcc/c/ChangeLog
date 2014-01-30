@@ -1,3 +1,18 @@
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* c-typeck.c (build_function_call_vec): Use loc parameter.
+	(convert_arguments): Add location parameter.  Use it.
+	(ep_convert_and_check): Likewise.
+	(build_atomic_assign): Adjust convert_for_assignment call.
+	(build_modify_expr): Likewise.
+	(digest_init): Likewise.
+	(c_finish_return): Likewise.
+	(build_conditional_expr): Adjust ep_convert_and_check calls.
+	(convert_for_assignment): Add rhs_loc parameter.  Use it.
+	(build_binary_op): Adjust convert_and_check and ep_convert_and_check
+	calls.
+
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR c/59905

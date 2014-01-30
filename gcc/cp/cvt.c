@@ -639,7 +639,8 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 
       if (!TREE_OVERFLOW_P (stripped)
 	  && folded_result != error_mark_node)
-	warnings_for_convert_and_check (type, folded, folded_result);
+	warnings_for_convert_and_check (input_location, type, folded,
+					folded_result);
     }
 
   return result;

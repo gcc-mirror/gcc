@@ -1,3 +1,9 @@
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* gcc.dg/pr59940.c: New test.
+	* gcc.dg/pr35635.c (func3): Move dg-warning.
+
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59903

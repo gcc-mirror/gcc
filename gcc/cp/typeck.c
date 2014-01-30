@@ -7715,7 +7715,7 @@ build_ptrmemfunc1 (tree type, tree delta, tree pfn)
   delta_field = DECL_CHAIN (pfn_field);
 
   /* Make sure DELTA has the type we want.  */
-  delta = convert_and_check (delta_type_node, delta);
+  delta = convert_and_check (input_location, delta_type_node, delta);
 
   /* Convert to the correct target type if necessary.  */
   pfn = fold_convert (TREE_TYPE (pfn_field), pfn);

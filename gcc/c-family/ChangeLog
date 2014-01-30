@@ -1,3 +1,18 @@
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* c-common.h (unsafe_conversion_p): Adjust declaration.
+	(warnings_for_convert_and_check): Likewise.
+	(convert_and_check): Likewise.
+	* c-common.c (unsafe_conversion_p): Add location parameter.  Call
+	expansion_point_location_if_in_system_header on it.
+	(warnings_for_convert_and_check): Add location parameter.  Call
+	expansion_point_location_if_in_system_header on it.  Use it.
+	(convert_and_check): Add location parameter.  Use it.
+	(conversion_warning): Likewise.
+	(c_add_case_label): Adjust convert_and_check calls.
+	(scalar_to_vector): Adjust unsafe_conversion_p calls.
+
 2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.c (c_define_builtins): Replaced flag_enable_cilkplus with
