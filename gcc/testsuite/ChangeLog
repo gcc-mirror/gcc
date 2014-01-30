@@ -1,3 +1,8 @@
+2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
+
+	Backport from mainline.
+	* gcc.target/microblaze/isa/fcmp4.c: New.
+
 2014-01-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/58007

@@ -1,3 +1,9 @@
+2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
+
+	Backport from mainline
+	* config/microblaze/microblaze.md(cstoresf4, cbranchsf4): Replace
+	comparison_operator with ordered_comparison_operator.
+
 2014-01-25  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline
