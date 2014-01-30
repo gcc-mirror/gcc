@@ -1,3 +1,7 @@
+2014-01-30  Alangi Derick  <alangiderick@gmail.com>
+
+	* README.Portability: Fix typo.
+
 2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md(cstoresf4, cbranchsf4): Replace
