@@ -1,3 +1,9 @@
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59903
+	* tree-vect-loop.c (vect_transform_loop): Guard multiple-types
+	check properly.
+
 2014-01-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59633

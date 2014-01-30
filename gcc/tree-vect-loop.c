@@ -5869,8 +5869,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      && !STMT_VINFO_LIVE_P (stmt_info))
 	    continue;
 
-	  if ((TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
-	        != (unsigned HOST_WIDE_INT) vectorization_factor)
+	  if (STMT_VINFO_VECTYPE (stmt_info)
+	      && (TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
+		  != (unsigned HOST_WIDE_INT) vectorization_factor)
 	      && dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
 
