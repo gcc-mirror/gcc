@@ -1,3 +1,9 @@
+2014-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/59959
+	* lra-constrains.c (simplify_operand_subreg): Assign NO_REGS to
+	any reload of register whose subreg is invalid.
+
 2014-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/f16cintrin.h (_cvtsh_ss): Avoid -Wnarrowing
