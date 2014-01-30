@@ -1,3 +1,10 @@
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59993
+	* tree-ssa-forwprop.c (associate_pointerplus): Check we
+	can propagate form the earlier stmt and avoid the transform
+	when the intermediate result is needed.
+
 2014-01-30  Alangi Derick  <alangiderick@gmail.com>
 
 	* README.Portability: Fix typo.
