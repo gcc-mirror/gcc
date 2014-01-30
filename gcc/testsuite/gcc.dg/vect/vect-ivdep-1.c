@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "-O3 -fopt-info-vec-optimized" } */
 
 /* PR other/33426 */
