@@ -431,6 +431,9 @@ build_base_path (enum tree_code code,
 	v_offset = build_vfield_ref (cp_build_indirect_ref (expr, RO_NULL,
                                                             complain),
 				     TREE_TYPE (TREE_TYPE (expr)));
+      
+      if (v_offset == error_mark_node)
+	return error_mark_node;
 
       v_offset = fold_build_pointer_plus (v_offset, BINFO_VPTR_FIELD (v_binfo));
       v_offset = build1 (NOP_EXPR,
@@ -625,7 +628,9 @@ build_vfield_ref (tree datum, tree type)
 {
   tree vfield, vcontext;
 
-  if (datum == error_mark_node)
+  if (datum == error_mark_node
+      /* Can happen in case of duplicate base types (c++/59082).  */
+      || !TYPE_VFIELD (type))
     return error_mark_node;
 
   /* First, convert to the requested type.  */

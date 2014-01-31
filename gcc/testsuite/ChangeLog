@@ -1,4 +1,10 @@
+2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59082
+	* g++.dg/inherit/crash4.C: New.
+
 2014-01-31  Maxim Ostapenko  <m.ostapenko@partner.samsung.com>
+
 	* c-c++-common/tsan/simple_race.c: Made test less flaky.
 
 2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
