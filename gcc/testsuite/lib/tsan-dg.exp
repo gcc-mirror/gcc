@@ -93,7 +93,11 @@ proc tsan_init { args } {
 	}
     }
     if { $link_flags != "" } {
-	return 1
+	if [check_runtime_nocache tsan_works {
+		int main () { return 0; }
+	    } "-fPIE -pie -fsanitize=thread -g"] {
+	    return 1
+	}
     }
     return 0
 }
