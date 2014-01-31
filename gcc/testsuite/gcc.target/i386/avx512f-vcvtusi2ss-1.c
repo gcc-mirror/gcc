@@ -12,5 +12,5 @@ void extern
 avx512f_test (void)
 {
   x = _mm_cvtu32_ss (x, n);
-  x = _mm_cvt_roundu32_ss (x, n, _MM_FROUND_TO_NEAREST_INT);
+  x = _mm_cvt_roundu32_ss (x, n, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 }

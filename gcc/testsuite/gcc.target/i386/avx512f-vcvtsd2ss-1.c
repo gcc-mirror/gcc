@@ -10,5 +10,5 @@ volatile __m128d s2;
 void extern
 avx512f_test (void)
 {
-  r = _mm_cvt_roundsd_ss (s1, s2, _MM_FROUND_TO_NEAREST_INT);
+  r = _mm_cvt_roundsd_ss (s1, s2, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 }
