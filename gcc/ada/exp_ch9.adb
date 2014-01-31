@@ -6195,6 +6195,7 @@ package body Exp_Ch9 is
       function Is_Global_Entity (N : Node_Id) return Traverse_Result is
          E : Entity_Id;
          S : Entity_Id;
+
       begin
          if Is_Entity_Name (N) and then Present (Entity (N)) then
             E := Entity (N);
@@ -6213,16 +6214,15 @@ package body Exp_Ch9 is
                --  this safe. This is a common (if dubious) idiom.
 
                elsif S = Scope (Prot)
-                 and then (Ekind (S) = E_Package
-                   or else Ekind (S) = E_Generic_Package)
+                 and then Ekind_In (S, E_Package, E_Generic_Package)
                  and then Nkind (Parent (E)) = N_Object_Declaration
                  and then Nkind (Parent (Parent (E))) = N_Package_Body
                then
                   null;
 
                else
-                  Error_Msg_N ("potentially unsynchronized barrier ?", N);
-                  Error_Msg_N ("!& should be private component of type?", N);
+                  Error_Msg_N ("potentially unsynchronized barrier?", N);
+                  Error_Msg_N ("\& should be private component of type?", N);
                end if;
             end if;
          end if;
@@ -6231,8 +6231,9 @@ package body Exp_Ch9 is
       end Is_Global_Entity;
 
       procedure Check_Unprotected_Barrier is
-         new Traverse_Proc (Is_Global_Entity);
-      --  Start of processing for Expand_Entry_Barrier
+        new Traverse_Proc (Is_Global_Entity);
+
+   --  Start of processing for Expand_Entry_Barrier
 
    begin
       if No_Run_Time_Mode then
