@@ -4723,7 +4723,6 @@ package body Exp_Ch9 is
 
             Actual := First_Actual (N);
             Formal := First_Formal (Ent);
-
             while Present (Actual) loop
 
                --  If it is a by_copy_type, copy it to a new variable. The
@@ -4786,7 +4785,7 @@ package body Exp_Ch9 is
                   Append_To (Plist,
                     Make_Attribute_Reference (Loc,
                       Attribute_Name => Name_Unchecked_Access,
-                    Prefix =>
+                    Prefix           =>
                       New_Reference_To (Defining_Identifier (N_Node), Loc)));
 
                else
@@ -4834,9 +4833,9 @@ package body Exp_Ch9 is
             Pdecl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => P,
-                Object_Definition =>
+                Object_Definition   =>
                   New_Reference_To (Designated_Type (Ent_Acc), Loc),
-                Expression =>
+                Expression          =>
                   Make_Aggregate (Loc, Expressions => Plist));
 
             Parm3 :=
@@ -5064,8 +5063,8 @@ package body Exp_Ch9 is
          else
             if Present (Handled_Statement_Sequence (N)) then
 
-               --  The call goes at the start of the statement sequence
-               --  after the start of exception range label if one is present.
+               --  The call goes at the start of the statement sequence after
+               --  the start of exception range label if one is present.
 
                declare
                   Stm : Node_Id;
@@ -5106,7 +5105,7 @@ package body Exp_Ch9 is
             else
                Set_Handled_Statement_Sequence (N,
                   Make_Handled_Sequence_Of_Statements (Loc,
-                     Statements => New_List (Call)));
+                    Statements => New_List (Call)));
             end if;
          end if;
 
@@ -5151,13 +5150,13 @@ package body Exp_Ch9 is
 
               Statements => New_List (
 
-               --  Init (Args);
+                --  Init (Args);
 
                 Make_Procedure_Call_Statement (Loc,
-                  Name => New_Reference_To (Init, Loc),
+                  Name                   => New_Reference_To (Init, Loc),
                   Parameter_Associations => Args),
 
-               --  Activate_Tasks (_Chain);
+                --  Activate_Tasks (_Chain);
 
                 Make_Procedure_Call_Statement (Loc,
                   Name => New_Reference_To (RTE (RE_Activate_Tasks), Loc),
@@ -5212,7 +5211,7 @@ package body Exp_Ch9 is
 
             Make_Object_Declaration (Loc,
               Defining_Identifier => Chain,
-              Aliased_Present => True,
+              Aliased_Present     => True,
               Object_Definition   =>
                 New_Reference_To (RTE (RE_Activation_Chain), Loc))),
 
@@ -5245,15 +5244,13 @@ package body Exp_Ch9 is
 
       if Comes_From_Source (T) then
          Spec_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (T), "TB"));
+           Make_Defining_Identifier (Loc, New_External_Name (Chars (T), "TB"));
 
       --  Case of anonymous task type, suffix B
 
       else
          Spec_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (T), 'B'));
+           Make_Defining_Identifier (Loc, New_External_Name (Chars (T), 'B'));
       end if;
 
       Set_Is_Internal (Spec_Id);
@@ -5382,7 +5379,7 @@ package body Exp_Ch9 is
 
             Append_To (Cdecls,
               Make_Component_Declaration (Loc,
-                Defining_Identifier =>
+                Defining_Identifier  =>
                   Make_Defining_Identifier (Loc, Chars (Efam)),
 
                 Component_Definition =>
@@ -5393,12 +5390,12 @@ package body Exp_Ch9 is
                         Subtype_Mark =>
                           New_Occurrence_Of (Efam_Type, Loc),
 
-                        Constraint  =>
+                        Constraint   =>
                           Make_Index_Or_Discriminant_Constraint (Loc,
                             Constraints => New_List (
                               New_Occurrence_Of
                                 (Etype (Discrete_Subtype_Definition
-                                  (Parent (Efam))), Loc)))))));
+                                          (Parent (Efam))), Loc)))))));
 
          end if;
 
@@ -5528,9 +5525,7 @@ package body Exp_Ch9 is
             --  assume that it can be called from an inner task, and therefore
             --  cannot treat it as a local reference.
 
-            elsif Is_Overloadable (Scop)
-              and then In_Open_Scopes (T)
-            then
+            elsif Is_Overloadable (Scop) and then In_Open_Scopes (T) then
                return False;
 
             else
@@ -5558,7 +5553,7 @@ package body Exp_Ch9 is
 
          return
            Make_Selected_Component (Loc,
-             Prefix =>
+             Prefix        =>
                Unchecked_Convert_To (Corresponding_Record_Type (Dtyp),
                  Make_Explicit_Dereference (Loc, N)),
              Selector_Name => Make_Identifier (Loc, Sel));
@@ -5820,8 +5815,8 @@ package body Exp_Ch9 is
       if Restriction_Active (No_Task_Hierarchy) = False then
          Call := Build_Runtime_Call (Sloc (N), RE_Enter_Master);
 
-         --  The block may have no declarations, and nevertheless be a task
-         --  master, if it contains a call that may return an object that
+         --  The block may have no declarations (and nevertheless be a task
+         --  master) if it contains a call that may return an object that
          --  contains tasks.
 
          if No (Declarations (N)) then
@@ -5993,10 +5988,10 @@ package body Exp_Ch9 is
                   Next (Alt);
                end loop;
 
-               --  If we are the first accept statement, then we have to create
-               --  the Ann variable, as for the stand alone case, except that
-               --  it is inserted before the selective accept. Similarly, a
-               --  label for requeue expansion must be declared.
+               --  If this is the first accept statement, then we have to
+               --  create the Ann variable, as for the stand alone case, except
+               --  that it is inserted before the selective accept. Similarly,
+               --  a label for requeue expansion must be declared.
 
                if N = Accept_Statement (Alt) then
                   Ann := Make_Temporary (Loc, 'A');
@@ -6008,7 +6003,7 @@ package body Exp_Ch9 is
 
                   Insert_Before_And_Analyze (Sel_Acc, Adecl);
 
-               --  If we are not the first accept statement, then find the Ann
+               --  If this is not the first accept statement, then find the Ann
                --  variable allocated by the first accept and use it.
 
                else
@@ -6227,7 +6222,7 @@ package body Exp_Ch9 is
       --  The Ravenscar profile restricts barriers to simple variables declared
       --  within the protected object. We also allow Boolean constants, since
       --  these appear in several published examples and are also allowed by
-      --  the Aonix compiler.
+      --  other compilers.
 
       --  Note that after analysis variables in this context will be replaced
       --  by the corresponding prival, that is to say a renaming of a selected
@@ -6300,8 +6295,8 @@ package body Exp_Ch9 is
       while Present (Tasknm) loop
          Count := Count + 1;
 
-         --  A task interface class-wide type object is being aborted.
-         --  Retrieve its _task_id by calling a dispatching routine.
+         --  A task interface class-wide type object is being aborted. Retrieve
+         --  its _task_id by calling a dispatching routine.
 
          if Ada_Version >= Ada_2005
            and then Ekind (Etype (Tasknm)) = E_Class_Wide_Type
@@ -6349,14 +6344,14 @@ package body Exp_Ch9 is
    -- Expand_N_Accept_Statement --
    -------------------------------
 
-   --  This procedure handles expansion of accept statements that stand
-   --  alone, i.e. they are not part of an accept alternative. The expansion
-   --  of accept statement in accept alternatives is handled by the routines
+   --  This procedure handles expansion of accept statements that stand alone,
+   --  i.e. they are not part of an accept alternative. The expansion of
+   --  accept statement in accept alternatives is handled by the routines
    --  Expand_N_Accept_Alternative and Expand_N_Selective_Accept. The
    --  following description applies only to stand alone accept statements.
 
-   --  If there is no handled statement sequence, or only null statements,
-   --  then this is called a trivial accept, and the expansion is:
+   --  If there is no handled statement sequence, or only null statements, then
+   --  this is called a trivial accept, and the expansion is:
 
    --    Accept_Trivial (entry-index)
 
@@ -6399,7 +6394,7 @@ package body Exp_Ch9 is
    --  an accept statement has no declarative part). In particular, if the
    --  expander is active, the first such declaration is the declaration of
    --  the Accept_Params_Ptr entity (see Sem_Ch9.Analyze_Accept_Statement).
-   --
+
    --  The two blocks are merged into a single block if the inner block has
    --  no exception handlers, but otherwise two blocks are required, since
    --  exceptions might be raised in the exception handlers of the inner
@@ -6443,7 +6438,6 @@ package body Exp_Ch9 is
 
          begin
             D := First (Declarations (N));
-
             while Present (D) loop
                Next_D := Next (D);
                if Nkind (D) = N_Object_Renaming_Declaration then
@@ -6806,8 +6800,8 @@ package body Exp_Ch9 is
 
    --  The job is to convert this to the asynchronous form
 
-   --  If the trigger is a delay statement, it will have been expanded into a
-   --  call to one of the GNARL delay procedures. This routine will convert
+   --  If the trigger is a delay statement, it will have been expanded into
+   --  a call to one of the GNARL delay procedures. This routine will convert
    --  this into a protected entry call on a delay object and then continue
    --  processing as for a protected entry call trigger. This requires
    --  declaring a Delay_Block object and adding a pointer to this object to

@@ -228,7 +228,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
       Uninterpreted_Data  : System.Address);
    --  Make a protected entry call to the specified object
    --
-   --  Pend a protected entry call on the protected object represented by
+   --  Pends a protected entry call on the protected object represented by
    --  Object. A pended call is not queued; it may be executed immediately
    --  or queued, depending on the state of the entry barrier.
    --

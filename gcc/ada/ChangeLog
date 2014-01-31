@@ -1,3 +1,22 @@
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, s-tassta.adb, s-tposen.adb, s-tposen.ads: Minor
+	reformatting.
+
+2014-01-31  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_disp.adb: Add a historic note.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Useless_Assignments): Add call to
+	Process_Deferred_References.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Do not issue a message for
+	ineffective pragma Warnings(Off) in GNATprove_Mode.
+
 2014-01-31  Bob Duff  <duff@adacore.com>
 
 	* s-taskin.ads: Minor comment fix.

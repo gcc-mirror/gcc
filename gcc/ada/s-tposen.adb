@@ -54,7 +54,7 @@ pragma Style_Checks (All_Checks);
 
 pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during tasking
---  operations. It can cause  infinite loops and other problems.
+--  operations. It can cause infinite loops and other problems.
 
 pragma Suppress (All_Checks);
 --  Why is this required ???
@@ -84,10 +84,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Wakeup_Entry_Caller (Entry_Call : Entry_Call_Link);
    pragma Inline (Wakeup_Entry_Caller);
-   --  This is called at the end of service of an entry call,
-   --  to abort the caller if he is in an abortable part, and
-   --  to wake up the caller if he is on Entry_Caller_Sleep.
-   --  Call it holding the lock of Entry_Call.Self.
+   --  This is called at the end of service of an entry call, to abort the
+   --  caller if he is in an abortable part, and to wake up the caller if he
+   --  is on Entry_Caller_Sleep. Call it holding the lock of Entry_Call.Self.
 
    procedure Wait_For_Completion (Entry_Call : Entry_Call_Link);
    pragma Inline (Wait_For_Completion);
@@ -100,17 +99,16 @@ package body System.Tasking.Protected_Objects.Single_Entry is
      (Self_ID : Task_Id;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Check_Exception);
-   --  Raise any pending exception from the Entry_Call.
-   --  This should be called at the end of every compiler interface procedure
-   --  that implements an entry call.
-   --  The caller should not be holding any locks, or there will be deadlock.
+   --  Raise any pending exception from the Entry_Call. This should be called
+   --  at the end of every compiler interface procedure that implements an
+   --  entry call. The caller should not be holding any locks, or there will
+   --  be deadlock.
 
    procedure PO_Do_Or_Queue
      (Object     : Protection_Entry_Access;
       Entry_Call : Entry_Call_Link);
-   --  This procedure executes or queues an entry call, depending
-   --  on the status of the corresponding barrier. It assumes that the
-   --  specified object is locked.
+   --  This procedure executes or queues an entry call, depending on the status
+   --  of the corresponding barrier. The specified object is assumed locked.
 
    ---------------------
    -- Check_Exception --
@@ -140,9 +138,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -- Send_Program_Error --
    ------------------------
 
-   procedure Send_Program_Error (Entry_Call : Entry_Call_Link)
-   is
+   procedure Send_Program_Error (Entry_Call : Entry_Call_Link) is
       Caller : constant Task_Id := Entry_Call.Self;
+
    begin
       Entry_Call.Exception_To_Raise := Program_Error'Identity;
 
@@ -192,7 +190,6 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       pragma Assert
         (Caller.Common.State /= Terminated and then
          Caller.Common.State /= Unactivated);
-
       Entry_Call.State := Done;
       STPO.Wakeup (Caller, Entry_Caller_Sleep);
    end Wakeup_Entry_Caller;
@@ -207,7 +204,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Exceptional_Complete_Single_Entry_Body
      (Object : Protection_Entry_Access;
-      Ex     : Ada.Exceptions.Exception_Id) is
+      Ex     : Ada.Exceptions.Exception_Id)
+   is
    begin
       Object.Call_In_Progress.Exception_To_Raise := Ex;
    end Exceptional_Complete_Single_Entry_Body;
@@ -235,7 +233,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -- Lock_Entry --
    ----------------
 
-   --  Compiler interface only.
+   --  Compiler interface only
+
    --  Do not call this procedure from within the run-time system.
 
    procedure Lock_Entry (Object : Protection_Entry_Access) is
@@ -391,7 +390,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -----------------------------------
 
    function Protected_Single_Entry_Caller
-     (Object : Protection_Entry) return Task_Id is
+     (Object : Protection_Entry) return Task_Id
+   is
    begin
       return Object.Call_In_Progress.Self;
    end Protected_Single_Entry_Caller;
