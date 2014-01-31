@@ -1,3 +1,38 @@
+2014-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/59410
+	* lib/tsan-dg.exp (tsan_init): Instead of not running any
+	tsan tests if trivial testcase doesn't run, set dg-do-what-default
+	to compile.
+	(tsan_finish): Restore dg-do-what-default.
+	* g++.dg/tsan/atomic_free.C: Remove dg-do line.
+	* g++.dg/tsan/fd_close_norace2.C: Likewise.
+	* g++.dg/tsan/default_options.C: Likewise.
+	* g++.dg/tsan/aligned_vs_unaligned_race.C: Likewise.
+	* g++.dg/tsan/atomic_free2.C: Likewise.
+	* g++.dg/tsan/cond_race.C: Likewise.
+	* g++.dg/tsan/fd_close_norace.C: Likewise.
+	* g++.dg/tsan/benign_race.C: Likewise.
+	* c-c++-common/tsan/fd_pipe_race.c: Likewise.
+	* c-c++-common/tsan/simple_race.c: Likewise.
+	* c-c++-common/tsan/mutexset1.c: Likewise.
+	* c-c++-common/tsan/thread_leak2.c: Likewise.
+	* c-c++-common/tsan/tls_race.c: Likewise.
+	* c-c++-common/tsan/write_in_reader_lock.c: Likewise.
+	* c-c++-common/tsan/race_on_barrier2.c: Likewise.
+	* c-c++-common/tsan/free_race2.c: Likewise.
+	* c-c++-common/tsan/thread_leak.c: Likewise.
+	* c-c++-common/tsan/thread_leak1.c: Likewise.
+	* c-c++-common/tsan/race_on_barrier.c: Likewise.
+	* c-c++-common/tsan/free_race.c: Likewise.
+	* c-c++-common/tsan/sleep_sync.c: Likewise.
+	* c-c++-common/tsan/tiny_race.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex2.c: Likewise.
+	* c-c++-common/tsan/atomic_stack.c: Likewise.
+	* c-c++-common/tsan/race_on_mutex.c: Likewise.  Adjust line numbers
+	in dg-output regexps.
+	* c-c++-common/tsan/simple_stack.c: Likewise.
+
 2014-01-31  Richard Henderson <rth@redhat.com>
 
 	* g++.dg/tm/pr60004.C: New.
