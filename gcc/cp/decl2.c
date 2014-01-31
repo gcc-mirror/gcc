@@ -4036,6 +4036,8 @@ handle_tls_init (void)
       if (TREE_PUBLIC (var))
 	{
           tree single_init_fn = get_tls_init_fn (var);
+	  if (single_init_fn == NULL_TREE)
+	    continue;
 	  cgraph_node *alias
 	    = cgraph_same_body_alias (cgraph_get_create_node (fn),
 				      single_init_fn, fn);

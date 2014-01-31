@@ -1,5 +1,8 @@
 2014-01-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58672
+	* decl2.c (handle_tls_init): Handle null init fn.
+
 	PR c++/55800
 	* decl2.c (get_tls_init_fn): Copy DECL_EXTERNAL from the variable.
 
