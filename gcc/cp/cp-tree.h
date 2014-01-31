@@ -1049,6 +1049,8 @@ struct GTY(()) saved_scope {
   cp_binding_level *class_bindings;
   cp_binding_level *bindings;
 
+  struct pointer_map_t *x_local_specializations;
+
   struct saved_scope *prev;
 };
 
@@ -1097,6 +1099,12 @@ struct GTY(()) saved_scope {
    class, or NULL if none.  */
 
 #define previous_class_level scope_chain->x_previous_class_level
+
+/* A map from local variable declarations in the body of the template
+   presently being instantiated to the corresponding instantiated
+   local variables.  */
+
+#define local_specializations scope_chain->x_local_specializations
 
 /* A list of private types mentioned, for deferred access checking.  */
 
