@@ -1,3 +1,25 @@
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Remove special case for
+	GNATprove_Mode.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* prj-attr.ads (First_Attribute_Of): Returns Empty_Attribute
+	for Unknown_Package.
+	* sem_ch6.adb, sem_attr.adb: Minor comment addition.
+
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Rewrite
+	the logic that generates a runtime check to determine the
+	controlled status of the object about to be allocated or
+	deallocated. Class-wide types now always use a runtime check
+	even if they appear as generic actuals.
+	(Find_Object): Detect
+	a special case that involves interface class-wide types because
+	the object appears as a complex expression.
+
 2014-01-31  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Process_Formals): In Ada2012 mode, place

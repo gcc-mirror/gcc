@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -246,7 +246,7 @@ package Prj.Attr is
    function First_Attribute_Of
      (Pkg : Package_Node_Id) return Attribute_Node_Id;
    --  Returns the first attribute in the list of attributes of package Pkg.
-   --  Returns Empty_Attribute if Pkg is Empty_Package.
+   --  Returns Empty_Attribute if Pkg is Empty_Package or Unknown_Package.
 
 private
    ----------------
