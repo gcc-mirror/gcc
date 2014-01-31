@@ -1,3 +1,9 @@
+2014-01-31  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/60004
+	* tree-eh.c (lower_try_finally_switch): Delay lowering finally block
+	until after else_eh is processed.
+
 2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/avx512fintrin.h (_MM_FROUND_TO_NEAREST_INT),
