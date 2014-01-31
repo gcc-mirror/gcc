@@ -1,3 +1,79 @@
+2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/constraints.md (Yk): Swap meaning with k.
+	* config/i386/i386.md (movhi_internal): Change Yk to k.
+	(movqi_internal): Ditto.
+	(*k<logic><mode>): Ditto.
+	(*andhi_1): Ditto.
+	(*andqi_1): Ditto.
+	(kandn<mode>): Ditto.
+	(*<code>hi_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(kxnor<mode>): Ditto.
+	(kortestzhi): Ditto.
+	(kortestchi): Ditto.
+	(kunpckhi): Ditto.
+	(*one_cmplhi2_1): Ditto.
+	(*one_cmplqi2_1): Ditto.
+	* config/i386/sse.md (): Change k to Yk.
+	(avx512f_load<mode>_mask): Ditto.
+	(avx512f_blendm<mode>): Ditto.
+	(avx512f_store<mode>_mask): Ditto.
+	(avx512f_storeu<ssemodesuffix>512_mask): Ditto.
+	(avx512f_storedqu<mode>_mask): Ditto.
+	(avx512f_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>): Ditto.
+	(avx512f_ucmp<mode>3<mask_scalar_merge_name>): Ditto.
+	(avx512f_vmcmp<mode>3<round_saeonly_name>): Ditto.
+	(avx512f_vmcmp<mode>3_mask<round_saeonly_name>): Ditto.
+	(avx512f_maskcmp<mode>3): Ditto.
+	(avx512f_fmadd_<mode>_mask<round_name>): Ditto.
+	(avx512f_fmadd_<mode>_mask3<round_name>): Ditto.
+	(avx512f_fmsub_<mode>_mask<round_name>): Ditto.
+	(avx512f_fmsub_<mode>_mask3<round_name>): Ditto.
+	(avx512f_fnmadd_<mode>_mask<round_name>): Ditto.
+	(avx512f_fnmadd_<mode>_mask3<round_name>): Ditto.
+	(avx512f_fnmsub_<mode>_mask<round_name>): Ditto.
+	(avx512f_fnmsub_<mode>_mask3<round_name>): Ditto.
+	(avx512f_fmaddsub_<mode>_mask<round_name>): Ditto.
+	(avx512f_fmaddsub_<mode>_mask3<round_name>): Ditto.
+	(avx512f_fmsubadd_<mode>_mask<round_name>): Ditto.
+	(avx512f_fmsubadd_<mode>_mask3<round_name>): Ditto.
+	(avx512f_vextract<shuffletype>32x4_1_maskm): Ditto.
+	(vec_extract_lo_<mode>_maskm): Ditto.
+	(vec_extract_hi_<mode>_maskm): Ditto.
+	(avx512f_vternlog<mode>_mask): Ditto.
+	(avx512f_fixupimm<mode>_mask<round_saeonly_name>): Ditto.
+	(avx512f_sfixupimm<mode>_mask<round_saeonly_name>): Ditto.
+	(avx512f_<code><pmov_src_lower><mode>2_mask): Ditto.
+	(avx512f_<code>v8div16qi2_mask): Ditto.
+	(avx512f_<code>v8div16qi2_mask_store): Ditto.
+	(avx512f_eq<mode>3<mask_scalar_merge_name>_1): Ditto.
+	(avx512f_gt<mode>3<mask_scalar_merge_name>): Ditto.
+	(avx512f_testm<mode>3<mask_scalar_merge_name>): Ditto.
+	(avx512f_testnm<mode>3<mask_scalar_merge_name>): Ditto.
+	(*avx512pf_gatherpf<mode>sf_mask): Ditto.
+	(*avx512pf_gatherpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>sf_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df_mask): Ditto.
+	(avx512cd_maskb_vec_dupv8di): Ditto.
+	(avx512cd_maskw_vec_dupv16si): Ditto.
+	(avx512f_vpermi2var<mode>3_maskz): Ditto.
+	(avx512f_vpermi2var<mode>3_mask): Ditto.
+	(avx512f_vpermi2var<mode>3_mask): Ditto.
+	(avx512f_vpermt2var<mode>3_maskz): Ditto.
+	(*avx512f_gathersi<mode>): Ditto.
+	(*avx512f_gathersi<mode>_2): Ditto.
+	(*avx512f_gatherdi<mode>): Ditto.
+	(*avx512f_gatherdi<mode>_2): Ditto.
+	(*avx512f_scattersi<mode>): Ditto.
+	(*avx512f_scatterdi<mode>): Ditto.
+	(avx512f_compress<mode>_mask): Ditto.
+	(avx512f_compressstore<mode>_mask): Ditto.
+	(avx512f_expand<mode>_mask): Ditto.
+	* config/i386/subst.md (mask): Change k to Yk.
+	(mask_scalar_merge): Ditto.
+	(sd): Ditto.
+
 2014-01-31  Marc Glisse  <marc.glisse@inria.fr>
 
 	* doc/extend.texi (Vector Extensions): Document ?: in C++.

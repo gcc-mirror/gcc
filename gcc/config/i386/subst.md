@@ -66,7 +66,7 @@
         (vec_merge:SUBST_V
 	  (match_dup 1)
 	  (match_operand:SUBST_V 2 "vector_move_operand" "0C")
-	  (match_operand:<avx512fmaskmode> 3 "register_operand" "k")))])
+	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))])
 
 (define_subst_attr "mask_scalar_merge_name" "mask_scalar_merge" "" "_mask")
 (define_subst_attr "mask_scalar_merge_operand3" "mask_scalar_merge" "" "%{%3%}")
@@ -79,7 +79,7 @@
   [(set (match_dup 0)
         (and:SUBST_S
 	  (match_dup 1)
-	  (match_operand:SUBST_S 3 "register_operand" "k")))])
+	  (match_operand:SUBST_S 3 "register_operand" "Yk")))])
 
 (define_subst_attr "sd_maskz_name" "sd" "" "_maskz_1")
 (define_subst_attr "sd_mask_op4" "sd" "" "%{%5%}%N4")
@@ -95,7 +95,7 @@
        (vec_merge:SUBST_V
 	 (match_dup 1)
 	 (match_operand:SUBST_V 2 "const0_operand" "C")
-	 (match_operand:<avx512fmaskmode> 3 "register_operand" "k")))
+	 (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))
 ])
 
 (define_subst_attr "round_name" "round" "" "_round")
