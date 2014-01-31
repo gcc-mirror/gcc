@@ -1,3 +1,10 @@
+2014-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59990
+	* builtins.c (fold_builtin_memory_op): Make sure to not
+	use a floating-point mode or a boolean or enumeral type for
+	the copy operation.
+
 2014-01-30  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.h (LIB_SPEC): Add -lcrt

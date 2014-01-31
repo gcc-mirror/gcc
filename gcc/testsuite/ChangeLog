@@ -1,3 +1,8 @@
+2014-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59990
+	* gcc.dg/torture/pr59990.c: New testcase.
+
 2014-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/tsan-dg.exp (tsan_init): Try to run a trivial program,
