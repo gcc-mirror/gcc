@@ -1705,8 +1705,8 @@ package body Lib.Xref is
          end loop;
       end Handle_Orphan_Type_References;
 
-      --  Now we have all the references, including those for any embedded
-      --  type references, so we can sort them, and output them.
+      --  Now we have all the references, including those for any embedded type
+      --  references, so we can sort them, and output them.
 
       Output_Refs : declare
 
@@ -2562,6 +2562,38 @@ package body Lib.Xref is
          Write_Info_EOL;
       end Output_Refs;
    end Output_References;
+
+   ---------------------------------
+   -- Process_Deferred_References --
+   ---------------------------------
+
+   procedure Process_Deferred_References is
+   begin
+      for J in Deferred_References.First .. Deferred_References.Last loop
+         declare
+            D : Deferred_Reference_Entry renames Deferred_References.Table (J);
+
+         begin
+            case Is_LHS (D.N) is
+               when Yes =>
+                  Generate_Reference (D.E, D.N, 'm');
+
+               when No =>
+                  Generate_Reference (D.E, D.N, 'r');
+
+               --  Not clear if Unknown can occur at this stage, but if it
+               --  does we will treat it as a normal reference.
+
+               when Unknown =>
+                  Generate_Reference (D.E, D.N, 'r');
+            end case;
+         end;
+      end loop;
+
+      --  Clear processed entries from table
+
+      Deferred_References.Init;
+   end Process_Deferred_References;
 
 --  Start of elaboration for Lib.Xref
 

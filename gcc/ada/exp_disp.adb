@@ -2337,30 +2337,6 @@ package body Exp_Disp is
 
                           New_Reference_To (Com_Block, Loc)))); -- comm block
 
-               when System_Tasking_Protected_Objects_Single_Entry =>
-
-                  --  Generate:
-                  --    procedure Protected_Single_Entry_Call
-                  --      (Object              : Protection_Entry_Access;
-                  --       Uninterpreted_Data  : System.Address;
-                  --       Mode                : Call_Modes);
-
-                  Append_To (Stmts,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To
-                          (RTE (RE_Protected_Single_Entry_Call), Loc),
-                      Parameter_Associations =>
-                        New_List (
-                          Obj_Ref,
-
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_uP),
-                            Attribute_Name => Name_Address),
-
-                            New_Reference_To
-                             (RTE (RE_Asynchronous_Call), Loc))));
-
                when others =>
                   raise Program_Error;
             end case;
@@ -3564,29 +3540,6 @@ package body Exp_Disp is
                             Expression =>
                               Make_Identifier (Loc, Name_uI)),
 
-                          Make_Identifier (Loc, Name_uP),   --  parameter block
-                          Make_Identifier (Loc, Name_uD),   --  delay
-                          Make_Identifier (Loc, Name_uM),   --  delay mode
-                          Make_Identifier (Loc, Name_uF)))); --  status flag
-
-               when System_Tasking_Protected_Objects_Single_Entry =>
-                  --  Generate:
-
-                  --   Timed_Protected_Single_Entry_Call
-                  --     (T._object'access, P, D, M, F);
-
-                  --  where T is the protected object, P is the wrapped
-                  --  parameters, D is the delay amount, M is the delay mode, F
-                  --  is the status flag.
-
-                  Append_To (Stmts,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To
-                          (RTE (RE_Timed_Protected_Single_Entry_Call), Loc),
-                      Parameter_Associations =>
-                        New_List (
-                          Obj_Ref,
                           Make_Identifier (Loc, Name_uP),   --  parameter block
                           Make_Identifier (Loc, Name_uD),   --  delay
                           Make_Identifier (Loc, Name_uM),   --  delay mode

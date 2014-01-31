@@ -1,3 +1,43 @@
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch2.adb: New calling sequence for Is_LHS.
+	* frontend.adb: Add call to Process_Deferred_References.
+	* lib-xref.ads, lib-xref.adb (Process_Deferred_References): New.
+	(Deferred_References): New table.
+	* sem_ch8.adb (Find_Direct_Name): Make deferred reference table
+	entries.
+	(Find_Expanded_Name): Ditto.
+	* sem_res.adb: New calling sequence for Is_LHS.
+	* sem_util.ads, sem_util.adb (Is_LHS): New calling sequence.
+	* sem_warn.adb: Call Process_Deferred_References before issuing
+	warnings.
+
+2014-01-31  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_util.adb (Corresponding_Runtime_Package): Restrict the
+	use of System_Tasking_Protected_Objects_Single_Entry.
+	* exp_ch9.adb (Build_Simple_Entry_Call): Remove Mode parameter
+	of Protected_Single_Entry_Call.
+	(Expand_N_Timed_Entry_Call): Remove single_entry case.
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Body): Remove
+	single_entry case.
+	(Make_Disp_Timed_Select_Body): Likewise.
+	* rtsfind.ads (RE_Timed_Protected_Single_Entry_Call): Remove.
+	* s-tposen.adb (Send_Program_Error, PO_Do_Or_Queue): Remove
+	Self_Id parameter.
+	(Wakeup_Entry_Caller): Remove Self_ID and New_State parameters.
+	(Wait_For_Completion_With_Timeout): Remove.
+	(Protected_Single_Entry_Call): Remove Mode parameter
+	(always Simple_Call).
+	(Service_Entry): Remove Self_Id constant (not used anymore).
+	(Timed_Protected_Single_Entry_Call): Remove.
+	* s-tposen.ads (Timed_Protected_Single_Entry_Call): Remove.
+	(Protected_Single_Entry_Call): Remove Mode parameter.
+
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Get_Pragma): Handle the retrieval of pragma Refined_Post.

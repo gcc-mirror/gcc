@@ -600,6 +600,39 @@ package Lib.Xref is
    --  Export at line 4, that its body is exported to C, and that the link name
    --  as given in the pragma is "here".
 
+   -------------------------
+   -- Deferred_References --
+   -------------------------
+
+   --  Normally we generate references as we go along, but as discussed in
+   --  Sem_Util.Is_LHS, and Sem_Ch8.Find_Direct_Name/Find_Selected_Component,
+   --  we have one case where that is tricky, which is when we have something
+   --  like X.A := 3, where we don't know until we know the type of X whether
+   --  this is a reference (if X is an access type, so what we really have is
+   --  X.all.A := 3) or a modification, where X is not an access type.
+
+   --  What we do in such cases is to gather nodes, where we would have liked
+   --  to call Generate_Reference but we couldn't because we didn't know enough
+   --  into this table, Then we deal with generating references later on when
+   --  we have sufficient information to do it right.
+
+   type Deferred_Reference_Entry is record
+      E : Entity_Id;
+      N : Node_Id;
+   end record;
+   --  One entry, E, N are as required for Generate_Reference call
+
+   package Deferred_References is new Table.Table (
+     Table_Component_Type => Deferred_Reference_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 512,
+     Table_Increment      => 200,
+     Table_Name           => "Name_Deferred_References");
+
+   procedure Process_Deferred_References;
+   --  This procedure is called from Frontend to process these table entries.
+
    -----------------------------
    -- SPARK Xrefs Information --
    -----------------------------

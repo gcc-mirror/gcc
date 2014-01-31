@@ -1164,8 +1164,15 @@ package Sem_Util is
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
    --  Ada.Iterator_Interfaces, or it is derived from one.
 
-   function Is_LHS (N : Node_Id) return Boolean;
-   --  Returns True iff N is used as Name in an assignment statement
+   type Is_LHS_Result is (Yes, No, Unknown);
+   function Is_LHS (N : Node_Id) return Is_LHS_Result;
+   --  Returns Yes if N is definitely used as Name in an assignment statement.
+   --  Returns No if N is definitely NOT used as a Name in an assignment
+   --  statement. Returns Unknown if we can't tell at this stage (happens in
+   --  the case where we don't know the type of N yet, and we have something
+   --  like N.A := 3, where this counts as N being used on the left side of
+   --  an assignment only if N is not an access type. If it is an access type
+   --  then it is N.all.A that is assigned, not N.
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,
