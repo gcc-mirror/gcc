@@ -1,5 +1,20 @@
 2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
 
+	* config/i386/avx512fintrin.h (_MM_FROUND_TO_NEAREST_INT),
+	(_MM_FROUND_TO_NEG_INF), (_MM_FROUND_TO_POS_INF),
+	(_MM_FROUND_TO_ZERO), (_MM_FROUND_CUR_DIRECTION): Are already defined
+	in smmintrin.h, remove them.
+	(_MM_FROUND_NO_EXC): Same as above, bit also wrong value.
+	* config/i386/i386.c (ix86_print_operand): Split sae and rounding.
+	* config/i386/i386.md (ROUND_SAE): Fix value.
+	* config/i386/predicates.md (const_4_or_8_to_11_operand): New.
+	(const48_operand): New.
+	* config/i386/subst.md (round), (round_expand): Use
+	const_4_or_8_to_11_operand.
+	(round_saeonly), (round_saeonly_expand): Use const48_operand.
+
+2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
+
 	* config/i386/constraints.md (Yk): Swap meaning with k.
 	* config/i386/i386.md (movhi_internal): Change Yk to k.
 	(movqi_internal): Ditto.

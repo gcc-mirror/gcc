@@ -49,14 +49,6 @@ typedef double __m512d __attribute__ ((__vector_size__ (64), __may_alias__));
 typedef unsigned char  __mmask8;
 typedef unsigned short __mmask16;
 
-/* Rounding mode macros.  */
-#define _MM_FROUND_TO_NEAREST_INT   0x00
-#define _MM_FROUND_TO_NEG_INF       0x01
-#define _MM_FROUND_TO_POS_INF       0x02
-#define _MM_FROUND_TO_ZERO	    0x03
-#define _MM_FROUND_CUR_DIRECTION    0x04
-#define _MM_FROUND_NO_EXC	    0x05
-
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_set_epi64 (long long __A, long long __B, long long __C,

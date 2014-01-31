@@ -12,5 +12,5 @@ void extern
 avx512f_test (void)
 {
   y = _mm_cvtss_u64 (x);
-  y = _mm_cvt_roundss_u64 (x, _MM_FROUND_TO_POS_INF);
+  y = _mm_cvt_roundss_u64 (x, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
 }
