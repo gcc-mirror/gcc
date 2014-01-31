@@ -1,5 +1,10 @@
 2014-01-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59646
+	* call.c (convert_like_real) [ck_aggr]: Set TARGET_EXPR_LIST_INIT_P.
+	[ck_list]: Check for error_mark_node.
+	(build_aggr_conv): Set LOOKUP_NO_NARROWING and check_narrowing.
+
 	PR c++/57043
 	* pt.c (fn_type_unification): Don't do DEDUCE_EXACT check
 	during partial ordering.
