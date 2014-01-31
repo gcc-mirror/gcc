@@ -150,27 +150,28 @@ package body System.Tasking.Stages is
       C : Task_Id;
       P : Task_Id;
 
+      --  Each task C will take care of its own dependents, so there is no need
+      --  to worry about them here. In fact, it would be wrong to abort
+      --  indirect dependents here, because we can't distinguish between
+      --  duplicate master ids. For example, suppose we have three nested task
+      --  bodies T1,T2,T3. And suppose T1 also calls P which calls Q (and both
+      --  P and Q are task masters). Q will have the same master id as
+      --  Master_of_Task of T3. Previous versions of this would abort T3 when Q
+      --  calls Complete_Master, which was completely wrong.
+
    begin
       C := All_Tasks_List;
       while C /= null loop
          P := C.Common.Parent;
-         while P /= null loop
-            if P = Self_ID then
 
-               --  ??? C is supposed to take care of its own dependents, so
-               --  there should be no need to worry about them. Need to double
-               --  check this.
-
-               if C.Master_of_Task = Self_ID.Master_Within then
-                  Utilities.Abort_One_Task (Self_ID, C);
-                  C.Dependents_Aborted := True;
-               end if;
-
-               exit;
+         if P = Self_ID then
+            if C.Master_of_Task = Self_ID.Master_Within then
+               pragma Debug
+                 (Debug.Trace (Self_ID, "Aborting", 'X', C));
+               Utilities.Abort_One_Task (Self_ID, C);
+               C.Dependents_Aborted := True;
             end if;
-
-            P := P.Common.Parent;
-         end loop;
+         end if;
 
          C := C.Common.All_Tasks_Link;
       end loop;
@@ -715,6 +716,10 @@ package body System.Tasking.Stages is
       if Runtime_Traces then
          Send_Trace_Info (T_Create, T);
       end if;
+
+      pragma Debug
+        (Debug.Trace
+           (Self_ID, "Created task in " & T.Master_of_Task'Img, 'C', T));
    end Create_Task;
 
    --------------------
@@ -734,6 +739,9 @@ package body System.Tasking.Stages is
       Self_ID : constant Task_Id := STPO.Self;
    begin
       Self_ID.Master_Within := Self_ID.Master_Within + 1;
+      pragma Debug
+        (Debug.Trace
+           (Self_ID, "Enter_Master ->" & Self_ID.Master_Within'Img, 'M'));
    end Enter_Master;
 
    -------------------------------
@@ -1669,7 +1677,7 @@ package body System.Tasking.Stages is
 
    begin
       pragma Debug
-        (Debug.Trace (Self_ID, "V_Complete_Master", 'C'));
+        (Debug.Trace (Self_ID, "V_Complete_Master(" & CM'Img & ")", 'C'));
 
       pragma Assert (Self_ID.Common.Wait_Count = 0);
       pragma Assert
@@ -1712,7 +1720,7 @@ package body System.Tasking.Stages is
             Unlock (C);
          end if;
 
-         --  Count it if dependent on this master
+         --  Count it if directly dependent on this master
 
          if C.Common.Parent = Self_ID and then C.Master_of_Task = CM then
             Write_Lock (C);
@@ -1759,6 +1767,8 @@ package body System.Tasking.Stages is
                Write_Lock (Self_ID);
             end if;
          else
+            pragma Debug
+              (Debug.Trace (Self_ID, "master_completion_sleep", 'C'));
             Sleep (Self_ID, Master_Completion_Sleep);
          end if;
       end loop;
