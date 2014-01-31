@@ -7233,6 +7233,19 @@ c = a >  b;     /* The result would be @{0, 0,-1, 0@}  */
 c = a == b;     /* The result would be @{0,-1, 0,-1@}  */
 @end smallexample
 
+In C++, the ternary operator @code{?:} is available. @code{a?b:c}, where
+@code{b} and @code{c} are vectors of the same type and @code{a} is an
+integer vector with the same number of elements of the same size as @code{b}
+and @code{c}, computes all three arguments and creates a vector
+@code{@{a[0]?b[0]:c[0], a[1]?b[1]:c[1], @dots{}@}}.  Note that unlike in
+OpenCL, @code{a} is thus interpreted as @code{a != 0} and not @code{a < 0}.
+As in the case of binary operations, this syntax is also accepted when
+one of @code{b} or @code{c} is a scalar that is then transformed into a
+vector. If both @code{b} and @code{c} are scalars and the type of
+@code{true?b:c} has the same size as the element type of @code{a}, then
+@code{b} and @code{c} are converted to a vector type whose elements have
+this type and with the same number of elements as @code{a}.
+
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
 @code{__builtin_shuffle (vec0, vec1, mask)}.
