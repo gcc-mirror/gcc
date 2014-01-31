@@ -6149,7 +6149,11 @@ package body Sem_Attr is
                   end;
 
                elsif Is_Record_Type (P_Type) then
-                  Check_Component_Reference (Comp, P_Type);
+                  if Nkind (Comp) /= N_Identifier then
+                     Error_Msg_N ("name should be identifier or OTHERS", Comp);
+                  else
+                     Check_Component_Reference (Comp, P_Type);
+                  end if;
                end if;
 
                Next (Comp);

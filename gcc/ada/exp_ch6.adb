@@ -8764,8 +8764,8 @@ package body Exp_Ch6 is
                --  is done because the input type may lack aspect/pragma
                --  predicate and simply inherit those from its ancestor.
 
-               --  Note that predicate pragmas include all three cases of
-               --  predicate aspects (Predicate, Dynamic_Predicate,
+               --  Note that predicate pragmas correspond to all three cases
+               --  of predicate aspects (Predicate, Dynamic_Predicate, and
                --  Static_Predicate), so this routine checks for all three
                --  cases.
 
@@ -8880,7 +8880,7 @@ package body Exp_Ch6 is
          then
             null;
 
-         --  Add the item
+         --  Otherwise, add the item
 
          else
             if No (List) then
@@ -9552,9 +9552,9 @@ package body Exp_Ch6 is
       end if;
 
       --  For now we test whether E denotes a function or access-to-function
-      --  type whose result subtype is inherently limited. Later this test may
-      --  be revised to allow composite nonlimited types. Functions with a
-      --  foreign convention or whose result type has a foreign convention
+      --  type whose result subtype is inherently limited. Later this test
+      --  may be revised to allow composite nonlimited types. Functions with
+      --  a foreign convention or whose result type has a foreign convention
       --  never qualify.
 
       if Ekind_In (E, E_Function, E_Generic_Function)
@@ -9595,13 +9595,13 @@ package body Exp_Ch6 is
       Function_Id : Entity_Id;
 
    begin
-      --  Return False when the expander is inactive, since awareness of
-      --  build-in-place treatment is only relevant during expansion. Note that
-      --  Is_Build_In_Place_Function, which is called as part of this function,
-      --  is also conditioned this way, but we need to check here as well to
-      --  avoid blowing up on processing protected calls when expansion is
-      --  disabled (such as with -gnatc) since those would trip over the raise
-      --  of Program_Error below.
+      --  Return False if the expander is currently inactive, since awareness
+      --  of build-in-place treatment is only relevant during expansion. Note
+      --  that Is_Build_In_Place_Function, which is called as part of this
+      --  function, is also conditioned this way, but we need to check here as
+      --  well to avoid blowing up on processing protected calls when expansion
+      --  is disabled (such as with -gnatc) since those would trip over the
+      --  raise of Program_Error below.
 
       --  In SPARK mode, build-in-place calls are not expanded, so that we
       --  may end up with a call that is neither resolved to an entity, nor
@@ -9778,8 +9778,7 @@ package body Exp_Ch6 is
             --  Handle CPP primitives found in derivations of CPP_Class types.
             --  These primitives must have been inherited from some parent, and
             --  there is no need to register them in the dispatch table because
-            --  Build_Inherit_Prims takes care of the initialization of these
-            --  slots.
+            --  Build_Inherit_Prims takes care of initializing these slots.
 
             elsif Is_Imported (Subp)
                and then (Convention (Subp) = Convention_CPP
