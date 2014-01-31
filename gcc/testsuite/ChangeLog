@@ -1,3 +1,7 @@
+2014-01-31  Richard Henderson <rth@redhat.com>
+
+	* g++.dg/tm/pr60004.C: New.
+
 2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59082
