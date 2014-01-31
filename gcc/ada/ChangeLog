@@ -1,3 +1,20 @@
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): In Ada2012 mode, place
+	subprogram with an incomplete untagged formals on the list of
+	private dependents, to verify that the type is properly completed
+	in the private part.
+	* sem_attr.adb: Code clean up.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2014-01-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb (First_Attribute_Of): Return Unknown_Attribute
+	when Pkg is unknown.
+
 2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Resolve_Entity_Name): Comment

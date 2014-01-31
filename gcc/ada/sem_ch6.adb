@@ -1907,10 +1907,11 @@ package body Sem_Ch6 is
                   if Is_Tagged_Type (Typ) then
                      null;
 
-                  elsif Nkind_In (Parent (Parent (N)),
-                     N_Accept_Statement,
-                     N_Entry_Body,
-                     N_Subprogram_Body)
+                  elsif Nkind (Parent (N)) = N_Subprogram_Body
+                    or else
+                      Nkind_In (Parent (Parent (N)),
+                        N_Accept_Statement,
+                        N_Entry_Body)
                   then
                      Error_Msg_NE
                        ("invalid use of untagged incomplete type&",
@@ -11010,9 +11011,15 @@ package body Sem_Ch6 is
                --  Ada 2012: tagged incomplete types are allowed as generic
                --  formal types. They do not introduce dependencies and the
                --  corresponding generic subprogram does not have a delayed
-               --  freeze, because it does not need a freeze node.
+               --  freeze, because it does not need a freeze node. However,
+               --  it is still the case that untagged incomplete types cannot
+               --  be Taft-amendment types and must be completed in private
+               --  part, so the subprogram must appear in the list of private
+               --  dependents of the type.
 
-               if Is_Tagged_Type (Formal_Type) then
+               if Is_Tagged_Type (Formal_Type)
+                 or else Ada_Version >= Ada_2012
+               then
                   if Ekind (Scope (Current_Scope)) = E_Package
                     and then not From_Limited_With (Formal_Type)
                     and then not Is_Generic_Type (Formal_Type)
