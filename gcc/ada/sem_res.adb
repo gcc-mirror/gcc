@@ -6523,15 +6523,15 @@ package body Sem_Res is
          Prev := N;
          while Present (Par) loop
 
-            --  The variable can appear on either side of an assignment
+            --  The volatile object can appear on either side of an assignment
 
             if Nkind (Par) = N_Assignment_Statement then
                Usage_OK := True;
                exit;
 
-            --  The variable is part of the initialization expression of an
-            --  object. Ensure that the climb of the parent chain came from the
-            --  expression side and not from the name side.
+            --  The volatile object is part of the initialization expression of
+            --  another object. Ensure that the climb of the parent chain came
+            --  from the expression side and not from the name side.
 
             elsif Nkind (Par) = N_Object_Declaration
               and then Present (Expression (Par))
@@ -6540,8 +6540,8 @@ package body Sem_Res is
                Usage_OK := True;
                exit;
 
-            --  The variable appears as an actual parameter in a call to an
-            --  instance of Unchecked_Conversion whose result is renamed.
+            --  The volatile object appears as an actual parameter in a call to
+            --  an instance of Unchecked_Conversion whose result is renamed.
 
             elsif Nkind (Par) = N_Function_Call
               and then Is_Unchecked_Conversion_Instance (Entity (Name (Par)))
@@ -6555,6 +6555,12 @@ package body Sem_Res is
             --  full legality check is done when the actuals are resolved.
 
             elsif Nkind (Par) = N_Procedure_Call_Statement then
+               Usage_OK := True;
+               exit;
+
+            --  Allow references to volatile objects in various checks
+
+            elsif Nkind (Par) in N_Raise_xxx_Error then
                Usage_OK := True;
                exit;
 

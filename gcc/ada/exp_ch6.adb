@@ -8697,15 +8697,16 @@ package body Exp_Ch6 is
 
             function Has_Public_Visibility_Of_Subprogram return Boolean is
                Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
-               Vis_Decls : constant List_Id :=
-                             Visible_Declarations (Specification
-                               (Unit_Declaration_Node (Scope (Typ))));
+
             begin
                --  An Initialization procedure must be considered visible even
                --  though it is internally generated.
 
                if Is_Init_Proc (Defining_Entity (Subp_Decl)) then
                   return True;
+
+               elsif Ekind (Scope (Typ)) /= E_Package then
+                  return False;
 
                --  Internally generated code is never publicly visible except
                --  for a subprogram that is the implementation of an expression
@@ -8724,7 +8725,9 @@ package body Exp_Ch6 is
                --  declarations of the package containing the type.
 
                else
-                  return List_Containing (Subp_Decl) = Vis_Decls;
+                  return List_Containing (Subp_Decl) =
+                    Visible_Declarations
+                      (Specification (Unit_Declaration_Node (Scope (Typ))));
                end if;
             end Has_Public_Visibility_Of_Subprogram;
 
