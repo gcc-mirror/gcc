@@ -1,3 +1,9 @@
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57043
+	* pt.c (fn_type_unification): Don't do DEDUCE_EXACT check
+	during partial ordering.
+
 2014-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59963
