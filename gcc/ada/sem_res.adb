@@ -7673,7 +7673,7 @@ package body Sem_Res is
                    or else (Is_Entity_Name (Prefix (N))
                              and then Is_Atomic (Entity (Prefix (N)))))
         and then Is_Bit_Packed_Array (Array_Type)
-        and then Is_LHS (N)
+        and then Is_LHS (N) = Yes
       then
          Error_Msg_N ("??assignment to component of packed atomic array",
                       Prefix (N));
@@ -9170,7 +9170,7 @@ package body Sem_Res is
                    or else (Is_Entity_Name (Prefix (N))
                              and then Is_Atomic (Entity (Prefix (N)))))
         and then Is_Packed (T)
-        and then Is_LHS (N)
+        and then Is_LHS (N) = Yes
       then
          Error_Msg_N
            ("??assignment to component of packed atomic record", Prefix (N));

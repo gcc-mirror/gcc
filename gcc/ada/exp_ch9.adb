@@ -4682,12 +4682,10 @@ package body Exp_Ch9 is
          --  family index expressions are evaluated before the entry
          --  parameters.
 
-         if Abort_Allowed
-           or else Restriction_Active (No_Entry_Queue) = False
-           or else not Is_Protected_Type (Conctyp)
-           or else Number_Entries (Conctyp) > 1
-           or else (Has_Attach_Handler (Conctyp)
-                     and then not Restricted_Profile)
+         if not Is_Protected_Type (Conctyp)
+           or else
+             Corresponding_Runtime_Package (Conctyp) =
+               System_Tasking_Protected_Objects_Entries
          then
             X := Make_Defining_Identifier (Loc, Name_uX);
 
@@ -4902,8 +4900,7 @@ package body Exp_Ch9 is
                when System_Tasking_Protected_Objects_Single_Entry =>
                   --     Protected_Single_Entry_Call (
                   --       Object => po._object'Access,
-                  --       Uninterpreted_Data => P'Address;
-                  --       Mode => Simple_Call);
+                  --       Uninterpreted_Data => P'Address);
 
                   Call :=
                     Make_Procedure_Call_Statement (Loc,
@@ -4914,8 +4911,7 @@ package body Exp_Ch9 is
                         Make_Attribute_Reference (Loc,
                           Attribute_Name => Name_Unchecked_Access,
                           Prefix         => Parm1),
-                        Parm3,
-                        New_Reference_To (RTE (RE_Simple_Call), Loc)));
+                        Parm3));
 
                when others =>
                   raise Program_Error;
@@ -12479,24 +12475,6 @@ package body Exp_Ch9 is
                       Name =>
                         New_Reference_To
                           (RTE (RE_Timed_Protected_Entry_Call), Loc),
-                      Parameter_Associations => Params));
-
-               when System_Tasking_Protected_Objects_Single_Entry =>
-                  Param := First (Params);
-                  while Present (Param)
-                    and then not
-                      Is_RTE (Etype (Param), RE_Protected_Entry_Index)
-                  loop
-                     Next (Param);
-                  end loop;
-
-                  Remove (Param);
-
-                  Rewrite (Call,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To
-                          (RTE (RE_Timed_Protected_Single_Entry_Call), Loc),
                       Parameter_Associations => Params));
 
                when others =>

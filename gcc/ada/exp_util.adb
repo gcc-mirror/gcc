@@ -1646,6 +1646,7 @@ package body Exp_Util is
          then
             if Abort_Allowed
               or else Restriction_Active (No_Entry_Queue) = False
+              or else Restriction_Active (No_Select_Statements) = False
               or else Number_Entries (Typ) > 1
               or else (Has_Attach_Handler (Typ)
                         and then not Restricted_Profile)

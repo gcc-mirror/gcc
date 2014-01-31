@@ -5587,7 +5587,8 @@ package body Sem_Util is
       --  we exclude overloaded calls, since we don't know enough to be sure
       --  of giving the right answer in this case.
 
-      if Is_Entity_Name (Name (Call))
+      if Nkind_In (Call, N_Function_Call, N_Procedure_Call_Statement)
+        and then Is_Entity_Name (Name (Call))
         and then Present (Entity (Name (Call)))
         and then Is_Overloadable (Entity (Name (Call)))
         and then not Is_Overloaded (Name (Call))
@@ -9982,14 +9983,18 @@ package body Sem_Util is
    --  We seem to have a lot of overlapping functions that do similar things
    --  (testing for left hand sides or lvalues???).
 
-   function Is_LHS (N : Node_Id) return Boolean is
+   function Is_LHS (N : Node_Id) return Is_LHS_Result is
       P : constant Node_Id := Parent (N);
 
    begin
       --  Return True if we are the left hand side of an assignment statement
 
       if Nkind (P) = N_Assignment_Statement then
-         return Name (P) = N;
+         if Name (P) = N then
+            return Yes;
+         else
+            return No;
+         end if;
 
       --  Case of prefix of indexed or selected component or slice
 
@@ -10002,23 +10007,16 @@ package body Sem_Util is
          --  what we really have is N.all.Q (or N.all(Q .. R)). In either
          --  case this makes N.all a left hand side but not N itself.
 
-         --  Here follows a worrisome kludge. If Etype (N) is not set, which
-         --  for sure happens in the call from Find_Direct_Name, that means we
-         --  don't know if N is of an access type, so we can't give an accurate
-         --  answer. For now, we assume we do not have an access type, which
-         --  means for example that P.Q.R := X will look like a modification
-         --  of P, even if P.Q eventually turns out to be an access type. The
-         --  consequence is at least that in some cases we incorrectly identify
-         --  a reference as a modification. It is not clear if there are any
-         --  other bad consequences. ???
+         --  If we don't know the type yet, this is the case where we return
+         --  Unknown, since the answer depends on the type which is unknown.
 
          if No (Etype (N)) then
-            return False;
+            return Unknown;
 
          --  We have an Etype set, so we can check it
 
          elsif Is_Access_Type (Etype (N)) then
-            return False;
+            return No;
 
          --  OK, not access type case, so just test whole expression
 
@@ -10029,7 +10027,7 @@ package body Sem_Util is
       --  All other cases are not left hand sides
 
       else
-         return False;
+         return No;
       end if;
    end Is_LHS;
 

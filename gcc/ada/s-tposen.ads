@@ -225,8 +225,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
    procedure Protected_Single_Entry_Call
      (Object              : Protection_Entry_Access;
-      Uninterpreted_Data  : System.Address;
-      Mode                : Call_Modes);
+      Uninterpreted_Data  : System.Address);
    --  Make a protected entry call to the specified object
    --
    --  Pend a protected entry call on the protected object represented by
@@ -237,18 +236,6 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --      This will be returned by Next_Entry_Call when this call is serviced.
    --      It can be used by the compiler to pass information between the
    --      caller and the server, in particular entry parameters.
-   --
-   --    Mode
-   --      The kind of call to be pended
-
-   procedure Timed_Protected_Single_Entry_Call
-     (Object                : Protection_Entry_Access;
-      Uninterpreted_Data    : System.Address;
-      Timeout               : Duration;
-      Mode                  : Delay_Modes;
-      Entry_Call_Successful : out Boolean);
-   --  Same as the Protected_Entry_Call but with time-out specified.
-   --  This routine is used to implement timed entry calls.
 
    procedure Exceptional_Complete_Single_Entry_Body
      (Object : Protection_Entry_Access;
