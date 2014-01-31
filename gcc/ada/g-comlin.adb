@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1681,7 +1681,13 @@ package body GNAT.Command_Line is
                   --  the argument. In the second case, the switch matches "*",
                   --  and is then decomposed below.
 
-                  S := Getopt (Switches    => "*",
+                  --  Note: When a Command_Line object is associated with a
+                  --  Command_Line_Config (which is mostly the case for tools
+                  --  that let users chose the command line before spawning
+                  --  other tools, for instance IDEs), the configuration of
+                  --  the switches must be taken from the Command_Line_Config.
+
+                  S := Getopt (Switches    => "* " & Get_Switches (Cmd.Config),
                                Concatenate => False,
                                Parser      => Parser);
 

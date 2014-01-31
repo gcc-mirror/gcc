@@ -23137,6 +23137,14 @@ package body Sem_Prag is
       --  Start of processing for Analyze_Refinement_Clause
 
       begin
+         --  A refinement clause appears as a component association where the
+         --  sole choice is the state and the expressions are the constituents.
+
+         if Nkind (Clause) /= N_Component_Association then
+            Error_Msg_N ("malformed state refinement clause", Clause);
+            return;
+         end if;
+
          --  Analyze the state name of a refinement clause
 
          State := First (Choices (Clause));

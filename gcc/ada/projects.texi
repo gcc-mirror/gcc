@@ -3806,6 +3806,9 @@ depending on the platform.
 For an indexed attribute, if it is allowed to use @b{others} as the index,
 this is indicated by the words "others allowed".
 
+When @b{others} is used as the index of an indexed attribute, the value of
+the attribute indexed by @b{others} is used when no other index would apply.
+
 @end itemize
 
 @node Project Level Attributes

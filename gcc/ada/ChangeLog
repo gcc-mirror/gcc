@@ -1,5 +1,24 @@
 2014-01-31  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch9.adb: Minor reformatting.
+
+2014-01-31  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Set_Command_Line): Take the switches
+	configuration from the Command_Line_Config.
+
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refinement_Clause): Guard against a malformed
+	refinement clause.
+
+2014-01-31  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add more documentation about others used as an
+	index in indexed attributes.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Minor update.
 	* gnat_rm.texi: Add example to Restriction_Warnings documentation.
 	* exp_util.adb: Minor reformatting.
