@@ -2178,7 +2178,11 @@ process_alt_operands (int only_alternative)
 						  (operand_reg[nop])]
 				     .last_reload);
 
-		  if (last_reload > bb_reload_num)
+		  /* The value of reload_sum has sense only if we
+		     process insns in their order.  It happens only on
+		     the first constraints sub-pass when we do most of
+		     reload work.  */
+		  if (lra_constraint_iter == 1 && last_reload > bb_reload_num)
 		    reload_sum += last_reload - bb_reload_num;
 		}
 	      /* If this is a constant that is reloaded into the
