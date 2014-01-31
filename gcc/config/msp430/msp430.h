@@ -68,6 +68,7 @@ extern bool msp430x;
 --start-group						\
 -lc							\
 -lgcc							\
+-lcrt							\
 %{msim:-lsim}						\
 %{!msim:-lnosys}					\
 --end-group					   	\
