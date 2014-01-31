@@ -42,8 +42,8 @@ avx512f_test (void)
   msk_src2 = 0x0F0F;
 
   asm ("kandw\t%2, %1, %0"
-       : "=Yk" (msk_dst)
-       : "Yk" (msk_src1), "Yk" (msk_src2));
+       : "=k" (msk_dst)
+       : "k" (msk_src1), "k" (msk_src2));
 
   msk_dst_ref =  _mm512_kand (msk_src1, msk_src2);
   if (msk_dst != msk_dst_ref)
@@ -59,7 +59,7 @@ avx512f_test (void)
 
   asm ("vpaddd\t%2, %1, %0 %{%3%}%{z%}"
        : "=x" (dst.x)
-       : "x" (src1.x), "x" (src2.x), "k" (msk_dst));
+       : "x" (src1.x), "x" (src2.x), "Yk" (msk_dst));
 
   calc_vpadd_mask_zeroed (dst_ref, msk_dst, src1.a, src2.a);
 

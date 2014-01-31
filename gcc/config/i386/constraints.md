@@ -78,10 +78,10 @@
  "TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387 ? FP_SECOND_REG : NO_REGS"
  "Second from top of 80387 floating-point stack (@code{%st(1)}).")
 
-(define_register_constraint "k" "TARGET_AVX512F ? MASK_EVEX_REGS : NO_REGS"
+(define_register_constraint "Yk" "TARGET_AVX512F ? MASK_EVEX_REGS : NO_REGS"
 "@internal Any mask register that can be used as predicate, i.e. k1-k7.")
 
-(define_register_constraint "Yk" "TARGET_AVX512F ? MASK_REGS : NO_REGS"
+(define_register_constraint "k" "TARGET_AVX512F ? MASK_REGS : NO_REGS"
 "@internal Any mask register.")
 
 ;; Vector registers (also used for plain floating point nowadays).
