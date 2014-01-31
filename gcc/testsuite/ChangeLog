@@ -1,5 +1,9 @@
 2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
 
+	* gcc.target/i386/m512-check.h: Use correct rounding values.
+
+2014-01-31  Ilya Tocar  <ilya.tocar@intel.com>
+
 	* gcc.target/i386/avx-1.c: Use correct rounding values.
         * gcc.target/i386/avx512f-vaddpd-1.c: Ditto.
         * gcc.target/i386/avx512f-vaddps-1.c: Ditto.
