@@ -4244,7 +4244,10 @@ package body Sem_Warn is
 
    procedure Warn_On_Useless_Assignments (E : Entity_Id) is
       Ent : Entity_Id;
+
    begin
+      Process_Deferred_References;
+
       if Warn_On_Modified_Unread
         and then In_Extended_Main_Source_Unit (E)
       then

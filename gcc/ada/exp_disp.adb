@@ -3522,6 +3522,13 @@ package body Exp_Disp is
             --  the wrapped parameters, D is the delay amount, M is the delay
             --  mode and F is the status flag.
 
+            --  Historically, there was also an implementation for single
+            --  entry protected types (in s-tposen). However, it was removed
+            --  by also testing for no No_Select_Statements restriction in
+            --  Exp_Utils.Corresponding_Runtime_Package. This simplified the
+            --  implementation of s-tposen, which was initially created for
+            --  the Ravenscar profile.
+
             case Corresponding_Runtime_Package (Conc_Typ) is
                when System_Tasking_Protected_Objects_Entries =>
                   Append_To (Stmts,

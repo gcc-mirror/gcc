@@ -150,14 +150,14 @@ package body System.Tasking.Stages is
       C : Task_Id;
       P : Task_Id;
 
-      --  Each task C will take care of its own dependents, so there is no need
-      --  to worry about them here. In fact, it would be wrong to abort
+      --  Each task C will take care of its own dependents, so there is no
+      --  need to worry about them here. In fact, it would be wrong to abort
       --  indirect dependents here, because we can't distinguish between
-      --  duplicate master ids. For example, suppose we have three nested task
-      --  bodies T1,T2,T3. And suppose T1 also calls P which calls Q (and both
-      --  P and Q are task masters). Q will have the same master id as
-      --  Master_of_Task of T3. Previous versions of this would abort T3 when Q
-      --  calls Complete_Master, which was completely wrong.
+      --  duplicate master ids. For example, suppose we have three nested
+      --  task bodies T1,T2,T3. And suppose T1 also calls P which calls Q (and
+      --  both P and Q are task masters). Q will have the same master id as
+      --  Master_of_Task of T3. Previous versions of this would abort T3 when
+      --  Q calls Complete_Master, which was completely wrong.
 
    begin
       C := All_Tasks_List;
