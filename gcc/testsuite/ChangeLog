@@ -1,3 +1,8 @@
+2014-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/tsan-dg.exp (tsan_init): Try to run a trivial program,
+	if it fails don't run any tsan tests.
+
 2014-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59963
