@@ -89,8 +89,9 @@ static int function_types_compatible_p (const_tree, const_tree, bool *,
 					bool *);
 static int type_lists_compatible_p (const_tree, const_tree, bool *, bool *);
 static tree lookup_field (tree, tree);
-static int convert_arguments (location_t, tree, vec<tree, va_gc> *,
-			      vec<tree, va_gc> *, tree, tree);
+static int convert_arguments (location_t, vec<location_t>, tree,
+			      vec<tree, va_gc> *, vec<tree, va_gc> *, tree,
+			      tree);
 static tree pointer_diff (location_t, tree, tree);
 static tree convert_for_assignment (location_t, location_t, tree, tree, tree,
 				    enum impl_conv, bool, tree, tree, int);
@@ -2014,7 +2015,7 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       params->quick_push (expr_addr);
       params->quick_push (tmp_addr);
       params->quick_push (seq_cst);
-      func_call = build_function_call_vec (loc, fndecl, params, NULL);
+      func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
 
       /* Return tmp which contains the value loaded.  */
       exp.value = build2 (COMPOUND_EXPR, nonatomic_type, func_call, tmp);
@@ -2796,7 +2797,7 @@ build_function_call (location_t loc, tree function, tree params)
   vec_alloc (v, list_length (params));
   for (; params; params = TREE_CHAIN (params))
     v->quick_push (TREE_VALUE (params));
-  ret = build_function_call_vec (loc, function, v, NULL);
+  ret = build_function_call_vec (loc, vNULL, function, v, NULL);
   vec_free (v);
   return ret;
 }
@@ -2818,8 +2819,8 @@ static void inform_declaration (tree decl)
    PARAMS.  */
 
 tree
-build_function_call_vec (location_t loc, tree function,
-			 vec<tree, va_gc> *params,
+build_function_call_vec (location_t loc, vec<location_t> arg_loc,
+			 tree function, vec<tree, va_gc> *params,
 			 vec<tree, va_gc> *origtypes)
 {
   tree fntype, fundecl = 0;
@@ -2901,8 +2902,8 @@ build_function_call_vec (location_t loc, tree function,
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
 
-  nargs = convert_arguments (loc, TYPE_ARG_TYPES (fntype), params, origtypes,
-			     function, fundecl);
+  nargs = convert_arguments (loc, arg_loc, TYPE_ARG_TYPES (fntype), params,
+			     origtypes, function, fundecl);
   if (nargs < 0)
     return error_mark_node;
 
@@ -2981,19 +2982,22 @@ build_function_call_vec (location_t loc, tree function,
 
    This is also where warnings about wrong number of args are generated.
 
+   ARG_LOC are locations of function arguments (if any).
+
    Returns the actual number of arguments processed (which may be less
    than the length of VALUES in some error situations), or -1 on
    failure.  */
 
 static int
-convert_arguments (location_t loc, tree typelist, vec<tree, va_gc> *values,
-		   vec<tree, va_gc> *origtypes, tree function, tree fundecl)
+convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
+		   vec<tree, va_gc> *values, vec<tree, va_gc> *origtypes,
+		   tree function, tree fundecl)
 {
   tree typetail, val;
   unsigned int parmnum;
   bool error_args = false;
   const bool type_generic = fundecl
-    && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
+    && lookup_attribute ("type generic", TYPE_ATTRIBUTES (TREE_TYPE (fundecl)));
   bool type_generic_remove_excess_precision = false;
   tree selector;
 
@@ -3228,7 +3232,13 @@ convert_arguments (location_t loc, tree typelist, vec<tree, va_gc> *values,
 	      if (excess_precision)
 		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
 	      origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
-	      parmval = convert_for_assignment (loc, UNKNOWN_LOCATION, type,
+	      bool arg_loc_ok = !arg_loc.is_empty ()
+				/* Some __atomic_* builtins have additional
+				   hidden argument at position 0.  */
+				&& values->length () == arg_loc.length ();
+	      parmval = convert_for_assignment (loc,
+						arg_loc_ok ? arg_loc[parmnum]
+						: UNKNOWN_LOCATION, type,
 						val, origtype, ic_argpass,
 						npc, fundecl, function,
 						parmnum + 1);
@@ -3252,7 +3262,7 @@ convert_arguments (location_t loc, tree typelist, vec<tree, va_gc> *values,
 	    {
 	      /* Convert `float' to `double'.  */
 	      if (warn_double_promotion && !c_inhibit_evaluation_warnings)
-		warning (OPT_Wdouble_promotion,
+		warning_at (arg_loc[parmnum], OPT_Wdouble_promotion,
 			 "implicit conversion from %qT to %qT when passing "
 			 "argument to function",
 			 valtype, double_type_node);
@@ -3619,7 +3629,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
       params->quick_push (lhs_addr);
       params->quick_push (rhs);
       params->quick_push (seq_cst);
-      func_call = build_function_call_vec (loc, fndecl, params, NULL);
+      func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
       add_stmt (func_call);
 
       /* Finish the compound statement.  */
@@ -3650,7 +3660,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   params->quick_push (lhs_addr);
   params->quick_push (old_addr);
   params->quick_push (seq_cst);
-  func_call = build_function_call_vec (loc, fndecl, params, NULL);
+  func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
   add_stmt (func_call);
   params->truncate (0);
 
@@ -3689,7 +3699,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   params->quick_push (integer_zero_node);
   params->quick_push (seq_cst);
   params->quick_push (seq_cst);
-  func_call = build_function_call_vec (loc, fndecl, params, NULL);
+  func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
 
   goto_stmt = build1 (GOTO_EXPR, void_type_node, done_decl);
   SET_EXPR_LOCATION (goto_stmt, loc);
@@ -5519,13 +5529,13 @@ convert_to_anonymous_field (location_t location, tree type, tree rhs)
    ERRTYPE says whether it is argument passing, assignment,
    initialization or return.
 
-   LOCATION is the location of the assignment, RHS_LOC is the location of
-   the RHS.
+   LOCATION is the location of the assignment, EXPR_LOC is the location of
+   the RHS or, for a function, location of an argument.
    FUNCTION is a tree for the function being called.
    PARMNUM is the number of the argument, for printing in error messages.  */
 
 static tree
-convert_for_assignment (location_t location, location_t rhs_loc, tree type,
+convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			tree rhs, tree origtype, enum impl_conv errtype,
 			bool null_pointer_constant, tree fundecl,
 			tree function, int parmnum)
@@ -5698,7 +5708,7 @@ convert_for_assignment (location_t location, location_t rhs_loc, tree type,
       rhs = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (rhs)), rhs);
       SET_EXPR_LOCATION (rhs, location);
 
-      rhs = convert_for_assignment (location, rhs_loc,
+      rhs = convert_for_assignment (location, expr_loc,
 				    build_pointer_type (TREE_TYPE (type)),
 				    rhs, origtype, errtype,
 				    null_pointer_constant, fundecl, function,
@@ -5728,8 +5738,8 @@ convert_for_assignment (location_t location, location_t rhs_loc, tree type,
       bool save = in_late_binary_op;
       if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
 	in_late_binary_op = true;
-      ret = convert_and_check (rhs_loc != UNKNOWN_LOCATION
-			       ? rhs_loc : location, type, orig_rhs);
+      ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
+			       ? expr_loc : location, type, orig_rhs);
       if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
 	in_late_binary_op = save;
       return ret;
@@ -5739,8 +5749,8 @@ convert_for_assignment (location_t location, location_t rhs_loc, tree type,
   if ((codel == RECORD_TYPE || codel == UNION_TYPE)
       && codel == coder
       && comptypes (type, rhstype))
-    return convert_and_check (rhs_loc != UNKNOWN_LOCATION
-			      ? rhs_loc : location, type, rhs);
+    return convert_and_check (expr_loc != UNKNOWN_LOCATION
+			      ? expr_loc : location, type, rhs);
 
   /* Conversion to a transparent union or record from its member types.
      This applies only to function arguments.  */

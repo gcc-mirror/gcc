@@ -3357,7 +3357,7 @@ build_function_call (location_t /*loc*/,
 
 /* Used by the C-common bits.  */
 tree
-build_function_call_vec (location_t /*loc*/,
+build_function_call_vec (location_t /*loc*/, vec<location_t> /*arg_loc*/,
 			 tree function, vec<tree, va_gc> *params,
 			 vec<tree, va_gc> * /*origtypes*/)
 {
