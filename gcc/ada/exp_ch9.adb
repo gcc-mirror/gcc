@@ -6180,9 +6180,59 @@ package body Exp_Ch9 is
                     Condition (Entry_Body_Formal_Part (N));
       Prot      : constant Entity_Id := Scope (Ent);
       Spec_Decl : constant Node_Id   := Parent (Prot);
-      Func      : Node_Id;
+      Func      : Entity_Id;
       B_F       : Node_Id;
       Body_Decl : Node_Id;
+
+      function Is_Global_Entity (N : Node_Id) return Traverse_Result;
+      --  Check whether entity in Barrier is external to protected type.
+      --  If so, barrier may not be properly synchronized.
+
+      ----------------------
+      -- Is_Global_Entity --
+      ----------------------
+
+      function Is_Global_Entity (N : Node_Id) return Traverse_Result is
+         E : Entity_Id;
+         S : Entity_Id;
+      begin
+         if Is_Entity_Name (N) and then Present (Entity (N)) then
+            E := Entity (N);
+            S := Scope  (E);
+
+            if Ekind (E) = E_Variable then
+               if Scope (E) = Func then
+                  null;
+
+               --  A protected call from a barrier to another object is ok
+
+               elsif Ekind (Etype (E)) = E_Protected_Type then
+                  null;
+
+               --  If the variable is within the package body we consider
+               --  this safe. This is a common (if dubious) idiom.
+
+               elsif S = Scope (Prot)
+                 and then (Ekind (S) = E_Package
+                   or else Ekind (S) = E_Generic_Package)
+                 and then Nkind (Parent (E)) = N_Object_Declaration
+                 and then Nkind (Parent (Parent (E))) = N_Package_Body
+               then
+                  null;
+
+               else
+                  Error_Msg_N ("potentially unsynchronized barrier ?", N);
+                  Error_Msg_N ("!& should be private component of type?", N);
+               end if;
+            end if;
+         end if;
+
+         return OK;
+      end Is_Global_Entity;
+
+      procedure Check_Unprotected_Barrier is
+         new Traverse_Proc (Is_Global_Entity);
+      --  Start of processing for Expand_Entry_Barrier
 
    begin
       if No_Run_Time_Mode then
@@ -6268,8 +6318,11 @@ package body Exp_Ch9 is
       end if;
 
       --  It is not a boolean variable or literal, so check the restriction
+      --  and otherwise emit warning if barrier contains global entities and
+      --  is thus potentially unsynchronized.
 
       Check_Restriction (Simple_Barriers, Cond);
+      Check_Unprotected_Barrier (Cond);
    end Expand_Entry_Barrier;
 
    ------------------------------

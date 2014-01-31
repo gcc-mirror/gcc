@@ -15262,13 +15262,15 @@ Options:
 -mdir -- generate one .xml file for each Ada source file, in directory
          @file{dir}. (Default is to generate the XML to standard output.)
 
--q -- debugging version, with interspersed source, and a more
+--compact -- debugging version, with interspersed source, and a more
       compact representation of "sloc". This version does not conform
       to any schema.
 
 -I <include-dir>
     directories to search for dependencies
     You can also set the ADA_INCLUDE_PATH environment variable for this.
+
+-q -- quiet
 
 -v -- verbose (print out the command line options, and the names of
       output files as they are generated).

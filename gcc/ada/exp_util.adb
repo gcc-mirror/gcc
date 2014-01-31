@@ -523,9 +523,9 @@ package body Exp_Util is
                --  the expander introduces several levels of address arithmetic
                --  to perform dispatch table displacement. In this scenario the
                --  object appears as:
-               --
+
                --    Tag_Ptr (Base_Address (<object>'Address))
-               --
+
                --  Detect this case and utilize the whole expression as the
                --  "object" since it now points to the proper dispatch table.
 
@@ -831,8 +831,9 @@ package body Exp_Util is
                  and then Is_Type (Entity (Temp))
                then
                   Flag_Expr :=
-                    New_Reference_To (Boolean_Literals
-                      (Needs_Finalization (Entity (Temp))), Loc);
+                    New_Reference_To
+                      (Boolean_Literals
+                         (Needs_Finalization (Entity (Temp))), Loc);
 
                --  The allocation / deallocation of a class-wide object relies
                --  on a runtime check to determine whether the object is truly
@@ -844,11 +845,11 @@ package body Exp_Util is
 
                   --  Detect a special case where interface class-wide types
                   --  are involved as the object appears as:
-                  --
+
                   --    Tag_Ptr (Base_Address (<object>'Address))
-                  --
+
                   --  The expression already yields the proper tag, generate:
-                  --
+
                   --    Temp.all
 
                   if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
@@ -858,7 +859,7 @@ package body Exp_Util is
 
                   --  In the default case, obtain the tag of the object about
                   --  to be allocated / deallocated. Generate:
-                  --
+
                   --    Temp'Tag
 
                   else
