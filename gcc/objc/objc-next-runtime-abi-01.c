@@ -882,7 +882,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
   /* Build an obj_type_ref, with the correct cast for the method call.  */
   t = build3 (OBJ_TYPE_REF, sender_cast, method,
 			    lookup_object, size_zero_node);
-  t = build_function_call_vec (loc, t, parms, NULL);
+  t = build_function_call_vec (loc, vNULL, t, parms, NULL);
   vec_free (parms);
   return t;
 }
@@ -2866,7 +2866,8 @@ build_throw_stmt (location_t loc, tree throw_expr, bool rethrown ATTRIBUTE_UNUSE
   /* A throw is just a call to the runtime throw function with the
      object as a parameter.  */
   parms->quick_push (throw_expr);
-  t = build_function_call_vec (loc, objc_exception_throw_decl, parms, NULL);
+  t = build_function_call_vec (loc, vNULL, objc_exception_throw_decl, parms,
+			       NULL);
   vec_free (parms);
   return add_stmt (t);
 }

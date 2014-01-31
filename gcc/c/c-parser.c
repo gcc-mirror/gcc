@@ -1203,7 +1203,7 @@ static struct c_expr c_parser_expression (c_parser *);
 static struct c_expr c_parser_expression_conv (c_parser *);
 static vec<tree, va_gc> *c_parser_expr_list (c_parser *, bool, bool,
 					     vec<tree, va_gc> **, location_t *,
-					     tree *);
+					     tree *, vec<location_t> *);
 static void c_parser_omp_construct (c_parser *);
 static void c_parser_omp_threadprivate (c_parser *);
 static void c_parser_omp_barrier (c_parser *);
@@ -3958,7 +3958,7 @@ c_parser_attributes (c_parser *parser)
 		  tree tree_list;
 		  c_parser_consume_token (parser);
 		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL, NULL);
+						  NULL, NULL, NULL, NULL);
 		  tree_list = build_tree_list_vec (expr_list);
 		  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
 		  release_tree_vector (expr_list);
@@ -3971,7 +3971,7 @@ c_parser_attributes (c_parser *parser)
 	      else
 		{
 		  expr_list = c_parser_expr_list (parser, false, true,
-						  NULL, NULL, NULL);
+						  NULL, NULL, NULL, NULL);
 		  attr_args = build_tree_list_vec (expr_list);
 		  release_tree_vector (expr_list);
 		}
@@ -7637,6 +7637,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
   unsigned int i;
   vec<tree, va_gc> *exprlist;
   vec<tree, va_gc> *origtypes = NULL;
+  vec<location_t> arg_loc = vNULL;
+
   while (true)
     {
       location_t op_loc = c_parser_peek_token (parser)->location;
@@ -7690,7 +7692,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	    exprlist = NULL;
 	  else
 	    exprlist = c_parser_expr_list (parser, true, false, &origtypes,
-					   sizeof_arg_loc, sizeof_arg);
+					   sizeof_arg_loc, sizeof_arg,
+					   &arg_loc);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  orig_expr = expr;
@@ -7700,10 +7703,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      expr.value, exprlist,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
-	  /* FIXME diagnostics: Ideally we want the FUNCNAME, not the
-	     "(" after the FUNCNAME, which is what we have now.    */
-	  expr.value = build_function_call_vec (op_loc, expr.value, exprlist,
-						origtypes);
+	  expr.value = build_function_call_vec (expr_loc, arg_loc, expr.value,
+						exprlist, origtypes);
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
 	      && TREE_CODE (orig_expr.value) == FUNCTION_DECL
@@ -7716,6 +7717,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      release_tree_vector (exprlist);
 	      release_tree_vector (origtypes);
 	    }
+	  arg_loc.release ();
 	  break;
 	case CPP_DOT:
 	  /* Structure element reference.  */
@@ -7869,7 +7871,8 @@ c_parser_expression_conv (c_parser *parser)
 
 /* Parse a non-empty list of expressions.  If CONVERT_P, convert
    functions and arrays to pointers and lvalues to rvalues.  If
-   FOLD_P, fold the expressions.
+   FOLD_P, fold the expressions.  If LOCATIONS is non-NULL, save the
+   locations of function arguments into this vector.
 
    nonempty-expr-list:
      assignment-expression
@@ -7879,7 +7882,8 @@ c_parser_expression_conv (c_parser *parser)
 static vec<tree, va_gc> *
 c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 		    vec<tree, va_gc> **p_orig_types,
-		    location_t *sizeof_arg_loc, tree *sizeof_arg)
+		    location_t *sizeof_arg_loc, tree *sizeof_arg,
+		    vec<location_t> *locations)
 {
   vec<tree, va_gc> *ret;
   vec<tree, va_gc> *orig_types;
@@ -7905,6 +7909,8 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   ret->quick_push (expr.value);
   if (orig_types)
     orig_types->quick_push (expr.original_type);
+  if (locations)
+    locations->safe_push (loc);
   if (sizeof_arg != NULL
       && cur_sizeof_arg_loc != UNKNOWN_LOCATION
       && expr.original_code == SIZEOF_EXPR)
@@ -7929,6 +7935,8 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
       vec_safe_push (ret, expr.value);
       if (orig_types)
 	vec_safe_push (orig_types, expr.original_type);
+      if (locations)
+	locations->safe_push (loc);
       if (++idx < 3
 	  && sizeof_arg != NULL
 	  && cur_sizeof_arg_loc != UNKNOWN_LOCATION
@@ -9026,7 +9034,7 @@ c_parser_objc_keywordexpr (c_parser *parser)
 {
   tree ret;
   vec<tree, va_gc> *expr_list = c_parser_expr_list (parser, true, true,
-						NULL, NULL, NULL);
+						NULL, NULL, NULL, NULL);
   if (vec_safe_length (expr_list) == 1)
     {
       /* Just return the expression, remove a level of

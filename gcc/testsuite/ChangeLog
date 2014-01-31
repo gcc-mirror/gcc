@@ -1,3 +1,13 @@
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* gcc.dg/pr59940.c (g): Adjust dg-warning.
+	(y): Adjust dg-error.
+	* gcc.dg/cast-function-1.c (bar): Adjust dg-warnings.
+	* gcc.dg/pr59963-1.c: New test.
+	* gcc.dg/pr59963-2.c: New test.
+	* gcc.dg/pr59963-3.c: New test.
+
 2014-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59923

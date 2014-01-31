@@ -911,8 +911,8 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree);
 
 extern tree build_function_call (location_t, tree, tree);
 
-extern tree build_function_call_vec (location_t, tree, vec<tree, va_gc> *,
-				     vec<tree, va_gc> *);
+extern tree build_function_call_vec (location_t, vec<location_t>, tree,
+				     vec<tree, va_gc> *, vec<tree, va_gc> *);
 
 extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
 

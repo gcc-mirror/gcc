@@ -1,3 +1,17 @@
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* objc-next-runtime-abi-02.c (build_throw_stmt): Pass vNULL to
+	build_function_call_vec.
+	(finish_catch): Likewise.
+	(next_runtime_abi_02_get_class_reference): Likewise.
+	* objc-next-runtime-abi-01.c (build_objc_method_call): Pass vNULL to
+	build_function_call_vec.
+	(build_throw_stmt): Likewise.
+	* objc-gnu-runtime-abi-01.c: (build_objc_method_call): Pass vNULL to
+	build_function_call_vec.
+	(build_throw_stmt): Likewise.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years

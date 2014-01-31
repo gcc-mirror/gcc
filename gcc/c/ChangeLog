@@ -1,3 +1,23 @@
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* c-typeck.c (convert_lvalue_to_rvalue): Pass vNULL to
+	build_function_call_vec.
+	(build_function_call): Likewise.
+	(build_atomic_assign): Likewise.
+	(build_function_call_vec): Add arg_loc parameter.  Use it.
+	(convert_arguments): Likewise.
+	(convert_for_assignment): Rename rhs_loc to expr_loc.
+	* c-parser.c (c_parser_attributes): Pass NULL to c_parser_expr_list.
+	(c_parser_objc_keywordexpr): Likewise.
+	(c_parser_postfix_expression_after_primary): Call
+	build_function_call_vec with expr_loc rather than op_loc.
+	Call c_parser_expr_list to fill arg_loc.  Pass arg_loc to
+	build_function_call_vec.
+	(c_parser_expr_list): Add locations parameter.  Fill it with locations
+	of function arguments.
+	* c-decl.c (finish_decl): Pass vNULL to build_function_call_vec.
+
 2014-01-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59940

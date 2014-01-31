@@ -10382,7 +10382,7 @@ add_atomic_size_parameter (unsigned n, location_t loc, tree function,
       vec_alloc (v, len + 1);
       for (z = 0; z < len; z++)
 	v->quick_push ((*params)[z]);
-      f = build_function_call_vec (loc, function, v, NULL);
+      f = build_function_call_vec (loc, vNULL, function, v, NULL);
       vec_free (v);
       return f;
     }
@@ -10813,7 +10813,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  return error_mark_node;
 
 	first_param = (*params)[0];
-	result = build_function_call_vec (loc, new_function, params, NULL);
+	result = build_function_call_vec (loc, vNULL, new_function, params,
+					  NULL);
 	if (result == error_mark_node)
 	  return result;
 	if (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N

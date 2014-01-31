@@ -15,13 +15,13 @@ g (void)
   si = 3.2f; /* { dg-warning "8:conversion" } */
   uc = 256; /* { dg-warning "8:large integer implicitly truncated to unsigned type" } */
   si = 0x800000000; /* { dg-warning "8:overflow in implicit constant conversion" } */
-  return f (si) /* { dg-warning "12:conversion" } */
-         + f (si); /* { dg-warning "14:conversion" } */
+  return f (si) /* { dg-warning "13:conversion" } */
+         + f (si); /* { dg-warning "15:conversion" } */
 }
 
 int
 y (void)
 {
-  f (); /* { dg-error "5:too few arguments to function" } */
-  g (0xa); /* { dg-error "5:too many arguments to function" } */
+  f (); /* { dg-error "3:too few arguments to function" } */
+  g (0xa); /* { dg-error "3:too many arguments to function" } */
 }
