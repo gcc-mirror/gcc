@@ -1,3 +1,19 @@
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Comment
+	reformatting. Allow volatile objects in various generated checks.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): For a record
+	component association, set the etype of the identifier, for
+	SPARK use.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Has_Visibility_Of_Subprogram): If type is not
+	declared in a package, not checks can apply to the subprogram.
+
 2014-01-31  Robert Dewar  <dewar@adacore.com>
 
 	* erroutc.adb (Validate_Specific_Warnings): Warnings are

@@ -6014,10 +6014,11 @@ package body Sem_Attr is
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
 
-                  --  Record component entity in the given aggregate choice,
-                  --  for subsequent resolution.
+                  --  Record component entity and type in the given aggregate
+                  --  choice, for subsequent resolution.
 
                   Set_Entity (Comp, Comp_Or_Discr);
+                  Set_Etype  (Comp, Etype (Comp_Or_Discr));
                   exit;
                end if;
 
