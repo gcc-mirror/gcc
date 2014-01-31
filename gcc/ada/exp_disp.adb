@@ -3526,8 +3526,9 @@ package body Exp_Disp is
             --  entry protected types (in s-tposen). However, it was removed
             --  by also testing for no No_Select_Statements restriction in
             --  Exp_Utils.Corresponding_Runtime_Package. This simplified the
-            --  implementation of s-tposen, which was initially created for
-            --  the Ravenscar profile.
+            --  implementation of s-tposen.adb and provided consistency between
+            --  all versions of System.Tasking.Protected_Objects.Single_Entry
+            --  (s-tposen*.adb).
 
             case Corresponding_Runtime_Package (Conc_Typ) is
                when System_Tasking_Protected_Objects_Entries =>
