@@ -1,5 +1,3 @@
-/* { dg-do run { target { x86_64-*-linux* } } } */
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdint.h>

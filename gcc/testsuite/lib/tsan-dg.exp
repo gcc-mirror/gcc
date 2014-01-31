@@ -69,6 +69,8 @@ proc tsan_init { args } {
     global ALWAYS_CXXFLAGS
     global TOOL_OPTIONS
     global tsan_saved_TEST_ALWAYS_FLAGS
+    global dg-do-what-default
+    global tsan_saved_dg-do-what-default
 
     set link_flags ""
     if ![is_remote host] {
@@ -79,6 +81,9 @@ proc tsan_init { args } {
 	}
     }
 
+    if [info exists dg-do-what-default] {
+	set tsan_saved_dg-do-what-default ${dg-do-what-default}
+    }
     if [info exists TEST_ALWAYS_FLAGS] {
 	set tsan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
     }
@@ -96,8 +101,11 @@ proc tsan_init { args } {
 	if [check_runtime_nocache tsan_works {
 		int main () { return 0; }
 	    } "-fPIE -pie -fsanitize=thread -g"] {
-	    return 1
+	    set dg-do-what-default run
+	} else {
+	    set dg-do-what-default compile
 	}
+	return 1
     }
     return 0
 }
@@ -109,10 +117,17 @@ proc tsan_init { args } {
 proc tsan_finish { args } {
     global TEST_ALWAYS_FLAGS
     global tsan_saved_TEST_ALWAYS_FLAGS
+    global dg-do-what-default
+    global tsan_saved_dg-do-what-default
 
     if [info exists tsan_saved_TEST_ALWAYS_FLAGS] {
 	set TEST_ALWAYS_FLAGS $tsan_saved_TEST_ALWAYS_FLAGS
     } else {
 	unset TEST_ALWAYS_FLAGS
+    }
+    if [info exists tsan_saved_dg-do-what-default] {
+	set dg-do-what-default ${tsan_saved_dg-do-what-default}
+    } else {
+	unset dg-do-what-default
     }
 }

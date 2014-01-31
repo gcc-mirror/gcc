@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-shouldfail "tsan" } */
 
 #include <pthread.h>

@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-set-target-env-var TSAN_OPTIONS "halt_on_error=1" } */
 /* { dg-shouldfail "tsan" } */
 

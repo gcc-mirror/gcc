@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-shouldfail "tsan" } */
 /* { dg-output "ThreadSanitizer: data race.*" } */
 /* { dg-output "pthread_cond_signal.*" } */
