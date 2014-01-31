@@ -1,3 +1,15 @@
+2014-01-31  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads: Minor comment fix.
+	* s-tassta.adb (Abort_Dependents): Don't abort all dependents;
+	just direct dependents. If this is actually an abort, each task
+	will take care of aborting its dependents, so all dependents will
+	get aborted, as before. However, when this is called the second
+	time from Vulnerable_Complete_Master "for convenience" (i.e. to
+	kill off tasks waiting at terminate alternatives), aborting
+	indirect dependents is wrong, because it causes some unrelated
+	tasks to get aborted.
+
 2014-01-31  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.

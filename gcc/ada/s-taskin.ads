@@ -754,7 +754,7 @@ package System.Tasking is
    subtype Master_ID is Master_Level;
 
    --  Normally, a task starts out with internal master nesting level one
-   --  larger than external master nesting level. It is incremented to one by
+   --  larger than external master nesting level. It is incremented by one by
    --  Enter_Master, which is called in the task body only if the compiler
    --  thinks the task may have dependent tasks. It is set to 1 for the
    --  environment task, the level 2 is reserved for server tasks of the
