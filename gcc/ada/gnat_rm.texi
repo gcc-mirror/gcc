@@ -6026,6 +6026,26 @@ the compiler checks for violations of the restriction, but
 generates a warning message rather than an error message
 if the restriction is violated.
 
+One use of this is in situations where you want to know
+about violations of a restriction, but you want to ignore some of
+these violations. Consider this example, where you want to set
+Ada_95 mode and enable style checks, but you want to know about
+any other use of implementation pragmas:
+
+@smallexample @c ada
+pragma Restriction_Warnings (No_Implementation_Pragmas);
+pragma Warnings (Off, "violation of*No_Implementation_Pragmas*");
+pragma Ada_95;
+pragma Style_Checks ("2bfhkM160");
+pragma Warnings (On, "violation of*No_Implementation_Pragmas*");
+@end smallexample
+
+@noindent
+By including the above lines in a configuration pragmas file,
+the Ada_95 and Style_Checks pragmas are accepted without
+generating a warning, but any other use of implementation
+defined pragmas will cause a warning to be generated.
+
 @node Pragma Share_Generic
 @unnumberedsec Pragma Share_Generic
 @findex Share_Generic

@@ -1,3 +1,15 @@
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor update.
+	* gnat_rm.texi: Add example to Restriction_Warnings documentation.
+	* exp_util.adb: Minor reformatting.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Warn if the barrier
+	depends on data that is not private to the protected object,
+	and potentially modifiable in unsynchronized fashion.
+
 2014-01-31  Yannick Moy  <moy@adacore.com>
 
 	* erroutc.adb (Validate_Specific_Warnings): Remove special case for
