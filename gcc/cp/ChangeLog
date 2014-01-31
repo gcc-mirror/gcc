@@ -1,3 +1,8 @@
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55800
+	* decl2.c (get_tls_init_fn): Copy DECL_EXTERNAL from the variable.
+
 2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59082
