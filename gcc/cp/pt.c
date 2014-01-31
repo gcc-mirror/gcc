@@ -17967,6 +17967,7 @@ mark_decl_instantiated (tree result, int extern_p)
   else
     {
       mark_definable (result);
+      mark_needed (result);
       /* Always make artificials weak.  */
       if (DECL_ARTIFICIAL (result) && flag_weak)
 	comdat_linkage (result);
