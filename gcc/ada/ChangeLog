@@ -1,5 +1,32 @@
 2014-01-31  Robert Dewar  <dewar@adacore.com>
 
+	* erroutc.adb (Validate_Specific_Warnings): Warnings are
+	controlled -gnatw.W.
+	* gnat_ugn.texi: Document new warnings controlled by -gnatw.w.
+	* opt.ads (Warn_On_Warnings_Off): Now controls more cases.
+
+2014-01-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_disp.adb: Update comments.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration,
+	Save_Global_References): Guard access to expression in aspect.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma/Pragma_SPARK_Mode):
+	Issue an error when the pragma is applied to a generic unit,
+	a generic declaration, or inside a generic.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Set SPARK_Mode on renaming
+	entity.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch9.adb, s-tassta.adb, s-tposen.adb, s-tposen.ads: Minor
 	reformatting.
 

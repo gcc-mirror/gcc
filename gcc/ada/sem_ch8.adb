@@ -2386,6 +2386,11 @@ package body Sem_Ch8 is
          Set_Is_Pure (New_S, Is_Pure (Current_Scope));
       end if;
 
+      --  Set SPARK mode from current context
+
+      Set_SPARK_Pragma (New_S, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (New_S, True);
+
       Rename_Spec := Find_Corresponding_Spec (N);
 
       --  Case of Renaming_As_Body

@@ -5690,7 +5690,7 @@ as shown in the following example.
 @end smallexample
 
 @item -gnatw.w
-@emph{Activate warnings on unnecessary Warnings Off pragmas}
+@emph{Activate warnings on Warnings Off pragmas}
 @cindex @option{-gnatw.w} (@command{gcc})
 @cindex Warnings Off control
 This switch activates warnings for use of @code{pragma Warnings (Off, entity)}
@@ -5698,12 +5698,14 @@ where either the pragma is entirely useless (because it suppresses no
 warnings), or it could be replaced by @code{pragma Unreferenced} or
 @code{pragma Unmodified}. The default is that these warnings are not given.
 Note that this warning is not included in -gnatwa, it must be
-activated explicitly.
+activated explicitly. Also activates warnings for the case of
+Warnings (Off, String), where either there is no matching
+Warnings (On, String), or the Warnings (Off) did not suppress any warning.
 
 @item -gnatw.W
 @emph{Suppress warnings on unnecessary Warnings Off pragmas}
 @cindex @option{-gnatw.W} (@command{gcc})
-This switch suppresses warnings for use of @code{pragma Warnings (Off, entity)}.
+This switch suppresses warnings for use of @code{pragma Warnings (Off, ...)}.
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}

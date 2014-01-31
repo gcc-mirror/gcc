@@ -19160,6 +19160,10 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
+            if Inside_A_Generic then
+               Error_Pragma ("incorrect placement of pragma% in a generic");
+            end if;
+
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
@@ -19192,6 +19196,15 @@ package body Sem_Prag is
             elsif Nkind (Context) = N_Compilation_Unit then
                Check_Valid_Configuration_Pragma;
 
+               if Nkind (Unit (Context)) in N_Generic_Declaration
+                 or else (Present (Library_Unit (Context))
+                           and then Nkind (Unit (Library_Unit (Context))) in
+                                                        N_Generic_Declaration)
+               then
+                  Error_Pragma
+                    ("incorrect placement of pragma% in a generic unit");
+               end if;
+
                SPARK_Mode_Pragma := N;
                SPARK_Mode := Mode_Id;
 
@@ -19219,11 +19232,13 @@ package body Sem_Prag is
                   elsif not Comes_From_Source (Stmt) then
                      null;
 
+                  elsif Nkind (Stmt) in N_Generic_Declaration then
+                     Error_Pragma
+                       ("incorrect placement of pragma% on a generic");
+
                   --  The pragma applies to a package declaration
 
-                  elsif Nkind_In (Stmt, N_Generic_Package_Declaration,
-                                        N_Package_Declaration)
-                  then
+                  elsif Nkind (Stmt) = N_Package_Declaration then
                      Spec_Id := Defining_Entity (Stmt);
                      Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance
@@ -19239,9 +19254,7 @@ package body Sem_Prag is
 
                   --  The pragma applies to a subprogram declaration
 
-                  elsif Nkind_In (Stmt, N_Generic_Subprogram_Declaration,
-                                        N_Subprogram_Declaration)
-                  then
+                  elsif Nkind (Stmt) = N_Subprogram_Declaration then
                      Spec_Id := Defining_Entity (Stmt);
                      Check_Library_Level_Entity (Spec_Id);
                      Check_Pragma_Conformance
