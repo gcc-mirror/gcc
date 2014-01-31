@@ -14784,6 +14784,8 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   /* Instantiation of the function happens in the context of the function
      template, not the context of the overload resolution we're doing.  */
   push_to_top_level ();
+  struct pointer_map_t *saved_local_specializations = local_specializations;
+  local_specializations = NULL;
   /* If there are dependent arguments, e.g. because we're doing partial
      ordering, make sure processing_template_decl stays set.  */
   if (uses_template_parms (targ_ptr))
@@ -14799,6 +14801,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 		   targ_ptr, complain, gen_tmpl);
   if (DECL_CLASS_SCOPE_P (gen_tmpl))
     pop_nested_class ();
+  local_specializations = saved_local_specializations;
   pop_from_top_level ();
 
   if (fndecl == error_mark_node)
