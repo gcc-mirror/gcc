@@ -6149,6 +6149,11 @@ package body Sem_Attr is
                   end;
 
                elsif Is_Record_Type (P_Type) then
+
+                  --  Make sure we have an identifier. Old SPARK allowed
+                  --  a component selection e.g. A.B in the corresponding
+                  --  context, but we do not yet permit this for 'Update.
+
                   if Nkind (Comp) /= N_Identifier then
                      Error_Msg_N ("name should be identifier or OTHERS", Comp);
                   else

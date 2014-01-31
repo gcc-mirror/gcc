@@ -511,13 +511,32 @@ package body Exp_Util is
 
          Expr := E;
          loop
-            if Nkind_In (Expr, N_Qualified_Expression,
-                               N_Unchecked_Type_Conversion)
-            then
+            if Nkind (Expr) = N_Explicit_Dereference then
+               Expr := Prefix (Expr);
+
+            elsif Nkind (Expr) = N_Qualified_Expression then
                Expr := Expression (Expr);
 
-            elsif Nkind (Expr) = N_Explicit_Dereference then
-               Expr := Prefix (Expr);
+            elsif Nkind (Expr) = N_Unchecked_Type_Conversion then
+
+               --  When interface class-wide types are involved in allocation,
+               --  the expander introduces several levels of address arithmetic
+               --  to perform dispatch table displacement. In this scenario the
+               --  object appears as:
+               --
+               --    Tag_Ptr (Base_Address (<object>'Address))
+               --
+               --  Detect this case and utilize the whole expression as the
+               --  "object" since it now points to the proper dispatch table.
+
+               if Is_RTE (Etype (Expr), RE_Tag_Ptr) then
+                  exit;
+
+               --  Continue to strip the object
+
+               else
+                  Expr := Expression (Expr);
+               end if;
 
             else
                exit;
@@ -790,101 +809,105 @@ package body Exp_Util is
 
          --  h) Is_Controlled
 
-         --  Generate a run-time check to determine whether a class-wide object
-         --  is truly controlled.
-
          if Needs_Finalization (Desig_Typ) then
-            if Is_Class_Wide_Type (Desig_Typ)
-              or else Is_Generic_Actual_Type (Desig_Typ)
-            then
-               declare
-                  Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
-                  Flag_Expr : Node_Id;
-                  Param     : Node_Id;
-                  Temp      : Node_Id;
+            declare
+               Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
+               Flag_Expr : Node_Id;
+               Param     : Node_Id;
+               Temp      : Node_Id;
 
-               begin
-                  if Is_Allocate then
-                     Temp := Find_Object (Expression (Expr));
-                  else
-                     Temp := Expr;
-                  end if;
+            begin
+               if Is_Allocate then
+                  Temp := Find_Object (Expression (Expr));
+               else
+                  Temp := Expr;
+               end if;
 
-                  --  Processing for generic actuals
+               --  Processing for allocations where the expression is a subtype
+               --  indication.
 
-                  if Is_Generic_Actual_Type (Desig_Typ) then
-                     Flag_Expr :=
-                       New_Reference_To (Boolean_Literals
-                         (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
+               if Is_Allocate
+                 and then Is_Entity_Name (Temp)
+                 and then Is_Type (Entity (Temp))
+               then
+                  Flag_Expr :=
+                    New_Reference_To (Boolean_Literals
+                      (Needs_Finalization (Entity (Temp))), Loc);
 
-                  --  Processing for subtype indications
+               --  The allocation / deallocation of a class-wide object relies
+               --  on a runtime check to determine whether the object is truly
+               --  controlled or not. Depending on this check, the finalization
+               --  machinery will request or reclaim extra storage reserved for
+               --  a list header.
 
-                  elsif Nkind (Temp) in N_Has_Entity
-                    and then Is_Type (Entity (Temp))
-                  then
-                     Flag_Expr :=
-                       New_Reference_To (Boolean_Literals
-                         (Needs_Finalization (Entity (Temp))), Loc);
+               elsif Is_Class_Wide_Type (Desig_Typ) then
 
-                  --  Generate a runtime check to test the controlled state of
-                  --  an object for the purposes of allocation / deallocation.
-
-                  else
-                     --  The following case arises when allocating through an
-                     --  interface class-wide type, generate:
-                     --
-                     --    Temp.all
-
-                     if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
-                        Param :=
-                          Make_Explicit_Dereference (Loc,
-                            Prefix =>
-                              Relocate_Node (Temp));
-
-                     --  Generate:
-                     --    Temp'Tag
-
-                     else
-                        Param :=
-                          Make_Attribute_Reference (Loc,
-                            Prefix =>
-                              Relocate_Node (Temp),
-                            Attribute_Name => Name_Tag);
-                     end if;
-
-                     --  Generate:
-                     --    Needs_Finalization (<Param>)
-
-                     Flag_Expr :=
-                       Make_Function_Call (Loc,
-                         Name =>
-                           New_Reference_To (RTE (RE_Needs_Finalization), Loc),
-                         Parameter_Associations => New_List (Param));
-                  end if;
-
-                  --  Create the temporary which represents the finalization
-                  --  state of the expression. Generate:
+                  --  Detect a special case where interface class-wide types
+                  --  are involved as the object appears as:
                   --
-                  --    F : constant Boolean := <Flag_Expr>;
+                  --    Tag_Ptr (Base_Address (<object>'Address))
+                  --
+                  --  The expression already yields the proper tag, generate:
+                  --
+                  --    Temp.all
 
-                  Insert_Action (N,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Flag_Id,
-                      Constant_Present => True,
-                      Object_Definition =>
-                        New_Reference_To (Standard_Boolean, Loc),
-                      Expression => Flag_Expr));
+                  if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
+                     Param :=
+                       Make_Explicit_Dereference (Loc,
+                         Prefix => Relocate_Node (Temp));
 
-                  --  The flag acts as the last actual
+                  --  In the default case, obtain the tag of the object about
+                  --  to be allocated / deallocated. Generate:
+                  --
+                  --    Temp'Tag
 
-                  Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
-               end;
+                  else
+                     Param :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => Relocate_Node (Temp),
+                         Attribute_Name => Name_Tag);
+                  end if;
 
-            --  The object is statically known to be controlled
+                  --  Generate:
+                  --    Needs_Finalization (<Param>)
 
-            else
-               Append_To (Actuals, New_Reference_To (Standard_True, Loc));
-            end if;
+                  Flag_Expr :=
+                    Make_Function_Call (Loc,
+                      Name                   =>
+                        New_Reference_To (RTE (RE_Needs_Finalization), Loc),
+                      Parameter_Associations => New_List (Param));
+
+               --  Processing for generic actuals
+
+               elsif Is_Generic_Actual_Type (Desig_Typ) then
+                  Flag_Expr :=
+                    New_Reference_To (Boolean_Literals
+                      (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
+
+               --  The object does not require any specialized checks, it is
+               --  known to be controlled.
+
+               else
+                  Flag_Expr := New_Reference_To (Standard_True, Loc);
+               end if;
+
+               --  Create the temporary which represents the finalization state
+               --  of the expression. Generate:
+               --
+               --    F : constant Boolean := <Flag_Expr>;
+
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Flag_Id,
+                   Constant_Present    => True,
+                   Object_Definition   =>
+                     New_Reference_To (Standard_Boolean, Loc),
+                    Expression          => Flag_Expr));
+
+               Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
+            end;
+
+         --  The object is not controlled
 
          else
             Append_To (Actuals, New_Reference_To (Standard_False, Loc));

@@ -1908,10 +1908,8 @@ package body Sem_Ch6 is
                      null;
 
                   elsif Nkind (Parent (N)) = N_Subprogram_Body
-                    or else
-                      Nkind_In (Parent (Parent (N)),
-                        N_Accept_Statement,
-                        N_Entry_Body)
+                    or else Nkind_In (Parent (Parent (N)), N_Accept_Statement,
+                                                           N_Entry_Body)
                   then
                      Error_Msg_NE
                        ("invalid use of untagged incomplete type&",
@@ -1919,7 +1917,7 @@ package body Sem_Ch6 is
                   end if;
 
                   --  The type must be completed in the current package. This
-                  --  is checked at the end of the package declaraton, when
+                  --  is checked at the end of the package declaration when
                   --  Taft-amendment types are identified. If the return type
                   --  is class-wide, there is no required check, the type can
                   --  be a bona fide TAT.
