@@ -1,5 +1,8 @@
 2014-01-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59469
+	* pt.c (mark_decl_instantiated): Call mark_needed.
+
 	PR c++/58672
 	* decl2.c (handle_tls_init): Handle null init fn.
 
