@@ -1,3 +1,10 @@
+2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59082
+	* class.c (build_vfield_ref): Early return error_mark_node if
+	TYPE_VFIELD (type) is null.
+	(build_base_path): Check return value of build_vfield_ref.
+
 2014-01-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59646
