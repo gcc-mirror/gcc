@@ -78,11 +78,6 @@ static GTY(()) tree saved_access_scope;
    to the EXPR_STMT that is its result.  */
 static tree cur_stmt_expr;
 
-/* A map from local variable declarations in the body of the template
-   presently being instantiated to the corresponding instantiated
-   local variables.  */
-static struct pointer_map_t *local_specializations;
-
 /* True if we've recursed into fn_type_unification too many times.  */
 static bool excessive_deduction_depth;
 

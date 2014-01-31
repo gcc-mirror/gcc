@@ -1,3 +1,10 @@
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57899
+	* cp-tree.h (struct saved_scope): Add x_local_specializations.
+	(local_specializations): New macro.
+	* pt.c (local_specializations): Remove variable.
+
 2014-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR c++/58708
