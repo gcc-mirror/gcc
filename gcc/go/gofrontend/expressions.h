@@ -106,7 +106,8 @@ class Expression
     EXPRESSION_INTERFACE_INFO,
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_MAP_DESCRIPTOR,
-    EXPRESSION_LABEL_ADDR
+    EXPRESSION_LABEL_ADDR,
+    EXPRESSION_CONDITIONAL
   };
 
   Expression(Expression_classification, Location);
@@ -387,6 +388,10 @@ class Expression
   // label.
   static Expression*
   make_label_addr(Label*, Location);
+
+  // Make a conditional expression.
+  static Expression*
+  make_conditional(Expression*, Expression*, Expression*, Location);
 
   // Return the expression classification.
   Expression_classification
