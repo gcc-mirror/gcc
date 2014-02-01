@@ -1,3 +1,8 @@
+2014-02-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59414
+	* gfortran.dg/allocate_class_3.f90 : New test
+
 2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
 
 	Backport from mainline.
