@@ -1,3 +1,9 @@
+2014-01-31  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/60004
+	* tree-eh.c (lower_try_finally_switch): Delay lowering finally block
+	until after else_eh is processed.
+
 2014-01-30  David Holsgrove <david.holsgrove@xilinx.com>
 
 	Backport from mainline
@@ -199,7 +205,7 @@
 
 	Backport from mainline
 	2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
-            Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/59695
 	* config/aarch64/aarch64.c (aarch64_build_constant): Fix incorrect
