@@ -1,3 +1,8 @@
+2014-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51219
+	* g++.dg/init/bitfield5.C: New.
+
 2014-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60003

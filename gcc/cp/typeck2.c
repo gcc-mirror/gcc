@@ -1268,11 +1268,7 @@ process_init_constructor_record (tree type, tree init,
       tree type;
 
       if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-	{
-	  flags |= picflag_from_initializer (integer_zero_node);
-	  CONSTRUCTOR_APPEND_ELT (v, field, integer_zero_node);
-	  continue;
-	}
+	continue;
 
       if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	continue;
