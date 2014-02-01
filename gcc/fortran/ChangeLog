@@ -1,3 +1,13 @@
+2014-02-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59906
+	* trans-stmt.c (gfc_add_loop_ss_code): In the case of character
+	SS_REFERENCE, use gfc_conv_string_parameter to ensure that a
+	pointer to the string is stored.
+	* trans-expr.c (gfc_conv_expr_reference): Likewise, use
+	gfc_conv_string_parameter to ensure that a pointer to is passed
+	to the elemental function.
+
 2014-01-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59414
