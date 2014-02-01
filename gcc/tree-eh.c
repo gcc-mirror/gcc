@@ -1328,9 +1328,6 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   x = gimple_seq_last_stmt (finally);
   finally_loc = x ? gimple_location (x) : tf_loc;
 
-  /* Lower the finally block itself.  */
-  lower_eh_constructs_1 (state, finally);
-
   /* Prepare for switch statement generation.  */
   nlabels = VEC_length (tree, tf->dest_array);
   return_index = nlabels;
@@ -1414,6 +1411,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   x = gimple_build_label (finally_label);
   gimple_seq_add_stmt (&tf->top_p_seq, x);
 
+  lower_eh_constructs_1 (state, finally);
   gimple_seq_add_seq (&tf->top_p_seq, finally);
 
   /* Redirect each incoming goto edge.  */

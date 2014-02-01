@@ -1,3 +1,9 @@
+2014-01-31  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/60004
+	* tree-eh.c (lower_try_finally_switch): Delay lowering finally block
+	until after else_eh is processed.
+
 2014-01-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	Backport from mainline
