@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -finstrument-functions" } */
 /* { dg-additional-options "-mno-explicit-relocs" { target alpha*-*-* } } */
+/* { dg-additional-options "-mno-relax-pic-calls" { target mips*-*-* } } */
 /* { dg-final { scan-assembler-times "__cyg_profile_func_enter" 1} } */
 
 #define NOINSTR __attribute__((no_instrument_function))
