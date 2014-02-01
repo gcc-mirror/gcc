@@ -1,3 +1,11 @@
+2014-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60003
+	* gimple-low.c (lower_builtin_setjmp): Set cfun->has_nonlocal_label.
+	* profile.c (branch_prob): Use gimple_call_builtin_p
+	to check for BUILT_IN_SETJMP_RECEIVER.
+	* tree-inline.c (copy_bb): Call notice_special_calls.
+
 2014-01-31  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/59985
