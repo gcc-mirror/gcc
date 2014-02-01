@@ -5,4 +5,4 @@
 typedef enum { e } T __attribute__((vector_size(8)));
 static void foo(T t) {}
 void bar (T t) {}		// { dg-error "no linkage" "" { target c++98 } }
-// { dg-final { scan-assembler-not "globl\[ \t]*_Z3bar" } }
+// { dg-final { scan-assembler-not "globl\[ \t]*_Z3bar" { target { ! c++98 } } } }
