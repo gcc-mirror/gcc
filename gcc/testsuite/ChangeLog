@@ -1,5 +1,9 @@
 2014-02-01  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Adjust expected MIPS output.
+
+2014-02-01  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* g++.dg/pr49718.C: Use -mno-relax-pic-calls for MIPS.
 
 2014-02-01  Richard Sandiford  <rdsandiford@googlemail.com>
