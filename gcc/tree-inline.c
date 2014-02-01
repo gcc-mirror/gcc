@@ -1745,7 +1745,6 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	  if (is_gimple_call (stmt))
 	    {
 	      struct cgraph_edge *edge;
-	      int flags;
 
 	      switch (id->transform_call_graph_edges)
 		{
@@ -1868,11 +1867,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		    }
 		}
 
-	      flags = gimple_call_flags (stmt);
-	      if (flags & ECF_MAY_BE_ALLOCA)
-		cfun->calls_alloca = true;
-	      if (flags & ECF_RETURNS_TWICE)
-		cfun->calls_setjmp = true;
+	      notice_special_calls (stmt);
 	    }
 
 	  maybe_duplicate_eh_stmt_fn (cfun, stmt, id->src_cfun, orig_stmt,
