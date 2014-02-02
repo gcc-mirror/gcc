@@ -1,3 +1,7 @@
+2014-02-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ipa-inline-analysis.c (true_predicate_p): Fix a typo in comments.
+
 2014-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60003
