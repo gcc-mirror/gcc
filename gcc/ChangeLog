@@ -56,7 +56,8 @@
 	(avx512f_store<mode>_mask): Ditto.
 	(avx512f_storeu<ssemodesuffix>512_mask): Ditto.
 	(avx512f_storedqu<mode>_mask): Ditto.
-	(avx512f_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>): Ditto.
+	(avx512f_cmp<mode>3<mask_scalar_merge_name><round_saeonly_name>):
+	Ditto.
 	(avx512f_ucmp<mode>3<mask_scalar_merge_name>): Ditto.
 	(avx512f_vmcmp<mode>3<round_saeonly_name>): Ditto.
 	(avx512f_vmcmp<mode>3_mask<round_saeonly_name>): Ditto.
@@ -158,8 +159,7 @@
 
 2014-01-30  Jakub Jelinek  <jakub@redhat.com>
 
-	* config/i386/f16cintrin.h (_cvtsh_ss): Avoid -Wnarrowing
-	warning.
+	* config/i386/f16cintrin.h (_cvtsh_ss): Avoid -Wnarrowing warning.
 	* config/i386/avx512fintrin.h (_mm512_mask_cvtusepi64_storeu_epi32):
 	Add missing return type - void.
 
@@ -240,8 +240,7 @@
 2014-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/59951
-	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Skip uses in debug
-	insns.
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Skip uses in debug insns.
 
 2014-01-30  Savin Zlobec  <savin.zlobec@gmail.com>
 
@@ -275,33 +274,26 @@
 	* config/rs6000/vsx.md (vsx_mergel_<mode>): Adjust for
 	-maltivec=be with LE targets.
 	(vsx_mergeh_<mode>): Likewise.
-	* config/rs6000/altivec.md (UNSPEC_VMRG[HL]_DIRECT): New
-	unspecs.
+	* config/rs6000/altivec.md (UNSPEC_VMRG[HL]_DIRECT): New unspecs.
 	(mulv8hi3): Use gen_altivec_vmrg[hl]w_direct.
 	(altivec_vmrghb): Replace with define_expand and new
-	*altivec_vmrghb_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrghb_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrghb_direct): New define_insn.
 	(altivec_vmrghh): Replace with define_expand and new
-	*altivec_vmrghh_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrghh_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrghh_direct): New define_insn.
 	(altivec_vmrghw): Replace with define_expand and new
-	*altivec_vmrghw_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrghw_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrghw_direct): New define_insn.
 	(*altivec_vmrghsf): Adjust for endianness.
 	(altivec_vmrglb): Replace with define_expand and new
-	*altivec_vmrglb_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrglb_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrglb_direct): New define_insn.
 	(altivec_vmrglh): Replace with define_expand and new
-	*altivec_vmrglh_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrglh_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrglh_direct): New define_insn.
 	(altivec_vmrglw): Replace with define_expand and new
-	*altivec_vmrglw_internal insn; adjust for -maltivec=be with LE
-	targets.
+	*altivec_vmrglw_internal insn; adjust for -maltivec=be with LE targets.
 	(altivec_vmrglw_direct): New define_insn.
 	(*altivec_vmrglsf): Adjust for endianness.
 	(vec_widen_umult_hi_v16qi): Use gen_altivec_vmrghh_direct.
@@ -397,8 +389,7 @@
 	* tree-cfg.h (make_abnormal_goto_edges): Remove.
 	(computed_goto_p, get_abnormal_succ_dispatcher): New prototypes.
 	* internal-fn.c (expand_ABNORMAL_DISPATCHER): New function.
-	* builtins.c (expand_builtin): Don't handle
-	BUILT_IN_SETJMP_DISPATCHER.
+	* builtins.c (expand_builtin): Don't handle BUILT_IN_SETJMP_DISPATCHER.
 	* internal-fn.def (ABNORMAL_DISPATCHER): New.
 	* omp-low.c (make_gimple_omp_edges): Add region_idx argument, when
 	filling *region also set *region_idx to (*region)->entry->index.
@@ -409,7 +400,7 @@
 
 2014-01-29  Bingfeng Mei  <bmei@broadcom.com>
 
-	* doc/md.texi: Mention that a target shouldn't implement 
+	* doc/md.texi: Mention that a target shouldn't implement
 	vec_widen_(s|u)mul_even/odd pair if it is less efficient
 	than hi/lo pair.
 
@@ -446,8 +437,7 @@
 
 	PR preprocessor/59935
 	* input.c (location_get_source_line): Bail out on when line number
-	is zero, and test the return value of
-	lookup_or_add_file_to_cache_tab.
+	is zero, and test the return value of lookup_or_add_file_to_cache_tab.
 
 2014-01-28  Richard Biener  <rguenther@suse.de>
 
@@ -474,8 +464,7 @@
 
 2014-01-28  Richard Biener  <rguenther@suse.de>
 
-	* tree-data-ref.h (ddr_is_anti_dependent, ddrs_have_anti_deps):
-	Remove.
+	* tree-data-ref.h (ddr_is_anti_dependent, ddrs_have_anti_deps): Remove.
 
 2014-01-28  Richard Biener  <rguenther@suse.de>
 
