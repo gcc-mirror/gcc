@@ -1,3 +1,8 @@
+2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (update_jump_functions_after_inlining): When type is not
+	preserverd by passthrough, do not propagate the type.
+
 2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (MIPS_GET_FCSR, MIPS_SET_FCSR): New macros.

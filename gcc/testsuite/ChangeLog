@@ -1,3 +1,7 @@
+2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirt-23.C: New testcase.
+
 2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/get-fcsr-1.c, gcc.target/mips/get-fcsr-2.c,

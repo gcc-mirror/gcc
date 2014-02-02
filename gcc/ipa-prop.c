@@ -2359,10 +2359,13 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  dst->type = IPA_JF_UNKNOWN;
 		  break;
 		case IPA_JF_KNOWN_TYPE:
-		  ipa_set_jf_known_type (dst,
-					 ipa_get_jf_known_type_offset (src),
-					 ipa_get_jf_known_type_base_type (src),
-					 ipa_get_jf_known_type_base_type (src));
+		  if (ipa_get_jf_pass_through_type_preserved (dst))
+		    ipa_set_jf_known_type (dst,
+					   ipa_get_jf_known_type_offset (src),
+					   ipa_get_jf_known_type_base_type (src),
+					   ipa_get_jf_known_type_base_type (src));
+		  else
+		    dst->type = IPA_JF_UNKNOWN;
 		  break;
 		case IPA_JF_CONST:
 		  ipa_set_jf_cst_copy (dst, src);
