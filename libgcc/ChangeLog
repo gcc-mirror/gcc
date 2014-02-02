@@ -1,3 +1,17 @@
+2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* configure.ac: Check __mips64 when setting host_address.
+	* configure: Regenerate.
+	* config.host (mips*-*-*): Add t-softfp-sfdf, mips/t-softfp-tf,
+	mips/t-mips64 and t-softfp.
+	(mips*-*-linux*): Don't add mips/t-tpbit.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS, FPBIT, FPBIT_CFLAGS)
+	(DPBIT, DPBIT_CFLAGS): Delete.
+	* config/mips/sfp-machine.h: New file.
+	* config/mips/t-mips64: Likewise.
+	* config/mips/t-softfp-tf: Likewise.
+	* config/mips/t-tpbit: Delete.
+
 2014-01-29  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/sfp-machine.h (_FP_I_TYPE): Define
