@@ -1,3 +1,8 @@
+2014-01-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/57033
+	* gfortran.dg/default_initialization_7.f90: New test.
+
 2014-02-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59906
