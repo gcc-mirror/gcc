@@ -1,3 +1,10 @@
+2014-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/f16cintrin.h (_cvtsh_ss): Avoid -Wnarrowing warning.
+
 2014-01-31  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/60004
@@ -26,9 +33,9 @@
 	Backport from mainline
 	2014-01-25  Walter Lee  <walt@tilera.com>
 
-	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins): 
+	* config/tilegx/tilegx-c.c (tilegx_cpu_cpp_builtins):
 	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2}.
-	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins): 
+	* config/tilegx/tilepro-c.c (tilepro_cpu_cpp_builtins):
 	Define __GCC_HAVE_SYNC_COMPARE_AND_SWAP_{1,2,4,8}.
 
 2014-01-25  Walter Lee  <walt@tilera.com>
@@ -38,8 +45,7 @@
 
 	* config/tilegx/tilegx.c (tilegx_gen_bundles): Delete barrier
 	insns before bundling.
-	* config/tilegx/tilegx.md (tile_network_barrier): Update
-	comment.
+	* config/tilegx/tilegx.md (tile_network_barrier): Update comment.
 
 2014-01-25  Walter Lee  <walt@tilera.com>
 
@@ -55,8 +61,7 @@
 	Backport from mainline
 	2014-01-25  Walter Lee  <walt@tilera.com>
 
-	* config/tilepro/tilepro.md (ctzdi2): Use register_operand
-	predicate.
+	* config/tilepro/tilepro.md (ctzdi2): Use register_operand predicate.
 	(clzdi2): Ditto.
 	(ffsdi2): Ditto.
 
