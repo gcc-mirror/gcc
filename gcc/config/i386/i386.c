@@ -6627,25 +6627,28 @@ classify_argument (enum machine_mode mode, const_tree type,
     case CHImode:
     case CQImode:
       {
-	int size = (bit_offset % 64)+ (int) GET_MODE_BITSIZE (mode);
+	int size = bit_offset + (int) GET_MODE_BITSIZE (mode);
 
-	if (size <= 32)
+	/* Analyze last 128 bits only.  */
+	size = (size - 1) & 0x7f;
+
+	if (size < 32)
 	  {
 	    classes[0] = X86_64_INTEGERSI_CLASS;
 	    return 1;
 	  }
-	else if (size <= 64)
+	else if (size < 64)
 	  {
 	    classes[0] = X86_64_INTEGER_CLASS;
 	    return 1;
 	  }
-	else if (size <= 64+32)
+	else if (size < 64+32)
 	  {
 	    classes[0] = X86_64_INTEGER_CLASS;
 	    classes[1] = X86_64_INTEGERSI_CLASS;
 	    return 2;
 	  }
-	else if (size <= 64+64)
+	else if (size < 64+64)
 	  {
 	    classes[0] = classes[1] = X86_64_INTEGER_CLASS;
 	    return 2;

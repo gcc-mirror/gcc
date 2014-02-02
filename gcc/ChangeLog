@@ -1,3 +1,9 @@
+2014-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60017
+	* config/i386/i386.c (classify_argument): Fix handling of bit_offset
+	when calculating size of integer atomic types.
+
 2014-02-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ipa-inline-analysis.c (true_predicate_p): Fix a typo in comments.
