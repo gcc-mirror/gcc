@@ -12617,6 +12617,15 @@ GCC provides other MIPS-specific built-in functions:
 Insert a @samp{cache} instruction with operands @var{op} and @var{addr}.
 GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
 when this function is available.
+
+@item unsigned int __builtin_mips_get_fcsr (void)
+@itemx void __builtin_mips_set_fcsr (unsigned int @var{value})
+Get and set the contents of the floating-point control and status register
+(FPU control register 31).  These functions are only available in hard-float
+code but can be called in both MIPS16 and non-MIPS16 contexts.
+
+@code{__builtin_mips_set_fcsr} can be used to change any bit of the
+register except the condition codes, which GCC assumes are preserved.
 @end table
 
 @node MSP430 Built-in Functions

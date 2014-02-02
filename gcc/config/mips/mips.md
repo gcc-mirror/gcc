@@ -86,6 +86,10 @@
   UNSPEC_MFHC1
   UNSPEC_MTHC1
 
+  ;; Floating-point environment.
+  UNSPEC_GET_FCSR
+  UNSPEC_SET_FCSR
+
   ;; HI/LO moves.
   UNSPEC_MFHI
   UNSPEC_MTHI
@@ -147,6 +151,8 @@
 
 (define_constants
   [(TLS_GET_TP_REGNUM		3)
+   (GET_FCSR_REGNUM		2)
+   (SET_FCSR_REGNUM		4)
    (MIPS16_T_REGNUM		24)
    (PIC_FUNCTION_ADDR_REGNUM	25)
    (RETURN_ADDR_REGNUM		31)
@@ -7093,6 +7099,66 @@
   DONE;
 })
 
+;; __builtin_mips_get_fcsr: move the FCSR into operand 0.
+(define_expand "mips_get_fcsr"
+  [(set (match_operand:SI 0 "register_operand")
+  	(unspec_volatile [(const_int 0)] UNSPEC_GET_FCSR))]
+  "TARGET_HARD_FLOAT_ABI"
+{
+  if (TARGET_MIPS16)
+    {
+      mips16_expand_get_fcsr (operands[0]);
+      DONE;
+    }
+})
+
+(define_insn "*mips_get_fcsr"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+  	(unspec_volatile [(const_int 0)] UNSPEC_GET_FCSR))]
+  "TARGET_HARD_FLOAT"
+  "cfc1\t%0,$31")
+
+;; See tls_get_tp_mips16_<mode> for why this form is used.
+(define_insn "mips_get_fcsr_mips16_<mode>"
+  [(set (reg:SI GET_FCSR_REGNUM)
+	(unspec:SI [(match_operand:P 0 "call_insn_operand" "dS")]
+		   UNSPEC_GET_FCSR))
+   (clobber (reg:P PIC_FUNCTION_ADDR_REGNUM))
+   (clobber (reg:P RETURN_ADDR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && TARGET_MIPS16"
+  { return MIPS_CALL ("jal", operands, 0, -1); }
+  [(set_attr "type" "call")
+   (set_attr "insn_count" "3")])
+
+;; __builtin_mips_set_fcsr: move operand 0 into the FCSR.
+(define_expand "mips_set_fcsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand")]
+  		    UNSPEC_SET_FCSR)]
+  "TARGET_HARD_FLOAT_ABI"
+{
+  if (TARGET_MIPS16)
+    {
+      mips16_expand_set_fcsr (operands[0]);
+      DONE;
+    }
+})
+
+(define_insn "*mips_set_fcsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "d")]
+  		    UNSPEC_SET_FCSR)]
+  "TARGET_HARD_FLOAT"
+  "ctc1\t%0,$31")
+
+;; See tls_get_tp_mips16_<mode> for why this form is used.
+(define_insn "mips_set_fcsr_mips16_<mode>"
+  [(unspec_volatile:SI [(match_operand:P 0 "call_insn_operand" "dS")
+  	                (reg:SI SET_FCSR_REGNUM)] UNSPEC_SET_FCSR)
+   (clobber (reg:P PIC_FUNCTION_ADDR_REGNUM))
+   (clobber (reg:P RETURN_ADDR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && TARGET_MIPS16"
+  { return MIPS_CALL ("jal", operands, 0, -1); }
+  [(set_attr "type" "call")
+   (set_attr "insn_count" "3")])
 
 ;; Synchronization instructions.
 
