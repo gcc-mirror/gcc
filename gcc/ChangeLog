@@ -1,3 +1,15 @@
+2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_one_only_stub): New class.
+	(mips_need_mips16_rdhwr_p): Replace with...
+	(mips16_rdhwr_stub): ...this new variable.
+	(mips16_stub_call_address): New function.
+	(mips16_rdhwr_one_only_stub): New class.
+	(mips_expand_thread_pointer): Use mips16_stub_call_address.
+	(mips_output_mips16_rdhwr): Delete.
+	(mips_finish_stub): New function.
+	(mips_code_end): Use it to handle rdhwr stubs.
+
 2014-02-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/60017
