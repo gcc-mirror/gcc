@@ -1,5 +1,11 @@
 2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (MIPS_GET_FCSR, MIPS_SET_FCSR): New macros.
+	(mips_atomic_assign_expand_fenv): New function.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): Define.
+
+2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/extend.texi (__builtin_mips_get_fcsr): Document.
 	(__builtin_mips_set_fcsr): Likewise.
 	* config/mips/mips-ftypes.def: Add MIPS_VOID_FTYPE_USI and

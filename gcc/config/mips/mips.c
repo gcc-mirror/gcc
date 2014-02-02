@@ -13937,7 +13937,9 @@ AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 #define CODE_FOR_loongson_psubusb CODE_FOR_ussubv8qi3
 
 static const struct mips_builtin_description mips_builtins[] = {
+#define MIPS_GET_FCSR 0
   DIRECT_BUILTIN (get_fcsr, MIPS_USI_FTYPE_VOID, hard_float),
+#define MIPS_SET_FCSR 1
   DIRECT_NO_TARGET_BUILTIN (set_fcsr, MIPS_VOID_FTYPE_USI, hard_float),
 
   DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
@@ -18843,6 +18845,49 @@ mips_case_values_threshold (void)
   else
     return default_case_values_threshold ();
 }
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  if (!TARGET_HARD_FLOAT_ABI)
+    return;
+  tree exceptions_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree fcsr_orig_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree fcsr_mod_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
+  tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
+  tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);
+  tree hold_assign_orig = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+				  fcsr_orig_var, get_fcsr_hold_call);
+  tree hold_mod_val = build2 (BIT_AND_EXPR, MIPS_ATYPE_USI, fcsr_orig_var,
+			      build_int_cst (MIPS_ATYPE_USI, 0xfffff003));
+  tree hold_assign_mod = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+				 fcsr_mod_var, hold_mod_val);
+  tree set_fcsr_hold_call = build_call_expr (set_fcsr, 1, fcsr_mod_var);
+  tree hold_all = build2 (COMPOUND_EXPR, MIPS_ATYPE_USI,
+			  hold_assign_orig, hold_assign_mod);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, hold_all,
+		  set_fcsr_hold_call);
+
+  *clear = build_call_expr (set_fcsr, 1, fcsr_mod_var);
+
+  tree get_fcsr_update_call = build_call_expr (get_fcsr, 0);
+  *update = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+		    exceptions_var, get_fcsr_update_call);
+  tree set_fcsr_update_call = build_call_expr (set_fcsr, 1, fcsr_orig_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    set_fcsr_update_call);
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  tree int_exceptions_var = fold_convert (integer_type_node,
+					  exceptions_var);
+  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept,
+						    1, int_exceptions_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    atomic_feraiseexcept_call);
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -19076,6 +19121,9 @@ mips_case_values_threshold (void)
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD mips_case_values_threshold
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV mips_atomic_assign_expand_fenv
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
