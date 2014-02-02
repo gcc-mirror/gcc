@@ -1,8 +1,1 @@
-LIB2_SIDITI_CONV_FUNCS = yes
-
-FPBIT = true
-FPBIT_CFLAGS = -DQUIET_NAN_NEGATED
-DPBIT = true
-DPBIT_CFLAGS = -DQUIET_NAN_NEGATED
-
 LIB2ADD_ST += $(srcdir)/config/mips/lib2funcs.c
