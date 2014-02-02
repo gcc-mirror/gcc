@@ -56,8 +56,8 @@ _init:
 	addi	fp, sp, 8
 #ifdef linux
 	nextpc	r22
-1:	movhi	r2, %hiadj(_GLOBAL_OFFSET_TABLE_ - 1b)
-	addi	r2, r2, %lo(_GLOBAL_OFFSET_TABLE_ - 1b)
+1:	movhi	r2, %hiadj(_gp_got - 1b)
+	addi	r2, r2, %lo(_gp_got - 1b)
 	add	r22, r22, r2
 #endif
 	
@@ -80,8 +80,8 @@ _fini:
 	addi	fp, sp, 8
 #ifdef linux
 	nextpc	r22
-1:	movhi	r2, %hiadj(_GLOBAL_OFFSET_TABLE_ - 1b)
-	addi	r2, r2, %lo(_GLOBAL_OFFSET_TABLE_ - 1b)
+1:	movhi	r2, %hiadj(_gp_got - 1b)
+	addi	r2, r2, %lo(_gp_got - 1b)
 	add	r22, r22, r2
 #endif
 
