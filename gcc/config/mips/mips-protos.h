@@ -345,6 +345,8 @@ extern bool lwsp_swsp_address_p (rtx, enum machine_mode);
 extern bool m16_based_address_p (rtx, enum machine_mode,
 			         int (*)(rtx_def*, machine_mode)); 
 extern rtx mips_expand_thread_pointer (rtx);
+extern void mips16_expand_get_fcsr (rtx);
+extern void mips16_expand_set_fcsr (rtx);
 
 extern bool mips_eh_uses (unsigned int);
 extern bool mips_epilogue_uses (unsigned int);
