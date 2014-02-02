@@ -1,3 +1,9 @@
+2014-02-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (load_got_register): Initialize GOT
+	pointer from _gp_got instead of _GLOBAL_OFFSET_TABLE_.
+	* config/nios2/nios2.c (nios2_function_profiler): Likewise.
+
 2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (update_jump_functions_after_inlining): When type is not
