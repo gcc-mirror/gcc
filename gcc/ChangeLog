@@ -1,3 +1,8 @@
+2014-02-03  James Greenhalgh  <james.greenhalgh@arm.com>
+	    Will Deacon  <will.deacon@arm.com>
+
+	* doc/gimple.texi (gimple_asm_clear_volatile): Remove.
+
 2014-02-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-tables.opt: Regenerate.
