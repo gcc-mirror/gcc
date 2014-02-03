@@ -1,5 +1,11 @@
 2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
 
+	PR rtl-optimization/57662
+	* sel-sched.c (code_motion_path_driver): Do not mark already not
+	existing blocks in the visiting bitmap.
+
+2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
+
 	* sel-sched-ir.c (sel_gen_insn_from_expr_after): Reset INSN_DELETED_P
 	on the insn being emitted.
 
