@@ -1366,7 +1366,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     }
 
   vbases = CLASSTYPE_VBASECLASSES (ctype);
-  if (vbases == NULL)
+  if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
   else if (!assign_p)
     {
