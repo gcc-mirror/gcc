@@ -1826,7 +1826,22 @@
   "vrfiz %0,%1"
   [(set_attr "type" "vecfloat")])
 
-(define_insn "altivec_vperm_<mode>"
+(define_expand "altivec_vperm_<mode>"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM))]
+  "TARGET_ALTIVEC"
+{
+  if (!VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_vec_perm_le (operands);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_vperm_<mode>_internal"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")
@@ -1836,7 +1851,22 @@
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
 
-(define_insn "altivec_vperm_<mode>_uns"
+(define_expand "altivec_vperm_<mode>_uns"
+  [(set (match_operand:VM 0 "register_operand" "=v")
+	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
+		    (match_operand:VM 2 "register_operand" "v")
+		    (match_operand:V16QI 3 "register_operand" "v")]
+		   UNSPEC_VPERM_UNS))]
+  "TARGET_ALTIVEC"
+{
+  if (!VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_vec_perm_le (operands);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_vperm_<mode>_uns_internal"
   [(set (match_operand:VM 0 "register_operand" "=v")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v")
 		    (match_operand:VM 2 "register_operand" "v")

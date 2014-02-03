@@ -1,5 +1,20 @@
 2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_le): Generalize
+	for vector types other than V16QImode.
+	* config/rs6000/altivec.md (altivec_vperm_<mode>): Change to a
+	define_expand, and call altivec_expand_vec_perm_le when producing
+	code with little endian element order.
+	(*altivec_vperm_<mode>_internal): New insn having previous
+	behavior of altivec_vperm_<mode>.
+	(altivec_vperm_<mode>_uns): Change to a define_expand, and call
+	altivec_expand_vec_perm_le when producing code with little endian
+	element order.
+	(*altivec_vperm_<mode>_uns_internal): New insn having previous
+	behavior of altivec_vperm_<mode>_uns.
+
+2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/altivec.md (UNSPEC_VSUMSWS_DIRECT): New unspec.
 	(altivec_vsumsws): Add handling for -maltivec=be with a little
 	endian target.
