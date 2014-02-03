@@ -1,3 +1,8 @@
+2014-02-03  Laurent Aflonsi  <laurent.alfonsi@st.com>
+
+	PR gcov-profile/58602
+	* gcc/gcov-io.c (gcov_open): Open with truncation when mode<0
+
 2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59831
