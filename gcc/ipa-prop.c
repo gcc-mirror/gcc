@@ -355,8 +355,10 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 		 ii->param_index, ii->offset,
 		 ii->by_ref ? "by reference" : "by_value");
       else
-	fprintf (f, "    indirect %s callsite, calling param %i",
-		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index);
+	fprintf (f, "    indirect %s callsite, calling param %i, "
+		 "offset " HOST_WIDE_INT_PRINT_DEC,
+		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index,
+		 ii->offset);
 
       if (cs->call_stmt)
 	{
@@ -1332,11 +1334,11 @@ struct ipa_known_agg_contents_list
 
 /* Traverse statements from CALL backwards, scanning whether an aggregate given
    in ARG is filled in with constant values.  ARG can either be an aggregate
-   expression or a pointer to an aggregate.  JFUNC is the jump function into
-   which the constants are subsequently stored.  */
+   expression or a pointer to an aggregate.  ARG_TYPE is the type of the aggregate.
+   JFUNC is the jump function into which the constants are subsequently stored.  */
 
 static void
-determine_known_aggregate_parts (gimple call, tree arg,
+determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
 				 struct ipa_jump_func *jfunc)
 {
   struct ipa_known_agg_contents_list *list = NULL;
@@ -1351,18 +1353,18 @@ determine_known_aggregate_parts (gimple call, tree arg,
      arg_base and arg_offset based on what is actually passed as an actual
      argument.  */
 
-  if (POINTER_TYPE_P (TREE_TYPE (arg)))
+  if (POINTER_TYPE_P (arg_type))
     {
       by_ref = true;
       if (TREE_CODE (arg) == SSA_NAME)
 	{
 	  tree type_size;
-          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)))))
+          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (arg_type))))
             return;
 	  check_ref = true;
 	  arg_base = arg;
 	  arg_offset = 0;
-	  type_size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)));
+	  type_size = TYPE_SIZE (TREE_TYPE (arg_type));
 	  arg_size = tree_to_uhwi (type_size);
 	  ao_ref_init_from_ptr_and_size (&r, arg_base, NULL_TREE);
 	}
@@ -1645,13 +1647,22 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 				      ? TREE_TYPE (param_type)
 				      : NULL);
 
+      /* If ARG is pointer, we can not use its type to determine the type of aggregate
+	 passed (because type conversions are ignored in gimple).  Usually we can
+	 safely get type from function declaration, but in case of K&R prototypes or
+	 variadic functions we can try our luck with type of the pointer passed.
+	 TODO: Since we look for actual initialization of the memory object, we may better
+	 work out the type based on the memory stores we find.  */
+      if (!param_type)
+	param_type = TREE_TYPE (arg);
+
       if ((jfunc->type != IPA_JF_PASS_THROUGH
 	      || !ipa_get_jf_pass_through_agg_preserved (jfunc))
 	  && (jfunc->type != IPA_JF_ANCESTOR
 	      || !ipa_get_jf_ancestor_agg_preserved (jfunc))
 	  && (AGGREGATE_TYPE_P (TREE_TYPE (arg))
-	      || (POINTER_TYPE_P (TREE_TYPE (arg)))))
-	determine_known_aggregate_parts (call, arg, jfunc);
+	      || POINTER_TYPE_P (param_type)))
+	determine_known_aggregate_parts (call, arg, param_type, jfunc);
     }
 }
 
@@ -2676,9 +2687,23 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc,
 				   struct ipa_node_params *new_root_info)
 {
-  tree binfo, target;
+  tree binfo = NULL, target;
 
-  binfo = ipa_value_from_jfunc (new_root_info, jfunc);
+  if (!flag_devirtualize)
+    return NULL;
+
+  /* First try to do lookup binfo via known virtual table pointer value.  */
+  if (!ie->indirect_info->by_ref)
+    {
+      tree t = ipa_find_agg_cst_for_param (&jfunc->agg,
+					   ie->indirect_info->offset,
+					   true);
+      if (t)
+        binfo = vtable_pointer_value_to_binfo (t);
+    }
+
+  if (!binfo)
+    binfo = ipa_value_from_jfunc (new_root_info, jfunc);
 
   if (!binfo)
     return NULL;
@@ -2688,7 +2713,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       binfo = gimple_extract_devirt_binfo_from_cst
 		 (binfo, ie->indirect_info->otr_type);
       if (!binfo)
-        return NULL;
+	return NULL;
     }
 
   binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
