@@ -1116,8 +1116,15 @@ init_regs_for_mode (enum machine_mode mode)
 
   for (cur_reg = 0; cur_reg < FIRST_PSEUDO_REGISTER; cur_reg++)
     {
-      int nregs = hard_regno_nregs[cur_reg][mode];
+      int nregs;
       int i;
+
+      /* See whether it accepts all modes that occur in
+         original insns.  */
+      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
+        continue;
+
+      nregs = hard_regno_nregs[cur_reg][mode];
 
       for (i = nregs - 1; i >= 0; --i)
         if (fixed_regs[cur_reg + i]
@@ -1138,11 +1145,6 @@ init_regs_for_mode (enum machine_mode mode)
           break;
 
       if (i >= 0)
-        continue;
-
-      /* See whether it accepts all modes that occur in
-         original insns.  */
-      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
         continue;
 
       if (HARD_REGNO_CALL_PART_CLOBBERED (cur_reg, mode))
