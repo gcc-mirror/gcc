@@ -1,3 +1,9 @@
+2014-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58871
+	* method.c (synthesized_method_walk): If vbases is non-null but
+	is_empty is true, likewise don't worry about the virtual bases.
+
 2014-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51219
