@@ -1821,8 +1821,13 @@ push_pred (pred_chain_union *norm_preds, pred_info pred)
    OP != 0 and push it WORK_LIST.  */
 
 inline static void
-push_to_worklist (tree op, vec<pred_info, va_heap, vl_ptr> *work_list)
+push_to_worklist (tree op, vec<pred_info, va_heap, vl_ptr> *work_list,
+                  pointer_set_t *mark_set)
 {
+  if (pointer_set_contains (mark_set, op))
+    return;
+  pointer_set_insert (mark_set, op);
+
   pred_info arg_pred;
   arg_pred.pred_lhs = op;
   arg_pred.pred_rhs = integer_zero_node;
@@ -1905,7 +1910,8 @@ normalize_one_pred_1 (pred_chain_union *norm_preds,
                       pred_chain *norm_chain,
                       pred_info pred,
                       enum tree_code and_or_code,
-                      vec<pred_info, va_heap, vl_ptr> *work_list)
+                      vec<pred_info, va_heap, vl_ptr> *work_list,
+		      pointer_set_t *mark_set)
 {
   if (!is_neq_zero_form_p (pred))
     {
@@ -1945,39 +1951,37 @@ normalize_one_pred_1 (pred_chain_union *norm_preds,
           if (integer_zerop (op))
             continue;
 
-          push_to_worklist (op, work_list);
+          push_to_worklist (op, work_list, mark_set);
         }
-     }
-   else if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
-     {
-       if (and_or_code == BIT_IOR_EXPR)
-         push_pred (norm_preds, pred);
-       else
-         norm_chain->safe_push (pred);
-     }
-   else if (gimple_assign_rhs_code (def_stmt) == and_or_code)
-     {
-        push_to_worklist (gimple_assign_rhs1 (def_stmt),
-                          work_list);
-        push_to_worklist (gimple_assign_rhs2 (def_stmt),
-                          work_list);
-     }
-   else if (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
-            == tcc_comparison)
-     {
-       pred_info n_pred = get_pred_info_from_cmp (def_stmt);
-       if (and_or_code == BIT_IOR_EXPR)
-         push_pred (norm_preds, n_pred);
-       else
-         norm_chain->safe_push (n_pred);
-     }
-   else
-     {
-       if (and_or_code == BIT_IOR_EXPR)
-         push_pred (norm_preds, pred);
-       else
-         norm_chain->safe_push (pred);
-     }
+    }
+  else if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
+    {
+      if (and_or_code == BIT_IOR_EXPR)
+	push_pred (norm_preds, pred);
+      else
+	norm_chain->safe_push (pred);
+    }
+  else if (gimple_assign_rhs_code (def_stmt) == and_or_code)
+    {
+      push_to_worklist (gimple_assign_rhs1 (def_stmt), work_list, mark_set);
+      push_to_worklist (gimple_assign_rhs2 (def_stmt), work_list, mark_set);
+    }
+  else if (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
+	   == tcc_comparison)
+    {
+      pred_info n_pred = get_pred_info_from_cmp (def_stmt);
+      if (and_or_code == BIT_IOR_EXPR)
+	push_pred (norm_preds, n_pred);
+      else
+	norm_chain->safe_push (n_pred);
+    }
+  else
+    {
+      if (and_or_code == BIT_IOR_EXPR)
+	push_pred (norm_preds, pred);
+      else
+	norm_chain->safe_push (pred);
+    }
 }
 
 /* Normalize PRED and store the normalized predicates into NORM_PREDS.  */
@@ -1987,6 +1991,7 @@ normalize_one_pred (pred_chain_union *norm_preds,
                     pred_info pred)
 {
   vec<pred_info, va_heap, vl_ptr> work_list = vNULL;
+  pointer_set_t *mark_set = NULL;
   enum tree_code and_or_code = ERROR_MARK;
   pred_chain norm_chain = vNULL;
 
@@ -2014,16 +2019,19 @@ normalize_one_pred (pred_chain_union *norm_preds,
     }
 
   work_list.safe_push (pred);
+  mark_set = pointer_set_create ();
+
   while (!work_list.is_empty ())
     {
       pred_info a_pred = work_list.pop ();
       normalize_one_pred_1 (norm_preds, &norm_chain, a_pred,
-                            and_or_code, &work_list);
+                            and_or_code, &work_list, mark_set);
     }
   if (and_or_code == BIT_AND_EXPR)
     norm_preds->safe_push (norm_chain);
 
   work_list.release ();
+  pointer_set_destroy (mark_set);
 }
 
 static void
@@ -2031,21 +2039,26 @@ normalize_one_pred_chain (pred_chain_union *norm_preds,
                           pred_chain one_chain)
 {
   vec<pred_info, va_heap, vl_ptr> work_list = vNULL;
+  pointer_set_t *mark_set = pointer_set_create ();
   pred_chain norm_chain = vNULL;
   size_t i;
 
   for (i = 0; i < one_chain.length (); i++)
-    work_list.safe_push (one_chain[i]);
+    {
+      work_list.safe_push (one_chain[i]);
+      pointer_set_insert (mark_set, one_chain[i].pred_lhs);
+    }
 
   while (!work_list.is_empty ())
     {
       pred_info a_pred = work_list.pop ();
       normalize_one_pred_1 (0, &norm_chain, a_pred,
-                            BIT_AND_EXPR, &work_list);
+                            BIT_AND_EXPR, &work_list, mark_set);
     }
 
   norm_preds->safe_push (norm_chain);
   work_list.release ();
+  pointer_set_destroy (mark_set);
 }
 
 /* Normalize predicate chains PREDS and returns the normalized one.  */

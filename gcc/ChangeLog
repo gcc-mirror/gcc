@@ -1,3 +1,12 @@
+2014-02-03  Richard Henderson  <rth@twiddle.net>
+
+	PR tree-opt/59924
+	* tree-ssa-uninit.c (push_to_worklist): Don't re-push if we've
+	already processed this node.
+	(normalize_one_pred_1): Pass along mark_set.
+	(normalize_one_pred): Create and destroy a pointer_set_t.
+	(normalize_one_pred_chain): Likewise.
+
 2014-02-03  Laurent Aflonsi  <laurent.alfonsi@st.com>
 
 	PR gcov-profile/58602
