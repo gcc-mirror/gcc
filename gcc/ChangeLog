@@ -1,3 +1,10 @@
+2014-02-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60000
+	* tree-vect-loop.c (vect_transform_loop): Set pattern_def_seq to NULL
+	if the vectorized statement is a store.  A store statement can only
+	appear at the end of pattern statements.
+
 2014-02-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (flag_opts): Add -mlong-double-128.
