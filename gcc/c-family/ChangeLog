@@ -1,3 +1,12 @@
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* c-common.c (handle_aligned_attribute, handle_alloc_size_attribute,
+	handle_vector_size_attribute, handle_nonnull_attribute): Call
+	default_conversion on the attribute argument.
+	(handle_nonnull_attribute): Increment the argument number.
+
 2014-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59963

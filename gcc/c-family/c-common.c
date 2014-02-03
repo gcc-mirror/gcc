@@ -7526,9 +7526,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   tree decl = NULL_TREE;
   tree *type = NULL;
   int is_type = 0;
-  tree align_expr = (args ? TREE_VALUE (args)
-		     : size_int (ATTRIBUTE_ALIGNED_VALUE / BITS_PER_UNIT));
+  tree align_expr;
   int i;
+
+  if (args)
+    {
+      align_expr = TREE_VALUE (args);
+      if (align_expr && TREE_CODE (align_expr) != IDENTIFIER_NODE)
+	align_expr = default_conversion (align_expr);
+    }
+  else
+    align_expr = size_int (ATTRIBUTE_ALIGNED_VALUE / BITS_PER_UNIT);
 
   if (DECL_P (*node))
     {
@@ -8023,6 +8031,9 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   for (; args; args = TREE_CHAIN (args))
     {
       tree position = TREE_VALUE (args);
+      if (position && TREE_CODE (position) != IDENTIFIER_NODE
+	  && TREE_CODE (position) != FUNCTION_DECL)
+	position = default_conversion (position);
 
       if (TREE_CODE (position) != INTEGER_CST
 	  || TREE_INT_CST_HIGH (position)
@@ -8467,6 +8478,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;
 
   size = TREE_VALUE (args);
+  if (size && TREE_CODE (size) != IDENTIFIER_NODE)
+    size = default_conversion (size);
 
   if (!tree_fits_uhwi_p (size))
     {
@@ -8560,11 +8573,16 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
   /* Argument list specified.  Verify that each argument number references
      a pointer argument.  */
-  for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
+  for (attr_arg_num = 1; args; attr_arg_num++, args = TREE_CHAIN (args))
     {
       unsigned HOST_WIDE_INT arg_num = 0, ck_num;
 
-      if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
+      tree arg = TREE_VALUE (args);
+      if (arg && TREE_CODE (arg) != IDENTIFIER_NODE
+	  && TREE_CODE (arg) != FUNCTION_DECL)
+	arg = default_conversion (arg);
+
+      if (!get_nonnull_operand (arg, &arg_num))
 	{
 	  error ("nonnull argument has invalid operand number (argument %lu)",
 		 (unsigned long) attr_arg_num);

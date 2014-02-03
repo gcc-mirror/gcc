@@ -2241,7 +2241,7 @@ For instance,
 
 @smallexample
 void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
-void my_realloc(void*, size_t) __attribute__((alloc_size(2)))
+void* my_realloc(void*, size_t) __attribute__((alloc_size(2)))
 @end smallexample
 
 @noindent

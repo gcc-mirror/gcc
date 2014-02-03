@@ -1,3 +1,10 @@
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* tree.c (handle_init_priority_attribute): Call default_conversion on
+	the attribute argument.
+
 2014-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58871
