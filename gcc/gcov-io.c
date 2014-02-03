@@ -149,9 +149,15 @@ gcov_open (const char *name, int mode)
       /* pass mode (ignored) for compatibility */
       fd = open (name, O_RDONLY, S_IRUSR | S_IWUSR);
     }
-  else
+  else if (mode < 0)
+     {
+       /* Write mode - acquire a write-lock.  */
+       s_flock.l_type = F_WRLCK;
+      fd = open (name, O_RDWR | O_CREAT | O_TRUNC, 0666);
+    }
+  else /* mode == 0 */
     {
-      /* Write mode - acquire a write-lock.  */
+      /* Read-Write mode - acquire a write-lock.  */
       s_flock.l_type = F_WRLCK;
       fd = open (name, O_RDWR | O_CREAT, 0666);
     }
