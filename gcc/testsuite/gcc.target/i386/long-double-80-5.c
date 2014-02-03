@@ -8,3 +8,4 @@ foo (__float80 x)
 }
 
 /* { dg-final { scan-assembler "fldt" } } */
+/* { dg-final { scan-assembler-not "call\[\\t \]*_?__multf3" } } */

@@ -1,3 +1,33 @@
+2014-02-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/long-double-64-1.c: Verify __multf3 isn't used.
+	* gcc.target/i386/long-double-64-4.c: Likewise.
+	* gcc.target/i386/long-double-80-1.c: Likewise.
+	* gcc.target/i386/long-double-80-2.c: Likewise.
+	* gcc.target/i386/long-double-80-3.c: Likewise.
+	* gcc.target/i386/long-double-80-4.c: Likewise.
+	* gcc.target/i386/long-double-80-5.c: Likewise.
+	* gcc.target/i386/long-double-64-2.c: Limit to ia32.  Verify
+	__multf3 isn't used.
+	* gcc.target/i386/long-double-64-3.c: Likewise.
+	* gcc.target/i386/long-double-128-1.c: New test.
+	* gcc.target/i386/long-double-128-2.c: Likewise.
+	* gcc.target/i386/long-double-128-3.c: Likewise.
+	* gcc.target/i386/long-double-128-4.c: Likewise.
+	* gcc.target/i386/long-double-128-5.c: Likewise.
+	* gcc.target/i386/long-double-128-6.c: Likewise.
+	* gcc.target/i386/long-double-128-7.c: Likewise.
+	* gcc.target/i386/long-double-128-8.c: Likewise.
+	* gcc.target/i386/long-double-128-9.c: Likewise.
+	* gcc.target/i386/long-double-64-5.c: Likewise.
+	* gcc.target/i386/long-double-64-6.c: Likewise.
+	* gcc.target/i386/long-double-64-7.c: Likewise.
+	* gcc.target/i386/long-double-64-8.c: Likewise.
+	* gcc.target/i386/long-double-64-9.c: Likewise.
+	* gcc.target/i386/long-double-80-10.c: Likewise.
+	* gcc.target/i386/long-double-80-8.c: Likewise.
+	* gcc.target/i386/long-double-80-9.c: Likewise.
+
 2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/57662

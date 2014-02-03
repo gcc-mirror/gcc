@@ -1,5 +1,5 @@
-/* { dg-do compile { target { *-*-linux* && ia32 } } } */
-/* { dg-options "-O2 -mbionic" } */
+/* { dg-do compile { target *-*-linux* } } */
+/* { dg-options "-O2 -mlong-double-64 -mandroid" } */
 
 long double
 foo (long double x)

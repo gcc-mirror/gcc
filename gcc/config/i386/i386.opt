@@ -186,12 +186,16 @@ Target RejectNegative Report InverseMask(128BIT_LONG_DOUBLE) Save
 sizeof(long double) is 12
 
 mlong-double-80
-Target Report RejectNegative InverseMask(LONG_DOUBLE_64) Save
+Target Report RejectNegative Negative(mlong-double-64) InverseMask(LONG_DOUBLE_64) Save
 Use 80-bit long double
 
 mlong-double-64
-Target Report RejectNegative Mask(LONG_DOUBLE_64) Save
+Target Report RejectNegative Negative(mlong-double-128) Mask(LONG_DOUBLE_64) InverseMask(LONG_DOUBLE_128) Save
 Use 64-bit long double
+
+mlong-double-128
+Target Report RejectNegative Negative(mlong-double-80) Mask(LONG_DOUBLE_128) InverseMask(LONG_DOUBLE_64) Save
+Use 128-bit long double
 
 maccumulate-outgoing-args
 Target Report Mask(ACCUMULATE_OUTGOING_ARGS) Save

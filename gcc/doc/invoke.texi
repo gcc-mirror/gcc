@@ -674,7 +674,7 @@ Objective-C and Objective-C++ Dialects}.
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double -mlong-double-64 -mlong-double-80 @gol
+-m96bit-long-double -mlong-double-64 -mlong-double-80 -mlong-double-128 @gol
 -mregparm=@var{num}  -msseregparm @gol
 -mveclibabi=@var{type} -mvect8-ret-in-mem @gol
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
@@ -15053,11 +15053,15 @@ with code compiled without that switch.
 
 @item -mlong-double-64
 @itemx -mlong-double-80
+@itemx -mlong-double-128
 @opindex mlong-double-64
 @opindex mlong-double-80
+@opindex mlong-double-128
 These switches control the size of @code{long double} type. A size
 of 64 bits makes the @code{long double} type equivalent to the @code{double}
-type. This is the default for Bionic C library.
+type. This is the default for 32-bit Bionic C library.  A size
+of 128 bits makes the @code{long double} type equivalent to the
+@code{__float128} type. This is the default for 64-bit Bionic C library.
 
 @strong{Warning:} if you override the default value for your target ABI, this
 changes the size of
