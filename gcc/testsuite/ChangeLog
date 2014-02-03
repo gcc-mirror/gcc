@@ -1,6 +1,11 @@
 2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-23.C: New testcase.
+	* g++.dg/ipa/devirt-20.C: Fix template.
+
+2014-02-02  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-21.C: New testcase.
 
 2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
