@@ -1,3 +1,7 @@
+2014-01-31  Brooks Moses  <bmoses@google.com>
+
+	* gcc_update (files_and_dependencies): Add aarch64-tune.md.
+
 2014-01-29  Yury Gribov  <y.gribov@samsung.com>
 
 	* mklog: Improve support of context diffs.
