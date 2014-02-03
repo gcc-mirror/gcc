@@ -1,3 +1,7 @@
+2014-02-03  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* doc/invoke.texi: (fprofile-reorder-functions): Fix typo.
+
 2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/57662

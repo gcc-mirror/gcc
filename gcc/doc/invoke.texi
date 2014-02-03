@@ -9100,7 +9100,7 @@ from profiling values of expressions for usage in optimizations.
 
 Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 
-@item -fprofile-reoder-functions
+@item -fprofile-reorder-functions
 @opindex fprofile-reorder-functions
 Function reordering based on profile instrumentation collects
 first time of execution of a function and orders these functions
