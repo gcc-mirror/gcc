@@ -1,5 +1,24 @@
 2014-02-03  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (flag_opts): Add -mlong-double-128.
+	(ix86_option_override_internal): Default long double to 64-bit for
+	32-bit Bionic and to 128-bit for 64-bit Bionic.
+
+	* config/i386/i386.h (LONG_DOUBLE_TYPE_SIZE): Use 128 if
+	TARGET_LONG_DOUBLE_128 is true.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Likewise.
+
+	* config/i386/i386.opt (mlong-double-80): Negate -mlong-double-64.
+	(mlong-double-64): Negate -mlong-double-128.
+	(mlong-double-128): New option.
+
+	* config/i386/i386-c.c (ix86_target_macros): Define
+	__LONG_DOUBLE_128__ for TARGET_LONG_DOUBLE_128.
+
+	* doc/invoke.texi: Document -mlong-double-128.
+
+2014-02-03  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR rtl-optimization/60024
 	* sel-sched.c (init_regs_for_mode): Check if mode is OK first.
 

@@ -513,6 +513,9 @@ ix86_target_macros (void)
   if (TARGET_LONG_DOUBLE_64)
     cpp_define (parse_in, "__LONG_DOUBLE_64__");
 
+  if (TARGET_LONG_DOUBLE_128)
+    cpp_define (parse_in, "__LONG_DOUBLE_128__");
+
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_ACQUIRE=%d", IX86_HLE_ACQUIRE);
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_RELEASE=%d", IX86_HLE_RELEASE);
 

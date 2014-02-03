@@ -1,11 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mlong-double-64" } */
 
-long double
-foo (long double x)
+__float128
+foo (__float128 x)
 {
   return x * x;
 }
 
 /* { dg-final { scan-assembler-not "fldt" } } */
-/* { dg-final { scan-assembler-not "call\[\\t \]*_?__multf3" } } */
+/* { dg-final { scan-assembler "call\[\\t \]*_?__multf3" } } */
