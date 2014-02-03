@@ -1,3 +1,8 @@
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59831
+	* g++.dg/ipa/devirt-24.C: New testcase.
+
 2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53017

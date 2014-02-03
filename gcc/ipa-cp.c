@@ -1479,7 +1479,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   HOST_WIDE_INT token, anc_offset;
   tree otr_type;
   tree t;
-  tree target;
+  tree target = NULL;
 
   if (param_index == -1
       || known_vals.length () <= (unsigned int) param_index)
@@ -1527,14 +1527,53 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	return NULL_TREE;
     }
 
+  if (!flag_devirtualize)
+    return NULL_TREE;
+
   gcc_assert (!ie->indirect_info->agg_contents);
   token = ie->indirect_info->otr_token;
   anc_offset = ie->indirect_info->offset;
   otr_type = ie->indirect_info->otr_type;
 
-  t = known_vals[param_index];
+  t = NULL;
+
+  /* Try to work out value of virtual table pointer value in replacemnets.  */
+  if (!t && agg_reps && !ie->indirect_info->by_ref)
+    {
+      while (agg_reps)
+	{
+	  if (agg_reps->index == param_index
+	      && agg_reps->offset == ie->indirect_info->offset
+	      && agg_reps->by_ref)
+	    {
+	      t = agg_reps->value;
+	      break;
+	    }
+	  agg_reps = agg_reps->next;
+	}
+    }
+
+  /* Try to work out value of virtual table pointer value in known
+     aggregate values.  */
+  if (!t && known_aggs.length () > (unsigned int) param_index
+      && !ie->indirect_info->by_ref)
+    {
+       struct ipa_agg_jump_function *agg;
+       agg = known_aggs[param_index];
+       t = ipa_find_agg_cst_for_param (agg, ie->indirect_info->offset,
+				       true);
+    }
+
+  /* If we found the virtual table pointer, lookup the binfo.  */
+  if (t)
+    t = vtable_pointer_value_to_binfo (t);
+
+  /* Did we work out BINFO via type propagation?  */
   if (!t && known_binfos.length () > (unsigned int) param_index)
     t = known_binfos[param_index];
+  /* Or do we know the constant value of pointer?  */
+  if (!t)
+    t = known_vals[param_index];
   if (!t)
     return NULL_TREE;
 
