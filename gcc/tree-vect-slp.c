@@ -1103,8 +1103,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	  FOR_EACH_VEC_ELT (node->load_permutation, j, next)
 	    dump_printf (MSG_NOTE, "%d ", next);
 	else
-	  for (i = 0; i < group_size; ++i)
-	    dump_printf (MSG_NOTE, "%d ", i);
+	  for (k = 0; k < group_size; ++k)
+	    dump_printf (MSG_NOTE, "%d ", k);
       dump_printf (MSG_NOTE, "\n");
     }
 
