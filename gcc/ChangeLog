@@ -1,3 +1,7 @@
+2014-02-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-tables.opt: Regenerate.
+
 2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_le): Generalize
