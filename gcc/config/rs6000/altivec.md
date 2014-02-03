@@ -132,6 +132,7 @@
    UNSPEC_VMRGH_DIRECT
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
+   UNSPEC_VSUMSWS_DIRECT
 ])
 
 (define_c_enum "unspecv"
@@ -1601,6 +1602,27 @@
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUMSWS))
+   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
+   (clobber (match_scratch:V4SI 3 "=v"))]
+  "TARGET_ALTIVEC"
+{
+  if (BYTES_BIG_ENDIAN || VECTOR_ELT_ORDER_BIG)
+    return "vsumsws %0,%1,%2";
+  else
+    return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvspltw %0,%3,3";
+}
+  [(set_attr "type" "veccomplex")
+   (set (attr "length")
+     (if_then_else
+       (match_test "(BYTES_BIG_ENDIAN || VECTOR_ELT_ORDER_BIG)")
+       (const_string "4")
+       (const_string "12")))])
+
+(define_insn "altivec_vsumsws_direct"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
+                      (match_operand:V4SI 2 "register_operand" "v")]
+		     UNSPEC_VSUMSWS_DIRECT))
    (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "TARGET_ALTIVEC"
   "vsumsws %0,%1,%2"
@@ -2337,7 +2359,7 @@
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4s<VI_char>s (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws (dest, vtmp1, vzero));
+  emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
   DONE;
 })
 

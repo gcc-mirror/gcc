@@ -1,3 +1,8 @@
+2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/vsums.c: New.
+	* gcc.dg/vmx/vsums-be-order.c: New.
+
 2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirt-23.C: New testcase.
