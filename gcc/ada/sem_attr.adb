@@ -6014,10 +6014,11 @@ package body Sem_Attr is
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
 
-                  --  Record component entity in the given aggregate choice,
-                  --  for subsequent resolution.
+                  --  Record component entity and type in the given aggregate
+                  --  choice, for subsequent resolution.
 
                   Set_Entity (Comp, Comp_Or_Discr);
+                  Set_Etype  (Comp, Etype (Comp_Or_Discr));
                   exit;
                end if;
 
@@ -6148,7 +6149,16 @@ package body Sem_Attr is
                   end;
 
                elsif Is_Record_Type (P_Type) then
-                  Check_Component_Reference (Comp, P_Type);
+
+                  --  Make sure we have an identifier. Old SPARK allowed
+                  --  a component selection e.g. A.B in the corresponding
+                  --  context, but we do not yet permit this for 'Update.
+
+                  if Nkind (Comp) /= N_Identifier then
+                     Error_Msg_N ("name should be identifier or OTHERS", Comp);
+                  else
+                     Check_Component_Reference (Comp, P_Type);
+                  end if;
                end if;
 
                Next (Comp);

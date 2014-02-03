@@ -1243,6 +1243,22 @@ save_template_attributes (tree *attr_p, tree *decl_p)
     }
 }
 
+/* Return true iff ATTRS are acceptable attributes to be applied in-place
+   to a typedef which gives a previously anonymous class or enum a name for
+   linkage purposes.  */
+
+bool
+attributes_naming_typedef_ok (tree attrs)
+{
+  for (; attrs; attrs = TREE_CHAIN (attrs))
+    {
+      tree name = get_attribute_name (attrs);
+      if (is_attribute_p ("vector_size", name))
+	return false;
+    }
+  return true;
+}
+
 /* Like reconstruct_complex_type, but handle also template trees.  */
 
 tree
@@ -2933,7 +2949,7 @@ get_tls_init_fn (tree var)
       TREE_PUBLIC (fn) = TREE_PUBLIC (var);
       DECL_ARTIFICIAL (fn) = true;
       DECL_COMDAT (fn) = DECL_COMDAT (var);
-      DECL_EXTERNAL (fn) = true;
+      DECL_EXTERNAL (fn) = DECL_EXTERNAL (var);
       if (DECL_ONE_ONLY (var))
 	make_decl_one_only (fn, cxx_comdat_group (fn));
       if (TREE_PUBLIC (var))
@@ -4020,6 +4036,8 @@ handle_tls_init (void)
       if (TREE_PUBLIC (var))
 	{
           tree single_init_fn = get_tls_init_fn (var);
+	  if (single_init_fn == NULL_TREE)
+	    continue;
 	  cgraph_node *alias
 	    = cgraph_same_body_alias (cgraph_get_create_node (fn),
 				      single_init_fn, fn);

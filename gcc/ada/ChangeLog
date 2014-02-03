@@ -1,3 +1,187 @@
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting.
+
+2014-01-31  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Set_Command_Line): Take the switches
+	configuration from the Command_Line_Config.
+
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refinement_Clause): Guard against a malformed
+	refinement clause.
+
+2014-01-31  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add more documentation about others used as an
+	index in indexed attributes.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor update.
+	* gnat_rm.texi: Add example to Restriction_Warnings documentation.
+	* exp_util.adb: Minor reformatting.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Warn if the barrier
+	depends on data that is not private to the protected object,
+	and potentially modifiable in unsynchronized fashion.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Remove special case for
+	GNATprove_Mode.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* prj-attr.ads (First_Attribute_Of): Returns Empty_Attribute
+	for Unknown_Package.
+	* sem_ch6.adb, sem_attr.adb: Minor comment addition.
+
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Rewrite
+	the logic that generates a runtime check to determine the
+	controlled status of the object about to be allocated or
+	deallocated. Class-wide types now always use a runtime check
+	even if they appear as generic actuals.
+	(Find_Object): Detect
+	a special case that involves interface class-wide types because
+	the object appears as a complex expression.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): In Ada2012 mode, place
+	subprogram with an incomplete untagged formals on the list of
+	private dependents, to verify that the type is properly completed
+	in the private part.
+	* sem_attr.adb: Code clean up.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2014-01-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb (First_Attribute_Of): Return Unknown_Attribute
+	when Pkg is unknown.
+
+2014-01-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Resolve_Entity_Name): Comment
+	reformatting. Allow volatile objects in various generated checks.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): For a record
+	component association, set the etype of the identifier, for
+	SPARK use.
+
+2014-01-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Has_Visibility_Of_Subprogram): If type is not
+	declared in a package, not checks can apply to the subprogram.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Warnings are
+	controlled -gnatw.W.
+	* gnat_ugn.texi: Document new warnings controlled by -gnatw.w.
+	* opt.ads (Warn_On_Warnings_Off): Now controls more cases.
+
+2014-01-31  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_disp.adb: Update comments.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration,
+	Save_Global_References): Guard access to expression in aspect.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma/Pragma_SPARK_Mode):
+	Issue an error when the pragma is applied to a generic unit,
+	a generic declaration, or inside a generic.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Set SPARK_Mode on renaming
+	entity.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, s-tassta.adb, s-tposen.adb, s-tposen.ads: Minor
+	reformatting.
+
+2014-01-31  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_disp.adb: Add a historic note.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Useless_Assignments): Add call to
+	Process_Deferred_References.
+
+2014-01-31  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Validate_Specific_Warnings): Do not issue a message for
+	ineffective pragma Warnings(Off) in GNATprove_Mode.
+
+2014-01-31  Bob Duff  <duff@adacore.com>
+
+	* s-taskin.ads: Minor comment fix.
+	* s-tassta.adb (Abort_Dependents): Don't abort all dependents;
+	just direct dependents. If this is actually an abort, each task
+	will take care of aborting its dependents, so all dependents will
+	get aborted, as before. However, when this is called the second
+	time from Vulnerable_Complete_Master "for convenience" (i.e. to
+	kill off tasks waiting at terminate alternatives), aborting
+	indirect dependents is wrong, because it causes some unrelated
+	tasks to get aborted.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2014-01-31  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch2.adb: New calling sequence for Is_LHS.
+	* frontend.adb: Add call to Process_Deferred_References.
+	* lib-xref.ads, lib-xref.adb (Process_Deferred_References): New.
+	(Deferred_References): New table.
+	* sem_ch8.adb (Find_Direct_Name): Make deferred reference table
+	entries.
+	(Find_Expanded_Name): Ditto.
+	* sem_res.adb: New calling sequence for Is_LHS.
+	* sem_util.ads, sem_util.adb (Is_LHS): New calling sequence.
+	* sem_warn.adb: Call Process_Deferred_References before issuing
+	warnings.
+
+2014-01-31  Tristan Gingold  <gingold@adacore.com>
+
+	* exp_util.adb (Corresponding_Runtime_Package): Restrict the
+	use of System_Tasking_Protected_Objects_Single_Entry.
+	* exp_ch9.adb (Build_Simple_Entry_Call): Remove Mode parameter
+	of Protected_Single_Entry_Call.
+	(Expand_N_Timed_Entry_Call): Remove single_entry case.
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Body): Remove
+	single_entry case.
+	(Make_Disp_Timed_Select_Body): Likewise.
+	* rtsfind.ads (RE_Timed_Protected_Single_Entry_Call): Remove.
+	* s-tposen.adb (Send_Program_Error, PO_Do_Or_Queue): Remove
+	Self_Id parameter.
+	(Wakeup_Entry_Caller): Remove Self_ID and New_State parameters.
+	(Wait_For_Completion_With_Timeout): Remove.
+	(Protected_Single_Entry_Call): Remove Mode parameter
+	(always Simple_Call).
+	(Service_Entry): Remove Self_Id constant (not used anymore).
+	(Timed_Protected_Single_Entry_Call): Remove.
+	* s-tposen.ads (Timed_Protected_Single_Entry_Call): Remove.
+	(Protected_Single_Entry_Call): Remove Mode parameter.
+
 2014-01-29  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Get_Pragma): Handle the retrieval of pragma Refined_Post.

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler "kmovw\[ \\t\]+\[^\n\]*%k\[1-7\]" } } */
+/* { dg-final { scan-assembler "kmovw\[ \\t\]+\[^\n\]*%k\[0-7\]" } } */
 
 #include <immintrin.h>
 volatile __mmask16 k1;

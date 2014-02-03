@@ -1381,7 +1381,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 		    if (TYPE_PTR_P (t)
 			&& TYPE_NAME (TREE_TYPE (t))
-			&& DECL_NAME (TYPE_NAME (TREE_TYPE (t)))
+			&& TYPE_IDENTIFIER (TREE_TYPE (t))
 			   == get_identifier ("FILE")
 			&& compparms (TREE_CHAIN (t1), TREE_CHAIN (t2)))
 		      {
@@ -3213,7 +3213,7 @@ typename_hash (const void* k)
   const_tree const t = (const_tree) k;
 
   hash = (htab_hash_pointer (TYPE_CONTEXT (t))
-	  ^ htab_hash_pointer (DECL_NAME (TYPE_NAME (t))));
+	  ^ htab_hash_pointer (TYPE_IDENTIFIER (t)));
 
   return hash;
 }
@@ -3235,7 +3235,7 @@ typename_compare (const void * k1, const void * k2)
   const_tree const t1 = (const_tree) k1;
   const typename_info *const t2 = (const typename_info *) k2;
 
-  return (DECL_NAME (TYPE_NAME (t1)) == t2->name
+  return (TYPE_IDENTIFIER (t1) == t2->name
 	  && TYPE_CONTEXT (t1) == t2->scope
 	  && TYPENAME_TYPE_FULLNAME (t1) == t2->template_id
 	  && TYPENAME_IS_ENUM_P (t1) == t2->enum_p
@@ -10216,6 +10216,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_ANONYMOUS_P (type)
 	  && declspecs->type_definition_p
+	  && attributes_naming_typedef_ok (*attrlist)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
 	  tree t;

@@ -58,6 +58,16 @@ check_rough_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v,	\
 								\
   for (i = 0; i < ARRAY_SIZE (u.a); i++)			\
     {								\
+      /* We can have have v[i] == 0 == u.a[i]  for some i,	\
+         when we test zero-masking.  */				\
+      if (v[i] == 0.0 && u.a[i] == 0.0)				\
+	continue;						\
+      if (v[i] == 0.0 && u.a[i] != 0.0)				\
+	{							\
+	  err++;						\
+	  PRINTF ("%i: " FMT " != " FMT "\n",			\
+		  i, v[i], u.a[i]);				\
+	}							\
       VALUE_TYPE rel_err = (u.a[i] - v[i]) / v[i];		\
       if (((rel_err < 0) ? -rel_err : rel_err) > eps)		\
 	{							\

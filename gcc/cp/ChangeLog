@@ -1,3 +1,91 @@
+2014-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51219
+	* typeck2.c (process_init_constructor_record): Just skip unnamed
+	bit-fields.
+
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59469
+	* pt.c (mark_decl_instantiated): Call mark_needed.
+
+	PR c++/58672
+	* decl2.c (handle_tls_init): Handle null init fn.
+
+	PR c++/55800
+	* decl2.c (get_tls_init_fn): Copy DECL_EXTERNAL from the variable.
+
+2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59082
+	* class.c (build_vfield_ref): Early return error_mark_node if
+	TYPE_VFIELD (type) is null.
+	(build_base_path): Check return value of build_vfield_ref.
+
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59646
+	* call.c (convert_like_real) [ck_aggr]: Set TARGET_EXPR_LIST_INIT_P.
+	[ck_list]: Check for error_mark_node.
+	(build_aggr_conv): Set LOOKUP_NO_NARROWING and check_narrowing.
+
+	PR c++/57043
+	* pt.c (fn_type_unification): Don't do DEDUCE_EXACT check
+	during partial ordering.
+
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* typeck.c (build_function_call_vec): Add dummy arg_loc parameter.
+
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57899
+	* cp-tree.h (struct saved_scope): Add x_local_specializations.
+	(local_specializations): New macro.
+	* pt.c (local_specializations): Remove variable.
+
+2014-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR c++/58708
+	* parser.c (make_string_pack): Use double_int::from_buffer.
+
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* typeck.c (build_ptrmemfunc1): Call convert_and_check with
+	input_location.
+	* cvt.c (cp_convert_and_check): Call warnings_for_convert_and_check
+	with input_location.
+	* call.c (build_conditional_expr_1): Call unsafe_conversion_p with
+	loc parameter.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58843
+	* typeck.c (lookup_destructor): Check dtor_type for error_mark_node.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58649
+	* pt.c (lookup_template_class_1): Check start_enum return value
+	for error_mark_node.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls, typename_hash, typename_compare):
+	Use TYPE_IDENTIFIER.
+	* error.c (dump_type): Likewise.
+	* mangle.c (dump_substitution_candidates): Likewise.
+
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59633
+	* decl2.c (attributes_naming_typedef_ok): New.
+	* cp-tree.h: Declare it.
+	* decl.c (grokdeclarator): Check it.
+	* tree.c (no_linkage_check): Handle VECTOR_TYPE.
+
 2014-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59707

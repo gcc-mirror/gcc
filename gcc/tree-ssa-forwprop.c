@@ -2926,11 +2926,13 @@ associate_pointerplus (gimple_stmt_iterator *gsi)
   /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
   ptr = gimple_assign_rhs1 (stmt);
   off1 = gimple_assign_rhs2 (stmt);
-  if (TREE_CODE (ptr) != SSA_NAME)
+  if (TREE_CODE (ptr) != SSA_NAME
+      || !has_single_use (ptr))
     return false;
   def_stmt = SSA_NAME_DEF_STMT (ptr);
   if (!is_gimple_assign (def_stmt)
-      || gimple_assign_rhs_code (def_stmt) != POINTER_PLUS_EXPR)
+      || gimple_assign_rhs_code (def_stmt) != POINTER_PLUS_EXPR
+      || !can_propagate_from (def_stmt))
     return false;
   ptr = gimple_assign_rhs1 (def_stmt);
   off2 = gimple_assign_rhs2 (def_stmt);

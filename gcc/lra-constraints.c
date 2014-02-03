@@ -1293,11 +1293,8 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
     {
       enum reg_class rclass;
 
-      if (REG_P (reg)
-	  && curr_insn_set != NULL_RTX
-	  && (REG_P (SET_SRC (curr_insn_set))
-	      || GET_CODE (SET_SRC (curr_insn_set)) == SUBREG))
-	/* There is big probability that we will get the same class
+      if (REG_P (reg))
+	/* There is a big probability that we will get the same class
 	   for the new pseudo and we will get the same insn which
 	   means infinite looping.  So spill the new pseudo.  */
 	rclass = NO_REGS;
@@ -2181,7 +2178,11 @@ process_alt_operands (int only_alternative)
 						  (operand_reg[nop])]
 				     .last_reload);
 
-		  if (last_reload > bb_reload_num)
+		  /* The value of reload_sum has sense only if we
+		     process insns in their order.  It happens only on
+		     the first constraints sub-pass when we do most of
+		     reload work.  */
+		  if (lra_constraint_iter == 1 && last_reload > bb_reload_num)
 		    reload_sum += last_reload - bb_reload_num;
 		}
 	      /* If this is a constant that is reloaded into the

@@ -469,7 +469,7 @@ upc_grok_layout_qualifier (location_t loc, const enum tree_code decl_kind,
     }
 
   if (TREE_OVERFLOW_P (block_factor)
-      || tree_to_uhwi (block_factor) > UPC_MAX_BLOCK_SIZE)
+      || tree_to_shwi (block_factor) > UPC_MAX_BLOCK_SIZE)
     {
       error_at (loc, "the maximum UPC block size in this implementation "
                      "is %ld", (long int) UPC_MAX_BLOCK_SIZE);

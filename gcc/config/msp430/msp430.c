@@ -1429,6 +1429,9 @@ msp430_expand_epilogue (int is_eh)
 
   emit_insn (gen_epilogue_start_marker ());
 
+  if (cfun->decl && strcmp (IDENTIFIER_POINTER (DECL_NAME (cfun->decl)), "main") == 0)
+    emit_insn (gen_msp430_refsym_need_exit ());
+
   if (is_wakeup_func ())
     /* Clear the SCG1, SCG0, OSCOFF and CPUOFF bits in the saved copy of the
        status register current residing on the stack.  When this function

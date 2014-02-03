@@ -275,11 +275,26 @@ enum mips_builtin_type {
 enum mips_fp_condition {
   MIPS_FP_CONDITIONS (DECLARE_MIPS_COND)
 };
+#undef DECLARE_MIPS_COND
 
 /* Index X provides the string representation of MIPS_FP_COND_<X>.  */
 #define STRINGIFY(X) #X
 static const char *const mips_fp_conditions[] = {
   MIPS_FP_CONDITIONS (STRINGIFY)
+};
+#undef STRINGIFY
+
+/* A class used to control a comdat-style stub that we output in each
+   translation unit that needs it.  */
+class mips_one_only_stub {
+public:
+  virtual ~mips_one_only_stub () {}
+
+  /* Return the name of the stub.  */
+  virtual const char *get_name () = 0;
+
+  /* Output the body of the function to asm_out_file.  */
+  virtual void output_body () = 0;
 };
 
 /* Tuning information that is automatically derived from other sources
@@ -626,8 +641,10 @@ struct target_globals *mips16_globals;
    and returned from mips_sched_reorder2.  */
 static int cached_can_issue_more;
 
-/* True if the output uses __mips16_rdhwr.  */
-static bool mips_need_mips16_rdhwr_p;
+/* The stubs for various MIPS16 support functions, if used.   */
+static mips_one_only_stub *mips16_rdhwr_stub;
+static mips_one_only_stub *mips16_get_fcsr_stub;
+static mips_one_only_stub *mips16_set_fcsr_stub;
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
@@ -1605,6 +1622,87 @@ mips16_stub_function (const char *name)
   x = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
   SYMBOL_REF_FLAGS (x) |= (SYMBOL_FLAG_EXTERNAL | SYMBOL_FLAG_FUNCTION);
   return x;
+}
+
+/* Return a legitimate call address for STUB, given that STUB is a MIPS16
+   support function.  */
+
+static rtx
+mips16_stub_call_address (mips_one_only_stub *stub)
+{
+  rtx fn = mips16_stub_function (stub->get_name ());
+  SYMBOL_REF_FLAGS (fn) |= SYMBOL_FLAG_LOCAL;
+  if (!call_insn_operand (fn, VOIDmode))
+    fn = force_reg (Pmode, fn);
+  return fn;
+}
+
+/* A stub for moving the thread pointer into TLS_GET_TP_REGNUM.  */
+
+class mips16_rdhwr_one_only_stub : public mips_one_only_stub
+{
+  virtual const char *get_name ();
+  virtual void output_body ();
+};
+
+const char *
+mips16_rdhwr_one_only_stub::get_name ()
+{
+  return "__mips16_rdhwr";
+}
+
+void
+mips16_rdhwr_one_only_stub::output_body ()
+{
+  fprintf (asm_out_file,
+	   "\t.set\tpush\n"
+	   "\t.set\tmips32r2\n"
+	   "\t.set\tnoreorder\n"
+	   "\trdhwr\t$3,$29\n"
+	   "\t.set\tpop\n"
+	   "\tj\t$31\n");
+}
+
+/* A stub for moving the FCSR into GET_FCSR_REGNUM.  */
+class mips16_get_fcsr_one_only_stub : public mips_one_only_stub
+{
+  virtual const char *get_name ();
+  virtual void output_body ();
+};
+
+const char *
+mips16_get_fcsr_one_only_stub::get_name ()
+{
+  return "__mips16_get_fcsr";
+}
+
+void
+mips16_get_fcsr_one_only_stub::output_body ()
+{
+  fprintf (asm_out_file,
+	   "\tcfc1\t%s,$31\n"
+	   "\tj\t$31\n", reg_names[GET_FCSR_REGNUM]);
+}
+
+/* A stub for moving SET_FCSR_REGNUM into the FCSR.  */
+class mips16_set_fcsr_one_only_stub : public mips_one_only_stub
+{
+  virtual const char *get_name ();
+  virtual void output_body ();
+};
+
+const char *
+mips16_set_fcsr_one_only_stub::get_name ()
+{
+  return "__mips16_set_fcsr";
+}
+
+void
+mips16_set_fcsr_one_only_stub::output_body ()
+{
+  fprintf (asm_out_file,
+	   "\tctc1\t%s,$31\n"
+	   "\tj\t$31\n", reg_names[SET_FCSR_REGNUM]);
 }
 
 /* Return true if symbols of type TYPE require a GOT access.  */
@@ -3070,11 +3168,9 @@ mips_expand_thread_pointer (rtx tp)
 
   if (TARGET_MIPS16)
     {
-      mips_need_mips16_rdhwr_p = true;
-      fn = mips16_stub_function ("__mips16_rdhwr");
-      SYMBOL_REF_FLAGS (fn) |= SYMBOL_FLAG_LOCAL;
-      if (!call_insn_operand (fn, VOIDmode))
-	fn = force_reg (Pmode, fn);
+      if (!mips16_rdhwr_stub)
+	mips16_rdhwr_stub = new mips16_rdhwr_one_only_stub ();
+      fn = mips16_stub_call_address (mips16_rdhwr_stub);
       emit_insn (PMODE_INSN (gen_tls_get_tp_mips16, (tp, fn)));
     }
   else
@@ -3165,6 +3261,31 @@ mips_legitimize_tls_address (rtx loc)
       gcc_unreachable ();
     }
   return dest;
+}
+
+/* Implement "TARGET = __builtin_mips_get_fcsr ()" for MIPS16,
+   using a stub.  */
+
+void
+mips16_expand_get_fcsr (rtx target)
+{
+  if (!mips16_get_fcsr_stub)
+    mips16_get_fcsr_stub = new mips16_get_fcsr_one_only_stub ();
+  rtx fn = mips16_stub_call_address (mips16_get_fcsr_stub);
+  emit_insn (PMODE_INSN (gen_mips_get_fcsr_mips16, (fn)));
+  emit_move_insn (target, gen_rtx_REG (SImode, GET_FCSR_REGNUM));
+}
+
+/* Implement __builtin_mips_set_fcsr (TARGET) for MIPS16, using a stub.  */
+
+void
+mips16_expand_set_fcsr (rtx newval)
+{
+  if (!mips16_set_fcsr_stub)
+    mips16_set_fcsr_stub = new mips16_set_fcsr_one_only_stub ();
+  rtx fn = mips16_stub_call_address (mips16_set_fcsr_stub);
+  emit_move_insn (gen_rtx_REG (SImode, SET_FCSR_REGNUM), newval);
+  emit_insn (PMODE_INSN (gen_mips_set_fcsr_mips16, (fn)));
 }
 
 /* If X is not a valid address for mode MODE, force it into a register.  */
@@ -6204,25 +6325,24 @@ mips_end_function_definition (const char *name)
       fputs ("\n", asm_out_file);
     }
 }
-
-/* Output a definition of the __mips16_rdhwr function.  */
+
+/* If *STUB_PTR points to a stub, output a comdat-style definition for it,
+   then free *STUB_PTR.  */
 
 static void
-mips_output_mips16_rdhwr (void)
+mips_finish_stub (mips_one_only_stub **stub_ptr)
 {
-  const char *name;
+  mips_one_only_stub *stub = *stub_ptr;
+  if (!stub)
+    return;
 
-  name = "__mips16_rdhwr";
+  const char *name = stub->get_name ();
   mips_start_unique_function (name);
   mips_start_function_definition (name, false);
-  fprintf (asm_out_file,
-	   "\t.set\tpush\n"
-	   "\t.set\tmips32r2\n"
-	   "\t.set\tnoreorder\n"
-	   "\trdhwr\t$3,$29\n"
-	   "\t.set\tpop\n"
-	   "\tj\t$31\n");
+  stub->output_body ();
   mips_end_function_definition (name);
+  delete stub;
+  *stub_ptr = 0;
 }
 
 /* Return true if calls to X can use R_MIPS_CALL* relocations.  */
@@ -8906,8 +9026,9 @@ mips_file_start (void)
 static void
 mips_code_end (void)
 {
-  if (mips_need_mips16_rdhwr_p)
-    mips_output_mips16_rdhwr ();
+  mips_finish_stub (&mips16_rdhwr_stub);
+  mips_finish_stub (&mips16_get_fcsr_stub);
+  mips_finish_stub (&mips16_set_fcsr_stub);
 }
 
 /* Make the last instruction frame-related and note that it performs
@@ -13599,9 +13720,12 @@ mips_prefetch_cookie (rtx write, rtx locality)
 /* Flags that indicate when a built-in function is available.
 
    BUILTIN_AVAIL_NON_MIPS16
-	The function is available on the current target, but only
-	in non-MIPS16 mode.  */
+	The function is available on the current target if !TARGET_MIPS16.
+
+   BUILTIN_AVAIL_MIPS16
+	The function is available on the current target if TARGET_MIPS16.  */
 #define BUILTIN_AVAIL_NON_MIPS16 1
+#define BUILTIN_AVAIL_MIPS16 2
 
 /* Declare an availability predicate for built-in functions that
    require non-MIPS16 mode and also require COND to be true.
@@ -13611,6 +13735,16 @@ mips_prefetch_cookie (rtx write, rtx locality)
  mips_builtin_avail_##NAME (void)					\
  {									\
    return (COND) ? BUILTIN_AVAIL_NON_MIPS16 : 0;			\
+ }
+
+/* Declare an availability predicate for built-in functions that
+   support both MIPS16 and non-MIPS16 code and also require COND
+   to be true.  NAME is the main part of the predicate's name.  */
+#define AVAIL_ALL(NAME, COND)						\
+ static unsigned int							\
+ mips_builtin_avail_##NAME (void)					\
+ {									\
+   return (COND) ? BUILTIN_AVAIL_NON_MIPS16 | BUILTIN_AVAIL_MIPS16 : 0;	\
  }
 
 /* This structure describes a single built-in function.  */
@@ -13635,6 +13769,7 @@ struct mips_builtin_description {
   unsigned int (*avail) (void);
 };
 
+AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 AVAIL_NON_MIPS16 (paired_single, TARGET_PAIRED_SINGLE_FLOAT)
 AVAIL_NON_MIPS16 (sb1_paired_single, TARGET_SB1 && TARGET_PAIRED_SINGLE_FLOAT)
 AVAIL_NON_MIPS16 (mips3d, TARGET_MIPS3D)
@@ -13802,6 +13937,11 @@ AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 #define CODE_FOR_loongson_psubusb CODE_FOR_ussubv8qi3
 
 static const struct mips_builtin_description mips_builtins[] = {
+#define MIPS_GET_FCSR 0
+  DIRECT_BUILTIN (get_fcsr, MIPS_USI_FTYPE_VOID, hard_float),
+#define MIPS_SET_FCSR 1
+  DIRECT_NO_TARGET_BUILTIN (set_fcsr, MIPS_VOID_FTYPE_USI, hard_float),
+
   DIRECT_BUILTIN (pll_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
   DIRECT_BUILTIN (pul_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
   DIRECT_BUILTIN (plu_ps, MIPS_V2SF_FTYPE_V2SF_V2SF, paired_single),
@@ -14451,7 +14591,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   d = &mips_builtins[fcode];
   avail = d->avail ();
   gcc_assert (avail != 0);
-  if (TARGET_MIPS16)
+  if (TARGET_MIPS16 && !(avail & BUILTIN_AVAIL_MIPS16))
     {
       error ("built-in function %qE not supported for MIPS16",
 	     DECL_NAME (fndecl));
@@ -18705,6 +18845,49 @@ mips_case_values_threshold (void)
   else
     return default_case_values_threshold ();
 }
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+mips_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  if (!TARGET_HARD_FLOAT_ABI)
+    return;
+  tree exceptions_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree fcsr_orig_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree fcsr_mod_var = create_tmp_var (MIPS_ATYPE_USI, NULL);
+  tree get_fcsr = mips_builtin_decls[MIPS_GET_FCSR];
+  tree set_fcsr = mips_builtin_decls[MIPS_SET_FCSR];
+  tree get_fcsr_hold_call = build_call_expr (get_fcsr, 0);
+  tree hold_assign_orig = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+				  fcsr_orig_var, get_fcsr_hold_call);
+  tree hold_mod_val = build2 (BIT_AND_EXPR, MIPS_ATYPE_USI, fcsr_orig_var,
+			      build_int_cst (MIPS_ATYPE_USI, 0xfffff003));
+  tree hold_assign_mod = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+				 fcsr_mod_var, hold_mod_val);
+  tree set_fcsr_hold_call = build_call_expr (set_fcsr, 1, fcsr_mod_var);
+  tree hold_all = build2 (COMPOUND_EXPR, MIPS_ATYPE_USI,
+			  hold_assign_orig, hold_assign_mod);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, hold_all,
+		  set_fcsr_hold_call);
+
+  *clear = build_call_expr (set_fcsr, 1, fcsr_mod_var);
+
+  tree get_fcsr_update_call = build_call_expr (get_fcsr, 0);
+  *update = build2 (MODIFY_EXPR, MIPS_ATYPE_USI,
+		    exceptions_var, get_fcsr_update_call);
+  tree set_fcsr_update_call = build_call_expr (set_fcsr, 1, fcsr_orig_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    set_fcsr_update_call);
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  tree int_exceptions_var = fold_convert (integer_type_node,
+					  exceptions_var);
+  tree atomic_feraiseexcept_call = build_call_expr (atomic_feraiseexcept,
+						    1, int_exceptions_var);
+  *update = build2 (COMPOUND_EXPR, void_type_node, *update,
+		    atomic_feraiseexcept_call);
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -18938,6 +19121,9 @@ mips_case_values_threshold (void)
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD mips_case_values_threshold
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV mips_atomic_assign_expand_fenv
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

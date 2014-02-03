@@ -6350,7 +6350,13 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       /* Returns a reference to the scalar evaluated outside the loop
 	 for this case.  */
       gfc_conv_expr (se, expr);
-      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+
+      if (expr->ts.type == BT_CHARACTER
+	  && expr->expr_type != EXPR_FUNCTION)
+	gfc_conv_string_parameter (se);
+      else
+	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+
       return;
     }
 

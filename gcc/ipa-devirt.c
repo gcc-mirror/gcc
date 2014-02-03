@@ -972,6 +972,70 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
   return get_class_context (&context, otr_type);
 }
 
+/* Lookup base of BINFO that has virtual table VTABLE with OFFSET.  */
+
+static tree
+subbinfo_with_vtable_at_offset (tree binfo, tree offset, tree vtable)
+{
+  tree v = BINFO_VTABLE (binfo);
+  int i;
+  tree base_binfo;
+
+  gcc_assert (!v || TREE_CODE (v) == POINTER_PLUS_EXPR);
+  
+  if (v && tree_int_cst_equal (TREE_OPERAND (v, 1), offset)
+      && TREE_OPERAND (TREE_OPERAND (v, 0), 0) == vtable)
+    return binfo;
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (polymorphic_type_binfo_p (base_binfo))
+      {
+	base_binfo = subbinfo_with_vtable_at_offset (base_binfo, offset, vtable);
+	if (base_binfo)
+	  return base_binfo;
+      }
+  return NULL;
+}
+
+/* T is known constant value of virtual table pointer.  Return BINFO of the
+   instance type.  */
+
+tree
+vtable_pointer_value_to_binfo (tree t)
+{
+  /* We expect &MEM[(void *)&virtual_table + 16B].
+     We obtain object's BINFO from the context of the virtual table. 
+     This one contains pointer to virtual table represented via
+     POINTER_PLUS_EXPR.  Verify that this pointer match to what
+     we propagated through.
+
+     In the case of virtual inheritance, the virtual tables may
+     be nested, i.e. the offset may be different from 16 and we may
+     need to dive into the type representation.  */
+  if (t && TREE_CODE (t) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 0)) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST
+      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 0))
+	  == VAR_DECL)
+      && DECL_VIRTUAL_P (TREE_OPERAND (TREE_OPERAND
+					 (TREE_OPERAND (t, 0), 0), 0)))
+    {
+      tree vtable = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 0);
+      tree offset = TREE_OPERAND (TREE_OPERAND (t, 0), 1);
+      tree binfo = TYPE_BINFO (DECL_CONTEXT (vtable));
+
+      binfo = subbinfo_with_vtable_at_offset (binfo, offset, vtable);
+
+      /* FIXME: for stores of construction vtables we return NULL,
+	 because we do not have BINFO for those. Eventually we should fix
+	 our representation to allow this case to be handled, too.
+	 In the case we see store of BINFO we however may assume
+	 that standard folding will be ale to cope with it.  */
+      return binfo;
+    }
+  return NULL;
+}
+
 /* Given REF call in FNDECL, determine class of the polymorphic
    call (OTR_TYPE), its token (OTR_TOKEN) and CONTEXT.
    Return pointer to object described by the context  */

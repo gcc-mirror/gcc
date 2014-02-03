@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>

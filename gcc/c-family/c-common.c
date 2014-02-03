@@ -2558,23 +2558,24 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
   return result_type;
 }
 
-/* Checks if expression EXPR of real/integer type cannot be converted 
+/* Checks if expression EXPR of real/integer type cannot be converted
    to the real/integer type TYPE. Function returns non-zero when:
-	* EXPR is a constant which cannot be exactly converted to TYPE 
-	* EXPR is not a constant and size of EXPR's type > than size of TYPE, 
+	* EXPR is a constant which cannot be exactly converted to TYPE.
+	* EXPR is not a constant and size of EXPR's type > than size of TYPE,
 	  for EXPR type and TYPE being both integers or both real.
-	* EXPR is not a constant of real type and TYPE is an integer.  
-	* EXPR is not a constant of integer type which cannot be 
-	  exactly converted to real type.  
+	* EXPR is not a constant of real type and TYPE is an integer.
+	* EXPR is not a constant of integer type which cannot be
+	  exactly converted to real type.
    Function allows conversions between types of different signedness and
    can return SAFE_CONVERSION (zero) in that case.  Function can produce
    signedness warnings if PRODUCE_WARNS is true.  */
+
 enum conversion_safety
-unsafe_conversion_p (tree type, tree expr, bool produce_warns)
+unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 {
   enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
@@ -2737,10 +2738,9 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
    This is a helper function for warnings_for_convert_and_check.  */
 
 static void
-conversion_warning (tree type, tree expr)
+conversion_warning (location_t loc, tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
   enum conversion_safety conversion_kind;
 
   if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
@@ -2770,7 +2770,7 @@ conversion_warning (tree type, tree expr)
 
     case REAL_CST:
     case INTEGER_CST:
-      conversion_kind = unsafe_conversion_p (type, expr, true);
+      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
       if (conversion_kind == UNSAFE_REAL)
 	warning_at (loc, OPT_Wfloat_conversion,
 		    "conversion to %qT alters %qT constant value",
@@ -2788,13 +2788,13 @@ conversion_warning (tree type, tree expr)
         tree op1 = TREE_OPERAND (expr, 1);
         tree op2 = TREE_OPERAND (expr, 2);
         
-        conversion_warning (type, op1);
-        conversion_warning (type, op2);
+        conversion_warning (loc, type, op1);
+        conversion_warning (loc, type, op2);
         return;
       }
 
     default: /* 'expr' is not a constant.  */
-      conversion_kind = unsafe_conversion_p (type, expr, true);
+      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
       if (conversion_kind == UNSAFE_REAL)
 	warning_at (loc, OPT_Wfloat_conversion,
 		    "conversion to %qT from %qT may alter its value",
@@ -2811,9 +2811,10 @@ conversion_warning (tree type, tree expr)
    convert_and_check and cp_convert_and_check.  */
 
 void
-warnings_for_convert_and_check (tree type, tree expr, tree result)
+warnings_for_convert_and_check (location_t loc, tree type, tree expr,
+				tree result)
 {
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -2833,10 +2834,10 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
             warning_at (loc, OPT_Woverflow,
 			"large integer implicitly truncated to unsigned type");
           else
-            conversion_warning (type, expr);
+            conversion_warning (loc, type, expr);
         }
       else if (!int_fits_type_p (expr, c_common_unsigned_type (type)))
-	warning (OPT_Woverflow,
+	warning_at (loc, OPT_Woverflow,
 		 "overflow in implicit constant conversion");
       /* No warning for converting 0x80000000 to int.  */
       else if (pedantic
@@ -2847,14 +2848,14 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
 		    "overflow in implicit constant conversion");
 
       else
-	conversion_warning (type, expr);
+	conversion_warning (loc, type, expr);
     }
   else if ((TREE_CODE (result) == INTEGER_CST
 	    || TREE_CODE (result) == FIXED_CST) && TREE_OVERFLOW (result))
     warning_at (loc, OPT_Woverflow,
 		"overflow in implicit constant conversion");
   else
-    conversion_warning (type, expr);
+    conversion_warning (loc, type, expr);
 }
 
 
@@ -2863,7 +2864,7 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
    i.e. because of language rules and not because of an explicit cast.  */
 
 tree
-convert_and_check (tree type, tree expr)
+convert_and_check (location_t loc, tree type, tree expr)
 {
   tree result;
   tree expr_for_warning;
@@ -2890,7 +2891,7 @@ convert_and_check (tree type, tree expr)
   if (c_inhibit_evaluation_warnings == 0
       && !TREE_OVERFLOW_P (expr)
       && result != error_mark_node)
-    warnings_for_convert_and_check (type, expr_for_warning, result);
+    warnings_for_convert_and_check (loc, type, expr_for_warning, result);
 
   return result;
 }
@@ -6071,14 +6072,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   if (low_value)
     {
       low_value = check_case_value (low_value);
-      low_value = convert_and_check (type, low_value);
+      low_value = convert_and_check (loc, type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
   if (high_value)
     {
       high_value = check_case_value (high_value);
-      high_value = convert_and_check (type, high_value);
+      high_value = convert_and_check (loc, type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
     }
@@ -10495,7 +10496,7 @@ add_atomic_size_parameter (unsigned n, location_t loc, tree function,
       vec_alloc (v, len + 1);
       for (z = 0; z < len; z++)
 	v->quick_push ((*params)[z]);
-      f = build_function_call_vec (loc, function, v, NULL);
+      f = build_function_call_vec (loc, vNULL, function, v, NULL);
       vec_free (v);
       return f;
     }
@@ -10926,7 +10927,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  return error_mark_node;
 
 	first_param = (*params)[0];
-	result = build_function_call_vec (loc, new_function, params, NULL);
+	result = build_function_call_vec (loc, vNULL, new_function, params,
+					  NULL);
 	if (result == error_mark_node)
 	  return result;
 	if (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
@@ -11841,7 +11843,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -11891,7 +11893,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -11906,7 +11908,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "

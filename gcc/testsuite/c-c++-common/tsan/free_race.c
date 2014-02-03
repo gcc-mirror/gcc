@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-shouldfail "tsan" } */
 
 #include <stdlib.h>

@@ -140,8 +140,16 @@ microblaze*-*-*)
 	cpu_type=microblaze
 	;;
 mips*-*-*)
+	# All MIPS targets provide a full set of FP routines.
 	cpu_type=mips
-	tmake_file=mips/t-mips
+	tmake_file="mips/t-mips t-softfp-sfdf"
+	if test "${ac_cv_sizeof_long_double}" = 16; then
+		tmake_file="${tmake_file} mips/t-softfp-tf"
+	fi
+	if test "${host_address}" = 64; then
+		tmake_file="${tmake_file} mips/t-mips64"
+	fi
+	tmake_file="${tmake_file} t-softfp"
 	;;
 nds32*-*)
 	cpu_type=nds32
@@ -776,9 +784,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	    ;;
 	esac
 	md_unwind_header=mips/linux-unwind.h
-	if test "${ac_cv_sizeof_long_double}" = 16; then
-		tmake_file="${tmake_file} mips/t-tpbit"
-	fi
 	;;
 mips*-sde-elf*)
 	tmake_file="$tmake_file mips/t-crtstuff mips/t-mips16"

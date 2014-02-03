@@ -2544,7 +2544,8 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
       if (parent && !comp)
 	break;
 
-      actual = actual->next;
+      if (actual)
+	actual = actual->next;
     }
 
   if (!build_actual_constructor (&comp_head, &ctor_head, sym))

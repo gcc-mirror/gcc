@@ -788,7 +788,8 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern void c_common_init_ts (void);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern enum conversion_safety unsafe_conversion_p (tree, tree, bool);
+extern enum conversion_safety unsafe_conversion_p (location_t, tree, tree,
+						   bool);
 extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *);
 extern tree decl_constant_value_for_optimization (tree);
@@ -808,8 +809,8 @@ extern bool strict_aliasing_warning (tree, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,
 					      bool (*) (tree, tree));
-extern void warnings_for_convert_and_check (tree, tree, tree);
-extern tree convert_and_check (tree, tree);
+extern void warnings_for_convert_and_check (location_t, tree, tree, tree);
+extern tree convert_and_check (location_t, tree, tree);
 extern void overflow_warning (location_t, tree);
 extern bool warn_if_unused_value (const_tree, location_t);
 extern void warn_logical_operator (location_t, enum tree_code, tree,
@@ -951,8 +952,8 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree);
 
 extern tree build_function_call (location_t, tree, tree);
 
-extern tree build_function_call_vec (location_t, tree, vec<tree, va_gc> *,
-				     vec<tree, va_gc> *);
+extern tree build_function_call_vec (location_t, vec<location_t>, tree,
+				     vec<tree, va_gc> *, vec<tree, va_gc> *);
 
 extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
 

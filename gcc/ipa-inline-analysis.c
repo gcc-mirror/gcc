@@ -189,7 +189,7 @@ false_predicate (void)
 }
 
 
-/* Return true if P is (false).  */
+/* Return true if P is (true).  */
 
 static inline bool
 true_predicate_p (struct predicate *p)

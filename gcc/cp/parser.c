@@ -3808,7 +3808,8 @@ make_string_pack (tree value)
 {
   tree charvec;
   tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
-  const char *str = TREE_STRING_POINTER (value);
+  const unsigned char *str
+    = (const unsigned char *) TREE_STRING_POINTER (value);
   int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value))));
   int len = TREE_STRING_LENGTH (value) / sz - 1;
   tree argvec = make_tree_vec (2);
@@ -3821,23 +3822,10 @@ make_string_pack (tree value)
 
   /* Fill in CHARVEC with all of the parameters.  */
   charvec = make_tree_vec (len);
-  if (sz == 1)
-    {
-      for (int i = 0; i < len; ++i)
-	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, str[i]);
-    }
-  else if (sz == 2)
-    {
-      const uint16_t *num = (const uint16_t *)str;
-      for (int i = 0; i < len; ++i)
-	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, num[i]);
-    }
-  else if (sz == 4)
-    {
-      const uint32_t *num = (const uint32_t *)str;
-      for (int i = 0; i < len; ++i)
-	TREE_VEC_ELT (charvec, i) = build_int_cst (str_char_type_node, num[i]);
-    }
+  for (int i = 0; i < len; ++i)
+    TREE_VEC_ELT (charvec, i)
+      = double_int_to_tree (str_char_type_node,
+			    double_int::from_buffer (str + i * sz, sz));
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, charvec);
@@ -14824,25 +14812,7 @@ cp_parser_nonclass_name (cp_parser* parser)
   /* Look up the type-name.  */
   type_decl = cp_parser_lookup_name_simple (parser, identifier, token->location);
 
-  if (TREE_CODE (type_decl) == USING_DECL)
-    {
-      if (!DECL_DEPENDENT_P (type_decl))
-	type_decl = strip_using_decl (type_decl);
-      else if (USING_DECL_TYPENAME_P (type_decl))
-	{
-	  /* We have found a type introduced by a using
-	     declaration at class scope that refers to a dependent
-	     type.
-	     
-	     using typename :: [opt] nested-name-specifier unqualified-id ;
-	  */
-	  type_decl = make_typename_type (TREE_TYPE (type_decl),
-					  DECL_NAME (type_decl),
-					  typename_type, tf_error);
-	  if (type_decl != error_mark_node)
-	    type_decl = TYPE_NAME (type_decl);
-	}
-    }
+  type_decl = strip_using_decl (type_decl);
   
   if (TREE_CODE (type_decl) != TYPE_DECL
       && (objc_is_id (identifier) || objc_is_class_name (identifier)))

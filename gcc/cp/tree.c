@@ -2170,6 +2170,7 @@ no_linkage_check (tree t, bool relaxed_p)
     case ARRAY_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+    case VECTOR_TYPE:
       return no_linkage_check (TREE_TYPE (t), relaxed_p);
 
     case OFFSET_TYPE:

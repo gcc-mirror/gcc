@@ -78,11 +78,6 @@ static GTY(()) tree saved_access_scope;
    to the EXPR_STMT that is its result.  */
 static tree cur_stmt_expr;
 
-/* A map from local variable declarations in the body of the template
-   presently being instantiated to the corresponding instantiated
-   local variables.  */
-static struct pointer_map_t *local_specializations;
-
 /* True if we've recursed into fn_type_unification too many times.  */
 static bool excessive_deduction_depth;
 
@@ -7521,6 +7516,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 			      tsubst (ENUM_UNDERLYING_TYPE (template_type),
 				      arglist, complain, in_decl),
 			      SCOPED_ENUM_P (template_type), NULL);
+
+	      if (t == error_mark_node)
+		return t;
 	    }
 	  else
             {
@@ -15742,8 +15740,11 @@ fn_type_unification (tree fn,
 
   /* If we're looking for an exact match, check that what we got
      is indeed an exact match.  It might not be if some template
-     parameters are used in non-deduced contexts.  */
-  if (strict == DEDUCE_EXACT)
+     parameters are used in non-deduced contexts.  But don't check
+     for an exact match if we have dependent template arguments;
+     in that case we're doing partial ordering, and we already know
+     that we have two candidates that will provide the actual type.  */
+  if (strict == DEDUCE_EXACT && !any_dependent_template_arguments_p (targs))
     {
       tree substed = TREE_TYPE (decl);
       unsigned int i;
@@ -17966,6 +17967,7 @@ mark_decl_instantiated (tree result, int extern_p)
   else
     {
       mark_definable (result);
+      mark_needed (result);
       /* Always make artificials weak.  */
       if (DECL_ARTIFICIAL (result) && flag_weak)
 	comdat_linkage (result);

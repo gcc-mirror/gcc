@@ -279,9 +279,11 @@ AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
   [libgcc_cv_cfi=yes],
   [libgcc_cv_cfi=no])])
 
-# Check 32bit or 64bit
+# Check 32bit or 64bit.  In the case of MIPS, this really determines the
+# word size rather than the address size.
 cat > conftest.c <<EOF
-#if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__))
+#if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__)) \
+    || defined(__mips64)
 host_address=64
 #else
 host_address=32
