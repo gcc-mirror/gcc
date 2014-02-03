@@ -591,7 +591,7 @@ static tree
 extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree lhs, rhs, base;
+  tree lhs, rhs, base, binfo;
 
   if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
@@ -599,13 +599,7 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
   lhs = gimple_assign_lhs (stmt);
   rhs = gimple_assign_rhs1 (stmt);
   if (TREE_CODE (lhs) != COMPONENT_REF
-      || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1))
-      || TREE_CODE (rhs) != ADDR_EXPR)
-    return NULL_TREE;
-  rhs = get_base_address (TREE_OPERAND (rhs, 0));
-  if (!rhs
-      || TREE_CODE (rhs) != VAR_DECL
-      || !DECL_VIRTUAL_P (rhs))
+      || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1)))
     return NULL_TREE;
 
   base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
@@ -624,7 +618,16 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
   else if (tci->object != base)
     return NULL_TREE;
 
-  return DECL_CONTEXT (rhs);
+  binfo = vtable_pointer_value_to_binfo (rhs);
+
+  /* FIXME: vtable_pointer_value_to_binfo may return BINFO of a
+     base of outer type.  In this case we would need to either
+     work on binfos or translate it back to outer type and offset.
+     KNOWN_TYPE jump functions are not ready for that, yet.  */
+  if (!binfo || TYPE_BINFO (BINFO_TYPE (binfo)) != binfo)
+   return NULL;
+
+  return BINFO_TYPE (binfo);
 }
 
 /* Callback of walk_aliased_vdefs and a helper function for

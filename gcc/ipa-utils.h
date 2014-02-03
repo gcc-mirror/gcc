@@ -87,6 +87,7 @@ tree method_class_type (tree);
 tree get_polymorphic_call_info (tree, tree, tree *,
 				HOST_WIDE_INT *,
 				ipa_polymorphic_call_context *);
+tree vtable_pointer_value_to_binfo (tree t);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 

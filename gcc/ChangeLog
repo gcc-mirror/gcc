@@ -1,3 +1,10 @@
+2014-02-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (subbinfo_with_vtable_at_offset,
+	vtable_pointer_value_to_binfo): New functions.
+	* ipa-utils.h (vtable_pointer_value_to_binfo): Declare.
+	* ipa-prop.c (extr_type_from_vtbl_ptr_store): Use it.
+
 2014-02-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (load_got_register): Initialize GOT
