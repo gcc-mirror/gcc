@@ -1,3 +1,8 @@
+2014-02-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59941
+	* expr.c (replace_comp): Check for isym to avoid ICE.
+
 2014-01-27  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/58007

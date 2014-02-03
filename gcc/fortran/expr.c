@@ -4195,7 +4195,7 @@ replace_comp (gfc_expr *expr, gfc_symbol *sym, int *i ATTRIBUTE_UNUSED)
   gfc_component *comp;
   comp = (gfc_component *)sym;
   if ((expr->expr_type == EXPR_VARIABLE 
-       || (expr->expr_type == EXPR_FUNCTION
+       || (expr->expr_type == EXPR_FUNCTION && !expr->value.function.isym
 	   && !gfc_is_intrinsic (expr->symtree->n.sym, 0, expr->where)))
       && expr->symtree->n.sym->ns == comp->ts.interface->formal_ns)
     {

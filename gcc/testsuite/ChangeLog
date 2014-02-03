@@ -1,3 +1,8 @@
+2014-02-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/59941
+	* gfortran.dg/typebound_proc_26.f90: New.
+
 2014-01-29  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	Backport from mainline
