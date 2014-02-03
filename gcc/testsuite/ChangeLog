@@ -1,3 +1,10 @@
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* c-c++-common/attributes-1.c: New testcase.
+	* g++.dg/cpp0x/constexpr-attribute2.C: Likewise.
+
 2014-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58871

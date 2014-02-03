@@ -1,3 +1,9 @@
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* doc/extend.texi (Function Attributes): Typo.
+
 2014-02-03  Cong Hou  <congh@google.com>
 
 	PR tree-optimization/60000
