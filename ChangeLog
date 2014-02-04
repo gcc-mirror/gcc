@@ -1,3 +1,9 @@
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* ltmain.sh (opt_duplicate_compiler_generated_deps): Enable on
+	*solaris2*.
+
 2014-01-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	* MAINTAINERS: Update my email address.

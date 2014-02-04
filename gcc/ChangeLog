@@ -1,3 +1,9 @@
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* config/sol2.h (LINK_LIBGCC_MAPFILE_SPEC): Define.
+	(LINK_SPEC): Use it for -shared, -shared-libgcc.
+
 2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59882

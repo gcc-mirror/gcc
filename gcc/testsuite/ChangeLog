@@ -1,3 +1,8 @@
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* g++.dg/eh/unwind-direct.C: New test.
+
 2014-02-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/tsan-dg.exp (tsan_init): Set trivial testcase
