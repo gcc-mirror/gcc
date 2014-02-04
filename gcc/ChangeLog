@@ -3,6 +3,8 @@
 	PR other/58712
 	* omp-low.c (simd_clone_struct_copy): If from->inbranch
 	is set, copy one less argument.
+	(expand_simd_clones): Don't subtract clone_info->inbranch
+	from simd_clone_struct_alloc argument.
 
 	PR rtl-optimization/57915
 	* recog.c (simplify_while_replacing): If all unary/binary/relational

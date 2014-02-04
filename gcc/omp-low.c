@@ -11694,7 +11694,6 @@ expand_simd_clones (struct cgraph_node *node)
 	  if (i != 0)
 	    {
 	      clone = simd_clone_struct_alloc (clone_info->nargs
-					       - clone_info->inbranch
 					       + ((i & 1) != 0));
 	      simd_clone_struct_copy (clone, clone_info);
 	      /* Undo changes targetm.simd_clone.compute_vecsize_and_simdlen
