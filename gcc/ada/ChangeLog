@@ -1,3 +1,34 @@
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Further comments on N_Expression_With_Actions node.
+
+2014-02-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Depends_In_Decl_Part): Remove global
+	variables Out_Items and Ref_Global. Remove local constant
+	Body_Id along with dummy variables D1, D2, D3, D4, D5, D6, D7
+	and D8. Remove the useless collection of global items as this
+	was a leftover from an earlier version of the routine. Move
+	several routines out to avoid deep nesting and indentation.
+	(Inputs_Match): Add formal parameter Dep_Clause. Rename formal
+	parameter Do_Checks to Post_Errors. Update the comment on usage.
+	(Is_Matching_Input): Renamed to Input_Match. Add formal parameters
+	Ref_Inputs and Do_Checks. Rename formal parameter Do_Checks
+	to Post_Errors. Update the comment on usage. Account for the
+	case where a self referential state may have a null input_list.
+	(Is_Self_Referential): New routine.
+
+2014-02-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): If the
+	entity renames an expression, as in the case of an object of
+	an unconstrained type initialized by a function call, defer the
+	rewriting of the expression to the expander.
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
+	'Alignment): If the entity renames an expression, introduce
+	temporary to capture value, and rewrite original declaration to
+	use temporary.
+
 2014-02-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* g-comlin.adb: Minor typo fix.

@@ -157,6 +157,46 @@ package body Exp_Ch13 is
                  (Exp, Make_Integer_Literal (Loc, Expr_Value (Exp)));
             end if;
 
+            --  A complex case arises if the alignment clause applies to an
+            --  unconstrained object initialized with a function call. The
+            --  result of the call is placed on the secondary stack, and the
+            --  declaration is rewritten as a renaming of a dereference, which
+            --  fails expansion. We must introduce a temporary and assign its
+            --  value to the existing entity.
+
+            if Nkind (Parent (Ent)) = N_Object_Renaming_Declaration
+              and then not Is_Entity_Name (Renamed_Object (Ent))
+            then
+               declare
+                  Loc      : constant Source_Ptr := Sloc (N);
+                  Decl     : constant Node_Id    := Parent (Ent);
+                  Temp     : constant Entity_Id  := Make_Temporary (Loc, 'T');
+                  New_Decl : Node_Id;
+
+               begin
+                  --  Replace entity with temporary and renalyze
+
+                  Set_Defining_Identifier (Decl, Temp);
+                  Set_Analyzed (Decl, False);
+                  Analyze (Decl);
+
+                  --  Introduce new declaration for entity but do not reanalyze
+                  --  because entity is already in scope. Type and expression
+                  --  are already resolved.
+
+                  New_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Ent,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Etype (Ent), Loc),
+                      Expression          => New_Occurrence_Of (Temp, Loc));
+
+                  Set_Renamed_Object (Ent, Empty);
+                  Insert_After (Decl, New_Decl);
+                  Set_Analyzed (Decl);
+               end;
+            end if;
+
          ------------------
          -- Storage_Size --
          ------------------
