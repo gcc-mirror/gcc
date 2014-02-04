@@ -565,7 +565,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
-  rtx new_rtx;
+  rtx new_rtx = NULL_RTX;
 
   if (SWAPPABLE_OPERANDS_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
@@ -577,6 +577,35 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
 					       XEXP (x, 0)), 1);
       x = *loc;
       code = GET_CODE (x);
+    }
+
+  /* Canonicalize arithmetics with all constant operands.  */
+  switch (GET_RTX_CLASS (code))
+    {
+    case RTX_UNARY:
+      if (CONSTANT_P (XEXP (x, 0)))
+	new_rtx = simplify_unary_operation (code, GET_MODE (x), XEXP (x, 0),
+					    op0_mode);
+      break;
+    case RTX_COMM_ARITH:
+    case RTX_BIN_ARITH:
+      if (CONSTANT_P (XEXP (x, 0)) && CONSTANT_P (XEXP (x, 1)))
+	new_rtx = simplify_binary_operation (code, GET_MODE (x), XEXP (x, 0),
+					     XEXP (x, 1));
+      break;
+    case RTX_COMPARE:
+    case RTX_COMM_COMPARE:
+      if (CONSTANT_P (XEXP (x, 0)) && CONSTANT_P (XEXP (x, 1)))
+	new_rtx = simplify_relational_operation (code, GET_MODE (x), op0_mode,
+						 XEXP (x, 0), XEXP (x, 1));
+      break;
+    default:
+      break;
+    }
+  if (new_rtx)
+    {
+      validate_change (object, loc, new_rtx, 1);
+      return;
     }
 
   switch (code)

@@ -1,5 +1,9 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/57915
+	* recog.c (simplify_while_replacing): If all unary/binary/relational
+	operation arguments are constant, attempt to simplify those.
+
 	PR middle-end/59261
 	* expmed.c (expand_mult): For MODE_VECTOR_INT multiplication
 	if there is no vashl<mode>3 or ashl<mode>3 insn, skip_synth.
