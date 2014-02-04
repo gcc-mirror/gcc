@@ -1,3 +1,16 @@
+2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60038
+	* sanitizer_common/sanitizer_linux_libcdep.cc: Include
+	sanitizer_atomic.h and unistd.h.
+	(kThreadDescriptorSize): Made static, remove initializer and const,
+	change type to atomic_uintptr_t.
+	(ThreadDescriptorSize): Use confstr(_CS_GNU_LIBC_VERSION, ...) to
+	query glibc version, compute kThreadDescriptorSize depending on
+	glibc version minor number.
+	(GetThreadStackAndTls): Use ThreadDescriptorSize() instead of
+	kThreadDescriptorSize directly.
+
 2014-01-23  Yury Gribov  <y.gribov@samsung.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
