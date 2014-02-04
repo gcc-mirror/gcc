@@ -1,3 +1,9 @@
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60012
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Apply
+	TBAA disambiguation to all DDRs.
+
 2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/59788
