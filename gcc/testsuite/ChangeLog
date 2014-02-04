@@ -1,5 +1,10 @@
 2014-02-03  Jan Hubicka  <jh@suse.cz>
 
+	PR ipa/59831
+	* g++.dg/ipa/devirt-22.C: New testcase.
+
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
 	* g++.dg/ipa/devirt-25.C: New testcase.
 
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>

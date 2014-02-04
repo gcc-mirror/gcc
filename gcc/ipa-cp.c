@@ -1601,15 +1601,24 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 
   if (TREE_CODE (t) != TREE_BINFO)
     {
-      tree binfo;
-      binfo = gimple_extract_devirt_binfo_from_cst
-		 (t, ie->indirect_info->otr_type);
-      if (!binfo)
+      ipa_polymorphic_call_context context;
+      vec <cgraph_node *>targets;
+      bool final;
+
+      if (!get_polymorphic_call_info_from_invariant
+	     (&context, t, ie->indirect_info->otr_type,
+	      anc_offset))
 	return NULL_TREE;
-      binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
-      if (!binfo)
+      targets = possible_polymorphic_call_targets
+		 (ie->indirect_info->otr_type,
+		  ie->indirect_info->otr_token,
+		  context, &final);
+      if (!final || targets.length () > 1)
 	return NULL_TREE;
-      target = gimple_get_virt_method_for_binfo (token, binfo);
+      if (targets.length () == 1)
+	target = targets[0]->decl;
+      else
+	target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
     }
   else
     {
