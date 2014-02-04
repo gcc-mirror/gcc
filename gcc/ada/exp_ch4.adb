@@ -5113,11 +5113,16 @@ package body Exp_Ch4 is
       Act := First (Actions (N));
 
       --  Deal with case where there are no actions. In this case we simply
-      --  replace the node by its expression since we don't need the actions
+      --  rewrite the node with its expression since we don't need the actions
       --  and the specification of this node does not allow a null action list.
 
+      --  Note: we use Rewrite instead of Replace, because Codepeer is using
+      --  the expanded tree and relying on being able to retrieve the original
+      --  tree in cases like this. This raises a whole lot of issues of whether
+      --  we have problems elsewhere, which will be addressed in the future???
+
       if No (Act) then
-         Replace (N, Relocate_Node (Expression (N)));
+         Rewrite (N, Relocate_Node (Expression (N)));
 
       --  Otherwise process the actions as described above
 

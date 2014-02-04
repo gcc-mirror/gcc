@@ -1292,8 +1292,8 @@ package Opt is
 
    Sprint_Line_Limit : Nat := 72;
    --  GNAT
-   --  Limit values for chopping long lines in Sprint output, can be reset by
-   --  use of NNN parameter with -gnatG or -gnatD switches.
+   --  Limit values for chopping long lines in Cprint/Sprint output, can be
+   --  reset by use of NNN parameter with -gnatG or -gnatD switches.
 
    Stack_Checking_Enabled : Boolean := False;
    --  GNAT
