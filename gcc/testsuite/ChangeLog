@@ -1,3 +1,8 @@
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59882
+	* g++.dg/torture/pr59882.C: New testcase
+
 2014-02-03  Jan Hubicka  <jh@suse.cz>
 
 	PR ipa/59831
