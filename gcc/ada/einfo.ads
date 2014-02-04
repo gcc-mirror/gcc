@@ -2775,7 +2775,7 @@ package Einfo is
 
 --    Is_Pure (Flag44)
 --       Defined in all entities. Set in all entities of a unit to which a
---       pragma Pure is applied except for non intrinsic imported subprogram,
+--       pragma Pure is applied except for non-intrinsic imported subprograms,
 --       and also set for the entity of the unit itself. In addition, this
 --       flag may be set for any other functions or procedures that are known
 --       to be side effect free, so in the case of subprograms, the Is_Pure

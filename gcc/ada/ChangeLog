@@ -1,3 +1,7 @@
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, einfo.ads, freeze.adb, sem_ch8.adb: Minor reformatting.
+
 2014-02-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aggr.adb: Change "runtime" to "run time" in warning message,

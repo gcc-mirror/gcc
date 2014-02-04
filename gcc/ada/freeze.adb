@@ -6521,6 +6521,11 @@ package body Freeze is
       --  can bypass the normal check to ensure that pure units call only pure
       --  subprograms.
 
+      --  The reason for the intrinsic exception is that in general, intrinsic
+      --  functions (such as shifts) are pure anyway. The only exceptions are
+      --  the intrinsics in GNAT.Source_Info, and that unit is not marked Pure
+      --  in any case, so no problem arises.
+
       if Is_Imported (E)
         and then Is_Pure (E)
         and then not Has_Pragma_Pure_Function (E)
