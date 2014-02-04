@@ -1,3 +1,11 @@
+2014-02-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-02-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60017
+	* gcc.c-torture/execute/pr60017.c: New test.
+
 2014-02-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59414
