@@ -7359,7 +7359,11 @@ package Sinfo is
       --  the actions list is always non-null, since there is no point in this
       --  node if the actions are Empty. During semantic analysis there are
       --  cases where it is convenient to temporarily generate an empty actions
-      --  list, but the Expander removes such cases.
+      --  list. This arises in cases where we create such an empty actions
+      --  list, and it may or may not end up being a place where additional
+      --  actions are inserted. The expander removes such empty cases after
+      --  the expression of the node is fully analyzed and expanded, at which
+      --  point it is safe to remove it, since no more actions can be inserted.
 
       --  Note: Expression may be a Null_Statement, in which case the
       --  N_Expression_With_Actions has type Standard_Void_Type. However some
