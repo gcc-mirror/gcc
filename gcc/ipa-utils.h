@@ -87,6 +87,8 @@ tree method_class_type (tree);
 tree get_polymorphic_call_info (tree, tree, tree *,
 				HOST_WIDE_INT *,
 				ipa_polymorphic_call_context *);
+bool get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *,
+					       tree, tree, HOST_WIDE_INT);
 tree vtable_pointer_value_to_binfo (tree t);
 bool vtable_pointer_value_to_vtable (tree, tree *, unsigned HOST_WIDE_INT *);
 

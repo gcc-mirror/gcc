@@ -1071,6 +1071,60 @@ vtable_pointer_value_to_binfo (tree t)
 					 offset, vtable);
 }
 
+/* Proudce polymorphic call context for call method of instance
+   that is located within BASE (that is assumed to be a decl) at OFFSET. */
+
+static void
+get_polymorphic_call_info_for_decl (ipa_polymorphic_call_context *context,
+				    tree base, HOST_WIDE_INT offset)
+{
+  gcc_assert (DECL_P (base));
+
+  context->outer_type = TREE_TYPE (base);
+  context->offset = offset;
+  /* Make very conservative assumption that all objects
+     may be in construction. 
+     TODO: ipa-prop already contains code to tell better. 
+     merge it later.  */
+  context->maybe_in_construction = true;
+  context->maybe_derived_type = false;
+}
+
+/* CST is an invariant (address of decl), try to get meaningful
+   polymorphic call context for polymorphic call of method 
+   if instance of OTR_TYPE that is located at OFFSET of this invariant.
+   Return FALSE if nothing meaningful can be found.  */
+
+bool
+get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *context,
+				          tree cst,
+				          tree otr_type,
+				          HOST_WIDE_INT offset)
+{
+  HOST_WIDE_INT offset2, size, max_size;
+  tree base;
+
+  if (TREE_CODE (cst) != ADDR_EXPR)
+    return NULL_TREE;
+
+  cst = TREE_OPERAND (cst, 0);
+  base = get_ref_base_and_extent (cst, &offset2, &size, &max_size);
+  if (!DECL_P (base)
+      || max_size == -1
+      || max_size != size)
+    return NULL_TREE;
+
+  /* Only type inconsistent programs can have otr_type that is
+     not part of outer type.  */
+  if (!contains_type_p (TREE_TYPE (base),
+			offset, otr_type))
+    return NULL_TREE;
+
+  get_polymorphic_call_info_for_decl (context,
+				     base, offset);
+  return true;
+}
+
 /* Given REF call in FNDECL, determine class of the polymorphic
    call (OTR_TYPE), its token (OTR_TOKEN) and CONTEXT.
    Return pointer to object described by the context  */
@@ -1136,14 +1190,8 @@ get_polymorphic_call_info (tree fndecl,
 		  if (!contains_type_p (TREE_TYPE (base),
 					context->offset + offset2, *otr_type))
 		    return base_pointer;
-		  context->outer_type = TREE_TYPE (base);
-		  context->offset += offset2;
-		  /* Make very conservative assumption that all objects
-		     may be in construction. 
-		     TODO: ipa-prop already contains code to tell better. 
-		     merge it later.  */
-		  context->maybe_in_construction = true;
-		  context->maybe_derived_type = false;
+		  get_polymorphic_call_info_for_decl (context, base,
+						      context->offset + offset2);
 		  return NULL;
 		}
 	      else

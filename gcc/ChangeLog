@@ -1,5 +1,16 @@
 2014-02-03  Jan Hubicka  <jh@suse.cz>
 
+	PR ipa/59831
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use ipa-devirt
+	to figure out targets of polymorphic calls with known decl.
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
+	* ipa-utils.h (get_polymorphic_call_info_from_invariant): Declare.
+	* ipa-devirt.c (get_polymorphic_call_info_for_decl): Break out from ...
+	(get_polymorphic_call_info): ... here.
+	(get_polymorphic_call_info_from_invariant): New function.
+
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Do direct
 	lookup via vtable pointer; check for type consistency
 	and turn inconsitent facts into UNREACHABLE.
