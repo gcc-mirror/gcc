@@ -1,3 +1,9 @@
+2014-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60036
+	* c-common.c (conversion_warning): Unwrap C_MAYBE_CONST_EXPR and/or
+	SAVE_EXPR.
+
 2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53017

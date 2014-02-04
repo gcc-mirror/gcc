@@ -2714,6 +2714,14 @@ conversion_warning (location_t loc, tree type, tree expr)
   if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
     return;
 
+  /* This may happen, because for LHS op= RHS we preevaluate
+     RHS and create C_MAYBE_CONST_EXPR <SAVE_EXPR <RHS>>, which
+     means we could no longer see the code of the EXPR.  */
+  if (TREE_CODE (expr) == C_MAYBE_CONST_EXPR)
+    expr = C_MAYBE_CONST_EXPR_EXPR (expr);
+  if (TREE_CODE (expr) == SAVE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
   switch (TREE_CODE (expr))
     {
     case EQ_EXPR:
