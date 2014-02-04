@@ -1,3 +1,7 @@
+2014-02-04  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/ftest-armv7a-thumb.c: Change aramv7-a to armv7-a.
+
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59261
