@@ -1193,7 +1193,13 @@ package body Sem_Ch8 is
          end;
       end if;
 
-      Set_Ekind (Id, E_Variable);
+      --  Set the Ekind of the entity, unless it has been set already, as is
+      --  the case for the iteration object over a container with no variable
+      --  indexing.
+
+      if Ekind (Id) /= E_Constant then
+         Set_Ekind (Id, E_Variable);
+      end if;
 
       --  Initialize the object size and alignment. Note that we used to call
       --  Init_Size_Align here, but that's wrong for objects which have only

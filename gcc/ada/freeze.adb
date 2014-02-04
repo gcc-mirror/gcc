@@ -6514,15 +6514,17 @@ package body Freeze is
       end if;
 
       --  Reset the Pure indication on an imported subprogram unless an
-      --  explicit Pure_Function pragma was present. We do this because
-      --  otherwise it is an insidious error to call a non-pure function from
-      --  pure unit and have calls mysteriously optimized away. What happens
-      --  here is that the Import can bypass the normal check to ensure that
-      --  pure units call only pure subprograms.
+      --  explicit Pure_Function pragma was present or the subprogram is an
+      --  intrinsic. We do this because otherwise it is an insidious error
+      --  to call a non-pure function from pure unit and have calls
+      --  mysteriously optimized away. What happens here is that the Import
+      --  can bypass the normal check to ensure that pure units call only pure
+      --  subprograms.
 
       if Is_Imported (E)
         and then Is_Pure (E)
         and then not Has_Pragma_Pure_Function (E)
+        and then not Is_Intrinsic_Subprogram (E)
       then
          Set_Is_Pure (E, False);
       end if;
