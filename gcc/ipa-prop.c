@@ -2687,23 +2687,44 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 				   struct ipa_jump_func *jfunc,
 				   struct ipa_node_params *new_root_info)
 {
-  tree binfo = NULL, target;
+  tree binfo, target;
 
   if (!flag_devirtualize)
     return NULL;
 
-  /* First try to do lookup binfo via known virtual table pointer value.  */
+  /* First try to do lookup via known virtual table pointer value.  */
   if (!ie->indirect_info->by_ref)
     {
+      tree vtable;
+      unsigned HOST_WIDE_INT offset;
       tree t = ipa_find_agg_cst_for_param (&jfunc->agg,
 					   ie->indirect_info->offset,
 					   true);
-      if (t)
-        binfo = vtable_pointer_value_to_binfo (t);
+      if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
+	{
+	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
+						      vtable, offset);
+	  if (target)
+	    {
+	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
+		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+		  || !possible_polymorphic_call_target_p
+		       (ie, cgraph_get_node (target)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Type inconsident devirtualization: %s/%i->%s\n",
+			     ie->caller->name (), ie->caller->order,
+			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+		  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  cgraph_get_create_node (target);
+		}
+	      return ipa_make_edge_direct_to_target (ie, target);
+	    }
+	}
     }
 
-  if (!binfo)
-    binfo = ipa_value_from_jfunc (new_root_info, jfunc);
+  binfo = ipa_value_from_jfunc (new_root_info, jfunc);
 
   if (!binfo)
     return NULL;

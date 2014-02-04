@@ -1,3 +1,13 @@
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Do direct
+	lookup via vtable pointer; check for type consistency
+	and turn inconsitent facts into UNREACHABLE.
+	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): 
+	Do not ICE on type inconsistent querries; return UNREACHABLE
+	instead.
+
 2014-02-03  Richard Henderson  <rth@twiddle.net>
 
 	PR tree-opt/59924
