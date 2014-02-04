@@ -1,3 +1,8 @@
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60012
+	* gcc.dg/vect/pr60012.c: New testcase.
+
 2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/59788

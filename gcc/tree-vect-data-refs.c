@@ -235,6 +235,18 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       || (DR_IS_READ (dra) && DR_IS_READ (drb)))
     return false;
 
+  /* Even if we have an anti-dependence then, as the vectorized loop covers at
+     least two scalar iterations, there is always also a true dependence.
+     As the vectorizer does not re-order loads and stores we can ignore
+     the anti-dependence if TBAA can disambiguate both DRs similar to the
+     case with known negative distance anti-dependences (positive
+     distance anti-dependences would violate TBAA constraints).  */
+  if (((DR_IS_READ (dra) && DR_IS_WRITE (drb))
+       || (DR_IS_WRITE (dra) && DR_IS_READ (drb)))
+      && !alias_sets_conflict_p (get_alias_set (DR_REF (dra)),
+				 get_alias_set (DR_REF (drb))))
+    return false;
+
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
