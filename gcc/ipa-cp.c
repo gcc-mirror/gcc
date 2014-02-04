@@ -1573,20 +1573,23 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	{
 	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
 						      vtable, offset);
-	  if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
-	       && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
-	      || !possible_polymorphic_call_target_p
-		   (ie, cgraph_get_node (target)))
+	  if (target)
 	    {
-	      if (dump_file)
-		fprintf (dump_file,
-			 "Type inconsident devirtualization: %s/%i->%s\n",
-			 ie->caller->name (), ie->caller->order,
-			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
-	      target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-	      cgraph_get_create_node (target);
+	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
+		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+		  || !possible_polymorphic_call_target_p
+		       (ie, cgraph_get_node (target)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Type inconsident devirtualization: %s/%i->%s\n",
+			     ie->caller->name (), ie->caller->order,
+			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+		  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  cgraph_get_create_node (target);
+		}
+	      return target;
 	    }
-	  return target;
 	}
     }
 

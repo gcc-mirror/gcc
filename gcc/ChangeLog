@@ -1,3 +1,9 @@
+2014-02-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/60058
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Check that target
+	is non-null.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Default visibility is safe.
