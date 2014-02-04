@@ -1723,7 +1723,7 @@ predicate_mem_writes (loop_p loop)
 	      new_stmt
 		= gimple_build_call_internal (IFN_MASK_STORE, 4, addr, ptr,
 					      mask, rhs);
-	    gsi_replace (&gsi, new_stmt, false);
+	    gsi_replace (&gsi, new_stmt, true);
 	  }
 	else if (gimple_vdef (stmt))
 	  {

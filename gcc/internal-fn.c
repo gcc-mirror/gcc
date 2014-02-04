@@ -820,6 +820,8 @@ expand_MASK_LOAD (gimple stmt)
 
   maskt = gimple_call_arg (stmt, 2);
   lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return;
   type = TREE_TYPE (lhs);
   rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
 		     gimple_call_arg (stmt, 1));

@@ -1,5 +1,15 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60023
+	* tree-if-conv.c (predicate_mem_writes): Pass true instead of
+	false to gsi_replace.
+	* tree-vect-stmts.c (vect_finish_stmt_generation): If stmt
+	has been in some EH region and vec_stmt could throw, add
+	vec_stmt into the same EH region.
+	* tree-data-ref.c (get_references_in_stmt): If IFN_MASK_LOAD
+	has no lhs, ignore it.
+	* internal-fn.c (expand_MASK_LOAD): Likewise.
+
 	PR ipa/60026
 	* tree-inline.c (copy_forbidden): Fail for
 	__attribute__((optimize (0))) functions.
