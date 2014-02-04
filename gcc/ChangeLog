@@ -1,3 +1,12 @@
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59723
+	* lto-streamer-out.c (tree_is_indexable): Force NAMELIST_DECLs
+	in function context local.
+	(lto_output_tree_ref): Do not write trees from lto_output_tree_ref.
+	* lto-streamer-in.c (lto_input_tree_ref): Handle LTO_namelist_decl_ref
+	similar to LTO_imported_decl_ref.
+
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/60002
