@@ -1,3 +1,8 @@
+2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59924
+	* gcc.dg/pr59924.c: New test.
+
 2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59831
