@@ -6739,7 +6739,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
       && (TREE_STATIC (exp) || DECL_EXTERNAL (exp)))
     {
       varpool_node *vnode = varpool_get_node (exp);
-      if (vnode && resolution_local_p (vnode->resolution))
+      if (vnode && (resolution_local_p (vnode->resolution) || vnode->in_other_partition))
 	resolved_locally = true;
       if (vnode
 	  && resolution_to_local_definition_p (vnode->resolution))
@@ -6749,7 +6749,7 @@ default_binds_local_p_1 (const_tree exp, int shlib)
     {
       struct cgraph_node *node = cgraph_get_node (exp);
       if (node
-	  && resolution_local_p (node->resolution))
+	  && (resolution_local_p (node->resolution) || node->in_other_partition))
 	resolved_locally = true;
       if (node
 	  && resolution_to_local_definition_p (node->resolution))

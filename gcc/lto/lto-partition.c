@@ -94,10 +94,12 @@ get_symbol_class (symtab_node *node)
   else if (!cgraph (node)->definition)
     return SYMBOL_EXTERNAL;
 
-  /* Comdats are duplicated to every use unless they are keyed.
-     Those do not need duplication.  */
-  if (DECL_COMDAT (node->decl)
+  /* Linker discardable symbols are duplicated to every use unless they are
+     keyed.
+     Keyed symbols or those.  */
+  if (DECL_ONE_ONLY (node->decl)
       && !node->force_output
+      && !node->forced_by_abi
       && !symtab_used_from_object_file_p (node))
     return SYMBOL_DUPLICATE;
 

@@ -1,3 +1,10 @@
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (function_and_variable_visibility): Decompose DECL_ONE_ONLY
+	groups when we know they are controlled by LTO.
+	* varasm.c (default_binds_local_p_1): If object is in other partition,
+	it will be resolved locally.
+
 2014-02-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc/config/host-linux.c (linux_gt_pch_use_address): Don't

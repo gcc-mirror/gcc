@@ -1,3 +1,8 @@
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (get_symbol_class): Only unforced DECL_ONE_ONLY 
+	needs duplicating, not generic COMDAT.
+
 2014-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59723
