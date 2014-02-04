@@ -3128,6 +3128,15 @@ package body Exp_Ch5 is
 
                Set_Debug_Info_Needed (Id);
 
+               --  If the container does not have a variable indexing aspect,
+               --  the element is a constant in the loop.
+
+               if No (Find_Value_Of_Aspect
+                       (Container_Typ, Aspect_Variable_Indexing))
+               then
+                  Set_Ekind (Id, E_Constant);
+               end if;
+
                --  If the container holds controlled objects, wrap the loop
                --  statements and element renaming declaration with a block.
                --  This ensures that the result of Element (Cusor) is

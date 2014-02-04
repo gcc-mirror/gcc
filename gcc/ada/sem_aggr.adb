@@ -4743,7 +4743,7 @@ package body Sem_Aggr is
          Error_Msg_N
            ("(Ada 2005) null not allowed in null-excluding component??", Expr);
          Error_Msg_N
-           ("\Constraint_Error will be raised at runtime?", Expr);
+           ("\Constraint_Error will be raised at run time?", Expr);
 
          Rewrite (Expr,
            Make_Raise_Constraint_Error

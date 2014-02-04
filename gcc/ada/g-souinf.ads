@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2005 AdaCore                      --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,14 @@
 --  the name of the source file in which the exception is handled.
 
 package GNAT.Source_Info is
-   pragma Pure;
+   pragma Preelaborate;
+   --  Note that this unit is Preelaborate, but not Pure, that's because the
+   --  functions here such as Line are clearly not pure functions, and normally
+   --  we mark intrinsic functions in a Pure unit as Pure, even though they are
+   --  imported.
+   --
+   --  Historical note: this used to be Pure, but that was when we marked all
+   --  intrinsics as not Pure, even in Pure units, so no problems arose.
 
    function File return String;
    --  Return the name of the current file, not including the path information.

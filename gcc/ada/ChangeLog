@@ -1,5 +1,26 @@
 2014-02-04  Gary Dismukes  <dismukes@adacore.com>
 
+	* sem_aggr.adb: Change "runtime" to "run time" in warning message,
+	for consistency with other messages.
+
+2014-02-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb  (Expand_Iterator_Loop):  For a container element
+	iterator, indicate that the element is a constant if the container
+	type does not have a variable indexing aspect.
+	* sem_ch8.adb (Analyze_Object_Renaming): If the entity is already
+	marked as constant, do not reset its Ekind, to ensure that
+	container elements in an element loop are not modified if the
+	container (e.g. a hashed set) only has a constant indexing aspect.
+
+2014-02-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-souinf.ads: Subprograms in this unit are actually not pure.
+	* freeze.adb (Freeze_Subprogram): Do not reset Is_Pure for Intrinsics.
+	* einfo.ads (Is_Pure): Update doc to match implementation.
+
+2014-02-04  Gary Dismukes  <dismukes@adacore.com>
+
 	* exp_ch13.adb: Minor spelling fix.
 
 2014-02-04  Robert Dewar  <dewar@adacore.com>
