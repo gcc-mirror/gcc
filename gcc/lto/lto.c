@@ -926,6 +926,7 @@ mentions_vars_p (tree t)
     case RESULT_DECL:
     case IMPORTED_DECL:
     case NAMESPACE_DECL:
+    case NAMELIST_DECL:
       return mentions_vars_p_decl_common (t);
 
     case VAR_DECL:
@@ -2597,7 +2598,7 @@ lto_fixup_prevailing_decls (tree t)
   enum tree_code code = TREE_CODE (t);
   bool fixed = false;
 
-  gcc_checking_assert (code != CONSTRUCTOR && code != TREE_BINFO);
+  gcc_checking_assert (code != TREE_BINFO);
   LTO_NO_PREVAIL (TREE_TYPE (t));
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     LTO_NO_PREVAIL (TREE_CHAIN (t));
@@ -2658,6 +2659,13 @@ lto_fixup_prevailing_decls (tree t)
       int i;
       for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
 	LTO_SET_PREVAIL (TREE_OPERAND (t, i));
+    }
+  else if (TREE_CODE (t) == CONSTRUCTOR)
+    {
+      unsigned i;
+      tree val;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, val)
+	LTO_SET_PREVAIL (val);
     }
   else
     {

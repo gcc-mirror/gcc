@@ -1,3 +1,9 @@
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59723
+	* lto.c (mentions_vars_p): Handle NAMELIST_DECL.
+	(lto_fixup_prevailing_decls): Handle fixing up CONSTRUCTOR values.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 	    Markus Trippelsdorf
 
