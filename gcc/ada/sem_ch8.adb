@@ -1195,7 +1195,8 @@ package body Sem_Ch8 is
 
       --  Set the Ekind of the entity, unless it has been set already, as is
       --  the case for the iteration object over a container with no variable
-      --  indexing.
+      --  indexing. In that case it's been marked as a constant, and we do not
+      --  want to change it to a variable.
 
       if Ekind (Id) /= E_Constant then
          Set_Ekind (Id, E_Variable);

@@ -3132,7 +3132,7 @@ package body Exp_Ch5 is
                --  the element is a constant in the loop.
 
                if No (Find_Value_Of_Aspect
-                       (Container_Typ, Aspect_Variable_Indexing))
+                        (Container_Typ, Aspect_Variable_Indexing))
                then
                   Set_Ekind (Id, E_Constant);
                end if;
