@@ -1,3 +1,12 @@
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* config/t-slibgcc-sld (libgcc-unwind.map): New target.
+	(install-libgcc-unwind-map-forbuild): New target.
+	(all): Depend on install-libgcc-unwind-map-forbuild.
+	(install-libgcc-unwind-map): New target.
+	(install): Depend on install-libgcc-unwind-map.
+
 2014-02-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/crti.S (_init): Initialize GOT pointer from
