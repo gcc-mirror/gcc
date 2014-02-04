@@ -1,5 +1,10 @@
 2014-02-03  Jan Hubicka  <jh@suse.cz>
 
+	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Remove.
+	* gimple-fold.h (gimple_extract_devirt_binfo_from_cst): Remove.
+
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
 	PR ipa/59831
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use ipa-devirt
 	to figure out targets of polymorphic calls with known decl.
