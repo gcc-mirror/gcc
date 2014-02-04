@@ -1,3 +1,7 @@
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/init/dso_handle2.C: Compile with -fuse-cxa-atexit.
+
 2014-02-04  Renlin Li  <Renlin.Li@arm.com>
 
 	* gcc.target/arm/ftest-armv7a-thumb.c: Change aramv7-a to armv7-a.
