@@ -59,6 +59,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Merge node flags.  */
   if (node->force_output)
     cgraph_mark_force_output_node (prevailing_node);
+  if (node->forced_by_abi)
+    prevailing_node->forced_by_abi = true;
   if (node->address_taken)
     {
       gcc_assert (!prevailing_node->global.inlined_to);
@@ -110,6 +112,10 @@ lto_varpool_replace_node (varpool_node *vnode,
   gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
 
   ipa_clone_referring (prevailing_node, &vnode->ref_list);
+  if (vnode->force_output)
+    prevailing_node->force_output = true;
+  if (vnode->forced_by_abi)
+    prevailing_node->forced_by_abi = true;
 
   /* Be sure we can garbage collect the initializer.  */
   if (DECL_INITIAL (vnode->decl)
