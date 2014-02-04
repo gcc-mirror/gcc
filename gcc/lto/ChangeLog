@@ -1,3 +1,10 @@
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+	    Markus Trippelsdorf
+
+	PR ipa/59469
+	* lto-symtab.c (lto_cgraph_replace_node, lto_varpool_replace_node):
+	merge force_output and forced_by_abi flags.
+
 2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* lto-lang.c (lto_init): Replaced flag_enable_cilkplus with
