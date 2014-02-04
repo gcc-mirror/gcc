@@ -1131,7 +1131,7 @@ package body Sprint is
 
             if Present (Identifier (Node))
               and then (not Has_Created_Identifier (Node)
-                          or else not Dump_Original_Only)
+                         or else not Dump_Original_Only)
             then
                Write_Rewrite_Str ("<<<");
                Write_Id (Identifier (Node));

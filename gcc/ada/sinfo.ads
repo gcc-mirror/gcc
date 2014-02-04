@@ -7355,8 +7355,11 @@ package Sinfo is
       --  Expression (Node3)
       --  plus fields for expression
 
-      --  Note: the actions list is always non-null, since we would never have
-      --  created this node if there weren't some actions.
+      --  Note: In the final generated tree presented to the code generator,
+      --  the actions list is always non-null, since there is no point in this
+      --  node if the actions are Empty. During semantic analysis there are
+      --  cases where it is convenient to temporarily generate an empty actions
+      --  list, but the Expander removes such cases.
 
       --  Note: Expression may be a Null_Statement, in which case the
       --  N_Expression_With_Actions has type Standard_Void_Type. However some
