@@ -3247,12 +3247,14 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   tree vtable = v, init, fn;
   unsigned HOST_WIDE_INT size;
 
+  /* First of all double check we have virtual table.  */
   if (TREE_CODE (v) != VAR_DECL
       || !DECL_VIRTUAL_P (v))
     return NULL_TREE;
+
   init = ctor_for_folding (v);
 
-  /* The virtual tables should always be born with constructors.
+  /* The virtual tables should always be born with constructors
      and we always should assume that they are avaialble for
      folding.  At the moment we do not stream them in all cases,
      but it should never happen that ctor seem unreachable.  */
@@ -3266,21 +3268,31 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))));
   offset *= BITS_PER_UNIT;
   offset += token * size;
-  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
-			    offset, size, v);
-  if (!fn || integer_zerop (fn))
-    return NULL_TREE;
-  gcc_assert (TREE_CODE (fn) == ADDR_EXPR
-	      || TREE_CODE (fn) == FDESC_EXPR);
-  fn = TREE_OPERAND (fn, 0);
-  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
 
-  /* When cgraph node is missing and function is not public, we cannot
-     devirtualize.  This can happen in WHOPR when the actual method
-     ends up in other partition, because we found devirtualization
-     possibility too late.  */
-  if (!can_refer_decl_in_current_unit_p (fn, vtable))
-    return NULL_TREE;
+  /* Do not pass from_decl here, we want to know even about values we can
+     not use and will check can_refer_decl_in_current_unit_p ourselves.  */
+  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
+			    offset, size, NULL);
+
+  /* For type inconsistent program we may end up looking up virtual method
+     in virtual table that does not contain TOKEN entries.  We may overrun
+     the virtual table and pick up a constant or RTTI info pointer.
+     In any case the call is undefined.  */
+  if (!fn
+      || (TREE_CODE (fn) != ADDR_EXPR && TREE_CODE (fn) != FDESC_EXPR)
+      || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
+    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+  else
+    {
+      fn = TREE_OPERAND (fn, 0);
+
+      /* When cgraph node is missing and function is not public, we cannot
+	 devirtualize.  This can happen in WHOPR when the actual method
+	 ends up in other partition, because we found devirtualization
+	 possibility too late.  */
+      if (!can_refer_decl_in_current_unit_p (fn, vtable))
+	return NULL_TREE;
+    }
 
   /* Make sure we create a cgraph node for functions we'll reference.
      They can be non-existent if the reference comes from an entry
