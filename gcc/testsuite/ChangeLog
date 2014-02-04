@@ -1,3 +1,8 @@
+2014-02-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/tsan-dg.exp (tsan_init): Set trivial testcase
+	timeout value to 20s.
+
 2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59882
