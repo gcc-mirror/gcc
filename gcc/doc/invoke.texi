@@ -22463,6 +22463,10 @@ read or write that is correctly aligned for the target machine.  In this
 case GCC falls back to generating multiple accesses rather than code that 
 will fault or truncate the result at run time.
 
+Note:  Due to restrictions of the C/C++11 memory model, write accesses are
+not allowed to touch non bit-field members.  It is therefore recommended
+to define all bits of the field's type as bit-field members.
+
 The default value of this option is determined by the application binary
 interface for the target processor.
 

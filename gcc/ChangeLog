@@ -1,3 +1,8 @@
+2014-02-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi (fstrict-volatile-bitfields): Clarify current
+	behavior.
+
 2014-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/59723
