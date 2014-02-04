@@ -1,5 +1,9 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/58712
+	* omp-low.c (simd_clone_struct_copy): If from->inbranch
+	is set, copy one less argument.
+
 	PR rtl-optimization/57915
 	* recog.c (simplify_while_replacing): If all unary/binary/relational
 	operation arguments are constant, attempt to simplify those.
