@@ -1,5 +1,10 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/60055
+	* tsan/tsan_flags.cc (__tsan_default_options): Add
+	SANITIZER_INTERFACE_ATTRIBUTE.  Backport from upstream r200747.
+	* tsan/tsan_rtl.cc (__tsan::OnFinalize): Likewise.
+
 	PR sanitizer/60038
 	* sanitizer_common/sanitizer_linux_libcdep.cc: Include
 	sanitizer_atomic.h and unistd.h.

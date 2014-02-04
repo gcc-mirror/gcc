@@ -40,6 +40,7 @@ static char ctx_placeholder[sizeof(Context)] ALIGNED(64);
 #ifdef TSAN_EXTERNAL_HOOKS
 bool OnFinalize(bool failed);
 #else
+SANITIZER_INTERFACE_ATTRIBUTE
 bool WEAK OnFinalize(bool failed) {
   return failed;
 }
