@@ -1,5 +1,9 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60002
+	* cgraphclones.c (build_function_decl_skip_args): Clear
+	DECL_LANG_SPECIFIC.
+
 	PR tree-optimization/60023
 	* tree-if-conv.c (predicate_mem_writes): Pass true instead of
 	false to gsi_replace.
