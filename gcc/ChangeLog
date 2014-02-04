@@ -1,3 +1,7 @@
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Default visibility is safe.
+
 2014-02-04  Marek Polacek  <polacek@redhat.com>
 
 	* gdbinit.in (pel): Define.
