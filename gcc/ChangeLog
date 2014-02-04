@@ -1,3 +1,15 @@
+2014-02-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/59913
+	* lra-constraints.c (need_for_split_p): Use more 3 reloads as
+	threshold for pseudo splitting.
+	(update_ebb_live_info): Process call argument hard registers and
+	hard registers from insn definition too.
+	(max_small_class_regs_num): New constant.
+	(inherit_in_ebb): Update live hard regs through EBBs.  Update
+	reloads_num only for small register classes.  Don't split for
+	outputs of jumps.
+
 2014-02-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR ipa/60058
