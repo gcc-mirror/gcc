@@ -1,5 +1,8 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60002
+	* g++.dg/opt/pr60002.C: New test.
+
 	PR tree-optimization/60023
 	* g++.dg/vect/pr60023.cc: New test.
 
