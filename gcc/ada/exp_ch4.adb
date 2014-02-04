@@ -5111,11 +5111,23 @@ package body Exp_Ch4 is
 
    begin
       Act := First (Actions (N));
-      while Present (Act) loop
-         Process_Single_Action (Act);
 
-         Next (Act);
-      end loop;
+      --  Deal with case where there are no actions. In this case we simply
+      --  replace the node by its expression since we don't need the actions
+      --  and the specification of this node does not allow a null action list.
+
+      if No (Act) then
+         Replace (N, Relocate_Node (Expression (N)));
+
+      --  Otherwise process the actions as described above
+
+      else
+         loop
+            Process_Single_Action (Act);
+            Next (Act);
+            exit when No (Act);
+         end loop;
+      end if;
    end Expand_N_Expression_With_Actions;
 
    ----------------------------

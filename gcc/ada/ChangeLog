@@ -1,3 +1,24 @@
+2014-02-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* g-comlin.adb: Minor typo fix.
+
+2014-02-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_All): Types derived from a formal
+	access_to_classwide type do not have a finalization master.
+
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb: Minor reformatting.
+
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Eliminate
+	cases where Actions is a null list.
+	* sinfo.ads (N_Expression_With_Actions): Actions can be
+	temporarily empty during semantic analysis, but must be non-empty
+	in the final expanded tree.
+
 2014-01-31  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch9.adb: Minor reformatting.

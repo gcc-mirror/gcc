@@ -1647,13 +1647,13 @@ package body Freeze is
          --  where a component type is private and the controlled full type
          --  occurs after the access type is frozen. Cases that don't need a
          --  finalization master are generic formal types (the actual type will
-         --  have it) and types with Java and CIL conventions, since those are
-         --  used for API bindings. (Are there any other cases that should be
-         --  excluded here???)
+         --  have it) and types derived from them,  and types with Java and CIL
+         --  conventions, since those are used for API bindings.
+         --  (Are there any other cases that should be excluded here???)
 
          elsif Is_Access_Type (E)
            and then Comes_From_Source (E)
-           and then not Is_Generic_Type (E)
+           and then not Is_Generic_Type (Root_Type (E))
            and then Needs_Finalization (Designated_Type (E))
          then
             Build_Finalization_Master (E);
