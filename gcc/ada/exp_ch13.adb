@@ -174,7 +174,7 @@ package body Exp_Ch13 is
                   New_Decl : Node_Id;
 
                begin
-                  --  Replace entity with temporary and renalyze
+                  --  Replace entity with temporary and reanalyze
 
                   Set_Defining_Identifier (Decl, Temp);
                   Set_Analyzed (Decl, False);

@@ -1,3 +1,22 @@
+2014-02-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch13.adb: Minor spelling fix.
+
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* opt.ads: Minor comment update.
+
+2014-02-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Use Rewrite
+	instead of Replace.
+
+2014-02-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Suppress warnings
+	on null expressions if component type is non-null, when the
+	corresponding association covers an empty range of index values.
+
 2014-02-04  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Further comments on N_Expression_With_Actions node.

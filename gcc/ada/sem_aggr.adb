@@ -1937,6 +1937,25 @@ package body Sem_Aggr is
             Errors_Posted_On_Choices : Boolean := False;
             --  Keeps track of whether any choices have semantic errors
 
+            function Empty_Range (A : Node_Id)  return Boolean;
+            --  If an association covers an empty range, some warnings on the
+            --  expression of the association can be disabled.
+
+            -----------------
+            -- Empty_Range --
+            -----------------
+
+            function Empty_Range (A : Node_Id)  return Boolean is
+               R : constant Node_Id := First (Choices (A));
+            begin
+               return No (Next (R))
+                 and then Nkind (R) = N_Range
+                 and then Compile_Time_Compare
+                            (Low_Bound (R), High_Bound (R), False) = GT;
+            end Empty_Range;
+
+         --  Start of processing for Step_2
+
          begin
             --  STEP 2 (A): Check discrete choices validity
 
@@ -2059,6 +2078,7 @@ package body Sem_Aggr is
 
                if Ada_Version >= Ada_2005
                  and then Known_Null (Expression (Assoc))
+                 and then not Empty_Range (Assoc)
                then
                   Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
                end if;
@@ -4717,16 +4737,17 @@ package body Sem_Aggr is
          --  Apply_Compile_Time_Constraint_Error here to the Expr, which might
          --  seem the more natural approach. That's because in some cases the
          --  components are rewritten, and the replacement would be missed.
+         --  We do not mark the whole aggregate as raising a constraint error,
+         --  because the association may be a null array range.
 
-         Insert_Action
-           (Compile_Time_Constraint_Error
-              (Expr,
-               "(Ada 2005) null not allowed in null-excluding component??"),
-            Make_Raise_Constraint_Error
-              (Sloc (Expr), Reason => CE_Access_Check_Failed));
+         Error_Msg_N
+           ("(Ada 2005) null not allowed in null-excluding component??", Expr);
+         Error_Msg_N
+           ("\Constraint_Error will be raised at runtime?", Expr);
 
-         --  Set proper type for bogus component (why is this needed???)
-
+         Rewrite (Expr,
+           Make_Raise_Constraint_Error
+             (Sloc (Expr), Reason => CE_Access_Check_Failed));
          Set_Etype    (Expr, Comp_Typ);
          Set_Analyzed (Expr);
       end if;
