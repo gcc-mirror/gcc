@@ -1,5 +1,8 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/60026
+	* c-c++-common/torture/pr60026.c: New test.
+
 	PR rtl-optimization/57915
 	* gcc.target/i386/pr57915.c: New test.
 

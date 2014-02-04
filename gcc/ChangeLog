@@ -1,5 +1,9 @@
 2014-02-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/60026
+	* tree-inline.c (copy_forbidden): Fail for
+	__attribute__((optimize (0))) functions.
+
 	PR other/58712
 	* omp-low.c (simd_clone_struct_copy): If from->inbranch
 	is set, copy one less argument.
