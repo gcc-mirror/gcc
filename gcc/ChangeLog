@@ -1,9 +1,14 @@
-2014-02-03  Jan Hubicka  <jh@suse.cz>
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59882
+	* tree.c (get_binfo_at_offset): Do not get confused by empty classes;
+
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Remove.
 	* gimple-fold.h (gimple_extract_devirt_binfo_from_cst): Remove.
 
-2014-02-03  Jan Hubicka  <jh@suse.cz>
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59831
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Use ipa-devirt
@@ -14,7 +19,7 @@
 	(get_polymorphic_call_info): ... here.
 	(get_polymorphic_call_info_from_invariant): New function.
 
-2014-02-03  Jan Hubicka  <jh@suse.cz>
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Do direct
 	lookup via vtable pointer; check for type consistency
@@ -152,7 +157,7 @@
 	(reduc_splus_<mode>): Call gen_altivec_vsumsws_direct instead of
 	gen_altivec_vsumsws.
 
-2014-02-02  Jan Hubicka  <jh@suse.cz>
+2014-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (subbinfo_with_vtable_at_offset,
 	vtable_pointer_value_to_binfo): New functions.
@@ -479,7 +484,7 @@
 	if -minrt given.
 	(ENDFILE_SPEC): Likewise.
 
-2014-01-29  Jan Hubicka  <jh@suse.cz>
+2014-01-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (clobber_only_eh_bb_p): New function.
 	(estimate_function_body_sizes): Use it.
@@ -1234,12 +1239,12 @@
 
 	* config/microblaze/microblaze.md: Correct bswaphi2 insn.
 
-2014-01-22  Jan Hubicka  <jh@suse.cz>
+2014-01-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/x86-tune.def (X86_TUNE_ACCUMULATE_OUTGOING_ARGS):
 	Enable for generic and recent AMD targets.
 
-2014-01-22  Jan Hubicka  <jh@suse.cz>
+2014-01-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* combine-stack-adj.c (combine_stack_adjustments_for_block): Remove
 	ARG_SIZE note when adjustment was eliminated.
@@ -1404,7 +1409,7 @@
 	* config/i386/i386.c (ix86_avoid_lea_for_addr): Return false
 	if operands[1] is a REG or ZERO_EXTEND of a REG.
 
-2014-01-19  Jan Hubicka  <jh@suse.cz>
+2014-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varasm.c (compute_reloc_for_constant): Use targetm.binds_local_p.
 
@@ -1481,7 +1486,7 @@
 	* ree.c (combine_set_extension): Temporarily disable test for
 	changing number of hard registers.
 
-2014-01-17  Jan Hubicka  <jh@suse.cz>
+2014-01-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/58125
 	* ipa-inline-analysis.c (inline_free_summary):
@@ -1658,7 +1663,7 @@
 	* ipa-ref.c (ipa_remove_stmt_references): Fix references
 	traversal when removing references.
 
-2014-01-16  Jan Hubicka  <jh@suse.cz>
+2014-01-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59775
 	* tree.c (get_binfo_at_offset): Look harder for virtual bases.
@@ -2070,7 +2075,7 @@
 	occurs before the extension when optimizing extensions with
 	different source and destination hard registers.
 
-2014-01-10  Jan Hubicka  <jh@suse.cz>
+2014-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58585
 	* ipa-devirt.c (build_type_inheritance_graph): Also add types of
