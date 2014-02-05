@@ -234,7 +234,25 @@ report_inline_failed_reason (struct cgraph_edge *e)
     }
 }
 
-/* Decide if we can inline the edge and possibly update
+ /* Decide whether sanitizer-related attributes allow inlining. */
+
+static bool
+sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
+{
+  /* Don't care if sanitizer is disabled */
+  if (!(flag_sanitize & SANITIZE_ADDRESS))
+    return true;
+
+  if (!caller || !callee)
+    return true;
+
+  return !!lookup_attribute ("no_sanitize_address",
+      DECL_ATTRIBUTES (caller)) == 
+      !!lookup_attribute ("no_sanitize_address",
+      DECL_ATTRIBUTES (callee));
+}
+
+ /* Decide if we can inline the edge and possibly update
    inline_failed reason.  
    We check whether inlining is possible at all and whether
    caller growth limits allow doing so.  
@@ -325,6 +343,12 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 						callee->decl))
     {
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
+      inlinable = false;
+    }
+  /* Don't inline a function with mismatched sanitization attributes. */
+  else if (!sanitize_attrs_match_for_inline_p (e->caller->decl, callee->decl))
+    {
+      e->inline_failed = CIF_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
   /* Check if caller growth allows the inlining.  */

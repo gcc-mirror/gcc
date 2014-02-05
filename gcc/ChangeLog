@@ -1,3 +1,11 @@
+2014-02-05  Yury Gribov  <y.gribov@samsung.com>
+
+	* cif-code.def (ATTRIBUTE_MISMATCH): New CIF code.
+	* ipa-inline.c (report_inline_failed_reason): Handle mismatched
+	sanitization attributes.
+	(can_inline_edge_p): Likewise.
+	(sanitize_attrs_match_for_inline_p): New function.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-prop.c (detect_type_change): Shor circuit testing of
