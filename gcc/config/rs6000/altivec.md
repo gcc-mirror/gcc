@@ -1605,15 +1605,29 @@
   "vsum4s<VI_char>s %0,%1,%2"
   [(set_attr "type" "veccomplex")])
 
+;; FIXME: For the following two patterns, the scratch should only be
+;; allocated for !VECTOR_ELT_ORDER_BIG, and the instructions should
+;; be emitted separately.
 (define_insn "altivec_vsum2sws"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VSUM2SWS))
-   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
+   (set (reg:SI 110) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))
+   (clobber (match_scratch:V4SI 3 "=v"))]
   "TARGET_ALTIVEC"
-  "vsum2sws %0,%1,%2"
-  [(set_attr "type" "veccomplex")])
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    return "vsum2sws %0,%1,%2";
+  else
+    return "vsldoi %3,%2,%2,12\n\tvsum2sws %3,%1,%3\n\tvsldoi %0,%3,%3,4";
+}
+  [(set_attr "type" "veccomplex")
+   (set (attr "length")
+     (if_then_else
+       (match_test "VECTOR_ELT_ORDER_BIG")
+       (const_string "4")
+       (const_string "12")))])
 
 (define_insn "altivec_vsumsws"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
@@ -1624,7 +1638,7 @@
    (clobber (match_scratch:V4SI 3 "=v"))]
   "TARGET_ALTIVEC"
 {
-  if (BYTES_BIG_ENDIAN || VECTOR_ELT_ORDER_BIG)
+  if (VECTOR_ELT_ORDER_BIG)
     return "vsumsws %0,%1,%2";
   else
     return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvspltw %0,%3,3";
@@ -1632,7 +1646,7 @@
   [(set_attr "type" "veccomplex")
    (set (attr "length")
      (if_then_else
-       (match_test "(BYTES_BIG_ENDIAN || VECTOR_ELT_ORDER_BIG)")
+       (match_test "(VECTOR_ELT_ORDER_BIG)")
        (const_string "4")
        (const_string "12")))])
 
