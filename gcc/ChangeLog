@@ -1,3 +1,15 @@
+2014-02-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/59777
+	* config/pa/pa.c (legitimize_tls_address): Return original address
+	if not passed a SYMBOL_REF rtx.
+	(hppa_legitimize_address): Call legitimize_tls_address for all TLS
+	addresses.
+	(pa_emit_move_sequence): Simplify TLS source operands.
+	(pa_legitimate_constant_p): Reject all TLS constants.
+	* config/pa/pa.h (PA_SYMBOL_REF_TLS_P): Correct comment.
+	(CONSTANT_ADDRESS_P): Reject TLS CONST addresses.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (function_and_variable_visibility): Decompose DECL_ONE_ONLY

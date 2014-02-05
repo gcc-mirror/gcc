@@ -784,9 +784,9 @@ extern int may_call_alloca;
 
 #define MAX_REGS_PER_ADDRESS 2
 
-/* Non-TLS symbolic references.  */
-#define PA_SYMBOL_REF_TLS_P(RTX) \
-  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+/* TLS symbolic reference.  */
+#define PA_SYMBOL_REF_TLS_P(X) \
+  (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (X) != 0)
 
 /* Recognize any constant value that is a valid address except
    for symbolic addresses.  We get better CSE by rejecting them
@@ -796,7 +796,8 @@ extern int may_call_alloca;
 #define CONSTANT_ADDRESS_P(X) \
   ((GET_CODE (X) == LABEL_REF 						\
    || (GET_CODE (X) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (X))		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == CONST_INT						\
+   || (GET_CODE (X) == CONST && !pa_tls_referenced_p (X))		\
    || GET_CODE (X) == HIGH) 						\
    && (reload_in_progress || reload_completed				\
        || ! pa_symbolic_expression_p (X)))
