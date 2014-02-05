@@ -114,6 +114,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
      unit may be in separate DSO and the symbol may be hidden.  */
   if (DECL_VISIBILITY_SPECIFIED (decl)
       && DECL_EXTERNAL (decl)
+      && DECL_VISIBILITY (decl) != VISIBILITY_DEFAULT
       && (!(snode = symtab_get_node (decl)) || !snode->in_other_partition))
     return false;
   /* When function is public, we always can introduce new reference.
