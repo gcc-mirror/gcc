@@ -1,3 +1,9 @@
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57499
+	* tree-eh.c (cleanup_empty_eh): Bail out on totally empty
+	bb with no successors.
+
 2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	PR target/59718

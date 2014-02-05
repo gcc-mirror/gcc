@@ -1,6 +1,11 @@
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57499
+	* g++.dg/torture/pr57499.C: New test.
+
 2014-02-05  Yury Gribov  <y.gribov@samsung.com>
 
-	* gcc.dg/asan/nosanitize-and-inline.c: : New test.
+	* gcc.dg/asan/nosanitize-and-inline.c: New test.
 
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
