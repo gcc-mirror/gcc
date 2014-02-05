@@ -688,6 +688,19 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
     return false;
 
+  /* C++ methods are not allowed to change THIS pointer unless they
+     are constructors or destructors.  */
+  if (TREE_CODE	(base) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
+      && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (base, 0))) == PARM_DECL
+      && TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
+      && !DECL_CXX_CONSTRUCTOR_P (current_function_decl)
+      && !DECL_CXX_DESTRUCTOR_P (current_function_decl)
+      && (SSA_NAME_VAR (TREE_OPERAND (base, 0))
+	  == DECL_ARGUMENTS (current_function_decl)))
+    return false;
+
   ao_ref_init (&ao, arg);
   ao.base = base;
   ao.offset = offset;
