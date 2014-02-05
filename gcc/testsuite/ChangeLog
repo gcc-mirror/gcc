@@ -1,3 +1,12 @@
+2014-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx512f-vrndscaless-2.c (compute_rndscaless):
+	Use __builtin_floorf, __builtin_ceilf.
+	* gcc.target/i386/sse4_1-floorf-sfix-vec.c (floorf): Remove
+	declaration.
+	(TEST): Use __builtin_floorf.
+	* gcc.target/i386/sse4_1-floorf-vec.c: Likewise.
+
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/59947
