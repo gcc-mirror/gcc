@@ -1,5 +1,11 @@
 2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/altivec.md (altivec_vsum2sws): Adjust code
+	generation for -maltivec=be.
+	(altivec_vsumsws): Simplify redundant test.
+
+2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* altivec.md (UNSPEC_VPACK_UNS_UNS_MOD_DIRECT): New unspec.
 	(UNSPEC_VUNPACK_HI_SIGN_DIRECT): Likewise.
 	(UNSPEC_VUNPACK_LO_SIGN_DIRECT): Likewise.
