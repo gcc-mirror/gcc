@@ -1,3 +1,7 @@
+2014-02-05  Yury Gribov  <y.gribov@samsung.com>
+
+	* gcc.dg/asan/nosanitize-and-inline.c: : New test.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/devirrt-22.C: Fix template.

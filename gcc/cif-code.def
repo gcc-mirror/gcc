@@ -123,3 +123,7 @@ DEFCIFCODE(OPTIMIZATION_MISMATCH, CIF_FINAL_ERROR,
 /* We can't inline because the callee refers to comdat-local symbols.  */
 DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_NORMAL,
 	   N_("callee refers to comdat-local symbols"))
+
+/* We can't inline because of mismatched caller/callee attributes.  */
+DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_NORMAL,
+	   N_("function attribute mismatch"))
