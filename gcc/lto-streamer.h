@@ -873,6 +873,7 @@ void lto_output_location (struct output_block *, struct bitpack_d *, location_t)
 
 
 /* In lto-cgraph.c  */
+extern bool asm_nodes_output;
 lto_symtab_encoder_t lto_symtab_encoder_new (bool);
 int lto_symtab_encoder_encode (lto_symtab_encoder_t, symtab_node *);
 void lto_symtab_encoder_delete (lto_symtab_encoder_t);
