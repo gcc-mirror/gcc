@@ -1,5 +1,15 @@
 2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Change
+	CODE_FOR_altivec_vpku[hw]um to
+	CODE_FOR_altivec_vpku[hw]um_direct.
+	* config/rs6000/altivec.md (vec_unpacks_hi_<VP_small_lc>): Change
+	UNSPEC_VUNPACK_HI_SIGN to UNSPEC_VUNPACK_HI_SIGN_DIRECT.
+	(vec_unpacks_lo_<VP_small_lc>): Change UNSPEC_VUNPACK_LO_SIGN to
+	UNSPEC_VUNPACK_LO_SIGN_DIRECT.
+
+2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/altivec.md (altivec_vsum2sws): Adjust code
 	generation for -maltivec=be.
 	(altivec_vsumsws): Simplify redundant test.

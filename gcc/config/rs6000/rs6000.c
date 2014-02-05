@@ -29888,9 +29888,9 @@ altivec_expand_vec_perm_const (rtx operands[4])
     unsigned char perm[16];
   };
   static const struct altivec_perm_insn patterns[] = {
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuhum,
+    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuhum_direct,
       {  1,  3,  5,  7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31 } },
-    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum,
+    { OPTION_MASK_ALTIVEC, CODE_FOR_altivec_vpkuwum_direct,
       {  2,  3,  6,  7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 } },
     { OPTION_MASK_ALTIVEC, 
       (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb_direct
@@ -30055,14 +30055,14 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	     halfwords (BE numbering) when the even halfwords (LE
 	     numbering) are what we need.  */
 	  if (!BYTES_BIG_ENDIAN
-	      && icode == CODE_FOR_altivec_vpkuwum
+	      && icode == CODE_FOR_altivec_vpkuwum_direct
 	      && ((GET_CODE (op0) == REG
 		   && GET_MODE (op0) != V4SImode)
 		  || (GET_CODE (op0) == SUBREG
 		      && GET_MODE (XEXP (op0, 0)) != V4SImode)))
 	    continue;
 	  if (!BYTES_BIG_ENDIAN
-	      && icode == CODE_FOR_altivec_vpkuhum
+	      && icode == CODE_FOR_altivec_vpkuhum_direct
 	      && ((GET_CODE (op0) == REG
 		   && GET_MODE (op0) != V8HImode)
 		  || (GET_CODE (op0) == SUBREG

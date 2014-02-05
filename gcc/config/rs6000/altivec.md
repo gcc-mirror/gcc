@@ -2566,14 +2566,14 @@
 (define_expand "vec_unpacks_hi_<VP_small_lc>"
   [(set (match_operand:VP 0 "register_operand" "=v")
         (unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
-		   UNSPEC_VUNPACK_HI_SIGN))]
+		   UNSPEC_VUNPACK_HI_SIGN_DIRECT))]
   "<VI_unit>"
   "")
 
 (define_expand "vec_unpacks_lo_<VP_small_lc>"
   [(set (match_operand:VP 0 "register_operand" "=v")
         (unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
-		   UNSPEC_VUNPACK_LO_SIGN))]
+		   UNSPEC_VUNPACK_LO_SIGN_DIRECT))]
   "<VI_unit>"
   "")
 
