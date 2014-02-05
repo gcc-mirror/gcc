@@ -10722,8 +10722,6 @@ those options take precedence over the appropriate part of this option.
 Permissible names for this option are the same as those for
 @option{-mtune}.
 
-ssembly code.
-
 @option{-mcpu=generic-@var{arch}} is also permissible, and is
 equivalent to @option{-march=@var{arch} -mtune=generic-@var{arch}}.
 See @option{-mtune} for more information.

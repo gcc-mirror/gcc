@@ -1,5 +1,9 @@
 2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* doc/invoke.texi: Fix thinko introduced by previous revision.
+
+2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	Backport from mainline.
 	2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
