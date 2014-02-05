@@ -1,3 +1,10 @@
+2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/59718
+	* doc/invoke.texi (-march): Clarify documentation for ARM.
+	(-mtune): Likewise.
+	(-mcpu): Likewise.
+
 2014-02-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_2): Be more informative
