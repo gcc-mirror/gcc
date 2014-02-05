@@ -1,3 +1,13 @@
+2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport from mainline.
+	2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR target/59718
+	* doc/invoke.texi (-march): Clarify documentation for ARM.
+	(-mtune): Likewise.
+	(-mcpu): Likewise.
+
 2014-02-04  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/59777
