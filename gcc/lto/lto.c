@@ -50,8 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 
-/* Vector to keep track of external variables we've seen so far.  */
-vec<tree, va_gc> *lto_global_var_decls;
 
 static GTY(()) tree first_personality_decl;
 
@@ -3009,9 +3007,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 static void
 materialize_cgraph (void)
 {
-  tree decl;
   struct cgraph_node *node; 
-  unsigned i;
   timevar_id_t lto_timer;
 
   if (!quiet_flag)
@@ -3042,10 +3038,6 @@ materialize_cgraph (void)
 
   current_function_decl = NULL;
   set_cfun (NULL);
-
-  /* Inform the middle end about the global variables we have seen.  */
-  FOR_EACH_VEC_ELT (*lto_global_var_decls, i, decl)
-    rest_of_decl_compilation (decl, 1, 0);
 
   if (!quiet_flag)
     fprintf (stderr, "\n");
@@ -3309,8 +3301,6 @@ lto_main (void)
 	do_whole_program_analysis ();
       else
 	{
-	  varpool_node *vnode;
-
 	  timevar_start (TV_PHASE_OPT_GEN);
 
 	  materialize_cgraph ();
@@ -3330,10 +3320,6 @@ lto_main (void)
 	     this.  */
 	  if (flag_lto_report || (flag_wpa && flag_lto_report_wpa))
 	    print_lto_report_1 ();
-
-	  /* Record the global variables.  */
-	  FOR_EACH_DEFINED_VARIABLE (vnode)
-	    vec_safe_push (lto_global_var_decls, vnode->decl);
 	}
     }
 
