@@ -24,6 +24,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef __s390x__
+
 #define EXPD(fp)	(((fp.l.upper) >> 20) & 0x7FF)
 #define EXCESSD		1022
 #define SIGNBIT		0x80000000
@@ -91,3 +93,4 @@ __fixunsdfdi (double a1)
 
     return l;
 }
+#endif /* !__s390x__ */
