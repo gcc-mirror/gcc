@@ -1,3 +1,8 @@
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58703
+	* c-c++-common/gomp/pr58703.c: New test.
+
 2014-02-05  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/60076
