@@ -1,3 +1,10 @@
+2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/pack.c: New.
+	* gcc.dg/vmx/pack-be-order.c: New.
+	* gcc.dg/vmx/unpack.c: New.
+	* gcc.dg/vmx/unpack-be-order.c: New.
+
 2014-02-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* g++.dg/cilk-plus/CK/catch_exc.cc: Disable test for -O1.

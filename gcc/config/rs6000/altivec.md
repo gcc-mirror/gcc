@@ -46,6 +46,7 @@
    UNSPEC_VPACK_SIGN_UNS_SAT
    UNSPEC_VPACK_UNS_UNS_SAT
    UNSPEC_VPACK_UNS_UNS_MOD
+   UNSPEC_VPACK_UNS_UNS_MOD_DIRECT
    UNSPEC_VSLV4SI
    UNSPEC_VSLO
    UNSPEC_VSR
@@ -69,6 +70,8 @@
    UNSPEC_VLSDOI
    UNSPEC_VUNPACK_HI_SIGN
    UNSPEC_VUNPACK_LO_SIGN
+   UNSPEC_VUNPACK_HI_SIGN_DIRECT
+   UNSPEC_VUNPACK_LO_SIGN_DIRECT
    UNSPEC_VUPKHPX
    UNSPEC_VUPKLPX
    UNSPEC_DST
@@ -683,7 +686,7 @@
        emit_insn (gen_altivec_vmulosh (odd, operands[1], operands[2]));
        emit_insn (gen_altivec_vmrghw_direct (high, even, odd));
        emit_insn (gen_altivec_vmrglw_direct (low, even, odd));
-       emit_insn (gen_altivec_vpkuwum (operands[0], high, low));
+       emit_insn (gen_altivec_vpkuwum_direct (operands[0], high, low));
      }
    else
      {
@@ -691,7 +694,7 @@
        emit_insn (gen_altivec_vmulesh (odd, operands[1], operands[2]));
        emit_insn (gen_altivec_vmrghw_direct (high, odd, even));
        emit_insn (gen_altivec_vmrglw_direct (low, odd, even));
-       emit_insn (gen_altivec_vpkuwum (operands[0], low, high));
+       emit_insn (gen_altivec_vpkuwum_direct (operands[0], low, high));
      } 
 
    DONE;
@@ -1432,7 +1435,7 @@
   "TARGET_ALTIVEC"
   "*
   {
-    if (BYTES_BIG_ENDIAN)
+    if (VECTOR_ELT_ORDER_BIG)
       return \"vpkpx %0,%1,%2\";
     else
       return \"vpkpx %0,%2,%1\";
@@ -1447,7 +1450,7 @@
   "<VI_unit>"
   "*
   {
-    if (BYTES_BIG_ENDIAN)
+    if (VECTOR_ELT_ORDER_BIG)
       return \"vpks<VI_char>ss %0,%1,%2\";
     else
       return \"vpks<VI_char>ss %0,%2,%1\";
@@ -1462,7 +1465,7 @@
   "<VI_unit>"
   "*
   {
-    if (BYTES_BIG_ENDIAN)
+    if (VECTOR_ELT_ORDER_BIG)
       return \"vpks<VI_char>us %0,%1,%2\";
     else
       return \"vpks<VI_char>us %0,%2,%1\";
@@ -1477,7 +1480,7 @@
   "<VI_unit>"
   "*
   {
-    if (BYTES_BIG_ENDIAN)
+    if (VECTOR_ELT_ORDER_BIG)
       return \"vpku<VI_char>us %0,%1,%2\";
     else
       return \"vpku<VI_char>us %0,%2,%1\";
@@ -1489,6 +1492,21 @@
 	(unspec:<VP_small> [(match_operand:VP 1 "register_operand" "v")
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_UNS_UNS_MOD))]
+  "<VI_unit>"
+  "*
+  {
+    if (VECTOR_ELT_ORDER_BIG)
+      return \"vpku<VI_char>um %0,%1,%2\";
+    else
+      return \"vpku<VI_char>um %0,%2,%1\";
+  }"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "altivec_vpku<VI_char>um_direct"
+  [(set (match_operand:<VP_small> 0 "register_operand" "=v")
+	(unspec:<VP_small> [(match_operand:VP 1 "register_operand" "v")
+			    (match_operand:VP 2 "register_operand" "v")]
+			   UNSPEC_VPACK_UNS_UNS_MOD_DIRECT))]
   "<VI_unit>"
   "*
   {
@@ -2034,6 +2052,19 @@
 	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
 		     UNSPEC_VUNPACK_HI_SIGN))]
   "<VI_unit>"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    return "vupkhs<VU_char> %0,%1";
+  else
+    return "vupkls<VU_char> %0,%1";
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vupkhs<VU_char>_direct"
+  [(set (match_operand:VP 0 "register_operand" "=v")
+	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
+		     UNSPEC_VUNPACK_HI_SIGN_DIRECT))]
+  "<VI_unit>"
   "vupkhs<VU_char> %0,%1"
   [(set_attr "type" "vecperm")])
 
@@ -2041,6 +2072,19 @@
   [(set (match_operand:VP 0 "register_operand" "=v")
 	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
 		     UNSPEC_VUNPACK_LO_SIGN))]
+  "<VI_unit>"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    return "vupkls<VU_char> %0,%1";
+  else
+    return "vupkhs<VU_char> %0,%1";
+}
+  [(set_attr "type" "vecperm")])
+
+(define_insn "*altivec_vupkls<VU_char>_direct"
+  [(set (match_operand:VP 0 "register_operand" "=v")
+	(unspec:VP [(match_operand:<VP_small> 1 "register_operand" "v")]
+		     UNSPEC_VUNPACK_LO_SIGN_DIRECT))]
   "<VI_unit>"
   "vupkls<VU_char> %0,%1"
   [(set_attr "type" "vecperm")])
@@ -2050,7 +2094,12 @@
 	(unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
 		     UNSPEC_VUPKHPX))]
   "TARGET_ALTIVEC"
-  "vupkhpx %0,%1"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    return "vupkhpx %0,%1";
+  else
+    return "vupklpx %0,%1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vupklpx"
@@ -2058,7 +2107,12 @@
 	(unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
 		     UNSPEC_VUPKLPX))]
   "TARGET_ALTIVEC"
-  "vupklpx %0,%1"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    return "vupklpx %0,%1";
+  else
+    return "vupkhpx %0,%1";
+}
   [(set_attr "type" "vecperm")])
 
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
