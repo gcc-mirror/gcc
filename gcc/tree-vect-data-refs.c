@@ -2901,6 +2901,24 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 		  && diff - (HOST_WIDE_INT) TREE_INT_CST_LOW (dr_a1->seg_len) <
 		     min_seg_len_b))
 	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "merging ranges for ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				     DR_REF (dr_a1->dr));
+		  dump_printf (MSG_NOTE,  ", ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				     DR_REF (dr_b1->dr));
+		  dump_printf (MSG_NOTE,  " and ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				     DR_REF (dr_a2->dr));
+		  dump_printf (MSG_NOTE,  ", ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM,
+				     DR_REF (dr_b2->dr));
+		  dump_printf (MSG_NOTE, "\n");
+		}
+
 	      dr_a1->seg_len = size_binop (PLUS_EXPR,
 					   dr_a2->seg_len, size_int (diff));
 	      comp_alias_ddrs.ordered_remove (i--);
@@ -2908,18 +2926,12 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	}
     }
 
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "improved number of alias checks from %d to %d\n",
+		   may_alias_ddrs.length (), comp_alias_ddrs.length ());
   if ((int) comp_alias_ddrs.length () >
       PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location,
-	                   "disable versioning for alias - max number of "
-	                   "generated checks exceeded.\n");
-	}
-
-      return false;
-    }
+    return false;
 
   return true;
 }
