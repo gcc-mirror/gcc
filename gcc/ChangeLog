@@ -1,3 +1,9 @@
+2014-02-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_hard_regno_mode_ok): Do not
+	accept extended registers in any mode when compiling for the
+	MN10300.
+
 2014-02-05  Yury Gribov  <y.gribov@samsung.com>
 
 	* cif-code.def (ATTRIBUTE_MISMATCH): New CIF code.
