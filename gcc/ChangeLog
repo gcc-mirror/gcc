@@ -1,3 +1,12 @@
+2014-02-05  Richard Henderson <rth@redhat.com>
+
+	PR debug/52727
+	* combine-stack-adj.c: Revert r206943.
+	* sched-int.h (struct deps_desc): Add last_args_size.
+	* sched-deps.c (init_deps): Initialize it.
+	(sched_analyze_insn): Add OUTPUT dependencies between insns that
+	contain REG_ARGS_SIZE notes.
+
 2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-cgraph.c (asm_nodes_output): Make global.
