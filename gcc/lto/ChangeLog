@@ -1,3 +1,14 @@
+2014-02-05  Richard Biener  <rguenther@suse.de>
+
+	* lto.h (lto_global_var_decls): Remove.
+	* lto-lang.c (lto_init): Do not allocate lto_global_var_decls.
+	(lto_write_globals): Do nothing in WPA stage, gather globals from
+	the varpool here ...
+	* lto.c (lto_main): ... not here.
+	(materialize_cgraph): Do not call rest_of_decl_compilation
+	on the empty lto_global_var_decls vector.
+	(lto_global_var_decls): Remove.
+
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (get_symbol_class): Only unforced DECL_ONE_ONLY 
