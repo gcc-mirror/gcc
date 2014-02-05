@@ -1,3 +1,8 @@
+2014-02-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: Disable test for -O1.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+
 2014-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/avx512f-vrndscaless-2.c (compute_rndscaless):
@@ -114,6 +119,7 @@
 	PR ipa/59831
 	* g++.dg/ipa/devirt-24.C: New testcase.
 
+>>>>>>> .r207518
 2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53017
