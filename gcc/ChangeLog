@@ -1,5 +1,10 @@
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/59947
+	* ipa-devirt.c (possible_polymorphic_call_targets): Fix
+	a comment typo and formatting issue.  If odr_hash hasn't been
+	created, return vNULL and set *completep to false.
+
 	PR middle-end/57499
 	* tree-eh.c (cleanup_empty_eh): Bail out on totally empty
 	bb with no successors.

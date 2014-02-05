@@ -1,5 +1,8 @@
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/59947
+	* g++.dg/opt/pr59947.C: New test.
+
 	PR c++/58703
 	* c-c++-common/gomp/pr58703.c: New test.
 
