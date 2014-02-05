@@ -183,7 +183,6 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       OMP_ATOMIC_SEQ_CST (x) = seq_cst;
       return build_modify_expr (loc, v, NULL_TREE, NOP_EXPR,
 				loc, x, NULL_TREE);
-      return x;
     }
 
   /* There are lots of warnings, errors, and conversions that need to happen

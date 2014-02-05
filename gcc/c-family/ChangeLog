@@ -1,3 +1,9 @@
+2014-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/53123
+	* c-omp.c (c_finish_omp_atomic): Remove unreachable return
+	statement.
+
 2014-02-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60036
