@@ -1,6 +1,7 @@
 /* { dg-options "-fcilkplus" } */
 /* { dg-do run { target i?86-*-* x86_64-*-* arm*-*-* } } */
 /* { dg-options "-fcilkplus -lcilkrts" { target { i?86-*-* x86_64-*-* arm*-*-* } } } */
+/* { dg-skip-if "" { *-*-* } { "-O1" } { "" } } */
 
 #include <assert.h>
 #include <unistd.h>
