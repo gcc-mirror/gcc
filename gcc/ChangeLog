@@ -1,3 +1,11 @@
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-cgraph.c (asm_nodes_output): Make global.
+	* lto-wrapper.c (run_gcc): Pass down paralelizm to WPA.
+	* gcc.c (AS_NEEDS_DASH_FOR_PIPED_INPUT): Allow WPA
+	parameter
+	(driver_handle_option): Handle OPT_fwpa.
+
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/59947

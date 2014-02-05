@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "ipa-utils.h"
 
+/* True when asm nodes has been output.  */
+bool asm_nodes_output = false;
+
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
 
@@ -890,7 +893,6 @@ output_symtab (void)
   lto_symtab_encoder_iterator lsei;
   int i, n_nodes;
   lto_symtab_encoder_t encoder;
-  static bool asm_nodes_output = false;
 
   if (flag_wpa)
     output_cgraph_opt_summary ();

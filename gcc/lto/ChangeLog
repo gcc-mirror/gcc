@@ -1,3 +1,14 @@
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_parallelism): New static var.
+	(do_stream_out, wait_for_child, stream_out): New static functions.
+	(lto_wpa_write_files): Add support for parallel streaming.
+	(do_whole_program_analysis): Set parallelism.
+	* lang.opt (fwpa): Add parameter.
+	* lto-lang.c (lto_handle_option): Handle flag_wpa.
+	(lto_init): Update use of flag_wpa.
+	* lto-streamer.h (asm_nodes_output): Declare.
+
 2014-02-05  Richard Biener  <rguenther@suse.de>
 
 	* lto.h (lto_global_var_decls): Remove.
