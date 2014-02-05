@@ -1,3 +1,13 @@
+2014-02-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.host: Include t-floattodi also for s390x.
+	* config/s390/32/_fixdfdi.c: Omit in 64 bit mode.
+	* config/s390/32/_fixsfdi.c: Likewise.
+	* config/s390/32/_fixtfdi.c: Likewise.
+	* config/s390/32/_fixunsdfdi.c: Likewise.
+	* config/s390/32/_fixunssfdi.c: Likewise.
+	* config/s390/32/_fixunstfdi.c: Likewise.
+
 2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/59788
