@@ -1359,7 +1359,7 @@ devirt_variable_node_removal_hook (varpool_node *n,
    temporarily change to one of base types.  INCLUDE_DERIVER_TYPES make
    us to walk the inheritance graph for all derivations.
 
-   If COMPLETEP is non-NULL, store true if the list is complette. 
+   If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
@@ -1378,13 +1378,20 @@ possible_polymorphic_call_targets (tree otr_type,
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   pointer_set_t *inserted;
   pointer_set_t *matched_vtables;
-  vec <cgraph_node *> nodes=vNULL;
+  vec <cgraph_node *> nodes = vNULL;
   odr_type type, outer_type;
   polymorphic_call_target_d key;
   polymorphic_call_target_d **slot;
   unsigned int i;
   tree binfo, target;
   bool final;
+
+  if (!odr_hash.is_created ())                                                                                                                    
+    {                                                                                                                                             
+      if (completep)                                                                                                                              
+	*completep = false;                                                                                                                        
+      return nodes;                                                                                                                               
+    }                                                                                                                                             
 
   type = get_odr_type (otr_type, true);
 
