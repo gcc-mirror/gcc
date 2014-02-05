@@ -1,3 +1,9 @@
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58703
+	* parser.c (cp_parser_omp_declare_reduction): Save and free
+	declarator_obstack.
+
 2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53017

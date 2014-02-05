@@ -30623,6 +30623,10 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
   cp_token *first_token;
   cp_token_cache *cp;
   int errs;
+  void *p;
+    
+  /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
+  p = obstack_alloc (&declarator_obstack, 0);
 
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     goto fail;
@@ -30731,7 +30735,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     {
      fail:
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return;
+      goto done;
     }
 
   first_token = cp_lexer_peek_token (parser->lexer);
@@ -30835,6 +30839,10 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
     }
 
   cp_parser_require_pragma_eol (parser, pragma_tok);
+
+ done:
+  /* Free any declarators allocated.  */
+  obstack_free (&declarator_obstack, p);
 }
 
 /* OpenMP 4.0
