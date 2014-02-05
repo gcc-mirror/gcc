@@ -1,3 +1,9 @@
+2014-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/60076
+	* gcc.dg/vect/pr60012.c: Require vect_extract_even_odd and
+	avoid using unsigned long long.
+
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/57499
