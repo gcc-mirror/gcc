@@ -1,3 +1,10 @@
+2014-02-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_2): Be more informative
+	when not vectorizing because of too many alias checks.
+	* tree-vect-data-refs.c (vect_prune_runtime_alias_test_list):
+	Add more verboseness, avoid duplicate MSG_MISSED_OPTIMIZATION.
+
 2014-02-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_hard_regno_mode_ok): Do not
