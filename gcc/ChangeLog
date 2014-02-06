@@ -1,3 +1,12 @@
+2014-02-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): New table.
+	Remove extra newline at end of file.
+	* config/arm/arm.c (arm_cortex_a57_tune): New tuning struct.
+	(arm_issue_rate): Handle cortexa57.
+	* config/arm/arm-cores.def (cortex-a57): Use cortex_a57 tuning.
+	(cortex-a57.cortex-a53): Likewise.
+
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59575
