@@ -1088,15 +1088,29 @@ package body Lib.Xref is
               and then Present (First_Private_Entity (E))
               and then In_Extended_Main_Source_Unit (N)
             then
-               Add_Entry
-                 ((Ent       => Ent,
-                   Loc       => Sloc (First_Private_Entity (E)),
-                   Typ       => 'E',
-                   Eun       => Get_Source_Unit (Def),
-                   Lun       => Get_Source_Unit (Ref),
-                   Ref_Scope => Empty,
-                   Ent_Scope => Empty),
-                  Ent_Scope_File => No_Unit);
+               --  Handle case in which the full-view and partial-view of the
+               --  first private entity are swapped
+
+               declare
+                  First_Private : Entity_Id := First_Private_Entity (E);
+
+               begin
+                  if Is_Private_Type (First_Private)
+                    and then Present (Full_View (First_Private))
+                  then
+                     First_Private := Full_View (First_Private);
+                  end if;
+
+                  Add_Entry
+                    ((Ent       => Ent,
+                      Loc       => Sloc (First_Private),
+                      Typ       => 'E',
+                      Eun       => Get_Source_Unit (Def),
+                      Lun       => Get_Source_Unit (Ref),
+                      Ref_Scope => Empty,
+                      Ent_Scope => Empty),
+                     Ent_Scope_File => No_Unit);
+               end;
             end if;
          end if;
       end if;
