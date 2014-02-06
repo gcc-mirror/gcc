@@ -1,3 +1,9 @@
+2014-02-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/60032
+	* config/rs6000/rs6000.c (rs6000_secondary_memory_needed_mode): Only
+	change SDmode to DDmode when lra_in_progress.
+
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59150
