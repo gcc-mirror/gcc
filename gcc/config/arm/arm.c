@@ -29551,7 +29551,7 @@ arm_vector_alignment_reachable (const_tree type, bool is_packed)
 {
   /* Vectors which aren't in packed structures will not be less aligned than
      the natural alignment of their element type, so this is safe.  */
-  if (TARGET_NEON && !BYTES_BIG_ENDIAN)
+  if (TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access)
     return !is_packed;
 
   return default_builtin_vector_alignment_reachable (type, is_packed);
@@ -29562,7 +29562,7 @@ arm_builtin_support_vector_misalignment (enum machine_mode mode,
 					 const_tree type, int misalignment,
 					 bool is_packed)
 {
-  if (TARGET_NEON && !BYTES_BIG_ENDIAN)
+  if (TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access)
     {
       HOST_WIDE_INT align = TYPE_ALIGN_UNIT (type);
 

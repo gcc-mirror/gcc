@@ -1,3 +1,8 @@
+2014-02-06  Yury Gribov  <y.gribov@samsung.com>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/arm/vect-noalign.c: New file.
+
 2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
