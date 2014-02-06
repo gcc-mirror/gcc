@@ -996,6 +996,13 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
 
+   Modify_Tree_For_C : Boolean := False;
+   --  GNAT
+   --  If this switch is set True (currently it is set only by -gnatd.V), then
+   --  certain meaning-preserving transformations are applied to the tree to
+   --  make it easier to interface with back ends that implement C semantics.
+   --  There is a section in Sinfo which describes the transformations made.
+
    Multiple_Unit_Index : Int := 0;
    --  GNAT
    --  This is set non-zero if the current unit is being compiled in multiple

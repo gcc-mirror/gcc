@@ -1254,6 +1254,9 @@ the search stops:
   @item @file{<prefix>/<target>/lib/gnat}
   (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
   @option{--target} is specified)
+  @item @file{<prefix>/<target>/share/gpr}
+  (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
+  @option{--target} is specified)
   @item @file{<prefix>/share/gpr/}
   (for @command{gnatmake} and @command{gprbuild})
   @item @file{<prefix>/lib/gnat/}

@@ -117,6 +117,12 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
+      --  -gnatd.V enables special C expansion mode
+
+      if Debug_Flag_Dot_VV then
+         Modify_Tree_For_C := True;
+      end if;
+
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
       --  to be treated as warnings instead of errors.
 

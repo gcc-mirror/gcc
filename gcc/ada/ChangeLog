@@ -1,3 +1,24 @@
+2014-02-06  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb (For_Interface_Sources): Fix handling of required
+	bodies for aggregate libs.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* nlists.ads: Minor comment clarifications.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set Modify_Tree_For_C
+	if gnatd.V set.
+	* opt.ads (Modify_Tree_For_C): New flag.
+	* output.ads, output.adb (Last_Char): New function.
+
+2014-02-06  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi, prj-env.adb (Initialize_Default_Project_Path): Add
+	share/gpr for cross-builds.
+
 2014-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.ads, checks.adb, sem_prag.adb, prj-util.adb, sem_ch13.adb:
