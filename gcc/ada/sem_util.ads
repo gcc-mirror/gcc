@@ -171,6 +171,15 @@ package Sem_Util is
    --  Suggest_Static when the context warrants an advice on how to avoid the
    --  use error.
 
+   function Bad_Unordered_Enumeration_Reference
+     (N : Node_Id;
+      T : Entity_Id) return Boolean;
+   --  Node N contains a potentially dubious reference to type T, either an
+   --  explicit comparison, or an explicit range. This function returns True
+   --  if the type T is an enumeration type for which No pragma Order has been
+   --  given, and the reference N is not in the same extended source unit as
+   --  the declaration of T.
+
    function Build_Actual_Subtype
      (T : Entity_Id;
       N : Node_Or_Entity_Id) return Node_Id;

@@ -1,5 +1,16 @@
 2014-02-06  Robert Dewar  <dewar@adacore.com>
 
+	* sem_attr.adb (Analyze_Attribute, case Max): Check for improper
+	comparison of unordered enumeration type.
+	(Analyze_Attribute, case Max): Check for improper comparison of
+	unordered enumeration type.
+	* sem_res.adb (Bad_Unordered_Enumeration_Reference): Moved to
+	sem_util.adb.
+	* sem_util.ads, sem_util.adb (Bad_Unordered_Enumeration_Reference):
+	Moved here from Sem_Res.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sem_prag.adb, sem_res.adb, lib-xref.adb: Minor
 	reformatting.
 

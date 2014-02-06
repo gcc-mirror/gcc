@@ -93,15 +93,6 @@ package body Sem_Res is
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
 
-   function Bad_Unordered_Enumeration_Reference
-     (N : Node_Id;
-      T : Entity_Id) return Boolean;
-   --  Node N contains a potentially dubious reference to type T, either an
-   --  explicit comparison, or an explicit range. This function returns True
-   --  if the type T is an enumeration type for which No pragma Order has been
-   --  given, and the reference N is not in the same extended source unit as
-   --  the declaration of T.
-
    procedure Check_Discriminant_Use (N : Node_Id);
    --  Enforce the restrictions on the use of discriminants when constraining
    --  a component of a discriminated type (record or concurrent type).
@@ -396,22 +387,6 @@ package body Sem_Res is
            Scope_Suppress;
       end if;
    end Analyze_And_Resolve;
-
-   ----------------------------------------
-   -- Bad_Unordered_Enumeration_Reference --
-   ----------------------------------------
-
-   function Bad_Unordered_Enumeration_Reference
-     (N : Node_Id;
-      T : Entity_Id) return Boolean
-   is
-   begin
-      return Is_Enumeration_Type (T)
-        and then Comes_From_Source (N)
-        and then Warn_On_Unordered_Enumeration_Type
-        and then not Has_Pragma_Ordered (T)
-        and then not In_Same_Extended_Unit (N, T);
-   end Bad_Unordered_Enumeration_Reference;
 
    ----------------------------
    -- Check_Discriminant_Use --
