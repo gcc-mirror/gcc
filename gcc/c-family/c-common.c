@@ -11285,8 +11285,8 @@ warn_for_sign_compare (location_t location,
               if ((mask & constant) != mask)
 		{
 		  if (constant == 0)
-		    warning (OPT_Wsign_compare,
-			     "promoted ~unsigned is always non-zero");
+		    warning_at (location, OPT_Wsign_compare,
+				"promoted ~unsigned is always non-zero");
 		  else
 		    warning_at (location, OPT_Wsign_compare,
 				"comparison of promoted ~unsigned with constant");
