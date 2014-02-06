@@ -3297,12 +3297,13 @@ again:
          clobber stmts during vectorization.  */
       if (gimple_clobber_p (stmt))
 	{
+	  free_data_ref (dr);
 	  if (i == datarefs.length () - 1)
 	    {
 	      datarefs.pop ();
 	      break;
 	    }
-	  datarefs[i] = datarefs.pop ();
+	  datarefs[i] = dr = datarefs.pop ();
 	  goto again;
 	}
 
@@ -3643,13 +3644,14 @@ again:
       if (simd_lane_access)
 	{
 	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
+	  free_data_ref (datarefs[i]);
 	  datarefs[i] = dr;
 	}
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
-      STMT_VINFO_VECTYPE (stmt_info) =
-                get_vectype_for_scalar_type (scalar_type);
+      STMT_VINFO_VECTYPE (stmt_info)
+	= get_vectype_for_scalar_type (scalar_type);
       if (!STMT_VINFO_VECTYPE (stmt_info))
         {
           if (dump_enabled_p ())
@@ -3669,7 +3671,8 @@ again:
 	  if (gather || simd_lane_access)
 	    {
 	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
-	      free_data_ref (dr);
+	      if (gather)
+		free_data_ref (dr);
 	    }
 	  return false;
         }
