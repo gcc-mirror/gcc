@@ -1925,6 +1925,7 @@ default-c.o: config/default-c.c
 # Files used by all variants of C and some other languages.
 
 CFLAGS-prefix.o += -DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s)
+prefix.o: $(BASEVER)
 
 # Language-independent files.
 
@@ -2540,6 +2541,7 @@ PREPROCESSOR_DEFINES = \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
 CFLAGS-cppbuiltin.o += $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s)
+cppbuiltin.o: $(BASEVER)
 
 CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 
