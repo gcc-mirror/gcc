@@ -14638,6 +14638,17 @@ line breaks. You can use this switch more than once in the same call to
 @command{gnatpp}. You also can combine this switch with an explicit list of
 files.
 
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatpp})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
+
+@cindex @option{^-t^/TIME^} (@command{gnatpp})
+@item ^-t^/TIME^
+Print out execution time.
+
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatpp})
 Verbose mode;
@@ -16629,6 +16640,10 @@ Use @var{n} processes to carry out the tree creations (internal representations
 of the argument sources). On a multiprocessor machine this speeds up processing
 of big sets of argument sources. If @var{n} is 0, then the maximum number of
 parallel tree creations is the number of core processors on the platform.
+
+@cindex @option{^-t^/TIME^} (@command{gnatmetric})
+@item ^-t^/TIME^
+Print out execution time.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@command{gnatmetric})

@@ -9991,11 +9991,14 @@ package body Sem_Prag is
                --  Opt is not a duplicate property and sets the flag Status.
 
                procedure Create_Abstract_State
-                 (State_Nam : Name_Id;
-                  Is_Null   : Boolean := False);
+                 (State_Nam  : Name_Id;
+                  State_Decl : Node_Id;
+                  Is_Null    : Boolean := False);
                --  Generate an abstract state entity with name State_Nam and
-               --  enter it into visibility. Flag Is_Null should be set when
-               --  the associated Abstract_State pragma defines a null state.
+               --  enter it into visibility. State_Decl is the "declaration"
+               --  of the state as it appears in pragma Abstract_State. Flag
+               --  Is_Null should be set when the associated Abstract_State
+               --  pragma defines a null state.
 
                -----------------------------
                -- Analyze_External_Option --
@@ -10245,8 +10248,9 @@ package body Sem_Prag is
                ---------------------------
 
                procedure Create_Abstract_State
-                 (State_Nam : Name_Id;
-                  Is_Null   : Boolean := False)
+                 (State_Nam  : Name_Id;
+                  State_Decl : Node_Id;
+                  Is_Null    : Boolean := False)
                is
                begin
                   --  The generated state abstraction reuses the same chars
@@ -10266,10 +10270,19 @@ package body Sem_Prag is
                   Set_Refinement_Constituents (State_Id, New_Elmt_List);
                   Set_Part_Of_Constituents    (State_Id, New_Elmt_List);
 
-                  --  Every non-null state must be nameable and resolvable the
-                  --  same way a constant is.
+                  --  Establish a link between the state declaration and the
+                  --  abstract state entity. Note that a null state remains as
+                  --  N_Null and does not carry any linkages.
 
                   if not Is_Null then
+                     if Present (State_Decl) then
+                        Set_Entity (State_Decl, State_Id);
+                        Set_Etype  (State_Decl, Standard_Void_Type);
+                     end if;
+
+                     --  Every non-null state must be nameable and resolvable
+                     --  the same way a constant is.
+
                      Push_Scope (Pack_Id);
                      Enter_Name (State_Id);
                      Pop_Scope;
@@ -10295,8 +10308,9 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Null then
                   Create_Abstract_State
-                    (State_Nam => New_Internal_Name ('S'),
-                     Is_Null   => True);
+                    (State_Nam  => New_Internal_Name ('S'),
+                     State_Decl => Empty,
+                     Is_Null    => True);
                   Null_Seen := True;
 
                   --  Catch a case where a null state appears in a list of
@@ -10311,7 +10325,9 @@ package body Sem_Prag is
                --  Simple state declaration
 
                elsif Nkind (State) = N_Identifier then
-                  Create_Abstract_State (Chars (State));
+                  Create_Abstract_State
+                    (State_Nam  => Chars (State),
+                     State_Decl => State);
                   Non_Null_Seen := True;
 
                --  State declaration with various options. This construct
@@ -10319,7 +10335,9 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Extension_Aggregate then
                   if Nkind (Ancestor_Part (State)) = N_Identifier then
-                     Create_Abstract_State (Chars (Ancestor_Part (State)));
+                     Create_Abstract_State
+                       (State_Nam  => Chars (Ancestor_Part (State)),
+                        State_Decl => Ancestor_Part (State));
                      Non_Null_Seen := True;
                   else
                      Error_Msg_N

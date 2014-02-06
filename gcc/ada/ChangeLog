@@ -1,3 +1,17 @@
+2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: Add documentation of '-t' option for
+	gnatmetric/gnatpp.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Abstract_State): Update
+	all calls to Create_Abstract_State to pass the proper state
+	"declaration".
+	(Create_Abstract_State): Add new formal parameter
+	State_Decl along with comment on usage. Establish a link between
+	the abstract state entity and the state declaration.
+
 2014-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case Max): Check for improper
