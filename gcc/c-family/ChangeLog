@@ -1,3 +1,9 @@
+2014-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60087
+	* c-common.c (warn_for_sign_compare): Call warning_at with location
+	instead of warning.
+
 2014-02-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c/53123
