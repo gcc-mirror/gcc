@@ -5850,6 +5850,13 @@ package VMS_Data is
                                                 "-nolocal ";
    --  NODOC  (see /COMPLEXITY_METRICS /NO_LOCAL_DETAILS /NO_EXITS_AS_GOTOS)
 
+   S_Metric_Time    : aliased constant S := "/TIME "                        &
+                                            "-t";
+   --        /NOTIME (D)
+   --        /TIME
+   --
+   --   Print out execution time
+
    S_Metric_Verbose  : aliased constant S := "/VERBOSE "                   &
                                              "-v";
    --        /NOVERBOSE (D)
@@ -5889,6 +5896,7 @@ package VMS_Data is
                         S_Metric_Subdirs          'Access,
                         S_Metric_Syntax           'Access,
                         S_Metric_Suppress         'Access,
+                        S_Metric_Time             'Access,
                         S_Metric_Verbose          'Access,
                         S_Metric_XMLout           'Access);
 
@@ -6655,6 +6663,18 @@ package VMS_Data is
    --      LOWER_CASE
    --      UPPER_CASE
 
+   S_Pretty_Processes : aliased constant S := "/PROCESSES=#"                 &
+                                            "-j#";
+
+   --        /NOPROCESSES (D)
+   --        /PROCESSES=NNN
+   --
+   --   Use NNN processes to carry out the tree creations (internal
+   --   representations of the argument sources). On a multiprocessor machine
+   --   this speeds up processing of big sets of argument sources. If NNN is 0,
+   --   then the maximum number of parallel tree creations is the number of
+   --   core processors on the platform.
+
    S_Pretty_Project   : aliased constant S := "/PROJECT_FILE=<"            &
                                                 "-P>";
    --        /PROJECT_FILE=filename
@@ -6706,6 +6726,13 @@ package VMS_Data is
    --   The actual directories (object, exec, library, ...) are subdirectories
    --   of the directory specified in the project file. If the subdirectory
    --   does not exist, it is created automatically.
+
+   S_Pretty_Time    : aliased constant S := "/TIME "                        &
+                                            "-t";
+   --        /NOTIME (D)
+   --        /TIME
+   --
+   --   Print out execution time
 
    S_Pretty_Types     : aliased constant S := "/TYPE_CASING="              &
                                               "AS_DECLARED "               &
@@ -6784,6 +6811,7 @@ package VMS_Data is
                         S_Pretty_Pragma           'Access,
                         S_Pretty_Replace          'Access,
                         S_Pretty_Replace_No_Backup'Access,
+                        S_Pretty_Processes        'Access,
                         S_Pretty_Project          'Access,
                         S_Pretty_RTS              'Access,
                         S_Pretty_Search           'Access,
@@ -6795,6 +6823,7 @@ package VMS_Data is
                         S_Pretty_Stnm_On_Nw_Line  'Access,
                         S_Pretty_Specific         'Access,
                         S_Pretty_Standard         'Access,
+                        S_Pretty_Time             'Access,
                         S_Pretty_Types            'Access,
                         S_Pretty_Verbose          'Access,
                         S_Pretty_Warnings         'Access);
