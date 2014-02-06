@@ -4487,6 +4487,7 @@ package body Exp_Ch7 is
          Fin_Block : Node_Id;
          Fin_Data  : Finalization_Exception_Data;
          Fin_Decls : List_Id;
+         Fin_Insrt : Node_Id;
          Last_Fin  : Node_Id := Empty;
          Loc       : Source_Ptr;
          Obj_Id    : Entity_Id;
@@ -4502,11 +4503,34 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Transient_Objects
 
       begin
+         --  Recognize a scenario where the transient context is an object
+         --  declaration initialized by a build-in-place function call:
+
+         --    Obj : ... := BIP_Function_Call (Ctrl_Func_Call);
+
+         --  The rough expansion of the above is:
+
+         --    Temp : ... := Ctrl_Func_Call;
+         --    Obj  : ...;
+         --    Res  : ... := BIP_Func_Call (..., Obj, ...);
+
+         --  The finalization of any controlled transient must happen after
+         --  the build-in-place function call is executed.
+
+         if Nkind (N) = N_Object_Declaration
+           and then Present (BIP_Initialization_Call (Defining_Identifier (N)))
+         then
+            Must_Hook := True;
+            Fin_Insrt := BIP_Initialization_Call (Defining_Identifier (N));
+
          --  Search the context for at least one subprogram call. If found, the
          --  machinery exports all transient objects to the enclosing finalizer
          --  due to the possibility of abnormal call termination.
 
-         Detect_Subprogram_Call (N);
+         else
+            Detect_Subprogram_Call (N);
+            Fin_Insrt := Last_Object;
+         end if;
 
          --  Examine all objects in the list First_Object .. Last_Object
 
@@ -4689,7 +4713,7 @@ package body Exp_Ch7 is
                if Present (Prev_Fin) then
                   Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
                else
-                  Insert_After_And_Analyze (Last_Object,
+                  Insert_After_And_Analyze (Fin_Insrt,
                     Make_Block_Statement (Loc,
                       Declarations => Fin_Decls,
                       Handled_Statement_Sequence =>
@@ -4717,9 +4741,7 @@ package body Exp_Ch7 is
          --       Raise_From_Controlled_Operation (E);
          --    end if;
 
-         if Built
-           and then Present (Last_Fin)
-         then
+         if Built and then Present (Last_Fin) then
             Insert_After_And_Analyze (Last_Fin,
               Build_Raise_Statement (Fin_Data));
          end if;

@@ -11300,6 +11300,13 @@ Put @command{gnatelim} output into a specified file. If this file already exists
 it is overridden. If this switch is not used, @command{gnatelim} outputs its results
 into @file{stderr}
 
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatelim})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
+
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatelim})
 Quiet mode: by default @code{gnatelim} outputs to the standard error

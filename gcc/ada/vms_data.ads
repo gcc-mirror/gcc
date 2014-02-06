@@ -4010,6 +4010,18 @@ package VMS_Data is
    --   Do not generate pragmas for subprograms declared in the sources
    --  listed in a specified file
 
+   S_Elim_Processes : aliased constant S := "/PROCESSES=#"                 &
+                                            "-j#";
+
+   --        /NOPROCESSES (D)
+   --        /PROCESSES=NNN
+   --
+   --   Use NNN processes to carry out the tree creations (internal
+   --   representations of the argument sources). On a multiprocessor machine
+   --   this speeds up processing of big sets of argument sources. If NNN is 0,
+   --   then the maximum number of parallel tree creations is the number of
+   --   core processors on the platform.
+
    S_Elim_Project : aliased constant S := "/PROJECT_FILE=<"                &
                                              "-P>";
    --        /PROJECT_FILE=filename
@@ -4108,29 +4120,30 @@ package VMS_Data is
    --        QUIET         Some warning messages are suppressed
 
    Elim_Switches : aliased constant Switches :=
-                     (S_Elim_Add     'Access,
-                      S_Elim_All     'Access,
-                      S_Elim_Bind    'Access,
-                      S_Elim_Comp    'Access,
-                      S_Elim_Config  'Access,
-                      S_Elim_Current 'Access,
-                      S_Elim_Ext     'Access,
-                      S_Elim_Files   'Access,
-                      S_Elim_Follow  'Access,
-                      S_Elim_GNATMAKE'Access,
-                      S_Elim_Log     'Access,
-                      S_Elim_Logfile 'Access,
-                      S_Elim_Main    'Access,
-                      S_Elim_Mess    'Access,
-                      S_Elim_Nodisp  'Access,
-                      S_Elim_Out     'Access,
-                      S_Elim_Project 'Access,
-                      S_Elim_Quiet   'Access,
-                      S_Elim_Search  'Access,
-                      S_Elim_Subdirs 'Access,
-                      S_Elim_Time    'Access,
-                      S_Elim_Verb    'Access,
-                      S_Elim_Warn    'Access);
+                     (S_Elim_Add      'Access,
+                      S_Elim_All      'Access,
+                      S_Elim_Bind     'Access,
+                      S_Elim_Comp     'Access,
+                      S_Elim_Config   'Access,
+                      S_Elim_Current  'Access,
+                      S_Elim_Ext      'Access,
+                      S_Elim_Files    'Access,
+                      S_Elim_Follow   'Access,
+                      S_Elim_GNATMAKE 'Access,
+                      S_Elim_Log      'Access,
+                      S_Elim_Logfile  'Access,
+                      S_Elim_Main     'Access,
+                      S_Elim_Mess     'Access,
+                      S_Elim_Nodisp   'Access,
+                      S_Elim_Out      'Access,
+                      S_Elim_Processes'Access,
+                      S_Elim_Project  'Access,
+                      S_Elim_Quiet    'Access,
+                      S_Elim_Search   'Access,
+                      S_Elim_Subdirs  'Access,
+                      S_Elim_Time     'Access,
+                      S_Elim_Verb     'Access,
+                      S_Elim_Warn     'Access);
 
    ----------------------------
    -- Switches for GNAT FIND --

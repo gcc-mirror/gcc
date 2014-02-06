@@ -499,6 +499,14 @@ package Einfo is
 --       defines the related state. If the body refines the said state, all
 --       references on this list are illegal due to the visible refinement.
 
+--    BIP_Initialization_Call (Node29)
+--       Defined in constants and variables whose corresponding declaration
+--       is wrapped in a transient block and the inital value is provided by
+--       a build-in-place function call. Contains the relocated build-in-place
+--       call after the expansion has decoupled the call from the object. This
+--       attribute is used by the finalization machinery to insert cleanup code
+--       for all additional transient variables found in the transient block.
+
 --    C_Pass_By_Copy (Flag125) [implementation base type only]
 --       Defined in record types. Set if a pragma Convention for the record
 --       type specifies convention C_Pass_By_Copy. This convention name is
@@ -5307,6 +5315,7 @@ package Einfo is
    --    Interface_Name                      (Node21)   (constants only)
    --    Related_Type                        (Node27)   (constants only)
    --    Initialization_Statements           (Node28)
+   --    BIP_Initialization_Call             (Node29)
    --    Linker_Section_Pragma               (Node33)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
@@ -6013,6 +6022,7 @@ package Einfo is
    --    Last_Assignment                     (Node26)
    --    Related_Type                        (Node27)
    --    Initialization_Statements           (Node28)
+   --    BIP_Initialization_Call             (Node29)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Has_Alignment_Clause                (Flag46)
@@ -6290,6 +6300,7 @@ package Einfo is
    function Body_Entity                         (Id : E) return E;
    function Body_Needed_For_SAL                 (Id : E) return B;
    function Body_References                     (Id : E) return L;
+   function BIP_Initialization_Call             (Id : E) return N;
    function CR_Discriminant                     (Id : E) return E;
    function C_Pass_By_Copy                      (Id : E) return B;
    function Can_Never_Be_Null                   (Id : E) return B;
@@ -6913,6 +6924,7 @@ package Einfo is
    procedure Set_Body_Entity                     (Id : E; V : E);
    procedure Set_Body_Needed_For_SAL             (Id : E; V : B := True);
    procedure Set_Body_References                 (Id : E; V : L);
+   procedure Set_BIP_Initialization_Call         (Id : E; V : N);
    procedure Set_CR_Discriminant                 (Id : E; V : E);
    procedure Set_C_Pass_By_Copy                  (Id : E; V : B := True);
    procedure Set_Can_Never_Be_Null               (Id : E; V : B := True);
@@ -7650,6 +7662,7 @@ package Einfo is
    pragma Inline (Body_Entity);
    pragma Inline (Body_Needed_For_SAL);
    pragma Inline (Body_References);
+   pragma Inline (BIP_Initialization_Call);
    pragma Inline (CR_Discriminant);
    pragma Inline (C_Pass_By_Copy);
    pragma Inline (Can_Never_Be_Null);
@@ -8121,6 +8134,7 @@ package Einfo is
    pragma Inline (Set_Body_Entity);
    pragma Inline (Set_Body_Needed_For_SAL);
    pragma Inline (Set_Body_References);
+   pragma Inline (Set_BIP_Initialization_Call);
    pragma Inline (Set_CR_Discriminant);
    pragma Inline (Set_C_Pass_By_Copy);
    pragma Inline (Set_Can_Never_Be_Null);
