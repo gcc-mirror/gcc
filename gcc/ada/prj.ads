@@ -1353,7 +1353,7 @@ package Prj is
       --  Indicate that this is a Standalone Library Project File
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
-      --  For Standalone Library Project Files, list of Interface ALI files.
+      --  For Standalone Library Project Files, list of Interface ALI files
 
       Other_Interfaces : String_List_Id := Nil_String;
       --  List of non unit based sources in attribute Interfaces

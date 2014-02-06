@@ -1597,6 +1597,7 @@ package body Sem_Prag is
 
       Clause      : Node_Id;
       Errors      : Nat;
+      Expr        : Node_Id;
       Last_Clause : Node_Id;
       Subp_Decl   : Node_Id;
 
@@ -1653,72 +1654,122 @@ package body Sem_Prag is
 
       --  Dependency clauses appear as component associations of an aggregate
 
-      elsif Nkind (Clause) = N_Aggregate
-        and then Present (Component_Associations (Clause))
-      then
-         Last_Clause := Last (Component_Associations (Clause));
+      elsif Nkind (Clause) = N_Aggregate then
 
-         --  Gather all states, variables and formal parameters that the
-         --  subprogram may depend on. These items are obtained from the
-         --  parameter profile or pragma [Refined_]Global (if available).
+         --  The aggregate should not have an expression list because a clause
+         --  is always interpreted as a component association. The only way an
+         --  expression list can sneak in is by adding extra parenthesis around
+         --  the individual clauses:
 
-         Collect_Subprogram_Inputs_Outputs
-           (Subp_Id      => Subp_Id,
-            Subp_Inputs  => Subp_Inputs,
-            Subp_Outputs => Subp_Outputs,
-            Global_Seen  => Global_Seen);
+         --    Depends  (Output => Input)   --  proper form
+         --    Depends ((Output => Input))  --  extra parenthesis
 
-         --  Ensure that the formal parameters are visible when analyzing all
-         --  clauses. This falls out of the general rule of aspects pertaining
-         --  to subprogram declarations. Skip the installation for subprogram
-         --  bodies because the formals are already visible.
+         --  Since the extra parenthesis are not allowed by the syntax of the
+         --  pragma, flag them now to avoid emitting misleading errors down the
+         --  line.
 
-         if not In_Open_Scopes (Spec_Id) then
-            Restore_Scope := True;
-            Push_Scope (Spec_Id);
-            Install_Formals (Spec_Id);
+         if Present (Expressions (Clause)) then
+            Expr := First (Expressions (Clause));
+            while Present (Expr) loop
+
+               --  A dependency clause surrounded by extra parenthesis appears
+               --  as an aggregate of component associations with an optional
+               --  Paren_Count set.
+
+               if Nkind (Expr) = N_Aggregate
+                 and then Present (Component_Associations (Expr))
+               then
+                  Error_Msg_N
+                    ("dependency clause contains extra parenthesis", Expr);
+
+               --  Otherwise the expression is a malformed construct
+
+               else
+                  Error_Msg_N ("malformed dependency clause", Expr);
+               end if;
+
+               Next (Expr);
+            end loop;
+
+            --  Do not attempt to perform analysis of syntactically illegal
+            --  clauses as this will lead to misleading errors.
+
+            return;
          end if;
 
-         Clause := First (Component_Associations (Clause));
-         while Present (Clause) loop
-            Errors := Serious_Errors_Detected;
+         if Present (Component_Associations (Clause)) then
+            Last_Clause := Last (Component_Associations (Clause));
 
-            --  Normalization may create extra clauses that contain replicated
-            --  input and output names. There is no need to reanalyze them.
+            --  Gather all states, variables and formal parameters that the
+            --  subprogram may depend on. These items are obtained from the
+            --  parameter profile or pragma [Refined_]Global (if available).
 
-            if not Analyzed (Clause) then
-               Set_Analyzed (Clause);
+            Collect_Subprogram_Inputs_Outputs
+              (Subp_Id      => Subp_Id,
+               Subp_Inputs  => Subp_Inputs,
+               Subp_Outputs => Subp_Outputs,
+               Global_Seen  => Global_Seen);
 
-               Analyze_Dependency_Clause
-                 (Clause  => Clause,
-                  Is_Last => Clause = Last_Clause);
+            --  Ensure that the formal parameters are visible when analyzing
+            --  all clauses. This falls out of the general rule of aspects
+            --  pertaining to subprogram declarations. Skip the installation
+            --  for subprogram bodies because the formals are already visible.
+
+            if not In_Open_Scopes (Spec_Id) then
+               Restore_Scope := True;
+               Push_Scope (Spec_Id);
+               Install_Formals (Spec_Id);
             end if;
 
-            --  Do not normalize an erroneous clause because the inputs and/or
-            --  outputs may denote illegal items.
+            Clause := First (Component_Associations (Clause));
+            while Present (Clause) loop
+               Errors := Serious_Errors_Detected;
 
-            if Serious_Errors_Detected = Errors then
-               Normalize_Clause (Clause);
+               --  Normalization may create extra clauses that contain
+               --  replicated input and output names. There is no need to
+               --  reanalyze them.
+
+               if not Analyzed (Clause) then
+                  Set_Analyzed (Clause);
+
+                  Analyze_Dependency_Clause
+                    (Clause  => Clause,
+                     Is_Last => Clause = Last_Clause);
+               end if;
+
+               --  Do not normalize an erroneous clause because the inputs
+               --  and/or outputs may denote illegal items.
+
+               if Serious_Errors_Detected = Errors then
+                  Normalize_Clause (Clause);
+               end if;
+
+               Next (Clause);
+            end loop;
+
+            if Restore_Scope then
+               End_Scope;
             end if;
 
-            Next (Clause);
-         end loop;
+            --  Verify that every input or output of the subprogram appear in a
+            --  dependency.
 
-         if Restore_Scope then
-            End_Scope;
+            Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
+            Check_Usage (Subp_Outputs, All_Outputs_Seen, False);
+            Check_Function_Return;
+
+         --  The dependency list is malformed
+
+         else
+            Error_Msg_N ("malformed dependency relation", Clause);
+            return;
          end if;
-
-         --  Verify that every input or output of the subprogram appear in a
-         --  dependency.
-
-         Check_Usage (Subp_Inputs, All_Inputs_Seen, True);
-         Check_Usage (Subp_Outputs, All_Outputs_Seen, False);
-         Check_Function_Return;
 
       --  The top level dependency relation is malformed
 
       else
          Error_Msg_N ("malformed dependency relation", Clause);
+         return;
       end if;
 
       --  Ensure that a state and a corresponding constituent do not appear

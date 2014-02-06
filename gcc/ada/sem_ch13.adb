@@ -6686,6 +6686,7 @@ package body Sem_Ch13 is
             --  Build function declaration
 
             Set_Ekind (SId, E_Function);
+            Set_Is_Internal (SId);
             Set_Is_Predicate_Function (SId);
             Set_Predicate_Function (Typ, SId);
 
@@ -9429,9 +9430,14 @@ package body Sem_Ch13 is
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
 
       --  If we have a type with predicates, build predicate function. This
-      --  is not needed in the generic casee
+      --  is not needed in the generic casee, and is not needed within TSS
+      --  subprograms and other predefined primitives.
 
-      if Non_Generic_Case and then Is_Type (E) and then Has_Predicates (E) then
+      if Non_Generic_Case
+        and then Is_Type (E)
+        and then Has_Predicates (E)
+        and then not Within_Internal_Subprogram
+      then
          Build_Predicate_Functions (E, N);
       end if;
 

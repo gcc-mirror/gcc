@@ -8911,26 +8911,46 @@ package body Exp_Ch6 is
          Stmts   : List_Id;
          Result  : Entity_Id)
       is
-         procedure Insert_After_Last_Declaration (Stmt : Node_Id);
-         --  Insert node Stmt after the last declaration of the subprogram body
+         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id);
+         --  Insert node Stmt before the first source declaration of the
+         --  related subprogram's body. If no such declaration exists, Stmt
+         --  becomes the last declaration.
 
-         -----------------------------------
-         -- Insert_After_Last_Declaration --
-         -----------------------------------
+         --------------------------------------------
+         -- Insert_Before_First_Source_Declaration --
+         --------------------------------------------
 
-         procedure Insert_After_Last_Declaration (Stmt : Node_Id) is
-            Decls : List_Id := Declarations (N);
+         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id) is
+            Decls : constant List_Id := Declarations (N);
+            Decl  : Node_Id;
 
          begin
+            --  Inspect the declarations of the related subprogram body looking
+            --  for the first source declaration.
+
+            if Present (Decls) then
+               Decl := First (Decls);
+               while Present (Decl) loop
+                  if Comes_From_Source (Decl) then
+                     Insert_Before (Decl, Stmt);
+                     return;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+
+               --  If we get there, then the subprogram body lacks any source
+               --  declarations. The body of _Postconditions now acts as the
+               --  last declaration.
+
+               Append (Stmt, Decls);
+
             --  Ensure that the body has a declaration list
 
-            if No (Decls) then
-               Decls := New_List;
-               Set_Declarations (N, Decls);
+            else
+               Set_Declarations (N, New_List (Stmt));
             end if;
-
-            Append_To (Decls, Stmt);
-         end Insert_After_Last_Declaration;
+         end Insert_Before_First_Source_Declaration;
 
          --  Local variables
 
@@ -8965,9 +8985,9 @@ package body Exp_Ch6 is
                   New_Reference_To (Etype (Result), Loc)));
          end if;
 
-         --  Insert _Postconditions after the last declaration of the body.
-         --  This ensures that the body will not cause any premature freezing
-         --  as it may mention types:
+         --  Insert _Postconditions before the first source declaration of the
+         --  body. This ensures that the body will not cause any premature
+         --  freezing as it may mention types:
 
          --    procedure Proc (Obj : Array_Typ) is
          --       procedure _postconditions is
@@ -8983,7 +9003,7 @@ package body Exp_Ch6 is
          --  order reference. The body of _Postconditions must be placed after
          --  the declaration of Temp to preserve correct visibility.
 
-         Insert_After_Last_Declaration (
+         Insert_Before_First_Source_Declaration (
            Make_Subprogram_Body (Loc,
              Specification              =>
                Make_Procedure_Specification (Loc,

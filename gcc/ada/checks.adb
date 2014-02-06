@@ -32,7 +32,6 @@ with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Pakd; use Exp_Pakd;
-with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
 with Expander; use Expander;
@@ -2574,15 +2573,15 @@ package body Checks is
    begin
       if Present (Predicate_Function (Typ)) then
 
-         --  A predicate check does not apply within internally generated
-         --  subprograms, such as TSS functions.
-
          S := Current_Scope;
          while Present (S) and then not Is_Subprogram (S) loop
             S := Scope (S);
          end loop;
 
-         if Present (S) and then Get_TSS_Name (S) /= TSS_Null then
+         --  A predicate check does not apply within internally generated
+         --  subprograms, such as TSS functions.
+
+         if Within_Internal_Subprogram then
             return;
 
          --  If the check appears within the predicate function itself, it
@@ -2590,7 +2589,7 @@ package body Checks is
          --  predicated subtype itself, rather than some covering type. This
          --  is likely to be a common error, and thus deserves a warning.
 
-         elsif S = Predicate_Function (Typ) then
+         elsif Present (S) and then  S = Predicate_Function (Typ) then
             Error_Msg_N
               ("predicate check includes a function call that "
                & "requires a predicate check??", Parent (N));
@@ -3208,6 +3207,13 @@ package body Checks is
       elsif Serious_Errors_Detected > 0 then
          return;
 
+      --  Never generate discriminant checks for Unchecked_Union types
+
+      elsif Present (Expr_Type)
+        and then Is_Unchecked_Union (Expr_Type)
+      then
+         return;
+
       --  Scalar type conversions of the form Target_Type (Expr) require a
       --  range check if we cannot be sure that Expr is in the base type of
       --  Target_Typ and also that Expr is in the range of Target_Typ. These
@@ -3218,8 +3224,8 @@ package body Checks is
          declare
             Conv_OK  : constant Boolean := Conversion_OK (N);
             --  If the Conversion_OK flag on the type conversion is set and no
-            --  floating point type is involved in the type conversion then
-            --  fixed point values must be read as integral values.
+            --  floating-point type is involved in the type conversion then
+            --  fixed-point values must be read as integral values.
 
             Float_To_Int : constant Boolean :=
               Is_Floating_Point_Type (Expr_Type)
@@ -3245,9 +3251,9 @@ package body Checks is
                     (Expr, Target_Type, Fixed_Int => Conv_OK);
 
                   --  If the target type has predicates, we need to indicate
-                  --  the need for a check, even if Determine_Range finds
-                  --  that the value is within bounds. This may be the case
-                  --  e.g for a division with a constant denominator.
+                  --  the need for a check, even if Determine_Range finds that
+                  --  the value is within bounds. This may be the case e.g for
+                  --  a division with a constant denominator.
 
                   if Has_Predicates (Target_Type) then
                      Enable_Range_Check (Expr);
@@ -3267,9 +3273,9 @@ package body Checks is
          --  An unconstrained derived type may have inherited discriminant.
          --  Build an actual discriminant constraint list using the stored
          --  constraint, to verify that the expression of the parent type
-         --  satisfies the constraints imposed by the (unconstrained)
-         --  derived type. This applies to value conversions, not to view
-         --  conversions of tagged types.
+         --  satisfies the constraints imposed by the (unconstrained) derived
+         --  type. This applies to value conversions, not to view conversions
+         --  of tagged types.
 
          declare
             Loc         : constant Source_Ptr := Sloc (N);
@@ -3794,11 +3800,11 @@ package body Checks is
 
    begin
       pragma Assert
-        (K = N_Component_Declaration
-           or else K = N_Discriminant_Specification
-           or else K = N_Function_Specification
-           or else K = N_Object_Declaration
-           or else K = N_Parameter_Specification);
+        (Nkind_In (K, N_Component_Declaration,
+                      N_Discriminant_Specification,
+                      N_Function_Specification,
+                      N_Object_Declaration,
+                      N_Parameter_Specification));
 
       if K = N_Function_Specification then
          Typ := Etype (Defining_Entity (N));
