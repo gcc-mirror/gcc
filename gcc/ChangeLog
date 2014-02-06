@@ -1,3 +1,10 @@
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/59992
+	* var-tracking.c (adjust_mems): Before adding a SET
+	to amd->side_effects, adjust it's SET_SRC using
+	simplify_replace_fn_rtx.
+
 2014-02-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/60032
