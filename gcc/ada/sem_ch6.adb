@@ -1255,7 +1255,7 @@ package body Sem_Ch6 is
       Null_Body :=
         Make_Subprogram_Body (Loc,
           Specification => New_Copy_Tree (Spec),
-          Declarations => New_List,
+          Declarations  => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (Make_Null_Statement (Loc))));
@@ -11243,8 +11243,8 @@ package body Sem_Ch6 is
 
             elsif Is_SPARK_Volatile_Object (Formal) then
                Error_Msg_N
-                 ("function cannot have a volatile formal parameter (SPARK RM "
-                  & "7.1.3(10))", Formal);
+                 ("function cannot have a volatile formal parameter "
+                  & "(SPARK RM 7.1.3(10))", Formal);
             end if;
          end if;
 

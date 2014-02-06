@@ -2160,8 +2160,7 @@ package body Sem_Ch3 is
          Spec := Copy_Separate_Tree (Body_Spec);
 
          --  Ensure that the subprogram declaration does not inherit the null
-         --  indicator from the body as we now have a proper spec and body
-         --  pair.
+         --  indicator from the body as we now have a proper spec/body pair.
 
          Set_Null_Present (Spec, False);
 

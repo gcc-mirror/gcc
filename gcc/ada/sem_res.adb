@@ -4343,8 +4343,8 @@ package body Sem_Res is
                      Error_Msg_Name_1 := Name_Async_Writers;
                      Error_Msg_NE
                        ("external variable & with enabled property % cannot "
-                        & "appear as actual in procedure call (SPARK RM "
-                        & "7.1.3(11))", A, A_Id);
+                        & "appear as actual in procedure call "
+                        & "(SPARK RM 7.1.3(11))", A, A_Id);
                      Error_Msg_N
                        ("\\corresponding formal parameter has mode Out", A);
                   end if;
@@ -6637,8 +6637,8 @@ package body Sem_Res is
 
          if not Usage_OK then
             Error_Msg_N
-              ("volatile object cannot appear in this context (SPARK RM "
-               & "7.1.3(13))", N);
+              ("volatile object cannot appear in this context "
+               & "(SPARK RM 7.1.3(13))", N);
          end if;
       end if;
    end Resolve_Entity_Name;
