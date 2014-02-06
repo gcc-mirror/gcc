@@ -5879,14 +5879,11 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 	return false;
     }
 
-  set_loop_copy (loop, loop);
-
   /* In case the function is used for loop header copying (which is the primary
      use), ensure that EXIT and its copy will be new latch and entry edges.  */
   if (loop->header == entry->dest)
     {
       copying_header = true;
-      set_loop_copy (loop, loop_outer (loop));
 
       if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit->src))
 	return false;
@@ -5897,13 +5894,18 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 	  return false;
     }
 
+  initialize_original_copy_tables ();
+
+  if (copying_header)
+    set_loop_copy (loop, loop_outer (loop));
+  else
+    set_loop_copy (loop, loop);
+
   if (!region_copy)
     {
       region_copy = XNEWVEC (basic_block, n_region);
       free_region_copy = true;
     }
-
-  initialize_original_copy_tables ();
 
   /* Record blocks outside the region that are dominated by something
      inside.  */

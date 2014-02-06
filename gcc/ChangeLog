@@ -1,3 +1,8 @@
+2014-02-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_duplicate_sese_region): Fix ordering of
+	set_loop_copy and initialize_original_copy_tables.
+
 2014-02-06  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/aarch64/aarch64-simd.md
