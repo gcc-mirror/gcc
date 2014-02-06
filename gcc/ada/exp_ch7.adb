@@ -4439,20 +4439,28 @@ package body Exp_Ch7 is
 
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
-            --  Aggregates are usually rewritten into component by component
-            --  assignments and replaced by a reference to a temporary in the
-            --  original tree. Peek in the aggregate to detect function calls.
+            --  Complex constructs are factored out by the expander and their
+            --  occurrences are replaced with references to temporaries. Due to
+            --  this expansion activity, inspect the original tree to detect
+            --  subprogram calls.
 
-            if Nkind (N) = N_Identifier
-              and then Nkind_In (Original_Node (N), N_Aggregate,
-                                                    N_Extension_Aggregate)
-            then
+            if Nkind (N) = N_Identifier and then Original_Node (N) /= N then
                Detect_Subprogram_Call (Original_Node (N));
-               return OK;
 
-            --  Detect a call to a function that returns on the secondary stack
+               --  The original construct contains a subprogram call, there is
+               --  no point in continuing the tree traversal.
+
+               if Must_Hook then
+                  return Abandon;
+               else
+                  return OK;
+               end if;
+
+            --  The original construct contains a subprogram call, there is no
+            --  point in continuing the tree traversal.
 
             elsif Nkind (N) = N_Object_Declaration
+              and then Present (Expression (N))
               and then Nkind (Original_Node (Expression (N))) = N_Function_Call
             then
                Must_Hook := True;

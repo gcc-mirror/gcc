@@ -1,3 +1,27 @@
+2014-02-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Rewrite as a null statement
+	in GNATprove_Mode.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Discriminant_Check_Function): New flag.
+	* exp_ch3.adb (Build_Dcheck_Function): Set
+	Is_Discriminant_Check_Function.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Is_Subprogram_Call): Inspect
+	the original tree in certain cases where a construct has been
+	factored out and replaced by a reference to a temporary.
+
+2014-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Fix typo in the order of
+	parameters when propagating predicate function to full view.
+	(Find_Type_Of_Object): Freeze base type of object type to catch
+	premature use of discriminated private type without a full view.
+
 2014-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* sprint.adb: Minor reformatting.

@@ -2228,6 +2228,10 @@ package Einfo is
 --       Defined in all entities. Set only in E_Function entities that Layout
 --       creates to compute discriminant-dependent dynamic size/offset values.
 
+--    Is_Discriminant_Check_Function (Flag264)
+--       Defined in all entities. Set only in E_Function entities for functions
+--       created to do discriminant checks.
+
 --    Is_Discriminal (synthesized)
 --       Applies to all entities, true for renamings of discriminants. Such
 --       entities appear as constants or IN parameters.
@@ -3017,6 +3021,12 @@ package Einfo is
 --       types, it is never set if the type does not have preelaborable
 --       initialization, it may or may not be set if the type does have
 --       preelaborable initialization.
+
+--    Last_Aggregate_Assignment (Node11)
+--       Applies to controlled variables initialized by an aggregate. Points to
+--       the last statement associated with the expansion of the aggregate. The
+--       attribute is used by the finalization machinery when marking an object
+--       as successfully initialized.
 
 --    Last_Assignment (Node26)
 --       Defined in entities for variables, and OUT or IN OUT formals. Set for
@@ -4983,6 +4993,7 @@ package Einfo is
    --    Is_Completely_Hidden                (Flag103)
    --    Is_Descendent_Of_Address            (Flag223)
    --    Is_Discrim_SO_Function              (Flag176)
+   --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Dispatch_Table_Entity            (Flag234)
    --    Is_Dispatching_Operation            (Flag6)
    --    Is_Entry_Formal                     (Flag52)
@@ -5497,6 +5508,7 @@ package Einfo is
    --    Is_Called                           (Flag102)  (non-generic case only)
    --    Is_Constructor                      (Flag76)
    --    Is_Discrim_SO_Function              (Flag176)
+   --    Is_Discriminant_Check_Function      (Flag264)
    --    Is_Eliminated                       (Flag124)
    --    Is_Instantiated                     (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -5983,6 +5995,7 @@ package Einfo is
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
    --    Encapsulating_State                 (Node10)
+   --    Last_Aggregate_Assignment           (Node11)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6487,6 +6500,7 @@ package Einfo is
    function Is_Controlling_Formal               (Id : E) return B;
    function Is_Descendent_Of_Address            (Id : E) return B;
    function Is_Discrim_SO_Function              (Id : E) return B;
+   function Is_Discriminant_Check_Function      (Id : E) return B;
    function Is_Dispatch_Table_Entity            (Id : E) return B;
    function Is_Dispatching_Operation            (Id : E) return B;
    function Is_Eliminated                       (Id : E) return B;
@@ -6563,6 +6577,7 @@ package Einfo is
    function Kill_Elaboration_Checks             (Id : E) return B;
    function Kill_Range_Checks                   (Id : E) return B;
    function Known_To_Have_Preelab_Init          (Id : E) return B;
+   function Last_Aggregate_Assignment           (Id : E) return N;
    function Last_Assignment                     (Id : E) return N;
    function Last_Entity                         (Id : E) return E;
    function Limited_View                        (Id : E) return E;
@@ -7107,6 +7122,7 @@ package Einfo is
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
    procedure Set_Is_Descendent_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
+   procedure Set_Is_Discriminant_Check_Function  (Id : E; V : B := True);
    procedure Set_Is_Dispatch_Table_Entity        (Id : E; V : B := True);
    procedure Set_Is_Dispatching_Operation        (Id : E; V : B := True);
    procedure Set_Is_Eliminated                   (Id : E; V : B := True);
@@ -7187,6 +7203,7 @@ package Einfo is
    procedure Set_Kill_Elaboration_Checks         (Id : E; V : B := True);
    procedure Set_Kill_Range_Checks               (Id : E; V : B := True);
    procedure Set_Known_To_Have_Preelab_Init      (Id : E; V : B := True);
+   procedure Set_Last_Aggregate_Assignment       (Id : E; V : N);
    procedure Set_Last_Assignment                 (Id : E; V : N);
    procedure Set_Last_Entity                     (Id : E; V : E);
    procedure Set_Limited_View                    (Id : E; V : E);
@@ -7853,6 +7870,7 @@ package Einfo is
    pragma Inline (Is_Discrete_Or_Fixed_Point_Type);
    pragma Inline (Is_Discrete_Type);
    pragma Inline (Is_Discrim_SO_Function);
+   pragma Inline (Is_Discriminant_Check_Function);
    pragma Inline (Is_Dispatch_Table_Entity);
    pragma Inline (Is_Dispatching_Operation);
    pragma Inline (Is_Elementary_Type);
@@ -7959,6 +7977,7 @@ package Einfo is
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
    pragma Inline (Known_To_Have_Preelab_Init);
+   pragma Inline (Last_Aggregate_Assignment);
    pragma Inline (Last_Assignment);
    pragma Inline (Last_Entity);
    pragma Inline (Limited_View);
@@ -8306,6 +8325,7 @@ package Einfo is
    pragma Inline (Set_Is_Controlling_Formal);
    pragma Inline (Set_Is_Descendent_Of_Address);
    pragma Inline (Set_Is_Discrim_SO_Function);
+   pragma Inline (Set_Is_Discriminant_Check_Function);
    pragma Inline (Set_Is_Dispatch_Table_Entity);
    pragma Inline (Set_Is_Dispatching_Operation);
    pragma Inline (Set_Is_Eliminated);
@@ -8386,6 +8406,7 @@ package Einfo is
    pragma Inline (Set_Kill_Elaboration_Checks);
    pragma Inline (Set_Kill_Range_Checks);
    pragma Inline (Set_Known_To_Have_Preelab_Init);
+   pragma Inline (Set_Last_Aggregate_Assignment);
    pragma Inline (Set_Last_Assignment);
    pragma Inline (Set_Last_Entity);
    pragma Inline (Set_Limited_View);

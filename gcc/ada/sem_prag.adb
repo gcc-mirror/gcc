@@ -12603,13 +12603,20 @@ package body Sem_Prag is
                Freeze_Before (N, Entity (Name (Call)));
             end if;
 
-            Rewrite (N, Make_Implicit_If_Statement (N,
-              Condition => Cond,
-                 Then_Statements => New_List (
-                   Make_Block_Statement (Loc,
-                     Handled_Statement_Sequence =>
-                       Make_Handled_Sequence_Of_Statements (Loc,
-                         Statements => New_List (Relocate_Node (Call)))))));
+            --  Ignore pragma Debug in GNATprove mode
+
+            if GNATprove_Mode then
+               Rewrite (N, Make_Null_Statement (Loc));
+            else
+               Rewrite (N, Make_Implicit_If_Statement (N,
+                 Condition => Cond,
+                    Then_Statements => New_List (
+                      Make_Block_Statement (Loc,
+                        Handled_Statement_Sequence =>
+                          Make_Handled_Sequence_Of_Statements (Loc,
+                            Statements => New_List (Relocate_Node (Call)))))));
+            end if;
+
             Analyze (N);
          end Debug;
 
