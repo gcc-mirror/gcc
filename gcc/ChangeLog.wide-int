@@ -368,11 +368,8 @@
 	(hash_tree): Use wide-int interfaces.
 	(output_cfg): Likewise.
 	* Makefile.in
-	(RTL_H, CFGLOOP_H, C_COMMON_H, TREE_FLOW_H): Add wide-int.h.
-	(REAL_H): Add signop.h.
 	(OBJS): Add wide-int.o and wide-int-print.o.
 	(GTFILES): Add wide-int.h and signop.h.
-	(wide-int.h): New rule.
 	(TAGS): Look for .cc files too.
 	* omp-low.c
 	(scan_omp_1_op): Use wide-int interfaces.

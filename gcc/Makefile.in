@@ -869,7 +869,7 @@ RTL_BASE_H = coretypes.h rtl.h rtl.def $(MACHMODE_H) reg-notes.def \
   insn-notes.def $(INPUT_H) $(REAL_H) statistics.h $(VEC_H) \
   $(FIXED_VALUE_H) alias.h $(HASHTAB_H)
 FIXED_VALUE_H = fixed-value.h $(MACHMODE_H) double-int.h
-RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h wide-int.h
+RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
@@ -899,7 +899,7 @@ FUNCTION_H = function.h $(HASHTAB_H) $(TM_H) hard-reg-set.h \
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h insn-opinit.h
 REGS_H = regs.h $(MACHMODE_H) hard-reg-set.h
-CFGLOOP_H = cfgloop.h $(BASIC_BLOCK_H) double-int.h wide-int.h \
+CFGLOOP_H = cfgloop.h $(BASIC_BLOCK_H) double-int.h \
 	$(BITMAP_H) sbitmap.h
 IPA_UTILS_H = ipa-utils.h $(TREE_H) $(CGRAPH_H)
 IPA_REFERENCE_H = ipa-reference.h $(BITMAP_H) $(TREE_H)
@@ -914,7 +914,7 @@ TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h insn-attr-common.h $(INSN_ADDR_H)
 INSN_ADDR_H = $(srcdir)/insn-addr.h
 C_COMMON_H = c-family/c-common.h c-family/c-common.def $(TREE_H) \
-	$(SPLAY_TREE_H) $(CPPLIB_H) $(GGC_H) $(DIAGNOSTIC_CORE_H) wide-int.h
+	$(SPLAY_TREE_H) $(CPPLIB_H) $(GGC_H) $(DIAGNOSTIC_CORE_H)
 C_PRAGMA_H = c-family/c-pragma.h $(CPPLIB_H)
 C_TREE_H = c/c-tree.h $(C_COMMON_H) $(DIAGNOSTIC_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h \
@@ -932,7 +932,7 @@ TREE_PASS_H = tree-pass.h $(TIMEVAR_H) $(DUMPFILE_H)
 TREE_SSA_H = tree-ssa.h tree-ssa-operands.h \
 		$(BITMAP_H) sbitmap.h $(BASIC_BLOCK_H) $(GIMPLE_H) \
 		$(HASHTAB_H) $(CGRAPH_H) $(IPA_REFERENCE_H) \
-		tree-ssa-alias.h wide-int.h
+		tree-ssa-alias.h
 PRETTY_PRINT_H = pretty-print.h $(INPUT_H) $(OBSTACK_H)
 TREE_PRETTY_PRINT_H = tree-pretty-print.h $(PRETTY_PRINT_H)
 GIMPLE_PRETTY_PRINT_H = gimple-pretty-print.h $(TREE_PRETTY_PRINT_H)
@@ -941,7 +941,7 @@ DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(TREE_H)
 TREE_INLINE_H = tree-inline.h
-REAL_H = real.h $(MACHMODE_H) signop.h
+REAL_H = real.h $(MACHMODE_H)
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) $(HASH_TABLE_H) $(TREE_H) $(GIMPLE_H) \
 		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h pointer-set.h
@@ -2438,13 +2438,11 @@ CFLAGS-gengtype-parse.o += -DGENERATOR_FILE
 build/gengtype-parse.o: $(BCONFIG_H)
 
 gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
-  gengtype.h errors.h double-int.h version.h $(HASHTAB_H)    \
-  $(OBSTACK_H) $(XREGEX_H)
+  gengtype.h errors.h double-int.h version.h $(HASHTAB_H) $(OBSTACK_H) \
+  $(XREGEX_H)
 gengtype-state.o: $(CONFIG_H)
 CFLAGS-gengtype-state.o += -DGENERATOR_FILE
 build/gengtype-state.o: $(BCONFIG_H)
-wide-int.h: $(GTM_H) $(TREE_H) hwint.h $(OPTIONS_H)			\
-  $(MACHMODE_H) double-int.h dumpfile.h $(REAL_H) signop.h
 gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
   rtl.def insn-notes.def errors.h double-int.h version.h     		\
   $(HASHTAB_H) $(OBSTACK_H) $(XREGEX_H)
