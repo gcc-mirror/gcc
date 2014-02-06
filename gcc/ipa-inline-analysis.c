@@ -310,7 +310,7 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
   if (false_predicate_p (p))
     return;
 
-  /* No one should be sily enough to add false into nontrivial clauses.  */
+  /* No one should be silly enough to add false into nontrivial clauses.  */
   gcc_checking_assert (!(clause & (1 << predicate_false_condition)));
 
   /* Look where to insert the clause.  At the same time prune out
@@ -1035,7 +1035,7 @@ inline_node_removal_hook (struct cgraph_node *node,
   memset (info, 0, sizeof (inline_summary_t));
 }
 
-/* Remap predicate P of former function to be predicate of duplicated functoin.
+/* Remap predicate P of former function to be predicate of duplicated function.
    POSSIBLE_TRUTHS is clause of possible truths in the duplicated node,
    INFO is inline summary of the duplicated node.  */
 
@@ -1887,8 +1887,15 @@ compute_bb_predicates (struct cgraph_node *node,
 		}
 	      else if (!predicates_equal_p (&p, (struct predicate *) bb->aux))
 		{
-		  done = false;
-		  *((struct predicate *) bb->aux) = p;
+		  /* This OR operation is needed to ensure monotonous data flow
+		     in the case we hit the limit on number of clauses and the
+		     and/or operations above give approximate answers.  */
+		  p = or_predicates (summary->conds, &p, (struct predicate *)bb->aux);
+	          if (!predicates_equal_p (&p, (struct predicate *) bb->aux))
+		    {
+		      done = false;
+		      *((struct predicate *) bb->aux) = p;
+		    }
 		}
 	    }
 	}
