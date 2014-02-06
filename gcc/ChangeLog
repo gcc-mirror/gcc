@@ -1,5 +1,7 @@
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* Makefile.in (prefix.o, cppbuiltin.o): Depend on $(BASEVER).
+
 	PR target/60062
 	* tree.h (opts_for_fn): New inline function.
 	(opt_for_fn): Define.
