@@ -1,3 +1,10 @@
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60013
+	* ipa-inline-analysis.c (compute_bb_predicates): Ensure monotonicity
+	of the dataflow.
+
 2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Change
