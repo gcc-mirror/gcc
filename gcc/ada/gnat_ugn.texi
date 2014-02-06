@@ -6497,7 +6497,8 @@ an inherited operation must carry an overriding indicator.
 @emph{Check pragma casing.}
 Pragma names must be written in mixed case, that is, the
 initial letter and any letter following an underscore must be uppercase.
-All other letters must be lowercase.
+All other letters must be lowercase. An exception is that SPARK_Mode is
+allowed as an alternative for Spark_Mode.
 
 @item ^r^REFERENCES^
 @emph{Check references.}
@@ -16622,14 +16623,21 @@ line breaks. You can use this switch more than once in the same call to
 @command{gnatmetric}. You also can combine this switch with
 an explicit list of files.
 
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatmetric})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
+
 @item ^-v^/VERBOSE^
-@cindex @option{^-v^/VERBOSE^} (@code{gnatmetric})
+@cindex @option{^-v^/VERBOSE^} (@command{gnatmetric})
 Verbose mode;
 @command{gnatmetric} generates version information and then
 a trace of sources being processed.
 
 @item ^-q^/QUIET^
-@cindex @option{^-q^/QUIET^} (@code{gnatmetric})
+@cindex @option{^-q^/QUIET^} (@command{gnatmetric})
 Quiet mode.
 @end table
 

@@ -614,6 +614,28 @@ package Sinfo is
    --    refers to a node or is posted on its source location, and has the
    --    effect of inhibiting further messages involving this same node.
 
+   -----------------------
+   -- Modify_Tree_For_C --
+   -----------------------
+
+   --  If the flag Opt.Modify_Tree_For_C is set True, then the tree is modified
+   --  in ways that help match the semantics better with C, easing the task of
+   --  interfacing to C code generators (other than GCC, where the work is done
+   --  in gigi, and there is no point in changing that), and also making life
+   --  easier for Cprint in generating C source code.
+
+   --  The current modifications implemented are as follows:
+
+   --    N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic nodes
+   --    are eliminated from the tree (since these operations do not exist in
+   --    C), and the operations are rewritten in terms of logical shifts and
+   --    other logical operations that do exist in C. See Exp_Ch4 expansion
+   --    routines for these operators for details of the transformations made.
+
+   --    The right operand of N_Op_Shift_Right and N_Op_Shift_Left is always
+   --    less than the word size (since other values are not well-defined in
+   --    C). This is done using an explicit test if necessary.
+
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------
@@ -7144,6 +7166,12 @@ package Sinfo is
       --  plus fields for binary operator
       --  plus fields for expression
       --  Shift_Count_OK (Flag4-Sem)
+
+      --  Note: N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic
+      --  never appear in the expanded tree if Modify_Tree_For_C mode is set.
+
+      --  Note: For N_Op_Shift_Left and N_Op_Shift_Right, the right operand is
+      --  always less than the word size if Modify_Tree_For_C mode is set.
 
    --------------------------
    -- Obsolescent Features --

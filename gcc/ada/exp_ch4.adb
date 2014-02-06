@@ -8787,6 +8787,7 @@ package body Exp_Ch4 is
                   Make_Op_Shift_Left (Loc,
                     Left_Opnd  => Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)),
+
                 Right_Opnd =>
                   Make_Op_Shift_Right (Loc,
                     Left_Opnd  => Duplicate_Subexpr_No_Checks (Left_Opnd (N)),
@@ -8839,6 +8840,7 @@ package body Exp_Ch4 is
                   Make_Op_Shift_Right (Loc,
                     Left_Opnd  => Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)),
+
                 Right_Opnd =>
                   Make_Op_Shift_Left (Loc,
                     Left_Opnd  => Duplicate_Subexpr_No_Checks (Left_Opnd (N)),
@@ -8857,9 +8859,64 @@ package body Exp_Ch4 is
    -- Expand_N_Op_Shift_Left --
    ----------------------------
 
+   --  Note: nothing in this routine depends on left as opposed to right shifts
+   --  so we share the routine for expanding shift right operations.
+
    procedure Expand_N_Op_Shift_Left (N : Node_Id) is
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  If we are in Modify_Tree_For_C mode, then ensure that the right
+      --  operand is not greater than the word size (since that would not
+      --  be defined properly by the corresponding C shift operator).
+
+      if Modify_Tree_For_C then
+         declare
+            Right : constant Node_Id    := Right_Opnd (N);
+            Loc   : constant Source_Ptr := Sloc (Right);
+            Typ   : constant Entity_Id  := Etype (N);
+            Siz   : constant Uint       := Esize (Typ);
+            Orig  : Node_Id;
+            OK    : Boolean;
+            Lo    : Uint;
+            Hi    : Uint;
+
+         begin
+            if Compile_Time_Known_Value (Right) then
+               if Expr_Value (Right) >= Siz then
+                  Rewrite (N, Make_Integer_Literal (Loc, 0));
+                  Analyze_And_Resolve (N, Typ);
+               end if;
+
+            --  Not compile time known, find range
+
+            else
+               Determine_Range (Right, OK, Lo, Hi, Assume_Valid => True);
+
+               --  Nothing to do if known to be OK range, otherwise expand
+
+               if not OK or else Hi >= Siz then
+
+                  --  Prevent recursion on copy of shift node
+
+                  Orig := Relocate_Node (N);
+                  Set_Analyzed (Orig);
+
+                  --  Now do the rewrite
+
+                  Rewrite (N,
+                     Make_If_Expression (Loc,
+                       Expressions => New_List (
+                         Make_Op_Ge (Loc,
+                           Left_Opnd  => Duplicate_Subexpr_Move_Checks (Right),
+                           Right_Opnd => Make_Integer_Literal (Loc, Siz)),
+                         Make_Integer_Literal (Loc, 0),
+                         Orig)));
+                  Analyze_And_Resolve (N, Typ);
+               end if;
+            end if;
+         end;
+      end if;
    end Expand_N_Op_Shift_Left;
 
    -----------------------------
@@ -8868,7 +8925,9 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Op_Shift_Right (N : Node_Id) is
    begin
-      Binary_Op_Validity_Checks (N);
+      --  Share shift left circuit
+
+      Expand_N_Op_Shift_Left (N);
    end Expand_N_Op_Shift_Right;
 
    ----------------------------------------
@@ -8891,6 +8950,10 @@ package body Exp_Ch4 is
 
       --  Note: in almost all C compilers it would work to just shift a
       --  signed integer right, but it's undefined and we cannot rely on it.
+
+      --  Note: the above works fine for shift counts greater than or equal
+      --  to the word size, since in this case (not (Shift_Right (Mask, bits)))
+      --  generates all 1'bits.
 
       --  What about non-binary modulus ???
 
