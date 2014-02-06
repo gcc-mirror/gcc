@@ -1,5 +1,15 @@
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59575
+	* config/arm/arm.c (emit_multi_reg_push): Add dwarf_regs_mask argument,
+	don't record in REG_FRAME_RELATED_EXPR registers not set in that
+	bitmask.
+	(arm_expand_prologue): Adjust all callers.
+	(arm_unwind_emit_sequence): Allow saved, but not important for unwind
+	info, registers also at the lowest numbered registers side.  Use
+	gcc_assert instead of abort, and SET_SRC/SET_DEST macros instead of
+	XEXP.
+
 	PR debug/59992
 	* var-tracking.c (adjust_mems): Before adding a SET
 	to amd->side_effects, adjust it's SET_SRC using
