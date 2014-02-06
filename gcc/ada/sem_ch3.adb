@@ -3551,10 +3551,13 @@ package body Sem_Ch3 is
 
       --  We need a predicate check if the type has predicates, and if either
       --  there is an initializing expression, or for default initialization
-      --  when we have at least one case of an explicit default initial value.
+      --  when we have at least one case of an explicit default initial value
+      --  and then this is not an internal declaration whose initialization
+      --  comes later (as for an aggregate expansion).
 
       if not Suppress_Assignment_Checks (N)
         and then Present (Predicate_Function (T))
+        and then not No_Initialization (N)
         and then
           (Present (E)
             or else

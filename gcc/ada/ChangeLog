@@ -1,3 +1,30 @@
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Refined_Pragma): Remove
+	local variable Pack_Spec. Refinement pragmas may now apply to
+	bodies of both visible and private subprograms.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute):
+	Minor change (Attr => N) (Expand_Pred_Succ): New name
+	Expand_Pred_Succ_Attribute (Expand_N_Attribute_Reference, case
+	Max): Expand into if expression if Modify_Tree_For_C mode.
+	(Expand_N_Attribute_Reference, case Min): ditto
+	* sinfo.ads: Modify_Tree_For_C takes care of expanding Min and
+	Max attributes.
+
+2014-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Do not generate
+	predicate check if this is an internal declaration with
+	No_Initialization set, as for an expanded aggregate component.
+
+2014-02-06  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_default_resignal_p) [VMS]: Test for and resignal
+	conditions with severity of "SUCCESS" or "INFORMATIONAL".
+
 2014-02-06  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Analyze pragma
