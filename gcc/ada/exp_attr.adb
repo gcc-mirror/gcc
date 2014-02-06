@@ -136,11 +136,11 @@ package body Exp_Attr is
    --  that takes two floating-point arguments. The function to be called
    --  is always the same as the attribute name.
 
-   procedure Expand_Loop_Entry_Attribute (Attr : Node_Id);
+   procedure Expand_Loop_Entry_Attribute (N : Node_Id);
    --  Handle the expansion of attribute 'Loop_Entry. As a result, the related
    --  loop may be converted into a conditional block. See body for details.
 
-   procedure Expand_Pred_Succ (N : Node_Id);
+   procedure Expand_Pred_Succ_Attribute (N : Node_Id);
    --  Handles expansion of Pred or Succ attributes for case of non-real
    --  operand with overflow checking required.
 
@@ -657,7 +657,7 @@ package body Exp_Attr is
    -- Expand_Loop_Entry_Attribute --
    ---------------------------------
 
-   procedure Expand_Loop_Entry_Attribute (Attr : Node_Id) is
+   procedure Expand_Loop_Entry_Attribute (N : Node_Id) is
       procedure Build_Conditional_Block
         (Loc       : Source_Ptr;
          Cond      : Node_Id;
@@ -730,8 +730,8 @@ package body Exp_Attr is
 
       --  Local variables
 
-      Exprs     : constant List_Id   := Expressions (Attr);
-      Pref      : constant Node_Id   := Prefix (Attr);
+      Exprs     : constant List_Id   := Expressions (N);
+      Pref      : constant Node_Id   := Prefix (N);
       Typ       : constant Entity_Id := Etype (Pref);
       Blk       : Node_Id;
       Decls     : List_Id;
@@ -760,7 +760,7 @@ package body Exp_Attr is
       --  internally generated loops for quantified expressions.
 
       else
-         Loop_Stmt := Attr;
+         Loop_Stmt := N;
          while Present (Loop_Stmt) loop
             if Nkind (Loop_Stmt) = N_Loop_Statement
               and then Present (Identifier (Loop_Stmt))
@@ -1002,7 +1002,7 @@ package body Exp_Attr is
 
       --  Step 4: Analyze all bits
 
-      Rewrite (Attr, New_Reference_To (Temp_Id, Loc));
+      Rewrite (N, New_Reference_To (Temp_Id, Loc));
 
       Installed := Current_Scope = Scope (Loop_Id);
 
@@ -1028,7 +1028,7 @@ package body Exp_Attr is
          Analyze (Temp_Decl);
       end if;
 
-      Analyze (Attr);
+      Analyze (N);
 
       if not Installed then
          Pop_Scope;
@@ -3616,6 +3616,44 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Mantissa;
 
+      ---------
+      -- Max --
+      ---------
+
+      when Attribute_Max =>
+
+         --  Max is handled by the back end (except that static cases have
+         --  already been evaluated during semantic processing, but anyway
+         --  the back end should not count on this). The one bit of special
+         --  processing required in the normal case is that this attribute
+         --  typically generates conditionals in the code, so we must check
+         --  the relevant restriction.
+
+         Check_Restriction (No_Implicit_Conditionals, N);
+
+         --  In Modify_Tree_For_C mode, we rewrite as an if expression
+
+         if Modify_Tree_For_C then
+            declare
+               Loc   : constant Source_Ptr := Sloc (N);
+               Typ   : constant Entity_Id  := Etype (N);
+               Expr  : constant Node_Id    := First (Expressions (N));
+               Left  : constant Node_Id    := Relocate_Node (Expr);
+               Right : constant Node_Id    := Relocate_Node (Next (Expr));
+
+            begin
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Make_Op_Ge (Loc,
+                       Left_Opnd  => Left,
+                       Right_Opnd => Right),
+                     Duplicate_Subexpr_No_Checks (Left),
+                     Duplicate_Subexpr_No_Checks (Right))));
+               Analyze_And_Resolve (N, Typ);
+            end;
+         end if;
+
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
       ----------------------------------
@@ -3701,6 +3739,44 @@ package body Exp_Attr is
            and then Present (Alias (Entity (Pref)))
          then
             Set_Renamed_Subprogram (Pref, Alias (Entity (Pref)));
+         end if;
+
+      ---------
+      -- Min --
+      ---------
+
+      when Attribute_Min =>
+
+         --  Min is handled by the back end (except that static cases have
+         --  already been evaluated during semantic processing, but anyway
+         --  the back end should not count on this). The one bit of special
+         --  processing required in the normal case is that this attribute
+         --  typically generates conditionals in the code, so we must check
+         --  the relevant restriction.
+
+         Check_Restriction (No_Implicit_Conditionals, N);
+
+         --  In Modify_Tree_For_C mode, we rewrite as an if expression
+
+         if Modify_Tree_For_C then
+            declare
+               Loc   : constant Source_Ptr := Sloc (N);
+               Typ   : constant Entity_Id  := Etype (N);
+               Expr  : constant Node_Id    := First (Expressions (N));
+               Left  : constant Node_Id    := Relocate_Node (Expr);
+               Right : constant Node_Id    := Relocate_Node (Next (Expr));
+
+            begin
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Make_Op_Le (Loc,
+                       Left_Opnd  => Left,
+                       Right_Opnd => Right),
+                     Duplicate_Subexpr_No_Checks (Left),
+                     Duplicate_Subexpr_No_Checks (Right))));
+               Analyze_And_Resolve (N, Typ);
+            end;
          end if;
 
       ---------
@@ -4378,7 +4454,7 @@ package body Exp_Attr is
            or else Do_Range_Check (First (Exprs))
          then
             Set_Do_Range_Check (First (Exprs), False);
-            Expand_Pred_Succ (N);
+            Expand_Pred_Succ_Attribute (N);
          end if;
       end Pred;
 
@@ -5426,7 +5502,7 @@ package body Exp_Attr is
            or else Do_Range_Check (First (Exprs))
          then
             Set_Do_Range_Check (First (Exprs), False);
-            Expand_Pred_Succ (N);
+            Expand_Pred_Succ_Attribute (N);
          end if;
       end Succ;
 
@@ -6440,17 +6516,6 @@ package body Exp_Attr is
 
       --  The following attributes are handled by the back end (except that
       --  static cases have already been evaluated during semantic processing,
-      --  but in any case the back end should not count on this). The one bit
-      --  of special processing required is that these attributes typically
-      --  generate conditionals in the code, so we need to check the relevant
-      --  restriction.
-
-      when Attribute_Max                          |
-           Attribute_Min                          =>
-         Check_Restriction (No_Implicit_Conditionals, N);
-
-      --  The following attributes are handled by the back end (except that
-      --  static cases have already been evaluated during semantic processing,
       --  but in any case the back end should not count on this).
 
       --  The back end also handles the non-class-wide cases of Size
@@ -6552,9 +6617,9 @@ package body Exp_Attr is
          return;
    end Expand_N_Attribute_Reference;
 
-   ----------------------
-   -- Expand_Pred_Succ --
-   ----------------------
+   --------------------------------
+   -- Expand_Pred_Succ_Attribute --
+   --------------------------------
 
    --  For typ'Pred (exp), we generate the check
 
@@ -6570,7 +6635,7 @@ package body Exp_Attr is
    --  statement or the expression of an object declaration, where the flag
    --  Suppress_Assignment_Checks is set for the assignment/declaration.
 
-   procedure Expand_Pred_Succ (N : Node_Id) is
+   procedure Expand_Pred_Succ_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       P    : constant Node_Id    := Parent (N);
       Cnam : Name_Id;
@@ -6598,7 +6663,7 @@ package body Exp_Attr is
                      Attribute_Name => Cnam)),
              Reason => CE_Overflow_Check_Failed));
       end if;
-   end Expand_Pred_Succ;
+   end Expand_Pred_Succ_Attribute;
 
    -----------------------------
    -- Expand_Update_Attribute --

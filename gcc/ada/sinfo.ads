@@ -549,6 +549,9 @@ package Sinfo is
    --  not make sense from a user point-of-view, and that cross-references that
    --  do not lead to data dependences for subprograms can be safely ignored.
 
+   --  In addition pragma Debug statements are removed from the tree (rewritten
+   --  to NULL stmt), since they should be taken into account in flow analysis.
+
    -----------------------
    -- Check Flag Fields --
    -----------------------
@@ -635,6 +638,9 @@ package Sinfo is
    --    The right operand of N_Op_Shift_Right and N_Op_Shift_Left is always
    --    less than the word size (since other values are not well-defined in
    --    C). This is done using an explicit test if necessary.
+
+   --    Min and Max attributes are expanded into equivalent if expressions,
+   --    dealing properly with side effect issues.
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -3588,6 +3594,9 @@ package Sinfo is
       --  Redundant_Use (Flag13-Sem)
       --  Must_Be_Byte_Aligned (Flag14)
       --  plus fields for expression
+
+      --  Note: in Modify_Tree_For_C mode, Max and Min attributes are expanded
+      --  into equivalent if expressions, properly taking care of side effects.
 
       ---------------------------------
       -- 4.1.4  Attribute Designator --

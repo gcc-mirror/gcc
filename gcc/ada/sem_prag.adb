@@ -3616,7 +3616,6 @@ package body Sem_Prag is
          Legal   : out Boolean)
       is
          Body_Decl : Node_Id;
-         Pack_Spec : Node_Id;
          Spec_Decl : Node_Id;
 
       begin
@@ -3676,14 +3675,10 @@ package body Sem_Prag is
                                  N_Generic_Subprogram_Declaration,
                                  N_Subprogram_Declaration));
 
-         Pack_Spec := Parent (Spec_Decl);
-
-         if Nkind (Pack_Spec) /= N_Package_Specification
-           or else List_Containing (Spec_Decl) /=
-                     Visible_Declarations (Pack_Spec)
-         then
+         if Nkind (Parent (Spec_Decl)) /= N_Package_Specification then
             Error_Pragma
-              ("pragma % must apply to the body of a visible subprogram");
+              ("pragma % must apply to the body of a subprogram declared in a "
+               & "package specification");
             return;
          end if;
 
@@ -12622,13 +12617,14 @@ package body Sem_Prag is
                Freeze_Before (N, Entity (Name (Call)));
             end if;
 
-            Rewrite (N, Make_Implicit_If_Statement (N,
-              Condition       => Cond,
-              Then_Statements => New_List (
-                Make_Block_Statement (Loc,
-                  Handled_Statement_Sequence =>
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => New_List (Relocate_Node (Call)))))));
+            Rewrite (N,
+              Make_Implicit_If_Statement (N,
+                Condition       => Cond,
+                Then_Statements => New_List (
+                  Make_Block_Statement (Loc,
+                    Handled_Statement_Sequence =>
+                      Make_Handled_Sequence_Of_Statements (Loc,
+                        Statements => New_List (Relocate_Node (Call)))))));
             Analyze (N);
 
             --  Ignore pragma Debug in GNATprove mode. Do this rewriting
