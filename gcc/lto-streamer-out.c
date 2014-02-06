@@ -1622,6 +1622,21 @@ output_ssa_names (struct output_block *ob, struct function *fn)
 }
 
 
+/* Output a wide-int.  */
+
+static void
+streamer_write_wi (struct output_block *ob,
+		   const widest_int &w)
+{
+  int len = w.get_len ();
+
+  streamer_write_uhwi (ob, w.get_precision ());
+  streamer_write_uhwi (ob, len);
+  for (int i = 0; i < len; i++)
+    streamer_write_hwi (ob, w.elt (i));
+}
+
+
 /* Output the cfg.  */
 
 static void
@@ -1694,26 +1709,10 @@ output_cfg (struct output_block *ob, struct function *fn)
 			   loop_estimation, EST_LAST, loop->estimate_state);
       streamer_write_hwi (ob, loop->any_upper_bound);
       if (loop->any_upper_bound)
-	{
-	  int len = loop->nb_iterations_upper_bound.get_len ();
-	  int i;
-
-	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.get_precision ());
-	  streamer_write_uhwi (ob, len);
-	  for (i = 0; i < len; i++)
-	    streamer_write_hwi (ob, loop->nb_iterations_upper_bound.elt (i));
-	}
+	streamer_write_wi (ob, loop->nb_iterations_upper_bound);
       streamer_write_hwi (ob, loop->any_estimate);
       if (loop->any_estimate)
-	{
-	  int len = loop->nb_iterations_estimate.get_len ();
-	  int i;
-
-	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.get_precision ());
-	  streamer_write_uhwi (ob, len);
-	  for (i = 0; i < len; i++)
-	    streamer_write_hwi (ob, loop->nb_iterations_estimate.elt (i));
-	}
+	streamer_write_wi (ob, loop->nb_iterations_estimate);
 
       /* Write OMP SIMD related info.  */
       streamer_write_hwi (ob, loop->safelen);

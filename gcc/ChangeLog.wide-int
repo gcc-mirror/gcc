@@ -362,9 +362,11 @@
 	(decide_peel_simple): Likewise.
 	(decide_unroll_stupid): Likewise.
 	* lto-streamer-in.c
+	(streamer_read_wi): Add.
 	(input_cfg): Use wide-int interfaces.
 	(lto_input_tree_1): Likewise.
 	* lto-streamer-out.c
+	(streamer_write_wi): Add.
 	(hash_tree): Use wide-int interfaces.
 	(output_cfg): Likewise.
 	* Makefile.in

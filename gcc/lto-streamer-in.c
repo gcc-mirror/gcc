@@ -617,6 +617,21 @@ make_new_block (struct function *fn, unsigned int index)
 }
 
 
+/* Read a wide-int.  */
+
+static widest_int
+streamer_read_wi (struct lto_input_block *ib)
+{
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
+  int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
+  int len = streamer_read_uhwi (ib);
+  for (i = 0; i < len; i++)
+    a[i] = streamer_read_hwi (ib);
+  return widest_int::from_array (a, len);
+}
+
+
 /* Read the CFG for function FN from input block IB.  */
 
 static void
@@ -726,28 +741,10 @@ input_cfg (struct lto_input_block *ib, struct data_in *data_in,
       loop->estimate_state = streamer_read_enum (ib, loop_estimation, EST_LAST);
       loop->any_upper_bound = streamer_read_hwi (ib);
       if (loop->any_upper_bound)
-	{
-	  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
-	  int i;
-	  int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
-	  int len = streamer_read_uhwi (ib);
-	  for (i = 0; i < len; i++)
-	    a[i] = streamer_read_hwi (ib);
-
-	  loop->nb_iterations_upper_bound = widest_int::from_array (a, len);
-	}
+	loop->nb_iterations_upper_bound = streamer_read_wi (ib);
       loop->any_estimate = streamer_read_hwi (ib);
       if (loop->any_estimate)
-	{
-	  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
-	  int i;
-	  int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
-	  int len = streamer_read_uhwi (ib);
-	  for (i = 0; i < len; i++)
-	    a[i] = streamer_read_hwi (ib);
-
-	  loop->nb_iterations_estimate = widest_int::from_array (a, len);
-	}
+	loop->nb_iterations_estimate = streamer_read_wi (ib);
 
       /* Read OMP SIMD related info.  */
       loop->safelen = streamer_read_hwi (ib);
