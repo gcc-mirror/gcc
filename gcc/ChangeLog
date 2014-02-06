@@ -1,5 +1,12 @@
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/59150
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For clobbers, call
+	free_data_ref on the dr first, and before goto again also set dr
+	to the next dr.  For simd_lane_access, free old datarefs[i] before
+	overwriting it.  For get_vectype_for_scalar_type failure, don't
+	free_data_ref if simd_lane_access.
+
 	* Makefile.in (prefix.o, cppbuiltin.o): Depend on $(BASEVER).
 
 	PR target/60062
