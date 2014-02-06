@@ -2110,7 +2110,6 @@ package body Sem_Ch3 is
          Loc       : constant Source_Ptr := Sloc (Body_Id);
          Params    : constant List_Id    :=
                        Parameter_Specifications (Body_Spec);
-         Spec      : Node_Id;
          Spec_Id   : Entity_Id;
 
          Dummy : Entity_Id;
@@ -2119,8 +2118,8 @@ package body Sem_Ch3 is
          --  spec analysis.
 
       begin
-         --  Consider only procedure bodies whose name matches one of type
-         --  [Limited_]Controlled's primitives.
+         --  Consider only procedure bodies whose name matches one of the three
+         --  controlled primitives.
 
          if Nkind (Body_Spec) /= N_Procedure_Specification
            or else not Nam_In (Chars (Body_Id), Name_Adjust,
@@ -2129,14 +2128,15 @@ package body Sem_Ch3 is
          then
             return;
 
-         --  A controlled primitive must have exactly one formal whose type
-         --  derives from [Limited_]Controlled.
+         --  A controlled primitive must have exactly one formal
 
          elsif List_Length (Params) /= 1 then
             return;
          end if;
 
          Dummy := Analyze_Subprogram_Specification (Body_Spec);
+
+         --  The type of the formal must be derived from [Limited_]Controlled
 
          if not Is_Controlled (Etype (Defining_Entity (First (Params)))) then
             return;
@@ -2152,16 +2152,13 @@ package body Sem_Ch3 is
          end if;
 
          --  At this point the body is known to be a late controlled primitive.
-         --  Generate a matching spec and insert it before the body.
-
-         Spec := New_Copy_Tree (Body_Spec);
-
-         Set_Defining_Unit_Name
-           (Spec, Make_Defining_Identifier (Loc, Chars (Body_Id)));
+         --  Generate a matching spec and insert it before the body. Note the
+         --  use of Copy_Separate_Tree - we want an entirely separate semantic
+         --  tree in this case.
 
          Insert_Before_And_Analyze (Body_Decl,
            Make_Subprogram_Declaration (Loc,
-             Specification => Spec));
+             Specification => Copy_Separate_Tree (Body_Spec)));
       end Handle_Late_Controlled_Primitive;
 
       --------------------------------

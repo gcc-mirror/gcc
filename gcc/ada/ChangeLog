@@ -1,3 +1,34 @@
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* casing.adb (Determine_Casing): Consider SPARK_Mode to be
+	mixed case.
+
+2014-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function): Predicate is false
+	when the function has a foreign convention, but not if only the
+	limited return type has such a convention.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Handle_Late_Controlled_Primitive): Remove local
+	variable Spec. Comment reformatting. Use Copy_Separate_Tree
+	rather than New_Copy_Tree when building the corresponding
+	subprogram declaration.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Remove
+	the mode-related checks on abstract states with enabled external
+	properties.
+	(Property_Error): Removed.
+
+2014-02-06  Javier Miranda  <miranda@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): When
+	generating the reference to the first private entity take care
+	of handling swapped entities.
+
 2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi, vms_data.ads: Add documentation of -j option for

@@ -1912,33 +1912,7 @@ package body Sem_Prag is
            (Item        : Node_Id;
             Global_Mode : Name_Id)
          is
-            procedure Property_Error
-              (State_Id : Entity_Id;
-               Prop_Nam : Name_Id);
-            --  Emit an error concerning state State_Id with enabled property
-            --  Async_Readers, Effective_Reads or Effective_Writes that is not
-            --  marked as In_Out or Output item.
-
-            --------------------
-            -- Property_Error --
-            --------------------
-
-            procedure Property_Error
-              (State_Id : Entity_Id;
-               Prop_Nam : Name_Id)
-            is
-            begin
-               Error_Msg_Name_1 := Prop_Nam;
-               Error_Msg_NE
-                 ("external state & with enabled property % must have mode "
-                  & "In_Out or Output (SPARK RM 7.1.2(7))", Item, State_Id);
-            end Property_Error;
-
-            --  Local variables
-
             Item_Id : Entity_Id;
-
-         --  Start of processing for Analyze_Global_Item
 
          begin
             --  Detect one of the following cases
@@ -2016,30 +1990,6 @@ package body Sem_Prag is
                      Record_Possible_Body_Reference
                        (State_Id => Item_Id,
                         Ref      => Item);
-                  end if;
-
-                  --  Detect an external state with an enabled property that
-                  --  does not match the mode of the state.
-
-                  if Global_Mode = Name_Input then
-                     if Async_Readers_Enabled (Item_Id) then
-                        Property_Error (Item_Id, Name_Async_Readers);
-
-                     elsif Effective_Reads_Enabled (Item_Id) then
-                        Property_Error (Item_Id, Name_Effective_Reads);
-
-                     elsif Effective_Writes_Enabled (Item_Id) then
-                        Property_Error (Item_Id, Name_Effective_Writes);
-                     end if;
-
-                  elsif Global_Mode = Name_Output
-                    and then Async_Writers_Enabled (Item_Id)
-                  then
-                     Error_Msg_Name_1 := Name_Async_Writers;
-                     Error_Msg_NE
-                       ("external state & with enabled property % must have "
-                        & "mode Input or In_Out (SPARK RM 7.1.2(7))",
-                        Item, Item_Id);
                   end if;
 
                --  Variable related checks

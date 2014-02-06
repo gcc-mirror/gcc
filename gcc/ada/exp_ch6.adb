@@ -9592,13 +9592,13 @@ package body Exp_Ch6 is
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
-         --  Note: If you have Convention (C) on an inherently limited type,
-         --  you're on your own. That is, the C code will have to be carefully
-         --  written to know about the Ada conventions.
+         --  Note: If the function has a foreign convention, it cannot build
+         --  its result in place, so you're on your own. On the other hand,
+         --  if only the return type has a foreign convention, its layout is
+         --  intended to be compatible with the other language, but the build-
+         --  in place machinery can ensure that the object is not copied.
 
-         if Has_Foreign_Convention (E)
-           or else Has_Foreign_Convention (Etype (E))
-         then
+         if Has_Foreign_Convention (E) then
             return False;
 
          --  In Ada 2005 all functions with an inherently limited return type
