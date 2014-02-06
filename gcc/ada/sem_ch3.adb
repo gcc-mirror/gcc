@@ -2110,6 +2110,7 @@ package body Sem_Ch3 is
          Loc       : constant Source_Ptr := Sloc (Body_Id);
          Params    : constant List_Id    :=
                        Parameter_Specifications (Body_Spec);
+         Spec      : Node_Id;
          Spec_Id   : Entity_Id;
 
          Dummy : Entity_Id;
@@ -2156,9 +2157,17 @@ package body Sem_Ch3 is
          --  use of Copy_Separate_Tree - we want an entirely separate semantic
          --  tree in this case.
 
+         Spec := Copy_Separate_Tree (Body_Spec);
+
+         --  Ensure that the subprogram declaration does not inherit the null
+         --  indicator from the body as we now have a proper spec and body
+         --  pair.
+
+         Set_Null_Present (Spec, False);
+
          Insert_Before_And_Analyze (Body_Decl,
            Make_Subprogram_Declaration (Loc,
-             Specification => Copy_Separate_Tree (Body_Spec)));
+             Specification => Spec));
       end Handle_Late_Controlled_Primitive;
 
       --------------------------------

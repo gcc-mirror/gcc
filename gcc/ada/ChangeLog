@@ -1,3 +1,9 @@
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Handle_Late_Controlled_Primitive): Add local
+	variable Spec. Do not inherit the null indicator from the
+	subprogram body when generating the spec.
+
 2014-02-06  Robert Dewar  <dewar@adacore.com>
 
 	* casing.adb (Determine_Casing): Consider SPARK_Mode to be
