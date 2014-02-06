@@ -1067,10 +1067,13 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 					? GET_MODE_SIZE (amd->mem_mode)
 					: -GET_MODE_SIZE (amd->mem_mode),
 					GET_MODE (loc)));
+      store_save = amd->store;
+      amd->store = false;
+      tem = simplify_replace_fn_rtx (tem, old_rtx, adjust_mems, data);
+      amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0),
-							tem),
+							XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case PRE_MODIFY:
@@ -1080,10 +1083,14 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	addr = XEXP (loc, 0);
       gcc_assert (amd->mem_mode != VOIDmode);
       addr = simplify_replace_fn_rtx (addr, old_rtx, adjust_mems, data);
+      store_save = amd->store;
+      amd->store = false;
+      tem = simplify_replace_fn_rtx (XEXP (loc, 1), old_rtx,
+				     adjust_mems, data);
+      amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0),
-							XEXP (loc, 1)),
+							XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case SUBREG:
