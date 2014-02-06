@@ -1,3 +1,8 @@
+2014-02-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Fix logic
+	for SYMBOL_REF in large memory model.
+
 2014-02-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a53): Specify CRC32
