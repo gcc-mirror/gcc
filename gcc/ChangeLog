@@ -1,3 +1,11 @@
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60062
+	* tree.h (opts_for_fn): New inline function.
+	(opt_for_fn): Define.
+	* config/i386/i386.c (ix86_function_regparm): Use
+	opt_for_fn (decl, optimize) instead of optimize.
+
 2014-02-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_classify_symbol): Fix logic
