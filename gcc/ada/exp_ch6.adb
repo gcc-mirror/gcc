@@ -10466,6 +10466,7 @@ package body Exp_Ch6 is
       Pass_Caller_Acc : Boolean := False;
       New_Expr        : Node_Id;
       Ref_Type        : Entity_Id;
+      Res_Decl        : Node_Id;
       Result_Subt     : Entity_Id;
 
    begin
@@ -10678,11 +10679,12 @@ package body Exp_Ch6 is
       Set_Etype (Def_Id, Ref_Type);
       Set_Is_Known_Non_Null (Def_Id);
 
-      Insert_After_And_Analyze (Ptr_Typ_Decl,
+      Res_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Def_Id,
           Object_Definition   => New_Reference_To (Ref_Type, Loc),
-          Expression          => New_Expr));
+          Expression          => New_Expr);
+      Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
       --  If the result subtype of the called function is constrained and
       --  is not itself the return expression of an enclosing BIP function,
@@ -10691,6 +10693,24 @@ package body Exp_Ch6 is
       if Is_Constrained (Underlying_Type (Result_Subt))
         and then not Is_Return_Object (Defining_Identifier (Object_Decl))
       then
+         --  The related object declaration is encased in a transient block
+         --  because the build-in-place function call contains at least one
+         --  nested function call that produces a controlled transient
+         --  temporary:
+
+         --    Obj : ... := BIP_Func_Call (Ctrl_Func_Call);
+
+         --  Since the build-in-place expansion decouples the call from the
+         --  object declaration, the finalization machinery lacks the context
+         --  which prompted the generation of the transient block. To resolve
+         --  this scenario, store the build-in-place call.
+
+         if Scope_Is_Transient
+           and then Node_To_Be_Wrapped = Object_Decl
+         then
+            Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
+         end if;
+
          Set_Expression (Object_Decl, Empty);
          Set_No_Initialization (Object_Decl);
 
@@ -10790,9 +10810,9 @@ package body Exp_Ch6 is
 
    begin
       pragma Assert (Nkind (Allocator) = N_Allocator
-                       and then Nkind (Function_Call) = N_Function_Call);
+                      and then Nkind (Function_Call) = N_Function_Call);
       pragma Assert (Convention (Function_Id) = Convention_CPP
-                       and then Is_Constructor (Function_Id));
+                      and then Is_Constructor (Function_Id));
       pragma Assert (Is_Constrained (Underlying_Type (Result_Subt)));
 
       --  Replace the initialized allocator of form "new T'(Func (...))" with

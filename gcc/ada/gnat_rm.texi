@@ -4812,13 +4812,14 @@ pragma Optimize_Alignment (TIME | SPACE | OFF);
 
 @noindent
 This is a configuration pragma which affects the choice of default alignments
-for types where no alignment is explicitly specified. There is a time/space
-trade-off in the selection of these values. Large alignments result in more
-efficient code, at the expense of larger data space, since sizes have to be
-increased to match these alignments. Smaller alignments save space, but the
-access code is slower. The normal choice of default alignments (which is what
-you get if you do not use this pragma, or if you use an argument of OFF),
-tries to balance these two requirements.
+for types and objects where no alignment is explicitly specified. There is a
+time/space trade-off in the selection of these values. Large alignments result
+in more efficient code, at the expense of larger data space, since sizes have
+to be increased to match these alignments. Smaller alignments save space, but
+the access code is slower. The normal choice of default alignments for types
+and individual alignment promotions for objects (which is what you get if you
+do not use this pragma, or if you use an argument of OFF), tries to balance
+these two requirements.
 
 Specifying SPACE causes smaller default alignments to be chosen in two cases.
 First any packed record is given an alignment of 1. Second, if a size is given
@@ -4847,6 +4848,10 @@ record (that is a discriminated record with a component which is an array
 whose length depends on a discriminant), has a pragma Pack, then it is not
 in general possible to set the alignment of such a record to one, so the
 pragma is ignored in this case (with a warning).
+
+Specifying SPACE also disables individual alignment promotions for objects,
+which occur when the compiler increases the alignment of a specific object
+without changing the alignment of its type.
 
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:

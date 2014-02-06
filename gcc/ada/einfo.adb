@@ -242,6 +242,7 @@ package body Einfo is
    --    Initialization_Statements       Node28
    --    Underlying_Record_View          Node28
 
+   --    BIP_Initialization_Call         Node29
    --    Subprograms_For_Type            Node29
 
    --    Corresponding_Equality          Node30
@@ -766,6 +767,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       return Elist16 (Id);
    end Body_References;
+
+   function BIP_Initialization_Call (Id : E) return N is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node29 (Id);
+   end BIP_Initialization_Call;
 
    function C_Pass_By_Copy (Id : E) return B is
    begin
@@ -3433,6 +3440,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       Set_Elist16 (Id, V);
    end Set_Body_References;
+
+   procedure Set_BIP_Initialization_Call (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node29 (Id, V);
+   end Set_BIP_Initialization_Call;
 
    procedure Set_C_Pass_By_Copy (Id : E; V : B := True) is
    begin
@@ -9419,6 +9432,10 @@ package body Einfo is
    procedure Write_Field29_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("BIP_Initialization_Call");
+
          when Type_Kind =>
             Write_Str ("Subprograms_For_Type");
 

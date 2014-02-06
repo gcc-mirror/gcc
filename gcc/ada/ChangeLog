@@ -1,3 +1,32 @@
+2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: Add documentation of -j option for
+	gnatelim.
+
+2014-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_rm.texi (Pragma Optimize_Alignment): Document the effect
+	of the pragma on individual objects.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Node29 is now used as BIP_Initialization_Call.
+	(BIP_Initialization_Call): New routine.
+	(Set_BIP_Initialization_Call): New routine.
+	(Write_Field29_Name): Add an entry for constants and variables.
+	* einfo.ads Add new attribute BIP_Initialization_Call and update
+	its usage in nodes.
+	(BIP_Initialization_Call): New routine along with pragma Inline.
+	(Set_BIP_Initialization_Call): New routine along with pragma Inline.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Add local declaration Res_Decl. Capture the build-in-place
+	initialization call when the related object declaration has
+	created a transient block.
+	* exp_ch7.adb (Process_Transient_Objects): Add local variable
+	Fin_Insrt. Recognize a scenario where an object declaration acts
+	as a transient context and is initialized by a build-in-place
+	function call.
+
 2014-02-06  Pascal Obry  <obry@adacore.com>
 
 	* prj-util.adb (For_Interface_Sources): Fix handling of required
