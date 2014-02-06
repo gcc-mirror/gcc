@@ -1,3 +1,37 @@
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Add
+	local variable Expr. Flag clauses with extra parenthesis as this
+	is not allowed by the syntax of the pragma. Code reformatting.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Alphabetize
+	variables. Rename variabme Tnn to Temp. Do not create a temporary
+	if assertions are disabled. Find enclosing routine _Postconditions
+	and insert the temporary that captures the value of the prefix
+	before the routine.
+	* exp_ch6.adb (Build_Postconditions_Procedure):
+	Insert the generated _Postconditions routine
+	before the first source declaration of the related
+	subprogram.
+	(Insert_After_Last_Declaration): Removed.
+	(Insert_Before_First_Source_Declaration): New routine.
+
+2014-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb, exp_util.ads (Within_Internal_Subprogram):
+	Utility to determine whether current expansion is for the body
+	of a predefined primitive operation.
+	(Make_Predicate_Check): Use Within_Internal_Subpgram
+	* checks.adb (Apply_Predicate_Check): Use
+	Within_Internal_Subprogram
+	* sem_ch13.adb (Freeze_Entity_Checks): Ditto.
+
+2014-02-06  Pascal Obry  <obry@adacore.com>
+
+	* prj.ads, prj-util.adb: Minor reformatting.
+
 2014-02-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Expand_Subprogram_Contract, Append_Enabled_Item):

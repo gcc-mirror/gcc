@@ -5752,6 +5752,13 @@ package body Exp_Util is
          return Make_Null_Statement (Loc);
       end if;
 
+      --  Do not generate a check within an internal subprogram (stream
+      --  functions and the like, including including predicate functions).
+
+      if Within_Internal_Subprogram then
+         return Make_Null_Statement (Loc);
+      end if;
+
       --  Compute proper name to use, we need to get this right so that the
       --  right set of check policies apply to the Check pragma we are making.
 
@@ -8212,6 +8219,24 @@ package body Exp_Util is
 
       return False;
    end Within_Case_Or_If_Expression;
+
+   --------------------------------
+   -- Within_Internal_Subprogram --
+   --------------------------------
+
+   function Within_Internal_Subprogram return Boolean is
+      S : Entity_Id;
+
+   begin
+      S := Current_Scope;
+      while Present (S) and then not Is_Subprogram (S) loop
+         S := Scope (S);
+      end loop;
+
+      return Present (S)
+        and then Get_TSS_Name (S) /= TSS_Null
+        and then not Is_Predicate_Function (S);
+   end Within_Internal_Subprogram;
 
    ----------------------------
    -- Wrap_Cleanup_Procedure --

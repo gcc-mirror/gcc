@@ -3806,9 +3806,9 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Tnn     : constant Entity_Id := Make_Temporary (Loc, 'T', Pref);
-         Subp    : Node_Id;
          Asn_Stm : Node_Id;
+         Subp    : Node_Id;
+         Temp    : Entity_Id;
 
       begin
          --  If assertions are disabled, no need to create the declaration
@@ -3818,41 +3818,46 @@ package body Exp_Attr is
             return;
          end if;
 
-         --  Find the nearest subprogram body, ignoring _Preconditions
+         Temp := Make_Temporary (Loc, 'T', Pref);
+
+         --  Climb the parent chain looking for subprogram _Postconditions
 
          Subp := N;
-         loop
-            Subp := Parent (Subp);
+         while Present (Subp) loop
             exit when Nkind (Subp) = N_Subprogram_Body
-              and then Chars (Defining_Entity (Subp)) /= Name_uPostconditions;
+              and then Chars (Defining_Entity (Subp)) = Name_uPostconditions;
+
+            Subp := Parent (Subp);
          end loop;
 
-         --  Insert the initialized object declaration at the start of the
-         --  subprogram's declarations.
+         --  'Old can only appear in a postcondition, the generated body of
+         --  _Postconditions must be in the tree.
+
+         pragma Assert (Present (Subp));
+
+         --  Generate:
+         --    Temp : constant <Pref type> := <Pref>;
 
          Asn_Stm :=
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Tnn,
+             Defining_Identifier => Temp,
              Constant_Present    => True,
              Object_Definition   => New_Occurrence_Of (Etype (N), Loc),
              Expression          => Pref);
 
-         --  Push the subprogram's scope, so that the object will be analyzed
-         --  in that context (rather than the context of the Precondition
-         --  subprogram) and will have its Scope set properly.
+         --  Push the scope of the related subprogram where _Postcondition
+         --  resides as this ensures that the object will be analyzed in the
+         --  proper context.
 
-         if Present (Corresponding_Spec (Subp)) then
-            Push_Scope (Corresponding_Spec (Subp));
-         else
-            Push_Scope (Defining_Entity (Subp));
-         end if;
+         Push_Scope (Scope (Defining_Entity (Subp)));
 
-         if Is_Empty_List (Declarations (Subp)) then
-            Set_Declarations (Subp, New_List (Asn_Stm));
-            Analyze (Asn_Stm);
-         else
-            Insert_Action (First (Declarations (Subp)), Asn_Stm);
-         end if;
+         --  The object declaration is inserted before the body of subprogram
+         --  _Postconditions. This ensures that any precondition-like actions
+         --  are still executed before any parameter values are captured and
+         --  the multiple 'Old occurrences appear in order of declaration.
+
+         Insert_Before_And_Analyze (Subp, Asn_Stm);
+         Pop_Scope;
 
          --  Ensure that the prefix of attribute 'Old is valid. The check must
          --  be inserted after the expansion of the attribute has taken place
@@ -3862,9 +3867,7 @@ package body Exp_Attr is
             Ensure_Valid (Pref);
          end if;
 
-         Pop_Scope;
-
-         Rewrite (N, New_Occurrence_Of (Tnn, Loc));
+         Rewrite (N, New_Occurrence_Of (Temp, Loc));
       end Old;
 
       ----------------------
