@@ -1,3 +1,8 @@
+2014-02-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/cpp0x/constexpr-attribute2.C: Restrict to target
+	init_priority. Test alignment of variable instead of function.
+
 2014-02-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60087
@@ -162,7 +167,6 @@
 	PR ipa/59831
 	* g++.dg/ipa/devirt-24.C: New testcase.
 
->>>>>>> .r207518
 2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53017

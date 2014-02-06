@@ -1,3 +1,4 @@
+// { dg-do compile { target init_priority } }
 // { dg-options -std=gnu++11 }
 
 struct t { t(); };
@@ -29,4 +30,4 @@ typedef char vec __attribute__((vector_size(size)));
 
 void f(char*) __attribute__((nonnull(pos)));
 
-void g() __attribute__((aligned(size)));
+char g __attribute__((aligned(size)));
