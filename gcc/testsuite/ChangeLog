@@ -1,3 +1,8 @@
+2014-02-06  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.dg/tree-ssa/pr59597.c: Make called function static
+	so that expected outcome works for PIC variants too.
+
 2014-02-06  Yury Gribov  <y.gribov@samsung.com>
 	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
