@@ -850,8 +850,8 @@ package body Sem_Prag is
                              ("cannot mention state & in global refinement",
                               Item, Item_Id);
                            Error_Msg_N
-                              ("\use its constituents instead (SPARK RM "
-                               & "6.1.5(3))", Item);
+                              ("\use its constituents instead "
+                               & "(SPARK RM 6.1.5(3))", Item);
                            return;
 
                         --  If the reference to the abstract state appears in
@@ -958,8 +958,8 @@ package body Sem_Prag is
       begin
          if Ekind (Spec_Id) = E_Function and then not Result_Seen then
             Error_Msg_NE
-              ("result of & must appear in exactly one output list (SPARK RM "
-               & "6.1.5(10))", N, Spec_Id);
+              ("result of & must appear in exactly one output list "
+               & "(SPARK RM 6.1.5(10))", N, Spec_Id);
          end if;
       end Check_Function_Return;
 
@@ -1413,8 +1413,8 @@ package body Sem_Prag is
 
             elsif Is_Attribute_Result (Output) then
                Error_Msg_N
-                 ("function result cannot depend on itself (SPARK RM "
-                  & "6.1.5(10))", Output);
+                 ("function result cannot depend on itself "
+                  & "(SPARK RM 6.1.5(10))", Output);
                return;
             end if;
 
@@ -1810,8 +1810,8 @@ package body Sem_Prag is
          end if;
       else
          Error_Msg_N
-           ("external property % must apply to a volatile object (SPARK RM "
-            & "7.1.3(2))", N);
+           ("external property % must apply to a volatile object "
+            & "(SPARK RM 7.1.3(2))", N);
       end if;
 
       --  Ensure that the expression (if present) is static Boolean. A missing
@@ -1954,16 +1954,16 @@ package body Sem_Prag is
 
                elsif Ekind (Item_Id) = E_Constant then
                   Error_Msg_N
-                    ("global item cannot denote a constant (SPARK RM "
-                     & "6.1.4(7))", Item);
+                    ("global item cannot denote a constant "
+                     & "(SPARK RM 6.1.4(7))", Item);
 
                --  The only legal references are those to abstract states and
                --  variables.
 
                elsif not Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                   Error_Msg_N
-                    ("global item must denote variable or state (SPARK RM "
-                     & "6.1.4(4))", Item);
+                    ("global item must denote variable or state "
+                     & "(SPARK RM 6.1.4(4))", Item);
                   return;
                end if;
 
@@ -2004,8 +2004,8 @@ package body Sem_Prag is
                   then
                      Error_Msg_NE
                        ("volatile global item & with property Effective_Reads "
-                        & "must have mode In_Out or Output (SPARK RM "
-                        & "7.1.3(11))", Item, Item_Id);
+                        & "must have mode In_Out or Output "
+                        & "(SPARK RM 7.1.3(11))", Item, Item_Id);
                      return;
                   end if;
                end if;
@@ -2022,8 +2022,8 @@ package body Sem_Prag is
 
             else
                Error_Msg_N
-                 ("global item must denote variable or state (SPARK RM "
-                  & "6.1.4(4))", Item);
+                 ("global item must denote variable or state "
+                  & "(SPARK RM 6.1.4(4))", Item);
                return;
             end if;
 
@@ -2150,8 +2150,8 @@ package body Sem_Prag is
          begin
             if Ekind (Spec_Id) = E_Function then
                Error_Msg_N
-                 ("global mode & is not applicable to functions (SPARK RM "
-                  & "6.1.4(10))", Mode);
+                 ("global mode & is not applicable to functions "
+                  & "(SPARK RM 6.1.4(10))", Mode);
             end if;
          end Check_Mode_Restriction_In_Function;
 
@@ -3538,8 +3538,8 @@ package body Sem_Prag is
 
          if Placement = Not_In_Package then
             Error_Msg_N
-              ("indicator Part_Of may not appear in this context (SPARK RM "
-               & "7.2.6(5))", Indic);
+              ("indicator Part_Of may not appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
             Error_Msg_Name_1 := Chars (Scope (State_Id));
             Error_Msg_NE
               ("\& is not part of the hidden state of package %",
@@ -3593,8 +3593,8 @@ package body Sem_Prag is
 
          else
             Error_Msg_N
-              ("indicator Part_Of may not appear in this context (SPARK RM "
-               & "7.2.6(5))", Indic);
+              ("indicator Part_Of may not appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
 
             if Scope (State_Id) = Pack_Id then
                Error_Msg_Name_1 := Chars (Pack_Id);
@@ -22384,8 +22384,8 @@ package body Sem_Prag is
                      Posted := True;
                      Error_Msg_NE
                        ("output state & must be replaced by all its "
-                        & "constituents in global refinement (SPARK RM "
-                        & "7.2.5(3))", N, State_Id);
+                        & "constituents in global refinement "
+                        & "(SPARK RM 7.2.5(3))", N, State_Id);
                   end if;
 
                   Error_Msg_NE
@@ -24002,8 +24002,8 @@ package body Sem_Prag is
 
             else
                Error_Msg_N
-                 ("indicator Part_Of is required in this context (SPARK RM "
-                  & "7.2.6(3))", Item_Id);
+                 ("indicator Part_Of is required in this context "
+                  & "(SPARK RM 7.2.6(3))", Item_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_N
                  ("\& is declared in the visible part of private child unit %",
@@ -24035,8 +24035,8 @@ package body Sem_Prag is
 
          else
             Error_Msg_N
-              ("indicator Part_Of is required in this context (SPARK RM "
-               & "7.2.6(2))", Item_Id);
+              ("indicator Part_Of is required in this context "
+               & "(SPARK RM 7.2.6(2))", Item_Id);
             Error_Msg_Name_1 := Chars (Pack_Id);
             Error_Msg_N
               ("\& is declared in the private part of package %", Item_Id);

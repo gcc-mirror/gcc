@@ -1069,7 +1069,7 @@ package body Lib.Xref is
             end if;
 
             Add_Entry
-              ((Ent      => Ent,
+              ((Ent       => Ent,
                 Loc       => Ref,
                 Typ       => Actual_Typ,
                 Eun       => Get_Source_Unit (Def),
@@ -1612,11 +1612,11 @@ package body Lib.Xref is
               and then Sloc (E) > No_Location
             then
                Add_Entry
-                 ((Ent => E,
-                   Loc => No_Location,
-                   Typ => Character'First,
-                   Eun => Get_Source_Unit (Original_Location (Sloc (E))),
-                   Lun => No_Unit,
+                 ((Ent       => E,
+                   Loc       => No_Location,
+                   Typ       => Character'First,
+                   Eun       => Get_Source_Unit (Original_Location (Sloc (E))),
+                   Lun       => No_Unit,
                    Ref_Scope => Empty,
                    Ent_Scope => Empty),
                   Ent_Scope_File => No_Unit);
@@ -1700,11 +1700,11 @@ package body Lib.Xref is
 
                      if Present (Prim) then
                         Add_Entry
-                          ((Ent => Prim,
-                            Loc => No_Location,
-                            Typ => Character'First,
-                            Eun => Get_Source_Unit (Sloc (Prim)),
-                            Lun => No_Unit,
+                          ((Ent       => Prim,
+                            Loc       => No_Location,
+                            Typ       => Character'First,
+                            Eun       => Get_Source_Unit (Sloc (Prim)),
+                            Lun       => No_Unit,
                             Ref_Scope => Empty,
                             Ent_Scope => Empty),
                            Ent_Scope_File => No_Unit);
