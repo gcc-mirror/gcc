@@ -177,7 +177,7 @@ static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static tree arm_builtin_decl (unsigned, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx emit_set_insn (rtx, rtx);
-static rtx emit_multi_reg_push (unsigned long);
+static rtx emit_multi_reg_push (unsigned long, unsigned long);
 static int arm_arg_partial_bytes (cumulative_args_t, enum machine_mode,
 				  tree, bool);
 static rtx arm_function_arg (cumulative_args_t, enum machine_mode,
@@ -19573,28 +19573,33 @@ arm_emit_strd_push (unsigned long saved_regs_mask)
 /* Generate and emit an insn that we will recognize as a push_multi.
    Unfortunately, since this insn does not reflect very well the actual
    semantics of the operation, we need to annotate the insn for the benefit
-   of DWARF2 frame unwind information.  */
+   of DWARF2 frame unwind information.  DWARF_REGS_MASK is a subset of
+   MASK for registers that should be annotated for DWARF2 frame unwind
+   information.  */
 static rtx
-emit_multi_reg_push (unsigned long mask)
+emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 {
   int num_regs = 0;
-  int num_dwarf_regs;
+  int num_dwarf_regs = 0;
   int i, j;
   rtx par;
   rtx dwarf;
   int dwarf_par_index;
   rtx tmp, reg;
 
+  /* We don't record the PC in the dwarf frame information.  */
+  dwarf_regs_mask &= ~(1 << PC_REGNUM);
+
   for (i = 0; i <= LAST_ARM_REGNUM; i++)
-    if (mask & (1 << i))
-      num_regs++;
+    {
+      if (mask & (1 << i))
+	num_regs++;
+      if (dwarf_regs_mask & (1 << i))
+	num_dwarf_regs++;
+    }
 
   gcc_assert (num_regs && num_regs <= 16);
-
-  /* We don't record the PC in the dwarf frame information.  */
-  num_dwarf_regs = num_regs;
-  if (mask & (1 << PC_REGNUM))
-    num_dwarf_regs--;
+  gcc_assert ((dwarf_regs_mask & ~mask) == 0);
 
   /* For the body of the insn we are going to generate an UNSPEC in
      parallel with several USEs.  This allows the insn to be recognized
@@ -19660,14 +19665,13 @@ emit_multi_reg_push (unsigned long mask)
 					   gen_rtvec (1, reg),
 					   UNSPEC_PUSH_MULT));
 
-	  if (i != PC_REGNUM)
+	  if (dwarf_regs_mask & (1 << i))
 	    {
 	      tmp = gen_rtx_SET (VOIDmode,
 				 gen_frame_mem (SImode, stack_pointer_rtx),
 				 reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
-	      XVECEXP (dwarf, 0, dwarf_par_index) = tmp;
-	      dwarf_par_index++;
+	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
 
 	  break;
@@ -19682,7 +19686,7 @@ emit_multi_reg_push (unsigned long mask)
 
 	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
 
-	  if (i != PC_REGNUM)
+	  if (dwarf_regs_mask & (1 << i))
 	    {
 	      tmp
 		= gen_rtx_SET (VOIDmode,
@@ -20689,7 +20693,7 @@ arm_expand_prologue (void)
 	  /* Interrupt functions must not corrupt any registers.
 	     Creating a frame pointer however, corrupts the IP
 	     register, so we must push it first.  */
-	  emit_multi_reg_push (1 << IP_REGNUM);
+	  emit_multi_reg_push (1 << IP_REGNUM, 1 << IP_REGNUM);
 
 	  /* Do not set RTX_FRAME_RELATED_P on this insn.
 	     The dwarf stack unwinding code only wants to see one
@@ -20750,7 +20754,8 @@ arm_expand_prologue (void)
 	      if (cfun->machine->uses_anonymous_args)
 		{
 		  insn
-		    = emit_multi_reg_push ((0xf0 >> (args_to_push / 4)) & 0xf);
+		    = emit_multi_reg_push ((0xf0 >> (args_to_push / 4)) & 0xf,
+					   (0xf0 >> (args_to_push / 4)) & 0xf);
 		  emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
 		  saved_pretend_args = 1;
 		}
@@ -20794,7 +20799,8 @@ arm_expand_prologue (void)
       /* Push the argument registers, or reserve space for them.  */
       if (cfun->machine->uses_anonymous_args)
 	insn = emit_multi_reg_push
-	  ((0xf0 >> (args_to_push / 4)) & 0xf);
+	  ((0xf0 >> (args_to_push / 4)) & 0xf,
+	   (0xf0 >> (args_to_push / 4)) & 0xf);
       else
 	insn = emit_insn
 	  (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
@@ -20819,6 +20825,8 @@ arm_expand_prologue (void)
 
   if (live_regs_mask)
     {
+      unsigned long dwarf_regs_mask = live_regs_mask;
+
       saved_regs += bit_count (live_regs_mask) * 4;
       if (optimize_size && !frame_pointer_needed
 	  && saved_regs == offsets->saved_regs - offsets->saved_args)
@@ -20845,25 +20853,22 @@ arm_expand_prologue (void)
 	  && current_tune->prefer_ldrd_strd
           && !optimize_function_for_size_p (cfun))
         {
+	  gcc_checking_assert (live_regs_mask == dwarf_regs_mask);
           if (TARGET_THUMB2)
-            {
-              thumb2_emit_strd_push (live_regs_mask);
-            }
+	    thumb2_emit_strd_push (live_regs_mask);
           else if (TARGET_ARM
                    && !TARGET_APCS_FRAME
                    && !IS_INTERRUPT (func_type))
-            {
-              arm_emit_strd_push (live_regs_mask);
-            }
+	    arm_emit_strd_push (live_regs_mask);
           else
             {
-              insn = emit_multi_reg_push (live_regs_mask);
+	      insn = emit_multi_reg_push (live_regs_mask, live_regs_mask);
               RTX_FRAME_RELATED_P (insn) = 1;
             }
         }
       else
         {
-          insn = emit_multi_reg_push (live_regs_mask);
+	  insn = emit_multi_reg_push (live_regs_mask, dwarf_regs_mask);
           RTX_FRAME_RELATED_P (insn) = 1;
         }
     }
@@ -28694,7 +28699,13 @@ arm_dwarf_register_span (rtx rtl)
 /* Emit unwind directives for a store-multiple instruction or stack pointer
    push during alignment.
    These should only ever be generated by the function prologue code, so
-   expect them to have a particular form.  */
+   expect them to have a particular form.
+   The store-multiple instruction sometimes pushes pc as the last register,
+   although it should not be tracked into unwind information, or for -Os
+   sometimes pushes some dummy registers before first register that needs
+   to be tracked in unwind information; such dummy registers are there just
+   to avoid separate stack adjustment, and will not be restored in the
+   epilogue.  */
 
 static void
 arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
@@ -28705,32 +28716,43 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
   int reg_size;
   unsigned reg;
   unsigned lastreg;
+  unsigned padfirst = 0, padlast = 0;
   rtx e;
 
   e = XVECEXP (p, 0, 0);
-  if (GET_CODE (e) != SET)
-    abort ();
+  gcc_assert (GET_CODE (e) == SET);
 
   /* First insn will adjust the stack pointer.  */
-  if (GET_CODE (e) != SET
-      || !REG_P (XEXP (e, 0))
-      || REGNO (XEXP (e, 0)) != SP_REGNUM
-      || GET_CODE (XEXP (e, 1)) != PLUS)
-    abort ();
+  gcc_assert (GET_CODE (e) == SET
+	      && REG_P (SET_DEST (e))
+	      && REGNO (SET_DEST (e)) == SP_REGNUM
+	      && GET_CODE (SET_SRC (e)) == PLUS);
 
-  offset = -INTVAL (XEXP (XEXP (e, 1), 1));
+  offset = -INTVAL (XEXP (SET_SRC (e), 1));
   nregs = XVECLEN (p, 0) - 1;
+  gcc_assert (nregs);
 
-  reg = REGNO (XEXP (XVECEXP (p, 0, 1), 1));
+  reg = REGNO (SET_SRC (XVECEXP (p, 0, 1)));
   if (reg < 16)
     {
+      /* For -Os dummy registers can be pushed at the beginning to
+	 avoid separate stack pointer adjustment.  */
+      e = XVECEXP (p, 0, 1);
+      e = XEXP (SET_DEST (e), 0);
+      if (GET_CODE (e) == PLUS)
+	padfirst = INTVAL (XEXP (e, 1));
+      gcc_assert (padfirst == 0 || optimize_size);
       /* The function prologue may also push pc, but not annotate it as it is
 	 never restored.  We turn this into a stack pointer adjustment.  */
-      if (nregs * 4 == offset - 4)
-	{
-	  fprintf (asm_out_file, "\t.pad #4\n");
-	  offset -= 4;
-	}
+      e = XVECEXP (p, 0, nregs);
+      e = XEXP (SET_DEST (e), 0);
+      if (GET_CODE (e) == PLUS)
+	padlast = offset - INTVAL (XEXP (e, 1)) - 4;
+      else
+	padlast = offset - 4;
+      gcc_assert (padlast == 0 || padlast == 4);
+      if (padlast == 4)
+	fprintf (asm_out_file, "\t.pad #4\n");
       reg_size = 4;
       fprintf (asm_out_file, "\t.save {");
     }
@@ -28741,14 +28763,13 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
     }
   else
     /* Unknown register type.  */
-    abort ();
+    gcc_unreachable ();
 
   /* If the stack increment doesn't match the size of the saved registers,
      something has gone horribly wrong.  */
-  if (offset != nregs * reg_size)
-    abort ();
+  gcc_assert (offset == padfirst + nregs * reg_size + padlast);
 
-  offset = 0;
+  offset = padfirst;
   lastreg = 0;
   /* The remaining insns will describe the stores.  */
   for (i = 1; i <= nregs; i++)
@@ -28756,14 +28777,12 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
       /* Expect (set (mem <addr>) (reg)).
          Where <addr> is (reg:SP) or (plus (reg:SP) (const_int)).  */
       e = XVECEXP (p, 0, i);
-      if (GET_CODE (e) != SET
-	  || !MEM_P (XEXP (e, 0))
-	  || !REG_P (XEXP (e, 1)))
-	abort ();
+      gcc_assert (GET_CODE (e) == SET
+		  && MEM_P (SET_DEST (e))
+		  && REG_P (SET_SRC (e)));
 
-      reg = REGNO (XEXP (e, 1));
-      if (reg < lastreg)
-	abort ();
+      reg = REGNO (SET_SRC (e));
+      gcc_assert (reg >= lastreg);
 
       if (i != 1)
 	fprintf (asm_out_file, ", ");
@@ -28776,23 +28795,22 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
 
 #ifdef ENABLE_CHECKING
       /* Check that the addresses are consecutive.  */
-      e = XEXP (XEXP (e, 0), 0);
+      e = XEXP (SET_DEST (e), 0);
       if (GET_CODE (e) == PLUS)
-	{
-	  offset += reg_size;
-	  if (!REG_P (XEXP (e, 0))
-	      || REGNO (XEXP (e, 0)) != SP_REGNUM
-	      || !CONST_INT_P (XEXP (e, 1))
-	      || offset != INTVAL (XEXP (e, 1)))
-	    abort ();
-	}
-      else if (i != 1
-	       || !REG_P (e)
-	       || REGNO (e) != SP_REGNUM)
-	abort ();
+	gcc_assert (REG_P (XEXP (e, 0))
+		    && REGNO (XEXP (e, 0)) == SP_REGNUM
+		    && CONST_INT_P (XEXP (e, 1))
+		    && offset == INTVAL (XEXP (e, 1)));
+      else
+	gcc_assert (i == 1
+		    && REG_P (e)
+		    && REGNO (e) == SP_REGNUM);
+      offset += reg_size;
 #endif
     }
   fprintf (asm_out_file, "}\n");
+  if (padfirst)
+    fprintf (asm_out_file, "\t.pad #%d\n", padfirst);
 }
 
 /*  Emit unwind directives for a SET.  */

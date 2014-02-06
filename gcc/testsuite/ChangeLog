@@ -1,5 +1,8 @@
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/59575
+	* gcc.target/arm/pr59575.c: New test.
+
 	PR debug/59992
 	* gcc.dg/pr59992.c: New test.
 
