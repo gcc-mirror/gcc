@@ -1,3 +1,8 @@
+2014-02-06  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ashr_simddi): Change QI to SI.
+
 2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
