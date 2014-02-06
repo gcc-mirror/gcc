@@ -1193,6 +1193,8 @@ package body Sem_Ch6 is
             end loop;
          end;
 
+         Check_SPARK_Mode_In_Generic (N);
+
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id, True);
 

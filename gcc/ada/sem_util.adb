@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
@@ -2698,6 +2699,31 @@ package body Sem_Util is
          Check_Expression (Expr);
       end if;
    end Check_Result_And_Post_State;
+
+   ---------------------------------
+   -- Check_SPARK_Mode_In_Generic --
+   ---------------------------------
+
+   procedure Check_SPARK_Mode_In_Generic (N : Node_Id) is
+      Aspect : Node_Id;
+
+   begin
+      --  Try to find aspect SPARK_Mode and flag it as illegal
+
+      if Has_Aspects (N) then
+         Aspect := First (Aspect_Specifications (N));
+         while Present (Aspect) loop
+            if Get_Aspect_Id (Aspect) = Aspect_SPARK_Mode then
+               Error_Msg_Name_1 := Name_SPARK_Mode;
+               Error_Msg_N
+                 ("incorrect placement of aspect % on a generic", Aspect);
+               exit;
+            end if;
+
+            Next (Aspect);
+         end loop;
+      end if;
+   end Check_SPARK_Mode_In_Generic;
 
    ------------------------------
    -- Check_Unprotected_Access --

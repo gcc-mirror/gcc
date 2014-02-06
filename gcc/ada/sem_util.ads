@@ -62,6 +62,7 @@ package Sem_Util is
    --    Precondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_Post
    --    Refined_States
    --    Test_Case
 
@@ -288,6 +289,10 @@ package Sem_Util is
    --  the pragma contains an expression that evaluates differently in pre-
    --  and post-state. Prag is a [refined] postcondition or a contract-cases
    --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
+
+   procedure Check_SPARK_Mode_In_Generic (N : Node_Id);
+   --  Given a generic package [body] or a generic subprogram [body], inspect
+   --  the aspect specifications (if any) and flag SPARK_Mode as illegal.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;

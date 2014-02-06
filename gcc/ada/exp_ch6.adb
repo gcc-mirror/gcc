@@ -8887,7 +8887,18 @@ package body Exp_Ch6 is
                List := New_List;
             end if;
 
-            Append (Item, List);
+            --  If the pragma is a conjunct in a composite postcondition, it
+            --  has been processed in reverse order. In the postcondition body
+            --  if must appear before the others.
+
+            if Nkind (Item) = N_Pragma
+              and then From_Aspect_Specification (Item)
+              and then Split_PPC (Item)
+            then
+               Prepend (Item, List);
+            else
+               Append (Item, List);
+            end if;
          end if;
       end Append_Enabled_Item;
 
