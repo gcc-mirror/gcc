@@ -19217,10 +19217,6 @@ package body Sem_Prag is
             Check_No_Identifiers;
             Check_At_Most_N_Arguments (1);
 
-            if Inside_A_Generic then
-               Error_Pragma ("incorrect placement of pragma% in a generic");
-            end if;
-
             --  Check the legality of the mode (no argument = ON)
 
             if Arg_Count = 1 then
@@ -19233,9 +19229,15 @@ package body Sem_Prag is
             Mode_Id := Get_SPARK_Mode_Type (Mode);
             Context := Parent (N);
 
+            --  Packages and subprograms declared in a generic unit cannot be
+            --  subject to the pragma.
+
+            if Inside_A_Generic then
+               Error_Pragma ("incorrect placement of pragma% in a generic");
+
             --  The pragma appears in a configuration pragmas file
 
-            if No (Context) then
+            elsif No (Context) then
                Check_Valid_Configuration_Pragma;
 
                if Present (SPARK_Mode_Pragma) then
@@ -19258,8 +19260,7 @@ package body Sem_Prag is
                            and then Nkind (Unit (Library_Unit (Context))) in
                                                         N_Generic_Declaration)
                then
-                  Error_Pragma
-                    ("incorrect placement of pragma% in a generic unit");
+                  Error_Pragma ("incorrect placement of pragma% in a generic");
                end if;
 
                SPARK_Mode_Pragma := N;

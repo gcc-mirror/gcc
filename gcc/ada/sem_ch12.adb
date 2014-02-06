@@ -3118,6 +3118,8 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
+      Check_SPARK_Mode_In_Generic (N);
+
       --  The aspect specifications are not attached to the tree, and must
       --  be copied and attached to the generic copy explicitly.
 

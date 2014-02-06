@@ -1,3 +1,26 @@
+2014-02-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Subprogram_Contract, Append_Enabled_Item):
+	Take into account the Split_PPC flag to ensure that conjuncts
+	in a composite postcondition aspect are tested in source order.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Flag illegal
+	use of SPARK_Mode.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): Flag
+	illegal use of SPARK_Mode.
+	(Instantiate_Subprogram_Body): Flag illegal use of SPARK_Mode.
+	* sem_prag.adb (Analyze_Pragma): Code reformatting.
+	* sem_util.adb Add with and use clause for Aspects.
+	(Check_SPARK_Mode_In_Generic): New routine.
+	* sem_util.ads (Check_SPARK_Mode_In_Generic): New routine.
+
+2014-02-06  Thomas Quinot  <quinot@adacore.com>
+
+	* a-calend.adb (Formatting_Operations.Split): Ensure that
+	Time_Error is raised for invalid time values.
+
 2014-02-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Rewrite as a null statement
