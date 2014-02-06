@@ -1,3 +1,21 @@
+2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads: Add documentation of -j option for
+	gnatmetric.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Shift_Left): Handle shift counts greater
+	than the word size when operating in Modify_Tree_For_C mode.
+	* sinfo.ads: Add documentation section on Modify_Tree_For_C mode.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* erroutc.adb (Warning_Specifically_Suppressed.Matches):
+	compare is case insensitive.
+	* gnat_rm.texi: Document that string compare for Warnings Off
+	is now case insensitive.
+
 2014-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_rm.texi: Small wording tweak.

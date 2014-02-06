@@ -5798,6 +5798,18 @@ package VMS_Data is
    --   at the main project file will be parsed before the invocation of the
    --   binder.
 
+   S_Metric_Processes : aliased constant S := "/PROCESSES=#"                 &
+                                            "-j#";
+
+   --        /NOPROCESSES (D)
+   --        /PROCESSES=NNN
+   --
+   --   Use NNN processes to carry out the tree creations (internal
+   --   representations of the argument sources). On a multiprocessor machine
+   --   this speeds up processing of big sets of argument sources. If NNN is 0,
+   --   then the maximum number of parallel tree creations is the number of
+   --   core processors on the platform.
+
    S_Metric_Quiet    : aliased constant S := "/QUIET "                     &
                                              "-q";
    --        /NOQUIET (D)
@@ -5871,6 +5883,7 @@ package VMS_Data is
                         S_Metric_No_Local         'Access,
                         S_Metric_No_Static_Loop   'Access,
                         S_Metric_Project          'Access,
+                        S_Metric_Processes        'Access,
                         S_Metric_Quiet            'Access,
                         S_Metric_Suffix           'Access,
                         S_Metric_Subdirs          'Access,

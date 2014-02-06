@@ -1347,6 +1347,7 @@ package body Erroutc is
       function Matches (S : String; P : String) return Boolean;
       --  Returns true if the String S patches the pattern P, which can contain
       --  wild card chars (*). The entire pattern must match the entire string.
+      --  Case is ignored in the comparison (so X matches x).
 
       -------------
       -- Matches --
@@ -1398,7 +1399,7 @@ package body Erroutc is
 
             --  Dealt with end of string and *, advance if we have a match
 
-            elsif S (SPtr) = P (PPtr) then
+            elsif Fold_Lower (S (SPtr)) = Fold_Lower (P (PPtr)) then
                SPtr := SPtr + 1;
                PPtr := PPtr + 1;
 
