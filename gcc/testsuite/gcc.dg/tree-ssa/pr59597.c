@@ -8,7 +8,8 @@ typedef unsigned int u32;
 
 u32 f[NNN], t[NNN];
 
-u16 Calc_crc8(u8 data, u16 crc )
+static u16
+Calc_crc8 (u8 data, u16 crc)
 {
   u8 i=0,x16=0,carry=0;
   for (i = 0; i < 8; i++)
@@ -31,7 +32,9 @@ u16 Calc_crc8(u8 data, u16 crc )
     }
   return crc;
 }
-int main (int argc, char argv[])
+
+int
+main (int argc, char argv[])
 {
   int i, j; u16 crc;
   for (j = 0; j < 10000000; j++)
