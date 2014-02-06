@@ -1680,7 +1680,7 @@ package body Sem_Prag is
                  and then Present (Component_Associations (Expr))
                then
                   Error_Msg_N
-                    ("dependency clause contains extra parenthesis", Expr);
+                    ("dependency clause contains extra parentheses", Expr);
 
                --  Otherwise the expression is a malformed construct
 

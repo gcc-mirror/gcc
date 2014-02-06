@@ -834,7 +834,7 @@ package Exp_Util is
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is within a case or an if expression
 
-   function Within_Internal_Subprogram  return Boolean;
+   function Within_Internal_Subprogram return Boolean;
    --  Indicates that some expansion is taking place within the body of a
    --  predefined primitive operation. Some expansion activity (e.g. predicate
    --  checks) is disabled in such.
