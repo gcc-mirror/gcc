@@ -1,3 +1,15 @@
+2014-02-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Analyze pragma
+	Debug rewritten node before rewriting it as a null statement in
+	GNATprove mode.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Min_Max): New procedure.
+	(Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements): New
+	procedure.
+
 2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi, vms_data.ads: Add documentation of '-t' option for
