@@ -1,3 +1,10 @@
+2014-02-06  Yury Gribov  <y.gribov@samsung.com>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (arm_vector_alignment_reachable): Check
+	unaligned_access.
+	* config/arm/arm.c (arm_builtin_support_vector_misalignment): Likewise.
+
 2014-02-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (gimple_duplicate_sese_region): Fix ordering of
