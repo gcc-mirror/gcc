@@ -204,7 +204,7 @@ package body Sprint is
      (Node    : Node_Id;
       Default : Node_Id);
    --  Print the end label for a Handled_Sequence_Of_Statements in a body.
-   --  If there is not end label, use the defining identifier of the enclosing
+   --  If there is no end label, use the defining identifier of the enclosing
    --  construct. If the end label is present, treat it as a reference to the
    --  defining entity of the construct: this guarantees that it carries the
    --  proper sloc information for debugging purposes.

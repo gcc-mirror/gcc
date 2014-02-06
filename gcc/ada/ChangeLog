@@ -1,3 +1,42 @@
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* sprint.adb: Minor reformatting.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Transient_Object): Add local variable
+	Temp_Ins. When the transient object is initialized by an
+	aggregate, the hook must capture the object after the last
+	component assignment takes place.
+	* exp_ch7.adb (Detect_Subprogram_Call): Expose the subprogram to
+	routine Is_Subprogram_Call.
+	(Is_Subprogram_Call): Inspect an
+	aggregate that has been heavily expanded for subprogram calls.
+	(Process_Transient_Objects): Add local variables Expr, Ptr_Id
+	and Temp_Ins.  Remove the nested declare block and adjust the
+	indentation. When the transient object is initialized by an
+	aggregate, the hook must capture the object after the last
+	component assignment takes place.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Detect illegal uses of
+	external states with enabled properties that do not match the
+	global mode.
+	(Property_Error): New routine.
+	* sem_res.adb (Property_Error): New routine.
+	(Resolve_Actuals): Detect illegal uses of external variables with
+	enabled properties in procedure calls that do not match the mode of
+	the corresponding formal parameter.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Has_Enabled_Property): Rename
+	formal parameter Prop_Nam to Property. Update the comment on usage
+	and all occurrences in the body. Add local variable Prop_Nam. When
+	inspecting a property with an expression, the property name
+	appears as the first choice of the component association.
+
 2014-02-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, einfo.ads, freeze.adb, sem_ch8.adb: Minor reformatting.

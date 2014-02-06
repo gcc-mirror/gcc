@@ -2454,11 +2454,22 @@ package body Exp_Ch7 is
              Expression => Make_Integer_Literal (Loc, Counter_Val));
 
          --  Insert the counter after all initialization has been done. The
-         --  place of insertion depends on the context. When dealing with a
-         --  controlled function, the counter is inserted directly after the
-         --  declaration because such objects lack init calls.
+         --  place of insertion depends on the context. If an object is being
+         --  initialized via an aggregate, then the counter must be inserted
+         --  after the last aggregate assignment.
 
-         Find_Last_Init (Decl, Obj_Typ, Count_Ins, Body_Ins);
+         if Ekind (Obj_Id) = E_Variable
+           and then Present (Last_Aggregate_Assignment (Obj_Id))
+         then
+            Count_Ins := Last_Aggregate_Assignment (Obj_Id);
+            Body_Ins  := Empty;
+
+         --  In all other cases the counter is inserted after the last call to
+         --  either [Deep_]Initialize or the type specific init proc.
+
+         else
+            Find_Last_Init (Decl, Obj_Typ, Count_Ins, Body_Ins);
+         end if;
 
          Insert_After (Count_Ins, Inc_Decl);
          Analyze (Inc_Decl);
@@ -4419,23 +4430,37 @@ package body Exp_Ch7 is
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
          --  Determine whether an arbitrary node denotes a subprogram call
 
+         procedure Detect_Subprogram_Call is
+           new Traverse_Proc (Is_Subprogram_Call);
+
          ------------------------
          -- Is_Subprogram_Call --
          ------------------------
 
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
-            --  A regular procedure or function call
+            --  Aggregates are usually rewritten into component by component
+            --  assignments and replaced by a reference to a temporary in the
+            --  original tree. Peek in the aggregate to detect function calls.
 
-            if Nkind (N) in N_Subprogram_Call then
-               Must_Hook := True;
-               return Abandon;
+            if Nkind (N) = N_Identifier
+              and then Nkind_In (Original_Node (N), N_Aggregate,
+                                                    N_Extension_Aggregate)
+            then
+               Detect_Subprogram_Call (Original_Node (N));
+               return OK;
 
             --  Detect a call to a function that returns on the secondary stack
 
             elsif Nkind (N) = N_Object_Declaration
               and then Nkind (Original_Node (Expression (N))) = N_Function_Call
             then
+               Must_Hook := True;
+               return Abandon;
+
+            --  A regular procedure or function call
+
+            elsif Nkind (N) in N_Subprogram_Call then
                Must_Hook := True;
                return Abandon;
 
@@ -4446,13 +4471,11 @@ package body Exp_Ch7 is
             end if;
          end Is_Subprogram_Call;
 
-         procedure Detect_Subprogram_Call is
-           new Traverse_Proc (Is_Subprogram_Call);
-
          --  Local variables
 
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
+         Expr      : Node_Id;
          Fin_Block : Node_Id;
          Fin_Data  : Finalization_Exception_Data;
          Fin_Decls : List_Id;
@@ -4462,9 +4485,11 @@ package body Exp_Ch7 is
          Obj_Ref   : Node_Id;
          Obj_Typ   : Entity_Id;
          Prev_Fin  : Node_Id := Empty;
+         Ptr_Id    : Entity_Id;
          Stmt      : Node_Id;
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
+         Temp_Ins  : Node_Id;
 
       --  Start of processing for Process_Transient_Objects
 
@@ -4505,11 +4530,10 @@ package body Exp_Ch7 is
                --  time around.
 
                if not Built then
+                  Built     := True;
                   Fin_Decls := New_List;
 
                   Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
-
-                  Built := True;
                end if;
 
                --  Transient variables associated with subprogram calls need
@@ -4524,69 +4548,80 @@ package body Exp_Ch7 is
                --  "hooks" are picked up by the finalization machinery.
 
                if Must_Hook then
-                  declare
-                     Expr   : Node_Id;
-                     Ptr_Id : Entity_Id;
 
-                  begin
-                     --  Step 1: Create an access type which provides a
-                     --  reference to the transient object. Generate:
+                  --  Step 1: Create an access type which provides a reference
+                  --  to the transient object. Generate:
 
-                     --    Ann : access [all] <Desig_Typ>;
+                  --    Ann : access [all] <Desig_Typ>;
 
-                     Ptr_Id := Make_Temporary (Loc, 'A');
+                  Ptr_Id := Make_Temporary (Loc, 'A');
 
-                     Insert_Action (Stmt,
-                       Make_Full_Type_Declaration (Loc,
-                         Defining_Identifier => Ptr_Id,
-                         Type_Definition     =>
-                           Make_Access_To_Object_Definition (Loc,
-                             All_Present        =>
-                               Ekind (Obj_Typ) = E_General_Access_Type,
-                             Subtype_Indication =>
-                               New_Reference_To (Desig_Typ, Loc))));
+                  Insert_Action (Stmt,
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => Ptr_Id,
+                      Type_Definition     =>
+                        Make_Access_To_Object_Definition (Loc,
+                          All_Present        =>
+                            Ekind (Obj_Typ) = E_General_Access_Type,
+                          Subtype_Indication =>
+                            New_Reference_To (Desig_Typ, Loc))));
 
-                     --  Step 2: Create a temporary which acts as a hook to
-                     --  the transient object. Generate:
+                  --  Step 2: Create a temporary which acts as a hook to the
+                  --  transient object. Generate:
 
-                     --    Temp : Ptr_Id := null;
+                  --    Temp : Ptr_Id := null;
 
-                     Temp_Id := Make_Temporary (Loc, 'T');
+                  Temp_Id := Make_Temporary (Loc, 'T');
 
-                     Insert_Action (Stmt,
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Temp_Id,
-                         Object_Definition   =>
-                           New_Reference_To (Ptr_Id, Loc)));
+                  Insert_Action (Stmt,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp_Id,
+                      Object_Definition   =>
+                        New_Reference_To (Ptr_Id, Loc)));
 
-                     --  Mark the temporary as a transient hook. This signals
-                     --  the machinery in Build_Finalizer to recognize this
-                     --  special case.
+                  --  Mark the temporary as a transient hook. This signals the
+                  --  machinery in Build_Finalizer to recognize this special
+                  --  case.
 
-                     Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+                  Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
 
-                     --  Step 3: Hook the transient object to the temporary
+                  --  Step 3: Hook the transient object to the temporary
 
-                     if Is_Access_Type (Obj_Typ) then
-                        Expr :=
-                          Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
-                     else
-                        Expr :=
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Reference_To (Obj_Id, Loc),
-                            Attribute_Name => Name_Unrestricted_Access);
-                     end if;
+                  if Is_Access_Type (Obj_Typ) then
+                     Expr :=
+                       Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+                  else
+                     Expr :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Reference_To (Obj_Id, Loc),
+                         Attribute_Name => Name_Unrestricted_Access);
+                  end if;
 
-                     --  Generate:
-                     --    Temp := Ptr_Id (Obj_Id);
-                     --      <or>
-                     --    Temp := Obj_Id'Unrestricted_Access;
+                  --  Generate:
+                  --    Temp := Ptr_Id (Obj_Id);
+                  --      <or>
+                  --    Temp := Obj_Id'Unrestricted_Access;
 
-                     Insert_After_And_Analyze (Stmt,
-                       Make_Assignment_Statement (Loc,
-                         Name       => New_Reference_To (Temp_Id, Loc),
-                         Expression => Expr));
-                  end;
+                  --  When the transient object is initialized by an aggregate,
+                  --  the hook must capture the object after the last component
+                  --  assignment takes place. Only then is the object fully
+                  --  initialized.
+
+                  if Ekind (Obj_Id) = E_Variable
+                    and then Present (Last_Aggregate_Assignment (Obj_Id))
+                  then
+                     Temp_Ins := Last_Aggregate_Assignment (Obj_Id);
+
+                  --  Otherwise the hook seizes the related object immediately
+
+                  else
+                     Temp_Ins := Stmt;
+                  end if;
+
+                  Insert_After_And_Analyze (Temp_Ins,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Reference_To (Temp_Id, Loc),
+                      Expression => Expr));
                end if;
 
                Stmts := New_List;

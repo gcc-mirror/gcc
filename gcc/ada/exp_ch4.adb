@@ -12386,6 +12386,7 @@ package body Exp_Ch4 is
       Fin_Stmts : List_Id;
       Ptr_Id    : Entity_Id;
       Temp_Id   : Entity_Id;
+      Temp_Ins  : Node_Id;
 
    --  Start of processing for Process_Transient_Object
 
@@ -12463,7 +12464,22 @@ package body Exp_Ch4 is
       --      <or>
       --    Temp := Obj_Id'Unrestricted_Access;
 
-      Insert_After_And_Analyze (Decl,
+      --  When the transient object is initialized by an aggregate, the hook
+      --  must capture the object after the last component assignment takes
+      --  place. Only then is the object fully initialized.
+
+      if Ekind (Obj_Id) = E_Variable
+        and then Present (Last_Aggregate_Assignment (Obj_Id))
+      then
+         Temp_Ins := Last_Aggregate_Assignment (Obj_Id);
+
+      --  Otherwise the hook seizes the related object immediately
+
+      else
+         Temp_Ins := Decl;
+      end if;
+
+      Insert_After_And_Analyze (Temp_Ins,
         Make_Assignment_Statement (Loc,
           Name       => New_Reference_To (Temp_Id, Loc),
           Expression => Expr));
