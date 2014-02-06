@@ -115,10 +115,10 @@ package body Sem_Util is
 
    function Has_Enabled_Property
      (State_Id : Node_Id;
-      Prop_Nam : Name_Id) return Boolean;
+      Property : Name_Id) return Boolean;
    --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
    --  Determine whether an abstract state denoted by its entity State_Id has
-   --  enabled property Prop_Name.
+   --  enabled property Property.
 
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
@@ -7255,13 +7255,14 @@ package body Sem_Util is
 
    function Has_Enabled_Property
      (State_Id : Node_Id;
-      Prop_Nam : Name_Id) return Boolean
+      Property : Name_Id) return Boolean
    is
-      Decl    : constant Node_Id := Parent (State_Id);
-      Opt     : Node_Id;
-      Opt_Nam : Node_Id;
-      Prop    : Node_Id;
-      Props   : Node_Id;
+      Decl     : constant Node_Id := Parent (State_Id);
+      Opt      : Node_Id;
+      Opt_Nam  : Node_Id;
+      Prop     : Node_Id;
+      Prop_Nam : Node_Id;
+      Props    : Node_Id;
 
    begin
       --  The declaration of an external abstract state appears as an extension
@@ -7305,7 +7306,7 @@ package body Sem_Util is
 
                Prop := First (Expressions (Props));
                while Present (Prop) loop
-                  if Chars (Prop) = Prop_Nam then
+                  if Chars (Prop) = Property then
                      return True;
                   end if;
 
@@ -7316,7 +7317,9 @@ package body Sem_Util is
 
                Prop := First (Component_Associations (Props));
                while Present (Prop) loop
-                  if Chars (Prop) = Prop_Nam then
+                  Prop_Nam := First (Choices (Prop));
+
+                  if Chars (Prop_Nam) = Property then
                      return Is_True (Expr_Value (Expression (Prop)));
                   end if;
 
@@ -7326,7 +7329,7 @@ package body Sem_Util is
             --  Single property
 
             else
-               return Chars (Props) = Prop_Nam;
+               return Chars (Props) = Property;
             end if;
          end if;
 

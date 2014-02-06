@@ -3020,8 +3020,9 @@ package body Sem_Res is
    procedure Resolve_Actuals (N : Node_Id; Nam : Entity_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
-      F      : Entity_Id;
+      A_Id   : Entity_Id;
       A_Typ  : Entity_Id;
+      F      : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
@@ -3042,6 +3043,14 @@ package body Sem_Res is
       --  If the actual is missing in a call, insert in the actuals list
       --  an instance of the default expression. The insertion is always
       --  a named association.
+
+      procedure Property_Error
+        (Var      : Node_Id;
+         Var_Id   : Entity_Id;
+         Prop_Nam : Name_Id);
+      --  Emit an error concerning variable Var with entity Var_Id that has
+      --  enabled property Prop_Nam when it acts as an actual parameter in a
+      --  call and the corresponding formal parameter is of mode IN.
 
       function Same_Ancestor (T1, T2 : Entity_Id) return Boolean;
       --  Check whether T1 and T2, or their full views, are derived from a
@@ -3373,6 +3382,23 @@ package body Sem_Res is
 
          Prev := Actval;
       end Insert_Default;
+
+      --------------------
+      -- Property_Error --
+      --------------------
+
+      procedure Property_Error
+        (Var      : Node_Id;
+         Var_Id   : Entity_Id;
+         Prop_Nam : Name_Id)
+      is
+      begin
+         Error_Msg_Name_1 := Prop_Nam;
+         Error_Msg_NE
+           ("external variable & with enabled property % cannot appear as "
+            & "actual in procedure call (SPARK RM 7.1.3(11))", Var, Var_Id);
+         Error_Msg_N ("\\corresponding formal parameter has mode In", Var);
+      end Property_Error;
 
       -------------------
       -- Same_Ancestor --
@@ -4287,6 +4313,41 @@ package body Sem_Res is
                   Error_Msg_N
                     ("volatile object cannot act as actual in a call (SPARK "
                      & "RM 7.1.3(12))", A);
+               end if;
+
+               --  Detect an external variable with an enabled property that
+               --  does not match the mode of the corresponding formal in a
+               --  procedure call.
+
+               --  why only procedure calls ???
+
+               if Ekind (Nam) = E_Procedure
+                 and then Is_Entity_Name (A)
+                 and then Present (Entity (A))
+                 and then Ekind (Entity (A)) = E_Variable
+               then
+                  A_Id := Entity (A);
+
+                  if Ekind (F) = E_In_Parameter then
+                     if Async_Readers_Enabled (A_Id) then
+                        Property_Error (A, A_Id, Name_Async_Readers);
+                     elsif Effective_Reads_Enabled (A_Id) then
+                        Property_Error (A, A_Id, Name_Effective_Reads);
+                     elsif Effective_Writes_Enabled (A_Id) then
+                        Property_Error (A, A_Id, Name_Effective_Writes);
+                     end if;
+
+                  elsif Ekind (F) = E_Out_Parameter
+                    and then Async_Writers_Enabled (A_Id)
+                  then
+                     Error_Msg_Name_1 := Name_Async_Writers;
+                     Error_Msg_NE
+                       ("external variable & with enabled property % cannot "
+                        & "appear as actual in procedure call (SPARK RM "
+                        & "7.1.3(11))", A, A_Id);
+                     Error_Msg_N
+                       ("\\corresponding formal parameter has mode Out", A);
+                  end if;
                end if;
             end if;
 
