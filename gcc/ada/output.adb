@@ -181,6 +181,19 @@ package body Output is
         (Cur_Indentation + Indentation_Amount) mod Indentation_Limit;
    end Indent;
 
+   ---------------
+   -- Last_Char --
+   ---------------
+
+   function Last_Char return Character is
+   begin
+      if Next_Col /= 1 then
+         return Buffer (Next_Col - 1);
+      else
+         return ASCII.NUL;
+      end if;
+   end Last_Char;
+
    -------------
    -- Outdent --
    -------------

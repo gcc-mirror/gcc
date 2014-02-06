@@ -346,7 +346,9 @@ package Nlists is
    function No (List : List_Id) return Boolean;
    pragma Inline (No);
    --  Tests given Id for equality with No_List. This allows notations like
-   --  "if No (Statements)" as opposed to "if Statements = No_List".
+   --  "if No (Statements)" as opposed to "if Statements = No_List". Note that
+   --  an empty list gives False for this test, as opposed to Is_Empty_List
+   --  which gives True either for No_List or for an empty list.
 
    function Present (List : List_Id) return Boolean;
    pragma Inline (Present);

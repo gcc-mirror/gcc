@@ -530,7 +530,11 @@ package body Prj.Util is
       --  Now handle the bodies and separates if needed
 
       if Deps.Length /= 0 then
-         Iter := For_Each_Source (Tree, Project);
+         if Project.Qualifier = Aggregate_Library then
+            Iter := For_Each_Source (Tree);
+         else
+            Iter := For_Each_Source (Tree, Project);
+         end if;
 
          loop
             Sid := Element (Iter);
