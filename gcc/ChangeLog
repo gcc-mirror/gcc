@@ -1,3 +1,9 @@
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/60030
+	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Surround
+	lopart with paradoxical subreg before shifting it up by hprec.
+
 2014-02-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/aarch-cost-tables.h (cortexa57_extra_costs): New table.
