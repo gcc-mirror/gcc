@@ -370,6 +370,8 @@ package body Prj.Attr is
    "Premote#" &
    "SVroot_dir#" &
    "LVexcluded_patterns#" &
+   "LVincluded_patterns#" &
+   "LVincluded_artifact_patterns#" &
 
    --  package Stack
 
