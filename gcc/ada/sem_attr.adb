@@ -4113,6 +4113,15 @@ package body Sem_Attr is
          Resolve (E2, P_Base_Type);
          Set_Etype (N, P_Base_Type);
 
+         --  Check for comparison on unordered enumeration type
+
+         if Bad_Unordered_Enumeration_Reference (N, P_Base_Type) then
+            Error_Msg_Sloc := Sloc (P_Base_Type);
+            Error_Msg_NE
+              ("comparison on unordered enumeration type& declared#?U?",
+               N, P_Base_Type);
+         end if;
+
       ----------------------------------
       -- Max_Alignment_For_Allocation --
       -- Max_Size_In_Storage_Elements --
@@ -4173,6 +4182,15 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Resolve (E2, P_Base_Type);
          Set_Etype (N, P_Base_Type);
+
+         --  Check for comparison on unordered enumeration type
+
+         if Bad_Unordered_Enumeration_Reference (N, P_Base_Type) then
+            Error_Msg_Sloc := Sloc (P_Base_Type);
+            Error_Msg_NE
+              ("comparison on unordered enumeration type& declared#?U?",
+               N, P_Base_Type);
+         end if;
 
       ---------
       -- Mod --
