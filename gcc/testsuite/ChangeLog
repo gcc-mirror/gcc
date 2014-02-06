@@ -1,3 +1,9 @@
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60062
+	* gcc.c-torture/execute/pr60062.c: New test.
+	* gcc.c-torture/execute/pr60072.c: New test.
+
 2014-02-06  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.dg/tree-ssa/pr59597.c: Make called function static
