@@ -470,6 +470,7 @@ package body Prj.Util is
            and then not Sid.Locally_Removed
            and then (Project.Standalone_Library = No
                      or else Sid.Declared_In_Interfaces)
+           and then Sid.Dep_Name /= No_File -- for non compilable languages
          then
             Action (Sid);
 
