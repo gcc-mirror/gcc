@@ -9430,7 +9430,7 @@ package body Sem_Ch13 is
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
 
       --  If we have a type with predicates, build predicate function. This
-      --  is not needed in the generic casee, and is not needed within TSS
+      --  is not needed in the generic case, and is not needed within TSS
       --  subprograms and other predefined primitives.
 
       if Non_Generic_Case

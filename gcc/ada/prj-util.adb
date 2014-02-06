@@ -467,10 +467,14 @@ package body Prj.Util is
          --  the interface for standalone libraries.
 
          if Sid.Kind = Spec
+           and then not Sid.Project.Externally_Built
            and then not Sid.Locally_Removed
            and then (Project.Standalone_Library = No
-                     or else Sid.Declared_In_Interfaces)
-           and then Sid.Dep_Name /= No_File -- for non compilable languages
+                      or else Sid.Declared_In_Interfaces)
+
+           --  Handle case of non-compilable languages
+
+           and then Sid.Dep_Name /= No_File
          then
             Action (Sid);
 

@@ -1,3 +1,8 @@
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads, checks.adb, sem_prag.adb, prj-util.adb, sem_ch13.adb:
+	Minor reformatting and code clean ups.
+
 2014-02-06  Pascal Obry  <obry@adacore.com>
 
 	* prj-util.adb (For_Interface_Sources): Skip non compilable languages.

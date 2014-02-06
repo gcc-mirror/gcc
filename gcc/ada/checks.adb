@@ -2589,7 +2589,7 @@ package body Checks is
          --  predicated subtype itself, rather than some covering type. This
          --  is likely to be a common error, and thus deserves a warning.
 
-         elsif Present (S) and then  S = Predicate_Function (Typ) then
+         elsif Present (S) and then S = Predicate_Function (Typ) then
             Error_Msg_N
               ("predicate check includes a function call that "
                & "requires a predicate check??", Parent (N));
