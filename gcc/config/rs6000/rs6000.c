@@ -15581,7 +15581,7 @@ rs6000_secondary_memory_needed_rtx (enum machine_mode mode)
 enum machine_mode
 rs6000_secondary_memory_needed_mode (enum machine_mode mode)
 {
-  if (mode == SDmode)
+  if (lra_in_progress && mode == SDmode)
     return DDmode;
   return mode;
 }

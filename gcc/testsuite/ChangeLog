@@ -1,3 +1,7 @@
+2014-02-06  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr60032.c: New.
+
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60062
