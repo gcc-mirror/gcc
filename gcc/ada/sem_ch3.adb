@@ -15772,8 +15772,12 @@ package body Sem_Ch3 is
            and then No (Expression (P))
          then
             null;
+
+         --  Here we freeze the base type of object type to catch premature use
+         --  of discriminated private type without a full view.
+
          else
-            Insert_Actions (Obj_Def, Freeze_Entity (T, P));
+            Insert_Actions (Obj_Def, Freeze_Entity (Base_Type (T), P));
          end if;
 
       --  Ada 2005 AI-406: the object definition in an object declaration
@@ -18675,7 +18679,7 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Ada 2005 AI 161: Check preelaboratable initialization consistency
+      --  Ada 2005 AI 161: Check preelaborable initialization consistency
 
       if Known_To_Have_Preelab_Init (Priv_T) then
 
@@ -18737,10 +18741,16 @@ package body Sem_Ch3 is
          Set_Has_Inheritable_Invariants (Full_T);
       end if;
 
-      --  Propagate predicates to full type
+      --  Propagate predicates to full type, and predicate function if already
+      --  defined. It is not clear that this can actually happen? the partial
+      --  view cannot be frozen yet, and the predicate function has not been
+      --  built. Still it is a cheap check and seems safer to make it.
 
       if Has_Predicates (Priv_T) then
-         Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
+         if Present (Predicate_Function (Priv_T)) then
+            Set_Predicate_Function (Full_T, Predicate_Function (Priv_T));
+         end if;
+
          Set_Has_Predicates (Full_T);
       end if;
    end Process_Full_View;
