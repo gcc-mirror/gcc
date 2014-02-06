@@ -511,7 +511,7 @@ package Prj is
       --  there is no need for such switch.
 
       Object_Generated : Boolean := True;
-      --  False in no object file is generated
+      --  False if no object file is generated
 
       Objects_Linked : Boolean := True;
       --  False if object files are not use to link executables and build

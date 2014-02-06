@@ -1,3 +1,8 @@
+2014-02-06  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb (For_Interface_Sources): Skip non compilable languages.
+	* prj.ads: Minor typo fix in comment.
+
 2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Add
