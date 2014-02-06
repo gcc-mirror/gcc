@@ -1,3 +1,10 @@
+2014-02-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a53): Specify CRC32
+	and crypto support.
+	(cortex-a57): Likewise.
+	(cortex-a57.cortex-a53): Likewise.
+
 2014-02-06  Yury Gribov  <y.gribov@samsung.com>
 	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
