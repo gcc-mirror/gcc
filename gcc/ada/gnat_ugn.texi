@@ -14351,6 +14351,16 @@ Start each USE clause in a context clause from a separate line.
 Use a separate line for a loop or block statement name, but do not use an extra
 indentation level for the statement itself.
 
+@cindex @option{^--insert-blank-lines^/INSERT_BLANK_LINES^} (@command{gnatpp})
+@item ^--insert-blank-lines^/INSERT_BLANK_LINES^
+Insert blank lines where appropriate (between bodies and other large
+constructs).
+
+@cindex @option{^--preserve-blank-lines^/PRESERVE_BLANK_LINES^} (@command{gnatpp})
+@item ^--preserve-blank-lines^/PRESERVE_BLANK_LINES^
+Preserve blank lines in the input. By default, gnatpp will squeeze
+multiple blank lines down to one.
+
 @end table
 
 @ifclear vms

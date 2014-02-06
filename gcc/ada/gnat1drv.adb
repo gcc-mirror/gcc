@@ -117,9 +117,9 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
-      --  -gnatd.V enables special C expansion mode
+      --  -gnatd.V or -gnatd.u enables special C expansion mode
 
-      if Debug_Flag_Dot_VV then
+      if Debug_Flag_Dot_VV or Debug_Flag_Dot_U then
          Modify_Tree_For_C := True;
       end if;
 

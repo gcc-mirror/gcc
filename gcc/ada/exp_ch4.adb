@@ -8756,6 +8756,49 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Rotate_Left (N : Node_Id) is
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  If we are in Modify_Tree_For_C mode, there is no rotate left in C,
+      --  so we rewrite in terms of logical shifts
+
+      --    Shift_Left (Num, Bits) or Shift_Right (num, Esize - Bits)
+
+      --  where Bits is the shift count mod Esize (the mod operation here
+      --  deals with ludicrous large shift counts, which are apparently OK).
+
+      --  What about non-binary modulus ???
+
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
+         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+         Typ : constant Entity_Id  := Etype (N);
+
+      begin
+         if Modify_Tree_For_C then
+            Rewrite (Right_Opnd (N),
+              Make_Op_Rem (Loc,
+                Left_Opnd  => Relocate_Node (Right_Opnd (N)),
+                Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
+
+            Analyze_And_Resolve (Right_Opnd (N), Rtp);
+
+            Rewrite (N,
+              Make_Op_Or (Loc,
+                Left_Opnd =>
+                  Make_Op_Shift_Left (Loc,
+                    Left_Opnd  => Left_Opnd (N),
+                    Right_Opnd => Right_Opnd (N)),
+                Right_Opnd =>
+                  Make_Op_Shift_Right (Loc,
+                    Left_Opnd  => Duplicate_Subexpr_No_Checks (Left_Opnd (N)),
+                    Right_Opnd =>
+                      Make_Op_Subtract (Loc,
+                        Left_Opnd  => Make_Integer_Literal (Loc, Esize (Typ)),
+                        Right_Opnd =>
+                          Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
+
+            Analyze_And_Resolve (N, Typ);
+         end if;
+      end;
    end Expand_N_Op_Rotate_Left;
 
    ------------------------------
@@ -8765,6 +8808,49 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Rotate_Right (N : Node_Id) is
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  If we are in Modify_Tree_For_C mode, there is no rotate right in C,
+      --  so we rewrite in terms of logical shifts
+
+      --    Shift_Right (Num, Bits) or Shift_Left (num, Esize - Bits)
+
+      --  where Bits is the shift count mod Esize (the mod operation here
+      --  deals with ludicrous large shift counts, which are apparently OK).
+
+      --  What about non-binary modulus ???
+
+      declare
+         Loc : constant Source_Ptr := Sloc (N);
+         Rtp : constant Entity_Id  := Etype (Right_Opnd (N));
+         Typ : constant Entity_Id  := Etype (N);
+
+      begin
+         Rewrite (Right_Opnd (N),
+           Make_Op_Rem (Loc,
+             Left_Opnd  => Relocate_Node (Right_Opnd (N)),
+             Right_Opnd => Make_Integer_Literal (Loc, Esize (Typ))));
+
+         Analyze_And_Resolve (Right_Opnd (N), Rtp);
+
+         if Modify_Tree_For_C then
+            Rewrite (N,
+              Make_Op_Or (Loc,
+                Left_Opnd =>
+                  Make_Op_Shift_Right (Loc,
+                    Left_Opnd  => Left_Opnd (N),
+                    Right_Opnd => Right_Opnd (N)),
+                Right_Opnd =>
+                  Make_Op_Shift_Left (Loc,
+                    Left_Opnd  => Duplicate_Subexpr_No_Checks (Left_Opnd (N)),
+                    Right_Opnd =>
+                      Make_Op_Subtract (Loc,
+                        Left_Opnd  => Make_Integer_Literal (Loc, Esize (Typ)),
+                        Right_Opnd =>
+                          Duplicate_Subexpr_No_Checks (Right_Opnd (N))))));
+
+            Analyze_And_Resolve (N, Typ);
+         end if;
+      end;
    end Expand_N_Op_Rotate_Right;
 
    ----------------------------
@@ -8792,6 +8878,80 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Shift_Right_Arithmetic (N : Node_Id) is
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  If we are in Modify_Tree_For_C mode, there is no shift right
+      --  arithmetic in C, so we rewrite in terms of logical shifts.
+
+      --    Shift_Right (Num, Bits) or
+      --      (if Num >= Sign
+      --       then not (Shift_Right (Mask, bits))
+      --       else 0)
+
+      --  Here Mask is all 1 bits (2**size - 1), and Sign is 2**(size - 1)
+
+      --  Note: in almost all C compilers it would work to just shift a
+      --  signed integer right, but it's undefined and we cannot rely on it.
+
+      --  What about non-binary modulus ???
+
+      declare
+         Loc   : constant Source_Ptr := Sloc (N);
+         Typ   : constant Entity_Id  := Etype (N);
+         Sign  : constant Uint       := 2 ** (Esize (Typ) - 1);
+         Mask  : constant Uint       := (2 ** Esize (Typ)) - 1;
+         Left  : constant Node_Id    := Left_Opnd (N);
+         Right : constant Node_Id    := Right_Opnd (N);
+         Maskx : Node_Id;
+
+      begin
+         if Modify_Tree_For_C then
+
+            --  Here if not (Shift_Right (Mask, bits)) can be computed at
+            --  compile time as a single constant.
+
+            if Compile_Time_Known_Value (Right) then
+               declare
+                  Val : constant Uint := Expr_Value (Right);
+
+               begin
+                  if Val >= Esize (Typ) then
+                     Maskx := Make_Integer_Literal (Loc, Mask);
+
+                  else
+                     Maskx :=
+                       Make_Integer_Literal (Loc,
+                         Intval => Mask - (Mask / (2 ** Expr_Value (Right))));
+                  end if;
+               end;
+
+            else
+               Maskx :=
+                 Make_Op_Not (Loc,
+                   Right_Opnd =>
+                     Make_Op_Shift_Right (Loc,
+                       Left_Opnd  => Make_Integer_Literal (Loc, Mask),
+                       Right_Opnd => Duplicate_Subexpr_No_Checks (Right)));
+            end if;
+
+            --  Now do the rewrite
+
+            Rewrite (N,
+              Make_Op_Or (Loc,
+                Left_Opnd =>
+                  Make_Op_Shift_Right (Loc,
+                    Left_Opnd  => Left,
+                    Right_Opnd => Right),
+                Right_Opnd =>
+                  Make_If_Expression (Loc,
+                    Expressions => New_List (
+                      Make_Op_Ge (Loc,
+                        Left_Opnd  => Duplicate_Subexpr_No_Checks (Left),
+                        Right_Opnd => Make_Integer_Literal (Loc, Sign)),
+                      Maskx,
+                      Make_Integer_Literal (Loc, 0)))));
+            Analyze_And_Resolve (N, Typ);
+         end if;
+      end;
    end Expand_N_Op_Shift_Right_Arithmetic;
 
    --------------------------

@@ -1513,8 +1513,9 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Analyze_Package_Body_Stub (N : Node_Id) is
-      Id  : constant Entity_Id := Defining_Identifier (N);
-      Nam : Entity_Id;
+      Id   : constant Entity_Id := Defining_Identifier (N);
+      Nam  : Entity_Id;
+      Opts : Config_Switches_Type;
 
    begin
       --  The package declaration must be in the current declarative part
@@ -1531,6 +1532,11 @@ package body Sem_Ch10 is
          Error_Msg_N ("duplicate or redundant stub for package", N);
 
       else
+         --  Retain and restore the configuration options of the enclosing
+         --  context as the proper body may introduce a set of its own.
+
+         Save_Opt_Config_Switches (Opts);
+
          --  Indicate that the body of the package exists. If we are doing
          --  only semantic analysis, the stub stands for the body. If we are
          --  generating code, the existence of the body will be confirmed
@@ -1541,6 +1547,8 @@ package body Sem_Ch10 is
          Set_Corresponding_Spec_Of_Stub (N, Nam);
          Generate_Reference (Nam, Id, 'b');
          Analyze_Proper_Body (N, Nam);
+
+         Restore_Opt_Config_Switches (Opts);
       end if;
    end Analyze_Package_Body_Stub;
 
@@ -1913,6 +1921,7 @@ package body Sem_Ch10 is
 
    procedure Analyze_Subprogram_Body_Stub (N : Node_Id) is
       Decl : Node_Id;
+      Opts : Config_Switches_Type;
 
    begin
       Check_Stub_Level (N);
@@ -1937,11 +1946,18 @@ package body Sem_Ch10 is
          end loop;
       end if;
 
+      --  Retain and restore the configuration options of the enclosing context
+      --  as the proper body may introduce a set of its own.
+
+      Save_Opt_Config_Switches (Opts);
+
       --  Treat stub as a body, which checks conformance if there is a previous
       --  declaration, or else introduces entity and its signature.
 
       Analyze_Subprogram_Body (N);
       Analyze_Proper_Body (N, Empty);
+
+      Restore_Opt_Config_Switches (Opts);
    end Analyze_Subprogram_Body_Stub;
 
    ---------------------

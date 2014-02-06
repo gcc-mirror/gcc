@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Expander; use Expander;
 with Exp_Atag; use Exp_Atag;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
@@ -643,7 +644,7 @@ package body Exp_Intr is
 
    --  As a result, whenever a shift is used in the source program, it will
    --  remain as a call until converted by this routine to the operator node
-   --  form which Gigi is expecting to see.
+   --  form which the back end is expecting to see.
 
    --  Note: it is possible for the expander to generate shift operator nodes
    --  directly, which will be analyzed in the normal manner by calling Analyze
@@ -681,8 +682,15 @@ package body Exp_Intr is
          Rewrite (N, Snode);
          Set_Analyzed (N);
 
-      else
+         --  However, we do call the expander, so that the expansion for
+         --  rotates and shift_right_arithmetic happens if Modify_Tree_For_C
+         --  is set.
 
+         if Expander_Active then
+            Expand (N);
+         end if;
+
+      else
          --  If the context type is not the type of the operator, it is an
          --  inherited operator for a derived type. Wrap the node in a
          --  conversion so that it is type-consistent for possible further

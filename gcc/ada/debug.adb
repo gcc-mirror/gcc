@@ -111,7 +111,7 @@ package body Debug is
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s  Disable expansion of slice move, use memmove
    --  d.t  Disable static allocation of library level dispatch tables
-   --  d.u
+   --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
@@ -574,6 +574,9 @@ package body Debug is
    --       This debug switch disables this modification and reverts to the
    --       previous dynamic construction of tables. It is there as a possible
    --       work around if we run into trouble with the new implementation.
+
+   --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
+   --       easier to generate code using a C compiler.
 
    --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have at least one discriminant (v = variant).

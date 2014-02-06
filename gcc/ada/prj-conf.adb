@@ -1463,7 +1463,8 @@ package body Prj.Conf is
             From_Project_Node      => Config_Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
             Env                    => Env,
-            Reset_Tree             => False);
+            Reset_Tree             => False,
+            On_New_Tree_Loaded     => null);
       end if;
 
       if Config_Project_Node = Empty_Node
@@ -1575,7 +1576,8 @@ package body Prj.Conf is
       Target_Name                : String := "";
       Normalized_Hostname        : String;
       On_Load_Config             : Config_File_Hook := null;
-      Implicit_Project           : Boolean := False)
+      Implicit_Project           : Boolean := False;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
@@ -1617,7 +1619,8 @@ package body Prj.Conf is
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
-         On_Load_Config             => On_Load_Config);
+         On_Load_Config             => On_Load_Config,
+         On_New_Tree_Loaded         => On_New_Tree_Loaded);
    end Parse_Project_And_Apply_Config;
 
    --------------------------------------
@@ -1639,7 +1642,8 @@ package body Prj.Conf is
       Target_Name                : String := "";
       Normalized_Hostname        : String;
       On_Load_Config             : Config_File_Hook := null;
-      Reset_Tree                 : Boolean := True)
+      Reset_Tree                 : Boolean := True;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
       Shared              : constant Shared_Project_Tree_Data_Access :=
                               Project_Tree.Shared;
@@ -1695,7 +1699,8 @@ package body Prj.Conf is
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
          Env                    => Env,
-         Reset_Tree             => Reset_Tree);
+         Reset_Tree             => Reset_Tree,
+         On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
       if not Success then
          Main_Project := No_Project;

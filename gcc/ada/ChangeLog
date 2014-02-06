@@ -1,3 +1,61 @@
+2014-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_rm.texi: Small wording tweak.
+
+2014-02-06  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add Included_Patterns
+	and Included_Artifact_Patterns attribute definitions.
+
+2014-02-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set
+	SPARK_Mode pragma component for all subprograms, including stubs.
+
+2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Analyze_Package_Body_Stub): Maintain
+	the configuration options of the enclosing context in a
+	stack-like fasion.
+	(Analyze_Subprogram_Body_Stub): Maintain the
+	configuration options of the enclosing context in a stack-like
+	fashion.
+
+2014-02-06  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: -gnatd.u sets Modify_Tree_For C
+	* exp_ch4.adb (Expand_N_Op_Rotate_Left): Expand out
+	if Modify_Tree_For_C (Expand_N_Op_Rotate_Right): ditto.
+	(Expand_N_Op_Arithmetic_Right_Shift): ditto.
+	* exp_intr.adb (Expand_Shift): Call expander so we do
+	Modify_Tree_For_C expansions.
+	* gnat1drv.adb (Adjust_Global_Switches): Set Modify_Tree_For_C
+	if -gnatd.u set.
+
+2014-02-06  Fedor Rybin  <frybin@adacore.com>
+
+	* prj-proc.ads (Tree_Loaded_Callback): new type Callback used
+	after the phase 1 of the processing of each aggregated project
+	to get access to project trees of aggregated projects.
+	(Process_Project_Tree_Phase_1): new parameter On_New_Tree_Loaded
+	If specified, On_New_Tree_Loaded is called after each aggregated
+	project has been processed succesfully.
+	(Process): new parameter On_New_Tree_Loaded.
+	* prj-proc.adb (Process_Aggregated_Projects): On_New_Tree_Loaded
+	callback added after processing of each aggregated project.
+	(Recursive_Process): new parameter On_New_Tree_Loaded.
+	(Process): new parameter On_New_Tree_Loaded.
+	(Process_Project_Tree_Phase_1): new parameter On_New_Tree_Loaded.
+	* prj-conf.ads (Parse_Project_And_Apply_Config): new parameter
+	On_New_Tree_Loaded.
+	* prj-conf.adb (Parse_Project_And_Apply_Config): new parameter
+	On_New_Tree_Loaded.
+
+2014-02-06  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Implement --insert-blank-lines and
+	--preserve-blank-lines switches.
+
 2014-02-06  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi, vms_data.ads: Add documentation of -j option for
