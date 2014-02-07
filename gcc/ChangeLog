@@ -1,5 +1,8 @@
 2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* cilk-common.c (cilk_init_builtins): Clear TREE_NOTHROW
+	flag on __cilkrts_rethrow builtin.
+
 	PR ipa/60026
 	* ipa-cp.c (determine_versionability): Fail at -O0
 	or __attribute__((optimize (0))) or -fno-ipa-cp functions.
