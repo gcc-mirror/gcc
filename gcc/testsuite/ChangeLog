@@ -1,3 +1,12 @@
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60082
+	Revert
+	2014-02-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: Disable test for -O1.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+
 2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/fp2int1.c: New testcase.
