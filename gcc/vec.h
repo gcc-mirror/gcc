@@ -679,9 +679,9 @@ vec_safe_truncate (vec<T, A, vl_embed> *v, unsigned size)
 /* If SRC is not NULL, return a pointer to a copy of it.  */
 template<typename T, typename A>
 inline vec<T, A, vl_embed> *
-vec_safe_copy (vec<T, A, vl_embed> *src)
+vec_safe_copy (vec<T, A, vl_embed> *src CXX_MEM_STAT_INFO)
 {
-  return src ? src->copy () : NULL;
+  return src ? src->copy (ALONE_PASS_MEM_STAT) : NULL;
 }
 
 /* Copy the elements from SRC to the end of DST as if by memcpy.

@@ -31957,7 +31957,7 @@ synthesize_implicit_template_parm  (cp_parser *parser)
     {
       tree& new_parms = INNERMOST_TEMPLATE_PARMS (current_template_parms);
       int new_parm_idx = TREE_VEC_LENGTH (new_parms);
-      new_parms = grow_tree_vec_stat (new_parms, new_parm_idx + 1);
+      new_parms = grow_tree_vec (new_parms, new_parm_idx + 1);
       TREE_VEC_ELT (new_parms, new_parm_idx) = parser->implicit_template_parms;
     }
 

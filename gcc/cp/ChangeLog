@@ -1,3 +1,7 @@
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz
+
+	* parser.c (synthesize_implicit_template_parm): Use grow_tree_vec.
+
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58703

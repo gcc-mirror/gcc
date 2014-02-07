@@ -10649,7 +10649,7 @@ simd_clone_struct_alloc (int nargs)
   size_t len = (sizeof (struct cgraph_simd_clone)
 		+ nargs * sizeof (struct cgraph_simd_clone_arg));
   clone_info = (struct cgraph_simd_clone *)
-	       ggc_internal_cleared_alloc_stat (len PASS_MEM_STAT);
+	       ggc_internal_cleared_alloc (len);
   return clone_info;
 }
 
