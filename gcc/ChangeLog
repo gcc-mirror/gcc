@@ -1,3 +1,8 @@
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* optabs.c (expand_atomic_compare_and_swap): Allow expander to
+	fail.
+
 2014-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092
