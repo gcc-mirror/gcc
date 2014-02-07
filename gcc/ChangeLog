@@ -1,5 +1,23 @@
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/60077
+	* expr.c (emit_move_resolve_push): Export; be bit more selective
+	on when to clear alias set.
+	* expr.h (emit_move_resolve_push): Declare.
+	* function.h (struct function): Add tail_call_marked.
+	* tree-tailcall.c (optimize_tail_call): Set tail_call_marked.
+	* config/i386/i386-protos.h (ix86_expand_push): Remove.
+	* config/i386/i386.md (TImode move expander): De not call
+	ix86_expand_push.
+	(FP push expanders): Preserve memory attributes.
+	* config/i386/sse.md (push<mode>1): Remove.
+	* config/i386/i386.c (ix86_expand_vector_move): Handle push
+	operation.
+	(ix86_expand_push): Remove.
+	* config/i386/mmx.md (push<mode>1): Remove.
+
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
 	PR rtl-optimization/60030
 	* internal-fn.c (ubsan_expand_si_overflow_mul_check): Surround
 	lopart with paradoxical subreg before shifting it up by hprec.

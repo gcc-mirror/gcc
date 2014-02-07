@@ -913,14 +913,6 @@
   operands[2] = CONST0_RTX (DFmode);
 })
 
-(define_expand "push<mode>1"
-  [(match_operand:VMOVE 0 "register_operand")]
-  "TARGET_SSE"
-{
-  ix86_expand_push (<MODE>mode, operands[0]);
-  DONE;
-})
-
 (define_expand "movmisalign<mode>"
   [(set (match_operand:VMOVE 0 "nonimmediate_operand")
 	(match_operand:VMOVE 1 "nonimmediate_operand"))]
