@@ -9218,7 +9218,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   /* F2008, Section 7.2.1.2.  */
   if (gfc_is_coindexed (lhs) && gfc_has_ultimate_allocatable (lhs))
     {
-      gfc_error ("Coindexed variable must not be have an allocatable ultimate "
+      gfc_error ("Coindexed variable must not have an allocatable ultimate "
 		 "component in assignment at %L", &lhs->where);
       return false;
     }

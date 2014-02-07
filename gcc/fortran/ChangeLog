@@ -1,3 +1,9 @@
+2014-02-07  Benno Schulenberg  <bensberg@justemail.net>
+
+	PR translation/52289
+	* fortran/resolve.c (resolve_ordinary_assign): Fix typoed word
+	in an error message.
+
 2014-02-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57033
