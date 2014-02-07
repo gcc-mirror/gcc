@@ -6673,7 +6673,15 @@ s390_mainpool_start (void)
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC_VOLATILE
 	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPECV_MAIN_POOL)
 	{
-	  gcc_assert (!pool->pool_insn);
+	  /* There might be two main_pool instructions if base_reg
+	     is call-clobbered; one for shrink-wrapped code and one
+	     for the rest.  We want to keep the first.  */
+	  if (pool->pool_insn)
+	    {
+	      insn = PREV_INSN (insn);
+	      delete_insn (NEXT_INSN (insn));
+	      continue;
+	    }
 	  pool->pool_insn = insn;
 	}
 
@@ -7110,7 +7118,7 @@ s390_chunkify_start (void)
 	  if (GET_CODE (pat) == SET)
 	    {
 	      rtx label = JUMP_LABEL (insn);
-	      if (label)
+	      if (label && !ANY_RETURN_P (label))
 		{
 		  if (s390_find_pool (pool_list, label)
 		      != s390_find_pool (pool_list, insn))
@@ -8635,6 +8643,11 @@ s390_early_mach (void)
   /* Re-compute register info.  */
   s390_register_info ();
 
+  /* If we're using a base register, ensure that it is always valid for
+     the first non-prologue instruction.  */
+  if (cfun->machine->base_reg)
+    emit_insn_at_entry (gen_main_pool (cfun->machine->base_reg));
+
   /* Annotate all constant pool references to let the scheduler know
      they implicitly use the base register.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -9170,6 +9183,55 @@ s390_emit_epilogue (bool sibcall)
     }
 }
 
+/* Implement TARGET_SET_UP_BY_PROLOGUE.  */
+
+static void
+s300_set_up_by_prologue (hard_reg_set_container *regs)
+{
+  if (cfun->machine->base_reg
+      && !call_really_used_regs[REGNO (cfun->machine->base_reg)])
+    SET_HARD_REG_BIT (regs->set, REGNO (cfun->machine->base_reg));
+}
+
+/* Return true if the function can use simple_return to return outside
+   of a shrink-wrapped region.  At present shrink-wrapping is supported
+   in all cases.  */
+
+bool
+s390_can_use_simple_return_insn (void)
+{
+  return true;
+}
+
+/* Return true if the epilogue is guaranteed to contain only a return
+   instruction and if a direct return can therefore be used instead.
+   One of the main advantages of using direct return instructions
+   is that we can then use conditional returns.  */
+
+bool
+s390_can_use_return_insn (void)
+{
+  int i;
+
+  if (!reload_completed)
+    return false;
+
+  if (crtl->profile)
+    return false;
+
+  if (TARGET_TPF_PROFILING)
+    return false;
+
+  for (i = 0; i < 16; i++)
+    if (cfun_gpr_save_slot (i))
+      return false;
+
+  if (cfun->machine->base_reg
+      && !call_really_used_regs[REGNO (cfun->machine->base_reg)])
+    return false;
+
+  return cfun_frame_layout.frame_size == 0;
+}
 
 /* Return the size in bytes of a function argument of
    type TYPE and/or mode MODE.  At least one of TYPE or
@@ -11019,6 +11081,11 @@ s390_fix_long_loop_prediction (rtx insn)
       || GET_CODE (SET_SRC(set)) != IF_THEN_ELSE)
     return false;
 
+  /* Skip conditional returns.  */
+  if (ANY_RETURN_P (XEXP (SET_SRC (set), 1))
+      && XEXP (SET_SRC (set), 2) == pc_rtx)
+    return false;
+
   label_ref = (GET_CODE (XEXP (SET_SRC (set), 1)) == LABEL_REF ?
 	       XEXP (SET_SRC (set), 1) : XEXP (SET_SRC (set), 2));
 
@@ -12162,6 +12229,9 @@ s390_option_override (void)
 
 #undef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P s390_can_inline_p
+
+#undef TARGET_SET_UP_BY_PROLOGUE
+#define TARGET_SET_UP_BY_PROLOGUE s300_set_up_by_prologue
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
