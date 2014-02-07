@@ -26,13 +26,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef __s390x__
 
-#define EXP(fp)         (((fp.l) >> 23) & 0xFF)
-#define EXCESS          126
+#define EXPONENT_BIAS   127
+#define MANTISSA_BITS   23
+#define EXP(fp)         (((fp.l) >> MANTISSA_BITS) & 0xFF)
+#define PRECISION       (MANTISSA_BITS + 1)
 #define SIGNBIT         0x80000000
 #define SIGN(fp)        ((fp.l) & SIGNBIT)
-#define HIDDEN          (1 << 23)
+#define HIDDEN          (1 << MANTISSA_BITS)
 #define MANT(fp)        (((fp.l) & 0x7FFFFF) | HIDDEN)
 #define FRAC(fp)        ((fp.l) & 0x7FFFFF)
+#define LLONG_MAX       9223372036854775807LL
+#define LLONG_MIN       (-LLONG_MAX - 1LL)
 
 typedef int DItype_x __attribute__ ((mode (DI)));
 typedef unsigned int UDItype_x __attribute__ ((mode (DI)));
@@ -44,6 +48,12 @@ union float_long
     float f;
     USItype_x l;
   };
+
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
 
 DItype_x __fixsfdi (float a1);
 
@@ -58,32 +68,34 @@ __fixsfdi (float a1)
     fl1.f = a1;
 
     /* +/- 0, denormalized */
-
     if (!EXP (fl1))
       return 0;
 
-    exp = EXP (fl1) - EXCESS - 24;
+    exp = EXP (fl1) - EXPONENT_BIAS - MANTISSA_BITS;
 
     /* number < 1 */
-
-    if (exp < -24)
+    if (exp <= -PRECISION)
       return 0;
 
     /* NaN */
 
-    if ((EXP(fl1) == 0xff) && (FRAC(fl1) != 0)) /* NaN */
-      return 0x8000000000000000ULL;
+    if ((EXP (fl1) == 0xff) && (FRAC (fl1) != 0)) /* NaN */
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0x8000000000000000ULL;
+      }
 
     /* Number big number & +/- inf */
-
-    if (exp >= 40) {
-	l = (long long)1<<63;
-	if (!SIGN(fl1))
-	    l--;
-	return l;
+    if (exp >= 40) {      
+      /* Don't throw an exception for -1p+63  */
+      if (!SIGN (fl1) || exp > 40 || FRAC (fl1) != 0)
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+      return SIGN (fl1) ? LLONG_MIN : LLONG_MAX;
     }
 
-    l = MANT(fl1);
+    l = MANT (fl1);
 
     if (exp > 0)
       l <<= exp;

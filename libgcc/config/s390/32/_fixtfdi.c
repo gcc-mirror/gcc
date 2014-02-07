@@ -31,13 +31,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MANTISSA_BITS      112
 #define PRECISION          (MANTISSA_BITS + 1)
 #define SIGNBIT		   0x80000000
-#define SIGND(fp)	   ((fp.l.i[0]) & SIGNBIT)
+#define SIGN(fp)	   ((fp.l.i[0]) & SIGNBIT)
 #define MANTD_HIGH_LL(fp)  ((fp.ll[0] & HIGH_LL_FRAC_MASK) | HIGH_LL_UNIT_BIT)
 #define MANTD_LOW_LL(fp)   (fp.ll[1])
 #define FRACD_ZERO_P(fp)   (!fp.ll[1] && !(fp.ll[0] & HIGH_LL_FRAC_MASK))
 #define HIGH_LL_FRAC_BITS  48
 #define HIGH_LL_UNIT_BIT   ((UDItype_x)1 << HIGH_LL_FRAC_BITS)
 #define HIGH_LL_FRAC_MASK  (HIGH_LL_UNIT_BIT - 1)
+#define LLONG_MAX       9223372036854775807LL
+#define LLONG_MIN       (-LLONG_MAX - 1LL)
 
 typedef int DItype_x __attribute__ ((mode (DI)));
 typedef unsigned int UDItype_x __attribute__ ((mode (DI)));
@@ -51,6 +53,12 @@ union double_long {
     } l;
   UDItype_x ll[2];   /* 64 bit parts: 0 upper, 1 lower */
 };
+
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
 
 DItype_x __fixtfdi (long double a1);
 
@@ -79,7 +87,11 @@ __fixtfdi (long double a1)
 
     /* NaN: All exponent bits set and a nonzero fraction.  */
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
-      return 0x8000000000000000ULL;
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0x8000000000000000ULL;
+      }
 
     /* One extra bit is needed for the unit bit which is appended by
        MANTD_HIGH_LL on the left of the matissa.  */
@@ -92,13 +104,19 @@ __fixtfdi (long double a1)
        or more.  */
     if (exp >= 0)
       {
-	l = 1ULL << 63; /* long long min */
-	return SIGND (dl1) ? l : l - 1;
+	/* Don't throw an exception for -1p+63  */
+	if (!SIGN (dl1)
+	    || exp > 0
+	    || MANTD_LOW_LL (dl1) >> (HIGH_LL_FRAC_BITS + 1)
+	    || (dl1.ll[0] & HIGH_LL_FRAC_MASK))
+	  /* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	  fexceptdiv (0.0, 0.0);
+	return SIGN (dl1) ? LLONG_MIN : LLONG_MAX;
       }
 
     l = MANTD_LOW_LL (dl1) >> (HIGH_LL_FRAC_BITS + 1)
         | MANTD_HIGH_LL (dl1) << (64 - (HIGH_LL_FRAC_BITS + 1));
 
-    return SIGND (dl1) ? -(l >> -exp) : l >> -exp;
+    return SIGN (dl1) ? -(l >> -exp) : l >> -exp;
 }
 #endif /* !__s390x__ */
