@@ -1,3 +1,10 @@
+2014-02-07  Misty De Meo  <misty@brew.sh>
+
+	PR target/58710
+	* configure.ac: Use AC_LINK_IFELSE in check for
+	_Unwind_GetIPInfo.
+	* configure: Regenerate.
+
 2013-12-05  Ian Lance Taylor  <iant@google.com>
 
 	* alloc.c (backtrace_vector_finish): Add error_callback and data

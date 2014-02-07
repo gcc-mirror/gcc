@@ -144,7 +144,7 @@ else
   ac_save_CFFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror-implicit-function-declaration"
   AC_MSG_CHECKING([for _Unwind_GetIPInfo])
-  AC_COMPILE_IFELSE(
+  AC_LINK_IFELSE(
     [AC_LANG_PROGRAM(
        [#include "unwind.h"
 	struct _Unwind_Context *context;
