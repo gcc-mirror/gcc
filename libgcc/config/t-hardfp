@@ -1,0 +1,81 @@
+# Copyright (C) 2014 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# For historical reasons, some targets provide a full set of FP routines
+# even if there is native hardware support for some of them.  This file
+# is used to define functions that can be implemented directly in hardware.
+# For example, an __adddf3 defined by this file will use an FPU addition.
+#
+# The following variables should be set up before including this file:
+#
+# hardfp_float_modes: a list of hardware floating-point modes.
+#                     e.g. sf df
+# hardfp_int_modes: a list of integer modes for which to define conversions;
+#		    usually this is "si", since libgcc2.c provides routines
+#		    for wider modes
+# hardfp_extensions: a list of extensions between hardware floating-point modes,
+#                    e.g. sfdf
+# hardfp_truncations: a list of truncations between hardware floating-point
+#                     modes, e.g. dfsf
+
+# Functions parameterized by a floating-point mode M.
+hardfp_func_bases := addM3 subM3 negM2 mulM3 divM3
+hardfp_func_bases += eqM2 neM2 geM2 gtM2 leM2 ltM2 unordM2
+
+# Functions parameterized by both a floating-point mode M and an integer mode N.
+hardfp_int_func_bases := fixMN floatNM floatunNM
+hardfp_func_bases += $(foreach n, $(hardfp_int_modes), \
+			       $(subst N,$(n),$(hardfp_int_func_bases)))
+
+# Get the full list of functions.
+hardfp_func_list := $(foreach m, $(hardfp_float_modes), \
+	      	 	      $(subst M,$(m),$(hardfp_func_bases)))
+hardfp_func_list += $(foreach pair, $(hardfp_extensions), \
+		    	      $(subst M,$(pair),extendM2))
+hardfp_func_list += $(foreach pair, $(hardfp_truncations), \
+		    	      $(subst M,$(pair),truncM2))
+
+# Regexp for matching a floating-point mode.
+hardfp_mode_regexp := $(shell echo $(hardfp_float_modes) | sed 's/ /\\|/g')
+
+# Regexp for matching the end of a function name, after the last
+# floating-point mode.
+hardfp_suffix_regexp := $(shell echo $(hardfp_int_modes) 2 3 | sed 's/ /\\|/g')
+
+# Add -D options to define:
+#   FUNC: the function name (e.g. __addsf3)
+#   OP:   the function name without the leading __ and with the last
+#            floating-point mode removed (e.g. add3)
+#   TYPE: the last floating-point mode (e.g. sf)
+hardfp_defines_for = \
+  $(shell echo $1 | \
+    sed 's/\(.*\)\($(hardfp_mode_regexp)\)\($(hardfp_suffix_regexp)\|\)$$/-DFUNC=__& -DOP_\1\3 -DTYPE=\2/')
+
+hardfp-o = $(patsubst %,%$(objext),$(hardfp_func_list))
+$(hardfp-o): %$(objext): $(srcdir)/config/hardfp.c
+	@echo "Mode = $(hardfp_mode_regexp)"
+	@echo "Suffix = $(hardfp_suffix_regexp)"
+	$(gcc_compile) $(call hardfp_defines_for, $*) -c $< $(vis_hide) -Wno-missing-prototypes
+libgcc-objects += $(hardfp-o)
+
+ifeq ($(enable_shared),yes)
+hardfp-s-o = $(patsubst %,%_s$(objext),$(hardfp_func_list))
+$(hardfp-s-o): %_s$(objext): $(srcdir)/config/hardfp.c
+	$(gcc_s_compile) $(call hardfp_defines_for, $*) -c $< -Wno-missing-prototypes
+libgcc-s-objects += $(hardfp-s-o)
+endif

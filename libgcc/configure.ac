@@ -292,6 +292,18 @@ EOF
 eval `${CC-cc} -E conftest.c | grep host_address=`
 rm -f conftest.c
 
+case ${host} in
+mips*-*-*)
+  AC_CACHE_CHECK([whether the target is hard-float],
+		 [libgcc_cv_mips_hard_float],
+		 [AC_COMPILE_IFELSE(
+    [#ifndef __mips_hard_float
+     #error FOO
+     #endif],
+    [libgcc_cv_mips_hard_float=yes],
+    [libgcc_cv_mips_hard_float=no])])
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 

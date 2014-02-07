@@ -1,3 +1,16 @@
+2014-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* configure.ac (libgcc_cv_mips_hard_float): New.
+	* configure: Regenerate.
+	* config.host (mips*-*-*): Use t-hardfp-sfdf rather than
+	t-softfp-sfdf for hard-float targets.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS): Reinstate.
+	(softfp_float_modes, softfp_int_modes, softfp_extensions)
+	(softfp_truncations, softfp_exclude_libgcc2): New.
+	* config/t-hardfp: New file.
+	* config/t-hardfp-sfdf: Likewise.
+	* config/hardfp.c: Likewise.
+
 2014-02-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.host: Include t-floattodi also for s390x.
