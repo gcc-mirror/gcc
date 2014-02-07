@@ -1,3 +1,8 @@
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59918
+	* g++.dg/torture/pr59918.C: New testcase.
+
 2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59575
