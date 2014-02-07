@@ -1,4 +1,11 @@
-2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ggc.h (ggc_internal_cleared_alloc): New macro.
+	* vec.h (vec_safe_copy): Handle memory stats.
+	* omp-low.c (simd_clone_struct_alloc): Use ggc_internal_cleared_alloc.
+	* target-globals.c (save_target_globals): Likewise.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/60077
 	* expr.c (emit_move_resolve_push): Export; be bit more selective
