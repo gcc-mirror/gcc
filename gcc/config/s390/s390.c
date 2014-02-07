@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "cfgloop.h"
 #include "opts.h"
+#include "tree-pass.h"
+#include "context.h"
 
 /* Define the specific costs for a given cpu.  */
 
@@ -1676,220 +1678,6 @@ static struct machine_function *
 s390_init_machine_status (void)
 {
   return ggc_alloc_cleared_machine_function ();
-}
-
-static void
-s390_option_override (void)
-{
-  unsigned int i;
-  cl_deferred_option *opt;
-  vec<cl_deferred_option> *v =
-    (vec<cl_deferred_option> *) s390_deferred_options;
-
-  if (v)
-    FOR_EACH_VEC_ELT (*v, i, opt)
-      {
-	switch (opt->opt_index)
-	  {
-	  case OPT_mhotpatch:
-	    s390_hotpatch_trampoline_halfwords = (opt->value) ?
-	      s390_hotpatch_trampoline_halfwords_default : -1;
-	    break;
-	  case OPT_mhotpatch_:
-	    {
-	      int val;
-
-	      val = integral_argument (opt->arg);
-	      if (val == -1)
-		{
-		  /* argument is not a plain number */
-		  error ("argument to %qs should be a non-negative integer",
-			 "-mhotpatch=");
-		  break;
-		}
-	      else if (val > s390_hotpatch_trampoline_halfwords_max)
-		{
-		  error ("argument to %qs is too large (max. %d)",
-			 "-mhotpatch=", s390_hotpatch_trampoline_halfwords_max);
-		  break;
-		}
-	      s390_hotpatch_trampoline_halfwords = val;
-	      break;
-	    }
-	  default:
-	    gcc_unreachable ();
-	  }
-      }
-
-  /* Set up function hooks.  */
-  init_machine_status = s390_init_machine_status;
-
-  /* Architecture mode defaults according to ABI.  */
-  if (!(target_flags_explicit & MASK_ZARCH))
-    {
-      if (TARGET_64BIT)
-	target_flags |= MASK_ZARCH;
-      else
-	target_flags &= ~MASK_ZARCH;
-    }
-
-  /* Set the march default in case it hasn't been specified on
-     cmdline.  */
-  if (s390_arch == PROCESSOR_max)
-    {
-      s390_arch_string = TARGET_ZARCH? "z900" : "g5";
-      s390_arch = TARGET_ZARCH ? PROCESSOR_2064_Z900 : PROCESSOR_9672_G5;
-      s390_arch_flags = processor_flags_table[(int)s390_arch];
-    }
-
-  /* Determine processor to tune for.  */
-  if (s390_tune == PROCESSOR_max)
-    {
-      s390_tune = s390_arch;
-      s390_tune_flags = s390_arch_flags;
-    }
-
-  /* Sanity checks.  */
-  if (TARGET_ZARCH && !TARGET_CPU_ZARCH)
-    error ("z/Architecture mode not supported on %s", s390_arch_string);
-  if (TARGET_64BIT && !TARGET_ZARCH)
-    error ("64-bit ABI not supported in ESA/390 mode");
-
-  /* Use hardware DFP if available and not explicitly disabled by
-     user. E.g. with -m31 -march=z10 -mzarch   */
-  if (!(target_flags_explicit & MASK_HARD_DFP) && TARGET_DFP)
-    target_flags |= MASK_HARD_DFP;
-
-  /* Enable hardware transactions if available and not explicitly
-     disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
-  if (!(target_flags_explicit & MASK_OPT_HTM) && TARGET_CPU_HTM && TARGET_ZARCH)
-    target_flags |= MASK_OPT_HTM;
-
-  if (TARGET_HARD_DFP && !TARGET_DFP)
-    {
-      if (target_flags_explicit & MASK_HARD_DFP)
-	{
-	  if (!TARGET_CPU_DFP)
-	    error ("hardware decimal floating point instructions"
-		   " not available on %s", s390_arch_string);
-	  if (!TARGET_ZARCH)
-	    error ("hardware decimal floating point instructions"
-		   " not available in ESA/390 mode");
-	}
-      else
-	target_flags &= ~MASK_HARD_DFP;
-    }
-
-  if ((target_flags_explicit & MASK_SOFT_FLOAT) && TARGET_SOFT_FLOAT)
-    {
-      if ((target_flags_explicit & MASK_HARD_DFP) && TARGET_HARD_DFP)
-	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
-
-      target_flags &= ~MASK_HARD_DFP;
-    }
-
-  /* Set processor cost function.  */
-  switch (s390_tune)
-    {
-    case PROCESSOR_2084_Z990:
-      s390_cost = &z990_cost;
-      break;
-    case PROCESSOR_2094_Z9_109:
-      s390_cost = &z9_109_cost;
-      break;
-    case PROCESSOR_2097_Z10:
-      s390_cost = &z10_cost;
-      break;
-    case PROCESSOR_2817_Z196:
-      s390_cost = &z196_cost;
-      break;
-    case PROCESSOR_2827_ZEC12:
-      s390_cost = &zEC12_cost;
-      break;
-    default:
-      s390_cost = &z900_cost;
-    }
-
-  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
-    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
-	   "in combination");
-
-  if (s390_stack_size)
-    {
-      if (s390_stack_guard >= s390_stack_size)
-	error ("stack size must be greater than the stack guard value");
-      else if (s390_stack_size > 1 << 16)
-	error ("stack size must not be greater than 64k");
-    }
-  else if (s390_stack_guard)
-    error ("-mstack-guard implies use of -mstack-size");
-
-#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
-  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
-    target_flags |= MASK_LONG_DOUBLE_128;
-#endif
-
-  if (s390_tune == PROCESSOR_2097_Z10
-      || s390_tune == PROCESSOR_2817_Z196
-      || s390_tune == PROCESSOR_2827_ZEC12)
-    {
-      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64,
-			     global_options.x_param_values,
-			     global_options_set.x_param_values);
-    }
-
-  maybe_set_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 256,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  /* values for loop prefetching */
-  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, 256,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  /* s390 has more than 2 levels and the size is much larger.  Since
-     we are always running virtualized assume that we only get a small
-     part of the caches above l1.  */
-  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6,
-			 global_options.x_param_values,
-			 global_options_set.x_param_values);
-
-  /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
-     requires the arch flags to be evaluated already.  Since prefetching
-     is beneficial on s390, we enable it if available.  */
-  if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
-    flag_prefetch_loop_arrays = 1;
-
-  /* Use the alternative scheduling-pressure algorithm by default.  */
-  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
-
-  if (TARGET_TPF)
-    {
-      /* Don't emit DWARF3/4 unless specifically selected.  The TPF
-	 debuggers do not yet support DWARF 3/4.  */
-      if (!global_options_set.x_dwarf_strict) 
-	dwarf_strict = 1;
-      if (!global_options_set.x_dwarf_version)
-	dwarf_version = 2;
-    }
 }
 
 /* Map for smallest class containing reg regno.  */
@@ -8832,6 +8620,64 @@ s390_restore_gprs_from_fprs (void)
     }
 }
 
+
+/* A pass run immediately before shrink-wrapping and prologue and epilogue
+   generation.  */
+
+static unsigned int
+s390_early_mach (void)
+{
+  rtx insn;
+
+  /* Try to get rid of the FPR clobbers.  */
+  s390_optimize_nonescaping_tx ();
+
+  /* Re-compute register info.  */
+  s390_register_info ();
+
+  /* Annotate all constant pool references to let the scheduler know
+     they implicitly use the base register.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	annotate_constant_pool_refs (&PATTERN (insn));
+	df_insn_rescan (insn);
+      }
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_s390_early_mach =
+{
+  RTL_PASS, /* type */
+  "early_mach", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_verify | TODO_df_finish
+    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
+};
+
+class pass_s390_early_mach : public rtl_opt_pass
+{
+public:
+  pass_s390_early_mach (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_s390_early_mach, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return s390_early_mach (); }
+
+}; // class pass_s390_early_mach
+
+} // anon namespace
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -8842,26 +8688,6 @@ s390_emit_prologue (void)
   int i;
   int offset;
   int next_fpr = 0;
-
-  /* Try to get rid of the FPR clobbers.  */
-  s390_optimize_nonescaping_tx ();
-
-  /* Re-compute register info.  */
-  s390_register_info ();
-
-  /* Annotate all constant pool references to let the scheduler know
-     they implicitly use the base register.  */
-
-  push_topmost_sequence ();
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn))
-      {
-	annotate_constant_pool_refs (&PATTERN (insn));
-	df_insn_rescan (insn);
-      }
-
-  pop_topmost_sequence ();
 
   /* Choose best register to use for temp use within prologue.
      See below for why TPF must use the register 1.  */
@@ -11926,6 +11752,235 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
     default:
       return MIN (nunroll, 16 / mem_count);
     }
+}
+
+static void
+s390_option_override (void)
+{
+  unsigned int i;
+  cl_deferred_option *opt;
+  vec<cl_deferred_option> *v =
+    (vec<cl_deferred_option> *) s390_deferred_options;
+
+  if (v)
+    FOR_EACH_VEC_ELT (*v, i, opt)
+      {
+	switch (opt->opt_index)
+	  {
+	  case OPT_mhotpatch:
+	    s390_hotpatch_trampoline_halfwords = (opt->value) ?
+	      s390_hotpatch_trampoline_halfwords_default : -1;
+	    break;
+	  case OPT_mhotpatch_:
+	    {
+	      int val;
+
+	      val = integral_argument (opt->arg);
+	      if (val == -1)
+		{
+		  /* argument is not a plain number */
+		  error ("argument to %qs should be a non-negative integer",
+			 "-mhotpatch=");
+		  break;
+		}
+	      else if (val > s390_hotpatch_trampoline_halfwords_max)
+		{
+		  error ("argument to %qs is too large (max. %d)",
+			 "-mhotpatch=", s390_hotpatch_trampoline_halfwords_max);
+		  break;
+		}
+	      s390_hotpatch_trampoline_halfwords = val;
+	      break;
+	    }
+	  default:
+	    gcc_unreachable ();
+	  }
+      }
+
+  /* Set up function hooks.  */
+  init_machine_status = s390_init_machine_status;
+
+  /* Architecture mode defaults according to ABI.  */
+  if (!(target_flags_explicit & MASK_ZARCH))
+    {
+      if (TARGET_64BIT)
+	target_flags |= MASK_ZARCH;
+      else
+	target_flags &= ~MASK_ZARCH;
+    }
+
+  /* Set the march default in case it hasn't been specified on
+     cmdline.  */
+  if (s390_arch == PROCESSOR_max)
+    {
+      s390_arch_string = TARGET_ZARCH? "z900" : "g5";
+      s390_arch = TARGET_ZARCH ? PROCESSOR_2064_Z900 : PROCESSOR_9672_G5;
+      s390_arch_flags = processor_flags_table[(int)s390_arch];
+    }
+
+  /* Determine processor to tune for.  */
+  if (s390_tune == PROCESSOR_max)
+    {
+      s390_tune = s390_arch;
+      s390_tune_flags = s390_arch_flags;
+    }
+
+  /* Sanity checks.  */
+  if (TARGET_ZARCH && !TARGET_CPU_ZARCH)
+    error ("z/Architecture mode not supported on %s", s390_arch_string);
+  if (TARGET_64BIT && !TARGET_ZARCH)
+    error ("64-bit ABI not supported in ESA/390 mode");
+
+  /* Use hardware DFP if available and not explicitly disabled by
+     user. E.g. with -m31 -march=z10 -mzarch   */
+  if (!(target_flags_explicit & MASK_HARD_DFP) && TARGET_DFP)
+    target_flags |= MASK_HARD_DFP;
+
+  /* Enable hardware transactions if available and not explicitly
+     disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
+  if (!(target_flags_explicit & MASK_OPT_HTM) && TARGET_CPU_HTM && TARGET_ZARCH)
+    target_flags |= MASK_OPT_HTM;
+
+  if (TARGET_HARD_DFP && !TARGET_DFP)
+    {
+      if (target_flags_explicit & MASK_HARD_DFP)
+	{
+	  if (!TARGET_CPU_DFP)
+	    error ("hardware decimal floating point instructions"
+		   " not available on %s", s390_arch_string);
+	  if (!TARGET_ZARCH)
+	    error ("hardware decimal floating point instructions"
+		   " not available in ESA/390 mode");
+	}
+      else
+	target_flags &= ~MASK_HARD_DFP;
+    }
+
+  if ((target_flags_explicit & MASK_SOFT_FLOAT) && TARGET_SOFT_FLOAT)
+    {
+      if ((target_flags_explicit & MASK_HARD_DFP) && TARGET_HARD_DFP)
+	error ("-mhard-dfp can%'t be used in conjunction with -msoft-float");
+
+      target_flags &= ~MASK_HARD_DFP;
+    }
+
+  /* Set processor cost function.  */
+  switch (s390_tune)
+    {
+    case PROCESSOR_2084_Z990:
+      s390_cost = &z990_cost;
+      break;
+    case PROCESSOR_2094_Z9_109:
+      s390_cost = &z9_109_cost;
+      break;
+    case PROCESSOR_2097_Z10:
+      s390_cost = &z10_cost;
+      break;
+    case PROCESSOR_2817_Z196:
+      s390_cost = &z196_cost;
+      break;
+    case PROCESSOR_2827_ZEC12:
+      s390_cost = &zEC12_cost;
+      break;
+    default:
+      s390_cost = &z900_cost;
+    }
+
+  if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
+    error ("-mbackchain -mpacked-stack -mhard-float are not supported "
+	   "in combination");
+
+  if (s390_stack_size)
+    {
+      if (s390_stack_guard >= s390_stack_size)
+	error ("stack size must be greater than the stack guard value");
+      else if (s390_stack_size > 1 << 16)
+	error ("stack size must not be greater than 64k");
+    }
+  else if (s390_stack_guard)
+    error ("-mstack-guard implies use of -mstack-size");
+
+#ifdef TARGET_DEFAULT_LONG_DOUBLE_128
+  if (!(target_flags_explicit & MASK_LONG_DOUBLE_128))
+    target_flags |= MASK_LONG_DOUBLE_128;
+#endif
+
+  if (s390_tune == PROCESSOR_2097_Z10
+      || s390_tune == PROCESSOR_2817_Z196
+      || s390_tune == PROCESSOR_2827_ZEC12)
+    {
+      maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_MAX_UNROLL_TIMES, 32,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEELED_INSNS, 2000,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+      maybe_set_param_value (PARAM_MAX_COMPLETELY_PEEL_TIMES, 64,
+			     global_options.x_param_values,
+			     global_options_set.x_param_values);
+    }
+
+  maybe_set_param_value (PARAM_MAX_PENDING_LIST_LENGTH, 256,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  /* values for loop prefetching */
+  maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE, 256,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_L1_CACHE_SIZE, 128,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  /* s390 has more than 2 levels and the size is much larger.  Since
+     we are always running virtualized assume that we only get a small
+     part of the caches above l1.  */
+  maybe_set_param_value (PARAM_L2_CACHE_SIZE, 1500,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO, 2,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+  maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES, 6,
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
+
+  /* This cannot reside in s390_option_optimization_table since HAVE_prefetch
+     requires the arch flags to be evaluated already.  Since prefetching
+     is beneficial on s390, we enable it if available.  */
+  if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
+    flag_prefetch_loop_arrays = 1;
+
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+                         global_options.x_param_values,
+                         global_options_set.x_param_values);
+
+  if (TARGET_TPF)
+    {
+      /* Don't emit DWARF3/4 unless specifically selected.  The TPF
+	 debuggers do not yet support DWARF 3/4.  */
+      if (!global_options_set.x_dwarf_strict) 
+	dwarf_strict = 1;
+      if (!global_options_set.x_dwarf_version)
+	dwarf_version = 2;
+    }
+
+  /* Register a target-specific optimization-and-lowering pass
+     to run immediately before prologue and epilogue generation.
+
+     Registering the pass must be done at start up.  It's
+     convenient to do it here.  */
+  opt_pass *new_pass = new pass_s390_early_mach (g);
+  struct register_pass_info insert_pass_s390_early_mach =
+    {
+      new_pass,			/* pass */
+      "pro_and_epilogue",	/* reference_pass_name */
+      1,			/* ref_pass_instance_number */
+      PASS_POS_INSERT_BEFORE	/* po_op */
+    };
+  register_pass (&insert_pass_s390_early_mach);
 }
 
 /* Initialize GCC target structure.  */
