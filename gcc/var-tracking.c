@@ -886,8 +886,25 @@ vt_stack_adjustments (void)
 	}
       else
 	{
-	  /* Check whether the adjustments on the edges are the same.  */
-	  if (VTI (dest)->in.stack_adjust != VTI (src)->out.stack_adjust)
+	  /* We can end up with different stack adjustments for the exit block
+	     of a shrink-wrapped function if stack_adjust_offset_pre_post
+	     doesn't understand the rtx pattern used to restore the stack
+	     pointer in the epilogue.  For example, on s390(x), the stack
+	     pointer is often restored via a load-multiple instruction
+	     and so no stack_adjust offset is recorded for it.  This means
+	     that the stack offset at the end of the epilogue block is the
+	     the same as the offset before the epilogue, whereas other paths
+	     to the exit block will have the correct stack_adjust.
+
+	     It is safe to ignore these differences because (a) we never
+	     use the stack_adjust for the exit block in this pass and
+	     (b) dwarf2cfi checks whether the CFA notes in a shrink-wrapped
+	     function are correct.
+
+	     We must check whether the adjustments on other edges are
+	     the same though.  */
+	  if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	      && VTI (dest)->in.stack_adjust != VTI (src)->out.stack_adjust)
 	    {
 	      free (stack);
 	      return false;
