@@ -1,3 +1,8 @@
+2014-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/vect/pr60092-2.c: New testcase.
+
 2014-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60082
