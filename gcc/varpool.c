@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "gimple-expr.h"
 #include "flags.h"
+#include "pointer-set.h"
 
 /* List of hooks triggered on varpool_node events.  */
 struct varpool_node_hook_list {
@@ -262,7 +263,7 @@ ctor_for_folding (tree decl)
     return error_mark_node;
 
   /* Do not care about automatic variables.  Those are never initialized
-     anyway, because gimplifier exapnds the code*/
+     anyway, because gimplifier exapnds the code.  */
   if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
     {
       gcc_assert (!TREE_PUBLIC (decl));
@@ -486,6 +487,7 @@ varpool_remove_unreferenced_decls (void)
   varpool_node *first = (varpool_node *)(void *)1;
   int i;
   struct ipa_ref *ref;
+  struct pointer_set_t *referenced = pointer_set_create ();
 
   if (seen_error ())
     return;
@@ -518,7 +520,7 @@ varpool_remove_unreferenced_decls (void)
 	       next = next->same_comdat_group)
 	    {
 	      varpool_node *vnext = dyn_cast <varpool_node> (next);
-	      if (vnext && vnext->analyzed)
+	      if (vnext && vnext->analyzed && !symtab_comdat_local_p (next))
 		enqueue_node (vnext, &first);
 	    }
 	}
@@ -526,10 +528,13 @@ varpool_remove_unreferenced_decls (void)
 	{
 	  varpool_node *vnode = dyn_cast <varpool_node> (ref->referred);
 	  if (vnode
+	      && !vnode->in_other_partition
 	      && (!DECL_EXTERNAL (ref->referred->decl)
 		  || vnode->alias)
 	      && vnode->analyzed)
 	    enqueue_node (vnode, &first);
+	  else
+	    pointer_set_insert (referenced, node);
 	}
     }
   if (cgraph_dump_file)
@@ -541,9 +546,13 @@ varpool_remove_unreferenced_decls (void)
 	{
           if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, " %s", node->asm_name ());
-	  varpool_remove_node (node);
+	  if (pointer_set_contains (referenced, node))
+	    varpool_remove_initializer (node);
+	  else
+	    varpool_remove_node (node);
 	}
     }
+  pointer_set_destroy (referenced);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "\n");
 }
