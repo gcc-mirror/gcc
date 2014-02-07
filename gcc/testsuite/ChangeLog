@@ -1,3 +1,9 @@
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60077
+	* gcc.target/i386/pr60077-1.c: New test.
+	* gcc.target/i386/pr60077-2.c: New test.
+
 2014-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/56824
