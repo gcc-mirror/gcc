@@ -1,3 +1,9 @@
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60082
+	* tree.c (build_common_builtin_nodes): Set ECF_LEAF for
+	__builtin_setjmp_receiver.
+
 2014-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092
