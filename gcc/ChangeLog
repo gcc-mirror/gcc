@@ -1,3 +1,8 @@
+2014-02-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Do O(1)
+	lookup in the vtable constructor.
+
 2014-02-07  Jeff Law  <law@redhat.com>
 
 	PR target/40977
