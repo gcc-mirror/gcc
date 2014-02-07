@@ -1,3 +1,14 @@
+2014-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* builtin-types.def (BT_FN_INT_PTRPTR_SIZE_SIZE): Add.
+	* builtins.def (BUILT_IN_POSIX_MEMALIGN): Likewise.
+	* tree-ssa-structalias.c (find_func_aliases_for_builtin_call):
+	Handle BUILT_IN_POSIX_MEMALIGN.
+	(find_func_clobbers): Likewise.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59918
