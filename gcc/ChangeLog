@@ -1,5 +1,12 @@
 2014-02-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* varpool.c: Include pointer-set.h.
+	(varpool_remove_unreferenced_decls): Variables in other partitions
+	will not be output; be however careful to not lose information
+	about partitioning.
+
+2014-02-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gimple-fold.c (gimple_get_virt_method_for_vtable): Do O(1)
 	lookup in the vtable constructor.
 
