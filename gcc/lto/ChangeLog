@@ -1,3 +1,12 @@
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59469
+	* lto-partition.c (symbol_class): Move to cgraph.h
+	(get_symbol_class): Move to symtab.c
+	(add_references_to_partition, add_symbol_to_partition_1,
+	lto_max_map, lto_1_to_1_map, lto_balanced_map,
+	lto_promote_cross_file_statics): Update.
+
 2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_parallelism): New static var.
