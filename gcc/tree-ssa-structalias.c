@@ -3982,7 +3982,7 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, vec<ce_s> rhsc,
       struct constraint_expr tmpc;
       rhsc.create (0);
       vi = make_heapvar ("HEAP");
-      /* We marking allocated storage local, we deal with it becoming
+      /* We are marking allocated storage local, we deal with it becoming
          global by escaping and setting of vars_contains_escaped_heap.  */
       DECL_EXTERNAL (vi->decl) = 0;
       vi->is_global_var = 0;
@@ -4229,6 +4229,26 @@ find_func_aliases_for_builtin_call (gimple t)
 	  FOR_EACH_VEC_ELT (lhsc, i, lhsp)
 	      process_constraint (new_constraint (*lhsp, ac));
 	  lhsc.release ();
+	  return true;
+	}
+      case BUILT_IN_POSIX_MEMALIGN:
+        {
+	  tree ptrptr = gimple_call_arg (t, 0);
+	  get_constraint_for (ptrptr, &lhsc);
+	  do_deref (&lhsc);
+	  varinfo_t vi = make_heapvar ("HEAP");
+	  /* We are marking allocated storage local, we deal with it becoming
+	     global by escaping and setting of vars_contains_escaped_heap.  */
+	  DECL_EXTERNAL (vi->decl) = 0;
+	  vi->is_global_var = 0;
+	  struct constraint_expr tmpc;
+	  tmpc.var = vi->id;
+	  tmpc.offset = 0;
+	  tmpc.type = ADDRESSOF;
+	  rhsc.safe_push (tmpc);
+	  process_all_all_constraints (lhsc, rhsc);
+	  lhsc.release ();
+	  rhsc.release ();
 	  return true;
 	}
       case BUILT_IN_ASSUME_ALIGNED:
@@ -4960,6 +4980,7 @@ find_func_clobbers (gimple origt)
 	     its argument.  */
 	  case BUILT_IN_MEMSET:
 	  case BUILT_IN_MEMSET_CHK:
+	  case BUILT_IN_POSIX_MEMALIGN:
 	    {
 	      tree dest = gimple_call_arg (t, 0);
 	      unsigned i;
