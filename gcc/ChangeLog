@@ -1,5 +1,16 @@
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/59469
+	* lto-cgraph.c (lto_output_node): Use
+	symtab_get_symbol_partitioning_class.
+	(lto_output_varpool_node): likewise.
+	(symtab_get_symbol_partitioning_class): Move here from
+	lto/lto-partition.c
+	* cgraph.h (symbol_partitioning_class): Likewise.
+	(symtab_get_symbol_partitioning_class): Declare.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ggc.h (ggc_internal_cleared_alloc): New macro.
 	* vec.h (vec_safe_copy): Handle memory stats.
 	* omp-low.c (simd_clone_struct_alloc): Use ggc_internal_cleared_alloc.
