@@ -689,10 +689,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 	 we may not have its associated vtable.  This is not a problem, since
 	 we will walk it on the other path.  */
       if (!type_binfo)
-	{
-	  gcc_assert (BINFO_VIRTUAL_P (binfo));
-	  return;
-	}
+	return;
       tree inner_binfo = get_binfo_at_offset (type_binfo,
 					      offset, otr_type);
       /* For types in anonymous namespace first check if the respective vtable

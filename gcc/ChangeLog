@@ -1,5 +1,10 @@
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/59918
+	* ipa-devirt.c (record_target_from_binfo): Remove overactive sanity check.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/59469
 	* lto-cgraph.c (lto_output_node): Use
 	symtab_get_symbol_partitioning_class.
