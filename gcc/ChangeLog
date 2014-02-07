@@ -1,5 +1,9 @@
 2014-02-07  Jeff Law  <law@redhat.com>
 
+	PR target/40977
+	* config/m68k/m68k.md (ashldi_extsi): Turn into a
+	define_insn_and_split.
+
 	* ipa-inline.c (inline_small_functions): Fix typos.
 
 2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
