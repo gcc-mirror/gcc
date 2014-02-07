@@ -3315,18 +3315,6 @@ copy_forbidden (struct function *fun, tree fndecl)
 	goto fail;
       }
 
-  tree fs_opts;
-  fs_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fun->decl);
-  if (fs_opts)
-    {
-      struct cl_optimization *os = TREE_OPTIMIZATION (fs_opts);
-      if (!os->x_optimize)
-	{
-	  reason = G_("function %q+F compiled without optimizations");
-	  goto fail;
-	}
-    }
-
  fail:
   fun->cannot_be_copied_reason = reason;
   fun->cannot_be_copied_set = true;

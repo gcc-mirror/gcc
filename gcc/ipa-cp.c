@@ -430,6 +430,9 @@ determine_versionability (struct cgraph_node *node)
     reason = "not a tree_versionable_function";
   else if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     reason = "insufficient body availability";
+  else if (!opt_for_fn (node->decl, optimize)
+	   || !opt_for_fn (node->decl, flag_ipa_cp))
+    reason = "non-optimized function";
   else if (lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (node->decl)))
     {
       /* Ideally we should clone the SIMD clones themselves and create
