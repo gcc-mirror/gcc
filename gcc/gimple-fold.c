@@ -3179,6 +3179,8 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
 {
   tree vtable = v, init, fn;
   unsigned HOST_WIDE_INT size;
+  unsigned HOST_WIDE_INT elt_size, access_index;
+  tree domain_type;
 
   /* First of all double check we have virtual table.  */
   if (TREE_CODE (v) != VAR_DECL
@@ -3202,10 +3204,31 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   offset *= BITS_PER_UNIT;
   offset += token * size;
 
-  /* Do not pass from_decl here, we want to know even about values we can
-     not use and will check can_refer_decl_in_current_unit_p ourselves.  */
-  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
-			    offset, size, NULL);
+  /* Lookup the value in the constructor that is assumed to be array.
+     This is equivalent to
+     fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
+			       offset, size, NULL);
+     but in a constant time.  We expect that frontend produced a simple
+     array without indexed initializers.  */
+
+  gcc_checking_assert (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
+  domain_type = TYPE_DOMAIN (TREE_TYPE (init));
+  gcc_checking_assert (integer_zerop (TYPE_MIN_VALUE (domain_type)));
+  elt_size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
+
+  access_index = offset / BITS_PER_UNIT / elt_size;
+  gcc_checking_assert (offset % (elt_size * BITS_PER_UNIT) == 0);
+
+  /* This code makes an assumption that there are no 
+     indexed fileds produced by C++ FE, so we can directly index the array. */
+  if (access_index < CONSTRUCTOR_NELTS (init))
+    {
+      fn = CONSTRUCTOR_ELT (init, access_index)->value;
+      gcc_checking_assert (!CONSTRUCTOR_ELT (init, access_index)->index);
+      STRIP_NOPS (fn);
+    }
+  else
+    fn = NULL;
 
   /* For type inconsistent program we may end up looking up virtual method
      in virtual table that does not contain TOKEN entries.  We may overrun
