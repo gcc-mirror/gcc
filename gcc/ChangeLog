@@ -1,5 +1,15 @@
 2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
+	* config/s390/s390.c: Include tree-pass.h and context.h.
+	(s390_early_mach): New function, split out from...
+	(s390_emit_prologue): ...here.
+	(pass_data_s390_early_mach): New pass structure.
+	(pass_s390_early_mach): New class.
+	(s390_option_override): Create and register early_mach pass.
+	Move to end of file.
+
+2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
 	* var-tracking.c (vt_stack_adjustments): Don't require stack_adjusts
 	to match for the exit block.
 
