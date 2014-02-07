@@ -1,3 +1,10 @@
+2014-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gimple-low.c (lower_builtin_posix_memalign): New function.
+	(lower_stmt): Call it to lower posix_memalign in a way
+	to make alignment info accessible.
+
 2014-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60082
