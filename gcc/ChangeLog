@@ -1,5 +1,11 @@
 2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.md ("atomic_load<mode>", "atomic_store<mode>")
+	("atomic_compare_and_swap<mode>", "atomic_fetch_<atomic><mode>"):
+	Reject misaligned operands.
+
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* optabs.c (expand_atomic_compare_and_swap): Allow expander to
 	fail.
 
