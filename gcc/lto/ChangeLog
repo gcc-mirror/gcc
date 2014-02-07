@@ -1,5 +1,9 @@
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto.c (unify_scc): Free CONSTRUCTOR_ELTS.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/59469
 	* lto-partition.c (symbol_class): Move to cgraph.h
 	(get_symbol_class): Move to symtab.c

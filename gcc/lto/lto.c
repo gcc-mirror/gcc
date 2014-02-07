@@ -1807,8 +1807,12 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
 	  /* Free the tree nodes from the read SCC.  */
 	  for (unsigned i = 0; i < len; ++i)
 	    {
+	      enum tree_code code;
 	      if (TYPE_P (scc->entries[i]))
 		num_merged_types++;
+	      code = TREE_CODE (scc->entries[i]);
+	      if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+		vec_free (CONSTRUCTOR_ELTS (scc->entries[i]));
 	      ggc_free (scc->entries[i]);
 	    }
 
