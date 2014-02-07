@@ -6659,12 +6659,12 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
   force_folding_builtin_constant_p
     = saved_force_folding_builtin_constant_p;
   vec_alloc (cexpr_list, 1);
-  C_EXPR_APPEND (cexpr_list, expr);
+  vec_safe_push (cexpr_list, expr);
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
       expr = c_parser_expr_no_commas (parser, NULL);
-      C_EXPR_APPEND (cexpr_list, expr);
+      vec_safe_push (cexpr_list, expr);
     }
 
   if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
