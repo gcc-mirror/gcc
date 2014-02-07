@@ -4900,6 +4900,14 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
+  if (!opt_for_fn (node->decl, optimize)
+      || !opt_for_fn (node->decl, flag_ipa_sra))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function not optimized.\n");
+      return false;
+    }
+
   if (DECL_VIRTUAL_P (current_function_decl))
     {
       if (dump_file)

@@ -1,3 +1,17 @@
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60026
+	* ipa-cp.c (determine_versionability): Fail at -O0
+	or __attribute__((optimize (0))) or -fno-ipa-cp functions.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Similarly.
+
+	Revert:
+	2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60026
+	* tree-inline.c (copy_forbidden): Fail for
+	__attribute__((optimize (0))) functions.
+
 2014-02-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c: Include pointer-set.h.
