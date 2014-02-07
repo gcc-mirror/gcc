@@ -1,5 +1,21 @@
 2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
+	* config/s390/s390-protos.h (s390_can_use_simple_return_insn)
+	(s390_can_use_return_insn): Declare.
+	* config/s390/s390.h (EPILOGUE_USES): Define.
+	* config/s390/s390.c (s390_mainpool_start): Allow two main_pool
+	instructions.
+	(s390_chunkify_start): Handle return JUMP_LABELs.
+	(s390_early_mach): Emit a main_pool instruction on the entry edge.
+	(s300_set_up_by_prologue, s390_can_use_simple_return_insn)
+	(s390_can_use_return_insn): New functions.
+	(s390_fix_long_loop_prediction): Handle conditional returns.
+	(TARGET_SET_UP_BY_PROLOGUE): Define.
+	* config/s390/s390.md (ANY_RETURN): New code iterator.
+	(*creturn, *csimple_return, return, simple_return): New patterns.
+
+2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_restore_gprs_from_fprs): Add REG_CFA_RESTORE
 	notes to each restore.  Also add REG_CFA_DEF_CFA when restoring %r15.
 	(s390_optimize_prologue): Don't clear RTX_FRAME_RELATED_P.  Update the
