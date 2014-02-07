@@ -1,3 +1,8 @@
+2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* var-tracking.c (vt_stack_adjustments): Don't require stack_adjusts
+	to match for the exit block.
+
 2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md ("atomic_load<mode>", "atomic_store<mode>")
