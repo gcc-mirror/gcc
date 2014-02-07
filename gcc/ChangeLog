@@ -1,3 +1,7 @@
+2014-02-07  Jeff Law  <law@redhat.com>
+
+	* ipa-inline.c (inline_small_functions): Fix typos.
+
 2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* config/s390/s390-protos.h (s390_can_use_simple_return_insn)
