@@ -52,6 +52,12 @@ union double_long {
   UDItype_x ll[2];   /* 64 bit parts: 0 upper, 1 lower */
 };
 
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
+
 UDItype_x __fixunstfdi (long double a1);
 
 /* convert double to unsigned int */
@@ -64,9 +70,19 @@ __fixunstfdi (long double a1)
 
     dl1.d = a1;
 
-    /* +/- 0, denormalized, negative */
-    if (!EXPD (dl1) || SIGND(dl1))
+    /* +/- 0, denormalized */
+    if (!EXPD (dl1))
       return 0;
+
+    /* Negative.  */
+    if (SIGND (dl1))
+      {
+	/* Value is <= -1.0
+	   C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	if (EXPD (dl1) >= EXPONENT_BIAS)
+	  fexceptdiv (0.0, 0.0);
+	return 0;
+      }
 
     /* The exponent - considered the binary point at the right end of
        the mantissa.  */
@@ -80,16 +96,25 @@ __fixunstfdi (long double a1)
 
     /* NaN: All exponent bits set and a nonzero fraction.  */
     if ((EXPD(dl1) == 0x7fff) && !FRACD_ZERO_P (dl1))
-      return 0x0ULL;
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0;
+      }
 
     /* One extra bit is needed for the unit bit which is appended by
        MANTD_HIGH_LL on the left of the matissa.  */
     exp += HIGH_LL_FRAC_BITS + 1;
 
-    /* If the result would still need a left shift it will be too large
-       to be represented.  */
+    /* If the result would still need a left shift it will be too
+       large to be represented.  Infinities have all exponent bits set
+       and will end up here as well.  */
     if (exp > 0)
-      return 0xFFFFFFFFFFFFFFFFULL;
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0xFFFFFFFFFFFFFFFFULL;
+      }
 
     l = MANTD_LOW_LL (dl1) >> (HIGH_LL_FRAC_BITS + 1)
         | MANTD_HIGH_LL (dl1) << (64 - (HIGH_LL_FRAC_BITS + 1));

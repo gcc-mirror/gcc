@@ -27,9 +27,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __s390x__
 
 #define EXPD(fp)	(((fp.l.upper) >> 20) & 0x7FF)
-#define EXCESSD		1022
+#define EXPONENT_BIAS	1023
+#define MANTISSA_BITS   52
+#define PRECISION       (MANTISSA_BITS + 1)
 #define SIGNBIT		0x80000000
-#define SIGND(fp)	((fp.l.upper) & SIGNBIT)
+#define SIGN(fp)	((fp.l.upper) & SIGNBIT)
 #define MANTD_LL(fp)	((fp.ll & (HIDDEND_LL-1)) | HIDDEND_LL)
 #define FRACD_LL(fp)	(fp.ll & (HIDDEND_LL-1))
 #define HIDDEND_LL	((UDItype_x)1 << 52)
@@ -48,6 +50,12 @@ union double_long {
     UDItype_x ll;
 };
 
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
+
 UDItype_x __fixunsdfdi (double a1);
 
 /* convert double to unsigned int */
@@ -60,28 +68,44 @@ __fixunsdfdi (double a1)
 
     dl1.d = a1;
 
-    /* +/- 0, denormalized, negative */
-
-    if (!EXPD (dl1) || SIGND(dl1))
+    /* +/- 0, denormalized  */
+    if (!EXPD (dl1))
       return 0;
 
-    exp = EXPD (dl1) - EXCESSD - 53;
+    /* Negative.  */
+    if (SIGN (dl1))
+      { 
+	/* Value is <= -1.0
+	   C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	if (EXPD (dl1) >= EXPONENT_BIAS)
+	  fexceptdiv (0.0, 0.0);
+	return 0;
+      }
+
+    exp = EXPD (dl1) - EXPONENT_BIAS - MANTISSA_BITS;
 
     /* number < 1 */
 
-    if (exp < -53)
+    if (exp < -PRECISION)
       return 0;
 
     /* NaN */
 
     if ((EXPD(dl1) == 0x7ff) && (FRACD_LL(dl1) != 0)) /* NaN */
-      return 0x0ULL;
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0x0ULL;
+      }
 
     /* Number big number & + inf */
 
-    if (exp >= 12) {
-      return 0xFFFFFFFFFFFFFFFFULL;
-    }
+    if (exp >= 12)
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0xFFFFFFFFFFFFFFFFULL;
+      }
 
     l = MANTD_LL(dl1);
 

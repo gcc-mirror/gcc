@@ -26,11 +26,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef __s390x__
 
-#define EXP(fp)         (((fp.l) >> 23) & 0xFF)
-#define EXCESS          126
+#define EXPONENT_BIAS   127
+#define MANTISSA_BITS   23
+#define EXP(fp)         (((fp.l) >> MANTISSA_BITS) & 0xFF)
 #define SIGNBIT         0x80000000
 #define SIGN(fp)        ((fp.l) & SIGNBIT)
-#define HIDDEN          (1 << 23)
+#define HIDDEN          (1 << MANTISSA_BITS)
 #define MANT(fp)        (((fp.l) & 0x7FFFFF) | HIDDEN)
 #define FRAC(fp)        ((fp.l) & 0x7FFFFF)
 
@@ -45,6 +46,12 @@ union float_long
     USItype_x l;
   };
 
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
+
 UDItype_x __fixunssfdi (float a1);
 
 /* convert float to unsigned int */
@@ -57,30 +64,45 @@ __fixunssfdi (float a1)
 
     fl1.f = a1;
 
-    /* +/- 0, denormalized, negative */
-
-    if (!EXP (fl1) || SIGN(fl1))
+    /* +/- 0, denormalized  */
+    if (!EXP (fl1))
       return 0;
 
-    exp = EXP (fl1) - EXCESS - 24;
+    /* Negative.  */
+    if (SIGN (fl1))
+      { 
+	/* Value is <= -1.0
+	   C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	if (EXP (fl1) >= EXPONENT_BIAS)
+	  fexceptdiv (0.0, 0.0);
+	return 0;
+      }
+
+    exp = EXP (fl1) - EXPONENT_BIAS - MANTISSA_BITS;
 
     /* number < 1 */
-
     if (exp < -24)
       return 0;
 
     /* NaN */
 
-    if ((EXP(fl1) == 0xff) && (FRAC(fl1) != 0)) /* NaN */
-      return 0x0ULL;
+    if ((EXP (fl1) == 0xff) && (FRAC (fl1) != 0)) /* NaN */
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);	
+	return 0x0ULL;
+      }
 
     /* Number big number & + inf */
 
-    if (exp >= 41) {
-      return 0xFFFFFFFFFFFFFFFFULL;
-    }
+    if (exp >= 41)
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0xFFFFFFFFFFFFFFFFULL;
+      }
 
-    l = MANT(fl1);
+    l = MANT (fl1);
 
     if (exp > 0)
       l <<= exp;

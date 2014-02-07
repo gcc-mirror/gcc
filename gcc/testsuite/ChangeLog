@@ -1,3 +1,7 @@
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/fp2int1.c: New testcase.
+
 2014-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092

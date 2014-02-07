@@ -27,12 +27,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __s390x__
 
 #define EXPD(fp)	(((fp.l.upper) >> 20) & 0x7FF)
-#define EXCESSD		1022
+#define EXPONENT_BIAS	1023
+#define MANTISSA_BITS   52
+#define PRECISION       (MANTISSA_BITS + 1)
 #define SIGNBIT		0x80000000
-#define SIGND(fp)	((fp.l.upper) & SIGNBIT)
+#define SIGN(fp)	((fp.l.upper) & SIGNBIT)
 #define MANTD_LL(fp)	((fp.ll & (HIDDEND_LL-1)) | HIDDEND_LL)
 #define FRACD_LL(fp)	(fp.ll & (HIDDEND_LL-1))
-#define HIDDEND_LL	((UDItype_x)1 << 52)
+#define HIDDEND_LL	((UDItype_x)1 << MANTISSA_BITS)
+#define LLONG_MAX       9223372036854775807LL
+#define LLONG_MIN       (-LLONG_MAX - 1LL)
 
 typedef int DItype_x __attribute__ ((mode (DI)));
 typedef unsigned int UDItype_x __attribute__ ((mode (DI)));
@@ -48,6 +52,12 @@ union double_long {
     UDItype_x ll;
 };
 
+static __inline__ void
+fexceptdiv (float d, float e)
+{
+  __asm__ __volatile__ ("debr %0,%1" : : "f" (d), "f" (e) );
+}
+
 DItype_x __fixdfdi (double a1);
 
 /* convert double to int */
@@ -61,29 +71,33 @@ __fixdfdi (double a1)
     dl1.d = a1;
 
     /* +/- 0, denormalized */
-
     if (!EXPD (dl1))
       return 0;
 
-    exp = EXPD (dl1) - EXCESSD - 53;
+    /* The exponent - considered the binary point at the right end of
+       the mantissa.  */
+    exp = EXPD (dl1) - EXPONENT_BIAS - MANTISSA_BITS;
 
     /* number < 1 */
-
-    if (exp < -53)
+    if (exp <= -PRECISION)
       return 0;
 
     /* NaN */
 
     if ((EXPD(dl1) == 0x7ff) && (FRACD_LL(dl1) != 0)) /* NaN */
-      return 0x8000000000000000ULL;
+      {
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+	return 0x8000000000000000ULL;
+      }
 
     /* Number big number & +/- inf */
-
     if (exp >= 11) {
-	l = (long long)1<<63;
-	if (!SIGND(dl1))
-	    l--;
-	return l;
+      /* Don't throw an exception for -1p+63  */
+      if (!SIGN (dl1) || exp > 11 || FRACD_LL (dl1) != 0)
+	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
+	fexceptdiv (0.0, 0.0);
+      return SIGN (dl1) ? LLONG_MIN : LLONG_MAX;
     }
 
     l = MANTD_LL(dl1);
@@ -94,6 +108,6 @@ __fixdfdi (double a1)
     else
       l >>= -exp;
 
-    return (SIGND (dl1) ? -l : l);
+    return (SIGN (dl1) ? -l : l);
 }
 #endif /* !__s390x__ */
