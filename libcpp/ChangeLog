@@ -1,3 +1,15 @@
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/56824
+	* line-map.c (get_combined_adhoc_loc, linemap_get_expansion_line,
+	linemap_get_expansion_filename, linemap_location_in_system_header_p,
+	linemap_location_from_macro_expansion_p,
+	linemap_macro_loc_to_spelling_point, linemap_macro_loc_to_def_point,
+	linemap_macro_loc_to_exp_point, linemap_expand_location): Fix
+	formatting.
+	(linemap_compare_locations): Look through adhoc locations for both
+	l0 and l1.
+
 2014-01-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR PR preprocessor/58580

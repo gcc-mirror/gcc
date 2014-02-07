@@ -1,3 +1,8 @@
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/56824
+	* gcc.dg/pr56824.c: New test.
+
 2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/gcc-have-sync-compare-and-swap.c: Align the 16 byte
