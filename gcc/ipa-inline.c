@@ -1749,9 +1749,9 @@ inline_small_functions (void)
 	  continue;
 	}
 
-      /* Heuristics for inlining small functions works poorly for
-	 recursive calls where we do efect similar to loop unrolling.
-	 When inliing such edge seems profitable, leave decision on
+      /* Heuristics for inlining small functions work poorly for
+	 recursive calls where we do effects similar to loop unrolling.
+	 When inlining such edge seems profitable, leave decision on
 	 specific inliner.  */
       if (cgraph_edge_recursive_p (edge))
 	{
@@ -1779,10 +1779,11 @@ inline_small_functions (void)
 	  struct cgraph_node *outer_node = NULL;
 	  int depth = 0;
 
-	  /* Consider the case where self recursive function A is inlined into B.
-	     This is desired optimization in some cases, since it leads to effect
-	     similar of loop peeling and we might completely optimize out the
-	     recursive call.  However we must be extra selective.  */
+	  /* Consider the case where self recursive function A is inlined
+	     into B.  This is desired optimization in some cases, since it
+	     leads to effect similar of loop peeling and we might completely
+	     optimize out the recursive call.  However we must be extra
+	     selective.  */
 
 	  where = edge->caller;
 	  while (where->global.inlined_to)
