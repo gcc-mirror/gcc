@@ -8610,11 +8610,11 @@ s390_restore_gprs_from_fprs (void)
 	    emit_move_insn (gen_rtx_REG (DImode, i),
 			    gen_rtx_REG (DImode, cfun_gpr_save_slot (i)));
 	  df_set_regs_ever_live (i, true);
-	  /* The frame related flag is only required on the save
-	     operations.  We nevertheless set it also for the restore
-	     in order to recognize these instructions in
-	     s390_optimize_prologue.  The flag will then be
-	     deleted.  */
+	  add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (DImode, i));
+	  if (i == STACK_POINTER_REGNUM)
+	    add_reg_note (insn, REG_CFA_DEF_CFA,
+			  plus_constant (Pmode, stack_pointer_rtx,
+					 STACK_POINTER_OFFSET));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -10854,12 +10854,6 @@ s390_optimize_prologue (void)
 	      || call_really_used_regs[gpr_regno])
 	    continue;
 
-	  /* For restores we have to revert the frame related flag
-	     since no debug info is supposed to be generated for
-	     these.  */
-	  if (dest_regno == gpr_regno)
-	    RTX_FRAME_RELATED_P (insn) = 0;
-
 	  /* It must not happen that what we once saved in an FPR now
 	     needs a stack slot.  */
 	  gcc_assert (cfun_gpr_save_slot (gpr_regno) != -1);
@@ -10942,8 +10936,6 @@ s390_optimize_prologue (void)
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
 
-	  RTX_FRAME_RELATED_P (insn) = 0;
-
 	  if (cfun_frame_layout.first_restore_gpr != -1
 	      && (cfun_frame_layout.first_restore_gpr < first
 		  || cfun_frame_layout.last_restore_gpr > last))
@@ -10961,8 +10953,19 @@ s390_optimize_prologue (void)
 					      - first) * UNITS_PER_LONG,
 				       cfun_frame_layout.first_restore_gpr,
 				       cfun_frame_layout.last_restore_gpr);
-	      RTX_FRAME_RELATED_P (new_insn) = 0;
+
+	      /* Remove REG_CFA_RESTOREs for registers that we no
+		 longer need to save.  */
+	      REG_NOTES (new_insn) = REG_NOTES (insn);
+	      for (rtx *ptr = &REG_NOTES (new_insn); *ptr; )
+		if (REG_NOTE_KIND (*ptr) == REG_CFA_RESTORE
+		    && ((int) REGNO (XEXP (*ptr, 0))
+			< cfun_frame_layout.first_restore_gpr))
+		  *ptr = XEXP (*ptr, 1);
+		else
+		  ptr = &XEXP (*ptr, 1);
 	      new_insn = emit_insn_before (new_insn, insn);
+	      RTX_FRAME_RELATED_P (new_insn) = 1;
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
 
@@ -10983,8 +10986,6 @@ s390_optimize_prologue (void)
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
-
-	  RTX_FRAME_RELATED_P (insn) = 0;
 
 	  if (REGNO (base) != STACK_POINTER_REGNUM
 	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
