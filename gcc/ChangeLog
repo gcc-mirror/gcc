@@ -1,5 +1,12 @@
 2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_restore_gprs_from_fprs): Add REG_CFA_RESTORE
+	notes to each restore.  Also add REG_CFA_DEF_CFA when restoring %r15.
+	(s390_optimize_prologue): Don't clear RTX_FRAME_RELATED_P.  Update the
+	REG_CFA_RESTORE list when deciding not to restore a register.
+
+2014-02-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
 	* config/s390/s390.c: Include tree-pass.h and context.h.
 	(s390_early_mach): New function, split out from...
 	(s390_emit_prologue): ...here.
