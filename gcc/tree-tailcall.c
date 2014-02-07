@@ -909,6 +909,7 @@ optimize_tail_call (struct tailcall *t, bool opt_tailcalls)
       gimple stmt = gsi_stmt (t->call_gsi);
 
       gimple_call_set_tail (stmt, true);
+      cfun->tail_call_marked = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
 	  fprintf (dump_file, "Found tail call ");

@@ -16828,6 +16828,9 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
   rtx op0 = operands[0], op1 = operands[1];
   unsigned int align = GET_MODE_ALIGNMENT (mode);
 
+  if (push_operand (op0, VOIDmode))
+    op0 = emit_move_resolve_push (mode, op0);
+
   /* Force constants other than zero into memory.  We do not know how
      the instructions used to build constants modify the upper 64 bits
      of the register, once we have that information we may be able
@@ -17253,30 +17256,6 @@ ix86_expand_vector_move_misalign (enum machine_mode mode, rtx operands[])
     }
   else
     gcc_unreachable ();
-}
-
-/* Expand a push in MODE.  This is some mode for which we do not support
-   proper push instructions, at least from the registers that we expect
-   the value to live in.  */
-
-void
-ix86_expand_push (enum machine_mode mode, rtx x)
-{
-  rtx tmp;
-
-  tmp = expand_simple_binop (Pmode, PLUS, stack_pointer_rtx,
-			     GEN_INT (-GET_MODE_SIZE (mode)),
-			     stack_pointer_rtx, 1, OPTAB_DIRECT);
-  if (tmp != stack_pointer_rtx)
-    emit_move_insn (stack_pointer_rtx, tmp);
-
-  tmp = gen_rtx_MEM (mode, stack_pointer_rtx);
-
-  /* When we push an operand onto stack, it has to be aligned at least
-     at the function argument boundary.  However since we don't have
-     the argument type, we can't determine the actual argument
-     boundary.  */
-  emit_move_insn (tmp, x);
 }
 
 /* Helper function of ix86_fixup_binary_operands to canonicalize

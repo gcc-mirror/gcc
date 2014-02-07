@@ -413,6 +413,7 @@ extern rtx emit_move_insn_1 (rtx, rtx);
 
 extern rtx emit_move_complex_push (enum machine_mode, rtx, rtx);
 extern rtx emit_move_complex_parts (rtx, rtx);
+extern rtx emit_move_resolve_push (enum machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.  */
