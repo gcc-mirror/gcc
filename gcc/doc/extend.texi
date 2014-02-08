@@ -2154,8 +2154,8 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{aligned}, @code{alloc_size}, @code{noreturn},
-@code{returns_twice}, @code{noinline}, @code{noclone},
+@code{aligned}, @code{alloc_size}, @code{alloc_align}, @code{assume_aligned},
+@code{noreturn}, @code{returns_twice}, @code{noinline}, @code{noclone},
 @code{always_inline}, @code{flatten}, @code{pure}, @code{const},
 @code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{no_split_stack},
@@ -2248,6 +2248,46 @@ void* my_realloc(void*, size_t) __attribute__((alloc_size(2)))
 declares that @code{my_calloc} returns memory of the size given by
 the product of parameter 1 and 2 and that @code{my_realloc} returns memory
 of the size given by parameter 2.
+
+@item alloc_align
+@cindex @code{alloc_align} attribute
+The @code{alloc_align} attribute is used to tell the compiler that the
+function return value points to memory, where the returned pointer minimum
+alignment is given by one of the functions parameters.  GCC uses this
+information to improve pointer alignment analysis.
+
+The function parameter denoting the allocated alignment is specified by
+one integer argument, whose number is the argument of the attribute.
+Argument numbering starts at one.
+
+For instance,
+
+@smallexample
+void* my_memalign(size_t, size_t) __attribute__((alloc_align(1)))
+@end smallexample
+
+@noindent
+declares that @code{my_memalign} returns memory with minimum alignment
+given by parameter 1.
+
+@item assume_aligned
+@cindex @code{assume_aligned} attribute
+The @code{assume_aligned} attribute is used to tell the compiler that the
+function return value points to memory, where the returned pointer minimum
+alignment is given by the first argument.
+If the attribute has two arguments, the second argument is misalignment offset.
+
+For instance
+
+@smallexample
+void* my_alloc1(size_t) __attribute__((assume_aligned(16)))
+void* my_alloc2(size_t) __attribute__((assume_aligned(32, 8)))
+@end smallexample
+
+@noindent
+declares that @code{my_alloc1} returns 16-byte aligned pointer and
+that @code{my_alloc2} returns a pointer whose value modulo 32 is equal
+to 8.
 
 @item always_inline
 @cindex @code{always_inline} function attribute

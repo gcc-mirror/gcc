@@ -738,13 +738,18 @@ surely_varying_stmt_p (gimple stmt)
     return true;
 
   /* If it is a call and does not return a value or is not a
-     builtin and not an indirect call, it is varying.  */
+     builtin and not an indirect call or a call to function with
+     assume_aligned/alloc_align attribute, it is varying.  */
   if (is_gimple_call (stmt))
     {
-      tree fndecl;
+      tree fndecl, fntype = gimple_call_fntype (stmt);
       if (!gimple_call_lhs (stmt)
 	  || ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
-	      && !DECL_BUILT_IN (fndecl)))
+	      && !DECL_BUILT_IN (fndecl)
+	      && !lookup_attribute ("assume_aligned",
+				    TYPE_ATTRIBUTES (fntype))
+	      && !lookup_attribute ("alloc_align",
+				    TYPE_ATTRIBUTES (fntype))))
 	return true;
     }
 
@@ -1476,40 +1481,86 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
   return val;
 }
 
-/* Return the propagation value when applying __builtin_assume_aligned to
-   its arguments.  */
+/* Return the propagation value for __builtin_assume_aligned
+   and functions with assume_aligned or alloc_aligned attribute.
+   For __builtin_assume_aligned, ATTR is NULL_TREE,
+   for assume_aligned attribute ATTR is non-NULL and ALLOC_ALIGNED
+   is false, for alloc_aligned attribute ATTR is non-NULL and
+   ALLOC_ALIGNED is true.  */
 
 static prop_value_t
-bit_value_assume_aligned (gimple stmt)
+bit_value_assume_aligned (gimple stmt, tree attr, prop_value_t ptrval,
+			  bool alloc_aligned)
 {
-  tree ptr = gimple_call_arg (stmt, 0), align, misalign = NULL_TREE;
-  tree type = TREE_TYPE (ptr);
+  tree align, misalign = NULL_TREE, type;
   unsigned HOST_WIDE_INT aligni, misaligni = 0;
-  prop_value_t ptrval = get_value_for_expr (ptr, true);
   prop_value_t alignval;
   double_int value, mask;
   prop_value_t val;
+
+  if (attr == NULL_TREE)
+    {
+      tree ptr = gimple_call_arg (stmt, 0);
+      type = TREE_TYPE (ptr);
+      ptrval = get_value_for_expr (ptr, true);
+    }
+  else
+    {
+      tree lhs = gimple_call_lhs (stmt);
+      type = TREE_TYPE (lhs);
+    }
+
   if (ptrval.lattice_val == UNDEFINED)
     return ptrval;
   gcc_assert ((ptrval.lattice_val == CONSTANT
 	       && TREE_CODE (ptrval.value) == INTEGER_CST)
 	      || ptrval.mask.is_minus_one ());
-  align = gimple_call_arg (stmt, 1);
-  if (!tree_fits_uhwi_p (align))
-    return ptrval;
-  aligni = tree_to_uhwi (align);
-  if (aligni <= 1
-      || (aligni & (aligni - 1)) != 0)
-    return ptrval;
-  if (gimple_call_num_args (stmt) > 2)
+  if (attr == NULL_TREE)
     {
-      misalign = gimple_call_arg (stmt, 2);
-      if (!tree_fits_uhwi_p (misalign))
+      /* Get aligni and misaligni from __builtin_assume_aligned.  */
+      align = gimple_call_arg (stmt, 1);
+      if (!tree_fits_uhwi_p (align))
 	return ptrval;
-      misaligni = tree_to_uhwi (misalign);
-      if (misaligni >= aligni)
-	return ptrval;
+      aligni = tree_to_uhwi (align);
+      if (gimple_call_num_args (stmt) > 2)
+	{
+	  misalign = gimple_call_arg (stmt, 2);
+	  if (!tree_fits_uhwi_p (misalign))
+	    return ptrval;
+	  misaligni = tree_to_uhwi (misalign);
+	}
     }
+  else
+    {
+      /* Get aligni and misaligni from assume_aligned or
+	 alloc_align attributes.  */
+      if (TREE_VALUE (attr) == NULL_TREE)
+	return ptrval;
+      attr = TREE_VALUE (attr);
+      align = TREE_VALUE (attr);
+      if (!tree_fits_uhwi_p (align))
+	return ptrval;
+      aligni = tree_to_uhwi (align);
+      if (alloc_aligned)
+	{
+	  if (aligni == 0 || aligni > gimple_call_num_args (stmt))
+	    return ptrval;
+	  align = gimple_call_arg (stmt, aligni - 1);
+	  if (!tree_fits_uhwi_p (align))
+	    return ptrval;
+	  aligni = tree_to_uhwi (align);
+	}
+      else if (TREE_CHAIN (attr) && TREE_VALUE (TREE_CHAIN (attr)))
+	{
+	  misalign = TREE_VALUE (TREE_CHAIN (attr));
+	  if (!tree_fits_uhwi_p (misalign))
+	    return ptrval;
+	  misaligni = tree_to_uhwi (misalign);
+	}
+    }
+  if (aligni <= 1 || (aligni & (aligni - 1)) != 0 || misaligni >= aligni)
+    return ptrval;
+
   align = build_int_cst_type (type, -aligni);
   alignval = get_value_for_expr (align, true);
   bit_value_binop_1 (BIT_AND_EXPR, type, &value, &mask,
@@ -1708,10 +1759,25 @@ evaluate_stmt (gimple stmt)
 	      break;
 
 	    case BUILT_IN_ASSUME_ALIGNED:
-	      val = bit_value_assume_aligned (stmt);
+	      val = bit_value_assume_aligned (stmt, NULL_TREE, val, false);
 	      break;
 
 	    default:;
+	    }
+	}
+      if (is_gimple_call (stmt) && gimple_call_lhs (stmt))
+	{
+	  tree fntype = gimple_call_fntype (stmt);
+	  if (fntype)
+	    {
+	      tree attrs = lookup_attribute ("assume_aligned",
+					     TYPE_ATTRIBUTES (fntype));
+	      if (attrs)
+		val = bit_value_assume_aligned (stmt, attrs, val, false);
+	      attrs = lookup_attribute ("alloc_align",
+					TYPE_ATTRIBUTES (fntype));
+	      if (attrs)
+		val = bit_value_assume_aligned (stmt, attrs, val, true);
 	    }
 	}
       is_constant = (val.lattice_val == CONSTANT);

@@ -366,6 +366,8 @@ static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_alloc_align_attribute (tree *, tree, tree, int, bool *);
+static tree handle_assume_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
@@ -766,6 +768,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
+  { "alloc_align",	      1, 1, false, true, true,
+			      handle_alloc_align_attribute, false },
+  { "assume_aligned",	      1, 2, false, true, true,
+			      handle_assume_aligned_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -8043,13 +8049,61 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	  && TREE_CODE (position) != FUNCTION_DECL)
 	position = default_conversion (position);
 
-      if (TREE_CODE (position) != INTEGER_CST
-	  || TREE_INT_CST_HIGH (position)
-	  || TREE_INT_CST_LOW (position) < 1
-	  || TREE_INT_CST_LOW (position) > arg_count )
+      if (!tree_fits_uhwi_p (position)
+	  || !arg_count
+	  || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
 	{
 	  warning (OPT_Wattributes,
 	           "alloc_size parameter outside range");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "alloc_align" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_alloc_align_attribute (tree *node, tree, tree args, int,
+			      bool *no_add_attrs)
+{
+  unsigned arg_count = type_num_arguments (*node);
+  tree position = TREE_VALUE (args);
+  if (position && TREE_CODE (position) != IDENTIFIER_NODE)
+    position = default_conversion (position);
+
+  if (!tree_fits_uhwi_p (position)
+      || !arg_count
+      || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
+    {
+      warning (OPT_Wattributes,
+	       "alloc_align parameter outside range");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "assume_aligned" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_assume_aligned_attribute (tree *, tree, tree args, int,
+				 bool *no_add_attrs)
+{
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree position = TREE_VALUE (args);
+      if (position && TREE_CODE (position) != IDENTIFIER_NODE
+	  && TREE_CODE (position) != FUNCTION_DECL)
+	position = default_conversion (position);
+
+      if (TREE_CODE (position) != INTEGER_CST)
+	{
+	  warning (OPT_Wattributes,
+		   "assume_aligned parameter not integer constant");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
