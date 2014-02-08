@@ -1,3 +1,17 @@
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60092
+	* tree-ssa-ccp.c (surely_varying_stmt_p): Don't return true
+	if TYPE_ATTRIBUTES (gimple_call_fntype ()) contain
+	assume_aligned or alloc_align attributes.
+	(bit_value_assume_aligned): Add ATTR, PTRVAL and ALLOC_ALIGN
+	arguments.  Handle also assume_aligned and alloc_align attributes.
+	(evaluate_stmt): Adjust bit_value_assume_aligned caller.
+	Handle calls to functions with assume_aligned or alloc_align
+	attributes.
+	* doc/extend.texi: Document assume_aligned and alloc_align
+	attributes.
+
 2014-02-08  Terry Guo  <terry.guo@arm.com>
 
 	* doc/invoke.texi: Document ARM -march=armv7e-m.
