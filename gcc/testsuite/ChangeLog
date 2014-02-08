@@ -1,3 +1,9 @@
+2014-02-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60066
+	* gfortran.dg/elemental_subroutine_10.f90 : New test. This PR
+	was fixed by the patch for PR59906.
+
 2014-02-08  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR translation/52289
