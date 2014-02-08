@@ -112,7 +112,7 @@ contains
     type(t),allocatable :: x[:]
     type(t) :: y
     x = y
-    x[1] = y ! { dg-error "must not be have an allocatable ultimate component" }
+    x[1] = y ! { dg-error "must not have an allocatable ultimate component" }
   end subroutine assign2
 end module mmm3
 
