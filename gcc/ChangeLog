@@ -1,5 +1,9 @@
 2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For clobbers
+	not at the end of datarefs vector use ordered_remove to avoid
+	reordering datarefs vector.
+
 	PR c/59984
 	* gimplify.c (gimplify_bind_expr): In ORT_SIMD region
 	mark local addressable non-static vars as GOVD_PRIVATE

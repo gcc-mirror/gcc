@@ -3303,7 +3303,8 @@ again:
 	      datarefs.pop ();
 	      break;
 	    }
-	  datarefs[i] = dr = datarefs.pop ();
+	  datarefs.ordered_remove (i);
+	  dr = datarefs[i];
 	  goto again;
 	}
 
