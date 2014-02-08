@@ -1,3 +1,12 @@
+2014-02-08  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin <mikael.morin@gcc.gnu.org>
+
+	PR fortran/58470
+	* class.c (generate_finalization_wrapper): Assert that proc_tree has
+	been set in gfc_resolve_finalizers.
+	* resolve.c (resolve_fl_derived0): Remove unnecessary call to
+	gfc_is_finalizable.
+
 2014-02-07  Benno Schulenberg  <bensberg@justemail.net>
 
 	PR translation/52289
