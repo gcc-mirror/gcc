@@ -1,5 +1,8 @@
 2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/59984
+	* gcc.dg/vect/pr59984.c: New test.
+
 	PR middle-end/60092
 	* gcc.dg/attr-alloc_align-1.c: New test.
 	* gcc.dg/attr-alloc_align-2.c: New test.

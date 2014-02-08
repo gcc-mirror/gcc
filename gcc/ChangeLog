@@ -1,5 +1,13 @@
 2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/59984
+	* gimplify.c (gimplify_bind_expr): In ORT_SIMD region
+	mark local addressable non-static vars as GOVD_PRIVATE
+	instead of GOVD_LOCAL.
+	* omp-low.c (lower_omp_for): Move gimple_bind_vars
+	and BLOCK_VARS of gimple_bind_block to new_stmt rather
+	than copying them.
+
 	PR middle-end/60092
 	* tree-ssa-ccp.c (surely_varying_stmt_p): Don't return true
 	if TYPE_ATTRIBUTES (gimple_call_fntype ()) contain
