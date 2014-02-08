@@ -12455,10 +12455,6 @@ resolve_fl_derived0 (gfc_symbol *sym)
   /* Add derived type to the derived type list.  */
   add_dt_to_dt_list (sym);
 
-  /* Check if the type is finalizable. This is done in order to ensure that the
-     finalization wrapper is generated early enough.  */
-  gfc_is_finalizable (sym, NULL);
-
   return true;
 }
 
