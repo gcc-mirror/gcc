@@ -1,5 +1,14 @@
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/57522
+	* resolve.c (resolve_assoc_var): Set the subref_array_pointer
+	attribute for the 'associate-name' if necessary.
+	* trans-stmt.c (trans_associate_var): If the 'associate-name'
+	is a subref_array_pointer, assign the element size of the
+	associate variable to 'span'.
+
+2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/59026
 	* trans-expr.c (gfc_conv_procedure_call): Pass the value of the
 	actual argument to a formal argument with the value attribute

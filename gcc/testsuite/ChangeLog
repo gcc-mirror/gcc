@@ -1,5 +1,10 @@
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/57522
+	* gfortran.dg/associated_target_5.f03 : New test
+
+2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/59026
 	* gfortran.dg/elemental_by_value_1.f90 : New test
 
