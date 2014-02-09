@@ -7820,6 +7820,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
       sym->attr.target = tsym->attr.target
 			 || gfc_expr_attr (target).pointer;
+      if (is_subref_array (target))
+	sym->attr.subref_array_pointer = 1;
     }
 
   /* Get type if this was not already set.  Note that it can be
