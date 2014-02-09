@@ -5069,7 +5069,14 @@ match_ppc_decl (void)
       if (gfc_add_proc (&c->attr, name, NULL) == FAILURE)
 	return MATCH_ERROR;
 
-      c->tb = tb;
+      if (num == 1)
+	c->tb = tb;
+      else
+	{
+	  c->tb = XCNEW (gfc_typebound_proc);
+	  c->tb->where = gfc_current_locus;
+	  *c->tb = *tb;
+	}
 
       /* Set interface.  */
       if (proc_if != NULL)
