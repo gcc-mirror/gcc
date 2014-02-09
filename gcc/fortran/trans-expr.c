@@ -4047,7 +4047,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_init_se (&parmse, se);
 	  parm_kind = ELEMENTAL;
 
-	  gfc_conv_expr_reference (&parmse, e);
+	  if (fsym && fsym->attr.value)
+	    gfc_conv_expr (&parmse, e);
+	  else
+	    gfc_conv_expr_reference (&parmse, e);
+
 	  if (e->ts.type == BT_CHARACTER && !e->rank
 	      && e->expr_type == EXPR_FUNCTION)
 	    parmse.expr = build_fold_indirect_ref_loc (input_location,

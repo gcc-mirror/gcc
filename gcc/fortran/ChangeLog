@@ -1,3 +1,10 @@
+2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59026
+	* trans-expr.c (gfc_conv_procedure_call): Pass the value of the
+	actual argument to a formal argument with the value attribute
+	in an elemental procedure.
+
 2014-02-08  Janus Weil  <janus@gcc.gnu.org>
 	    Mikael Morin <mikael.morin@gcc.gnu.org>
 
