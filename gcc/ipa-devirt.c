@@ -1102,23 +1102,19 @@ get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *context,
   tree base;
 
   if (TREE_CODE (cst) != ADDR_EXPR)
-    return NULL_TREE;
+    return false;
 
   cst = TREE_OPERAND (cst, 0);
   base = get_ref_base_and_extent (cst, &offset2, &size, &max_size);
-  if (!DECL_P (base)
-      || max_size == -1
-      || max_size != size)
-    return NULL_TREE;
+  if (!DECL_P (base) || max_size == -1 || max_size != size)
+    return false;
 
   /* Only type inconsistent programs can have otr_type that is
      not part of outer type.  */
-  if (!contains_type_p (TREE_TYPE (base),
-			offset, otr_type))
-    return NULL_TREE;
+  if (!contains_type_p (TREE_TYPE (base), offset, otr_type))
+    return false;
 
-  get_polymorphic_call_info_for_decl (context,
-				     base, offset);
+  get_polymorphic_call_info_for_decl (context, base, offset);
   return true;
 }
 
@@ -1383,12 +1379,12 @@ possible_polymorphic_call_targets (tree otr_type,
   tree binfo, target;
   bool final;
 
-  if (!odr_hash.is_created ())                                                                                                                    
-    {                                                                                                                                             
-      if (completep)                                                                                                                              
-	*completep = false;                                                                                                                        
-      return nodes;                                                                                                                               
-    }                                                                                                                                             
+  if (!odr_hash.is_created ())
+    {
+      if (completep)
+	*completep = false;
+      return nodes;
+    }
 
   type = get_odr_type (otr_type, true);
 
@@ -1396,7 +1392,7 @@ possible_polymorphic_call_targets (tree otr_type,
   if (context.outer_type)
     get_class_context (&context, otr_type);
 
-  /* We now canonicalize our query, so we do not need extra hashtable entries.  */
+  /* We canonicalize our query, so we do not need extra hashtable entries.  */
 
   /* Without outer type, we have no use for offset.  Just do the
      basic search from innter type  */
@@ -1457,7 +1453,6 @@ possible_polymorphic_call_targets (tree otr_type,
   matched_vtables = pointer_set_create ();
 
   /* First see virtual method of type itself.  */
-
   binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
 			       context.offset, otr_type);
   target = gimple_get_virt_method_for_binfo (otr_token, binfo);
@@ -1474,6 +1469,7 @@ possible_polymorphic_call_targets (tree otr_type,
      is that it has been fully optimized out.  */
   else if (flag_ltrans || !type->anonymous_namespace)
     final = false;
+
   pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
 
   /* Next walk bases, if asked to.  */
@@ -1492,10 +1488,12 @@ possible_polymorphic_call_targets (tree otr_type,
       for (i = 0; i < outer_type->derived_types.length(); i++)
 	possible_polymorphic_call_targets_1 (nodes, inserted,
 					     matched_vtables,
-					     otr_type, outer_type->derived_types[i],
+					     otr_type,
+					     outer_type->derived_types[i],
 					     otr_token, outer_type->type,
 					     context.offset);
     }
+
   (*slot)->targets = nodes;
   (*slot)->final = final;
   if (completep)
