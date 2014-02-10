@@ -1,3 +1,16 @@
+2014-02-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/sysv4.h (ENDIAN_SELECT): Do not attempt to enforce
+	big-endian mode for -mcall-aixdesc, -mcall-freebsd, -mcall-netbsd,
+	-mcall-openbsd, or -mcall-linux.
+	(CC1_ENDIAN_BIG_SPEC): Remove.
+	(CC1_ENDIAN_LITTLE_SPEC): Remove.
+	(CC1_ENDIAN_DEFAULT_SPEC): Remove.
+	(CC1_SPEC): Remove (always empty) %cc1_endian_... spec.
+	(SUBTARGET_EXTRA_SPECS): Remove %cc1_endian_big, %cc1_endian_little,
+	and %cc1_endian_default.
+	* config/rs6000/sysv4le.h (CC1_ENDIAN_DEFAULT_SPEC): Remove.
+
 2014-02-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60115
