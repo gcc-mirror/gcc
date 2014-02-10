@@ -741,16 +741,31 @@ mn10300_gen_multiple_store (unsigned int mask)
   F (emit_insn (x));
 }
 
+static inline unsigned int
+popcount (unsigned int mask)
+{
+  unsigned int count = 0;
+  
+  while (mask)
+    {
+      ++ count;
+      mask &= ~ (mask & - mask);
+    }
+  return count;
+}
+
 void
 mn10300_expand_prologue (void)
 {
   HOST_WIDE_INT size = mn10300_frame_size ();
+  unsigned int mask;
+
+  mask = mn10300_get_live_callee_saved_regs (NULL);
+  /* If we use any of the callee-saved registers, save them now.  */
+  mn10300_gen_multiple_store (mask);
 
   if (flag_stack_usage_info)
-    current_function_static_stack_size = size;
-
-  /* If we use any of the callee-saved registers, save them now.  */
-  mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs (NULL));
+    current_function_static_stack_size = size + popcount (mask) * 4;
 
   if (TARGET_AM33_2 && fp_regs_to_save ())
     {
@@ -766,6 +781,9 @@ mn10300_expand_prologue (void)
       } strategy;
       unsigned int strategy_size = (unsigned)-1, this_strategy_size;
       rtx reg;
+
+      if (flag_stack_usage_info)
+	current_function_static_stack_size += num_regs_to_save * 4;
 
       /* We have several different strategies to save FP registers.
 	 We can store them using SP offsets, which is beneficial if
