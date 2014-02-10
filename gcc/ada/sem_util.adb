@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
@@ -115,10 +116,10 @@ package body Sem_Util is
 
    function Has_Enabled_Property
      (State_Id : Node_Id;
-      Prop_Nam : Name_Id) return Boolean;
+      Property : Name_Id) return Boolean;
    --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
    --  Determine whether an abstract state denoted by its entity State_Id has
-   --  enabled property Prop_Name.
+   --  enabled property Property.
 
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
@@ -667,6 +668,22 @@ package body Sem_Util is
          end if;
       end if;
    end Bad_Predicated_Subtype_Use;
+
+   ----------------------------------------
+   -- Bad_Unordered_Enumeration_Reference --
+   ----------------------------------------
+
+   function Bad_Unordered_Enumeration_Reference
+     (N : Node_Id;
+      T : Entity_Id) return Boolean
+   is
+   begin
+      return Is_Enumeration_Type (T)
+        and then Comes_From_Source (N)
+        and then Warn_On_Unordered_Enumeration_Type
+        and then not Has_Pragma_Ordered (T)
+        and then not In_Same_Extended_Unit (N, T);
+   end Bad_Unordered_Enumeration_Reference;
 
    --------------------------
    -- Build_Actual_Subtype --
@@ -2698,6 +2715,31 @@ package body Sem_Util is
          Check_Expression (Expr);
       end if;
    end Check_Result_And_Post_State;
+
+   ---------------------------------
+   -- Check_SPARK_Mode_In_Generic --
+   ---------------------------------
+
+   procedure Check_SPARK_Mode_In_Generic (N : Node_Id) is
+      Aspect : Node_Id;
+
+   begin
+      --  Try to find aspect SPARK_Mode and flag it as illegal
+
+      if Has_Aspects (N) then
+         Aspect := First (Aspect_Specifications (N));
+         while Present (Aspect) loop
+            if Get_Aspect_Id (Aspect) = Aspect_SPARK_Mode then
+               Error_Msg_Name_1 := Name_SPARK_Mode;
+               Error_Msg_N
+                 ("incorrect placement of aspect % on a generic", Aspect);
+               exit;
+            end if;
+
+            Next (Aspect);
+         end loop;
+      end if;
+   end Check_SPARK_Mode_In_Generic;
 
    ------------------------------
    -- Check_Unprotected_Access --
@@ -7255,13 +7297,14 @@ package body Sem_Util is
 
    function Has_Enabled_Property
      (State_Id : Node_Id;
-      Prop_Nam : Name_Id) return Boolean
+      Property : Name_Id) return Boolean
    is
-      Decl    : constant Node_Id := Parent (State_Id);
-      Opt     : Node_Id;
-      Opt_Nam : Node_Id;
-      Prop    : Node_Id;
-      Props   : Node_Id;
+      Decl     : constant Node_Id := Parent (State_Id);
+      Opt      : Node_Id;
+      Opt_Nam  : Node_Id;
+      Prop     : Node_Id;
+      Prop_Nam : Node_Id;
+      Props    : Node_Id;
 
    begin
       --  The declaration of an external abstract state appears as an extension
@@ -7305,7 +7348,7 @@ package body Sem_Util is
 
                Prop := First (Expressions (Props));
                while Present (Prop) loop
-                  if Chars (Prop) = Prop_Nam then
+                  if Chars (Prop) = Property then
                      return True;
                   end if;
 
@@ -7316,7 +7359,9 @@ package body Sem_Util is
 
                Prop := First (Component_Associations (Props));
                while Present (Prop) loop
-                  if Chars (Prop) = Prop_Nam then
+                  Prop_Nam := First (Choices (Prop));
+
+                  if Chars (Prop_Nam) = Property then
                      return Is_True (Expr_Value (Expression (Prop)));
                   end if;
 
@@ -7326,7 +7371,7 @@ package body Sem_Util is
             --  Single property
 
             else
-               return Chars (Props) = Prop_Nam;
+               return Chars (Props) = Property;
             end if;
          end if;
 

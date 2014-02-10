@@ -213,14 +213,6 @@
   [(const_int 0)]
   "ix86_split_long_move (operands); DONE;")
 
-(define_expand "push<mode>1"
-  [(match_operand:MMXMODE 0 "register_operand")]
-  "TARGET_MMX"
-{
-  ix86_expand_push (<MODE>mode, operands[0]);
-  DONE;
-})
-
 (define_expand "movmisalign<mode>"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
 	(match_operand:MMXMODE 1 "nonimmediate_operand"))]

@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "ipa-utils.h"
 
+/* True when asm nodes has been output.  */
+bool asm_nodes_output = false;
+
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
 
@@ -414,7 +417,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
      Cherry-picked nodes:  These are nodes we pulled from other
      translation units into SET during IPA-inlining.  We make them as
      local static nodes to prevent clashes with other local statics.  */
-  if (boundary_p && node->analyzed && !DECL_EXTERNAL (node->decl))
+  if (boundary_p && node->analyzed
+      && symtab_get_symbol_partitioning_class (node) == SYMBOL_PARTITION)
     {
       /* Inline clones can not be part of boundary.  
          gcc_assert (!node->global.inlined_to);  
@@ -498,8 +502,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp, node->address_taken, 1);
   bp_pack_value (&bp, tag == LTO_symtab_analyzed_node
-		 && !DECL_EXTERNAL (node->decl)
-		 && !DECL_COMDAT (node->decl)
+		 && symtab_get_symbol_partitioning_class (node) == SYMBOL_PARTITION
 		 && (reachable_from_other_partition_p (node, encoder)
 		     || referenced_from_other_partition_p (&node->ref_list,
 							   encoder)), 1);
@@ -566,9 +569,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   /* Constant pool initializers can be de-unified into individual ltrans units.
      FIXME: Alternatively at -Os we may want to avoid generating for them the local
      labels and share them across LTRANS partitions.  */
-  if (DECL_IN_CONSTANT_POOL (node->decl)
-      && !DECL_EXTERNAL (node->decl)
-      && !DECL_COMDAT (node->decl))
+  if (symtab_get_symbol_partitioning_class (node) != SYMBOL_PARTITION)
     {
       bp_pack_value (&bp, 0, 1);  /* used_from_other_parition.  */
       bp_pack_value (&bp, 0, 1);  /* in_other_partition.  */
@@ -890,7 +891,6 @@ output_symtab (void)
   lto_symtab_encoder_iterator lsei;
   int i, n_nodes;
   lto_symtab_encoder_t encoder;
-  static bool asm_nodes_output = false;
 
   if (flag_wpa)
     output_cgraph_opt_summary ();

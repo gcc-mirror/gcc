@@ -646,7 +646,8 @@ ubsan_expand_si_overflow_mul_check (gimple stmt)
 	    emit_cmp_and_jump_insns (hipart, const0_rtx, GE, NULL_RTX, hmode,
 				     false, after_hipart_neg, PROB_EVEN);
 
-	  tem = expand_shift (LSHIFT_EXPR, mode, lopart, hprec, NULL_RTX, 1);
+	  tem = convert_modes (mode, hmode, lopart, 1);
+	  tem = expand_shift (LSHIFT_EXPR, mode, tem, hprec, NULL_RTX, 1);
 	  tem = expand_simple_binop (mode, MINUS, loxhi, tem, NULL_RTX,
 				     1, OPTAB_DIRECT);
 	  emit_move_insn (loxhi, tem);
@@ -820,6 +821,8 @@ expand_MASK_LOAD (gimple stmt)
 
   maskt = gimple_call_arg (stmt, 2);
   lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return;
   type = TREE_TYPE (lhs);
   rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
 		     gimple_call_arg (stmt, 1));

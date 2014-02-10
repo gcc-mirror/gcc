@@ -3470,6 +3470,15 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
             change_spec_dep_to_hard (sd_it);
         }
     }
+
+  /* We do not yet have code to adjust REG_ARGS_SIZE, therefore we must
+     honor their original ordering.  */
+  if (find_reg_note (insn, REG_ARGS_SIZE, NULL))
+    {
+      if (deps->last_args_size)
+	add_dependence (insn, deps->last_args_size, REG_DEP_OUTPUT);
+      deps->last_args_size = insn;
+    }
 }
 
 /* Return TRUE if INSN might not always return normally (e.g. call exit,
@@ -3876,6 +3885,7 @@ init_deps (struct deps_desc *deps, bool lazy_reg_last)
   deps->sched_before_next_jump = 0;
   deps->in_post_call_group_p = not_post_call;
   deps->last_debug_insn = 0;
+  deps->last_args_size = 0;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;
   deps->readonly = 0;
 }

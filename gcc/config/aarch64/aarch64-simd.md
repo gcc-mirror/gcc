@@ -689,7 +689,7 @@
 (define_expand "aarch64_ashr_simddi"
   [(match_operand:DI 0 "register_operand" "=w")
    (match_operand:DI 1 "register_operand" "w")
-   (match_operand:QI 2 "aarch64_shift_imm64_di" "")]
+   (match_operand:SI 2 "aarch64_shift_imm64_di" "")]
   "TARGET_SIMD"
   {
     if (INTVAL (operands[2]) == 64)

@@ -1193,6 +1193,8 @@ package body Sem_Ch6 is
             end loop;
          end;
 
+         Check_SPARK_Mode_In_Generic (N);
+
          Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
          Set_SPARK_Pragma_Inherited (Body_Id, True);
 
@@ -1253,7 +1255,7 @@ package body Sem_Ch6 is
       Null_Body :=
         Make_Subprogram_Body (Loc,
           Specification => New_Copy_Tree (Spec),
-          Declarations => New_List,
+          Declarations  => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (Make_Null_Statement (Loc))));
@@ -2998,11 +3000,6 @@ package body Sem_Ch6 is
 
             Push_Scope (Spec_Id);
 
-            --  Set SPARK_Mode from context
-
-            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-            Set_SPARK_Pragma_Inherited (Body_Id, True);
-
             --  Make sure that the subprogram is immediately visible. For
             --  child units that have no separate spec this is indispensable.
             --  Otherwise it is safe albeit redundant.
@@ -3050,11 +3047,6 @@ package body Sem_Ch6 is
             Install_Formals (Body_Id);
 
             Push_Scope (Body_Id);
-
-            --  Set SPARK_Mode from context
-
-            Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
-            Set_SPARK_Pragma_Inherited (Body_Id, True);
          end if;
 
          --  For stubs and bodies with no previous spec, generate references to
@@ -3062,6 +3054,11 @@ package body Sem_Ch6 is
 
          Generate_Reference_To_Formals (Body_Id);
       end if;
+
+      --  Set SPARK_Mode from context
+
+      Set_SPARK_Pragma (Body_Id, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (Body_Id, True);
 
       --  If the return type is an anonymous access type whose designated type
       --  is the limited view of a class-wide type and the non-limited view is
@@ -11246,8 +11243,8 @@ package body Sem_Ch6 is
 
             elsif Is_SPARK_Volatile_Object (Formal) then
                Error_Msg_N
-                 ("function cannot have a volatile formal parameter (SPARK RM "
-                  & "7.1.3(10))", Formal);
+                 ("function cannot have a volatile formal parameter "
+                  & "(SPARK RM 7.1.3(10))", Formal);
             end if;
          end if;
 

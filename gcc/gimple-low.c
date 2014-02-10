@@ -83,6 +83,7 @@ static void lower_gimple_bind (gimple_stmt_iterator *, struct lower_data *);
 static void lower_try_catch (gimple_stmt_iterator *, struct lower_data *);
 static void lower_gimple_return (gimple_stmt_iterator *, struct lower_data *);
 static void lower_builtin_setjmp (gimple_stmt_iterator *);
+static void lower_builtin_posix_memalign (gimple_stmt_iterator *);
 
 
 /* Lower the body of current_function_decl from High GIMPLE into Low
@@ -327,12 +328,19 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 	  }
 
 	if (decl
-	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-	    && DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
+	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	  {
-	    lower_builtin_setjmp (gsi);
-	    data->cannot_fallthru = false;
-	    return;
+	    if (DECL_FUNCTION_CODE (decl) == BUILT_IN_SETJMP)
+	      {
+		lower_builtin_setjmp (gsi);
+		data->cannot_fallthru = false;
+		return;
+	      }
+	    else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_POSIX_MEMALIGN)
+	      {
+		lower_builtin_posix_memalign (gsi);
+		return;
+	      }
 	  }
 
 	if (decl && (flags_from_decl_or_type (decl) & ECF_NORETURN))
@@ -770,6 +778,49 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 
   /* Remove the call to __builtin_setjmp.  */
   gsi_remove (gsi, false);
+}
+
+/* Lower calls to posix_memalign to
+     posix_memalign (ptr, align, size);
+     tem = *ptr;
+     tem = __builtin_assume_aligned (tem, align);
+     *ptr = tem;
+   or to
+     void *tem;
+     posix_memalign (&tem, align, size);
+     ttem = tem;
+     ttem = __builtin_assume_aligned (ttem, align);
+     ptr = tem;
+   in case the first argument was &ptr.  That way we can get at the
+   alignment of the heap pointer in CCP.  */
+
+static void
+lower_builtin_posix_memalign (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  tree pptr = gimple_call_arg (stmt, 0);
+  tree align = gimple_call_arg (stmt, 1);
+  tree ptr = create_tmp_reg (ptr_type_node, NULL);
+  if (TREE_CODE (pptr) == ADDR_EXPR)
+    {
+      tree tem = create_tmp_var (ptr_type_node, NULL);
+      TREE_ADDRESSABLE (tem) = 1;
+      gimple_call_set_arg (stmt, 0, build_fold_addr_expr (tem));
+      stmt = gimple_build_assign (ptr, tem);
+    }
+  else
+    stmt = gimple_build_assign (ptr,
+				fold_build2 (MEM_REF, ptr_type_node, pptr,
+					     build_int_cst (ptr_type_node, 0)));
+  gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
+  stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_ASSUME_ALIGNED),
+			    2, ptr, align);
+  gimple_call_set_lhs (stmt, ptr);
+  gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
+  stmt = gimple_build_assign (fold_build2 (MEM_REF, ptr_type_node, pptr,
+					   build_int_cst (ptr_type_node, 0)),
+			      ptr);
+  gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
 }
 
 

@@ -878,6 +878,10 @@ do {									\
   fputc ('\n', (FILE));							\
 } while (0)
 
+/* Mark the return register as used by the epilogue so that we can
+   use it in unadorned (return) and (simple_return) instructions.  */
+#define EPILOGUE_USES(REGNO) ((REGNO) == RETURN_REGNUM)
+
 #undef ASM_OUTPUT_FUNCTION_LABEL
 #define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
   s390_asm_output_function_label (FILE, NAME, DECL)

@@ -101,6 +101,7 @@ package body Einfo is
    --    Entry_Component                 Node11
    --    Enumeration_Pos                 Uint11
    --    Generic_Homonym                 Node11
+   --    Last_Aggregate_Assignment       Node11
    --    Protected_Body_Subprogram       Node11
    --    Block_Node                      Node11
 
@@ -241,6 +242,7 @@ package body Einfo is
    --    Initialization_Statements       Node28
    --    Underlying_Record_View          Node28
 
+   --    BIP_Initialization_Call         Node29
    --    Subprograms_For_Type            Node29
 
    --    Corresponding_Equality          Node30
@@ -552,6 +554,7 @@ package body Einfo is
    --    Has_Delayed_Rep_Aspects         Flag261
    --    May_Inherit_Delayed_Rep_Aspects Flag262
    --    Has_Visible_Refinement          Flag263
+   --    Is_Discriminant_Check_Function  Flag264
    --    SPARK_Pragma_Inherited          Flag265
    --    SPARK_Aux_Pragma_Inherited      Flag266
 
@@ -559,7 +562,6 @@ package body Einfo is
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag264
    --    (unused)                        Flag267
    --    (unused)                        Flag268
    --    (unused)                        Flag269
@@ -765,6 +767,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       return Elist16 (Id);
    end Body_References;
+
+   function BIP_Initialization_Call (Id : E) return N is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      return Node29 (Id);
+   end BIP_Initialization_Call;
 
    function C_Pass_By_Copy (Id : E) return B is
    begin
@@ -1962,6 +1970,11 @@ package body Einfo is
       return Flag176 (Id);
    end Is_Discrim_SO_Function;
 
+   function Is_Discriminant_Check_Function (Id : E) return B is
+   begin
+      return Flag264 (Id);
+   end Is_Discriminant_Check_Function;
+
    function Is_Dispatch_Table_Entity (Id : E) return B is
    begin
       return Flag234 (Id);
@@ -2394,6 +2407,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag207 (Id);
    end Known_To_Have_Preelab_Init;
+
+   function Last_Aggregate_Assignment (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Node11 (Id);
+   end Last_Aggregate_Assignment;
 
    function Last_Assignment (Id : E) return N is
    begin
@@ -3421,6 +3440,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       Set_Elist16 (Id, V);
    end Set_Body_References;
+
+   procedure Set_BIP_Initialization_Call (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      Set_Node29 (Id, V);
+   end Set_BIP_Initialization_Call;
 
    procedure Set_C_Pass_By_Copy (Id : E; V : B := True) is
    begin
@@ -4660,6 +4685,11 @@ package body Einfo is
       Set_Flag176 (Id, V);
    end Set_Is_Discrim_SO_Function;
 
+   procedure Set_Is_Discriminant_Check_Function (Id : E; V : B := True) is
+   begin
+      Set_Flag264 (Id, V);
+   end Set_Is_Discriminant_Check_Function;
+
    procedure Set_Is_Dispatch_Table_Entity (Id : E; V : B := True) is
    begin
       Set_Flag234 (Id, V);
@@ -5109,6 +5139,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag207 (Id, V);
    end Set_Known_To_Have_Preelab_Init;
+
+   procedure Set_Last_Aggregate_Assignment (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Node11 (Id, V);
+   end Set_Last_Aggregate_Assignment;
 
    procedure Set_Last_Assignment (Id : E; V : N) is
    begin
@@ -8204,6 +8240,7 @@ package body Einfo is
       W ("Is_Controlling_Formal",           Flag97  (Id));
       W ("Is_Descendent_Of_Address",        Flag223 (Id));
       W ("Is_Discrim_SO_Function",          Flag176 (Id));
+      W ("Is_Discriminant_Check_Function",  Flag264 (Id));
       W ("Is_Dispatch_Table_Entity",        Flag234 (Id));
       W ("Is_Dispatching_Operation",        Flag6   (Id));
       W ("Is_Eliminated",                   Flag124 (Id));
@@ -8620,6 +8657,9 @@ package body Einfo is
 
          when E_Generic_Package                            =>
             Write_Str ("Generic_Homonym");
+
+         when E_Variable                                   =>
+            Write_Str ("Last_Aggregate_Assignment");
 
          when E_Function                                   |
               E_Procedure                                  |
@@ -9392,6 +9432,10 @@ package body Einfo is
    procedure Write_Field29_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("BIP_Initialization_Call");
+
          when Type_Kind =>
             Write_Str ("Subprograms_For_Type");
 

@@ -3526,13 +3526,23 @@ package body Sem_Ch13 is
          --  expander. The easiest general way to handle this is to create a
          --  copy of the attribute definition clause for this object.
 
-         else
+         elsif Is_Entity_Name (Renamed_Object (Ent)) then
             Insert_Action (N,
               Make_Attribute_Definition_Clause (Loc,
                 Name       =>
                   New_Occurrence_Of (Entity (Renamed_Object (Ent)), Loc),
                 Chars      => Chars (N),
                 Expression => Duplicate_Subexpr (Expression (N))));
+
+         --  If the renamed object is not an entity, it must be a dereference
+         --  of an unconstrained function call, and we must introduce a new
+         --  declaration to capture the expression. This is needed in the case
+         --  of 'Alignment, where the original declaration must be rewritten.
+
+         else
+            pragma Assert
+              (Nkind (Renamed_Object (Ent)) = N_Explicit_Dereference);
+            null;
          end if;
 
       --  If no underlying entity, use entity itself, applies to some
@@ -6676,6 +6686,7 @@ package body Sem_Ch13 is
             --  Build function declaration
 
             Set_Ekind (SId, E_Function);
+            Set_Is_Internal (SId);
             Set_Is_Predicate_Function (SId);
             Set_Predicate_Function (Typ, SId);
 
@@ -9419,9 +9430,14 @@ package body Sem_Ch13 is
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
 
       --  If we have a type with predicates, build predicate function. This
-      --  is not needed in the generic casee
+      --  is not needed in the generic case, and is not needed within TSS
+      --  subprograms and other predefined primitives.
 
-      if Non_Generic_Case and then Is_Type (E) and then Has_Predicates (E) then
+      if Non_Generic_Case
+        and then Is_Type (E)
+        and then Has_Predicates (E)
+        and then not Within_Internal_Subprogram
+      then
          Build_Predicate_Functions (E, N);
       end if;
 

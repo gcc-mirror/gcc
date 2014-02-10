@@ -430,6 +430,9 @@ determine_versionability (struct cgraph_node *node)
     reason = "not a tree_versionable_function";
   else if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     reason = "insufficient body availability";
+  else if (!opt_for_fn (node->decl, optimize)
+	   || !opt_for_fn (node->decl, flag_ipa_cp))
+    reason = "non-optimized function";
   else if (lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (node->decl)))
     {
       /* Ideally we should clone the SIMD clones themselves and create
@@ -1479,7 +1482,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   HOST_WIDE_INT token, anc_offset;
   tree otr_type;
   tree t;
-  tree target;
+  tree target = NULL;
 
   if (param_index == -1
       || known_vals.length () <= (unsigned int) param_index)
@@ -1527,28 +1530,101 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 	return NULL_TREE;
     }
 
+  if (!flag_devirtualize)
+    return NULL_TREE;
+
   gcc_assert (!ie->indirect_info->agg_contents);
   token = ie->indirect_info->otr_token;
   anc_offset = ie->indirect_info->offset;
   otr_type = ie->indirect_info->otr_type;
 
-  t = known_vals[param_index];
+  t = NULL;
+
+  /* Try to work out value of virtual table pointer value in replacemnets.  */
+  if (!t && agg_reps && !ie->indirect_info->by_ref)
+    {
+      while (agg_reps)
+	{
+	  if (agg_reps->index == param_index
+	      && agg_reps->offset == ie->indirect_info->offset
+	      && agg_reps->by_ref)
+	    {
+	      t = agg_reps->value;
+	      break;
+	    }
+	  agg_reps = agg_reps->next;
+	}
+    }
+
+  /* Try to work out value of virtual table pointer value in known
+     aggregate values.  */
+  if (!t && known_aggs.length () > (unsigned int) param_index
+      && !ie->indirect_info->by_ref)
+    {
+       struct ipa_agg_jump_function *agg;
+       agg = known_aggs[param_index];
+       t = ipa_find_agg_cst_for_param (agg, ie->indirect_info->offset,
+				       true);
+    }
+
+  /* If we found the virtual table pointer, lookup the target.  */
+  if (t)
+    {
+      tree vtable;
+      unsigned HOST_WIDE_INT offset;
+      if (vtable_pointer_value_to_vtable (t, &vtable, &offset))
+	{
+	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
+						      vtable, offset);
+	  if (target)
+	    {
+	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
+		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+		  || !possible_polymorphic_call_target_p
+		       (ie, cgraph_get_node (target)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Type inconsident devirtualization: %s/%i->%s\n",
+			     ie->caller->name (), ie->caller->order,
+			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+		  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  cgraph_get_create_node (target);
+		}
+	      return target;
+	    }
+	}
+    }
+
+  /* Did we work out BINFO via type propagation?  */
   if (!t && known_binfos.length () > (unsigned int) param_index)
     t = known_binfos[param_index];
+  /* Or do we know the constant value of pointer?  */
+  if (!t)
+    t = known_vals[param_index];
   if (!t)
     return NULL_TREE;
 
   if (TREE_CODE (t) != TREE_BINFO)
     {
-      tree binfo;
-      binfo = gimple_extract_devirt_binfo_from_cst
-		 (t, ie->indirect_info->otr_type);
-      if (!binfo)
+      ipa_polymorphic_call_context context;
+      vec <cgraph_node *>targets;
+      bool final;
+
+      if (!get_polymorphic_call_info_from_invariant
+	     (&context, t, ie->indirect_info->otr_type,
+	      anc_offset))
 	return NULL_TREE;
-      binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
-      if (!binfo)
+      targets = possible_polymorphic_call_targets
+		 (ie->indirect_info->otr_type,
+		  ie->indirect_info->otr_token,
+		  context, &final);
+      if (!final || targets.length () > 1)
 	return NULL_TREE;
-      target = gimple_get_virt_method_for_binfo (token, binfo);
+      if (targets.length () == 1)
+	target = targets[0]->decl;
+      else
+	target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
     }
   else
     {

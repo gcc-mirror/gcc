@@ -1,3 +1,316 @@
+2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/57522
+	* gfortran.dg/associated_target_5.f03 : New test
+
+2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59026
+	* gfortran.dg/elemental_by_value_1.f90 : New test
+
+2014-02-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58470
+	* gfortran.dg/finalize_22.f90: New.
+
+2014-02-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/60066
+	* gfortran.dg/elemental_subroutine_10.f90 : New test. This PR
+	was fixed by the patch for PR59906.
+
+2014-02-08  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR translation/52289
+	* gfortran.dg/coarray_8.f90: Update dg-error match.
+
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/59984
+	* gcc.dg/vect/pr59984.c: New test.
+
+	PR middle-end/60092
+	* gcc.dg/attr-alloc_align-1.c: New test.
+	* gcc.dg/attr-alloc_align-2.c: New test.
+	* gcc.dg/attr-alloc_align-3.c: New test.
+	* gcc.dg/attr-assume_aligned-1.c: New test.
+	* gcc.dg/attr-assume_aligned-2.c: New test.
+	* gcc.dg/attr-assume_aligned-3.c: New test.
+
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60077
+	* gcc.target/i386/pr60077-1.c: New test.
+	* gcc.target/i386/pr60077-2.c: New test.
+
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/56824
+	* gcc.dg/pr56824.c: New test.
+
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/gcc-have-sync-compare-and-swap.c: Align the 16 byte
+	variable used for atomic operations.
+
+2014-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/vect/pr60092-2.c: New testcase.
+
+2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60082
+	Revert
+	2014-02-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: Disable test for -O1.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/fp2int1.c: New testcase.
+
+2014-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/tree-ssa/alias-30.c: New testcase.
+	* gcc.dg/tree-ssa/alias-31.c: Likewise.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59918
+	* g++.dg/torture/pr59918.C: New testcase.
+
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59575
+	* gcc.target/arm/pr59575.c: New test.
+
+	PR debug/59992
+	* gcc.dg/pr59992.c: New test.
+
+2014-02-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/cpp0x/constexpr-attribute2.C: Restrict to target
+	init_priority. Test alignment of variable instead of function.
+
+2014-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60087
+	* gcc.dg/pr60087.c: New test.
+
+2014-02-06  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr60032.c: New.
+
+2014-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/60062
+	* gcc.c-torture/execute/pr60062.c: New test.
+	* gcc.c-torture/execute/pr60072.c: New test.
+
+2014-02-06  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.dg/tree-ssa/pr59597.c: Make called function static
+	so that expected outcome works for PIC variants too.
+
+2014-02-06  Yury Gribov  <y.gribov@samsung.com>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/arm/vect-noalign.c: New file.
+
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60013
+	* gcc.dg/pr60013.c: New testcase.
+
+2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/sum2s.c: New.
+	* gcc.dg/vmx/sum2s-be-order.c: New.
+
+2014-02-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/pack.c: New.
+	* gcc.dg/vmx/pack-be-order.c: New.
+	* gcc.dg/vmx/unpack.c: New.
+	* gcc.dg/vmx/unpack-be-order.c: New.
+
+2014-02-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* g++.dg/cilk-plus/CK/catch_exc.cc: Disable test for -O1.
+	* c-c++-common/cilk-plus/CK/spawner_inline.c: Likewise.
+
+2014-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx512f-vrndscaless-2.c (compute_rndscaless):
+	Use __builtin_floorf, __builtin_ceilf.
+	* gcc.target/i386/sse4_1-floorf-sfix-vec.c (floorf): Remove
+	declaration.
+	(TEST): Use __builtin_floorf.
+	* gcc.target/i386/sse4_1-floorf-vec.c: Likewise.
+
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/59947
+	* g++.dg/opt/pr59947.C: New test.
+
+	PR c++/58703
+	* c-c++-common/gomp/pr58703.c: New test.
+
+2014-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/60076
+	* gcc.dg/vect/pr60012.c: Require vect_extract_even_odd and
+	avoid using unsigned long long.
+
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57499
+	* g++.dg/torture/pr57499.C: New test.
+
+2014-02-05  Yury Gribov  <y.gribov@samsung.com>
+
+	* gcc.dg/asan/nosanitize-and-inline.c: New test.
+
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/devirrt-22.C: Fix template.
+
+2014-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60036
+	* gcc.dg/pr60036.c: New test.
+
+2014-02-04  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR ipa/60058
+	* g++.dg/torture/pr60058.C: New testcase.
+
+2014-02-04  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* g++.dg/tsan/default_options.C: Invert check.
+
+2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/60002
+	* g++.dg/opt/pr60002.C: New test.
+
+	PR tree-optimization/60023
+	* g++.dg/vect/pr60023.cc: New test.
+
+	PR ipa/60026
+	* c-c++-common/torture/pr60026.c: New test.
+
+	PR rtl-optimization/57915
+	* gcc.target/i386/pr57915.c: New test.
+
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/init/dso_handle2.C: Compile with -fuse-cxa-atexit.
+
+2014-02-04  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/ftest-armv7a-thumb.c: Change aramv7-a to armv7-a.
+
+2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59261
+	* gcc.dg/pr59261.c: New test.
+
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60012
+	* gcc.dg/vect/pr60012.c: New testcase.
+
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* g++.dg/eh/unwind-direct.C: New test.
+
+2014-02-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/tsan-dg.exp (tsan_init): Set trivial testcase
+	timeout value to 20s.
+
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59882
+	* g++.dg/torture/pr59882.C: New testcase
+
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/59831
+	* g++.dg/ipa/devirt-22.C: New testcase.
+
+2014-02-03  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-25.C: New testcase.
+
+2014-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/59924
+	* gcc.dg/pr59924.c: New test.
+
+2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59831
+	* g++.dg/ipa/devirt-24.C: New testcase.
+
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* c-c++-common/attributes-1.c: New testcase.
+	* g++.dg/cpp0x/constexpr-attribute2.C: Likewise.
+
+2014-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58871
+	* g++.dg/cpp0x/pr58871.C: New.
+
+2014-02-03  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60000
+	* g++.dg/vect/pr60000.cc: New test.
+
+2014-02-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/long-double-64-1.c: Verify __multf3 isn't used.
+	* gcc.target/i386/long-double-64-4.c: Likewise.
+	* gcc.target/i386/long-double-80-1.c: Likewise.
+	* gcc.target/i386/long-double-80-2.c: Likewise.
+	* gcc.target/i386/long-double-80-3.c: Likewise.
+	* gcc.target/i386/long-double-80-4.c: Likewise.
+	* gcc.target/i386/long-double-80-5.c: Likewise.
+	* gcc.target/i386/long-double-64-2.c: Limit to ia32.  Verify
+	__multf3 isn't used.
+	* gcc.target/i386/long-double-64-3.c: Likewise.
+	* gcc.target/i386/long-double-128-1.c: New test.
+	* gcc.target/i386/long-double-128-2.c: Likewise.
+	* gcc.target/i386/long-double-128-3.c: Likewise.
+	* gcc.target/i386/long-double-128-4.c: Likewise.
+	* gcc.target/i386/long-double-128-5.c: Likewise.
+	* gcc.target/i386/long-double-128-6.c: Likewise.
+	* gcc.target/i386/long-double-128-7.c: Likewise.
+	* gcc.target/i386/long-double-128-8.c: Likewise.
+	* gcc.target/i386/long-double-128-9.c: Likewise.
+	* gcc.target/i386/long-double-64-5.c: Likewise.
+	* gcc.target/i386/long-double-64-6.c: Likewise.
+	* gcc.target/i386/long-double-64-7.c: Likewise.
+	* gcc.target/i386/long-double-64-8.c: Likewise.
+	* gcc.target/i386/long-double-64-9.c: Likewise.
+	* gcc.target/i386/long-double-80-10.c: Likewise.
+	* gcc.target/i386/long-double-80-8.c: Likewise.
+	* gcc.target/i386/long-double-80-9.c: Likewise.
+
+2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57662
+	* g++.dg/pr57662.C: New test.
+
 2014-02-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/3b-15.c: Remove special handling for little endian.

@@ -148,7 +148,7 @@ package body Prj.Env is
       if Recursive then
 
          --  If it is the first time we call this function for this project,
-         --  compute the source path
+         --  compute the source path.
 
          if Project.Ada_Include_Path = null then
             Buffer := new String (1 .. Buffer_Initial);
@@ -292,7 +292,6 @@ package body Prj.Env is
       for Index in
         Object_Path_Table.First .. Object_Path_Table.Last (Object_Paths)
       loop
-
          --  If it is, remove it, and add it as the last one
 
          if Object_Paths.Table (Index) = Object_Dir then
@@ -323,9 +322,10 @@ package body Prj.Env is
       Buffer      : in out String_Access;
       Buffer_Last : in out Natural)
    is
-      Current    : String_List_Id := Source_Dirs;
+      Current    : String_List_Id;
       Source_Dir : String_Element;
    begin
+      Current := Source_Dirs;
       while Current /= Nil_String loop
          Source_Dir := Shared.String_Elements.Table (Current);
          Add_To_Path (Get_Name_String (Source_Dir.Display_Value),
@@ -359,11 +359,10 @@ package body Prj.Env is
             --  Note: the order of the conditions below is important, since
             --  it ensures a minimal number of string comparisons.
 
-            if (J = Path'First
-                or else Path (J - 1) = Path_Separator)
+            if (J = Path'First or else Path (J - 1) = Path_Separator)
               and then
                 (J + Dir'Length > Path'Last
-                 or else Path (J + Dir'Length) = Path_Separator)
+                  or else Path (J + Dir'Length) = Path_Separator)
               and then Dir = Path (J .. J + Dir'Length - 1)
             then
                return True;
@@ -426,13 +425,14 @@ package body Prj.Env is
       Shared       : Shared_Project_Tree_Data_Access;
       Source_Paths : in out Source_Path_Table.Instance)
    is
-      Current    : String_List_Id := Source_Dirs;
+      Current    : String_List_Id;
       Source_Dir : String_Element;
       Add_It     : Boolean;
 
    begin
       --  Add each source directory
 
+      Current := Source_Dirs;
       while Current /= Nil_String loop
          Source_Dir := Shared.String_Elements.Table (Current);
          Add_It := True;
@@ -1088,15 +1088,17 @@ package body Prj.Env is
 
          Unit := Units_Htable.Get_First (In_Tree.Units_HT);
          while Unit /= null loop
+
             --  Check for body
 
             if not Main_Project_Only
               or else
                 (Unit.File_Names (Impl) /= null
-                 and then Unit.File_Names (Impl).Project = The_Project)
+                  and then Unit.File_Names (Impl).Project = The_Project)
             then
                declare
                   Current_Name : File_Name_Type;
+
                begin
                   --  Case of a body present
 
@@ -1365,8 +1367,8 @@ package body Prj.Env is
                 (Namet.Get_Name_String
                    (Unit.File_Names (Spec).File) = Original_Name
                  or else (Unit.File_Names (Spec).Path /= No_Path_Information
-                          and then
-                            Namet.Get_Name_String
+                           and then
+                             Namet.Get_Name_String
                                (Unit.File_Names (Spec).Path.Name) =
                                                            Original_Name))
             then
@@ -1481,7 +1483,6 @@ package body Prj.Env is
       Write_Line ("List of Sources:");
 
       Unit := Units_Htable.Get_First (In_Tree.Units_HT);
-
       while Unit /= No_Unit_Index loop
          Write_Str  ("   ");
          Write_Line (Namet.Get_Name_String (Unit.Name));
@@ -2121,6 +2122,21 @@ package body Prj.Env is
 
                   Add_Str_To_Name_Buffer
                     ("lib" & Directory_Separator & "gnat");
+
+                  --  $prefix/$target/share/gpr
+
+                  Add_Str_To_Name_Buffer
+                    (Path_Separator & Prefix.all & Target_Name);
+
+                  --  Note: Target_Name has a trailing / when it comes from
+                  --  Sdefault.
+
+                  if Name_Buffer (Name_Len) /= '/' then
+                     Add_Char_To_Name_Buffer (Directory_Separator);
+                  end if;
+
+                  Add_Str_To_Name_Buffer
+                    ("share" & Directory_Separator & "gpr");
                end if;
 
                --  $prefix/share/gpr
@@ -2172,8 +2188,8 @@ package body Prj.Env is
      (Self : Project_Search_Path;
       Path : String) return String_Access
    is
-      First  : Natural;
-      Last   : Natural;
+      First : Natural;
+      Last  : Natural;
 
    begin
       if Current_Verbosity = High then
@@ -2328,15 +2344,15 @@ package body Prj.Env is
             Result :=
               Try_Path_Name
                 (Self,
-                 Directory & Directory_Separator &
-                   File & Project_File_Extension);
+                 Directory & Directory_Separator
+                 & File & Project_File_Extension);
          end if;
 
          --  Then we try <directory>/<file_name>
 
          if Result = null then
-            Result := Try_Path_Name
-                       (Self, Directory & Directory_Separator & File);
+            Result :=
+              Try_Path_Name (Self, Directory & Directory_Separator & File);
          end if;
       end if;
 

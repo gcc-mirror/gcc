@@ -511,7 +511,7 @@ package Prj is
       --  there is no need for such switch.
 
       Object_Generated : Boolean := True;
-      --  False in no object file is generated
+      --  False if no object file is generated
 
       Objects_Linked : Boolean := True;
       --  False if object files are not use to link executables and build
@@ -1353,7 +1353,7 @@ package Prj is
       --  Indicate that this is a Standalone Library Project File
 
       Lib_Interface_ALIs : String_List_Id := Nil_String;
-      --  For Standalone Library Project Files, list of Interface ALI files.
+      --  For Standalone Library Project Files, list of Interface ALI files
 
       Other_Interfaces : String_List_Id := Nil_String;
       --  List of non unit based sources in attribute Interfaces

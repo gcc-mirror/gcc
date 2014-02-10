@@ -3136,6 +3136,14 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       if (do_trapv)
 	goto skip_synth;
 
+      /* If mode is integer vector mode, check if the backend supports
+	 vector lshift (by scalar or vector) at all.  If not, we can't use
+	 synthetized multiply.  */
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	  && optab_handler (vashl_optab, mode) == CODE_FOR_nothing
+	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing)
+	goto skip_synth;
+
       /* These are the operations that are potentially turned into
 	 a sequence of shifts and additions.  */
       mode_bitsize = GET_MODE_UNIT_BITSIZE (mode);

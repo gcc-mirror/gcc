@@ -1267,4 +1267,55 @@ symtab_semantically_equivalent_p (symtab_node *a,
     bb = b;
   return bb == ba;
 }
+
+/* Classify symbol NODE for partitioning.  */
+
+enum symbol_partitioning_class
+symtab_get_symbol_partitioning_class (symtab_node *node)
+{
+  /* Inline clones are always duplicated.
+     This include external delcarations.   */
+  cgraph_node *cnode = dyn_cast <cgraph_node> (node);
+
+  if (DECL_ABSTRACT (node->decl))
+    return SYMBOL_EXTERNAL;
+
+  if (cnode && cnode->global.inlined_to)
+    return SYMBOL_DUPLICATE;
+
+  /* Weakref aliases are always duplicated.  */
+  if (node->weakref)
+    return SYMBOL_DUPLICATE;
+
+  /* External declarations are external.  */
+  if (DECL_EXTERNAL (node->decl))
+    return SYMBOL_EXTERNAL;
+
+  if (varpool_node *vnode = dyn_cast <varpool_node> (node))
+    {
+      /* Constant pool references use local symbol names that can not
+         be promoted global.  We should never put into a constant pool
+         objects that can not be duplicated across partitions.  */
+      if (DECL_IN_CONSTANT_POOL (node->decl))
+	return SYMBOL_DUPLICATE;
+      gcc_checking_assert (vnode->definition);
+    }
+  /* Functions that are cloned may stay in callgraph even if they are unused.
+     Handle them as external; compute_ltrans_boundary take care to make
+     proper things to happen (i.e. to make them appear in the boundary but
+     with body streamed, so clone can me materialized).  */
+  else if (!cgraph (node)->definition)
+    return SYMBOL_EXTERNAL;
+
+  /* Linker discardable symbols are duplicated to every use unless they are
+     keyed.
+     Keyed symbols or those.  */
+  if (DECL_ONE_ONLY (node->decl)
+      && !node->force_output
+      && !node->forced_by_abi
+      && !symtab_used_from_object_file_p (node))
+    return SYMBOL_DUPLICATE;
+
+  return SYMBOL_PARTITION;
+}
 #include "gt-symtab.h"

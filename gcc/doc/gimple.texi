@@ -994,10 +994,6 @@ Return true if @code{G} is an asm statement marked volatile.
 Mark asm statement @code{G} as volatile.
 @end deftypefn
 
-@deftypefn {GIMPLE function} void gimple_asm_clear_volatile (gimple g)
-Remove volatile marker from asm statement @code{G}.
-@end deftypefn
-
 @node @code{GIMPLE_ASSIGN}
 @subsection @code{GIMPLE_ASSIGN}
 @cindex @code{GIMPLE_ASSIGN}

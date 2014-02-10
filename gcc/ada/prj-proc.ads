@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,14 @@ with Prj.Tree;  use Prj.Tree;
 
 package Prj.Proc is
 
+   type Tree_Loaded_Callback is access procedure
+     (Node_Tree    : Project_Node_Tree_Ref;
+      Tree         : Project_Tree_Ref;
+      Project_Node : Project_Node_Id;
+      Project      : Project_Id);
+   --  Callback used after the phase 1 of the processing of each aggregated
+   --  project to get access to project trees of aggregated projects.
+
    procedure Process_Project_Tree_Phase_1
      (In_Tree                : Project_Tree_Ref;
       Project                : out Project_Id;
@@ -39,7 +47,8 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Reset_Tree             : Boolean := True);
+      Reset_Tree             : Boolean              := True;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null);
    --  Process a project tree (ie the direct resulting of parsing a .gpr file)
    --  based on the current external references.
    --
@@ -51,6 +60,9 @@ package Prj.Proc is
    --
    --  When Reset_Tree is True, all the project data are removed from the
    --  project table before processing.
+   --
+   --  If specified, On_New_Tree_Loaded is called after each aggregated project
+   --  has been processed succesfully.
 
    procedure Process_Project_Tree_Phase_2
      (In_Tree                : Project_Tree_Ref;
@@ -74,7 +86,8 @@ package Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Reset_Tree             : Boolean := True);
+      Reset_Tree             : Boolean              := True;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null);
    --  Performs the two phases of the processing
 
 end Prj.Proc;

@@ -1683,7 +1683,7 @@ package body GNAT.Command_Line is
 
                   --  Note: When a Command_Line object is associated with a
                   --  Command_Line_Config (which is mostly the case for tools
-                  --  that let users chose the command line before spawning
+                  --  that let users choose the command line before spawning
                   --  other tools, for instance IDEs), the configuration of
                   --  the switches must be taken from the Command_Line_Config.
 

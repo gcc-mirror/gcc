@@ -132,15 +132,6 @@ struct c_expr
    inside the VEC types.  */
 typedef struct c_expr c_expr_t;
 
-/* A varray of c_expr_t.  */
-
-/* Append a new c_expr_t element to V.  */
-#define C_EXPR_APPEND(V, ELEM) \
-  do { \
-    c_expr_t __elem = (ELEM); \
-    vec_safe_push (V, __elem); \
-  } while (0)
-
 /* A kind of type specifier.  Note that this information is currently
    only used to distinguish tag definitions, tag references and typeof
    uses.  */

@@ -264,6 +264,7 @@ cilk_init_builtins (void)
   /* __cilkrts_rethrow (struct stack_frame *);  */
   cilk_rethrow_fndecl = install_builtin ("__cilkrts_rethrow", fptr_fun, 
 					 BUILT_IN_CILK_RETHROW, false);
+  TREE_NOTHROW (cilk_rethrow_fndecl) = 0;
 
   /* __cilkrts_save_fp_ctrl_state (__cilkrts_stack_frame *);  */
   cilk_save_fp_fndecl = install_builtin ("__cilkrts_save_fp_ctrl_state", 

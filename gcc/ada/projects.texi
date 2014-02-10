@@ -1254,6 +1254,9 @@ the search stops:
   @item @file{<prefix>/<target>/lib/gnat}
   (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
   @option{--target} is specified)
+  @item @file{<prefix>/<target>/share/gpr}
+  (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
+  @option{--target} is specified)
   @item @file{<prefix>/share/gpr/}
   (for @command{gnatmake} and @command{gprbuild})
   @item @file{<prefix>/lib/gnat/}
@@ -4986,6 +4989,19 @@ invoking @code{gnatpp} for the source.
 @subsubsection Package Remote Attributes
 
 @itemize @bullet
+
+@item @b{Included_Patterns}: list
+
+If this attribute is defined it sets the patterns to
+synchronized from the master to the slaves. It is exclusive
+with Excluded_Patterns, that is it is an error to define
+both.
+
+@item @b{Included_Artifact_Patterns}: list
+
+If this attribute is defined it sets the patterns of compilation
+artifacts to synchronized from the slaves to the build master.
+This attribute replace the default hard-coded patterns.
 
 @item @b{Excluded_Patterns}: list
 

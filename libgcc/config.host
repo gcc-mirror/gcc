@@ -142,7 +142,12 @@ microblaze*-*-*)
 mips*-*-*)
 	# All MIPS targets provide a full set of FP routines.
 	cpu_type=mips
-	tmake_file="mips/t-mips t-softfp-sfdf"
+	tmake_file="mips/t-mips"
+	if test "${libgcc_cv_mips_hard_float}" = yes; then
+		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
+	else
+		tmake_file="${tmake_file} t-softfp-sfdf"
+	fi
 	if test "${ac_cv_sizeof_long_double}" = 16; then
 		tmake_file="${tmake_file} mips/t-softfp-tf"
 	fi
@@ -1013,7 +1018,7 @@ s390-*-linux*)
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-*-linux*)
-	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux"
+	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi"
 	md_unwind_header=s390/linux-unwind.h
 	;;
 s390x-ibm-tpf*)

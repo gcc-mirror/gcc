@@ -8887,7 +8887,18 @@ package body Exp_Ch6 is
                List := New_List;
             end if;
 
-            Append (Item, List);
+            --  If the pragma is a conjunct in a composite postcondition, it
+            --  has been processed in reverse order. In the postcondition body
+            --  if must appear before the others.
+
+            if Nkind (Item) = N_Pragma
+              and then From_Aspect_Specification (Item)
+              and then Split_PPC (Item)
+            then
+               Prepend (Item, List);
+            else
+               Append (Item, List);
+            end if;
          end if;
       end Append_Enabled_Item;
 
@@ -8900,26 +8911,46 @@ package body Exp_Ch6 is
          Stmts   : List_Id;
          Result  : Entity_Id)
       is
-         procedure Insert_After_Last_Declaration (Stmt : Node_Id);
-         --  Insert node Stmt after the last declaration of the subprogram body
+         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id);
+         --  Insert node Stmt before the first source declaration of the
+         --  related subprogram's body. If no such declaration exists, Stmt
+         --  becomes the last declaration.
 
-         -----------------------------------
-         -- Insert_After_Last_Declaration --
-         -----------------------------------
+         --------------------------------------------
+         -- Insert_Before_First_Source_Declaration --
+         --------------------------------------------
 
-         procedure Insert_After_Last_Declaration (Stmt : Node_Id) is
-            Decls : List_Id := Declarations (N);
+         procedure Insert_Before_First_Source_Declaration (Stmt : Node_Id) is
+            Decls : constant List_Id := Declarations (N);
+            Decl  : Node_Id;
 
          begin
+            --  Inspect the declarations of the related subprogram body looking
+            --  for the first source declaration.
+
+            if Present (Decls) then
+               Decl := First (Decls);
+               while Present (Decl) loop
+                  if Comes_From_Source (Decl) then
+                     Insert_Before (Decl, Stmt);
+                     return;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+
+               --  If we get there, then the subprogram body lacks any source
+               --  declarations. The body of _Postconditions now acts as the
+               --  last declaration.
+
+               Append (Stmt, Decls);
+
             --  Ensure that the body has a declaration list
 
-            if No (Decls) then
-               Decls := New_List;
-               Set_Declarations (N, Decls);
+            else
+               Set_Declarations (N, New_List (Stmt));
             end if;
-
-            Append_To (Decls, Stmt);
-         end Insert_After_Last_Declaration;
+         end Insert_Before_First_Source_Declaration;
 
          --  Local variables
 
@@ -8954,9 +8985,9 @@ package body Exp_Ch6 is
                   New_Reference_To (Etype (Result), Loc)));
          end if;
 
-         --  Insert _Postconditions after the last declaration of the body.
-         --  This ensures that the body will not cause any premature freezing
-         --  as it may mention types:
+         --  Insert _Postconditions before the first source declaration of the
+         --  body. This ensures that the body will not cause any premature
+         --  freezing as it may mention types:
 
          --    procedure Proc (Obj : Array_Typ) is
          --       procedure _postconditions is
@@ -8972,7 +9003,7 @@ package body Exp_Ch6 is
          --  order reference. The body of _Postconditions must be placed after
          --  the declaration of Temp to preserve correct visibility.
 
-         Insert_After_Last_Declaration (
+         Insert_Before_First_Source_Declaration (
            Make_Subprogram_Body (Loc,
              Specification              =>
                Make_Procedure_Specification (Loc,
@@ -9561,13 +9592,13 @@ package body Exp_Ch6 is
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
-         --  Note: If you have Convention (C) on an inherently limited type,
-         --  you're on your own. That is, the C code will have to be carefully
-         --  written to know about the Ada conventions.
+         --  Note: If the function has a foreign convention, it cannot build
+         --  its result in place, so you're on your own. On the other hand,
+         --  if only the return type has a foreign convention, its layout is
+         --  intended to be compatible with the other language, but the build-
+         --  in place machinery can ensure that the object is not copied.
 
-         if Has_Foreign_Convention (E)
-           or else Has_Foreign_Convention (Etype (E))
-         then
+         if Has_Foreign_Convention (E) then
             return False;
 
          --  In Ada 2005 all functions with an inherently limited return type
@@ -10435,6 +10466,7 @@ package body Exp_Ch6 is
       Pass_Caller_Acc : Boolean := False;
       New_Expr        : Node_Id;
       Ref_Type        : Entity_Id;
+      Res_Decl        : Node_Id;
       Result_Subt     : Entity_Id;
 
    begin
@@ -10647,11 +10679,12 @@ package body Exp_Ch6 is
       Set_Etype (Def_Id, Ref_Type);
       Set_Is_Known_Non_Null (Def_Id);
 
-      Insert_After_And_Analyze (Ptr_Typ_Decl,
+      Res_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Def_Id,
           Object_Definition   => New_Reference_To (Ref_Type, Loc),
-          Expression          => New_Expr));
+          Expression          => New_Expr);
+      Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
       --  If the result subtype of the called function is constrained and
       --  is not itself the return expression of an enclosing BIP function,
@@ -10660,6 +10693,24 @@ package body Exp_Ch6 is
       if Is_Constrained (Underlying_Type (Result_Subt))
         and then not Is_Return_Object (Defining_Identifier (Object_Decl))
       then
+         --  The related object declaration is encased in a transient block
+         --  because the build-in-place function call contains at least one
+         --  nested function call that produces a controlled transient
+         --  temporary:
+
+         --    Obj : ... := BIP_Func_Call (Ctrl_Func_Call);
+
+         --  Since the build-in-place expansion decouples the call from the
+         --  object declaration, the finalization machinery lacks the context
+         --  which prompted the generation of the transient block. To resolve
+         --  this scenario, store the build-in-place call.
+
+         if Scope_Is_Transient
+           and then Node_To_Be_Wrapped = Object_Decl
+         then
+            Set_BIP_Initialization_Call (Obj_Def_Id, Res_Decl);
+         end if;
+
          Set_Expression (Object_Decl, Empty);
          Set_No_Initialization (Object_Decl);
 
@@ -10759,9 +10810,9 @@ package body Exp_Ch6 is
 
    begin
       pragma Assert (Nkind (Allocator) = N_Allocator
-                       and then Nkind (Function_Call) = N_Function_Call);
+                      and then Nkind (Function_Call) = N_Function_Call);
       pragma Assert (Convention (Function_Id) = Convention_CPP
-                       and then Is_Constructor (Function_Id));
+                      and then Is_Constructor (Function_Id));
       pragma Assert (Is_Constrained (Underlying_Type (Result_Subt)));
 
       --  Replace the initialized allocator of form "new T'(Func (...))" with

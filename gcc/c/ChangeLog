@@ -1,3 +1,9 @@
+2014-02-07  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* c-parser.c (c_parser_get_builtin_args): Replace calls to
+	C_EXPR_APPEND by vec_safe_push.
+	* c-tree.h (C_EXPR_APPEND): Remove.
+
 2014-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/59963

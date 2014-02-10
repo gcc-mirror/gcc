@@ -8946,8 +8946,14 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (!gimple_seq_empty_p (omp_for_body)
       && gimple_code (gimple_seq_first_stmt (omp_for_body)) == GIMPLE_BIND)
     {
-      tree vars = gimple_bind_vars (gimple_seq_first_stmt (omp_for_body));
+      gimple inner_bind = gimple_seq_first_stmt (omp_for_body);
+      tree vars = gimple_bind_vars (inner_bind);
       gimple_bind_append_vars (new_stmt, vars);
+      /* bind_vars/BLOCK_VARS are being moved to new_stmt/block, don't
+	 keep them on the inner_bind and it's block.  */
+      gimple_bind_set_vars (inner_bind, NULL_TREE);
+      if (gimple_bind_block (inner_bind))
+	BLOCK_VARS (gimple_bind_block (inner_bind)) = NULL_TREE;
     }
 
   if (gimple_omp_for_combined_into_p (stmt))
@@ -10649,7 +10655,7 @@ simd_clone_struct_alloc (int nargs)
   size_t len = (sizeof (struct cgraph_simd_clone)
 		+ nargs * sizeof (struct cgraph_simd_clone_arg));
   clone_info = (struct cgraph_simd_clone *)
-	       ggc_internal_cleared_alloc_stat (len PASS_MEM_STAT);
+	       ggc_internal_cleared_alloc (len);
   return clone_info;
 }
 
@@ -10660,7 +10666,8 @@ simd_clone_struct_copy (struct cgraph_simd_clone *to,
 			struct cgraph_simd_clone *from)
 {
   memcpy (to, from, (sizeof (struct cgraph_simd_clone)
-		     + from->nargs * sizeof (struct cgraph_simd_clone_arg)));
+		     + ((from->nargs - from->inbranch)
+			* sizeof (struct cgraph_simd_clone_arg))));
 }
 
 /* Return vector of parameter types of function FNDECL.  This uses
@@ -11693,7 +11700,6 @@ expand_simd_clones (struct cgraph_node *node)
 	  if (i != 0)
 	    {
 	      clone = simd_clone_struct_alloc (clone_info->nargs
-					       - clone_info->inbranch
 					       + ((i & 1) != 0));
 	      simd_clone_struct_copy (clone, clone_info);
 	      /* Undo changes targetm.simd_clone.compute_vecsize_and_simdlen

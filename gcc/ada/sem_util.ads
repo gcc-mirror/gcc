@@ -62,6 +62,7 @@ package Sem_Util is
    --    Precondition
    --    Refined_Depends
    --    Refined_Global
+   --    Refined_Post
    --    Refined_States
    --    Test_Case
 
@@ -169,6 +170,15 @@ package Sem_Util is
    --  If Typ does not have any predicates, the call has no effect. Set flag
    --  Suggest_Static when the context warrants an advice on how to avoid the
    --  use error.
+
+   function Bad_Unordered_Enumeration_Reference
+     (N : Node_Id;
+      T : Entity_Id) return Boolean;
+   --  Node N contains a potentially dubious reference to type T, either an
+   --  explicit comparison, or an explicit range. This function returns True
+   --  if the type T is an enumeration type for which No pragma Order has been
+   --  given, and the reference N is not in the same extended source unit as
+   --  the declaration of T.
 
    function Build_Actual_Subtype
      (T : Entity_Id;
@@ -288,6 +298,10 @@ package Sem_Util is
    --  the pragma contains an expression that evaluates differently in pre-
    --  and post-state. Prag is a [refined] postcondition or a contract-cases
    --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
+
+   procedure Check_SPARK_Mode_In_Generic (N : Node_Id);
+   --  Given a generic package [body] or a generic subprogram [body], inspect
+   --  the aspect specifications (if any) and flag SPARK_Mode as illegal.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;

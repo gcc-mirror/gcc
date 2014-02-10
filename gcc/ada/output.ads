@@ -137,6 +137,10 @@ package Output is
    procedure Write_Line (S : String);
    --  Equivalent to Write_Str (S) followed by Write_Eol;
 
+   function Last_Char return Character;
+   --  Returns last character written on the current line, or null if the
+   --  current line is (so far) empty.
+
    function Column return Pos;
    pragma Inline (Column);
    --  Returns the number of the column about to be written (e.g. a value of 1

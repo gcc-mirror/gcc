@@ -2119,8 +2119,8 @@ package body Sem_Ch3 is
          --  spec analysis.
 
       begin
-         --  Consider only procedure bodies whose name matches one of type
-         --  [Limited_]Controlled's primitives.
+         --  Consider only procedure bodies whose name matches one of the three
+         --  controlled primitives.
 
          if Nkind (Body_Spec) /= N_Procedure_Specification
            or else not Nam_In (Chars (Body_Id), Name_Adjust,
@@ -2129,14 +2129,15 @@ package body Sem_Ch3 is
          then
             return;
 
-         --  A controlled primitive must have exactly one formal whose type
-         --  derives from [Limited_]Controlled.
+         --  A controlled primitive must have exactly one formal
 
          elsif List_Length (Params) /= 1 then
             return;
          end if;
 
          Dummy := Analyze_Subprogram_Specification (Body_Spec);
+
+         --  The type of the formal must be derived from [Limited_]Controlled
 
          if not Is_Controlled (Etype (Defining_Entity (First (Params)))) then
             return;
@@ -2152,12 +2153,16 @@ package body Sem_Ch3 is
          end if;
 
          --  At this point the body is known to be a late controlled primitive.
-         --  Generate a matching spec and insert it before the body.
+         --  Generate a matching spec and insert it before the body. Note the
+         --  use of Copy_Separate_Tree - we want an entirely separate semantic
+         --  tree in this case.
 
-         Spec := New_Copy_Tree (Body_Spec);
+         Spec := Copy_Separate_Tree (Body_Spec);
 
-         Set_Defining_Unit_Name
-           (Spec, Make_Defining_Identifier (Loc, Chars (Body_Id)));
+         --  Ensure that the subprogram declaration does not inherit the null
+         --  indicator from the body as we now have a proper spec/body pair.
+
+         Set_Null_Present (Spec, False);
 
          Insert_Before_And_Analyze (Body_Decl,
            Make_Subprogram_Declaration (Loc,
@@ -3546,10 +3551,13 @@ package body Sem_Ch3 is
 
       --  We need a predicate check if the type has predicates, and if either
       --  there is an initializing expression, or for default initialization
-      --  when we have at least one case of an explicit default initial value.
+      --  when we have at least one case of an explicit default initial value
+      --  and then this is not an internal declaration whose initialization
+      --  comes later (as for an aggregate expansion).
 
       if not Suppress_Assignment_Checks (N)
         and then Present (Predicate_Function (T))
+        and then not No_Initialization (N)
         and then
           (Present (E)
             or else
@@ -15772,8 +15780,12 @@ package body Sem_Ch3 is
            and then No (Expression (P))
          then
             null;
+
+         --  Here we freeze the base type of object type to catch premature use
+         --  of discriminated private type without a full view.
+
          else
-            Insert_Actions (Obj_Def, Freeze_Entity (T, P));
+            Insert_Actions (Obj_Def, Freeze_Entity (Base_Type (T), P));
          end if;
 
       --  Ada 2005 AI-406: the object definition in an object declaration
@@ -18675,7 +18687,7 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Ada 2005 AI 161: Check preelaboratable initialization consistency
+      --  Ada 2005 AI 161: Check preelaborable initialization consistency
 
       if Known_To_Have_Preelab_Init (Priv_T) then
 
@@ -18737,10 +18749,16 @@ package body Sem_Ch3 is
          Set_Has_Inheritable_Invariants (Full_T);
       end if;
 
-      --  Propagate predicates to full type
+      --  Propagate predicates to full type, and predicate function if already
+      --  defined. It is not clear that this can actually happen? the partial
+      --  view cannot be frozen yet, and the predicate function has not been
+      --  built. Still it is a cheap check and seems safer to make it.
 
       if Has_Predicates (Priv_T) then
-         Set_Predicate_Function (Priv_T, Predicate_Function (Full_T));
+         if Present (Predicate_Function (Priv_T)) then
+            Set_Predicate_Function (Full_T, Predicate_Function (Priv_T));
+         end if;
+
          Set_Has_Predicates (Full_T);
       end if;
    end Process_Full_View;

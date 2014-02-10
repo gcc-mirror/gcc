@@ -1116,8 +1116,15 @@ init_regs_for_mode (enum machine_mode mode)
 
   for (cur_reg = 0; cur_reg < FIRST_PSEUDO_REGISTER; cur_reg++)
     {
-      int nregs = hard_regno_nregs[cur_reg][mode];
+      int nregs;
       int i;
+
+      /* See whether it accepts all modes that occur in
+         original insns.  */
+      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
+        continue;
+
+      nregs = hard_regno_nregs[cur_reg][mode];
 
       for (i = nregs - 1; i >= 0; --i)
         if (fixed_regs[cur_reg + i]
@@ -1138,11 +1145,6 @@ init_regs_for_mode (enum machine_mode mode)
           break;
 
       if (i >= 0)
-        continue;
-
-      /* See whether it accepts all modes that occur in
-         original insns.  */
-      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
         continue;
 
       if (HARD_REGNO_CALL_PART_CLOBBERED (cur_reg, mode))
@@ -6741,7 +6743,11 @@ code_motion_path_driver (insn_t insn, av_set_t orig_ops, ilist_t path,
      the numbering by creating bookkeeping blocks.  */
   if (removed_last_insn)
     insn = PREV_INSN (insn);
-  bitmap_set_bit (code_motion_visited_blocks, BLOCK_FOR_INSN (insn)->index);
+
+  /* If we have simplified the control flow and removed the first jump insn,
+     there's no point in marking this block in the visited blocks bitmap.  */
+  if (BLOCK_FOR_INSN (insn))
+    bitmap_set_bit (code_motion_visited_blocks, BLOCK_FOR_INSN (insn)->index);
   return true;
 }
 

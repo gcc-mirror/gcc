@@ -18,10 +18,10 @@ compute_rndscaless (float *s1, float *s2, float *r, int imm)
   switch (rc)
     {
     case _MM_FROUND_FLOOR:
-      r[0] = floorf (s2[0] * pow (2, m)) / pow (2, m);
+      r[0] = __builtin_floorf (s2[0] * pow (2, m)) / pow (2, m);
       break;
     case _MM_FROUND_CEIL:
-      r[0] = ceilf (s2[0] * pow (2, m)) / pow (2, m);
+      r[0] = __builtin_ceilf (s2[0] * pow (2, m)) / pow (2, m);
       break;
     default:
       abort ();

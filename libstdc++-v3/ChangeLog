@@ -1,3 +1,9 @@
+2014-02-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/abi/post/mips64-linux-gnu/32/baseline_symbols.txt: New file.
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/mips64-linux-gnu/64/baseline_symbols.txt: Likewise.
+
 2014-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (allocator_traits::_S_allocate): Do

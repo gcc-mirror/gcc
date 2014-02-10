@@ -1691,6 +1691,13 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
     }
 
   gimple_set_location (vec_stmt, gimple_location (stmt));
+
+  /* While EH edges will generally prevent vectorization, stmt might
+     e.g. be in a must-not-throw region.  Ensure newly created stmts
+     that could throw are part of the same region.  */
+  int lp_nr = lookup_stmt_eh_lp (stmt);
+  if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
+    add_stmt_to_eh_lp (vec_stmt, lp_nr);
 }
 
 /* Checks if CALL can be vectorized in type VECTYPE.  Returns

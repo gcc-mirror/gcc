@@ -1192,6 +1192,17 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 					      dim, gfc_index_one_node);
 	}
 
+      /* If this is a subreference array pointer associate name use the
+	 associate variable element size for the value of 'span'.  */
+      if (sym->attr.subref_array_pointer)
+	{
+	  gcc_assert (e->expr_type == EXPR_VARIABLE);
+	  tmp = e->symtree->n.sym->backend_decl;
+	  tmp = gfc_get_element_type (TREE_TYPE (tmp));
+	  tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+	  gfc_add_modify (&se.pre, GFC_DECL_SPAN(desc), tmp);
+	}
+
       /* Done, register stuff as init / cleanup code.  */
       gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
 			    gfc_finish_block (&se.post));

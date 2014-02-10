@@ -897,12 +897,12 @@ static const char *asm_options =
 
 static const char *invoke_as =
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
-"%{!fwpa:\
+"%{!fwpa*:\
    %{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
    %{!S:-o %|.s |\n as %(asm_options) %|.s %A }\
   }";
 #else
-"%{!fwpa:\
+"%{!fwpa*:\
    %{fcompare-debug=*|fdump-final-insns=*:%:compare-debug-dump-opt()}\
    %{!S:-o %|.s |\n as %(asm_options) %m.s %A }\
   }";
@@ -3677,6 +3677,10 @@ driver_handle_option (struct gcc_options *opts,
 	 first two, gfortranspec.c understands -static-libgfortran and
 	 g++spec.c understands -static-libstdc++ */
       validated = true;
+      break;
+
+    case OPT_fwpa:
+      flag_wpa = "";
       break;
 
     default:
