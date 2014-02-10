@@ -1,3 +1,9 @@
+2014-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-devirt.c (get_polymorphic_call_info_from_invariant): Return
+	proper constants and fix formatting.
+	(possible_polymorphic_call_targets): Fix formatting.
+
 2014-02-10  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Ilya Tocar  <ilya.tocar@intel.com>
 
