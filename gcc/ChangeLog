@@ -1,3 +1,19 @@
+2014-02-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59903
+	* tree-vect-loop.c (vect_transform_loop): Guard multiple-types
+	check properly.
+
+	2014-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60115
+	* tree-eh.c (tree_could_trap_p): Unify TARGET_MEM_REF and
+	MEM_REF handling.  Properly verify that the accesses are not
+	out of the objects bound.
+
 2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.
