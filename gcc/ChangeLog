@@ -1,3 +1,10 @@
+2014-02-10  Jeff Law  <law@redhat.com>
+
+	PR middle-end/52306
+	* reload1.c (emit_input_reload_insns): Do not create invalid RTL
+	when changing the SET_DEST of a prior insn to avoid an input
+	reload.
+
 2014-02-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/sysv4.h (ENDIAN_SELECT): Do not attempt to enforce

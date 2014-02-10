@@ -1,3 +1,8 @@
+2014-02-10  Jeff Law  <law@redhat.com>
+
+	PR middle-end-52306
+	* gcc.c-torture/compile/pr52306.c: New test.
+
 2014-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/ext/vector26.C: Use -mmmx for 32-bit x86.
