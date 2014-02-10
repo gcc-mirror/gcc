@@ -1,3 +1,8 @@
+2014-02-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_override_options): Fix typo from
+	coretex to cortex.
+
 2014-02-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-devirt.c (get_polymorphic_call_info_from_invariant): Return
