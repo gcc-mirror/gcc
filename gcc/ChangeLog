@@ -1,3 +1,10 @@
+2014-02-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/60080
+	* cfgexpand.c (expand_asm_operands): Attach source location to
+	ASM_INPUT rtx objects.
+	* print-rtl.c (print_rtx): Check for UNKNOWN_LOCATION.
+
 2014-02-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (popcount): New function.
@@ -489,7 +496,7 @@
 
 2014-02-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	* gcc/config/host-linux.c (linux_gt_pch_use_address): Don't
+	* config/host-linux.c (linux_gt_pch_use_address): Don't
 	use SSIZE_MAX because it is not always defined. 
 
 2014-02-04  Vladimir Makarov  <vmakarov@redhat.com>

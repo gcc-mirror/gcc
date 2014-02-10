@@ -2678,8 +2678,9 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       ASM_OPERANDS_INPUT (body, i) = op;
 
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
-	= gen_rtx_ASM_INPUT (TYPE_MODE (type),
-			     ggc_strdup (constraints[i + noutputs]));
+	= gen_rtx_ASM_INPUT_loc (TYPE_MODE (type),
+				 ggc_strdup (constraints[i + noutputs]),
+				 locus);
 
       if (tree_conflicts_with_clobbers_p (val, &clobbered_regs))
 	clobber_conflict_found = 1;
@@ -2701,7 +2702,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
       sprintf (buffer, "%d", j);
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
-	= gen_rtx_ASM_INPUT (inout_mode[i], ggc_strdup (buffer));
+	= gen_rtx_ASM_INPUT_loc (inout_mode[i], ggc_strdup (buffer), locus);
     }
 
   /* Copy labels to the vector.  */

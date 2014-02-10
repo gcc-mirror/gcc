@@ -417,17 +417,19 @@ print_rtx (const_rtx in_rtx)
 	else if (i == 6 && GET_CODE (in_rtx) == ASM_OPERANDS)
 	  {
 #ifndef GENERATOR_FILE
-	    fprintf (outfile, " %s:%i",
-		     LOCATION_FILE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)),
-		     LOCATION_LINE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)));
+	    if (ASM_OPERANDS_SOURCE_LOCATION (in_rtx) != UNKNOWN_LOCATION)
+	      fprintf (outfile, " %s:%i",
+		       LOCATION_FILE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)),
+		       LOCATION_LINE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)));
 #endif
 	  }
 	else if (i == 1 && GET_CODE (in_rtx) == ASM_INPUT)
 	  {
 #ifndef GENERATOR_FILE
-	    fprintf (outfile, " %s:%i",
-		     LOCATION_FILE (ASM_INPUT_SOURCE_LOCATION (in_rtx)),
-		     LOCATION_LINE (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
+	    if (ASM_INPUT_SOURCE_LOCATION (in_rtx) != UNKNOWN_LOCATION)
+	      fprintf (outfile, " %s:%i",
+		       LOCATION_FILE (ASM_INPUT_SOURCE_LOCATION (in_rtx)),
+		       LOCATION_LINE (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
 #endif
 	  }
 	else if (i == 6 && NOTE_P (in_rtx))
