@@ -1,3 +1,8 @@
+2014-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/vect/pr33426-ivdep-3.cc: Require vect_int_mult as well.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Likewise.
+
 2014-02-10  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Ilya Tocar  <ilya.tocar@intel.com>
 
