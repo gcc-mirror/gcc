@@ -7362,9 +7362,18 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	  /* Store into the reload register instead of the pseudo.  */
 	  SET_DEST (PATTERN (temp)) = reloadreg;
 
-	  /* Verify that resulting insn is valid.  */
+	  /* Verify that resulting insn is valid. 
+
+	     Note that we have replaced the destination of TEMP with
+	     RELOADREG.  If TEMP references RELOADREG within an
+	     autoincrement addressing mode, then the resulting insn
+	     is ill-formed and we must reject this optimization.  */
 	  extract_insn (temp);
-	  if (constrain_operands (1))
+	  if (constrain_operands (1)
+#ifdef AUTO_INC_DEC
+	      && ! find_reg_note (temp, REG_INC, reloadreg)
+#endif
+	      )
 	    {
 	      /* If the previous insn is an output reload, the source is
 		 a reload register, and its spill_reg_store entry will
