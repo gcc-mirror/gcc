@@ -1,3 +1,10 @@
+2014-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60115
+	* tree-eh.c (tree_could_trap_p): Unify TARGET_MEM_REF and
+	MEM_REF handling.  Properly verify that the accesses are not
+	out of the objects bound.
+
 2014-02-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_override_options): Fix typo from

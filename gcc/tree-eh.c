@@ -2610,12 +2610,6 @@ tree_could_trap_p (tree expr)
  restart:
   switch (code)
     {
-    case TARGET_MEM_REF:
-      if (TREE_CODE (TMR_BASE (expr)) == ADDR_EXPR
-	  && !TMR_INDEX (expr) && !TMR_INDEX2 (expr))
-	return false;
-      return !TREE_THIS_NOTRAP (expr);
-
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -2642,10 +2636,36 @@ tree_could_trap_p (tree expr)
 	return false;
       return !in_array_bounds_p (expr);
 
+    case TARGET_MEM_REF:
     case MEM_REF:
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR
+	  && tree_could_trap_p (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)))
+	return true;
+      if (TREE_THIS_NOTRAP (expr))
 	return false;
-      /* Fallthru.  */
+      /* We cannot prove that the access is in-bounds when we have
+         variable-index TARGET_MEM_REFs.  */
+      if (code == TARGET_MEM_REF
+	  && (TMR_INDEX (expr) || TMR_INDEX2 (expr)))
+	return true;
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	{
+	  tree base = TREE_OPERAND (TREE_OPERAND (expr, 0), 0);
+	  double_int off = mem_ref_offset (expr);
+	  if (off.is_negative ())
+	    return true;
+	  if (TREE_CODE (base) == STRING_CST)
+	    return double_int::from_uhwi (TREE_STRING_LENGTH (base)).ule (off);
+	  else if (DECL_SIZE_UNIT (base) == NULL_TREE
+		   || TREE_CODE (DECL_SIZE_UNIT (base)) != INTEGER_CST
+		   || tree_to_double_int (DECL_SIZE_UNIT (base)).ule (off))
+	    return true;
+	  /* Now we are sure the first byte of the access is inside
+	     the object.  */
+	  return false;
+	}
+      return true;
+
     case INDIRECT_REF:
       return !TREE_THIS_NOTRAP (expr);
 
