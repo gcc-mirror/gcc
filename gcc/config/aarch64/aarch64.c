@@ -5244,7 +5244,7 @@ aarch64_override_options (void)
 
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "coretex-a53".  */
+     --with-cpu, otherwise it is "cortex-a53".  */
   if (!selected_cpu)
     {
       selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];
