@@ -5665,17 +5665,9 @@ _mm512_mask_storeu_epi64 (void *__P, __mmask8 __U, __m512i __A)
 				     (__mmask8) __U);
 }
 
-extern __inline void
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_storeu_epi64 (void *__P, __m512i __A)
-{
-  __builtin_ia32_storedqudi512_mask ((__v8di *) __P, (__v8di) __A,
-				     (__mmask8) -1);
-}
-
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_loadu_epi32 (void const *__P)
+_mm512_loadu_si512 (void const *__P)
 {
   return (__m512i) __builtin_ia32_loaddqusi512_mask ((const __v16si *) __P,
 						     (__v16si)
@@ -5704,7 +5696,7 @@ _mm512_maskz_loadu_epi32 (__mmask16 __U, void const *__P)
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_storeu_epi32 (void *__P, __m512i __A)
+_mm512_storeu_si512 (void *__P, __m512i __A)
 {
   __builtin_ia32_storedqusi512_mask ((__v16si *) __P, (__v16si) __A,
 				     (__mmask16) -1);
@@ -8389,174 +8381,7 @@ _mm512_mask_ceil_pd (__m512d __W, __mmask8 __U, __m512d __A)
 						   _MM_FROUND_CUR_DIRECTION);
 }
 
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_floor_ps (__mmask16 __U, __m512 __A)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_FLOOR,
-						  (__v16sf)
-						  _mm512_setzero_ps (),
-						  __U,
-						  _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_floor_pd (__mmask8 __U, __m512d __A)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_FLOOR,
-						   (__v8df)
-						   _mm512_setzero_pd (),
-						   __U,
-						   _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_ceil_ps (__mmask16 __U, __m512 __A)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_CEIL,
-						  (__v16sf)
-						  _mm512_setzero_ps (),
-						  __U,
-						  _MM_FROUND_CUR_DIRECTION);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_ceil_pd (__mmask8 __U, __m512d __A)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_CEIL,
-						   (__v8df)
-						   _mm512_setzero_pd (),
-						   __U,
-						   _MM_FROUND_CUR_DIRECTION);
-}
-
 #ifdef __OPTIMIZE__
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_floor_round_ps (__m512 __A, const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_FLOOR,
-						  (__v16sf) __A, -1, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_floor_round_pd (__m512d __A, const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_FLOOR,
-						   (__v8df) __A, -1, __R);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_ceil_round_ps (__m512 __A, const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_CEIL,
-						  (__v16sf) __A, -1, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_ceil_round_pd (__m512d __A, const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_CEIL,
-						   (__v8df) __A, -1, __R);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_floor_round_ps (__m512 __W, __mmask16 __U, __m512 __A,
-			    const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_FLOOR,
-						  (__v16sf) __W, __U, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_floor_round_pd (__m512d __W, __mmask8 __U, __m512d __A,
-			    const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_FLOOR,
-						   (__v8df) __W, __U, __R);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_ceil_round_ps (__m512 __W, __mmask16 __U, __m512 __A, const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_CEIL,
-						  (__v16sf) __W, __U, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_ceil_round_pd (__m512d __W, __mmask8 __U, __m512d __A,
-			   const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_CEIL,
-						   (__v8df) __W, __U, __R);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_floor_round_ps (__mmask16 __U, __m512 __A, const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_FLOOR,
-						  (__v16sf)
-						  _mm512_setzero_ps (),
-						  __U, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_floor_round_pd (__mmask8 __U, __m512d __A, const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_FLOOR,
-						   (__v8df)
-						   _mm512_setzero_pd (),
-						   __U, __R);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_ceil_round_ps (__mmask16 __U, __m512 __A, const int __R)
-{
-  return (__m512) __builtin_ia32_rndscaleps_mask ((__v16sf) __A,
-						  _MM_FROUND_CEIL,
-						  (__v16sf)
-						  _mm512_setzero_ps (),
-						  __U, __R);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_ceil_round_pd (__mmask8 __U, __m512d __A, const int __R)
-{
-  return (__m512d) __builtin_ia32_rndscalepd_mask ((__v8df) __A,
-						   _MM_FROUND_CEIL,
-						   (__v8df)
-						   _mm512_setzero_pd (),
-						   __U, __R);
-}
-
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_alignr_epi32 (__m512i __A, __m512i __B, const int __imm)
@@ -8625,67 +8450,6 @@ _mm512_maskz_alignr_epi64 (__mmask8 __U, __m512i __A, __m512i __B,
 						  (__mmask8) __U);
 }
 #else
-#define _mm512_floor_round_ps(A, R) \
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(A),	\
-					    _MM_FROUND_FLOOR,		\
-					    (__v16sf)(__m512)(A),	\
-					    (__mmask16)(-1), R))
-#define _mm512_mask_floor_round_ps(A, B, C, R)				\
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(C),	\
-					    _MM_FROUND_FLOOR,		\
-					    (__v16sf)(__m512)(A),	\
-					    (__mmask16)(B), R))
-#define _mm512_maskz_floor_round_ps(A, B, R)				\
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(B),	\
-					    _MM_FROUND_FLOOR,		\
-					    (__v16sf)_mm512_setzero_ps(),\
-					    (__mmask16)(A), R))
-#define _mm512_floor_round_pd(A, R) \
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(A),	\
-					    _MM_FROUND_FLOOR,		\
-					    (__v8df)(__m512d)(A),	\
-					     (__mmask8)(-1), R))
-#define _mm512_mask_floor_round_pd(A, B, C, R)				\
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(C),	\
-					    _MM_FROUND_FLOOR,		\
-					     (__v8df)(__m512d)(A),	\
-					     (__mmask8)(B), R))
-#define _mm512_maskz_floor_round_pd(A, B, R)				\
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(B),	\
-					    _MM_FROUND_FLOOR,		\
-					     (__v8df)_mm512_setzero_pd(),\
-					     (__mmask8)(A), R))
-#define _mm512_ceil_round_ps(A, R) \
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(A),	\
-					    _MM_FROUND_CEIL,		\
-					    (__v16sf)(__m512)(A),	\
-					    (__mmask16)(-1), R))
-#define _mm512_mask_ceil_round_ps(A, B, C, R)				\
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(C),	\
-					    _MM_FROUND_CEIL,		\
-					    (__v16sf)(__m512)(A),	\
-					    (__mmask16)(B), R))
-#define _mm512_maskz_ceil_round_ps(A, B, R)				\
-  ((__m512) __builtin_ia32_rndscaleps_mask ((__v16sf)(__m512)(B),	\
-					    _MM_FROUND_CEIL,		\
-					    (__v16sf)_mm512_setzero_ps(),\
-					    (__mmask16)(A), R))
-#define _mm512_ceil_round_pd(A, R) \
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(A),	\
-					    _MM_FROUND_CEIL,		\
-					    (__v8df)(__m512d)(A),	\
-					     (__mmask8)(-1), R))
-#define _mm512_mask_ceil_round_pd(A, B, C, R)				\
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(C),	\
-					    _MM_FROUND_CEIL,		\
-					     (__v8df)(__m512d)(A),	\
-					     (__mmask8)(B), R))
-#define _mm512_maskz_ceil_round_pd(A, B, R)				\
-  ((__m512d) __builtin_ia32_rndscalepd_mask ((__v8df)(__m512d)(B),	\
-					    _MM_FROUND_CEIL,		\
-					     (__v8df)_mm512_setzero_pd(),\
-					     (__mmask8)(A), R))
-
 #define _mm512_alignr_epi32(X, Y, C)                                        \
     ((__m512i)__builtin_ia32_alignd512_mask ((__v16si)(__m512i)(X),         \
         (__v16si)(__m512i)(Y), (int)(C), (__v16si)(__m512i)(X),             \
@@ -9797,13 +9561,6 @@ _mm512_mask_compressstoreu_epi32 (void *__P, __mmask16 __U, __m512i __A)
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_expand_pd (__m512d __A)
-{
-  return (__m512d) __builtin_ia32_expanddf512 ((__v8df) __A);
-}
-
-extern __inline __m512d
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_expand_pd (__m512d __W, __mmask8 __U, __m512d __A)
 {
   return (__m512d) __builtin_ia32_expanddf512_mask ((__v8df) __A,
@@ -9838,13 +9595,6 @@ _mm512_maskz_expandloadu_pd (__mmask8 __U, void const *__P)
 							 (__v8df)
 							 _mm512_setzero_pd (),
 							 (__mmask8) __U);
-}
-
-extern __inline __m512
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_expand_ps (__m512 __A)
-{
-  return (__m512) __builtin_ia32_expandsf512 ((__v16sf) __A);
 }
 
 extern __inline __m512

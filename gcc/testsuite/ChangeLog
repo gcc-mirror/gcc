@@ -1,3 +1,34 @@
+2014-02-10  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-vexpandpd-1.c: Update intrinsics.
+	* gcc.target/i386/avx512f-vexpandps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-1: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-2: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-1: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-2: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmupd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmupq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-2.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dpd-1.c: Update parameters.
+	* gcc.target/i386/avx512pf-vgatherpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-2.c: Initialize 64 bits.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-2.c: Ditto.
+
 2014-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/pr59984.c: Require effective target
