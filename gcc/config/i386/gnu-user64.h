@@ -32,12 +32,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    done.  */
 
 #if TARGET_64BIT_DEFAULT
-#define SPEC_32 "m32"
+#define SPEC_32 "m16|m32"
 #if TARGET_BI_ARCH == 2
 #define SPEC_64 "m64"
-#define SPEC_X32 "m32|m64:;"
+#define SPEC_X32 "m16|m32|m64:;"
 #else
-#define SPEC_64 "m32|mx32:;"
+#define SPEC_64 "m16|m32|mx32:;"
 #define SPEC_X32 "mx32"
 #endif
 #else

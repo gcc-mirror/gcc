@@ -1,4 +1,4 @@
-/* { dg-options "(-mmicromips)" } */
+/* { dg-options "(-mmicromips) addressing=absolute" } */
 
 void foo (void);
 

@@ -638,7 +638,8 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 
       if (!TREE_OVERFLOW_P (stripped)
 	  && folded_result != error_mark_node)
-	warnings_for_convert_and_check (type, folded, folded_result);
+	warnings_for_convert_and_check (input_location, type, folded,
+					folded_result);
     }
 
   return result;
@@ -752,6 +753,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     unspecified.  */
 	  if ((complain & tf_warning)
 	      && TREE_CODE (e) == INTEGER_CST
+	      && ENUM_UNDERLYING_TYPE (type)
 	      && !int_fits_type_p (e, ENUM_UNDERLYING_TYPE (type)))
 	    warning_at (loc, OPT_Wconversion, 
 			"the result of the conversion is unspecified because "

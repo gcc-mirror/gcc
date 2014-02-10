@@ -187,6 +187,8 @@ rest_of_decl_compilation (tree decl,
 			  int top_level,
 			  int at_end)
 {
+  bool finalize = true;
+
   /* We deferred calling assemble_alias so that we could collect
      other attributes such as visibility.  Emit the alias now.  */
   if (!in_lto_p)
@@ -203,6 +205,7 @@ rest_of_decl_compilation (tree decl,
 	DECL_EXTERNAL (decl) = 0;
 	TREE_STATIC (decl) = 1;
 	assemble_alias (decl, alias);
+	finalize = false;
       }
   }
 
@@ -234,7 +237,7 @@ rest_of_decl_compilation (tree decl,
 	     rebuild it.  */
 	  if (in_lto_p && !at_end)
 	    ;
-	  else if (TREE_CODE (decl) != FUNCTION_DECL)
+	  else if (finalize && TREE_CODE (decl) != FUNCTION_DECL)
 	    varpool_finalize_decl (decl);
 	}
 

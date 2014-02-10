@@ -29,7 +29,8 @@ extern "C" const char* __tsan_default_options();
 void WEAK OverrideFlags(Flags *f) {
   (void)f;
 }
-extern "C" const char *WEAK __tsan_default_options() {
+extern "C" SANITIZER_INTERFACE_ATTRIBUTE
+const char *WEAK __tsan_default_options() {
   return "";
 }
 #endif

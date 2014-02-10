@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++1y" }
 // { dg-do run { xfail *-*-* } }
-// { dg-options "-O0" }
+// { dg-options "-std=gnu++1y -O0" }
 // { dg-require-debug-mode "" }
 
 // Copyright (C) 2013-2014 Free Software Foundation, Inc.
@@ -26,6 +25,6 @@ int
 main()
 {
   typedef std::experimental::string_view string_view_type;
-  experimental::string_view_type s;
+  string_view_type s;
   s[0]; // abort
 }

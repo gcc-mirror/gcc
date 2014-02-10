@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,14 +60,14 @@ package Csets is
    --  The character set in use is specified by the value stored in
    --  Opt.Identifier_Character_Set, which has the following settings:
 
-   --    '1'  Latin-1 (ISO-8859-1)
-   --    '2'  Latin-2 (ISO-8859-2)
-   --    '3'  Latin-3 (ISO-8859-3)
-   --    '4'  Latin-4 (ISO-8859-4)
-   --    '5'  Latin-5 (ISO-8859-5, Cyrillic)
-   --    'p'  IBM PC  (code page 437)
-   --    '8'  IBM PC  (code page 850)
-   --    '9'  Latin-9 (ISO-9959-9)
+   --    '1'  Latin-1  (ISO-8859-1)
+   --    '2'  Latin-2  (ISO-8859-2)
+   --    '3'  Latin-3  (ISO-8859-3)
+   --    '4'  Latin-4  (ISO-8859-4)
+   --    '5'  Cyrillic (ISO-8859-5)
+   --    'p'  IBM PC   (code page 437)
+   --    '8'  IBM PC   (code page 850)
+   --    '9'  Latin-9  (ISO-8859-15)
    --    'f'  Full upper set (all distinct)
    --    'n'  No upper characters (Ada/83 rules)
    --    'w'  Latin-1 plus wide characters also allowed

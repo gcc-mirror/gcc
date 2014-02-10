@@ -2390,7 +2390,7 @@ package body Ada.Containers.Bounded_Vectors is
    is
    begin
       if Capacity > Container.Capacity then
-         raise Constraint_Error with "Capacity is out of range";
+         raise Capacity_Error with "Capacity is out of range";
       end if;
    end Reserve_Capacity;
 

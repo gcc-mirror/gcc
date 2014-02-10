@@ -50,7 +50,7 @@ package body Sinput.C is
       --  indicates failure to open the specified source file.
 
       Len : Integer;
-      --  Length of file. Assume no more than 2 gigabytes of source!
+      --  Length of file (assume no more than 2 gigabytes of source)
 
       Actual_Len : Integer;
 
@@ -147,7 +147,7 @@ package body Sinput.C is
       end;
 
       --  Read is complete, close the file and we are done (no need to test
-      --  status from close, since we have successfully read the file!)
+      --  status from close, since we have successfully read the file).
 
       Close (Source_File_FD);
 

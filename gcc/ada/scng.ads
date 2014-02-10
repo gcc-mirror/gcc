@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,6 +55,10 @@ generic
    --  Instantiation of Styleg with the same error reporting routines
 
 package Scng is
+
+   procedure Check_End_Of_Line;
+   --  Called when end of line encountered. Checks that line is not too long,
+   --  and that other style checks for the end of line are met.
 
    procedure Initialize_Scanner (Index : Source_File_Index);
    --  Initialize lexical scanner for scanning a new file referenced by Index.

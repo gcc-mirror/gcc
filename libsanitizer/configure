@@ -612,6 +612,8 @@ ALLOC_FILE
 VIEW_FILE
 BACKTRACE_SUPPORTED
 FORMAT_FILE
+SANITIZER_SUPPORTED_FALSE
+SANITIZER_SUPPORTED_TRUE
 USING_MAC_INTERPOSE_FALSE
 USING_MAC_INTERPOSE_TRUE
 link_liblsan
@@ -12017,7 +12019,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12020 "configure"
+#line 12022 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12123,7 +12125,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12126 "configure"
+#line 12128 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15586,6 +15588,47 @@ fi
 
 backtrace_supported=yes
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary platform features" >&5
+$as_echo_n "checking for necessary platform features... " >&6; }
+case "$target" in
+  *-*-linux*)
+    # Some old Linux distributions miss required syscalls.
+    sanitizer_supported=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+int
+main ()
+{
+
+      syscall (__NR_gettid);
+      syscall (__NR_futex);
+      syscall (__NR_exit_group);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  sanitizer_supported=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    ;;
+  *)
+    sanitizer_supported=yes
+    ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $sanitizer_supported" >&5
+$as_echo "$sanitizer_supported" >&6; }
+ if test "$sanitizer_supported" = yes; then
+  SANITIZER_SUPPORTED_TRUE=
+  SANITIZER_SUPPORTED_FALSE='#'
+else
+  SANITIZER_SUPPORTED_TRUE='#'
+  SANITIZER_SUPPORTED_FALSE=
+fi
+
+
 # Test for __sync support.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking __sync extensions" >&5
 $as_echo_n "checking __sync extensions... " >&6; }
@@ -16454,6 +16497,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_MAC_INTERPOSE_TRUE}" && test -z "${USING_MAC_INTERPOSE_FALSE}"; then
   as_fn_error "conditional \"USING_MAC_INTERPOSE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${SANITIZER_SUPPORTED_TRUE}" && test -z "${SANITIZER_SUPPORTED_FALSE}"; then
+  as_fn_error "conditional \"SANITIZER_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBBACKTRACE_SUPPORTED_TRUE}" && test -z "${LIBBACKTRACE_SUPPORTED_FALSE}"; then

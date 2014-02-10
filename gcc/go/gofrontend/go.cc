@@ -119,6 +119,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Use temporary variables to force order of evaluation.
   ::gogo->order_evaluations();
 
+  // Convert named types to backend representation.
+  ::gogo->convert_named_types();
+
   // Flatten the parse tree.
   ::gogo->flatten();
 

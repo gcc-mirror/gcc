@@ -5,7 +5,8 @@
 
 int z = Q;
 
-__attribute__ ((vector (uniform(x), vectorlength (), linear (y:1) ))) /* { dg-error "expected expression" } */
+__attribute__ ((vector (uniform(x), vectorlength (), linear (y:1) ))) /* { dg-error "expected expression" "" { target c } } */ 
+     /* { dg-error "expected primary-expression" "" { target c++ }  8 } */ 
 int func2 (int x, int y)
 {
   int zq = 5;
@@ -19,7 +20,8 @@ int func3 (int x, int y)
   return x + (y*zq);
 }
 
-__attribute__ ((vector (uniform(x), linear (y:1), vectorlength (z) ))) /* { dg-error "vectorlength must be an integer" } */
+__attribute__ ((vector (uniform(x), linear (y:1), vectorlength (z) ))) /* { dg-error "vectorlength must be an integer" "" { target c } } */ 
+     /* { dg-error "constant" "" { target c++ } 23 } */
 int func4 (int x, int y)
 {
   int zq = 5;
@@ -33,7 +35,8 @@ int func5 (int x, int y)
   return x + (y*zq);
 }
 
-__attribute__ ((vector (uniform(x), vectorlength (z), linear (y:1)))) /* { dg-error "vectorlength must be an integer" } */
+__attribute__ ((vector (uniform(x), vectorlength (z), linear (y:1)))) /* { dg-error "vectorlength must be an integer" ""  { target c } } */ 
+     /* { dg-error "constant" "" { target c++ }  38 } */
 int func6 (int x, int y)
 {
   int zq = 5;

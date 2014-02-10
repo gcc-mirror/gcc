@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -464,11 +464,11 @@ package body Csets is
 
       others => ' ');
 
-   ---------------------------------------------------
-   -- Definitions for Latin-5 (Cyrillic ISO-8859-5) --
-   ---------------------------------------------------
+   -------------------------------------------
+   -- Definitions for Cyrillic (ISO-8859-5) --
+   -------------------------------------------
 
-   Fold_Latin_5 : constant Translate_Table := Translate_Table'(
+   Fold_Cyrillic : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_D0 => X_B0,  X_E0 => X_C0,
       'b' => 'B',  X_D1 => X_B1,  X_E1 => X_C1,  X_F1 => X_A1,
@@ -539,9 +539,9 @@ package body Csets is
 
       others => ' ');
 
-   ------------------------------------------
-   -- Definitions for Latin-9 (ISO 8859-9) --
-   ------------------------------------------
+   -------------------------------------------
+   -- Definitions for Latin-9 (ISO 8859-15) --
+   -------------------------------------------
 
    Fold_Latin_9 : constant Translate_Table := Translate_Table'(
 
@@ -1112,7 +1112,7 @@ package body Csets is
          Fold_Upper := Fold_Latin_4;
 
       elsif Identifier_Character_Set = '5' then
-         Fold_Upper := Fold_Latin_5;
+         Fold_Upper := Fold_Cyrillic;
 
       elsif Identifier_Character_Set = 'p' then
          Fold_Upper := Fold_IBM_PC_437;

@@ -65,13 +65,11 @@ TEST (void)
 	  imm = _MM_FROUND_FLOOR;
 	  res1.x = INTRINSIC (_floor_ps) (s.x);
 	  res2.x = INTRINSIC (_mask_floor_ps) (res2.x, mask, s.x);
-	  res3.x = INTRINSIC (_maskz_floor_ps) (mask, s.x);
 	  break;
 	case 2:
 	  imm = _MM_FROUND_CEIL;
 	  res1.x = INTRINSIC (_ceil_ps) (s.x);
 	  res2.x = INTRINSIC (_mask_ceil_ps) (res2.x, mask, s.x);
-	  res3.x = INTRINSIC (_maskz_ceil_ps) (mask, s.x);
 	  break;
 	}
 
@@ -87,7 +85,7 @@ TEST (void)
 
       MASK_ZERO ()(res_ref, mask, SIZE);
 
-      if (UNION_CHECK (AVX512F_LEN,) (res3, res_ref))
+      if (!i && UNION_CHECK (AVX512F_LEN,) (res3, res_ref))
 	abort ();
 
     }

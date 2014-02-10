@@ -26,6 +26,7 @@
 --  The following package manipulates the configuration files
 
 with Prj.Tree;
+with Prj.Proc;
 
 package Prj.Conf is
 
@@ -40,23 +41,30 @@ package Prj.Conf is
    --  is set to Empty_Node when this procedure is called. You can then decide
    --  to create a new config file if you need.
 
+   No_Configuration_File : constant String := "/";
+   --  When specified as a parameter Config_File_Name in the procedures below,
+   --  no existing configuration project file is parsed. This is used by
+   --  gnatmake, gnatclean and the GNAT driver to avoid parsing an existing
+   --  default configuration project file.
+
    procedure Parse_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
       User_Project_Node          : out Prj.Tree.Project_Node_Id;
-      Config_File_Name           : String := "";
+      Config_File_Name           : String                        := "";
       Autoconf_Specified         : Boolean;
       Project_File_Name          : String;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
       Packages_To_Check          : String_List_Access;
-      Allow_Automatic_Generation : Boolean := True;
+      Allow_Automatic_Generation : Boolean                       := True;
       Automatically_Generated    : out Boolean;
       Config_File_Path           : out String_Access;
-      Target_Name                : String := "";
+      Target_Name                : String                        := "";
       Normalized_Hostname        : String;
-      On_Load_Config             : Config_File_Hook := null;
-      Implicit_Project           : Boolean := False);
+      On_Load_Config             : Config_File_Hook              := null;
+      Implicit_Project           : Boolean                       := False;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null);
    --  Find the main configuration project and parse the project tree rooted at
    --  this configuration project.
    --
@@ -67,6 +75,10 @@ package Prj.Conf is
    --  If the processing fails, Main_Project is set to No_Project. If the error
    --  happened while parsing the project itself (i.e. creating the tree),
    --  User_Project_Node is also set to Empty_Node.
+   --
+   --  If Config_File_Name is No_Configuration_File, then no configuration
+   --  project file is parsed. Normally, in this case On_Load_Config is not
+   --  null, and it is used to create a configuration project file in memory.
    --
    --  Autoconf_Specified indicates whether the user has specified --autoconf.
    --  If this is the case, the config file might be (re)generated, as
@@ -93,23 +105,27 @@ package Prj.Conf is
    --  invoked without a project file and is using an implicit project file
    --  that is virtually in the current working directory, but is physically
    --  in another directory.
+   --
+   --  If specified, On_New_Tree_Loaded is called after each aggregated project
+   --  has been processed succesfully.
 
    procedure Process_Project_And_Apply_Config
      (Main_Project               : out Prj.Project_Id;
       User_Project_Node          : Prj.Tree.Project_Node_Id;
-      Config_File_Name           : String := "";
+      Config_File_Name           : String                       := "";
       Autoconf_Specified         : Boolean;
       Project_Tree               : Prj.Project_Tree_Ref;
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
       Packages_To_Check          : String_List_Access;
-      Allow_Automatic_Generation : Boolean := True;
+      Allow_Automatic_Generation : Boolean                      := True;
       Automatically_Generated    : out Boolean;
       Config_File_Path           : out String_Access;
-      Target_Name                : String := "";
+      Target_Name                : String                       := "";
       Normalized_Hostname        : String;
-      On_Load_Config             : Config_File_Hook := null;
-      Reset_Tree                 : Boolean := True);
+      On_Load_Config             : Config_File_Hook             := null;
+      Reset_Tree                 : Boolean                      := True;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null);
    --  Same as above, except the project must already have been parsed through
    --  Prj.Part.Parse, and only the processing of the project and the
    --  configuration is done at this level.
@@ -132,15 +148,15 @@ package Prj.Conf is
       Project_Node_Tree          : Prj.Tree.Project_Node_Tree_Ref;
       Env                        : in out Prj.Tree.Environment;
       Allow_Automatic_Generation : Boolean;
-      Config_File_Name           : String := "";
+      Config_File_Name           : String             := "";
       Autoconf_Specified         : Boolean;
-      Target_Name                : String := "";
+      Target_Name                : String             := "";
       Normalized_Hostname        : String;
       Packages_To_Check          : String_List_Access := null;
       Config                     : out Prj.Project_Id;
       Config_File_Path           : out String_Access;
       Automatically_Generated    : out Boolean;
-      On_Load_Config             : Config_File_Hook := null);
+      On_Load_Config             : Config_File_Hook   := null);
    --  Compute the name of the configuration file that should be used. If no
    --  default configuration file is found, a new one will be automatically
    --  generated if Allow_Automatic_Generation is true. This configuration

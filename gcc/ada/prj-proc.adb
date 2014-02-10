@@ -153,7 +153,8 @@ package body Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
       Extended_By            : Project_Id;
-      From_Encapsulated_Lib  : Boolean);
+      From_Encapsulated_Lib  : Boolean;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null);
    --  Process project with node From_Project_Node in the tree. Do nothing if
    --  From_Project_Node is Empty_Node. If project has already been processed,
    --  simply return its project id. Otherwise create a new project id, mark it
@@ -168,6 +169,9 @@ package body Prj.Proc is
    --
    --  From_Encapsulated_Lib is true if we are parsing a project from
    --  encapsulated library dependencies.
+   --
+   --  If specified, On_New_Tree_Loaded is called after each aggregated project
+   --  has been processed succesfully.
 
    function Get_Attribute_Index
      (Tree  : Project_Node_Tree_Ref;
@@ -1360,7 +1364,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Reset_Tree             : Boolean := True)
+      Reset_Tree             : Boolean              := True;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null)
    is
    begin
       Process_Project_Tree_Phase_1
@@ -1371,7 +1376,8 @@ package body Prj.Proc is
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
          Packages_To_Check      => Packages_To_Check,
-         Reset_Tree             => Reset_Tree);
+         Reset_Tree             => Reset_Tree,
+         On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
       if Project_Qualifier_Of
            (From_Project_Node, From_Project_Node_Tree) /= Configuration
@@ -1969,7 +1975,8 @@ package body Prj.Proc is
                Add (Env.External,
                     External_Name => Get_Name_String (Index_Name),
                     Value         => Get_Name_String (New_Value.Value),
-                    Source        => From_External_Attribute);
+                    Source        => From_External_Attribute,
+                    Silent        => True);
             else
                if Current_Verbosity = High then
                   Debug_Output
@@ -2356,7 +2363,8 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
-      Reset_Tree             : Boolean := True)
+      Reset_Tree             : Boolean              := True;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null)
    is
    begin
       if Reset_Tree then
@@ -2381,7 +2389,8 @@ package body Prj.Proc is
          From_Project_Node_Tree => From_Project_Node_Tree,
          Env                    => Env,
          Extended_By            => No_Project,
-         From_Encapsulated_Lib  => False);
+         From_Encapsulated_Lib  => False,
+         On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
       Success :=
         Total_Errors_Detected = 0
@@ -2516,7 +2525,8 @@ package body Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Env                    : in out Prj.Tree.Environment;
       Extended_By            : Project_Id;
-      From_Encapsulated_Lib  : Boolean)
+      From_Encapsulated_Lib  : Boolean;
+      On_New_Tree_Loaded     : Tree_Loaded_Callback := null)
    is
       Shared : constant Shared_Project_Tree_Data_Access := In_Tree.Shared;
 
@@ -2576,7 +2586,8 @@ package body Prj.Proc is
                   From_Project_Node_Tree => From_Project_Node_Tree,
                   Env                    => Env,
                   Extended_By            => No_Project,
-                  From_Encapsulated_Lib  => From_Encapsulated_Lib);
+                  From_Encapsulated_Lib  => From_Encapsulated_Lib,
+                  On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
                if Imported = null then
                   Project.Imported_Projects := new Project_List_Element'
@@ -2667,7 +2678,8 @@ package body Prj.Proc is
                      From_Project_Node      => Loaded_Project,
                      From_Project_Node_Tree => Node_Tree,
                      Env                    => Child_Env,
-                     Reset_Tree             => False);
+                     Reset_Tree             => False,
+                     On_New_Tree_Loaded     => On_New_Tree_Loaded);
                else
                   --  use the same environment as the rest of the aggregated
                   --  projects, ie the one that was setup by the root aggregate
@@ -2679,7 +2691,13 @@ package body Prj.Proc is
                      From_Project_Node      => Loaded_Project,
                      From_Project_Node_Tree => Node_Tree,
                      Env                    => Env,
-                     Reset_Tree             => False);
+                     Reset_Tree             => False,
+                     On_New_Tree_Loaded     => On_New_Tree_Loaded);
+               end if;
+
+               if On_New_Tree_Loaded /= null then
+                  On_New_Tree_Loaded
+                    (Node_Tree, Tree, Loaded_Project, List.Project);
                end if;
 
             else
@@ -2911,7 +2929,8 @@ package body Prj.Proc is
                From_Project_Node_Tree => From_Project_Node_Tree,
                Env                    => Env,
                Extended_By            => Project,
-               From_Encapsulated_Lib  => From_Encapsulated_Lib);
+               From_Encapsulated_Lib  => From_Encapsulated_Lib,
+               On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
             Process_Declarative_Items
               (Project                => Project,

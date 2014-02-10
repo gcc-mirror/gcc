@@ -44,34 +44,27 @@ extern void abort (void);
 #define DATA_TYPE_64 double
 #define DATA_TYPE(data_len) DATA_TYPE_##data_len
 
-#define INDEX64_32 [i]
-#define INDEX64_64
-#define INDEX128_32 [i]
-#define INDEX128_64 [i]
-#define INDEX(reg_len, data_len) \
-  CONCAT1 (INDEX, reg_len##_##data_len)
-
+#define STORE_INST(reg_len, data_len) \
+  CONCAT1 (vst1, POSTFIX (reg_len, data_len))
 #define LOAD_INST(reg_len, data_len) \
   CONCAT1 (vld1, POSTFIX (reg_len, data_len))
 #define NEG_INST(reg_len, data_len) \
   CONCAT1 (vneg, POSTFIX (reg_len, data_len))
 
 #define INHIB_OPTIMIZATION asm volatile ("" : : : "memory")
-
-#define RUN_TEST(test_set, reg_len, data_len, n, a, b) \
+#define RUN_TEST(test_set, reg_len, data_len, n, a, b, c) \
   {						       \
     int i;					       \
     (a) = LOAD_INST (reg_len, data_len) (test_set);    \
     (b) = NEG_INST (reg_len, data_len) (a);	       \
+    STORE_INST (reg_len, data_len) (c, b);	       \
     for (i = 0; i < n; i++)			       \
       {						       \
 	DATA_TYPE (data_len) diff;		       \
 	INHIB_OPTIMIZATION;			       \
-	diff					       \
-	  = a INDEX (reg_len, data_len)		       \
-	    + b INDEX (reg_len, data_len);	       \
+	diff = test_set[i] + c[i];		       \
 	if (diff > EPSILON)			       \
-	  return 1;				       \
+	    return 1;				       \
       }						       \
   }
 
@@ -84,28 +77,29 @@ extern void abort (void);
 int
 test_vneg_f32 ()
 {
-  float test_set0[2] = { TEST0, TEST1 };
-  float test_set1[2] = { TEST2, TEST3 };
-  float test_set2[2] = { VAR_MAX, VAR_MIN };
-  float test_set3[2] = { INFINITY, NAN };
-
   float32x2_t a;
   float32x2_t b;
+  float32_t c[2];
 
-  RUN_TEST (test_set0, 64, 32, 2, a, b);
-  RUN_TEST (test_set1, 64, 32, 2, a, b);
-  RUN_TEST (test_set2, 64, 32, 2, a, b);
-  RUN_TEST (test_set3, 64, 32, 0, a, b);
+  float32_t test_set0[2] = { TEST0, TEST1 };
+  float32_t test_set1[2] = { TEST2, TEST3 };
+  float32_t test_set2[2] = { VAR_MAX, VAR_MIN };
+  float32_t test_set3[2] = { INFINITY, NAN };
+
+  RUN_TEST (test_set0, 64, 32, 2, a, b, c);
+  RUN_TEST (test_set1, 64, 32, 2, a, b, c);
+  RUN_TEST (test_set2, 64, 32, 2, a, b, c);
+  RUN_TEST (test_set3, 64, 32, 0, a, b, c);
 
   /* Since last test cannot be checked in a uniform way by adding
      negation result to original value, the number of lanes to be
      checked in RUN_TEST is 0 (last argument).  Instead, result
      will be checked manually.  */
 
-  if (b[0] != -INFINITY)
+  if (c[0] != -INFINITY)
     return 1;
 
-  if (!__builtin_isnan (b[1]))
+  if (!__builtin_isnan (c[1]))
     return 1;
 
   return 0;
@@ -130,37 +124,38 @@ test_vneg_f64 ()
 {
   float64x1_t a;
   float64x1_t b;
+  float64_t c[1];
 
-  double test_set0[1] = { TEST0 };
-  double test_set1[1] = { TEST1 };
-  double test_set2[1] = { TEST2 };
-  double test_set3[1] = { TEST3 };
-  double test_set4[1] = { VAR_MAX };
-  double test_set5[1] = { VAR_MIN };
-  double test_set6[1] = { INFINITY };
-  double test_set7[1] = { NAN };
+  float64_t test_set0[1] = { TEST0 };
+  float64_t test_set1[1] = { TEST1 };
+  float64_t test_set2[1] = { TEST2 };
+  float64_t test_set3[1] = { TEST3 };
+  float64_t test_set4[1] = { VAR_MAX };
+  float64_t test_set5[1] = { VAR_MIN };
+  float64_t test_set6[1] = { INFINITY };
+  float64_t test_set7[1] = { NAN };
 
-  RUN_TEST (test_set0, 64, 64, 1, a, b);
-  RUN_TEST (test_set1, 64, 64, 1, a, b);
-  RUN_TEST (test_set2, 64, 64, 1, a, b);
-  RUN_TEST (test_set3, 64, 64, 1, a, b);
-  RUN_TEST (test_set4, 64, 64, 1, a, b);
-  RUN_TEST (test_set5, 64, 64, 1, a, b);
-  RUN_TEST (test_set6, 64, 64, 0, a, b);
+  RUN_TEST (test_set0, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set1, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set2, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set3, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set4, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set5, 64, 64, 1, a, b, c);
+  RUN_TEST (test_set6, 64, 64, 0, a, b, c);
 
   /* Since last test cannot be checked in a uniform way by adding
      negation result to original value, the number of lanes to be
      checked in RUN_TEST is 0 (last argument).  Instead, result
      will be checked manually.  */
 
-  if (b != -INFINITY)
+  if (c[0] != -INFINITY)
     return 1;
 
   /* Same as above.  */
 
-  RUN_TEST (test_set7, 64, 64, 0, a, b);
+  RUN_TEST (test_set7, 64, 64, 0, a, b, c);
 
-  if (!__builtin_isnan (b))
+  if (!__builtin_isnan (c[0]))
     return 1;
 
   return 0;
@@ -185,22 +180,23 @@ test_vnegq_f32 ()
 {
   float32x4_t a;
   float32x4_t b;
+  float32_t c[4];
 
-  float test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
-  float test_set1[4] = { FLT_MAX, FLT_MIN, INFINITY, NAN };
+  float32_t test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
+  float32_t test_set1[4] = { FLT_MAX, FLT_MIN, INFINITY, NAN };
 
-  RUN_TEST (test_set0, 128, 32, 4, a, b);
-  RUN_TEST (test_set1, 128, 32, 2, a, b);
+  RUN_TEST (test_set0, 128, 32, 4, a, b, c);
+  RUN_TEST (test_set1, 128, 32, 2, a, b, c);
 
   /* Since last test cannot be fully checked in a uniform way by
      adding negation result to original value, the number of lanes
      to be checked in RUN_TEST is 0 (last argument).  Instead, result
      will be checked manually.  */
 
-  if (b[2] != -INFINITY)
+  if (c[2] != -INFINITY)
     return 1;
 
-  if (!__builtin_isnan (b[3]))
+  if (!__builtin_isnan (c[3]))
     return 1;
 
   return 0;
@@ -225,26 +221,27 @@ test_vnegq_f64 ()
 {
   float64x2_t a;
   float64x2_t b;
+  float64_t c[2];
 
-  double test_set0[2] = { TEST0, TEST1 };
-  double test_set1[2] = { TEST2, TEST3 };
-  double test_set2[2] = { FLT_MAX, FLT_MIN };
-  double test_set3[2] = { INFINITY, NAN };
+  float64_t test_set0[2] = { TEST0, TEST1 };
+  float64_t test_set1[2] = { TEST2, TEST3 };
+  float64_t test_set2[2] = { FLT_MAX, FLT_MIN };
+  float64_t test_set3[2] = { INFINITY, NAN };
 
-  RUN_TEST (test_set0, 128, 64, 2, a, b);
-  RUN_TEST (test_set1, 128, 64, 2, a, b);
-  RUN_TEST (test_set2, 128, 64, 2, a, b);
-  RUN_TEST (test_set3, 128, 64, 0, a, b);
+  RUN_TEST (test_set0, 128, 64, 2, a, b, c);
+  RUN_TEST (test_set1, 128, 64, 2, a, b, c);
+  RUN_TEST (test_set2, 128, 64, 2, a, b, c);
+  RUN_TEST (test_set3, 128, 64, 0, a, b, c);
 
   /* Since last test cannot be checked in a uniform way by adding
      negation result to original value, the number of lanes to be
      checked in RUN_TEST is 0 (last argument).  Instead, result
      will be checked manually.  */
 
-  if (b[0] != -INFINITY)
+  if (c[0] != -INFINITY)
     return 1;
 
-  if (!__builtin_isnan (b[1]))
+  if (!__builtin_isnan (c[1]))
     return 1;
 
   return 0;

@@ -2,11 +2,9 @@
  *
  *************************************************************************
  *
- *  @copyright
- *  Copyright (C) 2009-2013, Intel Corporation
+ *  Copyright (C) 2009-2014, Intel Corporation
  *  All rights reserved.
  *  
- *  @copyright
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -21,7 +19,6 @@
  *      contributors may be used to endorse or promote products derived
  *      from this software without specific prior written permission.
  *  
- *  @copyright
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -91,6 +88,20 @@ COMMON_SYSDEP int __cilkrts_xchg(volatile int *ptr, int x)
     return x;
 }
 
+/*
+ * The Intel compiler distribution assumes newer CPUs and doesn't yet support
+ * the __builtin_cpu_supports intrinsic added by GCC 4.8, so just return 1 in
+ * that environment.
+ *
+ * This declaration should generate an error when the Intel compiler adds
+ * supprt for the intrinsic.
+ */
+#ifdef __INTEL_COMPILER
+static inline int __builtin_cpu_supports(const char *feature)
+{
+    return 1;
+}
+#endif
 
 /*
  * Restore the floating point state that is stored in a stack frame at each
@@ -100,11 +111,16 @@ COMMON_SYSDEP int __cilkrts_xchg(volatile int *ptr, int x)
  */
 void restore_x86_fp_state (__cilkrts_stack_frame *sf) {
 #ifdef RESTORE_X86_FP_STATE
-    __asm__ ( "ldmxcsr %0\n\t"
-              "fnclex\n\t"
-              "fldcw %1"
-              :
-              : "m" (sf->mxcsr), "m" (sf->fpcsr));
+    if (__builtin_cpu_supports("sse"))
+    {
+        __asm__ ("ldmxcsr %0"
+                 :
+                 : "m" (sf->mxcsr));
+    }
+    __asm__ ("fnclex\n\t"
+             "fldcw %0"
+             :
+             : "m" (sf->fpcsr));
 #endif
 }
 
@@ -115,7 +131,10 @@ void sysdep_save_fp_ctrl_state(__cilkrts_stack_frame *sf)
 #ifdef RESTORE_X86_FP_STATE
     if (CILK_FRAME_VERSION_VALUE(sf->flags) >= 1)
     {
-        __asm__ ("stmxcsr %0" : "=m" (sf->mxcsr));
+        if (__builtin_cpu_supports("sse"))
+        {
+            __asm__ ("stmxcsr %0" : "=m" (sf->mxcsr));
+        }
         __asm__ ("fnstsw %0" : "=m" (sf->fpcsr));
     }
 #endif

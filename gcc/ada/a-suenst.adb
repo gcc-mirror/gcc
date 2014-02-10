@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2010-2012, Free Software Foundation, Inc.      --
+--          Copyright (C) 2010-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,6 +154,15 @@ package body Ada.Strings.UTF_Encoding.Strings is
          end if;
 
          Len := Len + 1;
+
+         --  The value may still be out of range of Standard.Character. We make
+         --  the check explicit because the library is typically compiled with
+         --  range checks disabled.
+
+         if R > Character'Pos (Character'Last) then
+            Raise_Encoding_Error (Iptr - 1);
+         end if;
+
          Result (Len) := Character'Val (R);
       end loop;
 

@@ -103,9 +103,11 @@ class Expression
     EXPRESSION_TYPE_DESCRIPTOR,
     EXPRESSION_TYPE_INFO,
     EXPRESSION_SLICE_INFO,
+    EXPRESSION_INTERFACE_INFO,
     EXPRESSION_STRUCT_FIELD_OFFSET,
     EXPRESSION_MAP_DESCRIPTOR,
-    EXPRESSION_LABEL_ADDR
+    EXPRESSION_LABEL_ADDR,
+    EXPRESSION_CONDITIONAL
   };
 
   Expression(Expression_classification, Location);
@@ -356,6 +358,21 @@ class Expression
   static Expression*
   make_slice_info(Expression* slice, Slice_info, Location);
 
+
+  // Make an expression that evaluates to some characteristic of a
+  // interface.  For simplicity, the enum values must match the field indexes
+  // of a non-empty interface in the underlying struct.
+  enum Interface_info
+    {
+      // The methods of an interface.
+      INTERFACE_INFO_METHODS,
+      // The first argument to pass to an interface method.
+      INTERFACE_INFO_OBJECT
+    };
+
+  static Expression*
+  make_interface_info(Expression* iface, Interface_info, Location);
+
   // Make an expression which evaluates to the offset of a field in a
   // struct.  This is only used for type descriptors, so there is no
   // location parameter.
@@ -372,6 +389,10 @@ class Expression
   static Expression*
   make_label_addr(Label*, Location);
 
+  // Make a conditional expression.
+  static Expression*
+  make_conditional(Expression*, Expression*, Expression*, Location);
+
   // Return the expression classification.
   Expression_classification
   classification() const
@@ -386,6 +407,11 @@ class Expression
   bool
   is_constant() const
   { return this->do_is_constant(); }
+
+  // Return whether this is an immutable expression.
+  bool
+  is_immutable() const
+  { return this->do_is_immutable(); }
 
   // If this is not a numeric constant, return false.  If it is one,
   // return true, and set VAL to hold the value.
@@ -688,11 +714,11 @@ class Expression
 				 Type* rhs_type, tree rhs_tree,
 				 bool for_type_guard, Location);
 
-  // Return a tree implementing the comparison LHS_EXPR OP RHS_EXPR.
+  // Return a backend expression implementing the comparison LEFT OP RIGHT.
   // TYPE is the type of both sides.
-  static tree
-  comparison_tree(Translate_context*, Type* result_type, Operator op,
-		  Expression* left_expr, Expression* right_expr, Location);
+  static Bexpression*
+  comparison(Translate_context*, Type* result_type, Operator op,
+	     Expression* left, Expression* right, Location);
 
   // Return the backend expression for the numeric constant VAL.
   static Bexpression*
@@ -740,6 +766,11 @@ class Expression
   // Return whether this is a constant expression.
   virtual bool
   do_is_constant() const
+  { return false; }
+
+  // Return whether this is an immutable expression.
+  virtual bool
+  do_is_immutable() const
   { return false; }
 
   // Return whether this is a constant expression of numeric type, and
@@ -1180,6 +1211,10 @@ class String_expression : public Expression
   { return true; }
 
   bool
+  do_is_immutable() const
+  { return true; }
+
+  bool
   do_string_constant_value(std::string* val) const
   {
     *val = this->val_;
@@ -1272,6 +1307,9 @@ class Binary_expression : public Expression
 
   Expression*
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
+
+  Expression*
+  do_flatten(Gogo*, Named_object*, Statement_inserter*);
 
   bool
   do_is_constant() const
@@ -1508,10 +1546,9 @@ class Call_expression : public Expression
   bool
   check_argument_type(int, const Type*, const Type*, Location, bool);
 
-  tree
-  interface_method_function(Translate_context*,
-			    Interface_field_reference_expression*,
-			    tree*);
+  Expression*
+  interface_method_function(Interface_field_reference_expression*,
+			    Expression**);
 
   tree
   set_results(Translate_context*, tree);
@@ -2115,16 +2152,14 @@ class Interface_field_reference_expression : public Expression
   static Named_object*
   create_thunk(Gogo*, Interface_type* type, const std::string& name);
 
-  // Return a tree for the pointer to the function to call, given a
-  // tree for the expression.
-  tree
-  get_function_tree(Translate_context*, tree);
+  // Return an expression for the pointer to the function to call.
+  Expression*
+  get_function();
 
-  // Return a tree for the first argument to pass to the interface
-  // function, given a tree for the expression.  This is the real
-  // object associated with the interface object.
-  tree
-  get_underlying_object_tree(Translate_context*, tree);
+  // Return an expression for the first argument to pass to the interface
+  // function.  This is the real object associated with the interface object.
+  Expression*
+  get_underlying_object();
 
  protected:
   int

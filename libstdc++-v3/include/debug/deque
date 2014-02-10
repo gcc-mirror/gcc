@@ -68,8 +68,11 @@ namespace __debug
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.1.1 construct/copy/destroy:
+
+      deque() : _Base() { }
+
       explicit
-      deque(const _Allocator& __a = _Allocator())
+      deque(const _Allocator& __a)
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L

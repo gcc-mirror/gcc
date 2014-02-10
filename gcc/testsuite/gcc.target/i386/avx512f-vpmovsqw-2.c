@@ -30,6 +30,7 @@ TEST (void)
 {
   int i, sign;
   UNION_TYPE (128, i_w) res1, res2, res3;
+  short res4[8];
   UNION_TYPE (AVX512F_LEN, i_q) src;
   MASK_TYPE mask = MASK_VALUE;
   short res_ref[8];
@@ -40,11 +41,13 @@ TEST (void)
       src.a[i] = 1 + 34 * i * sign;
       sign = sign * -1;
       res2.a[i] = DEFAULT_VALUE;
+      res4[i] = DEFAULT_VALUE;
     }
 
   res1.x = INTRINSIC (_cvtsepi64_epi16) (src.x);
   res2.x = INTRINSIC (_mask_cvtsepi64_epi16) (res2.x, mask, src.x);
   res3.x = INTRINSIC (_maskz_cvtsepi64_epi16) (mask, src.x);
+  INTRINSIC (_mask_cvtsepi64_storeu_epi16) (res4, mask, src.x);
 
   CALC (res_ref, src.a);
 
@@ -53,6 +56,9 @@ TEST (void)
 
   MASK_MERGE (i_w) (res_ref, mask, SIZE);
   if (UNION_CHECK (128, i_w) (res2, res_ref))
+    abort ();
+
+  if (checkVs (res4, res_ref, 8))
     abort ();
 
   MASK_ZERO (i_w) (res_ref, mask, SIZE);

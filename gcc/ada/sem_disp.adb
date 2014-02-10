@@ -1118,11 +1118,11 @@ package body Sem_Disp is
 
                               if Has_Dispatch_Table (Tagged_Type) then
                                  Error_Msg_N
-                                   ("overriding of& is too late for building" &
-                                    " static dispatch tables!", Subp);
+                                   ("overriding of& is too late for building "
+                                    & " static dispatch tables!", Subp);
                                  Error_Msg_N
-                                   ("\spec should appear immediately after" &
-                                    " the type!", Subp);
+                                   ("\spec should appear immediately after "
+                                    & "the type!", Subp);
                               end if;
 
                            --  No code required to register primitives in VM
@@ -1264,7 +1264,7 @@ package body Sem_Disp is
             --  emitted after those tables are built, to prevent access before
             --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive and then Full_Expander_Active then
+            if Body_Is_Last_Primitive and then Expander_Active then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;
@@ -1576,7 +1576,7 @@ package body Sem_Disp is
          if Derives_From (Node (Op1)) then
             if No (Prev) then
 
-               --  Avoid adding it to the list of primitives if already there!
+               --  Avoid adding it to the list of primitives if already there
 
                if Node (Op2) /= Subp then
                   Prepend_Elmt (Subp, New_Prim);
@@ -2250,7 +2250,7 @@ package body Sem_Disp is
 
    begin
       --  Diagnose failure to match No_Return in parent (Ada-2005, AI-414, but
-      --  we do it unconditionally in Ada 95 now, since this is our pragma!)
+      --  we do it unconditionally in Ada 95 now, since this is our pragma).
 
       if No_Return (Prev_Op) and then not No_Return (New_Op) then
          Error_Msg_N ("procedure & must have No_Return pragma", New_Op);

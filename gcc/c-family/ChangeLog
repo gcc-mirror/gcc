@@ -1,3 +1,105 @@
+2014-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60092
+	* c-common.c (handle_alloc_size_attribute): Use tree_fits_uhwi_p
+	and tree_to_uhwi.
+	(handle_alloc_align_attribute, handle_assume_aligned_attribute): New
+	functions.
+	(c_common_attribute_table): Add alloc_align and assume_aligned
+	attributes.
+
+2014-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60087
+	* c-common.c (warn_for_sign_compare): Call warning_at with location
+	instead of warning.
+
+2014-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c/53123
+	* c-omp.c (c_finish_omp_atomic): Remove unreachable return
+	statement.
+
+2014-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60036
+	* c-common.c (conversion_warning): Unwrap C_MAYBE_CONST_EXPR and/or
+	SAVE_EXPR.
+
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* c-common.c (handle_aligned_attribute, handle_alloc_size_attribute,
+	handle_vector_size_attribute, handle_nonnull_attribute): Call
+	default_conversion on the attribute argument.
+	(handle_nonnull_attribute): Increment the argument number.
+
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* c-common.c (add_atomic_size_parameter): Pass vNULL to
+	build_function_call_vec.
+	(resolve_overloaded_builtin): Likewise.
+	* c-common.h (build_function_call_vec): Adjust declaration.
+
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* c-common.h (unsafe_conversion_p): Adjust declaration.
+	(warnings_for_convert_and_check): Likewise.
+	(convert_and_check): Likewise.
+	* c-common.c (unsafe_conversion_p): Add location parameter.  Call
+	expansion_point_location_if_in_system_header on it.
+	(warnings_for_convert_and_check): Add location parameter.  Call
+	expansion_point_location_if_in_system_header on it.  Use it.
+	(convert_and_check): Add location parameter.  Use it.
+	(conversion_warning): Likewise.
+	(c_add_case_label): Adjust convert_and_check calls.
+	(scalar_to_vector): Adjust unsafe_conversion_p calls.
+
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-common.c (c_define_builtins): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+	* c-pragma.c (init_pragma): Likewise.
+	* c.opt: Likewise.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59846
+	* c-common.c (shorten_compare): Add location_t parameter.
+	* c-common.h (shorten_binary_op): Adjust declaration.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* c-common.c (pointer_to_zero_sized_aggr_p): New function.
+	* c-common.h: Declare it.
+
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (dump_ada_specs): Revert prototype change.
+	* c-ada-spec.c (dump_ads): Likewise.
+	(cpp_check): Likewise.
+	(dump_ada_specs): Likewise.
+
+2014-01-15  Laurent Alfonsi  <laurent.alfonsi@st.com>
+
+	PR c++/49718
+	* c-common.c (handle_no_instrument_function_attribute): Allow
+	no_instrument_function attribute in class member
+	definition/declaration.
+
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* c-omp.c (c_finish_omp_atomic): Set in_late_binary_op around
+	build_modify_expr with non-NOP_EXPR opcode.  Handle return from it
+	being COMPOUND_EXPR.
+	(c_finish_omp_for): Handle incr being COMPOUND_EXPR with first
+	operand a SAVE_EXPR and second MODIFY_EXPR.
+
 2014-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58115

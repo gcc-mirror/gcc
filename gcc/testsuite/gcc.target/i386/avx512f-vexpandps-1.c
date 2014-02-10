@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
+/* { dg-final { scan-assembler-times "vexpandps\[ \\t\]+\[^\n\]*%zmm\[0-9\]" 4 } } */
 /* { dg-final { scan-assembler-times "vexpandps\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\[^\{\]" 2 } } */
 /* { dg-final { scan-assembler-times "vexpandps\[ \\t\]+\[^\n\]*%zmm\[0-9\]\{%k\[1-7\]\}\{z\}" 2 } } */
 

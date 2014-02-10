@@ -1103,8 +1103,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	  FOR_EACH_VEC_ELT (node->load_permutation, j, next)
 	    dump_printf (MSG_NOTE, "%d ", next);
 	else
-	  for (i = 0; i < group_size; ++i)
-	    dump_printf (MSG_NOTE, "%d ", i);
+	  for (k = 0; k < group_size; ++k)
+	    dump_printf (MSG_NOTE, "%d ", k);
       dump_printf (MSG_NOTE, "\n");
     }
 
@@ -1967,9 +1967,10 @@ vect_bb_slp_scalar_cost (basic_block bb,
 	  imm_use_iterator use_iter;
 	  gimple use_stmt;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-	    if (gimple_code (use_stmt) == GIMPLE_PHI
-		|| gimple_bb (use_stmt) != bb
-		|| !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt)))
+	    if (!is_gimple_debug (use_stmt)
+		&& (gimple_code (use_stmt) == GIMPLE_PHI
+		    || gimple_bb (use_stmt) != bb
+		    || !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt))))
 	      {
 		(*life)[i] = true;
 		BREAK_FROM_IMM_USE_STMT (use_iter);

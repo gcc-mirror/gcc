@@ -301,10 +301,10 @@ package body Ada.Containers.Formal_Vectors is
    begin
       if Capacity = 0 then
          C := LS;
-      elsif Capacity >= LS then
+      elsif Capacity >= LS and then Capacity in Capacity_Range then
          C := Capacity;
       else
-         raise Constraint_Error;
+         raise Capacity_Error;
       end if;
 
       return Target : Vector (C) do
@@ -1505,6 +1505,19 @@ package body Ada.Containers.Formal_Vectors is
          Container.Last := Index_Type'Base (Last_As_Int);
       end;
    end Set_Length;
+
+   ------------------
+   -- Strict_Equal --
+   ------------------
+
+   function Strict_Equal (Left, Right : Vector) return Boolean is
+   begin
+      --  On bounded vectors, cursors are indexes. As a consequence, two
+      --  vectors always have the same cursor at the same position and
+      --  Strict_Equal is simply =
+
+      return Left = Right;
+   end Strict_Equal;
 
    ----------
    -- Swap --

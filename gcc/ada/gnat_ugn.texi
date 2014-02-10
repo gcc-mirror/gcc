@@ -3571,6 +3571,13 @@ This information is used by advanced coverage tools. See unit @file{SCOs}
 in the compiler sources for details in files @file{scos.ads} and
 @file{scos.adb}.
 
+@item -fdump-xref
+@cindex @option{-fdump-xref} (@command{gcc})
+Generates cross reference information in GLI files for C and C++ sources.
+The GLI files have the same syntax as the ALI files for Ada, and can be used
+for source navigation in IDEs and on the command line using e.g. gnatxref
+and the @option{--ext=gli} switch.
+
 @item -flto@r{[}=n@r{]}
 @cindex @option{-flto} (@command{gcc})
 Enables Link Time Optimization. This switch must be used in conjunction
@@ -3823,7 +3830,7 @@ temporary use of special test software.
 
 @item -gnateS
 @cindex @option{-gnateS} (@command{gcc})
-Synonym of @option{-fdump-scos}, kept for backards compatibility.
+Synonym of @option{-fdump-scos}, kept for backwards compatibility.
 
 @item -gnatet=@var{path}
 @cindex @option{-gnatet=file} (@command{gcc})
@@ -3862,6 +3869,7 @@ Long_Size                  : Pos; -- Standard.Long_Integer'Size
 Maximum_Alignment          : Pos; -- Maximum permitted alignment
 Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
 Pointer_Size               : Pos; -- System.Address'Size
+Short_Enums                : Nat; -- Short foreign convention enums?
 Short_Size                 : Pos; -- Standard.Short_Integer'Size
 Strict_Alignment           : Nat; -- Strict alignment?
 System_Allocator_Alignment : Nat; -- Alignment for malloc calls
@@ -5332,6 +5340,22 @@ an explicit @option{-gnatws} or
 implicit @option{-gnatwe} that is activated by the
 use of @option{-gnatg}.
 
+@item -gnatw.n
+@emph{Activate warnings on atomic synchronization.}
+@cindex @option{-gnatw.n} (@command{gcc})
+@cindex Atomic Synchronization, warnings
+This switch actives warnings when an access to an atomic variable
+requires the generation of atomic synchronization code. These
+warnings are off by default and this warning is not included
+in @code{-gnatwa}.
+
+@item -gnatw.N
+@emph{Suppress warnings on atomic synchronization.}
+@cindex @option{-gnatw.n} (@command{gcc})
+@cindex Atomic Synchronization, warnings
+This switch suppresses warnings when an access to an atomic variable
+requires the generation of atomic synchronization code.
+
 @item -gnatwo
 @emph{Activate warnings on address clause overlays.}
 @cindex @option{-gnatwo} (@command{gcc})
@@ -5666,7 +5690,7 @@ as shown in the following example.
 @end smallexample
 
 @item -gnatw.w
-@emph{Activate warnings on unnecessary Warnings Off pragmas}
+@emph{Activate warnings on Warnings Off pragmas}
 @cindex @option{-gnatw.w} (@command{gcc})
 @cindex Warnings Off control
 This switch activates warnings for use of @code{pragma Warnings (Off, entity)}
@@ -5674,12 +5698,14 @@ where either the pragma is entirely useless (because it suppresses no
 warnings), or it could be replaced by @code{pragma Unreferenced} or
 @code{pragma Unmodified}. The default is that these warnings are not given.
 Note that this warning is not included in -gnatwa, it must be
-activated explicitly.
+activated explicitly. Also activates warnings for the case of
+Warnings (Off, String), where either there is no matching
+Warnings (On, String), or the Warnings (Off) did not suppress any warning.
 
 @item -gnatw.W
 @emph{Suppress warnings on unnecessary Warnings Off pragmas}
 @cindex @option{-gnatw.W} (@command{gcc})
-This switch suppresses warnings for use of @code{pragma Warnings (Off, entity)}.
+This switch suppresses warnings for use of @code{pragma Warnings (Off, ...)}.
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
@@ -6471,7 +6497,8 @@ an inherited operation must carry an overriding indicator.
 @emph{Check pragma casing.}
 Pragma names must be written in mixed case, that is, the
 initial letter and any letter following an underscore must be uppercase.
-All other letters must be lowercase.
+All other letters must be lowercase. An exception is that SPARK_Mode is
+allowed as an alternative for Spark_Mode.
 
 @item ^r^REFERENCES^
 @emph{Check references.}
@@ -7407,7 +7434,12 @@ the @option{-gnatR} switch). For @option{-gnatR1} (which is the default,
 so @option{-gnatR} with no parameter has the same effect), size and alignment
 information is listed for declared array and record types. For
 @option{-gnatR2}, size and alignment information is listed for all
-declared types and objects. Finally @option{-gnatR3} includes symbolic
+declared types and objects. The @code{Linker_Section} is also listed for any
+entity for which the @code{Linker_Section} is set explicitly or implicitly (the
+latter case occurs for objects of a type for which a @code{Linker_Section}
+is set).
+
+Finally @option{-gnatR3} includes symbolic
 expressions for values that are computed at run time for
 variant records. These symbolic expressions have a mostly obvious
 format with #n being used to represent the value of the n'th
@@ -10147,6 +10179,8 @@ some guidelines on debugging optimized code.
 * Other Optimization Switches::
 * Optimization and Strict Aliasing::
 * Aliased Variables and Optimization::
+* Atomic Variables and Optimization::
+* Passive Task Optimization::
 
 @ifset vms
 * Coverage Analysis::
@@ -10992,6 +11026,122 @@ inhibits optimizations that assume the value cannot be assigned.
 This means that the above example will in fact "work" reliably,
 that is, it will produce the expected results.
 
+@node Atomic Variables and Optimization
+@subsection Atomic Variables and Optimization
+@cindex Atomic
+There are two considerations with regard to performance when
+atomic variables are used.
+
+First, the RM only guarantees that access to atomic variables
+be atomic, it has nothing to say about how this is achieved,
+though there is a strong implication that this should not be
+achieved by explicit locking code. Indeed GNAT will never
+generate any locking code for atomic variable access (it will
+simply reject any attempt to make a variable or type atomic
+if the atomic access cannot be achieved without such locking code).
+
+That being said, it is important to understand that you cannot
+assume that the entire variable will always be accessed. Consider
+this example:
+
+@smallexample @c ada
+type R is record
+   A,B,C,D : Character;
+end record;
+for R'Size use 32;
+for R'Alignment use 4;
+
+RV : R;
+pragma Atomic (RV);
+X : Character;
+...
+X := RV.B;
+@end smallexample
+
+@noindent
+You cannot assume that the reference to @code{RV.B}
+will read the entire 32-bit
+variable with a single load instruction. It is perfectly legitimate if
+the hardware allows it to do a byte read of just the B field. This read
+is still atomic, which is all the RM requires. GNAT can and does take
+advantage of this, depending on the architecture and optimization level.
+Any assumption to the contrary is non-portable and risky. Even if you
+examine the assembly language and see a full 32-bit load, this might
+change in a future version of the compiler.
+
+If your application requires that all accesses to @code{RV} in this
+example be full 32-bit loads, you need to make a copy for the access
+as in:
+
+@smallexample @c ada
+declare
+   RV_Copy : constant R := RV;
+begin
+   X := RV_Copy.B;
+end;
+@end smallexample
+
+
+@noindent
+Now the reference to RV must read the whole variable.
+Actually one can imagine some compiler which figures
+out that the whole copy is not required (because only
+the B field is actually accessed), but GNAT
+certainly won't do that, and we don't know of any
+compiler that would not handle this right, and the
+above code will in practice work portably across
+all architectures (that permit the Atomic declaration).
+
+The second issue with atomic variables has to do with
+the possible requirement of generating synchronization
+code. For more details on this, consult the sections on
+the pragmas Enable/Disable_Atomic_Synchronization in the
+GNAT Reference Manual. If performance is critical, and
+such synchronization code is not required, it may be
+useful to disable it.
+
+@node Passive Task Optimization
+@subsection Passive Task Optimization
+@cindex Passive Task
+
+A passive task is one which is sufficiently simple that
+in theory a compiler could recognize it an implement it
+efficiently without creating a new thread. The original design
+of Ada 83 had in mind this kind of passive task optimization, but
+only a few Ada 83 compilers attempted it. The problem was that
+it was difficult to determine the exact conditions under which
+the optimization was possible. The result is a very fragile
+optimization where a very minor change in the program can
+suddenly silently make a task non-optimizable.
+
+With the revisiting of this issue in Ada 95, there was general
+agreement that this approach was fundamentally flawed, and the
+notion of protected types was introduced. When using protected
+types, the restrictions are well defined, and you KNOW that the
+operations will be optimized, and furthermore this optimized
+performance is fully portable.
+
+Although it would theoretically be possible for GNAT to attempt to
+do this optimization, but it really doesn't make sense in the
+context of Ada 95, and none of the Ada 95 compilers implement
+this optimization as far as we know. In particular GNAT never
+attempts to perform this optimization.
+
+In any new Ada 95 code that is written, you should always
+use protected types in place of tasks that might be able to
+be optimized in this manner.
+Of course this does not help if you have legacy Ada 83 code
+that depends on this optimization, but it is unusual to encounter
+a case where the performance gains from this optimization
+are significant.
+
+Your program should work correctly without this optimization. If
+you have performance problems, then the most practical
+approach is to figure out exactly where these performance problems
+arise, and update those particular tasks to be protected types. Note
+that typically clients of the tasks who call entries, will not have
+to be modified, only the task definition itself.
+
 @ifset vms
 @node Coverage Analysis
 @subsection Coverage Analysis
@@ -11150,6 +11300,13 @@ listed in a specified file
 Put @command{gnatelim} output into a specified file. If this file already exists,
 it is overridden. If this switch is not used, @command{gnatelim} outputs its results
 into @file{stderr}
+
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatelim})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
 
 @item ^-q^/QUIET^
 @cindex @option{^-q^/QUIET^} (@command{gnatelim})
@@ -11778,6 +11935,7 @@ recognized by GNAT:
    Ada_2005
    Ada_12
    Ada_2012
+   Allow_Integer_Address
    Annotate
    Assertion_Policy
    Assume_No_Invalid_Values
@@ -13176,9 +13334,9 @@ Do not look for library files in the system default directory.
 @item --ext=@var{extension}
 @cindex @option{--ext} (@command{gnatxref})
 Specify an alternate ali file extension. The default is @code{ali} and other
-extensions (e.g. @code{sli} for SPARK library files) may be specified via this
-switch. Note that if this switch overrides the default, which means that only
-the new extension will be considered.
+extensions (e.g. @code{gli} for C/C++ sources when using @option{-fdump-xref})
+may be specified via this switch. Note that if this switch overrides the
+default, which means that only the new extension will be considered.
 
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@command{gnatxref})
@@ -13353,9 +13511,9 @@ Do not look for library files in the system default directory.
 @item --ext=@var{extension}
 @cindex @option{--ext} (@command{gnatfind})
 Specify an alternate ali file extension. The default is @code{ali} and other
-extensions (e.g. @code{sli} for SPARK library files) may be specified via this
-switch. Note that if this switch overrides the default, which means that only
-the new extension will be considered.
+extensions (e.g. @code{gli} for C/C++ sources when using @option{-fdump-xref})
+may be specified via this switch. Note that if this switch overrides the
+default, which means that only the new extension will be considered.
 
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@command{gnatfind})
@@ -13819,11 +13977,8 @@ identifier case conventions, rules of indentation, and comment layout.
 
 Note: A newly-redesigned set of formatting algorithms used by gnatpp
 is now available.
-To invoke the new experimental formatting algorithms, use the
-@option{--pp-new} switch.
-The default is @option{--pp-old}; that is, gnatpp uses the old
-formatting algorithms by default.
-We intend to make @option{--pp-new} the default at some point.
+To invoke the old formatting algorithms, use the @option{--pp-old} switch.
+Support for @option{--pp-old} will be removed in some future version.
 
 To produce a reformatted file, @command{gnatpp} generates and uses the ASIS
 tree for the input source and thus requires the input to be syntactically and
@@ -14147,6 +14302,10 @@ Reformat comment blocks
 @item ^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^
 Keep unchanged special form comments
 
+@item --comments-only
+@cindex @option{--comments-only} @command{gnatpp}
+Format just the comments.
+
 @cindex @option{^-l@var{n}^/CONSTRUCT_LAYOUT^} (@command{gnatpp})
 @item ^-l1^/CONSTRUCT_LAYOUT=GNAT^
 GNAT-style layout (this is the default)
@@ -14192,6 +14351,16 @@ Start each USE clause in a context clause from a separate line.
 @item ^--separate-stmt-name^/STMT_NAME_ON_NEW_LINE^
 Use a separate line for a loop or block statement name, but do not use an extra
 indentation level for the statement itself.
+
+@cindex @option{^--insert-blank-lines^/INSERT_BLANK_LINES^} (@command{gnatpp})
+@item ^--insert-blank-lines^/INSERT_BLANK_LINES^
+Insert blank lines where appropriate (between bodies and other large
+constructs).
+
+@cindex @option{^--preserve-blank-lines^/PRESERVE_BLANK_LINES^} (@command{gnatpp})
+@item ^--preserve-blank-lines^/PRESERVE_BLANK_LINES^
+Preserve blank lines in the input. By default, gnatpp will squeeze
+multiple blank lines down to one.
 
 @end table
 
@@ -14251,9 +14420,23 @@ line indentation is also 1)
 
 @noindent
 These switches control the inclusion of missing end/exit labels, and
-the indentation level in @b{case} statements.
+the indentation level in @b{case} statements, etc.
 
 @table @option
+@item --decimal-grouping=@var{n}
+@cindex @option{--decimal-grouping} @command{gnatpp}
+Put underscores in decimal literals (numeric literals without a base)
+every @var{n} characters. If a literal already has one or more
+underscores, it is not modified. For example, with
+@code{--decimal-grouping=3}, @code{1000000} will be changed to
+@code{1_000_000}.
+
+@item --based-grouping=@var{n}
+@cindex @option{--based-grouping} @command{gnatpp}
+Same as @code{--decimal-grouping}, but for based literals. For
+example, with @code{--based-grouping=4}, @code{16#0001FFFE#} will be
+changed to @code{16#0001_FFFE#}.
+
 @item ^-e^/NO_MISSED_LABELS^
 @cindex @option{^-e^/NO_MISSED_LABELS^} (@command{gnatpp})
 Do not insert missing end/exit labels. An end label is the name of
@@ -14433,13 +14616,19 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatpp}
 Display usage, then exit disregarding all other options.
 
-@item --pp-new
-@cindex @option{--pp-new} @command{gnatpp}
-Use the new experimental formatting algorithms.
+@item --pp-off=@var{xxx}
+@cindex @option{--pp-off} @command{gnatpp}
+Use @code{--xxx} as the command to turn off pretty printing, instead
+of the default @code{--!pp off}.
+
+@item --pp-on=@var{xxx}
+@cindex @option{--pp-on} @command{gnatpp}
+Use @code{--xxx} as the command to turn pretty printing back on, instead
+of the default @code{--!pp on}.
 
 @item --pp-old
 @cindex @option{--pp-old} @command{gnatpp}
-Use the old formatting algorithms. This is the default.
+Use the old formatting algorithms.
 
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatpp})
@@ -14448,6 +14637,17 @@ ordinary text file containing file names separated by spaces or
 line breaks. You can use this switch more than once in the same call to
 @command{gnatpp}. You also can combine this switch with an explicit list of
 files.
+
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatpp})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
+
+@cindex @option{^-t^/TIME^} (@command{gnatpp})
+@item ^-t^/TIME^
+Print out execution time.
 
 @item ^-v^/VERBOSE^
 @cindex @option{^-v^/VERBOSE^} (@code{gnatpp})
@@ -14471,11 +14671,52 @@ comments, program layout, and name casing.
 They provide the detailed descriptions of the switches shown above.
 
 @menu
+* Disabling Pretty Printing::
 * White Space and Empty Lines::
 * Formatting Comments::
 * Construct Layout::
 * Name Casing::
 @end menu
+
+@node Disabling Pretty Printing
+@subsection Disabling Pretty Printing
+
+@noindent
+Pretty printing is highly heuristic in nature, and sometimes doesn't
+do exactly what you want. If you wish to format a certain region of
+code by hand, you can turn off pretty printing in that region by
+surrounding it with special comments that start with @code{--!pp off}
+and @code{--!pp on}. The text in that region will then be reproduced
+verbatim in the output with no formatting.
+
+To disable pretty printing for the whole file, put @code{--!pp off} at
+the top, with no following @code{--!pp on}.
+
+The comments must appear on a line by themselves, with nothing
+preceding except spaces. The initial text of the comment must be
+exactly @code{--!pp off} or @code{--!pp on} (case sensitive), but may
+be followed by arbitrary additional text. For example:
+
+@smallexample @c ada
+@cartouche
+package Interrupts is
+   --!pp off -- turn off pretty printing so "Interrupt_Kind" lines up
+   type Interrupt_Kind is
+     (Asynchronous_Interrupt_Kind,
+       Synchronous_Interrupt_Kind,
+             Green_Interrupt_Kind);
+   --!pp on -- reenable pretty printing
+
+   ...
+@end cartouche
+@end smallexample
+
+You can specify different comment strings using the gnatpp
+@code{--pp-off} and @code{--pp-on} switches. For example, if you say
+@code{gnatpp --pp-off=' pp-' *.ad?} then gnatpp will recognize
+comments of the form @code{-- pp-} instead of @code{--!pp off} for
+disabling pretty printing. Note that the leading @code{--} of the
+comment is not included in the argument to these switches.
 
 @node White Space and Empty Lines
 @subsection White Space and Empty Lines
@@ -14660,6 +14901,17 @@ not white space nor line break immediately following the leading @code{--} of
 the comment) should be without any change moved from the argument source
 into reformatted source. This switch allows to preserve comments that are used
 as a special marks in the code (e.g.@: SPARK annotation).
+
+@noindent
+The @option{--comments-only} switch specifies that only the comments
+are formatted; the rest of the program text is left alone. The
+comments are formatted according to the -c3 and -c4 switches; other
+formatting switches are ignored. For example, @option{--comments-only
+-c4} means to fill comment paragraphs, and do nothing else. Likewise,
+@option{--comments-only -c3} ensures comments start with at least two
+spaces after @code{--}, and @option{--comments-only -c3 -c4} does
+both. If @option{--comments-only} is given without @option{-c3} or
+@option{-c4}, then gnatpp doesn't format anything.
 
 @node Construct Layout
 @subsection Construct Layout
@@ -15039,13 +15291,15 @@ Options:
 -mdir -- generate one .xml file for each Ada source file, in directory
          @file{dir}. (Default is to generate the XML to standard output.)
 
--q -- debugging version, with interspersed source, and a more
+--compact -- debugging version, with interspersed source, and a more
       compact representation of "sloc". This version does not conform
       to any schema.
 
 -I <include-dir>
     directories to search for dependencies
     You can also set the ADA_INCLUDE_PATH environment variable for this.
+
+-q -- quiet
 
 -v -- verbose (print out the command line options, and the names of
       output files as they are generated).
@@ -15381,6 +15635,17 @@ attribute:
 @itemize @bullet
 @item
 mode indicates that the parameter is of mode 'in', 'in out', or 'out'.
+@end itemize
+
+@noindent
+All elements other than Not_An_Element have this attribute:
+
+@itemize @bullet
+@item
+checks is a comma-separated list of run-time checks that are needed
+for that element. The possible checks are: do_accessibility_check,
+do_discriminant_check,do_division_check,do_length_check,
+do_overflow_check,do_range_check,do_storage_check,do_tag_check.
 @end itemize
 
 @noindent
@@ -16369,14 +16634,25 @@ line breaks. You can use this switch more than once in the same call to
 @command{gnatmetric}. You also can combine this switch with
 an explicit list of files.
 
+@item ^-j^/PROCESSES=^@var{n}
+@cindex @option{^-j^/PROCESSES^} (@command{gnatmetric})
+Use @var{n} processes to carry out the tree creations (internal representations
+of the argument sources). On a multiprocessor machine this speeds up processing
+of big sets of argument sources. If @var{n} is 0, then the maximum number of
+parallel tree creations is the number of core processors on the platform.
+
+@cindex @option{^-t^/TIME^} (@command{gnatmetric})
+@item ^-t^/TIME^
+Print out execution time.
+
 @item ^-v^/VERBOSE^
-@cindex @option{^-v^/VERBOSE^} (@code{gnatmetric})
+@cindex @option{^-v^/VERBOSE^} (@command{gnatmetric})
 Verbose mode;
 @command{gnatmetric} generates version information and then
 a trace of sources being processed.
 
 @item ^-q^/QUIET^
-@cindex @option{^-q^/QUIET^} (@code{gnatmetric})
+@cindex @option{^-q^/QUIET^} (@command{gnatmetric})
 Quiet mode.
 @end table
 
@@ -19486,6 +19762,12 @@ to check substitutability.
 @cindex @option{--skeleton-default} (@command{gnattest})
 Specifies the default behavior of generated skeletons. @var{val} can be either
 "fail" or "pass", "fail" being the default.
+
+@item --passed-tests=@var{val}
+@cindex @option{--skeleton-default} (@command{gnattest})
+Specifies whether or not passed tests should be shown. @var{val} can be either
+"show" or "hide", "show" being the default.
+
 
 @item --tests-root=@var{dirname}
 @cindex @option{--tests-root} (@command{gnattest})
@@ -22820,6 +23102,8 @@ following:
 @item  @code{Ada_12}
 
 @item  @code{Ada_2012}
+
+@item  @code{ALLOW_INTEGER_ADDRESS}
 
 @item  @code{ANNOTATE}
 

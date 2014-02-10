@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,13 +80,13 @@ package body Prj.Pars is
       if Project_Node /= Empty_Node then
          begin
             --  No config file should be read from the disk for gnatmake.
-            --  However, we will simulate one that only contains the
-            --  default GNAT naming scheme.
+            --  However, we will simulate one that only contains the default
+            --  GNAT naming scheme.
 
             Process_Project_And_Apply_Config
               (Main_Project               => The_Project,
                User_Project_Node          => Project_Node,
-               Config_File_Name           => "",
+               Config_File_Name           => No_Configuration_File,
                Autoconf_Specified         => False,
                Project_Tree               => In_Tree,
                Project_Node_Tree          => Project_Node_Tree,

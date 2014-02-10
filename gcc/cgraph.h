@@ -82,7 +82,7 @@ public:
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* The symbol will be assumed to be used in an invisiable way (like 
+  /* The symbol will be assumed to be used in an invisible way (like
      by an toplevel asm statement).  */
   unsigned force_output : 1;
   /* Like FORCE_OUTPUT, but in the case it is ABI requiring the symbol to be
@@ -518,11 +518,17 @@ struct varpool_node_set_iterator
   unsigned index;
 };
 
-#define DEFCIFCODE(code, string)	CIF_ ## code,
+#define DEFCIFCODE(code, type, string)	CIF_ ## code,
 /* Reasons for inlining failures.  */
 enum cgraph_inline_failed_t {
 #include "cif-code.def"
   CIF_N_REASONS
+};
+
+enum cgraph_inline_failed_type_t
+{
+  CIF_FINAL_NORMAL = 0,
+  CIF_FINAL_ERROR
 };
 
 /* Structure containing additional information about an indirect call.  */
@@ -698,6 +704,20 @@ extern GTY(()) struct asm_node *asm_nodes;
 extern GTY(()) int symtab_order;
 extern bool cpp_implicit_aliases_done;
 
+/* Classifcation of symbols WRT partitioning.  */
+enum symbol_partitioning_class
+{
+   /* External declarations are ignored by partitioning algorithms and they are
+      added into the boundary later via compute_ltrans_boundary.  */
+   SYMBOL_EXTERNAL,
+   /* Partitioned symbols are pur into one of partitions.  */
+   SYMBOL_PARTITION,
+   /* Duplicated symbols (such as comdat or constant pool references) are
+      copied into every node needing them via add_symbol_to_partition.  */
+   SYMBOL_DUPLICATE
+};
+
+
 /* In symtab.c  */
 void symtab_register_node (symtab_node *);
 void symtab_unregister_node (symtab_node *);
@@ -728,6 +748,7 @@ bool symtab_for_node_and_aliases (symtab_node *,
 symtab_node *symtab_nonoverwritable_alias (symtab_node *);
 enum availability symtab_node_availability (symtab_node *);
 bool symtab_semantically_equivalent_p (symtab_node *, symtab_node *);
+enum symbol_partitioning_class symtab_get_symbol_partitioning_class (symtab_node *);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -774,6 +795,7 @@ void cgraph_unnest_node (struct cgraph_node *);
 enum availability cgraph_function_body_availability (struct cgraph_node *);
 void cgraph_add_new_function (tree, bool);
 const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
+cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
 void cgraph_set_nothrow_flag (struct cgraph_node *, bool);
 void cgraph_set_const_flag (struct cgraph_node *, bool, bool);

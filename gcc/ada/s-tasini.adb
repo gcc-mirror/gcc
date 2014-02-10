@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2013, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -598,7 +598,7 @@ package body System.Tasking.Initialization is
    -- Undefer_Abort --
    -------------------
 
-   --  Precondition : Self does not hold any locks!
+   --  Precondition : Self does not hold any locks
 
    --  Undefer_Abort is called on any abort completion point (aka.
    --  synchronization point). It performs the following actions if they

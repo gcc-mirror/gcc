@@ -538,7 +538,9 @@ package body Restrict is
       --  set in gnat1drv.adb so that we have consistency between each
       --  compilation.
 
-      if CodePeer_Mode or SPARK_Mode then
+      --  Just checking, SPARK does not allow restrictions to be set ???
+
+      if CodePeer_Mode or GNATprove_Mode then
          return;
       end if;
 
@@ -623,8 +625,12 @@ package body Restrict is
    begin
       --  Ignore call if node U is not in the main source unit. This avoids
       --  cascaded errors, e.g. when Ada.Containers units with other units.
+      --  However, allow Standard_Location here, since this catches some cases
+      --  of constructs that get converted to run-time calls.
 
-      if not In_Extended_Main_Source_Unit (U) then
+      if not In_Extended_Main_Source_Unit (U)
+        and then Sloc (U) /= Standard_Location
+      then
          return;
       end if;
 

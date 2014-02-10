@@ -1,3 +1,383 @@
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz
+
+	* parser.c (synthesize_implicit_template_parm): Use grow_tree_vec.
+
+2014-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58703
+	* parser.c (cp_parser_omp_declare_reduction): Save and free
+	declarator_obstack.
+
+2014-02-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53017
+	PR c++/59211
+	* tree.c (handle_init_priority_attribute): Call default_conversion on
+	the attribute argument.
+
+2014-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58871
+	* method.c (synthesized_method_walk): If vbases is non-null but
+	is_empty is true, likewise don't worry about the virtual bases.
+
+2014-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51219
+	* typeck2.c (process_init_constructor_record): Just skip unnamed
+	bit-fields.
+
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59469
+	* pt.c (mark_decl_instantiated): Call mark_needed.
+
+	PR c++/58672
+	* decl2.c (handle_tls_init): Handle null init fn.
+
+	PR c++/55800
+	* decl2.c (get_tls_init_fn): Copy DECL_EXTERNAL from the variable.
+
+2014-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59082
+	* class.c (build_vfield_ref): Early return error_mark_node if
+	TYPE_VFIELD (type) is null.
+	(build_base_path): Check return value of build_vfield_ref.
+
+2014-01-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59646
+	* call.c (convert_like_real) [ck_aggr]: Set TARGET_EXPR_LIST_INIT_P.
+	[ck_list]: Check for error_mark_node.
+	(build_aggr_conv): Set LOOKUP_NO_NARROWING and check_narrowing.
+
+	PR c++/57043
+	* pt.c (fn_type_unification): Don't do DEDUCE_EXACT check
+	during partial ordering.
+
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* typeck.c (build_function_call_vec): Add dummy arg_loc parameter.
+
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57899
+	* cp-tree.h (struct saved_scope): Add x_local_specializations.
+	(local_specializations): New macro.
+	* pt.c (local_specializations): Remove variable.
+
+2014-01-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR c++/58708
+	* parser.c (make_string_pack): Use double_int::from_buffer.
+
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* typeck.c (build_ptrmemfunc1): Call convert_and_check with
+	input_location.
+	* cvt.c (cp_convert_and_check): Call warnings_for_convert_and_check
+	with input_location.
+	* call.c (build_conditional_expr_1): Call unsafe_conversion_p with
+	loc parameter.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58843
+	* typeck.c (lookup_destructor): Check dtor_type for error_mark_node.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58649
+	* pt.c (lookup_template_class_1): Check start_enum return value
+	for error_mark_node.
+
+2014-01-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (duplicate_decls, typename_hash, typename_compare):
+	Use TYPE_IDENTIFIER.
+	* error.c (dump_type): Likewise.
+	* mangle.c (dump_substitution_candidates): Likewise.
+
+2014-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59633
+	* decl2.c (attributes_naming_typedef_ok): New.
+	* cp-tree.h: Declare it.
+	* decl.c (grokdeclarator): Check it.
+	* tree.c (no_linkage_check): Handle VECTOR_TYPE.
+
+2014-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59707
+	* call.c (add_builtin_candidate): Catch dependent types.
+
+	PR c++/59989
+	* pt.c (expand_template_argument_pack): Correct
+	non_default_args_count calculation.
+
+	PR c++/58466
+	* pt.c (unify_pack_expansion): Call expand_template_argument_pack.
+
+	PR c++/59956
+	* friend.c (do_friend): Pass the TEMPLATE_DECL to add_friend if we
+	have a friend template in a class template.
+	* pt.c (tsubst_friend_function): Look through it.
+	(push_template_decl_real): A friend member template is
+	primary.
+
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58846
+	* decl.c (get_dso_handle_node): Don't crash if dso_handle_node
+	== error_mark_node.
+
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58674
+	* pt.c (instantiate_template_1): Check for error_mark_node the second
+	argument too.
+
+2014-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59916
+	* optimize.c (maybe_thunk_body): Build a RETURN_EXPR for
+	cdtor_returns_this case.
+
+	PR c++/59315
+	* decl.c (cxx_maybe_build_cleanup): Call mark_used.
+
+2014-01-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58702
+	* semantics.c (finish_omp_reduction_clause): Check type for
+	error_mark_node.
+
+2014-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59791
+	* pt.c (tsubst_decl) [VAR_DECL]: Allow in unevaluated context.
+	(tsubst_copy): Use it if lookup fails.
+
+	PR c++/59818
+	* pt.c (tsubst_function_type): Make sure we keep the same function
+	quals.
+
+	PR c++/58701
+	* semantics.c (build_anon_member_initialization): Stop walking
+	when we run out of COMPONENT_REFs.
+
+	PR c++/58632
+	* decl.c (lookup_and_check_tag): Ignore template parameters if
+	scope == ts_current.
+	* pt.c (check_template_shadow): Don't complain about the injected
+	class name.
+
+	* decl.c (duplicate_decls): Tweak.
+
+	PR c++/53756
+	* mangle.c (write_unqualified_name): Handle operator auto.
+
+2014-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59823
+	Core DR 1138
+	* call.c (reference_binding): Pass LOOKUP_NO_TEMP_BIND for
+	list-initialization.  A conversion to rvalue ref that involves
+	an lvalue-rvalue conversion is bad.
+	(convert_like_real): Give helpful error message.
+
+	PR c++/54652
+	* decl.c (duplicate_decls): Always use oldtype for TYPE_DECL.
+
+	PR c++/58504
+	* pt.c (tsubst_copy_and_build) [TRAIT_EXPR]: Use tsubst for
+	types.
+
+	PR c++/58606
+	* pt.c (template_parm_to_arg): Call convert_from_reference.
+	(tsubst_template_arg): Don't strip reference refs.
+
+	PR c++/58639
+	* call.c (build_aggr_conv): Reject value-initialization of reference.
+
+	PR c++/58812
+	PR c++/58651
+	* call.c (convert_like_real): Give helpful error about excess braces
+	for ck_rvalue of scalar type.
+
+	Core DR 1288
+	* call.c (reference_binding): Only elide braces if the single
+	element is reference-related.
+
+	PR c++/58814
+	* typeck.c (cp_build_modify_expr): Make the RHS an rvalue before
+	stabilizing.
+
+	PR c++/58837
+	* typeck.c (cp_truthvalue_conversion): Use explicit comparison for
+	FUNCTION_DECL.
+
+	PR c++/59097
+	* decl.c (compute_array_index_type): Don't call
+	maybe_constant_value for a non-integral expression.
+
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* call.c (magic_varargs_p): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+	* cp-gimplify.c (cp_genericize): Likewise.
+	* decl.c (grokfndecl): Likewise.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(is_cilkplus_vector_p): Likewise.
+	(cp_parser_omp_clause_name): Likewise.
+	(cp_parser_omp_all_clauses): Likewise.
+	* pt.c (apply_late_template_attributes): Likewise.
+	* typeck.c (cp_build_array_ref): Likewise.
+	(cp_build_compound_expr): Likewise.
+	(check_return_expr): Likewise.
+
+2014-01-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58550
+	* decl.c (grokdeclarator): Turn pedwarn about auto return type in
+	c++11 into error.
+
+	PR c++/59886
+	PR c++/59659
+	* typeck2.c (process_init_constructor_array): Don't create
+	RANGE_EXPR yet.
+
+2014-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck2.c (split_nonconstant_init_1): Fix num_split_elts
+	handling for RANGE_ARRAY case.
+
+2014-01-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57524
+	* name-lookup.c (push_using_directive): Use timevar_cond_start.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59846
+	* typeck.c (cp_build_binary_op): Pass location to shorten_compare.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* typeck.c (pointer_diff): Give an error on arithmetic on pointer to
+	an empty aggregate.
+
+2014-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55189
+	* cp-tree.h (struct language_function): Add infinite_loop and
+	infinite_loops.
+	(current_function_infinite_loop): New.
+	* semantics.c (begin_maybe_infinite_loop, end_maybe_infinite_loop)
+	(break_maybe_infinite_loop): New.
+	(finish_while_stmt_cond, finish_while_stmt, begin_do_stmt)
+	(finish_do_stmt, finish_for_cond, finish_for_stmt)
+	(begin_range_for_stmt): Use them.
+	* decl.c (finish_function): Don't warn about missing return
+	if current_function_infinite_loop.
+	* pt.c (instantiate_decl): Copy current_function_infinite_loop.
+	* parser.c (cp_parser_jump_statement): Call break_maybe_infinite_loop.
+
+	* call.c (build_op_delete_call): Use make_tree_vector and
+	release_tree_vector.
+
+2014-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58980
+	* parser.c (cp_parser_enum_specifier): Handle TYPENAME_TYPE as
+	nested_name_specifier.
+
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* parser.c (cp_parser_direct_declarator): When Cilk Plus is enabled
+	see if there is an attribute after function decl.  If so, then
+	parse them now.
+	(cp_parser_late_return_type_opt): Handle parsing of Cilk Plus SIMD
+	enabled function late parsing.
+	(cp_parser_gnu_attribute_list): Parse all the tokens for the vector
+	attribute for a SIMD-enabled function.
+	(cp_parser_omp_all_clauses): Skip parsing to the end of pragma when
+	the function is used by SIMD-enabled function (indicated by NULL
+	pragma token).   Added 3 new clauses: PRAGMA_CILK_CLAUSE_MASK,
+	PRAGMA_CILK_CLAUSE_NOMASK and PRAGMA_CILK_CLAUSE_VECTORLENGTH
+	(cp_parser_cilk_simd_vectorlength): Modified this function to handle
+	vectorlength clause in SIMD-enabled function and #pragma SIMD's
+	vectorlength clause.  Added a new bool parameter to differentiate
+	between the two.
+	(cp_parser_cilk_simd_fn_vector_attrs): New function.
+	(is_cilkplus_vector_p): Likewise.
+	(cp_parser_late_parsing_elem_fn_info): Likewise.
+	(cp_parser_omp_clause_name): Added a check for "mask", "nomask"
+	and "vectorlength" clauses when Cilk Plus is enabled.
+	(cp_parser_omp_clause_linear): Added a new parameter of type bool
+	and emit a sorry message when step size is a parameter.
+	* parser.h (cp_parser::cilk_simd_fn_info): New field.
+	* decl.c (grokfndecl): Added flag_enable_cilkplus along with
+	flag_openmp.
+	* pt.c (apply_late_template_attributes): Likewise.
+
+2014-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58809
+	* semantics.c (finish_omp_reduction_clause): Reject
+	BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR on COMPLEX_TYPEs.
+
+2014-01-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/59482
+	* parser.c (cp_parser_class_head): Push the class before parsing
+	the base-clause, pop after it.
+
+2014-01-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl2.c (cpp_check): Revert prototype change.
+
+2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59270
+	PR c++/58811
+	* init.c (build_value_init_noctor): Don't pass error_mark_node to
+	build_value_init.
+
+2014-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59269
+	* init.c (build_value_init_noctor): Assert !TYPE_HAS_COMPLEX_DFLT
+	only when errorcount == 0.
+
+2014-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/59838
+	* cvt.c (ocp_convert): Don't segfault on non-existing
+	ENUM_UNDERLYING_TYPE.
+
+2014-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59821
+	* tree.c (bot_manip): Update the location of builtin_LINE and
+	builtin_FILE calls.
+
+2014-01-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59659
+	* typeck2.c (massage_init_elt): New.
+	(process_init_constructor_record)
+	(process_init_constructor_union): Use it.
+	(process_init_constructor_array): Use it.  Use RANGE_EXPR.
+	(split_nonconstant_init_1): Handle it.
+	* semantics.c (cxx_eval_vec_init_1): Use force_rvalue.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c++/59631

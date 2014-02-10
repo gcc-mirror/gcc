@@ -42,6 +42,8 @@ proc scan-rtl-dump { args } {
     }
 }
 
+force_conventional_output_for scan-rtl-dump
+
 # Call pass if pattern is present given number of times, otherwise fail.
 # Argument 0 is the regexp to match
 # Argument 1 is number of times the regexp must be found
@@ -66,6 +68,8 @@ proc scan-rtl-dump-times { args } {
     }
 }
 
+force_conventional_output_for scan-rtl-dump-times
+
 # Call pass if pattern is not present, otherwise fail.
 #
 # Argument 0 is the regexp to match
@@ -89,6 +93,8 @@ proc scan-rtl-dump-not { args } {
 		      "\[0-9\]\[0-9\]\[0-9\]r.[lindex $args 1]"
     }
 }
+
+force_conventional_output_for scan-rtl-dump-not
 
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
@@ -115,6 +121,8 @@ proc scan-rtl-dump-dem { args } {
     }
 }
 
+force_conventional_output_for scan-rtl-dump-dem
+
 # Call pass if demangled pattern is not present, otherwise fail.
 #
 # Argument 0 is the regexp to match
@@ -139,3 +147,5 @@ proc scan-rtl-dump-dem-not { args } {
 			  "\[0-9\]\[0-9\]\[0-9\]r.[lindex $args 1]"
     }
 }
+
+force_conventional_output_for scan-rtl-dump-dem-not

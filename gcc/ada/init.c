@@ -809,6 +809,7 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 /* Masks for facility identification. */
 #define FAC_MASK  		0x0fff0000
 #define DECADA_M_FACILITY	0x00310000
+#define SEVERITY_MASK		0x7
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    It would be better to just include <ssdef.h> */
@@ -1067,6 +1068,9 @@ __gnat_default_resignal_p (int code)
   for (i = 0; facility_resignal_table [i]; i++)
     if ((code & FAC_MASK) == facility_resignal_table [i])
       return 1;
+
+  if ((code & SEVERITY_MASK) == 1 || (code & SEVERITY_MASK) == 3)
+    return 1;
 
   for (i = 0, iexcept = 0;
        cond_resignal_table [i]
@@ -2316,6 +2320,83 @@ __gnat_install_handler (void)
     sigaction (SIGSEGV, &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
+
+  __gnat_handler_installed = 1;
+}
+
+#elif defined(__ANDROID__)
+
+/*******************/
+/* Android Section */
+/*******************/
+
+#include <signal.h>
+#include <stdlib.h>
+
+static void
+__gnat_error_handler (int sig,
+		      siginfo_t *si ATTRIBUTE_UNUSED,
+		      void *ucontext ATTRIBUTE_UNUSED)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch (sig)
+    {
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+  Raise_From_Signal_Handler (exception, msg);
+}
+
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+char __gnat_alternate_stack[16 * 1024];
+
+void
+__gnat_install_handler (void)
+{
+  struct sigaction act;
+
+  /* Set up signal handler to map synchronous signals to appropriate
+     exceptions.  Make sure that the handler isn't interrupted by another
+     signal that might cause a scheduling event!  Also setup an alternate
+     stack region for the handler execution so that stack overflows can be
+     handled properly, avoiding a SEGV generation from stack usage by the
+     handler itself.  */
+
+  stack_t stack;
+  stack.ss_sp = __gnat_alternate_stack;
+  stack.ss_size = sizeof (__gnat_alternate_stack);
+  stack.ss_flags = 0;
+  sigaltstack (&stack, NULL);
+
+  act.sa_sigaction = __gnat_error_handler;
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
+  sigemptyset (&act.sa_mask);
+
+  sigaction (SIGABRT, &act, NULL);
+  sigaction (SIGFPE,  &act, NULL);
+  sigaction (SIGILL,  &act, NULL);
+  sigaction (SIGBUS,  &act, NULL);
+  act.sa_flags |= SA_ONSTACK;
+  sigaction (SIGSEGV, &act, NULL);
 
   __gnat_handler_installed = 1;
 }

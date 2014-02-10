@@ -1,6 +1,6 @@
 /* Like vsprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.
-   Copyright (C) 1994, 2003, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2003, 2011, 2013 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -165,10 +165,10 @@ static void ATTRIBUTE_PRINTF_1
 checkit (const char *format, ...)
 {
   char *result;
-  VA_OPEN (args, format);
-  VA_FIXEDARG (args, const char *, format);
+  va_list args;
+  va_start (args, format);
   vasprintf (&result, format, args);
-  VA_CLOSE (args);
+  va_end (args);
 
   if (strlen (result) < (size_t) global_total_width)
     printf ("PASS: ");

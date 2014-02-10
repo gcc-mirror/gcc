@@ -1,3 +1,174 @@
+2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/32/_fixdfdi.c: Throw invalid exception if number
+	cannot be represented.
+	* config/s390/32/_fixsfdi.c: Likewise.
+	* config/s390/32/_fixtfdi.c: Likewise.
+	* config/s390/32/_fixunsdfdi.c: Likewise.
+	* config/s390/32/_fixunssfdi.c: Likewise.
+	* config/s390/32/_fixunstfdi.c: Likewise.
+
+2014-02-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* configure.ac (libgcc_cv_mips_hard_float): New.
+	* configure: Regenerate.
+	* config.host (mips*-*-*): Use t-hardfp-sfdf rather than
+	t-softfp-sfdf for hard-float targets.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS): Reinstate.
+	(softfp_float_modes, softfp_int_modes, softfp_extensions)
+	(softfp_truncations, softfp_exclude_libgcc2): New.
+	* config/t-hardfp: New file.
+	* config/t-hardfp-sfdf: Likewise.
+	* config/hardfp.c: Likewise.
+
+2014-02-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.host: Include t-floattodi also for s390x.
+	* config/s390/32/_fixdfdi.c: Omit in 64 bit mode.
+	* config/s390/32/_fixsfdi.c: Likewise.
+	* config/s390/32/_fixtfdi.c: Likewise.
+	* config/s390/32/_fixunsdfdi.c: Likewise.
+	* config/s390/32/_fixunssfdi.c: Likewise.
+	* config/s390/32/_fixunstfdi.c: Likewise.
+
+2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/59788
+	* config/t-slibgcc-sld (libgcc-unwind.map): New target.
+	(install-libgcc-unwind-map-forbuild): New target.
+	(all): Depend on install-libgcc-unwind-map-forbuild.
+	(install-libgcc-unwind-map): New target.
+	(install): Depend on install-libgcc-unwind-map.
+
+2014-02-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/crti.S (_init): Initialize GOT pointer from
+	_gp_got instead of _GLOBAL_OFFSET_TABLE_.
+
+2014-02-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* configure.ac: Check __mips64 when setting host_address.
+	* configure: Regenerate.
+	* config.host (mips*-*-*): Add t-softfp-sfdf, mips/t-softfp-tf,
+	mips/t-mips64 and t-softfp.
+	(mips*-*-linux*): Don't add mips/t-tpbit.
+	* config/mips/t-mips (LIB2_SIDITI_CONV_FUNCS, FPBIT, FPBIT_CFLAGS)
+	(DPBIT, DPBIT_CFLAGS): Delete.
+	* config/mips/sfp-machine.h: New file.
+	* config/mips/t-mips64: Likewise.
+	* config/mips/t-softfp-tf: Likewise.
+	* config/mips/t-tpbit: Delete.
+
+2014-01-29  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/sfp-machine.h (_FP_I_TYPE): Define
+	as long long.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c: Include tconfig.h.  Don't include
+	config.h or system.h.
+	(bool) Define.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c (pre_atomic_barrier): Mark inline.
+	(post_atomic_barrier): Ditto.
+	(__fetch_and_do): New macro.
+	(__atomic_fetch_and_do): Use __fetch_and_do.
+	(__sync_fetch_and_do): New macro.
+	(__sync_fetch_and_add_4): New function.
+	(__sync_fetch_and_sub_4): New function.
+	(__sync_fetch_and_or_4): New function.
+	(__sync_fetch_and_and_4): New function.
+	(__sync_fetch_and_xor_4): New function.
+	(__sync_fetch_and_nand_4): New function.
+	(__sync_fetch_and_add_8): New function.
+	(__sync_fetch_and_sub_8): New function.
+	(__sync_fetch_and_or_8): New function.
+	(__sync_fetch_and_and_8): New function.
+	(__sync_fetch_and_xor_8): New function.
+	(__sync_fetch_and_nand_8): New function.
+	(__do_and_fetch): New macro.
+	(__atomic_do_and_fetch): Use __do_and_fetch.
+	(__sync_do_and_fetch): New macro.
+	(__sync_add_and_fetch_4): New function.
+	(__sync_sub_and_fetch_4): New function.
+	(__sync_or_and_fetch_4): New function.
+	(__sync_and_and_fetch_4): New function.
+	(__sync_xor_and_fetch_4): New function.
+	(__sync_nand_and_fetch_4): New function.
+	(__sync_add_and_fetch_8): New function.
+	(__sync_sub_and_fetch_8): New function.
+	(__sync_or_and_fetch_8): New function.
+	(__sync_and_and_fetch_8): New function.
+	(__sync_xor_and_fetch_8): New function.
+	(__sync_nand_and_fetch_8): New function.
+	(__sync_exchange_methods): New macro.
+	(__sync_val_compare_and_swap_4): New function.
+	(__sync_bool_compare_and_swap_4): New function.
+	(__sync_lock_test_and_test_4): New function.
+	(__sync_val_compare_and_swap_8): New function.
+	(__sync_bool_compare_and_swap_8): New function.
+	(__sync_lock_test_and_test_8): New function.
+	(__subword_cmpxchg_body): New macro.
+	(__atomic_compare_exchange_1): Use __subword_cmpxchg_body.
+	(__atomic_compare_exchange_2): Ditto.
+	(__sync_subword_cmpxchg): New macro.
+	(__sync_val_compare_and_swap_1): New function.
+	(__sync_bool_compare_and_swap_1): New function.
+	(__sync_val_compare_and_swap_2): New function.
+	(__sync_bool_compare_and_swap_2): New function.
+	(__atomic_subword): Rename to ...
+	(__subword): ... New name.
+	(__atomic_subword_fetch): Use __subword.
+	(__sync_subword_fetch): New macro.
+	(__sync_fetch_and_add_1): New function.
+	(__sync_fetch_and_sub_1): New function.
+	(__sync_fetch_and_or_1): New function.
+	(__sync_fetch_and_and_1): New function.
+	(__sync_fetch_and_xor_1): New function.
+	(__sync_fetch_and_nand_1): New function.
+	(__sync_fetch_and_add_2): New function.
+	(__sync_fetch_and_sub_2): New function.
+	(__sync_fetch_and_or_2): New function.
+	(__sync_fetch_and_and_2): New function.
+	(__sync_fetch_and_xor_2): New function.
+	(__sync_fetch_and_nand_2): New function.
+	(__sync_add_and_fetch_1): New function.
+	(__sync_sub_and_fetch_1): New function.
+	(__sync_or_and_fetch_1): New function.
+	(__sync_and_and_fetch_1): New function.
+	(__sync_xor_and_fetch_1): New function.
+	(__sync_nand_and_fetch_1): New function.
+	(__sync_add_and_fetch_2): New function.
+	(__sync_sub_and_fetch_2): New function.
+	(__sync_or_and_fetch_2): New function.
+	(__sync_and_and_fetch_2): New function.
+	(__sync_xor_and_fetch_2): New function.
+	(__sync_nand_and_fetch_2): New function.
+	(__atomic_subword_lock): Use __subword.
+	(__sync_subword_lock): New macro.
+	(__sync_lock_test_and_set_1): New function.
+	(__sync_lock_test_and_set_2): New function.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c (BIT_OFFSET): Define.
+	(__atomic_subword_cmpxchg): Use BIT_OFFSET.
+	(__atomic_subword): Ditto.
+
+2014-01-25  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.c (__atomic_do_and_fetch): Add
+	a prefix op argument.
+	(__atomic_nand_fetch_4): Add prefix op.
+	(__atomic_nand_fetch_8): Ditto.
+
+2014-01-21  Baruch Siach <barch@tkos.co.il>
+
+	* config.host (tmake_file): add t-slibgcc-libgcc for xtensa*-*-linux*.
+
 2014-01-09  Rong Xu  <xur@google.com>
 
 	* libgcov-driver.c (this_prg): make it local to save

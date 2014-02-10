@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,6 +137,10 @@ package Output is
    procedure Write_Line (S : String);
    --  Equivalent to Write_Str (S) followed by Write_Eol;
 
+   function Last_Char return Character;
+   --  Returns last character written on the current line, or null if the
+   --  current line is (so far) empty.
+
    function Column return Pos;
    pragma Inline (Column);
    --  Returns the number of the column about to be written (e.g. a value of 1
@@ -168,7 +172,7 @@ package Output is
    --  The following procedures are intended only for debugging purposes,
    --  for temporary insertion into the text in environments where a debugger
    --  is not available. They all have non-standard very short lower case
-   --  names, precisely to make sure that they are only used for debugging!
+   --  names, precisely to make sure that they are only used for debugging.
 
    procedure w (C : Character);
    --  Dump quote, character, quote, followed by line return

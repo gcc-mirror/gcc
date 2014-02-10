@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -467,9 +467,14 @@ package body Prj.Util is
          --  the interface for standalone libraries.
 
          if Sid.Kind = Spec
+           and then not Sid.Project.Externally_Built
            and then not Sid.Locally_Removed
            and then (Project.Standalone_Library = No
                       or else Sid.Declared_In_Interfaces)
+
+           --  Handle case of non-compilable languages
+
+           and then Sid.Dep_Name /= No_File
          then
             Action (Sid);
 
@@ -525,7 +530,11 @@ package body Prj.Util is
       --  Now handle the bodies and separates if needed
 
       if Deps.Length /= 0 then
-         Iter := For_Each_Source (Tree, Project);
+         if Project.Qualifier = Aggregate_Library then
+            Iter := For_Each_Source (Tree);
+         else
+            Iter := For_Each_Source (Tree, Project);
+         end if;
 
          loop
             Sid := Element (Iter);

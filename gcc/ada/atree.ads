@@ -73,9 +73,10 @@ package Atree is
    --  nodes, considered as a single record. The following definition gives
    --  the number of extension nodes.
 
-   Num_Extension_Nodes : Int := 5;
+   Num_Extension_Nodes : Node_Id := 5;
    --  This value is increased by one if debug flag -gnatd.N is set. This is
-   --  for testing performance impact of adding a new extension node.
+   --  for testing performance impact of adding a new extension node. We make
+   --  this of type Node_Id for easy reference in loops using this value.
 
    ----------------------------------------
    -- Definitions of Fields in Tree Node --
@@ -168,16 +169,20 @@ package Atree is
    --   it is useful to be able to do untyped traversals, and an internal
    --   package in Atree allows for direct untyped accesses in such cases.
 
-   --   Flag4         Fifteen Boolean flags (use depends on Nkind and
-   --   Flag5         Ekind, as described for FieldN). Again the access
-   --   Flag6         is usually via subprograms in Sinfo and Einfo which
-   --   Flag7         provide high-level synonyms for these flags, and
-   --   Flag8         contain debugging code that checks that the values
-   --   Flag9         in Nkind and Ekind are appropriate for the access.
+   --   Flag0         Nineteen Boolean flags (use depends on Nkind and
+   --   Flag1         Ekind, as described for FieldN). Again the access
+   --   Flag2         is usually via subprograms in Sinfo and Einfo which
+   --   Flag3         provide high-level synonyms for these flags, and
+   --   Flag4         contain debugging code that checks that the values
+   --   Flag5         in Nkind and Ekind are appropriate for the access.
+   --   Flag6
+   --   Flag7
+   --   Flag8
+   --   Flag9
    --   Flag10
-   --   Flag11        Note that Flag1-3 are missing from this list. For
-   --   Flag12        historical reasons, these flag names are unused.
-   --   Flag13
+   --   Flag11        Note that Flag0-3 are stored separately in the Flags
+   --   Flag12        table, but that's a detail of the implementation which
+   --   Flag13        is entirely hidden by the funcitonal interface.
    --   Flag14
    --   Flag15
    --   Flag16
@@ -219,6 +224,9 @@ package Atree is
 
    function Nodes_Address return System.Address;
    --  Return address of Nodes table (used in Back_End for Gigi call)
+
+   function Flags_Address return System.Address;
+   --  Return address of Flags table (used in Back_End for Gigi call)
 
    function Num_Nodes return Nat;
    --  Total number of nodes allocated, where an entity counts as a single
@@ -350,7 +358,7 @@ package Atree is
    -------------------------------------
 
    --  A subpackage Atree.Unchecked_Access provides routines for reading and
-   --  writing the fields defined above (Field1-35, Node1-35, Flag4-317 etc).
+   --  writing the fields defined above (Field1-35, Node1-35, Flag0-317 etc).
    --  These unchecked access routines can be used for untyped traversals.
    --  In addition they are used in the implementations of the Sinfo and
    --  Einfo packages. These packages both provide logical synonyms for
@@ -747,6 +755,17 @@ package Atree is
       V7 : Entity_Kind) return Boolean;
 
    function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind) return Boolean;
+
+   function Ekind_In
      (T  : Entity_Kind;
       V1 : Entity_Kind;
       V2 : Entity_Kind) return Boolean;
@@ -790,6 +809,17 @@ package Atree is
       V5 : Entity_Kind;
       V6 : Entity_Kind;
       V7 : Entity_Kind) return Boolean;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind;
+      V7 : Entity_Kind;
+      V8 : Entity_Kind) return Boolean;
 
    pragma Inline (Ekind_In);
    --  Inline all above functions
@@ -1201,6 +1231,12 @@ package Atree is
       function Node32 (N : Node_Id) return Node_Id;
       pragma Inline (Node32);
 
+      function Node33 (N : Node_Id) return Node_Id;
+      pragma Inline (Node33);
+
+      function Node34 (N : Node_Id) return Node_Id;
+      pragma Inline (Node34);
+
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
 
@@ -1242,6 +1278,9 @@ package Atree is
 
       function Elist8 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist8);
+
+      function Elist9 (N : Node_Id) return Elist_Id;
+      pragma Inline (Elist9);
 
       function Elist10 (N : Node_Id) return Elist_Id;
       pragma Inline (Elist10);
@@ -1340,6 +1379,18 @@ package Atree is
 
       function Ureal21 (N : Node_Id) return Ureal;
       pragma Inline (Ureal21);
+
+      function Flag0 (N : Node_Id) return Boolean;
+      pragma Inline (Flag0);
+
+      function Flag1 (N : Node_Id) return Boolean;
+      pragma Inline (Flag1);
+
+      function Flag2 (N : Node_Id) return Boolean;
+      pragma Inline (Flag2);
+
+      function Flag3 (N : Node_Id) return Boolean;
+      pragma Inline (Flag3);
 
       function Flag4 (N : Node_Id) return Boolean;
       pragma Inline (Flag4);
@@ -2489,6 +2540,12 @@ package Atree is
       procedure Set_Node32 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node32);
 
+      procedure Set_Node33 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node33);
+
+      procedure Set_Node34 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node34);
+
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);
 
@@ -2530,6 +2587,9 @@ package Atree is
 
       procedure Set_Elist8 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist8);
+
+      procedure Set_Elist9 (N : Node_Id; Val : Elist_Id);
+      pragma Inline (Set_Elist9);
 
       procedure Set_Elist10 (N : Node_Id; Val : Elist_Id);
       pragma Inline (Set_Elist10);
@@ -2623,6 +2683,18 @@ package Atree is
 
       procedure Set_Ureal21 (N : Node_Id; Val : Ureal);
       pragma Inline (Set_Ureal21);
+
+      procedure Set_Flag0 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag0);
+
+      procedure Set_Flag1 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag1);
+
+      procedure Set_Flag2 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag2);
+
+      procedure Set_Flag3 (N : Node_Id; Val : Boolean);
+      pragma Inline (Set_Flag3);
 
       procedure Set_Flag4 (N : Node_Id; Val : Boolean);
       pragma Inline (Set_Flag4);
@@ -3621,12 +3693,12 @@ package Atree is
       -------------------------
 
       --  The nodes of the tree are stored in a table (i.e. an array). In the
-      --  case of extended nodes five consecutive components in the array are
+      --  case of extended nodes six consecutive components in the array are
       --  used. There are thus two formats for array components. One is used
       --  for non-extended nodes, and for the first component of extended
       --  nodes. The other is used for the extension parts (second, third,
-      --  fourth and fifth components) of an extended node. A variant record
-      --  structure is used to distinguish the two formats.
+      --  fourth, fifth, and sixth components) of an extended node. A variant
+      --  record structure is used to distinguish the two formats.
 
       type Node_Record (Is_Extension : Boolean := False) is record
 
@@ -3680,7 +3752,8 @@ package Atree is
          Flag16 : Boolean;
          Flag17 : Boolean;
          Flag18 : Boolean;
-         --  The eighteen flags for a normal node
+         --  Flags 4-18 for a normal node. Note that Flags 0-3 are stored
+         --  separately in the Flags array.
 
          --  The above fields are used as follows in components 2-6 of
          --  an extended node entry.
@@ -3720,7 +3793,7 @@ package Atree is
          --     Fifth entry:  holds 8 additional flags (Flag247-254)
          --     Sixth entry:  holds 8 additional flags (Flag310-317)
 
-         --  Now finally (on an 32-bit boundary!) comes the variant part
+         --  Now finally (on an 32-bit boundary) comes the variant part
 
          case Is_Extension is
 
@@ -3888,7 +3961,7 @@ package Atree is
          Field12           => Empty_List_Or_Node);
 
       --  The following defines the extendable array used for the nodes table
-      --  Nodes with extensions use five consecutive entries in the array
+      --  Nodes with extensions use six consecutive entries in the array
 
       package Nodes is new Table.Table (
         Table_Component_Type => Node_Record,
@@ -3897,6 +3970,37 @@ package Atree is
         Table_Initial        => Alloc.Nodes_Initial,
         Table_Increment      => Alloc.Nodes_Increment,
         Table_Name           => "Nodes");
+
+      --  The following is a parallel table to Nodes, which provides 8 more
+      --  bits of space that logically belong to the corresponding node. This
+      --  is currently used to implement Flags 0,1,2,3 for normal nodes, or
+      --  the first component of an extended node (four bits unused). Entries
+      --  for extending components are completely unused.
+
+      type Flags_Byte is record
+         Flag0  : Boolean;
+         Flag1  : Boolean;
+         Flag2  : Boolean;
+         Flag3  : Boolean;
+         Spare0 : Boolean;
+         Spare1 : Boolean;
+         Spare2 : Boolean;
+         Spare3 : Boolean;
+      end record;
+
+      for Flags_Byte'Size use 8;
+      pragma Pack (Flags_Byte);
+
+      Default_Flags : constant Flags_Byte := (others => False);
+      --  Default value used to initialize new entries
+
+      package Flags is new Table.Table (
+        Table_Component_Type => Flags_Byte,
+        Table_Index_Type     => Node_Id'Base,
+        Table_Low_Bound      => First_Node_Id,
+        Table_Initial        => Alloc.Nodes_Initial,
+        Table_Increment      => Alloc.Nodes_Increment,
+        Table_Name           => "Flags");
 
    end Atree_Private_Part;
 

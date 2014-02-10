@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -909,12 +909,12 @@ package body Ada.Wide_Text_IO.Editing is
       end if;
 
       --  This was once a simple return statement, now there are nine
-      --  different return cases.  Not to mention the five above to deal
-      --  with zeros.  Why not split things out?
+      --  different return cases. Not to mention the five above to deal
+      --  with zeros. Why not split things out?
 
-      --  Processing the radix and sign expansion separately
-      --  would require lots of copying--the string and some of its
-      --  indicies--without really simplifying the logic.  The cases are:
+      --  Processing the radix and sign expansion separately would require
+      --  lots of copying--the string and some of its indexes--without
+      --  really simplifying the logic. The cases are:
 
       --  1) Expand $, replace '.' with Radix_Point
       --  2) No currency expansion, replace '.' with Radix_Point
@@ -1033,7 +1033,7 @@ package body Ada.Wide_Text_IO.Editing is
             when '0' =>
 
                --  Only count a zero before the decimal point if it follows a
-               --  non-zero digit.  After the decimal point, zeros will be
+               --  non-zero digit. After the decimal point, zeros will be
                --  counted if followed by a non-zero digit.
 
                if not Answer.Has_Fraction then
@@ -1068,7 +1068,7 @@ package body Ada.Wide_Text_IO.Editing is
                Answer.End_Of_Int        := J - 1;
 
             when others =>
-               raise Picture_Error; -- can this happen? probably not!
+               raise Picture_Error; -- can this happen? probably not
          end case;
       end loop;
 
@@ -1412,8 +1412,7 @@ package body Ada.Wide_Text_IO.Editing is
       --------------------
 
       --  Note that Leading_Dollar can be called in either State.
-      --  It will set state to Okay only if a 9 or (second) $
-      --  is encountered.
+      --  It will set state to Okay only if a 9 or (second) $ is encountered.
 
       --  Also notice the tricky bit with State and Zero_Suppression.
       --  Zero_Suppression is Picture_Error if a '$' or a '9' has been
@@ -1521,9 +1520,9 @@ package body Ada.Wide_Text_IO.Editing is
       -- Leading_Pound --
       -------------------
 
-      --  This one is complex!  A Leading_Pound can be fixed or floating,
+      --  This one is complex. A Leading_Pound can be fixed or floating,
       --  but in some cases the decision has to be deferred until we leave
-      --  this procedure.  Also note that Leading_Pound can be called in
+      --  this procedure. Also note that Leading_Pound can be called in
       --  either State.
 
       --  It will set state to Okay only if a 9 or  (second) # is

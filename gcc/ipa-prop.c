@@ -355,8 +355,10 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 		 ii->param_index, ii->offset,
 		 ii->by_ref ? "by reference" : "by_value");
       else
-	fprintf (f, "    indirect %s callsite, calling param %i",
-		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index);
+	fprintf (f, "    indirect %s callsite, calling param %i, "
+		 "offset " HOST_WIDE_INT_PRINT_DEC,
+		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index,
+		 ii->offset);
 
       if (cs->call_stmt)
 	{
@@ -591,7 +593,7 @@ static tree
 extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree lhs, rhs, base;
+  tree lhs, rhs, base, binfo;
 
   if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
@@ -599,13 +601,7 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
   lhs = gimple_assign_lhs (stmt);
   rhs = gimple_assign_rhs1 (stmt);
   if (TREE_CODE (lhs) != COMPONENT_REF
-      || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1))
-      || TREE_CODE (rhs) != ADDR_EXPR)
-    return NULL_TREE;
-  rhs = get_base_address (TREE_OPERAND (rhs, 0));
-  if (!rhs
-      || TREE_CODE (rhs) != VAR_DECL
-      || !DECL_VIRTUAL_P (rhs))
+      || !DECL_VIRTUAL_P (TREE_OPERAND (lhs, 1)))
     return NULL_TREE;
 
   base = get_ref_base_and_extent (lhs, &offset, &size, &max_size);
@@ -624,7 +620,16 @@ extr_type_from_vtbl_ptr_store (gimple stmt, struct type_change_info *tci)
   else if (tci->object != base)
     return NULL_TREE;
 
-  return DECL_CONTEXT (rhs);
+  binfo = vtable_pointer_value_to_binfo (rhs);
+
+  /* FIXME: vtable_pointer_value_to_binfo may return BINFO of a
+     base of outer type.  In this case we would need to either
+     work on binfos or translate it back to outer type and offset.
+     KNOWN_TYPE jump functions are not ready for that, yet.  */
+  if (!binfo || TYPE_BINFO (BINFO_TYPE (binfo)) != binfo)
+   return NULL;
+
+  return BINFO_TYPE (binfo);
 }
 
 /* Callback of walk_aliased_vdefs and a helper function for
@@ -681,6 +686,19 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       || TREE_CODE (comp_type) != RECORD_TYPE
       || !TYPE_BINFO (comp_type)
       || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
+    return false;
+
+  /* C++ methods are not allowed to change THIS pointer unless they
+     are constructors or destructors.  */
+  if (TREE_CODE	(base) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (base, 0))
+      && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (base, 0))) == PARM_DECL
+      && TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
+      && !DECL_CXX_CONSTRUCTOR_P (current_function_decl)
+      && !DECL_CXX_DESTRUCTOR_P (current_function_decl)
+      && (SSA_NAME_VAR (TREE_OPERAND (base, 0))
+	  == DECL_ARGUMENTS (current_function_decl)))
     return false;
 
   ao_ref_init (&ao, arg);
@@ -1329,11 +1347,11 @@ struct ipa_known_agg_contents_list
 
 /* Traverse statements from CALL backwards, scanning whether an aggregate given
    in ARG is filled in with constant values.  ARG can either be an aggregate
-   expression or a pointer to an aggregate.  JFUNC is the jump function into
-   which the constants are subsequently stored.  */
+   expression or a pointer to an aggregate.  ARG_TYPE is the type of the aggregate.
+   JFUNC is the jump function into which the constants are subsequently stored.  */
 
 static void
-determine_known_aggregate_parts (gimple call, tree arg,
+determine_known_aggregate_parts (gimple call, tree arg, tree arg_type,
 				 struct ipa_jump_func *jfunc)
 {
   struct ipa_known_agg_contents_list *list = NULL;
@@ -1348,18 +1366,18 @@ determine_known_aggregate_parts (gimple call, tree arg,
      arg_base and arg_offset based on what is actually passed as an actual
      argument.  */
 
-  if (POINTER_TYPE_P (TREE_TYPE (arg)))
+  if (POINTER_TYPE_P (arg_type))
     {
       by_ref = true;
       if (TREE_CODE (arg) == SSA_NAME)
 	{
 	  tree type_size;
-          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)))))
+          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (arg_type))))
             return;
 	  check_ref = true;
 	  arg_base = arg;
 	  arg_offset = 0;
-	  type_size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)));
+	  type_size = TYPE_SIZE (TREE_TYPE (arg_type));
 	  arg_size = tree_to_uhwi (type_size);
 	  ao_ref_init_from_ptr_and_size (&r, arg_base, NULL_TREE);
 	}
@@ -1642,13 +1660,22 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 				      ? TREE_TYPE (param_type)
 				      : NULL);
 
+      /* If ARG is pointer, we can not use its type to determine the type of aggregate
+	 passed (because type conversions are ignored in gimple).  Usually we can
+	 safely get type from function declaration, but in case of K&R prototypes or
+	 variadic functions we can try our luck with type of the pointer passed.
+	 TODO: Since we look for actual initialization of the memory object, we may better
+	 work out the type based on the memory stores we find.  */
+      if (!param_type)
+	param_type = TREE_TYPE (arg);
+
       if ((jfunc->type != IPA_JF_PASS_THROUGH
 	      || !ipa_get_jf_pass_through_agg_preserved (jfunc))
 	  && (jfunc->type != IPA_JF_ANCESTOR
 	      || !ipa_get_jf_ancestor_agg_preserved (jfunc))
 	  && (AGGREGATE_TYPE_P (TREE_TYPE (arg))
-	      || (POINTER_TYPE_P (TREE_TYPE (arg)))))
-	determine_known_aggregate_parts (call, arg, jfunc);
+	      || POINTER_TYPE_P (param_type)))
+	determine_known_aggregate_parts (call, arg, param_type, jfunc);
     }
 }
 
@@ -2359,10 +2386,13 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		  dst->type = IPA_JF_UNKNOWN;
 		  break;
 		case IPA_JF_KNOWN_TYPE:
-		  ipa_set_jf_known_type (dst,
-					 ipa_get_jf_known_type_offset (src),
-					 ipa_get_jf_known_type_base_type (src),
-					 ipa_get_jf_known_type_base_type (src));
+		  if (ipa_get_jf_pass_through_type_preserved (dst))
+		    ipa_set_jf_known_type (dst,
+					   ipa_get_jf_known_type_offset (src),
+					   ipa_get_jf_known_type_base_type (src),
+					   ipa_get_jf_known_type_base_type (src));
+		  else
+		    dst->type = IPA_JF_UNKNOWN;
 		  break;
 		case IPA_JF_CONST:
 		  ipa_set_jf_cst_copy (dst, src);
@@ -2672,6 +2702,41 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 {
   tree binfo, target;
 
+  if (!flag_devirtualize)
+    return NULL;
+
+  /* First try to do lookup via known virtual table pointer value.  */
+  if (!ie->indirect_info->by_ref)
+    {
+      tree vtable;
+      unsigned HOST_WIDE_INT offset;
+      tree t = ipa_find_agg_cst_for_param (&jfunc->agg,
+					   ie->indirect_info->offset,
+					   true);
+      if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
+	{
+	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
+						      vtable, offset);
+	  if (target)
+	    {
+	      if ((TREE_CODE (TREE_TYPE (target)) == FUNCTION_TYPE
+		   && DECL_FUNCTION_CODE (target) == BUILT_IN_UNREACHABLE)
+		  || !possible_polymorphic_call_target_p
+		       (ie, cgraph_get_node (target)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     "Type inconsident devirtualization: %s/%i->%s\n",
+			     ie->caller->name (), ie->caller->order,
+			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (target)));
+		  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  cgraph_get_create_node (target);
+		}
+	      return ipa_make_edge_direct_to_target (ie, target);
+	    }
+	}
+    }
+
   binfo = ipa_value_from_jfunc (new_root_info, jfunc);
 
   if (!binfo)
@@ -2679,19 +2744,38 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   if (TREE_CODE (binfo) != TREE_BINFO)
     {
-      binfo = gimple_extract_devirt_binfo_from_cst
-		 (binfo, ie->indirect_info->otr_type);
-      if (!binfo)
-        return NULL;
-    }
+      ipa_polymorphic_call_context context;
+      vec <cgraph_node *>targets;
+      bool final;
 
-  binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
-			       ie->indirect_info->otr_type);
-  if (binfo)
-    target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
-					       binfo);
+      if (!get_polymorphic_call_info_from_invariant
+	     (&context, binfo, ie->indirect_info->otr_type,
+	      ie->indirect_info->offset))
+	return NULL;
+      targets = possible_polymorphic_call_targets
+		 (ie->indirect_info->otr_type,
+		  ie->indirect_info->otr_token,
+		  context, &final);
+      if (!final || targets.length () > 1)
+	return NULL;
+      if (targets.length () == 1)
+	target = targets[0]->decl;
+      else
+	{
+          target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	  cgraph_get_create_node (target);
+	}
+    }
   else
-    return NULL;
+    {
+      binfo = get_binfo_at_offset (binfo, ie->indirect_info->offset,
+				   ie->indirect_info->otr_type);
+      if (binfo)
+	target = gimple_get_virt_method_for_binfo (ie->indirect_info->otr_token,
+						   binfo);
+      else
+	return NULL;
+    }
 
   if (target)
     {

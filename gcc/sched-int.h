@@ -539,6 +539,9 @@ struct deps_desc
   /* The last debug insn we've seen.  */
   rtx last_debug_insn;
 
+  /* The last insn bearing REG_ARGS_SIZE that we've seen.  */
+  rtx last_args_size;
+
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
   int max_reg;

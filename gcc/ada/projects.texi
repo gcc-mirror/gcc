@@ -1254,6 +1254,9 @@ the search stops:
   @item @file{<prefix>/<target>/lib/gnat}
   (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
   @option{--target} is specified)
+  @item @file{<prefix>/<target>/share/gpr}
+  (for @command{gnatmake} in all cases, and for @command{gprbuild} if option
+  @option{--target} is specified)
   @item @file{<prefix>/share/gpr/}
   (for @command{gnatmake} and @command{gprbuild})
   @item @file{<prefix>/lib/gnat/}
@@ -1615,6 +1618,10 @@ a change in the
 implementation part of the library implies minimal post-compilation actions on
 the complete system and potentially no action at all for the rest of the
 system in the case of dynamic SALs.
+
+There is a restriction on shared library projects: by default, they are only
+allowed to import other shared library projects. They are not allowed to
+import non library projects or static library projects.
 
 The GNAT Project Manager takes complete care of the library build, rebuild and
 installation tasks, including recompilation of the source files for which
@@ -2365,6 +2372,9 @@ aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main will not be built when
 building the aggregate project.
 
+Aggregate projects are only supported with @command{gprbuild}, but not with
+@command{gnatmake}.
+
 @c ---------------------------------------------------------
 @node Building a set of projects with a single command
 @subsection Building a set of projects with a single command
@@ -2404,8 +2414,8 @@ with Annex E.
 @subsection Define a build environment
 @c ---------------------------------------------
 
-The environment variables at the time you launch @command{gprbuild} or
-@command{gnatmake} will influence the view these tools have of the project
+The environment variables at the time you launch @command{gprbuild}
+will influence the view these tools have of the project
 (PATH to find the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
 projects, environment variables that are referenced in project files
 through the "external" statement,...). Several command line switches
@@ -2462,13 +2472,13 @@ end MyProject;
 @subsection Performance improvements in builder
 @c --------------------------------------------
 
-The loading of aggregate projects is optimized in @command{gprbuild} and
-@command{gnatmake}, so that all files are searched for only once on the disk
+The loading of aggregate projects is optimized in @command{gprbuild},
+so that all files are searched for only once on the disk
 (thus reducing the number of system calls and contributing to faster
 compilation times especially on systems with sources on remote
-servers). As part of the loading, @command{gprbuild} and @command{gnatmake}
-compute how and where a source file should be compiled, and even if it is found
-several times in the aggregated projects it will be compiled only
+servers). As part of the loading, @command{gprbuild}
+computes how and where a source file should be compiled, and even if it is
+found several times in the aggregated projects it will be compiled only
 once.
 
 Since there is no ambiguity as to which switches should be used, files
@@ -2487,9 +2497,10 @@ recommended extension is still @file{.gpr}. However, a special
 @code{project}.
 
 An aggregate project cannot @code{with} any other project (standard or
-aggregate), except an abstract project which can be used to share
-attribute values. Building other aggregate projects from an aggregate
-project is done through the Project_Files attribute (see below).
+aggregate), except an abstract project which can be used to share attribute
+values. Also, aggregate projects cannot be extended or imported though a
+@code{with} clause by any other project. Building other aggregate projects from
+an aggregate project is done through the Project_Files attribute (see below).
 
 An aggregate project does not have any source files directly (only
 through other standard projects). Therefore a number of the standard
@@ -2541,11 +2552,13 @@ attribute nor the @code{Library_*} attributes, and the result will be to
 build all their source files (not just the ones needed by other
 projects).
 
-The file can include paths (absolute or relative). Paths are
-relative to the location of the aggregate project file itself (if
-you use a base name, we expect to find the .gpr file in the same
-directory as the aggregate project file). The extension @file{.gpr} is
-mandatory, since this attribute contains file names, not project names.
+The file can include paths (absolute or relative). Paths are relative to
+the location of the aggregate project file itself (if you use a base name,
+we expect to find the .gpr file in the same directory as the aggregate
+project file). The environment variables @code{ADA_PROJECT_PATH},
+@code{GPR_PROJECT_PATH} and @code{GPR_PROJECT_PATH_FILE} are not used to find
+the project files. The extension @file{.gpr} is mandatory, since this attribute
+contains file names, not project names.
 
 Paths can also include the @code{"*"} and @code{"**"} globbing patterns. The
 latter indicates that any subdirectory (recursively) will be
@@ -2663,15 +2676,15 @@ These override the value given by the attribute, so that
 users can override the value set in the (presumably shared
 with others in his team) aggregate project.
 
-@item The -X command line switch to @command{gprbuild} and @command{gnatmake}
+@item The -X command line switch to @command{gprbuild}
 
 This always takes precedence.
 
 @end itemize
 
 This attribute is only taken into account in the main aggregate
-project (i.e. the one specified on the command line to @command{gprbuild} or
-@command{gnatmake}), and ignored in other aggregate projects. It is invalid
+project (i.e. the one specified on the command line to @command{gprbuild}),
+and ignored in other aggregate projects. It is invalid
 in standard projects.
 The goal is to have a consistent value in all
 projects that are built through the aggregate, which would not
@@ -2695,13 +2708,15 @@ are valid:
 @table @asis
 @item @b{^Switches^Switches^}:
 @cindex @code{^Switches^Switches^}
-This attribute gives the list of switches to use for the builder
-(@command{gprbuild} or @command{gnatmake}), depending on the language of the
-main file. For instance,
+This attribute gives the list of switches to use for @command{gprbuild}.
+Because no mains can be specified for aggregate projects, the only possible
+index for attribute @code{Switches} is @code{others}. All other indexes will
+be ignored.
+
+Example:
 
 @smallexample @c projectfile
-for ^Switches^Switches^ ("Ada") use ("-d", "-p");
-for ^Switches^Switches^ ("C")   use ("-p");
+for ^Switches^Switches^ (other) use ("-v", "-k", "-j8");
 @end smallexample
 
 These switches are only read from the main aggregate project (the
@@ -2797,13 +2812,20 @@ B), the switches used by the compiler are unambiguous.
 @cindex @code{Global_Configuration_Pragmas}
 
 This attribute can be used to specify a file containing
-configuration pragmas, to be passed to the compiler.  Since we
+configuration pragmas, to be passed to the Ada compiler.  Since we
 ignore the package Builder in other aggregate projects and projects,
 only those pragmas defined in the main aggregate project will be
 taken into account.
 
 Projects can locally add to those by using the
 @code{Compiler.Local_Configuration_Pragmas} attribute if they need.
+
+@item @b{Global_Config_File}
+@cindex @code{Global_Config_File}
+
+This attribute, indexed with a language name, can be used to specify a config
+when compiling sources of the language. For Ada, these files are configuration
+pragmas files.
 
 @end table
 
@@ -2920,7 +2942,9 @@ The only package that is authorized (albeit optional) is Builder.
 
 The Project_Files attribute (See @pxref{Aggregate Projects}) is used to
 described the aggregated projects whose object files have to be
-included into the aggregate library.
+included into the aggregate library. The environment variables
+@code{ADA_PROJECT_PATH}, @code{GPR_PROJECT_PATH} and
+@code{GPR_PROJECT_PATH_FILE} are not used to find the project files.
 
 @c ---------------------------------------------
 @node Project File Reference
@@ -3171,8 +3195,8 @@ The following packages are currently supported in project files
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
 @item ^Gnatls^Gnatls^
-  This package the options to use when invoking @command{gnatls} via the
-  @command{gnat} driver.
+  This package specifies the options to use when invoking @command{gnatls}
+  via the @command{gnat} driver.
 @item ^Gnatstub^Gnatstub^
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes
@@ -3785,6 +3809,9 @@ depending on the platform.
 For an indexed attribute, if it is allowed to use @b{others} as the index,
 this is indicated by the words "others allowed".
 
+When @b{others} is used as the index of an indexed attribute, the value of
+the attribute indexed by @b{others} is used when no other index would apply.
+
 @end itemize
 
 @node Project Level Attributes
@@ -4384,11 +4411,11 @@ Index is a language name. Indicates the kind of the language, either file based
 or unit based. Only authorized case-insensitive values are "unit_based" and
 "file_based" (the default).
 
-@item @b{Dependency_Kind}: : single, indexed, case-insensitive index
+@item @b{Dependency_Kind}: single, indexed, case-insensitive index
 
 Index is a language name. Indicates how the dependencies are handled for the
 language. Only authorized case-insensitive values are "makefile", "ali_file",
-"ali_closure" or "none" (the default.
+"ali_closure" or "none" (the default).
 
 @item @b{Required_Switches}: list, indexed, case-insensitive index
 
@@ -4963,10 +4990,25 @@ invoking @code{gnatpp} for the source.
 
 @itemize @bullet
 
-@item @b{Build_Slaves}: list
+@item @b{Included_Patterns}: list
 
-Value is the list of machine names that are to be used in distributed
-compilation.
+If this attribute is defined it sets the patterns to
+synchronized from the master to the slaves. It is exclusive
+with Excluded_Patterns, that is it is an error to define
+both.
+
+@item @b{Included_Artifact_Patterns}: list
+
+If this attribute is defined it sets the patterns of compilation
+artifacts to synchronized from the slaves to the build master.
+This attribute replace the default hard-coded patterns.
+
+@item @b{Excluded_Patterns}: list
+
+Set of patterns to ignore when synchronizing sources from the build
+master to the slaves. A set of predefined patterns are supported
+(e.g. *.o, *.ali, *.exe, etc.), this attributes make it possible to
+add some more patterns.
 
 @item @b{Root_Dir}: single
 

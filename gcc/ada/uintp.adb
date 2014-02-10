@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1517,7 +1517,7 @@ package body Uintp is
    --  possible, substituting Int arithmetic instead. See Knuth volume II,
    --  Algorithm L (page 329).
 
-   --  We use the same notation as Knuth (U_Hat standing for the obvious!)
+   --  We use the same notation as Knuth (U_Hat standing for the obvious)
 
    function UI_GCD (Uin, Vin : Uint) return Uint is
       U, V : Uint;

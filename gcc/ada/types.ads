@@ -43,7 +43,7 @@
 --  Note: the declarations in this package reflect an expectation that the host
 --  machine has an efficient integer base type with a range at least 32 bits
 --  2s-complement. If there are any machines for which this is not a correct
---  assumption, a significant number of changes will be required!
+--  assumption, a significant number of changes will be required.
 
 with System;
 with Unchecked_Conversion;
@@ -881,13 +881,5 @@ package Types is
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..
      SE_Object_Too_Large;
-
-   ----------------------------------------
-   -- Types Used for SPARK Mode Handling --
-   ----------------------------------------
-
-   type SPARK_Mode_Id is (None, SPARK_Off, SPARK_Auto, SPARK_On);
-   --  Type used to represent all legal modes that can be set by aspect/pragma
-   --  SPARK_Mode.
 
 end Types;

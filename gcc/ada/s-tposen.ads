@@ -1,14 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---             SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY                --
+--               SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY              --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
--- GNARL is free software; you can  redistribute it  and/or modify it under --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
@@ -31,7 +31,7 @@
 
 --  This package provides an optimized version of Protected_Objects.Operations
 --  and Protected_Objects.Entries making the following assumptions:
---
+
 --    PO have only one entry
 --    There is only one caller at a time (No_Entry_Queue)
 --    There is no dynamic priority support (No_Dynamic_Priorities)
@@ -39,17 +39,17 @@
 --      (No_Abort_Statements, Max_Asynchronous_Select_Nesting => 0)
 --    PO are at library level
 --    None of the tasks will terminate (no need for finalization)
---
---  This interface is intended to be used in the ravenscar profile, the
+
+--  This interface is intended to be used in the Ravenscar profile, the
 --  compiler is responsible for ensuring that the conditions mentioned above
 --  are respected, except for the No_Entry_Queue restriction that is checked
 --  dynamically in this package, since the check cannot be performed at compile
 --  time, and is relatively cheap (see body).
---
+
 --  This package is part of the high level tasking interface used by the
 --  compiler to expand Ada 95 tasking constructs into simpler run time calls
 --  (aka GNARLI, GNU Ada Run-time Library Interface)
---
+
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes
 --  in exp_ch9.adb and possibly exp_ch7.adb
@@ -191,86 +191,67 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  to keep track of the runtime state of a protected object.
 
    procedure Lock_Entry (Object : Protection_Entry_Access);
-   --  Lock a protected object for write access. Upon return, the caller
-   --  owns the lock to this object, and no other call to Lock or
-   --  Lock_Read_Only with the same argument will return until the
-   --  corresponding call to Unlock has been made by the caller.
+   --  Lock a protected object for write access. Upon return, the caller owns
+   --  the lock to this object, and no other call to Lock or Lock_Read_Only
+   --  with the same argument will return until the corresponding call to
+   --  Unlock has been made by the caller.
 
    procedure Lock_Read_Only_Entry
      (Object : Protection_Entry_Access);
-   --  Lock a protected object for read access.  Upon return, the caller
-   --  owns the lock for read access, and no other calls to Lock
-   --  with the same argument will return until the corresponding call
-   --  to Unlock has been made by the caller.  Other calls to Lock_Read_Only
-   --  may (but need not) return before the call to Unlock, and the
-   --  corresponding callers will also own the lock for read access.
+   --  Lock a protected object for read access. Upon return, the caller owns
+   --  the lock for read access, and no other calls to Lock with the same
+   --  argument will return until the corresponding call to Unlock has been
+   --  made by the caller. Other calls to Lock_Read_Only may (but need not)
+   --  return before the call to Unlock, and the corresponding callers will
+   --  also own the lock for read access.
 
    procedure Unlock_Entry (Object : Protection_Entry_Access);
-   --  Relinquish ownership of the lock for the object represented by
-   --  the Object parameter.  If this ownership was for write access, or
-   --  if it was for read access where there are no other read access
-   --  locks outstanding, one (or more, in the case of Lock_Read_Only)
-   --  of the tasks waiting on this lock (if any) will be given the
-   --  lock and allowed to return from the Lock or Lock_Read_Only call.
+   --  Relinquish ownership of the lock for the object represented by the
+   --  Object parameter. If this ownership was for write access, or if it was
+   --  for read access where there are no other read access locks outstanding,
+   --  one (or more, in the case of Lock_Read_Only) of the tasks waiting on
+   --  this lock (if any) will be given the lock and allowed to return from
+   --  the Lock or Lock_Read_Only call.
 
    procedure Service_Entry (Object : Protection_Entry_Access);
    --  Service the entry queue of the specified object, executing the
    --  corresponding body of any queued entry call that is waiting on True
    --  barrier. This is used when the state of a protected object may have
-   --  changed, in particular after the execution of the statement sequence of
-   --  a protected procedure.
+   --  changed, in particular after the execution of the statement sequence
+   --  of a protected procedure.
    --
    --  This must be called with abort deferred and with the corresponding
    --  object locked. Object is unlocked on return.
 
    procedure Protected_Single_Entry_Call
      (Object              : Protection_Entry_Access;
-      Uninterpreted_Data  : System.Address;
-      Mode                : Call_Modes);
-   --  Make a protected entry call to the specified object.
-   --  Pend a protected entry call on the protected object represented
-   --  by Object. A pended call is not queued; it may be executed immediately
+      Uninterpreted_Data  : System.Address);
+   --  Make a protected entry call to the specified object
+   --
+   --  Pends a protected entry call on the protected object represented by
+   --  Object. A pended call is not queued; it may be executed immediately
    --  or queued, depending on the state of the entry barrier.
    --
    --    Uninterpreted_Data
    --      This will be returned by Next_Entry_Call when this call is serviced.
    --      It can be used by the compiler to pass information between the
    --      caller and the server, in particular entry parameters.
-   --
-   --    Mode
-   --      The kind of call to be pended
-
-   procedure Timed_Protected_Single_Entry_Call
-     (Object                : Protection_Entry_Access;
-      Uninterpreted_Data    : System.Address;
-      Timeout               : Duration;
-      Mode                  : Delay_Modes;
-      Entry_Call_Successful : out Boolean);
-   --  Same as the Protected_Entry_Call but with time-out specified.
-   --  This routine is used to implement timed entry calls.
-
-   procedure Complete_Single_Entry_Body
-     (Object : Protection_Entry_Access);
-   pragma Inline (Complete_Single_Entry_Body);
-   --  Called from within an entry body procedure, indicates that the
-   --  corresponding entry call has been serviced.
 
    procedure Exceptional_Complete_Single_Entry_Body
      (Object : Protection_Entry_Access;
       Ex     : Ada.Exceptions.Exception_Id);
-   --  Perform all of the functions of Complete_Entry_Body. In addition,
-   --  report in Ex the exception whose propagation terminated the entry
-   --  body to the runtime system.
+   --  Perform all of the functions of Complete_Entry_Body. In addition, report
+   --  in Ex the exception whose propagation terminated the entry body to the
+   --  runtime system.
 
-   function Protected_Count_Entry (Object : Protection_Entry)
-     return Natural;
+   function Protected_Count_Entry (Object : Protection_Entry) return Natural;
    --  Return the number of entry calls on Object (0 or 1)
 
-   function Protected_Single_Entry_Caller (Object : Protection_Entry)
-     return Task_Id;
-   --  Return value of E'Caller, where E is the protected entry currently
-   --  being handled. This will only work if called from within an
-   --  entry body, as required by the LRM (C.7.1(14)).
+   function Protected_Single_Entry_Caller
+     (Object : Protection_Entry) return Task_Id;
+   --  Return value of E'Caller, where E is the protected entry currently being
+   --  handled. This will only work if called from within an entry body, as
+   --  required by the LRM (C.7.1(14)).
 
 private
    type Protection_Entry is record

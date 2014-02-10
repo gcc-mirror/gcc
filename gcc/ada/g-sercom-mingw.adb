@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2012, AdaCore                      --
+--                    Copyright (C) 2007-2013, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@
 
 --  This is the Windows implementation of this package
 
-with Ada.Unchecked_Deallocation; use Ada;
 with Ada.Streams;                use Ada.Streams;
+with Ada.Unchecked_Deallocation; use Ada;
 
 with System;               use System;
 with System.Communication; use System.Communication;
@@ -90,7 +90,12 @@ package body GNAT.Serial_Communications is
    function Name (Number : Positive) return Port_Name is
       N_Img : constant String := Positive'Image (Number);
    begin
-      return Port_Name ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
+      if Number > 9 then
+         return Port_Name ("\\.\COM" & N_Img (N_Img'First + 1 .. N_Img'Last));
+      else
+         return Port_Name
+           ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
+      end if;
    end Name;
 
    ----------

@@ -369,6 +369,9 @@ package body Prj.Attr is
 
    "Premote#" &
    "SVroot_dir#" &
+   "LVexcluded_patterns#" &
+   "LVincluded_patterns#" &
+   "LVincluded_artifact_patterns#" &
 
    --  package Stack
 
@@ -1012,7 +1015,7 @@ package body Prj.Attr is
      (Pkg : Package_Node_Id) return Attribute_Node_Id
    is
    begin
-      if Pkg = Empty_Package then
+      if Pkg = Empty_Package or else Pkg = Unknown_Package then
          return Empty_Attribute;
       else
          return

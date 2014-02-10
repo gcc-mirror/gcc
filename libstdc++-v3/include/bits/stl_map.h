@@ -154,8 +154,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
       // [23.3.1.1] construct/copy/destroy
-      // (get_allocator() is normally listed in this section, but seems to have
-      // been accidentally omitted in the printed standard)
+      // (get_allocator() is also listed in this section)
+
       /**
        *  @brief  Default constructor creates no elements.
        */
@@ -301,8 +301,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @brief  %Map move assignment operator.
        *  @param  __x  A %map of identical element and allocator types.
        *
-       *  The contents of @a __x are moved into this map (without copying).
-       *  @a __x is a valid, but unspecified %map.
+       *  The contents of @a __x are moved into this map (without copying
+       *  if the allocators compare equal or get moved on assignment).
+       *  Afterwards @a __x is in a valid, but unspecified state.
        */
       map&
       operator=(map&& __x) noexcept(_Alloc_traits::_S_nothrow_move())

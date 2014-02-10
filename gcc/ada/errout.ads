@@ -64,7 +64,6 @@ package Errout is
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
-   --  Note: always ignored in VMS mode where we do not provide this feature.
 
    -----------------------------------
    -- Suppression of Error Messages --
@@ -305,8 +304,10 @@ package Errout is
    --    Insertion character < (Less Than: conditional warning message)
    --      The character < appearing anywhere in a message is used for a
    --      conditional error message. If Error_Msg_Warn is True, then the
-   --      effect is the same as ? described above. If Error_Msg_Warn is
-   --      False, then there is no effect.
+   --      effect is the same as ? described above, and in particular << and
+   --      <X< have the effect of ?? and ?X? respectively. If Error_Msg_Warn
+   --      is False, then the < << or <X< sequence is ignored and the message
+   --      is treated as a error rather than a warning.
 
    --    Insertion character A-Z (Upper case letter: Ada reserved word)
    --      If two or more upper case letters appear in the message, they are
@@ -353,6 +354,31 @@ package Errout is
    --      Indicates that Error_Msg_String (1 .. Error_Msg_Strlen) is to be
    --      inserted to replace the ~ character. The string is inserted in the
    --      literal form it appears, without any action on special characters.
+
+   --    Insertion character [ (Left bracket: will/would be raised at run time)
+   --      This is used in messages about exceptions being raised at run-time.
+   --      If the current message is a warning message, then if the code is
+   --      executed, the exception will be raised, and [ inserts:
+   --
+   --        will be raised at run time
+   --
+   --      If the current message is an error message, then it is an error
+   --      because the exception would have been raised and [ inserts:
+   --
+   --        would have been raised at run time
+   --
+   --      Typically the message contains a < insertion which means that the
+   --      message is a warning or error depending on Error_Msg_Warn. This is
+   --      most typically used in the context of messages which are normally
+   --      warnings, but are errors in GNATprove mode, corresponding to the
+   --      permission in the definition of SPARK that allows an implementation
+   --      to reject a program as illegal if a situation arises in which the
+   --      compiler can determine that it is certain that a run-time check
+   --      would have fail if the statement was executed.
+
+   --    Insertion character ] (Right bracket: may/might be raised at run time)
+   --      This is like [ except that the insertion messages say may/might,
+   --      instead of will/would.
 
    ----------------------------------------
    -- Specialization of Messages for VMS --
@@ -818,7 +844,7 @@ package Errout is
    --  Returns True if errors have been detected, or warnings in -gnatwe (treat
    --  warnings as errors) mode. Note that it is mandatory to call Finalize
    --  before calling this routine. Always returns False in formal verification
-   --  mode, because errors issued when generating Why code are not compilation
+   --  mode, because errors issued when analyzing code are not compilation
    --  errors, and should not result in exiting with an error status.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);

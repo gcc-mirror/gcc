@@ -229,7 +229,7 @@ package body Prj is
                   --  Make sure that we don't have a config file for this
                   --  project, in case there are several mains. In this case,
                   --  we will recreate another config file: we cannot reuse the
-                  --  one that we just deleted!
+                  --  one that we just deleted.
 
                   Proj.Project.Config_Checked   := False;
                   Proj.Project.Config_File_Name := No_Path;
@@ -1083,8 +1083,24 @@ package body Prj is
    ----------------------------
 
    procedure Add_Aggregated_Project
-     (Project : Project_Id; Path : Path_Name_Type) is
+     (Project : Project_Id;
+      Path    : Path_Name_Type)
+   is
+      Aggregated : Aggregated_Project_List;
+
    begin
+      --  Check if the project is already in the aggregated project list. If it
+      --  is, do not add it again.
+
+      Aggregated := Project.Aggregated_Projects;
+      while Aggregated /= null loop
+         if Path = Aggregated.Path then
+            return;
+         else
+            Aggregated := Aggregated.Next;
+         end if;
+      end loop;
+
       Project.Aggregated_Projects := new Aggregated_Project'
         (Path    => Path,
          Project => No_Project,
@@ -1105,6 +1121,7 @@ package body Prj is
          Free (Project.Ada_Include_Path);
          Free (Project.Objects_Path);
          Free (Project.Ada_Objects_Path);
+         Free (Project.Ada_Objects_Path_No_Libs);
          Free_List (Project.Imported_Projects, Free_Project => False);
          Free_List (Project.All_Imported_Projects, Free_Project => False);
          Free_List (Project.Languages);
@@ -1485,7 +1502,10 @@ package body Prj is
 
          if Project.Library then
             if Project.Object_Directory = No_Path_Information
-              or else Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name)
+              or else
+                (Including_Libraries
+                  and then
+                    Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name))
             then
                return Project.Library_ALI_Dir.Display_Name;
             else
@@ -1838,7 +1858,7 @@ package body Prj is
 
    procedure Debug_Output (Str : String; Str2 : Name_Id) is
    begin
-      if Current_Verbosity = High then
+      if Current_Verbosity > Default then
          Debug_Indent;
          Set_Standard_Error;
          Write_Str (Str);

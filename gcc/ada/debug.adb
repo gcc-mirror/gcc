@@ -111,7 +111,7 @@ package body Debug is
    --  d.r  Enable OK_To_Reorder_Components in non-variant records
    --  d.s  Disable expansion of slice move, use memmove
    --  d.t  Disable static allocation of library level dispatch tables
-   --  d.u
+   --  d.u  Enable Modify_Tree_For_C (update tree for c)
    --  d.v  Enable OK_To_Reorder_Components in variant records
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
@@ -121,10 +121,10 @@ package body Debug is
    --  d.A  Read/write Aspect_Specifications hash table to tree
    --  d.B
    --  d.C  Generate concatenation call, do not generate inline code
-   --  d.D  SPARK strict mode
+   --  d.D
    --  d.E  Turn selected errors into warnings
-   --  d.F  SPARK mode
-   --  d.G  Frame condition mode for gnat2why
+   --  d.F  Debug mode for GNATprove
+   --  d.G
    --  d.H
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Disable parallel SCIL generation mode
@@ -139,7 +139,7 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U  Ignore indirect calls for static elaboration
-   --  d.V  Extensions for formal verification
+   --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X
    --  d.Y
@@ -575,6 +575,9 @@ package body Debug is
    --       previous dynamic construction of tables. It is there as a possible
    --       work around if we run into trouble with the new implementation.
 
+   --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
+   --       easier to generate code using a C compiler.
+
    --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have at least one discriminant (v = variant).
 
@@ -594,21 +597,21 @@ package body Debug is
    --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
    --       where we would normally generate inline concatenation code.
 
-   --  d.D  SPARK strict mode. Interpret compiler permissions as strictly as
-   --       possible in SPARK mode.
-
    --  d.E  Turn selected errors into warnings. This debug switch causes a
    --       specific set of error messages into warnings. Setting this switch
-   --       causes Opt.Error_To_Warning to be set to True.
+   --       causes Opt.Error_To_Warning to be set to True. The intention is
+   --       that this be used for messages representing upwards incompatible
+   --       changes to Ada 2012 that cause previously correct programs to be
+   --       treated as illegal now. The following cases are affected:
+   --
+   --          Errors relating to overlapping subprogram parameters for cases
+   --          other than IN OUT parameters to functions.
+   --
+   --          Errors relating to the new rules about not defining equality
+   --          too late so that composition of equality can be assured.
 
-   --  d.F  SPARK mode. Generate AST in a form suitable for formal
-   --       verification, as well as additional cross reference information in
-   --       ALI files to compute effects of subprograms. Note that ALI files
-   --       are only written when option d.G is also given.
-
-   --  d.G  Frame condition mode for gnat2why. In this mode, gnat2why will not
-   --       generate Why code. Instead, it generates ALI files with an extra
-   --       section which contains the effects of subprograms.
+   --  d.F  Sets GNATprove_Mode to True. This allows debugging the frontend in
+   --       the special mode used by GNATprove.
 
    --  d.I  Do not ignore enum representation clauses in CodePeer mode.
    --       The default of ignoring representation clauses for enumeration
@@ -656,10 +659,6 @@ package body Debug is
    --       Proc. This can cause elaboration cycles at bind time. This flag
    --       reverts to the behavior of earlier compilers, which ignored
    --       indirect calls.
-
-   --  d.V  Extensions for formal verification. New attributes/aspects/pragmas
-   --       defined in GNAT for formal verification with the tool GNATprove are
-   --       only accepted under this switch.
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in

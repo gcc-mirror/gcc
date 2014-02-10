@@ -112,6 +112,10 @@ package body Sem_Ch13 is
    --  list is stored in Static_Predicate (Typ), and the Expr is rewritten as
    --  a canonicalized membership operation.
 
+   procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
+   --  Called if both Storage_Pool and Storage_Size attribute definition
+   --  clauses (SP and SS) are present for entity Ent. Issue error message.
+
    procedure Freeze_Entity_Checks (N : Node_Id);
    --  Called from Analyze_Freeze_Entity and Analyze_Generic_Freeze Entity
    --  to generate appropriate semantic checks that are delayed until this
@@ -1136,33 +1140,35 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
-      procedure Decorate_Delayed_Aspect_And_Pragma
-        (Asp  : Node_Id;
-         Prag : Node_Id);
-      --  Establish the linkages between a delayed aspect and its corresponding
-      --  pragma. Set all delay-related flags on both constructs.
+      procedure Decorate_Aspect_And_Pragma
+        (Asp     : Node_Id;
+         Prag    : Node_Id;
+         Delayed : Boolean := False);
+      --  Establish the linkages between an aspect and its corresponding
+      --  pragma. Flag Delayed should be set when both constructs are delayed.
 
       procedure Insert_Delayed_Pragma (Prag : Node_Id);
       --  Insert a postcondition-like pragma into the tree depending on the
       --  context. Prag must denote one of the following: Pre, Post, Depends,
       --  Global or Contract_Cases.
 
-      ----------------------------------------
-      -- Decorate_Delayed_Aspect_And_Pragma --
-      ----------------------------------------
+      --------------------------------
+      -- Decorate_Aspect_And_Pragma --
+      --------------------------------
 
-      procedure Decorate_Delayed_Aspect_And_Pragma
-        (Asp  : Node_Id;
-         Prag : Node_Id)
+      procedure Decorate_Aspect_And_Pragma
+        (Asp     : Node_Id;
+         Prag    : Node_Id;
+         Delayed : Boolean := False)
       is
       begin
-         Set_Aspect_Rep_Item           (Asp, Prag);
+         Set_Aspect_Rep_Item           (Asp,  Prag);
          Set_Corresponding_Aspect      (Prag, Asp);
          Set_From_Aspect_Specification (Prag);
-         Set_Is_Delayed_Aspect         (Prag);
-         Set_Is_Delayed_Aspect         (Asp);
+         Set_Is_Delayed_Aspect         (Prag, Delayed);
+         Set_Is_Delayed_Aspect         (Asp,  Delayed);
          Set_Parent                    (Prag, Asp);
-      end Decorate_Delayed_Aspect_And_Pragma;
+      end Decorate_Aspect_And_Pragma;
 
       ---------------------------
       -- Insert_Delayed_Pragma --
@@ -1629,10 +1635,11 @@ package body Sem_Ch13 is
                --  referring to the entity, and the second argument is the
                --  aspect definition expression.
 
-               --  Suppress/Unsuppress
+               --  Linker_Section/Suppress/Unsuppress
 
-               when Aspect_Suppress   |
-                    Aspect_Unsuppress =>
+               when Aspect_Linker_Section |
+                    Aspect_Suppress       |
+                    Aspect_Unsuppress     =>
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
@@ -1698,8 +1705,8 @@ package body Sem_Ch13 is
                   end if;
 
                   --  If the type is private, indicate that its completion
-                  --  has a freeze node, because that is the one that will be
-                  --  visible at freeze time.
+                  --  has a freeze node, because that is the one that will
+                  --  be visible at freeze time.
 
                   if Is_Private_Type (E) and then Present (Full_View (E)) then
                      Set_Has_Predicates (Full_View (E));
@@ -1999,7 +2006,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Abstract_State);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2031,7 +2038,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Depends);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2049,7 +2057,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Global);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2074,7 +2083,9 @@ package body Sem_Ch13 is
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  =>
                           Name_Initial_Condition);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decorate_Aspect_And_Pragma
+                       (Aspect, Aitem, Delayed => True);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2112,7 +2123,9 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Initializes);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decorate_Aspect_And_Pragma
+                       (Aspect, Aitem, Delayed => True);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2130,14 +2143,71 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initializes;
 
+               --  Part_Of
+
+               when Aspect_Part_Of =>
+                  if Nkind_In (N, N_Object_Declaration,
+                                  N_Package_Instantiation)
+                  then
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Loc,
+                            Expression => Relocate_Node (Expr))),
+                        Pragma_Name                  => Name_Part_Of);
+
+                  else
+                     Error_Msg_NE
+                       ("aspect & must apply to a variable or package "
+                        & "instantiation", Aspect, Id);
+                  end if;
+
                --  SPARK_Mode
 
-               when Aspect_SPARK_Mode =>
+               when Aspect_SPARK_Mode => SPARK_Mode : declare
+                  Decls : List_Id;
+
+               begin
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
+
+                  --  When the aspect appears on a package body, insert the
+                  --  generated pragma at the top of the body declarations to
+                  --  emulate the behavior of a source pragma.
+
+                  if Nkind (N) = N_Package_Body then
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decls := Declarations (N);
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Declarations (N, Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+                     goto Continue;
+
+                  --  When the aspect is associated with package declaration,
+                  --  insert the generated pragma at the top of the visible
+                  --  declarations to emulate the behavior of a source pragma.
+
+                  elsif Nkind (N) = N_Package_Declaration then
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
+
+                     Decls := Visible_Declarations (Specification (N));
+
+                     if No (Decls) then
+                        Decls := New_List;
+                        Set_Visible_Declarations (Specification (N), Decls);
+                     end if;
+
+                     Prepend_To (Decls, Aitem);
+                     goto Continue;
+                  end if;
+               end SPARK_Mode;
 
                --  Refined_Depends
 
@@ -2153,7 +2223,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Depends);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2171,7 +2242,7 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Refined_Global);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2203,7 +2274,7 @@ package body Sem_Ch13 is
                           Make_Pragma_Argument_Association (Loc,
                             Expression => Relocate_Node (Expr))),
                         Pragma_Name                  => Name_Refined_State);
-                     Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                     Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
                      if No (Decls) then
                         Decls := New_List;
@@ -2473,7 +2544,8 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Nam);
 
-                  Decorate_Delayed_Aspect_And_Pragma (Aspect, Aitem);
+                  Decorate_Aspect_And_Pragma
+                    (Aspect, Aitem, Delayed => True);
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
@@ -2718,7 +2790,7 @@ package body Sem_Ch13 is
                      Prepend (Aitem,
                        Visible_Declarations (Specification (N)));
 
-                  elsif Nkind (N) =  N_Package_Instantiation then
+                  elsif Nkind (N) = N_Package_Instantiation then
                      declare
                         Spec : constant Node_Id :=
                                  Specification (Instance_Spec (N));
@@ -3454,13 +3526,23 @@ package body Sem_Ch13 is
          --  expander. The easiest general way to handle this is to create a
          --  copy of the attribute definition clause for this object.
 
-         else
+         elsif Is_Entity_Name (Renamed_Object (Ent)) then
             Insert_Action (N,
               Make_Attribute_Definition_Clause (Loc,
                 Name       =>
                   New_Occurrence_Of (Entity (Renamed_Object (Ent)), Loc),
                 Chars      => Chars (N),
                 Expression => Duplicate_Subexpr (Expression (N))));
+
+         --  If the renamed object is not an entity, it must be a dereference
+         --  of an unconstrained function call, and we must introduce a new
+         --  declaration to capture the expression. This is needed in the case
+         --  of 'Alignment, where the original declaration must be rewritten.
+
+         else
+            pragma Assert
+              (Nkind (Renamed_Object (Ent)) = N_Explicit_Dereference);
+            null;
          end if;
 
       --  If no underlying entity, use entity itself, applies to some
@@ -4592,6 +4674,20 @@ package body Sem_Ch13 is
                return;
             end if;
 
+            --  Check for Storage_Size previously given
+
+            declare
+               SS : constant Node_Id :=
+                      Get_Attribute_Definition_Clause
+                        (U_Ent, Attribute_Storage_Size);
+            begin
+               if Present (SS) then
+                  Check_Pool_Size_Clash (U_Ent, N, SS);
+               end if;
+            end;
+
+            --  Storage_Pool case
+
             if Id = Attribute_Storage_Pool then
                Analyze_And_Resolve
                  (Expr, Class_Wide_Type (RTE (RE_Root_Storage_Pool)));
@@ -4718,7 +4814,7 @@ package body Sem_Ch13 is
          begin
             if Is_Task_Type (U_Ent) then
 
-               --  Check obsolescent (but never obsolescent if from aspect!)
+               --  Check obsolescent (but never obsolescent if from aspect)
 
                if not From_Aspect_Specification (N) then
                   Check_Restriction (No_Obsolescent_Features, N);
@@ -4751,10 +4847,21 @@ package body Sem_Ch13 is
                Analyze_And_Resolve (Expr, Any_Integer);
 
                if Is_Access_Type (U_Ent) then
-                  if Present (Associated_Storage_Pool (U_Ent)) then
-                     Error_Msg_N ("storage pool already given for &", Nam);
-                     return;
-                  end if;
+
+                  --  Check for Storage_Pool previously given
+
+                  declare
+                     SP : constant Node_Id :=
+                            Get_Attribute_Definition_Clause
+                              (U_Ent, Attribute_Storage_Pool);
+
+                  begin
+                     if Present (SP) then
+                        Check_Pool_Size_Clash (U_Ent, SP, N);
+                     end if;
+                  end;
+
+                  --  Special case of for x'Storage_Size use 0
 
                   if Is_OK_Static_Expression (Expr)
                     and then Expr_Value (Expr) = 0
@@ -5295,7 +5402,7 @@ package body Sem_Ch13 is
          end;
       end if;
 
-      --  We repeat the too late test in case it froze itself!
+      --  We repeat the too late test in case it froze itself
 
       if Rep_Item_Too_Late (Enumtype, N) then
          null;
@@ -5918,6 +6025,20 @@ package body Sem_Ch13 is
 
          procedure Replace_Type_Reference (N : Node_Id) is
          begin
+
+            --  Add semantic information to node to be rewritten, for ASIS
+            --  navigation needs.
+
+            if Nkind (N) = N_Identifier then
+               Set_Entity (N, T);
+               Set_Etype  (N, T);
+
+            elsif Nkind (N) = N_Selected_Component then
+               Analyze (Prefix (N));
+               Set_Entity (Selector_Name (N), T);
+               Set_Etype  (Selector_Name (N), T);
+            end if;
+
             --  Invariant'Class, replace with T'Class (obj)
 
             if Class_Present (Ritem) then
@@ -6025,6 +6146,20 @@ package body Sem_Ch13 is
 
                Set_Parent (Exp, N);
                Preanalyze_Assert_Expression (Exp, Standard_Boolean);
+
+               --  In ASIS mode, even if assertions are not enabled, we must
+               --  analyze the original expression in the aspect specification
+               --  because it is part of the original tree.
+
+               if ASIS_Mode then
+                  declare
+                     Inv : constant Node_Id :=
+                             Expression (Corresponding_Aspect (Ritem));
+                  begin
+                     Replace_Type_References (Inv, Chars (T));
+                     Preanalyze_Assert_Expression (Inv, Standard_Boolean);
+                  end;
+               end if;
 
                --  Build first two arguments for Check pragma
 
@@ -6551,6 +6686,7 @@ package body Sem_Ch13 is
             --  Build function declaration
 
             Set_Ekind (SId, E_Function);
+            Set_Is_Internal (SId);
             Set_Is_Predicate_Function (SId);
             Set_Predicate_Function (Typ, SId);
 
@@ -6670,7 +6806,7 @@ package body Sem_Ch13 is
 
                --  Build the body, we declare the boolean expression before
                --  doing the return, because we are not really confident of
-               --  what happens if a return appears within a return!
+               --  what happens if a return appears within a return.
 
                BTemp :=
                  Make_Defining_Identifier (Loc,
@@ -7847,6 +7983,9 @@ package body Sem_Ch13 is
               Aspect_Value_Size     =>
             T := Any_Integer;
 
+         when Aspect_Linker_Section =>
+            T := Standard_String;
+
          when Aspect_Synchronization =>
             return;
 
@@ -7891,6 +8030,7 @@ package body Sem_Ch13 is
               Aspect_Implicit_Dereference |
               Aspect_Initial_Condition    |
               Aspect_Initializes          |
+              Aspect_Part_Of              |
               Aspect_Post                 |
               Aspect_Postcondition        |
               Aspect_Pre                  |
@@ -8241,6 +8381,33 @@ package body Sem_Ch13 is
          Check_Expr_Constants (Expr);
       end if;
    end Check_Constant_Address_Clause;
+
+   ---------------------------
+   -- Check_Pool_Size_Clash --
+   ---------------------------
+
+   procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id) is
+      Post : Node_Id;
+
+   begin
+      --  We need to find out which one came first. Note that in the case of
+      --  aspects mixed with pragmas there are cases where the processing order
+      --  is reversed, which is why we do the check here.
+
+      if Sloc (SP) < Sloc (SS) then
+         Error_Msg_Sloc := Sloc (SP);
+         Post := SS;
+         Error_Msg_NE ("Storage_Pool previously given for&#", Post, Ent);
+
+      else
+         Error_Msg_Sloc := Sloc (SS);
+         Post := SP;
+         Error_Msg_NE ("Storage_Size previously given for&#", Post, Ent);
+      end if;
+
+      Error_Msg_N
+        ("\cannot have Storage_Size and Storage_Pool (RM 13.11(3))", Post);
+   end Check_Pool_Size_Clash;
 
    ----------------------------------------
    -- Check_Record_Representation_Clause --
@@ -9263,9 +9430,14 @@ package body Sem_Ch13 is
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
 
       --  If we have a type with predicates, build predicate function. This
-      --  is not needed in the generic casee
+      --  is not needed in the generic case, and is not needed within TSS
+      --  subprograms and other predefined primitives.
 
-      if Non_Generic_Case and then Is_Type (E) and then Has_Predicates (E) then
+      if Non_Generic_Case
+        and then Is_Type (E)
+        and then Has_Predicates (E)
+        and then not Within_Internal_Subprogram
+      then
          Build_Predicate_Functions (E, N);
       end if;
 
@@ -9446,10 +9618,10 @@ package body Sem_Ch13 is
                --  on the modified variant part, since its only effect would be
                --  to compute the Others_Discrete_Choices node laboriously, and
                --  of course we already know the list of choices corresponding
-               --  to the others choice (it's the list we're replacing!)
+               --  to the others choice (it's the list we're replacing).
 
                --  We only want to do this if the expander is active, since
-               --  we do not want to clobber the ASIS tree!
+               --  we do not want to clobber the ASIS tree.
 
                if Expander_Active then
                   declare
@@ -9515,7 +9687,6 @@ package body Sem_Ch13 is
    -------------------------------------
 
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id) is
-
       function Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
         (Rep_Item : Node_Id) return Boolean;
       --  This routine checks if Rep_Item is either a pragma or an aspect
@@ -10666,6 +10837,10 @@ package body Sem_Ch13 is
 
       if Has_Foreign_Convention (T)
         and then Esize (T) < Standard_Integer_Size
+
+        --  Don't do this if Short_Enums on target
+
+        and then not Target_Short_Enums
       then
          Init_Esize (T, Standard_Integer_Size);
       else
@@ -11067,7 +11242,7 @@ package body Sem_Ch13 is
 
       --  If we are dealing with private types, then do the check on their
       --  fully declared counterparts if the full declarations have been
-      --  encountered (they don't have to be visible, but they must exist!)
+      --  encountered (they don't have to be visible, but they must exist).
 
       Source := Ancestor_Subtype (Etype (First_Formal (Act_Unit)));
 

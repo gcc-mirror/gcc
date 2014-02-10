@@ -36,6 +36,7 @@ with Debug;   use Debug;
 with Einfo;   use Einfo;
 with Lib;     use Lib;
 with Namet;   use Namet;
+with Nlists;  use Nlists;
 with Opt;     use Opt;
 with Output;  use Output;
 with Sem_Aux; use Sem_Aux;
@@ -43,6 +44,7 @@ with Sinfo;   use Sinfo;
 with Sinput;  use Sinput;
 with Snames;  use Snames;
 with Stand;   use Stand;
+with Stringt; use Stringt;
 with Table;   use Table;
 with Uname;   use Uname;
 with Urealp;  use Urealp;
@@ -146,6 +148,10 @@ package body Repinfo is
 
    procedure List_Array_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean);
    --  List representation info for array type Ent
+
+   procedure List_Linker_Section (Ent : Entity_Id);
+   --  List linker section for Ent (caller has checked that Ent is an entity
+   --  for which the Linker_Section_Pragma field is defined).
 
    procedure List_Mechanisms (Ent : Entity_Id);
    --  List mechanism information for parameters of Ent, which is subprogram,
@@ -352,8 +358,8 @@ package body Repinfo is
 
          if List_Representation_Info_Mechanisms
            and then (Is_Subprogram (Ent)
-                       or else Ekind (Ent) = E_Entry
-                       or else Ekind (Ent) = E_Entry_Family)
+                      or else Ekind (Ent) = E_Entry
+                      or else Ekind (Ent) = E_Entry_Family)
          then
             Need_Blank_Line := True;
             List_Mechanisms (Ent);
@@ -374,13 +380,16 @@ package body Repinfo is
                               and then Present (Full_View (E))))
               or else Debug_Flag_AA
             then
-               if Is_Subprogram (E)
-                       or else
-                     Ekind (E) = E_Entry
-                       or else
-                     Ekind (E) = E_Entry_Family
-                       or else
-                     Ekind (E) = E_Subprogram_Type
+               if Is_Subprogram (E) then
+                  List_Linker_Section (E);
+
+                  if List_Representation_Info_Mechanisms then
+                     List_Mechanisms (E);
+                  end if;
+
+               elsif Ekind_In (E, E_Entry,
+                                  E_Entry_Family,
+                                  E_Subprogram_Type)
                then
                   if List_Representation_Info_Mechanisms then
                      List_Mechanisms (E);
@@ -391,24 +400,28 @@ package body Repinfo is
                      List_Record_Info (E, Bytes_Big_Endian);
                   end if;
 
+                  List_Linker_Section (E);
+
                elsif Is_Array_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Array_Info (E, Bytes_Big_Endian);
                   end if;
 
+                  List_Linker_Section (E);
+
                elsif Is_Type (E) then
                   if List_Representation_Info >= 2 then
                      List_Type_Info (E);
+                     List_Linker_Section (E);
                   end if;
 
-               elsif Ekind (E) = E_Variable
-                       or else
-                     Ekind (E) = E_Constant
-                       or else
-                     Ekind (E) = E_Loop_Parameter
-                       or else
-                     Is_Formal (E)
-               then
+               elsif Ekind_In (E, E_Variable, E_Constant) then
+                  if List_Representation_Info >= 2 then
+                     List_Object_Info (E);
+                     List_Linker_Section (E);
+                  end if;
+
+               elsif Ekind (E) = E_Loop_Parameter or else Is_Formal (E) then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
@@ -425,17 +438,12 @@ package body Repinfo is
 
                --  Recurse into bodies
 
-               elsif Ekind (E) = E_Protected_Type
-                       or else
-                     Ekind (E) = E_Task_Type
-                       or else
-                     Ekind (E) = E_Subprogram_Body
-                       or else
-                     Ekind (E) = E_Package_Body
-                       or else
-                     Ekind (E) = E_Task_Body
-                       or else
-                     Ekind (E) = E_Protected_Body
+               elsif Ekind_In (E, E_Protected_Type,
+                                  E_Task_Type,
+                                  E_Subprogram_Body,
+                                  E_Package_Body,
+                                  E_Task_Body,
+                                  E_Protected_Body)
                then
                   List_Entities (E, Bytes_Big_Endian);
 
@@ -632,6 +640,34 @@ package body Repinfo is
          Print_Expr (U);
       end if;
    end List_GCC_Expression;
+
+   -------------------------
+   -- List_Linker_Section --
+   -------------------------
+
+   procedure List_Linker_Section (Ent : Entity_Id) is
+      Arg : Node_Id;
+
+   begin
+      if Present (Linker_Section_Pragma (Ent)) then
+         Write_Str ("pragma Linker_Section (");
+         List_Name (Ent);
+         Write_Str (", """);
+
+         Arg :=
+           Last (Pragma_Argument_Associations (Linker_Section_Pragma (Ent)));
+
+         if Nkind (Arg) = N_Pragma_Argument_Association then
+            Arg := Expression (Arg);
+         end if;
+
+         pragma Assert (Nkind (Arg) = N_String_Literal);
+         String_To_Name_Buffer (Strval (Arg));
+         Write_Str (Name_Buffer (1 .. Name_Len));
+         Write_Str (""");");
+         Write_Eol;
+      end if;
+   end List_Linker_Section;
 
    ---------------------
    -- List_Mechanisms --
@@ -893,7 +929,7 @@ package body Repinfo is
 
             else
                --  For the packed case, we don't know the bit positions if we
-               --  don't know the starting position!
+               --  don't know the starting position.
 
                if Is_Packed (Ent) then
                   Write_Line ("?? range  ? .. ??;");

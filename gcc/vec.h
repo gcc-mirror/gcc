@@ -476,6 +476,7 @@ public:
   void unordered_remove (unsigned);
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
+  T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
   static size_t embedded_size (unsigned);
   void embedded_init (unsigned, unsigned = 0);
@@ -678,9 +679,9 @@ vec_safe_truncate (vec<T, A, vl_embed> *v, unsigned size)
 /* If SRC is not NULL, return a pointer to a copy of it.  */
 template<typename T, typename A>
 inline vec<T, A, vl_embed> *
-vec_safe_copy (vec<T, A, vl_embed> *src)
+vec_safe_copy (vec<T, A, vl_embed> *src CXX_MEM_STAT_INFO)
 {
-  return src ? src->copy () : NULL;
+  return src ? src->copy (ALONE_PASS_MEM_STAT) : NULL;
 }
 
 /* Copy the elements from SRC to the end of DST as if by memcpy.
@@ -938,7 +939,43 @@ template<typename T, typename A>
 inline void
 vec<T, A, vl_embed>::qsort (int (*cmp) (const void *, const void *))
 {
-  ::qsort (address (), length (), sizeof (T), cmp);
+  if (length () > 1)
+    ::qsort (address (), length (), sizeof (T), cmp);
+}
+
+
+/* Search the contents of the sorted vector with a binary search.
+   CMP is the comparison function to pass to bsearch.  */
+
+template<typename T, typename A>
+inline T *
+vec<T, A, vl_embed>::bsearch (const void *key,
+			      int (*compar) (const void *, const void *))
+{
+  const void *base = this->address ();
+  size_t nmemb = this->length ();
+  size_t size = sizeof (T);
+  /* The following is a copy of glibc stdlib-bsearch.h.  */
+  size_t l, u, idx;
+  const void *p;
+  int comparison;
+
+  l = 0;
+  u = nmemb;
+  while (l < u)
+    {
+      idx = (l + u) / 2;
+      p = (const void *) (((const char *) base) + (idx * size));
+      comparison = (*compar) (key, p);
+      if (comparison < 0)
+	u = idx;
+      else if (comparison > 0)
+	l = idx + 1;
+      else
+	return (T *)const_cast<void *>(p);
+    }
+
+  return NULL;
 }
 
 
@@ -1174,6 +1211,7 @@ public:
   void unordered_remove (unsigned);
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
+  T *bsearch (const void *key, int (*compar)(const void *, const void *));
   unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
 
   bool using_auto_storage () const;
@@ -1632,6 +1670,20 @@ vec<T, va_heap, vl_ptr>::qsort (int (*cmp) (const void *, const void *))
 {
   if (m_vec)
     m_vec->qsort (cmp);
+}
+
+
+/* Search the contents of the sorted vector with a binary search.
+   CMP is the comparison function to pass to bsearch.  */
+
+template<typename T>
+inline T *
+vec<T, va_heap, vl_ptr>::bsearch (const void *key,
+				  int (*cmp) (const void *, const void *))
+{
+  if (m_vec)
+    return m_vec->bsearch (key, cmp);
+  return NULL;
 }
 
 

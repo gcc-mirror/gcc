@@ -18,7 +18,7 @@ avx512f_test (void)
   y = _mm512_cvtpd_ps (x);
   y = _mm512_mask_cvtpd_ps (y, 4, x);
   y = _mm512_maskz_cvtpd_ps (6, x);
-  y = _mm512_cvt_roundpd_ps (x, _MM_FROUND_TO_NEAREST_INT);
-  y = _mm512_mask_cvt_roundpd_ps (y, 4, x, _MM_FROUND_TO_NEG_INF);
-  y = _mm512_maskz_cvt_roundpd_ps (6, x, _MM_FROUND_TO_ZERO);
+  y = _mm512_cvt_roundpd_ps (x, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+  y = _mm512_mask_cvt_roundpd_ps (y, 4, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
+  y = _mm512_maskz_cvt_roundpd_ps (6, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
 }

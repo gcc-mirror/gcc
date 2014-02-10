@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,15 +30,16 @@
 ------------------------------------------------------------------------------
 
 --  This package provides a limited binding to the VxWorks API
+
 --  In particular, it interfaces with the VxWorks hardware interrupt
---  facilities, allowing the use of low-latency direct-vectored
---  interrupt handlers. Note that such handlers have a variety of
---  restrictions regarding system calls and language constructs. In particular,
---  the use of exception handlers and functions returning variable-length
---  objects cannot be used. Less restrictive, but higher-latency handlers can
---  be written using Ada protected procedures, Ada 83 style interrupt entries,
---  or by signalling an Ada task from within an interrupt handler using a
---  binary semaphore as described in the VxWorks Programmer's Manual.
+--  facilities, allowing the use of low-latency direct-vectored interrupt
+--  handlers. Note that such handlers have a variety of restrictions regarding
+--  system calls and language constructs. In particular, the use of exception
+--  handlers and functions returning variable-length objects cannot be used.
+--  Less restrictive, but higher-latency handlers can be written using Ada
+--  protected procedures, Ada 83 style interrupt entries, or by signalling
+--  an Ada task from within an interrupt handler using a binary semaphore
+--  as described in the VxWorks Programmer's Manual.
 --
 --  For complete documentation of the operations in this package, please
 --  consult the VxWorks Programmer's Manual and VxWorks Reference Manual.
@@ -81,6 +82,7 @@ package Interfaces.VxWorks is
    --        logMsg ("received an interrupt" & ASCII.LF & ASCII.NUL);
    --
    --        --  Acknowledge VME interrupt
+   --
    --        S := sysBusIntAck (intLevel => Level);
    --     end Handler;
    --  end P;
@@ -90,9 +92,10 @@ package Interfaces.VxWorks is
    --
    --  with P; use P;
    --  procedure Useint is
-   --     --  Be sure to use a reasonable interrupt number for the target
-   --     --  board!
+   --
+   --     --  Be sure to use a reasonable interrupt number for  board.
    --     --  This one is the unused VME graphics interrupt on the PPC MV2604
+   --
    --     Interrupt : constant := 16#14#;
    --
    --     task T;
@@ -106,6 +109,7 @@ package Interfaces.VxWorks is
    --           delay 1.0;
    --
    --           --  Generate VME interrupt, using interrupt number
+   --
    --           S := sysBusIntGen (1, Interrupt);
    --        end loop;
    --     end T;
@@ -137,24 +141,24 @@ package Interfaces.VxWorks is
      (vector    : Interrupt_Vector;
       handler   : VOIDFUNCPTR;
       parameter : System.Address := System.Null_Address) return STATUS;
-   --  Binding to the C routine intConnect. Use this to set up an
-   --  user handler. The routine generates a wrapper around the user
-   --  handler to save and restore context
+   --  Binding to the C routine intConnect. Use this to set up an user handler.
+   --  The routine generates a wrapper around the user handler to save and
+   --  restore context
 
    function intContext return int;
-   --  Binding to the C routine intContext. This function returns 1 only
-   --  if the current execution state is in interrupt context.
+   --  Binding to the C routine intContext. This function returns 1 only if the
+   --  current execution state is in interrupt context.
 
    function intVecGet
      (Vector : Interrupt_Vector) return VOIDFUNCPTR;
-   --  Binding to the C routine intVecGet. Use this to get the
-   --  existing handler for later restoral
+   --  Binding to the C routine intVecGet. Use this to get the existing handler
+   --  for later restoral
 
    procedure intVecSet
      (Vector  : Interrupt_Vector;
       Handler : VOIDFUNCPTR);
-   --  Binding to the C routine intVecSet. Use this to restore a
-   --  handler obtained using intVecGet
+   --  Binding to the C routine intVecSet. Use this to restore a handler
+   --  obtained using intVecGet
 
    function INUM_TO_IVEC (intNum : int) return Interrupt_Vector;
    --  Equivalent to the C macro INUM_TO_IVEC used to convert an interrupt
@@ -170,10 +174,10 @@ package Interfaces.VxWorks is
    --  Binding to the C routine sysBusIntAck
 
    function sysBusIntGen (intLevel : int; Intnum : int) return STATUS;
-   --  Binding to the C routine sysBusIntGen. Note that the T2
-   --  documentation implies that a vector address is the proper
-   --  argument - it's not. The interrupt number in the range
-   --  0 .. 255 (for 68K and PPC) is the correct argument.
+   --  Binding to the C routine sysBusIntGen. Note that the T2 documentation
+   --  implies that a vector address is the proper argument - it's not. The
+   --  interrupt number in the range 0 .. 255 (for 68K and PPC) is the correct
+   --  argument.
 
    procedure logMsg
      (fmt : String; arg1, arg2, arg3, arg4, arg5, arg6 : int := 0);
@@ -182,10 +186,9 @@ package Interfaces.VxWorks is
    --  (e.g logMsg ("Interrupt" & ASCII.NUL))
 
    type FP_CONTEXT is private;
-   --  Floating point context save and restore. Handlers using floating
-   --  point must be bracketed with these calls. The pFpContext parameter
-   --  should be an object of type FP_CONTEXT that is
-   --  declared local to the handler.
+   --  Floating point context save and restore. Handlers using floating point
+   --  must be bracketed with these calls. The pFpContext parameter should be
+   --  an object of type FP_CONTEXT that is declared local to the handler.
 
    procedure fppRestore (pFpContext : in out FP_CONTEXT);
    --  Restore floating point context

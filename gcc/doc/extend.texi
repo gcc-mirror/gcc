@@ -2154,8 +2154,8 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{aligned}, @code{alloc_size}, @code{noreturn},
-@code{returns_twice}, @code{noinline}, @code{noclone},
+@code{aligned}, @code{alloc_size}, @code{alloc_align}, @code{assume_aligned},
+@code{noreturn}, @code{returns_twice}, @code{noinline}, @code{noclone},
 @code{always_inline}, @code{flatten}, @code{pure}, @code{const},
 @code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{no_split_stack},
@@ -2241,13 +2241,53 @@ For instance,
 
 @smallexample
 void* my_calloc(size_t, size_t) __attribute__((alloc_size(1,2)))
-void my_realloc(void*, size_t) __attribute__((alloc_size(2)))
+void* my_realloc(void*, size_t) __attribute__((alloc_size(2)))
 @end smallexample
 
 @noindent
 declares that @code{my_calloc} returns memory of the size given by
 the product of parameter 1 and 2 and that @code{my_realloc} returns memory
 of the size given by parameter 2.
+
+@item alloc_align
+@cindex @code{alloc_align} attribute
+The @code{alloc_align} attribute is used to tell the compiler that the
+function return value points to memory, where the returned pointer minimum
+alignment is given by one of the functions parameters.  GCC uses this
+information to improve pointer alignment analysis.
+
+The function parameter denoting the allocated alignment is specified by
+one integer argument, whose number is the argument of the attribute.
+Argument numbering starts at one.
+
+For instance,
+
+@smallexample
+void* my_memalign(size_t, size_t) __attribute__((alloc_align(1)))
+@end smallexample
+
+@noindent
+declares that @code{my_memalign} returns memory with minimum alignment
+given by parameter 1.
+
+@item assume_aligned
+@cindex @code{assume_aligned} attribute
+The @code{assume_aligned} attribute is used to tell the compiler that the
+function return value points to memory, where the returned pointer minimum
+alignment is given by the first argument.
+If the attribute has two arguments, the second argument is misalignment offset.
+
+For instance
+
+@smallexample
+void* my_alloc1(size_t) __attribute__((assume_aligned(16)))
+void* my_alloc2(size_t) __attribute__((assume_aligned(32, 8)))
+@end smallexample
+
+@noindent
+declares that @code{my_alloc1} returns 16-byte aligned pointer and
+that @code{my_alloc2} returns a pointer whose value modulo 32 is equal
+to 8.
 
 @item always_inline
 @cindex @code{always_inline} function attribute
@@ -7233,6 +7273,19 @@ c = a >  b;     /* The result would be @{0, 0,-1, 0@}  */
 c = a == b;     /* The result would be @{0,-1, 0,-1@}  */
 @end smallexample
 
+In C++, the ternary operator @code{?:} is available. @code{a?b:c}, where
+@code{b} and @code{c} are vectors of the same type and @code{a} is an
+integer vector with the same number of elements of the same size as @code{b}
+and @code{c}, computes all three arguments and creates a vector
+@code{@{a[0]?b[0]:c[0], a[1]?b[1]:c[1], @dots{}@}}.  Note that unlike in
+OpenCL, @code{a} is thus interpreted as @code{a != 0} and not @code{a < 0}.
+As in the case of binary operations, this syntax is also accepted when
+one of @code{b} or @code{c} is a scalar that is then transformed into a
+vector. If both @code{b} and @code{c} are scalars and the type of
+@code{true?b:c} has the same size as the element type of @code{a}, then
+@code{b} and @code{c} are converted to a vector type whose elements have
+this type and with the same number of elements as @code{a}.
+
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
 @code{__builtin_shuffle (vec0, vec1, mask)}.
@@ -8726,6 +8779,8 @@ means that the compiler can assume for @code{x}, set to @code{arg}, that
 @deftypefn {Built-in Function} int __builtin_LINE ()
 This function is the equivalent to the preprocessor @code{__LINE__}
 macro and returns the line number of the invocation of the built-in.
+In a C++ default argument for a function @var{F}, it gets the line number of
+the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
@@ -8736,6 +8791,8 @@ macro and returns the function name the invocation of the built-in is in.
 @deftypefn {Built-in Function} {const char *} __builtin_FILE ()
 This function is the equivalent to the preprocessor @code{__FILE__}
 macro and returns the file name the invocation of the built-in is in.
+In a C++ default argument for a function @var{F}, it gets the file name of
+the call to @var{F}.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
@@ -12600,6 +12657,15 @@ GCC provides other MIPS-specific built-in functions:
 Insert a @samp{cache} instruction with operands @var{op} and @var{addr}.
 GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
 when this function is available.
+
+@item unsigned int __builtin_mips_get_fcsr (void)
+@itemx void __builtin_mips_set_fcsr (unsigned int @var{value})
+Get and set the contents of the floating-point control and status register
+(FPU control register 31).  These functions are only available in hard-float
+code but can be called in both MIPS16 and non-MIPS16 contexts.
+
+@code{__builtin_mips_set_fcsr} can be used to change any bit of the
+register except the condition codes, which GCC assumes are preserved.
 @end table
 
 @node MSP430 Built-in Functions

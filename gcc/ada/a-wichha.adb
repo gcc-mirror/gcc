@@ -33,9 +33,13 @@ with Ada.Wide_Characters.Unicode; use Ada.Wide_Characters.Unicode;
 
 package body Ada.Wide_Characters.Handling is
 
+   ---------------------------
+   -- Character_Set_Version --
+   ---------------------------
+
    function Character_Set_Version return String is
    begin
-      return "Unicode 6.2";
+      return "Unicode 4.0";
    end Character_Set_Version;
 
    ---------------------

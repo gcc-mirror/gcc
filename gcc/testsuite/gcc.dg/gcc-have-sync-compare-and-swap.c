@@ -40,10 +40,12 @@ void f8()
 #endif
 }
 
+/* aligned (16): On S/390 16 byte compare and swap operations are only
+   available if the memory operand resides on a 16 byte boundary.  */
 void f16()
 {
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
-  typedef int __attribute__ ((__mode__ (__TI__))) ti_int_type;
+  typedef int __attribute__ ((__mode__ (__TI__), aligned (16))) ti_int_type;
   ti_int_type ti_int;
   __sync_bool_compare_and_swap (&ti_int, (ti_int_type)0, (ti_int_type)1);
 #endif

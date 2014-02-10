@@ -229,6 +229,10 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       P : List (C);
 
    begin
+      if 0 < Capacity and then Capacity < Source.Capacity then
+         raise Capacity_Error;
+      end if;
+
       N := 1;
       while N <= Source.Capacity loop
          P.Nodes (N).Prev := Source.Nodes (N).Prev;

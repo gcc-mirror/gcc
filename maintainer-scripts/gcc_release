@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001, 2002, 2006, 2009, 2010, 2011 Free Software Foundation.
+# Copyright (c) 2001-2014 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -213,7 +213,7 @@ EOF
 #
 # Suggested usage:
 # md5sum -c MD5SUMS | grep -v \"OK$\"
-" > MD5SUMS
+#" > MD5SUMS
 
   find . -type f |
   sed -e 's:^\./::' -e '/MD5SUMS/d' |

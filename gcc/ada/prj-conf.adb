@@ -1372,19 +1372,27 @@ package body Prj.Conf is
       Get_Project_Target;
       Check_Builder_Switches;
 
-      if Conf_File_Name'Length > 0 then
-         Config_File_Path := Locate_Config_File (Conf_File_Name.all);
-      else
-         Config_File_Path := Locate_Config_File (Default_File_Name);
-      end if;
+      --  Do not attempt to find a configuration project file when
+      --  Config_File_Name is No_Configuration_File.
 
-      if Config_File_Path = null then
-         if not Allow_Automatic_Generation
-           and then Conf_File_Name'Length > 0
-         then
-            Raise_Invalid_Config
-              ("could not locate main configuration project "
-               & Conf_File_Name.all);
+      if Config_File_Name = No_Configuration_File then
+         Config_File_Path := null;
+
+      else
+         if Conf_File_Name'Length > 0 then
+            Config_File_Path := Locate_Config_File (Conf_File_Name.all);
+         else
+            Config_File_Path := Locate_Config_File (Default_File_Name);
+         end if;
+
+         if Config_File_Path = null then
+            if not Allow_Automatic_Generation
+              and then Conf_File_Name'Length > 0
+            then
+               Raise_Invalid_Config
+                 ("could not locate main configuration project "
+                  & Conf_File_Name.all);
+            end if;
          end if;
       end if;
 
@@ -1415,7 +1423,8 @@ package body Prj.Conf is
         and then On_Load_Config = null
       then
          Write_Line
-           ("warning: --RTS is taken into account only in auto-configuration");
+           ("warning: " &
+              "--RTS is taken into account only in auto-configuration");
       end if;
 
       --  Parse the configuration file
@@ -1425,12 +1434,7 @@ package body Prj.Conf is
          Write_Line (Config_File_Path.all);
       end if;
 
-      if On_Load_Config /= null then
-         On_Load_Config
-           (Config_File       => Config_Project_Node,
-            Project_Node_Tree => Project_Node_Tree);
-
-      elsif Config_File_Path /= null then
+      if Config_File_Path /= null then
          Prj.Part.Parse
            (In_Tree           => Project_Node_Tree,
             Project           => Config_Project_Node,
@@ -1444,6 +1448,12 @@ package body Prj.Conf is
          Config_Project_Node := Empty_Node;
       end if;
 
+      if On_Load_Config /= null then
+         On_Load_Config
+           (Config_File       => Config_Project_Node,
+            Project_Node_Tree => Project_Node_Tree);
+      end if;
+
       if Config_Project_Node /= Empty_Node then
          Prj.Proc.Process_Project_Tree_Phase_1
            (In_Tree                => Project_Tree,
@@ -1453,7 +1463,8 @@ package body Prj.Conf is
             From_Project_Node      => Config_Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
             Env                    => Env,
-            Reset_Tree             => False);
+            Reset_Tree             => False,
+            On_New_Tree_Loaded     => null);
       end if;
 
       if Config_Project_Node = Empty_Node
@@ -1565,7 +1576,8 @@ package body Prj.Conf is
       Target_Name                : String := "";
       Normalized_Hostname        : String;
       On_Load_Config             : Config_File_Hook := null;
-      Implicit_Project           : Boolean := False)
+      Implicit_Project           : Boolean := False;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
    begin
       pragma Assert (Prj.Env.Is_Initialized (Env.Project_Path));
@@ -1607,7 +1619,8 @@ package body Prj.Conf is
          Config_File_Path           => Config_File_Path,
          Target_Name                => Target_Name,
          Normalized_Hostname        => Normalized_Hostname,
-         On_Load_Config             => On_Load_Config);
+         On_Load_Config             => On_Load_Config,
+         On_New_Tree_Loaded         => On_New_Tree_Loaded);
    end Parse_Project_And_Apply_Config;
 
    --------------------------------------
@@ -1629,7 +1642,8 @@ package body Prj.Conf is
       Target_Name                : String := "";
       Normalized_Hostname        : String;
       On_Load_Config             : Config_File_Hook := null;
-      Reset_Tree                 : Boolean := True)
+      Reset_Tree                 : Boolean := True;
+      On_New_Tree_Loaded         : Prj.Proc.Tree_Loaded_Callback := null)
    is
       Shared              : constant Shared_Project_Tree_Data_Access :=
                               Project_Tree.Shared;
@@ -1685,7 +1699,8 @@ package body Prj.Conf is
          From_Project_Node      => User_Project_Node,
          From_Project_Node_Tree => Project_Node_Tree,
          Env                    => Env,
-         Reset_Tree             => Reset_Tree);
+         Reset_Tree             => Reset_Tree,
+         On_New_Tree_Loaded     => On_New_Tree_Loaded);
 
       if not Success then
          Main_Project := No_Project;

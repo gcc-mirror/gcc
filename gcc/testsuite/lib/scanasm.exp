@@ -82,10 +82,7 @@ proc scan-assembler { args } {
     dg-scan "scan-assembler" 1 $testcase $output_file $args
 }
 
-proc scan-assembler_required_options { args } {
-    global gcc_force_conventional_output
-    return $gcc_force_conventional_output
-}
+force_conventional_output_for scan-assembler
 
 # Check that a pattern is not present in the .s file produced by the
 # compiler.  See dg-scan for details.
@@ -97,10 +94,7 @@ proc scan-assembler-not { args } {
     dg-scan "scan-assembler-not" 0 $testcase $output_file $args
 }
 
-proc scan-assembler-not_required_options { args } {
-    global gcc_force_conventional_output
-    return $gcc_force_conventional_output
-}
+force_conventional_output_for scan-assembler-not
 
 # Return the scan for the assembly for hidden visibility. 
 
@@ -259,10 +253,7 @@ proc scan-assembler-times { args } {
     }
 }
 
-proc scan-assembler-times_required_options { args } {
-    global gcc_force_conventional_output
-    return $gcc_force_conventional_output
-}
+force_conventional_output_for scan-assembler-times
 
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.

@@ -63,6 +63,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Ordered_Sets is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
@@ -93,7 +94,7 @@ package Ada.Containers.Formal_Ordered_Sets is
      Pre => Target.Capacity >= Length (Source);
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set with
-     Pre => Capacity >= Source.Capacity;
+     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
 
    function Element
      (Container : Set;

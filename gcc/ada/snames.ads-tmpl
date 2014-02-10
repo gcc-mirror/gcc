@@ -4,7 +4,7 @@
 --                                                                          --
 --                               S N A M E S                                --
 --                                                                          --
---                             T e m p l a t e                              --
+--                                 S p e c                                  --
 --                                                                          --
 --          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -52,7 +52,7 @@ package Snames is
    --  cause a duplicate, then list it only once in this table, and adjust the
    --  definition of the functions for testing for pragma names and attribute
    --  names, and returning their ID values. Of course everything is simpler if
-   --  no such duplications occur!
+   --  no such duplications occur.
 
    --  First we have the one character names used to optimize the lookup
    --  process for one character identifiers (to avoid the hashing in this
@@ -361,6 +361,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
+   Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume                         : constant Name_Id := N + $; -- GNAT
@@ -459,6 +460,8 @@ package Snames is
 
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
    Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
+   Name_Async_Readers                  : constant Name_Id := N + $; -- GNAT
+   Name_Async_Writers                  : constant Name_Id := N + $; -- GNAT
    Name_Asynchronous                   : constant Name_Id := N + $;
    Name_Atomic                         : constant Name_Id := N + $;
    Name_Atomic_Components              : constant Name_Id := N + $;
@@ -485,6 +488,8 @@ package Snames is
 
    Name_Debug                          : constant Name_Id := N + $; -- GNAT
    Name_Depends                        : constant Name_Id := N + $; -- GNAT
+   Name_Effective_Reads                : constant Name_Id := N + $; -- GNAT
+   Name_Effective_Writes               : constant Name_Id := N + $; -- GNAT
    Name_Elaborate                      : constant Name_Id := N + $; -- Ada 83
    Name_Elaborate_All                  : constant Name_Id := N + $;
    Name_Elaborate_Body                 : constant Name_Id := N + $;
@@ -560,6 +565,7 @@ package Snames is
    Name_Ordered                        : constant Name_Id := N + $; -- GNAT
    Name_Pack                           : constant Name_Id := N + $;
    Name_Page                           : constant Name_Id := N + $;
+   Name_Part_Of                        : constant Name_Id := N + $; -- GNAT
    Name_Passive                        : constant Name_Id := N + $; -- GNAT
    Name_Post                           : constant Name_Id := N + $; -- GNAT
    Name_Postcondition                  : constant Name_Id := N + $; -- GNAT
@@ -683,7 +689,6 @@ package Snames is
    Name_Assertion                      : constant Name_Id := N + $;
    Name_Assertions                     : constant Name_Id := N + $;
    Name_Attribute_Name                 : constant Name_Id := N + $;
-   Name_Auto                           : constant Name_Id := N + $;
    Name_Body_File_Name                 : constant Name_Id := N + $;
    Name_Boolean_Entry_Barriers         : constant Name_Id := N + $;
    Name_By_Any                         : constant Name_Id := N + $;
@@ -719,7 +724,6 @@ package Snames is
    Name_In_Out                         : constant Name_Id := N + $;
    Name_Increases                      : constant Name_Id := N + $;
    Name_Info                           : constant Name_Id := N + $;
-   Name_Input_Only                     : constant Name_Id := N + $;
    Name_Internal                       : constant Name_Id := N + $;
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
@@ -756,10 +760,8 @@ package Snames is
    Name_Non_Volatile                   : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
    Name_Optional                       : constant Name_Id := N + $;
-   Name_Output_Only                    : constant Name_Id := N + $;
    Name_Policy                         : constant Name_Id := N + $;
    Name_Parameter_Types                : constant Name_Id := N + $;
-   Name_Part_Of                        : constant Name_Id := N + $;
    Name_Proof_In                       : constant Name_Id := N + $;
    Name_Reason                         : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
@@ -1258,6 +1260,7 @@ package Snames is
    Name_Excluded_Source_List_File          : constant Name_Id := N + $;
    Name_Exec_Dir                           : constant Name_Id := N + $;
    Name_Exec_Subdir                        : constant Name_Id := N + $;
+   Name_Excluded_Patterns                  : constant Name_Id := N + $;
    Name_Executable                         : constant Name_Id := N + $;
    Name_Executable_Suffix                  : constant Name_Id := N + $;
    Name_Extends                            : constant Name_Id := N + $;
@@ -1275,6 +1278,8 @@ package Snames is
    Name_Implementation                     : constant Name_Id := N + $;
    Name_Implementation_Exceptions          : constant Name_Id := N + $;
    Name_Implementation_Suffix              : constant Name_Id := N + $;
+   Name_Included_Artifact_Patterns         : constant Name_Id := N + $;
+   Name_Included_Patterns                  : constant Name_Id := N + $;
    Name_Include_Switches                   : constant Name_Id := N + $;
    Name_Include_Path                       : constant Name_Id := N + $;
    Name_Include_Path_File                  : constant Name_Id := N + $;
@@ -1709,6 +1714,7 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
+      Pragma_Allow_Integer_Address,
       Pragma_Annotate,
       Pragma_Assertion_Policy,
       Pragma_Assume,
@@ -1786,6 +1792,8 @@ package Snames is
       Pragma_All_Calls_Remote,
       Pragma_Assert,
       Pragma_Assert_And_Cut,
+      Pragma_Async_Readers,
+      Pragma_Async_Writers,
       Pragma_Asynchronous,
       Pragma_Atomic,
       Pragma_Atomic_Components,
@@ -1805,6 +1813,8 @@ package Snames is
       Pragma_CPP_Vtable,
       Pragma_Debug,
       Pragma_Depends,
+      Pragma_Effective_Reads,
+      Pragma_Effective_Writes,
       Pragma_Elaborate,
       Pragma_Elaborate_All,
       Pragma_Elaborate_Body,
@@ -1862,6 +1872,7 @@ package Snames is
       Pragma_Ordered,
       Pragma_Pack,
       Pragma_Page,
+      Pragma_Part_Of,
       Pragma_Passive,
       Pragma_Post,
       Pragma_Postcondition,

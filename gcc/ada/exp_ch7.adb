@@ -511,7 +511,6 @@ package body Exp_Ch7 is
          declare
             Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
             Conc_Typ  : Entity_Id;
-            Nam       : Node_Id;
             Param     : Node_Id;
             Param_Typ : Entity_Id;
 
@@ -532,81 +531,12 @@ package body Exp_Ch7 is
 
             pragma Assert (Present (Param));
 
-            --  If the associated protected object has entries, a protected
-            --  procedure has to service entry queues. In this case generate:
+            --  Historical note: In earlier versions of GNAT, there was code
+            --  at this point to generate stuff to service entry queues. It is
+            --  now abstracted in Build_Protected_Subprogram_Call_Cleanup.
 
-            --    Service_Entries (_object._object'Access);
-
-            if Nkind (Specification (N)) = N_Procedure_Specification
-              and then Has_Entries (Conc_Typ)
-            then
-               case Corresponding_Runtime_Package (Conc_Typ) is
-                  when System_Tasking_Protected_Objects_Entries =>
-                     Nam := New_Reference_To (RTE (RE_Service_Entries), Loc);
-
-                  when System_Tasking_Protected_Objects_Single_Entry =>
-                     Nam := New_Reference_To (RTE (RE_Service_Entry), Loc);
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-               Append_To (Stmts,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   => Nam,
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         Make_Selected_Component (Loc,
-                           Prefix        => New_Reference_To (
-                             Defining_Identifier (Param), Loc),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Name_uObject)),
-                       Attribute_Name => Name_Unchecked_Access))));
-
-            else
-               --  Generate:
-               --    Unlock (_object._object'Access);
-
-               case Corresponding_Runtime_Package (Conc_Typ) is
-                  when System_Tasking_Protected_Objects_Entries =>
-                     Nam := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
-
-                  when System_Tasking_Protected_Objects_Single_Entry =>
-                     Nam := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
-
-                  when System_Tasking_Protected_Objects =>
-                     Nam := New_Reference_To (RTE (RE_Unlock), Loc);
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-
-               Append_To (Stmts,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   => Nam,
-                   Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix         =>
-                         Make_Selected_Component (Loc,
-                           Prefix        =>
-                             New_Reference_To
-                               (Defining_Identifier (Param), Loc),
-                           Selector_Name =>
-                             Make_Identifier (Loc, Name_uObject)),
-                       Attribute_Name => Name_Unchecked_Access))));
-            end if;
-
-            --  Generate:
-            --    Abort_Undefer;
-
-            if Abort_Allowed then
-               Append_To (Stmts,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name                   =>
-                     New_Reference_To (RTE (RE_Abort_Undefer), Loc),
-                   Parameter_Associations => Empty_List));
-            end if;
+            Build_Protected_Subprogram_Call_Cleanup
+              (Specification (N), Conc_Typ, Loc, Stmts);
          end;
 
       --  Add a call to Expunge_Unactivated_Tasks for dynamically allocated
@@ -937,7 +867,9 @@ package body Exp_Ch7 is
       --  Do not create finalization masters in SPARK mode because they result
       --  in unwanted expansion.
 
-      elsif SPARK_Mode then
+      --  More detail would be useful here ???
+
+      elsif GNATprove_Mode then
          return;
       end if;
 
@@ -2522,11 +2454,22 @@ package body Exp_Ch7 is
              Expression => Make_Integer_Literal (Loc, Counter_Val));
 
          --  Insert the counter after all initialization has been done. The
-         --  place of insertion depends on the context. When dealing with a
-         --  controlled function, the counter is inserted directly after the
-         --  declaration because such objects lack init calls.
+         --  place of insertion depends on the context. If an object is being
+         --  initialized via an aggregate, then the counter must be inserted
+         --  after the last aggregate assignment.
 
-         Find_Last_Init (Decl, Obj_Typ, Count_Ins, Body_Ins);
+         if Ekind (Obj_Id) = E_Variable
+           and then Present (Last_Aggregate_Assignment (Obj_Id))
+         then
+            Count_Ins := Last_Aggregate_Assignment (Obj_Id);
+            Body_Ins  := Empty;
+
+         --  In all other cases the counter is inserted after the last call to
+         --  either [Deep_]Initialize or the type specific init proc.
+
+         else
+            Find_Last_Init (Decl, Obj_Typ, Count_Ins, Body_Ins);
+         end if;
 
          Insert_After (Count_Ins, Inc_Decl);
          Analyze (Inc_Decl);
@@ -2813,7 +2756,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because it is not
       --  necessary.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -2975,7 +2918,7 @@ package body Exp_Ch7 is
       --  Do not perform this expansion in SPARK mode because we do not create
       --  finalizers in the first place.
 
-      if SPARK_Mode then
+      if GNATprove_Mode then
          return;
       end if;
 
@@ -3610,7 +3553,7 @@ package body Exp_Ch7 is
    --  This procedure is called each time a transient block has to be inserted
    --  that is to say for each call to a function with unconstrained or tagged
    --  result. It creates a new scope on the stack scope in order to enclose
-   --  all transient variables generated
+   --  all transient variables generated.
 
    procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is
       Loc       : constant Source_Ptr := Sloc (N);
@@ -3658,7 +3601,7 @@ package body Exp_Ch7 is
       --  this node and enclosed expression are not expanded, so do not apply
       --  any transformations here.
 
-      elsif SPARK_Mode
+      elsif GNATprove_Mode
         and then Nkind (Wrap_Node) = N_Pragma
         and then Get_Pragma_Id (Wrap_Node) = Pragma_Check
       then
@@ -4480,51 +4423,115 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         function Requires_Hooking return Boolean;
-         --  Determine whether the context requires transient variable export
-         --  to the outer finalizer. This scenario arises when the context may
-         --  raise an exception.
+         Must_Hook : Boolean := False;
+         --  Flag denoting whether the context requires transient variable
+         --  export to the outer finalizer.
 
-         ----------------------
-         -- Requires_Hooking --
-         ----------------------
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes a subprogram call
 
-         function Requires_Hooking return Boolean is
+         procedure Detect_Subprogram_Call is
+           new Traverse_Proc (Is_Subprogram_Call);
+
+         ------------------------
+         -- Is_Subprogram_Call --
+         ------------------------
+
+         function Is_Subprogram_Call (N : Node_Id) return Traverse_Result is
          begin
-            --  The context is either a procedure or function call or an object
-            --  declaration initialized by a function call. Note that in the
-            --  latter case, a function call that returns on the secondary
-            --  stack is usually rewritten into something else. Its proper
-            --  detection requires examination of the original initialization
-            --  expression.
+            --  Complex constructs are factored out by the expander and their
+            --  occurrences are replaced with references to temporaries. Due to
+            --  this expansion activity, inspect the original tree to detect
+            --  subprogram calls.
 
-            return Nkind (N) in N_Subprogram_Call
-              or else (Nkind (N) = N_Object_Declaration
-                         and then Nkind (Original_Node (Expression (N))) =
-                                    N_Function_Call);
-         end Requires_Hooking;
+            if Nkind (N) = N_Identifier and then Original_Node (N) /= N then
+               Detect_Subprogram_Call (Original_Node (N));
+
+               --  The original construct contains a subprogram call, there is
+               --  no point in continuing the tree traversal.
+
+               if Must_Hook then
+                  return Abandon;
+               else
+                  return OK;
+               end if;
+
+            --  The original construct contains a subprogram call, there is no
+            --  point in continuing the tree traversal.
+
+            elsif Nkind (N) = N_Object_Declaration
+              and then Present (Expression (N))
+              and then Nkind (Original_Node (Expression (N))) = N_Function_Call
+            then
+               Must_Hook := True;
+               return Abandon;
+
+            --  A regular procedure or function call
+
+            elsif Nkind (N) in N_Subprogram_Call then
+               Must_Hook := True;
+               return Abandon;
+
+            --  Keep searching
+
+            else
+               return OK;
+            end if;
+         end Is_Subprogram_Call;
 
          --  Local variables
 
-         Must_Hook : constant Boolean := Requires_Hooking;
          Built     : Boolean := False;
          Desig_Typ : Entity_Id;
+         Expr      : Node_Id;
          Fin_Block : Node_Id;
          Fin_Data  : Finalization_Exception_Data;
          Fin_Decls : List_Id;
+         Fin_Insrt : Node_Id;
          Last_Fin  : Node_Id := Empty;
          Loc       : Source_Ptr;
          Obj_Id    : Entity_Id;
          Obj_Ref   : Node_Id;
          Obj_Typ   : Entity_Id;
          Prev_Fin  : Node_Id := Empty;
+         Ptr_Id    : Entity_Id;
          Stmt      : Node_Id;
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
+         Temp_Ins  : Node_Id;
 
       --  Start of processing for Process_Transient_Objects
 
       begin
+         --  Recognize a scenario where the transient context is an object
+         --  declaration initialized by a build-in-place function call:
+
+         --    Obj : ... := BIP_Function_Call (Ctrl_Func_Call);
+
+         --  The rough expansion of the above is:
+
+         --    Temp : ... := Ctrl_Func_Call;
+         --    Obj  : ...;
+         --    Res  : ... := BIP_Func_Call (..., Obj, ...);
+
+         --  The finalization of any controlled transient must happen after
+         --  the build-in-place function call is executed.
+
+         if Nkind (N) = N_Object_Declaration
+           and then Present (BIP_Initialization_Call (Defining_Identifier (N)))
+         then
+            Must_Hook := True;
+            Fin_Insrt := BIP_Initialization_Call (Defining_Identifier (N));
+
+         --  Search the context for at least one subprogram call. If found, the
+         --  machinery exports all transient objects to the enclosing finalizer
+         --  due to the possibility of abnormal call termination.
+
+         else
+            Detect_Subprogram_Call (N);
+            Fin_Insrt := Last_Object;
+         end if;
+
          --  Examine all objects in the list First_Object .. Last_Object
 
          Stmt := First_Object;
@@ -4555,11 +4562,10 @@ package body Exp_Ch7 is
                --  time around.
 
                if not Built then
+                  Built     := True;
                   Fin_Decls := New_List;
 
                   Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
-
-                  Built := True;
                end if;
 
                --  Transient variables associated with subprogram calls need
@@ -4574,69 +4580,80 @@ package body Exp_Ch7 is
                --  "hooks" are picked up by the finalization machinery.
 
                if Must_Hook then
-                  declare
-                     Expr   : Node_Id;
-                     Ptr_Id : Entity_Id;
 
-                  begin
-                     --  Step 1: Create an access type which provides a
-                     --  reference to the transient object. Generate:
+                  --  Step 1: Create an access type which provides a reference
+                  --  to the transient object. Generate:
 
-                     --    Ann : access [all] <Desig_Typ>;
+                  --    Ann : access [all] <Desig_Typ>;
 
-                     Ptr_Id := Make_Temporary (Loc, 'A');
+                  Ptr_Id := Make_Temporary (Loc, 'A');
 
-                     Insert_Action (Stmt,
-                       Make_Full_Type_Declaration (Loc,
-                         Defining_Identifier => Ptr_Id,
-                         Type_Definition     =>
-                           Make_Access_To_Object_Definition (Loc,
-                             All_Present        =>
-                               Ekind (Obj_Typ) = E_General_Access_Type,
-                             Subtype_Indication =>
-                               New_Reference_To (Desig_Typ, Loc))));
+                  Insert_Action (Stmt,
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => Ptr_Id,
+                      Type_Definition     =>
+                        Make_Access_To_Object_Definition (Loc,
+                          All_Present        =>
+                            Ekind (Obj_Typ) = E_General_Access_Type,
+                          Subtype_Indication =>
+                            New_Reference_To (Desig_Typ, Loc))));
 
-                     --  Step 2: Create a temporary which acts as a hook to
-                     --  the transient object. Generate:
+                  --  Step 2: Create a temporary which acts as a hook to the
+                  --  transient object. Generate:
 
-                     --    Temp : Ptr_Id := null;
+                  --    Temp : Ptr_Id := null;
 
-                     Temp_Id := Make_Temporary (Loc, 'T');
+                  Temp_Id := Make_Temporary (Loc, 'T');
 
-                     Insert_Action (Stmt,
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Temp_Id,
-                         Object_Definition   =>
-                           New_Reference_To (Ptr_Id, Loc)));
+                  Insert_Action (Stmt,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp_Id,
+                      Object_Definition   =>
+                        New_Reference_To (Ptr_Id, Loc)));
 
-                     --  Mark the temporary as a transient hook. This signals
-                     --  the machinery in Build_Finalizer to recognize this
-                     --  special case.
+                  --  Mark the temporary as a transient hook. This signals the
+                  --  machinery in Build_Finalizer to recognize this special
+                  --  case.
 
-                     Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
+                  Set_Status_Flag_Or_Transient_Decl (Temp_Id, Stmt);
 
-                     --  Step 3: Hook the transient object to the temporary
+                  --  Step 3: Hook the transient object to the temporary
 
-                     if Is_Access_Type (Obj_Typ) then
-                        Expr :=
-                          Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
-                     else
-                        Expr :=
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Reference_To (Obj_Id, Loc),
-                            Attribute_Name => Name_Unrestricted_Access);
-                     end if;
+                  if Is_Access_Type (Obj_Typ) then
+                     Expr :=
+                       Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+                  else
+                     Expr :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Reference_To (Obj_Id, Loc),
+                         Attribute_Name => Name_Unrestricted_Access);
+                  end if;
 
-                     --  Generate:
-                     --    Temp := Ptr_Id (Obj_Id);
-                     --      <or>
-                     --    Temp := Obj_Id'Unrestricted_Access;
+                  --  Generate:
+                  --    Temp := Ptr_Id (Obj_Id);
+                  --      <or>
+                  --    Temp := Obj_Id'Unrestricted_Access;
 
-                     Insert_After_And_Analyze (Stmt,
-                       Make_Assignment_Statement (Loc,
-                         Name       => New_Reference_To (Temp_Id, Loc),
-                         Expression => Expr));
-                  end;
+                  --  When the transient object is initialized by an aggregate,
+                  --  the hook must capture the object after the last component
+                  --  assignment takes place. Only then is the object fully
+                  --  initialized.
+
+                  if Ekind (Obj_Id) = E_Variable
+                    and then Present (Last_Aggregate_Assignment (Obj_Id))
+                  then
+                     Temp_Ins := Last_Aggregate_Assignment (Obj_Id);
+
+                  --  Otherwise the hook seizes the related object immediately
+
+                  else
+                     Temp_Ins := Stmt;
+                  end if;
+
+                  Insert_After_And_Analyze (Temp_Ins,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Reference_To (Temp_Id, Loc),
+                      Expression => Expr));
                end if;
 
                Stmts := New_List;
@@ -4696,7 +4713,7 @@ package body Exp_Ch7 is
                if Present (Prev_Fin) then
                   Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
                else
-                  Insert_After_And_Analyze (Last_Object,
+                  Insert_After_And_Analyze (Fin_Insrt,
                     Make_Block_Statement (Loc,
                       Declarations => Fin_Decls,
                       Handled_Statement_Sequence =>
@@ -4724,9 +4741,7 @@ package body Exp_Ch7 is
          --       Raise_From_Controlled_Operation (E);
          --    end if;
 
-         if Built
-           and then Present (Last_Fin)
-         then
+         if Built and then Present (Last_Fin) then
             Insert_After_And_Analyze (Last_Fin,
               Build_Raise_Statement (Fin_Data));
          end if;
@@ -5137,14 +5152,14 @@ package body Exp_Ch7 is
          Exceptions_OK : constant Boolean :=
                            not Restriction_Active (No_Exception_Propagation);
 
-         procedure Build_Indices;
-         --  Generate the indices used in the dimension loops
+         procedure Build_Indexes;
+         --  Generate the indexes used in the dimension loops
 
          -------------------
-         -- Build_Indices --
+         -- Build_Indexes --
          -------------------
 
-         procedure Build_Indices is
+         procedure Build_Indexes is
          begin
             --  Generate the following identifiers:
             --    Jnn  -  for initialization
@@ -5153,14 +5168,14 @@ package body Exp_Ch7 is
                Append_To (Index_List,
                  Make_Defining_Identifier (Loc, New_External_Name ('J', Dim)));
             end loop;
-         end Build_Indices;
+         end Build_Indexes;
 
       --  Start of processing for Build_Adjust_Or_Finalize_Statements
 
       begin
          Finalizer_Decls := New_List;
 
-         Build_Indices;
+         Build_Indexes;
          Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          Comp_Ref :=
@@ -5315,8 +5330,8 @@ package body Exp_Ch7 is
          function Build_Finalization_Call return Node_Id;
          --  Generate a deep finalization call for an array element
 
-         procedure Build_Indices;
-         --  Generate the initialization and finalization indices used in the
+         procedure Build_Indexes;
+         --  Generate the initialization and finalization indexes used in the
          --  dimension loops.
 
          function Build_Initialization_Call return Node_Id;
@@ -5391,10 +5406,10 @@ package body Exp_Ch7 is
          end Build_Finalization_Call;
 
          -------------------
-         -- Build_Indices --
+         -- Build_Indexes --
          -------------------
 
-         procedure Build_Indices is
+         procedure Build_Indexes is
          begin
             --  Generate the following identifiers:
             --    Jnn  -  for initialization
@@ -5407,7 +5422,7 @@ package body Exp_Ch7 is
                Append_To (Final_List,
                  Make_Defining_Identifier (Loc, New_External_Name ('F', Dim)));
             end loop;
-         end Build_Indices;
+         end Build_Indexes;
 
          -------------------------------
          -- Build_Initialization_Call --
@@ -5434,7 +5449,7 @@ package body Exp_Ch7 is
          Counter_Id := Make_Temporary (Loc, 'C');
          Finalizer_Decls := New_List;
 
-         Build_Indices;
+         Build_Indexes;
          Build_Object_Declarations (Finalizer_Data, Finalizer_Decls, Loc);
 
          --  Generate the block which houses the finalization call, the index
@@ -7942,8 +7957,8 @@ package body Exp_Ch7 is
    -------------------------------
 
    procedure Wrap_Transient_Expression (N : Node_Id) is
-      Expr : constant Node_Id    := Relocate_Node (N);
       Loc  : constant Source_Ptr := Sloc (N);
+      Expr : Node_Id             := Relocate_Node (N);
       Temp : constant Entity_Id  := Make_Temporary (Loc, 'E', N);
       Typ  : constant Entity_Id  := Etype (N);
 
@@ -7954,13 +7969,30 @@ package body Exp_Ch7 is
       --    declare
       --       M : constant Mark_Id := SS_Mark;
       --       procedure Finalizer is ...  (See Build_Finalizer)
-
+      --
       --    begin
-      --       Temp := <Expr>;
+      --       Temp := <Expr>;                           --  general case
+      --       Temp := (if <Expr> then True else False); --  boolean case
       --
       --    at end
       --       Finalizer;
       --    end;
+
+      --  A special case is made for Boolean expressions so that the back-end
+      --  knows to generate a conditional branch instruction, if running with
+      --  -fpreserve-control-flow. This ensures that a control flow change
+      --  signalling the decision outcome occurs before the cleanup actions.
+
+      if Opt.Suppress_Control_Flow_Optimizations
+        and then Is_Boolean_Type (Typ)
+      then
+         Expr :=
+           Make_If_Expression (Loc,
+             Expressions => New_List (
+               Expr,
+               New_Occurrence_Of (Standard_True, Loc),
+               New_Occurrence_Of (Standard_False, Loc)));
+      end if;
 
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,

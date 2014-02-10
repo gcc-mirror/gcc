@@ -15,5 +15,9 @@ void func() {
 /* { dg-final { scan-rtl-dump "global deletions = (2|3)" "dse1" } } */
 /* { dg-final { cleanup-rtl-dump "dse1" } } */
 
-/* { dg-final { scan-rtl-dump-not "insn \[^\n\]*set \\(mem" "final" } } */
+/* Here we want to ignore frame-related instructions, marked as insn/f,
+   that do things like store the link register to the stack.  We also want
+   to treat insns the same regardless of whether they have a scheduling
+   :TI marker, so match both "insn " and "insn:".  */
+/* { dg-final { scan-rtl-dump-not "insn\[: \]\[^\n\]*set \\(mem(?!\[^\n\]*scratch)" "final" } } */
 /* { dg-final { cleanup-rtl-dump "final" } } */

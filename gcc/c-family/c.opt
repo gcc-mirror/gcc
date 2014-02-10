@@ -863,7 +863,7 @@ C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcilkplus
-C ObjC C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
 Enable Cilk Plus
 
 fcond-mismatch

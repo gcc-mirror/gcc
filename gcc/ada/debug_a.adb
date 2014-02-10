@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package body Debug_A is
    --  A stack used to keep track of Node_Id values for setting the value of
    --  Current_Error_Node correctly. Note that if we have more than 200
    --  recursion levels, we just don't reset the right value on exit, which
-   --  is not crucial, since this is only for debugging!
+   --  is not crucial, since this is only for debugging.
 
    -----------------------
    -- Local Subprograms --

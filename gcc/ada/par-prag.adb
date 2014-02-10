@@ -407,7 +407,7 @@ begin
 
          --  We unconditionally make a List_On entry for the pragma, so that
          --  in the List (Off) case, the pragma will print even in a region
-         --  of code with listing turned off (this is required!)
+         --  of code with listing turned off (this is required).
 
          List_Pragmas.Increment_Last;
          List_Pragmas.Table (List_Pragmas.Last) :=
@@ -1109,11 +1109,14 @@ begin
 
       when Pragma_Abort_Defer                    |
            Pragma_Abstract_State                 |
+           Pragma_Async_Readers                  |
+           Pragma_Async_Writers                  |
            Pragma_Assertion_Policy               |
            Pragma_Assume                         |
            Pragma_Assume_No_Invalid_Values       |
            Pragma_AST_Entry                      |
            Pragma_All_Calls_Remote               |
+           Pragma_Allow_Integer_Address          |
            Pragma_Annotate                       |
            Pragma_Assert                         |
            Pragma_Assert_And_Cut                 |
@@ -1152,6 +1155,8 @@ begin
            Pragma_Disable_Atomic_Synchronization |
            Pragma_Discard_Names                  |
            Pragma_Dispatching_Domain             |
+           Pragma_Effective_Reads                |
+           Pragma_Effective_Writes               |
            Pragma_Eliminate                      |
            Pragma_Elaborate                      |
            Pragma_Elaborate_All                  |
@@ -1231,6 +1236,7 @@ begin
            Pragma_Overflow_Mode                  |
            Pragma_Overriding_Renamings           |
            Pragma_Pack                           |
+           Pragma_Part_Of                        |
            Pragma_Partition_Elaboration_Policy   |
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |

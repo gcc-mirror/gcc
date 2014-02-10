@@ -290,16 +290,6 @@ extern void output_object_blocks (void);
 
 extern void output_quoted_string (FILE *, const char *);
 
-/* Output assembler code for constant EXP to FILE, with no label.
-   This includes the pseudo-op such as ".int" or ".byte", and a newline.
-   Assumes output_addressed_constants has been done on EXP already.
-
-   Generate exactly SIZE bytes of assembler data, padding at the end
-   with zeros if necessary.  SIZE must always be specified.
-
-   ALIGN is the alignment in bits that may be assumed for the data.  */
-extern void output_constant (tree, unsigned HOST_WIDE_INT, unsigned int);
-
 /* When outputting delayed branch sequences, this rtx holds the
    sequence being output.  It is null when no delayed branch
    sequence is being output, so it can be used as a test in the

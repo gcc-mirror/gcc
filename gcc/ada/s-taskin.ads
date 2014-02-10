@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -615,12 +615,14 @@ package System.Tasking is
       --  Protection: Only used by Activator
 
       Activator : Task_Id;
+      pragma Atomic (Activator);
       --  The task that created this task, either by declaring it as a task
       --  object or by executing a task allocator. The value is null iff Self
       --  has completed activation.
       --
-      --  Protection: Set by Activator before Self is activated, and only read
-      --  and modified by Self after that.
+      --  Protection: Set by Activator before Self is activated, and
+      --  only modified by Self after that. Can be read by any task via
+      --  Ada.Task_Identification.Activation_Is_Complete; hence Atomic.
 
       Wait_Count : Natural;
       --  This count is used by a task that is waiting for other tasks. At all
@@ -752,7 +754,7 @@ package System.Tasking is
    subtype Master_ID is Master_Level;
 
    --  Normally, a task starts out with internal master nesting level one
-   --  larger than external master nesting level. It is incremented to one by
+   --  larger than external master nesting level. It is incremented by one by
    --  Enter_Master, which is called in the task body only if the compiler
    --  thinks the task may have dependent tasks. It is set to 1 for the
    --  environment task, the level 2 is reserved for server tasks of the

@@ -2358,6 +2358,7 @@ extern rtx extract_asm_operands (rtx);
 extern int asm_noperands (const_rtx);
 extern const char *decode_asm_operands (rtx, rtx *, rtx **, const char **,
 					enum machine_mode *, location_t *);
+extern void get_referenced_operands (const char *, bool *, unsigned int);
 
 extern enum reg_class reg_preferred_class (int);
 extern enum reg_class reg_alternate_class (int);
@@ -2984,6 +2985,8 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 #define fatal_insn_not_found(insn) \
 	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
 
+/* reginfo.c */
+extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
 
 
 #endif /* ! GCC_RTL_H */

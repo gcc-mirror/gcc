@@ -667,8 +667,8 @@ nios2_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (flag_pic)
     {
       fprintf (file, "\tnextpc\tr2\n");
-      fprintf (file, "\t1: movhi\tr3, %%hiadj(_GLOBAL_OFFSET_TABLE_ - 1b)\n");
-      fprintf (file, "\taddi\tr3, r3, %%lo(_GLOBAL_OFFSET_TABLE_ - 1b)\n");
+      fprintf (file, "\t1: movhi\tr3, %%hiadj(_gp_got - 1b)\n");
+      fprintf (file, "\taddi\tr3, r3, %%lo(_gp_got - 1b)\n");
       fprintf (file, "\tadd\tr2, r2, r3\n");
       fprintf (file, "\tldw\tr2, %%call(_mcount)(r2)\n");
       fprintf (file, "\tcallr\tr2\n");
@@ -2066,7 +2066,8 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
 	}
       else
 	{
-	  op1 = "%0"; op2 = "%1";
+	  op1 = (dst_mode == DFmode ? "%D0" : "%0");
+	  op2 = "%1";
 	  op3 = (num_operands == 2 ? "zero" : "%2");
 	}
     }

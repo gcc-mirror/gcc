@@ -10,6 +10,8 @@
 #include <gmp.h>
 #include <mpfr.h>
 
+#include "operator.h"
+
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -283,6 +285,32 @@ class Backend
   // Return an expression for the field at INDEX in BSTRUCT.
   virtual Bexpression*
   struct_field_expression(Bexpression* bstruct, size_t index, Location) = 0;
+
+  // Create an expression that executes BSTAT before BEXPR.
+  virtual Bexpression*
+  compound_expression(Bstatement* bstat, Bexpression* bexpr, Location) = 0;
+
+  // Return an expression that executes THEN_EXPR if CONDITION is true, or
+  // ELSE_EXPR otherwise and returns the result as type BTYPE.  ELSE_EXPR
+  // may be NULL.  BTYPE may be NULL.
+  virtual Bexpression*
+  conditional_expression(Btype* btype, Bexpression* condition,
+                         Bexpression* then_expr, Bexpression* else_expr,
+                         Location) = 0;
+
+  // Return an expression for the unary operation OP EXPR.
+  // Supported values of OP are (from operators.h):
+  //    MINUS, NOT, XOR.
+  virtual Bexpression*
+  unary_expression(Operator op, Bexpression* expr, Location) = 0;
+
+  // Return an expression for the binary operation LEFT OP RIGHT.
+  // Supported values of OP are (from operators.h):
+  //    EQEQ, NOTEQ, LT, LE, GT, GE, PLUS, MINUS, OR, XOR, MULT, DIV, MOD,
+  //    LSHIFT, RSHIFT, AND, NOT.
+  virtual Bexpression*
+  binary_expression(Operator op, Bexpression* left, Bexpression* right,
+                    Location) = 0;
 
   // Statements.
 

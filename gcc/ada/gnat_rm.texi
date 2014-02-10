@@ -26,8 +26,6 @@ included in the section entitled ``GNU Free Documentation License''.
 @end copying
 
 @set EDITION GNAT
-@set DEFAULTLANGUAGEVERSION Ada 2005
-@set NONDEFAULTLANGUAGEVERSION Ada 95
 
 @settitle GNAT Reference Manual
 
@@ -98,12 +96,14 @@ About This Guide
 Implementation Defined Pragmas
 
 * Pragma Abort_Defer::
+* Pragma Abstract_State::
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
 * Pragma Ada_12::
 * Pragma Ada_2012::
+* Pragma Allow_Integer_Address::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assert_And_Cut::
@@ -136,6 +136,7 @@ Implementation Defined Pragmas
 * Pragma Debug::
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
+* Pragma Depends::
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
@@ -156,6 +157,7 @@ Implementation Defined Pragmas
 * Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
+* Pragma Global::
 * Pragma Ident::
 * Pragma Implementation_Defined::
 * Pragma Implemented::
@@ -167,7 +169,9 @@ Implementation Defined Pragmas
 * Pragma Import_Valued_Procedure::
 * Pragma Independent::
 * Pragma Independent_Components::
+* Pragma Initial_Condition::
 * Pragma Initialize_Scalars::
+* Pragma Initializes::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
 * Pragma Interface::
@@ -224,6 +228,7 @@ Implementation Defined Pragmas
 * Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
@@ -283,8 +288,11 @@ Implementation Defined Aspects
 * Aspect Dimension_System::
 * Aspect Favor_Top_Level::
 * Aspect Global::
+* Aspect Initial_Condition::
+* Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Linker_Section::
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
 * Aspect Predicate::
@@ -292,6 +300,7 @@ Implementation Defined Aspects
 * Aspect Pure_05::
 * Aspect Pure_12::
 * Aspect Pure_Function::
+* Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
 * Aspect Shared::
@@ -686,15 +695,15 @@ This manual contains useful information in writing programs using the
 characteristics of @value{EDITION}, including all the information required by
 Annex M of the Ada language standard.
 
-@value{EDITION} implements Ada 95 and Ada 2005, and it may also be invoked in
-Ada 83 compatibility mode.
-By default, @value{EDITION} assumes @value{DEFAULTLANGUAGEVERSION},
+@value{EDITION} implements Ada 95, Ada 2005 and Ada 2012, and it may also be
+invoked in Ada 83 compatibility mode.
+By default, @value{EDITION} assumes Ada 2012,
 but you can override with a compiler switch
 to explicitly specify the language version.
 (Please refer to @ref{Compiling Different Versions of Ada,,, gnat_ugn,
 @value{EDITION} User's Guide}, for details on these switches.)
 Throughout this manual, references to ``Ada'' without a year suffix
-apply to both the Ada 95 and Ada 2005 versions of the language.
+apply to all the Ada versions of the language.
 
 Ada is designed to be highly portable.
 In general, a program will have the same effect even when compiled by
@@ -921,12 +930,14 @@ consideration, the use of these pragmas should be minimized.
 
 @menu
 * Pragma Abort_Defer::
+* Pragma Abstract_State::
 * Pragma Ada_83::
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
 * Pragma Ada_12::
 * Pragma Ada_2012::
+* Pragma Allow_Integer_Address::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assert_And_Cut::
@@ -959,6 +970,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Debug::
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
+* Pragma Depends::
 * Pragma Detect_Blocking::
 * Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
@@ -979,6 +991,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Favor_Top_Level::
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
+* Pragma Global::
 * Pragma Ident::
 * Pragma Implementation_Defined::
 * Pragma Implemented::
@@ -990,7 +1003,9 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Import_Valued_Procedure::
 * Pragma Independent::
 * Pragma Independent_Components::
+* Pragma Initial_Condition::
 * Pragma Initialize_Scalars::
+* Pragma Initializes::
 * Pragma Inline_Always::
 * Pragma Inline_Generic::
 * Pragma Interface::
@@ -1047,6 +1062,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Pure_12::
 * Pragma Pure_Function::
 * Pragma Ravenscar::
+* Pragma Refined_State::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
@@ -1111,6 +1127,13 @@ handled sequence of statements (right after the @code{begin}).  It has
 the effect of deferring aborts for the sequence of statements (but not
 for the declarations or handlers, if any, associated with this statement
 sequence).
+
+@node Pragma Abstract_State
+@unnumberedsec Pragma Abstract_State
+@findex Abstract_State
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.4.
 
 @node Pragma Ada_83
 @unnumberedsec Pragma Ada_83
@@ -1217,6 +1240,57 @@ pragma Ada_2012;
 @noindent
 This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
+
+@node Pragma Allow_Integer_Address
+@unnumberedsec Pragma Allow_Integer_Address
+@findex Allow_Integer_Address
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Allow_Integer_Address;
+@end smallexample
+
+@noindent
+In almost all versions of GNAT, @code{System.Address} is a private
+type in accordance with the implementation advice in the RM. This
+means that integer values,
+in particular integer literals, are not allowed as address values.
+If the configuration pragma
+@code{Allow_Integer_Address} is given, then integer expressions may
+be used anywhere a value of type @code{System.Address} is required.
+The effect is to introduce an implicit unchecked conversion from the
+integer value to type @code{System.Address}. The reverse case of using
+an address where an integer type is required is handled analogously.
+The following example compiles without errors:
+
+@smallexample @c ada
+pragma Allow_Integer_Address;
+with System; use System;
+package AddrAsInt is
+   X : Integer;
+   Y : Integer;
+   for X'Address use 16#1240#;
+   for Y use at 16#3230#;
+   m : Address := 16#4000#;
+   n : constant Address := 4000;
+   p : constant Address := Address (X + Y);
+   v : Integer := y'Address;
+   w : constant Integer := Integer (Y'Address);
+   type R is new integer;
+   RR : R := 1000;
+   Z : Integer;
+   for Z'Address use RR;
+end AddrAsInt;
+@end smallexample
+
+@noindent
+Note that pragma @code{Allow_Integer_Address} is ignored if
+@code{System.Address}
+is not a private type. In implementations of @code{GNAT} where
+System.Address is a visible integer type (notably the implementations
+for @code{OpenVMS}), this pragma serves no purpose but is ignored
+rather than rejected to allow common sets of sources to be used
+in the two situations.
 
 @node Pragma Annotate
 @unnumberedsec Pragma Annotate
@@ -1390,7 +1464,6 @@ ID_ASSERTION_KIND ::= Assertions           |
                       Precondition         |
                       Predicate            |
                       Refined_Post         |
-                      Refined_Pre          |
                       Statement_Assertions
 
 POLICY_IDENTIFIER ::= Check | Disable | Ignore
@@ -1432,7 +1505,7 @@ implementation defined).
 
 The implementation defined policy @code{Statement_Assertions}
 applies to @code{Assert}, @code{Assert_And_Cut},
-@code{Assume}, and @code{Loop_Invariant}.
+@code{Assume}, @code{Loop_Invariant}, and @code{Loop_Variant}.
 
 @node Pragma Assume
 @unnumberedsec Pragma Assume
@@ -2301,7 +2374,7 @@ See @ref{Interfacing to C++} for related information.
 Syntax:
 
 @smallexample @c ada
-pragma CPU (EXPRESSSION);
+pragma CPU (EXPRESSION);
 @end smallexample
 
 @noindent
@@ -2366,6 +2439,13 @@ pragma Default_Storage_Pool (storage_pool_NAME | null);
 This pragma is standard in Ada 2012, but is available in all earlier
 versions of Ada as an implementation-defined pragma.
 See Ada 2012 Reference Manual for details.
+
+@node Pragma Depends
+@unnumberedsec Pragma Depends
+@findex Depends
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.5.
 
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
@@ -2890,11 +2970,11 @@ You can use this pragma either to access a predefined @code{System}
 extension supplied with the compiler, for example @code{Aux_DEC} or
 you can construct your own extension unit following the above
 definition.  Note that such a package is a child of @code{System}
-and thus is considered part of the implementation.  To compile
-it you will have to use the appropriate switch for compiling
-system units.
-@xref{Top, @value{EDITION} User's Guide, About This Guide, gnat_ugn, @value{EDITION} User's Guide},
-for details.
+and thus is considered part of the implementation.
+To compile it you will have to use the @option{-gnatg} switch,
+or the @option{/GNAT_INTERNAL} qualifier on OpenVMS,
+for compiling System units, as explained in the
+@value{EDITION} User's Guide.
 
 @node Pragma Extensions_Allowed
 @unnumberedsec Pragma Extensions_Allowed
@@ -3143,6 +3223,13 @@ For digits values from 10 to 15, G float format will be used.
 @item
 Digits values above 15 are not allowed.
 @end itemize
+
+@node Pragma Global
+@unnumberedsec Pragma Global
+@findex Global
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 6.1.4.
 
 @node Pragma Ident
 @unnumberedsec Pragma Ident
@@ -3585,6 +3672,13 @@ manipulate separate components in the composite object. This may place
 constraints on the representation of the object (for instance prohibiting
 tight packing).
 
+@node Pragma Initial_Condition
+@unnumberedsec Pragma Initial_Condition
+@findex Initial_Condition
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.6.
+
 @node Pragma Initialize_Scalars
 @unnumberedsec Pragma Initialize_Scalars
 @findex Initialize_Scalars
@@ -3646,6 +3740,13 @@ substantially larger. It may also cause an increase in the amount
 of stack required, so it is probably a good idea to turn on stack
 checking (see description of stack checking in the @value{EDITION}
 User's Guide) when using this pragma.
+
+@node Pragma Initializes
+@unnumberedsec Pragma Initializes
+@findex Initializes
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.1.5.
 
 @node Pragma Inline_Always
 @unnumberedsec Pragma Inline_Always
@@ -4147,14 +4248,33 @@ pragma Linker_Section (
 @end smallexample
 
 @noindent
-@var{LOCAL_NAME} must refer to an object that is declared at the library
-level. This pragma specifies the name of the linker section for the given
-entity. It is equivalent to @code{__attribute__((section))} in GNU C and
-causes @var{LOCAL_NAME} to be placed in the @var{static_string_EXPRESSION}
-section of the executable (assuming the linker doesn't rename the section).
+@var{LOCAL_NAME} must refer to an object, type, or subprogram that is
+declared at the library level. This pragma specifies the name of the
+linker section for the given entity. It is equivalent to
+@code{__attribute__((section))} in GNU C and causes @var{LOCAL_NAME} to
+be placed in the @var{static_string_EXPRESSION} section of the
+executable (assuming the linker doesn't rename the section).
+GNAT also provides an implementation defined aspect of the same name.
 
-The compiler normally places library-level objects in standard sections
-depending on their type: procedures and functions generally go in the
+In the case of specifying this aspect for a type, the effect is to
+specify the corresponding for all library level objects of the type which
+do not have an explicit linker section set. Note that this only applies to
+whole objects, not to components of composite objects.
+
+In the case of a subprogram, the linker section applies to all previously
+declared matching overloaded subprograms in the current declarative part
+which do not already have a linker section assigned. The linker section
+aspect is useful in this case for specifying different linker sections
+for different elements of such an overloaded set.
+
+Note that an empty string specifies that no linker section is specified.
+This is not quite the same as omitting the pragma or aspect, since it
+can be used to specify that one element of an overloaded set of subprograms
+has the default linker section, or that one object of a type for which a
+linker section is specified should has the default linker section.
+
+The compiler normally places library-level entities in standard sections
+depending on the class: procedures and functions generally go in the
 @code{.text} section, initialized variables in the @code{.data} section
 and uninitialized variables in the @code{.bss} section.
 
@@ -4180,6 +4300,12 @@ package IO_Card is
   Port_B : Integer;
   pragma Volatile (Port_B);
   pragma Linker_Section (Port_B, ".bss.port_b");
+
+  type Port_Type is new Integer with Linker_Section => ".bss";
+  PA : Port_Type with Linker_Section => ".bss.PA";
+  PB : Port_Type; --  ends up in linker section ".bss"
+
+  procedure Q with Linker_Section => "Qsection";
 end IO_Card;
 @end smallexample
 
@@ -4686,13 +4812,14 @@ pragma Optimize_Alignment (TIME | SPACE | OFF);
 
 @noindent
 This is a configuration pragma which affects the choice of default alignments
-for types where no alignment is explicitly specified. There is a time/space
-trade-off in the selection of these values. Large alignments result in more
-efficient code, at the expense of larger data space, since sizes have to be
-increased to match these alignments. Smaller alignments save space, but the
-access code is slower. The normal choice of default alignments (which is what
-you get if you do not use this pragma, or if you use an argument of OFF),
-tries to balance these two requirements.
+for types and objects where no alignment is explicitly specified. There is a
+time/space trade-off in the selection of these values. Large alignments result
+in more efficient code, at the expense of larger data space, since sizes have
+to be increased to match these alignments. Smaller alignments save space, but
+the access code is slower. The normal choice of default alignments for types
+and individual alignment promotions for objects (which is what you get if you
+do not use this pragma, or if you use an argument of OFF), tries to balance
+these two requirements.
 
 Specifying SPACE causes smaller default alignments to be chosen in two cases.
 First any packed record is given an alignment of 1. Second, if a size is given
@@ -4721,6 +4848,10 @@ record (that is a discriminated record with a component which is an array
 whose length depends on a discriminant), has a pragma Pack, then it is not
 in general possible to set the alignment of such a record to one, so the
 pragma is ignored in this case (with a warning).
+
+Specifying SPACE also disables alignment promotions for standalone objects,
+which occur when the compiler increases the alignment of a specific object
+without changing the alignment of its type.
 
 Specifying TIME causes larger default alignments to be chosen in the case of
 small types with sizes that are not a power of 2. For example, consider:
@@ -4957,6 +5088,9 @@ and that optimization of context switch with this task is permitted and
 desired.  If the argument @code{No} is present, the task must not be
 optimized.  GNAT does not attempt to optimize any tasks in this manner
 (since protected objects are available in place of passive tasks).
+
+For more information on the subject of passive tasks, see the section
+``Passive Task Optimization'' in the GNAT Users Guide.
 
 @node Pragma Persistent_BSS
 @unnumberedsec Pragma Persistent_BSS
@@ -5808,6 +5942,13 @@ pragma Profile (Ravenscar);
 @noindent
 which is the preferred method of setting the @code{Ravenscar} profile.
 
+@node Pragma Refined_State
+@unnumberedsec Pragma Refined_State
+@findex Refined_State
+@noindent
+For the description of this pragma, see SPARK 2014 Reference Manual,
+section 7.2.2.
+
 @node Pragma Relative_Deadline
 @unnumberedsec Pragma Relative_Deadline
 @findex Relative_Deadline
@@ -5815,7 +5956,7 @@ which is the preferred method of setting the @code{Ravenscar} profile.
 Syntax:
 
 @smallexample @c ada
-pragma Relative_Deadline (time_span_EXPRESSSION);
+pragma Relative_Deadline (time_span_EXPRESSION);
 @end smallexample
 
 @noindent
@@ -5889,6 +6030,26 @@ pragma @code{Restrictions}). For each of these identifiers
 the compiler checks for violations of the restriction, but
 generates a warning message rather than an error message
 if the restriction is violated.
+
+One use of this is in situations where you want to know
+about violations of a restriction, but you want to ignore some of
+these violations. Consider this example, where you want to set
+Ada_95 mode and enable style checks, but you want to know about
+any other use of implementation pragmas:
+
+@smallexample @c ada
+pragma Restriction_Warnings (No_Implementation_Pragmas);
+pragma Warnings (Off, "violation of*No_Implementation_Pragmas*");
+pragma Ada_95;
+pragma Style_Checks ("2bfhkM160");
+pragma Warnings (On, "violation of*No_Implementation_Pragmas*");
+@end smallexample
+
+@noindent
+By including the above lines in a configuration pragmas file,
+the Ada_95 and Style_Checks pragmas are accepted without
+generating a warning, but any other use of implementation
+defined pragmas will cause a warning to be generated.
 
 @node Pragma Share_Generic
 @unnumberedsec Pragma Share_Generic
@@ -6169,82 +6330,79 @@ is needed for error messages issued by all phases of the compiler.
 Syntax:
 
 @smallexample @c ada
-pragma SPARK_Mode [ (On | Off | Auto) ] ;
+pragma SPARK_Mode [(On | Off)] ;
 @end smallexample
 
 @noindent
-This pragma is used to designate whether a contract and its implementation must
-follow the SPARK 2014 programming language syntactic and semantic rules. The
-pragma is intended for use with formal verification tools and has no effect on
-the generated code.
+In general a program can have some parts that are in SPARK 2014 (and
+follow all the rules in the SPARK Reference Manual), and some parts
+that are full Ada 2012.
 
-When used as a configuration pragma over a whole compilation or in a particular
-compilation unit, it sets the mode of the units involved, in particular:
-
-@itemize @bullet
-
-@item
-@code{On}: All entities in the units must follow the SPARK 2014 language, and
-an error will be generated if not, unless locally overridden by a local
-SPARK_Mode pragma or aspect. @code{On} is the default mode when pragma
-SPARK_Mode is used without an argument.
-
-@item
-@code{Off}: The units are considered to be in Ada by default and therefore not
-part of SPARK 2014 unless overridden locally. These units may be called by
-SPARK 2014 units.
-
-@item
-@code{Auto}: The formal verification tools will automatically detect whether
-each entity is in SPARK 2014 or in Ada.
-
-@end itemize
-
-Pragma SPARK_Mode can be used as a local pragma with the following semantics:
+The SPARK_Mode pragma is used to identify which parts are in SPARK
+2014 (by default programs are in full Ada). The SPARK_Mode pragma can
+be used in the following places:
 
 @itemize @bullet
 
 @item
-Auto cannot be used as a mode argument.
+As a configuration pragma, in which case it sets the default mode for
+all units compiled with this pragma.
 
 @item
-When the pragma at the start of the visible declarations (preceded only
-by other pragmas) of a package declaration, it marks the whole package
-(declaration and body) in or out of SPARK 2014.
+Immediately following a library-level subprogram spec
 
 @item
-When the pragma appears at the start of the private declarations of a
-package (only other pragmas can appear between the @code{private} keyword
-and the @code{SPARK_Mode} pragma), it marks the private part in or
-out of SPARK 2014 (overriding the default mode of the visible part).
+Immediately within a library-level package body
 
 @item
-When the pragma appears immediately at the start of the declarations of a
-package body (preceded only by other pragmas),
-it marks the whole body in or out of SPARK 2014 (overriding the default
-mode set by the declaration).
+Immediately following the @code{private} keyword of a library-level
+package spec
 
 @item
-When the pragma appears at the start of the elaboration statements of
-a package body (only other pragmas can appear between the @code{begin}
-keyword and the @code{SPARK_Mode} pragma),
-it marks the elaboration statements in or out of SPARK 2014 (overriding
-the default mode of the package body).
+Immediately following the @code{begin} keyword of a library-level
+package body
 
 @item
-When the pragma appears after a subprogram declaration (with only other
-pragmas intervening), it marks the whole
-subprogram (spec and body) in or out of SPARK 2014.
-
-@item
-When the pragma appears at the start of the declarations of a subprogram
-body (preceded only by other pragmas), it marks the whole body in or out
-of SPARK 2014 (overriding the default mode set by the declaration).
-
-@item
-Any other use of the pragma is illegal.
+Immediately within a library-level subprogram body
 
 @end itemize
+
+@noindent
+Normally a subprogram or package spec/body inherits the current mode
+that is active at the point it is declared. But this can be overridden
+by pragma within the spec or body as above.
+
+The basic consistency rule is that you can't turn SPARK_Mode back
+@code{On}, once you have explicitly (with a pragma) turned if
+@code{Off}. So the following rules apply:
+
+@noindent
+If a subprogram spec has SPARK_Mode @code{Off}, then the body must
+also have SPARK_Mode @code{Off}.
+
+@noindent
+For a package, we have four parts:
+
+@itemize
+@item
+the package public declarations
+@item
+the package private part
+@item
+the body of the package
+@item
+the elaboration code after @code{begin}
+@end itemize
+
+@noindent
+For a package, the rule is that if you explicitly turn SPARK_Mode
+@code{Off} for any part, then all the following parts must have
+SPARK_Mode @code{Off}. Note that this may require repeating a pragma
+SPARK_Mode (@code{Off}) in the body. For example, if we have a
+configuration pragma SPARK_Mode (@code{On}) that turns the mode on by
+default everywhere, and one particular package spec has pragma
+SPARK_Mode (@code{Off}), then that pragma will need to be repeated in
+the package body.
 
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired
@@ -7277,6 +7435,7 @@ the message. For example, you can use
 message @code{warning: 960 bits of "a" unused}. No other regular
 expression notations are permitted. All characters other than asterisk in
 these three specific cases are treated as literal characters in the match.
+The match is case insensitive, for example XYZ matches xyz.
 
 The above use of patterns to match the message applies only to warning
 messages generated by the front end. This form of the pragma with a
@@ -7464,8 +7623,11 @@ clause.
 * Aspect Dimension_System::
 * Aspect Favor_Top_Level::
 * Aspect Global::
+* Aspect Initial_Condition::
+* Aspect Initializes::
 * Aspect Inline_Always::
 * Aspect Invariant::
+* Aspect Linker_Section::
 * Aspect Lock_Free::
 * Aspect Object_Size::
 * Aspect Persistent_BSS::
@@ -7474,6 +7636,7 @@ clause.
 * Aspect Pure_05::
 * Aspect Pure_12::
 * Aspect Pure_Function::
+* Aspect Refined_State::
 * Aspect Remote_Access_Type::
 * Aspect Scalar_Storage_Order::
 * Aspect Shared::
@@ -7630,7 +7793,19 @@ This aspect is equivalent to pragma @code{Favor_Top_Level}.
 @unnumberedsec Aspect Global
 @findex Global
 @noindent
-This aspect is equivalent pragma @code{Global}.
+This aspect is equivalent to pragma @code{Global}.
+
+@node Aspect Initial_Condition
+@unnumberedsec Aspect Initial_Condition
+@findex Initial_Condition
+@noindent
+This aspect is equivalent to pragma @code{Initial_Condition}.
+
+@node Aspect Initializes
+@unnumberedsec Aspect Initializes
+@findex Initializes
+@noindent
+This aspect is equivalent to pragma @code{Initializes}.
 
 @node Aspect Inline_Always
 @unnumberedsec Aspect Inline_Always
@@ -7645,6 +7820,12 @@ This aspect is equivalent to pragma @code{Inline_Always}.
 This aspect is equivalent to pragma @code{Invariant}. It is a
 synonym for the language defined aspect @code{Type_Invariant} except
 that it is separately controllable using pragma @code{Assertion_Policy}.
+
+@node Aspect Linker_Section
+@unnumberedsec Aspect Linker_Section
+@findex Linker_Section
+@noindent
+This aspect is equivalent to an @code{Linker_Section} pragma.
 
 @node Aspect Lock_Free
 @unnumberedsec Aspect Lock_Free
@@ -7700,6 +7881,12 @@ This aspect is equivalent to pragma @code{Pure_12}.
 @noindent
 This aspect is equivalent to pragma @code{Pure_Function}.
 
+@node Aspect Refined_State
+@unnumberedsec Aspect Refined_State
+@findex Refined_State
+@noindent
+This aspect is equivalent to pragma @code{Refined_State}.
+
 @node Aspect Remote_Access_Type
 @unnumberedsec Aspect Remote_Access_Type
 @findex Remote_Access_Type
@@ -7737,7 +7924,9 @@ This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
 @unnumberedsec Aspect SPARK_Mode
 @findex SPARK_Mode
 @noindent
-This aspect is equivalent to pragma @code{SPARK_Mode}.
+This aspect is equivalent to pragma @code{SPARK_Mode} and
+may be specified for either or both of the specification and body
+of a subprogram or package.
 
 @node Aspect Suppress_Debug_Info
 @unnumberedsec Aspect Suppress_Debug_Info
@@ -8724,8 +8913,9 @@ order as the parent type.
 
 If a component of @var{S} has itself a record or array type, then it shall also
 have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
-if the component does not start on a byte boundary, then the scalar storage
-order specified for S and for the nested component type shall be identical.
+if the component is a packed array, or does not start on a byte boundary, then
+the scalar storage order specified for S and for the nested component type shall
+be identical.
 
 If @var{S} appears as the type of a record or array component, the enclosing
 record or array shall also have a @code{Scalar_Storage_Order} attribute
@@ -12255,7 +12445,7 @@ See A.3.5(3).
 @end cartouche
 @noindent
 @code{Ada.Wide_Characters.Handling.Character_Set_Version} returns
-the string "Unicode 6.2", referring to version 6.2.x of the
+the string "Unicode 4.0", referring to version 4.0 of the
 Unicode specification.
 
 @sp 1

@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Warning! Error messages can be generated during Gigi processing by direct
+--  Warning: Error messages can be generated during Gigi processing by direct
 --  calls to error message routines, so it is essential that the processing
 --  in this body be consistent with the requirements for the Gigi processing
 --  environment, and that in particular, no disallowed table expansion is
@@ -185,7 +185,7 @@ package body Erroutc is
             return;
 
          --  Otherwise see if continuations are the same, if not, keep both
-         --  sequences, a curious case, but better to keep everything!
+         --  sequences, a curious case, but better to keep everything.
 
          elsif not Same_Error (N1, N2) then
             return;
@@ -1172,26 +1172,35 @@ package body Erroutc is
          return;
       end if;
 
+      --  If all warnings are suppressed by command line switch, this can
+      --  be ignored, unless we are in GNATprove_Mode which requires pragma
+      --  Warnings to be stored for the formal verification backend.
+
+      if Warning_Mode = Suppress
+        and then not GNATprove_Mode
+      then
+         return;
+      end if;
+
       --  If last entry in table already covers us, this is a redundant pragma
-      --  Warnings (Off) and can be ignored. This also handles the case where
-      --  all warnings are suppressed by command line switch.
+      --  Warnings (Off) and can be ignored.
 
       if Warnings.Last >= Warnings.First
         and then Warnings.Table (Warnings.Last).Start <= Loc
         and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
          return;
-
-      --  Otherwise establish a new entry, extending from the location of the
-      --  pragma to the end of the current source file. This ending point will
-      --  be adjusted by a subsequent pragma Warnings (On).
-
-      else
-         Warnings.Increment_Last;
-         Warnings.Table (Warnings.Last).Start := Loc;
-         Warnings.Table (Warnings.Last).Stop :=
-           Source_Last (Current_Source_File);
       end if;
+
+      --  If none of those special conditions holds, establish a new entry,
+      --  extending from the location of the pragma to the end of the current
+      --  source file. This ending point will be adjusted by a subsequent
+      --  corresponding pragma Warnings (On).
+
+      Warnings.Increment_Last;
+      Warnings.Table (Warnings.Last).Start := Loc;
+      Warnings.Table (Warnings.Last).Stop :=
+        Source_Last (Current_Source_File);
    end Set_Warnings_Mode_Off;
 
    --------------------------
@@ -1207,14 +1216,22 @@ package body Erroutc is
          return;
       end if;
 
-      --  Nothing to do unless command line switch to suppress all warnings
-      --  is off, and the last entry in the warnings table covers this
-      --  pragma Warnings (On), in which case adjust the end point.
+      --  If all warnings are suppressed by command line switch, this can
+      --  be ignored, unless we are in GNATprove_Mode which requires pragma
+      --  Warnings to be stored for the formal verification backend.
 
-      if (Warnings.Last >= Warnings.First
-           and then Warnings.Table (Warnings.Last).Start <= Loc
-           and then Loc <= Warnings.Table (Warnings.Last).Stop)
-        and then Warning_Mode /= Suppress
+      if Warning_Mode = Suppress
+        and then not GNATprove_Mode
+      then
+         return;
+      end if;
+
+      --  If the last entry in the warnings table covers this pragma, then
+      --  we adjust the end point appropriately.
+
+      if Warnings.Last >= Warnings.First
+        and then Warnings.Table (Warnings.Last).Start <= Loc
+        and then Loc <= Warnings.Table (Warnings.Last).Stop
       then
          Warnings.Table (Warnings.Last).Stop := Loc;
       end if;
@@ -1283,6 +1300,10 @@ package body Erroutc is
 
    procedure Validate_Specific_Warnings (Eproc : Error_Msg_Proc) is
    begin
+      if not Warn_On_Warnings_Off then
+         return;
+      end if;
+
       for J in Specific_Warnings.First .. Specific_Warnings.Last loop
          declare
             SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
@@ -1294,7 +1315,7 @@ package body Erroutc is
 
                if SWE.Open then
                   Eproc.all
-                    ("?pragma Warnings Off with no matching Warnings On",
+                    ("?W?pragma Warnings Off with no matching Warnings On",
                      SWE.Start);
 
                --  Warn for ineffective Warnings (Off, ..)
@@ -1308,7 +1329,7 @@ package body Erroutc is
                    (SWE.Msg'Length > 2 and then SWE.Msg (1 .. 2) = "-W")
                then
                   Eproc.all
-                    ("?no warning suppressed by this pragma", SWE.Start);
+                    ("?W?no warning suppressed by this pragma", SWE.Start);
                end if;
             end if;
          end;
@@ -1326,6 +1347,7 @@ package body Erroutc is
       function Matches (S : String; P : String) return Boolean;
       --  Returns true if the String S patches the pattern P, which can contain
       --  wild card chars (*). The entire pattern must match the entire string.
+      --  Case is ignored in the comparison (so X matches x).
 
       -------------
       -- Matches --
@@ -1377,7 +1399,7 @@ package body Erroutc is
 
             --  Dealt with end of string and *, advance if we have a match
 
-            elsif S (SPtr) = P (PPtr) then
+            elsif Fold_Lower (S (SPtr)) = Fold_Lower (P (PPtr)) then
                SPtr := SPtr + 1;
                PPtr := PPtr + 1;
 

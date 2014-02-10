@@ -1416,6 +1416,12 @@ package body Clean is
 
          if Main_Project = No_Project then
             Fail ("""" & Project_File_Name.all & """ processing failed");
+
+         elsif Main_Project.Qualifier = Aggregate then
+            Fail ("aggregate projects are not supported");
+
+         elsif Aggregate_Libraries_In (Project_Tree) then
+            Fail ("aggregate library projects are not supported");
          end if;
 
          if Opt.Verbose_Mode then

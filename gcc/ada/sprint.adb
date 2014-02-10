@@ -204,7 +204,7 @@ package body Sprint is
      (Node    : Node_Id;
       Default : Node_Id);
    --  Print the end label for a Handled_Sequence_Of_Statements in a body.
-   --  If there is not end label, use the defining identifier of the enclosing
+   --  If there is no end label, use the defining identifier of the enclosing
    --  construct. If the end label is present, treat it as a reference to the
    --  defining entity of the construct: this guarantees that it carries the
    --  proper sloc information for debugging purposes.
@@ -1131,7 +1131,7 @@ package body Sprint is
 
             if Present (Identifier (Node))
               and then (not Has_Created_Identifier (Node)
-                          or else not Dump_Original_Only)
+                         or else not Dump_Original_Only)
             then
                Write_Rewrite_Str ("<<<");
                Write_Id (Identifier (Node));
@@ -2009,7 +2009,7 @@ package body Sprint is
                Sprint_Node (Condition);
                Write_Str_With_Col_Check (" then ");
 
-               --  Defense against junk here!
+               --  Defense against junk here
 
                if Present (Then_Expr) then
                   Sprint_Node (Then_Expr);
@@ -3091,10 +3091,6 @@ package body Sprint is
 
             Write_Char (';');
 
-         when N_Subprogram_Info =>
-            Sprint_Node (Identifier (Node));
-            Write_Str_With_Col_Check_Sloc ("'subprogram_info");
-
          when N_Subprogram_Renaming_Declaration =>
             Write_Indent;
             Sprint_Node (Specification (Node));
@@ -4011,7 +4007,7 @@ package body Sprint is
               and then Defining_Entity (P) = Typ
             then
                --  We must set Itype_Printed true before the recursive call to
-               --  print the node, otherwise we get an infinite recursion!
+               --  print the node, otherwise we get an infinite recursion.
 
                Set_Itype_Printed (Typ, True);
 

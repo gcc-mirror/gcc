@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,7 +408,7 @@ package body Sem_Elim is
             end if;
 
             --  If given entity is a library level subprogram and pragma had a
-            --  single parameter, a match!
+            --  single parameter, a match.
 
             if Is_Compilation_Unit (E)
               and then Is_Subprogram (E)

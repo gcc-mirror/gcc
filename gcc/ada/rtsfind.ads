@@ -1747,11 +1747,9 @@ package Rtsfind is
      RE_Unlock_Entry,                    -- Protected_Objects.Single_Entry
      RE_Protected_Single_Entry_Call,     -- Protected_Objects.Single_Entry
      RE_Service_Entry,                   -- Protected_Objects.Single_Entry
-     RE_Complete_Single_Entry_Body,      -- Protected_Objects.Single_Entry
      RE_Exceptional_Complete_Single_Entry_Body,
      RE_Protected_Count_Entry,           -- Protected_Objects.Single_Entry
      RE_Protected_Single_Entry_Caller,   -- Protected_Objects.Single_Entry
-     RE_Timed_Protected_Single_Entry_Call,
 
      RE_Protected_Entry_Index,           -- System.Tasking.Protected_Objects
      RE_Entry_Body,                      -- System.Tasking.Protected_Objects
@@ -3057,15 +3055,11 @@ package Rtsfind is
        System_Tasking_Protected_Objects_Single_Entry,
      RE_Service_Entry                    =>
        System_Tasking_Protected_Objects_Single_Entry,
-     RE_Complete_Single_Entry_Body       =>
-       System_Tasking_Protected_Objects_Single_Entry,
      RE_Exceptional_Complete_Single_Entry_Body =>
        System_Tasking_Protected_Objects_Single_Entry,
      RE_Protected_Count_Entry            =>
        System_Tasking_Protected_Objects_Single_Entry,
      RE_Protected_Single_Entry_Caller    =>
-       System_Tasking_Protected_Objects_Single_Entry,
-     RE_Timed_Protected_Single_Entry_Call =>
        System_Tasking_Protected_Objects_Single_Entry,
 
      RE_Protected_Entry_Index            => System_Tasking_Protected_Objects,

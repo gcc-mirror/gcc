@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ with Ada.Unchecked_Conversion;
 pragma Warnings (Off);
 --  Allow withing of non-Preelaborated units in Ada 2005 mode where this
 --  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
+--  It is safe in the context of the run-time to violate the rules.
 
 with System.Tasking.Utilities;
 
@@ -83,6 +83,16 @@ package body Ada.Task_Identification is
       end if;
    end Abort_Task;
 
+   ----------------------------
+   -- Activation_Is_Complete --
+   ----------------------------
+
+   function Activation_Is_Complete (T : Task_Id) return Boolean is
+      use type System.Tasking.Task_Id;
+   begin
+      return Convert_Ids (T).Common.Activator = null;
+   end Activation_Is_Complete;
+
    -----------------
    -- Convert_Ids --
    -----------------
@@ -105,6 +115,15 @@ package body Ada.Task_Identification is
    begin
       return Convert_Ids (System.Task_Primitives.Operations.Self);
    end Current_Task;
+
+   ----------------------
+   -- Environment_Task --
+   ----------------------
+
+   function Environment_Task return Task_Id is
+   begin
+      return Convert_Ids (System.Task_Primitives.Operations.Environment_Task);
+   end Environment_Task;
 
    -----------
    -- Image --

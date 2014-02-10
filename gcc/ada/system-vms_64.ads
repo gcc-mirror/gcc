@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                (OpenVMS 64bit GCC_ZCX DEC Threads Version)               --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -144,6 +144,7 @@ private
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := True;
+   VAX_Float                 : constant Boolean := False;
    Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := True;
@@ -248,7 +249,7 @@ private
    ADA_GNAT : constant Boolean := True;
    pragma Export_Object (ADA_GNAT, "ADA$GNAT");
    --  Ubiquitous global symbol identifying a GNAT compiled image to VMS Debug.
-   --  Do not remove!
+   --  Do not remove.
 
    pragma Ident ("GNAT"); --  Gnat_Static_Version_String
    --  Default ident for all VMS images.

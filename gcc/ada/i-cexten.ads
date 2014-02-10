@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -170,6 +170,102 @@ package Interfaces.C.Extensions is
    type Unsigned_32 is mod 2 ** 32;
    for Unsigned_32'Size use 32;
 
+   type Unsigned_33 is mod 2 ** 33;
+   for Unsigned_33'Size use 33;
+
+   type Unsigned_34 is mod 2 ** 34;
+   for Unsigned_34'Size use 34;
+
+   type Unsigned_35 is mod 2 ** 35;
+   for Unsigned_35'Size use 35;
+
+   type Unsigned_36 is mod 2 ** 36;
+   for Unsigned_36'Size use 36;
+
+   type Unsigned_37 is mod 2 ** 37;
+   for Unsigned_37'Size use 37;
+
+   type Unsigned_38 is mod 2 ** 38;
+   for Unsigned_38'Size use 38;
+
+   type Unsigned_39 is mod 2 ** 39;
+   for Unsigned_39'Size use 39;
+
+   type Unsigned_40 is mod 2 ** 40;
+   for Unsigned_40'Size use 40;
+
+   type Unsigned_41 is mod 2 ** 41;
+   for Unsigned_41'Size use 41;
+
+   type Unsigned_42 is mod 2 ** 42;
+   for Unsigned_42'Size use 42;
+
+   type Unsigned_43 is mod 2 ** 43;
+   for Unsigned_43'Size use 43;
+
+   type Unsigned_44 is mod 2 ** 44;
+   for Unsigned_44'Size use 44;
+
+   type Unsigned_45 is mod 2 ** 45;
+   for Unsigned_45'Size use 45;
+
+   type Unsigned_46 is mod 2 ** 46;
+   for Unsigned_46'Size use 46;
+
+   type Unsigned_47 is mod 2 ** 47;
+   for Unsigned_47'Size use 47;
+
+   type Unsigned_48 is mod 2 ** 48;
+   for Unsigned_48'Size use 48;
+
+   type Unsigned_49 is mod 2 ** 49;
+   for Unsigned_49'Size use 49;
+
+   type Unsigned_50 is mod 2 ** 50;
+   for Unsigned_50'Size use 50;
+
+   type Unsigned_51 is mod 2 ** 51;
+   for Unsigned_51'Size use 51;
+
+   type Unsigned_52 is mod 2 ** 52;
+   for Unsigned_52'Size use 52;
+
+   type Unsigned_53 is mod 2 ** 53;
+   for Unsigned_53'Size use 53;
+
+   type Unsigned_54 is mod 2 ** 54;
+   for Unsigned_54'Size use 54;
+
+   type Unsigned_55 is mod 2 ** 55;
+   for Unsigned_55'Size use 55;
+
+   type Unsigned_56 is mod 2 ** 56;
+   for Unsigned_56'Size use 56;
+
+   type Unsigned_57 is mod 2 ** 57;
+   for Unsigned_57'Size use 57;
+
+   type Unsigned_58 is mod 2 ** 58;
+   for Unsigned_58'Size use 58;
+
+   type Unsigned_59 is mod 2 ** 59;
+   for Unsigned_59'Size use 59;
+
+   type Unsigned_60 is mod 2 ** 60;
+   for Unsigned_60'Size use 60;
+
+   type Unsigned_61 is mod 2 ** 61;
+   for Unsigned_61'Size use 61;
+
+   type Unsigned_62 is mod 2 ** 62;
+   for Unsigned_62'Size use 62;
+
+   type Unsigned_63 is mod 2 ** 63;
+   for Unsigned_63'Size use 63;
+
+   type Unsigned_64 is mod 2 ** 64;
+   for Unsigned_64'Size use 64;
+
    type Signed_2 is range -2 ** 1 .. 2 ** 1 - 1;
    for Signed_2'Size use 2;
 
@@ -262,5 +358,101 @@ package Interfaces.C.Extensions is
 
    type Signed_32 is range -2 ** 31 .. 2 ** 31 - 1;
    for Signed_32'Size use 32;
+
+   type Signed_33 is range -2 ** 32 .. 2 ** 32 - 1;
+   for Signed_33'Size use 33;
+
+   type Signed_34 is range -2 ** 33 .. 2 ** 33 - 1;
+   for Signed_34'Size use 34;
+
+   type Signed_35 is range -2 ** 34 .. 2 ** 34 - 1;
+   for Signed_35'Size use 35;
+
+   type Signed_36 is range -2 ** 35 .. 2 ** 35 - 1;
+   for Signed_36'Size use 36;
+
+   type Signed_37 is range -2 ** 36 .. 2 ** 36 - 1;
+   for Signed_37'Size use 37;
+
+   type Signed_38 is range -2 ** 37 .. 2 ** 37 - 1;
+   for Signed_38'Size use 38;
+
+   type Signed_39 is range -2 ** 38 .. 2 ** 38 - 1;
+   for Signed_39'Size use 39;
+
+   type Signed_40 is range -2 ** 39 .. 2 ** 39 - 1;
+   for Signed_40'Size use 40;
+
+   type Signed_41 is range -2 ** 40 .. 2 ** 40 - 1;
+   for Signed_41'Size use 41;
+
+   type Signed_42 is range -2 ** 41 .. 2 ** 41 - 1;
+   for Signed_42'Size use 42;
+
+   type Signed_43 is range -2 ** 42 .. 2 ** 42 - 1;
+   for Signed_43'Size use 43;
+
+   type Signed_44 is range -2 ** 43 .. 2 ** 43 - 1;
+   for Signed_44'Size use 44;
+
+   type Signed_45 is range -2 ** 44 .. 2 ** 44 - 1;
+   for Signed_45'Size use 45;
+
+   type Signed_46 is range -2 ** 45 .. 2 ** 45 - 1;
+   for Signed_46'Size use 46;
+
+   type Signed_47 is range -2 ** 46 .. 2 ** 46 - 1;
+   for Signed_47'Size use 47;
+
+   type Signed_48 is range -2 ** 47 .. 2 ** 47 - 1;
+   for Signed_48'Size use 48;
+
+   type Signed_49 is range -2 ** 48 .. 2 ** 48 - 1;
+   for Signed_49'Size use 49;
+
+   type Signed_50 is range -2 ** 49 .. 2 ** 49 - 1;
+   for Signed_50'Size use 50;
+
+   type Signed_51 is range -2 ** 50 .. 2 ** 50 - 1;
+   for Signed_51'Size use 51;
+
+   type Signed_52 is range -2 ** 51 .. 2 ** 51 - 1;
+   for Signed_52'Size use 52;
+
+   type Signed_53 is range -2 ** 52 .. 2 ** 52 - 1;
+   for Signed_53'Size use 53;
+
+   type Signed_54 is range -2 ** 53 .. 2 ** 53 - 1;
+   for Signed_54'Size use 54;
+
+   type Signed_55 is range -2 ** 54 .. 2 ** 54 - 1;
+   for Signed_55'Size use 55;
+
+   type Signed_56 is range -2 ** 55 .. 2 ** 55 - 1;
+   for Signed_56'Size use 56;
+
+   type Signed_57 is range -2 ** 56 .. 2 ** 56 - 1;
+   for Signed_57'Size use 57;
+
+   type Signed_58 is range -2 ** 57 .. 2 ** 57 - 1;
+   for Signed_58'Size use 58;
+
+   type Signed_59 is range -2 ** 58 .. 2 ** 58 - 1;
+   for Signed_59'Size use 59;
+
+   type Signed_60 is range -2 ** 59 .. 2 ** 59 - 1;
+   for Signed_60'Size use 60;
+
+   type Signed_61 is range -2 ** 60 .. 2 ** 60 - 1;
+   for Signed_61'Size use 61;
+
+   type Signed_62 is range -2 ** 61 .. 2 ** 61 - 1;
+   for Signed_62'Size use 62;
+
+   type Signed_63 is range -2 ** 62 .. 2 ** 62 - 1;
+   for Signed_63'Size use 63;
+
+   type Signed_64 is range -2 ** 63 .. 2 ** 63 - 1;
+   for Signed_64'Size use 64;
 
 end Interfaces.C.Extensions;

@@ -1088,7 +1088,8 @@ next_runtime_abi_02_get_class_reference (tree ident)
       t = my_build_string_pointer (IDENTIFIER_LENGTH (ident) + 1,
 				   IDENTIFIER_POINTER (ident));
       v->quick_push (t);
-      t = build_function_call_vec (input_location, objc_get_class_decl, v, 0);
+      t = build_function_call_vec (input_location, vNULL, objc_get_class_decl,
+				   v, 0);
       vec_free (v);
       return t;
     }
@@ -3622,14 +3623,16 @@ build_throw_stmt (location_t loc, tree throw_expr, bool rethrown)
   tree t;
   if (rethrown)
     /* We have a separate re-throw entry.  */
-    t = build_function_call_vec (loc, objc_rethrow_exception_decl, NULL, NULL);
+    t = build_function_call_vec (loc, vNULL, objc_rethrow_exception_decl,
+				 NULL, NULL);
   else
     {
       /* Throw like the others...  */
       vec<tree, va_gc> *parms;
       vec_alloc (parms, 1);
       parms->quick_push (throw_expr);
-      t = build_function_call_vec (loc, objc_exception_throw_decl, parms, 0);
+      t = build_function_call_vec (loc, vNULL, objc_exception_throw_decl,
+				   parms, 0);
       vec_free (parms);
     }
   return add_stmt (t);
@@ -3708,7 +3711,8 @@ finish_catch (struct objc_try_context **cur_try_context, tree curr_catch)
 
   /* Pick up the new context we made in begin_try above...  */
   ct = *cur_try_context;
-  func = build_function_call_vec (loc, objc2_end_catch_decl, NULL, NULL);
+  func = build_function_call_vec (loc, vNULL, objc2_end_catch_decl, NULL,
+				  NULL);
   append_to_statement_list (func, &ct->finally_body);
   try_exp = build_stmt (loc, TRY_FINALLY_EXPR, ct->try_body, ct->finally_body);
   *cur_try_context = ct->outer;

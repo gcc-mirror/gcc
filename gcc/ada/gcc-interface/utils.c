@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -869,8 +869,9 @@ make_packable_type (tree type, bool in_record)
 
   finish_record_type (new_type, nreverse (field_list), 2, false);
   relate_alias_sets (new_type, type, ALIAS_SET_COPY);
-  SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
-			  DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
+  if (TYPE_STUB_DECL (type))
+    SET_DECL_PARALLEL_TYPE (TYPE_STUB_DECL (new_type),
+			    DECL_PARALLEL_TYPE (TYPE_STUB_DECL (type)));
 
   /* If this is a padding record, we never want to make the size smaller
      than what was specified.  For QUAL_UNION_TYPE, also copy the size.  */
@@ -1049,6 +1050,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 		bool is_user_type, bool definition, bool set_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
+  unsigned int orig_align = TYPE_ALIGN (type);
   tree record, field;
 
   /* If TYPE is a padded type, see if it agrees with any size and alignment
@@ -1059,21 +1061,18 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (TYPE_IS_PADDING_P (type))
     {
       if ((!size
-	   || operand_equal_p (round_up (size,
-					 MAX (align, TYPE_ALIGN (type))),
-			       round_up (TYPE_SIZE (type),
-					 MAX (align, TYPE_ALIGN (type))),
-			       0))
-	  && (align == 0 || align == TYPE_ALIGN (type)))
+	   || operand_equal_p (round_up (size, orig_align), orig_size, 0))
+	  && (align == 0 || align == orig_align))
 	return type;
 
       if (!size)
-	size = TYPE_SIZE (type);
+	size = orig_size;
       if (align == 0)
-	align = TYPE_ALIGN (type);
+	align = orig_align;
 
       type = TREE_TYPE (TYPE_FIELDS (type));
       orig_size = TYPE_SIZE (type);
+      orig_align = TYPE_ALIGN (type);
     }
 
   /* If the size is either not being changed or is being made smaller (which
@@ -1086,7 +1085,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	      && tree_int_cst_lt (size, orig_size))))
     size = NULL_TREE;
 
-  if (align == TYPE_ALIGN (type))
+  if (align == orig_align)
     align = 0;
 
   if (align == 0 && !size)
@@ -1110,7 +1109,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   if (Present (gnat_entity))
     TYPE_NAME (record) = create_concat_name (gnat_entity, "PAD");
 
-  TYPE_ALIGN (record) = align;
+  TYPE_ALIGN (record) = align ? align : orig_align;
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
@@ -2063,8 +2062,7 @@ create_type_stub_decl (tree type_name, tree type)
   /* Using a named TYPE_DECL ensures that a type name marker is emitted in
      STABS while setting DECL_ARTIFICIAL ensures that no DW_TAG_typedef is
      emitted in DWARF.  */
-  tree type_decl = build_decl (input_location,
-			       TYPE_DECL, type_name, type);
+  tree type_decl = build_decl (input_location, TYPE_DECL, type_name, type);
   DECL_ARTIFICIAL (type_decl) = 1;
   TYPE_ARTIFICIAL (type) = 1;
   return type_decl;
@@ -4354,7 +4352,7 @@ convert_to_fat_pointer (tree type, tree expr)
   tree template_type = TREE_TYPE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type))));
   tree p_array_type = TREE_TYPE (TYPE_FIELDS (type));
   tree etype = TREE_TYPE (expr);
-  tree template_tree;
+  tree template_addr;
   vec<constructor_elt, va_gc> *v;
   vec_alloc (v, 2);
 
@@ -4397,31 +4395,43 @@ convert_to_fat_pointer (tree type, tree expr)
       tree field = TYPE_FIELDS (TREE_TYPE (etype));
 
       expr = gnat_protect_expr (expr);
-      if (TREE_CODE (expr) == ADDR_EXPR)
-	expr = TREE_OPERAND (expr, 0);
-      else
+
+      /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
+	 the thin pointer value has been shifted so we shift it back to get
+	 the template address.  */
+      if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
 	{
-	  /* If we have a TYPE_UNCONSTRAINED_ARRAY attached to the RECORD_TYPE,
-	     the thin pointer value has been shifted so we first need to shift
-	     it back to get the template address.  */
-	  if (TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
-	    expr
-	      = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
-				 fold_build1 (NEGATE_EXPR, sizetype,
-					      byte_position
-					      (DECL_CHAIN (field))));
-	  expr = build1 (INDIRECT_REF, TREE_TYPE (etype), expr);
+	  template_addr
+	    = build_binary_op (POINTER_PLUS_EXPR, etype, expr,
+			       fold_build1 (NEGATE_EXPR, sizetype,
+					    byte_position
+					    (DECL_CHAIN (field))));
+	  template_addr
+	    = fold_convert (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (type))),
+			    template_addr);
 	}
 
-      template_tree = build_component_ref (expr, NULL_TREE, field, false);
-      expr = build_unary_op (ADDR_EXPR, NULL_TREE,
-			     build_component_ref (expr, NULL_TREE,
-						  DECL_CHAIN (field), false));
+      /* Otherwise we explicitly take the address of the fields.  */
+      else
+	{
+	  expr = build_unary_op (INDIRECT_REF, NULL_TREE, expr);
+	  template_addr
+	    = build_unary_op (ADDR_EXPR, NULL_TREE,
+			      build_component_ref (expr, NULL_TREE, field,
+						   false));
+	  expr = build_unary_op (ADDR_EXPR, NULL_TREE,
+				 build_component_ref (expr, NULL_TREE,
+						      DECL_CHAIN (field),
+						      false));
+	}
     }
 
   /* Otherwise, build the constructor for the template.  */
   else
-    template_tree = build_template (template_type, TREE_TYPE (etype), expr);
+    template_addr
+      = build_unary_op (ADDR_EXPR, NULL_TREE,
+			build_template (template_type, TREE_TYPE (etype),
+					expr));
 
   /* The final result is a constructor for the fat pointer.
 
@@ -4435,11 +4445,8 @@ convert_to_fat_pointer (tree type, tree expr)
 
      Note that the call to "build_template" above is still fine because it
      will only refer to the provided TEMPLATE_TYPE in this case.  */
-  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
-			  convert (p_array_type, expr));
-  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
-			  build_unary_op (ADDR_EXPR, NULL_TREE,
-					  template_tree));
+  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type), convert (p_array_type, expr));
+  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)), template_addr);
   return gnat_build_constructor (type, v);
 }
 
@@ -4626,7 +4633,7 @@ convert (tree type, tree expr)
       break;
 
     case VECTOR_CST:
-      /* If we are converting a VECTOR_CST to a mere variant type, just make
+      /* If we are converting a VECTOR_CST to a mere type variant, just make
 	 a new one in the proper type.  */
       if (code == ecode && gnat_types_compatible_p (type, etype))
 	{
@@ -4636,9 +4643,15 @@ convert (tree type, tree expr)
 	}
 
     case CONSTRUCTOR:
-      /* If we are converting a CONSTRUCTOR to a mere variant type, just make
-	 a new one in the proper type.  */
-      if (code == ecode && gnat_types_compatible_p (type, etype))
+      /* If we are converting a CONSTRUCTOR to a mere type variant, or to
+	 another padding type around the same type, just make a new one in
+	 the proper type.  */
+      if (code == ecode
+	  && (gnat_types_compatible_p (type, etype)
+	      || (code == RECORD_TYPE
+		  && TYPE_PADDING_P (type) && TYPE_PADDING_P (etype)
+		  && TREE_TYPE (TYPE_FIELDS (type))
+		     == TREE_TYPE (TYPE_FIELDS (etype)))))
 	{
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;
@@ -4669,13 +4682,17 @@ convert (tree type, tree expr)
 
 	  FOR_EACH_CONSTRUCTOR_ELT(e, idx, index, value)
 	    {
-	      /* We expect only simple constructors.  */
-	      if (!SAME_FIELD_P (index, efield))
-		break;
+	      /* Skip the missing fields in the CONSTRUCTOR.  */
+	      while (efield && field && !SAME_FIELD_P (efield, index))
+	        {
+		  efield = DECL_CHAIN (efield);
+		  field = DECL_CHAIN (field);
+		}
 	      /* The field must be the same.  */
-	      if (!SAME_FIELD_P (efield, field))
+	      if (!(efield && field && SAME_FIELD_P (efield, field)))
 		break;
-	      constructor_elt elt = {field, convert (TREE_TYPE (field), value)};
+	      constructor_elt elt
+	        = {field, convert (TREE_TYPE (field), value)};
 	      v->quick_push (elt);
 
 	      /* If packing has made this field a bitfield and the input
@@ -5321,10 +5338,9 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (type));
 
       field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
-				 NULL_TREE, NULL_TREE, 1, 0);
+				 NULL_TREE, bitsize_zero_node, 1, 0);
 
-      TYPE_FIELDS (rec_type) = field;
-      layout_type (rec_type);
+      finish_record_type (rec_type, field, 1, false);
 
       expr = unchecked_convert (rec_type, expr, notrunc_p);
       expr = build_component_ref (expr, NULL_TREE, field, false);
@@ -5352,10 +5368,9 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (etype));
 
       field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
-				 NULL_TREE, NULL_TREE, 1, 0);
+				 NULL_TREE, bitsize_zero_node, 1, 0);
 
-      TYPE_FIELDS (rec_type) = field;
-      layout_type (rec_type);
+      finish_record_type (rec_type, field, 1, false);
 
       expr = fold_build1 (NOP_EXPR, field_type, expr);
       CONSTRUCTOR_APPEND_ELT (v, field, expr);
@@ -5412,6 +5427,19 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 				       etype))
     expr = convert (type, expr);
 
+  /* If we are converting a CONSTRUCTOR to a more aligned RECORD_TYPE, bump
+     the alignment of the CONSTRUCTOR to speed up the copy operation.  */
+  else if (TREE_CODE (expr) == CONSTRUCTOR
+	   && code == RECORD_TYPE
+	   && TYPE_ALIGN (etype) < TYPE_ALIGN (type))
+    {
+      expr = convert (maybe_pad_type (etype, NULL_TREE, TYPE_ALIGN (type),
+				      Empty, false, false, false, true),
+		      expr);
+      return unchecked_convert (type, expr, notrunc_p);
+    }
+
+  /* Otherwise, just build a VIEW_CONVERT_EXPR of the expression.  */
   else
     {
       expr = maybe_unconstrained_array (expr);

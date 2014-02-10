@@ -44,15 +44,13 @@
 #include <iterator>
 #include <locale>
 #include <memory>
-#include <map>
-#include <queue>
-#include <set>
 #include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstring>
 
 #include <bits/regex_constants.h>
 #include <bits/regex_error.h>

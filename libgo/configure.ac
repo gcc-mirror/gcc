@@ -357,10 +357,10 @@ dnl possible for the linker to support this for some targets but not
 dnl others.
 AC_CACHE_CHECK([whether linker supports split stack],
 [libgo_cv_c_linker_supports_split_stack],
-libgo_cv_c_linker_supports_split_stack=no
-if $LD --help 2>/dev/null | grep split-stack-adjust-size >/dev/null 2>&1; then
+[libgo_cv_c_linker_supports_split_stack=no
+if $GOC -Wl,--help 2>/dev/null | grep split-stack-adjust-size >/dev/null 2>&1; then
   libgo_cv_c_linker_supports_split_stack=yes
-fi)
+fi])
 if test "$libgo_cv_c_linker_supports_split_stack" = yes; then
   AC_DEFINE(LINKER_SUPPORTS_SPLIT_STACK, 1,
 	    [Define if the linker support split stack adjustments])

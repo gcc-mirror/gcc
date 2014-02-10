@@ -45,8 +45,9 @@
 --    which is not possible if cursors encapsulate an access to the underlying
 --    container.
 
---    There are two new functions:
+--    There are three new functions:
 
+--      function Strict_Equal (Left, Right : Vector) return Boolean;
 --      function Left  (Container : Vector; Position : Cursor) return Vector;
 --      function Right (Container : Vector; Position : Cursor) return Vector;
 
@@ -62,6 +63,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Vectors is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    subtype Extended_Index is Index_Type'Base
@@ -70,7 +72,10 @@ package Ada.Containers.Formal_Vectors is
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
-   type Vector (Capacity : Count_Type) is private;
+   subtype Capacity_Range is
+     Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
+
+   type Vector (Capacity : Capacity_Range) is private;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
@@ -120,7 +125,7 @@ package Ada.Containers.Formal_Vectors is
      (Source   : Vector;
       Capacity : Count_Type := 0) return Vector
    with
-     Pre => Length (Source) <= Capacity;
+     Pre => Length (Source) <= Capacity and then Capacity in Capacity_Range;
 
    function To_Cursor
      (Container : Vector;
@@ -345,6 +350,11 @@ package Ada.Containers.Formal_Vectors is
 
    end Generic_Sorting;
 
+   function Strict_Equal (Left, Right : Vector) return Boolean;
+   --  Strict_Equal returns True if the containers are physically equal, i.e.
+   --  they are structurally equal (function "=" returns True) and that they
+   --  have the same set of cursors.
+
    function Left (Container : Vector; Position : Cursor) return Vector with
      Pre => Has_Element (Container, Position) or else Position = No_Element;
    function Right (Container : Vector; Position : Cursor) return Vector with
@@ -371,7 +381,7 @@ private
    type Elements_Array is array (Count_Type range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Vector (Capacity : Count_Type) is record
+   type Vector (Capacity : Capacity_Range) is record
       Elements : Elements_Array (1 .. Capacity);
       Last     : Extended_Index := No_Index;
    end record;

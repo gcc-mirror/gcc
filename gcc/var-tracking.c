@@ -886,8 +886,25 @@ vt_stack_adjustments (void)
 	}
       else
 	{
-	  /* Check whether the adjustments on the edges are the same.  */
-	  if (VTI (dest)->in.stack_adjust != VTI (src)->out.stack_adjust)
+	  /* We can end up with different stack adjustments for the exit block
+	     of a shrink-wrapped function if stack_adjust_offset_pre_post
+	     doesn't understand the rtx pattern used to restore the stack
+	     pointer in the epilogue.  For example, on s390(x), the stack
+	     pointer is often restored via a load-multiple instruction
+	     and so no stack_adjust offset is recorded for it.  This means
+	     that the stack offset at the end of the epilogue block is the
+	     the same as the offset before the epilogue, whereas other paths
+	     to the exit block will have the correct stack_adjust.
+
+	     It is safe to ignore these differences because (a) we never
+	     use the stack_adjust for the exit block in this pass and
+	     (b) dwarf2cfi checks whether the CFA notes in a shrink-wrapped
+	     function are correct.
+
+	     We must check whether the adjustments on other edges are
+	     the same though.  */
+	  if (dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+	      && VTI (dest)->in.stack_adjust != VTI (src)->out.stack_adjust)
 	    {
 	      free (stack);
 	      return false;
@@ -1067,10 +1084,13 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 					? GET_MODE_SIZE (amd->mem_mode)
 					: -GET_MODE_SIZE (amd->mem_mode),
 					GET_MODE (loc)));
+      store_save = amd->store;
+      amd->store = false;
+      tem = simplify_replace_fn_rtx (tem, old_rtx, adjust_mems, data);
+      amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0),
-							tem),
+							XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case PRE_MODIFY:
@@ -1080,10 +1100,14 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	addr = XEXP (loc, 0);
       gcc_assert (amd->mem_mode != VOIDmode);
       addr = simplify_replace_fn_rtx (addr, old_rtx, adjust_mems, data);
+      store_save = amd->store;
+      amd->store = false;
+      tem = simplify_replace_fn_rtx (XEXP (loc, 1), old_rtx,
+				     adjust_mems, data);
+      amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0),
-							XEXP (loc, 1)),
+							XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case SUBREG:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,8 +157,6 @@ private
 
    type Element_Access is access Element_Sequence;
 
-   type Counter is access Natural;
-
    type Indexes_Access is access Separators_Indexes;
 
    type Slice_Info is record
@@ -172,12 +170,17 @@ private
    --  All indexes for fast access to slices. In the Slice_Set we keep only
    --  the original array and the indexes where each slice start and stop.
 
-   type Slice_Set is new Ada.Finalization.Controlled with record
-      Ref_Counter : Counter;            -- Reference counter, by-address sem
+   type Data is record
+      Ref_Counter : Natural;            -- Reference counter, by-address sem
       Source      : Element_Access;
       N_Slice     : Slice_Number := 0;  -- Number of slices found
       Indexes     : Indexes_Access;
       Slices      : Slices_Access;
+   end record;
+   type Data_Access is access all Data;
+
+   type Slice_Set is new Ada.Finalization.Controlled with record
+      D : Data_Access;
    end record;
 
    procedure Initialize (S : in out Slice_Set);

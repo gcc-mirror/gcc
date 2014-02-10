@@ -319,6 +319,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp1, typename _Alloc, typename... _Args>
 	friend shared_ptr<_Tp1>
 	allocate_shared(const _Alloc& __a, _Args&&... __args);
+
+      // This constructor is non-standard, it is used by weak_ptr::lock().
+      shared_ptr(const weak_ptr<_Tp>& __r, std::nothrow_t)
+      : __shared_ptr<_Tp>(__r, std::nothrow) { }
+
+      friend class weak_ptr<_Tp>;
     };
 
   // 20.7.2.2.7 shared_ptr comparisons
@@ -492,23 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_ptr<_Tp>
       lock() const noexcept
-      {
-#ifdef __GTHREADS
-	if (this->expired())
-	  return shared_ptr<_Tp>();
-
-	__try
-	  {
-	    return shared_ptr<_Tp>(*this);
-	  }
-	__catch(const bad_weak_ptr&)
-	  {
-	    return shared_ptr<_Tp>();
-	  }
-#else
-	return this->expired() ? shared_ptr<_Tp>() : shared_ptr<_Tp>(*this);
-#endif
-      }
+      { return shared_ptr<_Tp>(*this, std::nothrow); }
     };
 
   // 20.7.2.3.6 weak_ptr specialized algorithms.

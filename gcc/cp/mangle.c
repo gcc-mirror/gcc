@@ -324,7 +324,7 @@ dump_substitution_candidates (void)
       else if (TREE_CODE (el) == TREE_LIST)
 	name = IDENTIFIER_POINTER (DECL_NAME (TREE_VALUE (el)));
       else if (TYPE_NAME (el))
-	name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (el)));
+	name = IDENTIFIER_POINTER (TYPE_IDENTIFIER (el));
       fprintf (stderr, " S%d_ = ", i - 1);
       if (TYPE_P (el) &&
 	  (CP_TYPE_RESTRICT_P (el)
@@ -1232,6 +1232,9 @@ write_unqualified_name (const tree decl)
 	      fn_type = get_mostly_instantiated_function_type (decl);
 	      type = TREE_TYPE (fn_type);
 	    }
+	  else if (FNDECL_USED_AUTO (decl))
+	    type = (DECL_STRUCT_FUNCTION (decl)->language
+		    ->x_auto_return_pattern);
 	  else
 	    type = DECL_CONV_FN_TYPE (decl);
 	  write_conversion_operator_name (type);

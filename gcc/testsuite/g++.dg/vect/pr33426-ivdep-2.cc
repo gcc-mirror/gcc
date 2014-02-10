@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "-O3 -fopt-info-vec-optimized -fdump-tree-original -fdump-tree-gimple" } */
 
 /* PR other/33426 */
@@ -29,8 +29,7 @@ void bar(int n, int *a, int *b, int *c) {
 }
 
 /* { dg-message "loop vectorized" "" { target *-*-* } 0 } */
-/* { dg-bogus " version" "" { target *-*-* } 0 } */
-/* { dg-bogus " alias" "" { target *-*-* } 0 } */
+/* { dg-bogus " version\[^\n\r]* alias" "" { target *-*-* } 0 } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
 /* { dg-final { scan-tree-dump-times "ANNOTATE_EXPR " 2 "original" } } */

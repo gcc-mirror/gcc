@@ -27,21 +27,15 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
-with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
-with Stand;    use Stand;
 
 package body Exp_SPARK is
 
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   procedure Expand_SPARK_Call (N : Node_Id);
-   --  This procedure contains common processing for function and procedure
-   --  calls: replacement of renaming by subprogram renamed
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id);
    --  Perform name evaluation for a renamed object
@@ -72,9 +66,6 @@ package body Exp_SPARK is
               N_Subprogram_Body     =>
             Qualify_Entity_Names (N);
 
-         when N_Subprogram_Call     =>
-            Expand_SPARK_Call (N);
-
          when N_Expanded_Name |
               N_Identifier    =>
             Expand_Potential_Renaming (N);
@@ -88,59 +79,6 @@ package body Exp_SPARK is
             null;
       end case;
    end Expand_SPARK;
-
-   -----------------------
-   -- Expand_SPARK_Call --
-   -----------------------
-
-   procedure Expand_SPARK_Call (N : Node_Id) is
-      Call_Node   : constant Node_Id := N;
-      Parent_Subp : Entity_Id;
-
-   begin
-      --  Ignore if previous error
-
-      if Nkind (Call_Node) in N_Has_Etype
-        and then Etype (Call_Node) = Any_Type
-      then
-         return;
-      end if;
-
-      --  Call using access to subprogram with explicit dereference
-
-      if Nkind (Name (Call_Node)) = N_Explicit_Dereference then
-         Parent_Subp := Empty;
-
-      --  Case of call to simple entry, where the Name is a selected component
-      --  whose prefix is the task, and whose selector name is the entry name
-
-      elsif Nkind (Name (Call_Node)) = N_Selected_Component then
-         Parent_Subp := Empty;
-
-      --  Case of call to member of entry family, where Name is an indexed
-      --  component, with the prefix being a selected component giving the
-      --  task and entry family name, and the index being the entry index.
-
-      elsif Nkind (Name (Call_Node)) = N_Indexed_Component then
-         Parent_Subp := Empty;
-
-      --  Normal case
-
-      else
-         Parent_Subp := Alias (Entity (Name (Call_Node)));
-      end if;
-
-      --  If the subprogram is a renaming, replace it in the call with the name
-      --  of the actual subprogram being called.
-
-      if Present (Parent_Subp) then
-         Parent_Subp := Ultimate_Alias (Parent_Subp);
-
-         --  The below setting of Entity is suspect, see F109-018 discussion???
-
-         Set_Entity (Name (Call_Node), Parent_Subp);
-      end if;
-   end Expand_SPARK_Call;
 
    ------------------------------------------------
    -- Expand_SPARK_N_Object_Renaming_Declaration --

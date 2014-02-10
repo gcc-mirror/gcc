@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 
 /* Test overload resolution of vector types.
    From Janis Johnson and Paolo Bonzini, based on PR/16882 */
@@ -17,7 +18,7 @@ extern const vector signed short *cvssp;
 void foo ()
 {
   vss = vld(i, vscp);        /* { dg-error "no matching function for call" } */
-  // { dg-message "candidate" "candidate note" { target *-*-* } 19 }
+  // { dg-message "candidate" "candidate note" { target *-*-* } 20 }
   vss = vld(i, vssp);
   vss = vld(i, cvssp);
 }

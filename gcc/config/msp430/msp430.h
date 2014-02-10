@@ -45,14 +45,14 @@ extern bool msp430x;
   while (0)
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:crt0.o%s} crtbegin.o%s"
+#define STARTFILE_SPEC "%{pg:gcrt0.o%s}%{!pg:%{minrt:crt0-minrt.o%s}%{!minrt:crt0.o%s}} %{!minrt:crtbegin.o%s}"
 
 /* -lgcc is included because crtend.o needs __mspabi_func_epilog_1.  */
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s crtn.o%s -lgcc"
+#define ENDFILE_SPEC "%{!minrt:crtend.o%s} %{minrt:crtn-minrt.o%s}%{!minrt:crtn.o%s} -lgcc"
 
 #define ASM_SPEC "-mP " /* Enable polymorphic instructions.  */ \
-  "%{mmcu=msp430x:-mmcu=msp430X;mmcu=*:-mmcu=%*} " /* Pass the MCU type on to the assembler.  */  \
+  "%{mcpu=*:-mcpu=%*}%{!mcpu=*:%{mmcu=*:-mmcu=%*}} " /* Pass the CPU type on to the assembler.  */ \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
   "%{!msim:-md} %{msim:%{mlarge:-md}}" /* Copy data from ROM to RAM if necessary.  */ \
@@ -68,11 +68,12 @@ extern bool msp430x;
 --start-group						\
 -lc							\
 -lgcc							\
+-lcrt							\
 %{msim:-lsim}						\
 %{!msim:-lnosys}					\
 --end-group					   	\
-%{!T*:%{!msim:%{mmcu=*:--script=%*/memory.ld --script=%*/peripherals.ld}}}	\
-%{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}} \
+%{!T*:%{!msim:%{mmcu=*:--script=%*.ld}}}		\
+%{!T*:%{!msim:%{!mmcu=*:%Tmsp430.ld}}}			\
 %{!T*:%{msim:%{mlarge:%Tmsp430xl-sim.ld}%{!mlarge:%Tmsp430-sim.ld}}} \
 "
 

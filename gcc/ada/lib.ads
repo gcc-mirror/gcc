@@ -371,10 +371,6 @@ package Lib is
    --      Set when the entry is created by a call to Lib.Load and then cannot
    --      be changed.
 
-   --    SPARK_Mode_Pragma
-   --      Pointer to the configuration pragma SPARK_Mode that applies to the
-   --      whole unit. Add note of what this is used for ???
-
    --    Unit_File_Name
    --      The name of the source file containing the unit. Set when the entry
    --      is created by a call to Lib.Load, and then cannot be changed.
@@ -426,7 +422,6 @@ package Lib is
    function Munit_Index       (U : Unit_Number_Type) return Nat;
    function OA_Setting        (U : Unit_Number_Type) return Character;
    function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
-   function SPARK_Mode_Pragma (U : Unit_Number_Type) return Node_Id;
    function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
@@ -445,7 +440,6 @@ package Lib is
    procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
    procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
    procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
-   procedure Set_SPARK_Mode_Pragma (U : Unit_Number_Type; N : Node_Id);
    procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
    --  Set value of named field for given units table entry. Note that we
    --  do not have an entry for each possible field, since some of the fields
@@ -526,6 +520,14 @@ package Lib is
    --  instantiations are included in the extended main unit for this call.
    --  If the main unit is itself a subunit, then the extended main code unit
    --  includes its parent unit, and the parent unit spec if it is separate.
+   --
+   --  This routine (and the following three routines) all return False if
+   --  Sloc (N) is No_Location or Standard_Location. In an earlier version,
+   --  they returned True for Standard_Location, but this was odd, and some
+   --  archeology indicated that this was done for the sole benefit of the
+   --  call in Restrict.Check_Restriction_No_Dependence, so we have moved
+   --  the special case check to that routine. This avoids some difficulties
+   --  with some other calls that malfunctioned with the odd return of True.
 
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean;
    --  Same function as above, but argument is a source pointer rather
@@ -749,10 +751,8 @@ private
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
    pragma Inline (Set_OA_Setting);
-   pragma Inline (Set_SPARK_Mode_Pragma);
    pragma Inline (Set_Unit_Name);
    pragma Inline (Source_Index);
-   pragma Inline (SPARK_Mode_Pragma);
    pragma Inline (Unit_File_Name);
    pragma Inline (Unit_Name);
 

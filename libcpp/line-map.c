@@ -106,8 +106,8 @@ get_combined_adhoc_loc (struct line_maps *set,
   linemap_assert (data);
 
   if (IS_ADHOC_LOC (locus))
-    locus =
-	set->location_adhoc_data_map.data[locus & MAX_SOURCE_LOCATION].locus;
+    locus
+      = set->location_adhoc_data_map.data[locus & MAX_SOURCE_LOCATION].locus;
   if (locus == 0 && data == NULL)
     return 0;
   lb.locus = locus;
@@ -141,8 +141,8 @@ get_combined_adhoc_loc (struct line_maps *set,
 	}
       *slot = set->location_adhoc_data_map.data
 	      + set->location_adhoc_data_map.curr_loc;
-      set->location_adhoc_data_map.data[
-	  set->location_adhoc_data_map.curr_loc++] = lb;
+      set->location_adhoc_data_map.data[set->location_adhoc_data_map.curr_loc++]
+	= lb;
     }
   return ((*slot) - set->location_adhoc_data_map.data) | 0x80000000;
 }
@@ -833,8 +833,8 @@ linemap_get_expansion_line (struct line_maps *set,
   const struct line_map *map = NULL;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return 0;
@@ -861,8 +861,8 @@ linemap_get_expansion_filename (struct line_maps *set,
   const struct line_map *map = NULL;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return NULL;
@@ -899,8 +899,8 @@ linemap_location_in_system_header_p (struct line_maps *set,
   const struct line_map *map = NULL;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   if (location < RESERVED_LOCATION_COUNT)
     return false;
@@ -942,8 +942,8 @@ linemap_location_from_macro_expansion_p (struct line_maps *set,
 					 source_location location)
 {
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   linemap_assert (location <= MAX_SOURCE_LOCATION
 		  && (set->highest_location
@@ -1024,6 +1024,11 @@ linemap_compare_locations (struct line_maps *set,
   bool pre_virtual_p, post_virtual_p;
   source_location l0 = pre, l1 = post;
 
+  if (IS_ADHOC_LOC (l0))
+    l0 = set->location_adhoc_data_map.data[l0 & MAX_SOURCE_LOCATION].locus;
+  if (IS_ADHOC_LOC (l1))
+    l1 = set->location_adhoc_data_map.data[l1 & MAX_SOURCE_LOCATION].locus;
+
   if (l0 == l1)
     return 0;
 
@@ -1086,8 +1091,8 @@ linemap_macro_loc_to_spelling_point (struct line_maps *set,
   struct line_map *map;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
@@ -1124,8 +1129,8 @@ linemap_macro_loc_to_def_point (struct line_maps *set,
   struct line_map *map;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
@@ -1166,8 +1171,8 @@ linemap_macro_loc_to_exp_point (struct line_maps *set,
   struct line_map *map;
 
   if (IS_ADHOC_LOC (location))
-    location = set->location_adhoc_data_map.data[
-	location & MAX_SOURCE_LOCATION].locus;
+    location = set->location_adhoc_data_map.data[location
+						 & MAX_SOURCE_LOCATION].locus;
 
   linemap_assert (set && location >= RESERVED_LOCATION_COUNT);
 
@@ -1374,8 +1379,8 @@ linemap_expand_location (struct line_maps *set,
   if (IS_ADHOC_LOC (loc))
     {
       loc = set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
-      xloc.data = set->location_adhoc_data_map.data[
-	  loc & MAX_SOURCE_LOCATION].data;
+      xloc.data
+	= set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].data;
     }
 
   if (loc < RESERVED_LOCATION_COUNT)
@@ -1500,6 +1505,46 @@ linemap_dump_location (struct line_maps *set,
      E: macro expansion?, LOC: original location, R: resolved location   */
   fprintf (stream, "{P:%s;F:%s;L:%d;C:%d;S:%d;M:%p;E:%d,LOC:%d,R:%d}",
 	   path, from, l, c, s, (void*)map, e, loc, location);
+}
+
+/* Return the highest location emitted for a given file for which
+   there is a line map in SET.  FILE_NAME is the file name to
+   consider.  If the function returns TRUE, *LOC is set to the highest
+   location emitted for that file.  */
+
+bool
+linemap_get_file_highest_location (struct line_maps *set,
+				   const char *file_name,
+				   source_location *loc)
+{
+  /* If the set is empty or no ordinary map has been created then
+     there is no file to look for ...  */
+  if (set == NULL || set->info_ordinary.used == 0)
+    return false;
+
+  /* Now look for the last ordinary map created for FILE_NAME.  */
+  int i;
+  for (i = set->info_ordinary.used - 1; i >= 0; --i)
+    {
+      const char *fname = set->info_ordinary.maps[i].d.ordinary.to_file;
+      if (fname && !filename_cmp (fname, file_name))
+	break;
+    }
+
+  if (i < 0)
+    return false;
+
+  /* The highest location for a given map is either the starting
+     location of the next map minus one, or -- if the map is the
+     latest one -- the highest location of the set.  */
+  source_location result;
+  if (i == (int) set->info_ordinary.used - 1)
+    result = set->highest_location;
+  else
+    result = set->info_ordinary.maps[i + 1].start_location - 1;
+
+  *loc = result;
+  return true;
 }
 
 /* Compute and return statistics about the memory consumption of some

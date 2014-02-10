@@ -548,7 +548,18 @@ package body Exp_Prag is
       Init_Call : Node_Id;
 
    begin
-      Def_Id := Entity (Arg2 (N));
+      --  In Relaxed_RM_Semantics, support old Ada 83 style:
+      --  pragma Import (Entity, "external name");
+
+      if Relaxed_RM_Semantics
+        and then List_Length (Pragma_Argument_Associations (N)) = 2
+        and then Chars (Pragma_Identifier (N)) = Name_Import
+        and then Nkind (Arg2 (N)) = N_String_Literal
+      then
+         Def_Id := Entity (Arg1 (N));
+      else
+         Def_Id := Entity (Arg2 (N));
+      end if;
 
       --  Variable case
 
@@ -628,7 +639,7 @@ package body Exp_Prag is
                     Expression => Make_Identifier (Loc, Chars (Dum))),
 
                   Make_Pragma_Argument_Association (Loc,
-                    Chars => Name_External_Name,
+                    Chars      => Name_External_Name,
                     Expression => Relocate_Node (Rtti_Name))))));
 
             Rewrite (Expression (Foreign_Data),
@@ -643,7 +654,6 @@ package body Exp_Prag is
 
       else
          null;
-
       end if;
    end Expand_Pragma_Import_Or_Interface;
 

@@ -283,6 +283,10 @@ package body Ada.Containers.Formal_Ordered_Maps is
       N    : Count_Type;
 
    begin
+      if 0 < Capacity and then Capacity < Source.Capacity then
+         raise Capacity_Error;
+      end if;
+
       return Target : Map (Count_Type'Max (Source.Capacity, Capacity)) do
          if Length (Source) > 0 then
             Target.Length := Source.Length;

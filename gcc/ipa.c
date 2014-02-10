@@ -1002,6 +1002,36 @@ function_and_variable_visibility (bool whole_program)
 	  if (DECL_EXTERNAL (decl_node->decl))
 	    DECL_EXTERNAL (node->decl) = 1;
 	}
+
+      /* If whole comdat group is used only within LTO code, we can dissolve it,
+	 we handle the unification ourselves.
+	 We keep COMDAT and weak so visibility out of DSO does not change.
+	 Later we may bring the symbols static if they are not exported.  */
+      if (DECL_ONE_ONLY (node->decl)
+	  && (node->resolution == LDPR_PREVAILING_DEF_IRONLY
+	      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP))
+	{
+	  symtab_node *next = node;
+
+	  if (node->same_comdat_group)
+	    for (next = node->same_comdat_group;
+		 next != node;
+		 next = next->same_comdat_group)
+	      if (next->externally_visible
+		  && (next->resolution != LDPR_PREVAILING_DEF_IRONLY
+		      && next->resolution != LDPR_PREVAILING_DEF_IRONLY_EXP))
+		break;
+	  if (node == next)
+	    {
+	      if (node->same_comdat_group)
+	        for (next = node->same_comdat_group;
+		     next != node;
+		     next = next->same_comdat_group)
+		  DECL_COMDAT_GROUP (next->decl) = NULL;
+	      DECL_COMDAT_GROUP (node->decl) = NULL;
+	      symtab_dissolve_same_comdat_group_list (node);
+	    }
+	}
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {

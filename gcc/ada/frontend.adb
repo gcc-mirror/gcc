@@ -36,6 +36,7 @@ with Fname.UF;
 with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
+with Lib.Xref; use Lib.Xref;
 with Live;     use Live;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -226,7 +227,7 @@ begin
          end loop;
       end if;
 
-      --  Restore style check, but if config file turned on checks, leave on!
+      --  Restore style check, but if config file turned on checks, leave on
 
       Opt.Style_Check := Save_Style_Check or Style_Check;
 
@@ -360,9 +361,11 @@ begin
 
          --  Cleanup processing after completing main analysis
 
+         --  Comment needed for ASIS mode test and GNATprove mode test???
+
          if Operating_Mode = Generate_Code
            or else (Operating_Mode = Check_Semantics
-                     and then ASIS_Mode)
+                     and then (ASIS_Mode or GNATprove_Mode))
          then
             Instantiate_Bodies;
          end if;
@@ -390,6 +393,7 @@ begin
 
          --  Output waiting warning messages
 
+         Lib.Xref.Process_Deferred_References;
          Sem_Warn.Output_Non_Modified_In_Out_Warnings;
          Sem_Warn.Output_Unreferenced_Messages;
          Sem_Warn.Check_Unused_Withs;

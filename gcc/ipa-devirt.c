@@ -689,10 +689,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 	 we may not have its associated vtable.  This is not a problem, since
 	 we will walk it on the other path.  */
       if (!type_binfo)
-	{
-	  gcc_assert (BINFO_VIRTUAL_P (binfo));
-	  return;
-	}
+	return;
       tree inner_binfo = get_binfo_at_offset (type_binfo,
 					      offset, otr_type);
       /* For types in anonymous namespace first check if the respective vtable
@@ -972,6 +969,155 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
   return get_class_context (&context, otr_type);
 }
 
+/* Lookup base of BINFO that has virtual table VTABLE with OFFSET.  */
+
+static tree
+subbinfo_with_vtable_at_offset (tree binfo, unsigned HOST_WIDE_INT offset,
+				tree vtable)
+{
+  tree v = BINFO_VTABLE (binfo);
+  int i;
+  tree base_binfo;
+  unsigned HOST_WIDE_INT this_offset;
+
+  if (v)
+    {
+      if (!vtable_pointer_value_to_vtable (v, &v, &this_offset))
+	gcc_unreachable ();
+
+      if (offset == this_offset
+	  && DECL_ASSEMBLER_NAME (v) == DECL_ASSEMBLER_NAME (vtable))
+	return binfo;
+    }
+  
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (polymorphic_type_binfo_p (base_binfo))
+      {
+	base_binfo = subbinfo_with_vtable_at_offset (base_binfo, offset, vtable);
+	if (base_binfo)
+	  return base_binfo;
+      }
+  return NULL;
+}
+
+/* T is known constant value of virtual table pointer.
+   Store virtual table to V and its offset to OFFSET. 
+   Return false if T does not look like virtual table reference.  */
+
+bool
+vtable_pointer_value_to_vtable (tree t, tree *v, unsigned HOST_WIDE_INT *offset)
+{
+  /* We expect &MEM[(void *)&virtual_table + 16B].
+     We obtain object's BINFO from the context of the virtual table. 
+     This one contains pointer to virtual table represented via
+     POINTER_PLUS_EXPR.  Verify that this pointer match to what
+     we propagated through.
+
+     In the case of virtual inheritance, the virtual tables may
+     be nested, i.e. the offset may be different from 16 and we may
+     need to dive into the type representation.  */
+  if (TREE_CODE (t) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 0)) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST
+      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 0))
+	  == VAR_DECL)
+      && DECL_VIRTUAL_P (TREE_OPERAND (TREE_OPERAND
+					 (TREE_OPERAND (t, 0), 0), 0)))
+    {
+      *v = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 0);
+      *offset = tree_to_uhwi (TREE_OPERAND (TREE_OPERAND (t, 0), 1));
+      return true;
+    }
+
+  /* Alternative representation, used by C++ frontend is POINTER_PLUS_EXPR.
+     We need to handle it when T comes from static variable initializer or
+     BINFO. */
+  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+    {
+      *offset = tree_to_uhwi (TREE_OPERAND (t, 1));
+      t = TREE_OPERAND (t, 0);
+    }
+  else
+    *offset = 0;
+
+  if (TREE_CODE (t) != ADDR_EXPR)
+    return false;
+  *v = TREE_OPERAND (t, 0);
+  return true;
+}
+
+/* T is known constant value of virtual table pointer.  Return BINFO of the
+   instance type.  */
+
+tree
+vtable_pointer_value_to_binfo (tree t)
+{
+  tree vtable;
+  unsigned HOST_WIDE_INT offset;
+
+  if (!vtable_pointer_value_to_vtable (t, &vtable, &offset))
+    return NULL_TREE;
+
+  /* FIXME: for stores of construction vtables we return NULL,
+     because we do not have BINFO for those. Eventually we should fix
+     our representation to allow this case to be handled, too.
+     In the case we see store of BINFO we however may assume
+     that standard folding will be ale to cope with it.  */
+  return subbinfo_with_vtable_at_offset (TYPE_BINFO (DECL_CONTEXT (vtable)),
+					 offset, vtable);
+}
+
+/* Proudce polymorphic call context for call method of instance
+   that is located within BASE (that is assumed to be a decl) at OFFSET. */
+
+static void
+get_polymorphic_call_info_for_decl (ipa_polymorphic_call_context *context,
+				    tree base, HOST_WIDE_INT offset)
+{
+  gcc_assert (DECL_P (base));
+
+  context->outer_type = TREE_TYPE (base);
+  context->offset = offset;
+  /* Make very conservative assumption that all objects
+     may be in construction. 
+     TODO: ipa-prop already contains code to tell better. 
+     merge it later.  */
+  context->maybe_in_construction = true;
+  context->maybe_derived_type = false;
+}
+
+/* CST is an invariant (address of decl), try to get meaningful
+   polymorphic call context for polymorphic call of method 
+   if instance of OTR_TYPE that is located at OFFSET of this invariant.
+   Return FALSE if nothing meaningful can be found.  */
+
+bool
+get_polymorphic_call_info_from_invariant (ipa_polymorphic_call_context *context,
+				          tree cst,
+				          tree otr_type,
+				          HOST_WIDE_INT offset)
+{
+  HOST_WIDE_INT offset2, size, max_size;
+  tree base;
+
+  if (TREE_CODE (cst) != ADDR_EXPR)
+    return false;
+
+  cst = TREE_OPERAND (cst, 0);
+  base = get_ref_base_and_extent (cst, &offset2, &size, &max_size);
+  if (!DECL_P (base) || max_size == -1 || max_size != size)
+    return false;
+
+  /* Only type inconsistent programs can have otr_type that is
+     not part of outer type.  */
+  if (!contains_type_p (TREE_TYPE (base), offset, otr_type))
+    return false;
+
+  get_polymorphic_call_info_for_decl (context, base, offset);
+  return true;
+}
+
 /* Given REF call in FNDECL, determine class of the polymorphic
    call (OTR_TYPE), its token (OTR_TOKEN) and CONTEXT.
    Return pointer to object described by the context  */
@@ -1037,14 +1183,8 @@ get_polymorphic_call_info (tree fndecl,
 		  if (!contains_type_p (TREE_TYPE (base),
 					context->offset + offset2, *otr_type))
 		    return base_pointer;
-		  context->outer_type = TREE_TYPE (base);
-		  context->offset += offset2;
-		  /* Make very conservative assumption that all objects
-		     may be in construction. 
-		     TODO: ipa-prop already contains code to tell better. 
-		     merge it later.  */
-		  context->maybe_in_construction = true;
-		  context->maybe_derived_type = false;
+		  get_polymorphic_call_info_for_decl (context, base,
+						      context->offset + offset2);
 		  return NULL;
 		}
 	      else
@@ -1212,7 +1352,7 @@ devirt_variable_node_removal_hook (varpool_node *n,
    temporarily change to one of base types.  INCLUDE_DERIVER_TYPES make
    us to walk the inheritance graph for all derivations.
 
-   If COMPLETEP is non-NULL, store true if the list is complette. 
+   If COMPLETEP is non-NULL, store true if the list is complete. 
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
@@ -1231,7 +1371,7 @@ possible_polymorphic_call_targets (tree otr_type,
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   pointer_set_t *inserted;
   pointer_set_t *matched_vtables;
-  vec <cgraph_node *> nodes=vNULL;
+  vec <cgraph_node *> nodes = vNULL;
   odr_type type, outer_type;
   polymorphic_call_target_d key;
   polymorphic_call_target_d **slot;
@@ -1239,13 +1379,20 @@ possible_polymorphic_call_targets (tree otr_type,
   tree binfo, target;
   bool final;
 
+  if (!odr_hash.is_created ())
+    {
+      if (completep)
+	*completep = false;
+      return nodes;
+    }
+
   type = get_odr_type (otr_type, true);
 
   /* Lookup the outer class type we want to walk.  */
   if (context.outer_type)
     get_class_context (&context, otr_type);
 
-  /* We now canonicalize our query, so we do not need extra hashtable entries.  */
+  /* We canonicalize our query, so we do not need extra hashtable entries.  */
 
   /* Without outer type, we have no use for offset.  Just do the
      basic search from innter type  */
@@ -1306,7 +1453,6 @@ possible_polymorphic_call_targets (tree otr_type,
   matched_vtables = pointer_set_create ();
 
   /* First see virtual method of type itself.  */
-
   binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
 			       context.offset, otr_type);
   target = gimple_get_virt_method_for_binfo (otr_token, binfo);
@@ -1323,6 +1469,7 @@ possible_polymorphic_call_targets (tree otr_type,
      is that it has been fully optimized out.  */
   else if (flag_ltrans || !type->anonymous_namespace)
     final = false;
+
   pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
 
   /* Next walk bases, if asked to.  */
@@ -1341,10 +1488,12 @@ possible_polymorphic_call_targets (tree otr_type,
       for (i = 0; i < outer_type->derived_types.length(); i++)
 	possible_polymorphic_call_targets_1 (nodes, inserted,
 					     matched_vtables,
-					     otr_type, outer_type->derived_types[i],
+					     otr_type,
+					     outer_type->derived_types[i],
 					     otr_token, outer_type->type,
 					     context.offset);
     }
+
   (*slot)->targets = nodes;
   (*slot)->final = final;
   if (completep)

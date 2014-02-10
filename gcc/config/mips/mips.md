@@ -86,6 +86,10 @@
   UNSPEC_MFHC1
   UNSPEC_MTHC1
 
+  ;; Floating-point environment.
+  UNSPEC_GET_FCSR
+  UNSPEC_SET_FCSR
+
   ;; HI/LO moves.
   UNSPEC_MFHI
   UNSPEC_MTHI
@@ -147,6 +151,8 @@
 
 (define_constants
   [(TLS_GET_TP_REGNUM		3)
+   (GET_FCSR_REGNUM		2)
+   (SET_FCSR_REGNUM		4)
    (MIPS16_T_REGNUM		24)
    (PIC_FUNCTION_ADDR_REGNUM	25)
    (RETURN_ADDR_REGNUM		31)
@@ -2559,56 +2565,129 @@
 
 ;; VR4120 errata MD(A1): signed division instructions do not work correctly
 ;; with negative operands.  We use special libgcc functions instead.
-;;
+(define_expand "divmod<mode>4"
+  [(parallel
+     [(set (match_operand:GPR 0 "register_operand")
+	   (div:GPR (match_operand:GPR 1 "register_operand")
+		    (match_operand:GPR 2 "register_operand")))
+      (set (match_operand:GPR 3 "register_operand")
+	   (mod:GPR (match_dup 1)
+		    (match_dup 2)))])]
+  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120"
+{
+  if (TARGET_MIPS16)
+    {
+      rtx lo = gen_rtx_REG (<MODE>mode, LO_REGNUM);
+      emit_insn (gen_divmod<mode>4_mips16 (operands[0], operands[1],
+					   operands[2], operands[3], lo));
+      DONE;
+    }
+})
+
+(define_insn_and_split "*divmod<mode>4"
+  [(set (match_operand:GPR 0 "register_operand" "=l")
+	(div:GPR (match_operand:GPR 1 "register_operand" "d")
+		 (match_operand:GPR 2 "register_operand" "d")))
+   (set (match_operand:GPR 3 "register_operand" "=d")
+	(mod:GPR (match_dup 1)
+		 (match_dup 2)))]
+  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120 && !TARGET_MIPS16"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_divmod<mode>4_split (operands[3], operands[1], operands[2]));
+  DONE;
+}
+ [(set_attr "type" "idiv")
+  (set_attr "mode" "<MODE>")
+  (set_attr "insn_count" "2")])
+
 ;; Expand generates divmod instructions for individual division and modulus
 ;; operations.  We then rely on CSE to reuse earlier divmods where possible.
 ;; This means that, when generating MIPS16 code, it is better not to expose
 ;; the fixed LO register until after CSE has finished.  However, it's still
 ;; better to split before register allocation, so that we don't allocate
 ;; one of the scarce MIPS16 registers to an unused result.
-(define_insn_and_split "divmod<mode>4"
-  [(set (match_operand:GPR 0 "register_operand" "=kl")
+(define_insn_and_split "divmod<mode>4_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
 	(div:GPR (match_operand:GPR 1 "register_operand" "d")
 		 (match_operand:GPR 2 "register_operand" "d")))
    (set (match_operand:GPR 3 "register_operand" "=d")
 	(mod:GPR (match_dup 1)
-		 (match_dup 2)))]
-  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120"
+		 (match_dup 2)))
+   (clobber (match_operand:GPR 4 "lo_operand" "=l"))]
+  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120 && TARGET_MIPS16"
   "#"
-  "&& ((TARGET_MIPS16 && cse_not_expected) || reload_completed)"
+  "&& cse_not_expected"
   [(const_int 0)]
 {
   emit_insn (gen_divmod<mode>4_split (operands[3], operands[1], operands[2]));
-  if (TARGET_MIPS16)
-    emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, LO_REGNUM));
+  emit_move_insn (operands[0], operands[4]);
   DONE;
 }
  [(set_attr "type" "idiv")
   (set_attr "mode" "<MODE>")
-  ;; Worst case for MIPS16.
   (set_attr "insn_count" "3")])
 
-;; See the comment above "divmod<mode>4" for the MIPS16 handling.
-(define_insn_and_split "udivmod<mode>4"
-  [(set (match_operand:GPR 0 "register_operand" "=kl")
+(define_expand "udivmod<mode>4"
+  [(parallel
+     [(set (match_operand:GPR 0 "register_operand")
+	   (udiv:GPR (match_operand:GPR 1 "register_operand")
+		     (match_operand:GPR 2 "register_operand")))
+      (set (match_operand:GPR 3 "register_operand")
+	   (umod:GPR (match_dup 1)
+		     (match_dup 2)))])]
+  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120"
+{
+  if (TARGET_MIPS16)
+    {
+      rtx lo = gen_rtx_REG (<MODE>mode, LO_REGNUM);
+      emit_insn (gen_udivmod<mode>4_mips16 (operands[0], operands[1],
+					    operands[2], operands[3], lo));
+      DONE;
+    }
+})
+
+(define_insn_and_split "*udivmod<mode>4"
+  [(set (match_operand:GPR 0 "register_operand" "=l")
 	(udiv:GPR (match_operand:GPR 1 "register_operand" "d")
 		  (match_operand:GPR 2 "register_operand" "d")))
    (set (match_operand:GPR 3 "register_operand" "=d")
 	(umod:GPR (match_dup 1)
 		  (match_dup 2)))]
-  "ISA_HAS_<D>DIV"
+  "ISA_HAS_<D>DIV && !TARGET_MIPS16"
   "#"
-  "(TARGET_MIPS16 && cse_not_expected) || reload_completed"
+  "reload_completed"
   [(const_int 0)]
 {
   emit_insn (gen_udivmod<mode>4_split (operands[3], operands[1], operands[2]));
-  if (TARGET_MIPS16)
-    emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, LO_REGNUM));
   DONE;
 }
   [(set_attr "type" "idiv")
    (set_attr "mode" "<MODE>")
-   ;; Worst case for MIPS16.
+   (set_attr "insn_count" "2")])
+
+;; See the comment above "divmod<mode>4_mips16" for the split timing.
+(define_insn_and_split "udivmod<mode>4_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(udiv:GPR (match_operand:GPR 1 "register_operand" "d")
+		  (match_operand:GPR 2 "register_operand" "d")))
+   (set (match_operand:GPR 3 "register_operand" "=d")
+	(umod:GPR (match_dup 1)
+		  (match_dup 2)))
+   (clobber (match_operand:GPR 4 "lo_operand" "=l"))]
+  "ISA_HAS_<D>DIV && TARGET_MIPS16"
+  "#"
+  "cse_not_expected"
+  [(const_int 0)]
+{
+  emit_insn (gen_udivmod<mode>4_split (operands[3], operands[1], operands[2]));
+  emit_move_insn (operands[0], operands[4]);
+  DONE;
+}
+  [(set_attr "type" "idiv")
+   (set_attr "mode" "<MODE>")
    (set_attr "insn_count" "3")])
 
 (define_expand "<u>divmod<mode>4_split"
@@ -7020,6 +7099,66 @@
   DONE;
 })
 
+;; __builtin_mips_get_fcsr: move the FCSR into operand 0.
+(define_expand "mips_get_fcsr"
+  [(set (match_operand:SI 0 "register_operand")
+  	(unspec_volatile [(const_int 0)] UNSPEC_GET_FCSR))]
+  "TARGET_HARD_FLOAT_ABI"
+{
+  if (TARGET_MIPS16)
+    {
+      mips16_expand_get_fcsr (operands[0]);
+      DONE;
+    }
+})
+
+(define_insn "*mips_get_fcsr"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+  	(unspec_volatile [(const_int 0)] UNSPEC_GET_FCSR))]
+  "TARGET_HARD_FLOAT"
+  "cfc1\t%0,$31")
+
+;; See tls_get_tp_mips16_<mode> for why this form is used.
+(define_insn "mips_get_fcsr_mips16_<mode>"
+  [(set (reg:SI GET_FCSR_REGNUM)
+	(unspec:SI [(match_operand:P 0 "call_insn_operand" "dS")]
+		   UNSPEC_GET_FCSR))
+   (clobber (reg:P PIC_FUNCTION_ADDR_REGNUM))
+   (clobber (reg:P RETURN_ADDR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && TARGET_MIPS16"
+  { return MIPS_CALL ("jal", operands, 0, -1); }
+  [(set_attr "type" "call")
+   (set_attr "insn_count" "3")])
+
+;; __builtin_mips_set_fcsr: move operand 0 into the FCSR.
+(define_expand "mips_set_fcsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand")]
+  		    UNSPEC_SET_FCSR)]
+  "TARGET_HARD_FLOAT_ABI"
+{
+  if (TARGET_MIPS16)
+    {
+      mips16_expand_set_fcsr (operands[0]);
+      DONE;
+    }
+})
+
+(define_insn "*mips_set_fcsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "d")]
+  		    UNSPEC_SET_FCSR)]
+  "TARGET_HARD_FLOAT"
+  "ctc1\t%0,$31")
+
+;; See tls_get_tp_mips16_<mode> for why this form is used.
+(define_insn "mips_set_fcsr_mips16_<mode>"
+  [(unspec_volatile:SI [(match_operand:P 0 "call_insn_operand" "dS")
+  	                (reg:SI SET_FCSR_REGNUM)] UNSPEC_SET_FCSR)
+   (clobber (reg:P PIC_FUNCTION_ADDR_REGNUM))
+   (clobber (reg:P RETURN_ADDR_REGNUM))]
+  "TARGET_HARD_FLOAT_ABI && TARGET_MIPS16"
+  { return MIPS_CALL ("jal", operands, 0, -1); }
+  [(set_attr "type" "call")
+   (set_attr "insn_count" "3")])
 
 ;; Synchronization instructions.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -407,7 +407,7 @@ procedure Labl is
                --  Intervening label before possible end of loop. Current
                --  label is not a candidate. This is conservative, because
                --  the label might not be the target of any jumps, but not
-               --  worth dealing with useless labels!
+               --  worth dealing with useless labels.
 
                No_Header (N);
                return;

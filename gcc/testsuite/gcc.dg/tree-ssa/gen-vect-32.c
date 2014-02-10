@@ -1,6 +1,6 @@
 /* { dg-do run { target vect_cmdline_needed } } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details -mno-sse" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details -fno-vect-cost-model" } */
+/* { dg-additional-options "-mno-sse" { target { i?86-*-* x86_64-*-* } } } */
 
 #include <stdlib.h>
 

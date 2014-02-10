@@ -4094,12 +4094,19 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       // stack splitting for the thunk.
       bool disable_split_stack = this->is_recover_thunk_;
 
+      // This should go into a unique section if that has been
+      // requested elsewhere, or if this is a nointerface function.
+      // We want to put a nointerface function into a unique section
+      // because there is a good chance that the linker garbage
+      // collection can discard it.
+      bool in_unique_section = this->in_unique_section_ || this->nointerface_;
+
       Btype* functype = this->type_->get_backend_fntype(gogo);
       this->fndecl_ =
           gogo->backend()->function(functype, no->get_id(gogo), asm_name,
                                     is_visible, false, is_inlinable,
-                                    disable_split_stack,
-                                    this->in_unique_section_, this->location());
+                                    disable_split_stack, in_unique_section,
+				    this->location());
     }
   return this->fndecl_;
 }

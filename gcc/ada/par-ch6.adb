@@ -1146,7 +1146,7 @@ package body Ch6 is
 
          --  On exit from the loop, Ident_Node is the last identifier scanned,
          --  i.e. the defining identifier, and Prefix_Node is a node for the
-         --  entire name, structured (incorrectly!) as a selected component.
+         --  entire name, structured (incorrectly) as a selected component.
 
          Name_Node := Prefix (Prefix_Node);
          Change_Node (Prefix_Node, N_Designator);
@@ -1252,7 +1252,7 @@ package body Ch6 is
 
          --  On exit from the loop, Ident_Node is the last identifier scanned,
          --  i.e. the defining identifier, and Prefix_Node is a node for the
-         --  entire name, structured (incorrectly!) as a selected component.
+         --  entire name, structured (incorrectly) as a selected component.
 
          Name_Node := Prefix (Prefix_Node);
          Change_Node (Prefix_Node, N_Defining_Program_Unit_Name);
@@ -1399,7 +1399,7 @@ package body Ch6 is
 
                      --  If we run into a semicolon, then assume that a
                      --  colon was missing, e.g.  Parms (X Y; ...). Also
-                     --  assume missing colon on EOF (a real disaster!)
+                     --  assume missing colon on EOF (a real disaster)
                      --  and on a right paren, e.g. Parms (X Y), and also
                      --  on an assignment symbol, e.g. Parms (X Y := ..)
 

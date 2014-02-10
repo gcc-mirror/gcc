@@ -696,7 +696,7 @@ package body Exp_Disp is
       --  Expand_Dispatching_Call is called directly from the semantics,
       --  so we only proceed if the expander is active.
 
-      if not Full_Expander_Active
+      if not Expander_Active
 
         --  And there is no need to expand the call if we are compiling under
         --  restriction No_Dispatching_Calls; the semantic analyzer has
@@ -777,11 +777,12 @@ package body Exp_Disp is
 
          Param := First_Actual (Call_Node);
          while Present (Param) loop
-            --  Cases in which we may have generated runtime checks
 
-            if Param = Ctrl_Arg
-              or else Subp = Eq_Prim_Op
-            then
+            --  Cases in which we may have generated run-time checks. Note that
+            --  we strip any qualification from Param before comparing with the
+            --  already-stripped controlling argument.
+
+            if Unqualify (Param) = Ctrl_Arg or else Subp = Eq_Prim_Op then
                Append_To (New_Params,
                  Duplicate_Subexpr_Move_Checks (Param));
 
@@ -1286,11 +1287,11 @@ package body Exp_Disp is
                Selector_Name => New_Occurrence_Of (Iface_Tag, Loc))));
 
       else
-         --  Build internal function to handle the case in which the
-         --  actual is null. If the actual is null returns null because
-         --  no displacement is required; otherwise performs a type
-         --  conversion that will be expanded in the code that returns
-         --  the value of the displaced actual. That is:
+         --  Build internal function to handle the case in which the actual is
+         --  null. If the actual is null returns null because no displacement
+         --  is required; otherwise performs a type conversion that will be
+         --  expanded in the code that returns the value of the displaced
+         --  actual. That is:
 
          --     function Func (O : Address) return Iface_Typ is
          --        type Op_Typ is access all Operand_Typ;
@@ -2335,30 +2336,6 @@ package body Exp_Disp is
                             (RTE (RE_Asynchronous_Call), Loc),
 
                           New_Reference_To (Com_Block, Loc)))); -- comm block
-
-               when System_Tasking_Protected_Objects_Single_Entry =>
-
-                  --  Generate:
-                  --    procedure Protected_Single_Entry_Call
-                  --      (Object              : Protection_Entry_Access;
-                  --       Uninterpreted_Data  : System.Address;
-                  --       Mode                : Call_Modes);
-
-                  Append_To (Stmts,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To
-                          (RTE (RE_Protected_Single_Entry_Call), Loc),
-                      Parameter_Associations =>
-                        New_List (
-                          Obj_Ref,
-
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Make_Identifier (Loc, Name_uP),
-                            Attribute_Name => Name_Address),
-
-                            New_Reference_To
-                             (RTE (RE_Asynchronous_Call), Loc))));
 
                when others =>
                   raise Program_Error;
@@ -3545,6 +3522,14 @@ package body Exp_Disp is
             --  the wrapped parameters, D is the delay amount, M is the delay
             --  mode and F is the status flag.
 
+            --  Historically, there was also an implementation for single
+            --  entry protected types (in s-tposen). However, it was removed
+            --  by also testing for no No_Select_Statements restriction in
+            --  Exp_Utils.Corresponding_Runtime_Package. This simplified the
+            --  implementation of s-tposen.adb and provided consistency between
+            --  all versions of System.Tasking.Protected_Objects.Single_Entry
+            --  (s-tposen*.adb).
+
             case Corresponding_Runtime_Package (Conc_Typ) is
                when System_Tasking_Protected_Objects_Entries =>
                   Append_To (Stmts,
@@ -3563,29 +3548,6 @@ package body Exp_Disp is
                             Expression =>
                               Make_Identifier (Loc, Name_uI)),
 
-                          Make_Identifier (Loc, Name_uP),   --  parameter block
-                          Make_Identifier (Loc, Name_uD),   --  delay
-                          Make_Identifier (Loc, Name_uM),   --  delay mode
-                          Make_Identifier (Loc, Name_uF)))); --  status flag
-
-               when System_Tasking_Protected_Objects_Single_Entry =>
-                  --  Generate:
-
-                  --   Timed_Protected_Single_Entry_Call
-                  --     (T._object'access, P, D, M, F);
-
-                  --  where T is the protected object, P is the wrapped
-                  --  parameters, D is the delay amount, M is the delay mode, F
-                  --  is the status flag.
-
-                  Append_To (Stmts,
-                    Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To
-                          (RTE (RE_Timed_Protected_Single_Entry_Call), Loc),
-                      Parameter_Associations =>
-                        New_List (
-                          Obj_Ref,
                           Make_Identifier (Loc, Name_uP),   --  parameter block
                           Make_Identifier (Loc, Name_uD),   --  delay
                           Make_Identifier (Loc, Name_uM),   --  delay mode
@@ -5049,7 +5011,7 @@ package body Exp_Disp is
 
       --  Of course this value will only be valid if the tagged type is still
       --  in scope, but it clearly must be erroneous to compute the internal
-      --  tag of a tagged type that is out of scope!
+      --  tag of a tagged type that is out of scope.
 
       --  We don't do this processing if an explicit external tag has been
       --  specified. That's an odd case for which we have already issued a
@@ -7216,7 +7178,7 @@ package body Exp_Disp is
       --  the decoration required by the backend.
 
       --  Odd comment, the back end cannot require anything not properly
-      --  documented in einfo! ???
+      --  documented in einfo. ???
 
       Set_Is_Dispatch_Table_Entity (RTE (RE_Prim_Ptr));
       Set_Is_Dispatch_Table_Entity (RTE (RE_Predef_Prims_Table_Ptr));

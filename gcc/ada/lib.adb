@@ -166,11 +166,6 @@ package body Lib is
       return Units.Table (U).Source_Index;
    end Source_Index;
 
-   function SPARK_Mode_Pragma (U : Unit_Number_Type) return Node_Id is
-   begin
-      return Units.Table (U).SPARK_Mode_Pragma;
-   end SPARK_Mode_Pragma;
-
    function Unit_File_Name (U : Unit_Number_Type) return File_Name_Type is
    begin
       return Units.Table (U).Unit_File_Name;
@@ -258,11 +253,6 @@ package body Lib is
    begin
       Units.Table (U).OA_Setting := C;
    end Set_OA_Setting;
-
-   procedure Set_SPARK_Mode_Pragma (U : Unit_Number_Type; N : Node_Id) is
-   begin
-      Units.Table (U).SPARK_Mode_Pragma := N;
-   end Set_SPARK_Mode_Pragma;
 
    procedure Set_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type) is
    begin
@@ -728,7 +718,7 @@ package body Lib is
    is
    begin
       if Sloc (N) = Standard_Location then
-         return True;
+         return False;
 
       elsif Sloc (N) = No_Location then
          return False;
@@ -760,7 +750,7 @@ package body Lib is
    function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean is
    begin
       if Loc = Standard_Location then
-         return True;
+         return False;
 
       elsif Loc = No_Location then
          return False;
@@ -797,7 +787,7 @@ package body Lib is
       --  Special value cases
 
       elsif Nloc = Standard_Location then
-         return True;
+         return False;
 
       elsif Nloc = No_Location then
          return False;
@@ -836,7 +826,7 @@ package body Lib is
       --  Special value cases
 
       elsif Loc = Standard_Location then
-         return True;
+         return False;
 
       elsif Loc = No_Location then
          return False;

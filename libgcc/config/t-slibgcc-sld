@@ -3,3 +3,26 @@
 
 SHLIB_LDFLAGS = -Wl,-h,$(SHLIB_SONAME) -Wl,-z,text -Wl,-z,defs \
 	-Wl,-M,$(SHLIB_MAP)
+
+# Linker mapfile to enforce direct binding to libgcc_s unwinder
+# (PR target/59788).
+libgcc-unwind.map: libgcc-std.ver
+	@(echo "{";				\
+	for f in `grep _Unwind_ $< | sort`; do	\
+	  echo "	$$f = EXTERN DIRECT;";	\
+	done;					\
+	echo "};" ) > $@
+
+# Copy libgcc-unwind.map to the place where gcc will look for it at build-time.
+install-libgcc-unwind-map-forbuild: libgcc-unwind.map
+	dest=$(gcc_objdir)/tmp$$$$-$<; \
+	cp $< $$dest; \
+	chmod a+r $$dest; \
+	sh $(srcdir)/../move-if-change $$dest $(gcc_objdir)/$<
+
+all: install-libgcc-unwind-map-forbuild
+
+install-libgcc-unwind-map: libgcc-unwind.map
+	$(INSTALL_DATA) $< $(DESTDIR)$(slibdir)
+
+install: install-libgcc-unwind-map

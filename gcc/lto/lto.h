@@ -41,9 +41,6 @@ extern tree lto_eh_personality (void);
 extern void lto_main (void);
 extern void lto_read_all_file_options (void);
 
-/* In lto-symtab.c  */
-extern GTY(()) vec<tree, va_gc> *lto_global_var_decls;
-
 /* In lto-elf.c or lto-coff.c  */
 extern lto_file *lto_obj_file_open (const char *filename, bool writable);
 extern void lto_obj_file_close (lto_file *file);

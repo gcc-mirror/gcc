@@ -2430,7 +2430,8 @@ package body Osint is
 
       Len : Integer;
       --  Length of source file text (ALI). If it doesn't fit in an integer
-      --  we're probably stuck anyway (>2 gigs of source seems a lot!)
+      --  we're probably stuck anyway (>2 gigs of source seems a lot, and
+      --  there are other places in the compiler that make this assumption).
 
       Text : Text_Buffer_Ptr;
       --  Allocated text buffer
@@ -2585,7 +2586,7 @@ package body Osint is
       --  indicates failure to open the specified source file.
 
       Len : Integer;
-      --  Length of file. Assume no more than 2 gigabytes of source!
+      --  Length of file, assume no more than 2 gigabytes of source
 
       Actual_Len : Integer;
 

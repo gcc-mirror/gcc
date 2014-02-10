@@ -244,31 +244,10 @@ lto_input_tree_ref (struct lto_input_block *ib, struct data_in *data_in,
     case LTO_imported_decl_ref:
     case LTO_label_decl_ref:
     case LTO_translation_unit_decl_ref:
+    case LTO_namelist_decl_ref:
       ix_u = streamer_read_uhwi (ib);
       result = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
       break;
-
-    case LTO_namelist_decl_ref:
-      {
-	tree tmp;
-	vec<constructor_elt, va_gc> *nml_decls = NULL;
-	unsigned i, n;
-
-	result = make_node (NAMELIST_DECL);
-	TREE_TYPE (result) = void_type_node;
-	DECL_NAME (result) = stream_read_tree (ib, data_in);
-	n = streamer_read_uhwi (ib);
-	for (i = 0; i < n; i++)
-	  {
-	    ix_u = streamer_read_uhwi (ib);
-	    tmp = lto_file_decl_data_get_var_decl (data_in->file_data, ix_u);
-	    gcc_assert (tmp != NULL_TREE);
-	    CONSTRUCTOR_APPEND_ELT (nml_decls, NULL_TREE, tmp);
-	  }
-	NAMELIST_DECL_ASSOCIATED_DECL (result) = build_constructor (NULL_TREE,
-								    nml_decls);
-	break;
-      }
 
     default:
       gcc_unreachable ();

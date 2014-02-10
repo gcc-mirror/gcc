@@ -367,6 +367,8 @@ static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
+static tree handle_alloc_align_attribute (tree *, tree, tree, int, bool *);
+static tree handle_assume_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_target_attribute (tree *, tree, tree, int, bool *);
 static tree handle_optimize_attribute (tree *, tree, tree, int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
@@ -767,6 +769,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_simd_attribute, false },
   { "omp declare target",     0, 0, true, false, false,
 			      handle_omp_declare_target_attribute, false },
+  { "alloc_align",	      1, 1, false, true, true,
+			      handle_alloc_align_attribute, false },
+  { "assume_aligned",	      1, 2, false, true, true,
+			      handle_assume_aligned_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -2527,23 +2533,24 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
   return result_type;
 }
 
-/* Checks if expression EXPR of real/integer type cannot be converted 
+/* Checks if expression EXPR of real/integer type cannot be converted
    to the real/integer type TYPE. Function returns non-zero when:
-	* EXPR is a constant which cannot be exactly converted to TYPE 
-	* EXPR is not a constant and size of EXPR's type > than size of TYPE, 
+	* EXPR is a constant which cannot be exactly converted to TYPE.
+	* EXPR is not a constant and size of EXPR's type > than size of TYPE,
 	  for EXPR type and TYPE being both integers or both real.
-	* EXPR is not a constant of real type and TYPE is an integer.  
-	* EXPR is not a constant of integer type which cannot be 
-	  exactly converted to real type.  
+	* EXPR is not a constant of real type and TYPE is an integer.
+	* EXPR is not a constant of integer type which cannot be
+	  exactly converted to real type.
    Function allows conversions between types of different signedness and
    can return SAFE_CONVERSION (zero) in that case.  Function can produce
    signedness warnings if PRODUCE_WARNS is true.  */
+
 enum conversion_safety
-unsafe_conversion_p (tree type, tree expr, bool produce_warns)
+unsafe_conversion_p (location_t loc, tree type, tree expr, bool produce_warns)
 {
   enum conversion_safety give_warning = SAFE_CONVERSION; /* is 0 or false */
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_CODE (expr) == REAL_CST || TREE_CODE (expr) == INTEGER_CST)
     {
@@ -2706,14 +2713,21 @@ unsafe_conversion_p (tree type, tree expr, bool produce_warns)
    This is a helper function for warnings_for_convert_and_check.  */
 
 static void
-conversion_warning (tree type, tree expr)
+conversion_warning (location_t loc, tree type, tree expr)
 {
   tree expr_type = TREE_TYPE (expr);
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
   enum conversion_safety conversion_kind;
 
   if (!warn_conversion && !warn_sign_conversion && !warn_float_conversion)
     return;
+
+  /* This may happen, because for LHS op= RHS we preevaluate
+     RHS and create C_MAYBE_CONST_EXPR <SAVE_EXPR <RHS>>, which
+     means we could no longer see the code of the EXPR.  */
+  if (TREE_CODE (expr) == C_MAYBE_CONST_EXPR)
+    expr = C_MAYBE_CONST_EXPR_EXPR (expr);
+  if (TREE_CODE (expr) == SAVE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
 
   switch (TREE_CODE (expr))
     {
@@ -2739,7 +2753,7 @@ conversion_warning (tree type, tree expr)
 
     case REAL_CST:
     case INTEGER_CST:
-      conversion_kind = unsafe_conversion_p (type, expr, true);
+      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
       if (conversion_kind == UNSAFE_REAL)
 	warning_at (loc, OPT_Wfloat_conversion,
 		    "conversion to %qT alters %qT constant value",
@@ -2757,13 +2771,13 @@ conversion_warning (tree type, tree expr)
         tree op1 = TREE_OPERAND (expr, 1);
         tree op2 = TREE_OPERAND (expr, 2);
         
-        conversion_warning (type, op1);
-        conversion_warning (type, op2);
+        conversion_warning (loc, type, op1);
+        conversion_warning (loc, type, op2);
         return;
       }
 
     default: /* 'expr' is not a constant.  */
-      conversion_kind = unsafe_conversion_p (type, expr, true);
+      conversion_kind = unsafe_conversion_p (loc, type, expr, true);
       if (conversion_kind == UNSAFE_REAL)
 	warning_at (loc, OPT_Wfloat_conversion,
 		    "conversion to %qT from %qT may alter its value",
@@ -2780,9 +2794,10 @@ conversion_warning (tree type, tree expr)
    convert_and_check and cp_convert_and_check.  */
 
 void
-warnings_for_convert_and_check (tree type, tree expr, tree result)
+warnings_for_convert_and_check (location_t loc, tree type, tree expr,
+				tree result)
 {
-  location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+  loc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -2802,10 +2817,10 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
             warning_at (loc, OPT_Woverflow,
 			"large integer implicitly truncated to unsigned type");
           else
-            conversion_warning (type, expr);
+            conversion_warning (loc, type, expr);
         }
       else if (!int_fits_type_p (expr, c_common_unsigned_type (type)))
-	warning (OPT_Woverflow,
+	warning_at (loc, OPT_Woverflow,
 		 "overflow in implicit constant conversion");
       /* No warning for converting 0x80000000 to int.  */
       else if (pedantic
@@ -2816,14 +2831,14 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
 		    "overflow in implicit constant conversion");
 
       else
-	conversion_warning (type, expr);
+	conversion_warning (loc, type, expr);
     }
   else if ((TREE_CODE (result) == INTEGER_CST
 	    || TREE_CODE (result) == FIXED_CST) && TREE_OVERFLOW (result))
     warning_at (loc, OPT_Woverflow,
 		"overflow in implicit constant conversion");
   else
-    conversion_warning (type, expr);
+    conversion_warning (loc, type, expr);
 }
 
 
@@ -2832,7 +2847,7 @@ warnings_for_convert_and_check (tree type, tree expr, tree result)
    i.e. because of language rules and not because of an explicit cast.  */
 
 tree
-convert_and_check (tree type, tree expr)
+convert_and_check (location_t loc, tree type, tree expr)
 {
   tree result;
   tree expr_for_warning;
@@ -2859,7 +2874,7 @@ convert_and_check (tree type, tree expr)
   if (c_inhibit_evaluation_warnings == 0
       && !TREE_OVERFLOW_P (expr)
       && result != error_mark_node)
-    warnings_for_convert_and_check (type, expr_for_warning, result);
+    warnings_for_convert_and_check (loc, type, expr_for_warning, result);
 
   return result;
 }
@@ -3975,13 +3990,15 @@ expr_original_type (tree expr)
    of build_binary_op: OP0_PTR is &OP0, OP1_PTR is &OP1,
    RESTYPE_PTR is &RESULT_TYPE and RESCODE_PTR is &RESULTCODE.
 
+   LOC is the location of the comparison.
+
    If this function returns nonzero, it means that the comparison has
    a constant value.  What this function returns is an expression for
    that value.  */
 
 tree
-shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
-		 enum tree_code *rescode_ptr)
+shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
+		 tree *restype_ptr, enum tree_code *rescode_ptr)
 {
   tree type;
   tree op0 = *op0_ptr;
@@ -3990,7 +4007,6 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   int real1, real2;
   tree primop0, primop1;
   enum tree_code code = *rescode_ptr;
-  location_t loc = EXPR_LOC_OR_LOC (op0, input_location);
 
   /* Throw away any conversions to wider types
      already present in the operands.  */
@@ -5253,7 +5269,7 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
 
   build_common_builtin_nodes ();
 
-  if (flag_enable_cilkplus)
+  if (flag_cilkplus)
     cilk_init_builtins ();
 }
 
@@ -5952,14 +5968,14 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
   if (low_value)
     {
       low_value = check_case_value (low_value);
-      low_value = convert_and_check (type, low_value);
+      low_value = convert_and_check (loc, type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
     }
   if (high_value)
     {
       high_value = check_case_value (high_value);
-      high_value = convert_and_check (type, high_value);
+      high_value = convert_and_check (loc, type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
     }
@@ -7509,9 +7525,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   tree decl = NULL_TREE;
   tree *type = NULL;
   int is_type = 0;
-  tree align_expr = (args ? TREE_VALUE (args)
-		     : size_int (ATTRIBUTE_ALIGNED_VALUE / BITS_PER_UNIT));
+  tree align_expr;
   int i;
+
+  if (args)
+    {
+      align_expr = TREE_VALUE (args);
+      if (align_expr && TREE_CODE (align_expr) != IDENTIFIER_NODE)
+	align_expr = default_conversion (align_expr);
+    }
+  else
+    align_expr = size_int (ATTRIBUTE_ALIGNED_VALUE / BITS_PER_UNIT);
 
   if (DECL_P (*node))
     {
@@ -7970,12 +7994,6 @@ handle_no_instrument_function_attribute (tree *node, tree name,
 		"%qE attribute applies only to functions", name);
       *no_add_attrs = true;
     }
-  else if (DECL_INITIAL (decl))
-    {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"can%'t set %qE attribute after definition", name);
-      *no_add_attrs = true;
-    }
   else
     DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
 
@@ -8012,13 +8030,65 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   for (; args; args = TREE_CHAIN (args))
     {
       tree position = TREE_VALUE (args);
+      if (position && TREE_CODE (position) != IDENTIFIER_NODE
+	  && TREE_CODE (position) != FUNCTION_DECL)
+	position = default_conversion (position);
 
-      if (TREE_CODE (position) != INTEGER_CST
-	  || wi::ltu_p (position, 1)
-	  || wi::gtu_p (position, arg_count))
+      if (!tree_fits_uhwi_p (position)
+	  || !arg_count
+	  || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
 	{
 	  warning (OPT_Wattributes,
 	           "alloc_size parameter outside range");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "alloc_align" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_alloc_align_attribute (tree *node, tree, tree args, int,
+			      bool *no_add_attrs)
+{
+  unsigned arg_count = type_num_arguments (*node);
+  tree position = TREE_VALUE (args);
+  if (position && TREE_CODE (position) != IDENTIFIER_NODE)
+    position = default_conversion (position);
+
+  if (!tree_fits_uhwi_p (position)
+      || !arg_count
+      || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
+    {
+      warning (OPT_Wattributes,
+	       "alloc_align parameter outside range");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "assume_aligned" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_assume_aligned_attribute (tree *, tree, tree args, int,
+				 bool *no_add_attrs)
+{
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree position = TREE_VALUE (args);
+      if (position && TREE_CODE (position) != IDENTIFIER_NODE
+	  && TREE_CODE (position) != FUNCTION_DECL)
+	position = default_conversion (position);
+
+      if (TREE_CODE (position) != INTEGER_CST)
+	{
+	  warning (OPT_Wattributes,
+		   "assume_aligned parameter not integer constant");
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -8455,6 +8525,8 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;
 
   size = TREE_VALUE (args);
+  if (size && TREE_CODE (size) != IDENTIFIER_NODE)
+    size = default_conversion (size);
 
   if (!tree_fits_uhwi_p (size))
     {
@@ -8548,11 +8620,16 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
   /* Argument list specified.  Verify that each argument number references
      a pointer argument.  */
-  for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
+  for (attr_arg_num = 1; args; attr_arg_num++, args = TREE_CHAIN (args))
     {
       unsigned HOST_WIDE_INT arg_num = 0, ck_num;
 
-      if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
+      tree arg = TREE_VALUE (args);
+      if (arg && TREE_CODE (arg) != IDENTIFIER_NODE
+	  && TREE_CODE (arg) != FUNCTION_DECL)
+	arg = default_conversion (arg);
+
+      if (!get_nonnull_operand (arg, &arg_num))
 	{
 	  error ("nonnull argument has invalid operand number (argument %lu)",
 		 (unsigned long) attr_arg_num);
@@ -10371,7 +10448,7 @@ add_atomic_size_parameter (unsigned n, location_t loc, tree function,
       vec_alloc (v, len + 1);
       for (z = 0; z < len; z++)
 	v->quick_push ((*params)[z]);
-      f = build_function_call_vec (loc, function, v, NULL);
+      f = build_function_call_vec (loc, vNULL, function, v, NULL);
       vec_free (v);
       return f;
     }
@@ -10802,7 +10879,8 @@ resolve_overloaded_builtin (location_t loc, tree function,
 	  return error_mark_node;
 
 	first_param = (*params)[0];
-	result = build_function_call_vec (loc, new_function, params, NULL);
+	result = build_function_call_vec (loc, vNULL, new_function, params,
+					  NULL);
 	if (result == error_mark_node)
 	  return result;
 	if (orig_code != BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N
@@ -11247,8 +11325,8 @@ warn_for_sign_compare (location_t location,
               if ((mask & constant) != mask)
 		{
 		  if (constant == 0)
-		    warning (OPT_Wsign_compare,
-			     "promoted ~unsigned is always non-zero");
+		    warning_at (location, OPT_Wsign_compare,
+				"promoted ~unsigned is always non-zero");
 		  else
 		    warning_at (location, OPT_Wsign_compare,
 				"comparison of promoted ~unsigned with constant");
@@ -11715,7 +11793,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -11765,7 +11843,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 	if (TREE_CODE (type0) == INTEGER_TYPE
 	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -11780,7 +11858,7 @@ scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
 		     || TREE_CODE (type0) == INTEGER_TYPE)
 		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
 	  {
-	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	    if (unsafe_conversion_p (loc, TREE_TYPE (type1), op0, false))
 	      {
 		if (complain)
 		  error_at (loc, "conversion of scalar %qT to vector %qT "
@@ -11812,6 +11890,17 @@ cxx_fundamental_alignment_p  (unsigned align)
 {
   return (align <=  MAX (TYPE_ALIGN (long_long_integer_type_node),
 			 TYPE_ALIGN (long_double_type_node)));
+}
+
+/* Return true if T is a pointer to a zero-sized aggregate.  */
+
+bool
+pointer_to_zero_sized_aggr_p (tree t)
+{
+  if (!POINTER_TYPE_P (t))
+    return false;
+  t = TREE_TYPE (t);
+  return (TYPE_SIZE (t) && integer_zerop (TYPE_SIZE (t)));
 }
 
 #include "gt-c-family-c-common.h"

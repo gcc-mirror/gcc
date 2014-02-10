@@ -98,7 +98,7 @@ package Erroutc is
    --  ensures that two insertion tokens of maximum length can be accommodated.
    --  The value of 1024 is an arbitrary value that should be more than long
    --  enough to accommodate any reasonable message (and for that matter, some
-   --  pretty unreasonable messages!)
+   --  pretty unreasonable messages).
 
    Msg_Buffer : String (1 .. Max_Msg_Length);
    --  Buffer used to prepare error messages

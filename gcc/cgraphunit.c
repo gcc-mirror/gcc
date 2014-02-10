@@ -1592,7 +1592,17 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 
       if (nargs)
         for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-	  vargs.quick_push (arg);
+	  {
+	    tree tmp = arg;
+	    if (!is_gimple_val (arg))
+	      {
+		tmp = create_tmp_reg (TYPE_MAIN_VARIANT
+				      (TREE_TYPE (arg)), "arg");
+		gimple stmt = gimple_build_assign (tmp, arg);
+		gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+	      }
+	    vargs.quick_push (tmp);
+	  }
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       node->callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);

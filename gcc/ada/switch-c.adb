@@ -660,11 +660,35 @@ package body Switch.C is
                   when 'P' =>
                      Treat_Categorization_Errors_As_Warnings := True;
 
+                  --  -gnates=file (specify extra file switches for gnat2why)
+
+                  --  This is an internal switch
+
+                  when 's' =>
+                     if not First_Switch then
+                        Osint.Fail
+                          ("-gnates must not be combined with other switches");
+                     end if;
+
+                     --  Check for '='
+
+                     Ptr := Ptr + 1;
+
+                     if Ptr >= Max or else Switch_Chars (Ptr) /= '=' then
+                        Bad_Switch ("-gnates");
+                     else
+                        SPARK_Switches_File_Name :=
+                          new String'(Switch_Chars (Ptr + 1 .. Max));
+                     end if;
+
+                     return;
+
                   --  -gnateS (generate SCO information)
 
                   --  Include Source Coverage Obligation information in ALI
-                  --  files for the benefit of source coverage analysis tools
-                  --  (xcov).
+                  --  files for use by source coverage analysis tools
+                  --  (gnatcov) (equivalent to -fdump-scos, provided for
+                  --  backwards compatibility).
 
                   when 'S' =>
                      Generate_SCO := True;

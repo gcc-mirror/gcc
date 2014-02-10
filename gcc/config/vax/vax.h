@@ -295,7 +295,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* 1 if N is a possible register number for function argument passing.
    On the VAX, no registers are used in this way.  */
 
-#define FUNCTION_ARG_REGNO_P(N) 0
+#define FUNCTION_ARG_REGNO_P(N) ((void) (N), 0)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should

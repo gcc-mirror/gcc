@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -215,6 +215,10 @@ package Makeutl is
    --  For_Project and of all the project it imports directly or indirectly.
    --  The source directories of imported projects are only included if one
    --  of the declared languages is in the list Languages.
+
+   function Aggregate_Libraries_In (Tree : Project_Tree_Ref) return Boolean;
+   --  Return True iff there is one or more aggregate library projects in
+   --  the project tree Tree.
 
    procedure Write_Path_File (FD : File_Descriptor);
    --  Write in the specified open path file the directories in table

@@ -756,6 +756,14 @@ struct linemap_stats
   long duplicated_macro_maps_locations_size;
 };
 
+/* Return the highest location emitted for a given file for which
+   there is a line map in SET.  FILE_NAME is the file name to
+   consider.  If the function returns TRUE, *LOC is set to the highest
+   location emitted for that file.  */
+bool linemap_get_file_highest_location (struct line_maps * set,
+					const char *file_name,
+					source_location *loc);
+
 /* Compute and return statistics about the memory consumption of some
    parts of the line table SET.  */
 void linemap_get_statistics (struct line_maps *, struct linemap_stats *);

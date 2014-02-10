@@ -1,4 +1,4 @@
-// Core issue 934
+// Core issue 934/1288
 // { dg-options "-std=c++11" }
 
 int i;
@@ -13,12 +13,12 @@ struct A { int i; } a;
 
 A& r5 { i };			// { dg-error "" } reference to temporary
 A&& r6 { i };			// OK, aggregate initialization of temporary
-A& r7 { a };			// { dg-error "" } invalid aggregate initializer for A
-A&& r8 { a };			// { dg-error "" } invalid aggregate initializer for A
+A& r7 { a };			// OK, direct-initialization
+A&& r8 { a };			// { dg-error "lvalue" } binding && to lvalue
 
 struct B { B(int); int i; } b(0);
 
 B& r9 { i };			// { dg-error "" } reference to temporary
 B&& r10 { i };			// OK, make temporary with B(int) constructor
-B& r11 { b };			// { dg-error "" } reference to temporary
-B&& r12 { b };			// OK, make temporary with copy constructor
+B& r11 { b };			// OK, direct-initialization
+B&& r12 { b };			// { dg-error "lvalue" } binding && to lvalue

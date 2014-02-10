@@ -748,6 +748,10 @@ lto_handle_option (size_t scode, const char *arg,
       warn_psabi = value;
       break;
 
+    case OPT_fwpa:
+      flag_wpa = value ? "" : NULL;
+      break;
+
     default:
       break;
     }
@@ -1074,11 +1078,20 @@ lto_getdecls (void)
 static void
 lto_write_globals (void)
 {
-  tree *vec = lto_global_var_decls->address ();
-  int len = lto_global_var_decls->length ();
+  if (flag_wpa)
+    return;
+
+  /* Record the global variables.  */
+  vec<tree> lto_global_var_decls = vNULL;
+  varpool_node *vnode;
+  FOR_EACH_DEFINED_VARIABLE (vnode)
+    lto_global_var_decls.safe_push (vnode->decl);
+
+  tree *vec = lto_global_var_decls.address ();
+  int len = lto_global_var_decls.length ();
   wrapup_global_declarations (vec, len);
   emit_debug_global_declarations (vec, len);
-  vec_free (lto_global_var_decls);
+  lto_global_var_decls.release ();
 }
 
 static tree
@@ -1147,7 +1160,7 @@ static bool
 lto_init (void)
 {
   /* We need to generate LTO if running in WPA mode.  */
-  flag_generate_lto = flag_wpa;
+  flag_generate_lto = (flag_wpa != NULL);
 
   /* Create the basic integer types.  */
   build_common_tree_nodes (flag_signed_char, /*short_double=*/false);
@@ -1182,7 +1195,7 @@ lto_init (void)
 			   build_reference_type (va_list_type_node));
     }
   
-  if (flag_enable_cilkplus)
+  if (flag_cilkplus)
     cilk_init_builtins ();
 
   targetm.init_builtins ();
@@ -1217,7 +1230,6 @@ lto_init (void)
 #undef NAME_TYPE
 
   /* Initialize LTO-specific data structures.  */
-  vec_alloc (lto_global_var_decls, 256);
   in_lto_p = true;
 
   return true;

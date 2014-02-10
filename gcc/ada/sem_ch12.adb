@@ -98,7 +98,7 @@ package body Sem_Ch12 is
    --  tree and the copy, in order to recognize non-local references within
    --  the generic, and propagate them to each instance (recall that name
    --  resolution is done on the generic declaration: generics are not really
-   --  macros!). This is summarized in the following diagram:
+   --  macros). This is summarized in the following diagram:
 
    --              .-----------.               .----------.
    --              |  semantic |<--------------|  generic |
@@ -3118,6 +3118,8 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
+      Check_SPARK_Mode_In_Generic (N);
+
       --  The aspect specifications are not attached to the tree, and must
       --  be copied and attached to the generic copy explicitly.
 
@@ -3251,7 +3253,9 @@ package body Sem_Ch12 is
          begin
             Aspect := First (Aspect_Specifications (N));
             while Present (Aspect) loop
-               if Get_Aspect_Id (Aspect) /= Aspect_Warnings then
+               if Get_Aspect_Id (Aspect) /= Aspect_Warnings
+                 and then Present (Expression (Aspect))
+               then
                   Analyze (Expression (Aspect));
                end if;
 
@@ -3260,7 +3264,10 @@ package body Sem_Ch12 is
 
             Aspect := First (Aspect_Specifications (Original_Node (N)));
             while Present (Aspect) loop
-               Save_Global_References (Expression (Aspect));
+               if Present (Expression (Aspect)) then
+                  Save_Global_References (Expression (Aspect));
+               end if;
+
                Next (Aspect);
             end loop;
          end;
@@ -3611,12 +3618,11 @@ package body Sem_Ch12 is
 
          --  Save the instantiation node, for subsequent instantiation of the
          --  body, if there is one and we are generating code for the current
-         --  unit. Mark the unit as having a body, to avoid a premature error
-         --  message.
+         --  unit. Mark unit as having a body (avoids premature error message).
 
          --  We instantiate the body if we are generating code, if we are
          --  generating cross-reference information, or if we are building
-         --  trees for ASIS use.
+         --  trees for ASIS use or GNATprove use.
 
          declare
             Enclosing_Body_Present : Boolean := False;
@@ -3723,8 +3729,11 @@ package body Sem_Ch12 is
                 and then not Is_Actual_Pack
                 and then not Inline_Now
                 and then (Operating_Mode = Generate_Code
+
+                           --  Need comment for this check ???
+
                            or else (Operating_Mode = Check_Semantics
-                                     and then ASIS_Mode));
+                                     and then (ASIS_Mode or GNATprove_Mode)));
 
             --  If front_end_inlining is enabled, do not instantiate body if
             --  within a generic context.
@@ -3897,7 +3906,9 @@ package body Sem_Ch12 is
                    Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                    Version                  => Ada_Version,
                    Version_Pragma           => Ada_Version_Pragma,
-                   Warnings                 => Save_Warnings));
+                   Warnings                 => Save_Warnings,
+                   SPARK_Mode               => SPARK_Mode,
+                   SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
             end if;
          end if;
 
@@ -4243,7 +4254,9 @@ package body Sem_Ch12 is
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
                Version_Pragma           => Ada_Version_Pragma,
-               Warnings                 => Save_Warnings)),
+               Warnings                 => Save_Warnings,
+               SPARK_Mode               => SPARK_Mode,
+               SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4361,7 +4374,9 @@ package body Sem_Ch12 is
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
                Version_Pragma           => Ada_Version_Pragma,
-               Warnings                 => Save_Warnings)),
+               Warnings                 => Save_Warnings,
+               SPARK_Mode               => SPARK_Mode,
+               SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -4390,17 +4405,17 @@ package body Sem_Ch12 is
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
 
-        --  Must be generating code or analyzing code in ASIS mode
+        --  Must be generating code or analyzing code in ASIS/GNATprove mode
 
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
-                             and then ASIS_Mode))
+                             and then (ASIS_Mode or GNATprove_Mode)))
 
         --  The body is needed when generating code (full expansion), in ASIS
-        --  mode for other tools, and in SPARK mode (special expansion) for
+        --  mode for other tools, and in GNATprove mode (special expansion) for
         --  formal verification of the body itself.
 
-        and then (Expander_Active or ASIS_Mode)
+        and then (Expander_Active or ASIS_Mode or GNATprove_Mode)
 
         --  No point in inlining if ABE is inevitable
 
@@ -4419,7 +4434,9 @@ package body Sem_Ch12 is
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version,
              Version_Pragma           => Ada_Version_Pragma,
-             Warnings                 => Save_Warnings));
+             Warnings                 => Save_Warnings,
+             SPARK_Mode               => SPARK_Mode,
+             SPARK_Mode_Pragma        => SPARK_Mode_Pragma));
          return True;
 
       --  Here if not inlined, or we ignore the inlining
@@ -6763,7 +6780,7 @@ package body Sem_Ch12 is
       --  If the node is a compilation unit, it is the subunit of a stub, which
       --  has been loaded already (see code below). In this case, the library
       --  unit field of N points to the parent unit (which is a compilation
-      --  unit) and need not (and cannot!) be copied.
+      --  unit) and need not (and cannot) be copied.
 
       --  When the proper body of the stub is analyzed, the library_unit link
       --  is used to establish the proper context (see sem_ch10).
@@ -9838,6 +9855,19 @@ package body Sem_Ch12 is
            ("actual must exclude null to match generic formal#", Actual);
       end if;
 
+      --  A volatile object cannot be used as an actual in a generic instance.
+      --  The following check is only relevant when SPARK_Mode is on as it is
+      --  not a standard Ada legality rule.
+
+      if SPARK_Mode = On
+        and then Present (Actual)
+        and then Is_SPARK_Volatile_Object (Actual)
+      then
+         Error_Msg_N
+           ("volatile object cannot act as actual in generic instantiation "
+            & "(SPARK RM 7.1.3(8))", Actual);
+      end if;
+
       return List;
    end Instantiate_Object;
 
@@ -9898,6 +9928,8 @@ package body Sem_Ch12 is
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
+      Opt.SPARK_Mode           := Body_Info.SPARK_Mode;
+      Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -10188,6 +10220,8 @@ package body Sem_Ch12 is
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
+      Opt.SPARK_Mode           := Body_Info.SPARK_Mode;
+      Opt.SPARK_Mode_Pragma    := Body_Info.SPARK_Mode_Pragma;
 
       if No (Gen_Body_Id) then
 
@@ -12076,7 +12110,9 @@ package body Sem_Ch12 is
                                 Local_Suppress_Stack_Top,
                               Version                  => Ada_Version,
                               Version_Pragma           => Ada_Version_Pragma,
-                              Warnings                 => Save_Warnings);
+                              Warnings                 => Save_Warnings,
+                              SPARK_Mode               => SPARK_Mode,
+                              SPARK_Mode_Pragma        => SPARK_Mode_Pragma);
 
                            --  Package instance
 
@@ -12118,7 +12154,9 @@ package body Sem_Ch12 is
                          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                          Version                  => Ada_Version,
                          Version_Pragma           => Ada_Version_Pragma,
-                         Warnings                 => Save_Warnings)),
+                         Warnings                 => Save_Warnings,
+                         SPARK_Mode               => SPARK_Mode,
+                         SPARK_Mode_Pragma        => SPARK_Mode_Pragma)),
                      Body_Optional => Body_Optional);
                end;
             end if;
@@ -13058,14 +13096,16 @@ package body Sem_Ch12 is
                --  package, which is necessary semantically but complicates
                --  ASIS tree traversal, so we recover the original entity to
                --  expose the renaming. Take into account that the context may
-               --  be a nested generic and that the original node may itself
-               --  have an associated node.
+               --  be a nested generic, that the original node may itself have
+               --  an associated node that had better be an entity, and that
+               --  the current node is still a selected component.
 
                if Ekind (E) = E_Package
+                 and then Nkind (N) = N_Selected_Component
                  and then Nkind (Parent (N)) = N_Expanded_Name
                  and then Present (Original_Node (N2))
+                 and then Is_Entity_Name (Original_Node (N2))
                  and then Present (Entity (Original_Node (N2)))
-                 and then Is_Entity_Name (Entity (Original_Node (N2)))
                then
                   if Is_Global (Entity (Original_Node (N2))) then
                      N2 := Original_Node (N2);
@@ -13696,16 +13736,19 @@ package body Sem_Ch12 is
          end if;
 
          --  If a node has aspects, references within their expressions must
-         --  be saved separately, given that they are not directly in the
-         --  tree.
+         --  be saved separately, given they are not directly in the tree.
 
          if Has_Aspects (N) then
             declare
                Aspect : Node_Id;
+
             begin
                Aspect := First (Aspect_Specifications (N));
                while Present (Aspect) loop
-                  Save_Global_References (Expression (Aspect));
+                  if Present (Expression (Aspect)) then
+                     Save_Global_References (Expression (Aspect));
+                  end if;
+
                   Next (Aspect);
                end loop;
             end;
@@ -13782,6 +13825,10 @@ package body Sem_Ch12 is
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id)
    is
+      Assertion_Status       : constant Boolean := Assertions_Enabled;
+      Save_SPARK_Mode        : constant SPARK_Mode_Type := SPARK_Mode;
+      Save_SPARK_Mode_Pragma : constant Node_Id := SPARK_Mode_Pragma;
+
    begin
       --  Regardless of the current mode, predefined units are analyzed in the
       --  most current Ada mode, and earlier version Ada checks do not apply
@@ -13793,6 +13840,22 @@ package body Sem_Ch12 is
             Renamings_Included => True)
       then
          Set_Opt_Config_Switches (True, Current_Sem_Unit = Main_Unit);
+
+         --  In Ada2012 we may want to enable assertions in an instance of a
+         --  predefined unit, in which case we need to preserve the current
+         --  setting for the Assertions_Enabled flag. This will become more
+         --  critical when pre/postconditions are added to predefined units,
+         --  as is already the case for some numeric libraries.
+
+         if Ada_Version >= Ada_2012 then
+            Assertions_Enabled := Assertion_Status;
+         end if;
+
+         --  SPARK_Mode for an instance is the one applicable at the point of
+         --  instantiation.
+
+         SPARK_Mode := Save_SPARK_Mode;
+         SPARK_Mode_Pragma := Save_SPARK_Mode_Pragma;
       end if;
 
       Current_Instantiated_Parent :=

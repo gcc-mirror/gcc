@@ -85,14 +85,14 @@ package Sem_Eval is
    --  does not raise constraint error. In fact for certain legality checks not
    --  only do we need to ascertain that the expression is static, but we must
    --  also ensure that it does not raise constraint error.
-   --
+
    --  Neither of Is_Static_Expression and Is_OK_Static_Expression should be
    --  used for compile time evaluation purposes. In fact certain expression
-   --  whose value is known at compile time are not static in the RM 4.9 sense.
-   --  A typical example is:
-   --
+   --  whose value may be known at compile time are not static in the RM 4.9
+   --  sense. A typical example is:
+
    --     C : constant Integer := Record_Type'Size;
-   --
+
    --  The expression 'C' is not static in the technical RM sense, but for many
    --  simple record types, the size is in fact known at compile time. When we
    --  are trying to perform compile time constant folding (for instance for
@@ -100,8 +100,8 @@ package Sem_Eval is
    --  are not the right functions to test if folding is possible. Instead, we
    --  use Compile_Time_Known_Value. All static expressions that do not raise
    --  constraint error (i.e. those for which Is_OK_Static_Expression is true)
-   --  are known at compile time, but as shown by the above example, there are
-   --  cases of non-static expressions which are known at compile time.
+   --  are known at compile time, but as shown by the above example, there may
+   --  be cases of non-static expressions which are known at compile time.
 
    -----------------
    -- Subprograms --
@@ -226,13 +226,50 @@ package Sem_Eval is
 
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean;
    --  Returns true if Op is an expression not raising Constraint_Error whose
-   --  value is known at compile time. This is true if Op is a static
+   --  value is known at compile time and for which a call to Expr_Value can
+   --  be used to determine this value. This is always true if Op is a static
    --  expression, but can also be true for expressions which are technically
-   --  non-static but which are in fact known at compile time, such as the
-   --  static lower bound of a non-static range or the value of a constant
-   --  object whose initial value is static. Note that this routine is defended
+   --  non-static but which are in fact known at compile time. Some examples of
+   --  such expressions are the static lower bound of a non-static range or the
+   --  value of a constant object whose initial value is itself compile time
+   --  known in the sense of this routine. Note that this routine is defended
    --  against unanalyzed expressions. Such expressions will not cause a
    --  blowup, they may cause pessimistic (i.e. False) results to be returned.
+   --  In general we take a pessimistic view. False does not mean the value
+   --  could not be known at compile time, but True means that absolutely
+   --  definition it is known at compile time and it is safe to call
+   --  Expr_Value on the expression Op.
+   --
+   --  Note that we don't define precisely the set of expressions that return
+   --  True. Callers should not make any assumptions regarding the value that
+   --  is returned for non-static expressions. Functional behavior should never
+   --  be affected by whether a given non-static expression returns True or
+   --  False when this function is called. In other words this is purely for
+   --  efficiency optimization purposes. The code generated can often be more
+   --  efficient with compile time known values, e.g. range analysis for the
+   --  purpose of removing checks is more effective if we know precise bounds.
+
+   function CRT_Safe_Compile_Time_Known_Value (Op : Node_Id) return Boolean;
+   --  In the case of configurable run-times, there may be an issue calling
+   --  Compile_Time_Known_Value with non-static expressions where the legality
+   --  of the program is not well-defined. Consider this example:
+   --
+   --    X := B ** C;
+   --
+   --  Now if C is compile time known, and has the value 4, then inline code
+   --  can be generated at compile time, instead of calling a run-time routine.
+   --  That's fine in the normal case, but when we have a configurable run-time
+   --  the run-time routine may not be available. This means that the program
+   --  will be rejected if C is not known at compile time. We don't want the
+   --  legality of a program to depend on how clever the implementation of this
+   --  function is. If the run-time in use lacks the exponentiation routine,
+   --  then what we say is that exponentiation is permitted if the exponent is
+   --  officially static and has a value in the range 0 .. 4.
+   --
+   --  In a case like this, we use CRT_Safe_Compile_Time_Known_Value to avoid
+   --  this effect. This routine will return False for a non-static expression
+   --  if we are in configurable run-time mode, even if the expression would
+   --  normally be considered compile-time known.
 
    function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean;
    --  Similar to Compile_Time_Known_Value, but also returns True if the value
@@ -245,7 +282,7 @@ package Sem_Eval is
 
    function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean;
    --  If T is an array whose index bounds are all known at compile time, then
-   --  True is returned, if T is not an array, or one or more of its index
+   --  True is returned. If T is not an array type, or one or more of its index
    --  bounds is not known at compile time, then False is returned.
 
    function Expr_Value (N : Node_Id) return Uint;

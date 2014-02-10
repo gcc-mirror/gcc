@@ -74,7 +74,7 @@
 ;; bshift 	Shift operations
 
 (define_attr "type"
-  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt"
+  "unknown,branch,jump,call,load,store,move,arith,darith,imul,idiv,icmp,multi,nop,no_delay_arith,no_delay_load,no_delay_store,no_delay_imul,no_delay_move,bshift,fadd,frsub,fmul,fdiv,fcmp,fsl,fsqrt,fcvt,trap"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -365,7 +365,8 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
         (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
   "TARGET_REORDER"
-  "swaph %0, %1"
+  "swapb %0, %1
+   swaph %0, %0"
 )
 
 ;;----------------------------------------------------------------
@@ -1649,7 +1650,7 @@
 ;;----------------------------------------------------------------
 (define_insn "cstoresf4"
    [(set (match_operand:SI 0 "register_operand" "=r")
-        (match_operator 1 "comparison_operator"
+        (match_operator:SI 1 "ordered_comparison_operator"
 	      [(match_operand:SF 2 "register_operand" "r")
 	       (match_operand:SF 3 "register_operand" "r")]))]
   "TARGET_HARD_FLOAT"
@@ -1678,7 +1679,7 @@
 
 (define_expand "cbranchsf4"
   [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(match_operand:SF 1 "register_operand")
 		        (match_operand:SF 2 "register_operand")])
 		      (label_ref (match_operand 3 ""))
@@ -2199,6 +2200,14 @@
   [(set_attr "type"	"nop")
   (set_attr "mode"	"none")
   (set_attr "length"	"4")])
+
+;; Trap instruction pattern for __builtin_trap. Same as the glibc ABORT_INSTRUCTION
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+  "brki\tr0,-1"
+ [(set_attr "type" "trap")]
+)
 
 ;; The insn to set GOT. The hardcoded number "8" accounts for $pc difference
 ;; between "mfs" and "addik" instructions.

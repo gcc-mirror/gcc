@@ -1,3 +1,61 @@
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (unify_scc): Free CONSTRUCTOR_ELTS.
+
+2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59469
+	* lto-partition.c (symbol_class): Move to cgraph.h
+	(get_symbol_class): Move to symtab.c
+	(add_references_to_partition, add_symbol_to_partition_1,
+	lto_max_map, lto_1_to_1_map, lto_balanced_map,
+	lto_promote_cross_file_statics): Update.
+
+2014-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_parallelism): New static var.
+	(do_stream_out, wait_for_child, stream_out): New static functions.
+	(lto_wpa_write_files): Add support for parallel streaming.
+	(do_whole_program_analysis): Set parallelism.
+	* lang.opt (fwpa): Add parameter.
+	* lto-lang.c (lto_handle_option): Handle flag_wpa.
+	(lto_init): Update use of flag_wpa.
+	* lto-streamer.h (asm_nodes_output): Declare.
+
+2014-02-05  Richard Biener  <rguenther@suse.de>
+
+	* lto.h (lto_global_var_decls): Remove.
+	* lto-lang.c (lto_init): Do not allocate lto_global_var_decls.
+	(lto_write_globals): Do nothing in WPA stage, gather globals from
+	the varpool here ...
+	* lto.c (lto_main): ... not here.
+	(materialize_cgraph): Do not call rest_of_decl_compilation
+	on the empty lto_global_var_decls vector.
+	(lto_global_var_decls): Remove.
+
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (get_symbol_class): Only unforced DECL_ONE_ONLY 
+	needs duplicating, not generic COMDAT.
+
+2014-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/59723
+	* lto.c (mentions_vars_p): Handle NAMELIST_DECL.
+	(lto_fixup_prevailing_decls): Handle fixing up CONSTRUCTOR values.
+
+2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
+	    Markus Trippelsdorf
+
+	PR ipa/59469
+	* lto-symtab.c (lto_cgraph_replace_node, lto_varpool_replace_node):
+	merge force_output and forced_by_abi flags.
+
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* lto-lang.c (lto_init): Replaced flag_enable_cilkplus with
+	flag_cilkplus.
+
 2014-01-09  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (gimple_canonical_types_compatible_p): Fix comment.

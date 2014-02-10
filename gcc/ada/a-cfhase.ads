@@ -66,6 +66,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Hashed_Sets is
+   pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
    type Set (Capacity : Count_Type; Modulus : Hash_Type) is private;
@@ -105,7 +106,7 @@ package Ada.Containers.Formal_Hashed_Sets is
      (Source   : Set;
       Capacity : Count_Type := 0) return Set
    with
-     Pre => Capacity >= Source.Capacity;
+     Pre => Capacity = 0 or else Capacity >= Source.Capacity;
 
    function Element
      (Container : Set;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,12 +56,16 @@ with Interfaces;
 package System.Random_Numbers is
 
    type Generator is limited private;
+   --  Generator encodes the current state of a random number stream, it is
+   --  provided as input to produce the next random number, and updated so
+   --  that it is ready to produce the next one.
+
    type State is private;
    --  A non-limited version of a Generator's internal state
 
    function Random (Gen : Generator) return Float;
    function Random (Gen : Generator) return Long_Float;
-   --  Return pseudo-random numbers uniformly distributed on [0 .. 1)
+   --  Return pseudo-random numbers uniformly distributed on [0.0 .. 1.0)
 
    function Random (Gen : Generator) return Interfaces.Unsigned_32;
    function Random (Gen : Generator) return Interfaces.Unsigned_64;

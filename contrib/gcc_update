@@ -79,6 +79,7 @@ gcc/configure: gcc/configure.ac
 gcc/cstamp-h.in: gcc/configure.ac
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
+gcc/config/aarch64/aarch64-tune.md: gcc/config/aarch64/aarch64-cores.def gcc/config/aarch64/gentune.sh
 gcc/config/arm/arm-tune.md: gcc/config/arm/arm-cores.def gcc/config/arm/gentune.sh
 gcc/config/arm/arm-tables.opt: gcc/config/arm/arm-arches.def gcc/config/arm/arm-cores.def gcc/config/arm/arm-fpus.def gcc/config/arm/genopt.sh
 gcc/config/avr/avr-tables.opt: gcc/config/avr/avr-mcus.def gcc/config/avr/genopt.sh

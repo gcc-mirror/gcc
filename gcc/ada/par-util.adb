@@ -97,7 +97,7 @@ package body Util is
 
       --  Never consider something a misspelling if either the actual or
       --  expected string is less than 3 characters (before this check we
-      --  used to consider i to be a misspelled if in some cases!)
+      --  used to consider i to be a misspelled if in some cases).
 
       if SL < 3 or else Name_Len < 3 then
          return False;
@@ -268,7 +268,7 @@ package body Util is
       Paren_Count : Nat;
 
    begin
-      --  First check, if a comma is present, then a comma is present!
+      --  First check, if a comma is present, then a comma is present
 
       if Token = Tok_Comma then
          T_Comma;
@@ -318,7 +318,7 @@ package body Util is
 
          --  If that test didn't work, loop ahead looking for a comma or
          --  semicolon at the same parenthesis level. Always remember that
-         --  we can't go badly wrong in an error situation like this!
+         --  we can't go badly wrong in an error situation like this.
 
          Paren_Count := 0;
 

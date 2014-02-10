@@ -334,10 +334,6 @@ package body SPARK_Specific is
          S : Scope_Index) return Boolean;
       --  Check whether entity E is in SPARK_Scope_Table at index S or higher
 
-      function Is_Global_Constant (E : Entity_Id) return Boolean;
-      --  Return True if E is a global constant for which we should ignore
-      --  reads in SPARK.
-
       function Lt (Op1 : Natural; Op2 : Natural) return Boolean;
       --  Comparison function for Sort call
 
@@ -440,14 +436,6 @@ package body SPARK_Specific is
          if Ekind (E) in Overloadable_Kind then
             return Typ = 's';
 
-         --  References to constant objects are not considered in SPARK
-         --  section, as these will be translated as constants in the
-         --  intermediate language for formal verification, and should
-         --  therefore never appear in frame conditions.
-
-         elsif Is_Constant_Object (E) then
-            return False;
-
          --  Objects of Task type or protected type are not SPARK references
 
          elsif Present (Etype (E))
@@ -525,16 +513,6 @@ package body SPARK_Specific is
 
          return False;
       end Is_Future_Scope_Entity;
-
-      ------------------------
-      -- Is_Global_Constant --
-      ------------------------
-
-      function Is_Global_Constant (E : Entity_Id) return Boolean is
-      begin
-         return Ekind (E) = E_Constant
-           and then Ekind_In (Scope (E), E_Package, E_Package_Body);
-      end Is_Global_Constant;
 
       --------
       -- Lt --
@@ -726,7 +704,6 @@ package body SPARK_Specific is
               and then SPARK_References (Ref.Typ)
               and then Is_SPARK_Scope (Ref.Ent_Scope)
               and then Is_SPARK_Scope (Ref.Ref_Scope)
-              and then not Is_Global_Constant (Ref.Ent)
               and then Is_SPARK_Reference (Ref.Ent, Ref.Typ)
 
               --  Discard references from unknown scopes, e.g. generic scopes
@@ -805,6 +782,7 @@ package body SPARK_Specific is
          declare
             Ref_Entry : Xref_Entry renames Xrefs.Table (Rnums (Refno));
             Ref       : Xref_Key   renames Ref_Entry.Key;
+            Typ       : Character;
 
          begin
             --  If this assertion fails, the scope which we are looking for is
@@ -844,6 +822,17 @@ package body SPARK_Specific is
                Col  := Int (Get_Column_Number (Ref_Entry.Def));
             end if;
 
+            --  References to constant objects are considered specially in
+            --  SPARK section, because these will be translated as constants in
+            --  the intermediate language for formal verification, and should
+            --  therefore never appear in frame conditions.
+
+            if Is_Constant_Object (Ref.Ent) then
+               Typ := 'c';
+            else
+               Typ := Ref.Typ;
+            end if;
+
             SPARK_Xref_Table.Append (
               (Entity_Name => Ref_Name,
                Entity_Line => Line,
@@ -852,7 +841,7 @@ package body SPARK_Specific is
                File_Num    => Dependency_Num (Ref.Lun),
                Scope_Num   => Get_Scope_Num (Ref.Ref_Scope),
                Line        => Int (Get_Logical_Line_Number (Ref.Loc)),
-               Rtype       => Ref.Typ,
+               Rtype       => Typ,
                Col         => Int (Get_Column_Number (Ref.Loc))));
          end;
       end loop;
@@ -1023,25 +1012,18 @@ package body SPARK_Specific is
             when N_Pragma =>
 
                --  The enclosing subprogram for a precondition, postcondition,
-               --  or contract case should be the subprogram to which the
-               --  pragma is attached, which can be found by following
-               --  previous elements in the list to which the pragma belongs.
+               --  or contract case should be the declaration preceding the
+               --  pragma (skipping any other pragmas between this pragma and
+               --  this declaration.
 
-               if Get_Pragma_Id (Result) = Pragma_Precondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Postcondition
-                    or else
-                  Get_Pragma_Id (Result) = Pragma_Contract_Cases
-               then
-                  if Is_List_Member (Result)
-                    and then Present (Prev (Result))
-                  then
-                     Result := Prev (Result);
-                  else
-                     Result := Parent (Result);
-                  end if;
+               while Nkind (Result) = N_Pragma
+                 and then Is_List_Member (Result)
+                 and then Present (Prev (Result))
+               loop
+                  Result := Prev (Result);
+               end loop;
 
-               else
+               if Nkind (Result) = N_Pragma then
                   Result := Parent (Result);
                end if;
 

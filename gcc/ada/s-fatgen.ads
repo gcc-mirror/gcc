@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package System.Fat_Gen is
    --  actual type used. For functions returning universal integer, there
    --  is no problem, since the result always is in range of integer. For
    --  input arguments, the expander has to do some special casing to deal
-   --  with the (very annoying!) cases of out of range values. If we used
+   --  with the (very annoying) cases of out of range values. If we used
    --  Long_Long_Integer to represent universal, then there would be no
    --  problem, but the resulting inefficiency would be annoying.
 

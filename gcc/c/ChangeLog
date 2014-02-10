@@ -1,3 +1,130 @@
+2014-02-07  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* c-parser.c (c_parser_get_builtin_args): Replace calls to
+	C_EXPR_APPEND by vec_safe_push.
+	* c-tree.h (C_EXPR_APPEND): Remove.
+
+2014-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59963
+	* c-typeck.c (convert_lvalue_to_rvalue): Pass vNULL to
+	build_function_call_vec.
+	(build_function_call): Likewise.
+	(build_atomic_assign): Likewise.
+	(build_function_call_vec): Add arg_loc parameter.  Use it.
+	(convert_arguments): Likewise.
+	(convert_for_assignment): Rename rhs_loc to expr_loc.
+	* c-parser.c (c_parser_attributes): Pass NULL to c_parser_expr_list.
+	(c_parser_objc_keywordexpr): Likewise.
+	(c_parser_postfix_expression_after_primary): Call
+	build_function_call_vec with expr_loc rather than op_loc.
+	Call c_parser_expr_list to fill arg_loc.  Pass arg_loc to
+	build_function_call_vec.
+	(c_parser_expr_list): Add locations parameter.  Fill it with locations
+	of function arguments.
+	* c-decl.c (finish_decl): Pass vNULL to build_function_call_vec.
+
+2014-01-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59940
+	* c-typeck.c (build_function_call_vec): Use loc parameter.
+	(convert_arguments): Add location parameter.  Use it.
+	(ep_convert_and_check): Likewise.
+	(build_atomic_assign): Adjust convert_for_assignment call.
+	(build_modify_expr): Likewise.
+	(digest_init): Likewise.
+	(c_finish_return): Likewise.
+	(build_conditional_expr): Adjust ep_convert_and_check calls.
+	(convert_for_assignment): Add rhs_loc parameter.  Use it.
+	(build_binary_op): Adjust convert_and_check and ep_convert_and_check
+	calls.
+
+2014-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR c/59905
+	* c-typeck.c (build_function_call_vec): Do not replace calls
+	to a function via an incompatible type with a runtime abort.
+
+2014-01-24  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-parser.c (c_parser_declaration_or_fndef): Replaced
+	flag_enable_cilkplus with flag_cilkplus.
+	(c_parser_direct_declarator_inner): Likewise.
+	(c_parser_attribute_any_word): Likewise.
+	(c_parser_attributes): Likewise.
+	(c_parser_compound_statement): Likewise.
+	(c_parser_statement_after_labels): Likewise.
+	(c_parser_if_statement): Likewise.
+	(c_parser_switch_statement): Likewise.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_unary_expression): Likewise.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_omp_clause_name): Likewise.
+	(c_finish_omp_declare_simd): Likewise.
+	(c_parser_cilk_verify_simd): Likewise.
+	* c-typeck.c (build_array_ref): Likewise.
+	(build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+	(build_compound_expr): Likewise.
+	(c_finish_return): Likewise.
+	(c_finish_if_stmt): Likewise.
+	(c_finish_loop): Likewise.
+	(build_binary_op): Likewise.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59846
+	* c-typeck.c (parser_build_binary_op): Use location instead of
+	input_location.
+	(build_binary_op): Pass location to shorten_compare.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/58346
+	* c-typeck.c (pointer_diff): Give an error on arithmetic on pointer to
+	an empty aggregate.
+
+2014-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59871
+	* c-typeck.c (build_compound_expr): Warn even for right-hand operand
+	of a comma expression.
+	(emit_side_effect_warnings): Likewise.
+
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/59825
+	* c-array-notation.c (expand_array_notation_exprs): Rewrote this
+	function to use walk_tree and moved a lot of its functionality to
+	expand_array_notations.
+	(expand_array_notations): New function.
+
+2014-01-23  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-parser.c (c_finish_omp_declare_simd): Made "cilk simd function"
+	attribute an attribute without value.
+
+2014-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58809
+	* c-typeck.c (c_finish_omp_clause): Reject MIN_EXPR, MAX_EXPR,
+	BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR on COMPLEX_TYPEs.
+
+2014-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/59891
+	* c-typeck.c (build_conditional_expr): Call c_fully_fold instead
+	of remove_c_maybe_const_expr on op1 and op2.
+
+2014-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/58943
+	* c-typeck.c (build_modify_expr): For lhs op= rhs, if rhs has side
+	effects, preevaluate rhs using SAVE_EXPR first.
+
 2014-01-09  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c++/59631

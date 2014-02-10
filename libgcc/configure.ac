@@ -279,9 +279,11 @@ AC_CACHE_CHECK([whether assembler supports CFI directives], [libgcc_cv_cfi],
   [libgcc_cv_cfi=yes],
   [libgcc_cv_cfi=no])])
 
-# Check 32bit or 64bit
+# Check 32bit or 64bit.  In the case of MIPS, this really determines the
+# word size rather than the address size.
 cat > conftest.c <<EOF
-#if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__))
+#if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__)) \
+    || defined(__mips64)
 host_address=64
 #else
 host_address=32
@@ -289,6 +291,18 @@ host_address=32
 EOF
 eval `${CC-cc} -E conftest.c | grep host_address=`
 rm -f conftest.c
+
+case ${host} in
+mips*-*-*)
+  AC_CACHE_CHECK([whether the target is hard-float],
+		 [libgcc_cv_mips_hard_float],
+		 [AC_COMPILE_IFELSE(
+    [#ifndef __mips_hard_float
+     #error FOO
+     #endif],
+    [libgcc_cv_mips_hard_float=yes],
+    [libgcc_cv_mips_hard_float=no])])
+esac
 
 # Collect host-machine-specific information.
 . ${srcdir}/config.host

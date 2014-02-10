@@ -761,7 +761,8 @@ BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
-BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
+BUILD_CPPFLAGS= -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
+		-I$(srcdir)/../include @INCINTL@ $(CPPINC) $(CPPFLAGS)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
@@ -1473,7 +1474,8 @@ OBJS = \
 
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
-OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o input.o version.o
+OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o \
+	vec.o  input.o version.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -1925,6 +1927,7 @@ default-c.o: config/default-c.c
 # Files used by all variants of C and some other languages.
 
 CFLAGS-prefix.o += -DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s)
+prefix.o: $(BASEVER)
 
 # Language-independent files.
 
@@ -2540,6 +2543,7 @@ PREPROCESSOR_DEFINES = \
   @TARGET_SYSTEM_ROOT_DEFINE@
 
 CFLAGS-cppbuiltin.o += $(PREPROCESSOR_DEFINES) -DBASEVER=$(BASEVER_s)
+cppbuiltin.o: $(BASEVER)
 
 CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 

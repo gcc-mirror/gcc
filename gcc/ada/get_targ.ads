@@ -108,6 +108,13 @@ package Get_Targ is
    --  Alignment required for Long_Long_Integer or larger integer types
    --  or 0 if no special requirement.
 
+   function Get_Short_Enums                return Int;
+   --  Returns non-zero if we are in short enums mode, where foreign convention
+   --  (in particular C and C++) enumeration types will be sized as in Ada,
+   --  using the shortest possibility from 8,16,32 bits, signed or unsigned.
+   --  A zero value means Short_Enums are not in use, and in this case all
+   --  foreign convention enumeration types are given the same size as c int.
+
    --  Other subprograms
 
    function Get_Max_Unaligned_Field return Pos;

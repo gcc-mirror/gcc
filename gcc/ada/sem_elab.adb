@@ -47,8 +47,6 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -978,7 +976,7 @@ package body Sem_Elab is
                --  elaboration Boolean for the unit containing the entity.
 
                --  Note that for this case, we do check the real unit (the one
-               --  from following renamings, since that is the issue!)
+               --  from following renamings, since that is the issue).
 
                --  Could this possibly miss a useless but required PE???
 
@@ -1138,13 +1136,14 @@ package body Sem_Elab is
 
       --  Here we definitely have a bad instantiation
 
-      Error_Msg_NE ("??cannot instantiate& before body seen", N, Ent);
+      Error_Msg_Warn := SPARK_Mode /= On;
+      Error_Msg_NE ("cannot instantiate& before body seen<<", N, Ent);
 
       if Present (Instance_Spec (N)) then
          Supply_Bodies (Instance_Spec (N));
       end if;
 
-      Error_Msg_N ("\??Program_Error will be raised at run time", N);
+      Error_Msg_N ("\Program_Error [<<", N);
       Insert_Elab_Check (N);
       Set_ABE_Is_Certain (N);
    end Check_Bad_Instantiation;
@@ -2044,7 +2043,7 @@ package body Sem_Elab is
          --  we go in unconditionally. This is not so terrible, it means the
          --  error backtrace is not quite complete, and we are too eager to
          --  scan bodies of tasks that are unused, but this is hardly very
-         --  significant!
+         --  significant.
 
          elsif Nkind (N) = N_Subprogram_Body
            and then Comes_From_Source (N)
@@ -2156,18 +2155,52 @@ package body Sem_Elab is
 
       declare
          P : Node_Id;
+         O : Node_Id;
+
       begin
          P := Parent (N);
          loop
+            --  Keep looking at parents if we are still in the subexpression
+
             if Nkind (P) in N_Subexpr then
                P := Parent (P);
-            elsif Nkind (P) = N_If_Statement
-              and then Nkind (Original_Node (P)) = N_Pragma
-              and then Present (Corresponding_Aspect (Original_Node (P)))
-            then
-               return;
+
+            --  Here P is the parent of the expression, check for special case
+
             else
-               exit;
+               O := Original_Node (P);
+
+               --  Definitely not the special case if orig node is not a pragma
+
+               exit when Nkind (O) /= N_Pragma;
+
+               --  Check we have an If statement or a null statement (happens
+               --  when the If has been expanded to be True).
+
+               exit when not Nkind_In (P, N_If_Statement, N_Null_Statement);
+
+               --  Our special case will be indicated either by the pragma
+               --  coming from an aspect ...
+
+               if Present (Corresponding_Aspect (O)) then
+                  return;
+
+               --  Or, in the case of an initial condition, specifically by a
+               --  Check pragma specifying an Initial_Condition check.
+
+               elsif Pragma_Name (O) = Name_Check
+                 and then
+                   Chars
+                     (Expression (First (Pragma_Argument_Associations (O)))) =
+                                                       Name_Initial_Condition
+               then
+                  return;
+
+               --  For anything else, we have an error
+
+               else
+                  exit;
+               end if;
             end if;
          end loop;
       end;
@@ -2178,14 +2211,17 @@ package body Sem_Elab is
       --  level, and the ABE is bound to occur.
 
       if Elab_Call.Last = 0 then
+         Error_Msg_Warn := SPARK_Mode /= On;
+
          if Inst_Case then
             Error_Msg_NE
-              ("??cannot instantiate& before body seen", N, Orig_Ent);
+              ("cannot instantiate& before body seen<<", N, Orig_Ent);
          else
-            Error_Msg_NE ("??cannot call& before body seen", N, Orig_Ent);
+            Error_Msg_NE
+              ("cannot call& before body seen<<", N, Orig_Ent);
          end if;
 
-         Error_Msg_N ("\??Program_Error will be raised at run time", N);
+         Error_Msg_N ("\Program_Error [<<", N);
          Insert_Elab_Check (N);
 
       --  Call is not at outer level
@@ -2259,17 +2295,19 @@ package body Sem_Elab is
            and then (Nkind (Original_Node (N)) /= N_Function_Call
                       or else not In_Assertion_Expression (Original_Node (N)))
          then
+            Error_Msg_Warn := SPARK_Mode /= On;
+
             if Inst_Case then
                Error_Msg_NE
-                 ("instantiation of& may occur before body is seen??",
+                 ("instantiation of& may occur before body is seen<<",
                   N, Orig_Ent);
             else
                Error_Msg_NE
-                 ("call to& may occur before body is seen??", N, Orig_Ent);
+                 ("call to& may occur before body is seen<<", N, Orig_Ent);
             end if;
 
             Error_Msg_N
-              ("\Program_Error may be raised at run time??", N);
+              ("\Program_Error ]<<", N);
 
             Output_Calls (N);
          end if;
@@ -2364,11 +2402,11 @@ package body Sem_Elab is
                       or else
                     Scope (Proc) = Scope (Defining_Identifier (Decl)))
                then
+                  Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N
-                    ("task will be activated before elaboration of its body??",
+                    ("task will be activated before elaboration of its body<<",
                       Decl);
-                  Error_Msg_N
-                    ("\Program_Error will be raised at run time??", Decl);
+                  Error_Msg_N ("\Program_Error [<<", Decl);
 
                elsif
                  Present (Corresponding_Body (Unit_Declaration_Node (Proc)))
@@ -2885,6 +2923,9 @@ package body Sem_Elab is
       Nod : Node_Id;
       Loc : constant Source_Ptr := Sloc (N);
 
+      Chk : Node_Id;
+      --  The check (N_Raise_Program_Error) node to be inserted
+
    begin
       --  If expansion is disabled, do not generate any checks. Also
       --  skip checks if any subunits are missing because in either
@@ -2908,106 +2949,35 @@ package body Sem_Elab is
          Nod := N;
       end if;
 
+      --  Build check node, possibly with condition
+
+      Chk :=
+        Make_Raise_Program_Error (Loc, Reason => PE_Access_Before_Elaboration);
+
+      if Present (C) then
+         Set_Condition (Chk, Make_Op_Not (Loc, Right_Opnd => C));
+      end if;
+
       --  If we are inserting at the top level, insert in Aux_Decls
 
       if Nkind (Parent (Nod)) = N_Compilation_Unit then
          declare
             ADN : constant Node_Id := Aux_Decls_Node (Parent (Nod));
-            R   : Node_Id;
 
          begin
-            if No (C) then
-               R :=
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Access_Before_Elaboration);
-            else
-               R :=
-                 Make_Raise_Program_Error (Loc,
-                   Condition => Make_Op_Not (Loc, C),
-                   Reason    => PE_Access_Before_Elaboration);
-            end if;
-
             if No (Declarations (ADN)) then
-               Set_Declarations (ADN, New_List (R));
+               Set_Declarations (ADN, New_List (Chk));
             else
-               Append_To (Declarations (ADN), R);
+               Append_To (Declarations (ADN), Chk);
             end if;
 
-            Analyze (R);
+            Analyze (Chk);
          end;
 
-      --  Otherwise just insert before the node in question. However, if
-      --  the context of the call has already been analyzed, an insertion
-      --  will not work if it depends on subsequent expansion (e.g. a call in
-      --  a branch of a short-circuit). In that case we replace the call with
-      --  an if expression, or with a Raise if it is unconditional.
-
-      --  Unfortunately this does not work if the call has a dynamic size,
-      --  because gigi regards it as a dynamic-sized temporary. If such a call
-      --  appears in a short-circuit expression, the elaboration check will be
-      --  missed (rare enough ???). Otherwise, the code below inserts the check
-      --  at the appropriate place before the call. Same applies in the even
-      --  rarer case the return type has a known size but is unconstrained.
+      --  Otherwise just insert as an action on the node in question
 
       else
-         if Nkind (N) = N_Function_Call
-           and then Analyzed (Parent (N))
-           and then Size_Known_At_Compile_Time (Etype (N))
-           and then
-            (not Has_Discriminants (Etype (N))
-              or else Is_Constrained (Etype (N)))
-
-         then
-            declare
-               Typ : constant Entity_Id := Etype (N);
-               Chk : constant Boolean   := Do_Range_Check (N);
-
-               R  : constant Node_Id :=
-                      Make_Raise_Program_Error (Loc,
-                         Reason => PE_Access_Before_Elaboration);
-
-               Reloc_N : Node_Id;
-
-            begin
-               Set_Etype (R, Typ);
-
-               if No (C) then
-                  Rewrite (N, R);
-
-               else
-                  Reloc_N := Relocate_Node (N);
-                  Save_Interps (N, Reloc_N);
-                  Rewrite (N,
-                    Make_If_Expression (Loc,
-                      Expressions => New_List (C, Reloc_N, R)));
-               end if;
-
-               Analyze_And_Resolve (N, Typ);
-
-               --  If the original call requires a range check, so does the
-               --  if expression.
-
-               if Chk then
-                  Enable_Range_Check (N);
-               else
-                  Set_Do_Range_Check (N, False);
-               end if;
-            end;
-
-         else
-            if No (C) then
-               Insert_Action (Nod,
-                  Make_Raise_Program_Error (Loc,
-                    Reason => PE_Access_Before_Elaboration));
-            else
-               Insert_Action (Nod,
-                  Make_Raise_Program_Error (Loc,
-                    Condition =>
-                      Make_Op_Not (Loc,
-                        Right_Opnd => C),
-                    Reason => PE_Access_Before_Elaboration));
-            end if;
-         end if;
+         Insert_Action (Nod, Chk);
       end if;
    end Insert_Elab_Check;
 

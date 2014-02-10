@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1384,6 +1384,10 @@ package body Ada.Calendar is
          Hour_Seconds := Day_Seconds mod 3_600;
          Minute       := Hour_Seconds / 60;
          Second       := Hour_Seconds mod 60;
+
+      exception
+         when Constraint_Error =>
+            raise Time_Error;
       end Split;
 
       -------------

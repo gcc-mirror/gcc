@@ -396,6 +396,13 @@ package body Sem_Attr is
       --  Common processing for attributes Definite and Has_Discriminants.
       --  Checks that prefix is generic indefinite formal type.
 
+      procedure Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
+      --  Common processing for attributes Max_Alignment_For_Allocation and
+      --  Max_Size_In_Storage_Elements.
+
+      procedure Min_Max;
+      --  Common processing for attributes Max and Min
+
       procedure Standard_Attribute (Val : Int);
       --  Used to process attributes whose prefix is package Standard which
       --  yield values of type Universal_Integer. The attribute reference
@@ -2189,6 +2196,40 @@ package body Sem_Attr is
          Set_Etype (N, Standard_Boolean);
       end Legal_Formal_Attribute;
 
+      ---------------------------------------------------------------
+      -- Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements --
+      ---------------------------------------------------------------
+
+      procedure Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements is
+      begin
+         Check_E0;
+         Check_Type;
+         Check_Not_Incomplete_Type;
+         Set_Etype (N, Universal_Integer);
+      end Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
+
+      -------------
+      -- Min_Max --
+      -------------
+
+      procedure Min_Max is
+      begin
+         Check_E2;
+         Check_Scalar_Type;
+         Resolve (E1, P_Base_Type);
+         Resolve (E2, P_Base_Type);
+         Set_Etype (N, P_Base_Type);
+
+         --  Check for comparison on unordered enumeration type
+
+         if Bad_Unordered_Enumeration_Reference (N, P_Base_Type) then
+            Error_Msg_Sloc := Sloc (P_Base_Type);
+            Error_Msg_NE
+              ("comparison on unordered enumeration type& declared#?U?",
+               N, P_Base_Type);
+         end if;
+      end Min_Max;
+
       ------------------------
       -- Standard_Attribute --
       ------------------------
@@ -3018,22 +3059,34 @@ package body Sem_Attr is
             end if;
 
             --  Must have discriminants or be an access type designating
-            --  a type with discriminants. If it is a classwide type is ???
+            --  a type with discriminants. If it is a classwide type it
             --  has unknown discriminants.
 
             if Has_Discriminants (P_Type)
-               or else Has_Unknown_Discriminants (P_Type)
-               or else
-                 (Is_Access_Type (P_Type)
-                   and then Has_Discriminants (Designated_Type (P_Type)))
+              or else Has_Unknown_Discriminants (P_Type)
+              or else
+                (Is_Access_Type (P_Type)
+                  and then Has_Discriminants (Designated_Type (P_Type)))
             then
                return;
 
+            --  The rule given in 3.7.2 is part of static semantics, but the
+            --  intent is clearly that it be treated as a legality rule, and
+            --  rechecked in the visible part of an instance. Nevertheless
+            --  the intent also seems to be it should legally apply to the
+            --  actual of a formal with unknown discriminants, regardless of
+            --  whether the actual has discriminants, in which case the value
+            --  of the attribute is determined using the J.4 rules. This choice
+            --  seems the most useful, and is compatible with existing tests.
+
+            elsif In_Instance then
+               return;
+
             --  Also allow an object of a generic type if extensions allowed
-            --  and allow this for any type at all.
+            --  and allow this for any type at all. (this may be obsolete ???)
 
             elsif (Is_Generic_Type (P_Type)
-                     or else Is_Generic_Actual_Type (P_Type))
+                    or else Is_Generic_Actual_Type (P_Type))
               and then Extensions_Allowed
             then
                return;
@@ -3903,13 +3956,17 @@ package body Sem_Attr is
          Stmt := Attr;
          while Present (Stmt) loop
 
-            --  Locate the enclosing Loop_Invariant / Loop_Variant pragma
+            --  Locate the corresponding enclosing pragma. Note that in the
+            --  case of Assert[And_Cut] and Assume, we have already checked
+            --  that the pragma appears in an appropriate loop location.
 
             if Nkind (Original_Node (Stmt)) = N_Pragma
-              and then
-                Nam_In (Pragma_Name (Original_Node (Stmt)),
-                        Name_Loop_Invariant,
-                        Name_Loop_Variant)
+              and then Nam_In (Pragma_Name (Original_Node (Stmt)),
+                               Name_Loop_Invariant,
+                               Name_Loop_Variant,
+                               Name_Assert,
+                               Name_Assert_And_Cut,
+                               Name_Assume)
             then
                In_Loop_Assertion := True;
 
@@ -3941,12 +3998,14 @@ package body Sem_Attr is
             Stmt := Parent (Stmt);
          end loop;
 
-         --  Loop_Entry must appear within a Loop_Assertion pragma
+            --  Loop_Entry must appear within a Loop_Assertion pragma (Assert,
+            --  Assert_And_Cut, Assume count as loop assertion pragmas for this
+            --  purpose if they appear in an appropriate location in a loop,
+            --  which was already checked by the top level pragma circuit).
 
          if not In_Loop_Assertion then
             Error_Attr
-              ("attribute % must appear within pragma Loop_Variant or " &
-               "Loop_Invariant", N);
+              ("attribute % must appear within appropriate pragma", N);
          end if;
 
          --  A Loop_Entry that applies to a given loop statement shall not
@@ -3976,13 +4035,23 @@ package body Sem_Attr is
          Check_References_In_Prefix (Loop_Id);
 
          --  The prefix must denote a static entity if the pragma does not
-         --  apply to the innermost enclosing loop statement.
+         --  apply to the innermost enclosing loop statement, or if it appears
+         --  within a potentially unevaluated epxression.
 
-         if Present (Enclosing_Loop)
-           and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
-           and then not Is_Entity_Name (P)
+         if Is_Entity_Name (P)
+           or else Nkind (Parent (P)) = N_Object_Renaming_Declaration
          then
-            Error_Attr_P ("prefix of attribute % must denote an entity");
+            null;
+
+         elsif Present (Enclosing_Loop)
+                 and then Entity (Identifier (Enclosing_Loop)) /= Loop_Id
+         then
+            Error_Attr_P ("prefix of attribute % that applies to "
+              & "outer loop must denote an entity");
+
+         elsif Is_Potentially_Unevaluated (P) then
+            Error_Attr_P ("prefix of attribute % that is potentially "
+              & "unevaluated must denote an entity");
          end if;
       end Loop_Entry;
 
@@ -4079,23 +4148,21 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Max =>
-         Check_E2;
-         Check_Scalar_Type;
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
+         Min_Max;
 
       ----------------------------------
       -- Max_Alignment_For_Allocation --
+      ----------------------------------
+
+      when Attribute_Max_Size_In_Storage_Elements =>
+         Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
+
+      ----------------------------------
       -- Max_Size_In_Storage_Elements --
       ----------------------------------
 
-      when Attribute_Max_Alignment_For_Allocation |
-        Attribute_Max_Size_In_Storage_Elements =>
-         Check_E0;
-         Check_Type;
-         Check_Not_Incomplete_Type;
-         Set_Etype (N, Universal_Integer);
+      when Attribute_Max_Alignment_For_Allocation =>
+         Max_Alignment_For_Allocation_Max_Size_In_Storage_Elements;
 
       -----------------------
       -- Maximum_Alignment --
@@ -4140,11 +4207,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Min =>
-         Check_E2;
-         Check_Scalar_Type;
-         Resolve (E1, P_Base_Type);
-         Resolve (E2, P_Base_Type);
-         Set_Etype (N, P_Base_Type);
+         Min_Max;
 
       ---------
       -- Mod --
@@ -4319,6 +4382,8 @@ package body Sem_Attr is
          --  During pre-analysis, Prag is the enclosing pragma node if any
 
       begin
+         Prag := Empty;
+
          --  Find enclosing scopes, excluding loops
 
          CS := Current_Scope;
@@ -4351,52 +4416,68 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                null;
 
+            --  We must have a pragma
+
             elsif Nkind (Prag) /= N_Pragma then
                Error_Attr ("% attribute can only appear in postcondition", P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
-               declare
-                  Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_CTC_Pragma (Prag);
-                  Arg     : Node_Id;
+            --  Processing depends on which pragma we have
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Arg /= Arg_Ens loop
-                     Arg := Parent (Arg);
-                  end loop;
+            else
+               case Get_Pragma_Id (Prag) is
+                  when Pragma_Test_Case =>
+                     declare
+                        Arg_Ens : constant Node_Id :=
+                                    Get_Ensures_From_CTC_Pragma (Prag);
+                        Arg     : Node_Id;
 
-                  if Arg /= Arg_Ens then
-                     Error_Attr ("% attribute misplaced inside test case", P);
-                  end if;
-               end;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag and then Arg /= Arg_Ens loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
-               declare
-                  Aggr : constant Node_Id :=
-                    Expression (First (Pragma_Argument_Associations (Prag)));
-                  Arg  : Node_Id;
+                        if Arg /= Arg_Ens then
+                           Error_Attr
+                             ("% attribute misplaced inside test case", P);
+                        end if;
+                     end;
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
-                     Arg := Parent (Arg);
-                  end loop;
+                  when Pragma_Contract_Cases =>
+                     declare
+                        Aggr : constant Node_Id :=
+                          Expression
+                            (First (Pragma_Argument_Associations (Prag)));
+                        Arg  : Node_Id;
 
-                  --  At this point, Parent (Arg) should be a component
-                  --  association. Attribute Result is only allowed in
-                  --  the expression part of this association.
+                     begin
+                        Arg := N;
+                        while Arg /= Prag
+                          and then Parent (Parent (Arg)) /= Aggr
+                        loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-                  if Nkind (Parent (Arg)) /= N_Component_Association
-                    or else Arg /= Expression (Parent (Arg))
-                  then
+                        --  At this point, Parent (Arg) should be a component
+                        --  association. Attribute Result is only allowed in
+                        --  the expression part of this association.
+
+                        if Nkind (Parent (Arg)) /= N_Component_Association
+                          or else Arg /= Expression (Parent (Arg))
+                        then
+                           Error_Attr
+                             ("% attribute misplaced inside contract cases",
+                              P);
+                        end if;
+                     end;
+
+                  when Pragma_Postcondition | Pragma_Refined_Post =>
+                     null;
+
+                  when others =>
                      Error_Attr
-                       ("% attribute misplaced inside contract cases", P);
-                  end if;
-               end;
-
-            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
-               Error_Attr ("% attribute can only appear in postcondition", P);
+                       ("% attribute can only appear in postcondition", P);
+               end case;
             end if;
 
          --  Check the legality of attribute 'Old when it appears inside pragma
@@ -4481,6 +4562,18 @@ package body Sem_Attr is
               ("??attribute Old applied to constant has no effect", P);
          end if;
 
+         --  Check that the prefix of 'Old is an entity, when it appears in
+         --  a postcondition and may be potentially unevaluated (6.1.1 (27/3)).
+
+         if Present (Prag)
+           and then Get_Pragma_Id (Prag) = Pragma_Postcondition
+           and then Is_Potentially_Unevaluated (N)
+           and then not Is_Entity_Name (P)
+         then
+            Error_Attr_P ("prefix of attribute % that is potentially "
+                 & "unevaluated must denote an entity");
+         end if;
+
          --  The attribute appears within a pre/postcondition, but refers to
          --  an entity in the enclosing subprogram. If it is a component of
          --  a formal its expansion might generate actual subtypes that may
@@ -4499,7 +4592,7 @@ package body Sem_Attr is
          --  not suffer from the out-of-order issue described above. Thus, this
          --  expansion is skipped in SPARK mode.
 
-         if not Is_Entity_Name (P) and then not SPARK_Mode then
+         if not Is_Entity_Name (P) and then not GNATprove_Mode then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);
@@ -4790,56 +4883,72 @@ package body Sem_Attr is
             if Nkind (Prag) = N_Aspect_Specification then
                null;
 
+            --  Must have a pragma
+
             elsif Nkind (Prag) /= N_Pragma then
                Error_Attr
                  ("% attribute can only appear in postcondition of function",
                   P);
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Test_Case then
-               declare
-                  Arg_Ens : constant Node_Id :=
-                              Get_Ensures_From_CTC_Pragma (Prag);
-                  Arg     : Node_Id;
+            --  Processing depends on which pragma we have
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Arg /= Arg_Ens loop
-                     Arg := Parent (Arg);
-                  end loop;
+            else
+               case Get_Pragma_Id (Prag) is
 
-                  if Arg /= Arg_Ens then
-                     Error_Attr ("% attribute misplaced inside test case", P);
-                  end if;
-               end;
+                  when Pragma_Test_Case =>
+                     declare
+                        Arg_Ens : constant Node_Id :=
+                                    Get_Ensures_From_CTC_Pragma (Prag);
+                        Arg     : Node_Id;
 
-            elsif Get_Pragma_Id (Prag) = Pragma_Contract_Cases then
-               declare
-                  Aggr : constant Node_Id :=
-                    Expression (First (Pragma_Argument_Associations (Prag)));
-                  Arg  : Node_Id;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag and then Arg /= Arg_Ens loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-               begin
-                  Arg := N;
-                  while Arg /= Prag and then Parent (Parent (Arg)) /= Aggr loop
-                     Arg := Parent (Arg);
-                  end loop;
+                        if Arg /= Arg_Ens then
+                           Error_Attr
+                             ("% attribute misplaced inside test case", P);
+                        end if;
+                     end;
 
-                  --  At this point, Parent (Arg) should be a component
-                  --  association. Attribute Result is only allowed in
-                  --  the expression part of this association.
+                  when Pragma_Contract_Cases =>
+                     declare
+                        Aggr : constant Node_Id :=
+                          Expression (First
+                                        (Pragma_Argument_Associations (Prag)));
+                        Arg  : Node_Id;
 
-                  if Nkind (Parent (Arg)) /= N_Component_Association
-                    or else Arg /= Expression (Parent (Arg))
-                  then
-                     Error_Attr
-                       ("% attribute misplaced inside contract cases", P);
-                  end if;
-               end;
+                     begin
+                        Arg := N;
+                        while Arg /= Prag
+                          and then Parent (Parent (Arg)) /= Aggr
+                        loop
+                           Arg := Parent (Arg);
+                        end loop;
 
-            elsif Get_Pragma_Id (Prag) /= Pragma_Postcondition then
-               Error_Attr
-                 ("% attribute can only appear in postcondition of function",
-                  P);
+                        --  At this point, Parent (Arg) should be a component
+                        --  association. Attribute Result is only allowed in
+                        --  the expression part of this association.
+
+                        if Nkind (Parent (Arg)) /= N_Component_Association
+                          or else Arg /= Expression (Parent (Arg))
+                        then
+                           Error_Attr
+                             ("% attribute misplaced inside contract cases",
+                              P);
+                        end if;
+                     end;
+
+                  when Pragma_Postcondition | Pragma_Refined_Post =>
+                     null;
+
+                     when others =>
+                        Error_Attr
+                          ("% attribute can only appear in postcondition "
+                           & "of function", P);
+               end case;
             end if;
 
             --  The attribute reference is a primary. If expressions follow,
@@ -4860,8 +4969,8 @@ package body Sem_Attr is
 
             Set_Etype (N, Etype (CS));
 
-            --  If several functions with that name are visible,
-            --  the intended one is the current scope.
+            --  If several functions with that name are visible, the intended
+            --  one is the current scope.
 
             if Is_Overloaded (P) then
                Set_Entity (P, CS);
@@ -5346,10 +5455,10 @@ package body Sem_Attr is
                                            Name_Simple_Storage_Pool_Type))
                then
                   Error_Msg_Name_1 := Aname;
+                     Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N ("cannot use % attribute for type with simple "
-                               & "storage pool??", N);
-                  Error_Msg_N
-                     ("\Program_Error will be raised at run time??", N);
+                               & "storage pool<<", N);
+                  Error_Msg_N ("\Program_Error [<<", N);
 
                   Rewrite
                     (N, Make_Raise_Program_Error
@@ -5939,6 +6048,12 @@ package body Sem_Attr is
             Comp_Or_Discr := First_Entity (Typ);
             while Present (Comp_Or_Discr) loop
                if Chars (Comp_Or_Discr) = Comp_Name then
+
+                  --  Record component entity and type in the given aggregate
+                  --  choice, for subsequent resolution.
+
+                  Set_Entity (Comp, Comp_Or_Discr);
+                  Set_Etype  (Comp, Etype (Comp_Or_Discr));
                   exit;
                end if;
 
@@ -5985,6 +6100,7 @@ package body Sem_Attr is
 
       begin
          Check_E1;
+         Check_Ada_2012_Attribute;
 
          if not Is_Object_Reference (P) then
             Error_Attr_P ("prefix of attribute % must denote an object");
@@ -6012,13 +6128,72 @@ package body Sem_Attr is
          Assoc := First (Component_Associations (E1));
          while Present (Assoc) loop
             Comp := First (Choices (Assoc));
+            Analyze (Expression (Assoc));
             while Present (Comp) loop
                if Nkind (Comp) = N_Others_Choice then
                   Error_Attr
                     ("others choice not allowed in attribute %", Comp);
 
+               elsif Is_Array_Type (P_Type) then
+                  declare
+                     Index      : Node_Id;
+                     Index_Type : Entity_Id;
+
+                  begin
+                     if Nkind (First (Choices (Assoc))) /= N_Aggregate then
+
+                        --  Choices denote separate components of one-
+                        --  dimensional array.
+
+                        Index_Type := First_Index (P_Type);
+
+                        Index := First (Choices (Assoc));
+                        while Present (Index) loop
+                           if Nkind (Index) = N_Range then
+                              Analyze_And_Resolve
+                                (Low_Bound (Index), Etype (Index_Type));
+                              Analyze_And_Resolve
+                                (High_Bound (Index), Etype (Index_Type));
+                              Set_Etype (Index, Etype (Index_Type));
+
+                           else
+                              Analyze_And_Resolve (Index, Etype (Index_Type));
+                           end if;
+
+                           Next (Index);
+                        end loop;
+
+                     --  Choice is a sequence of indexes for each dimension
+
+                     else
+                        Index_Type := First_Index (P_Type);
+                        Index := First (Expressions (First (Choices (Assoc))));
+                        while Present (Index_Type)
+                          and then Present (Index)
+                        loop
+                           Analyze_And_Resolve (Index, Etype (Index_Type));
+                           Next_Index (Index_Type);
+                           Next (Index);
+                        end loop;
+
+                        if Present (Index) or else Present (Index_Type) then
+                           Error_Msg_N
+                             ("dimension mismatch in index list", Assoc);
+                        end if;
+                     end if;
+                  end;
+
                elsif Is_Record_Type (P_Type) then
-                  Check_Component_Reference (Comp, P_Type);
+
+                  --  Make sure we have an identifier. Old SPARK allowed
+                  --  a component selection e.g. A.B in the corresponding
+                  --  context, but we do not yet permit this for 'Update.
+
+                  if Nkind (Comp) /= N_Identifier then
+                     Error_Msg_N ("name should be identifier or OTHERS", Comp);
+                  else
+                     Check_Component_Reference (Comp, P_Type);
+                  end if;
                end if;
 
                Next (Comp);
@@ -6053,7 +6228,7 @@ package body Sem_Attr is
 
          --  Note, we need a range check in general, but we wait for the
          --  Resolve call to do this, since we want to let Eval_Attribute
-         --  have a chance to find an static illegality first!
+         --  have a chance to find an static illegality first.
       end Val;
 
       -----------
@@ -6596,7 +6771,7 @@ package body Sem_Attr is
 
          --  Note that the whole point of the E_String_Literal_Subtype is to
          --  avoid this construction of bounds, but the cases in which we
-         --  have to materialize them are rare enough that we don't worry!
+         --  have to materialize them are rare enough that we don't worry.
 
          --  The low bound is simply the low bound of the base type. The
          --  high bound is computed from the length of the string and this
@@ -6646,7 +6821,7 @@ package body Sem_Attr is
             end loop;
 
             --  If no index type, get out (some other error occurred, and
-            --  we don't have enough information to complete the job!)
+            --  we don't have enough information to complete the job).
 
             if No (Indx) then
                Lo_Bound := Error;
@@ -8752,12 +8927,8 @@ package body Sem_Attr is
 
       --  Attribute Update is never static
 
-      ------------
-      -- Update --
-      ------------
-
       when Attribute_Update =>
-         null;
+         return;
 
       ---------------
       -- VADS_Size --
@@ -8949,7 +9120,7 @@ package body Sem_Attr is
 
                         if J > 255 then
 
-                           --  No need to compute this more than once!
+                           --  No need to compute this more than once
 
                            exit;
 
@@ -9261,10 +9432,10 @@ package body Sem_Attr is
          --  know will fail, so generate an appropriate warning.
 
          if In_Instance_Body then
+            Error_Msg_Warn := SPARK_Mode /= On;
             Error_Msg_F
-              ("??non-local pointer cannot point to local object", P);
-            Error_Msg_F
-              ("\??Program_Error will be raised at run time", P);
+              ("non-local pointer cannot point to local object<<", P);
+            Error_Msg_F ("\Program_Error [<<", P);
             Rewrite (N,
               Make_Raise_Program_Error (Loc,
                 Reason => PE_Accessibility_Check_Failed));
@@ -9738,14 +9909,16 @@ package body Sem_Attr is
                    Object_Access_Level (P) > Deepest_Type_Access_Level (Btyp)
                  and then Attr_Id = Attribute_Access
                then
-                  --  In an instance, this is a runtime check, but one we
-                  --  know will fail, so generate an appropriate warning.
+                  --  In an instance, this is a runtime check, but one we know
+                  --  will fail, so generate an appropriate warning. As usual,
+                  --  this kind of warning is an error in SPARK mode.
 
                   if In_Instance_Body then
+                     Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_F
-                       ("??non-local pointer cannot point to local object", P);
-                     Error_Msg_F
-                       ("\??Program_Error will be raised at run time", P);
+                       ("non-local pointer cannot point to local object<<", P);
+                     Error_Msg_F ("\Program_Error [<<", P);
+
                      Rewrite (N,
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Accessibility_Check_Failed));
@@ -10316,7 +10489,7 @@ package body Sem_Attr is
          -----------------
 
          --  Prefix must not be resolved in this case, since it is not a
-         --  real entity reference. No action of any kind is require!
+         --  real entity reference. No action of any kind is require.
 
          when Attribute_UET_Address =>
             return;
@@ -10332,6 +10505,60 @@ package body Sem_Attr is
          -------------------------
 
          --  Processing is shared with Access
+
+         ------------
+         -- Update --
+         ------------
+
+         --  Resolve aggregate components in component associations
+
+         when Attribute_Update =>
+            declare
+               Aggr  : constant Node_Id   := First (Expressions (N));
+               Typ   : constant Entity_Id := Etype (Prefix (N));
+               Assoc : Node_Id;
+               Comp  : Node_Id;
+
+            begin
+               --  Set the Etype of the aggregate to that of the prefix, even
+               --  though the aggregate may not be a proper representation of a
+               --  value of the type (missing or duplicated associations, etc.)
+               --  Complete resolution of the prefix. Note that in Ada 2012 it
+               --  can be a qualified expression that is e.g. an aggregate.
+
+               Set_Etype (Aggr, Typ);
+               Resolve (Prefix (N), Typ);
+
+               --  For an array type, resolve expressions with the component
+               --  type of the array.
+
+               if Is_Array_Type (Typ) then
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Resolve (Expression (Assoc), Component_Type (Typ));
+                     Next (Assoc);
+                  end loop;
+
+               --  For a record type, use type of each component, which is
+               --  recorded during analysis.
+
+               else
+                  Assoc := First (Component_Associations (Aggr));
+                  while Present (Assoc) loop
+                     Comp := First (Choices (Assoc));
+                     if Nkind (Comp) /= N_Others_Choice
+                       and then not Error_Posted (Comp)
+                     then
+                        Resolve (Expression (Assoc), Etype (Entity (Comp)));
+                     end if;
+                     Next (Assoc);
+                  end loop;
+               end if;
+            end;
+
+            --  Premature return requires comment ???
+
+            return;
 
          ---------
          -- Val --
@@ -10351,7 +10578,7 @@ package body Sem_Attr is
 
             --  Eval_Attribute may replace the node with a raise CE, or
             --  fold it to a constant. Obviously we only apply a scalar
-            --  range check if this did not happen!
+            --  range check if this did not happen.
 
             if Nkind (N) = N_Attribute_Reference
               and then Attribute_Name (N) = Name_Val

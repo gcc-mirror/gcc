@@ -930,8 +930,10 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Selected_Component);
-      return Flag13 (N);
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Selected_Component
+        or else NT (N).Nkind = N_Type_Conversion);
+      return Flag1 (N);
    end Do_Discriminant_Check;
 
    function Do_Division_Check
@@ -1625,8 +1627,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
         or else NT (N).Nkind = N_Label
         or else NT (N).Nkind = N_Loop_Statement
-        or else NT (N).Nkind = N_Record_Representation_Clause
-        or else NT (N).Nkind = N_Subprogram_Info);
+        or else NT (N).Nkind = N_Record_Representation_Clause);
       return Node1 (N);
    end Identifier;
 
@@ -4078,8 +4079,10 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Selected_Component);
-      Set_Flag13 (N, Val);
+        or else NT (N).Nkind = N_Assignment_Statement
+        or else NT (N).Nkind = N_Selected_Component
+        or else NT (N).Nkind = N_Type_Conversion);
+      Set_Flag1 (N, Val);
    end Set_Do_Discriminant_Check;
 
    procedure Set_Do_Division_Check
@@ -4764,8 +4767,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Enumeration_Representation_Clause
         or else NT (N).Nkind = N_Label
         or else NT (N).Nkind = N_Loop_Statement
-        or else NT (N).Nkind = N_Record_Representation_Clause
-        or else NT (N).Nkind = N_Subprogram_Info);
+        or else NT (N).Nkind = N_Record_Representation_Clause);
       Set_Node1_With_Parent (N, Val);
    end Set_Identifier;
 

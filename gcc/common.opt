@@ -875,7 +875,7 @@ Common Report Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays
 
 fbranch-count-reg
-Common Report Var(flag_branch_on_count_reg) Init(1) Optimization
+Common Report Var(flag_branch_on_count_reg) Optimization
 Replace add, compare, branch with branch on count register
 
 fbranch-probabilities
@@ -1564,7 +1564,7 @@ Common Report Var(flag_modulo_sched_allow_regmoves)
 Perform SMS based modulo scheduling with register moves allowed
 
 fmove-loop-invariants
-Common Report Var(flag_move_loop_invariants) Init(1) Optimization
+Common Report Var(flag_move_loop_invariants) Optimization
 Move loop invariant computations out of loops
 
 fdce
@@ -2170,7 +2170,7 @@ Common Report Var(flag_tree_partial_pre) Optimization
 In SSA-PRE optimization on trees, enable partial-partial redundancy elimination
 
 ftree-pta
-Common Report Var(flag_tree_pta) Init(1) Optimization
+Common Report Var(flag_tree_pta) Optimization
 Perform function-local points-to analysis on trees.
 
 ftree-reassoc

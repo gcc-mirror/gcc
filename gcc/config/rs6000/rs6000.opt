@@ -571,7 +571,11 @@ Use ISA 2.07 transactional memory (HTM) instructions
 
 mquad-memory
 Target Report Mask(QUAD_MEMORY) Var(rs6000_isa_flags)
-Generate the quad word memory instructions (lq/stq/lqarx/stqcx).
+Generate the quad word memory instructions (lq/stq).
+
+mquad-memory-atomic
+Target Report Mask(QUAD_MEMORY_ATOMIC) Var(rs6000_isa_flags)
+Generate the quad word memory atomic instructions (lqarx/stqcx).
 
 mcompat-align-parm
 Target Report Var(rs6000_compat_align_parm) Init(0) Save

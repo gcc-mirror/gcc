@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,7 +187,10 @@ package body System.Interrupts is
    -- Install_Restricted_Handlers --
    ---------------------------------
 
-   procedure Install_Restricted_Handlers (Handlers : New_Handler_Array) is
+   procedure Install_Restricted_Handlers
+     (Prio     : Any_Priority;
+      Handlers : New_Handler_Array)
+   is
    begin
       Unimplemented;
    end Install_Restricted_Handlers;

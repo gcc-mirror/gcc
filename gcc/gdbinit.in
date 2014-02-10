@@ -190,6 +190,15 @@ document pbm
 Dump the bitmap that is in $ as a comma-separated list of numbers.
 end
 
+define pel
+output expand_location ($)
+echo \n
+end
+
+document pel
+Print expanded location of $.
+end
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1

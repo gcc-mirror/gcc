@@ -1042,7 +1042,14 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && (! DECL_SEEN_IN_BIND_EXPR_P (t)
 		  || splay_tree_lookup (ctx->variables,
 					(splay_tree_key) t) == NULL))
-	    omp_add_variable (gimplify_omp_ctxp, t, GOVD_LOCAL | GOVD_SEEN);
+	    {
+	      if (ctx->region_type == ORT_SIMD
+		  && TREE_ADDRESSABLE (t)
+		  && !TREE_STATIC (t))
+		omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
+	      else
+		omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+	    }
 
 	  DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
 
@@ -7491,7 +7498,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  {
 	    tree cond = TREE_OPERAND (*expr_p, 0);
 	    tree id = TREE_OPERAND (*expr_p, 1);
-	    tree tmp = create_tmp_var_raw (TREE_TYPE(cond), NULL);
+	    tree type = TREE_TYPE (cond);
+	    if (!INTEGRAL_TYPE_P (type))
+	      {
+		*expr_p = cond;
+		ret = GS_OK;
+		break;
+	      }
+	    tree tmp = create_tmp_var (type, NULL);
 	    gimplify_arg (&cond, pre_p, EXPR_LOCATION (*expr_p));
 	    gimple call = gimple_build_call_internal (IFN_ANNOTATE, 2,
 						      cond, id);

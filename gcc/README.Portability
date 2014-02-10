@@ -6,7 +6,7 @@ compilers GCC needs to be able to compile on.
 
 The problem is that many ISO-standard constructs are not accepted by
 either old or buggy compilers, and we keep getting bitten by them.
-This knowledge until know has been sparsely spread around, so I
+This knowledge until now has been sparsely spread around, so I
 thought I'd collect it in one useful place.  Please add and correct
 any problems as you come across them.
 

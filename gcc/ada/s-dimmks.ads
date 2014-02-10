@@ -105,7 +105,7 @@ package System.Dim.Mks is
 
    --  Turn off the all the dimension warnings for these basic assignments
    --  since otherwise we would get complaints about assigning dimensionless
-   --  values to dimensioned subtypes (we can't assign 1.0*m to m!).
+   --  values to dimensioned subtypes (we can't assign 1.0*m to m).
 
    pragma Warnings (Off, "*assumed to be*");
 

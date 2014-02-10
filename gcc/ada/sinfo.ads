@@ -508,35 +508,35 @@ package Sinfo is
    --      simply ignore these nodes, since they are not relevant to the task
    --      of back annotating representation information.
 
-   ----------------
-   -- SPARK Mode --
-   ----------------
+   --------------------
+   -- GNATprove Mode --
+   --------------------
 
-   --  When a file is compiled in SPARK mode (-gnatd.F), a very light expansion
-   --  is performed and the analysis must generate a tree in a form that meets
-   --  additional requirements.
+   --  When a file is compiled in GNATprove mode (-gnatd.F), a very light
+   --  expansion is performed and the analysis must generate a tree in a
+   --  form that meets additional requirements.
 
-   --  The SPARK expansion does two transformations of the tree, that cannot be
-   --  postponed after the frontend semantic analysis:
+   --  This light expansion does two transformations of the tree that cannot
+   --  be postponed till after semantic analysis:
 
-   --    1. Replace renamings by renamed (object/subprogram). This requires
-   --       introducing temporaries at the point of the renaming, which must be
-   --       properly analyzed.
+   --    1. Replace object renamings by renamed object. This requires the
+   --       introduction of temporaries at the point of the renaming, which
+   --       must be properly analyzed.
 
    --    2. Fully qualify entity names. This is needed to generate suitable
-   --       local effects/call-graphs in ALI files, with the completely
+   --       local effects and call-graphs in ALI files, with the completely
    --       qualified names (in particular the suffix to distinguish homonyms).
 
-   --  The tree after SPARK expansion should be fully analyzed semantically,
-   --  which sometimes requires the insertion of semantic pre-analysis, for
-   --  example for subprogram contracts and pragma check/assert. In particular,
-   --  all expression must have their proper type, and semantic links should be
-   --  set between tree nodes (partial to full view, etc.) Some kinds of nodes
-   --  should be either absent, or can be ignored by the formal verification
-   --  backend:
+   --  The tree after this light expansion should be fully analyzed
+   --  semantically, which sometimes requires the insertion of semantic
+   --  pre-analysis, for example for subprogram contracts and pragma
+   --  check/assert. In particular, all expression must have their proper type,
+   --  and semantic links should be set between tree nodes (partial to full
+   --  view, etc.) Some kinds of nodes should be either absent, or can be
+   --  ignored by the formal verification backend:
 
    --      N_Object_Renaming_Declaration: can be ignored safely
-   --      N_Expression_Function:         absent (rewitten)
+   --      N_Expression_Function:         absent (rewritten)
    --      N_Expression_With_Actions:     absent (not generated)
 
    --  SPARK cross-references are generated from the regular cross-references
@@ -544,17 +544,52 @@ package Sinfo is
    --  collected during semantic analysis, in particular on all dereferences.
    --  These SPARK cross-references are output in a separate section of ALI
    --  files, as described in spark_xrefs.adb. They are the basis for the
-   --  computation of data dependences in the formal verification backend.
-   --  This implies that all cross-references should be generated in this mode,
-   --  even those that would not make sense from a user point-of-view, and that
-   --  cross-references that do not lead to data dependences for subprograms
-   --  can be safely ignored.
+   --  computation of data dependences in GNATprove. This implies that all
+   --  cross-references should be generated in this mode, even those that would
+   --  not make sense from a user point-of-view, and that cross-references that
+   --  do not lead to data dependences for subprograms can be safely ignored.
+
+   --  In addition pragma Debug statements are removed from the tree (rewritten
+   --  to NULL stmt), since they should be taken into account in flow analysis.
+
+   -----------------------
+   -- Check Flag Fields --
+   -----------------------
+
+   --  The following flag fields appear in expression nodes:
+
+   --    Do_Division_Check
+   --    Do_Overflow_Check
+   --    Do_Range_Check
+
+   --  These three flags are always set by the front end during semantic
+   --  analysis, on expression nodes that may trigger the corresponding
+   --  check. The front end then inserts or not the check during expansion. In
+   --  particular, these flags should also be correctly set in ASIS mode and
+   --  GNATprove mode.
+
+   --  Note that this accounts for all nodes that trigger the corresponding
+   --  checks, except for range checks on subtype_indications, which may be
+   --  required to check that a range_constraint is compatible with the given
+   --  subtype (RM 3.2.2(11)).
+
+   --  The following flag fields appear in various nodes:
+
+   --    Do_Accessibility_Check
+   --    Do_Discriminant_Check
+   --    Do_Length_Check
+   --    Do_Storage_Check
+   --    Do_Tag_Check
+
+   --  These flags are used in some specific cases by the front end, either
+   --  during semantic analysis or during expansion, and cannot be expected
+   --  to be set on all nodes that trigger the corresponding check.
 
    ------------------------
    -- Common Flag Fields --
    ------------------------
 
-   --  The following flag fields appear in all nodes
+   --  The following flag fields appear in all nodes:
 
    --  Analyzed
    --    This flag is used to indicate that a node (and all its children have
@@ -581,6 +616,31 @@ package Sinfo is
    --    referring to the same node. This flag is set if an error message
    --    refers to a node or is posted on its source location, and has the
    --    effect of inhibiting further messages involving this same node.
+
+   -----------------------
+   -- Modify_Tree_For_C --
+   -----------------------
+
+   --  If the flag Opt.Modify_Tree_For_C is set True, then the tree is modified
+   --  in ways that help match the semantics better with C, easing the task of
+   --  interfacing to C code generators (other than GCC, where the work is done
+   --  in gigi, and there is no point in changing that), and also making life
+   --  easier for Cprint in generating C source code.
+
+   --  The current modifications implemented are as follows:
+
+   --    N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic nodes
+   --    are eliminated from the tree (since these operations do not exist in
+   --    C), and the operations are rewritten in terms of logical shifts and
+   --    other logical operations that do exist in C. See Exp_Ch4 expansion
+   --    routines for these operators for details of the transformations made.
+
+   --    The right operand of N_Op_Shift_Right and N_Op_Shift_Left is always
+   --    less than the word size (since other values are not well-defined in
+   --    C). This is done using an explicit test if necessary.
+
+   --    Min and Max attributes are expanded into equivalent if expressions,
+   --    dealing properly with side effect issues.
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -639,9 +699,7 @@ package Sinfo is
    --    A flag set in the N_Subprogram_Body node for a subprogram body which
    --    is acting as its own spec, except in the case of a library level
    --    subprogram, in which case the flag is set on the parent compilation
-   --    unit node instead (see further description in spec of Lib package).
-   --    ??? Above note about Lib is dubious since lib.ads does not mention
-   --    Acts_As_Spec at all.
+   --    unit node instead.
 
    --  Actual_Designated_Subtype (Node4-Sem)
    --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If gigi
@@ -903,14 +961,16 @@ package Sinfo is
    --    that an accessibility check is required for the parameter. It is
    --    not yet decided who takes care of this check (TBD ???).
 
-   --  Do_Discriminant_Check (Flag13-Sem)
+   --  Do_Discriminant_Check (Flag1-Sem)
    --    This flag is set on N_Selected_Component nodes to indicate that a
    --    discriminant check is required using the discriminant check routine
    --    associated with the selector. The actual check is generated by the
    --    expander when processing selected components. In the case of
    --    Unchecked_Union, the flag is also set, but no discriminant check
    --    routine is associated with the selector, and the expander does not
-   --    generate a check.
+   --    generate a check. This flag is also present in assignment statements
+   --    (and set if the assignment requires a discriminant check), and in type
+   --    conversion nodes (and set if the conversion requires a check).
 
    --  Do_Division_Check (Flag13-Sem)
    --    This flag is set on a division operator (/ mod rem) to indicate
@@ -1459,7 +1519,7 @@ package Sinfo is
    --    that the reference occurs within a discriminant check. The
    --    significance is that optimizations based on assuming that the
    --    discriminant check has a correct value cannot be performed in this
-   --    case (or the discriminant check may be optimized away!)
+   --    case (or the discriminant check may be optimized away).
 
    --  Is_Machine_Number (Flag11-Sem)
    --    This flag is set in an N_Real_Literal node to indicate that the value
@@ -1683,11 +1743,12 @@ package Sinfo is
    --    is undefined and should not be read).
 
    --  No_Ctrl_Actions (Flag7-Sem)
-   --    Present in N_Assignment_Statement to indicate that no finalize nor
-   --    adjust should take place on this assignment even though the rhs is
-   --    controlled. This is used in init procs and aggregate expansions where
-   --    the generated assignments are more initialisations than real
-   --    assignments.
+   --    Present in N_Assignment_Statement to indicate that no Finalize nor
+   --    Adjust should take place on this assignment even though the RHS is
+   --    controlled. Also indicates that the primitive _assign should not be
+   --    used for a tagged assignment. This is used in init procs and aggregate
+   --    expansions where the generated assignments are initializations, not
+   --    real assignments.
 
    --  No_Elaboration_Check (Flag14-Sem)
    --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
@@ -2430,12 +2491,14 @@ package Sinfo is
       --  Etype (Node5-Sem)
       --  Must_Not_Freeze (Flag8-Sem)
 
-      --  Note: Etype is a copy of the Etype field of the Subtype_Mark. The
-      --  reason for this redundancy is so that in a list of array index types,
-      --  the Etype can be uniformly accessed to determine the subscript type.
-      --  This means that no Itype is constructed for the actual subtype that
-      --  is created by the subtype indication. If such an Itype is required,
-      --  it is constructed in the context in which the indication appears.
+      --  Note: Depending on context, the Etype is either the entity of the
+      --  Subtype_Mark field, or it is an itype constructed to reify the
+      --  subtype indication. In particular, such itypes are created for a
+      --  subtype indication that appears in an array type declaration. This
+      --  simplifies constraint checking in indexed components.
+
+      --  For subtype indications that appear in scalar type and subtype
+      --  declarations, the Etype is the entity of the subtype mark.
 
       -------------------------
       -- 3.2.2  Subtype Mark --
@@ -2620,7 +2683,7 @@ package Sinfo is
       --  appears directly in the tree as an attribute reference.
 
       --  Note: the field name for a reference to a range is Range_Expression
-      --  rather than Range, because range is a reserved keyword in Ada!
+      --  rather than Range, because range is a reserved keyword in Ada.
 
       --  Note: the reason that this node has expression fields is that a
       --  range can appear as an operand of a membership test. The Etype
@@ -3440,7 +3503,7 @@ package Sinfo is
       --  Prefix (Node3)
       --  Selector_Name (Node2)
       --  Associated_Node (Node4-Sem)
-      --  Do_Discriminant_Check (Flag13-Sem)
+      --  Do_Discriminant_Check (Flag1-Sem)
       --  Is_In_Discriminant_Check (Flag11-Sem)
       --  Is_Prefixed_Call (Flag17-Sem)
       --  Atomic_Sync_Required (Flag14-Sem)
@@ -3531,6 +3594,9 @@ package Sinfo is
       --  Redundant_Use (Flag13-Sem)
       --  Must_Be_Byte_Aligned (Flag14)
       --  plus fields for expression
+
+      --  Note: in Modify_Tree_For_C mode, Max and Min attributes are expanded
+      --  into equivalent if expressions, properly taking care of side effects.
 
       ---------------------------------
       -- 4.1.4  Attribute Designator --
@@ -4198,12 +4264,13 @@ package Sinfo is
       --  Sloc points to first token of subtype mark
       --  Subtype_Mark (Node4)
       --  Expression (Node3)
-      --  Do_Tag_Check (Flag13-Sem)
+      --  Do_Discriminant_Check (Flag1-Sem)
       --  Do_Length_Check (Flag4-Sem)
-      --  Do_Overflow_Check (Flag17-Sem)
       --  Float_Truncate (Flag11-Sem)
-      --  Rounded_Result (Flag18-Sem)
+      --  Do_Tag_Check (Flag13-Sem)
       --  Conversion_OK (Flag14-Sem)
+      --  Do_Overflow_Check (Flag17-Sem)
+      --  Rounded_Result (Flag18-Sem)
       --  plus fields for expression
 
       --  Note: if a range check is required, then the Do_Range_Check flag
@@ -4361,6 +4428,7 @@ package Sinfo is
       --  Sloc points to :=
       --  Name (Node2)
       --  Expression (Node3)
+      --  Do_Discriminant_Check (Flag1-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  Do_Length_Check (Flag4-Sem)
       --  Forwards_OK (Flag5-Sem)
@@ -4905,7 +4973,7 @@ package Sinfo is
       -------------------------
 
       --  This is an Ada 2012 extension, we put it here for now, to be labeled
-      --  and put in its proper section when we know exactly where that is!
+      --  and put in its proper section when we know exactly where that is.
 
       --  EXPRESSION_FUNCTION ::=
       --    FUNCTION SPECIFICATION IS (EXPRESSION)
@@ -4928,7 +4996,7 @@ package Sinfo is
       --  that it semantically resembles an expression, e.g. overloading is
       --  allowed and a type is concocted for semantic processing purposes.
       --  Certain of these fields, such as Parens are not relevant, but it
-      --  is easier to just supply all of them together!
+      --  is easier to just supply all of them together.
 
       --  N_Procedure_Call_Statement
       --  Sloc points to first token of name or prefix
@@ -7108,6 +7176,12 @@ package Sinfo is
       --  plus fields for expression
       --  Shift_Count_OK (Flag4-Sem)
 
+      --  Note: N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic
+      --  never appear in the expanded tree if Modify_Tree_For_C mode is set.
+
+      --  Note: For N_Op_Shift_Left and N_Op_Shift_Right, the right operand is
+      --  always less than the word size if Modify_Tree_For_C mode is set.
+
    --------------------------
    -- Obsolescent Features --
    --------------------------
@@ -7223,6 +7297,7 @@ package Sinfo is
       --    Postcondition
       --    Pre
       --    Precondition
+      --    Refined_Post
       --  The ordering in the list is in LIFO fashion.
 
       --  Note that there might be multiple preconditions or postconditions
@@ -7238,10 +7313,15 @@ package Sinfo is
       --  establish dependencies between subprogram or package inputs and
       --  outputs. Currently the following pragmas appear in this list:
       --    Abstract_States
+      --    Async_Readers
+      --    Async_Writers
       --    Depends
+      --    Effective_Reads
+      --    Effective_Writes
       --    Global
       --    Initial_Condition
       --    Initializes
+      --    Part_Of
       --    Refined_Depends
       --    Refined_Global
       --    Refined_States
@@ -7312,14 +7392,21 @@ package Sinfo is
       --  Expression (Node3)
       --  plus fields for expression
 
-      --  Note: the actions list is always non-null, since we would never have
-      --  created this node if there weren't some actions.
+      --  Note: In the final generated tree presented to the code generator,
+      --  the actions list is always non-null, since there is no point in this
+      --  node if the actions are Empty. During semantic analysis there are
+      --  cases where it is convenient to temporarily generate an empty actions
+      --  list. This arises in cases where we create such an empty actions
+      --  list, and it may or may not end up being a place where additional
+      --  actions are inserted. The expander removes such empty cases after
+      --  the expression of the node is fully analyzed and expanded, at which
+      --  point it is safe to remove it, since no more actions can be inserted.
 
       --  Note: Expression may be a Null_Statement, in which case the
       --  N_Expression_With_Actions has type Standard_Void_Type. However some
       --  backends do not support such expression-with-actions occurring
       --  outside of a proper (non-void) expression, so this should just be
-      --  used as an intermediate representation within the front-end. Also
+      --  used as an intermediate representation within the front end. Also
       --  note that this is really an irregularity (expressions and statements
       --  are not interchangeable, and in particular an N_Null_Statement is
       --  not a proper expression), and in the long term all cases of this
@@ -7677,23 +7764,6 @@ package Sinfo is
       --  with the N_In node (or a rewriting thereof) corresponding to a
       --  classwide membership test.
 
-      ---------------------
-      -- Subprogram_Info --
-      ---------------------
-
-      --  This node generates the appropriate Subprogram_Info value for a
-      --  given procedure. See Ada.Exceptions for further details
-
-      --  Sprint syntax: subprog'subprogram_info
-
-      --  N_Subprogram_Info
-      --  Sloc points to the entity for the procedure
-      --  Identifier (Node1) identifier referencing the procedure
-      --  Etype (Node5-Sem) type (always set to Ada.Exceptions.Code_Loc)
-
-      --  Note: in the case where a debug source file is generated, the Sloc
-      --  for this node points to the quote in the Sprint file output.
-
       --------------------------
       -- Unchecked Expression --
       --------------------------
@@ -7757,7 +7827,7 @@ package Sinfo is
       --  e.g. involving unconstrained array types.
 
       --  For the case of the standard gigi backend, this means that all
-      --  checks are done in the front-end.
+      --  checks are done in the front end.
 
       --  However, in the case of specialized back-ends, notably the JVM
       --  backend for JGNAT, additional requirements and restrictions apply
@@ -7971,7 +8041,6 @@ package Sinfo is
       N_Reference,
       N_Selected_Component,
       N_Slice,
-      N_Subprogram_Info,
       N_Type_Conversion,
       N_Unchecked_Expression,
       N_Unchecked_Type_Conversion,
@@ -8208,7 +8277,7 @@ package Sinfo is
       N_Unused_At_End);
 
    for Node_Kind'Size use 8;
-   --  The data structures in Atree assume this!
+   --  The data structures in Atree assume this
 
    ----------------------------
    -- Node Class Definitions --
@@ -8681,7 +8750,7 @@ package Sinfo is
      (N : Node_Id) return Boolean;    -- Flag13
 
    function Do_Discriminant_Check
-     (N : Node_Id) return Boolean;    -- Flag13
+     (N : Node_Id) return Boolean;    -- Flag1
 
    function Do_Division_Check
      (N : Node_Id) return Boolean;    -- Flag13
@@ -9683,7 +9752,7 @@ package Sinfo is
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
    procedure Set_Do_Discriminant_Check
-     (N : Node_Id; Val : Boolean := True);    -- Flag13
+     (N : Node_Id; Val : Boolean := True);    -- Flag1
 
    procedure Set_Do_Division_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -12071,13 +12140,6 @@ package Sinfo is
        (1 => False,   --  unused
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,   --  unused
-        5 => False),  --  Etype (Node5-Sem)
-
-     N_Subprogram_Info =>
-       (1 => True,    --  Identifier (Node1)
-        2 => False,   --  unused
-        3 => False,   --  unused
         4 => False,   --  unused
         5 => False),  --  Etype (Node5-Sem)
 

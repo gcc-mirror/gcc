@@ -11,5 +11,5 @@ void extern
 avx512f_test (void)
 {
   x = _mm_scalef_ss (x, x);
-  x = _mm_scalef_round_ss (x, x, _MM_FROUND_TO_NEAREST_INT);
+  x = _mm_scalef_round_ss (x, x, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 }

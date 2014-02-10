@@ -454,7 +454,7 @@ package body Ch13 is
       Scan; -- past FOR
 
       --  Note that the name in a representation clause is always a simple
-      --  name, even in the attribute case, see AI-300 which made this so!
+      --  name, even in the attribute case, see AI-300 which made this so.
 
       Identifier_Node := P_Identifier (C_Use);
 
