@@ -18,8 +18,8 @@ __mmask8 dst_ref;
     {							\
       dst_ref = ((rel) << i) | dst_ref;			\
     }							\
-    source1.x = _mm512_loadu_epi32 (s1);		\
-    source2.x = _mm512_loadu_epi32 (s2);		\
+    source1.x = _mm512_loadu_si512 (s1);		\
+    source2.x = _mm512_loadu_si512 (s2);		\
     dst1 = _mm512_cmp_epi64_mask (source1.x, source2.x, imm);\
     dst2 = _mm512_mask_cmp_epi64_mask (mask, source1.x, source2.x, imm);\
     if (dst_ref != dst1) abort();			\
