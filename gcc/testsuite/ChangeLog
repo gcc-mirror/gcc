@@ -1,3 +1,9 @@
+2014-02-11  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: Add arm_vfp3 option.
+	* lib/target-supports.exp (check_effective_target_arm_vfp3_ok): New.
+	(add_options_for_arm_vfp3): New.
+
 2014-02-11  Jeff Law  <law@redhat.com>
 
 	PR middle-end/54041

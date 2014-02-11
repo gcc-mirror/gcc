@@ -2259,6 +2259,19 @@ proc check_effective_target_arm_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=vfp3
+# -mfloat-abi=softfp.
+
+proc check_effective_target_arm_vfp3_ok { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_vfp3_ok object {
+	    int dummy;
+	} "-mfpu=vfp3 -mfloat-abi=softfp"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=fp-armv8
 # -mfloat-abi=softfp.
 proc check_effective_target_arm_v8_vfp_ok {} {
@@ -2404,6 +2417,14 @@ proc add_options_for_arm_neonv2 { flags } {
     }
     global et_arm_neonv2_flags
     return "$flags $et_arm_neonv2_flags"
+}
+
+# Add the options needed for vfp3.
+proc add_options_for_arm_vfp3 { flags } {
+    if { ! [check_effective_target_arm_vfp3_ok] } {
+        return "$flags"
+    }
+    return "$flags -mfpu=vfp3 -mfloat-abi=softfp"
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=neon
