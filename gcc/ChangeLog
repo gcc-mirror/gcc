@@ -1,5 +1,12 @@
 2014-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-cores.def (cortex-a57): Use cortexa57
+	tuning struct.
+	(cortex-a57.cortex-a53): Likewise.
+	* config/aarch64/aarch64.c (cortexa57_tunings): New tuning struct.
+
+2014-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/thumb2.md (*thumb2_movhi_insn): Add alternatives for
 	arm_restrict_it.
 

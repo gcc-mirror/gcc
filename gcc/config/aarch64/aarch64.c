@@ -235,6 +235,16 @@ static const struct tune_params cortexa53_tunings =
   NAMED_PARAM (issue_rate, 2)
 };
 
+static const struct tune_params cortexa57_tunings =
+{
+  &cortexa57_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  NAMED_PARAM (memmov_cost, 4),
+  NAMED_PARAM (issue_rate, 3)
+};
+
 /* A processor implementing AArch64.  */
 struct processor
 {
