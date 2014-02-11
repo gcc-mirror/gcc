@@ -1,3 +1,9 @@
+2014-02-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/49008
+	* genautomata.c (add_presence_absence): Fix typo with
+	{final_}presence_list.
+
 2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60137
