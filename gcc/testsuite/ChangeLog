@@ -1,3 +1,8 @@
+2014-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59927
+	* gcc.target/i386/pr59927.c: New test.
+
 2014-02-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/vect/pr57741-3.c: Require vect_int.
