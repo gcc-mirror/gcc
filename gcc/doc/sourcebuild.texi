@@ -1552,6 +1552,7 @@ ARM target supports @code{-mfpu=vfp -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
 @item arm_vfp3_ok
+@anchor{arm_vfp3_ok}
 ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
