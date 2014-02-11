@@ -1,3 +1,8 @@
+2014-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/thumb2.md (*thumb2_movhi_insn): Add alternatives for
+	arm_restrict_it.
+
 2014-02-11  Renlin Li  <Renlin.Li@arm.com>
 
 	* doc/sourcebuild.texi: Document check_effective_target_arm_vfp3_ok and
