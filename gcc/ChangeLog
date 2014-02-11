@@ -1,3 +1,10 @@
+2014-02-11  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/59776
+	* tree-sra.c (load_assign_lhs_subreplacements): Add VIEW_CONVERT_EXPR
+	around drhs if type conversion to lacc->type is not useless.
+
 2014-02-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a57): Use cortexa57
