@@ -6110,10 +6110,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   cum->caller = caller;
 
   /* Set up the number of registers to use for passing arguments.  */
-
-  if (TARGET_64BIT && cum->call_abi == MS_ABI && !ACCUMULATE_OUTGOING_ARGS)
-    sorry ("ms_abi attribute requires -maccumulate-outgoing-args "
-	   "or subtarget optimization implying it");
   cum->nregs = ix86_regparm;
   if (TARGET_64BIT)
     {
@@ -11032,15 +11028,14 @@ ix86_expand_prologue (void)
 
       if (TARGET_64BIT)
         r10_live = (DECL_STATIC_CHAIN (current_function_decl) != 0);
-      if (!TARGET_64BIT_MS_ABI)
-        eax_live = ix86_eax_live_at_start_p ();
 
-      /* Note that SEH directives need to continue tracking the stack
-	 pointer even after the frame pointer has been set up.  */
+      eax_live = ix86_eax_live_at_start_p ();
       if (eax_live)
 	{
 	  insn = emit_insn (gen_push (eax));
 	  allocate -= UNITS_PER_WORD;
+	  /* Note that SEH directives need to continue tracking the stack
+	     pointer even after the frame pointer has been set up.  */
 	  if (sp_is_cfa_reg || TARGET_SEH)
 	    {
 	      if (sp_is_cfa_reg)
