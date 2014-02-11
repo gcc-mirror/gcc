@@ -1,7 +1,8 @@
 /* Check that vcvt is used for fixed and float data conversions.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -mfpu=vfp3" } */
-/* { dg-require-effective-target arm_vfp_ok } */
+/* { dg-require-effective-target arm_vfp3_ok } */
+/* { dg-options "-O1" } */
+/* { dg-add-options arm_vfp3 } */
 
 float
 fixed_to_float (int i)

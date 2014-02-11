@@ -1,3 +1,8 @@
+2014-02-11  Renlin Li  <Renlin.Li@arm.com>
+
+	* doc/sourcebuild.texi: Document check_effective_target_arm_vfp3_ok and
+	add_options_for_arm_vfp3.
+
 2014-02-11  Jeff Law  <law@redhat.com>
 
 	PR middle-end/54041

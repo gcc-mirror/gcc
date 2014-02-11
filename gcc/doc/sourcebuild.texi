@@ -1551,6 +1551,10 @@ ARM target generates Thumb-2 code for @code{-mthumb}.
 ARM target supports @code{-mfpu=vfp -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
 
+@item arm_vfp3_ok
+ARM target supports @code{-mfpu=vfp3 -mfloat-abi=softfp}.
+Some multilibs may be incompatible with these options.
+
 @item arm_v8_vfp_ok
 ARM target supports @code{-mfpu=fp-armv8 -mfloat-abi=softfp}.
 Some multilibs may be incompatible with these options.
@@ -1953,6 +1957,10 @@ keyword}.
 NEON and half-precision floating point support.  Only ARM targets
 support this feature, and only then in certain modes; see
 the @ref{arm_neon_ok,,arm_neon_fp16_ok effective target keyword}.
+
+@item arm_vfp3
+arm vfp3 floating point support; see
+the @ref{arm_vfp3_ok,,arm_vfp3_ok effective target keyword}.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
