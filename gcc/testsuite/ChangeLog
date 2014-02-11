@@ -1,3 +1,36 @@
+2014-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59927
+	Revert
+	2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/58630
+	* gcc.target/i386/pr43662.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/i386/pr43869.c (dg-options): Ditto.
+	* gcc.target/i386/pr57003.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-options):
+	Remove -mtune=generic and add -maccumulate-outgoing-args instead.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-1.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/x86_64/abi/callabi/func-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/pr38891.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5b.c (dg-options): Ditto.
+
 2014-02-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/vect/pr56787.c: Mark as xfail for vect_no_align.

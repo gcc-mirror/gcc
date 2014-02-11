@@ -2,7 +2,7 @@
 */
 /* Origin: Kai Tietz <kai.tietz@onevision.com> */
 /* { dg-do run } */
-/* { dg-options "-std=gnu99 -maccumulate-outgoing-args" } */
+/* { dg-options "-std=gnu99" } */
 #include "callabi.h"
 
 extern void abort (void);

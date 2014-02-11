@@ -1,5 +1,5 @@
 /* Test for cross x86_64<->w64 abi standard calls.  */
-/* { dg-options "-mabi=ms -std=gnu99 -ffast-math -fno-builtin -maccumulate-outgoing-args" } */
+/* { dg-options "-mabi=ms -std=gnu99 -ffast-math -fno-builtin" } */
 
 long double func_cross (long double a, double b, float c, long d, int e,
 			char f)
