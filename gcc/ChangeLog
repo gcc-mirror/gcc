@@ -1,3 +1,7 @@
+2013-11-26  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+
+	* config/microblaze/microblaze.c: Extend mcpu version format
+
 2014-02-10  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.h: Define SIZE_TYPE and PTRDIFF_TYPE.
