@@ -1,3 +1,8 @@
+2014-02-11  Jeff Law  <law@redhat.com>
+
+	PR middle-end/54041
+	* gcc.target/m68k/pr54041.c: New test.
+
 2014-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/59927

@@ -1,3 +1,9 @@
+2014-02-11  Jeff Law  <law@redhat.com>
+
+	PR middle-end/54041
+	* expr.c (expand_expr_addr_expr_1): Handle expand_expr returning an
+	object with an undesirable mode.
+
 2014-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libgomp/60107
