@@ -128,6 +128,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "diagnostic.h"
 #include "tree-dfa.h"
+#include "demangle.h"
+
+static bool odr_violation_reported = false;
 
 /* Dummy polymorphic call context.  */
 
@@ -297,6 +300,7 @@ add_type_duplicate (odr_type val, tree type)
       if (!types_compatible_p (val->type, type))
 	{
 	  merge = false;
+	  odr_violation_reported = true;
 	  if (BINFO_VTABLE (TYPE_BINFO (val->type))
 	      && warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
 			     "type %qD violates one definition rule  ",
@@ -332,6 +336,7 @@ add_type_duplicate (odr_type val, tree type)
       if (base_mismatch)
 	{
 	  merge = false;
+	  odr_violation_reported = true;
 
 	  if (warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (type)), 0,
 			  "type %qD violates one definition rule  ",
@@ -594,16 +599,30 @@ build_type_inheritance_graph (void)
 }
 
 /* If TARGET has associated node, record it in the NODES array.
-   if TARGET can not be inserted (for example because its body was
-   already removed and there is no way to refer to it), clear COMPLETEP.  */
+   CAN_REFER specify if program can refer to the target directly.
+   if TARGET is unknown (NULL) or it can not be inserted (for example because
+   its body was already removed and there is no way to refer to it), clear
+   COMPLETEP.  */
 
 static void
 maybe_record_node (vec <cgraph_node *> &nodes,
 		   tree target, pointer_set_t *inserted,
+		   bool can_refer,
 		   bool *completep)
 {
   struct cgraph_node *target_node;
   enum built_in_function fcode;
+
+  if (!can_refer)
+    {
+      /* The only case when method of anonymous namespace becomes unreferable
+	 is when we completely optimized it out.  */
+      if (flag_ltrans
+	  || !target 
+          || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
+	*completep = false;
+      return;
+    }
 
   if (!target
       /* Those are used to mark impossible scenarios.  */
@@ -649,6 +668,8 @@ maybe_record_node (vec <cgraph_node *> &nodes,
    inserted.
 
    ANONYMOUS is true if BINFO is part of anonymous namespace.
+
+   Clear COMPLETEP when we hit unreferable target.
   */
 
 static void
@@ -661,7 +682,8 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 			  HOST_WIDE_INT offset,
 			  pointer_set_t *inserted,
 			  pointer_set_t *matched_vtables,
-			  bool anonymous)
+			  bool anonymous,
+			  bool *completep)
 {
   tree type = BINFO_TYPE (binfo);
   int i;
@@ -692,6 +714,11 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 	return;
       tree inner_binfo = get_binfo_at_offset (type_binfo,
 					      offset, otr_type);
+      if (!inner_binfo)
+	{
+	  gcc_assert (odr_violation_reported);
+	  return;
+	}
       /* For types in anonymous namespace first check if the respective vtable
 	 is alive. If not, we know the type can't be called.  */
       if (!flag_ltrans && anonymous)
@@ -708,9 +735,11 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
       gcc_assert (inner_binfo);
       if (!pointer_set_insert (matched_vtables, BINFO_VTABLE (inner_binfo)))
 	{
-	  tree target = gimple_get_virt_method_for_binfo (otr_token, inner_binfo);
-	  if (target)
-	    maybe_record_node (nodes, target, inserted, NULL);
+	  bool can_refer;
+	  tree target = gimple_get_virt_method_for_binfo (otr_token,
+							  inner_binfo,
+							  &can_refer);
+	  maybe_record_node (nodes, target, inserted, can_refer, completep);
 	}
       return;
     }
@@ -722,7 +751,7 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
       record_target_from_binfo (nodes, base_binfo, otr_type,
 				type_binfos, 
 				otr_token, outer_type, offset, inserted,
-				matched_vtables, anonymous);
+				matched_vtables, anonymous, completep);
   if (BINFO_VTABLE (binfo))
     type_binfos.pop ();
 }
@@ -730,7 +759,8 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
 /* Lookup virtual methods matching OTR_TYPE (with OFFSET and OTR_TOKEN)
    of TYPE, insert them to NODES, recurse into derived nodes. 
    INSERTED is used to avoid duplicate insertions of methods into NODES.
-   MATCHED_VTABLES are used to avoid duplicate walking vtables.  */
+   MATCHED_VTABLES are used to avoid duplicate walking vtables.
+   Clear COMPLETEP if unreferable target is found.  */
 
 static void
 possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
@@ -740,7 +770,8 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 				     odr_type type,
 				     HOST_WIDE_INT otr_token,
 				     tree outer_type,
-				     HOST_WIDE_INT offset)
+				     HOST_WIDE_INT offset,
+				     bool *completep)
 {
   tree binfo = TYPE_BINFO (type->type);
   unsigned int i;
@@ -749,14 +780,14 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
   record_target_from_binfo (nodes, binfo, otr_type, type_binfos, otr_token,
 			    outer_type, offset,
 			    inserted, matched_vtables,
-			    type->anonymous_namespace);
+			    type->anonymous_namespace, completep);
   type_binfos.release ();
   for (i = 0; i < type->derived_types.length (); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
 					 otr_type,
 					 type->derived_types[i],
-					 otr_token, outer_type, offset);
+					 otr_token, outer_type, offset, completep);
 }
 
 /* Cache of queries for polymorphic call targets.
@@ -771,7 +802,8 @@ struct polymorphic_call_target_d
   ipa_polymorphic_call_context context;
   odr_type type;
   vec <cgraph_node *> targets;
-  bool final;
+  int nonconstruction_targets;
+  bool complete;
 };
 
 /* Polymorphic call target cache helpers.  */
@@ -1282,7 +1314,7 @@ record_targets_from_bases (tree otr_type,
 			   HOST_WIDE_INT otr_token,
 			   tree outer_type,
 			   HOST_WIDE_INT offset,
-			   vec <cgraph_node *> nodes,
+			   vec <cgraph_node *> &nodes,
 			   pointer_set_t *inserted,
 			   pointer_set_t *matched_vtables,
 			   bool *completep)
@@ -1303,7 +1335,9 @@ record_targets_from_bases (tree otr_type,
 
 	  pos = int_bit_position (fld);
 	  size = tree_to_shwi (DECL_SIZE (fld));
-	  if (pos <= offset && (pos + size) > offset)
+	  if (pos <= offset && (pos + size) > offset
+	      /* Do not get confused by zero sized bases.  */
+	      && polymorphic_type_binfo_p (TYPE_BINFO (TREE_TYPE (fld))))
 	    break;
 	}
       /* Within a class type we should always find correcponding fields.  */
@@ -1317,16 +1351,19 @@ record_targets_from_bases (tree otr_type,
 
       base_binfo = get_binfo_at_offset (TYPE_BINFO (outer_type),
 					offset, otr_type);
+      if (!base_binfo)
+	{
+	  gcc_assert (odr_violation_reported);
+	  return;
+	}
       gcc_assert (base_binfo);
       if (!pointer_set_insert (matched_vtables, BINFO_VTABLE (base_binfo)))
 	{
-	  tree target = gimple_get_virt_method_for_binfo (otr_token, base_binfo);
-	  if (target)
-	    maybe_record_node (nodes, target, inserted, completep);
-	  /* The only way method in anonymous namespace can become unreferable
-	     is that it has been fully optimized out.  */
-	  else if (flag_ltrans || !type_in_anonymous_namespace_p (outer_type))
-	    *completep = false;
+	  bool can_refer;
+	  tree target = gimple_get_virt_method_for_binfo (otr_token,
+							  base_binfo,
+							  &can_refer);
+	  maybe_record_node (nodes, target, inserted, can_refer, completep);
 	  pointer_set_insert (matched_vtables, BINFO_VTABLE (base_binfo));
 	}
     }
@@ -1357,6 +1394,10 @@ devirt_variable_node_removal_hook (varpool_node *n,
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
 
+   NONCONSTRUCTION_TARGETS specify number of targets with asumption that
+   the type is not in the construction.  Those targets appear first in the
+   vector returned.
+
    Returned vector is placed into cache.  It is NOT caller's responsibility
    to free it.  The vector can be freed on cgraph_remove_node call if
    the particular node is a virtual function present in the cache.  */
@@ -1366,7 +1407,8 @@ possible_polymorphic_call_targets (tree otr_type,
 			           HOST_WIDE_INT otr_token,
 				   ipa_polymorphic_call_context context,
 			           bool *completep,
-			           void **cache_token)
+			           void **cache_token,
+				   int *nonconstruction_targetsp)
 {
   static struct cgraph_node_hook_list *node_removal_hook_holder;
   pointer_set_t *inserted;
@@ -1377,12 +1419,15 @@ possible_polymorphic_call_targets (tree otr_type,
   polymorphic_call_target_d **slot;
   unsigned int i;
   tree binfo, target;
-  bool final;
+  bool complete;
+  bool can_refer;
 
   if (!odr_hash.is_created ())
     {
       if (completep)
 	*completep = false;
+      if (nonconstruction_targetsp)
+	*nonconstruction_targetsp = 0;
       return nodes;
     }
 
@@ -1406,7 +1451,7 @@ possible_polymorphic_call_targets (tree otr_type,
   /* If outer and inner type match, there are no bases to see.  */
   if (type == outer_type)
     context.maybe_in_construction = false;
-  /* If the type is final, there are no derivations.  */
+  /* If the type is complete, there are no derivations.  */
   if (TYPE_FINAL_P (outer_type->type))
     context.maybe_derived_type = false;
 
@@ -1434,11 +1479,13 @@ possible_polymorphic_call_targets (tree otr_type,
   if (*slot)
     {
       if (completep)
-	*completep = (*slot)->final;
+	*completep = (*slot)->complete;
+      if (nonconstruction_targetsp)
+	*nonconstruction_targetsp = (*slot)->nonconstruction_targets;
       return (*slot)->targets;
     }
 
-  final = true;
+  complete = true;
 
   /* Do actual search.  */
   timevar_push (TV_IPA_VIRTUAL_CALL);
@@ -1455,49 +1502,58 @@ possible_polymorphic_call_targets (tree otr_type,
   /* First see virtual method of type itself.  */
   binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
 			       context.offset, otr_type);
-  target = gimple_get_virt_method_for_binfo (otr_token, binfo);
+  if (binfo)
+    target = gimple_get_virt_method_for_binfo (otr_token, binfo,
+					       &can_refer);
+  else
+    {
+      gcc_assert (odr_violation_reported);
+      target = NULL;
+    }
+
+  maybe_record_node (nodes, target, inserted, can_refer, &complete);
+
   if (target)
     {
-      maybe_record_node (nodes, target, inserted, &final);
-
-      /* In the case we get final method, we don't need 
+      /* In the case we get complete method, we don't need 
 	 to walk derivations.  */
       if (DECL_FINAL_P (target))
 	context.maybe_derived_type = false;
     }
-  /* The only way method in anonymous namespace can become unreferable
-     is that it has been fully optimized out.  */
-  else if (flag_ltrans || !type->anonymous_namespace)
-    final = false;
+  else
+    gcc_assert (!complete);
 
   pointer_set_insert (matched_vtables, BINFO_VTABLE (binfo));
 
-  /* Next walk bases, if asked to.  */
-  if (context.maybe_in_construction)
-    record_targets_from_bases (otr_type, otr_token, outer_type->type,
-			       context.offset, nodes, inserted,
-			       matched_vtables, &final);
-
-  /* Finally walk recursively all derived types.  */
+  /* Next walk recursively all derived types.  */
   if (context.maybe_derived_type)
     {
       /* For anonymous namespace types we can attempt to build full type.
 	 All derivations must be in this unit (unless we see partial unit).  */
       if (!type->anonymous_namespace || flag_ltrans)
-	final = false;
+	complete = false;
       for (i = 0; i < outer_type->derived_types.length(); i++)
 	possible_polymorphic_call_targets_1 (nodes, inserted,
 					     matched_vtables,
 					     otr_type,
 					     outer_type->derived_types[i],
 					     otr_token, outer_type->type,
-					     context.offset);
+					     context.offset, &complete);
     }
 
+  /* Finally walk bases, if asked to.  */
+  (*slot)->nonconstruction_targets = nodes.length();
+  if (context.maybe_in_construction)
+    record_targets_from_bases (otr_type, otr_token, outer_type->type,
+			       context.offset, nodes, inserted,
+			       matched_vtables, &complete);
+
   (*slot)->targets = nodes;
-  (*slot)->final = final;
+  (*slot)->complete = complete;
   if (completep)
-    *completep = final;
+    *completep = complete;
+  if (nonconstruction_targetsp)
+    *nonconstruction_targetsp = (*slot)->nonconstruction_targets;
 
   pointer_set_destroy (inserted);
   pointer_set_destroy (matched_vtables);
@@ -1517,28 +1573,46 @@ dump_possible_polymorphic_call_targets (FILE *f,
   bool final;
   odr_type type = get_odr_type (otr_type, false);
   unsigned int i;
+  int nonconstruction;
 
   if (!type)
     return;
   targets = possible_polymorphic_call_targets (otr_type, otr_token,
 					       ctx,
-					       &final);
+					       &final, NULL, &nonconstruction);
   fprintf (f, "  Targets of polymorphic call of type %i:", type->id);
   print_generic_expr (f, type->type, TDF_SLIM);
-  fprintf (f, " token %i\n"
-	   "    Contained in type:",
-	   (int)otr_token);
-  print_generic_expr (f, ctx.outer_type, TDF_SLIM);
-  fprintf (f, " at offset "HOST_WIDE_INT_PRINT_DEC"\n"
-	   "    %s%s%s\n      ",
-	   ctx.offset,
-	   final ? "This is full list." :
+  fprintf (f, " token %i\n", (int)otr_token);
+  if (ctx.outer_type || ctx.offset)
+    {
+      fprintf (f, "    Contained in type:");
+      print_generic_expr (f, ctx.outer_type, TDF_SLIM);
+      fprintf (f, " at offset "HOST_WIDE_INT_PRINT_DEC"\n",
+	       ctx.offset);
+    }
+
+  fprintf (f, "    %s%s%s\n      ",
+	   final ? "This is a complete list." :
 	   "This is partial list; extra targets may be defined in other units.",
 	   ctx.maybe_in_construction ? " (base types included)" : "",
 	   ctx.maybe_derived_type ? " (derived types included)" : "");
   for (i = 0; i < targets.length (); i++)
-    fprintf (f, " %s/%i", targets[i]->name (),
-	     targets[i]->order);
+    {
+      char *name = NULL;
+      if (i == (unsigned)nonconstruction)
+	fprintf (f, "\n     If the type is in construction,"
+		 " then additional tarets are:\n"
+		 "      ");
+      if (in_lto_p)
+	name = cplus_demangle_v3 (targets[i]->asm_name (), 0);
+      fprintf (f, " %s/%i", name ? name : targets[i]->name (), targets[i]->order);
+      if (in_lto_p)
+	free (name);
+      if (!targets[i]->definition)
+	fprintf (f, " (no definition%s)",
+		 DECL_DECLARED_INLINE_P (targets[i]->decl)
+		 ? " inline" : "");
+    }
   fprintf (f, "\n\n");
 }
 
@@ -1650,9 +1724,10 @@ ipa_devirt (void)
 	    struct cgraph_node *likely_target = NULL;
 	    void *cache_token;
 	    bool final;
+	    int nonconstruction_targets;
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
-		    (e, &final, &cache_token);
+		    (e, &final, &cache_token, &nonconstruction_targets);
 	    unsigned int i;
 
 	    if (dump_file)
@@ -1664,14 +1739,14 @@ ipa_devirt (void)
 	    if (!cgraph_maybe_hot_edge_p (e))
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Call is cold\n");
+		  fprintf (dump_file, "Call is cold\n\n");
 		ncold++;
 		continue;
 	      }
 	    if (e->speculative)
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Call is aready speculated\n");
+		  fprintf (dump_file, "Call is aready speculated\n\n");
 		nspeculated++;
 
 		/* When dumping see if we agree with speculation.  */
@@ -1682,7 +1757,7 @@ ipa_devirt (void)
 				      cache_token))
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Target list is known to be useless\n");
+		  fprintf (dump_file, "Target list is known to be useless\n\n");
 		nmultiple++;
 		continue;
 	      }
@@ -1691,10 +1766,13 @@ ipa_devirt (void)
 		{
 		  if (likely_target)
 		    {
-		      likely_target = NULL;
-		      if (dump_file)
-			fprintf (dump_file, "More than one likely target\n");
-		      nmultiple++;
+		      if (i < (unsigned) nonconstruction_targets)
+			{
+			  likely_target = NULL;
+			  if (dump_file)
+			    fprintf (dump_file, "More than one likely target\n\n");
+			  nmultiple++;
+			}
 		      break;
 		    }
 		  likely_target = targets[i];
@@ -1714,12 +1792,12 @@ ipa_devirt (void)
 		if (cgraph_function_or_thunk_node (e2->callee, NULL)
 		    == cgraph_function_or_thunk_node (likely_target, NULL))
 		  {
-		    fprintf (dump_file, "We agree with speculation\n");
+		    fprintf (dump_file, "We agree with speculation\n\n");
 		    nok++;
 		  }
 		else
 		  {
-		    fprintf (dump_file, "We disagree with speculation\n");
+		    fprintf (dump_file, "We disagree with speculation\n\n");
 		    nwrong++;
 		  }
 		continue;
@@ -1727,7 +1805,7 @@ ipa_devirt (void)
 	    if (!likely_target->definition)
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Target is not an definition\n");
+		  fprintf (dump_file, "Target is not an definition\n\n");
 		nnotdefined++;
 		continue;
 	      }
@@ -1738,7 +1816,7 @@ ipa_devirt (void)
 	    if (DECL_EXTERNAL (likely_target->decl))
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Target is external\n");
+		  fprintf (dump_file, "Target is external\n\n");
 		nexternal++;
 		continue;
 	      }
@@ -1747,7 +1825,7 @@ ipa_devirt (void)
 		&& symtab_can_be_discarded (likely_target))
 	      {
 		if (dump_file)
-		  fprintf (dump_file, "Target is overwritable\n");
+		  fprintf (dump_file, "Target is overwritable\n\n");
 		noverwritable++;
 		continue;
 	      }
@@ -1755,7 +1833,7 @@ ipa_devirt (void)
 	      {
 		if (dump_file)
 		  fprintf (dump_file,
-			   "Speculatively devirtualizing call in %s/%i to %s/%i\n",
+			   "Speculatively devirtualizing call in %s/%i to %s/%i\n\n",
 			   n->name (), n->order,
 			   likely_target->name (),
 			   likely_target->order);

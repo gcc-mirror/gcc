@@ -1,3 +1,30 @@
+2014-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/59468
+	* ipa-utils.h (possible_polymorphic_call_targets): Update prototype
+	and wrapper.
+	* ipa-devirt.c: Include demangle.h
+	(odr_violation_reported): New static variable.
+	(add_type_duplicate): Update odr_violations.
+	(maybe_record_node): Add completep parameter; update it.
+	(record_target_from_binfo): Add COMPLETEP parameter;
+	update it as needed.
+	(possible_polymorphic_call_targets_1): Likewise.
+	(struct polymorphic_call_target_d): Add nonconstruction_targets;
+	rename FINAL to COMPLETE.
+	(record_targets_from_bases): Sanity check we found the binfo;
+	fix COMPLETEP updating.
+	(possible_polymorphic_call_targets): Add NONCONSTRUTION_TARGETSP
+	parameter, fix computing of COMPLETEP.
+	(dump_possible_polymorphic_call_targets): Imrove readability of dump; at
+	LTO time do demangling.
+	(ipa_devirt): Use nonconstruction_targets; Improve dumps.
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Add can_refer
+	parameter.
+	(gimple_get_virt_method_for_binfo): Likewise.
+	* gimple-fold.h (gimple_get_virt_method_for_binfo,
+	gimple_get_virt_method_for_vtable): Update prototypes.
+
 2014-02-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/49008

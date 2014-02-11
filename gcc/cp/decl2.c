@@ -2660,7 +2660,6 @@ import_export_decl (tree decl)
 		  comdat_p = (targetm.cxx.class_data_always_comdat ()
 			      || (CLASSTYPE_KEY_METHOD (type)
 				  && DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type))));
-		  mark_needed (decl);
 		  if (!flag_weak)
 		    {
 		      comdat_p = false;

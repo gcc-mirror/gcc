@@ -1,3 +1,9 @@
+2014-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/59468
+	* g++.dg/ipa/devirt-27.C: New testcase.
+	* g++.dg/ipa/devirt-26.C: New testcase.
+
 2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60137
