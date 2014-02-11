@@ -1119,6 +1119,18 @@
   }
 )
 
+;;Load and store reverse
+(define_insn "movsi4_rev"
+  [(set (match_operand:SI 0 "reg_or_mem_operand" "=r,Q")
+        (bswap:SI (match_operand:SF 1 "reg_or_mem_operand" "Q,r")))]
+  "TARGET_REORDER"
+  "@
+   lwr\t%0,%y1,r0
+   swr\t%1,%y0,r0"
+  [(set_attr "type"     "load,store")
+  (set_attr "mode"      "SI")
+  (set_attr "length"    "4,4")])
+
 ;; 32-bit floating point moves
 
 (define_expand "movsf"

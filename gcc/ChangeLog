@@ -1,4 +1,9 @@
-2013-11-26  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
+
+	* config/microblaze/microblaze.md: Add movsi4_rev insn pattern.
+	* config/microblaze/predicates.md: Add reg_or_mem_operand predicate.
+
+2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
 
 	* config/microblaze/microblaze.c: Extend mcpu version format
 
