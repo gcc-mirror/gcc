@@ -1,3 +1,10 @@
+2014-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgomp/60107
+	* config/i386/sol2-9.h: New file.
+	* config.gcc (i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*,
+	*-*-solaris2.9*): Use it.
+
 2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
 
 	* config/microblaze/microblaze.md: Add movsi4_rev insn pattern.
