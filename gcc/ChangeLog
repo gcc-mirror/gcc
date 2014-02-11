@@ -1,3 +1,13 @@
+2014-02-10  Richard Henderson <rth@redhat.com>
+
+	PR target/59927
+	* calls.c (expand_call): Don't double-push for reg_parm_stack_space.
+	* config/i386/i386.c (init_cumulative_args): Remove sorry for 64-bit
+	ms-abi vs -mno-accumulate-outgoing-args.
+	(ix86_expand_prologue): Unconditionally call ix86_eax_live_at_start_p.
+	* config/i386/i386.h (ACCUMULATE_OUTGOING_ARGS): Fix comment with
+	respect to ms-abi.
+
 2014-02-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/60080
