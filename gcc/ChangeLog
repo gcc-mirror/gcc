@@ -1,3 +1,7 @@
+2014-02-10  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.h: Define SIZE_TYPE and PTRDIFF_TYPE.
+
 2014-02-10  Richard Henderson <rth@redhat.com>
 
 	PR target/59927
