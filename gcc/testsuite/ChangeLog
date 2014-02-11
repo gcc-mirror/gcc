@@ -1,3 +1,8 @@
+2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60137
+	* gcc.target/powerpc/pr60137.c: New file.
+
 2014-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/52370
