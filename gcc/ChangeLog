@@ -1,3 +1,15 @@
+2014-02-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/aarch-cost-tables.h (generic_extra_costs): Fix
+	identifiers in comments.
+	(cortexa53_extra_costs): Likewise.
+	* config/arm/arm.c (cortexa9_extra_costs): Fix identifiers in
+	comments.
+	(cortexa7_extra_costs): Likewise.
+	(cortexa12_extra_costs): Likewise.
+	(cortexa15_extra_costs): Likewise.
+	(v7m_extra_costs): Likewise.
+
 2014-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092
