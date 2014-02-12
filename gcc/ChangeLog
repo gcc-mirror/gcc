@@ -1,3 +1,9 @@
+2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60116
+	* combine.c (try_combine): Also remove dangling REG_DEAD notes on the
+	other_insn once the combination has been validated.
+
 2014-02-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/59468
