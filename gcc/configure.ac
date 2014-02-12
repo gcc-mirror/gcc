@@ -3867,8 +3867,13 @@ foo:	nop
 
     # These two are used unconditionally by i386.[ch]; it is to be defined
     # to 1 if the feature is present, 0 otherwise.
+    as_ix86_gotoff_in_data_opt=
+    if test x$gas = xyes; then
+      as_ix86_gotoff_in_data_opt="--32"
+    fi
     gcc_GAS_CHECK_FEATURE([GOTOFF in data],
-        gcc_cv_as_ix86_gotoff_in_data, [2,11,0],,
+      gcc_cv_as_ix86_gotoff_in_data, [2,11,0],
+      [$as_ix86_gotoff_in_data_opt],
 [	.text
 .L0:
 	nop
