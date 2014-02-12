@@ -1,3 +1,11 @@
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gimple-low.c (lower_builtin_posix_memalign): Lower conditional
+	of posix_memalign being successful.
+	(lower_stmt): Restrict lowering of posix_memalign to when
+	-ftree-bit-ccp is enabled.
+
 2014-02-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr-c.c (avr_resolve_overloaded_builtin): Pass vNULL for

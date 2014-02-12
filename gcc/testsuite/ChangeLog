@@ -1,3 +1,9 @@
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/torture/pr60092.c: New testcase.
+	* gcc.dg/tree-ssa/alias-31.c: Disable SRA.
+
 2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140212-1.c: New test.
