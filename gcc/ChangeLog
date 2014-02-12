@@ -1,3 +1,9 @@
+2014-02-12  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr-c.c (avr_resolve_overloaded_builtin): Pass vNULL for
+	arg_loc.
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Likewise.
+
 2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60116

@@ -181,7 +181,7 @@ spu_resolve_overloaded_builtin (location_t loc, tree fndecl, void *passed_args)
       return error_mark_node;
     }
 
-  return build_function_call_vec (loc, match, fnargs, NULL);
+  return build_function_call_vec (loc, vNULL, match, fnargs, NULL);
 #undef SCALAR_TYPE_P
 }
 
