@@ -3902,8 +3902,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  next = XEXP (note, 1);
 
 	  if ((REG_NOTE_KIND (note) == REG_DEAD
-	       || REG_NOTE_KIND (note) == REG_UNUSED)
-	      && ! reg_set_p (XEXP (note, 0), PATTERN (undobuf.other_insn)))
+	       && !reg_referenced_p (XEXP (note, 0),
+				     PATTERN (undobuf.other_insn)))
+	      ||(REG_NOTE_KIND (note) == REG_UNUSED
+		 && !reg_set_p (XEXP (note, 0),
+				PATTERN (undobuf.other_insn))))
 	    remove_note (undobuf.other_insn, note);
 	}
 
