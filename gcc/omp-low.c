@@ -9812,6 +9812,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					TREE_VEC_ELT (t, 1)),
 				&initlist, true, NULL_TREE);
 	  gimple_seq_add_seq (&ilist, initlist);
+
+	  tree clobber = build_constructor (TREE_TYPE (TREE_VEC_ELT (t, 1)),
+					    NULL);
+	  TREE_THIS_VOLATILE (clobber) = 1;
+	  gimple_seq_add_stmt (&olist,
+			       gimple_build_assign (TREE_VEC_ELT (t, 1),
+						    clobber));
 	}
 
       tree clobber = build_constructor (ctx->record_type, NULL);
