@@ -10269,7 +10269,8 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
       if ((branch_ctx
 	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
 	   && gimple_omp_for_kind (branch_ctx) == GF_OMP_FOR_KIND_CILKSIMD)
-	  || (gimple_code (label_ctx) == GIMPLE_OMP_FOR
+	  || (label_ctx
+	      && gimple_code (label_ctx) == GIMPLE_OMP_FOR
 	      && gimple_omp_for_kind (label_ctx) == GF_OMP_FOR_KIND_CILKSIMD))
 	cilkplus_block = true;
     }
