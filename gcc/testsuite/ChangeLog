@@ -1,3 +1,7 @@
+2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/cilk-plus/jump-openmp.c: New file.
+
 2014-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60092
