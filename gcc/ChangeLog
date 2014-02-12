@@ -1,3 +1,13 @@
+2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+		    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60151
+	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU
+	assembler.
+
 2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/60116
