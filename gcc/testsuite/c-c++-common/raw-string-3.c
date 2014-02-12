@@ -7,7 +7,7 @@
 const void	*s0	= R"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
                 // { dg-error "expected ',' or ';'" "expected" { target c } 7 }
 const void	*s1	= uR"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
-                // { dg-error "expected ',' or ';'" expected" { target c } 9 }
+                // { dg-error "expected ',' or ';'" "expected" { target c } 9 }
 const void	*s2	= UR"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
                 // { dg-error "expected ',' or ';'" "expected" { target c } 11 }
 const void	*s3	= u8R"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }

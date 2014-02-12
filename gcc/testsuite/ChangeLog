@@ -1,5 +1,7 @@
 2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/raw-string-3.c: Fix typo in dg-error invocation.
+
 	* gcc.dg/cilk-plus/jump-openmp.c: New file.
 
 2014-02-12  Richard Biener  <rguenther@suse.de>
