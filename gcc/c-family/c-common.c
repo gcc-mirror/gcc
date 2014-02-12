@@ -2976,7 +2976,7 @@ merge_tlist (struct tlist **to, struct tlist *add, int copy)
 	  }
       if (!found)
 	{
-	  *end = copy ? add : new_tlist (NULL, add->expr, add->writer);
+	  *end = copy ? new_tlist (NULL, add->expr, add->writer) : add;
 	  end = &(*end)->next;
 	  *end = 0;
 	}
@@ -3134,7 +3134,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       verify_tree (TREE_OPERAND (x, 0), &tmp_before, &tmp_list2, NULL_TREE);
       warn_for_collisions (tmp_list2);
       merge_tlist (pbefore_sp, tmp_before, 0);
-      merge_tlist (pbefore_sp, tmp_list2, 1);
+      merge_tlist (pbefore_sp, tmp_list2, 0);
 
       tmp_list3 = tmp_nosp = 0;
       verify_tree (TREE_OPERAND (x, 1), &tmp_list3, &tmp_nosp, NULL_TREE);
@@ -3238,12 +3238,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 	    warn_for_collisions (tmp_nosp);
 
 	    tmp_list3 = 0;
-	    while (tmp_nosp)
-	      {
-		struct tlist *t = tmp_nosp;
-		tmp_nosp = t->next;
-		merge_tlist (&tmp_list3, t, 0);
-	      }
+	    merge_tlist (&tmp_list3, tmp_nosp, 0);
 	    t->cache_before_sp = tmp_before;
 	    t->cache_after_sp = tmp_list3;
 	  }
