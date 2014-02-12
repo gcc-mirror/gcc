@@ -1,5 +1,10 @@
 2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gimplify.c (gimplify_call_expr, gimplify_modify_expr): Move
+	common code...
+	(maybe_fold_stmt): ... into this new function.
+	* omp-low.c (lower_omp): Update comment.
+
 	* omp-low.c (lower_omp_target): Add clobber for sizes array, after
 	last use.
 
