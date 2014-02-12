@@ -1,5 +1,8 @@
 2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* omp-low.c (lower_omp_target): Add clobber for sizes array, after
+	last use.
+
 	* omp-low.c (diagnose_sb_0): Make sure label_ctx is valid to
 	dereference.
 
