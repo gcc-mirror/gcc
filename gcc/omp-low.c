@@ -10134,9 +10134,8 @@ lower_omp (gimple_seq *body, omp_context *ctx)
   gimple_stmt_iterator gsi;
   for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
     lower_omp_1 (&gsi, ctx);
-  /* Inside target region we haven't called fold_stmt during gimplification,
-     because it can break code by adding decl references that weren't in the
-     source.  Call fold_stmt now.  */
+  /* During gimplification, we have not always invoked fold_stmt
+     (gimplify.c:maybe_fold_stmt); call it now.  */
   if (target_nesting_level)
     for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
       fold_stmt (&gsi);
