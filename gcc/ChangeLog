@@ -1,3 +1,9 @@
+2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/60116
+	* combine.c (try_combine): Also remove dangling REG_DEAD notes on the
+	other_insn once the combination has been validated.
+
 2014-02-10  Nagaraju Mekala <nagaraju.mekala@xilinx.com>
 
 	* config/microblaze/microblaze.md: Add movsi4_rev insn pattern.

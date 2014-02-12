@@ -1,3 +1,7 @@
+2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20140212-1.c: New test.
+
 2014-02-10  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
