@@ -1,3 +1,7 @@
+2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/opt/pr52727.C: Compile with -march=i686 for ia32.
+
 2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/raw-string-3.c: Fix typo in dg-error invocation.
