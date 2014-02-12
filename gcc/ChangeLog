@@ -1,3 +1,8 @@
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
+	* gcse.c (compute_transp): break from loop over canon_modify_mem_list
+	when we found a dependence.
+
 2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimplify.c (gimplify_call_expr, gimplify_modify_expr): Move

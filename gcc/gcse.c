@@ -1735,7 +1735,10 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
 
 		  if (canon_true_dependence (dest, GET_MODE (dest),
 					     dest_addr, x, x_addr))
-		    bitmap_clear_bit (bmap[bb_index], indx);
+		    {
+		      bitmap_clear_bit (bmap[bb_index], indx);
+		      break;
+		    }
 	        }
 	    }
 	}
