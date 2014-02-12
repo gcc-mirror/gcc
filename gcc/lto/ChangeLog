@@ -1,3 +1,11 @@
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60060
+	* lto-lang.c (lto_write_globals): Do not call
+	wrapup_global_declarations or emit_debug_global_declarations
+	but emit debug info for non-function scope variables
+	directly.
+
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (unify_scc): Free CONSTRUCTOR_ELTS.
