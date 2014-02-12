@@ -1,3 +1,8 @@
+2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60047
+	* g++.dg/cpp0x/pr60047.C: New.
+
 2014-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/60101
