@@ -1,3 +1,11 @@
+2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60151
+	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU
+	assembler.
+	* configure: Regenerated.
+
 2014-02-12  Richard Biener  <rguenther@suse.de>
 
 	* vec.c (vec_prefix::calculate_allocation): Move as
