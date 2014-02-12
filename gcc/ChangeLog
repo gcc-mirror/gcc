@@ -1,5 +1,25 @@
 2014-02-12  Richard Biener  <rguenther@suse.de>
 
+	* vec.c (vec_prefix::calculate_allocation): Move as
+	inline variant to vec.h.
+	(vec_prefix::calculate_allocation_1): New out-of-line version.
+	* vec.h (vec_prefix::calculate_allocation_1): Declare.
+	(vec_prefix::m_has_auto_buf): Rename to ...
+	(vec_prefix::m_using_auto_storage): ... this.
+	(vec_prefix::calculate_allocation): Inline the easy cases
+	and dispatch to calculate_allocation_1 which doesn't need the
+	prefix address.
+	(va_heap::reserve): Use gcc_checking_assert.
+	(vec<T, A, vl_embed>::embedded_init): Add argument to initialize
+	m_using_auto_storage.
+	(auto_vec): Change m_vecpfx member to a vec<T, va_heap, vl_embed>
+	member and adjust.
+	(vec<T, va_heap, vl_ptr>::reserve): Remove redundant check.
+	(vec<T, va_heap, vl_ptr>::release): Avoid casting.
+	(vec<T, va_heap, vl_ptr>::using_auto_storage): Simplify.
+
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
 	* gcse.c (compute_transp): break from loop over canon_modify_mem_list
 	when we found a dependence.
 
