@@ -1,3 +1,9 @@
+2014-02-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-mul-underflow.c,
+	gcc.dg/torture/float128-truncdf-underflow.c,
+	gcc.dg/torture/float128-truncsf-underflow.c: New tests.
+
 2014-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/59737
