@@ -1,3 +1,8 @@
+2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59737
+	* g++.dg/ipa/pr59737.C: New test.
+
 2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/opt/pr52727.C: Compile with -march=i686 for ia32.
