@@ -1,3 +1,7 @@
+2014-02-13  Sharad Singhai  <singhai@google.com>
+
+	* doc/optinfo.texi: Fix order of nodes.
+
 2014-02-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (xop_vmfrcz<mode>2): Generate const0 in
