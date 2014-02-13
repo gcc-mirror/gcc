@@ -13618,10 +13618,10 @@
 	  (unspec:VF_128
 	   [(match_operand:VF_128 1 "nonimmediate_operand")]
 	   UNSPEC_FRCZ)
-	  (match_dup 3)
+	  (match_dup 2)
 	  (const_int 1)))]
   "TARGET_XOP"
-  "operands[3] = CONST0_RTX (<MODE>mode);")
+  "operands[2] = CONST0_RTX (<MODE>mode);")
 
 (define_insn "*xop_vmfrcz<mode>2"
   [(set (match_operand:VF_128 0 "register_operand" "=x")
