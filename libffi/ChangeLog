@@ -1,3 +1,16 @@
+2014-02-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR libffi/60073
+	* src/sparc/ffitarget.h (FFI_TARGET_SPECIFIC_VARIADIC): Define.
+	(FFI_EXTRA_CIF_FIELDS): Likewise.
+	(FFI_NATIVE_RAW_API): Move around.
+	* src/sparc/ffi.c (ffi_prep_cif_machdep_core): New function from...
+	(ffi_prep_cif_machdep): ...here.  Call ffi_prep_cif_machdep_core.
+	(ffi_prep_cif_machdep_var): New function.
+	(ffi_closure_sparc_inner_v9): Do not pass anonymous FP arguments in
+	FP registers.
+	* doc/libffi.texi (Introduction): Fix inaccuracy.
+
 2013-12-10  Alan Modra  <amodra@gmail.com>
 
 	* src/powerpc/ffitarget.h: Import from upstream.
@@ -729,7 +742,7 @@
 	* src/sparc/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
 	just return FFI_BAD_ABI when things are wrong.
 
-2012-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+2011-02-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* src/sparc/v9.S (STACKFRAME): Bump to 176.
 
