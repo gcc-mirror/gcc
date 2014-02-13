@@ -1,3 +1,11 @@
+2014-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (xop_vmfrcz<mode>2): Generate const0 in
+	operands[2], not operands[3].
+
 2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_asm_output_function_label): Fix crash
@@ -11,8 +19,7 @@
 		    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/60151
-	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU
-	assembler.
+	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU assembler.
 
 2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
