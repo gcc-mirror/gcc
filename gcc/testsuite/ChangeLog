@@ -1,3 +1,8 @@
+2014-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43546
+	* gcc.target/i386/pr43546.c: New test.
+
 2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/hotpatch-compile-8.c: New test.
