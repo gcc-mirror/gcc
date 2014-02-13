@@ -5305,9 +5305,8 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       if (hotpatch_trampoline_halfwords >= 0
 	  && decl_function_context (decl) != NULL_TREE)
 	{
-	  warning_at (0, DECL_SOURCE_LOCATION (decl),
-		      "hotpatch_prologue is not compatible with nested"
-		      " function");
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_mhotpatch,
+		      "hotpatching is not compatible with nested functions");
 	  hotpatch_trampoline_halfwords = -1;
 	}
     }
