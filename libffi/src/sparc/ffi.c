@@ -249,7 +249,7 @@ int ffi_prep_args_v9(char *stack, extended_cif *ecif)
 }
 
 /* Perform machine dependent cif processing */
-ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+static ffi_status ffi_prep_cif_machdep_core(ffi_cif *cif)
 {
   int wordsize;
 
@@ -332,6 +332,19 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       break;
     }
   return FFI_OK;
+}
+
+ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
+{
+  cif->nfixedargs = cif->nargs;
+  return ffi_prep_cif_machdep_core (cif);
+}
+
+ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif, unsigned int nfixedargs,
+				    unsigned int ntotalargs)
+{
+  cif->nfixedargs = nfixedargs;
+  return ffi_prep_cif_machdep_core (cif);
 }
 
 int ffi_v9_layout_struct(ffi_type *arg, int off, char *ret, char *intg, char *flt)
@@ -604,8 +617,7 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
 
   /* Copy the caller's structure return address so that the closure
      returns the data directly to the caller.  */
-  if (cif->flags == FFI_TYPE_VOID
-      && cif->rtype->type == FFI_TYPE_STRUCT)
+  if (cif->flags == FFI_TYPE_VOID && cif->rtype->type == FFI_TYPE_STRUCT)
     {
       rvalue = (void *) gpr[0];
       /* Skip the structure return address.  */
@@ -619,6 +631,10 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
   /* Grab the addresses of the arguments from the stack frame.  */
   for (i = 0; i < cif->nargs; i++)
     {
+      /* If the function is variadic, FP arguments are passed in FP
+	 registers only if the corresponding parameter is named.  */
+      const int named = (i < cif->nfixedargs);
+
       if (arg_types[i]->type == FFI_TYPE_STRUCT)
 	{
 	  if (arg_types[i]->size > 16)
@@ -633,7 +649,9 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
 				   0,
 				   (char *) &gpr[argn],
 				   (char *) &gpr[argn],
-				   (char *) &fpr[argn]);
+				   named
+				   ? (char *) &fpr[argn]
+				   : (char *) &gpr[argn]);
 	      avalue[i] = &gpr[argn];
 	      argn += ALIGN(arg_types[i]->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
 	    }
@@ -649,6 +667,7 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
 	    argn++;
 #endif
 	  if (i < fp_slot_max
+	      && named
 	      && (arg_types[i]->type == FFI_TYPE_FLOAT
 		  || arg_types[i]->type == FFI_TYPE_DOUBLE
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
@@ -662,7 +681,7 @@ ffi_closure_sparc_inner_v9(ffi_closure *closure,
     }
 
   /* Invoke the closure.  */
-  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+  closure->fun (cif, rvalue, avalue, closure->user_data);
 
   /* Tell ffi_closure_sparc how to perform return type promotions.  */
   return cif->rtype->type;
