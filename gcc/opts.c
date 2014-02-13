@@ -2216,14 +2216,10 @@ option_name (diagnostic_context *context, int option_index,
 	return xstrdup (cl_options[option_index].opt_text);
     }
   /* A warning without option classified as an error.  */
-  else if (orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
-	   || diag_kind == DK_WARNING)
-    {
-      if (context->warning_as_error_requested)
-	return xstrdup (cl_options[OPT_Werror].opt_text);
-      else
-	return xstrdup (_("enabled by default"));
-    }
+  else if ((orig_diag_kind == DK_WARNING || orig_diag_kind == DK_PEDWARN
+	    || diag_kind == DK_WARNING)
+	   && context->warning_as_error_requested)
+    return xstrdup (cl_options[OPT_Werror].opt_text);
   else
     return NULL;
 }
