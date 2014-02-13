@@ -1,3 +1,8 @@
+2014-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (xop_vmfrcz<mode>2): Generate const0 in
+	operands[2], not operands[3].
+
 2014-02-13  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/59878
@@ -31,8 +36,7 @@
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/60151
-	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU
-	assembler.
+	* configure.ac (HAVE_AS_GOTOFF_IN_DATA): Pass --32 to GNU assembler.
 	* configure: Regenerated.
 
 2014-02-12  Richard Biener  <rguenther@suse.de>
@@ -78,8 +82,7 @@
 	* config/arm/aarch-cost-tables.h (generic_extra_costs): Fix
 	identifiers in comments.
 	(cortexa53_extra_costs): Likewise.
-	* config/arm/arm.c (cortexa9_extra_costs): Fix identifiers in
-	comments.
+	* config/arm/arm.c (cortexa9_extra_costs): Fix identifiers in comments.
 	(cortexa7_extra_costs): Likewise.
 	(cortexa12_extra_costs): Likewise.
 	(cortexa15_extra_costs): Likewise.
@@ -123,8 +126,8 @@
 	fix COMPLETEP updating.
 	(possible_polymorphic_call_targets): Add NONCONSTRUTION_TARGETSP
 	parameter, fix computing of COMPLETEP.
-	(dump_possible_polymorphic_call_targets): Imrove readability of dump; at
-	LTO time do demangling.
+	(dump_possible_polymorphic_call_targets): Imrove readability of dump;
+	at LTO time do demangling.
 	(ipa_devirt): Use nonconstruction_targets; Improve dumps.
 	* gimple-fold.c (gimple_get_virt_method_for_vtable): Add can_refer
 	parameter.
@@ -221,8 +224,7 @@
 
 	PR middle-end/52306
 	* reload1.c (emit_input_reload_insns): Do not create invalid RTL
-	when changing the SET_DEST of a prior insn to avoid an input
-	reload.
+	when changing the SET_DEST of a prior insn to avoid an input reload.
 
 2014-02-10  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -321,11 +323,9 @@
 	assume_aligned or alloc_align attributes.
 	(bit_value_assume_aligned): Add ATTR, PTRVAL and ALLOC_ALIGN
 	arguments.  Handle also assume_aligned and alloc_align attributes.
-	(evaluate_stmt): Adjust bit_value_assume_aligned caller.
-	Handle calls to functions with assume_aligned or alloc_align
-	attributes.
-	* doc/extend.texi: Document assume_aligned and alloc_align
-	attributes.
+	(evaluate_stmt): Adjust bit_value_assume_aligned caller.  Handle
+	calls to functions with assume_aligned or alloc_align attributes.
+	* doc/extend.texi: Document assume_aligned and alloc_align attributes.
 
 2014-02-08  Terry Guo  <terry.guo@arm.com>
 
@@ -414,8 +414,7 @@
 
 2014-02-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* optabs.c (expand_atomic_compare_and_swap): Allow expander to
-	fail.
+	* optabs.c (expand_atomic_compare_and_swap): Allow expander to fail.
 
 2014-02-07  Richard Biener  <rguenther@suse.de>
 
@@ -444,7 +443,8 @@
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59918
-	* ipa-devirt.c (record_target_from_binfo): Remove overactive sanity check.
+	* ipa-devirt.c (record_target_from_binfo): Remove overactive
+	sanity check.
 
 2014-02-06  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -477,8 +477,7 @@
 	ix86_expand_push.
 	(FP push expanders): Preserve memory attributes.
 	* config/i386/sse.md (push<mode>1): Remove.
-	* config/i386/i386.c (ix86_expand_vector_move): Handle push
-	operation.
+	* config/i386/i386.c (ix86_expand_vector_move): Handle push operation.
 	(ix86_expand_push): Remove.
 	* config/i386/mmx.md (push<mode>1): Remove.
 
@@ -510,9 +509,8 @@
 	XEXP.
 
 	PR debug/59992
-	* var-tracking.c (adjust_mems): Before adding a SET
-	to amd->side_effects, adjust it's SET_SRC using
-	simplify_replace_fn_rtx.
+	* var-tracking.c (adjust_mems): Before adding a SET to
+	amd->side_effects, adjust it's SET_SRC using simplify_replace_fn_rtx.
 
 2014-02-06  Alan Modra  <amodra@gmail.com>
 
@@ -608,13 +606,11 @@
 	(altivec_vupkhs<VU_char>): Emit vupkls* instead of vupkhs* when
 	target is little endian and -maltivec=be is not specified.
 	(*altivec_vupkhs<VU_char>_direct): New (copy of
-	altivec_vupkhs<VU_char> that always emits vupkhs*, for internal
-	use).
+	altivec_vupkhs<VU_char> that always emits vupkhs*, for internal use).
 	(altivec_vupkls<VU_char>): Emit vupkhs* instead of vupkls* when
 	target is little endian and -maltivec=be is not specified.
 	(*altivec_vupkls<VU_char>_direct): New (copy of
-	altivec_vupkls<VU_char> that always emits vupkls*, for internal
-	use).
+	altivec_vupkls<VU_char> that always emits vupkls*, for internal use).
 	(altivec_vupkhpx): Emit vupklpx instead of vupkhpx when target is
 	little endian and -maltivec=be is not specified.
 	(altivec_vupklpx): Emit vupkhpx instead of vupklpx when target is
@@ -633,8 +629,7 @@
 
 	* lto-cgraph.c (asm_nodes_output): Make global.
 	* lto-wrapper.c (run_gcc): Pass down paralelizm to WPA.
-	* gcc.c (AS_NEEDS_DASH_FOR_PIPED_INPUT): Allow WPA
-	parameter
+	* gcc.c (AS_NEEDS_DASH_FOR_PIPED_INPUT): Allow WPA parameter
 	(driver_handle_option): Handle OPT_fwpa.
 
 2014-02-05  Jakub Jelinek  <jakub@redhat.com>
@@ -665,8 +660,7 @@
 2014-02-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_hard_regno_mode_ok): Do not
-	accept extended registers in any mode when compiling for the
-	MN10300.
+	accept extended registers in any mode when compiling for the MN10300.
 
 2014-02-05  Yury Gribov  <y.gribov@samsung.com>
 
@@ -703,7 +697,7 @@
 2014-02-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/host-linux.c (linux_gt_pch_use_address): Don't
-	use SSIZE_MAX because it is not always defined. 
+	use SSIZE_MAX because it is not always defined.
 
 2014-02-04  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -725,7 +719,8 @@
 
 2014-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
-	* gimple-fold.c (can_refer_decl_in_current_unit_p): Default visibility is safe.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Default
+	visibility is safe.
 
 2014-02-04  Marek Polacek  <polacek@redhat.com>
 
@@ -818,9 +813,8 @@
 	lookup via vtable pointer; check for type consistency
 	and turn inconsitent facts into UNREACHABLE.
 	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
-	* gimple-fold.c (gimple_get_virt_method_for_vtable): 
-	Do not ICE on type inconsistent querries; return UNREACHABLE
-	instead.
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Do not ICE on
+	type inconsistent querries; return UNREACHABLE instead.
 
 2014-02-03  Richard Henderson  <rth@twiddle.net>
 
@@ -834,16 +828,16 @@
 2014-02-03  Laurent Aflonsi  <laurent.alfonsi@st.com>
 
 	PR gcov-profile/58602
-	* gcc/gcov-io.c (gcov_open): Open with truncation when mode<0
+	* gcc/gcov-io.c (gcov_open): Open with truncation when mode < 0.
 
 2014-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/59831
-	* ipa-cp.c (ipa_get_indirect_edge_target_1): Give up on -fno-devirtualize;
-	Try to devirtualize by the knowledge of virtual table pointer given by
-	aggregate propagation.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Give up on
+	-fno-devirtualize; try to devirtualize by the knowledge of
+	virtual table pointer given by aggregate propagation.
 	* ipa-prop.c (try_make_edge_direct_virtual_call): Likewise.
-	ipa_print_node_jump_functions): Dump also offset that
+	(ipa_print_node_jump_functions): Dump also offset that
 	is relevant for polymorphic calls.
 	(determine_known_aggregate_parts): Add arg_type parameter; use it
 	instead of determining the type from pointer type.
@@ -854,7 +848,7 @@
 	vtable_pointer_value_to_vtable.
 	* gimple-fold.h (gimple_get_virt_method_for_vtable): Declare.
 	* ipa-devirt.c (subbinfo_with_vtable_at_offset): Turn OFFSET parameter
-	to unsigned HOST_WIDE_INT; Use vtable_pointer_value_to_vtable.
+	to unsigned HOST_WIDE_INT; use vtable_pointer_value_to_vtable.
 	(vtable_pointer_value_to_vtable): Break out from ...; handle also
 	POINTER_PLUS_EXPR.
 	(vtable_pointer_value_to_binfo): ... here.
@@ -904,7 +898,7 @@
 
 2014-02-03  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
-	* doc/invoke.texi: (fprofile-reorder-functions): Fix typo.
+	* doc/invoke.texi (fprofile-reorder-functions): Fix typo.
 
 2014-02-03  Andrey Belevantsev  <abel@ispras.ru>
 
@@ -1602,7 +1596,7 @@
 
 2014-01-27  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-        * config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd):
+	* config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i32gather_pd):
 	New.
 	(_mm512_mask_prefetch_i64gather_pd): Ditto.
 	(_mm512_prefetch_i32scatter_pd): Ditto.
@@ -2650,7 +2644,7 @@
 	loads out of the loop.
 
 2014-01-15  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
-            Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/59695
 	* config/aarch64/aarch64.c (aarch64_build_constant): Fix incorrect
