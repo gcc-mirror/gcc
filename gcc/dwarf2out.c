@@ -18531,9 +18531,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       call_site_count = -1;
       tail_call_site_count = -1;
     }
-  /* Add the calling convention attribute if requested.  */
-  add_calling_convention_attribute (subr_die, decl);
 
+  if (subr_die != old_die)
+    /* Add the calling convention attribute if requested.  */
+    add_calling_convention_attribute (subr_die, decl);
 }
 
 /* Returns a hash value for X (which really is a die_struct).  */

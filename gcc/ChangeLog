@@ -1,3 +1,9 @@
+2014-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/60152
+	* dwarf2out.c (gen_subprogram_die): Don't call
+	add_calling_convention_attribute if subr_die is old_die.
+
 2014-02-13  Sharad Singhai  <singhai@google.com>
 
 	* doc/optinfo.texi: Fix order of nodes.
