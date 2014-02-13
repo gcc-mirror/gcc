@@ -1,3 +1,7 @@
+2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-compile-8.c: New test.
+
 2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20140212-1.c: New test.
