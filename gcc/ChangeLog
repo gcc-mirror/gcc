@@ -1,3 +1,9 @@
+2014-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43546
+	* expr.c (compress_float_constant): If x is a hard register,
+	extend into a pseudo and then move to x.
+
 2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_asm_output_function_label): Fix crash
