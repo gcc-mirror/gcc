@@ -383,25 +383,30 @@ installed but it is not in your default library search path, the
 @option{--with-mpc} configure option should be used.  See also
 @option{--with-mpc-lib} and @option{--with-mpc-include}.
 
-@item ISL Library version 0.11.1
+@item ISL Library version 0.12.2
 
 Necessary to build GCC with the Graphite loop optimizations.
 It can be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}
-as @file{isl-0.11.1.tar.bz2}.
+as @file{isl-0.12.2.tar.bz2}.  If an ISL source distribution is found
+in a subdirectory of your GCC sources named @file{isl}, it will be
+built together with GCC.  Alternatively, the @option{--with-isl} configure
+option should be used if ISL is not installed in your default library
+search path.
 
-The @option{--with-isl} configure option should be used if ISL is not
-installed in your default library search path.
-
-@item CLooG 0.18.0
+@item CLooG 0.18.1
 
 Necessary to build GCC with the Graphite loop optimizations.  It can be
 downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
-@file{cloog-0.18.0.tar.gz}.  The @option{--with-cloog} configure option should
-be used if CLooG is not installed in your default library search path.
-CLooG needs to be built against ISL 0.11.1.  Use @option{--with-isl=system}
-to direct CLooG to pick up an already installed ISL, otherwise it will use
-ISL 0.11.1 as bundled with CLooG.  CLooG needs to be configured to use GMP
-internally, use @option{--with-bits=gmp} to direct it to do that.
+@file{cloog-0.18.1.tar.gz}.  If a CLooG source distribution is found
+in a subdirectory of your GCC sources named @file{cloog}, it will be
+built together with GCC.  Alternatively, the @option{--with-cloog} configure
+option should be used if CLooG is not installed in your default library search
+path.
+
+If you want to install CLooG separately it needs to be built against
+ISL 0.12.2 by using the @option{--with-isl=system} to direct CLooG to pick
+up an already installed ISL.  Using the ISL library as bundled with CLooG
+is not supported.
 
 @end table
 
