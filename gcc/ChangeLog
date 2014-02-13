@@ -1,3 +1,9 @@
+2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_asm_output_function_label): Fix crash
+	caused by bad second argument to warning_at() with -mhotpatch and
+	nested functions (e.g. with gfortran).
+
 2014-02-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* opts.c (option_name): Remove "enabled by default" rider.
