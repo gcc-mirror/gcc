@@ -1,5 +1,11 @@
 2014-02-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/pr59605.c: Convert to a compile test.  Protect MAX_COPY
+	definition with an ifndef.
+	* gcc.dg/pr59605-2.c: New test.
+
+2014-02-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.dg/gomp/simd-clones-5.c: Update comment for new warning message.
 
 2014-02-12  Joseph Myers  <joseph@codesourcery.com>
