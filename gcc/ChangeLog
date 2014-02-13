@@ -1,3 +1,12 @@
+2014-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/59878
+	* doc/install.texi (ISL): Update recommended version to 0.12.2,
+	mention the possibility of an in-tree build.
+	(CLooG): Update recommended version to 0.18.1, mention the
+	possibility of an in-tree build and clarify that the ISL
+	bundled with CLooG does not work.
+
 2014-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43546
