@@ -1,11 +1,13 @@
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-minline-stringops-dynamically" { target { i?86-*-* x86_64-*-* } } } */
 
 extern void abort (void);
 
 #define MAX_OFFSET (sizeof (long long))
+#ifndef MAX_COPY
 #define MAX_COPY (1024 + 8192)
+#endif
 #define MAX_EXTRA (sizeof (long long))
 
 #define MAX_LENGTH (MAX_OFFSET + MAX_COPY + MAX_EXTRA)
