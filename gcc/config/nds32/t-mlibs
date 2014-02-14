@@ -28,7 +28,7 @@
 #   6. -mlittle-endian -mgp-direct
 #   7. -mlittle-endian -mno-gp-direct
 #   8. -mbig-endian -mgp-direct
-#   9. -mlittle-endian -mno-gp-direct
+#   9. -mbig-endian -mno-gp-direct
 #
 # We also define a macro MULTILIB_DEFAULTS in nds32.h that tells the
 # driver program which options are defaults for this target and thus

@@ -1,5 +1,10 @@
 2014-02-14  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/t-mlibs (MULTILIB_OPTIONS): Fix typo in comment.
+	* config/nds32/nds32.c (nds32_merge_decl_attributes): Likewise.
+
+2014-02-14  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c (nds32_naked_function_p): Follow the
 	GNU coding standards.
 

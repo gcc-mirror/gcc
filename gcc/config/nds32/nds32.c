@@ -3084,7 +3084,7 @@ nds32_merge_decl_attributes (tree olddecl, tree newdecl)
   combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),
 				     DECL_ATTRIBUTES (newdecl));
 
-  /* Sinc newdecl is acutally a duplicate of olddecl,
+  /* Since newdecl is acutally a duplicate of olddecl,
      we can take olddecl for some operations.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL)
     {
