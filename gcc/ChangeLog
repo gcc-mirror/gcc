@@ -1,5 +1,11 @@
 2014-02-14  Richard Biener  <rguenther@suse.de>
 
+	* cilk-common.c (cilk_arrow): Build a MEM_REF, not an INDIRECT_REF.
+	(get_frame_arg): Drop the assert with langhook types_compatible_p.
+	Do not strip INDIRECT_REFs.
+
+2014-02-14  Richard Biener  <rguenther@suse.de>
+
 	PR lto/60179
 	* lto-streamer-out.c (DFS_write_tree_body): Do not follow
 	DECL_FUNCTION_SPECIFIC_TARGET.
