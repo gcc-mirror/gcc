@@ -1272,8 +1272,13 @@ enum reg_class
    when addressing quantities in QI or HI mode; if we don't know the
    mode, then we must be conservative.  */
 #define MODE_BASE_REG_CLASS(MODE)					\
-    (TARGET_ARM || (TARGET_THUMB2 && !optimize_size) ? CORE_REGS :      \
-     (((MODE) == SImode) ? BASE_REGS : LO_REGS))
+  (arm_lra_flag								\
+   ? (TARGET_32BIT ? CORE_REGS						\
+      : GET_MODE_SIZE (MODE) >= 4 ? BASE_REGS				\
+      : LO_REGS)							\
+   : ((TARGET_ARM || (TARGET_THUMB2 && !optimize_size)) ? CORE_REGS	\
+      : ((MODE) == SImode) ? BASE_REGS					\
+      : LO_REGS))
 
 /* For Thumb we can not support SP+reg addressing, so we return LO_REGS
    instead of BASE_REGS.  */
