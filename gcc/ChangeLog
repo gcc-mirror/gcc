@@ -1,3 +1,14 @@
+2014-02-14  Vladimir Makarov  <vmakarov@redhat.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/59535
+	* lra-constraints.c (process_alt_operands): Encourage alternative
+	when unassigned pseudo class is superset of the alternative class.
+	(inherit_reload_reg): Don't inherit when optimizing for code size.
+	* config/arm/arm.h (MODE_BASE_REG_CLASS): Add version for LRA
+	returning CORE_REGS for anything but Thumb1 and BASE_REGS for
+	modes not less than 4 for Thumb1.
+
 2014-02-14  Kyle McMartin  <kyle@redhat.com>
 
 	PR pch/60010
