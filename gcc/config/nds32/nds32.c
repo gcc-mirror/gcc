@@ -1445,7 +1445,8 @@ nds32_needs_double_word_align (enum machine_mode mode, const_tree type)
 }
 
 /* Return true if FUNC is a naked function.  */
-static bool nds32_naked_function_p (tree func)
+static bool
+nds32_naked_function_p (tree func)
 {
   tree t;
 

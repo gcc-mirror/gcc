@@ -1,3 +1,8 @@
+2014-02-14  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_naked_function_p): Follow the
+	GNU coding standards.
+
 2014-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/60152
