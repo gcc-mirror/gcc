@@ -1968,10 +1968,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
         {
 	  gimple use_stmt = USE_STMT (use_p);
-          if (is_gimple_debug (use_stmt))
-            continue;
-
-	  use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
 
           /* Check if we got back to the reduction phi.  */
 	  if (use_stmt == phi)
@@ -3507,9 +3505,13 @@ get_initial_def_for_induction (gimple iv_phi)
       exit_phi = NULL;
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
         {
-	  if (!flow_bb_inside_loop_p (iv_loop, gimple_bb (USE_STMT (use_p))))
+	  gimple use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+
+	  if (!flow_bb_inside_loop_p (iv_loop, gimple_bb (use_stmt)))
 	    {
-	      exit_phi = USE_STMT (use_p);
+	      exit_phi = use_stmt;
 	      break;
 	    }
         }
@@ -5413,10 +5415,13 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
       loop_arg = PHI_ARG_DEF_FROM_EDGE (phi, latch_e);
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, loop_arg)
 	{
-	  if (!flow_bb_inside_loop_p (loop->inner,
-				      gimple_bb (USE_STMT (use_p))))
+	  gimple use_stmt = USE_STMT (use_p);
+	  if (is_gimple_debug (use_stmt))
+	    continue;
+
+	  if (!flow_bb_inside_loop_p (loop->inner, gimple_bb (use_stmt)))
 	    {
-	      exit_phi = USE_STMT (use_p);
+	      exit_phi = use_stmt;
 	      break;
 	    }
 	}
@@ -5514,7 +5519,7 @@ vectorizable_live_operation (gimple stmt,
 	    {
 	      gimple use_stmt = USE_STMT (use_p);
 	      if (gimple_code (use_stmt) == GIMPLE_PHI
-		  || gimple_bb (use_stmt) == merge_bb)
+		  && gimple_bb (use_stmt) == merge_bb)
 		{
 		  if (vec_stmt)
 		    {

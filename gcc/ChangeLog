@@ -1,3 +1,11 @@
+2014-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-loop.c (vect_is_slp_reduction): Don't set
+	use_stmt twice.
+	(get_initial_def_for_induction, vectorizable_induction): Ignore
+	debug stmts when looking for exit_phi.
+	(vectorizable_live_operation): Fix up condition.
+
 2014-02-14  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.c (nds32_asm_function_prologue): Do not use

@@ -1,3 +1,7 @@
+2014-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20140213.c: New test.
+
 2014-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43546
