@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=armv5te -marm -mthumb-interwork -Wall -Wstrict-prototypes -Wstrict-aliasing -funsigned-char -fno-builtin -fno-asm -msoft-float -std=gnu99 -mlittle-endian -mthumb -fno-stack-protector  -Os -g -feliminate-unused-debug-types -funit-at-a-time -fmerge-all-constants -fstrict-aliasing -fno-tree-loop-optimize -fno-tree-dominator-opts -fno-strength-reduce -fPIC -w" } */
+/* { dg-options "-march=armv5te -fno-builtin -mfloat-abi=soft -mthumb -fno-stack-protector -Os -fno-tree-loop-optimize -fno-tree-dominator-opts -fPIC -w" } */
+/* { dg-skip-if "Incompatible command line options: -mfloat-abi=soft -mfloat-abi=hard" { *-*-* } { "-mfloat-abi=hard" } { "" } } */
 
 typedef enum {
  REG_ENOSYS = -1,
