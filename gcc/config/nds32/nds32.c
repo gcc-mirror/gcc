@@ -1960,10 +1960,9 @@ nds32_asm_function_prologue (FILE *file,
 
   /* Display the attributes of this function.  */
   fprintf (file, "\t! function attributes: ");
-  /* GCC build attributes list with reverse order,
-     so we use nreverse() to make it looks like
-     the order that user specifies.  */
-  attrs = nreverse (DECL_ATTRIBUTES (current_function_decl));
+  /* Get the attributes tree list.
+     Note that GCC builds attributes list with reverse order.  */
+  attrs = DECL_ATTRIBUTES (current_function_decl);
 
   /* If there is no any attribute, print out "None".  */
   if (!attrs)
