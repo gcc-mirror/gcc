@@ -670,6 +670,18 @@ merge_def_and_ext (ext_cand *cand, rtx def_insn, ext_state *state)
   return false;
 }
 
+/* Given SRC, which should be one or more extensions of a REG, strip
+   away the extensions and return the REG.  */
+
+static inline rtx
+get_extended_src_reg (rtx src)
+{
+  while (GET_CODE (src) == SIGN_EXTEND || GET_CODE (src) == ZERO_EXTEND)
+    src = XEXP (src, 0);
+  gcc_assert (REG_P (src));
+  return src;
+}
+
 /* This function goes through all reaching defs of the source
    of the candidate for elimination (CAND) and tries to combine
    the extension with the definition instruction.  The changes
@@ -698,17 +710,23 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 
   /* If the destination operand of the extension is a different
      register than the source operand, then additional restrictions
-     are needed.  */
-  if ((REGNO (SET_DEST (PATTERN (cand->insn)))
-       != REGNO (XEXP (SET_SRC (PATTERN (cand->insn)), 0))))
+     are needed.  Note we have to handle cases where we have nested
+     extensions in the source operand.  */
+  if (REGNO (SET_DEST (PATTERN (cand->insn)))
+      != REGNO (get_extended_src_reg (SET_SRC (PATTERN (cand->insn)))))
     {
       /* In theory we could handle more than one reaching def, it
 	 just makes the code to update the insn stream more complex.  */
       if (state->defs_list.length () != 1)
 	return false;
 
-      /* We require the candidate not already be modified.  This may
-	 be overly conservative.  */
+      /* We require the candidate not already be modified.  It may,
+	 for example have been changed from a (sign_extend (reg))
+	 into (zero_extend (sign_extend (reg)).
+
+	 Handling that case shouldn't be terribly difficult, but the code
+	 here and the code to emit copies would need auditing.  Until
+	 we see a need, this is the safe thing to do.  */
       if (state->modified[INSN_UID (cand->insn)].kind != EXT_MODIFIED_NONE)
 	return false;
 
@@ -999,8 +1017,13 @@ find_and_remove_re (void)
           if (dump_file)
             fprintf (dump_file, "Eliminated the extension.\n");
           num_realized++;
-	  if (REGNO (SET_DEST (PATTERN (curr_cand->insn)))
-	      != REGNO (XEXP (SET_SRC (PATTERN (curr_cand->insn)), 0)))
+	  /* If the RHS of the current candidate is not (extend (reg)), then
+	     we do not allow the optimization of extensions where
+	     the source and destination registers do not match.  Thus
+	     checking REG_P here is correct.  */
+	  if (REG_P (XEXP (SET_SRC (PATTERN (curr_cand->insn)), 0))
+	      && (REGNO (SET_DEST (PATTERN (curr_cand->insn)))
+		  != REGNO (XEXP (SET_SRC (PATTERN (curr_cand->insn)), 0))))
 	    {
               reinsn_copy_list.safe_push (curr_cand->insn);
               reinsn_copy_list.safe_push (state.defs_list[0]);
