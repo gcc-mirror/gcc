@@ -1,3 +1,10 @@
+2014-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60179
+	* lto.c (compare_tree_sccs_1): Do not compare
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	(lto_read_decls): Re-build DECL_FUNCTION_SPECIFIC_TARGET.
+
 2014-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR lto/60060
