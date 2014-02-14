@@ -1,3 +1,11 @@
+2014-02-14  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac (HAVE_AS_IX86_UD2): New test for 'ud2' mnemonic.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* config/i386/i386.md (trap) [HAVE_AS_IX86_UD2]: Use the mnemonic
+	instead of ASM_SHORT.
+
 2014-02-14  Vladimir Makarov  <vmakarov@redhat.com>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
