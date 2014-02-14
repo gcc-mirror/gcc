@@ -1,3 +1,8 @@
+2014-02-14  Kyle McMartin  <kyle@redhat.com>
+
+	PR pch/60010
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for AArch64.
+
 2014-02-14  Richard Biener  <rguenther@suse.de>
 
 	* cilk-common.c (cilk_arrow): Build a MEM_REF, not an INDIRECT_REF.
