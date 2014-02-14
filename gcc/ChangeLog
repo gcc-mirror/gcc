@@ -1,3 +1,12 @@
+2014-02-14  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/60131
+	* ree.c (get_extended_src_reg): New function.
+	(combine_reaching_defs): Use it rather than assuming location
+	of REG.
+	(find_and_remove_re): Verify first operand of extension is
+	a REG before adding the insns to the copy list.
+
 2014-02-14  Roland McGrath  <mcgrathr@google.com>
 
 	* configure.ac (HAVE_AS_IX86_UD2): New test for 'ud2' mnemonic.

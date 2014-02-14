@@ -1,3 +1,8 @@
+2014-02-14  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/60131
+	* g++.dg/torture/pr60131.C: New test.
+
 2014-02-14  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/arm/pr59858.c: Skip if -mfloat-abi=hard specified
