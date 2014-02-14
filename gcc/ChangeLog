@@ -1,3 +1,19 @@
+2014-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60179
+	* lto-streamer-out.c (DFS_write_tree_body): Do not follow
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	(hash_tree): Do not hash DECL_FUNCTION_SPECIFIC_TARGET.
+	* tree-streamer-out.c (pack_ts_target_option): Remove.
+	(streamer_pack_tree_bitfields): Do not stream
+	TS_TARGET_OPTION.
+	(write_ts_function_decl_tree_pointers): Do not stream
+	DECL_FUNCTION_SPECIFIC_TARGET.
+	* tree-streamer-in.c (unpack_ts_target_option): Remove.
+	(unpack_value_fields): Do not stream TS_TARGET_OPTION.
+	(lto_input_ts_function_decl_tree_pointers): Do not stream
+	DECL_FUNCTION_SPECIFIC_TARGET.
+
 2014-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-loop.c (vect_is_slp_reduction): Don't set
