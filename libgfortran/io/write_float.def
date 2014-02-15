@@ -273,7 +273,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   updown:
 
   rchar = '0';
-  if (w > 0 && d == 0 && p == 0)
+  if (ft != FMT_F && w > 0 && d == 0 && p == 0)
     nbefore = 1;
   /* Scan for trailing zeros to see if we really need to round it.  */
   for(i = nbefore + nafter; i < ndigits; i++)
@@ -288,11 +288,20 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   if (nbefore + nafter == 0)
     {
       ndigits = 0;
-      if (nzero_real == d && digits[0] >= rchar)
+      if ((d == 0 || nzero_real == d) && digits[0] >= rchar)
 	{
 	  /* We rounded to zero but shouldn't have */
-	  nzero--;
-	  nafter = 1;
+	  if (d != 0)
+	    {
+	      nzero--;
+	      nafter = 1;
+	    }
+	  else
+	    {
+              /* Handle the case Fw.0 and value < 1.0 */
+	      nbefore = 1;
+	      digits--;
+	    }
 	  digits[0] = '1';
 	  ndigits = 1;
 	}
@@ -828,12 +837,13 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   int d = f->u.real.d;\
   int w = f->u.real.w;\
   fnode *newf;\
-  GFC_REAL_ ## x rexp_d, r = 0.5;\
+  GFC_REAL_ ## x exp_d, r = 0.5, r_sc;\
   int low, high, mid;\
   int ubound, lbound;\
   char *p, pad = ' ';\
   int save_scale_factor, nb = 0;\
   try result;\
+  volatile GFC_REAL_ ## x temp;\
 \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
@@ -853,10 +863,13 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 	break;\
     }\
 \
-  rexp_d = calculate_exp_ ## x (-d);\
-  if ((m > 0.0 && ((m < 0.1 - 0.1 * r * rexp_d) || (rexp_d * (m + r) >= 1.0)))\
+  exp_d = calculate_exp_ ## x (d);\
+  r_sc = (1 - r / exp_d);\
+  temp = 0.1 * r_sc;\
+  if ((m > 0.0 && ((m < temp) || (r >= (exp_d - m))))\
       || ((m == 0.0) && !(compile_options.allow_std\
-			  & (GFC_STD_F2003 | GFC_STD_F2008))))\
+			  & (GFC_STD_F2003 | GFC_STD_F2008)))\
+      ||  d == 0)\
     { \
       newf->format = FMT_E;\
       newf->u.real.w = w;\
@@ -874,10 +887,9 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 \
   while (low <= high)\
     { \
-      volatile GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
-      temp = (calculate_exp_ ## x (mid - 1) * (1 - r * rexp_d));\
+      temp = (calculate_exp_ ## x (mid - 1) * r_sc);\
 \
       if (m < temp)\
         { \
