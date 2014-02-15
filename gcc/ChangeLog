@@ -1,3 +1,10 @@
+2014-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60183
+	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating
+	loads.
+	(tree_ssa_phiprop): Calculate and free post-dominators.
+
 2014-02-14  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/60131
