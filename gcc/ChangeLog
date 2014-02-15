@@ -1,3 +1,10 @@
+2014-02-15  Alan Modra  <amodra@gmail.com>
+
+	PR target/58675
+	PR target/57935
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_inner): Use
+	find_replacement on parts of insn rtl that might be reloaded.
+
 2014-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60183
