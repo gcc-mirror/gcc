@@ -1,3 +1,13 @@
+2014-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	Backport from mainline
+	PR libfortran/59771
+	PR libfortran/59774
+	PR libfortran/59836
+	* gfortran.dg/fmt_g_1.f90: New test.
+	* gfortran.dg/round_3.f08: New cases added.
+
 2014-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57033
