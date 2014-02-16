@@ -59,10 +59,8 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
    code we missed the edge when the first conditional is false
    (b_elt is zero, which means the second conditional is always
    zero.  */
-/* ARM Cortex-M defined LOGICAL_OP_NON_SHORT_CIRCUIT to false,
-   so skip below test.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1" { target { ! { { mips*-*-* avr-*-* arc*-*-* } || { arm_cortex_m } } } } } } */
-/* MIPS defines LOGICAL_OP_NON_SHORT_CIRCUIT to 0, so we split both
+/* { dg-final { scan-tree-dump-times "Threaded" 3 "dom1" { target { ! logical_op_short_circuit } } } } */
+/* On targets that define LOGICAL_OP_NON_SHORT_CIRCUIT to 0, we split both
    "a_elt || b_elt" and "b_elt && kill_elt" into two conditions each,
    rather than using "(var1 != 0) op (var2 != 0)".  Also, as on other targets,
    we duplicate the header of the inner "while" loop.  There are then
@@ -78,9 +76,6 @@ bitmap_ior_and_compl (bitmap dst, const_bitmap a, const_bitmap b,
       -> "kill_elt->indx == b_elt->indx" in the second condition,
 	 skipping the known-true "b_elt && kill_elt" in the second
 	 condition.  */
-/* Likewise for arc.  */
-/* For avr, BRANCH_COST is by default 0, so the default
-   LOGICAL_OP_NON_SHORT_CIRCUIT definition also computes as 0.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 4 "dom1" { target mips*-*-* avr-*-* arc*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Threaded" 4 "dom1" { target logical_op_short_circuit } } } */
 /* { dg-final { cleanup-tree-dump "dom1" } } */
 

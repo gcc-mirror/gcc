@@ -1,3 +1,16 @@
+2014-02-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): New procedure.
+	* gcc.dg/binop-xor1.c: XFAIL for logical_op_short_circuit.
+	* gcc.dg/tree-ssa/forwprop-28.c: Use logical_op_short_circuit
+	instead of mips*-*-*, arc*-*-*, avr*-*-* and arm_cortex_m tests.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.  Also use
+	logical_op_short_circuit for the alternative test, extending
+	it to arm_cortex_m.
+
 2014-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60203

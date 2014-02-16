@@ -5690,6 +5690,18 @@ proc check_effective_target_fenv_exceptions {} {
     } "-std=gnu99"]
 }
 
+# Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
+
+proc check_effective_target_logical_op_short_circuit {} {
+    if { [istarget mips*-*-*]
+	 || [istarget arc*-*-*]
+	 || [istarget avr*-*-*]
+	 || [check_effective_target_arm_cortex_m] } {
+	return 1
+    }
+    return 0
+}
+
 # Record that dg-final test TEST requires convential compilation.
 
 proc force_conventional_output_for { test } {
