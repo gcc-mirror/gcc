@@ -1,5 +1,10 @@
 2014-02-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-inline.c (expand_call_inline): Release the virtual
+	operand defined by the call we are about to inline.
+
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa.c (verify_ssa): If verify_def found an error, ICE.
 
 2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
