@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    v8.S - Copyright (c) 1996, 1997, 2003, 2004, 2008 Red Hat, Inc.
-   
+
    SPARC Foreign Function Interface 
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -27,6 +27,8 @@
 #define LIBFFI_ASM	
 #include <fficonfig.h>
 #include <ffi.h>
+
+#ifndef SPARC64
 
 #define STACKFRAME 96		/* Minimum stack framesize for SPARC */
 #define ARGS (64+4)		/* Offset of register area in frame */
@@ -307,6 +309,7 @@ done2:
 	.byte	0x1f	! uleb128 0x1f
 	.align	WS
 .LLEFDE2:
+#endif
 
 #if defined __ELF__ && defined __linux__
 	.section	.note.GNU-stack,"",@progbits
