@@ -1,5 +1,10 @@
 2014-02-17  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (free_stmt_vec_info): Clear BB and
+	release SSA defs of pattern stmts.
+
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
 	* tree-inline.c (expand_call_inline): Release the virtual
 	operand defined by the call we are about to inline.
 
