@@ -1,3 +1,8 @@
+2014-02-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55907
+	* gfortran.dg/init_flag_12.f90: New.
+
 2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Ilya Tocar  <ilya.tocar@intel.com>
 
