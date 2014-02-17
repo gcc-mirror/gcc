@@ -1,3 +1,11 @@
+2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-vpermd-2.c: Fix reference calculations.
+	* gcc.target/i386/avx512f-vpermpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+
 2014-02-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* lib/target-supports.exp
