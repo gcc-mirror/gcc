@@ -1,3 +1,24 @@
+2014-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR libffi/60073
+	* src/sparc/v8.S: Assemble only if !SPARC64.
+	* src/sparc/v9.S: Remove obsolete comment.
+	* src/sparc/ffitarget.h (enum ffi_abi): Add FFI_COMPAT_V9.
+	(V8_ABI_P): New macro.
+	(V9_ABI_P): Likewise.
+	(FFI_EXTRA_CIF_FIELDS): Define only if SPARC64.
+	* src/sparc/ffi.c (ffi_prep_args_v8): Compile only if !SPARC64.
+	(ffi_prep_args_v9): Compile only if SPARC64.
+	(ffi_prep_cif_machdep_core): Use V9_ABI_P predicate.
+	(ffi_prep_cif_machdep): Guard access to nfixedargs field.
+	(ffi_prep_cif_machdep_var): Likewise.
+	(ffi_v9_layout_struct): Compile only if SPARC64.
+	(ffi_call): Deal with FFI_V8PLUS and FFI_COMPAT_V9 and fix warnings.
+	(ffi_prep_closure_loc): Use V9_ABI_P and V8_ABI_P predicates.
+	(ffi_closure_sparc_inner_v8): Compile only if !SPARC64.
+	(ffi_closure_sparc_inner_v9): Compile only if SPARC64.  Guard access
+	to nfixedargs field.
+
 2014-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR libffi/60073

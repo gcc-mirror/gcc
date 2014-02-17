@@ -1,6 +1,6 @@
 /* -----------------------------------------------------------------------
    v9.S - Copyright (c) 2000, 2003, 2004, 2008 Red Hat, Inc.
-   
+
    SPARC 64-bit Foreign Function Interface 
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -29,8 +29,6 @@
 #include <ffi.h>
 
 #ifdef SPARC64
-/* Only compile this in for 64bit builds, because otherwise the object file
-   will have inproper architecture due to used instructions.  */
 
 #define STACKFRAME 176		/* Minimum stack framesize for SPARC 64-bit */
 #define STACK_BIAS 2047
