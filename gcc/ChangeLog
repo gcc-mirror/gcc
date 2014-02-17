@@ -1,3 +1,8 @@
+2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (vsx_xxpermdi_<mode>): Handle little
+	endian targets.
+
 2014-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60203
