@@ -1,3 +1,14 @@
+2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_maskz_permutexvar_epi64): Swap
+	arguments order in builtin.
+	(_mm512_permutexvar_epi64): Ditto.
+	(_mm512_mask_permutexvar_epi64): Ditto
+	(_mm512_maskz_permutexvar_epi32): Ditto
+	(_mm512_permutexvar_epi32): Ditto
+	(_mm512_mask_permutexvar_epi32): Ditto
+
 2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian
