@@ -1,3 +1,7 @@
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa.c (verify_ssa): If verify_def found an error, ICE.
+
 2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Ilya Tocar  <ilya.tocar@intel.com>
 
