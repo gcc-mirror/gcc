@@ -1612,21 +1612,28 @@ static int
 microblaze_version_to_int (const char *version)
 {
   const char *p, *v;
-  const char *tmpl = "vX.YY.Z";
+  const char *tmpl = "vXX.YY.Z";
   int iver = 0;
 
   p = version;
   v = tmpl;
 
-  while (*v)
+  while (*p)
     {
       if (*v == 'X')
 	{			/* Looking for major  */
-	  if (!(*p >= '0' && *p <= '9'))
-	    return -1;
-	  iver += (int) (*p - '0');
-	  iver *= 10;
-	}
+          if (*p == '.')
+            {
+              *v++;
+            }
+          else
+            {
+	      if (!(*p >= '0' && *p <= '9'))
+	        return -1;
+	      iver += (int) (*p - '0');
+              iver *= 10;
+	     }
+        }
       else if (*v == 'Y')
 	{			/* Looking for minor  */
 	  if (!(*p >= '0' && *p <= '9'))

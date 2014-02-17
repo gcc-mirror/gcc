@@ -66,8 +66,7 @@ cilk_dot (tree frame, int field_number, bool volatil)
 tree
 cilk_arrow (tree frame_ptr, int field_number, bool volatil)
 {
-  return cilk_dot (fold_build1 (INDIRECT_REF, 
-				TREE_TYPE (TREE_TYPE (frame_ptr)), frame_ptr), 
+  return cilk_dot (build_simple_mem_ref (frame_ptr), 
 		   field_number, volatil);
 }
 
@@ -287,12 +286,9 @@ get_frame_arg (tree call)
 
   argtype = TREE_TYPE (argtype);
   
-  gcc_assert (!lang_hooks.types_compatible_p
-	      || lang_hooks.types_compatible_p (argtype, cilk_frame_type_decl));
-
   /* If it is passed in as an address, then just use the value directly 
      since the function is inlined.  */
-  if (TREE_CODE (arg) == INDIRECT_REF || TREE_CODE (arg) == ADDR_EXPR)
+  if (TREE_CODE (arg) == ADDR_EXPR)
     return TREE_OPERAND (arg, 0);
   return arg;
 }

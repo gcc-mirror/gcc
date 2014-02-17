@@ -1,7 +1,7 @@
 /* Test for cross x86_64<->w64 abi standard calls.
 */
 /* { dg-do compile } */
-/* { dg-options "-mno-sse -maccumulate-outgoing-args" } */
+/* { dg-options "-mno-sse" } */
 #include "callabi.h"
 
 long double

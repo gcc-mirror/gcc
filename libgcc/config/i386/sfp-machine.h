@@ -65,6 +65,8 @@ void __sfp_handle_exceptions (int);
 #define FP_ROUNDMODE		(_fcw & FP_RND_MASK)
 #endif
 
+#define _FP_TININESS_AFTER_ROUNDING 1
+
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
 

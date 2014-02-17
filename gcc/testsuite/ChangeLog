@@ -1,12 +1,259 @@
+2014-02-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): New procedure.
+	* gcc.dg/binop-xor1.c: XFAIL for logical_op_short_circuit.
+	* gcc.dg/tree-ssa/forwprop-28.c: Use logical_op_short_circuit
+	instead of mips*-*-*, arc*-*-*, avr*-*-* and arm_cortex_m tests.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.  Also use
+	logical_op_short_circuit for the alternative test, extending
+	it to arm_cortex_m.
+
+2014-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60203
+	* gcc.target/powerpc/pr60203.c: New testsuite.
+
+2014-02-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/59599
+	* gfortran.dg/ichar_3.f90: New test.
+
+2014-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60183
+	* gcc.dg/torture/pr60183.c: New testcase.
+
+2014-02-14  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/60131
+	* g++.dg/torture/pr60131.C: New test.
+
+2014-02-14  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/arm/pr59858.c: Skip if -mfloat-abi=hard specified
+	on command-line.
+
+2014-02-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/ubsan/overflow-negate-2.c (main): Use signed char.
+
+2014-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20140213.c: New test.
+
+2014-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43546
+	* gcc.target/i386/pr43546.c: New test.
+
+2014-02-13  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-compile-8.c: New test.
+
+2014-02-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/pr59605.c: Convert to a compile test.  Protect MAX_COPY
+	definition with an ifndef.
+	* gcc.dg/pr59605-2.c: New test.
+
+2014-02-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/gomp/simd-clones-5.c: Update comment for new warning message.
+
+2014-02-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/float128-mul-underflow.c,
+	gcc.dg/torture/float128-truncdf-underflow.c,
+	gcc.dg/torture/float128-truncsf-underflow.c: New tests.
+
+2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/59737
+	* g++.dg/ipa/pr59737.C: New test.
+
+2014-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/opt/pr52727.C: Compile with -march=i686 for ia32.
+
+2014-02-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/raw-string-3.c: Fix typo in dg-error invocation.
+
+	* gcc.dg/cilk-plus/jump-openmp.c: New file.
+
+2014-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60092
+	* gcc.dg/torture/pr60092.c: New testcase.
+	* gcc.dg/tree-ssa/alias-31.c: Disable SRA.
+
+2014-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20140212-1.c: New test.
+
+2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60047
+	* g++.dg/cpp0x/pr60047.C: New.
+
+2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/60101
+	* c-c++-common/pr60101.c: New test.
+
+2014-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/59468
+	* g++.dg/ipa/devirt-27.C: New testcase.
+	* g++.dg/ipa/devirt-26.C: New testcase.
+
+2014-02-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60137
+	* gcc.target/powerpc/pr60137.c: New file.
+
+2014-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/52370
+	* gfortran.dg/pr52370.f90: New test.
+
+2014-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59927
+	Revert
+	2013-12-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/58630
+	* gcc.target/i386/pr43662.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/i386/pr43869.c (dg-options): Ditto.
+	* gcc.target/i386/pr57003.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-16.c (dg-options):
+	Remove -mtune=generic and add -maccumulate-outgoing-args instead.
+	* gcc.target/i386/avx-vzeroupper-17.c (dg-options): Ditto.
+	* gcc.target/i386/avx-vzeroupper-18.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-1.c (dg-options):
+	Add -maccumulate-outgoing-args.
+	* gcc.target/x86_64/abi/callabi/func-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/pr38891.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-1.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-2.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-3.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-4b.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5a.c (dg-options): Ditto.
+	* gcc.target/x86_64/abi/callabi/vaarg-5b.c (dg-options): Ditto.
+
+2014-02-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/vect/pr56787.c: Mark as xfail for vect_no_align.
+
+2014-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/59776
+	* gcc.dg/guality/pr59776.c: New test.
+
+2014-02-11  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/arm/fixed_float_conversion.c: Add arm_vfp3 option.
+	* lib/target-supports.exp (check_effective_target_arm_vfp3_ok): New.
+	(add_options_for_arm_vfp3): New.
+
+2014-02-11  Jeff Law  <law@redhat.com>
+
+	PR middle-end/54041
+	* gcc.target/m68k/pr54041.c: New test.
+
+2014-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/59927
+	* gcc.target/i386/pr59927.c: New test.
+
+2014-02-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.dg/vect/pr57741-3.c: Require vect_int.
+	* gcc.dg/vect/pr60012.c: Likewise.
+	* gcc.dg/vect/vect-119.c: Likewise.
+	* gcc.dg/vect/vect-outer-4c-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-4c.c: Likewise.
+
+2014-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/binop-xor1.c: Don't xfail scan-tree-dump-times.
+
+2014-02-10  Jeff Law  <law@redhat.com>
+
+	PR middle-end-52306
+	* gcc.c-torture/compile/pr52306.c: New test.
+
+2014-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/ext/vector26.C: Use -mmmx for 32-bit x86.
+
+2014-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60115
+	* gcc.dg/torture/pr60115.c: New testcase.
+
+2014-02-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/vect/pr33426-ivdep-3.cc: Require vect_int_mult as well.
+	* g++.dg/vect/pr33426-ivdep-4.cc: Likewise.
+
+2014-02-10  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-vexpandpd-1.c: Update intrinsics.
+	* gcc.target/i386/avx512f-vexpandps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vexpandps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-1: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu32-2: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-1: Ditto.
+	* gcc.target/i386/avx512f-vmovdqu64-2: Ditto.
+	* gcc.target/i386/avx512f-vpcmpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmupd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmupq-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscalepd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrndscaleps-2.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dpd-1.c: Update parameters.
+	* gcc.target/i386/avx512pf-vgatherpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qps-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrad-2.c: Initialize 64 bits.
+	* gcc.target/i386/avx512f-vpslld-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpsrld-2.c: Ditto.
+
+2014-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/pr59984.c: Require effective target
+	vect_simd_clones.
+
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/57522
-	* gfortran.dg/associated_target_5.f03 : New test
+	* gfortran.dg/associated_target_5.f03: New test.
 
 2014-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59026
-	* gfortran.dg/elemental_by_value_1.f90 : New test
+	* gfortran.dg/elemental_by_value_1.f90: New test.
 
 2014-02-08  Janus Weil  <janus@gcc.gnu.org>
 
@@ -16,7 +263,7 @@
 2014-02-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/60066
-	* gfortran.dg/elemental_subroutine_10.f90 : New test. This PR
+	* gfortran.dg/elemental_subroutine_10.f90: New test.  This PR
 	was fixed by the patch for PR59906.
 
 2014-02-08  Andreas Schwab  <schwab@linux-m68k.org>
@@ -349,7 +596,7 @@
 2014-02-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59906
-	* gfortran.dg/elemental_subroutine_9.f90 : New test
+	* gfortran.dg/elemental_subroutine_9.f90: New test.
 
 2014-02-01  Richard Sandiford  <rdsandiford@googlemail.com>
 

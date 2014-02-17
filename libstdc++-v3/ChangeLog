@@ -1,3 +1,9 @@
+2014-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/22_locale/num_put/put/char/14220.cc: Don't xfail
+	execution on i?86-*-solaris2.9, remove comment.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.cc: Likewise.
+
 2014-02-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/abi/post/mips64-linux-gnu/32/baseline_symbols.txt: New file.

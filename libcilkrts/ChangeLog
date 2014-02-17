@@ -1,3 +1,12 @@
+2014-02-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR target/59691
+	* runtime/config/x86/os-unix-sysdep.c (__builtin_cpu_supports): New
+	function.
+	(restore_x86_fp_state): Added a check if the cpu supports the
+	instruction before emitting it.
+	(sysdep_save_fp_ctrl_state): Likewise.
+
 2014-01-20  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR other/58996

@@ -4689,8 +4689,10 @@ static void
 gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
 {
   tree args[2], type, pchartype;
+  int nargs;
 
-  gfc_conv_intrinsic_function_args (se, expr, args, 2);
+  nargs = gfc_intrinsic_argument_list_length (expr);
+  gfc_conv_intrinsic_function_args (se, expr, args, nargs);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (args[1])));
   pchartype = gfc_get_pchar_type (expr->value.function.actual->expr->ts.kind);
   args[1] = fold_build1_loc (input_location, NOP_EXPR, pchartype, args[1]);

@@ -1,5 +1,5 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-O2 -maccumulate-outgoing-args" } */
+/* { dg-options "-O2" } */
 
 void __attribute__ ((ms_abi)) foo (void)
 {

@@ -35,8 +35,8 @@
 /* V8 Architecture Processors.  */
 
 AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, cortexa53)
-AARCH64_CORE("cortex-a57",  cortexa15, cortexa15, 8,  AARCH64_FL_FPSIMD | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, generic)
+AARCH64_CORE("cortex-a57",  cortexa15, cortexa15, 8,  AARCH64_FL_FPSIMD | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, cortexa57)
 
 /* V8 big.LITTLE implementations.  */
 
-AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, generic)
+AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8,  AARCH64_FL_FPSIMD | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, cortexa57)

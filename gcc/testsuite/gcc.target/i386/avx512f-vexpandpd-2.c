@@ -24,7 +24,7 @@ CALC (double *s, double *r, MASK_TYPE mask)
 static void
 TEST (void)
 {
-  UNION_TYPE (AVX512F_LEN, d) s1, res1, res2, res3, res4, res5;
+  UNION_TYPE (AVX512F_LEN, d) s1, res2, res3, res4, res5;
   MASK_TYPE mask = MASK_VALUE;
   double s2[SIZE];
   double res_ref1[SIZE];
@@ -41,7 +41,6 @@ TEST (void)
       sign = -sign;
     }
 
-  res1.x = INTRINSIC (_expand_pd) (s1.x);
   res2.x = INTRINSIC (_mask_expand_pd) (res2.x, mask, s1.x);
   res3.x = INTRINSIC (_maskz_expand_pd) (mask, s1.x);
   res4.x = INTRINSIC (_mask_expandloadu_pd) (res4.x, mask, s2);
@@ -51,9 +50,6 @@ TEST (void)
   CALC (s1.a, res_ref1, MASK_ALL_ONES);
   CALC (s1.a, res_ref2, mask);
   CALC (s2, res_ref3, mask);
-
-  if (UNION_CHECK (AVX512F_LEN, d) (res1, res_ref1))
-    abort ();
 
   MASK_MERGE (d) (res_ref2, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, d) (res2, res_ref2))

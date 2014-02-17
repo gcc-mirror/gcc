@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Truncate IEEE quad into IEEE extended
-   Copyright (C) 2007-2013 Free Software Foundation, Inc.
+   Copyright (C) 2007-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Uros Bizjak (ubizjak@gmail.com).
 

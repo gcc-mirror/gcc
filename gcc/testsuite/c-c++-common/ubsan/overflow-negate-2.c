@@ -13,7 +13,7 @@
 int
 main (void)
 {
-  volatile char c = -SCHAR_MIN;
+  volatile signed char c = -SCHAR_MIN;
   CHECK (c, -128);
 
   volatile short s = -SHRT_MIN;

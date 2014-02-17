@@ -57,6 +57,8 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define FP_EX_UNDERFLOW		0x10
 #define FP_EX_INEXACT		0x20
 
+#define _FP_TININESS_AFTER_ROUNDING 1
+
 void __sfp_handle_exceptions (int);
 
 #define FP_HANDLE_EXCEPTIONS			\

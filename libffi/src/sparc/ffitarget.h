@@ -58,16 +58,17 @@ typedef enum ffi_abi {
 } ffi_abi;
 #endif
 
+#define FFI_TARGET_SPECIFIC_VARIADIC 1
+#define FFI_EXTRA_CIF_FIELDS unsigned int nfixedargs
+
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
-#define FFI_NATIVE_RAW_API 0
-
 #ifdef SPARC64
 #define FFI_TRAMPOLINE_SIZE 24
 #else
 #define FFI_TRAMPOLINE_SIZE 16
 #endif
+#define FFI_NATIVE_RAW_API 0
 
 #endif
-

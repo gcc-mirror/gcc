@@ -63,14 +63,14 @@ section entitled ``GNU General Public License''.
 @node Introduction
 @chapter What is libffi?
 
-Compilers for high level languages generate code that follow certain
+Compilers for high-level languages generate code that follow certain
 conventions.  These conventions are necessary, in part, for separate
 compilation to work.  One such convention is the @dfn{calling
 convention}.  The calling convention is a set of assumptions made by
 the compiler about where function arguments will be found on entry to
 a function.  A calling convention also specifies where the return
-value for a function is found.  The calling convention is also
-sometimes called the @dfn{ABI} or @dfn{Application Binary Interface}.
+value for a function is found.  The calling convention is part of
+what is called the @dfn{ABI} or @dfn{Application Binary Interface}.
 @cindex calling convention
 @cindex ABI
 @cindex Application Binary Interface

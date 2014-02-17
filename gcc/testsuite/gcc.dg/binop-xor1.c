@@ -7,5 +7,5 @@ foo (int a, int b, int c)
   return ((a && !b && c) || (!a && b && c));
 }
 
-/* { dg-final { scan-tree-dump-times "\\\^" 1 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "\\\^" 1 "optimized" { xfail logical_op_short_circuit } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

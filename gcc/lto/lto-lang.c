@@ -1082,17 +1082,11 @@ lto_write_globals (void)
   if (flag_wpa)
     return;
 
-  /* Record the global variables.  */
-  vec<tree> lto_global_var_decls = vNULL;
+  /* Output debug info for global variables.  */  
   varpool_node *vnode;
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    lto_global_var_decls.safe_push (vnode->decl);
-
-  tree *vec = lto_global_var_decls.address ();
-  int len = lto_global_var_decls.length ();
-  wrapup_global_declarations (vec, len);
-  emit_debug_global_declarations (vec, len);
-  lto_global_var_decls.release ();
+    if (!decl_function_context (vnode->decl))
+      debug_hooks->global_decl (vnode->decl);
 }
 
 static tree

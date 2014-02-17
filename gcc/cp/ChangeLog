@@ -1,3 +1,9 @@
+2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60047
+	* method.c (implicitly_declare_fn): A constructor of a class with
+	virtual base classes isn't constexpr (7.1.5p4).
+
 2014-02-05  Jan Hubicka  <hubicka@ucw.cz
 
 	* parser.c (synthesize_implicit_template_parm): Use grow_tree_vec.

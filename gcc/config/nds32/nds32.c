@@ -1445,7 +1445,8 @@ nds32_needs_double_word_align (enum machine_mode mode, const_tree type)
 }
 
 /* Return true if FUNC is a naked function.  */
-static bool nds32_naked_function_p (tree func)
+static bool
+nds32_naked_function_p (tree func)
 {
   tree t;
 
@@ -1959,10 +1960,9 @@ nds32_asm_function_prologue (FILE *file,
 
   /* Display the attributes of this function.  */
   fprintf (file, "\t! function attributes: ");
-  /* GCC build attributes list with reverse order,
-     so we use nreverse() to make it looks like
-     the order that user specifies.  */
-  attrs = nreverse (DECL_ATTRIBUTES (current_function_decl));
+  /* Get the attributes tree list.
+     Note that GCC builds attributes list with reverse order.  */
+  attrs = DECL_ATTRIBUTES (current_function_decl);
 
   /* If there is no any attribute, print out "None".  */
   if (!attrs)
@@ -3083,7 +3083,7 @@ nds32_merge_decl_attributes (tree olddecl, tree newdecl)
   combined_attrs = merge_attributes (DECL_ATTRIBUTES (olddecl),
 				     DECL_ATTRIBUTES (newdecl));
 
-  /* Sinc newdecl is acutally a duplicate of olddecl,
+  /* Since newdecl is acutally a duplicate of olddecl,
      we can take olddecl for some operations.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL)
     {

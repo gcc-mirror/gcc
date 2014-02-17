@@ -1,4 +1,5 @@
 /* PR c/59984 */
+/* { dg-require-effective-target vect_simd_clones } */
 /* { dg-additional-options "-fopenmp-simd" } */
 
 #include "tree-vect.h"

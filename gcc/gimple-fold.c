@@ -3170,22 +3170,35 @@ fold_const_aggregate_ref (tree t)
 }
 
 /* Lookup virtual method with index TOKEN in a virtual table V
-   at OFFSET.  */
+   at OFFSET.  
+   Set CAN_REFER if non-NULL to false if method
+   is not referable or if the virtual table is ill-formed (such as rewriten
+   by non-C++ produced symbol). Otherwise just return NULL in that calse.  */
 
 tree
 gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
 				   tree v,
-				   unsigned HOST_WIDE_INT offset)
+				   unsigned HOST_WIDE_INT offset,
+				   bool *can_refer)
 {
   tree vtable = v, init, fn;
   unsigned HOST_WIDE_INT size;
   unsigned HOST_WIDE_INT elt_size, access_index;
   tree domain_type;
 
+  if (can_refer)
+    *can_refer = true;
+
   /* First of all double check we have virtual table.  */
   if (TREE_CODE (v) != VAR_DECL
       || !DECL_VIRTUAL_P (v))
-    return NULL_TREE;
+    {
+      gcc_assert (in_lto_p);
+      /* Pass down that we lost track of the target.  */
+      if (can_refer)
+	*can_refer = false;
+      return NULL_TREE;
+    }
 
   init = ctor_for_folding (v);
 
@@ -3197,6 +3210,9 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
   if (init == error_mark_node)
     {
       gcc_assert (in_lto_p);
+      /* Pass down that we lost track of the target.  */
+      if (can_refer)
+	*can_refer = false;
       return NULL_TREE;
     }
   gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
@@ -3247,7 +3263,14 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
 	 ends up in other partition, because we found devirtualization
 	 possibility too late.  */
       if (!can_refer_decl_in_current_unit_p (fn, vtable))
-	return NULL_TREE;
+	{
+	  if (can_refer)
+	    {
+	      *can_refer = false;
+	      return fn;
+	    }
+	  return NULL_TREE;
+	}
     }
 
   /* Make sure we create a cgraph node for functions we'll reference.
@@ -3261,10 +3284,14 @@ gimple_get_virt_method_for_vtable (HOST_WIDE_INT token,
 /* Return a declaration of a function which an OBJ_TYPE_REF references. TOKEN
    is integer form of OBJ_TYPE_REF_TOKEN of the reference expression.
    KNOWN_BINFO carries the binfo describing the true type of
-   OBJ_TYPE_REF_OBJECT(REF).  */
+   OBJ_TYPE_REF_OBJECT(REF).
+   Set CAN_REFER if non-NULL to false if method
+   is not referable or if the virtual table is ill-formed (such as rewriten
+   by non-C++ produced symbol). Otherwise just return NULL in that calse.  */
 
 tree
-gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
+gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo,
+				  bool *can_refer)
 {
   unsigned HOST_WIDE_INT offset;
   tree v;
@@ -3275,9 +3302,12 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
     return NULL_TREE;
 
   if (!vtable_pointer_value_to_vtable (v, &v, &offset))
-    return NULL_TREE;
-
-  return gimple_get_virt_method_for_vtable (token, v, offset);
+    {
+      if (can_refer)
+	*can_refer = false;
+      return NULL_TREE;
+    }
+  return gimple_get_virt_method_for_vtable (token, v, offset, can_refer);
 }
 
 /* Return true iff VAL is a gimple expression that is known to be

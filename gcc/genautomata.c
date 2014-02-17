@@ -2348,7 +2348,7 @@ add_presence_absence (unit_set_el_t dest_list,
 		for (prev_el = (presence_p
 				? (final_p
 				   ? dst->unit_decl->final_presence_list
-				   : dst->unit_decl->final_presence_list)
+				   : dst->unit_decl->presence_list)
 				: (final_p
 				   ? dst->unit_decl->final_absence_list
 				   : dst->unit_decl->absence_list));

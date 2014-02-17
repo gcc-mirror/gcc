@@ -80,6 +80,8 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 	(FP_EX_INVALID | FP_EX_DIVZERO | FP_EX_OVERFLOW | FP_EX_UNDERFLOW \
 	 | FP_EX_INEXACT)
 
+#define _FP_TININESS_AFTER_ROUNDING 0
+
 void __sfp_handle_exceptions (int);
 
 #define FP_HANDLE_EXCEPTIONS			\

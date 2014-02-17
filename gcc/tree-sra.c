@@ -2950,6 +2950,10 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 						  lacc);
 	      else
 		drhs = NULL_TREE;
+	      if (drhs
+		  && !useless_type_conversion_p (lacc->type, TREE_TYPE (drhs)))
+		drhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
+					lacc->type, drhs);
 	      ds = gimple_build_debug_bind (get_access_replacement (lacc),
 					    drhs, gsi_stmt (*old_gsi));
 	      gsi_insert_after (new_gsi, ds, GSI_NEW_STMT);

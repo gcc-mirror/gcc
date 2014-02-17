@@ -1,3 +1,7 @@
+2014-02-13  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites: Update ISL and CLOOG versions.
+
 2014-01-31  Brooks Moses  <bmoses@google.com>
 
 	* gcc_update (files_and_dependencies): Add aarch64-tune.md.

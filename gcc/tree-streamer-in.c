@@ -394,21 +394,6 @@ unpack_ts_translation_unit_decl_value_fields (struct data_in *data_in,
   vec_safe_push (all_translation_units, expr);
 }
 
-/* Unpack a TS_TARGET_OPTION tree from BP into EXPR.  */
-
-static void
-unpack_ts_target_option (struct bitpack_d *bp, tree expr)
-{
-  unsigned i, len;
-  struct cl_target_option *t = TREE_TARGET_OPTION (expr);
-
-  len = sizeof (struct cl_target_option);
-  for (i = 0; i < len; i++)
-    ((unsigned char *)t)[i] = bp_unpack_value (bp, 8);
-  if (bp_unpack_value (bp, 32) != 0x12345678)
-    fatal_error ("cl_target_option size mismatch in LTO reader and writer");
-}
-
 /* Unpack a TS_OPTIMIZATION tree from BP into EXPR.  */
 
 static void
@@ -517,7 +502,7 @@ unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
     unpack_ts_translation_unit_decl_value_fields (data_in, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    unpack_ts_target_option (bp, expr);
+    gcc_unreachable ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     unpack_ts_optimization (bp, expr);
@@ -796,7 +781,7 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   /* DECL_STRUCT_FUNCTION is handled by lto_input_function.  FIXME lto,
      maybe it should be handled here?  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
-  DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
+  /* DECL_FUNCTION_SPECIFIC_TARGET is regenerated from attributes.  */
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
 
   /* If the file contains a function with an EH personality set,

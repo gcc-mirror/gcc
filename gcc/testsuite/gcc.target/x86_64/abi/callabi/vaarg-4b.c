@@ -1,5 +1,5 @@
 /* Test for cross x86_64<->w64 abi va_list calls.  */
-/* { dg-options "-O2 -mabi=ms -std=gnu99 -fno-builtin -maccumulate-outgoing-args" } */
+/* { dg-options "-O2 -mabi=ms -std=gnu99 -fno-builtin" } */
 
 #include <stdarg.h>
 

@@ -1234,7 +1234,12 @@
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 6)])))]
   "TARGET_P8_VECTOR"
-  "vmrgew %0,%1,%2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vmrgew %0,%1,%2";
+  else
+    return "vmrgow %0,%2,%1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_insn "p8_vmrgow"
@@ -1246,7 +1251,12 @@
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))]
   "TARGET_P8_VECTOR"
-  "vmrgow %0,%1,%2"
+{
+  if (BYTES_BIG_ENDIAN)
+    return "vmrgow %0,%1,%2";
+  else
+    return "vmrgew %0,%2,%1";
+}
   [(set_attr "type" "vecperm")])
 
 (define_expand "vec_widen_umult_even_v16qi"

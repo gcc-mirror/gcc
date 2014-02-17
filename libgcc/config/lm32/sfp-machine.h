@@ -41,6 +41,9 @@
     R##_c = FP_CLS_NAN;						\
   } while (0)
 
+/* Not checked.  */
+#define _FP_TININESS_AFTER_ROUNDING 0
+
 #define	__LITTLE_ENDIAN	1234
 #define	__BIG_ENDIAN	4321
 

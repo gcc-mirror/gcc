@@ -660,6 +660,14 @@
   return i == 2 || i == 4 || i == 8;
 })
 
+;; Match 1, 2, 5, or 6
+(define_predicate "const1256_operand"
+  (match_code "const_int")
+{
+  HOST_WIDE_INT i = INTVAL (op);
+  return i == 1 || i == 2 || i == 5 || i == 6;
+})
+
 ;; Match 1, 2, 4, or 8
 (define_predicate "const1248_operand"
   (match_code "const_int")
@@ -745,6 +753,11 @@
   unsigned HOST_WIDE_INT val = INTVAL (op);
   return val <= 255*8 && val % 8 == 0;
 })
+
+;; Match 1 to 2.
+(define_predicate "const_1_to_2_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 2)")))
 
 ;; Return true if OP is CONST_INT >= 1 and <= 31 (a valid operand
 ;; for shift & compare patterns, as shifting by 0 does not change flags).

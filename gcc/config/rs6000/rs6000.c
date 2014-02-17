@@ -16186,7 +16186,7 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
     rs6000_secondary_reload_fail (__LINE__, reg, mem, scratch, store_p);
 
   rclass = REGNO_REG_CLASS (regno);
-  addr = XEXP (mem, 0);
+  addr = find_replacement (&XEXP (mem, 0));
 
   switch (rclass)
     {
@@ -16197,19 +16197,18 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
       if (GET_CODE (addr) == AND)
 	{
 	  and_op2 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
+	  addr = find_replacement (&XEXP (addr, 0));
 	}
 
       if (GET_CODE (addr) == PRE_MODIFY)
 	{
-	  scratch_or_premodify = XEXP (addr, 0);
+	  scratch_or_premodify = find_replacement (&XEXP (addr, 0));
 	  if (!REG_P (scratch_or_premodify))
 	    rs6000_secondary_reload_fail (__LINE__, reg, mem, scratch, store_p);
 
-	  if (GET_CODE (XEXP (addr, 1)) != PLUS)
+	  addr = find_replacement (&XEXP (addr, 1));
+	  if (GET_CODE (addr) != PLUS)
 	    rs6000_secondary_reload_fail (__LINE__, reg, mem, scratch, store_p);
-
-	  addr = XEXP (addr, 1);
 	}
 
       if (GET_CODE (addr) == PLUS
@@ -16217,6 +16216,8 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
 	      || !rs6000_legitimate_offset_address_p (PTImode, addr,
 						      false, true)))
 	{
+	  /* find_replacement already recurses into both operands of
+	     PLUS so we don't need to call it here.  */
 	  addr_op1 = XEXP (addr, 0);
 	  addr_op2 = XEXP (addr, 1);
 	  if (!legitimate_indirect_address_p (addr_op1, false))
@@ -16292,7 +16293,7 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
 	      || !VECTOR_MEM_ALTIVEC_P (mode)))
 	{
 	  and_op2 = XEXP (addr, 1);
-	  addr = XEXP (addr, 0);
+	  addr = find_replacement (&XEXP (addr, 0));
 	}
 
       /* If we aren't using a VSX load, save the PRE_MODIFY register and use it
@@ -16304,14 +16305,13 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
 	      || and_op2 != NULL_RTX
 	      || !legitimate_indexed_address_p (XEXP (addr, 1), false)))
 	{
-	  scratch_or_premodify = XEXP (addr, 0);
+	  scratch_or_premodify = find_replacement (&XEXP (addr, 0));
 	  if (!legitimate_indirect_address_p (scratch_or_premodify, false))
 	    rs6000_secondary_reload_fail (__LINE__, reg, mem, scratch, store_p);
 
-	  if (GET_CODE (XEXP (addr, 1)) != PLUS)
+	  addr = find_replacement (&XEXP (addr, 1));
+	  if (GET_CODE (addr) != PLUS)
 	    rs6000_secondary_reload_fail (__LINE__, reg, mem, scratch, store_p);
-
-	  addr = XEXP (addr, 1);
 	}
 
       if (legitimate_indirect_address_p (addr, false)	/* reg */

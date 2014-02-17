@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-g -Os" }
+// { dg-additional-options "-march=i686" { target ia32 } }
 
 int grow (int);
 void fn (int);

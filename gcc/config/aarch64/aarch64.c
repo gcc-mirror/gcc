@@ -235,6 +235,16 @@ static const struct tune_params cortexa53_tunings =
   NAMED_PARAM (issue_rate, 2)
 };
 
+static const struct tune_params cortexa57_tunings =
+{
+  &cortexa57_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &generic_vector_cost,
+  NAMED_PARAM (memmov_cost, 4),
+  NAMED_PARAM (issue_rate, 3)
+};
+
 /* A processor implementing AArch64.  */
 struct processor
 {
@@ -5244,7 +5254,7 @@ aarch64_override_options (void)
 
   /* If the user did not specify a processor, choose the default
      one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "coretex-a53".  */
+     --with-cpu, otherwise it is "cortex-a53".  */
   if (!selected_cpu)
     {
       selected_cpu = &all_cores[TARGET_CPU_DEFAULT & 0x3f];

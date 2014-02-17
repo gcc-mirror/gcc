@@ -1367,9 +1367,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    if (memcmp (TREE_TARGET_OPTION (t1), TREE_TARGET_OPTION (t2),
-		sizeof (struct cl_target_option)) != 0)
-      return false;
+    gcc_unreachable ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
     if (memcmp (TREE_OPTIMIZATION (t1), TREE_OPTIMIZATION (t2),
@@ -1547,8 +1545,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
     {
       compare_tree_edges (DECL_FUNCTION_PERSONALITY (t1),
 			  DECL_FUNCTION_PERSONALITY (t2));
-      compare_tree_edges (DECL_FUNCTION_SPECIFIC_TARGET (t1),
-			  DECL_FUNCTION_SPECIFIC_TARGET (t2));
+      /* DECL_FUNCTION_SPECIFIC_TARGET is not yet created.  We compare
+         the attribute list instead.  */
       compare_tree_edges (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t1),
 			  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t2));
     }
@@ -1926,6 +1924,15 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      if (TREE_CODE (t) == INTEGER_CST
 		  && !TREE_OVERFLOW (t))
 		cache_integer_cst (t);
+	      /* Re-build DECL_FUNCTION_SPECIFIC_TARGET, we need that
+	         for both WPA and LTRANS stage.  */
+	      if (TREE_CODE (t) == FUNCTION_DECL)
+		{
+		  tree attr = lookup_attribute ("target", DECL_ATTRIBUTES (t));
+		  if (attr)
+		    targetm.target_option.valid_attribute_p
+			(t, NULL_TREE, TREE_VALUE (attr), 0);
+		}
 	      /* Register TYPE_DECLs with the debuginfo machinery.  */
 	      if (!flag_wpa
 		  && TREE_CODE (t) == TYPE_DECL)

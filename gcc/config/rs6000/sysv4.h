@@ -522,8 +522,6 @@ extern int fixuplabelno;
 #define ENDIAN_SELECT(BIG_OPT, LITTLE_OPT, DEFAULT_OPT)	\
 "%{mlittle|mlittle-endian:"	LITTLE_OPT ";"	\
   "mbig|mbig-endian:"		BIG_OPT    ";"	\
-  "mcall-aixdesc|mcall-freebsd|mcall-netbsd|"	\
-  "mcall-openbsd|mcall-linux:"	BIG_OPT    ";"	\
   "mcall-i960-old:"		LITTLE_OPT ";"	\
   ":"				DEFAULT_OPT "}"
 
@@ -536,20 +534,12 @@ extern int fixuplabelno;
 %{memb|msdata=eabi: -memb}" \
 ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
-#define	CC1_ENDIAN_BIG_SPEC ""
-
-#define	CC1_ENDIAN_LITTLE_SPEC ""
-
-#define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_big)"
-
 #ifndef CC1_SECURE_PLT_DEFAULT_SPEC
 #define CC1_SECURE_PLT_DEFAULT_SPEC ""
 #endif
 
-/* Pass -G xxx to the compiler and set correct endian mode.  */
+/* Pass -G xxx to the compiler.  */
 #define	CC1_SPEC "%{G*} %(cc1_cpu)" \
-  ENDIAN_SELECT(" %(cc1_endian_big)", " %(cc1_endian_little)",	\
-		" %(cc1_endian_default)")			\
 "%{meabi: %{!mcall-*: -mcall-sysv }} \
 %{!meabi: %{!mno-eabi: \
     %{mrelocatable: -meabi } \
@@ -903,9 +893,6 @@ ncrtn.o%s"
   { "link_os_netbsd",		LINK_OS_NETBSD_SPEC },			\
   { "link_os_openbsd",		LINK_OS_OPENBSD_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
-  { "cc1_endian_big",		CC1_ENDIAN_BIG_SPEC },			\
-  { "cc1_endian_little",	CC1_ENDIAN_LITTLE_SPEC },		\
-  { "cc1_endian_default",	CC1_ENDIAN_DEFAULT_SPEC },		\
   { "cc1_secure_plt_default",	CC1_SECURE_PLT_DEFAULT_SPEC },		\
   { "cpp_os_ads",		CPP_OS_ADS_SPEC },			\
   { "cpp_os_yellowknife",	CPP_OS_YELLOWKNIFE_SPEC },		\
