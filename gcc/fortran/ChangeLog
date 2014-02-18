@@ -1,3 +1,11 @@
+2014-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49397
+	* expr.c (gfc_check_pointer_assign): Add check for
+	F2008Cor2, C729.
+	* trans-decl.c (gfc_get_symbol_decl): Correctly generate external
+	decl in a corner case.
+
 2014-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60231

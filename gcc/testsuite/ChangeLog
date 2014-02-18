@@ -1,3 +1,9 @@
+2014-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49397
+	* gfortran.dg/proc_ptr_45.f90: New.
+	* gfortran.dg/proc_ptr_46.f90: New.
+
 2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60190
