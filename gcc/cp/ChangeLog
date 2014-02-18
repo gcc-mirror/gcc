@@ -5,6 +5,10 @@
 	scope whenever a template parameter list has been started, independent
 	of whether the function call operator was well-formed or not.
 
+	PR c++/60064
+	* parser.c (cp_parser_member_declaration): Pop fully implicit template
+	scope for generic friend declarations as well as for non-friends.
+
 2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60047
