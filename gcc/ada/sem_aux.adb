@@ -782,8 +782,15 @@ package body Sem_Aux is
             begin
                C := First_Component (Btype);
                while Present (C) loop
+
+                  --  For each component, test if its type is a by reference
+                  --  type and if its type is volatile. Also test the component
+                  --  itself for being volatile. This happens for example when
+                  --  a Volatile aspect is added to a component.
+
                   if Is_By_Reference_Type (Etype (C))
                     or else Is_Volatile (Etype (C))
+                    or else Is_Volatile (C)
                   then
                      return True;
                   end if;

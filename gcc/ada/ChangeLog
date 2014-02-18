@@ -1,3 +1,10 @@
+2014-02-18  Vincent Celier  <celier@adacore.com>
+
+	* sem_aux.adb (Is_By_Reference_Type): For each components of
+	a record type, check also if the component is volatile as it
+	may have an aspect that makes it volatile. If it is, then the
+	record type is a by reference type.
+
 2014-02-18  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb: Minor reformatting.
