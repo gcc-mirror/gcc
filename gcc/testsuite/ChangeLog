@@ -1,3 +1,9 @@
+2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60205
+	* gcc.target/i386/pr60205-1.c: New test.
+	* gcc.target/i386/pr60205-2.c: Ditto.
+
 2014-02-18  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/60193

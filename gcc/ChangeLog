@@ -1,9 +1,17 @@
+2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60205
+	* config/i386/i386.h (struct ix86_args): Add warn_avx512f.
+	* config/i386/i386.c (init_cumulative_args): Initialize warn_avx512f.
+	(type_natural_mode): Warn ABI change when %zmm register is not
+	available for AVX512F vector value passing.
+
 2014-02-18  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/60193
-	* config/i386/i386.c (ix86_expand_prologue): Use
-	rax register as displacement for restoring %r10, %rax.
-	Additional fix wrong offset for restoring both-registers.
+	* config/i386/i386.c (ix86_expand_prologue): Use value in
+	rax register as displacement when restoring %r10 or %rax.
+	Fix wrong offset when restoring both registers.
 
 2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -59,8 +67,7 @@
 
 2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian
-	targets.
+	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian targets.
 	(p8_vmrgow): Likewise.
 
 2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
@@ -89,16 +96,14 @@
 2014-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60183
-	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating
-	loads.
+	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating loads.
 	(tree_ssa_phiprop): Calculate and free post-dominators.
 
 2014-02-14  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/60131
 	* ree.c (get_extended_src_reg): New function.
-	(combine_reaching_defs): Use it rather than assuming location
-	of REG.
+	(combine_reaching_defs): Use it rather than assuming location of REG.
 	(find_and_remove_re): Verify first operand of extension is
 	a REG before adding the insns to the copy list.
 
@@ -139,8 +144,7 @@
 	DECL_FUNCTION_SPECIFIC_TARGET.
 	(hash_tree): Do not hash DECL_FUNCTION_SPECIFIC_TARGET.
 	* tree-streamer-out.c (pack_ts_target_option): Remove.
-	(streamer_pack_tree_bitfields): Do not stream
-	TS_TARGET_OPTION.
+	(streamer_pack_tree_bitfields): Do not stream TS_TARGET_OPTION.
 	(write_ts_function_decl_tree_pointers): Do not stream
 	DECL_FUNCTION_SPECIFIC_TARGET.
 	* tree-streamer-in.c (unpack_ts_target_option): Remove.
@@ -150,8 +154,7 @@
 
 2014-02-14  Jakub Jelinek  <jakub@redhat.com>
 
-	* tree-vect-loop.c (vect_is_slp_reduction): Don't set
-	use_stmt twice.
+	* tree-vect-loop.c (vect_is_slp_reduction): Don't set use_stmt twice.
 	(get_initial_def_for_induction, vectorizable_induction): Ignore
 	debug stmts when looking for exit_phi.
 	(vectorizable_live_operation): Fix up condition.
