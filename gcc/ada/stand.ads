@@ -454,8 +454,12 @@ package Stand is
    --  These are signed integer types with the indicated sizes. Used for the
    --  underlying implementation types for fixed-point and enumeration types.
 
-   Standard_Unsigned : Entity_Id;
-   --  An unsigned type of the same size as Standard_Integer
+   Standard_Short_Short_Unsigned : Entity_Id;
+   Standard_Short_Unsigned       : Entity_Id;
+   Standard_Unsigned             : Entity_Id;
+   Standard_Long_Unsigned        : Entity_Id;
+   Standard_Long_Long_Unsigned   : Entity_Id;
+   --  Unsigned types with same Esize as corresponding signed integer types
 
    Standard_Unsigned_64 : Entity_Id;
    --  An unsigned type, mod 2 ** 64, size of 64 bits.

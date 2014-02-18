@@ -35,6 +35,7 @@ with Einfo;  use Einfo;
 with Sinfo;  use Sinfo;
 with Snames; use Snames;
 with Stand;  use Stand;
+with Uintp;  use Uintp;
 
 package body Sem_Aux is
 
@@ -163,6 +164,29 @@ package body Sem_Aux is
          return Empty;
       end if;
    end Constant_Value;
+
+   ---------------------------------
+   -- Corresponding_Unsigned_Type --
+   ---------------------------------
+
+   function Corresponding_Unsigned_Type (Typ : Entity_Id) return Entity_Id is
+      pragma Assert (Is_Signed_Integer_Type (Typ));
+      Siz : constant Uint := Esize (Base_Type (Typ));
+   begin
+      if Siz = Esize (Standard_Short_Short_Integer) then
+         return Standard_Short_Short_Unsigned;
+      elsif Siz = Esize (Standard_Short_Integer) then
+         return Standard_Short_Unsigned;
+      elsif Siz = Esize (Standard_Unsigned) then
+         return Standard_Unsigned;
+      elsif Siz = Esize (Standard_Long_Integer) then
+         return Standard_Long_Unsigned;
+      elsif Siz = Esize (Standard_Long_Long_Integer) then
+         return Standard_Long_Long_Unsigned;
+      else
+         raise Program_Error;
+      end if;
+   end Corresponding_Unsigned_Type;
 
    -----------------------------
    -- Enclosing_Dynamic_Scope --

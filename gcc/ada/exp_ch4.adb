@@ -7956,12 +7956,19 @@ package body Exp_Ch4 is
       Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
       Determine_Range (Left,  LOK, Llo, Lhi, Assume_Valid => True);
 
-      --  Convert mod to rem if operands are known non-negative. We do this
-      --  since it is quite likely that this will improve the quality of code,
-      --  (the operation now corresponds to the hardware remainder), and it
-      --  does not seem likely that it could be harmful.
+      --  Convert mod to rem if operands are both known to be non-negative, or
+      --  both known to be non-positive (these are the cases in which rem and
+      --  mod are the same, see (RM 4.5.5(28-30)). We do this since it is quite
+      --  likely that this will improve the quality of code, (the operation now
+      --  corresponds to the hardware remainder), and it does not seem likely
+      --  that it could be harmful. It also avoids some cases of the elaborate
+      --  expansion in Modify_Tree_For_C mode below (since Ada rem = C %).
 
-      if LOK and then Llo >= 0 and then ROK and then Rlo >= 0 then
+      if (LOK and ROK)
+        and then ((Llo >= 0 and then Rlo >= 0)
+                    or else
+                  (Lhi <= 0 and then Rhi <= 0))
+      then
          Rewrite (N,
            Make_Op_Rem (Sloc (N),
              Left_Opnd  => Left_Opnd (N),
@@ -7976,6 +7983,7 @@ package body Exp_Ch4 is
          Set_Do_Division_Check (N, DDC);
          Expand_N_Op_Rem (N);
          Set_Analyzed (N);
+         return;
 
       --  Otherwise, normal mod processing
 
@@ -7999,10 +8007,108 @@ package body Exp_Ch4 is
             return;
          end if;
 
-         --  Deal with annoying case of largest negative number remainder
-         --  minus one. Gigi may not handle this case correctly, because
-         --  on some targets, the mod value is computed using a divide
-         --  instruction which gives an overflow trap for this case.
+         --  If we still have a mod operator and we are in Modify_Tree_For_C
+         --  mode, and we have a signed integer type, then here is where we do
+         --  the rewrite in terms of Rem. Note this rewrite bypasses the need
+         --  for the special handling of the annoying case of largest negative
+         --  number mod minus one.
+
+         if Nkind (N) = N_Op_Mod
+           and then Is_Signed_Integer_Type (Typ)
+           and then Modify_Tree_For_C
+         then
+            --  In the general case, we expand A mod B as
+
+            --    Tnn : constant typ := A rem B;
+            --    ..
+            --    (if (A >= 0) = (B >= 0) then Tnn
+            --     elsif Tnn = 0 then 0
+            --     else Tnn + B)
+
+            --  The comparison can be written simply as A >= 0 if we know that
+            --  B >= 0 which is a very common case.
+
+            --  An important optimization is when B is known at compile time
+            --  to be 2**K for some constant. In this case we can simply AND
+            --  the left operand with the bit string 2**K-1 (i.e. K 1-bits)
+            --  and that works for both the positive and negative cases.
+
+            declare
+               P2 : constant Nat := Power_Of_Two (Right);
+
+            begin
+               if P2 /= 0 then
+                  Rewrite (N,
+                    Unchecked_Convert_To (Typ,
+                      Make_Op_And (Loc,
+                        Left_Opnd  =>
+                          Unchecked_Convert_To
+                            (Corresponding_Unsigned_Type (Typ), Left),
+                        Right_Opnd =>
+                          Make_Integer_Literal (Loc, 2 ** P2 - 1))));
+                  Analyze_And_Resolve (N, Typ);
+                  return;
+               end if;
+            end;
+
+            --  Here for the full rewrite
+
+            declare
+               Tnn : constant Entity_Id := Make_Temporary (Sloc (N), 'T', N);
+               Cmp : Node_Id;
+
+            begin
+               Cmp :=
+                 Make_Op_Ge (Loc,
+                   Left_Opnd  => Duplicate_Subexpr_No_Checks (Left),
+                   Right_Opnd => Make_Integer_Literal (Loc, 0));
+
+               if not LOK or else Rlo < 0 then
+                  Cmp :=
+                     Make_Op_Eq (Loc,
+                       Left_Opnd  => Cmp,
+                       Right_Opnd =>
+                         Make_Op_Ge (Loc,
+                           Left_Opnd  => Duplicate_Subexpr_No_Checks (Right),
+                           Right_Opnd => Make_Integer_Literal (Loc, 0)));
+               end if;
+
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Tnn,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                   Expression          =>
+                     Make_Op_Rem (Loc,
+                       Left_Opnd  => Left,
+                       Right_Opnd => Right)));
+
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Cmp,
+                     New_Occurrence_Of (Tnn, Loc),
+                     Make_If_Expression (Loc,
+                       Is_Elsif    => True,
+                       Expressions => New_List (
+                         Make_Op_Eq (Loc,
+                           Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                           Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                         Make_Integer_Literal (Loc, 0),
+                         Make_Op_Add (Loc,
+                           Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                           Right_Opnd =>
+                             Duplicate_Subexpr_No_Checks (Right)))))));
+
+               Analyze_And_Resolve (N, Typ);
+               return;
+            end;
+         end if;
+
+         --  Deal with annoying case of largest negative number mod minus one.
+         --  Gigi may not handle this case correctly, because on some targets,
+         --  the mod value is computed using a divide instruction which gives
+         --  an overflow trap for this case.
 
          --  It would be a bit more efficient to figure out which targets
          --  this is really needed for, but in practice it is reasonable
@@ -9224,65 +9330,6 @@ package body Exp_Ch4 is
           Actions    => Actions));
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
-
-   ------------------------
-   -- Expand_N_Reference --
-   ------------------------
-
-   --  It is a little unclear why we generate references to expression values,
-   --  but we definitely do! At the very least in Modify_Tree_For_C, we need to
-   --  get rid of such constructs. We do this by expanding:
-
-   --    expression'Reference
-
-   --  into
-
-   --    Tnn : constant typ := expression;
-   --    ...
-   --    Tnn'Reference
-
-   procedure Expand_N_Reference (N : Node_Id) is
-   begin
-      --  No problem if Modify_Tree_For_C not set, the existing back ends will
-      --  correctly handle P'Reference where P is a general expression.
-
-      if not Modify_Tree_For_C then
-         return;
-
-      --  No problem if we have an entity name since we can take its address
-
-      elsif Is_Entity_Name (Prefix (N)) then
-         return;
-
-      --  Can't go copying limited types
-
-      elsif Is_Limited_Record (Etype (Prefix (N)))
-        or else Is_Limited_Composite (Etype (Prefix (N)))
-      then
-         return;
-
-      --  Here is the case where we do the transformation discussed above
-
-      else
-         declare
-            Loc  : constant Source_Ptr := Sloc (N);
-            Expr : constant Node_Id    := Prefix (N);
-            Typ  : constant Entity_Id  := Etype (N);
-            Tnn  : constant Entity_Id  := Make_Temporary (Loc, 'T', Expr);
-         begin
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Tnn,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Etype (Expr), Loc),
-                Expression          => Expr));
-            Rewrite (N,
-              Make_Reference (Loc,
-                Prefix => New_Occurrence_Of (Tnn, Loc)));
-            Analyze_And_Resolve (N, Typ);
-         end;
-      end if;
-   end Expand_N_Reference;
 
    ---------------------------------
    -- Expand_N_Selected_Component --

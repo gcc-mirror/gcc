@@ -2292,8 +2292,9 @@ package body Sem_Elab is
            --  within an assertion expression, since we can get false warnings
            --  in this case, due to the out of order handling in this case.
 
-           and then (Nkind (Original_Node (N)) /= N_Function_Call
-                      or else not In_Assertion_Expression (Original_Node (N)))
+           and then
+             (Nkind (Original_Node (N)) /= N_Function_Call
+               or else not In_Assertion_Expression_Pragma (Original_Node (N)))
          then
             Error_Msg_Warn := SPARK_Mode /= On;
 

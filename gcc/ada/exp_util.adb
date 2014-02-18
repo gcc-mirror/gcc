@@ -6391,6 +6391,32 @@ package body Exp_Util is
       end case;
    end Process_Statements_For_Controlled_Objects;
 
+   ------------------
+   -- Power_Of_Two --
+   ------------------
+
+   function Power_Of_Two (N : Node_Id) return Nat is
+      Typ : constant Entity_Id := Etype (N);
+      pragma Assert (Is_Integer_Type (Typ));
+      Siz : constant Nat := UI_To_Int (Esize (Typ));
+      Val : Uint;
+
+   begin
+      if not Compile_Time_Known_Value (N) then
+         return 0;
+
+      else
+         Val := Expr_Value (N);
+         for J in 1 .. Siz - 1 loop
+            if Val = Uint_2 ** J then
+               return J;
+            end if;
+         end loop;
+
+         return 0;
+      end if;
+   end Power_Of_Two;
+
    ----------------------
    -- Remove_Init_Call --
    ----------------------

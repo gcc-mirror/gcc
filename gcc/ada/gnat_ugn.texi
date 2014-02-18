@@ -14484,19 +14484,19 @@ uses the same switches as the GNAT compiler, with the same effects.
 
 @table @option
 @item ^-I^/SEARCH=^@var{dir}
-@cindex @option{^-I^/SEARCH^} (@code{gnatpp})
+@cindex @option{^-I^/SEARCH^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^-I-^/NOCURRENT_DIRECTORY^
-@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gnatpp})
+@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^-gnatec^/CONFIGURATION_PRAGMAS_FILE^=@var{path}
-@cindex @option{^-gnatec^/CONFIGURATION_PRAGMAS_FILE^} (@code{gnatpp})
+@cindex @option{^-gnatec^/CONFIGURATION_PRAGMAS_FILE^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^--RTS^/RUNTIME_SYSTEM^=@var{path}
-@cindex @option{^--RTS^/RUNTIME_SYSTEM^} (@code{gnatpp})
+@cindex @option{^--RTS^/RUNTIME_SYSTEM^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @end table
@@ -14515,7 +14515,7 @@ The output may be redirected by the following switches:
 
 @table @option
 @item ^-pipe^/STANDARD_OUTPUT^
-@cindex @option{^-pipe^/STANDARD_OUTPUT^} (@code{gnatpp})
+@cindex @option{^-pipe^/STANDARD_OUTPUT^} (@command{gnatpp})
 Send the output to @code{Standard_Output}
 
 @item ^-o @var{output_file}^/OUTPUT=@var{output_file}^
@@ -14525,12 +14525,12 @@ If @var{output_file} already exists, @command{gnatpp} terminates without
 reading or processing the input file.
 
 @item ^-of ^/FORCED_OUTPUT=^@var{output_file}
-@cindex @option{^-of^/FORCED_OUTPUT^} (@code{gnatpp})
+@cindex @option{^-of^/FORCED_OUTPUT^} (@command{gnatpp})
 Write the output into @var{output_file}, overwriting the existing file
 (if one is present).
 
 @item ^-r^/REPLACE^
-@cindex @option{^-r^/REPLACE^} (@code{gnatpp})
+@cindex @option{^-r^/REPLACE^} (@command{gnatpp})
 Replace the input source file with the reformatted output, and copy the
 original input source into the file whose name is obtained by appending the
 ^@file{.npp}^@file{$NPP}^ suffix to the name of the input file.
@@ -14543,7 +14543,7 @@ Like @option{^-r^/REPLACE^} except that if the file with the specified name
 already exists, it is overwritten.
 
 @item ^-rnb^/REPLACE_NO_BACKUP^
-@cindex @option{^-rnb^/REPLACE_NO_BACKUP^} (@code{gnatpp})
+@cindex @option{^-rnb^/REPLACE_NO_BACKUP^} (@command{gnatpp})
 Replace the input source file with the reformatted output without
 creating any backup copy of the input source.
 
@@ -14644,6 +14644,9 @@ Use @var{n} processes to carry out the tree creations (internal representations
 of the argument sources). On a multiprocessor machine this speeds up processing
 of big sets of argument sources. If @var{n} is 0, then the maximum number of
 parallel tree creations is the number of core processors on the platform.
+This option cannot be used together with @option{^-r^/REPLACE^},
+@option{^-rf^/OVERRIDING_REPLACE^} or
+@option{^-rnb^/REPLACE_NO_BACKUP^} option.
 
 @cindex @option{^-t^/TIME^} (@command{gnatpp})
 @item ^-t^/TIME^

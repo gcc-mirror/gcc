@@ -726,6 +726,12 @@ package Exp_Util is
    --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
    --  further details).
 
+   function Power_Of_Two (N : Node_Id) return Nat;
+   --  Determines if N is a known at compile time value which  is of the form
+   --  2**K, where K is in the range 1 .. M, where the Esize of N is 2**(M+1).
+   --  If so, returns the value K, otherwise returns zero. The caller checks
+   --  that N is of an integer type.
+
    procedure Process_Statements_For_Controlled_Objects (N : Node_Id);
    --  N is a node which contains a non-handled statement list. Inspect the
    --  statements looking for declarations of controlled objects. If at least

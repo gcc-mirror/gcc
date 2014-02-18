@@ -103,6 +103,11 @@ package Sem_Aux is
    --  constants from the point of view of constant folding. Empty is also
    --  returned for variables with no initialization expression.
 
+   function Corresponding_Unsigned_Type (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a signed integer subtype. This routine returns the standard
+   --  unsigned type with the same Esize as the implementation base type of
+   --  Typ, e.g. Long_Integer => Long_Unsigned.
+
    function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
    --  For any entity, Ent, returns the closest dynamic scope in which the
    --  entity is declared or Standard_Standard for library-level entities.
