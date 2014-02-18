@@ -1211,7 +1211,8 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     return;
   parm = TREE_OPERAND (expr, 0);
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (parm));
-  gcc_assert (index >= 0);
+  if (index < 0)
+    return;
 
   cond_bb = single_pred (assign_bb);
   cond = last_stmt (cond_bb);

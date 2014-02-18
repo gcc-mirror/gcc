@@ -1,3 +1,7 @@
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt32.adb: New test.
+
 2014-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60231
