@@ -1,3 +1,17 @@
+2014-02-18  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/58960
+	* haifa-sched.c (alloc_global_sched_pressure_data): New,
+	factored out from ...
+	(sched_init): ... here.
+	(free_global_sched_pressure_data): New, factored out from ...
+	(sched_finish): ... here.
+	* sched-int.h (free_global_sched_pressure_data): Declare.
+	* sched-rgn.c (nr_regions_initial): New static global.
+	(haifa_find_rgns): Initialize it.
+	(schedule_region): Disable sched-pressure for the newly
+	generated regions.
+
 2014-02-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (free_stmt_vec_info): Clear BB and

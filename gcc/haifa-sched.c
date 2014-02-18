@@ -6553,6 +6553,54 @@ setup_sched_dump (void)
 		? stderr : dump_file);
 }
 
+/* Allocate data for register pressure sensitive scheduling.  */
+static void
+alloc_global_sched_pressure_data (void)
+{
+  if (sched_pressure != SCHED_PRESSURE_NONE)
+    {
+      int i, max_regno = max_reg_num ();
+
+      if (sched_dump != NULL)
+	/* We need info about pseudos for rtl dumps about pseudo
+	   classes and costs.  */
+	regstat_init_n_sets_and_refs ();
+      ira_set_pseudo_classes (true, sched_verbose ? sched_dump : NULL);
+      sched_regno_pressure_class
+	= (enum reg_class *) xmalloc (max_regno * sizeof (enum reg_class));
+      for (i = 0; i < max_regno; i++)
+	sched_regno_pressure_class[i]
+	  = (i < FIRST_PSEUDO_REGISTER
+	     ? ira_pressure_class_translate[REGNO_REG_CLASS (i)]
+	     : ira_pressure_class_translate[reg_allocno_class (i)]);
+      curr_reg_live = BITMAP_ALLOC (NULL);
+      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
+	{
+	  saved_reg_live = BITMAP_ALLOC (NULL);
+	  region_ref_regs = BITMAP_ALLOC (NULL);
+	}
+    }
+}
+
+/*  Free data for register pressure sensitive scheduling.  Also called
+    from schedule_region when stopping sched-pressure early.  */
+void
+free_global_sched_pressure_data (void)
+{
+  if (sched_pressure != SCHED_PRESSURE_NONE)
+    {
+      if (regstat_n_sets_and_refs != NULL)
+	regstat_free_n_sets_and_refs ();
+      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
+	{
+	  BITMAP_FREE (region_ref_regs);
+	  BITMAP_FREE (saved_reg_live);
+	}
+      BITMAP_FREE (curr_reg_live);
+      free (sched_regno_pressure_class);
+    }
+}
+
 /* Initialize some global state for the scheduler.  This function works
    with the common data shared between all the schedulers.  It is called
    from the scheduler specific initialization routine.  */
@@ -6656,29 +6704,7 @@ sched_init (void)
   if (targetm.sched.init_global)
     targetm.sched.init_global (sched_dump, sched_verbose, get_max_uid () + 1);
 
-  if (sched_pressure != SCHED_PRESSURE_NONE)
-    {
-      int i, max_regno = max_reg_num ();
-
-      if (sched_dump != NULL)
-	/* We need info about pseudos for rtl dumps about pseudo
-	   classes and costs.  */
-	regstat_init_n_sets_and_refs ();
-      ira_set_pseudo_classes (true, sched_verbose ? sched_dump : NULL);
-      sched_regno_pressure_class
-	= (enum reg_class *) xmalloc (max_regno * sizeof (enum reg_class));
-      for (i = 0; i < max_regno; i++)
-	sched_regno_pressure_class[i]
-	  = (i < FIRST_PSEUDO_REGISTER
-	     ? ira_pressure_class_translate[REGNO_REG_CLASS (i)]
-	     : ira_pressure_class_translate[reg_allocno_class (i)]);
-      curr_reg_live = BITMAP_ALLOC (NULL);
-      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
-	{
-	  saved_reg_live = BITMAP_ALLOC (NULL);
-	  region_ref_regs = BITMAP_ALLOC (NULL);
-	}
-    }
+  alloc_global_sched_pressure_data ();
 
   curr_state = xmalloc (dfa_state_size);
 }
@@ -6777,18 +6803,7 @@ void
 sched_finish (void)
 {
   haifa_finish_h_i_d ();
-  if (sched_pressure != SCHED_PRESSURE_NONE)
-    {
-      if (regstat_n_sets_and_refs != NULL)
-	regstat_free_n_sets_and_refs ();
-      if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
-	{
-	  BITMAP_FREE (region_ref_regs);
-	  BITMAP_FREE (saved_reg_live);
-	}
-      BITMAP_FREE (curr_reg_live);
-      free (sched_regno_pressure_class);
-    }
+  free_global_sched_pressure_data ();
   free (curr_state);
 
   if (targetm.sched.finish_global)
