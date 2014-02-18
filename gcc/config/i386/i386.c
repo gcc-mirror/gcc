@@ -10529,17 +10529,16 @@ ix86_expand_prologue (void)
 	 works for realigned stack, too.  */
       if (r10_live && eax_live)
         {
-	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
+	  t = gen_rtx_PLUS (Pmode, stack_pointer_rtx, eax);
 	  emit_move_insn (gen_rtx_REG (word_mode, R10_REG),
 			  gen_frame_mem (word_mode, t));
-	  t = plus_constant (Pmode, stack_pointer_rtx,
-			     allocate - UNITS_PER_WORD);
+	  t = plus_constant (Pmode, t, UNITS_PER_WORD);
 	  emit_move_insn (gen_rtx_REG (word_mode, AX_REG),
 			  gen_frame_mem (word_mode, t));
 	}
       else if (eax_live || r10_live)
 	{
-	  t = plus_constant (Pmode, stack_pointer_rtx, allocate);
+	  t = gen_rtx_PLUS (Pmode, stack_pointer_rtx, eax);
 	  emit_move_insn (gen_rtx_REG (word_mode,
 				       (eax_live ? AX_REG : R10_REG)),
 			  gen_frame_mem (word_mode, t));

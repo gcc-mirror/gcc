@@ -1,3 +1,8 @@
+2014-02-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60193
+	* gcc.target/i386/nest-1.c: New testcase.
+
 2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt32.adb: New test.
