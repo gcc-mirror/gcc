@@ -7380,7 +7380,8 @@ ensure_literal_type_for_constexpr_object (tree decl)
   if (VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl)
       && !processing_template_decl)
     {
-      if (CLASS_TYPE_P (type) && !COMPLETE_TYPE_P (complete_type (type)))
+      tree stype = strip_array_types (type);
+      if (CLASS_TYPE_P (stype) && !COMPLETE_TYPE_P (complete_type (stype)))
 	/* Don't complain here, we'll complain about incompleteness
 	   when we try to initialize the variable.  */;
       else if (!literal_type_p (type))
@@ -9676,7 +9677,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	     build_non_dependent_expr,  because any expression that
 	     calls or takes the address of the function will have
 	     pulled a FUNCTION_DECL out of the COMPONENT_REF.  */
-	  gcc_checking_assert (allow_non_constant);
+	  gcc_checking_assert (allow_non_constant || errorcount);
 	  *non_constant_p = true;
 	  return t;
 	}

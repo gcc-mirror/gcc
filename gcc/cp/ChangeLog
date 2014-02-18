@@ -1,3 +1,15 @@
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60225
+	* semantics.c (ensure_literal_type_for_constexpr_object): Use
+	strip_array_types.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60215
+	* semantics.c (cxx_eval_constant_expression, [COMPONENT_REF]):
+	During error recovery allow_non_constant may be false.
+
 2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60190

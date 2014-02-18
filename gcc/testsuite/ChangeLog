@@ -1,3 +1,13 @@
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60225
+	* g++.dg/cpp0x/constexpr-ice10.C: New.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60215
+	* g++.dg/cpp0x/pr60215.C: New.
+
 2014-02-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49397
