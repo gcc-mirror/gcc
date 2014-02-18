@@ -1606,6 +1606,8 @@ typedef struct ix86_args {
 				   is used */
   int sse_words;		/* # sse words passed so far */
   int sse_nregs;		/* # sse registers available for passing */
+  int warn_avx512f;		/* True when we want to warn
+				   about AVX512F ABI.  */
   int warn_avx;			/* True when we want to warn about AVX ABI.  */
   int warn_sse;			/* True when we want to warn about SSE ABI.  */
   int warn_mmx;			/* True when we want to warn about MMX ABI.  */
