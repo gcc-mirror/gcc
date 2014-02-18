@@ -1,3 +1,10 @@
+2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60190
+	* parser.c (cp_parser_lambda_declarator_opt): Pop template parameter
+	scope whenever a template parameter list has been started, independent
+	of whether the function call operator was well-formed or not.
+
 2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60047
