@@ -1,3 +1,11 @@
+2014-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60142
+	* final.c (SEEN_BB): Remove.
+	(SEEN_NOTE, SEEN_EMITTED): Renumber.
+	(final_scan_insn): Don't force_source_line on second
+	NOTE_INSN_BASIC_BLOCK.
+
 2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/60205

@@ -112,9 +112,8 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Bitflags used by final_scan_insn.  */
-#define SEEN_BB		1
-#define SEEN_NOTE	2
-#define SEEN_EMITTED	4
+#define SEEN_NOTE	1
+#define SEEN_EMITTED	2
 
 /* Last insn processed by final_scan_insn.  */
 static rtx debug_insn;
@@ -2128,9 +2127,7 @@ call_from_call_insn (rtx insn)
 
    SEEN is used to track the end of the prologue, for emitting
    debug information.  We force the emission of a line note after
-   both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG, or
-   at the beginning of the second basic block, whichever comes
-   first.  */
+   both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
 
 rtx
 final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
@@ -2188,14 +2185,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
-
-	  if ((*seen & (SEEN_EMITTED | SEEN_BB)) == SEEN_BB)
-	    {
-	      *seen |= SEEN_EMITTED;
-	      force_source_line = true;
-	    }
-	  else
-	    *seen |= SEEN_BB;
 
           discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 
