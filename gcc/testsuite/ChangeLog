@@ -1,3 +1,8 @@
+2014-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60231
+	* gfortran.dg/typebound_generic_15.f90: New.
+
 2014-02-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55907
