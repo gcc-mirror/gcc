@@ -9127,15 +9127,15 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
-	if (template_param_list)
-	  {
-	    fco = finish_member_template_decl (fco);
-	    finish_template_decl (template_param_list);
-	    --parser->num_template_parameter_lists;
-	  }
-	else if (parser->fully_implicit_function_template_p)
-	  fco = finish_fully_implicit_template (parser, fco);
       }
+    if (template_param_list)
+      {
+	fco = finish_member_template_decl (fco);
+	finish_template_decl (template_param_list);
+	--parser->num_template_parameter_lists;
+      }
+    else if (parser->fully_implicit_function_template_p)
+      fco = finish_fully_implicit_template (parser, fco);
 
     finish_member_declaration (fco);
 

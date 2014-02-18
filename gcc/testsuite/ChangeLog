@@ -1,3 +1,8 @@
+2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60190
+	* g++.dg/cpp1y/pr60190.C: New testcase.
+
 2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/60205
