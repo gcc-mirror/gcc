@@ -1,3 +1,8 @@
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-prop.c (compute_complex_ancestor_jump_func): Replace overzealous
+	assertion with conditional return.
+
 2014-02-18  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
