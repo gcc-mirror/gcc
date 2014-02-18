@@ -495,29 +495,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xsaveopt = eax & bit_XSAVEOPT;
     }
 
-  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
-#define XCR_XFEATURE_ENABLED_MASK	0x0
-#define XSTATE_FP			0x1
-#define XSTATE_SSE			0x2
-#define XSTATE_YMM			0x4
-  if (has_osxsave)
-    asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
-	 : "=a" (eax), "=d" (edx)
-	 : "c" (XCR_XFEATURE_ENABLED_MASK));
-
-  /* Check if SSE and YMM states are supported.  */
-  if (!has_osxsave
-      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
-    {
-      has_avx = 0;
-      has_avx2 = 0;
-      has_fma = 0;
-      has_fma4 = 0;
-      has_xop = 0;
-      has_xsave = 0;
-      has_xsaveopt = 0;
-    }
-
   /* Check cpuid level of extended features.  */
   __cpuid (0x80000000, ext_level, ebx, ecx, edx);
 
@@ -538,6 +515,30 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
       has_3dnow = edx & bit_3DNOW;
+    }
+
+  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
+#define XCR_XFEATURE_ENABLED_MASK	0x0
+#define XSTATE_FP			0x1
+#define XSTATE_SSE			0x2
+#define XSTATE_YMM			0x4
+  if (has_osxsave)
+    asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
+	 : "=a" (eax), "=d" (edx)
+	 : "c" (XCR_XFEATURE_ENABLED_MASK));
+
+  /* Check if SSE and YMM states are supported.  */
+  if (!has_osxsave
+      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
+    {
+      has_avx = 0;
+      has_avx2 = 0;
+      has_fma = 0;
+      has_fma4 = 0;
+      has_f16c = 0;
+      has_xop = 0;
+      has_xsave = 0;
+      has_xsaveopt = 0;
     }
 
   if (!arch)
