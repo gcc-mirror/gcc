@@ -51,6 +51,7 @@ with Sem_Attr; use Sem_Attr;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sinfo;    use Sinfo;
@@ -8325,6 +8326,44 @@ package body Sem_Util is
       return False;
    end Implements_Interface;
 
+   ------------------------------------
+   -- In_Assertion_Expression_Pragma --
+   ------------------------------------
+
+   function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean is
+      Par  : Node_Id;
+      Prag : Node_Id := Empty;
+
+   begin
+      --  Climb the parent chain looking for an enclosing pragma
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind (Par) = N_Pragma then
+            Prag := Par;
+            exit;
+
+         --  Precondition-like pragmas are expanded into if statements, check
+         --  the original node instead.
+
+         elsif Nkind (Original_Node (Par)) = N_Pragma then
+            Prag := Original_Node (Par);
+            exit;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return False;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return
+        Present (Prag)
+          and then Assertion_Expression_Pragma (Get_Pragma_Id (Prag));
+   end In_Assertion_Expression_Pragma;
+
    -----------------
    -- In_Instance --
    -----------------
@@ -10537,11 +10576,11 @@ package body Sem_Util is
       Expr := N;
       Par  := Parent (N);
       while not Nkind_In (Par, N_If_Expression,
-                                N_Case_Expression,
-                                N_And_Then,
-                                N_Or_Else,
-                                N_In,
-                                N_Not_In)
+                               N_Case_Expression,
+                               N_And_Then,
+                               N_Or_Else,
+                               N_In,
+                               N_Not_In)
       loop
          Expr := Par;
          Par  := Parent (Par);

@@ -1402,11 +1402,6 @@ package Sinfo is
    --     pragma of the other kind is also present. This is used to avoid
    --     generating some unwanted error messages.
 
-   --  In_Assertion_Expression (Flag4-Sem)
-   --     This flag is present in N_Function_Call nodes. It is set if the
-   --     function is called from within an assertion expression. This is
-   --     used to avoid some bogus warnings about early elaboration.
-
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of
    --    unconstrained float types defined in Standard, which include not only
@@ -5036,7 +5031,6 @@ package Sinfo is
       --   actual parameter part)
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
-      --  In_Assertion_Expression (Flag4-Sem)
       --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  No_Elaboration_Check (Flag14-Sem)
@@ -8986,9 +8980,6 @@ package Sinfo is
    function Import_Interface_Present
      (N : Node_Id) return Boolean;    -- Flag16
 
-   function In_Assertion_Expression
-     (N : Node_Id) return Boolean;    -- Flag4
-
    function In_Present
      (N : Node_Id) return Boolean;    -- Flag15
 
@@ -9984,9 +9975,6 @@ package Sinfo is
 
    procedure Set_Import_Interface_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag16
-
-   procedure Set_In_Assertion_Expression
-     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_In_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
@@ -12393,7 +12381,6 @@ package Sinfo is
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);
    pragma Inline (Import_Interface_Present);
-   pragma Inline (In_Assertion_Expression);
    pragma Inline (In_Present);
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
@@ -12719,7 +12706,6 @@ package Sinfo is
    pragma Inline (Set_Identifier);
    pragma Inline (Set_Implicit_With);
    pragma Inline (Set_Import_Interface_Present);
-   pragma Inline (Set_In_Assertion_Expression);
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Includes_Infinities);
    pragma Inline (Set_Inherited_Discriminant);

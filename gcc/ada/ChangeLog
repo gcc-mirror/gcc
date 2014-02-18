@@ -1,3 +1,58 @@
+2014-02-18  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Build_Signed_Integer_Type): Minor change of formal
+	from Int to Nat (Build_Unsigned_Integer_Type): New procedure
+	(Create_Standard): Create new unsigned types.
+	* exp_ch4.adb (Expand_N_Op_Mod): Expand mod in Modify_Tree_For_C
+	mode (Expand_N_Reference): Removed, problematic and not needed
+	for now.
+	* exp_ch4.ads (Expand_N_Reference): Removed, problematic and
+	not needed for now.
+	* exp_util.ads, exp_util.adb (Power_Of_Two): New function.
+	* expander.adb: Remove call to Expand_N_Reference (problematic,
+	and not needed now).
+	* sem_aux.ads, sem_aux.adb (Corresponding_Unsigned_Type): New function.
+	* stand.adb: Read and write unsigned type entities.
+	* stand.ads: Add new unsigned types.
+
+2014-02-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): Do not mark a function call
+	as being inside an assertion expression as the flag is now removed.
+	(Check_Ghost_Subprogram_Call): Do not query the
+	In_Assertion_Expression flag as it is now removed, instead use
+	a predicate function.
+	* sem_elab.adb (Check_Internal_Call_Continue): Do not query the
+	In_Assertion_Expression flag as it is now removed, instead use
+	a predicate function.
+	* sem_prag.ads: Add new table Assertion_Expression_Pragma.
+	* sem_util.adb Add with and use clause for Sem_Prag.
+	(In_Assertion_Expression_Pragma): New routine.
+	* sem_util.ads (In_Assertion_Expression_Pragma): New routine.
+	* sinfo.adb (In_Assertion_Expression): Removed.
+	(Set_In_Assertion_Expression): Removed.
+	* sinfo.ads Remove flag In_Assertion_Expression along with its
+	use in nodes.
+	(In_Assertion_Expression): Removed along with
+	pragma Inline.	(Set_In_Assertion_Expression): Removed along
+	with pragma Inline.
+
+2014-02-18  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatpp section: add note that '-j' cannot be
+	used together with '-r', '-rf' or '-rnb' options.
+
+2014-02-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Comment
+	and code reformatting. Use separate routines to check the
+	legality of attribute 'Old in certain pragmas. Verify
+	the use of 'Old, 'Result and locally declared entities
+	within the prefix of 'Old.
+	(Check_References_In_Prefix): New routine.
+	(Check_Use_In_Contract_Cases): New routine.
+	(Check_Use_In_Test_Case): New routine.
+
 2014-02-18  Vincent Celier  <celier@adacore.com>
 
 	* sem_aux.adb (Is_By_Reference_Type): For each components of

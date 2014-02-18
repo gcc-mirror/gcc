@@ -888,10 +888,10 @@ package body Sem_Ch4 is
          if In_Spec_Expression then
             return;
 
-         --  The ghost subprogram appears inside an assertion expression
-         --  which is one of the allowed cases.
+         --  The ghost subprogram appears inside an assertion expression which
+         --  is one of the allowed cases.
 
-         elsif In_Assertion_Expression (N) then
+         elsif In_Assertion_Expression_Pragma (N) then
             return;
 
          --  Otherwise see if it inside another ghost subprogram
@@ -1008,12 +1008,6 @@ package body Sem_Ch4 is
    begin
       if Restriction_Check_Required (SPARK_05) then
          Check_Mixed_Parameter_And_Named_Associations;
-      end if;
-
-      --  Mark a function that appears inside an assertion expression
-
-      if Nkind (N) = N_Function_Call and then In_Assertion_Expr > 0 then
-         Set_In_Assertion_Expression (N);
       end if;
 
       --  Initialize the type of the result of the call to the error type,
