@@ -1,3 +1,10 @@
+2014-02-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60193
+	* config/i386/i386.c (ix86_expand_prologue): Use
+	rax register as displacement for restoring %r10, %rax.
+	Additional fix wrong offset for restoring both-registers.
+
 2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-prop.c (compute_complex_ancestor_jump_func): Replace overzealous
