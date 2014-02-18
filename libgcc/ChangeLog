@@ -1,3 +1,10 @@
+2014-02-18  Kai Tietz  <ktietz@redhat.com>
+	Jonathan Schleifer  <js@webkeks.org>
+
+	PR objc/56870
+	* unwind-seh.c (_GCC_specific_handler): Pass proper
+	value to unwind-handler.
+
 2014-02-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* soft-fp/adddf3.c: Update from glibc.
