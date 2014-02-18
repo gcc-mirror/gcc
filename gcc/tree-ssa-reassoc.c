@@ -1840,7 +1840,8 @@ init_range_entry (struct range_entry *r, tree exp, gimple stmt)
 
       if (exp != NULL_TREE)
 	{
-	  if (TREE_CODE (exp) != SSA_NAME)
+	  if (TREE_CODE (exp) != SSA_NAME
+	      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp))
 	    break;
 
 	  stmt = SSA_NAME_DEF_STMT (exp);
