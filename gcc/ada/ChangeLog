@@ -1,3 +1,12 @@
+2014-02-18  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Minor reformatting.
+	* exp_ch4.ads, exp_ch4.adb (Expand_N_Reference): New procedure.
+	* exp_util.adb (Remove_Side_Effects): Add conditional expressions
+	as another case where we don't generate N_Reference nodes for
+	primitive types.
+	* expander.adb (Expand): Add call to Expand_N_Reference.
+
 2014-02-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Refined_Pragma): Remove

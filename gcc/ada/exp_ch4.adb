@@ -9225,6 +9225,65 @@ package body Exp_Ch4 is
       Analyze_And_Resolve (N, Standard_Boolean);
    end Expand_N_Quantified_Expression;
 
+   ------------------------
+   -- Expand_N_Reference --
+   ------------------------
+
+   --  It is a little unclear why we generate references to expression values,
+   --  but we definitely do! At the very least in Modify_Tree_For_C, we need to
+   --  get rid of such constructs. We do this by expanding:
+
+   --    expression'Reference
+
+   --  into
+
+   --    Tnn : constant typ := expression;
+   --    ...
+   --    Tnn'Reference
+
+   procedure Expand_N_Reference (N : Node_Id) is
+   begin
+      --  No problem if Modify_Tree_For_C not set, the existing back ends will
+      --  correctly handle P'Reference where P is a general expression.
+
+      if not Modify_Tree_For_C then
+         return;
+
+      --  No problem if we have an entity name since we can take its address
+
+      elsif Is_Entity_Name (Prefix (N)) then
+         return;
+
+      --  Can't go copying limited types
+
+      elsif Is_Limited_Record (Etype (Prefix (N)))
+        or else Is_Limited_Composite (Etype (Prefix (N)))
+      then
+         return;
+
+      --  Here is the case where we do the transformation discussed above
+
+      else
+         declare
+            Loc  : constant Source_Ptr := Sloc (N);
+            Expr : constant Node_Id    := Prefix (N);
+            Typ  : constant Entity_Id  := Etype (N);
+            Tnn  : constant Entity_Id  := Make_Temporary (Loc, 'T', Expr);
+         begin
+            Insert_Action (N,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Tnn,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Etype (Expr), Loc),
+                Expression          => Expr));
+            Rewrite (N,
+              Make_Reference (Loc,
+                Prefix => New_Occurrence_Of (Tnn, Loc)));
+            Analyze_And_Resolve (N, Typ);
+         end;
+      end if;
+   end Expand_N_Reference;
+
    ---------------------------------
    -- Expand_N_Selected_Component --
    ---------------------------------

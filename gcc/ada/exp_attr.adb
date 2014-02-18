@@ -1132,20 +1132,20 @@ package body Exp_Attr is
             --  copies from being created when the unchecked conversion
             --  is expanded (which would happen in Remove_Side_Effects
             --  if Expand_N_Unchecked_Conversion were allowed to call
-            --  Force_Evaluation). The copy could violate Ada semantics
-            --  in cases such as an actual that is an out parameter.
-            --  Note that this approach is also used in exp_ch7 for calls
-            --  to controlled type operations to prevent problems with
-            --  actuals wrapped in unchecked conversions.
+            --  Force_Evaluation). The copy could violate Ada semantics in
+            --  cases such as an actual that is an out parameter. Note that
+            --  this approach is also used in exp_ch7 for calls to controlled
+            --  type operations to prevent problems with actuals wrapped in
+            --  unchecked conversions.
 
             if Is_Untagged_Derivation (Etype (Expression (Item))) then
                Set_Assignment_OK (Item);
             end if;
          end if;
 
-         --  The stream operation to call maybe a renaming created by
-         --  an attribute definition clause, and may not be frozen yet.
-         --  Ensure that it has the necessary extra formals.
+         --  The stream operation to call may be a renaming created by an
+         --  attribute definition clause, and may not be frozen yet. Ensure
+         --  that it has the necessary extra formals.
 
          if not Is_Frozen (Pname) then
             Create_Extra_Formals (Pname);
