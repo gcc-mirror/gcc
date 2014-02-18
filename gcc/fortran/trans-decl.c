@@ -1362,9 +1362,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   if (sym->attr.flavor == FL_PROCEDURE)
     {
-      /* Catch function declarations. Only used for actual parameters,
+      /* Catch functions. Only used for actual parameters,
 	 procedure pointers and procptr initialization targets.  */
-      if (sym->attr.external || sym->attr.use_assoc || sym->attr.intrinsic)
+      if (sym->attr.use_assoc || sym->attr.intrinsic
+	  || sym->attr.if_source != IFSRC_DECL)
 	{
 	  decl = gfc_get_extern_function_decl (sym);
 	  gfc_set_decl_location (decl, &sym->declared_at);

@@ -3581,6 +3581,16 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  return false;
 	}
 
+      /* Check F2008Cor2, C729.  */
+      if (!s2->attr.intrinsic && s2->attr.if_source == IFSRC_UNKNOWN
+	  && !s2->attr.external && !s2->attr.subroutine && !s2->attr.function)
+	{
+	  gfc_error ("Procedure pointer target '%s' at %L must be either an "
+		     "intrinsic, host or use associated, referenced or have "
+		     "the EXTERNAL attribute", s2->name, &rvalue->where);
+	  return false;
+	}
+
       return true;
     }
 
