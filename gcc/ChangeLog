@@ -1,3 +1,9 @@
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/60174
+	* tree-ssa-reassoc.c (init_range_entry): Do not look into the defining
+	statement of an SSA_NAME that occurs in an abnormal PHI node.
+
 2014-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/60142
