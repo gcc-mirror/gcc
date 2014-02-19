@@ -160,7 +160,6 @@ bool
 cp_function_decl_explicit_p (tree decl)
 {
   return (decl
-	  && FUNCTION_FIRST_USER_PARMTYPE (decl) != void_list_node
 	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
 	  && DECL_NONCONVERTING_P (decl));
 }
