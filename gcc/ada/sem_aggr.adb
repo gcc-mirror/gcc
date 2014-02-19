@@ -455,9 +455,12 @@ package body Sem_Aggr is
       end if;
 
       --  This is really expansion activity, so make sure that expansion is
-      --  on and is allowed. In GNATprove mode, we also want check flags to be
-      --  added in the tree, so that the formal verification can rely on those
-      --  to be present.
+      --  on and is allowed. In GNATprove mode, we also want check flags to
+      --  be added in the tree, so that the formal verification can rely on
+      --  those to be present. In GNATprove mode for formal verification, some
+      --  treatment typically only done during expansion needs to be performed
+      --  on the tree, but it should not be applied inside generics. Otherwise,
+      --  this breaks the name resolution mechanism for generic instances.
 
       if not Expander_Active
         and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)

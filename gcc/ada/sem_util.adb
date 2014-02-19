@@ -6387,6 +6387,80 @@ package body Sem_Util is
       return Proper_Body (Unit (Library_Unit (N)));
    end Get_Body_From_Stub;
 
+   ---------------------
+   -- Get_Cursor_Type --
+   ---------------------
+
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+      Typ    : Entity_Id) return Entity_Id
+   is
+      Assoc    : Node_Id;
+      Func     : Entity_Id;
+      First_Op : Entity_Id;
+      Cursor   : Entity_Id;
+
+   begin
+      --  If error already detected, return
+
+      if Error_Posted (Aspect) then
+         return Any_Type;
+      end if;
+
+      --  The cursor type for an Iterable aspect is the return type of a
+      --  non-overloaded First primitive operation. Locate association for
+      --  First.
+
+      Assoc := First (Component_Associations (Expression (Aspect)));
+      First_Op  := Any_Id;
+      while Present (Assoc) loop
+         if Chars (First (Choices (Assoc))) = Name_First then
+            First_Op := Expression (Assoc);
+            exit;
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if First_Op = Any_Id then
+         Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
+         return Any_Type;
+      end if;
+
+      Cursor := Any_Type;
+
+      --  Locate function with desired name and profile in scope of type
+
+      Func := First_Entity (Scope (Typ));
+      while Present (Func) loop
+         if Chars (Func) = Chars (First_Op)
+           and then Ekind (Func) = E_Function
+           and then Present (First_Formal (Func))
+           and then Etype (First_Formal (Func)) = Typ
+           and then No (Next_Formal (First_Formal (Func)))
+         then
+            if Cursor /= Any_Type then
+               Error_Msg_N
+                 ("Operation First for iterable type must be unique", Aspect);
+               return Any_Type;
+
+            else
+               Cursor :=  Etype (Func);
+            end if;
+         end if;
+
+         Next_Entity (Func);
+      end loop;
+
+      --  If not found, no way to resolve remaining primitives.
+
+      if Cursor = Any_Type then
+         Error_Msg_N
+           ("No legal primitive operation First for Iterable type", Aspect);
+      end if;
+
+      return Cursor;
+   end Get_Cursor_Type;
    -------------------------------
    -- Get_Default_External_Name --
    -------------------------------

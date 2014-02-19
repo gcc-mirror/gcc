@@ -89,9 +89,12 @@ package body Expander is
       --  Full_Analysis flag indicates whether we are performing a complete
       --  analysis, in which case Full_Analysis = True or a pre-analysis in
       --  which case Full_Analysis = False. See the spec of Sem for more info
-      --  on this. Additionally, the GNATprove_Mode flag indicates that a light
+      --  on this.
+
+      --  Additionally, the GNATprove_Mode flag indicates that a light
       --  expansion for formal verification should be used. This expansion is
-      --  never done inside generics.
+      --  never done inside generics, because otherwise, this breaks the name
+      --  resolution mechanism for generic instances
 
       --  The second reason for the Expander_Active flag to be False is that
       --  we are performing a pre-analysis. During pre-analysis all expansion

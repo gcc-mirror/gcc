@@ -1807,7 +1807,10 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      Typ := Etype (Iter_Name);
+      --  Get base type of container, for proper retrieval of Cursor type
+      --  and primitive operations.
+
+      Typ := Base_Type (Etype (Iter_Name));
 
       if Is_Array_Type (Typ) then
          if Of_Present (N) then
@@ -1918,17 +1921,25 @@ package body Sem_Ch5 is
 
             --  The result type of Iterate function is the classwide type of
             --  the interface parent. We need the specific Cursor type defined
-            --  in the container package.
+            --  in the container package. We obtain it by name for a predefined
+            --  container, or through the Iterable aspect for a formal one.
 
-            Ent := First_Entity (Scope (Typ));
-            while Present (Ent) loop
-               if Chars (Ent) = Name_Cursor then
-                  Set_Etype (Def_Id, Etype (Ent));
-                  exit;
-               end if;
+            if Has_Aspect (Typ, Aspect_Iterable) then
+               Set_Etype (Def_Id,
+                 Get_Cursor_Type
+                  (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)), Typ));
 
-               Next_Entity (Ent);
-            end loop;
+            else
+               Ent := First_Entity (Scope (Typ));
+               while Present (Ent) loop
+                  if Chars (Ent) = Name_Cursor then
+                     Set_Etype (Def_Id, Etype (Ent));
+                     exit;
+                  end if;
+
+                  Next_Entity (Ent);
+               end loop;
+            end if;
          end if;
       end if;
 

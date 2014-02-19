@@ -3898,6 +3898,18 @@ package body Sem_Prag is
                then
                   OK := True;
 
+               --  If the aspect is a predicate (possibly others ???)  and the
+               --  context is a record type, this is a discriminant expression
+               --  within a type declaration, that freezes the predicated
+               --  subtype.
+
+               elsif From_Aspect_Specification (N)
+                 and then Prag_Id = Pragma_Predicate
+                 and then Ekind (Current_Scope) = E_Record_Type
+                 and then Scop = Scope (Current_Scope)
+               then
+                  OK := True;
+
                --  Default case, just check that the pragma occurs in the scope
                --  of the entity denoted by the name.
 

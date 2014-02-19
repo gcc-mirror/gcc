@@ -17523,8 +17523,12 @@ is specifically authorized by the Ada Reference Manual
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for doubly linked lists, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
 @section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
@@ -17535,8 +17539,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
 @section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
@@ -17547,8 +17555,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
 @section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
@@ -17559,8 +17571,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
 @section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
@@ -17571,8 +17587,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Vectors (a-cofove.ads)
 @section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
@@ -17583,8 +17603,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for vectors, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})
