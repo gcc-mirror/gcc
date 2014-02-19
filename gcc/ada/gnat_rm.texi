@@ -4357,7 +4357,7 @@ achieving its purpose.
 
 Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
 apply to the same loop should be grouped in the same sequence of
-statements, with only the same pragmas in between.
+statements.
 
 To aid in writing such invariants, the special attribute @code{Loop_Entry}
 may be used to refer to the value of an expression on entry to the loop. This
@@ -4456,7 +4456,7 @@ syntax.
 
 Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
 apply to the same loop should be grouped in the same sequence of
-statements, with only the same pragmas in between.
+statements.
 
 The @code{Loop_Entry} attribute may be used within the expressions of the
 @code{Loop_Variant} pragma to refer to values on entry to the loop.

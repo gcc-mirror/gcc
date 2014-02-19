@@ -128,9 +128,11 @@ package body Sem_Ch13 is
    --  Uint value. If the value is inappropriate, then error messages are
    --  posted as required, and a value of No_Uint is returned.
 
-   function Get_Cursor_Type (S : Entity_Id) return Entity_Id;
-   --  Find Cursor type by name in the scope of an iterable type, for use in
-   --  resolving the primitive operations of the type.
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+       Typ   : Entity_Id) return Entity_Id;
+   --  Find Cursor type in scope of Typ, by locating primitive operation First.
+   --  For use in resolving the other primitive operations of an Iterable type.
 
    function Is_Operational_Item (N : Node_Id) return Boolean;
    --  A specification for a stream attribute is allowed before the full type
@@ -8059,16 +8061,25 @@ package body Sem_Ch13 is
             T := Entity (ASN);
 
             declare
-               Cursor : constant Entity_Id := Get_Cursor_Type (Scope (T));
+               Cursor : constant Entity_Id := Get_Cursor_Type (ASN, T);
                Assoc  : Node_Id;
                Expr   : Node_Id;
+
             begin
+               if Cursor = Any_Type then
+                  return;
+               end if;
+
                Assoc := First (Component_Associations (Expression (ASN)));
                while Present (Assoc) loop
                   Expr := Expression (Assoc);
                   Analyze (Expr);
-                  Resolve_Iterable_Operation
-                    (Expr, Cursor, T, Chars (First (Choices (Assoc))));
+
+                  if not Error_Posted (Expr) then
+                     Resolve_Iterable_Operation
+                       (Expr, Cursor, T, Chars (First (Choices (Assoc))));
+                  end if;
+
                   Next (Assoc);
                end loop;
             end;
@@ -9749,26 +9760,75 @@ package body Sem_Ch13 is
    -- Get_Cursor_Type --
    ---------------------
 
-   function Get_Cursor_Type (S : Entity_Id) return Entity_Id is
-      C : Entity_Id;
-      E : Entity_Id;
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+      Typ    : Entity_Id) return Entity_Id
+   is
+      Assoc    : Node_Id;
+      Func     : Entity_Id;
+      First_Op : Entity_Id;
+      Cursor   : Entity_Id;
 
    begin
-      --  There must be a cursor type declared in the same package, to be
-      --  used in iterable primitives.
+      --  If error already detected, return.
 
-      C := Empty;
-      E := First_Entity (S);
-      while Present (E) loop
-         if Chars (E) = Name_Cursor and then Is_Type (E) then
-            C := E;
+      if Error_Posted (Aspect) then
+         return Any_Type;
+      end if;
+
+      --  The cursor type for an Iterable aspect is the return type of
+      --  a non-overloaded First primitive operation. Locate association
+      --  for First.
+
+      Assoc := First (Component_Associations (Expression (Aspect)));
+      First_Op  := Any_Id;
+      while Present (Assoc) loop
+         if Chars (First (Choices (Assoc))) = Name_First then
+            First_Op := Expression (Assoc);
             exit;
          end if;
 
-         Next_Entity (E);
+         Next (Assoc);
       end loop;
 
-      return C;
+      if First_Op = Any_Id then
+         Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
+         return Any_Type;
+      end if;
+
+      Cursor := Any_Type;
+
+      --  Locate function with desired name and profile in scope of type.
+
+      Func := First_Entity (Scope (Typ));
+      while Present (Func) loop
+         if Chars (Func) = Chars (First_Op)
+           and then Ekind (Func) = E_Function
+           and then Present (First_Formal (Func))
+           and then Etype (First_Formal (Func)) = Typ
+           and then No (Next_Formal (First_Formal (Func)))
+         then
+            if Cursor /= Any_Type then
+               Error_Msg_N
+                  ("Operation First for iterable type must be unique", Aspect);
+               return Any_Type;
+
+            else
+               Cursor :=  Etype (Func);
+            end if;
+         end if;
+
+         Next_Entity (Func);
+      end loop;
+
+      --  If not found, no way to resolve remaining primitives.
+
+      if Cursor = Any_Type then
+         Error_Msg_N
+            ("No legal primitive operation First for Iterable type", Aspect);
+      end if;
+
+      return Cursor;
    end Get_Cursor_Type;
 
    -------------------------------------
@@ -10876,6 +10936,7 @@ package body Sem_Ch13 is
          then
             Error_Msg_N ("iterable primitive must be local function name "
                          & "whose first formal is an iterable type", N);
+            return;
          end if;
 
          Ent := Entity (N);
@@ -11455,7 +11516,7 @@ package body Sem_Ch13 is
       Expr  : Node_Id;
 
       Prim   : Node_Id;
-      Cursor : constant Entity_Id := Get_Cursor_Type (Scope (Typ));
+      Cursor : constant Entity_Id := Get_Cursor_Type (ASN, Typ);
 
       First_Id       : Entity_Id;
       Next_Id        : Entity_Id;
@@ -11463,8 +11524,9 @@ package body Sem_Ch13 is
       Element_Id     : Entity_Id;
 
    begin
-      if No (Cursor) then
-         Error_Msg_N ("Iterable aspect requires a cursor type", ASN);
+      --  If previous error aspect is unusable.
+
+      if Cursor = Any_Type then
          return;
       end if;
 
