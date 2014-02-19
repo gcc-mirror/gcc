@@ -1,5 +1,10 @@
 2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa.c (function_and_variable_visibility): Also clear WEAK
+	flag when disolving COMDAT_GROUP.
+
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.h (ipa_ancestor_jf_data): Update ocmment.
 	* ipa-prop.c (ipa_set_jf_known_type): Return early when
 	not devirtualizing.
