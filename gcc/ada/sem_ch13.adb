@@ -1897,7 +1897,10 @@ package body Sem_Ch13 is
                            Set_Main_Priority
                              (Main_Unit, UI_To_Int (Expr_Value (Expr)));
 
-                        else
+                        --  Ignore pragma if Relaxed_RM_Semantics to support
+                        --  other targets/non GNAT compilers.
+
+                        elsif not Relaxed_RM_Semantics then
                            Error_Msg_N
                              ("main subprogram priority is out of range",
                               Expr);

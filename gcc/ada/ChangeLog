@@ -1,3 +1,19 @@
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: Inhibit iterator rewriting in ASIS mode.
+
+2014-02-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Do not generate
+	an error on out of range priorities if Relaxed_RM_Semantics.
+	* sem_prag.adb (Analyze_Pragma): Ditto.
+
+2014-02-19  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Detect the case of F'Access
+	where F denotes the renaming of an enumeration literal, and
+	issue a specialized error message.
+
 2014-02-19  Matthew Heaney  <heaney@adacore.com>
 
 	* a-chtgop.ads (Checked_Index): New operation.
