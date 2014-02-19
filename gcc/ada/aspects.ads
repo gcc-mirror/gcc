@@ -102,6 +102,7 @@ package Aspects is
       Aspect_Interrupt_Priority,
       Aspect_Invariant,                     -- GNAT
       Aspect_Iterator_Element,
+      Aspect_Iterable,                      -- GNAT
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
@@ -325,6 +326,7 @@ package Aspects is
       Aspect_Input                   => Name,
       Aspect_Interrupt_Priority      => Expression,
       Aspect_Invariant               => Expression,
+      Aspect_Iterable                => Expression,
       Aspect_Iterator_Element        => Name,
       Aspect_Link_Name               => Expression,
       Aspect_Linker_Section          => Expression,
@@ -423,6 +425,7 @@ package Aspects is
       Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
       Aspect_Invariant                    => Name_Invariant,
       Aspect_Iterator_Element             => Name_Iterator_Element,
+      Aspect_Iterable                     => Name_Iterable,
       Aspect_Link_Name                    => Name_Link_Name,
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
@@ -628,6 +631,7 @@ package Aspects is
       Aspect_Interrupt_Handler            => Always_Delay,
       Aspect_Interrupt_Priority           => Always_Delay,
       Aspect_Invariant                    => Always_Delay,
+      Aspect_Iterable                     => Always_Delay,
       Aspect_Iterator_Element             => Always_Delay,
       Aspect_Link_Name                    => Always_Delay,
       Aspect_Linker_Section               => Always_Delay,

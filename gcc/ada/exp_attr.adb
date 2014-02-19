@@ -1351,6 +1351,7 @@ package body Exp_Attr is
       when Attribute_Constant_Indexing    |
            Attribute_Default_Iterator     |
            Attribute_Implicit_Dereference |
+           Attribute_Iterable             |
            Attribute_Iterator_Element     |
            Attribute_Variable_Indexing    =>
          null;

@@ -29,6 +29,7 @@ with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
@@ -260,10 +261,12 @@ package body Style is
    begin
 
       --  Perform the check on source subprograms and on subprogram instances,
-      --  because these can be primitives of untagged types.
+      --  because these can be primitives of untagged types. Note that such
+      --  indicators were introduced in Ada 2005.
 
       if Style_Check_Missing_Overriding
         and then (Comes_From_Source (N) or else Is_Generic_Instance (E))
+        and then Ada_Version >= Ada_2005
       then
          if Nkind (N) = N_Subprogram_Body then
             Error_Msg_NE -- CODEFIX

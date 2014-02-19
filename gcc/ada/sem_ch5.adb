@@ -1890,10 +1890,16 @@ package body Sem_Ch5 is
             --  iterator, typically the result of a call to Iterate. Give a
             --  useful error message when the name is a container by itself.
 
+            --  The type may be a formal container type, which has to have
+            --  an Iterable aspect detailing the required primitives.
+
             if Is_Entity_Name (Original_Node (Name (N)))
               and then not Is_Iterator (Typ)
             then
-               if not Has_Aspect (Typ, Aspect_Iterator_Element) then
+               if Has_Aspect (Typ, Aspect_Iterable) then
+                  null;
+
+               elsif not Has_Aspect (Typ, Aspect_Iterator_Element) then
                   Error_Msg_NE
                     ("cannot iterate over&", Name (N), Typ);
                else
@@ -1901,9 +1907,13 @@ package body Sem_Ch5 is
                     ("name must be an iterator, not a container", Name (N));
                end if;
 
-               Error_Msg_NE
-                 ("\to iterate directly over the elements of a container, " &
-                   "write `of &`", Name (N), Original_Node (Name (N)));
+               if Has_Aspect (Typ, Aspect_Iterable) then
+                  null;
+               else
+                  Error_Msg_NE
+                    ("\to iterate directly over the elements of a container, "
+                      & "write `of &`", Name (N), Original_Node (Name (N)));
+               end if;
             end if;
 
             --  The result type of Iterate function is the classwide type of

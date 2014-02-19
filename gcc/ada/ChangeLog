@@ -1,3 +1,32 @@
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* style.adb (Missing_Overriding): Warning does not apply in
+	language versions prior to Ada 2005.
+	* snames.ads-tmpl: Add Name_Iterable and Attribute_Iterable.
+	* sem_attr.adb: Add Attribute_Iterable where needed.
+	* exp_attr.adb: ditto.
+	* exp_ch5.adb (Expand_Formal_Container_Loop): New procedure to
+	handle loops and quantified expressions over types that have an
+	iterable aspect.  Called from Expand_Iterator_Loop.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Recognize types
+	with Iterable aspect.
+	* sem_ch13.adb (Validate_Iterable_Aspect): Verify that the
+	subprograms specified in the Iterable aspect have the proper
+	signature involving container and cursor.
+	(Check_Aspect_At_Freeze_Point): Analyze value of iterable aspect.
+	* sem_ch13.ads (Validate_Iterable_Aspect): New subprogram.
+	* sem_util.ads, sem_util.adb (Get_Iterable_Type_Primitive):
+	New procedure to retrieve one of the primitives First, Last,
+	or Has_Element, from the value of the iterable aspect of a
+	formal container.
+	(Is_Container_Element): Predicate to recognize expressions
+	that denote an element of one of the predefined containers,
+	for possible optimization.  This subprogram is not currently
+	used, pending ARG discussions on the legality of the proposed
+	optimization. Worth preserving for eventual use.
+	(Is_Iterator): Recognize formal container types.
+	* aspects.ads, aspects.adb: Add Aspect_Iterable where needed.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* exp_attr.adb (Expand_Min_Max_Attribute): New procedure

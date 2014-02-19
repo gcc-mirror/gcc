@@ -1110,6 +1110,9 @@ package body Sem_Ch13 is
                     Aspect_Iterator_Element  =>
                   Analyze (Expression (ASN));
 
+               when Aspect_Iterable =>
+                  Validate_Iterable_Aspect (E, ASN);
+
                when others =>
                   null;
                end case;
@@ -1571,6 +1574,7 @@ package body Sem_Ch13 is
                     Aspect_Dispatching_Domain   |
                     Aspect_External_Tag         |
                     Aspect_Input                |
+                    Aspect_Iterable             |
                     Aspect_Iterator_Element     |
                     Aspect_Machine_Radix        |
                     Aspect_Object_Size          |
@@ -4280,6 +4284,29 @@ package body Sem_Ch13 is
                  ("attribute& cannot be set with definition clause", N);
             end if;
          end Interrupt_Priority;
+
+         --------------
+         -- Iterable --
+         --------------
+
+         when Attribute_Iterable =>
+            Analyze (Expr);
+            if Nkind (Expr) /= N_Aggregate then
+               Error_Msg_N ("aspect Iterable must be an aggregate", Expr);
+            end if;
+
+            declare
+               Assoc : Node_Id;
+
+            begin
+               Assoc := First (Component_Associations (Expr));
+               while Present (Assoc) loop
+                  if not Is_Entity_Name (Expression (Assoc)) then
+                     Error_Msg_N ("value must be a function", Assoc);
+                  end if;
+                  Next (Assoc);
+               end loop;
+            end;
 
          ----------------------
          -- Iterator_Element --
@@ -8012,6 +8039,20 @@ package body Sem_Ch13 is
             Analyze (Expression (ASN));
             return;
 
+         --  Ditto for Iterable, legality checks in Validate_Iterable_Aspect.
+
+         when Aspect_Iterable =>
+            declare
+               Assoc : Node_Id;
+            begin
+               Assoc := First (Component_Associations (Expression (ASN)));
+               while Present (Assoc) loop
+                  Analyze (Expression (Assoc));
+                  Next (Assoc);
+               end loop;
+            end;
+            return;
+
          --  Invariant/Predicate take boolean expressions
 
          when Aspect_Dynamic_Predicate |
@@ -11222,6 +11263,153 @@ package body Sem_Ch13 is
       <<Continue>> null;
       end loop;
    end Validate_Independence;
+
+   ------------------------------
+   -- Validate_Iterable_Aspect --
+   ------------------------------
+
+   procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id) is
+      Scop           : constant Entity_Id := Scope (Typ);
+      Assoc          : Node_Id;
+      Expr           : Node_Id;
+
+      Prim           : Node_Id;
+      Cursor         : Entity_Id;
+
+      First_Id       : Entity_Id;
+      Next_Id        : Entity_Id;
+      Has_Element_Id : Entity_Id;
+      Element_Id     : Entity_Id;
+
+      procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive);
+      --  Verify that primitive has two parameters of the proper types.
+
+      procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive) is
+         F1, F2 : Entity_Id;
+
+      begin
+         if Scope (Op) /= Current_Scope then
+            Error_Msg_N ("iterable primitive must be declared in scope", Prim);
+         end if;
+
+         F1 := First_Formal (Op);
+         if No (F1)
+           or else Etype (F1) /= Typ
+         then
+            Error_Msg_N ("first parameter must be container type", Op);
+         end if;
+
+         if Num_Formals = 1 then
+            if Present (Next_Formal (F1)) then
+               Error_Msg_N ("First must have a single parameter", Op);
+            end if;
+
+         else
+            F2 := Next_Formal (F1);
+            if No (F2)
+              or else Etype (F2) /= Cursor
+            then
+               Error_Msg_N ("second parameter must be cursor", Op);
+            end if;
+
+            if Present (Next_Formal (F2)) then
+               Error_Msg_N ("too many parameters in iterable primitive", Op);
+            end if;
+         end if;
+      end Check_Signature;
+
+   begin
+      --  There must be a cursor type declared in the same package.
+
+      declare
+         E : Entity_Id;
+
+      begin
+         Cursor := Empty;
+         E := First_Entity (Scop);
+         while Present (E) loop
+            if Chars (E) = Name_Cursor
+               and then Is_Type (E)
+            then
+               Cursor := E;
+               exit;
+            end if;
+
+            Next_Entity (E);
+         end loop;
+
+         if No (Cursor) then
+            Error_Msg_N ("Iterable aspect requires a cursor type", ASN);
+            return;
+         end if;
+      end;
+
+      First_Id       := Empty;
+      Next_Id        := Empty;
+      Has_Element_Id := Empty;
+
+      --  Each expression must resolve to a function with the proper signature
+
+      Assoc := First (Component_Associations (Expression (ASN)));
+      while Present (Assoc) loop
+         Expr := Expression (Assoc);
+         Analyze (Expr);
+
+         if not Is_Entity_Name (Expr)
+           or else Ekind (Entity (Expr)) /= E_Function
+         then
+            Error_Msg_N ("this should be a function name", Expr);
+         end if;
+
+         Prim := First (Choices (Assoc));
+         if Nkind (Prim) /= N_Identifier
+           or else Present (Next (Prim))
+         then
+            Error_Msg_N ("illegal name in association", Prim);
+
+         elsif Chars (Prim) = Name_First then
+            First_Id := Entity (Expr);
+            Check_Signature (First_Id, 1);
+            if Etype (First_Id) /= Cursor then
+               Error_Msg_NE ("First must return Cursor", Expr, First_Id);
+            end if;
+
+         elsif Chars (Prim) = Name_Next then
+            Next_Id := Entity (Expr);
+            Check_Signature (Next_Id, 2);
+            if Etype (Next_Id) /= Cursor then
+               Error_Msg_NE ("Next must return Cursor", Expr, First_Id);
+            end if;
+
+         elsif Chars (Prim) = Name_Has_Element then
+            Has_Element_Id := Entity (Expr);
+            if Etype (Has_Element_Id) /= Standard_Boolean then
+               Error_Msg_NE
+                ("Has_Element must return Boolean", Expr, First_Id);
+            end if;
+
+         elsif Chars (Prim) = Name_Element then
+            Element_Id := Entity (Expr);
+            Check_Signature (Element_Id, 2);
+
+         else
+            Error_Msg_N ("invalid name for iterable function", Prim);
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if No (First_Id) then
+         Error_Msg_N ("Iterable aspect must have a First primitive", ASN);
+
+      elsif No (Next_Id) then
+         Error_Msg_N ("Iterable aspect must have a Next primitive", ASN);
+
+      elsif No (Has_Element_Id) then
+         Error_Msg_N
+           ("Iterable aspect must have a Has_Element  primitive", ASN);
+      end if;
+   end Validate_Iterable_Aspect;
 
    -----------------------------------
    -- Validate_Unchecked_Conversion --
