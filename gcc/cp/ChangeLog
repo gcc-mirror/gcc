@@ -1,3 +1,8 @@
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60267
+	* pt.c (tsubst_expr): Handle ANNOTATE_EXPR.
+
 2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60225
