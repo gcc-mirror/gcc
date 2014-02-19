@@ -5067,41 +5067,12 @@ package body Exp_Ch4 is
    --------------------------------------
 
    procedure Expand_N_Expression_With_Actions (N : Node_Id) is
-      procedure Insert_Declaration (Decl : Node_Id);
-      --  This is like Insert_Action, but inserts outside the expression in
-      --  which N appears. This is needed, because otherwise we can end up
-      --  inserting a declaration in the actions of a short circuit, and that
-      --  will not do, because that's likely where we (the expression with
-      --  actions) node came from the first place. We are only inserting a
-      --  declaration with no side effects, so it is harmless (and needed)
-      --  to insert at a higher point in the tree.
 
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
       --  transient controlled objects. If such objects are found, the routine
       --  generates code to clean them up when the context of the expression is
       --  evaluated or elaborated.
-
-      ------------------------
-      -- Insert_Declaration --
-      ------------------------
-
-      procedure Insert_Declaration (Decl : Node_Id) is
-         P : Node_Id;
-
-      begin
-         --  Climb out of the current expression
-
-         P := Decl;
-         loop
-            exit when Nkind (Parent (P)) not in N_Subexpr;
-            P := Parent (P);
-         end loop;
-
-         --  Now do the insertion
-
-         Insert_Action (P, Decl);
-      end Insert_Declaration;
 
       --------------------
       -- Process_Action --
@@ -5135,11 +5106,7 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Loc : Source_Ptr;
       Act : Node_Id;
-      Def : Entity_Id;
-      Exp : Node_Id;
-      Nxt : Node_Id;
 
    --  Start of processing for Expand_N_Expression_With_Actions
 
@@ -5151,48 +5118,6 @@ package body Exp_Ch4 is
          Process_Single_Action (Act);
          Next (Act);
       end loop;
-
-      --  In Modify_Tree_For_C, we have trouble in C with object declarations
-      --  in the actions list (expressions are fine). So if we have an object
-      --  declaration, insert it higher in the tree, if necessary replacing it
-      --  with an assignment to capture initialization.
-
-      if Modify_Tree_For_C then
-         Act := First (Actions (N));
-         while Present (Act) loop
-            if Nkind (Act) = N_Object_Declaration then
-               Def := Defining_Identifier (Act);
-               Exp := Expression (Act);
-               Set_Constant_Present (Act, False);
-               Set_Expression (Act, Empty);
-               Insert_Declaration (Relocate_Node (Act));
-
-               Loc := Sloc (Act);
-
-               --  Expression present, rewrite as assignment, get next action
-
-               if Present (Exp) then
-                  Rewrite (Act,
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (Def, Loc),
-                      Expression => Exp));
-                  Next (Act);
-
-               --  No expression, remove action and move to next
-
-               else
-                  Nxt := Next (Act);
-                  Remove (Act);
-                  Act := Nxt;
-               end if;
-
-            --  Not an object declaration, move to next action
-
-            else
-               Next (Act);
-            end if;
-         end loop;
-      end if;
 
       --  Deal with case where there are no actions. In this case we simply
       --  rewrite the node with its expression since we don't need the actions

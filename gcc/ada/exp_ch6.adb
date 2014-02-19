@@ -7834,6 +7834,13 @@ package body Exp_Ch6 is
                Set_Sec_Stack_Needed_For_Return (S, True);
                S := Enclosing_Dynamic_Scope (S);
             end loop;
+
+            --  The enclosing function itself must be marked as well, to
+            --  prevent premature secondary stack cleanup.
+
+            if Ekind (S) = E_Function then
+               Set_Sec_Stack_Needed_For_Return (Scope_Id);
+            end if;
          end;
 
          --  Optimize the case where the result is a function call. In this

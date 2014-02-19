@@ -3962,11 +3962,13 @@ package body Exp_Util is
 
       --  Climb until we find a procedure or a package
 
-      P := Parent (N);
+      P := N;
       loop
+         pragma Assert (Present (Parent (P)));
+         P := Parent (P);
+
          if Is_List_Member (P) then
             exit when Nkind_In (Parent (P), N_Package_Specification,
-                                            N_Package_Body,
                                             N_Subprogram_Body);
 
             --  Special handling for handled sequence of statements, we must
@@ -3977,8 +3979,6 @@ package body Exp_Util is
                exit;
             end if;
          end if;
-
-         P := Parent (P);
       end loop;
 
       --  Now do the insertion
@@ -5970,7 +5970,7 @@ package body Exp_Util is
       Siz : constant Uint := Esize (Typ);
 
    begin
-      --  Float-point cases
+      --  Floating-point cases
 
       if Is_Floating_Point_Type (Typ) then
          if Siz <= Esize (Standard_Short_Float) then
@@ -5987,7 +5987,7 @@ package body Exp_Util is
 
       --  Integer cases (includes fixed-point types)
 
-      --  Unsigned cases (includes normal enumeration types)
+      --  Unsigned integer cases (includes normal enumeration types)
 
       elsif Is_Unsigned_Type (Typ) then
          if Siz <= Esize (Standard_Short_Short_Unsigned) then
@@ -6004,7 +6004,7 @@ package body Exp_Util is
             raise Program_Error;
          end if;
 
-      --  Signed cases
+      --  Signed integer cases
 
       else
          if Siz <= Esize (Standard_Short_Short_Integer) then
@@ -6635,435 +6635,6 @@ package body Exp_Util is
       Ref_Type     : Entity_Id;
       Res          : Node_Id;
 
-      function Side_Effect_Free (N : Node_Id) return Boolean;
-      --  Determines if the tree N represents an expression that is known not
-      --  to have side effects, and for which no processing is required.
-
-      function Side_Effect_Free (L : List_Id) return Boolean;
-      --  Determines if all elements of the list L are side effect free
-
-      function Safe_Prefixed_Reference (N : Node_Id) return Boolean;
-      --  The argument N is a construct where the Prefix is dereferenced if it
-      --  is an access type and the result is a variable. The call returns True
-      --  if the construct is side effect free (not considering side effects in
-      --  other than the prefix which are to be tested by the caller).
-
-      function Within_In_Parameter (N : Node_Id) return Boolean;
-      --  Determines if N is a subcomponent of a composite in-parameter. If so,
-      --  N is not side-effect free when the actual is global and modifiable
-      --  indirectly from within a subprogram, because it may be passed by
-      --  reference. The front-end must be conservative here and assume that
-      --  this may happen with any array or record type. On the other hand, we
-      --  cannot create temporaries for all expressions for which this
-      --  condition is true, for various reasons that might require clearing up
-      --  ??? For example, discriminant references that appear out of place, or
-      --  spurious type errors with class-wide expressions. As a result, we
-      --  limit the transformation to loop bounds, which is so far the only
-      --  case that requires it.
-
-      -----------------------------
-      -- Safe_Prefixed_Reference --
-      -----------------------------
-
-      function Safe_Prefixed_Reference (N : Node_Id) return Boolean is
-      begin
-         --  If prefix is not side effect free, definitely not safe
-
-         if not Side_Effect_Free (Prefix (N)) then
-            return False;
-
-         --  If the prefix is of an access type that is not access-to-constant,
-         --  then this construct is a variable reference, which means it is to
-         --  be considered to have side effects if Variable_Ref is set True.
-
-         elsif Is_Access_Type (Etype (Prefix (N)))
-           and then not Is_Access_Constant (Etype (Prefix (N)))
-           and then Variable_Ref
-         then
-            --  Exception is a prefix that is the result of a previous removal
-            --  of side-effects.
-
-            return Is_Entity_Name (Prefix (N))
-              and then not Comes_From_Source (Prefix (N))
-              and then Ekind (Entity (Prefix (N))) = E_Constant
-              and then Is_Internal_Name (Chars (Entity (Prefix (N))));
-
-         --  If the prefix is an explicit dereference then this construct is a
-         --  variable reference, which means it is to be considered to have
-         --  side effects if Variable_Ref is True.
-
-         --  We do NOT exclude dereferences of access-to-constant types because
-         --  we handle them as constant view of variables.
-
-         elsif Nkind (Prefix (N)) = N_Explicit_Dereference
-           and then Variable_Ref
-         then
-            return False;
-
-         --  Note: The following test is the simplest way of solving a complex
-         --  problem uncovered by the following test (Side effect on loop bound
-         --  that is a subcomponent of a global variable:
-
-         --    with Text_Io; use Text_Io;
-         --    procedure Tloop is
-         --      type X is
-         --        record
-         --          V : Natural := 4;
-         --          S : String (1..5) := (others => 'a');
-         --        end record;
-         --      X1 : X;
-
-         --      procedure Modi;
-
-         --      generic
-         --        with procedure Action;
-         --      procedure Loop_G (Arg : X; Msg : String)
-
-         --      procedure Loop_G (Arg : X; Msg : String) is
-         --      begin
-         --        Put_Line ("begin loop_g " & Msg & " will loop till: "
-         --                  & Natural'Image (Arg.V));
-         --        for Index in 1 .. Arg.V loop
-         --          Text_Io.Put_Line
-         --            (Natural'Image (Index) & " " & Arg.S (Index));
-         --          if Index > 2 then
-         --            Modi;
-         --          end if;
-         --        end loop;
-         --        Put_Line ("end loop_g " & Msg);
-         --      end;
-
-         --      procedure Loop1 is new Loop_G (Modi);
-         --      procedure Modi is
-         --      begin
-         --        X1.V := 1;
-         --        Loop1 (X1, "from modi");
-         --      end;
-         --
-         --    begin
-         --      Loop1 (X1, "initial");
-         --    end;
-
-         --  The output of the above program should be:
-
-         --    begin loop_g initial will loop till:  4
-         --     1 a
-         --     2 a
-         --     3 a
-         --    begin loop_g from modi will loop till:  1
-         --     1 a
-         --    end loop_g from modi
-         --     4 a
-         --    begin loop_g from modi will loop till:  1
-         --     1 a
-         --    end loop_g from modi
-         --    end loop_g initial
-
-         --  If a loop bound is a subcomponent of a global variable, a
-         --  modification of that variable within the loop may incorrectly
-         --  affect the execution of the loop.
-
-         elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
-           and then Within_In_Parameter (Prefix (N))
-           and then Variable_Ref
-         then
-            return False;
-
-         --  All other cases are side effect free
-
-         else
-            return True;
-         end if;
-      end Safe_Prefixed_Reference;
-
-      ----------------------
-      -- Side_Effect_Free --
-      ----------------------
-
-      function Side_Effect_Free (N : Node_Id) return Boolean is
-      begin
-         --  Note on checks that could raise Constraint_Error. Strictly, if we
-         --  take advantage of 11.6, these checks do not count as side effects.
-         --  However, we would prefer to consider that they are side effects,
-         --  since the backend CSE does not work very well on expressions which
-         --  can raise Constraint_Error. On the other hand if we don't consider
-         --  them to be side effect free, then we get some awkward expansions
-         --  in -gnato mode, resulting in code insertions at a point where we
-         --  do not have a clear model for performing the insertions.
-
-         --  Special handling for entity names
-
-         if Is_Entity_Name (N) then
-
-            --  Variables are considered to be a side effect if Variable_Ref
-            --  is set or if we have a volatile reference and Name_Req is off.
-            --  If Name_Req is True then we can't help returning a name which
-            --  effectively allows multiple references in any case.
-
-            if Is_Variable (N, Use_Original_Node => False) then
-               return not Variable_Ref
-                 and then (not Is_Volatile_Reference (N) or else Name_Req);
-
-            --  Any other entity (e.g. a subtype name) is definitely side
-            --  effect free.
-
-            else
-               return True;
-            end if;
-
-         --  A value known at compile time is always side effect free
-
-         elsif Compile_Time_Known_Value (N) then
-            return True;
-
-         --  A variable renaming is not side-effect free, because the renaming
-         --  will function like a macro in the front-end in some cases, and an
-         --  assignment can modify the component designated by N, so we need to
-         --  create a temporary for it.
-
-         --  The guard testing for Entity being present is needed at least in
-         --  the case of rewritten predicate expressions, and may well also be
-         --  appropriate elsewhere. Obviously we can't go testing the entity
-         --  field if it does not exist, so it's reasonable to say that this is
-         --  not the renaming case if it does not exist.
-
-         elsif Is_Entity_Name (Original_Node (N))
-           and then Present (Entity (Original_Node (N)))
-           and then Is_Renaming_Of_Object (Entity (Original_Node (N)))
-           and then Ekind (Entity (Original_Node (N))) /= E_Constant
-         then
-            declare
-               RO : constant Node_Id :=
-                      Renamed_Object (Entity (Original_Node (N)));
-
-            begin
-               --  If the renamed object is an indexed component, or an
-               --  explicit dereference, then the designated object could
-               --  be modified by an assignment.
-
-               if Nkind_In (RO, N_Indexed_Component,
-                                N_Explicit_Dereference)
-               then
-                  return False;
-
-               --  A selected component must have a safe prefix
-
-               elsif Nkind (RO) = N_Selected_Component then
-                  return Safe_Prefixed_Reference (RO);
-
-               --  In all other cases, designated object cannot be changed so
-               --  we are side effect free.
-
-               else
-                  return True;
-               end if;
-            end;
-
-         --  Remove_Side_Effects generates an object renaming declaration to
-         --  capture the expression of a class-wide expression. In VM targets
-         --  the frontend performs no expansion for dispatching calls to
-         --  class- wide types since they are handled by the VM. Hence, we must
-         --  locate here if this node corresponds to a previous invocation of
-         --  Remove_Side_Effects to avoid a never ending loop in the frontend.
-
-         elsif VM_Target /= No_VM
-            and then not Comes_From_Source (N)
-            and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
-            and then Is_Class_Wide_Type (Etype (N))
-         then
-            return True;
-         end if;
-
-         --  For other than entity names and compile time known values,
-         --  check the node kind for special processing.
-
-         case Nkind (N) is
-
-            --  An attribute reference is side effect free if its expressions
-            --  are side effect free and its prefix is side effect free or
-            --  is an entity reference.
-
-            --  Is this right? what about x'first where x is a variable???
-
-            when N_Attribute_Reference =>
-               return Side_Effect_Free (Expressions (N))
-                 and then Attribute_Name (N) /= Name_Input
-                 and then (Is_Entity_Name (Prefix (N))
-                            or else Side_Effect_Free (Prefix (N)));
-
-            --  A binary operator is side effect free if and both operands are
-            --  side effect free. For this purpose binary operators include
-            --  membership tests and short circuit forms.
-
-            when N_Binary_Op | N_Membership_Test | N_Short_Circuit =>
-               return Side_Effect_Free (Left_Opnd  (N))
-                        and then
-                      Side_Effect_Free (Right_Opnd (N));
-
-            --  An explicit dereference is side effect free only if it is
-            --  a side effect free prefixed reference.
-
-            when N_Explicit_Dereference =>
-               return Safe_Prefixed_Reference (N);
-
-            --  An expression with action is side effect free if its expression
-            --  is side effect free and it has no actions.
-
-            when N_Expression_With_Actions =>
-               return Is_Empty_List (Actions (N))
-                        and then
-                      Side_Effect_Free (Expression (N));
-
-            --  A call to _rep_to_pos is side effect free, since we generate
-            --  this pure function call ourselves. Moreover it is critically
-            --  important to make this exception, since otherwise we can have
-            --  discriminants in array components which don't look side effect
-            --  free in the case of an array whose index type is an enumeration
-            --  type with an enumeration rep clause.
-
-            --  All other function calls are not side effect free
-
-            when N_Function_Call =>
-               return Nkind (Name (N)) = N_Identifier
-                 and then Is_TSS (Name (N), TSS_Rep_To_Pos)
-                 and then
-                   Side_Effect_Free (First (Parameter_Associations (N)));
-
-            --  An indexed component is side effect free if it is a side
-            --  effect free prefixed reference and all the indexing
-            --  expressions are side effect free.
-
-            when N_Indexed_Component =>
-               return Side_Effect_Free (Expressions (N))
-                 and then Safe_Prefixed_Reference (N);
-
-            --  A type qualification is side effect free if the expression
-            --  is side effect free.
-
-            when N_Qualified_Expression =>
-               return Side_Effect_Free (Expression (N));
-
-            --  A selected component is side effect free only if it is a side
-            --  effect free prefixed reference. If it designates a component
-            --  with a rep. clause it must be treated has having a potential
-            --  side effect, because it may be modified through a renaming, and
-            --  a subsequent use of the renaming as a macro will yield the
-            --  wrong value. This complex interaction between renaming and
-            --  removing side effects is a reminder that the latter has become
-            --  a headache to maintain, and that it should be removed in favor
-            --  of the gcc mechanism to capture values ???
-
-            when N_Selected_Component =>
-               if Nkind (Parent (N)) = N_Explicit_Dereference
-                 and then Has_Non_Standard_Rep (Designated_Type (Etype (N)))
-               then
-                  return False;
-               else
-                  return Safe_Prefixed_Reference (N);
-               end if;
-
-            --  A range is side effect free if the bounds are side effect free
-
-            when N_Range =>
-               return Side_Effect_Free (Low_Bound (N))
-                 and then Side_Effect_Free (High_Bound (N));
-
-            --  A slice is side effect free if it is a side effect free
-            --  prefixed reference and the bounds are side effect free.
-
-            when N_Slice =>
-               return Side_Effect_Free (Discrete_Range (N))
-                 and then Safe_Prefixed_Reference (N);
-
-            --  A type conversion is side effect free if the expression to be
-            --  converted is side effect free.
-
-            when N_Type_Conversion =>
-               return Side_Effect_Free (Expression (N));
-
-            --  A unary operator is side effect free if the operand
-            --  is side effect free.
-
-            when N_Unary_Op =>
-               return Side_Effect_Free (Right_Opnd (N));
-
-            --  An unchecked type conversion is side effect free only if it
-            --  is safe and its argument is side effect free.
-
-            when N_Unchecked_Type_Conversion =>
-               return Safe_Unchecked_Type_Conversion (N)
-                 and then Side_Effect_Free (Expression (N));
-
-            --  An unchecked expression is side effect free if its expression
-            --  is side effect free.
-
-            when N_Unchecked_Expression =>
-               return Side_Effect_Free (Expression (N));
-
-            --  A literal is side effect free
-
-            when N_Character_Literal    |
-                 N_Integer_Literal      |
-                 N_Real_Literal         |
-                 N_String_Literal       =>
-               return True;
-
-            --  We consider that anything else has side effects. This is a bit
-            --  crude, but we are pretty close for most common cases, and we
-            --  are certainly correct (i.e. we never return True when the
-            --  answer should be False).
-
-            when others =>
-               return False;
-         end case;
-      end Side_Effect_Free;
-
-      --  A list is side effect free if all elements of the list are side
-      --  effect free.
-
-      function Side_Effect_Free (L : List_Id) return Boolean is
-         N : Node_Id;
-
-      begin
-         if L = No_List or else L = Error_List then
-            return True;
-
-         else
-            N := First (L);
-            while Present (N) loop
-               if not Side_Effect_Free (N) then
-                  return False;
-               else
-                  Next (N);
-               end if;
-            end loop;
-
-            return True;
-         end if;
-      end Side_Effect_Free;
-
-      -------------------------
-      -- Within_In_Parameter --
-      -------------------------
-
-      function Within_In_Parameter (N : Node_Id) return Boolean is
-      begin
-         if not Comes_From_Source (N) then
-            return False;
-
-         elsif Is_Entity_Name (N) then
-            return Ekind (Entity (N)) = E_In_Parameter;
-
-         elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
-            return Within_In_Parameter (Prefix (N));
-
-         else
-            return False;
-         end if;
-      end Within_In_Parameter;
-
-   --  Start of processing for Remove_Side_Effects
-
    begin
       --  Handle cases in which there is nothing to do. In GNATprove mode,
       --  removal of side effects is useful for the light expansion of
@@ -7085,7 +6656,7 @@ package body Exp_Util is
 
       --  No action needed for side-effect free expressions
 
-      elsif Side_Effect_Free (Exp) then
+      elsif Side_Effect_Free (Exp, Name_Req, Variable_Ref) then
          return;
       end if;
 
@@ -7099,7 +6670,7 @@ package body Exp_Util is
       --  If it is a scalar type and we need to capture the value, just make
       --  a copy. Likewise for a function call, an attribute reference, a
       --  conditional expression, an allocator, or an operator. And if we have
-      --  a volatile reference and Name_Req is not set (see comments above for
+      --  a volatile reference and Name_Req is not set (see comments for
       --  Side_Effect_Free).
 
       if Is_Elementary_Type (Exp_Type)
@@ -7223,7 +6794,7 @@ package body Exp_Util is
       --  approach would generate an illegal access value (an access value
       --  cannot designate such an object - see Analyze_Reference). We skip
       --  using this scheme if we have an object of a volatile type and we do
-      --  not have Name_Req set true (see comments above for Side_Effect_Free).
+      --  not have Name_Req set true (see comments for Side_Effect_Free).
 
       --  In Ada 2012 a qualified expression is an object, but for purposes of
       --  removing side effects it still need to be transformed into a separate
@@ -8094,6 +7665,441 @@ package body Exp_Util is
          end;
       end if;
    end Set_Renamed_Subprogram;
+
+   ----------------------
+   -- Side_Effect_Free --
+   ----------------------
+
+   function Side_Effect_Free
+     (N            : Node_Id;
+      Name_Req     : Boolean := False;
+      Variable_Ref : Boolean := False) return Boolean
+   is
+      function Safe_Prefixed_Reference (N : Node_Id) return Boolean;
+      --  The argument N is a construct where the Prefix is dereferenced if it
+      --  is an access type and the result is a variable. The call returns True
+      --  if the construct is side effect free (not considering side effects in
+      --  other than the prefix which are to be tested by the caller).
+
+      function Within_In_Parameter (N : Node_Id) return Boolean;
+      --  Determines if N is a subcomponent of a composite in-parameter. If so,
+      --  N is not side-effect free when the actual is global and modifiable
+      --  indirectly from within a subprogram, because it may be passed by
+      --  reference. The front-end must be conservative here and assume that
+      --  this may happen with any array or record type. On the other hand, we
+      --  cannot create temporaries for all expressions for which this
+      --  condition is true, for various reasons that might require clearing up
+      --  ??? For example, discriminant references that appear out of place, or
+      --  spurious type errors with class-wide expressions. As a result, we
+      --  limit the transformation to loop bounds, which is so far the only
+      --  case that requires it.
+
+      -----------------------------
+      -- Safe_Prefixed_Reference --
+      -----------------------------
+
+      function Safe_Prefixed_Reference (N : Node_Id) return Boolean is
+      begin
+         --  If prefix is not side effect free, definitely not safe
+
+         if not Side_Effect_Free (Prefix (N), Name_Req, Variable_Ref) then
+            return False;
+
+         --  If the prefix is of an access type that is not access-to-constant,
+         --  then this construct is a variable reference, which means it is to
+         --  be considered to have side effects if Variable_Ref is set True.
+
+         elsif Is_Access_Type (Etype (Prefix (N)))
+           and then not Is_Access_Constant (Etype (Prefix (N)))
+           and then Variable_Ref
+         then
+            --  Exception is a prefix that is the result of a previous removal
+            --  of side-effects.
+
+            return Is_Entity_Name (Prefix (N))
+              and then not Comes_From_Source (Prefix (N))
+              and then Ekind (Entity (Prefix (N))) = E_Constant
+              and then Is_Internal_Name (Chars (Entity (Prefix (N))));
+
+         --  If the prefix is an explicit dereference then this construct is a
+         --  variable reference, which means it is to be considered to have
+         --  side effects if Variable_Ref is True.
+
+         --  We do NOT exclude dereferences of access-to-constant types because
+         --  we handle them as constant view of variables.
+
+         elsif Nkind (Prefix (N)) = N_Explicit_Dereference
+           and then Variable_Ref
+         then
+            return False;
+
+         --  Note: The following test is the simplest way of solving a complex
+         --  problem uncovered by the following test (Side effect on loop bound
+         --  that is a subcomponent of a global variable:
+
+         --    with Text_Io; use Text_Io;
+         --    procedure Tloop is
+         --      type X is
+         --        record
+         --          V : Natural := 4;
+         --          S : String (1..5) := (others => 'a');
+         --        end record;
+         --      X1 : X;
+
+         --      procedure Modi;
+
+         --      generic
+         --        with procedure Action;
+         --      procedure Loop_G (Arg : X; Msg : String)
+
+         --      procedure Loop_G (Arg : X; Msg : String) is
+         --      begin
+         --        Put_Line ("begin loop_g " & Msg & " will loop till: "
+         --                  & Natural'Image (Arg.V));
+         --        for Index in 1 .. Arg.V loop
+         --          Text_Io.Put_Line
+         --            (Natural'Image (Index) & " " & Arg.S (Index));
+         --          if Index > 2 then
+         --            Modi;
+         --          end if;
+         --        end loop;
+         --        Put_Line ("end loop_g " & Msg);
+         --      end;
+
+         --      procedure Loop1 is new Loop_G (Modi);
+         --      procedure Modi is
+         --      begin
+         --        X1.V := 1;
+         --        Loop1 (X1, "from modi");
+         --      end;
+         --
+         --    begin
+         --      Loop1 (X1, "initial");
+         --    end;
+
+         --  The output of the above program should be:
+
+         --    begin loop_g initial will loop till:  4
+         --     1 a
+         --     2 a
+         --     3 a
+         --    begin loop_g from modi will loop till:  1
+         --     1 a
+         --    end loop_g from modi
+         --     4 a
+         --    begin loop_g from modi will loop till:  1
+         --     1 a
+         --    end loop_g from modi
+         --    end loop_g initial
+
+         --  If a loop bound is a subcomponent of a global variable, a
+         --  modification of that variable within the loop may incorrectly
+         --  affect the execution of the loop.
+
+         elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
+           and then Within_In_Parameter (Prefix (N))
+           and then Variable_Ref
+         then
+            return False;
+
+         --  All other cases are side effect free
+
+         else
+            return True;
+         end if;
+      end Safe_Prefixed_Reference;
+
+      -------------------------
+      -- Within_In_Parameter --
+      -------------------------
+
+      function Within_In_Parameter (N : Node_Id) return Boolean is
+      begin
+         if not Comes_From_Source (N) then
+            return False;
+
+         elsif Is_Entity_Name (N) then
+            return Ekind (Entity (N)) = E_In_Parameter;
+
+         elsif Nkind_In (N, N_Indexed_Component, N_Selected_Component) then
+            return Within_In_Parameter (Prefix (N));
+
+         else
+            return False;
+         end if;
+      end Within_In_Parameter;
+
+   --  Start of processing for Side_Effect_Free
+
+   begin
+      --  Note on checks that could raise Constraint_Error. Strictly, if we
+      --  take advantage of 11.6, these checks do not count as side effects.
+      --  However, we would prefer to consider that they are side effects,
+      --  since the backend CSE does not work very well on expressions which
+      --  can raise Constraint_Error. On the other hand if we don't consider
+      --  them to be side effect free, then we get some awkward expansions
+      --  in -gnato mode, resulting in code insertions at a point where we
+      --  do not have a clear model for performing the insertions.
+
+      --  Special handling for entity names
+
+      if Is_Entity_Name (N) then
+
+         --  Variables are considered to be a side effect if Variable_Ref
+         --  is set or if we have a volatile reference and Name_Req is off.
+         --  If Name_Req is True then we can't help returning a name which
+         --  effectively allows multiple references in any case.
+
+         if Is_Variable (N, Use_Original_Node => False) then
+            return not Variable_Ref
+              and then (not Is_Volatile_Reference (N) or else Name_Req);
+
+         --  Any other entity (e.g. a subtype name) is definitely side
+         --  effect free.
+
+         else
+            return True;
+         end if;
+
+      --  A value known at compile time is always side effect free
+
+      elsif Compile_Time_Known_Value (N) then
+         return True;
+
+      --  A variable renaming is not side-effect free, because the renaming
+      --  will function like a macro in the front-end in some cases, and an
+      --  assignment can modify the component designated by N, so we need to
+      --  create a temporary for it.
+
+      --  The guard testing for Entity being present is needed at least in
+      --  the case of rewritten predicate expressions, and may well also be
+      --  appropriate elsewhere. Obviously we can't go testing the entity
+      --  field if it does not exist, so it's reasonable to say that this is
+      --  not the renaming case if it does not exist.
+
+      elsif Is_Entity_Name (Original_Node (N))
+        and then Present (Entity (Original_Node (N)))
+        and then Is_Renaming_Of_Object (Entity (Original_Node (N)))
+        and then Ekind (Entity (Original_Node (N))) /= E_Constant
+      then
+         declare
+            RO : constant Node_Id :=
+                   Renamed_Object (Entity (Original_Node (N)));
+
+         begin
+            --  If the renamed object is an indexed component, or an
+            --  explicit dereference, then the designated object could
+            --  be modified by an assignment.
+
+            if Nkind_In (RO, N_Indexed_Component,
+                             N_Explicit_Dereference)
+            then
+               return False;
+
+            --  A selected component must have a safe prefix
+
+            elsif Nkind (RO) = N_Selected_Component then
+               return Safe_Prefixed_Reference (RO);
+
+            --  In all other cases, designated object cannot be changed so
+            --  we are side effect free.
+
+            else
+               return True;
+            end if;
+         end;
+
+      --  Remove_Side_Effects generates an object renaming declaration to
+      --  capture the expression of a class-wide expression. In VM targets
+      --  the frontend performs no expansion for dispatching calls to
+      --  class- wide types since they are handled by the VM. Hence, we must
+      --  locate here if this node corresponds to a previous invocation of
+      --  Remove_Side_Effects to avoid a never ending loop in the frontend.
+
+      elsif VM_Target /= No_VM
+         and then not Comes_From_Source (N)
+         and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
+         and then Is_Class_Wide_Type (Etype (N))
+      then
+         return True;
+      end if;
+
+      --  For other than entity names and compile time known values,
+      --  check the node kind for special processing.
+
+      case Nkind (N) is
+
+         --  An attribute reference is side effect free if its expressions
+         --  are side effect free and its prefix is side effect free or
+         --  is an entity reference.
+
+         --  Is this right? what about x'first where x is a variable???
+
+         when N_Attribute_Reference =>
+            return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+              and then Attribute_Name (N) /= Name_Input
+              and then (Is_Entity_Name (Prefix (N))
+                         or else Side_Effect_Free
+                                   (Prefix (N), Name_Req, Variable_Ref));
+
+         --  A binary operator is side effect free if and both operands are
+         --  side effect free. For this purpose binary operators include
+         --  membership tests and short circuit forms.
+
+         when N_Binary_Op | N_Membership_Test | N_Short_Circuit =>
+            return Side_Effect_Free (Left_Opnd  (N), Name_Req, Variable_Ref)
+                     and then
+                   Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
+
+         --  An explicit dereference is side effect free only if it is
+         --  a side effect free prefixed reference.
+
+         when N_Explicit_Dereference =>
+            return Safe_Prefixed_Reference (N);
+
+         --  An expression with action is side effect free if its expression
+         --  is side effect free and it has no actions.
+
+         when N_Expression_With_Actions =>
+            return Is_Empty_List (Actions (N))
+              and then
+                Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+
+         --  A call to _rep_to_pos is side effect free, since we generate
+         --  this pure function call ourselves. Moreover it is critically
+         --  important to make this exception, since otherwise we can have
+         --  discriminants in array components which don't look side effect
+         --  free in the case of an array whose index type is an enumeration
+         --  type with an enumeration rep clause.
+
+         --  All other function calls are not side effect free
+
+         when N_Function_Call =>
+            return Nkind (Name (N)) = N_Identifier
+              and then Is_TSS (Name (N), TSS_Rep_To_Pos)
+              and then
+                Side_Effect_Free
+                  (First (Parameter_Associations (N)), Name_Req, Variable_Ref);
+
+         --  An indexed component is side effect free if it is a side
+         --  effect free prefixed reference and all the indexing
+         --  expressions are side effect free.
+
+         when N_Indexed_Component =>
+            return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+              and then Safe_Prefixed_Reference (N);
+
+         --  A type qualification is side effect free if the expression
+         --  is side effect free.
+
+         when N_Qualified_Expression =>
+            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+
+         --  A selected component is side effect free only if it is a side
+         --  effect free prefixed reference. If it designates a component
+         --  with a rep. clause it must be treated has having a potential
+         --  side effect, because it may be modified through a renaming, and
+         --  a subsequent use of the renaming as a macro will yield the
+         --  wrong value. This complex interaction between renaming and
+         --  removing side effects is a reminder that the latter has become
+         --  a headache to maintain, and that it should be removed in favor
+         --  of the gcc mechanism to capture values ???
+
+         when N_Selected_Component =>
+            if Nkind (Parent (N)) = N_Explicit_Dereference
+              and then Has_Non_Standard_Rep (Designated_Type (Etype (N)))
+            then
+               return False;
+            else
+               return Safe_Prefixed_Reference (N);
+            end if;
+
+         --  A range is side effect free if the bounds are side effect free
+
+         when N_Range =>
+            return Side_Effect_Free (Low_Bound (N),  Name_Req, Variable_Ref)
+                      and then
+                   Side_Effect_Free (High_Bound (N), Name_Req, Variable_Ref);
+
+         --  A slice is side effect free if it is a side effect free
+         --  prefixed reference and the bounds are side effect free.
+
+         when N_Slice =>
+            return Side_Effect_Free
+                     (Discrete_Range (N), Name_Req, Variable_Ref)
+              and then Safe_Prefixed_Reference (N);
+
+         --  A type conversion is side effect free if the expression to be
+         --  converted is side effect free.
+
+         when N_Type_Conversion =>
+            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+
+         --  A unary operator is side effect free if the operand
+         --  is side effect free.
+
+         when N_Unary_Op =>
+            return Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
+
+         --  An unchecked type conversion is side effect free only if it
+         --  is safe and its argument is side effect free.
+
+         when N_Unchecked_Type_Conversion =>
+            return Safe_Unchecked_Type_Conversion (N)
+              and then
+                Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+
+         --  An unchecked expression is side effect free if its expression
+         --  is side effect free.
+
+         when N_Unchecked_Expression =>
+            return Side_Effect_Free (Expression (N), Name_Req, Variable_Ref);
+
+         --  A literal is side effect free
+
+         when N_Character_Literal    |
+              N_Integer_Literal      |
+              N_Real_Literal         |
+              N_String_Literal       =>
+            return True;
+
+         --  We consider that anything else has side effects. This is a bit
+         --  crude, but we are pretty close for most common cases, and we
+         --  are certainly correct (i.e. we never return True when the
+         --  answer should be False).
+
+         when others =>
+            return False;
+      end case;
+   end Side_Effect_Free;
+
+   --  A list is side effect free if all elements of the list are side
+   --  effect free.
+
+   function Side_Effect_Free
+     (L            : List_Id;
+      Name_Req     : Boolean := False;
+      Variable_Ref : Boolean := False) return Boolean
+   is
+      N : Node_Id;
+
+   begin
+      if L = No_List or else L = Error_List then
+         return True;
+
+      else
+         N := First (L);
+         while Present (N) loop
+            if not Side_Effect_Free (N, Name_Req, Variable_Ref) then
+               return False;
+            else
+               Next (N);
+            end if;
+         end loop;
+
+         return True;
+      end if;
+   end Side_Effect_Free;
 
    ----------------------------------
    -- Silly_Boolean_Array_Not_Test --
