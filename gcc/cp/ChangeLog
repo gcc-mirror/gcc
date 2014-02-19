@@ -1,3 +1,9 @@
+2014-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60046
+	* pt.c (maybe_instantiate_noexcept): Don't instantiate exception
+	spec from template context.
+
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/56563
