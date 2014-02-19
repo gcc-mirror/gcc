@@ -1,3 +1,8 @@
+2014-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60195
+	* gcc.dg/pr60195.c: New test.
+
 2014-02-19  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer

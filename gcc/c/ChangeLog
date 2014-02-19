@@ -1,3 +1,12 @@
+2014-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60195
+	* c-typeck.c (convert_lvalue_to_rvalue): Set TREE_NO_WARNING on tmp.
+	Call mark_exp_read on exp.value.
+	(build_atomic_assign): Set TREE_NO_WARNING on val and old.  Set
+	TREE_ADDRESSABLE on old instead of val.
+	(emit_side_effect_warnings): Warn only if RHS has !TREE_NO_WARNING.
+
 2014-02-07  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
 	* c-parser.c (c_parser_get_builtin_args): Replace calls to
