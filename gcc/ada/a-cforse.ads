@@ -68,7 +68,11 @@ package Ada.Containers.Formal_Ordered_Sets is
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
-   type Set (Capacity : Count_Type) is private;
+   type Set (Capacity : Count_Type) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;

@@ -63,7 +63,11 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
-   type List (Capacity : Count_Type) is private;
+   type List (Capacity : Count_Type) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
    pragma Preelaborable_Initialization (List);
 
    type Cursor is private;

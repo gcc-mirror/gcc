@@ -70,7 +70,11 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   type Map (Capacity : Count_Type) is private;
+   type Map (Capacity : Count_Type) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;

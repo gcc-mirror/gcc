@@ -75,7 +75,11 @@ package Ada.Containers.Formal_Vectors is
    subtype Capacity_Range is
      Count_Type range 0 .. Count_Type (Index_Type'Last - Index_Type'First + 1);
 
-   type Vector (Capacity : Capacity_Range) is private;
+   type Vector (Capacity : Capacity_Range) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);

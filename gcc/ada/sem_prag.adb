@@ -4651,8 +4651,7 @@ package body Sem_Prag is
                         Check_Grouping (Statements (HSS));
                      end if;
 
-                  --  The first pragma of the first topmost grouping has been
-                  --  found.
+                  --  First pragma of the first topmost grouping has been found
 
                   elsif Is_Loop_Pragma (Stmt) then
 
@@ -4755,6 +4754,7 @@ package body Sem_Prag is
 
          procedure Placement_Error (Constr : Node_Id) is
             LA : constant String := " with Loop_Entry";
+
          begin
             if Prag_Id = Pragma_Assert then
                Error_Msg_String (1 .. LA'Length) := LA;

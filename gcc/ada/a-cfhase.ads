@@ -69,7 +69,11 @@ package Ada.Containers.Formal_Hashed_Sets is
    pragma Annotate (GNATprove, External_Axiomatization);
    pragma Pure;
 
-   type Set (Capacity : Count_Type; Modulus : Hash_Type) is private;
+   type Set (Capacity : Count_Type; Modulus : Hash_Type) is private with
+     Iterable => (First       => First,
+                  Next        => Next,
+                  Has_Element => Has_Element,
+                  Element     => Element);
    pragma Preelaborable_Initialization (Set);
 
    type Cursor is private;

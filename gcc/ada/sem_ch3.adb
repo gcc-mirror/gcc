@@ -9398,7 +9398,7 @@ package body Sem_Ch3 is
                Error_Msg_Name_1 := Impl_Kind;
                Error_Msg_N
                 ("overriding operation& must have synchronization%",
-                   Subp_Alias);
+                 Subp_Alias);
             end if;
 
          --  If primitive has Optional synchronization, overriding operation
@@ -9410,7 +9410,7 @@ package body Sem_Ch3 is
                Error_Msg_Name_1 := Impl_Kind;
                Error_Msg_N
                 ("overriding operation& must have syncrhonization%",
-                   Subp_Alias);
+                 Subp_Alias);
          end if;
       end Check_Pragma_Implemented;
 
