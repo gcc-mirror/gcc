@@ -1,3 +1,12 @@
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* config/i386/i386.c (type_natural_mode): Warn for ABI changes
+	only when -Wpsabi is enabled.
+
 2014-02-19  Terry Guo  <terry.guo@arm.com>
 
 	Backport from mainline
@@ -8,6 +17,8 @@
 2014-02-18  Kai Tietz  <ktietz@redhat.com>
 
 	Backport from mainline
+	2014-02-18  Kai Tietz  <ktietz@redhat.com>
+
 	PR target/60193
 	* config/i386/i386.c (ix86_expand_prologue): Use
 	rax register as displacement for restoring %r10, %rax.

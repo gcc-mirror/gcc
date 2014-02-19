@@ -1,3 +1,14 @@
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* gcc.target/i386/pr39162.c: Add dg-prune-output.
+	(dg-options): Remove -Wno-psabi.
+	* gcc.target/i386/pr59794-2.c: Ditto.
+	* gcc.target/i386/sse-5.c: Ditto.
+
 2014-02-19  Janus Weil  <janus@gcc.gnu.org>
 
 	Backports from mainline:
