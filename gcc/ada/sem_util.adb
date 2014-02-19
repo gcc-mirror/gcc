@@ -6619,6 +6619,34 @@ package body Sem_Util is
       end if;
    end Get_Index_Bounds;
 
+   ---------------------------------
+   -- Get_Iterable_Type_Primitive --
+   ---------------------------------
+
+   function Get_Iterable_Type_Primitive
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id
+   is
+      Funcs : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Iterable);
+      Assoc : Node_Id;
+   begin
+      if No (Funcs) then
+         return Empty;
+
+      else
+         Assoc := First (Component_Associations (Funcs));
+         while Present (Assoc) loop
+            if Chars (First (Choices (Assoc))) = Nam then
+               return Entity (Expression (Assoc));
+            end if;
+
+            Assoc := Next (Assoc);
+         end loop;
+
+         return Empty;
+      end if;
+   end Get_Iterable_Type_Primitive;
+
    ----------------------------------
    -- Get_Library_Unit_Name_string --
    ----------------------------------
@@ -9301,6 +9329,183 @@ package body Sem_Util is
                or else Is_Task_Interface (T));
    end Is_Concurrent_Interface;
 
+   ---------------------------
+   --  Is_Container_Element --
+   ---------------------------
+
+   function Is_Container_Element (Exp : Node_Id) return Boolean is
+      Loc      : constant Source_Ptr := Sloc (Exp);
+      Pref     : constant Node_Id   := Prefix (Exp);
+      Call     : Node_Id;
+      --  Call to an indexing aspect
+
+      Cont_Typ : Entity_Id;
+      --  The type of the container being accessed
+
+      Elem_Typ : Entity_Id;
+      --  Its element type
+
+      Indexing : Entity_Id;
+      Is_Const : Boolean;
+      --  Indicates that constant indexing is used, and the element is thus
+      --  a constant
+
+      Ref_Typ  : Entity_Id;
+      --  The reference type returned by the indexing operation.
+
+   begin
+      --  If C is a container, in a context that imposes the element type of
+      --  that container, the indexing notation C (X) is rewritten as:
+      --               Indexing (C, X).Discr.all
+      --  where Indexing is one of the indexing aspects of the container.
+      --  If the context does not require a reference, the construct can be
+      --  rewritten as Element (C, X).
+      --  First, verify that the construct has the proper form.
+
+      if not Expander_Active then
+         return False;
+
+      elsif Nkind (Pref) /= N_Selected_Component then
+         return False;
+
+      elsif Nkind (Prefix (Pref)) /= N_Function_Call then
+         return False;
+
+      else
+         Call     := Prefix (Pref);
+         Ref_Typ  := Etype (Call);
+      end if;
+
+      if not Has_Implicit_Dereference (Ref_Typ)
+        or else No (First (Parameter_Associations (Call)))
+        or else not Is_Entity_Name (Name (Call))
+      then
+         return False;
+      end if;
+
+      --  Retrieve type of container object, and its iterator aspects.
+
+      Cont_Typ := Etype (First (Parameter_Associations (Call)));
+      Indexing :=
+         Find_Value_Of_Aspect (Cont_Typ, Aspect_Constant_Indexing);
+      Is_Const := False;
+      if No (Indexing) then
+
+         --  Container should have at least one indexing operation.
+
+         return False;
+
+      elsif Entity (Name (Call)) /= Entity (Indexing) then
+
+         --  This may be a variable indexing operation
+
+         Indexing :=
+           Find_Value_Of_Aspect (Cont_Typ, Aspect_Variable_Indexing);
+         if No (Indexing)
+           or else Entity (Name (Call)) /= Entity (Indexing)
+         then
+            return False;
+         end if;
+
+      else
+         Is_Const := True;
+      end if;
+
+      Elem_Typ := Find_Value_Of_Aspect (Cont_Typ, Aspect_Iterator_Element);
+      if No (Elem_Typ)
+        or else Entity (Elem_Typ) /= Etype (Exp)
+      then
+         return False;
+      end if;
+
+      --  Check that the expression is not the target of an assignment, in
+      --  which case the rewriting is not possible.
+
+      if not Is_Const then
+         declare
+            Par : Node_Id;
+
+         begin
+            Par := Exp;
+            while Present (Par)
+            loop
+               if Nkind (Parent (Par)) = N_Assignment_Statement
+                 and then Par = Name (Parent (Par))
+               then
+                  return False;
+
+               --  A renaming produces a reference, and the transformation
+               --  does not apply.
+
+               elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
+                  return False;
+
+               elsif Nkind_In
+                 (Nkind (Parent (Par)),
+                     N_Function_Call,
+                     N_Procedure_Call_Statement,
+                     N_Entry_Call_Statement)
+               then
+                  --  Check that the element is not part of an actual for an
+                  --  in-out parameter.
+
+                  declare
+                     F : Entity_Id;
+                     A : Node_Id;
+
+                  begin
+                     F := First_Formal (Entity (Name (Parent (Par))));
+                     A := First (Parameter_Associations (Parent (Par)));
+                     while Present (F) loop
+                        if A = Par
+                          and then Ekind (F) /= E_In_Parameter
+                        then
+                           return False;
+                        end if;
+
+                        Next_Formal (F);
+                        Next (A);
+                     end loop;
+                  end;
+
+                  --  in_parameter in a call:  element is not modified.
+
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+         end;
+      end if;
+
+      --  The expression has the proper form and the context requires the
+      --  element type. Retrieve the Element function of the container, and
+      --  rewrite the construct as a call to it.
+
+      declare
+         Op : Elmt_Id;
+
+      begin
+         Op := First_Elmt (Primitive_Operations (Cont_Typ));
+         while Present (Op) loop
+            exit when Chars (Node (Op)) = Name_Element;
+            Next_Elmt (Op);
+         end loop;
+
+         if No (Op) then
+            return False;
+
+         else
+            Rewrite (Exp,
+              Make_Function_Call (Loc,
+                Name => New_Occurrence_Of (Node (Op), Loc),
+                Parameter_Associations => Parameter_Associations (Call)));
+            Analyze_And_Resolve (Exp, Entity (Elem_Typ));
+            return True;
+         end if;
+      end;
+   end Is_Container_Element;
+
    -----------------------
    -- Is_Constant_Bound --
    -----------------------
@@ -10038,6 +10243,9 @@ package body Sem_Util is
 
       elsif not Is_Tagged_Type (Typ) or else not Is_Derived_Type (Typ) then
          return False;
+
+      elsif Present (Find_Value_Of_Aspect (Typ, Aspect_Iterable)) then
+         return True;
 
       else
          Collect_Interfaces (Typ, Ifaces_List);

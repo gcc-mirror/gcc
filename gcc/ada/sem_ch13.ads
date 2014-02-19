@@ -325,4 +325,10 @@ package Sem_Ch13 is
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id);
    --  Given an entity Typ that denotes a derived type or a subtype, this
    --  routine performs the inheritance of aspects at the freeze point.
+
+   procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id);
+   --  For SPARK 2014 formal containers. The expression has the form of an
+   --  aggregate, and each entry must denote a function with the proper
+   --  syntax for First, Next, and Has_Element. Optionally an Element primitive
+   --  may also be defined.
 end Sem_Ch13;

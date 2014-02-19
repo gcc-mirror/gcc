@@ -2491,6 +2491,7 @@ package body Sem_Attr is
            Attribute_Default_Iterator     |
            Attribute_Implicit_Dereference |
            Attribute_Iterator_Element     |
+           Attribute_Iterable             |
            Attribute_Variable_Indexing    =>
          Error_Msg_N ("illegal attribute", N);
 
@@ -7472,6 +7473,7 @@ package body Sem_Attr is
               Attribute_Default_Iterator     |
               Attribute_Implicit_Dereference |
               Attribute_Iterator_Element     |
+              Attribute_Iterable             |
               Attribute_Variable_Indexing    => null;
 
          --  Internal attributes used to deal with Ada 2012 delayed aspects.

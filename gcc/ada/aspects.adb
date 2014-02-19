@@ -514,6 +514,7 @@ package body Aspects is
     Aspect_Interrupt_Handler            => Aspect_Interrupt_Handler,
     Aspect_Interrupt_Priority           => Aspect_Priority,
     Aspect_Invariant                    => Aspect_Invariant,
+    Aspect_Iterable                     => Aspect_Iterable,
     Aspect_Iterator_Element             => Aspect_Iterator_Element,
     Aspect_Link_Name                    => Aspect_Link_Name,
     Aspect_Linker_Section               => Aspect_Linker_Section,
