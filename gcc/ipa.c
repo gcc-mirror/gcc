@@ -1027,7 +1027,10 @@ function_and_variable_visibility (bool whole_program)
 	        for (next = node->same_comdat_group;
 		     next != node;
 		     next = next->same_comdat_group)
+		{
 		  DECL_COMDAT_GROUP (next->decl) = NULL;
+		  DECL_WEAK (next->decl) = false;
+		}
 	      DECL_COMDAT_GROUP (node->decl) = NULL;
 	      symtab_dissolve_same_comdat_group_list (node);
 	    }
