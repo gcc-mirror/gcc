@@ -1,3 +1,37 @@
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Doc clarifications.
+
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Do not remove side-effects
+	inside a generic.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Get_Cursor_Type): Obtain cursor type from
+	specified First primitive, rather than by name.
+	(Validate_Iterable_Aspect, Resolve_Iterable_Operation): Use it,
+	and extend error checking for missing primitives and incorrect
+	signatures.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Pragma_Implemented): Detect additional
+	errors when a Synchronization aspect on an overriding protected
+	operation does not match the given aspect on the overridden
+	operation of an ancestor interface.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Loop_Pragma_Grouping): New routine.
+	(Check_Loop_Pragma_Placement): Update
+	comment on usage. Remove local variables Orig_Stmt and
+	Within_Same_Sequence. Check that the current Loop_Invariant or
+	Loop_Variant pragma is grouped together with other such pragmas.
+	(Is_Loop_Pragma): New routine.
+	(Prev_In_Loop): Removed.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch6.adb (P_Return): For extended return, end column lines

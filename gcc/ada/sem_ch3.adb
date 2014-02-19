@@ -9377,7 +9377,26 @@ package body Sem_Ch3 is
                Error_Msg_NE
                  ("type & must implement abstract subprogram & with a " &
                   "procedure", Subp_Alias, Contr_Typ);
+
+            elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
+              and then Implementation_Kind (Impl_Subp) /= Impl_Kind
+            then
+               Error_Msg_Name_1 := Impl_Kind;
+               Error_Msg_N
+                ("overriding operation& must have synchronization%",
+                   Subp_Alias);
             end if;
+
+         --  If primitive has Optional synchronization, overriding operation
+         --  must match if it has an explicit synchronization..
+
+         elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
+           and then Implementation_Kind (Impl_Subp) /= Impl_Kind
+         then
+               Error_Msg_Name_1 := Impl_Kind;
+               Error_Msg_N
+                ("overriding operation& must have syncrhonization%",
+                   Subp_Alias);
          end if;
       end Check_Pragma_Implemented;
 

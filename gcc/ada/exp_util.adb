@@ -6638,9 +6638,12 @@ package body Exp_Util is
    begin
       --  Handle cases in which there is nothing to do. In GNATprove mode,
       --  removal of side effects is useful for the light expansion of
-      --  renamings.
+      --  renamings. This removal should only occur when not inside a
+      --  generic and not doing a pre-analysis.
 
-      if not (Expander_Active or (Full_Analysis and GNATprove_Mode)) then
+      if not Expander_Active
+        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+      then
          return;
       end if;
 
