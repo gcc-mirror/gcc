@@ -9692,16 +9692,27 @@ package body Sem_Attr is
                   Error_Msg_F ("prefix of % attribute cannot be abstract", P);
                   Set_Etype (N, Any_Type);
 
-               elsif Convention (Entity (P)) = Convention_Intrinsic then
-                  if Ekind (Entity (P)) = E_Enumeration_Literal then
-                     Error_Msg_F
-                       ("prefix of % attribute cannot be enumeration literal",
-                        P);
-                  else
-                     Error_Msg_F
-                       ("prefix of % attribute cannot be intrinsic", P);
-                  end if;
+               elsif Ekind (Entity (P)) = E_Enumeration_Literal then
+                  Error_Msg_F
+                    ("prefix of % attribute cannot be enumeration literal",
+                     P);
+                  Set_Etype (N, Any_Type);
 
+               --  An attempt to take 'Access of a function that renames an
+               --  enumeration literal. Issue a specialized error message.
+
+               elsif Ekind (Entity (P)) = E_Function
+                 and then Present (Alias (Entity (P)))
+                 and then Ekind (Alias (Entity (P))) = E_Enumeration_Literal
+               then
+                  Error_Msg_F
+                    ("prefix of % attribute cannot be function renaming " &
+                       "an enumeration literal", P);
+                  Set_Etype (N, Any_Type);
+
+               elsif Convention (Entity (P)) = Convention_Intrinsic then
+                  Error_Msg_F
+                    ("prefix of % attribute cannot be intrinsic", P);
                   Set_Etype (N, Any_Type);
                end if;
 
