@@ -2116,6 +2116,11 @@ package body Sem_Ch6 is
       --  verify that a function ends with a RETURN and that a procedure does
       --  not contain any RETURN.
 
+      procedure Diagnose_Misplaced_Aspect_Specifications;
+      --  It is known that subprogram body N has aspects, but they are not
+      --  properly placed. Provide specific error messages depending on the
+      --  aspects involved.
+
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
       --  view of a concurrent type which implements an interface, a special
@@ -2387,6 +2392,90 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Missing_Return;
+
+      ----------------------------------------------
+      -- Diagnose_Misplaced_Aspect_Specifications --
+      ----------------------------------------------
+
+      procedure Diagnose_Misplaced_Aspect_Specifications is
+         Asp     : Node_Id;
+         Asp_Nam : Name_Id;
+         Asp_Id  : Aspect_Id;
+         --  The current aspect along with its name and id
+
+         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id);
+         --  Emit an error message concerning SPARK aspect Asp. Ref_Nam is the
+         --  name of the refined version of the aspect.
+
+         ------------------------
+         -- SPARK_Aspect_Error --
+         ------------------------
+
+         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id) is
+         begin
+            --  The corresponding spec already contains the aspect in question
+            --  and the one appearing on the body must be the refined form:
+
+            --    procedure P with Global ...;
+            --    procedure P with Global ... is ... end P;
+            --                     ^
+            --                     Refined_Global
+
+            if Has_Aspect (Spec_Id, Asp_Id) then
+               Error_Msg_Name_1 := Asp_Nam;
+               Error_Msg_Name_2 := Ref_Nam;
+               Error_Msg_N ("aspect % should be %", Asp);
+
+            --  Otherwise the aspect must appear in the spec, not in the body:
+
+            --    procedure P;
+            --    procedure P with Global ... is ... end P;
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+         end SPARK_Aspect_Error;
+
+      --  Start of processing for Diagnose_Misplaced_Aspect_Specifications
+
+      begin
+         --  Iterate over the aspect specifications and emit specific errors
+         --  where applicable.
+
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            Asp_Nam := Chars (Identifier (Asp));
+            Asp_Id  := Get_Aspect_Id (Asp_Nam);
+
+            --  Do not emit errors on aspects that can appear on a subprogram
+            --  body. This scenario occurs when the aspect specification list
+            --  contains both misplaced and properly placed aspects.
+
+            if Aspect_On_Body_Or_Stub_OK (Asp_Id) then
+               null;
+
+            --  Special diagnostics for SPARK aspects
+
+            elsif Asp_Nam = Name_Depends then
+               SPARK_Aspect_Error (Name_Refined_Depends);
+
+            elsif Asp_Nam = Name_Global then
+               SPARK_Aspect_Error (Name_Refined_Global);
+
+            elsif Asp_Nam = Name_Post then
+               SPARK_Aspect_Error (Name_Refined_Post);
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+
+            Next (Asp);
+         end loop;
+      end Diagnose_Misplaced_Aspect_Specifications;
 
       -----------------------
       -- Disambiguate_Spec --
@@ -2774,9 +2863,7 @@ package body Sem_Ch6 is
 
            and then Nkind (Parent (Parent (Spec_Id))) /= N_Subprogram_Body_Stub
          then
-            Error_Msg_N
-              ("aspect specifications must appear in subprogram declaration",
-               N);
+            Diagnose_Misplaced_Aspect_Specifications;
 
          --  Delay the analysis of aspect specifications that apply to a body
          --  stub until the proper body is analyzed. If the corresponding body
