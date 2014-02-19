@@ -260,8 +260,8 @@ package body Style is
 
    procedure Missing_Overriding (N : Node_Id; E : Entity_Id) is
       Nod : Node_Id;
-   begin
 
+   begin
       --  Perform the check on source subprograms and on subprogram instances,
       --  because these can be primitives of untagged types. Note that such
       --  indicators were introduced in Ada 2005.
@@ -278,7 +278,6 @@ package body Style is
            and then Is_Generic_Instance (E)
          then
             Nod := Next (Parent (Parent (List_Containing (N))));
-
          else
             Nod := N;
          end if;
