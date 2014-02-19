@@ -6155,10 +6155,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	  cum->nregs = 0;
 	  cum->sse_nregs = 0;
 	  cum->mmx_nregs = 0;
-	  cum->warn_avx512f = 0;
-	  cum->warn_avx = 0;
-	  cum->warn_sse = 0;
-	  cum->warn_mmx = 0;
+	  cum->warn_avx512f = false;
+	  cum->warn_avx = false;
+	  cum->warn_sse = false;
+	  cum->warn_mmx = false;
 	  return;
 	}
 
@@ -6234,19 +6234,17 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 		    static bool warnedavx512f;
 		    static bool warnedavx512f_ret;
 
-		    if (cum
-			&& !warnedavx512f
-			&& cum->warn_avx512f)
+		    if (cum && cum->warn_avx512f && !warnedavx512f)
 		      {
-			warnedavx512f = true;
-			warning (0, "AVX512F vector argument without AVX512F "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "AVX512F vector argument "
+				     "without AVX512F enabled changes the ABI"))
+			  warnedavx512f = true;
 		      }
-		    else if (in_return & !warnedavx512f_ret)
+		    else if (in_return && !warnedavx512f_ret)
 		      {
-			warnedavx512f_ret = true;
-			warning (0, "AVX512F vector return without AVX512F "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "AVX512F vector return "
+				     "without AVX512F enabled changes the ABI"))
+			  warnedavx512f_ret = true;
 		      }
 
 		    return TYPE_MODE (type);
@@ -6256,19 +6254,17 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 		    static bool warnedavx;
 		    static bool warnedavx_ret;
 
-		    if (cum
-			&& !warnedavx
-			&& cum->warn_avx)
+		    if (cum && cum->warn_avx && !warnedavx)
 		      {
-			warnedavx = true;
-			warning (0, "AVX vector argument without AVX "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "AVX vector argument "
+				     "without AVX enabled changes the ABI"))
+			  warnedavx = true;
 		      }
-		    else if (in_return & !warnedavx_ret)
+		    else if (in_return && !warnedavx_ret)
 		      {
-			warnedavx_ret = true;
-			warning (0, "AVX vector return without AVX "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "AVX vector return "
+				     "without AVX enabled changes the ABI"))
+			  warnedavx_ret = true;
 		      }
 
 		    return TYPE_MODE (type);
@@ -6279,21 +6275,17 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 		    static bool warnedsse;
 		    static bool warnedsse_ret;
 
-		    if (cum
-			&& !warnedsse
-			&& cum->warn_sse)
+		    if (cum && cum->warn_sse && !warnedsse)
 		      {
-			warnedsse = true;
-			warning (0, "SSE vector argument without SSE "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "SSE vector argument "
+				     "without SSE enabled changes the ABI"))
+			  warnedsse = true;
 		      }
-		    else if (!TARGET_64BIT
-			     && in_return
-			     & !warnedsse_ret)
+		    else if (!TARGET_64BIT && in_return && !warnedsse_ret)
 		      {
-			warnedsse_ret = true;
-			warning (0, "SSE vector return without SSE "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "SSE vector return "
+				     "without SSE enabled changes the ABI"))
+			  warnedsse_ret = true;
 		      }
 		  }
 		else if ((size == 8 && !TARGET_64BIT) && !TARGET_MMX)
@@ -6301,19 +6293,17 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 		    static bool warnedmmx;
 		    static bool warnedmmx_ret;
 
-		    if (cum
-			&& !warnedmmx
-			&& cum->warn_mmx)
+		    if (cum && cum->warn_mmx && !warnedmmx)
 		      {
-			warnedmmx = true;
-			warning (0, "MMX vector argument without MMX "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "MMX vector argument "
+				     "without MMX enabled changes the ABI"))
+			  warnedmmx = true;
 		      }
-		    else if (in_return & !warnedmmx_ret)
+		    else if (in_return && !warnedmmx_ret)
 		      {
-			warnedmmx_ret = true;
-			warning (0, "MMX vector return without MMX "
-				 "enabled changes the ABI");
+			if (warning (OPT_Wpsabi, "MMX vector return "
+				     "without MMX enabled changes the ABI"))
+			  warnedmmx_ret = true;
 		      }
 		  }
 		return mode;
