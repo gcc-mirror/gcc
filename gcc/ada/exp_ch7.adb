@@ -4184,10 +4184,15 @@ package body Exp_Ch7 is
 
             --  Usually assignments are good candidate for wrapping except
             --  when they have been generated as part of a controlled aggregate
-            --  where the wrapping should take place more globally.
+            --  where the wrapping should take place more globally. Note that
+            --  No_Ctrl_Actions may be set also for non-controlled assignements
+            --  in order to disable the use of dispatching _assign, so we need
+            --  to test explicitly for a controlled type here.
 
             when N_Assignment_Statement =>
-               if No_Ctrl_Actions (The_Parent) then
+               if No_Ctrl_Actions (The_Parent)
+                 and then Needs_Finalization (Etype (Name (The_Parent)))
+               then
                   null;
                else
                   return The_Parent;

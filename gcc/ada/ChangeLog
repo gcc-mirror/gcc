@@ -1,3 +1,39 @@
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Minor comment update.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* atree.ads: Minor reformatting (change Entity_Info to Einfo).
+
+2014-02-19  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Find_Node_To_Be_Wrapped): An assignment statement
+	that has the No_Ctrl_Actions flag is a suitable node to be
+	wrapped if the assigned expression has no finalization actions.
+	* sem_eval.adb (Eval_Entity_Name): For a compile time known
+	boolean value, mark the corresponding condition SCO as constant.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting.
+	* exp_util.ads (Matching_Standard_Type): New function.
+	* exp_ch7.adb: Minor reformatting.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Get_Cursor_Type): Use scope of iterable type
+	to find declaration for Cursor, to handle properly the case of
+	a discriminated iterable type.
+
+2014-02-19  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): Always replace the object dirs of
+	imported library projects with the library ALI dirs, when setting
+	the object paths.
+	* prj-env.ads (Ada_Objects_Path): Correct comments about
+	argument Including_Libraries.
+
 2014-02-19  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat_rm.texi: Minor spelling fixes.

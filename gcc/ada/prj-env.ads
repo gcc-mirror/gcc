@@ -92,7 +92,7 @@ package Prj.Env is
       Including_Libraries : Boolean := True) return String_Access;
    --  Get the ADA_OBJECTS_PATH of a Project file. For the first call with the
    --  exact same parameters, compute it and cache it. When Including_Libraries
-   --  is False, the object directory of a library project is replaced with the
+   --  is True, the object directory of a library project is replaced with the
    --  library ALI directory of this project (usually the library directory of
    --  the project, except when attribute Library_ALI_Dir is declared) except
    --  when the library ALI directory does not contain any ALI file.
