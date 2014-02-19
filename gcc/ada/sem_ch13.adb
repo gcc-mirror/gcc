@@ -4291,6 +4291,7 @@ package body Sem_Ch13 is
 
          when Attribute_Iterable =>
             Analyze (Expr);
+
             if Nkind (Expr) /= N_Aggregate then
                Error_Msg_N ("aspect Iterable must be an aggregate", Expr);
             end if;
@@ -4304,6 +4305,7 @@ package body Sem_Ch13 is
                   if not Is_Entity_Name (Expression (Assoc)) then
                      Error_Msg_N ("value must be a function", Assoc);
                   end if;
+
                   Next (Assoc);
                end loop;
             end;
@@ -11269,12 +11271,12 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id) is
-      Scop           : constant Entity_Id := Scope (Typ);
-      Assoc          : Node_Id;
-      Expr           : Node_Id;
+      Scop   : constant Entity_Id := Scope (Typ);
+      Assoc  : Node_Id;
+      Expr   : Node_Id;
 
-      Prim           : Node_Id;
-      Cursor         : Entity_Id;
+      Prim   : Node_Id;
+      Cursor : Entity_Id;
 
       First_Id       : Entity_Id;
       Next_Id        : Entity_Id;
@@ -11283,6 +11285,10 @@ package body Sem_Ch13 is
 
       procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive);
       --  Verify that primitive has two parameters of the proper types.
+
+      ---------------------
+      -- Check_Signature --
+      ---------------------
 
       procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive) is
          F1, F2 : Entity_Id;
@@ -11293,9 +11299,8 @@ package body Sem_Ch13 is
          end if;
 
          F1 := First_Formal (Op);
-         if No (F1)
-           or else Etype (F1) /= Typ
-         then
+
+         if No (F1) or else Etype (F1) /= Typ then
             Error_Msg_N ("first parameter must be container type", Op);
          end if;
 
@@ -11306,9 +11311,8 @@ package body Sem_Ch13 is
 
          else
             F2 := Next_Formal (F1);
-            if No (F2)
-              or else Etype (F2) /= Cursor
-            then
+
+            if No (F2) or else Etype (F2) /= Cursor then
                Error_Msg_N ("second parameter must be cursor", Op);
             end if;
 
@@ -11318,19 +11322,20 @@ package body Sem_Ch13 is
          end if;
       end Check_Signature;
 
+   --  Start of processing for Validate_Iterable_Aspect
+
    begin
-      --  There must be a cursor type declared in the same package.
+      --  There must be a cursor type declared in the same package
 
       declare
          E : Entity_Id;
 
       begin
          Cursor := Empty;
+
          E := First_Entity (Scop);
          while Present (E) loop
-            if Chars (E) = Name_Cursor
-               and then Is_Type (E)
-            then
+            if Chars (E) = Name_Cursor and then Is_Type (E) then
                Cursor := E;
                exit;
             end if;
@@ -11362,6 +11367,7 @@ package body Sem_Ch13 is
          end if;
 
          Prim := First (Choices (Assoc));
+
          if Nkind (Prim) /= N_Identifier
            or else Present (Next (Prim))
          then
@@ -11370,6 +11376,7 @@ package body Sem_Ch13 is
          elsif Chars (Prim) = Name_First then
             First_Id := Entity (Expr);
             Check_Signature (First_Id, 1);
+
             if Etype (First_Id) /= Cursor then
                Error_Msg_NE ("First must return Cursor", Expr, First_Id);
             end if;
@@ -11377,12 +11384,14 @@ package body Sem_Ch13 is
          elsif Chars (Prim) = Name_Next then
             Next_Id := Entity (Expr);
             Check_Signature (Next_Id, 2);
+
             if Etype (Next_Id) /= Cursor then
                Error_Msg_NE ("Next must return Cursor", Expr, First_Id);
             end if;
 
          elsif Chars (Prim) = Name_Has_Element then
             Has_Element_Id := Entity (Expr);
+
             if Etype (Has_Element_Id) /= Standard_Boolean then
                Error_Msg_NE
                 ("Has_Element must return Boolean", Expr, First_Id);

@@ -104,6 +104,8 @@ package body Exp_Ch5 is
    --  might be filled with components from child types).
 
    procedure Expand_Formal_Container_Loop (Typ : Entity_Id; N : Node_Id);
+   --  Use the primitives specified in an Iterable aspect to expand a loop
+   --  over a so-called formal container, primarily for SPARK usage.
 
    procedure Expand_Iterator_Loop (N : Node_Id);
    --  Expand loop over arrays and containers that uses the form "for X of C"

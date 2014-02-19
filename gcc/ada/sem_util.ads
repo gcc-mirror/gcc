@@ -1111,13 +1111,13 @@ package Sem_Util is
    function Is_Container_Element (Exp : Node_Id) return Boolean;
    --  This routine recognizes expressions that denote an element of one of
    --  the predefined containers, when the source only contains an indexing
-   --  operation and an implicit dereference is inserted by the compiler. In
-   --  the absence of this optimization, the indexing creates a temporary
+   --  operation and an implicit dereference is inserted by the compiler.
+   --  In the absence of this optimization, the indexing creates a temporary
    --  controlled cursor that sets the tampering bit of the container, and
    --  restricts the use of the convenient notation C (X) to contexts that
-   --  do not check the tampering bit (e.g.  C.Include (X,  C (Y)).
-   --  Exp is an explicit dereference. The transformation applies when it
-   --  has the form  F (X).Discr.all.
+   --  do not check the tampering bit (e.g. C.Include (X, C (Y)). Exp is an
+   --  explicit dereference. The transformation applies when it has the form
+   --  F (X).Discr.all.
 
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;

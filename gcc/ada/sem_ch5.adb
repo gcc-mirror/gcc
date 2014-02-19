@@ -1912,7 +1912,7 @@ package body Sem_Ch5 is
                else
                   Error_Msg_NE
                     ("\to iterate directly over the elements of a container, "
-                      & "write `of &`", Name (N), Original_Node (Name (N)));
+                     & "write `of &`", Name (N), Original_Node (Name (N)));
                end if;
             end if;
 
