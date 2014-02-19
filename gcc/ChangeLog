@@ -1,3 +1,9 @@
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* config/i386/i386.c (type_natural_mode): Warn for ABI changes
+	only when -Wpsabi is enabled.
+
 2014-02-19  Michael Hudson-Doyle  <michael.hudson@linaro.org>
 
 	 PR target/59799
@@ -43,8 +49,7 @@
 	(compute_complex_ancestor_jump_func): Likewise.
 	(update_jump_functions_after_inlining): Fix updating of
 	ancestor function.
-	* ipa-cp.c (ipa_get_jf_ancestor_result): Be ready for type
-	to be NULL.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Be ready for type to be NULL.
 
 2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
 

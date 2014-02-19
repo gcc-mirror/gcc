@@ -1,3 +1,12 @@
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* gcc.target/i386/pr39162.c: Add dg-prune-output.
+	(dg-options): Remove -Wno-psabi.
+	* gcc.target/i386/59794-2.c: Ditto.
+	* gcc.target/i386/60205-1.c: Ditto.
+	* gcc.target/i386/sse-5.c: Ditto.
+
 2014-02-18  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/graphite/pr46966.c: Only run on 32-bit+ targets.
