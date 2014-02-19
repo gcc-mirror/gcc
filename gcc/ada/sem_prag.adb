@@ -9986,14 +9986,16 @@ package body Sem_Prag is
                --  Opt is not a duplicate property and sets the flag Status.
 
                procedure Create_Abstract_State
-                 (State_Nam  : Name_Id;
-                  State_Decl : Node_Id;
-                  Is_Null    : Boolean := False);
-               --  Generate an abstract state entity with name State_Nam and
-               --  enter it into visibility. State_Decl is the "declaration"
-               --  of the state as it appears in pragma Abstract_State. Flag
-               --  Is_Null should be set when the associated Abstract_State
-               --  pragma defines a null state.
+                 (Nam     : Name_Id;
+                  Decl    : Node_Id;
+                  Loc     : Source_Ptr;
+                  Is_Null : Boolean);
+               --  Generate an abstract state entity with name Nam and enter it
+               --  into visibility. Decl is the "declaration" of the state as
+               --  it appears in pragma Abstract_State. Loc is the location of
+               --  the related state "declaration". Flag Is_Null should be set
+               --  when the associated Abstract_State pragma defines a null
+               --  state.
 
                -----------------------------
                -- Analyze_External_Option --
@@ -10243,17 +10245,16 @@ package body Sem_Prag is
                ---------------------------
 
                procedure Create_Abstract_State
-                 (State_Nam  : Name_Id;
-                  State_Decl : Node_Id;
-                  Is_Null    : Boolean := False)
+                 (Nam     : Name_Id;
+                  Decl    : Node_Id;
+                  Loc     : Source_Ptr;
+                  Is_Null : Boolean)
                is
                begin
                   --  The generated state abstraction reuses the same chars
                   --  from the original state declaration. Decorate the entity.
 
-                  State_Id :=
-                    Make_Defining_Identifier (Sloc (State),
-                      Chars => New_External_Name (State_Nam));
+                  State_Id := Make_Defining_Identifier (Loc, Nam);
 
                   --  Null states never come from source
 
@@ -10270,15 +10271,16 @@ package body Sem_Prag is
                   --  N_Null and does not carry any linkages.
 
                   if not Is_Null then
-                     if Present (State_Decl) then
-                        Set_Entity (State_Decl, State_Id);
-                        Set_Etype  (State_Decl, Standard_Void_Type);
+                     if Present (Decl) then
+                        Set_Entity (Decl, State_Id);
+                        Set_Etype  (Decl, Standard_Void_Type);
                      end if;
 
-                     --  Every non-null state must be nameable and resolvable
-                     --  the same way a constant is.
+                     --  Every non-null state must be defined, nameable and
+                     --  resolvable.
 
                      Push_Scope (Pack_Id);
+                     Generate_Definition (State_Id);
                      Enter_Name (State_Id);
                      Pop_Scope;
                   end if;
@@ -10303,9 +10305,10 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Null then
                   Create_Abstract_State
-                    (State_Nam  => New_Internal_Name ('S'),
-                     State_Decl => Empty,
-                     Is_Null    => True);
+                    (Nam     => New_Internal_Name ('S'),
+                     Decl    => Empty,
+                     Loc     => Sloc (State),
+                     Is_Null => True);
                   Null_Seen := True;
 
                   --  Catch a case where a null state appears in a list of
@@ -10321,8 +10324,10 @@ package body Sem_Prag is
 
                elsif Nkind (State) = N_Identifier then
                   Create_Abstract_State
-                    (State_Nam  => Chars (State),
-                     State_Decl => State);
+                    (Nam     => Chars (State),
+                     Decl    => State,
+                     Loc     => Sloc (State),
+                     Is_Null => False);
                   Non_Null_Seen := True;
 
                --  State declaration with various options. This construct
@@ -10331,8 +10336,10 @@ package body Sem_Prag is
                elsif Nkind (State) = N_Extension_Aggregate then
                   if Nkind (Ancestor_Part (State)) = N_Identifier then
                      Create_Abstract_State
-                       (State_Nam  => Chars (Ancestor_Part (State)),
-                        State_Decl => Ancestor_Part (State));
+                       (Nam     => Chars (Ancestor_Part (State)),
+                        Decl    => Ancestor_Part (State),
+                        Loc     => Sloc (Ancestor_Part (State)),
+                        Is_Null => False);
                      Non_Null_Seen := True;
                   else
                      Error_Msg_N

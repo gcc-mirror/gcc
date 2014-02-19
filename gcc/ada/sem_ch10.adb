@@ -1563,8 +1563,9 @@ package body Sem_Ch10 is
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
-      --  present, which is user-friendly and in fact required for ASIS, but
-      --  we don't complain if the subunit is missing.
+      --  present, which is user-friendly and in fact required for ASIS, but we
+      --  don't complain if the subunit is missing. In GNATprove_Mode, we issue
+      --  an error to avoid formal verification of a partial unit.
 
       ----------------------
       -- Optional_Subunit --
@@ -1579,18 +1580,18 @@ package body Sem_Ch10 is
          --  ignore all errors. Note that Fatal_Error will still be set, so we
          --  will be able to check for this case below.
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
          end if;
 
          Unum :=
            Load_Unit
              (Load_Name  => Subunit_Name,
-              Required   => False,
+              Required   => GNATprove_Mode,
               Subunit    => True,
               Error_Node => N);
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          end if;
 

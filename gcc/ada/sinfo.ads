@@ -552,6 +552,10 @@ package Sinfo is
    --  In addition pragma Debug statements are removed from the tree (rewritten
    --  to NULL stmt), since they should be taken into account in flow analysis.
 
+   --  An error is also issued for missing subunits, similar to the warning
+   --  issued when generating code, to avoid formal verification of a partial
+   --  unit.
+
    -----------------------
    -- Check Flag Fields --
    -----------------------
