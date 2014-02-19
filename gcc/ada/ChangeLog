@@ -1,5 +1,22 @@
 2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Check_Refined_Global_Item):
+	A state or variable acts as a constituent only it is part of an
+	encapsulating state and the state has visible refinement.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Contract): Do not warn on a
+	postcondition for a function when the expression does not mention
+	'Result but the function has in-out parameters.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add documentation on Value_Size forcing biased
+	representation.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* lib-xref.ads Remove the small table of letter and symbol usage as we
 	already have one.
 

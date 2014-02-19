@@ -14262,6 +14262,34 @@ For all other types, the @code{Object_Size}
 and Value_Size are the same (and equivalent to the RM attribute @code{Size}).
 Only @code{Size} may be specified for such types.
 
+Note that @code{Value_Size} can be used to force biased representation
+for a particular subtype. Consider this example:
+
+@smallexample
+   type R is (A, B, C, D, E, F);
+   subtype RAB is R range A .. B;
+   subtype REF is R range E .. F;
+@end smallexample
+
+@noindent
+By default, @code{RAB}
+has a size of 1 (sufficient to accomodate the representation
+of @code{A} and @code{B}, 0 and 1), and @code{REF}
+has a size of 3 (sufficient to accomodate the representation
+of @code{E} and @code{F}, 4 and 5). But if we add the
+following @code{Value_Size} attribute definition clause:
+
+@smallexample
+   for REF'Value_Size use 1;
+@end smallexample
+
+@noindent
+then biased representation is forced for @code{REF},
+and 0 will represent @code{E} and 1 will represent @code{F}.
+A warning is issued when a @code{Value_Size} attribute
+definition clause forces biased representation. This
+warning can be turned off using @code{-gnatw.B}.
+
 @node Component_Size Clauses
 @section Component_Size Clauses
 @cindex Component_Size Clause
