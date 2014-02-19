@@ -1933,7 +1933,8 @@ package body Exp_Ch5 is
 
       if Is_Access_Type (Typ)
         and then Is_Entity_Name (Lhs)
-        and then Present (Effective_Extra_Accessibility (Entity (Lhs))) then
+        and then Present (Effective_Extra_Accessibility (Entity (Lhs)))
+      then
          declare
             function Lhs_Entity return Entity_Id;
             --  Look through renames to find the underlying entity.

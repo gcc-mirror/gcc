@@ -1828,9 +1828,9 @@ package body Ch6 is
       --  The caller has checked that the initial token is RETURN
 
       function Is_Simple return Boolean;
-      --  Scan state is just after RETURN (and is left that way).
-      --  Determine whether this is a simple or extended return statement
-      --  by looking ahead for "identifier :", which implies extended.
+      --  Scan state is just after RETURN (and is left that way). Determine
+      --  whether this is a simple or extended return statement by looking
+      --  ahead for "identifier :", which implies extended.
 
       ---------------
       -- Is_Simple --
@@ -1855,8 +1855,9 @@ package body Ch6 is
          return Result;
       end Is_Simple;
 
-      Return_Sloc : constant Source_Ptr := Token_Ptr;
-      Return_Node : Node_Id;
+      Ret_Sloc : constant Source_Ptr := Token_Ptr;
+      Ret_Strt : constant Column_Number := Start_Column;
+      Ret_Node : Node_Id;
 
    --  Start of processing for P_Return_Statement
 
@@ -1868,7 +1869,7 @@ package body Ch6 is
 
       if Token = Tok_Semicolon then
          Scan; -- past ;
-         Return_Node := New_Node (N_Simple_Return_Statement, Return_Sloc);
+         Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
 
       --  Non-trivial case
 
@@ -1880,10 +1881,10 @@ package body Ch6 is
          --  message is probably that we have a missing semicolon.
 
          if Is_Simple then
-            Return_Node := New_Node (N_Simple_Return_Statement, Return_Sloc);
+            Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
 
             if Token not in Token_Class_Eterm then
-               Set_Expression (Return_Node, P_Expression_No_Right_Paren);
+               Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
             end if;
 
          --  Extended_return_statement (Ada 2005 only -- AI-318):
@@ -1895,19 +1896,19 @@ package body Ch6 is
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
             end if;
 
-            Return_Node := New_Node (N_Extended_Return_Statement, Return_Sloc);
+            Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
             Set_Return_Object_Declarations
-              (Return_Node, New_List (P_Return_Object_Declaration));
+              (Ret_Node, New_List (P_Return_Object_Declaration));
 
             if Token = Tok_Do then
                Push_Scope_Stack;
                Scope.Table (Scope.Last).Etyp := E_Return;
-               Scope.Table (Scope.Last).Ecol := Start_Column;
-               Scope.Table (Scope.Last).Sloc := Return_Sloc;
+               Scope.Table (Scope.Last).Ecol := Ret_Strt;
+               Scope.Table (Scope.Last).Sloc := Ret_Sloc;
 
                Scan; -- past DO
                Set_Handled_Statement_Sequence
-                 (Return_Node, P_Handled_Sequence_Of_Statements);
+                 (Ret_Node, P_Handled_Sequence_Of_Statements);
                End_Statements;
 
                --  Do we need to handle Error_Resync here???
@@ -1917,7 +1918,7 @@ package body Ch6 is
          TF_Semicolon;
       end if;
 
-      return Return_Node;
+      return Ret_Node;
    end P_Return_Statement;
 
 end Ch6;

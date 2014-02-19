@@ -127,8 +127,8 @@ package Stylesw is
 
    Style_Check_If_Then_Layout : Boolean := False;
    --  This can be set True by using the -gnatyi switch. If it is True, then a
-   --  THEN keyword may not appear on the line that immediately follows the
-   --  line containing the corresponding IF.
+   --  THEN keyword must either appear on the same line as the IF, or on a line
+   --  all on its own.
    --
    --  This permits one of two styles for IF-THEN layout. Either the IF and
    --  THEN keywords are on the same line, where the condition is short enough,
@@ -141,10 +141,13 @@ package Stylesw is
    --      and then Y < Z
    --    then
    --
+   --    if X > Y and then Z > 0
+   --    then
+   --
    --  are allowed, but
    --
    --    if X > Y
-   --    then
+   --      and then B > C then
    --
    --  is not allowed.
 

@@ -6353,8 +6353,7 @@ source tokens.
 @emph{Check if-then layout.}
 The keyword @code{then} must appear either on the same
 line as corresponding @code{if}, or on a line on its own, lined
-up under the @code{if} with at least one non-blank line in between
-containing all or part of the condition to be tested.
+up under the @code{if}.
 
 @item ^I^IN_MODE^
 @emph{check mode IN keywords.}

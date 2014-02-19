@@ -1,5 +1,39 @@
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
+	* par-ch6.adb (P_Return): For extended return, end column lines
+	up with RETURN.
+	* par.adb: Minor documentation clarification.
+
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Loop_Pragma_Placement): Add check
+	that Loop_Invariant and Loop_Variant appear consecutively.
+	* gnat_rm.texi Update documentation of Loop_Invariant and
+	Loop_Variant pragmas.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document -gnatd.X.
+	* par-ch5.adb (P_If_Statement): Always check THEN, even if not
+	first token
+	(Check_Then_Column): Ditto.
+	* styleg.adb (Check_Then): Allow THEN on line after IF.
+	(Check_Then): Check THEN placement under control of -gnatd.X
+	* styleg.ads (Check_Then): Now called even if THEN is not first
+	token on line.
+	* stylesw.ads (Style_Check_If_Then_Layout): Document new
+	relaxed rules.
+	* gnat_ugn.texi: For -gnatyi, THEN can now be on line after IF.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* a-cfhama.adb, a-cfhase.adb, a-cforse.adb, a-cofove.adb, a-ngcefu.adb,
+	a-teioed.adb, a-wtedit.adb, a-ztedit.adb, exp_ch5.adb, inline.adb,
+	prj-pp.adb, prj-tree.adb, sem_ch12.adb, sem_ch8.adb,
+	vms_conv.adb: Fix bad layout of IF statements
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb (Side_Effect_Free): Scalar if expressions can be SEF.
 
 2014-02-19  Robert Dewar  <dewar@adacore.com>

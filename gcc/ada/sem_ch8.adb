@@ -4587,7 +4587,8 @@ package body Sem_Ch8 is
                   Get_Name_String (Chars (Lit));
 
                   if Chars (Lit) /= Chars (N)
-                    and then Is_Bad_Spelling_Of (Chars (N), Chars (Lit)) then
+                    and then Is_Bad_Spelling_Of (Chars (N), Chars (Lit))
+                  then
                      Error_Msg_Node_2 := Lit;
                      Error_Msg_N -- CODEFIX
                        ("& is undefined, assume misspelling of &", N);

@@ -4348,10 +4348,16 @@ except that in an @code{Assertion_Policy} pragma, the identifier
 (or disabled).
 
 @code{Loop_Invariant} can only appear as one of the items in the sequence
-of statements of a loop body. The intention is that it be used to
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+The intention is that it be used to
 represent a "loop invariant" assertion, i.e. something that is true each
 time through the loop, and which can be used to show that the loop is
 achieving its purpose.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements, with only the same pragmas in between.
 
 To aid in writing such invariants, the special attribute @code{Loop_Entry}
 may be used to refer to the value of an expression on entry to the loop. This
@@ -4420,8 +4426,10 @@ CHANGE_DIRECTION ::= Increases | Decreases
 @end smallexample
 
 @noindent
-This pragma must appear immediately within the sequence of statements of a
-loop statement. It allows the specification of quantities which must always
+@code{Loop_Variant} can only appear as one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+It allows the specification of quantities which must always
 decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
@@ -4445,6 +4453,10 @@ policy can be @code{Check} to enable the loop variant check, @code{Ignore}
 to ignore the check (in which case the pragma has no effect on the program),
 or @code{Disable} in which case the pragma is not even checked for correct
 syntax.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements, with only the same pragmas in between.
 
 The @code{Loop_Entry} attribute may be used within the expressions of the
 @code{Loop_Variant} pragma to refer to values on entry to the loop.

@@ -1103,8 +1103,7 @@ package body Ch5 is
       procedure Check_Then_Column;
       --  This procedure carries out the style checks for a THEN token
       --  Note that the caller has set Loc to the Source_Ptr value for
-      --  the previous IF or ELSIF token. These checks apply only to a
-      --  THEN at the start of a line.
+      --  the previous IF or ELSIF token.
 
       function Else_Should_Be_Elsif return Boolean;
       --  An internal routine used to do a special error recovery check when
@@ -1142,7 +1141,7 @@ package body Ch5 is
 
       procedure Check_Then_Column is
       begin
-         if Token_Is_At_Start_Of_Line and then Token = Tok_Then then
+         if Token = Tok_Then then
             Check_If_Column;
 
             if Style_Check then

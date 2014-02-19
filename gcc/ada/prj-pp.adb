@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -280,7 +280,8 @@ package body Prj.PP is
       procedure Write_Empty_Line (Always : Boolean := False) is
       begin
          if (Always or else not Minimize_Empty_Lines)
-           and then not Last_Line_Is_Empty then
+           and then not Last_Line_Is_Empty
+         then
             Write_Eol.all;
             Column := 0;
             Last_Line_Is_Empty := True;
