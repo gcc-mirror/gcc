@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,7 @@ package body Bindgen is
    -- Run-Time Globals --
    ----------------------
 
-   --  This section documents the global variables that set from the
+   --  This section documents the global variables that are set from the
    --  generated binder file.
 
    --     Main_Priority                 : Integer;
@@ -166,6 +166,9 @@ package body Bindgen is
    --  Heap_Size is the heap to use for memory allocations set by use of a
    --  -Hnn parameter for the binder or by the GNAT$NO_MALLOC_64 logical.
    --  Valid values are 32 and 64. This switch is only effective on VMS.
+
+   --  Float_Format is the float representation in use. Valid values are
+   --  'I' for IEEE and 'V' for VAX Float. This is only for VMS.
 
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in
@@ -677,6 +680,13 @@ package body Bindgen is
 
                Write_Statement_Buffer;
             end if;
+
+            WBI ("");
+            WBI ("      Float_Format : Character;");
+            WBI ("      pragma Import (C, Float_Format, " &
+                    """__gl_float_format"");");
+
+            Write_Statement_Buffer;
          end if;
 
          --  Initialize stack limit variable of the environment task if the
@@ -868,6 +878,25 @@ package body Bindgen is
          --  Generate call to Set_Features
 
          if OpenVMS_On_Target then
+
+            --  Set_Features will call IEEE$SET_FP_CONTROL appropriately
+            --  depending on the setting of Float_Format.
+
+            WBI ("");
+            Set_String ("      Float_Format := '");
+
+            if Float_Format_Specified = 'G'
+                 or else
+               Float_Format_Specified = 'D'
+            then
+               Set_Char ('V');
+            else
+               Set_Char ('I');
+            end if;
+
+            Set_String ("';");
+            Write_Statement_Buffer;
+
             WBI ("");
             WBI ("      if Features_Set = 0 then");
             WBI ("         Set_Features;");

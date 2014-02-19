@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,5 +30,16 @@ with Types; use Types;
 package Exp_Prag is
 
    procedure Expand_N_Pragma (N : Node_Id);
+
+   procedure Expand_Contract_Cases
+     (CCs     : Node_Id;
+      Subp_Id : Entity_Id;
+      Decls   : List_Id;
+      Stmts   : in out List_Id);
+   --  Given pragma Contract_Cases CCs, create the circuitry needed to evaluate
+   --  case guards and trigger consequence expressions. Subp_Id is the related
+   --  subprogram for which the pragma applies. Decls are the declarations of
+   --  Subp_Id's body. All generated code is added to list Stmts. If Stmts is
+   --  No_List on entry, a new list is created.
 
 end Exp_Prag;
