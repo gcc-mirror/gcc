@@ -57,6 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "params.h"
 #include "ipa-utils.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
 
 /* Intermediate information about a parameter that is only useful during the
    run of ipa_analyze_node and is not kept afterwards.  */
@@ -3794,18 +3796,32 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		align = (misalign & -misalign);
 	      if (align < TYPE_ALIGN (type))
 		type = build_aligned_type (type, align);
+	      base = force_gimple_operand_gsi (&gsi, base,
+					       true, NULL, true, GSI_SAME_STMT);
 	      expr = fold_build2_loc (loc, MEM_REF, type, base, off);
+	      /* If expr is not a valid gimple call argument emit
+	         a load into a temporary.  */
+	      if (is_gimple_reg_type (TREE_TYPE (expr)))
+		{
+		  gimple tem = gimple_build_assign (NULL_TREE, expr);
+		  if (gimple_in_ssa_p (cfun))
+		    {
+		      gimple_set_vuse (tem, gimple_vuse (stmt));
+		      expr = make_ssa_name (TREE_TYPE (expr), tem);
+		    }
+		  else
+		    expr = create_tmp_reg (TREE_TYPE (expr), NULL);
+		  gimple_assign_set_lhs (tem, expr);
+		  gsi_insert_before (&gsi, tem, GSI_SAME_STMT);
+		}
 	    }
 	  else
 	    {
 	      expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
 	      expr = build_fold_addr_expr (expr);
+	      expr = force_gimple_operand_gsi (&gsi, expr,
+					       true, NULL, true, GSI_SAME_STMT);
 	    }
-
-	  expr = force_gimple_operand_gsi (&gsi, expr,
-					   adj->by_ref
-					   || is_gimple_reg_type (adj->type),
-					   NULL, true, GSI_SAME_STMT);
 	  vargs.quick_push (expr);
 	}
       if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_STMTS)
@@ -3861,6 +3877,15 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
     gimple_set_location (new_stmt, gimple_location (stmt));
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
   gimple_call_copy_flags (new_stmt, stmt);
+  if (gimple_in_ssa_p (cfun))
+    {
+      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+      if (gimple_vdef (stmt))
+	{
+	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3878,9 +3903,6 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
     }
   while ((gsi_end_p (prev_gsi) && !gsi_end_p (gsi))
 	 || (!gsi_end_p (prev_gsi) && gsi_stmt (gsi) == gsi_stmt (prev_gsi)));
-
-  update_ssa (TODO_update_ssa);
-  free_dominance_info (CDI_DOMINATORS);
 }
 
 /* If the expression *EXPR should be replaced by a reduction of a parameter, do
