@@ -433,11 +433,6 @@ package Lib.Xref is
    --  indicating procedures and functions. If the operation is abstract,
    --  these letters are replaced in the xref by 'x' and 'y' respectively.
 
-   --  The following letters and symbols are currently in use:
-   --    A B C D E F I K L M N O P   R S T U V W X Y
-   --    a b c d e f i k l m n o p q r s t u v w x y
-   --    @ * + space
-
    Xref_Entity_Letters : array (Entity_Kind) of Character :=
      (E_Abstract_State                             => '@',
       E_Access_Attribute_Type                      => 'P',

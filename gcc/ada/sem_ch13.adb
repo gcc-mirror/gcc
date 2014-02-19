@@ -128,6 +128,10 @@ package body Sem_Ch13 is
    --  Uint value. If the value is inappropriate, then error messages are
    --  posted as required, and a value of No_Uint is returned.
 
+   function Get_Cursor_Type return Entity_Id;
+   --  Find Cursor type by name in the current scope, used to resolve primitive
+   --  operations of an iterable type.
+
    function Is_Operational_Item (N : Node_Id) return Boolean;
    --  A specification for a stream attribute is allowed before the full type
    --  is declared, as explained in AI-00137 and the corrigendum. Attributes
@@ -164,6 +168,14 @@ package body Sem_Ch13 is
    --  as a generic parameter does the actual replacement of node N, which is
    --  either a simple direct reference to TName, or a selected component that
    --  represents an appropriately qualified occurrence of TName.
+
+   procedure Resolve_Iterable_Operation
+     (N      : Node_Id;
+      Cursor : Entity_Id;
+      Typ    : Entity_Id;
+      Nam    : Name_Id);
+   --  If the name of a primitive operation for an Iterable aspect is
+   --  overloaded, resolve according to required signature.
 
    procedure Set_Biased
      (E      : Entity_Id;
@@ -8044,15 +8056,23 @@ package body Sem_Ch13 is
          --  Ditto for Iterable, legality checks in Validate_Iterable_Aspect.
 
          when Aspect_Iterable =>
+            T := Entity (ASN);
+
             declare
-               Assoc : Node_Id;
+               Cursor : constant Entity_Id := Get_Cursor_Type;
+               Assoc  : Node_Id;
+               Expr   : Node_Id;
             begin
                Assoc := First (Component_Associations (Expression (ASN)));
                while Present (Assoc) loop
-                  Analyze (Expression (Assoc));
+                  Expr := Expression (Assoc);
+                  Analyze (Expr);
+                  Resolve_Iterable_Operation
+                    (Expr, Cursor, T, Chars (First (Choices (Assoc))));
                   Next (Assoc);
                end loop;
             end;
+
             return;
 
          --  Invariant/Predicate take boolean expressions
@@ -9725,6 +9745,32 @@ package body Sem_Ch13 is
       end if;
    end Get_Alignment_Value;
 
+   ---------------------
+   -- Get_Cursor_Type --
+   ---------------------
+
+   function Get_Cursor_Type return Entity_Id is
+      C : Entity_Id;
+      E : Entity_Id;
+
+   begin
+      --  There must be a cursor type declared in the same package, to be
+      --  used in iterable primitives.
+
+      C := Empty;
+      E := First_Entity (Current_Scope);
+      while Present (E) loop
+         if Chars (E) = Name_Cursor and then Is_Type (E) then
+            C := E;
+            exit;
+         end if;
+
+         Next_Entity (E);
+      end loop;
+
+      return C;
+   end Get_Cursor_Type;
+
    -------------------------------------
    -- Inherit_Aspects_At_Freeze_Point --
    -------------------------------------
@@ -10806,6 +10852,140 @@ package body Sem_Ch13 is
       end if;
    end Same_Representation;
 
+   --------------------------------
+   -- Resolve_Iterable_Operation --
+   --------------------------------
+
+   procedure Resolve_Iterable_Operation
+     (N      : Node_Id;
+      Cursor : Entity_Id;
+      Typ    : Entity_Id;
+      Nam    : Name_Id)
+   is
+      Ent : Entity_Id;
+      F1  : Entity_Id;
+      F2  : Entity_Id;
+
+   begin
+      if not Is_Overloaded (N) then
+         if not Is_Entity_Name (N)
+           or else Ekind (Entity (N)) /= E_Function
+           or else Scope (Entity (N)) /= Scope (Typ)
+           or else No (First_Formal (Entity (N)))
+           or else Etype (First_Formal (Entity (N))) /= Typ
+         then
+            Error_Msg_N ("iterable primitive must be local function name "
+                         & "whose first formal is an iterable type", N);
+         end if;
+
+         Ent := Entity (N);
+         F1 := First_Formal (Ent);
+         if Nam = Name_First then
+
+            --  First (Container) => Cursor
+
+            if Etype (Ent) /= Cursor then
+               Error_Msg_N ("primitive for First must yield a curosr", N);
+            end if;
+
+         elsif Nam = Name_Next then
+
+            --  Next (Container, Cursor) => Cursor
+
+            F2 := Next_Formal (F1);
+
+            if Etype (F2) /= Cursor
+              or else Etype (Ent) /= Cursor
+              or else Present (Next_Formal (F2))
+            then
+               Error_Msg_N ("no match for Next iterable primitive", N);
+            end if;
+
+         elsif Nam = Name_Has_Element then
+
+            --  Has_Element (Container, Cursor) => Boolean
+
+            F2 := Next_Formal (F1);
+            if Etype (F2) /= Cursor
+              or else Etype (Ent) /= Standard_Boolean
+              or else Present (Next_Formal (F2))
+            then
+               Error_Msg_N ("no match for Has_Element iterable primitive", N);
+            end if;
+
+         elsif Nam = Name_Element then
+            null;
+
+         else
+            raise Program_Error;
+         end if;
+
+      else
+         --  Overloaded case: find subprogram with proper signature.
+         --  Caller will report error if no match is found.
+
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Get_First_Interp (N, I, It);
+            while Present (It.Typ) loop
+               if Ekind (It.Nam) = E_Function
+                  and then Etype (First_Formal (It.Nam)) = Typ
+               then
+                  F1 := First_Formal (It.Nam);
+
+                  if Nam = Name_First then
+                     if Etype (It.Nam) = Cursor
+                       and then No (Next_Formal (F1))
+                     then
+                        Set_Entity (N, It.Nam);
+                        exit;
+                     end if;
+
+                  elsif Nam = Name_Next then
+                     F2 := Next_Formal (F1);
+
+                     if Present (F2)
+                       and then No (Next_Formal (F2))
+                       and then Etype (F2) = Cursor
+                       and then Etype (It.Nam) = Cursor
+                     then
+                        Set_Entity (N, It.Nam);
+                        exit;
+                     end if;
+
+                  elsif Nam = Name_Has_Element then
+                     F2 := Next_Formal (F1);
+
+                     if Present (F2)
+                       and then No (Next_Formal (F2))
+                       and then Etype (F2) = Cursor
+                       and then Etype (It.Nam) = Standard_Boolean
+                     then
+                        Set_Entity (N, It.Nam);
+                        F2 := Next_Formal (F1);
+                        exit;
+                     end if;
+
+                  elsif Nam = Name_Element then
+                     if Present (F2)
+                       and then No (Next_Formal (F2))
+                       and then Etype (F2) = Cursor
+                     then
+                        Set_Entity (N, It.Nam);
+                        exit;
+                     end if;
+                  end if;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
+   end Resolve_Iterable_Operation;
+
    ----------------
    -- Set_Biased --
    ----------------
@@ -11271,83 +11451,22 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id) is
-      Scop   : constant Entity_Id := Scope (Typ);
-      Assoc  : Node_Id;
-      Expr   : Node_Id;
+      Assoc : Node_Id;
+      Expr  : Node_Id;
 
       Prim   : Node_Id;
-      Cursor : Entity_Id;
+      Cursor : constant Entity_Id := Get_Cursor_Type;
 
       First_Id       : Entity_Id;
       Next_Id        : Entity_Id;
       Has_Element_Id : Entity_Id;
       Element_Id     : Entity_Id;
 
-      procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive);
-      --  Verify that primitive has two parameters of the proper types.
-
-      ---------------------
-      -- Check_Signature --
-      ---------------------
-
-      procedure Check_Signature (Op : Entity_Id; Num_Formals : Positive) is
-         F1, F2 : Entity_Id;
-
-      begin
-         if Scope (Op) /= Current_Scope then
-            Error_Msg_N ("iterable primitive must be declared in scope", Prim);
-         end if;
-
-         F1 := First_Formal (Op);
-
-         if No (F1) or else Etype (F1) /= Typ then
-            Error_Msg_N ("first parameter must be container type", Op);
-         end if;
-
-         if Num_Formals = 1 then
-            if Present (Next_Formal (F1)) then
-               Error_Msg_N ("First must have a single parameter", Op);
-            end if;
-
-         else
-            F2 := Next_Formal (F1);
-
-            if No (F2) or else Etype (F2) /= Cursor then
-               Error_Msg_N ("second parameter must be cursor", Op);
-            end if;
-
-            if Present (Next_Formal (F2)) then
-               Error_Msg_N ("too many parameters in iterable primitive", Op);
-            end if;
-         end if;
-      end Check_Signature;
-
-   --  Start of processing for Validate_Iterable_Aspect
-
    begin
-      --  There must be a cursor type declared in the same package
-
-      declare
-         E : Entity_Id;
-
-      begin
-         Cursor := Empty;
-
-         E := First_Entity (Scop);
-         while Present (E) loop
-            if Chars (E) = Name_Cursor and then Is_Type (E) then
-               Cursor := E;
-               exit;
-            end if;
-
-            Next_Entity (E);
-         end loop;
-
-         if No (Cursor) then
-            Error_Msg_N ("Iterable aspect requires a cursor type", ASN);
-            return;
-         end if;
-      end;
+      if No (Cursor) then
+         Error_Msg_N ("Iterable aspect requires a cursor type", ASN);
+         return;
+      end if;
 
       First_Id       := Empty;
       Next_Id        := Empty;
@@ -11360,12 +11479,6 @@ package body Sem_Ch13 is
          Expr := Expression (Assoc);
          Analyze (Expr);
 
-         if not Is_Entity_Name (Expr)
-           or else Ekind (Entity (Expr)) /= E_Function
-         then
-            Error_Msg_N ("this should be a function name", Expr);
-         end if;
-
          Prim := First (Choices (Assoc));
 
          if Nkind (Prim) /= N_Identifier
@@ -11374,32 +11487,20 @@ package body Sem_Ch13 is
             Error_Msg_N ("illegal name in association", Prim);
 
          elsif Chars (Prim) = Name_First then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_First);
             First_Id := Entity (Expr);
-            Check_Signature (First_Id, 1);
-
-            if Etype (First_Id) /= Cursor then
-               Error_Msg_NE ("First must return Cursor", Expr, First_Id);
-            end if;
 
          elsif Chars (Prim) = Name_Next then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Next);
             Next_Id := Entity (Expr);
-            Check_Signature (Next_Id, 2);
-
-            if Etype (Next_Id) /= Cursor then
-               Error_Msg_NE ("Next must return Cursor", Expr, First_Id);
-            end if;
 
          elsif Chars (Prim) = Name_Has_Element then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Has_Element);
             Has_Element_Id := Entity (Expr);
 
-            if Etype (Has_Element_Id) /= Standard_Boolean then
-               Error_Msg_NE
-                ("Has_Element must return Boolean", Expr, First_Id);
-            end if;
-
          elsif Chars (Prim) = Name_Element then
+            Resolve_Iterable_Operation (Expr, Cursor, Typ, Name_Element);
             Element_Id := Entity (Expr);
-            Check_Signature (Element_Id, 2);
 
          else
             Error_Msg_N ("invalid name for iterable function", Prim);
@@ -11409,14 +11510,16 @@ package body Sem_Ch13 is
       end loop;
 
       if No (First_Id) then
-         Error_Msg_N ("Iterable aspect must have a First primitive", ASN);
+         Error_Msg_N ("match for First primitive not found", ASN);
 
       elsif No (Next_Id) then
-         Error_Msg_N ("Iterable aspect must have a Next primitive", ASN);
+         Error_Msg_N ("match for Next primitive not found", ASN);
 
       elsif No (Has_Element_Id) then
-         Error_Msg_N
-           ("Iterable aspect must have a Has_Element  primitive", ASN);
+         Error_Msg_N ("match for Has_Element primitive not found", ASN);
+
+      elsif No (Element_Id) then
+         null;  --  Optional.
       end if;
    end Validate_Iterable_Aspect;
 

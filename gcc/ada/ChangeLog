@@ -1,3 +1,23 @@
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref.ads Remove the small table of letter and symbol usage as we
+	already have one.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Emit specific error
+	messages depending on the offending misplaced aspect specifications.
+	(Diagnose_Misplaced_Aspect_Specifications): New routine.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Get_Cursor): Utility to retrieve cursor type
+	for iterable aspect primitives.
+	(Resolve_Iterable_Operation): Use expected signature of iterable
+	aspect to resolve primitive when overloading is present.
+	(Validate_Iterable_Aspect, Analyze_Aspects_At_Freeze_Point): use it.
+	(Check_Signature): Removed.
+
 2014-02-19  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch10.adb (Analyze_Proper_Body): Issue error on missing
