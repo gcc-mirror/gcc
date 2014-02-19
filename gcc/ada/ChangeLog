@@ -1,3 +1,31 @@
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_Min_Max_Attribute): New procedure
+	(Expand_N_Attribute_Reference): Use this procedure for Min and Max.
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Remove object
+	declarations from list of actions.
+	* output.ads, output.adb (Delete_Last_Char): New procedure.
+	* sinfo.ads: Document handling of Mod and expression with actions
+	in Modify_Tree_For_C mode.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch9.adb (P_Task): Add a null statement to produce a
+	well-formed task body when due to a previous syntax error the
+	statement list is empty.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Dependency_Clause): Account
+	for the case where a state with a non-null refinement matches a
+	null output list. Comment reformatting.
+	(Inputs_Match): Copy a solitary input to avoid an assertion failure
+	when trying to match the same input in multiple clauses.
+
+2014-02-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb: Minor typo fix.
+
 2014-02-18  Robert Dewar  <dewar@adacore.com>
 
 	* cstand.adb (Build_Signed_Integer_Type): Minor change of formal

@@ -4418,7 +4418,7 @@ package body Sem_Attr is
 
                --  Entities mentioned within the prefix of attribute 'Old must
                --  be global to the related postcondition. If this is not the
-               --  case, then the scope of the local entity is be nested within
+               --  case, then the scope of the local entity is nested within
                --  that of the subprogram.
 
                elsif Nkind (Nod) = N_Identifier

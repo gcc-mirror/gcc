@@ -5105,12 +5105,64 @@ package body Exp_Ch4 is
 
       --  Local variables
 
+      Loc : Source_Ptr;
       Act : Node_Id;
+      Def : Entity_Id;
+      Exp : Node_Id;
+      Nxt : Node_Id;
 
    --  Start of processing for Expand_N_Expression_With_Actions
 
    begin
+      --  Process the actions as described above
+
       Act := First (Actions (N));
+      while Present (Act) loop
+         Process_Single_Action (Act);
+         Next (Act);
+      end loop;
+
+      --  In Modify_Tree_For_C, we have trouble in C with object declarations
+      --  in the actions list (expressions are fine). So if we have an object
+      --  declaration, insert it higher in the tree, if necessary replacing it
+      --  with an assignment to capture initialization.
+
+      if Modify_Tree_For_C then
+         Act := First (Actions (N));
+         while Present (Act) loop
+            if Nkind (Act) = N_Object_Declaration then
+               Def := Defining_Identifier (Act);
+               Exp := Expression (Act);
+               Set_Constant_Present (Act, False);
+               Set_Expression (Act, Empty);
+               Insert_Action (N, Relocate_Node (Act));
+
+               Loc := Sloc (Act);
+
+               --  Expression present, rewrite as assignment, get next action
+
+               if Present (Exp) then
+                  Rewrite (Act,
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Def, Loc),
+                      Expression => Exp));
+                  Next (Act);
+
+               --  No expression, remove action and move to next
+
+               else
+                  Nxt := Next (Act);
+                  Remove (Act);
+                  Act := Nxt;
+               end if;
+
+            --  Not an object declaration, move to next action
+
+            else
+               Next (Act);
+            end if;
+         end loop;
+      end if;
 
       --  Deal with case where there are no actions. In this case we simply
       --  rewrite the node with its expression since we don't need the actions
@@ -5121,17 +5173,8 @@ package body Exp_Ch4 is
       --  tree in cases like this. This raises a whole lot of issues of whether
       --  we have problems elsewhere, which will be addressed in the future???
 
-      if No (Act) then
+      if Is_Empty_List (Actions (N)) then
          Rewrite (N, Relocate_Node (Expression (N)));
-
-      --  Otherwise process the actions as described above
-
-      else
-         loop
-            Process_Single_Action (Act);
-            Next (Act);
-            exit when No (Act);
-         end loop;
       end if;
    end Expand_N_Expression_With_Actions;
 

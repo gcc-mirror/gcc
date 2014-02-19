@@ -642,6 +642,13 @@ package Sinfo is
    --    Min and Max attributes are expanded into equivalent if expressions,
    --    dealing properly with side effect issues.
 
+   --    Mod for signed integer types is expanded into equivalent expressions
+   --    using Rem (which is % in C) and other C-available operators.
+
+   --    The Actions list of an Expression_With_Actions node has any object
+   --    declarations removed, so that it is composed only of expressions
+   --    (so that DO X,... Y IN Z can be represented as (X, .. Y, Z) in C).
+
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------
@@ -4127,6 +4134,11 @@ package Sinfo is
       --  and we are running in ELIMINATED mode, the operator node will be
       --  changed to be a call to the appropriate routine in System.Bignums.
 
+      --  Note: In Modify_Tree_For_C mode, we do not generate an N_Op_Mod node
+      --  for signed integer types (since there is no equivalent operator in
+      --  C). Instead we rewrite such an operation in terms of REM (which is
+      --  % in C) and other C-available operators.
+
       ------------------------------------
       -- 4.5.7  Conditional Expressions --
       ------------------------------------
@@ -7405,6 +7417,12 @@ package Sinfo is
       --  are not interchangeable, and in particular an N_Null_Statement is
       --  not a proper expression), and in the long term all cases of this
       --  idiom should instead use a new node kind N_Compound_Statement.
+
+      --  Note: In Modify_Tree_For_C, we eliminate declarations from the list
+      --  of actions, inserting them at the outer level. If we move an object
+      --  declaration with an initialization expression in this manner, then
+      --  the action is replaced by an appropriate assignment, otherwise it is
+      --  removed from the list of actions.
 
       --------------------
       -- Free Statement --
