@@ -1,3 +1,10 @@
+2014-02-19  Michael Hudson-Doyle  <michael.hudson@linaro.org>
+
+	 PR target/59799
+	* config/aarch64/aarch64.c (aarch64_pass_by_reference): The rules for
+	passing arrays in registers are the same as for structs, so remove the
+	special case for them.
+
 2014-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: For a bit-field

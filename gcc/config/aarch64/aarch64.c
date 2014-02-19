@@ -1197,14 +1197,10 @@ aarch64_pass_by_reference (cumulative_args_t pcum ATTRIBUTE_UNUSED,
   size = (mode == BLKmode && type)
     ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
 
-  if (type)
+  /* Aggregates are passed by reference based on their size.  */
+  if (type && AGGREGATE_TYPE_P (type))
     {
-      /* Arrays always passed by reference.  */
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	return true;
-      /* Other aggregates based on their size.  */
-      if (AGGREGATE_TYPE_P (type))
-	size = int_size_in_bytes (type);
+      size = int_size_in_bytes (type);
     }
 
   /* Variable sized arguments are always returned by reference.  */
