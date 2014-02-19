@@ -6629,6 +6629,7 @@ package body Sem_Util is
    is
       Funcs : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Iterable);
       Assoc : Node_Id;
+
    begin
       if No (Funcs) then
          return Empty;
@@ -9334,9 +9335,10 @@ package body Sem_Util is
    ---------------------------
 
    function Is_Container_Element (Exp : Node_Id) return Boolean is
-      Loc      : constant Source_Ptr := Sloc (Exp);
-      Pref     : constant Node_Id   := Prefix (Exp);
-      Call     : Node_Id;
+      Loc  : constant Source_Ptr := Sloc (Exp);
+      Pref : constant Node_Id   := Prefix (Exp);
+
+      Call : Node_Id;
       --  Call to an indexing aspect
 
       Cont_Typ : Entity_Id;
@@ -9348,19 +9350,24 @@ package body Sem_Util is
       Indexing : Entity_Id;
       Is_Const : Boolean;
       --  Indicates that constant indexing is used, and the element is thus
-      --  a constant
+      --  a constant.
 
-      Ref_Typ  : Entity_Id;
-      --  The reference type returned by the indexing operation.
+      Ref_Typ : Entity_Id;
+      --  The reference type returned by the indexing operation
 
    begin
       --  If C is a container, in a context that imposes the element type of
       --  that container, the indexing notation C (X) is rewritten as:
-      --               Indexing (C, X).Discr.all
+
+      --    Indexing (C, X).Discr.all
+
       --  where Indexing is one of the indexing aspects of the container.
       --  If the context does not require a reference, the construct can be
-      --  rewritten as Element (C, X).
-      --  First, verify that the construct has the proper form.
+      --  rewritten as
+
+      --    Element (C, X)
+
+      --  First, verify that the construct has the proper form
 
       if not Expander_Active then
          return False;
@@ -9372,8 +9379,8 @@ package body Sem_Util is
          return False;
 
       else
-         Call     := Prefix (Pref);
-         Ref_Typ  := Etype (Call);
+         Call    := Prefix (Pref);
+         Ref_Typ := Etype (Call);
       end if;
 
       if not Has_Implicit_Dereference (Ref_Typ)
@@ -9383,15 +9390,15 @@ package body Sem_Util is
          return False;
       end if;
 
-      --  Retrieve type of container object, and its iterator aspects.
+      --  Retrieve type of container object, and its iterator aspects
 
       Cont_Typ := Etype (First (Parameter_Associations (Call)));
-      Indexing :=
-         Find_Value_Of_Aspect (Cont_Typ, Aspect_Constant_Indexing);
+      Indexing := Find_Value_Of_Aspect (Cont_Typ, Aspect_Constant_Indexing);
       Is_Const := False;
+
       if No (Indexing) then
 
-         --  Container should have at least one indexing operation.
+         --  Container should have at least one indexing operation
 
          return False;
 
@@ -9399,8 +9406,8 @@ package body Sem_Util is
 
          --  This may be a variable indexing operation
 
-         Indexing :=
-           Find_Value_Of_Aspect (Cont_Typ, Aspect_Variable_Indexing);
+         Indexing := Find_Value_Of_Aspect (Cont_Typ, Aspect_Variable_Indexing);
+
          if No (Indexing)
            or else Entity (Name (Call)) /= Entity (Indexing)
          then
@@ -9412,9 +9419,8 @@ package body Sem_Util is
       end if;
 
       Elem_Typ := Find_Value_Of_Aspect (Cont_Typ, Aspect_Iterator_Element);
-      if No (Elem_Typ)
-        or else Entity (Elem_Typ) /= Etype (Exp)
-      then
+
+      if No (Elem_Typ) or else Entity (Elem_Typ) /= Etype (Exp) then
          return False;
       end if;
 
@@ -9441,10 +9447,9 @@ package body Sem_Util is
                   return False;
 
                elsif Nkind_In
-                 (Nkind (Parent (Par)),
-                     N_Function_Call,
-                     N_Procedure_Call_Statement,
-                     N_Entry_Call_Statement)
+                 (Nkind (Parent (Par)), N_Function_Call,
+                                        N_Procedure_Call_Statement,
+                                        N_Entry_Call_Statement)
                then
                   --  Check that the element is not part of an actual for an
                   --  in-out parameter.
@@ -9457,9 +9462,7 @@ package body Sem_Util is
                      F := First_Formal (Entity (Name (Parent (Par))));
                      A := First (Parameter_Associations (Parent (Par)));
                      while Present (F) loop
-                        if A = Par
-                          and then Ekind (F) /= E_In_Parameter
-                        then
+                        if A = Par and then Ekind (F) /= E_In_Parameter then
                            return False;
                         end if;
 
@@ -9468,7 +9471,7 @@ package body Sem_Util is
                      end loop;
                   end;
 
-                  --  in_parameter in a call:  element is not modified.
+                  --  E_In_Parameter in a call: element is not modified.
 
                   exit;
                end if;
@@ -9479,7 +9482,7 @@ package body Sem_Util is
       end if;
 
       --  The expression has the proper form and the context requires the
-      --  element type. Retrieve the Element function of the container, and
+      --  element type. Retrieve the Element function of the container and
       --  rewrite the construct as a call to it.
 
       declare
@@ -9498,7 +9501,7 @@ package body Sem_Util is
          else
             Rewrite (Exp,
               Make_Function_Call (Loc,
-                Name => New_Occurrence_Of (Node (Op), Loc),
+                Name                   => New_Occurrence_Of (Node (Op), Loc),
                 Parameter_Associations => Parameter_Associations (Call)));
             Analyze_And_Resolve (Exp, Entity (Elem_Typ));
             return True;

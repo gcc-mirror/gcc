@@ -149,11 +149,11 @@ package body Ch9 is
             --  null statement, so if a parsing error produces an empty list,
             --  patch it now.
 
-            if
-              No (First (Statements (Handled_Statement_Sequence (Task_Node))))
+            if No (First (Statements
+                           (Handled_Statement_Sequence (Task_Node))))
             then
                Set_Statements (Handled_Statement_Sequence (Task_Node),
-                   New_List (Make_Null_Statement (Token_Ptr)));
+                 New_List (Make_Null_Statement (Token_Ptr)));
             end if;
          end if;
 
