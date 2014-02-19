@@ -130,7 +130,9 @@ struct GTY(()) ipa_ancestor_jf_data
 {
   /* Offset of the field representing the ancestor.  */
   HOST_WIDE_INT offset;
-  /* Type of the result.  */
+  /* Type of the result.
+     When TYPE_PRESERVED is false, TYPE is NULL, since it is only
+     relevant for the devirtualization machinery.  */
   tree type;
   /* Number of the caller's formal parameter being passed.  */
   int formal_id;
