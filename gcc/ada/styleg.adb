@@ -30,7 +30,6 @@
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Csets;    use Csets;
-with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
@@ -1019,9 +1018,7 @@ package body Styleg is
          begin
             if If_Line = Then_Line then
                null;
-            elsif Debug_Flag_Dot_XX
-              and then Token_Ptr /= First_Non_Blank_Location
-            then
+            elsif Token_Ptr /= First_Non_Blank_Location then
                Error_Msg_SC ("(style) misplaced THEN");
             end if;
          end;

@@ -141,7 +141,7 @@ package body Debug is
    --  d.U  Ignore indirect calls for static elaboration
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X  Activate check on THEN appearing in wrong place
+   --  d.X
    --  d.Y
    --  d.Z
 
@@ -663,10 +663,6 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
-
-   --  d.X  Activates check for proper placement of THEN in -gnatyi mode. A
-   --       THEN keyword must appear on the same line as IF, or on a separate
-   --       line all on its own, lined up with the IF.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

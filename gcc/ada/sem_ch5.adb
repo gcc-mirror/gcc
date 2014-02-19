@@ -1727,7 +1727,7 @@ package body Sem_Ch5 is
 
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
-        --  Ditto for ASIS, where the temporary amy hide the transformation
+        --  Ditto for ASIS, where the temporary may hide the transformation
         --  of a selected component into a prefixed function call.
 
         and then not GNATprove_Mode

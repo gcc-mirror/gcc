@@ -17881,8 +17881,8 @@ package body Sem_Prag is
                      if not Relaxed_RM_Semantics
                        and then
                          (Val < 0
-                          or else Val > Expr_Value (Expression
-                                          (Parent (RTE (RE_Max_Priority)))))
+                           or else Val > Expr_Value (Expression
+                                           (Parent (RTE (RE_Max_Priority)))))
                      then
                         Error_Pragma_Arg
                           ("main subprogram priority is out of range", Arg1);
