@@ -1,3 +1,9 @@
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60267
+	* c-pragma.c (init_pragma): Don't call cpp_register_deferred_pragma
+	for PRAGMA_IVDEP if flag_preprocess_only.
+
 2014-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/60101
