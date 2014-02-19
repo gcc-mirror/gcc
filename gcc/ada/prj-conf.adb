@@ -202,6 +202,10 @@ package body Prj.Conf is
             Create_Attribute (Name_Library_Auto_Init_Supported, "false");
          end if;
 
+         --  Declare an empty target
+
+         Create_Attribute (Name_Target, "");
+
          --  Setup Ada support (Ada is the default language here, since this
          --  is only called when no config file existed initially, ie for
          --  gnatmake).
@@ -574,7 +578,8 @@ package body Prj.Conf is
       OK :=
         Target = ""
           or else (Tgt_Name /= No_Name
-                    and then Target = Get_Name_String (Tgt_Name));
+                   and then (Length_Of_Name (Tgt_Name) = 0
+                    or else Target = Get_Name_String (Tgt_Name)));
 
       if not OK then
          if Autoconf_Specified then

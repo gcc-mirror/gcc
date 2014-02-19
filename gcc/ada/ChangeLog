@@ -1,5 +1,31 @@
 2014-02-19  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_util.ads, sem_util.adb (Get_Cursor_Type): Moved to sem_util
+	from sem_ch13, for use elsewhere.
+	* sem_ch13.adb (Get_Cursor_Type): Moved to sem_util.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Set properly the
+	cursor type on the loop variable when the iteration is over o
+	formal container.
+
+2014-02-19  Vincent Celier  <celier@adacore.com>
+
+	* prj-conf.adb (Add_Default_GNAT_Naming_Scheme): Add declaration
+	for an empty Target (Check_Target): Never fail when an empty
+	target is declared in the configuration project.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Arg_Is_Local_Name): Argument is local if
+	the pragma comes fron a predicate aspect and the context is a
+	record declaration within the scope that declares the type.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Minor clarifications.
+	* expander.adb, sem_aggr.adb: Add comments.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_prag.adb (Check_Arg_Is_Local_Name): For an aspect that
 	applies to a subprogram body, the name is the current scope,
 	rather than being declared in the current scope.
