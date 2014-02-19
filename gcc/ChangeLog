@@ -1,3 +1,8 @@
+2014-02-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Fix most significant
+	bit of zero.
+
 2014-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/60207
