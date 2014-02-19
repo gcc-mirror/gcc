@@ -1,3 +1,11 @@
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/58844
+	* macro.c (enter_macro_context): Only push
+	macro_real_token_count (macro) tokens rather than
+	macro->count tokens, regardless of
+	CPP_OPTION (pfile, track-macro-expansion).
+
 2014-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/56824
