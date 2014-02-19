@@ -1,5 +1,10 @@
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/37743
+	* c-common.c (c_common_nodes_and_builtins): When initializing
+	c_uint{16,32,64}_type_node, also set corresponding
+	uint{16,32,64}_type_node to the same value.
+
 	PR c++/60267
 	* c-pragma.c (init_pragma): Don't call cpp_register_deferred_pragma
 	for PRAGMA_IVDEP if flag_preprocess_only.
