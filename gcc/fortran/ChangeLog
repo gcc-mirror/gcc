@@ -1,3 +1,9 @@
+2014-02-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60232
+	* expr.c (gfc_get_variable_expr): Don't add REF_ARRAY for dimensionful
+	functions, which are used as procedure pointer target.
+
 2014-02-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/49397
