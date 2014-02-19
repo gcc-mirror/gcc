@@ -7981,6 +7981,13 @@ package body Exp_Util is
                 Side_Effect_Free
                   (First (Parameter_Associations (N)), Name_Req, Variable_Ref);
 
+         --  An IF expression is side effect free if its components are all
+         --  side effect free (conditions and then actions and else actions).
+
+         --  when N_If_Expression =>
+         --  return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref);
+         --  commented out for now, caused some crashes ???
+
          --  An indexed component is side effect free if it is a side
          --  effect free prefixed reference and all the indexing
          --  expressions are side effect free.

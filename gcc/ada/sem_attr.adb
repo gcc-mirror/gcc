@@ -4466,7 +4466,22 @@ package body Sem_Attr is
             --  contract case as this is the only postcondition-like part of
             --  the pragma.
 
-            if Expr /= Expression (Parent (Expr)) then
+            if Expr = Expression (Parent (Expr)) then
+
+               --  Warn that a potentially unevaluated prefix is always
+               --  evaluated when the corresponding consequence is selected.
+
+               if Is_Potentially_Unevaluated (P) then
+                  Error_Msg_Name_1 := Aname;
+                  Error_Msg_N
+                    ("?prefix of attribute % is always evaluated when "
+                     & "related consequence is selected", P);
+               end if;
+
+            --  Attribute 'Old appears in the condition of a contract case.
+            --  Emit an error since this is not a postcondition-like context.
+
+            else
                Error_Attr
                  ("attribute % cannot appear in the condition of a contract "
                   & "case (SPARK RM 6.1.3(2))", P);

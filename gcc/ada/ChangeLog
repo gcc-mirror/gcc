@@ -1,5 +1,33 @@
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
+	* exp_util.adb: Update comments.
+
+2014-02-19  Doug Rupp  <rupp@adacore.com>
+
+	* bindgen.adb (Gen_Adainit) [VMS] New global Float_Format.
+	* init.c (__gl_float_format): [VMS] New global.
+	(__gnat_set_features): Call FP_CONTROL to set FPSR for the float
+	representation in effect.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb Add with and use clause for Exp_Prag.
+	(Expand_Contract_Cases): Relocated to Exp_Prag.
+	* exp_ch6.ads (Expand_Contract_Cases): Relocated to Exp_Prag.
+	* exp_prag.adb Add with and use clauses for Checks and Validsw.
+	(Expand_Contract_Cases): Relocated from Exp_Ch6. Update the
+	structure of the expanded code to showcase the evaluation of
+	attribute 'Old prefixes. Add local variable Old_Evals. Expand
+	any attribute 'Old references found within a consequence. Add
+	circuitry to evaluate the prefixes of attribute 'Old that
+	belong to a selected consequence.
+	(Expand_Old_In_Consequence): New routine.
+	* exp_prag.ads (Expand_Contract_Cases): Relocated from Exp_Ch6.
+	* sem_attr.adb (Check_Use_In_Contract_Cases): Warn that a
+	potentially unevaluated prefix is always evaluated.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
 	* exp_attr.adb (Expand_Min_Max_Attribute): Use Insert_Declaration
 	(Expand_Min_Max_Attribute): Use Matching_Standard_Type.
 	* exp_ch4.adb (Expand_N_Expression_With_Actions): Remove special
