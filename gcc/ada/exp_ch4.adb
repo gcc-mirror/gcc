@@ -5067,11 +5067,41 @@ package body Exp_Ch4 is
    --------------------------------------
 
    procedure Expand_N_Expression_With_Actions (N : Node_Id) is
+      procedure Insert_Declaration (Decl : Node_Id);
+      --  This is like Insert_Action, but inserts outside the expression in
+      --  which N appears. This is needed, because otherwise we can end up
+      --  inserting a declaration in the actions of a short circuit, and that
+      --  will not do, because that's likely where we (the expression with
+      --  actions) node came from the first place. We are only inserting a
+      --  declaration with no side effects, so it is harmless (and needed)
+      --  to insert at a higher point in the tree.
+
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
       --  transient controlled objects. If such objects are found, the routine
       --  generates code to clean them up when the context of the expression is
       --  evaluated or elaborated.
+
+      ------------------------
+      -- Insert_Declaration --
+      ------------------------
+
+      procedure Insert_Declaration (Decl : Node_Id) is
+         P : Node_Id;
+
+      begin
+         --  Climb out of the current expression
+
+         P := Decl;
+         loop
+            exit when Nkind (Parent (P)) not in N_Subexpr;
+            P := Parent (P);
+         end loop;
+
+         --  Now do the insertion
+
+         Insert_Action (P, Decl);
+      end Insert_Declaration;
 
       --------------------
       -- Process_Action --
@@ -5135,7 +5165,7 @@ package body Exp_Ch4 is
                Exp := Expression (Act);
                Set_Constant_Present (Act, False);
                Set_Expression (Act, Empty);
-               Insert_Action (N, Relocate_Node (Act));
+               Insert_Declaration (Relocate_Node (Act));
 
                Loc := Sloc (Act);
 
