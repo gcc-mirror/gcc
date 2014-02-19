@@ -1,3 +1,9 @@
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37743
+	* g++.dg/ext/builtin-bswap1.C: New test.
+	* c-c++-common/pr37743.c: New test.
+
 2014-02-19  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
 	* gcc.dg/decl-10.c: New test.
