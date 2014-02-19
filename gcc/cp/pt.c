@@ -19285,6 +19285,10 @@ maybe_instantiate_noexcept (tree fn)
 {
   tree fntype, spec, noex, clone;
 
+  /* Don't instantiate a noexcept-specification from template context.  */
+  if (processing_template_decl)
+    return;
+
   if (DECL_CLONED_FUNCTION_P (fn))
     fn = DECL_CLONED_FUNCTION (fn);
   fntype = TREE_TYPE (fn);
