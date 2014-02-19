@@ -1,3 +1,22 @@
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch10.adb (Analyze_Proper_Body): Issue error on missing
+	subunit in GNATprove_Mode.
+	* sinfo.ads (GNATprove_Mode): Document error issued in GNATprove_Mode.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* lib-xref.ads Alphabetize the contents of table
+	Xref_Entity_Letters. Add an entry in table Xref_Entity_Letters
+	for E_Abstract_State. List all letters and symbols in use.
+	* sem_prag.adb (Analyze_Abstract_State): Update all calls
+	to Create_Abstract_State to reflect the new signature.
+	(Create_Abstract_State): Change subprogram profile and update
+	the comment on usage. Use the proper location of the state
+	declaration when creating a new abstract state entity. Do not
+	generate an external name, but simply reuse the name coming from
+	the state declaration.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Expression_With_Actions): Make sure
