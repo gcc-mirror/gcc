@@ -141,6 +141,10 @@ package Output is
    --  Returns last character written on the current line, or null if the
    --  current line is (so far) empty.
 
+   procedure Delete_Last_Char;
+   --  Deletes last character written on the current line, no effect if the
+   --  current line is (so far) empty.
+
    function Column return Pos;
    pragma Inline (Column);
    --  Returns the number of the column about to be written (e.g. a value of 1

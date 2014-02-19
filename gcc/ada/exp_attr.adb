@@ -140,6 +140,10 @@ package body Exp_Attr is
    --  Handle the expansion of attribute 'Loop_Entry. As a result, the related
    --  loop may be converted into a conditional block. See body for details.
 
+   procedure Expand_Min_Max_Attribute (N : Node_Id);
+   --  Handle the expansion of attributes 'Max and 'Min, including expanding
+   --  then out if we are in Modify_Tree_For_C mode.
+
    procedure Expand_Pred_Succ_Attribute (N : Node_Id);
    --  Handles expansion of Pred or Succ attributes for case of non-real
    --  operand with overflow checking required.
@@ -1034,6 +1038,116 @@ package body Exp_Attr is
          Pop_Scope;
       end if;
    end Expand_Loop_Entry_Attribute;
+
+   ------------------------------
+   -- Expand_Min_Max_Attribute --
+   ------------------------------
+
+   procedure Expand_Min_Max_Attribute (N : Node_Id) is
+   begin
+      --  Min and Max are handled by the back end (except that static cases
+      --  have already been evaluated during semantic processing, although the
+      --  back end should not count on this). The one bit of special processing
+      --  required in the normal case is that these two attributes typically
+      --  generate conditionals in the code, so check the relevant restriction.
+
+      Check_Restriction (No_Implicit_Conditionals, N);
+
+      --  In Modify_Tree_For_C mode, we rewrite as an if expression
+
+      if Modify_Tree_For_C then
+         declare
+            Loc   : constant Source_Ptr := Sloc (N);
+            Typ   : constant Entity_Id  := Etype (N);
+            Expr  : constant Node_Id    := First (Expressions (N));
+            Left  : constant Node_Id    := Relocate_Node (Expr);
+            Right : constant Node_Id    := Relocate_Node (Next (Expr));
+            Ltyp  : constant Entity_Id  := Etype (Left);
+            Rtyp  : constant Entity_Id  := Etype (Right);
+
+            function Make_Compare (Left, Right : Node_Id) return Node_Id;
+            --  Returns Left >= Right for Max, Left <= Right for Min
+
+            ------------------
+            -- Make_Compare --
+            ------------------
+
+            function Make_Compare (Left, Right : Node_Id) return Node_Id is
+            begin
+               if Attribute_Name (N) = Name_Max then
+                  return
+                    Make_Op_Ge (Loc,
+                      Left_Opnd  => Left,
+                      Right_Opnd => Right);
+               else
+                  return
+                    Make_Op_Le (Loc,
+                      Left_Opnd  => Left,
+                      Right_Opnd => Right);
+               end if;
+            end Make_Compare;
+
+         --  Start of processing for Min_Max
+
+         begin
+            --  If both Left and Right are simple entity names, then we can
+            --  just use Duplicate_Expr to duplicate the references and return
+
+            --    (if Left >=|<= Right then Left else Right)
+
+            if Is_Entity_Name (Left) and then Is_Entity_Name (Right) then
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Make_Compare (Left, Right),
+                     Duplicate_Subexpr_No_Checks (Left),
+                     Duplicate_Subexpr_No_Checks (Right))));
+
+            --  Otherwise we wrap things in an expression with actions. You
+            --  might think we could just use the approach above, but there
+            --  are problems, in particular with escaped discriminants. In
+            --  this case we generate:
+
+            --    do
+            --      T1 : constant typ := Left;
+            --      T2 : constant typ := Right;
+            --    in
+            --      (if T1 >=|<= T2 then T1 else T2)
+            --    end;
+
+            else
+               declare
+                  T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+
+               begin
+                  Rewrite (N,
+                    Make_Expression_With_Actions (Loc,
+                      Actions => New_List (
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T1,
+                          Object_Definition   => New_Occurrence_Of (Ltyp, Loc),
+                          Expression          => Left),
+                        Make_Object_Declaration (Loc,
+                          Defining_Identifier => T2,
+                          Object_Definition   => New_Occurrence_Of (Rtyp, Loc),
+                          Expression          => Right)),
+
+                      Expression =>
+                        Make_If_Expression (Loc,
+                          Expressions => New_List (
+                            Make_Compare
+                              (New_Occurrence_Of (T1, Loc),
+                               New_Occurrence_Of (T2, Loc)),
+                            New_Occurrence_Of (T1, Loc),
+                            New_Occurrence_Of (T2, Loc)))));
+               end;
+            end if;
+
+            Analyze_And_Resolve (N, Typ);
+         end;
+      end if;
+   end Expand_Min_Max_Attribute;
 
    ----------------------------------
    -- Expand_N_Attribute_Reference --
@@ -3621,38 +3735,7 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Max =>
-
-         --  Max is handled by the back end (except that static cases have
-         --  already been evaluated during semantic processing, but anyway
-         --  the back end should not count on this). The one bit of special
-         --  processing required in the normal case is that this attribute
-         --  typically generates conditionals in the code, so we must check
-         --  the relevant restriction.
-
-         Check_Restriction (No_Implicit_Conditionals, N);
-
-         --  In Modify_Tree_For_C mode, we rewrite as an if expression
-
-         if Modify_Tree_For_C then
-            declare
-               Loc   : constant Source_Ptr := Sloc (N);
-               Typ   : constant Entity_Id  := Etype (N);
-               Expr  : constant Node_Id    := First (Expressions (N));
-               Left  : constant Node_Id    := Relocate_Node (Expr);
-               Right : constant Node_Id    := Relocate_Node (Next (Expr));
-
-            begin
-               Rewrite (N,
-                 Make_If_Expression (Loc,
-                   Expressions => New_List (
-                     Make_Op_Ge (Loc,
-                       Left_Opnd  => Left,
-                       Right_Opnd => Right),
-                     Duplicate_Subexpr_No_Checks (Left),
-                     Duplicate_Subexpr_No_Checks (Right))));
-               Analyze_And_Resolve (N, Typ);
-            end;
-         end if;
+         Expand_Min_Max_Attribute (N);
 
       ----------------------------------
       -- Max_Size_In_Storage_Elements --
@@ -3733,7 +3816,7 @@ package body Exp_Attr is
 
       when Attribute_Mechanism_Code =>
 
-         --  We must replace the prefix in the renamed case
+         --  We must replace the prefix i the renamed case
 
          if Is_Entity_Name (Pref)
            and then Present (Alias (Entity (Pref)))
@@ -3746,38 +3829,7 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Min =>
-
-         --  Min is handled by the back end (except that static cases have
-         --  already been evaluated during semantic processing, but anyway
-         --  the back end should not count on this). The one bit of special
-         --  processing required in the normal case is that this attribute
-         --  typically generates conditionals in the code, so we must check
-         --  the relevant restriction.
-
-         Check_Restriction (No_Implicit_Conditionals, N);
-
-         --  In Modify_Tree_For_C mode, we rewrite as an if expression
-
-         if Modify_Tree_For_C then
-            declare
-               Loc   : constant Source_Ptr := Sloc (N);
-               Typ   : constant Entity_Id  := Etype (N);
-               Expr  : constant Node_Id    := First (Expressions (N));
-               Left  : constant Node_Id    := Relocate_Node (Expr);
-               Right : constant Node_Id    := Relocate_Node (Next (Expr));
-
-            begin
-               Rewrite (N,
-                 Make_If_Expression (Loc,
-                   Expressions => New_List (
-                     Make_Op_Le (Loc,
-                       Left_Opnd  => Left,
-                       Right_Opnd => Right),
-                     Duplicate_Subexpr_No_Checks (Left),
-                     Duplicate_Subexpr_No_Checks (Right))));
-               Analyze_And_Resolve (N, Typ);
-            end;
-         end if;
+         Expand_Min_Max_Attribute (N);
 
       ---------
       -- Mod --

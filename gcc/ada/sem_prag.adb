@@ -21434,15 +21434,37 @@ package body Sem_Prag is
                   elsif Has_Non_Null_Refinement (Dep_Id) then
                      Has_Refined_State := True;
 
-                     if Is_Entity_Name (Ref_Output) then
-                        Ref_Id := Entity_Of (Ref_Output);
+                     --  Account for the case where a state with a non-null
+                     --  refinement matches a null output list:
 
-                        --  The output of the refinement clause is a valid
-                        --  constituent of the state. Remove the clause from
-                        --  the pool of candidates if both input lists match.
-                        --  Note that the search continues because one clause
-                        --  may have been normalized into multiple clauses as
-                        --  per the example above.
+                     --    Refined_State   => (State_1 => (C1, C2),
+                     --                        State_2 => (C3, C4))
+                     --    Depends         => (State_1 => State_2)
+                     --    Refined_Depends => (null    => C3)
+
+                     if Nkind (Ref_Output) = N_Null
+                       and then Inputs_Match
+                                  (Dep_Clause  => Dep_Clause,
+                                   Ref_Clause  => Ref_Clause,
+                                   Post_Errors => False)
+                     then
+                        Has_Constituent := True;
+
+                        --  Note that the search continues after the clause is
+                        --  removed from the pool of candidates because it may
+                        --  have been normalized into multiple simple clauses.
+
+                        Remove (Ref_Clause);
+
+                     --  Otherwise the output of the refinement clause must be
+                     --  a valid constituent of the state:
+
+                     --    Refined_State   => (State => (C1, C2))
+                     --    Depends         => (State => <input>)
+                     --    Refined_Depends => (C1    => <input>)
+
+                     elsif Is_Entity_Name (Ref_Output) then
+                        Ref_Id := Entity_Of (Ref_Output);
 
                         if Ekind_In (Ref_Id, E_Abstract_State, E_Variable)
                           and then Present (Encapsulating_State (Ref_Id))
@@ -21453,6 +21475,12 @@ package body Sem_Prag is
                                       Post_Errors => False)
                         then
                            Has_Constituent := True;
+
+                           --  Note that the search continues after the clause
+                           --  is removed from the pool of candidates because
+                           --  it may have been normalized into multiple simple
+                           --  clauses.
+
                            Remove (Ref_Clause);
                         end if;
                      end if;
@@ -21819,12 +21847,13 @@ package body Sem_Prag is
       begin
          --  Construct a list of all refinement inputs. Note that the input
          --  list is copied because the algorithm modifies its contents and
-         --  this should not be visible in Refined_Depends.
+         --  this should not be visible in Refined_Depends. The same applies
+         --  for a solitary input.
 
          if Nkind (Inputs) = N_Aggregate then
             Ref_Inputs := New_Copy_List (Expressions (Inputs));
          else
-            Ref_Inputs := New_List (Inputs);
+            Ref_Inputs := New_List (New_Copy (Inputs));
          end if;
 
          --  Depending on whether the original dependency clause mentions
