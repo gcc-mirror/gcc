@@ -1126,8 +1126,8 @@ package body Prj.Part is
 
             if Project_Qualifier_Of (Imported, In_Tree) = Aggregate then
                Error_Msg_Name_1 := Name_Id (Path_Name_Of (Imported, In_Tree));
-                  Error_Msg
-                    (Flags, "cannot import aggregate project %%", Token_Ptr);
+               Error_Msg
+                 (Flags, "cannot import aggregate project %%", Token_Ptr);
                exit;
             end if;
 
@@ -1280,6 +1280,7 @@ package body Prj.Part is
 
       Normed_Path_Name    : Path_Name_Type;
       Canonical_Path_Name : Path_Name_Type;
+      Resolved_Path_Name  : Path_Name_Type;
       Project_Directory   : Path_Name_Type;
       Project_Scan_State  : Saved_Project_Scan_State;
       Source_Index        : Source_File_Index;
@@ -1329,6 +1330,20 @@ package body Prj.Part is
          Name_Len := Canonical_Path'Length;
          Name_Buffer (1 .. Name_Len) := Canonical_Path;
          Canonical_Path_Name := Name_Find;
+
+         if Opt.Follow_Links_For_Files then
+            Resolved_Path_Name := Canonical_Path_Name;
+
+         else
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer
+              (Normalize_Pathname
+                 (Canonical_Path,
+                  Resolve_Links => True,
+                  Case_Sensitive => False));
+            Resolved_Path_Name := Name_Find;
+         end if;
+
       end;
 
       if Has_Circular_Dependencies
@@ -1351,7 +1366,7 @@ package body Prj.Part is
       while
         A_Project_Name_And_Node /= Tree_Private_Part.No_Project_Name_And_Node
       loop
-         if A_Project_Name_And_Node.Canonical_Path = Canonical_Path_Name then
+         if A_Project_Name_And_Node.Resolved_Path = Resolved_Path_Name then
             if Extended then
 
                if A_Project_Name_And_Node.Extended then
@@ -1773,6 +1788,17 @@ package body Prj.Part is
 
                   if Present (Extended_Project) then
 
+                     if Project_Qualifier_Of (Extended_Project, In_Tree) =
+                                                                   Aggregate
+                     then
+                        Error_Msg_Name_1 :=
+                          Name_Id (Path_Name_Of (Extended_Project, In_Tree));
+                        Error_Msg
+                          (Env.Flags,
+                           "cannot extend aggregate project %%",
+                           Location_Of (Project, In_Tree));
+                     end if;
+
                      --  A project that extends an extending-all project is
                      --  also an extending-all project.
 
@@ -1987,7 +2013,7 @@ package body Prj.Part is
             E => (Name           => Name_Of_Project,
                   Display_Name   => Display_Name_Of_Project,
                   Node           => Project,
-                  Canonical_Path => Canonical_Path_Name,
+                  Resolved_Path  => Resolved_Path_Name,
                   Extended       => Extended,
                   From_Extended  => From_Extended /= None,
                   Proj_Qualifier => Project_Qualifier_Of (Project, In_Tree)));

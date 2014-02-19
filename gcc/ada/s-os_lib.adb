@@ -611,7 +611,6 @@ package body System.OS_Lib is
    ----------------------
 
    procedure Copy_Time_Stamps (Source, Dest : String; Success : out Boolean) is
-
       function Copy_Attributes
         (From, To : System.Address;
          Mode     : Integer) return Integer;
@@ -672,7 +671,6 @@ package body System.OS_Lib is
         (Name  : C_File_Name;
          Fmode : Mode) return File_Descriptor;
       pragma Import (C, C_Create_File, "__gnat_open_create");
-
    begin
       return C_Create_File (Name, Fmode);
    end Create_File;
@@ -682,7 +680,6 @@ package body System.OS_Lib is
       Fmode : Mode) return File_Descriptor
    is
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -701,7 +698,6 @@ package body System.OS_Lib is
         (Name  : C_File_Name;
          Fmode : Mode) return File_Descriptor;
       pragma Import (C, C_Create_New_File, "__gnat_open_new");
-
    begin
       return C_Create_New_File (Name, Fmode);
    end Create_New_File;
@@ -711,7 +707,6 @@ package body System.OS_Lib is
       Fmode : Mode) return File_Descriptor
    is
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -726,9 +721,7 @@ package body System.OS_Lib is
       function C_Create_File
         (Name : C_File_Name) return File_Descriptor;
       pragma Import (C, C_Create_File, "__gnat_create_output_file");
-
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
@@ -760,6 +753,10 @@ package body System.OS_Lib is
       Create_Temp_File_Internal (FD, Name, Stdout => False);
    end Create_Temp_File;
 
+   -----------------------------
+   -- Create_Temp_Output_File --
+   -----------------------------
+
    procedure Create_Temp_Output_File
      (FD   : out File_Descriptor;
       Name : out String_Access)
@@ -773,17 +770,13 @@ package body System.OS_Lib is
    -------------------------------
 
    procedure Create_Temp_File_Internal
-     (FD        : out File_Descriptor;
-      Name      : out String_Access;
-      Stdout    : Boolean)
+     (FD     : out File_Descriptor;
+      Name   : out String_Access;
+      Stdout : Boolean)
    is
       Pos      : Positive;
       Attempts : Natural := 0;
       Current  : String (Current_Temp_File_Name'Range);
-
-      ---------------------------------
-      -- Create_New_Output_Text_File --
-      ---------------------------------
 
       function Create_New_Output_Text_File
         (Name : String) return File_Descriptor;
@@ -793,14 +786,17 @@ package body System.OS_Lib is
       --  process. There is no point exposing this function, as it's generally
       --  not particularly useful.
 
+      ---------------------------------
+      -- Create_New_Output_Text_File --
+      ---------------------------------
+
       function Create_New_Output_Text_File
-        (Name : String) return File_Descriptor is
+        (Name : String) return File_Descriptor
+      is
          function C_Create_File
            (Name : C_File_Name) return File_Descriptor;
          pragma Import (C, C_Create_File, "__gnat_create_output_file_new");
-
          C_Name : String (1 .. Name'Length + 1);
-
       begin
          C_Name (1 .. Name'Length) := Name;
          C_Name (C_Name'Last)      := ASCII.NUL;
@@ -812,6 +808,7 @@ package body System.OS_Lib is
 
       File_Loop : loop
          Locked : begin
+
             --  We need to protect global variable Current_Temp_File_Name
             --  against concurrent access by different tasks.
 
@@ -841,10 +838,10 @@ package body System.OS_Lib is
                   when others =>
 
                      --  If it is not a digit, then there are no available
-                     --  temp file names. Return Invalid_FD. There is almost
-                     --  no chance that this code will be ever be executed,
-                     --  since it would mean that there are one million temp
-                     --  files in the same directory.
+                     --  temp file names. Return Invalid_FD. There is almost no
+                     --  chance that this code will be ever be executed, since
+                     --  it would mean that there are one million temp files in
+                     --  the same directory.
 
                      SSL.Unlock_Task.all;
                      FD := Invalid_FD;
@@ -855,8 +852,8 @@ package body System.OS_Lib is
 
             Current := Current_Temp_File_Name;
 
-            --  We can now release the lock, because we are no longer
-            --  accessing Current_Temp_File_Name.
+            --  We can now release the lock, because we are no longer accessing
+            --  Current_Temp_File_Name.
 
             SSL.Unlock_Task.all;
 
@@ -909,11 +906,9 @@ package body System.OS_Lib is
 
    procedure Delete_File (Name : String; Success : out Boolean) is
       C_Name : String (1 .. Name'Length + 1);
-
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last)      := ASCII.NUL;
-
       Delete_File (C_Name'Address, Success);
    end Delete_File;
 
@@ -960,7 +955,6 @@ package body System.OS_Lib is
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -987,7 +981,6 @@ package body System.OS_Lib is
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1014,7 +1007,6 @@ package body System.OS_Lib is
 
    begin
       Get_Suffix_Ptr (Suffix_Length'Address, Suffix_Ptr'Address);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1044,7 +1036,6 @@ package body System.OS_Lib is
 
    begin
       Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1074,7 +1065,6 @@ package body System.OS_Lib is
 
    begin
       Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1104,7 +1094,6 @@ package body System.OS_Lib is
 
    begin
       Suffix_Length := Strlen (Target_Object_Ext_Ptr);
-
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1153,13 +1142,12 @@ package body System.OS_Lib is
    function GM_Day (Date : OS_Time) return Day_Type is
       D  : Day_Type;
 
-      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Y, Mo, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1173,13 +1161,12 @@ package body System.OS_Lib is
    function GM_Hour (Date : OS_Time) return Hour_Type is
       H  : Hour_Type;
 
-      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Y, Mo, D, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1193,13 +1180,12 @@ package body System.OS_Lib is
    function GM_Minute (Date : OS_Time) return Minute_Type is
       Mn : Minute_Type;
 
-      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
       S  : Second_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Y, Mo, D, H, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1213,13 +1199,12 @@ package body System.OS_Lib is
    function GM_Month (Date : OS_Time) return Month_Type is
       Mo : Month_Type;
 
-      pragma Warnings (Off);
       Y  : Year_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Y, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1233,13 +1218,12 @@ package body System.OS_Lib is
    function GM_Second (Date : OS_Time) return Second_Type is
       S  : Second_Type;
 
-      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Y, Mo, D, H, Mn);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1302,13 +1286,12 @@ package body System.OS_Lib is
    function GM_Year (Date : OS_Time) return Year_Type is
       Y  : Year_Type;
 
-      pragma Warnings (Off);
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Warnings (On);
+      pragma Unreferenced (Mo, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);

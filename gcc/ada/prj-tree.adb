@@ -2922,7 +2922,7 @@ package body Prj.Tree is
             Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
               (Name           => Name,
                Display_Name   => Name,
-               Canonical_Path => No_Path,
+               Resolved_Path  => No_Path,
                Node           => Project,
                Extended       => False,
                From_Extended  => False,

@@ -577,9 +577,10 @@ package body Prj.Conf is
 
       OK :=
         Target = ""
-          or else (Tgt_Name /= No_Name
-                   and then (Length_Of_Name (Tgt_Name) = 0
-                    or else Target = Get_Name_String (Tgt_Name)));
+          or else
+            (Tgt_Name /= No_Name
+              and then (Length_Of_Name (Tgt_Name) = 0
+                          or else Target = Get_Name_String (Tgt_Name)));
 
       if not OK then
          if Autoconf_Specified then

@@ -6443,7 +6443,6 @@ package body Sem_Util is
                Error_Msg_N
                  ("Operation First for iterable type must be unique", Aspect);
                return Any_Type;
-
             else
                Cursor :=  Etype (Func);
             end if;
@@ -6461,6 +6460,7 @@ package body Sem_Util is
 
       return Cursor;
    end Get_Cursor_Type;
+
    -------------------------------
    -- Get_Default_External_Name --
    -------------------------------
