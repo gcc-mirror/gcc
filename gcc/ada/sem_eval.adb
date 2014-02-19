@@ -37,6 +37,7 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Par_SCO;  use Par_SCO;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -1955,8 +1956,8 @@ package body Sem_Eval is
 
       elsif Ekind (Def_Id) = E_Constant then
 
-         --  Deferred constants must always be treated as nonstatic
-         --  outside the scope of their full view.
+         --  Deferred constants must always be treated as nonstatic outside the
+         --  scope of their full view.
 
          if Present (Full_View (Def_Id))
            and then not In_Open_Scopes (Scope (Def_Id))
@@ -1976,6 +1977,16 @@ package body Sem_Eval is
               and then not Is_Generic_Type (Etype (N))
             then
                Validate_Static_Object_Name (N);
+            end if;
+
+            --  Mark constant condition in SCOs
+
+            if Generate_SCO
+              and then Comes_From_Source (N)
+              and then Is_Boolean_Type (Etype (Def_Id))
+              and then Compile_Time_Known_Value (N)
+            then
+               Set_SCO_Condition (N, Expr_Value_E (N) = Standard_True);
             end if;
 
             return;

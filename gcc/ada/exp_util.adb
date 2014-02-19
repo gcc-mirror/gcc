@@ -3950,6 +3950,43 @@ package body Exp_Util is
       end if;
    end Insert_Actions_After;
 
+   ------------------------
+   -- Insert_Declaration --
+   ------------------------
+
+   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id) is
+      P : Node_Id;
+
+   begin
+      pragma Assert (Nkind (N) in N_Subexpr);
+
+      --  Climb until we find a procedure or a package
+
+      P := Parent (N);
+      loop
+         if Is_List_Member (P) then
+            exit when Nkind_In (Parent (P), N_Package_Specification,
+                                            N_Package_Body,
+                                            N_Subprogram_Body);
+
+            --  Special handling for handled sequence of statements, we must
+            --  insert in the statements not the exception handlers!
+
+            if Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements then
+               P := First (Statements (Parent (P)));
+               exit;
+            end if;
+         end if;
+
+         P := Parent (P);
+      end loop;
+
+      --  Now do the insertion
+
+      Insert_Before (P, Decl);
+      Analyze (Decl);
+   end Insert_Declaration;
+
    ---------------------------------
    -- Insert_Library_Level_Action --
    ---------------------------------
@@ -5923,6 +5960,68 @@ package body Exp_Util is
             Make_Index_Or_Discriminant_Constraint (Loc,
               Constraints => List_Constr));
    end Make_Subtype_From_Expr;
+
+   ----------------------------
+   -- Matching_Standard_Type --
+   ----------------------------
+
+   function Matching_Standard_Type (Typ : Entity_Id) return Entity_Id is
+      pragma Assert (Is_Scalar_Type (Typ));
+      Siz : constant Uint := Esize (Typ);
+
+   begin
+      --  Float-point cases
+
+      if Is_Floating_Point_Type (Typ) then
+         if Siz <= Esize (Standard_Short_Float) then
+            return Standard_Short_Float;
+         elsif Siz <= Esize (Standard_Float) then
+            return Standard_Float;
+         elsif Siz <= Esize (Standard_Long_Float) then
+            return Standard_Long_Float;
+         elsif Siz <= Esize (Standard_Long_Long_Float) then
+            return Standard_Long_Long_Float;
+         else
+            raise Program_Error;
+         end if;
+
+      --  Integer cases (includes fixed-point types)
+
+      --  Unsigned cases (includes normal enumeration types)
+
+      elsif Is_Unsigned_Type (Typ) then
+         if Siz <= Esize (Standard_Short_Short_Unsigned) then
+            return Standard_Short_Short_Unsigned;
+         elsif Siz <= Esize (Standard_Short_Unsigned) then
+            return Standard_Short_Unsigned;
+         elsif Siz <= Esize (Standard_Unsigned) then
+            return Standard_Unsigned;
+         elsif Siz <= Esize (Standard_Long_Unsigned) then
+            return Standard_Long_Unsigned;
+         elsif Siz <= Esize (Standard_Long_Long_Unsigned) then
+            return Standard_Long_Long_Unsigned;
+         else
+            raise Program_Error;
+         end if;
+
+      --  Signed cases
+
+      else
+         if Siz <= Esize (Standard_Short_Short_Integer) then
+            return Standard_Short_Short_Integer;
+         elsif Siz <= Esize (Standard_Short_Integer) then
+            return Standard_Short_Integer;
+         elsif Siz <= Esize (Standard_Integer) then
+            return Standard_Integer;
+         elsif Siz <= Esize (Standard_Long_Integer) then
+            return Standard_Long_Integer;
+         elsif Siz <= Esize (Standard_Long_Long_Integer) then
+            return Standard_Long_Long_Integer;
+         else
+            raise Program_Error;
+         end if;
+      end if;
+   end Matching_Standard_Type;
 
    -----------------------------
    -- May_Generate_Large_Temp --

@@ -1681,8 +1681,6 @@ package body Prj.Env is
          Path : Path_Name_Type;
 
       begin
-         --  ??? This is almost the equivalent of For_All_Source_Dirs
-
          if Process_Source_Dirs then
 
             --  Add to path all source directories of this project if there are

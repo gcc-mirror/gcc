@@ -1040,6 +1040,7 @@ procedure GNATCmd is
                 "accept project file switches -vPx, -Pprj and -Xnam=val");
       New_Line;
    end Non_VMS_Usage;
+
    ------------------
    -- Process_Link --
    ------------------
@@ -2106,7 +2107,7 @@ begin
          --  Set up the env vars for project path files
 
          Prj.Env.Set_Ada_Paths
-           (Project, Project_Tree, Including_Libraries => False);
+           (Project, Project_Tree, Including_Libraries => True);
 
          --  For gnatcheck, gnatstub, gnatmetric, gnatpp and gnatelim, create
          --  a configuration pragmas file, if necessary.

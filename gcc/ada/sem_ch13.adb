@@ -128,9 +128,9 @@ package body Sem_Ch13 is
    --  Uint value. If the value is inappropriate, then error messages are
    --  posted as required, and a value of No_Uint is returned.
 
-   function Get_Cursor_Type return Entity_Id;
-   --  Find Cursor type by name in the current scope, used to resolve primitive
-   --  operations of an iterable type.
+   function Get_Cursor_Type (S : Entity_Id) return Entity_Id;
+   --  Find Cursor type by name in the scope of an iterable type, for use in
+   --  resolving the primitive operations of the type.
 
    function Is_Operational_Item (N : Node_Id) return Boolean;
    --  A specification for a stream attribute is allowed before the full type
@@ -8059,7 +8059,7 @@ package body Sem_Ch13 is
             T := Entity (ASN);
 
             declare
-               Cursor : constant Entity_Id := Get_Cursor_Type;
+               Cursor : constant Entity_Id := Get_Cursor_Type (Scope (T));
                Assoc  : Node_Id;
                Expr   : Node_Id;
             begin
@@ -9749,7 +9749,7 @@ package body Sem_Ch13 is
    -- Get_Cursor_Type --
    ---------------------
 
-   function Get_Cursor_Type return Entity_Id is
+   function Get_Cursor_Type (S : Entity_Id) return Entity_Id is
       C : Entity_Id;
       E : Entity_Id;
 
@@ -9758,7 +9758,7 @@ package body Sem_Ch13 is
       --  used in iterable primitives.
 
       C := Empty;
-      E := First_Entity (Current_Scope);
+      E := First_Entity (S);
       while Present (E) loop
          if Chars (E) = Name_Cursor and then Is_Type (E) then
             C := E;
@@ -11455,7 +11455,7 @@ package body Sem_Ch13 is
       Expr  : Node_Id;
 
       Prim   : Node_Id;
-      Cursor : constant Entity_Id := Get_Cursor_Type;
+      Cursor : constant Entity_Id := Get_Cursor_Type (Scope (Typ));
 
       First_Id       : Entity_Id;
       Next_Id        : Entity_Id;

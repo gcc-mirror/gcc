@@ -47,18 +47,17 @@ package Atree is
 --  program internally. Syntactic and semantic information is combined in
 --  this tree. There is no separate symbol table structure.
 
---  WARNING: There is a C version of this package. Any changes to this
---  source file must be properly reflected in the C header file atree.h
+--  WARNING: There is a C version of this package. Any changes to this source
+--  file must be properly reflected in the C header file atree.h
 
 --  Package Atree defines the basic structure of the tree and its nodes and
---  provides the basic abstract interface for manipulating the tree. Two
---  other packages use this interface to define the representation of Ada
---  programs using this tree format. The package Sinfo defines the basic
---  representation of the syntactic structure of the program, as output
---  by the parser. The package Entity_Info defines the semantic information
---  which is added to the tree nodes that represent declared entities (i.e.
---  the information which might typically be described in a separate symbol
---  table structure).
+--  provides the basic abstract interface for manipulating the tree. Two other
+--  packages use this interface to define the representation of Ada programs
+--  using this tree format. The package Sinfo defines the basic representation
+--  of the syntactic structure of the program, as output by the parser. The
+--  package Einfo defines the semantic information which is added to the tree
+--  nodes that represent declared entities (i.e. the information which might
+--  typically be described in a separate symbol table structure).
 
 --  The front end of the compiler first parses the program and generates a
 --  tree that is simply a syntactic representation of the program in abstract
