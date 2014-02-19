@@ -7675,6 +7675,9 @@ package body Exp_Util is
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False) return Boolean
    is
+      Typ : constant Entity_Id := Etype (N);
+      --  Result type of the expression
+
       function Safe_Prefixed_Reference (N : Node_Id) return Boolean;
       --  The argument N is a construct where the Prefix is dereferenced if it
       --  is an access type and the result is a variable. The call returns True
@@ -7919,7 +7922,7 @@ package body Exp_Util is
       elsif VM_Target /= No_VM
          and then not Comes_From_Source (N)
          and then Nkind (Parent (N)) = N_Object_Renaming_Declaration
-         and then Is_Class_Wide_Type (Etype (N))
+         and then Is_Class_Wide_Type (Typ)
       then
          return True;
       end if;
@@ -7981,12 +7984,16 @@ package body Exp_Util is
                 Side_Effect_Free
                   (First (Parameter_Associations (N)), Name_Req, Variable_Ref);
 
-         --  An IF expression is side effect free if its components are all
-         --  side effect free (conditions and then actions and else actions).
+         --  An IF expression is side effect free if it's of a scalar type, and
+         --  all its components are all side effect free (conditions and then
+         --  actions and else actions). We restrict to scalar types, since it
+         --  is annoying to deal with things like (if A then B else C)'First
+         --  where the type involved is a string type.
 
-         --  when N_If_Expression =>
-         --  return Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref);
-         --  commented out for now, caused some crashes ???
+         when N_If_Expression =>
+            return Is_Scalar_Type (Typ)
+              and then
+                Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref);
 
          --  An indexed component is side effect free if it is a side
          --  effect free prefixed reference and all the indexing
@@ -8014,7 +8021,7 @@ package body Exp_Util is
 
          when N_Selected_Component =>
             if Nkind (Parent (N)) = N_Explicit_Dereference
-              and then Has_Non_Standard_Rep (Designated_Type (Etype (N)))
+              and then Has_Non_Standard_Rep (Designated_Type (Typ))
             then
                return False;
             else
