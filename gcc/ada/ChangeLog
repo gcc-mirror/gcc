@@ -1,3 +1,13 @@
+2014-02-19  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Minor spelling fixes.
+
+2014-02-19  Doug Rupp  <rupp@adacore.com>
+
+	* init.c: Remove unneeded code.
+	* fe.h (Float_Format): New macro
+	* gcc-interface/trans.c (gigi): On VMS, set vms_float_format.
+
 2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Refined_Global_Item):

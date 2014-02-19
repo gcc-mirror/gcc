@@ -184,6 +184,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define Exception_Mechanism            opt__exception_mechanism
 #define Generate_SCO_Instance_Table    opt__generate_sco_instance_table
 #define Global_Discard_Names           opt__global_discard_names
+#define Float_Format                   opt__float_format
 
 typedef enum {Setjmp_Longjmp, Back_End_Exceptions} Exception_Mechanism_Type;
 
@@ -193,6 +194,7 @@ extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;
 extern Boolean Generate_SCO_Instance_Table;
 extern Boolean Global_Discard_Names;
+extern Char Float_Format;
 
 /* restrict: */
 

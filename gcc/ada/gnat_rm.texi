@@ -14273,9 +14273,9 @@ for a particular subtype. Consider this example:
 
 @noindent
 By default, @code{RAB}
-has a size of 1 (sufficient to accomodate the representation
+has a size of 1 (sufficient to accommodate the representation
 of @code{A} and @code{B}, 0 and 1), and @code{REF}
-has a size of 3 (sufficient to accomodate the representation
+has a size of 3 (sufficient to accommodate the representation
 of @code{E} and @code{F}, 4 and 5). But if we add the
 following @code{Value_Size} attribute definition clause:
 

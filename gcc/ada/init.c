@@ -809,7 +809,6 @@ void (*__gnat_ctrl_c_handler) (void) = 0;
 /* Masks for facility identification. */
 #define FAC_MASK  		0x0fff0000
 #define DECADA_M_FACILITY	0x00310000
-#define SEVERITY_MASK		0x7
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    It would be better to just include <ssdef.h> */
@@ -1068,9 +1067,6 @@ __gnat_default_resignal_p (int code)
   for (i = 0; facility_resignal_table [i]; i++)
     if ((code & FAC_MASK) == facility_resignal_table [i])
       return 1;
-
-  if ((code & SEVERITY_MASK) == 1 || (code & SEVERITY_MASK) == 3)
-    return 1;
 
   for (i = 0, iexcept = 0;
        cond_resignal_table [i]
