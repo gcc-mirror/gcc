@@ -1,3 +1,8 @@
+2014-02-19  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer
+	overflow.
+
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/58844

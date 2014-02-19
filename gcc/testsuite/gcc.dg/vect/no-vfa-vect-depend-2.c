@@ -15,7 +15,7 @@ int main1 ()
   int i;
 
   /* Not vectorizable due to data dependence: dependence distance 1.  */ 
-  for (i = N - 1; i >= 0; i--)
+  for (i = N - 2; i >= 0; i--)
     {
       ia[i] = ia[i+1] * 4;
     }
@@ -28,7 +28,7 @@ int main1 ()
     } 
 
   /* Vectorizable. Dependence distance -1.  */
-  for (i = N - 1; i >= 0; i--)
+  for (i = N - 2; i >= 0; i--)
     {
       ib[i+1] = ib[i] * 4;
     }
