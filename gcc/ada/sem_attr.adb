@@ -9694,8 +9694,7 @@ package body Sem_Attr is
 
                elsif Ekind (Entity (P)) = E_Enumeration_Literal then
                   Error_Msg_F
-                    ("prefix of % attribute cannot be enumeration literal",
-                     P);
+                    ("prefix of % attribute cannot be enumeration literal", P);
                   Set_Etype (N, Any_Type);
 
                --  An attempt to take 'Access of a function that renames an
@@ -9706,13 +9705,12 @@ package body Sem_Attr is
                  and then Ekind (Alias (Entity (P))) = E_Enumeration_Literal
                then
                   Error_Msg_F
-                    ("prefix of % attribute cannot be function renaming " &
-                       "an enumeration literal", P);
+                    ("prefix of % attribute cannot be function renaming "
+                     & "an enumeration literal", P);
                   Set_Etype (N, Any_Type);
 
                elsif Convention (Entity (P)) = Convention_Intrinsic then
-                  Error_Msg_F
-                    ("prefix of % attribute cannot be intrinsic", P);
+                  Error_Msg_F ("prefix of % attribute cannot be intrinsic", P);
                   Set_Etype (N, Any_Type);
                end if;
 

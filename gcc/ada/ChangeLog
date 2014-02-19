@@ -1,3 +1,14 @@
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb, sem_prag.adb, sem_attr.adb: Minor reformatting.
+	* debug.adb: Remove -gnatd.X switch, no longer used.
+	* styleg.adb (Check_Then): Remove check of -gnatd.X, check is
+	now always made.
+
+2014-02-19  Bob Duff  <duff@adacore.com>
+
+	* g-socket.ads: Minor: Correct some comments.
+
 2014-02-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: Inhibit iterator rewriting in ASIS mode.
