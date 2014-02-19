@@ -1,3 +1,18 @@
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Analyze
+	a package contract at the end of the private declarations (if
+	applicable), otherwise analyze it and the end of the visible
+	declarations.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* style.adb (Missing_Overriding): If subprogram is an
+	instantiation, place warning on the instance node itself,
+	without mention of the original generic. Do not emit message
+	if explicit Ada version is older than the introduction of the
+	overriding indicator.
+
 2014-02-19  Yannick Moy  <moy@adacore.com>
 
 	* gnat_rm.texi: Doc clarifications.
