@@ -1,3 +1,9 @@
+2014-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60207
+	* config/i386/i386.c (construct_container): Remove TFmode check
+	for X86_64_INTEGER_CLASS.
+
 2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/59794
