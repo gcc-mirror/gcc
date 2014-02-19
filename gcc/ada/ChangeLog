@@ -1,3 +1,17 @@
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb, sem_util.ads, prj-conf.adb, s-os_lib.adb: Minor
+	reformatting.
+
+2014-02-19  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse_Single_Project): Use the fully resolved
+	project path, with all symbolic links resolved, to check if the
+	same project is imported with a different unresolved path.
+	* prj-tree.ads (Project_Name_And_Node): Component Canonical_Path
+	changed to Resolved_Path to reflect that all symbolic links
+	are resolved.
+
 2014-02-19  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Get_Cursor_Type): Moved to sem_util

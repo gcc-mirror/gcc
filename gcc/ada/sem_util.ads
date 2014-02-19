@@ -781,9 +781,9 @@ package Sem_Util is
      (Aspect : Node_Id;
       Typ    : Entity_Id) return Entity_Id;
    --  Find Cursor type in scope of formal container Typ, by locating primitive
-   --  operation First.
-   --  For use in resolving the other primitive operations of an Iterable type
-   --  and expanding loops and quantified expressions over formal containers.
+   --  operation First. For use in resolving the other primitive operations
+   --  of an Iterable type and expanding loops and quantified expressions
+   --  over formal containers.
 
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
