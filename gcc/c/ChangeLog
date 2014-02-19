@@ -1,3 +1,8 @@
+2014-02-19  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* c-parser.c (c_parser_declspecs): Replace call to error by error_at.
+	(c_parser_parameter_declaration): Likewise.
+
 2014-02-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60195
