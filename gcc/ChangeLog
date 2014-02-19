@@ -1,6 +1,12 @@
 2014-02-19  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60243
+	* tree-inline.c (estimate_num_insns): Avoid calling cgraph_get_node
+	for all calls.
+
+2014-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60243
 	* ipa-prop.c: Include stringpool.h and tree-ssanames.h.
 	(ipa_modify_call_arguments): Emit an argument load explicitely and
 	preserve virtual SSA form there and for the replacement call.
