@@ -1,6 +1,9 @@
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/60267
+	* g++.dg/ext/ivdep-1.C: New test.
+
+	PR c++/60267
 	* gcc.dg/pr60267.c: New test.
 
 2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
