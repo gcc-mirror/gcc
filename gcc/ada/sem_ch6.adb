@@ -3663,7 +3663,25 @@ package body Sem_Ch6 is
             Error_Msg_N
               ("contract cases do not mention result?T?", Case_Prag);
 
+         --  OK if we have at least one IN OUT parameter
+
          elsif Present (Post_Prag) and then not Seen_In_Post then
+            declare
+               F : Entity_Id;
+            begin
+               F := First_Formal (Subp);
+               while Present (F) loop
+                  if Ekind (F) = E_In_Out_Parameter then
+                     return;
+                  else
+                     Next_Formal (F);
+                  end if;
+               end loop;
+            end;
+
+            --  If no in-out parameters and no mention of Result, the contract
+            --  is certainly suspicious.
+
             Error_Msg_N
               ("function postcondition does not mention result?T?", Post_Prag);
          end if;
