@@ -317,13 +317,12 @@ namespace cilk {
 #ifndef __CILKRTS_ABI_VERSION
 #   ifdef IN_CILK_RUNTIME
 #       define __CILKRTS_ABI_VERSION 1
-#   elif __INTEL_COMPILER > 1200
-        // Intel compiler version >= 12.1
-#       define __CILKRTS_ABI_VERSION 1
-#   else
-        // Compiler does not support ABI version 1
-        // (Non-Intel compiler or Intel compiler prior to version 12.1).
+#   elif defined(__INTEL_COMPILER) && (__INTEL_COMPILER <= 1200)
+        // Intel compilers prior to version 12.1 support only ABI 0
 #       define __CILKRTS_ABI_VERSION 0
+#   else
+        // Non-Intel compiler or Intel compiler after version 12.0.
+#       define __CILKRTS_ABI_VERSION 1
 #   endif
 #endif
 
