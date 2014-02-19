@@ -208,7 +208,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
      (Container : aliased Map;
       Key       : Key_Type) return Constant_Reference_Type
    is
-      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+      Node : constant Count_Type :=
+               Key_Ops.Find (Container'Unrestricted_Access.all, Key);
 
    begin
       if Node = 0 then
@@ -321,7 +322,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    -------------
 
    function Element (Container : Map; Key : Key_Type) return Element_Type is
-      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+      Node : constant Count_Type :=
+               Key_Ops.Find (Container'Unrestricted_Access.all, Key);
 
    begin
       if Node = 0 then
@@ -449,7 +451,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
    ----------
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
-      Node : constant Count_Type := Key_Ops.Find (Container, Key);
+      Node : constant Count_Type :=
+               Key_Ops.Find (Container'Unrestricted_Access.all, Key);
    begin
       if Node = 0 then
          return No_Element;
@@ -1160,7 +1163,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
             return False;
          end if;
 
-         X := M.Buckets (Key_Ops.Index (M, M.Nodes (Position.Node).Key));
+         X := M.Buckets (Key_Ops.Checked_Index
+                          (M, M.Nodes (Position.Node).Key));
 
          for J in 1 .. M.Length loop
             if X = Position.Node then

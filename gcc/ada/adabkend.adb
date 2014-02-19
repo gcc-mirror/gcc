@@ -272,6 +272,12 @@ package body Adabkend is
             elsif not Is_Switch (Argv) then
                Add_File (Argv);
 
+            --  We must recognize -nostdinc to suppress visibility on the
+            --  standard GNAT RTL sources.
+
+            elsif Argv (Argv'First + 1 .. Argv'Last) = "nostdinc" then
+               Opt.No_Stdinc := True;
+
             --  Front end switch
 
             elsif Is_Front_End_Switch (Argv) then

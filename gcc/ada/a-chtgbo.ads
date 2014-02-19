@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,12 @@ package Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
    pragma Inline (Index);
    --  Uses the hash value of Node to compute its Hash_Table buckets array
    --  index.
+
+   function Checked_Index
+     (Hash_Table : aliased in out Hash_Table_Type'Class;
+      Node       : Count_Type) return Hash_Type;
+   --  Calls Index, but also locks and unlocks the container, per AI05-0022, in
+   --  order to detect element tampering by the generic actual Hash function.
 
    generic
       with function Find
