@@ -1,5 +1,21 @@
 2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.h (ipa_ancestor_jf_data): Update ocmment.
+	* ipa-prop.c (ipa_set_jf_known_type): Return early when
+	not devirtualizing.
+	(ipa_set_ancestor_jf): Set type to NULL hwen it is not preserved;
+	do more sanity checks.
+	(detect_type_change): Return true when giving up early.
+	(compute_complex_assign_jump_func): Fix type parameter of
+	ipa_set_ancestor_jf.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(update_jump_functions_after_inlining): Fix updating of
+	ancestor function.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Be ready for type
+	to be NULL.
+
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Also remove
 	inline clones when edge disappears.
 

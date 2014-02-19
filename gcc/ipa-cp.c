@@ -798,7 +798,9 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
       tree t = TREE_OPERAND (input, 0);
       t = build_ref_for_offset (EXPR_LOCATION (t), t,
 				ipa_get_jf_ancestor_offset (jfunc),
-				ipa_get_jf_ancestor_type (jfunc), NULL, false);
+				ipa_get_jf_ancestor_type (jfunc)
+				? ipa_get_jf_ancestor_type (jfunc)
+				: ptr_type_node, NULL, false);
       return build_fold_addr_expr (t);
     }
   else

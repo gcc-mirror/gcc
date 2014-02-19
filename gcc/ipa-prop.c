@@ -393,6 +393,9 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 {
   gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
 	      && TYPE_BINFO (component_type));
+  if (!flag_devirtualize)
+    return;
+  gcc_assert (BINFO_VTABLE (TYPE_BINFO (component_type)));
   jfunc->type = IPA_JF_KNOWN_TYPE;
   jfunc->value.known_type.offset = offset,
   jfunc->value.known_type.base_type = base_type;
@@ -477,10 +480,16 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 		     tree type, int formal_id, bool agg_preserved,
 		     bool type_preserved)
 {
+  if (!flag_devirtualize)
+    type_preserved = false;
+  gcc_assert (!type_preserved
+	      || (TREE_CODE (type) == RECORD_TYPE
+		  && TYPE_BINFO (type)
+		  && BINFO_VTABLE (TYPE_BINFO (type))));
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
-  jfunc->value.ancestor.type = type;
+  jfunc->value.ancestor.type = type_preserved ? type : NULL;
   jfunc->value.ancestor.agg_preserved = agg_preserved;
   jfunc->value.ancestor.type_preserved = type_preserved;
 }
@@ -686,7 +695,7 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       || TREE_CODE (comp_type) != RECORD_TYPE
       || !TYPE_BINFO (comp_type)
       || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
-    return false;
+    return true;
 
   /* C++ methods are not allowed to change THIS pointer unless they
      are constructors or destructors.  */
@@ -1103,7 +1112,8 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       bool type_p = !detect_type_change (op1, base, TREE_TYPE (param_type),
 					 call, jfunc, offset);
       if (type_p || jfunc->type == IPA_JF_UNKNOWN)
-	ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (op1), index,
+	ipa_set_ancestor_jf (jfunc, offset,
+			     type_p ? TREE_TYPE (param_type) : NULL, index,
 			     parm_ref_data_pass_through_p (&parms_ainfo[index],
 							   call, ssa), type_p);
     }
@@ -1236,7 +1246,7 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     type_p = !detect_type_change (obj, expr, TREE_TYPE (param_type),
 				  call, jfunc, offset);
   if (type_p || jfunc->type == IPA_JF_UNKNOWN)
-    ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (obj), index,
+    ipa_set_ancestor_jf (jfunc, offset, type_p ? TREE_TYPE (param_type) : NULL, index,
 			 parm_ref_data_pass_through_p (&parms_ainfo[index],
 						       call, parm), type_p);
 }
@@ -2391,7 +2401,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		    ipa_set_jf_known_type (dst,
 					   ipa_get_jf_known_type_offset (src),
 					   ipa_get_jf_known_type_base_type (src),
-					   ipa_get_jf_known_type_base_type (src));
+					   ipa_get_jf_known_type_component_type (src));
 		  else
 		    dst->type = IPA_JF_UNKNOWN;
 		  break;
