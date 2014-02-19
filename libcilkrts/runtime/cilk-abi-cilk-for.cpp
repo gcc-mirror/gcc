@@ -256,9 +256,19 @@ tail_recurse:
         // argument list of the spawned function, hence the call to
         // capture_spawn_arg_stack_frame().
         __cilkrts_stack_frame *sf;
+#if defined(__GNUC__) && ! defined(__INTEL_COMPILER) && ! defined(__clang__)
+        // The current version of gcc initializes the sf structure eagerly.
+        // We can take advantage of this fact to avoid calling
+        // `capture_spawn_arg_stack_frame` when compiling with gcc.
+        // Remove this if the "shrink-wrap" optimization is implemented.
+        sf = w->current_stack_frame;
+        _Cilk_spawn cilk_for_recursive(low, mid, body, data, grain, w,
+                                       loop_root_pedigree);
+#else        
         _Cilk_spawn cilk_for_recursive(low, mid, body, data, grain,
                                        capture_spawn_arg_stack_frame(sf, w),
                                        loop_root_pedigree);
+#endif
         w = sf->worker;
         low = mid;
 
