@@ -44,7 +44,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
 
 package body Exp_Ch2 is
 

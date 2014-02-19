@@ -10975,6 +10975,14 @@ package body Sem_Ch13 is
             end if;
 
          elsif Nam = Name_Element then
+            F2 := Next_Formal (F1);
+
+            if No (F2)
+              or else Etype (F2) /= Cursor
+              or else Present (Next_Formal (F2))
+            then
+               Error_Msg_N ("no match for Element iterable primitive", N);
+            end if;
             null;
 
          else
@@ -10993,6 +11001,7 @@ package body Sem_Ch13 is
             Get_First_Interp (N, I, It);
             while Present (It.Typ) loop
                if Ekind (It.Nam) = E_Function
+                  and then Scope (It.Nam) = Scope (Typ)
                   and then Etype (First_Formal (It.Nam)) = Typ
                then
                   F1 := First_Formal (It.Nam);
@@ -11031,6 +11040,8 @@ package body Sem_Ch13 is
                      end if;
 
                   elsif Nam = Name_Element then
+                     F2 := Next_Formal (F1);
+
                      if Present (F2)
                        and then No (Next_Formal (F2))
                        and then Etype (F2) = Cursor

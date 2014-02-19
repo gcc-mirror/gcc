@@ -1,3 +1,31 @@
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Arg_Is_Local_Name): For an aspect that
+	applies to a subprogram body, the name is the current scope,
+	rather than being declared in the current scope.
+	(Analyze_Pragma, case No_Return): Handle properly a No_Return
+	aspect applied to a subprogram body.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Resolve_Iterable_Operation): Improve resolution
+	of overloaded subprograms, and fix bug in handling of primitive
+	operation Element.
+
+2014-02-19  Pascal Obry  <obry@adacore.com>
+
+	* s-os_lib.adb: Minor reformatting.
+
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* expander.adb (Expand): Do nothing inside generics.
+	* sem_aggr.adb (Aggregate_Constraint_Checks): Do nothing inside
+	generics.
+
+2014-02-19  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch2.adb: Remove useless 'with' of unit Uintp.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, style.adb, sem_prag.adb, sem_ch13.adb: Minor reformatting
