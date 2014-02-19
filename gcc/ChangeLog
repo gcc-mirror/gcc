@@ -1,3 +1,9 @@
+2014-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: For a bit-field
+	destination type, extract only the valid bits if the source type is not
+	integral and has a different mode.
+
 2014-02-19  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60243
