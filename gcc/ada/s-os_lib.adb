@@ -2643,11 +2643,11 @@ package body System.OS_Lib is
          end loop;
 
          if Blocking then
-            Pid     := Invalid_Pid;
-            Result  := Portable_Spawn (Arg_List'Address);
+            Pid    := Invalid_Pid;
+            Result := Portable_Spawn (Arg_List'Address);
          else
-            Pid     := Portable_No_Block_Spawn (Arg_List'Address);
-            Result  := Boolean'Pos (Pid /= Invalid_Pid);
+            Pid    := Portable_No_Block_Spawn (Arg_List'Address);
+            Result := Boolean'Pos (Pid /= Invalid_Pid);
          end if;
       end Spawn;
 

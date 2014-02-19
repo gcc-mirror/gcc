@@ -459,7 +459,9 @@ package body Sem_Aggr is
       --  added in the tree, so that the formal verification can rely on those
       --  to be present.
 
-      if not (Expander_Active or GNATprove_Mode) or In_Spec_Expression then
+      if not Expander_Active
+        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+      then
          return;
       end if;
 
