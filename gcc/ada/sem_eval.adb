@@ -4834,6 +4834,10 @@ package body Sem_Eval is
    --  they are the same identical constraint, or if they are static and the
    --  values match (RM 4.9.1(1)).
 
+   --  In addition, in GNAT, the object size (Esize) values of the types must
+   --  match if they are set. The use of 'Object_Size can cause this to be
+   --  false even if the types would otherwise match in the RM sense.
+
    function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean is
 
       function Predicates_Match return Boolean;
@@ -4852,8 +4856,12 @@ package body Sem_Eval is
          if Ada_Version < Ada_2012 then
             return True;
 
+         --  Both types must have predicates or lack them
+
          elsif Has_Predicates (T1) /= Has_Predicates (T2) then
             return False;
+
+         --  Check matching predicates
 
          else
             Pred1 :=
@@ -4885,6 +4893,13 @@ package body Sem_Eval is
 
       if T1 = T2 then
          return True;
+
+      --  No match if sizes different (from use of 'Object_Size)
+
+      elsif Known_Static_Esize (T1) and then Known_Static_Esize (T2)
+        and then Esize (T1) /= Esize (T2)
+      then
+         return False;
 
       --  Scalar types
 

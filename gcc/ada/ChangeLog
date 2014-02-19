@@ -1,3 +1,8 @@
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads, sem_eval.adb (Subtypes_Statically_Match): Return False
+	if Esize values do not match.
+
 2014-02-19  Yannick Moy  <moy@adacore.com>
 
 	* sinfo.ads: Minor comment update.

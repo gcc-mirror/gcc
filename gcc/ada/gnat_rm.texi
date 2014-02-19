@@ -3718,7 +3718,7 @@ This means that you can compile a program, and then without having to
 recompile the program, you can run it with different values being used
 for initializing otherwise uninitialized values, to test if your program
 behavior depends on the choice.  Of course the behavior should not change,
-and if it does, then most likely you have an erroneous reference to an
+and if it does, then most likely you have an incorrect reference to an
 uninitialized value.
 
 It is even possible to change the value at execution time eliminating even
@@ -8713,6 +8713,45 @@ will have a size of 40 (that is @code{Rec'Size} will be 40).  The
 alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
+
+A consequence of this capability is that different object sizes can be
+given to subtypes that would otherwise be considered in Ada to be
+statically matching.  But it makes no sense to consider such subtypes
+as statically matching.  Consequently, in @code{GNAT} we add a rule
+to the static matching rules that requires object sizes to match.
+Consider this example:
+
+@smallexample @c ada
+ 1. procedure BadAVConvert is
+ 2.    type R is new Integer;
+ 3.    subtype R1 is R range 1 .. 10;
+ 4.    subtype R2 is R range 1 .. 10;
+ 5.    for R1'Object_Size use 8;
+ 6.    for R2'Object_Size use 16;
+ 7.    type R1P is access all R1;
+ 8.    type R2P is access all R2;
+ 9.    R1PV : R1P := new R1'(4);
+10.    R2PV : R2P;
+11. begin
+12.    R2PV := R2P (R1PV);
+               |
+       >>> target designated subtype not compatible with
+           type "R1" defined at line 3
+
+13. end;
+@end smallexample
+
+@noindent
+In the absence of lines 5 and 6,
+types @code{R1} and @code{R2} statically match and
+hence the conversion on line 12 is legal. But since lines 5 and 6
+cause the object sizes to differ, @code{GNAT} considers that types
+@code{R1} and @code{R2} are not statically matching, and line 12
+generates the diagnostic shown above.
+
+@noindent
+Similar additional checks are performed in other contexts requiring
+statically matching subtypes.
 
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference
@@ -14185,7 +14224,9 @@ an attribute definition clause.  Note that the use of these attributes
 can cause the RM 13.1(14) rule to be violated.  If two access types
 reference aliased objects whose subtypes have differing @code{Object_Size}
 values as a result of explicit attribute definition clauses, then it
-is erroneous to convert from one access subtype to the other.
+is illegal to convert from one access subtype to the other. For a more
+complete description of this additional legality rule, see the
+description of the @code{Object_Size} attribute.
 
 At the implementation level, Esize stores the Object_Size and the
 RM_Size field stores the @code{Value_Size} (and hence the value of the
