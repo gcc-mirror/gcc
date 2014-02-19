@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,6 +71,18 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
    --  Uses the hash value of Node to compute its Hash_Table buckets array
    --  index.
 
+   function Checked_Index
+     (Hash_Table : aliased in out Hash_Table_Type;
+      Buckets    : Buckets_Type;
+      Node       : Node_Access) return Hash_Type;
+   --  Calls Index, but also locks and unlocks the container, per AI05-0022, in
+   --  order to detect element tampering by the generic actual Hash function.
+
+   function Checked_Index
+     (Hash_Table : aliased in out Hash_Table_Type;
+      Node       : Node_Access) return Hash_Type;
+   --  Calls Checked_Index using Hash_Table's buckets array.
+
    procedure Adjust (HT : in out Hash_Table_Type);
    --  Used to implement controlled Adjust. It is assumed that HT has the value
    --  of the bit-wise copy that immediately follows controlled Finalize.
@@ -126,7 +138,7 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
    --  bucket.
 
    function Next
-     (HT   : Hash_Table_Type;
+     (HT   : aliased in out Hash_Table_Type;
       Node : Node_Access) return Node_Access;
    --  Returns the node that immediately follows Node. This corresponds to
    --  either the next node in the same bucket, or (if Node is the last node in

@@ -1,3 +1,79 @@
+2014-02-19  Matthew Heaney  <heaney@adacore.com>
+
+	* a-chtgop.ads (Checked_Index): New operation.
+	(Next): Changed mode of hash table.
+	* a-chtgop.adb (Adjust, Delete_Node_Sans_Free): Detect tampering
+	(Generic_Read, Reserve_Capacity): Ditto.
+	(Generic_Equal): Detect tampering.
+	(Next): Changed mode of hash table, detect tampering.
+	* a-chtgke.ads (Checked_Index, Checked_Equivalent_Keys): New
+	operation.
+	(Find): Changed mode of hash table.
+	* a-chtgke.adb (Checked_Equivalent_Keys): New operation
+	(Delete_Key_Sans_Free, Generic_Conditional_Insert): Detect
+	tampering.
+	(Find): Changed mode of hash table, check for tampering.
+	(Generic_Replace_Element): Check for tampering.
+	* a-chtgbk.ads (Checked_Index, Checked_Equivalent_Keys): New operation.
+	* a-chtgbk.adb (Checked_Index, Checked_Equivalent_Keys): New
+	operation (Delete_Key_Sans_Free, Generic_Conditional_Insert):
+	Detect tampering.
+	(Find, Generic_Replace_Element): Check for tampering.
+	* a-chtgbo.ads (Checked_Index): New operation.
+	* a-chtgbo.adb (Checked_Index): New operation
+	(Delete_Node_Sans_Free, Generic_Equal): Detect tampering.
+	(Generic_Read, Next): Ditto.
+	* a-cohase.adb, a-cihase.adb (Is_In): Changed mode of hash
+	table (Difference, Intersection): Use variable view of
+	source, detect tampering (Find, Is_Subset, Overlap): Use
+	variable view of container (Symmetric_Difference, Union):
+	Detect tampering (Vet): Use Checked_Index to detect tampering
+	(Constant_Reference, Element, Find): Use variable view of
+	container.
+	(Update_Element_Preserving_Key): Detect tampering.
+	* a-cbhase.adb (Difference, Find, Is_In): Use variable view
+	of container.
+	(Is_Subset): Ditto.
+	(Equivalent_Sets, Overlap): Use Node's Next component.
+	(Vet): Use Checked_Index to detect tampering.
+	(Constant_Reference, Element, Find): Use variable view of container.
+	(Update_Element_Preserving_Key): Detect tampering.
+	* a-cohama.adb, a-cihama.adb, a-cbhama.adb (Constant_Reference,
+	Element, Find): Use variable view of container.
+	(Reference): Rename hash table component.
+	(Vet): Use Checked_Index to detect tampering.
+
+2014-02-19  Arnaud Charlet  <charlet@adacore.com>
+
+	* adabkend.adb (Scan_Compiler_Arguments): Add missing handling
+	of -nostdinc.
+
+2014-02-19  Thomas Quinot  <quinot@adacore.com>
+
+	* tbuild.adb (New_Occurrence_Of, New_Rerefence_To): Guard
+	against calls without Def_Id.
+
+2014-02-19  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads, a-cforse.ads,
+	a-cofove.ads: Add global annotations to subprograms.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Initial_Condition_In_Decl_Part): Remove
+	constants Errors, Pack_Id and Pack_Init. Remove variable Vars.
+	Initial_Condition no longer requires the presence of pragma
+	Initialized. Do not try to diagnose whether all variables mentioned in
+	pragma Initializes also appear in Initial_Condition.
+	(Collect_Variables): Removed.
+	(Match_Variable): Removed.
+	(Match_Variables): Removed.
+	(Report_Unused_Variables): Removed.
+
+2014-02-19  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi (pragma Stream_Convert): Minor rewording.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb, sem_util.ads, prj-conf.adb, s-os_lib.adb: Minor
