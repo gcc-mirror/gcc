@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target size32plus } */
 /* { dg-options "-O2 -fmodulo-sched -fdump-rtl-sms --param sms-min-sc=1" } */
 /* { dg-options "-O2 -fmodulo-sched -fdump-rtl-sms --param sms-min-sc=1 -fmodulo-sched-allow-regmoves" { target powerpc*-*-* } } */
 
@@ -17,16 +18,13 @@ void foo (int * __restrict__ a, int * __restrict__ b, int * __restrict__ c)
      }
 }   
 
-
 int a[100], b[100], c[100];
+
 int main()
 {
-#if (__SIZEOF_INT__ <= 2)
   int i;
-  long res;
-#else
-  int i, res;
-#endif  
+  int res;
+
   for(i = 0; i < 100; i++)
     {
       b[i] = c[i] = i;
@@ -47,4 +45,3 @@ int main()
 /* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* } } } */
 /* { dg-final { scan-rtl-dump-times "SMS succeeded" 3 "sms" { target powerpc*-*-* } } } */
 /* { dg-final { cleanup-rtl-dump "sms" } } */
-

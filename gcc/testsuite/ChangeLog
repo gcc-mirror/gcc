@@ -1,3 +1,21 @@
+2014-02-18  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/graphite/pr46966.c: Only run on 32-bit+ targets.
+	* gcc.dg/pr23623.c: Likewise.
+	* gcc.dg/pr48784-1.c: Likewise.
+	* gcc.dg/pr48784-2.c: Likewise.
+	* gcc.dg/pr56997-2.c: Likewise.
+	* gcc.dg/sms-6.c: Likewise.
+	* gcc.dg/torture/pr60183.c: Likewise.
+	* gcc.dg/torture/vec-cvt-1.c: Likewise.
+	* gcc.c-torture/execute/20061220-1.x: New.
+	* gcc.c-torture/execute/pr43220.x: New.
+	* gcc.c-torture/execute/pr51581-1.x: New.
+	* gcc.c-torture/execute/pr51581-2.x: New.
+	* gcc.c-torture/execute/pr58570.x: New.
+	* gcc.c-torture/unsorted/DFcmp.x: New.
+	* gcc.c-torture/unsorted/SFset.x: New.
+
 2014-02-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt31.adb: New test.
