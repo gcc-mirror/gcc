@@ -1,5 +1,37 @@
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb (Expand_Min_Max_Attribute): Use Insert_Declaration
+	(Expand_Min_Max_Attribute): Use Matching_Standard_Type.
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Remove special
+	handling for the case of Modify_Tree_For_C, this approach did
+	not work.
+	* exp_util.adb (Matching_Standard_Type): New function
+	(Side_Effect_Free): New top level functions (from
+	Remove_Side_Effects).
+	* exp_util.ads (Side_Effect_Free): New top level functions
+	(moved from body).
+	* sinfo.ads: Minor comment updates.
+
+2014-02-19  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): If return
+	type is unconstrained and uses the secondary stack, mark the
+	enclosing function accordingly, to ensure that the value is not
+	prematurely removed.
+
+2014-02-19  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* par.adb Alphabetize the routines in Par.Sync.
+	(Resync_Past_Malformed_Aspect): New routine.
+	* par-ch13.adb (Get_Aspect_Specifications): Alphabetize local
+	variables. Code and comment reformatting. Detect missing
+	parentheses on aspects [Refined_]Global and [Refined_]Depends
+	with a non-null definition.
+	* par-sync.adb: Alphabetize all routines in this separate unit.
+	(Resync_Past_Malformed_Aspect): New routine.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
 	* sem_eval.ads, sem_eval.adb (Subtypes_Statically_Match): Return False
 	if Esize values do not match.
 

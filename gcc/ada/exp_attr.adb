@@ -1062,8 +1062,6 @@ package body Exp_Attr is
             Expr  : constant Node_Id    := First (Expressions (N));
             Left  : constant Node_Id    := Relocate_Node (Expr);
             Right : constant Node_Id    := Relocate_Node (Next (Expr));
-            Ltyp  : constant Entity_Id  := Etype (Left);
-            Rtyp  : constant Entity_Id  := Etype (Right);
 
             function Make_Compare (Left, Right : Node_Id) return Node_Id;
             --  Returns Left >= Right for Max, Left <= Right for Min
@@ -1090,12 +1088,12 @@ package body Exp_Attr is
          --  Start of processing for Min_Max
 
          begin
-            --  If both Left and Right are simple entity names, then we can
-            --  just use Duplicate_Expr to duplicate the references and return
+            --  If both Left and Right are side effect free, then we can just
+            --  use Duplicate_Expr to duplicate the references and return
 
             --    (if Left >=|<= Right then Left else Right)
 
-            if Is_Entity_Name (Left) and then Is_Entity_Name (Right) then
+            if Side_Effect_Free (Left) and then Side_Effect_Free (Right) then
                Rewrite (N,
                  Make_If_Expression (Loc,
                    Expressions => New_List (
@@ -1103,35 +1101,57 @@ package body Exp_Attr is
                      Duplicate_Subexpr_No_Checks (Left),
                      Duplicate_Subexpr_No_Checks (Right))));
 
-            --  Otherwise we wrap things in an expression with actions. You
-            --  might think we could just use the approach above, but there
-            --  are problems, in particular with escaped discriminants. In
-            --  this case we generate:
+            --  Otherwise we generate declarations to capture the values. We
+            --  can't put these declarations inside the if expression, since
+            --  we could end up with an N_Expression_With_Actions which has
+            --  declarations in the actions, forbidden for Modify_Tree_For_C.
+
+            --  The translation is
+
+            --    T1 : styp;    --  inserted high up in tree
+            --    T2 : styp;    --  inserted high up in tree
 
             --    do
-            --      T1 : constant typ := Left;
-            --      T2 : constant typ := Right;
+            --      T1 := styp!(Left);
+            --      T2 := styp!(Right);
             --    in
-            --      (if T1 >=|<= T2 then T1 else T2)
+            --      (if T1 >=|<= T2 then typ!(T1) else typ!(T2))
             --    end;
+
+            --  We insert the T1,T2 declarations with Insert_Declaration which
+            --  inserts these declarations high up in the tree unconditionally.
+            --  This is safe since no code is associated with the declarations.
+            --  Here styp is a standard type whose Esize matches the size of
+            --  our type. We do this because the actual type may be a result of
+            --  some local declaration which would not be visible at the point
+            --  where we insert the declarations of T1 and T2.
 
             else
                declare
-                  T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  T1   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  T2   : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
+                  Styp : constant Entity_Id := Matching_Standard_Type (Typ);
 
                begin
+                  Insert_Declaration (N,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => T1,
+                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
+
+                  Insert_Declaration (N,
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => T2,
+                      Object_Definition   => New_Occurrence_Of (Styp, Loc)));
+
                   Rewrite (N,
                     Make_Expression_With_Actions (Loc,
                       Actions => New_List (
-                        Make_Object_Declaration (Loc,
-                          Defining_Identifier => T1,
-                          Object_Definition   => New_Occurrence_Of (Ltyp, Loc),
-                          Expression          => Left),
-                        Make_Object_Declaration (Loc,
-                          Defining_Identifier => T2,
-                          Object_Definition   => New_Occurrence_Of (Rtyp, Loc),
-                          Expression          => Right)),
+                        Make_Assignment_Statement (Loc,
+                          Name       => New_Occurrence_Of (T1, Loc),
+                          Expression => Unchecked_Convert_To (Styp, Left)),
+                        Make_Assignment_Statement (Loc,
+                          Name       => New_Occurrence_Of (T2, Loc),
+                          Expression => Unchecked_Convert_To (Styp, Right))),
 
                       Expression =>
                         Make_If_Expression (Loc,
@@ -1139,8 +1159,10 @@ package body Exp_Attr is
                             Make_Compare
                               (New_Occurrence_Of (T1, Loc),
                                New_Occurrence_Of (T2, Loc)),
-                            New_Occurrence_Of (T1, Loc),
-                            New_Occurrence_Of (T2, Loc)))));
+                            Unchecked_Convert_To (Typ,
+                              New_Occurrence_Of (T1, Loc)),
+                            Unchecked_Convert_To (Typ,
+                              New_Occurrence_Of (T2, Loc))))));
                end;
             end if;
 

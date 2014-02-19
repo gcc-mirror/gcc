@@ -148,6 +148,70 @@ package body Sync is
       end if;
    end Resync_Init;
 
+   ----------------------------------
+   -- Resync_Past_Malformed_Aspect --
+   ----------------------------------
+
+   procedure Resync_Past_Malformed_Aspect is
+   begin
+      Resync_Init;
+
+      loop
+         --  A comma may separate two aspect specifications, but it may also
+         --  delimit multiple arguments of a single aspect.
+
+         if Token = Tok_Comma then
+            declare
+               Scan_State : Saved_Scan_State;
+
+            begin
+               Save_Scan_State (Scan_State);
+               Scan; -- past comma
+
+               --  The identifier following the comma is a valid aspect, the
+               --  current malformed aspect has been successfully skipped.
+
+               if Token = Tok_Identifier
+                 and then Get_Aspect_Id (Token_Name) /= No_Aspect
+               then
+                  Restore_Scan_State (Scan_State);
+                  exit;
+
+               --  The comma is delimiting multiple arguments of an aspect
+
+               else
+                  Restore_Scan_State (Scan_State);
+               end if;
+            end;
+
+         --  An IS signals the last aspect specification when the related
+         --  context is a body.
+
+         elsif Token = Tok_Is then
+            exit;
+
+         --  A semicolon signals the last aspect specification
+
+         elsif Token = Tok_Semicolon then
+            exit;
+
+         --  In the case of a mistyped semicolon, any token which follows a
+         --  semicolon signals the last aspect specification.
+
+         elsif Token in Token_Class_After_SM then
+            exit;
+         end if;
+
+         --  Keep on resyncing
+
+         Scan;
+      end loop;
+
+      --  Fall out of loop with resynchronization complete
+
+      Resync_Resume;
+   end Resync_Past_Malformed_Aspect;
+
    ---------------------------
    -- Resync_Past_Semicolon --
    ---------------------------
@@ -183,41 +247,6 @@ package body Sync is
 
       Resync_Resume;
    end Resync_Past_Semicolon;
-
-   -------------------------
-   -- Resync_To_Semicolon --
-   -------------------------
-
-   procedure Resync_To_Semicolon is
-   begin
-      Resync_Init;
-
-      loop
-         --  Done if we are at a semicolon
-
-         if Token = Tok_Semicolon then
-            exit;
-
-         --  Done if we are at a token which normally appears only after
-         --  a semicolon. One special glitch is that the keyword private is
-         --  in this category only if it does NOT appear after WITH.
-
-         elsif Token in Token_Class_After_SM
-            and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
-         then
-            exit;
-
-         --  Otherwise keep going
-
-         else
-            Scan;
-         end if;
-      end loop;
-
-      --  Fall out of loop with resynchronization complete
-
-      Resync_Resume;
-   end Resync_To_Semicolon;
 
    ----------------------------------------------
    -- Resync_Past_Semicolon_Or_To_Loop_Or_Then --
@@ -275,35 +304,6 @@ package body Sync is
       end if;
    end Resync_Resume;
 
-   --------------------
-   -- Resync_To_When --
-   --------------------
-
-   procedure Resync_To_When is
-   begin
-      Resync_Init;
-
-      loop
-         --  Done if at semicolon, WHEN or IS
-
-         if Token = Tok_Semicolon
-           or else Token = Tok_When
-           or else Token = Tok_Is
-         then
-            exit;
-
-         --  Otherwise keep going
-
-         else
-            Scan;
-         end if;
-      end loop;
-
-      --  Fall out of loop with resynchronization complete
-
-      Resync_Resume;
-   end Resync_To_When;
-
    ---------------------------
    -- Resync_Semicolon_List --
    ---------------------------
@@ -339,5 +339,69 @@ package body Sync is
 
       Resync_Resume;
    end Resync_Semicolon_List;
+
+   -------------------------
+   -- Resync_To_Semicolon --
+   -------------------------
+
+   procedure Resync_To_Semicolon is
+   begin
+      Resync_Init;
+
+      loop
+         --  Done if we are at a semicolon
+
+         if Token = Tok_Semicolon then
+            exit;
+
+         --  Done if we are at a token which normally appears only after
+         --  a semicolon. One special glitch is that the keyword private is
+         --  in this category only if it does NOT appear after WITH.
+
+         elsif Token in Token_Class_After_SM
+           and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
+         then
+            exit;
+
+         --  Otherwise keep going
+
+         else
+            Scan;
+         end if;
+      end loop;
+
+      --  Fall out of loop with resynchronization complete
+
+      Resync_Resume;
+   end Resync_To_Semicolon;
+
+   --------------------
+   -- Resync_To_When --
+   --------------------
+
+   procedure Resync_To_When is
+   begin
+      Resync_Init;
+
+      loop
+         --  Done if at semicolon, WHEN or IS
+
+         if Token = Tok_Semicolon
+           or else Token = Tok_When
+           or else Token = Tok_Is
+         then
+            exit;
+
+         --  Otherwise keep going
+
+         else
+            Scan;
+         end if;
+      end loop;
+
+      --  Fall out of loop with resynchronization complete
+
+      Resync_Resume;
+   end Resync_To_When;
 
 end Sync;

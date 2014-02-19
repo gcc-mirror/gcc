@@ -649,9 +649,8 @@ package Sinfo is
    --    Mod for signed integer types is expanded into equivalent expressions
    --    using Rem (which is % in C) and other C-available operators.
 
-   --    The Actions list of an Expression_With_Actions node has any object
-   --    declarations removed, so that it is composed only of expressions
-   --    (so that DO X,... Y IN Z can be represented as (X, .. Y, Z) in C).
+   --    The Actions list of an Expression_With_Actions node does not contain
+   --    any declarations,(so that DO X, .. Y IN Z becomes (X, .. Y, Z) in C).
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -7426,11 +7425,8 @@ package Sinfo is
       --  not a proper expression), and in the long term all cases of this
       --  idiom should instead use a new node kind N_Compound_Statement.
 
-      --  Note: In Modify_Tree_For_C, we eliminate declarations from the list
-      --  of actions, inserting them at the outer level. If we move an object
-      --  declaration with an initialization expression in this manner, then
-      --  the action is replaced by an appropriate assignment, otherwise it is
-      --  removed from the list of actions.
+      --  Note: In Modify_Tree_For_C, we never generate any declarations in
+      --  the action list, which can contain only non-declarative statements.
 
       --------------------
       -- Free Statement --
