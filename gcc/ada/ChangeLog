@@ -1,5 +1,11 @@
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Make sure
+	declarations get properly inserted in Modify_Tree_For_C mode.
+	* sinfo.ads: Minor comment addition.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch9.adb, exp_ch5.adb, sem_ch5.adb, exp_attr.adb, sem_util.adb,
 	sem_util.ads, sem_ch13.adb, sem_ch13.ads: Minor reformatting.
 

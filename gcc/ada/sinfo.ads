@@ -2925,6 +2925,10 @@ package Sinfo is
       --  Discrete_Subtype_Definitions (List2)
       --  Component_Definition (Node4)
 
+      --  Note: although the language allows the full syntax for discrete
+      --  subtype definitions (i.e. a discrete subtype indication or a range),
+      --  in the generated tree, we always rewrite these as N_Range nodes.
+
       --------------------------------------
       -- 3.6  Discrete Subtype Definition --
       --------------------------------------
