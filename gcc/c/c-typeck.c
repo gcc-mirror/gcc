@@ -2009,6 +2009,7 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       tmp = create_tmp_var (nonatomic_type, NULL);
       tmp_addr = build_unary_op (loc, ADDR_EXPR, tmp, 0);
       TREE_ADDRESSABLE (tmp) = 1;
+      TREE_NO_WARNING (tmp) = 1;
 
       /* Issue __atomic_load (&expr, &tmp, SEQ_CST);  */
       fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_LOAD);
@@ -2016,6 +2017,9 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       params->quick_push (tmp_addr);
       params->quick_push (seq_cst);
       func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+
+      /* EXPR is always read.  */
+      mark_exp_read (exp.value);
 
       /* Return tmp which contains the value loaded.  */
       exp.value = build2 (COMPOUND_EXPR, nonatomic_type, func_call, tmp);
@@ -3615,6 +3619,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   nonatomic_rhs_type = build_qualified_type (rhs_type, TYPE_UNQUALIFIED);
   val = create_tmp_var (nonatomic_rhs_type, NULL);
   TREE_ADDRESSABLE (val) = 1;
+  TREE_NO_WARNING (val) = 1;
   rhs = build2 (MODIFY_EXPR, nonatomic_rhs_type, val, rhs);
   SET_EXPR_LOCATION (rhs, loc);
   add_stmt (rhs);
@@ -3643,7 +3648,8 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   /* Create the variables and labels required for the op= form.  */
   old = create_tmp_var (nonatomic_lhs_type, NULL);
   old_addr = build_unary_op (loc, ADDR_EXPR, old, 0);
-  TREE_ADDRESSABLE (val) = 1;
+  TREE_ADDRESSABLE (old) = 1;
+  TREE_NO_WARNING (old) = 1;
 
   newval = create_tmp_var (nonatomic_lhs_type, NULL);
   newval_addr = build_unary_op (loc, ADDR_EXPR, newval, 0);
@@ -9661,6 +9667,7 @@ emit_side_effect_warnings (location_t loc, tree expr)
       if (!TREE_SIDE_EFFECTS (r)
 	  && !VOID_TYPE_P (TREE_TYPE (r))
 	  && !CONVERT_EXPR_P (r)
+	  && !TREE_NO_WARNING (r)
 	  && !TREE_NO_WARNING (expr))
 	warning_at (cloc, OPT_Wunused_value,
 		    "right-hand operand of comma expression has no effect");
