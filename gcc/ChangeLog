@@ -1,3 +1,8 @@
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Also remove
+	inline clones when edge disappears.
+
 2014-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/60203
