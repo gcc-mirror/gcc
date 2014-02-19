@@ -10638,8 +10638,7 @@ package body Sem_Ch12 is
             Desig_Act := Available_View (Desig_Act);
          end if;
 
-         if not Subtypes_Match
-           (Desig_Type, Desig_Act) then
+         if not Subtypes_Match (Desig_Type, Desig_Act) then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
                  Actual, Gen_T);

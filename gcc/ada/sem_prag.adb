@@ -3104,7 +3104,9 @@ package body Sem_Prag is
 
       procedure Check_Loop_Pragma_Placement;
       --  Verify whether pragma Loop_Invariant or Loop_Optimize or Loop_Variant
-      --  appear immediately within a construct restricted to loops.
+      --  appear immediately within a construct restricted to loops, and that
+      --  pragmas Loop_Invariant and Loop_Variant applying to the same loop all
+      --  appear grouped in the same sequence of statements.
 
       procedure Check_Is_In_Decl_Part_Or_Package_Spec;
       --  Check that pragma appears in a declarative part, or in a package
@@ -4580,6 +4582,11 @@ package body Sem_Prag is
          --  encountered an illegal relation between enclosing constructs. Emit
          --  an error depending on what Constr was.
 
+         function Prev_In_Loop (Stmt : Node_Id) return Node_Id;
+         --  Returns the statement or declaration preceding Stmt in the
+         --  same loop, or Empty if the head of the loop is reached. Block
+         --  statements are entered during this traversal.
+
          ---------------------
          -- Placement_Error --
          ---------------------
@@ -4605,14 +4612,111 @@ package body Sem_Prag is
             end if;
          end Placement_Error;
 
+         ------------------
+         -- Prev_In_Loop --
+         ------------------
+
+         function Prev_In_Loop (Stmt : Node_Id) return Node_Id is
+            Prev : Node_Id;
+            Reach_Inside_Blocks : Boolean;
+
+         begin
+            Reach_Inside_Blocks := True;
+
+            --  Try the previous statement in the same list
+
+            Prev := Nlists.Prev (Stmt);
+
+            --  Otherwise reach to the previous statement through the parent
+
+            if No (Prev) then
+
+               --  If we're inside the statements of a block which contains
+               --  declarations, continue with the last declaration of the
+               --  block if any.
+
+               if Nkind (Parent (Stmt)) = N_Handled_Sequence_Of_Statements
+                 and then Nkind (Parent (Parent (Stmt))) = N_Block_Statement
+                 and then Present (Declarations (Parent (Parent (Stmt))))
+               then
+                  Prev := Last (Declarations (Parent (Parent (Stmt))));
+
+               --  Ignore a handled statement sequence
+
+               elsif
+                 Nkind (Parent (Stmt)) = N_Handled_Sequence_Of_Statements
+               then
+                  Reach_Inside_Blocks := False;
+                  Prev := Parent (Parent (Stmt));
+
+               --  Do not reach past the head of the current loop
+
+               elsif Nkind (Parent (Stmt)) = N_Loop_Statement then
+                  null;
+
+               --  Otherwise use the parent statement
+
+               else
+                  Reach_Inside_Blocks := False;
+                  Prev := Parent (Stmt);
+               end if;
+            end if;
+
+            --  Skip block statements
+
+            while Nkind (Prev) = N_Block_Statement loop
+
+               --  If a block is reached from statements that follow it, then
+               --  we should reach inside the block to its last contained
+               --  statement.
+
+               if Reach_Inside_Blocks then
+                  Prev :=
+                    Last (Statements (Handled_Statement_Sequence (Prev)));
+
+               --  If a block is reached from statements and declarations
+               --  inside it, continue with the statements preceding the
+               --  block if any.
+
+               elsif Present (Nlists.Prev (Prev)) then
+                  Reach_Inside_Blocks := True;
+                  Prev := Nlists.Prev (Prev);
+
+               --  Ignore a handled statement sequence
+
+               elsif
+                 Nkind (Parent (Prev)) = N_Handled_Sequence_Of_Statements
+               then
+                  Prev := Parent (Parent (Prev));
+
+               --  Do not reach past the head of the current loop
+
+               elsif Nkind (Parent (Prev)) = N_Loop_Statement then
+                  Prev := Empty;
+
+               --  Otherwise use the parent statement
+
+               else
+                  Prev := Parent (Prev);
+               end if;
+            end loop;
+
+            return Prev;
+         end Prev_In_Loop;
+
          --  Local declarations
 
-         Prev : Node_Id;
-         Stmt : Node_Id;
+         Prev                 : Node_Id;
+         Stmt                 : Node_Id;
+         Orig_Stmt            : Node_Id;
+         Within_Same_Sequence : Boolean;
 
       --  Start of processing for Check_Loop_Pragma_Placement
 
       begin
+         --  Check that pragma appears immediately within a loop statement,
+         --  ignoring intervening block statements.
+
          Prev := N;
          Stmt := Parent (N);
          while Present (Stmt) loop
@@ -4649,7 +4753,7 @@ package body Sem_Prag is
                --  Stop the traversal because we reached the innermost loop
                --  regardless of whether we encountered an error or not.
 
-               return;
+               exit;
 
             --  Ignore a handled statement sequence. Note that this node may
             --  be related to a subprogram body in which case we will emit an
@@ -4666,6 +4770,73 @@ package body Sem_Prag is
                return;
             end if;
          end loop;
+
+         --  For a Loop_Invariant or Loop_Variant pragma, check that previous
+         --  Loop_Invariant and Loop_Variant pragmas for the same loop appear
+         --  in the same sequence of statements, with only intervening similar
+         --  pragmas.
+
+         if Prag_Id = Pragma_Loop_Invariant
+              or else
+            Prag_Id = Pragma_Loop_Variant
+         then
+            Stmt := Prev_In_Loop (N);
+            Within_Same_Sequence := True;
+
+            while Present (Stmt) loop
+
+               --  The pragma may have been rewritten as a null statement if
+               --  assertions are not enabled, in which case the original node
+               --  should be used.
+
+               Orig_Stmt := Original_Node (Stmt);
+
+               --  Issue an error on a non-consecutive Loop_Invariant or
+               --  Loop_Variant pragma.
+
+               if Nkind (Orig_Stmt) = N_Pragma then
+                  declare
+                     Stmt_Prag_Id : constant Pragma_Id :=
+                                      Get_Pragma_Id (Pragma_Name (Orig_Stmt));
+
+                  begin
+                     if Stmt_Prag_Id = Pragma_Loop_Invariant
+                          or else
+                        Stmt_Prag_Id = Pragma_Loop_Variant
+                     then
+                        if List_Containing (Stmt) /= List_Containing (N)
+                          or else not Within_Same_Sequence
+                        then
+                           Error_Msg_Sloc := Sloc (Orig_Stmt);
+                           Error_Pragma
+                             ("pragma% must appear immediately after pragma#");
+
+                        --  Continue searching for previous Loop_Invariant and
+                        --  Loop_Variant pragmas even after finding a previous
+                        --  correct pragma, so that an error is also issued
+                        --  for the current pragma in case there is a previous
+                        --  non-consecutive pragma.
+
+                        else
+                           null;
+                        end if;
+
+                     --  Mark the end of the consecutive sequence of pragmas
+
+                     else
+                        Within_Same_Sequence := False;
+                     end if;
+                  end;
+
+               --  Mark the end of the consecutive sequence of pragmas
+
+               else
+                  Within_Same_Sequence := False;
+               end if;
+
+               Stmt := Prev_In_Loop (Stmt);
+            end loop;
+         end if;
       end Check_Loop_Pragma_Placement;
 
       -------------------------------------------

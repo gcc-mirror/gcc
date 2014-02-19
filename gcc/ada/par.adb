@@ -467,7 +467,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  expected column of the end assuming normal Ada indentation usage. If
       --  the RM_Column_Check mode is set, this value is used for generating
       --  error messages about indentation. Otherwise it is used only to
-      --  control heuristic error recovery actions.
+      --  control heuristic error recovery actions. This value is zero origin.
 
       Labl : Node_Id;
       --  This field is used to provide the name of the construct being parsed
