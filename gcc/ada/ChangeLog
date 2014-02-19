@@ -1,5 +1,9 @@
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
+	* exp_util.adb (Side_Effect_Free): Scalar if expressions can be SEF.
+
+2014-02-19  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb: Update comments.
 
 2014-02-19  Doug Rupp  <rupp@adacore.com>
