@@ -6767,6 +6767,30 @@ package body Sem_Util is
       return Get_Pragma_Id (Pragma_Name (N));
    end Get_Pragma_Id;
 
+   -----------------------
+   -- Get_Reason_String --
+   -----------------------
+
+   procedure Get_Reason_String (N : Node_Id) is
+   begin
+      if Nkind (N) = N_String_Literal then
+         Store_String_Chars (Strval (N));
+
+      elsif Nkind (N) = N_Op_Concat then
+         Get_Reason_String (Left_Opnd (N));
+         Get_Reason_String (Right_Opnd (N));
+
+      --  If not of required form, error
+
+      else
+         Error_Msg_N
+           ("Reason for pragma Warnings has wrong form", N);
+         Error_Msg_N
+           ("\must be string literal or concatenation of string literals", N);
+         return;
+      end if;
+   end Get_Reason_String;
+
    ---------------------------
    -- Get_Referenced_Object --
    ---------------------------

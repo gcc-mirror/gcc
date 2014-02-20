@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,9 @@ package Stringt is
 --  it maybe. This means that the caller cannot count on having the same Id
 --  value for two identical strings stored separately and also cannot count on
 --  the two Id values being different.
+
+   Null_String_Id : String_Id;
+   --  Gets set to a null string with length zero
 
    --------------------------------------
    -- String Table Access Subprograms --

@@ -1931,6 +1931,7 @@ package body Sem_Ch5 is
                Set_Etype (Def_Id,
                  Get_Cursor_Type
                   (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)), Typ));
+               Ent := Etype (Def_Id);
 
             else
                Ent := First_Entity (Scope (Typ));

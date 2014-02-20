@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -471,5 +471,13 @@ package body Stringt is
          Write_Char ('"');
       end if;
    end Write_String_Table_Entry;
+
+--  Setup the null string
+
+pragma Warnings (Off); -- kill strange warning from code below ???
+
+begin
+   Start_String;
+   Null_String_Id := End_String;
 
 end Stringt;

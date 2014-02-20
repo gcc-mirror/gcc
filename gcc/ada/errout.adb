@@ -332,7 +332,9 @@ package body Errout is
       --  that style checks are not considered warning messages for this
       --  purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Orig_Loc) then
+      if Is_Warning_Msg
+        and then Warnings_Suppressed (Orig_Loc) /= No_String
+      then
          return;
 
       --  For style messages, check too many messages so far
@@ -774,7 +776,10 @@ package body Errout is
 
          --  Immediate return if warning message and warnings are suppressed
 
-         if Warnings_Suppressed (Optr) or else Warnings_Suppressed (Sptr) then
+         if Warnings_Suppressed (Optr) /= No_String
+              or else
+            Warnings_Suppressed (Sptr) /= No_String
+         then
             Cur_Msg := No_Error_Msg;
             return;
          end if;
@@ -1321,10 +1326,11 @@ package body Errout is
 
          begin
             if (CE.Warn and not CE.Deleted)
-              and then
-                (Warning_Specifically_Suppressed (CE.Sptr, CE.Text)
-                   or else
-                 Warning_Specifically_Suppressed (CE.Optr, CE.Text))
+              and then (Warning_Specifically_Suppressed (CE.Sptr, CE.Text) /=
+                                                                   No_String
+                          or else
+                        Warning_Specifically_Suppressed (CE.Optr, CE.Text) /=
+                                                                   No_String)
             then
                Delete_Warning (Cur);
 

@@ -267,9 +267,13 @@ package Erroutc is
    --  values in this table always reference the original template, not an
    --  instantiation copy, in the generic case.
 
+   --  Reason is the reason from the pragma Warnings (Off,..) or the null
+   --  string if no reason parameter is given.
+
    type Warnings_Entry is record
-      Start : Source_Ptr;
-      Stop  : Source_Ptr;
+      Start  : Source_Ptr;
+      Stop   : Source_Ptr;
+      Reason : String_Id;
    end record;
 
    package Warnings is new Table.Table (
@@ -282,13 +286,16 @@ package Erroutc is
 
    --  The second table is used for the specific forms of the pragma, where
    --  the first argument is ON or OFF, and the second parameter is a string
-   --  which is the entire message to suppress, or a prefix of it.
+   --  which is the pattern to match for suppressing a warning.
 
    type Specific_Warning_Entry is record
       Start : Source_Ptr;
       Stop  : Source_Ptr;
       --  Starting and ending source pointers for the range. These are always
       --  from the same source file.
+
+      Reason : String_Id;
+      --  Reason string from pragma Warnings, or null string if none
 
       Msg : String_Ptr;
       --  Message from pragma Warnings (Off, string)
@@ -466,6 +473,7 @@ package Erroutc is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
+      Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False);
    --  This is called in response to the two argument form of pragma Warnings
@@ -473,10 +481,11 @@ package Erroutc is
    --  which identifies a specific warning to be suppressed. The first argument
    --  is the start of the suppression range, and the second argument is the
    --  string from the pragma. Loc is the location of the pragma (which is the
-   --  start of the range to suppress). Config is True for the configuration
-   --  pragma case (where there is no requirement for a matching OFF pragma).
-   --  Used is set True to disable the check that the warning actually has
-   --  has the effect of suppressing a warning.
+   --  start of the range to suppress). Reason is the reason string from the
+   --  pragma, or the null string if no reason is given. Config is True for the
+   --  configuration pragma case (where there is no requirement for a matching
+   --  OFF pragma). Used is set True to disable the check that the warning
+   --  actually has has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;
@@ -489,9 +498,10 @@ package Erroutc is
    --  string from the pragma. Err is set to True on return to report the error
    --  of no matching Warnings Off pragma preceding this one.
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr);
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr; Reason : String_Id);
    --  Called in response to a pragma Warnings (Off) to record the source
-   --  location from which warnings are to be turned off.
+   --  location from which warnings are to be turned off. Reason is the
+   --  Reason from the pragma, or the null string if none is given.
 
    procedure Set_Warnings_Mode_On (Loc : Source_Ptr);
    --  Called in response to a pragma Warnings (On) to record the source
@@ -518,18 +528,24 @@ package Erroutc is
    --  Note that the call has no effect for continuation messages (those whose
    --  first character is '\'), and all variables are left unchanged.
 
-   function Warnings_Suppressed (Loc : Source_Ptr) return Boolean;
+   function Warnings_Suppressed (Loc : Source_Ptr) return String_Id;
    --  Determines if given location is covered by a warnings off suppression
    --  range in the warnings table (or is suppressed by compilation option,
    --  which generates a warning range for the whole source file). This routine
-   --  only deals with the general ON/OFF case, not specific warnings. True
-   --  is also returned if warnings are globally suppressed.
+   --  only deals with the general ON/OFF case, not specific warnings. The
+   --  returned result is No_String if warnings are not suppressed. If warnings
+   --  are suppressed for the given location, then then corresponding Reason
+   --  parameter from the pragma is returned (or the null string if no Reason
+   --  parameter was present).
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return Boolean;
+      Msg : String_Ptr) return String_Id;
    --  Determines if given message to be posted at given location is suppressed
    --  by specific ON/OFF Warnings pragmas specifying this particular message.
+   --  If the warning is not suppressed then No_String is returned, otherwise
+   --  the corresponding warning string is returned (or the null string if no
+   --  Warning argument was present in the pragma).
 
    type Error_Msg_Proc is
      access procedure (Msg : String; Flag_Location : Source_Ptr);

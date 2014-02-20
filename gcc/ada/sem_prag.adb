@@ -20815,14 +20815,17 @@ package body Sem_Prag is
 
          --  REASON ::= Reason => Static_String_Expression
 
-         when Pragma_Warnings => Warnings : begin
+         when Pragma_Warnings => Warnings : declare
+            Reason : String_Id;
+
+         begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (1);
 
             --  See if last argument is labeled Reason. If so, make sure we
-            --  have a static string expression, but otherwise just ignore
-            --  the REASON argument by decreasing Num_Args by 1 (all the
-            --  remaining tests look only at the first Num_Args arguments).
+            --  have a static string expression, and acquire the REASON string.
+            --  Then remove the REASON argument by decreasing Num_Args by one;
+            --  Remaining processing looks only at first Num_Args arguments).
 
             declare
                Last_Arg : constant Node_Id :=
@@ -20831,12 +20834,19 @@ package body Sem_Prag is
                if Nkind (Last_Arg) = N_Pragma_Argument_Association
                  and then Chars (Last_Arg) = Name_Reason
                then
-                  Check_Arg_Is_Static_Expression (Last_Arg, Standard_String);
+                  Start_String;
+                  Get_Reason_String (Get_Pragma_Arg (Last_Arg));
+                  Reason := End_String;
                   Arg_Count := Arg_Count - 1;
 
                   --  Not allowed in compiler units (bootstrap issues)
 
                   Check_Compiler_Unit (N);
+
+               --  No REASON string, set null string as reason
+
+               else
+                  Reason := Null_String_Id;
                end if;
             end;
 
@@ -20986,7 +20996,7 @@ package body Sem_Prag is
                                 and then Warn_On_Warnings_Off
                                 and then not In_Instance
                               then
-                                 Warnings_Off_Pragmas.Append ((N, E));
+                                 Warnings_Off_Pragmas.Append ((N, E, Reason));
                               end if;
 
                               if Is_Enumeration_Type (E) then
@@ -21040,7 +21050,7 @@ package body Sem_Prag is
 
                         if Chars (Argx) = Name_Off then
                            Set_Specific_Warning_Off
-                             (Loc, Name_Buffer (1 .. Name_Len),
+                             (Loc, Name_Buffer (1 .. Name_Len), Reason,
                               Config => Is_Configuration_Pragma,
                               Used   => Inside_A_Generic or else In_Instance);
 

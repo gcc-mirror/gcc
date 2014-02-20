@@ -1018,10 +1018,10 @@ begin
       -- Warnings (GNAT) --
       ---------------------
 
-      --  pragma Warnings (On | Off);
-      --  pragma Warnings (On | Off, LOCAL_NAME);
-      --  pragma Warnings (static_string_EXPRESSION);
-      --  pragma Warnings (On | Off, static_string_EXPRESSION);
+      --  pragma Warnings (On | Off [,REASON]);
+      --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
+      --  pragma Warnings (static_string_EXPRESSION [,REASON]);
+      --  pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
       --  The one argument ON/OFF case is processed by the parser, since it may
       --  control parser warnings as well as semantic warnings, and in any case
@@ -1042,12 +1042,33 @@ begin
 
             declare
                Argx : constant Node_Id := Expression (Arg1);
+
+               function Get_Reason return String_Id;
+               --  Analyzes Reason argument and returns corresponding String_Id
+               --  value, or null if there is no Reason argument, or if the
+               --  argument is not of the required form.
+
+               ----------------
+               -- Get_Reason --
+               ----------------
+
+               function Get_Reason return String_Id is
+               begin
+                  if Arg_Count = 1 then
+                     return Null_String_Id;
+                  else
+                     Start_String;
+                     Get_Reason_String (Expression (Arg2));
+                     return End_String;
+                  end if;
+               end Get_Reason;
+
             begin
                if Nkind (Argx) = N_Identifier then
                   if Chars (Argx) = Name_On then
                      Set_Warnings_Mode_On (Pragma_Sloc);
                   elsif Chars (Argx) = Name_Off then
-                     Set_Warnings_Mode_Off (Pragma_Sloc);
+                     Set_Warnings_Mode_Off (Pragma_Sloc, Get_Reason);
                   end if;
                end if;
             end;

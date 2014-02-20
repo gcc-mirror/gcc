@@ -851,6 +851,13 @@ package Sem_Util is
    pragma Inline (Get_Pragma_Id);
    --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)
 
+   procedure Get_Reason_String (N : Node_Id);
+   --  Recursive routine to analyze reason argument for pragma Warnings. The
+   --  value of the reason argument is appended to the current string using
+   --  Store_String_Chars. The reason argument is expected to be a string
+   --  literal or concatenation of string literals. An error is given for
+   --  any other form.
+
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
    --  Given a node, return the renamed object if the node represents a renamed
    --  object, otherwise return the node unchanged. The node may represent an
