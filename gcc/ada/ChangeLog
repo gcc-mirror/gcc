@@ -1,3 +1,37 @@
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Initialize
+	properly the cursor type for subsequent volatile testing in SPARK
+	mode, when domain is a formal container with an Iterabe aspect.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Warnings_Mode_Off): Add Reason argument.
+	(Set_Specific_Warning_Off): Add Reason argument.
+	* errout.ads (Set_Warnings_Mode_Off): Add Reason argument.
+	(Set_Specific_Warning_Off): Add Reason argument.
+	* erroutc.adb (Warnings_Entry): Add Reason field
+	(Specific_Warning_Entry): Add Reason field.
+	(Warnings_Suppressed): return String_Id for Reason.
+	(Warning_Specifically_Suppressed): return String_Id for Reason.
+	* erroutc.ads (Warnings_Entry): Add Reason field.
+	(Specific_Warning_Entry): Add Reason field.
+	(Set_Specific_Warning_Off): Add Reason argument.
+	(Set_Warnings_Mode_Off): Add Reason argument.
+	(Warnings_Suppressed): return String_Id for Reason.
+	(Warning_Specifically_Suppressed): return String_Id for Reason.
+	* errutil.adb (Warnings_Suppressed): returns String_Id for Reason
+	(Warning_Specifically_Suppressed): returns String_Id for Reason
+	* gnat_rm.texi: Document that Warning parameter is string literal
+	or a concatenation of string literals.
+	* par-prag.adb: New handling for Reason argument.
+	* sem_prag.adb (Analyze_Pragma, case Warning): New handling
+	for Reason argument.
+	* sem_util.ads, sem_util.adb (Get_Reason_String): New procedure.
+	* sem_warn.ads (Warnings_Off_Entry): Add reason field.
+	* stringt.adb: Set Null_String_Id.
+	* stringt.ads (Null_String_Id): New constant.
+
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads: Minor comment addition: Etype of package is

@@ -39,6 +39,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Uintp;    use Uintp;
 
@@ -1110,6 +1111,7 @@ package body Erroutc is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
+      Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False)
    is
@@ -1118,6 +1120,7 @@ package body Erroutc is
         ((Start      => Loc,
           Msg        => new String'(Msg),
           Stop       => Source_Last (Current_Source_File),
+          Reason     => Reason,
           Open       => True,
           Used       => Used,
           Config     => Config));
@@ -1163,7 +1166,7 @@ package body Erroutc is
    -- Set_Warnings_Mode_Off --
    ---------------------------
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr) is
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr; Reason : String_Id) is
    begin
       --  Don't bother with entries from instantiation copies, since we will
       --  already have a copy in the template, which is what matters.
@@ -1197,10 +1200,10 @@ package body Erroutc is
       --  source file. This ending point will be adjusted by a subsequent
       --  corresponding pragma Warnings (On).
 
-      Warnings.Increment_Last;
-      Warnings.Table (Warnings.Last).Start := Loc;
-      Warnings.Table (Warnings.Last).Stop :=
-        Source_Last (Current_Source_File);
+      Warnings.Append
+        ((Start  => Loc,
+          Stop   => Source_Last (Current_Source_File),
+          Reason => Reason));
    end Set_Warnings_Mode_Off;
 
    --------------------------
@@ -1342,7 +1345,7 @@ package body Erroutc is
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;
-      Msg : String_Ptr) return Boolean
+      Msg : String_Ptr) return String_Id
    is
       function Matches (S : String; P : String) return Boolean;
       --  Returns true if the String S patches the pattern P, which can contain
@@ -1429,36 +1432,36 @@ package body Erroutc is
             then
                if Matches (Msg.all, SWE.Msg.all) then
                   SWE.Used := True;
-                  return True;
+                  return SWE.Reason;
                end if;
             end if;
          end;
       end loop;
 
-      return False;
+      return No_String;
    end Warning_Specifically_Suppressed;
 
    -------------------------
    -- Warnings_Suppressed --
    -------------------------
 
-   function Warnings_Suppressed (Loc : Source_Ptr) return Boolean is
+   function Warnings_Suppressed (Loc : Source_Ptr) return String_Id is
    begin
-      if Warning_Mode = Suppress then
-         return True;
-      end if;
-
       --  Loop through table of ON/OFF warnings
 
       for J in Warnings.First .. Warnings.Last loop
          if Warnings.Table (J).Start <= Loc
            and then Loc <= Warnings.Table (J).Stop
          then
-            return True;
+            return Warnings.Table (J).Reason;
          end if;
       end loop;
 
-      return False;
+      if Warning_Mode = Suppress then
+         return Null_String_Id;
+      else
+         return No_String;
+      end if;
    end Warnings_Suppressed;
 
 end Erroutc;

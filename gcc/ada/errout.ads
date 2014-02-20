@@ -806,10 +806,11 @@ package Errout is
    --  ignored. A call with To=False restores the default treatment in which
    --  error calls are treated as usual (and as described in this spec).
 
-   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr)
+   procedure Set_Warnings_Mode_Off (Loc : Source_Ptr; Reason : String_Id)
      renames Erroutc.Set_Warnings_Mode_Off;
    --  Called in response to a pragma Warnings (Off) to record the source
-   --  location from which warnings are to be turned off.
+   --  location from which warnings are to be turned off. Reason is the
+   --  Reason from the pragma, or the null string if none is given.
 
    procedure Set_Warnings_Mode_On (Loc : Source_Ptr)
      renames Erroutc.Set_Warnings_Mode_On;
@@ -819,14 +820,20 @@ package Errout is
    procedure Set_Specific_Warning_Off
      (Loc    : Source_Ptr;
       Msg    : String;
+      Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False)
      renames Erroutc.Set_Specific_Warning_Off;
    --  This is called in response to the two argument form of pragma Warnings
-   --  where the first argument is OFF, and the second argument is the prefix
-   --  of a specific warning to be suppressed. The first argument is the start
-   --  of the suppression range, and the second argument is the string from
-   --  the pragma.
+   --  where the first argument is OFF, and the second argument is a string
+   --  which identifies a specific warning to be suppressed. The first argument
+   --  is the start of the suppression range, and the second argument is the
+   --  string from the pragma. Loc is the location of the pragma (which is the
+   --  start of the range to suppress). Reason is the reason string from the
+   --  pragma, or the null string if no reason is given. Config is True for the
+   --  configuration pragma case (where there is no requirement for a matching
+   --  OFF pragma). Used is set True to disable the check that the warning
+   --  actually has has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;
