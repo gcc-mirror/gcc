@@ -1,4 +1,11 @@
 2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/60204
+	* gcc.target/x86_64/abi/avx512f/test_passing_structs.c: Update to
+	reflect abi fix.
+	* gcc.target/x86_64/abi/avx512f/test_passing_unions.c: Ditto.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
 	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512er-vrcp28sd-2.c: Distinguish src1 and src2.
