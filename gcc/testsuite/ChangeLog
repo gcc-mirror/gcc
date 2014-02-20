@@ -16,7 +16,7 @@
 2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58555
-	* testsuite/g++.dg/torture/pr58555.C: New testcase.
+	* g++.dg/torture/pr58555.C: New testcase.
 
 2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
 
@@ -58,8 +58,8 @@
 	PR target/59794
 	* gcc.target/i386/pr39162.c: Add dg-prune-output.
 	(dg-options): Remove -Wno-psabi.
-	* gcc.target/i386/59794-2.c: Ditto.
-	* gcc.target/i386/60205-1.c: Ditto.
+	* gcc.target/i386/pr59794-2.c: Ditto.
+	* gcc.target/i386/pr60205-1.c: Ditto.
 	* gcc.target/i386/sse-5.c: Ditto.
 
 2014-02-18  Nick Clifton  <nickc@redhat.com>
@@ -828,7 +828,7 @@
 	in dg-output regexps.
 	* c-c++-common/tsan/simple_stack.c: Likewise.
 
-2014-01-31  Richard Henderson <rth@redhat.com>
+2014-01-31  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/tm/pr60004.C: New.
 
@@ -1294,7 +1294,7 @@
 	* c-c++-common/cpp/warning-zero-in-literals-1.c: New test file.
 
 2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
-	    Ilya Tocar     <ilya.tocar@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512f-kmovw-1.c: New.
 
