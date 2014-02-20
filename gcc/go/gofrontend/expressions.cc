@@ -3792,6 +3792,12 @@ Unary_expression::do_lower(Gogo*, Named_object*, Statement_inserter*, int)
 	      if (e == expr)
 		{
 		  // *&x == x.
+		  if (!ue->expr_->is_addressable() && !ue->create_temp_)
+		    {
+		      error_at(ue->location(),
+			       "invalid operand for unary %<&%>");
+		      this->set_is_error();
+		    }
 		  return ue->expr_;
 		}
 	      ue->set_does_not_escape();
@@ -3828,6 +3834,9 @@ Expression*
 Unary_expression::do_flatten(Gogo* gogo, Named_object*,
                              Statement_inserter* inserter)
 {
+  if (this->is_error_expression() || this->expr_->is_error_expression())
+    return Expression::make_error(this->location());
+
   Location location = this->location();
   if (this->op_ == OPERATOR_MULT
       && !this->expr_->is_variable())
@@ -4167,7 +4176,10 @@ Unary_expression::do_check_types(Gogo*)
       if (!this->expr_->is_addressable())
 	{
 	  if (!this->create_temp_)
-	    this->report_error(_("invalid operand for unary %<&%>"));
+	    {
+	      error_at(this->location(), "invalid operand for unary %<&%>");
+	      this->set_is_error();
+	    }
 	}
       else
         {
