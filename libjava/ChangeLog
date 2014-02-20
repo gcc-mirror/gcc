@@ -1,3 +1,11 @@
+2014-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR libjava/60261
+	* configure.ac (dbexecdir): Remove redundant multilib addition.
+	* Makefile.am (gcc_version): Export.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+
 2014-01-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gnu/gcj/convert/Convert.java (version): Update copyright notice
