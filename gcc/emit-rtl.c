@@ -896,6 +896,9 @@ gen_reg_rtx (enum machine_mode mode)
       return gen_rtx_CONCAT (mode, realpart, imagpart);
     }
 
+  /* Do not call gen_reg_rtx with uninitialized crtl.  */
+  gcc_assert (crtl->emit.regno_pointer_align_length);
+
   /* Make sure regno_pointer_align, and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 

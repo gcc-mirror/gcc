@@ -1,4 +1,9 @@
-2014-02-20  Richard Henderson <rth@redhat.com>
+2014-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* emit-rtl.c (gen_reg_rtx): Assert that
+	crtl->emit.regno_pointer_align_length is non-zero.
+
+2014-02-20  Richard Henderson  <rth@redhat.com>
 
 	PR c++/60272
 	* builtins.c (expand_builtin_atomic_compare_exchange): Conditionalize
@@ -32,8 +37,7 @@
 
 	* tree-cfg.c (replace_uses_by): Mark altered BBs before
 	doing the substitution.
-	(verify_gimple_assign_single): Also verify bare MEM_REFs
-	on the lhs.
+	(verify_gimple_assign_single): Also verify bare MEM_REFs on the lhs.
 
 2014-02-20  Martin Jambor  <mjambor@suse.cz>
 
@@ -50,8 +54,8 @@
 2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58555
-	* ipa-inline-transform.c (clone_inlined_nodes): Add freq_scale parameter
-	specifying the scaling.
+	* ipa-inline-transform.c (clone_inlined_nodes): Add freq_scale
+	parameter specifying the scaling.
 	(inline_call): Update.
 	(want_inline_recursively): Guard division by zero.
 	(recursive_inlining): Update.
@@ -64,7 +68,7 @@
 	64 bytes or less in register.
 
 2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
-            Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/avx512erintrin.h (_mm_rcp28_round_sd): Swap operands.
 	(_mm_rcp28_round_ss): Ditto.
@@ -567,7 +571,7 @@
 
 	* config/microblaze/microblaze.h: Define SIZE_TYPE and PTRDIFF_TYPE.
 
-2014-02-10  Richard Henderson <rth@redhat.com>
+2014-02-10  Richard Henderson  <rth@redhat.com>
 
 	PR target/59927
 	* calls.c (expand_call): Don't double-push for reg_parm_stack_space.
@@ -986,7 +990,7 @@
 	(altivec_vupklpx): Emit vupkhpx instead of vupklpx when target is
 	little endian and -maltivec=be is not specified.
 
-2014-02-05  Richard Henderson <rth@redhat.com>
+2014-02-05  Richard Henderson  <rth@redhat.com>
 
 	PR debug/52727
 	* combine-stack-adj.c: Revert r206943.
@@ -2926,7 +2930,7 @@
 	* config/aarch64/aarch64.c (aarch64_register_move_cost): Correct cost
 	of moving from/to the STACK_REG register class.
 
-2014-01-15  Richard Henderson <rth@redhat.com>
+2014-01-15  Richard Henderson  <rth@redhat.com>
 
 	PR debug/54694
 	* reginfo.c (global_regs_decl): Globalize.
