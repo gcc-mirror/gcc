@@ -233,7 +233,8 @@ bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge_p> *, int *, bool);
 unsigned int inline_transform (struct cgraph_node *);
-void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
+void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
+			  int freq_scale);
 
 extern int ncalls_inlined;
 extern int nfunctions_inlined;
