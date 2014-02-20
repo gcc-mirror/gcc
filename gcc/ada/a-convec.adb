@@ -943,6 +943,7 @@ package body Ada.Containers.Vectors is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Find;
@@ -985,6 +986,7 @@ package body Ada.Containers.Vectors is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Find_Index;
 
@@ -1095,6 +1097,7 @@ package body Ada.Containers.Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Is_Sorted;
@@ -1257,6 +1260,7 @@ package body Ada.Containers.Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Sort;
@@ -3288,6 +3292,7 @@ package body Ada.Containers.Vectors is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Reverse_Find;
@@ -3333,6 +3338,7 @@ package body Ada.Containers.Vectors is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Reverse_Find_Index;
 

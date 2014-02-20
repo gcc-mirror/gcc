@@ -598,6 +598,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
       end loop;
 
       return Target_Root;
+
    exception
       when others =>
          Delete_Tree (Target_Root);

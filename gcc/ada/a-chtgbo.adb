@@ -54,6 +54,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       L := L - 1;
 
       return Result;
+
    exception
       when others =>
          B := B - 1;
@@ -378,6 +379,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
          L_Node := Next (L.Nodes (L_Node));
 
          if L_Node = 0 then
+
             --  We have exhausted the nodes in this bucket
 
             if N = 0 then
@@ -402,6 +404,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       LR := LR - 1;
 
       return Result;
+
    exception
       when others =>
          BL := BL - 1;
