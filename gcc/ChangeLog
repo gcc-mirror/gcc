@@ -1,3 +1,10 @@
+2014-02-20  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2014-02-08  Terry Guo  <terry.guo@arm.com>
+
+	* doc/invoke.texi: Document ARM -march=armv7e-m.
+
 2014-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
