@@ -6421,8 +6421,8 @@ classify_argument (enum machine_mode mode, const_tree type,
       tree field;
       enum x86_64_reg_class subclasses[MAX_CLASSES];
 
-      /* On x86-64 we pass structures larger than 32 bytes on the stack.  */
-      if (bytes > 32)
+      /* On x86-64 we pass structures larger than 64 bytes on the stack.  */
+      if (bytes > 64)
 	return 0;
 
       for (i = 0; i < words; i++)

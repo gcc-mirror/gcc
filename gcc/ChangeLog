@@ -1,4 +1,10 @@
 2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/60204
+	* config/i386/i386.c (classify_argument): Pass structures of size
+	64 bytes or less in register.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
             Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/avx512erintrin.h (_mm_rcp28_round_sd): Swap operands.

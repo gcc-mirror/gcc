@@ -26,16 +26,8 @@ check_struct_passing1 (struct m512_struct ms1 ATTRIBUTE_UNUSED,
 		       struct m512_struct ms7 ATTRIBUTE_UNUSED,
 		       struct m512_struct ms8 ATTRIBUTE_UNUSED)
 {
-  /* Check the passing on the stack by comparing the address of the
-     stack elements to the expected place on the stack.  */
-  assert ((unsigned long)&ms1.x == rsp+8);
-  assert ((unsigned long)&ms2.x == rsp+72);
-  assert ((unsigned long)&ms3.x == rsp+136);
-  assert ((unsigned long)&ms4.x == rsp+200);
-  assert ((unsigned long)&ms5.x == rsp+264);
-  assert ((unsigned long)&ms6.x == rsp+328);
-  assert ((unsigned long)&ms7.x == rsp+392);
-  assert ((unsigned long)&ms8.x == rsp+456);
+  /* Check register contents.  */
+  check_m512_arguments;
 }
 
 void
