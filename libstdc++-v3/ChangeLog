@@ -1,3 +1,30 @@
+2014-02-20  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Rename shared_mutex to shared_timed_mutex per C++14 acceptance of N3891.
+	* include/std/shared_mutex: Rename shared_mutex to shared_timed_mutex.
+	* testsuite/30_threads/shared_lock/locking/2.cc: Ditto.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Ditto.
+	* testsuite/30_threads/shared_lock/locking/1.cc: Ditto.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Ditto.
+	* testsuite/30_threads/shared_lock/requirements/
+	explicit_instantiation.cc: Ditto.
+	* testsuite/30_threads/shared_lock/requirements/typedefs.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/2.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/4.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/1.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/6.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/3.cc: Ditto.
+	* testsuite/30_threads/shared_lock/cons/5.cc: Ditto.
+	* testsuite/30_threads/shared_lock/modifiers/2.cc: Ditto.
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/requirements/
+	standard_layout.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/cons/copy_neg.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/cons/assign_neg.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: Ditto.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: Ditto.
+
 2014-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/22_locale/num_put/put/char/14220.cc: Don't xfail
