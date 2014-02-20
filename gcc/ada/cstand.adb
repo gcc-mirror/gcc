@@ -1321,6 +1321,13 @@ package body CStand is
          Set_First_Index (Any_String, Index);
       end;
 
+      Raise_Type := New_Standard_Entity;
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Raise_Type);
+      Set_Scope (Raise_Type, Standard_Standard);
+      Build_Signed_Integer_Type (Raise_Type, Standard_Integer_Size);
+      Make_Name (Raise_Type, "any type");
+
       Standard_Integer_8 := New_Standard_Entity;
       Decl := New_Node (N_Full_Type_Declaration, Stloc);
       Set_Defining_Identifier (Decl, Standard_Integer_8);

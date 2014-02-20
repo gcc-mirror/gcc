@@ -1,5 +1,36 @@
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* a-cborma.adb, a-cbhama.adb, a-cbdlli.adb, a-cbmutr.adb: Use pragma
+	Unmodified rather than Warnings (Off). Make comments
+	uniform in the four affected units.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Object_Size): For non-scalar types allow any value that is a
+	multiple of 8.
+	* gnat_rm.texi: Document Object_Size for composites more clearly.
+
+2014-02-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Default_Initialization): Remove function.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* stand.ads: Raise_Type: new predefined entity, used as the type
+	of a Raise_Expression prior to resolution.
+	* cstand.adb: Build entity for Raise_Type.
+	* sem_ch11.adb (Analyze_Raise_Expression): use Raise_Type as the
+	initial type of the node.
+	* sem_type.adb (Covers): Raise_Type is compatible with all
+	other types.
+	* sem_res.adb (Resolve): Remove special handling of Any_Type on
+	Raise_Expression nodes.
+	(Resolve_Raise_Expression): Signal ambiguity if the type of the
+	context is still Raise_Type.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch12.adb (Validate_Access_Type_Instance): Add message if
 	mismatching predicates.
 	* sem_ch6.adb (Check_Conformance): Give better messages on

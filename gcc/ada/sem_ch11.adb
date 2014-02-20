@@ -475,9 +475,11 @@ package body Sem_Ch11 is
 
       Kill_Current_Values (Last_Assignment_Only => True);
 
-      --  Set type as Any_Type since we have no information at all on the type
+      --  Raise_Type is compatible with all other types so that the raise
+      --  expression is legal in any expression context. It will be eventually
+      --  replaced by the concrete type imposed by the context.
 
-      Set_Etype (N, Any_Type);
+      Set_Etype (N, Raise_Type);
    end Analyze_Raise_Expression;
 
    -----------------------------

@@ -4413,17 +4413,17 @@ package body Sem_Ch13 is
             else
                Check_Size (Expr, U_Ent, Size, Biased);
 
-               if Size /= 8
-                    and then
-                  Size /= 16
-                    and then
-                  Size /= 32
-                    and then
-                  UI_Mod (Size, 64) /= 0
-               then
-                  Error_Msg_N
-                    ("Object_Size must be 8, 16, 32, or multiple of 64",
-                     Expr);
+               if Is_Scalar_Type (U_Ent) then
+                  if Size /= 8 and then Size /= 16 and then Size /= 32
+                    and then UI_Mod (Size, 64) /= 0
+                  then
+                     Error_Msg_N
+                       ("Object_Size must be 8, 16, 32, or multiple of 64",
+                        Expr);
+                  end if;
+
+               elsif Size mod 8 /= 0 then
+                  Error_Msg_N ("Object_Size must be a multiple of 8", Expr);
                end if;
 
                Set_Esize (U_Ent, Size);
