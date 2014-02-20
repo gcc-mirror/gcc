@@ -4686,6 +4686,48 @@ package body Sem_Eval is
       end if;
    end Out_Of_Range;
 
+   ----------------------
+   -- Predicates_Match --
+   ----------------------
+
+   function Predicates_Match (T1, T2 : Entity_Id) return Boolean is
+      Pred1 : Node_Id;
+      Pred2 : Node_Id;
+
+   begin
+      if Ada_Version < Ada_2012 then
+         return True;
+
+         --  Both types must have predicates or lack them
+
+      elsif Has_Predicates (T1) /= Has_Predicates (T2) then
+         return False;
+
+         --  Check matching predicates
+
+      else
+         Pred1 :=
+           Get_Rep_Item
+             (T1, Name_Static_Predicate, Check_Parents => False);
+         Pred2 :=
+           Get_Rep_Item
+             (T2, Name_Static_Predicate, Check_Parents => False);
+
+         --  Subtypes statically match if the predicate comes from the
+         --  same declaration, which can only happen if one is a subtype
+         --  of the other and has no explicit predicate.
+
+         --  Suppress warnings on order of actuals, which is otherwise
+         --  triggered by one of the two calls below.
+
+         pragma Warnings (Off);
+         return Pred1 = Pred2
+           or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
+           or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
+         pragma Warnings (On);
+      end if;
+   end Predicates_Match;
+
    -------------------------
    -- Rewrite_In_Raise_CE --
    -------------------------
@@ -4839,55 +4881,6 @@ package body Sem_Eval is
    --  false even if the types would otherwise match in the RM sense.
 
    function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean is
-
-      function Predicates_Match return Boolean;
-      --  In Ada 2012, subtypes statically match if their static predicates
-      --  match as well.
-
-      ----------------------
-      -- Predicates_Match --
-      ----------------------
-
-      function Predicates_Match return Boolean is
-         Pred1 : Node_Id;
-         Pred2 : Node_Id;
-
-      begin
-         if Ada_Version < Ada_2012 then
-            return True;
-
-         --  Both types must have predicates or lack them
-
-         elsif Has_Predicates (T1) /= Has_Predicates (T2) then
-            return False;
-
-         --  Check matching predicates
-
-         else
-            Pred1 :=
-              Get_Rep_Item
-                (T1, Name_Static_Predicate, Check_Parents => False);
-            Pred2 :=
-              Get_Rep_Item
-                (T2, Name_Static_Predicate, Check_Parents => False);
-
-            --  Subtypes statically match if the predicate comes from the
-            --  same declaration, which can only happen if one is a subtype
-            --  of the other and has no explicit predicate.
-
-            --  Suppress warnings on order of actuals, which is otherwise
-            --  triggered by one of the two calls below.
-
-            pragma Warnings (Off);
-            return Pred1 = Pred2
-              or else (No (Pred1) and then Is_Subtype_Of (T1, T2))
-              or else (No (Pred2) and then Is_Subtype_Of (T2, T1));
-            pragma Warnings (On);
-         end if;
-      end Predicates_Match;
-
-   --  Start of processing for Subtypes_Statically_Match
-
    begin
       --  A type always statically matches itself
 
@@ -4903,7 +4896,7 @@ package body Sem_Eval is
 
       --  No match if predicates do not match
 
-      elsif not Predicates_Match then
+      elsif not Predicates_Match (T1, T2) then
          return False;
 
       --  Scalar types

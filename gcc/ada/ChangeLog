@@ -1,3 +1,16 @@
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Type_Instance): Add message if
+	mismatching predicates.
+	* sem_ch6.adb (Check_Conformance): Give better messages on
+	predicate mismatch.
+	* sem_eval.adb (Predicates_Match): Move to spec.
+	* sem_eval.ads (Predicates_Match): Moved here from body.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbmutr.adb: Use default value in Insert_Child.
+
 2014-02-20  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb, make.adb, prj-makr.adb, clean.adb: Call

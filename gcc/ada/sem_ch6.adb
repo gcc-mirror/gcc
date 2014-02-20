@@ -669,24 +669,43 @@ package body Sem_Ch6 is
          Subtype_Ind : constant Node_Id :=
                          Object_Definition (Original_Node (Obj_Decl));
 
-         R_Type_Is_Anon_Access :
-           constant Boolean :=
-             Ekind (R_Type) = E_Anonymous_Access_Subprogram_Type
-               or else
-             Ekind (R_Type) = E_Anonymous_Access_Protected_Subprogram_Type
-               or else
-             Ekind (R_Type) = E_Anonymous_Access_Type;
+         R_Type_Is_Anon_Access : constant Boolean :=
+             Ekind_In (R_Type,
+                       E_Anonymous_Access_Subprogram_Type,
+                       E_Anonymous_Access_Protected_Subprogram_Type,
+                       E_Anonymous_Access_Type);
          --  True if return type of the function is an anonymous access type
          --  Can't we make Is_Anonymous_Access_Type in einfo ???
 
-         R_Stm_Type_Is_Anon_Access :
-           constant Boolean :=
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Subprogram_Type
-               or else
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Protected_Subprogram_Type
-               or else
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Type;
+         R_Stm_Type_Is_Anon_Access : constant Boolean :=
+             Ekind_In (R_Stm_Type,
+                       E_Anonymous_Access_Subprogram_Type,
+                       E_Anonymous_Access_Protected_Subprogram_Type,
+                       E_Anonymous_Access_Type);
          --  True if type of the return object is an anonymous access type
+
+         procedure Error_No_Match (N : Node_Id);
+         --  Output error messages for case where types do not statically
+         --  match. N is the location for the messages.
+
+         --------------------
+         -- Error_No_Match --
+         --------------------
+
+         procedure Error_No_Match (N : Node_Id) is
+         begin
+            Error_Msg_N
+              ("subtype must statically match function result subtype", N);
+
+            if not Predicates_Match (R_Stm_Type, R_Type) then
+               Error_Msg_Node_2 := R_Type;
+               Error_Msg_NE
+                 ("\predicate of & does not match predicate of &",
+                  N, R_Stm_Type);
+            end if;
+         end Error_No_Match;
+
+      --  Start of processing for Check_Return_Subtype_Indication
 
       begin
          --  First, avoid cascaded errors
@@ -708,9 +727,7 @@ package body Sem_Ch6 is
                      Base_Type (Designated_Type (R_Type))
                     or else not Subtypes_Statically_Match (R_Stm_Type, R_Type)
                   then
-                     Error_Msg_N
-                      ("subtype must statically match function result subtype",
-                       Subtype_Mark (Subtype_Ind));
+                     Error_No_Match (Subtype_Mark (Subtype_Ind));
                   end if;
 
                else
@@ -720,9 +737,7 @@ package body Sem_Ch6 is
                   if not Conforming_Types
                     (R_Stm_Type, R_Type, Fully_Conformant)
                   then
-                     Error_Msg_N
-                      ("subtype must statically match function result subtype",
-                         Subtype_Ind);
+                     Error_No_Match (Subtype_Ind);
                   end if;
                end if;
 
@@ -763,9 +778,7 @@ package body Sem_Ch6 is
                  or else Null_Exclusion_Present (Parent (Scope_Id))) /=
                                               Can_Never_Be_Null (R_Stm_Type)
             then
-               Error_Msg_N
-                 ("subtype must statically match function result subtype",
-                  Subtype_Ind);
+               Error_No_Match (Subtype_Ind);
             end if;
 
             --  AI05-103: for elementary types, subtypes must statically match
@@ -774,9 +787,7 @@ package body Sem_Ch6 is
               or else Is_Access_Type (R_Type)
             then
                if not Subtypes_Statically_Match (R_Stm_Type, R_Type) then
-                  Error_Msg_N
-                    ("subtype must statically match function result subtype",
-                     Subtype_Ind);
+                  Error_No_Match (Subtype_Ind);
                end if;
             end if;
 
@@ -5931,7 +5942,16 @@ package body Sem_Ch6 is
             null;
 
          elsif not Conforming_Types (Old_Type, New_Type, Ctype, Get_Inst) then
-            Conformance_Error ("\return type does not match!", New_Id);
+            if Ctype >= Subtype_Conformant
+              and then not Predicates_Match (Old_Type, New_Type)
+            then
+               Conformance_Error
+                 ("\predicate of return type does not match!", New_Id);
+            else
+               Conformance_Error
+                 ("\return type does not match!", New_Id);
+            end if;
+
             return;
          end if;
 
@@ -6168,7 +6188,16 @@ package body Sem_Ch6 is
             if Errmsg and then Old_Formal_Base = Any_Type then
                Conforms := False;
             else
-               Conformance_Error ("\type of & does not match!", New_Formal);
+               if Ctype >= Subtype_Conformant
+                 and then
+                   not Predicates_Match (Old_Formal_Base, New_Formal_Base)
+               then
+                  Conformance_Error
+                    ("\predicate of & does not match!", New_Formal);
+               else
+                  Conformance_Error
+                    ("\type of & does not match!", New_Formal);
+               end if;
             end if;
 
             return;

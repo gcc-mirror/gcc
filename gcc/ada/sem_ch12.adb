@@ -10662,17 +10662,27 @@ package body Sem_Ch12 is
          if not Subtypes_Match (Desig_Type, Desig_Act) then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
-                 Actual, Gen_T);
+               Actual, Gen_T);
+
+            if not Predicates_Match (Desig_Type, Desig_Act) then
+               Error_Msg_N ("\predicates do not match", Actual);
+            end if;
+
             Abandon_Instantiation (Actual);
 
          elsif Is_Access_Type (Designated_Type (Act_T))
            and then Is_Constrained (Designated_Type (Designated_Type (Act_T)))
                       /=
-                  Is_Constrained (Designated_Type (Desig_Type))
+                    Is_Constrained (Designated_Type (Desig_Type))
          then
             Error_Msg_NE
               ("designated type of actual does not match that of formal &",
-                 Actual, Gen_T);
+               Actual, Gen_T);
+
+            if not Predicates_Match (Desig_Type, Desig_Act) then
+               Error_Msg_N ("\predicates do not match", Actual);
+            end if;
+
             Abandon_Instantiation (Actual);
          end if;
 
