@@ -1,3 +1,15 @@
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb: Minor code reorganization (use Nkind_In).
+	* stringt.adb: Remove temporary pragma Warnings (Off).
+	* stringt.ads: Add pragma Elaborate_Body to ensure initialization
+	of Null_String_Id.
+
+2014-02-20  Matthew Heaney  <heaney@adacore.com>
+
+	* a-chtgbk.adb (Replace): Use correct offset when calculating bucket
+	index.
+
 2014-02-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): Initialize

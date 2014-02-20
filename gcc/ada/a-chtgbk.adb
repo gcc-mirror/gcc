@@ -275,6 +275,13 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       --  Per AI05-0022, the container implementation is required to detect
       --  element tampering by a generic actual subprogram.
 
+      --  The following block appears to be vestigial -- this should be done
+      --  using Checked_Index instead. Also, we might have to move the actual
+      --  tampering checks to the top of the subprogram, in order to prevent
+      --  infinite recursion when calling Hash. (This is similar to how Insert
+      --  and Delete are implemented.) This implies that we will have to defer
+      --  the computation of New_Index until after the tampering check. ???
+
       declare
          B : Natural renames HT.Busy;
          L : Natural renames HT.Lock;
@@ -282,7 +289,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
          B := B + 1;
          L := L + 1;
 
-         Old_Indx := Hash (NN (Node)) mod HT.Buckets'Length;
+         Old_Indx := HT.Buckets'First + Hash (NN (Node)) mod HT.Buckets'Length;
 
          B := B - 1;
          L := L - 1;

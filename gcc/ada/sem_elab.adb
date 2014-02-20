@@ -1553,11 +1553,9 @@ package body Sem_Elab is
       --  then there is nothing to do (we do not know what is being assigned),
       --  but otherwise this is an assignment to the prefix.
 
-      if Nkind (N) = N_Indexed_Component
-           or else
-         Nkind (N) = N_Selected_Component
-           or else
-         Nkind (N) = N_Slice
+      if Nkind_In (N, N_Indexed_Component,
+                      N_Selected_Component,
+                      N_Slice)
       then
          if not Is_Access_Type (Etype (Prefix (N))) then
             Check_Elab_Assign (Prefix (N));
