@@ -1534,6 +1534,11 @@ replace_uses_by (tree name, tree val)
 
   FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
+      /* Mark the block if we change the last stmt in it.  */
+      if (cfgcleanup_altered_bbs
+	  && stmt_ends_bb_p (stmt))
+	bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
+
       FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
         {
 	  replace_exp (use, val);
@@ -1557,11 +1562,6 @@ replace_uses_by (tree name, tree val)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	  gimple orig_stmt = stmt;
 	  size_t i;
-
-	  /* Mark the block if we changed the last stmt in it.  */
-	  if (cfgcleanup_altered_bbs
-	      && stmt_ends_bb_p (stmt))
-	    bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
 
 	  /* FIXME.  It shouldn't be required to keep TREE_CONSTANT
 	     on ADDR_EXPRs up-to-date on GIMPLE.  Propagation will
