@@ -1,3 +1,9 @@
+2014-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60221
+	* tree-eh.c (execute_cleanup_eh_1): Also cleanup empty EH
+	regions at -O0.
+
 2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58555
