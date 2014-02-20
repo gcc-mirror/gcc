@@ -1,3 +1,8 @@
+2014-02-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Return 0
+	for execution test case.
+
 2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/58555
