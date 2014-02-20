@@ -8,8 +8,8 @@
 static void
 compute_vrcp14sd (double *s1, double *s2, double *r)
 {
-  r[0] = 1.0 / s1[0];
-  r[1] = s2[1];
+  r[0] = 1.0 / s2[0];
+  r[1] = s1[1];
 }
 
 static void

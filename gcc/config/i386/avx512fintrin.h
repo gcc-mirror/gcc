@@ -1470,16 +1470,16 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp14_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_rcp14sd ((__v2df) __A,
-					   (__v2df) __B);
+  return (__m128d) __builtin_ia32_rcp14sd ((__v2df) __B,
+					   (__v2df) __A);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp14_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_rcp14ss ((__v4sf) __A,
-					  (__v4sf) __B);
+  return (__m128) __builtin_ia32_rcp14ss ((__v4sf) __B,
+					  (__v4sf) __A);
 }
 
 extern __inline __m512d
@@ -1544,16 +1544,16 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt14_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_rsqrt14sd ((__v2df) __A,
-					     (__v2df) __B);
+  return (__m128d) __builtin_ia32_rsqrt14sd ((__v2df) __B,
+					     (__v2df) __A);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt14_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_rsqrt14ss ((__v4sf) __A,
-					    (__v4sf) __B);
+  return (__m128) __builtin_ia32_rsqrt14ss ((__v4sf) __B,
+					    (__v4sf) __A);
 }
 
 #ifdef __OPTIMIZE__

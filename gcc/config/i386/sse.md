@@ -1551,13 +1551,12 @@
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "nonimmediate_operand" "vm")]
+	    [(match_operand:VF_128 1 "nonimmediate_operand" "vm")]
 	    UNSPEC_RSQRT14)
-	  (match_dup 1)
+	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vrsqrt14<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  "vrsqrt14<ssescalarmodesuffix>\t{%1, %2, %0|%0, %2, %1}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -12804,6 +12803,7 @@
   "TARGET_AVX512ER"
   "vexp2<ssemodesuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "prefix" "evex")
+   (set_attr "type" "sse")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>"
@@ -12814,6 +12814,7 @@
   "TARGET_AVX512ER"
   "vrcp28<ssemodesuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "prefix" "evex")
+   (set_attr "type" "sse")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512er_vmrcp28<mode><round_saeonly_name>"
@@ -12825,9 +12826,10 @@
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512ER"
-  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|%0, %1, %2<round_saeonly_op3>}"
+  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_op3>%1, %2, %0|%0, %2, %1<round_saeonly_op3>}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
+   (set_attr "type" "sse")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>"
@@ -12838,6 +12840,7 @@
   "TARGET_AVX512ER"
   "vrsqrt28<ssemodesuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "prefix" "evex")
+   (set_attr "type" "sse")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "avx512er_vmrsqrt28<mode><round_saeonly_name>"
@@ -12849,8 +12852,9 @@
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512ER"
-  "vrsqrt28<ssescalarmodesuffix>\t{<round_saeonly_op3>%2, %1, %0|%0, %1, %2<round_saeonly_op3>}"
+  "vrsqrt28<ssescalarmodesuffix>\t{<round_saeonly_op3>%1, %2, %0|%0, %2, %1<round_saeonly_op3>}"
   [(set_attr "length_immediate" "1")
+   (set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
