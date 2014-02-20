@@ -39405,7 +39405,9 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
       else
 	dfinal.perm[i] = e;
     }
-  dfinal.op0 = gen_reg_rtx (dfinal.vmode);
+
+  if (!d->testing_p)
+    dfinal.op0 = gen_reg_rtx (dfinal.vmode);
   dfinal.op1 = dfinal.op0;
   dfinal.one_operand_p = true;
   dremap.target = dfinal.op0;
@@ -39840,6 +39842,9 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
     return false;
   gcc_assert (!d->one_operand_p);
 
+  if (d->testing_p)
+    return true;
+
   nelt = d->nelt;
   eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
 
@@ -40039,6 +40044,8 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
   switch (d->vmode)
     {
     case V4DFmode:
+      if (d->testing_p)
+	break;
       t1 = gen_reg_rtx (V4DFmode);
       t2 = gen_reg_rtx (V4DFmode);
 
@@ -40058,6 +40065,8 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
       {
 	int mask = odd ? 0xdd : 0x88;
 
+	if (d->testing_p)
+	  break;
 	t1 = gen_reg_rtx (V8SFmode);
 	t2 = gen_reg_rtx (V8SFmode);
 	t3 = gen_reg_rtx (V8SFmode);
@@ -40099,6 +40108,8 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	return expand_vec_perm_pshufb2 (d);
       else
 	{
+	  if (d->testing_p)
+	    break;
 	  /* We need 2*log2(N)-1 operations to achieve odd/even
 	     with interleave. */
 	  t1 = gen_reg_rtx (V8HImode);
@@ -40120,6 +40131,8 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	return expand_vec_perm_pshufb2 (d);
       else
 	{
+	  if (d->testing_p)
+	    break;
 	  t1 = gen_reg_rtx (V16QImode);
 	  t2 = gen_reg_rtx (V16QImode);
 	  t3 = gen_reg_rtx (V16QImode);
@@ -40152,6 +40165,9 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	  return expand_vec_perm_even_odd_1 (&d_copy, odd);
 	}
 
+      if (d->testing_p)
+	break;
+
       t1 = gen_reg_rtx (V4DImode);
       t2 = gen_reg_rtx (V4DImode);
 
@@ -40177,6 +40193,9 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
 	  d_copy.op1 = gen_lowpart (V8SFmode, d->op1);
 	  return expand_vec_perm_even_odd_1 (&d_copy, odd);
 	}
+
+      if (d->testing_p)
+	break;
 
       t1 = gen_reg_rtx (V8SImode);
       t2 = gen_reg_rtx (V8SImode);
@@ -40270,6 +40289,8 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
     case V16QImode:
       /* These can be implemented via interleave.  We save one insn by
 	 stopping once we have promoted to V4SImode and then use pshufd.  */
+      if (d->testing_p)
+	return true;
       do
 	{
 	  rtx dest;

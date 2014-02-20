@@ -1,3 +1,12 @@
+2014-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57896
+	* config/i386/i386.c (expand_vec_perm_interleave2): Don't call
+	gen_reg_rtx if d->testing_p.
+	(expand_vec_perm_pshufb2, expand_vec_perm_even_odd_1,
+	expand_vec_perm_broadcast_1): Return early if d->testing_p and
+	we will certainly return true.
+
 2014-02-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (replace_uses_by): Mark altered BBs before
