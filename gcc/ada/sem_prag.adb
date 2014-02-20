@@ -399,7 +399,8 @@ package body Sem_Prag is
 
             if Present (Extra_Guard) then
                Error_Msg_N
-                 ("contract case may have only one case guard", Extra_Guard);
+                 ("contract case must have exactly one case guard",
+                  Extra_Guard);
             end if;
 
             --  Check the placement of "others" (if available)
@@ -407,7 +408,7 @@ package body Sem_Prag is
             if Nkind (Case_Guard) = N_Others_Choice then
                if Others_Seen then
                   Error_Msg_N
-                    ("only one others choice allowed in aspect Contract_Cases "
+                    ("only one others choice allowed in contract cases "
                      & "(SPARK RM 6.1.3(1))", Case_Guard);
                else
                   Others_Seen := True;
@@ -415,7 +416,7 @@ package body Sem_Prag is
 
             elsif Others_Seen then
                Error_Msg_N
-                 ("others must be the last choice in aspect Contract_Cases "
+                 ("others must be the last choice in contract cases "
                   & "(SPARK RM 6.1.3(1))", N);
             end if;
 
@@ -460,7 +461,7 @@ package body Sem_Prag is
       pragma Assert (Nkind (All_Cases) = N_Aggregate);
 
       if No (Component_Associations (All_Cases)) then
-         Error_Msg_N ("wrong syntax for aspect Contract_Cases", N);
+         Error_Msg_N ("wrong syntax for constract cases", N);
 
       --  Individual contract cases appear as component associations
 
@@ -536,6 +537,15 @@ package body Sem_Prag is
       --  Two lists containing the full set of inputs and output of the related
       --  subprograms. Note that these lists contain both nodes and entities.
 
+      procedure Add_Item_To_Name_Buffer (Item_Id : Entity_Id);
+      --  Subsidiary routine to Check_Role and Check_Usage. Add the item kind
+      --  to the name buffer. The individual kinds are as follows:
+      --    E_Abstract_State   - "state"
+      --    E_In_Parameter     - "parameter"
+      --    E_In_Out_Parameter - "parameter"
+      --    E_Out_Parameter    - "parameter"
+      --    E_Variable         - "global"
+
       procedure Analyze_Dependency_Clause
         (Clause  : Node_Id;
          Is_Last : Boolean);
@@ -545,16 +555,17 @@ package body Sem_Prag is
       procedure Check_Function_Return;
       --  Verify that Funtion'Result appears as one of the outputs
 
-      procedure Check_Mode
+      procedure Check_Role
         (Item     : Node_Id;
          Item_Id  : Entity_Id;
          Is_Input : Boolean;
          Self_Ref : Boolean);
-      --  Ensure that an item has a proper IN, IN OUT, or OUT mode depending
-      --  on its function. If this is not the case, emit an error. Item and
-      --  Item_Id denote the attributes of an item. Flag Is_Input should be set
-      --  when item comes from an input list. Flag Self_Ref should be set when
-      --  the item is an output and the dependency clause has operator "+".
+      --  Ensure that an item fulfils its designated input and/or output role
+      --  as specified by pragma Global (if any) or the enclosing context. If
+      --  this is not the case, emit an error. Item and Item_Id denote the
+      --  attributes of an item. Flag Is_Input should be set when item comes
+      --  from an input list. Flag Self_Ref should be set when the item is an
+      --  output and the dependency clause has operator "+".
 
       procedure Check_Usage
         (Subp_Items : Elist_Id;
@@ -567,6 +578,28 @@ package body Sem_Prag is
       --  Remove a self-dependency "+" from the input list of a clause. Split
       --  a clause with multiple outputs into multiple clauses with a single
       --  output.
+
+      -----------------------------
+      -- Add_Item_To_Name_Buffer --
+      -----------------------------
+
+      procedure Add_Item_To_Name_Buffer (Item_Id : Entity_Id) is
+      begin
+         if Ekind (Item_Id) = E_Abstract_State then
+            Add_Str_To_Name_Buffer ("state");
+
+         elsif Is_Formal (Item_Id) then
+            Add_Str_To_Name_Buffer ("parameter");
+
+         elsif Ekind (Item_Id) = E_Variable then
+            Add_Str_To_Name_Buffer ("global");
+
+         --  The routine should not be called with non-SPARK items
+
+         else
+            raise Program_Error;
+         end if;
+      end Add_Item_To_Name_Buffer;
 
       -------------------------------
       -- Analyze_Dependency_Clause --
@@ -807,17 +840,19 @@ package body Sem_Prag is
                                         E_Out_Parameter,
                                         E_Variable)
                   then
-                     --  Ensure that the item is of the correct mode depending
-                     --  on its function.
+                     --  Ensure that the item fulfils its role as input and/or
+                     --  output as specified by pragma Global or the enclosing
+                     --  context.
 
-                     Check_Mode (Item, Item_Id, Is_Input, Self_Ref);
+                     Check_Role (Item, Item_Id, Is_Input, Self_Ref);
 
                      --  Detect multiple uses of the same state, variable or
                      --  formal parameter. If this is not the case, add the
                      --  item to the list of processed relations.
 
                      if Contains (Seen, Item_Id) then
-                        Error_Msg_N ("duplicate use of item", Item);
+                        Error_Msg_NE
+                          ("duplicate use of item &", Item, Item_Id);
                      else
                         Add_Item (Item_Id, Seen);
                      end if;
@@ -831,8 +866,9 @@ package body Sem_Prag is
                        and then Contains (All_Inputs_Seen, Item_Id)
                      then
                         Error_Msg_N
-                          ("input of a null output list appears in multiple "
-                           & "input lists (SPARK RM 6.1.5(13))", Item);
+                          ("input of a null output list cannot appear in "
+                           & "multiple input lists (SPARK RM 6.1.5(13))",
+                           Item);
                      end if;
 
                      --  Add an input or a self-referential output to the list
@@ -850,7 +886,7 @@ package body Sem_Prag is
                              ("cannot mention state & in global refinement",
                               Item, Item_Id);
                            Error_Msg_N
-                              ("\use its constituents instead "
+                              ("\\use its constituents instead "
                                & "(SPARK RM 6.1.5(3))", Item);
                            return;
 
@@ -892,15 +928,15 @@ package body Sem_Prag is
 
                   else
                      Error_Msg_N
-                        ("item must denote variable, state or formal "
-                         & "parameter (SPARK RM 6.1.5(1))", Item);
+                       ("item must denote parameter, variable or state "
+                        & "(SPARK RM 6.1.5(1))", Item);
                   end if;
 
                --  All other input/output items are illegal
 
                else
                   Error_Msg_N
-                    ("item must denote variable, state or formal parameter "
+                    ("item must denote parameter, variable or state "
                      & "(SPARK RM 6.1.5(1))", Item);
                end if;
             end if;
@@ -964,36 +1000,39 @@ package body Sem_Prag is
       end Check_Function_Return;
 
       ----------------
-      -- Check_Mode --
+      -- Check_Role --
       ----------------
 
-      procedure Check_Mode
+      procedure Check_Role
         (Item     : Node_Id;
          Item_Id  : Entity_Id;
          Is_Input : Boolean;
          Self_Ref : Boolean)
       is
-         procedure Find_Mode
-           (Is_Input    : out Boolean;
-            Is_Output   : out Boolean;
-            From_Global : out Boolean);
-         --  Find the mode of Item_Id. Flags Is_Input and Is_Output are set
-         --  depending on the mode. Flag From_Global is set when the mode is
-         --  determined by pragma [Refined_]Global.
+         procedure Find_Role
+           (Item_Is_Input  : out Boolean;
+            Item_Is_Output : out Boolean);
+         --  Find the input/output role of Item_Id. Flags Item_Is_Input and
+         --  Item_Is_Output are set depending on the role.
+
+         procedure Role_Error
+           (Item_Is_Input  : Boolean;
+            Item_Is_Output : Boolean);
+         --  Emit an error message concerning the incorrect use of Item in
+         --  pragma [Refined_]Depends. Flags Item_Is_Input and Item_Is_Output
+         --  denote whether the item is an input and/or an output.
 
          ---------------
-         -- Find_Mode --
+         -- Find_Role --
          ---------------
 
-         procedure Find_Mode
-           (Is_Input    : out Boolean;
-            Is_Output   : out Boolean;
-            From_Global : out Boolean)
+         procedure Find_Role
+           (Item_Is_Input  : out Boolean;
+            Item_Is_Output : out Boolean)
          is
          begin
-            Is_Input    := False;
-            Is_Output   := False;
-            From_Global := False;
+            Item_Is_Input  := False;
+            Item_Is_Output := False;
 
             --  Abstract state cases
 
@@ -1004,30 +1043,28 @@ package body Sem_Prag is
 
                if Global_Seen then
                   if Appears_In (Subp_Inputs, Item_Id) then
-                     Is_Input    := True;
-                     From_Global := True;
+                     Item_Is_Input := True;
                   end if;
 
                   if Appears_In (Subp_Outputs, Item_Id) then
-                     Is_Output   := True;
-                     From_Global := True;
+                     Item_Is_Output := True;
                   end if;
 
                --  Otherwise the state has a default IN OUT mode
 
                else
-                  Is_Input  := True;
-                  Is_Output := True;
+                  Item_Is_Input  := True;
+                  Item_Is_Output := True;
                end if;
 
             --  Parameter cases
 
             elsif Ekind (Item_Id) = E_In_Parameter then
-               Is_Input := True;
+               Item_Is_Input := True;
 
             elsif Ekind (Item_Id) = E_In_Out_Parameter then
-               Is_Input  := True;
-               Is_Output := True;
+               Item_Is_Input  := True;
+               Item_Is_Output := True;
 
             elsif Ekind (Item_Id) = E_Out_Parameter then
                if Scope (Item_Id) = Spec_Id then
@@ -1037,17 +1074,17 @@ package body Sem_Prag is
                   --  bounds, discriminants or tags can be read.
 
                   if Is_Unconstrained_Or_Tagged_Item (Item_Id) then
-                     Is_Input := True;
+                     Item_Is_Input := True;
                   end if;
 
-                  Is_Output := True;
+                  Item_Is_Output := True;
 
                --  An OUT parameter of an enclosing subprogram behaves as a
                --  read-write variable in which case the mode is IN OUT.
 
                else
-                  Is_Input  := True;
-                  Is_Output := True;
+                  Item_Is_Input  := True;
+                  Item_Is_Output := True;
                end if;
 
             --  Variable cases
@@ -1066,73 +1103,120 @@ package body Sem_Prag is
                   if Appears_In (Subp_Inputs, Item_Id)
                     or else Is_Unconstrained_Or_Tagged_Item (Item_Id)
                   then
-                     Is_Input    := True;
-                     From_Global := True;
+                     Item_Is_Input := True;
                   end if;
 
                   if Appears_In (Subp_Outputs, Item_Id) then
-                     Is_Output   := True;
-                     From_Global := True;
+                     Item_Is_Output := True;
                   end if;
 
                --  Otherwise the variable has a default IN OUT mode
 
                else
-                  Is_Input  := True;
-                  Is_Output := True;
+                  Item_Is_Input  := True;
+                  Item_Is_Output := True;
                end if;
             end if;
-         end Find_Mode;
+         end Find_Role;
+
+         ----------------
+         -- Role_Error --
+         ----------------
+
+         procedure Role_Error
+           (Item_Is_Input  : Boolean;
+            Item_Is_Output : Boolean)
+         is
+            Error_Msg : Name_Id;
+
+         begin
+            Name_Len := 0;
+
+            --  When the item is not part of the input and the output set of
+            --  the related subprogram, then it appears as extra in pragma
+            --  [Refined_]Depends.
+
+            if not Item_Is_Input and then not Item_Is_Output then
+               Add_Item_To_Name_Buffer (Item_Id);
+               Add_Str_To_Name_Buffer
+                 (" & cannot appear in dependence relation");
+
+               Error_Msg := Name_Find;
+               Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+
+               Error_Msg_Name_1 := Chars (Subp_Id);
+               Error_Msg_NE
+                 ("\\& is not part of the input or output set of subprogram %",
+                  Item, Item_Id);
+
+            --  The mode of the item and its role in pragma [Refined_]Depends
+            --  are in conflict. Construct a detailed message explaining the
+            --  illegality.
+
+            else
+               if Item_Is_Input then
+                  Add_Str_To_Name_Buffer ("read-only");
+               else
+                  Add_Str_To_Name_Buffer ("write-only");
+               end if;
+
+               Add_Char_To_Name_Buffer (' ');
+               Add_Item_To_Name_Buffer (Item_Id);
+               Add_Str_To_Name_Buffer  (" & cannot appear as ");
+
+               if Item_Is_Input then
+                  Add_Str_To_Name_Buffer ("output");
+               else
+                  Add_Str_To_Name_Buffer ("input");
+               end if;
+
+               Add_Str_To_Name_Buffer (" in dependence relation ");
+
+               --  Even though the two SPARK references differ by one character
+               --  they are fully written out to facilitate reference finding
+               --  and updating.
+
+               if Item_Is_Input then
+                  Add_Str_To_Name_Buffer ("(SPARK RM 6.1.5(5))");
+               else
+                  Add_Str_To_Name_Buffer ("(SPARK RM 6.1.5(6))");
+               end if;
+
+               Error_Msg := Name_Find;
+               Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+            end if;
+         end Role_Error;
 
          --  Local variables
 
          Item_Is_Input  : Boolean;
          Item_Is_Output : Boolean;
-         From_Global    : Boolean;
 
-      --  Start of processing for Check_Mode
+      --  Start of processing for Check_Role
 
       begin
-         Find_Mode (Item_Is_Input, Item_Is_Output, From_Global);
+         Find_Role (Item_Is_Input, Item_Is_Output);
 
          --  Input item
 
          if Is_Input then
             if not Item_Is_Input then
-               if From_Global then
-                  Error_Msg_NE
-                    ("item & must have mode `IN` or `IN OUT`", Item, Item_Id);
-               else
-                  Error_Msg_NE
-                    ("item & appears as extra in input list", Item, Item_Id);
-               end if;
+               Role_Error (Item_Is_Input, Item_Is_Output);
             end if;
 
          --  Self-referential item
 
          elsif Self_Ref then
             if not Item_Is_Input or else not Item_Is_Output then
-               if From_Global then
-                  Error_Msg_NE
-                    ("item & must have mode `IN OUT`", Item, Item_Id);
-               else
-                  Error_Msg_NE
-                    ("item & appears as extra in In_Out list", Item, Item_Id);
-               end if;
+               Role_Error (Item_Is_Input, Item_Is_Output);
             end if;
 
          --  Output item
 
          elsif not Item_Is_Output then
-            if From_Global then
-               Error_Msg_NE
-                 ("item & must have mode `OUT` or `IN OUT`", Item, Item_Id);
-            else
-               Error_Msg_NE
-                 ("item & appears as extra in output list", Item, Item_Id);
-            end if;
+            Role_Error (Item_Is_Input, Item_Is_Output);
          end if;
-      end Check_Mode;
+      end Check_Role;
 
       -----------------
       -- Check_Usage --
@@ -1151,46 +1235,52 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
-            Typ : constant Entity_Id := Etype (Item_Id);
+            Typ       : constant Entity_Id := Etype (Item_Id);
+            Error_Msg : Name_Id;
 
          begin
+            Name_Len := 0;
+
             --  Input case
 
             if Is_Input then
-               Error_Msg_NE
-                 ("item & must appear in at least one input dependence list "
-                  & "(SPARK RM 6.1.5(8))", Item, Item_Id);
+               Add_Item_To_Name_Buffer (Item_Id);
+               Add_Str_To_Name_Buffer
+                 (" & must appear in at least one input dependence list "
+                  & "(SPARK RM 6.1.5(8))");
 
-               --  Refine the error message for unconstrained OUT parameters
-               --  by giving the reason for the illegality.
+               Error_Msg := Name_Find;
+               Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+
+               --  Refine the error message for unconstrained parameters and
+               --  variables by giving the reason for the illegality.
 
                if Ekind (Item_Id) = E_Out_Parameter then
 
-                  --  One case is an unconstrained array where the bounds
-                  --  must be read, if we have this case, output a message
-                  --  indicating why the OUT parameter is read.
+                  --  Unconstrained arrays must appear as inputs because their
+                  --  bounds must be read.
 
                   if Is_Array_Type (Typ)
                     and then not Is_Constrained (Typ)
                   then
                      Error_Msg_NE
-                       ("\& is an unconstrained array type, so bounds must be "
-                        & "read", Item, Typ);
+                       ("\\type & is an unconstrained array", Item, Typ);
+                     Error_Msg_N ("\\array bounds must be read", Item);
 
-                  --  Another case is an unconstrained discriminated record
-                  --  type where the constrained flag must be read (and if
-                  --  set, the discriminants). Again output a message.
+                  --  Unconstrained discriminated records must appear as inputs
+                  --  because their discriminants and constrained flag must be
+                  --  read.
 
                   elsif Is_Record_Type (Typ)
                     and then Has_Discriminants (Typ)
                     and then not Is_Constrained (Typ)
                   then
                      Error_Msg_NE
-                       ("\& is an unconstrained discriminated record type",
+                       ("\\type & is an unconstrained discriminated record",
                         Item, Typ);
                      Error_Msg_N
-                       ("\constrained flag and possible discriminants must be "
-                        & "read", Item);
+                       ("\\discriminants and constrained flag must be read",
+                        Item);
 
                   --  Not clear if there are other cases. Anyway, we will
                   --  simply ignore any other cases.
@@ -1203,9 +1293,13 @@ package body Sem_Prag is
             --  Output case
 
             else
-               Error_Msg_NE
-                 ("item & must appear in exactly one output dependence list "
-                  & "(SPARK RM 6.1.5(10))", Item, Item_Id);
+               Add_Item_To_Name_Buffer (Item_Id);
+               Add_Str_To_Name_Buffer
+                 (" & must appear in exactly one output dependence list "
+                  & "(SPARK RM 6.1.5(10))");
+
+               Error_Msg := Name_Find;
+               Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
             end if;
          end Usage_Error;
 
@@ -1805,7 +1899,7 @@ package body Sem_Prag is
            and then Is_Formal (Entity (Obj))
          then
             Error_Msg_N
-              ("external property % cannot apply to a formal parameter "
+              ("external property % cannot apply to parameter "
                & "(SPARK RM 7.1.3(2))", N);
          end if;
       else
@@ -1943,9 +2037,9 @@ package body Sem_Prag is
 
                if Is_Formal (Item_Id) then
                   if Scope (Item_Id) = Spec_Id then
-                     Error_Msg_N
-                       ("global item cannot reference formal parameter "
-                        & "(SPARK RM 6.1.4(6))", Item);
+                     Error_Msg_NE
+                       ("global item cannot reference parameter of subprogram "
+                        & "& (SPARK RM 6.1.4(6))", Item, Spec_Id);
                      return;
                   end if;
 
@@ -1977,9 +2071,11 @@ package body Sem_Prag is
 
                   if Has_Visible_Refinement (Item_Id) then
                      Error_Msg_NE
-                       ("cannot mention state & in global refinement, use its "
-                        & "constituents instead (SPARK RM 6.1.4(8))",
+                       ("cannot mention state & in global refinement",
                         Item, Item_Id);
+                     Error_Msg_N
+                       ("\\use its constituents instead (SPARK RM 6.1.4(8))",
+                        Item);
                      return;
 
                   --  If the reference to the abstract state appears in an
@@ -2003,9 +2099,9 @@ package body Sem_Prag is
                     and then Global_Mode = Name_Input
                   then
                      Error_Msg_NE
-                       ("volatile global item & with property Effective_Reads "
-                        & "must have mode In_Out or Output "
-                        & "(SPARK RM 7.1.3(11))", Item, Item_Id);
+                       ("volatile item & with property Effective_Reads must "
+                        & "have mode In_Out or Output (SPARK RM 7.1.3(11))",
+                        Item, Item_Id);
                      return;
                   end if;
                end if;
@@ -2129,7 +2225,7 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output "
                         & "(SPARK RM 6.1.4(12))", Item, Item_Id);
                      Error_Msg_NE
-                       ("\item already appears as input of subprogram &",
+                       ("\\item already appears as input of subprogram &",
                         Item, Context);
 
                      --  Stop the traversal once an error has been detected
@@ -2472,8 +2568,8 @@ package body Sem_Prag is
 
             else
                Error_Msg_N
-                 ("initialization item must denote variable or state (SPARK "
-                  & "RM 7.1.5(3))", Item);
+                 ("initialization item must denote variable or state "
+                  & "(SPARK RM 7.1.5(3))", Item);
             end if;
          end if;
       end Analyze_Initialization_Item;
@@ -3369,11 +3465,11 @@ package body Sem_Prag is
 
          if Placement = Not_In_Package then
             Error_Msg_N
-              ("indicator Part_Of may not appear in this context "
+              ("indicator Part_Of cannot appear in this context "
                & "(SPARK RM 7.2.6(5))", Indic);
             Error_Msg_Name_1 := Chars (Scope (State_Id));
             Error_Msg_NE
-              ("\& is not part of the hidden state of package %",
+              ("\\& is not part of the hidden state of package %",
                Indic, Item_Id);
 
          --  The item appears in the visible state space of some package. In
@@ -3397,11 +3493,11 @@ package body Sem_Prag is
 
             else
                Error_Msg_N
-                 ("indicator Part_Of may not appear in this context (SPARK "
+                 ("indicator Part_Of cannot appear in this context (SPARK "
                   & "RM 7.2.6(5))", Indic);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\& is declared in the visible part of package %",
+                 ("\\& is declared in the visible part of package %",
                   Indic, Item_Id);
             end if;
 
@@ -3415,7 +3511,7 @@ package body Sem_Prag is
                   & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\& is declared in the private part of package %",
+                 ("\\& is declared in the private part of package %",
                   Indic, Item_Id);
             end if;
 
@@ -3424,13 +3520,13 @@ package body Sem_Prag is
 
          else
             Error_Msg_N
-              ("indicator Part_Of may not appear in this context "
+              ("indicator Part_Of cannot appear in this context "
                & "(SPARK RM 7.2.6(5))", Indic);
 
             if Scope (State_Id) = Pack_Id then
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\& is declared in the body of package %", Indic, Item_Id);
+                 ("\\& is declared in the body of package %", Indic, Item_Id);
             end if;
          end if;
 
@@ -6531,7 +6627,8 @@ package body Sem_Prag is
                Error_Msg_N
                  ("& may not have Ghost convention", E);
                Error_Msg_N
-                 ("\only functions are permitted to have Ghost convention", E);
+                 ("\\only functions are permitted to have Ghost convention",
+                  E);
                return;
             end if;
 
@@ -21644,7 +21741,7 @@ package body Sem_Prag is
 
             if Has_Refined_State then
                Error_Msg_N
-                 ("\check the use of constituents in dependence refinement",
+                 ("\\check the use of constituents in dependence refinement",
                   Ref_Clause);
             end if;
          end if;
@@ -21869,7 +21966,7 @@ package body Sem_Prag is
 
             if Has_Refined_State then
                Match_Error
-                 ("\check the use of constituents in dependence refinement",
+                 ("\\check the use of constituents in dependence refinement",
                   Dep_Input);
             end if;
 
@@ -22107,8 +22204,8 @@ package body Sem_Prag is
 
       if No (Depends) then
          Error_Msg_NE
-           ("useless refinement, subprogram & lacks dependence clauses (SPARK "
-            & "RM 7.2.5(2))", N, Spec_Id);
+           ("useless refinement, declaration of subprogram & lacks aspect or "
+            & "pragma Depends (SPARK RM 7.2.5(2))", N, Spec_Id);
          return;
       end if;
 
@@ -22510,7 +22607,7 @@ package body Sem_Prag is
                   end if;
 
                   Error_Msg_NE
-                    ("\  constituent & is missing in output list",
+                    ("\\  constituent & is missing in output list",
                      N, Constit_Id);
                end if;
 
@@ -22670,10 +22767,10 @@ package body Sem_Prag is
                  ("global item & has inconsistent modes", Item, Item_Id);
 
                Error_Msg_Name_1 := Global_Mode;
-               Error_Msg_N ("\  expected mode %", Item);
+               Error_Msg_N ("\\  expected mode %", Item);
 
                Error_Msg_Name_1 := Expect;
-               Error_Msg_N ("\  found mode %", Item);
+               Error_Msg_N ("\\  found mode %", Item);
             end Inconsistent_Mode_Error;
 
          --  Start of processing for Check_Refined_Global_Item
@@ -22867,7 +22964,8 @@ package body Sem_Prag is
 
       if No (Global) then
          Error_Msg_NE
-           ("useless refinement, subprogram & lacks global items", N, Spec_Id);
+           ("useless refinement, declaration of subprogram & lacks aspect or "
+            & "pragma Global", N, Spec_Id);
          return;
       end if;
 
@@ -22896,8 +22994,8 @@ package body Sem_Prag is
         and then not Has_Null_State
       then
          Error_Msg_NE
-           ("useless refinement, subprogram & does not mention abstract state "
-            & "with visible refinement", N, Spec_Id);
+           ("useless refinement, subprogram & does not depends on abstract "
+            & "state with visible refinement (SPARK RM 7.2.4(2))", N, Spec_Id);
          return;
       end if;
 
@@ -23159,7 +23257,7 @@ package body Sem_Prag is
                        ("& cannot act as constituent of state %",
                         Constit, Constit_Id);
                      Error_Msg_NE
-                       ("\Part_Of indicator specifies & as encapsulating "
+                       ("\\Part_Of indicator specifies & as encapsulating "
                         & "state", Constit, Encapsulating_State (Constit_Id));
                   end if;
 
@@ -23446,7 +23544,7 @@ package body Sem_Prag is
                     ("reference to & not allowed (SPARK RM 6.1.4(8))",
                      Body_Ref);
                   Error_Msg_Sloc := Sloc (State);
-                  Error_Msg_N ("\refinement of & is visible#", Body_Ref);
+                  Error_Msg_N ("\\refinement of & is visible#", Body_Ref);
 
                   Next_Elmt (Body_Ref_Elmt);
                end loop;
@@ -24130,8 +24228,8 @@ package body Sem_Prag is
                   & "(SPARK RM 7.2.6(3))", Item_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_N
-                 ("\& is declared in the visible part of private child unit %",
-                  Item_Id);
+                 ("\\& is declared in the visible part of private child "
+                  & "unit %", Item_Id);
             end if;
          end if;
 
@@ -24163,7 +24261,7 @@ package body Sem_Prag is
                & "(SPARK RM 7.2.6(2))", Item_Id);
             Error_Msg_Name_1 := Chars (Pack_Id);
             Error_Msg_N
-              ("\& is declared in the private part of package %", Item_Id);
+              ("\\& is declared in the private part of package %", Item_Id);
          end if;
       end if;
    end Check_Missing_Part_Of;

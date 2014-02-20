@@ -4481,57 +4481,57 @@ package body Exp_Util is
             Typ := Designated_Type (Typ);
          end if;
 
-         --  Look for aspect Default_Iterator
+         --  Look for aspect Default_Iterator. It may be part of a type
+         --  declaration for a container, or inherited from a base type
+         --  or parent type.
 
-         if Has_Aspects (Parent (Typ)) then
-            Aspect := Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
+         Aspect := Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
 
-            if Present (Aspect) then
-               Iter := Entity (Aspect);
+         if Present (Aspect) then
+            Iter := Entity (Aspect);
 
-               --  Examine the statements following the container object and
-               --  look for a call to the default iterate routine where the
-               --  first parameter is the transient. Such a call appears as:
+            --  Examine the statements following the container object and
+            --  look for a call to the default iterate routine where the
+            --  first parameter is the transient. Such a call appears as:
 
-               --     It : Access_To_CW_Iterator :=
-               --            Iterate (Tran_Id.all, ...)'reference;
+            --     It : Access_To_CW_Iterator :=
+            --            Iterate (Tran_Id.all, ...)'reference;
 
-               Stmt := First_Stmt;
-               while Present (Stmt) loop
+            Stmt := First_Stmt;
+            while Present (Stmt) loop
 
-                  --  Detect an object declaration which is initialized by a
-                  --  secondary stack function call.
+               --  Detect an object declaration which is initialized by a
+               --  secondary stack function call.
 
-                  if Nkind (Stmt) = N_Object_Declaration
-                    and then Present (Expression (Stmt))
-                    and then Nkind (Expression (Stmt)) = N_Reference
-                    and then Nkind (Prefix (Expression (Stmt))) =
-                               N_Function_Call
+               if Nkind (Stmt) = N_Object_Declaration
+                 and then Present (Expression (Stmt))
+                 and then Nkind (Expression (Stmt)) = N_Reference
+                 and then Nkind (Prefix (Expression (Stmt))) =
+                            N_Function_Call
+               then
+                  Call := Prefix (Expression (Stmt));
+
+                  --  The call must invoke the default iterate routine of
+                  --  the container and the transient object must appear as
+                  --  the first actual parameter. Skip any calls whose names
+                  --  are not entities.
+
+                  if Is_Entity_Name (Name (Call))
+                    and then Entity (Name (Call)) = Iter
+                    and then Present (Parameter_Associations (Call))
                   then
-                     Call := Prefix (Expression (Stmt));
+                     Param := First (Parameter_Associations (Call));
 
-                     --  The call must invoke the default iterate routine of
-                     --  the container and the transient object must appear as
-                     --  the first actual parameter. Skip any calls whose names
-                     --  are not entities.
-
-                     if Is_Entity_Name (Name (Call))
-                       and then Entity (Name (Call)) = Iter
-                       and then Present (Parameter_Associations (Call))
+                     if Nkind (Param) = N_Explicit_Dereference
+                       and then Entity (Prefix (Param)) = Trans_Id
                      then
-                        Param := First (Parameter_Associations (Call));
-
-                        if Nkind (Param) = N_Explicit_Dereference
-                          and then Entity (Prefix (Param)) = Trans_Id
-                        then
-                           return True;
-                        end if;
+                        return True;
                      end if;
                   end if;
+               end if;
 
-                  Next (Stmt);
-               end loop;
-            end if;
+               Next (Stmt);
+            end loop;
          end if;
 
          return False;
