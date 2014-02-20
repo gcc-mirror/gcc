@@ -1,3 +1,13 @@
+2014-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57896
+	* config/i386/i386.c (expand_vec_perm_interleave2): Don't call
+	gen_reg_rtx if d->testing_p.
+	(expand_vec_perm_pshufb2, expand_vec_perm_broadcast_1): Return early
+	if d->testing_p and we will certainly return true.
+	(expand_vec_perm_even_odd_1): Likewise.  Don't call gen_reg_rtx
+	if d->testing_p.
+
 2014-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* emit-rtl.c (gen_reg_rtx): Assert that
