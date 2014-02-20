@@ -1,3 +1,15 @@
+2014-02-20  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi, vms_data.ads (gnatelim): Add description of
+	project-specific options.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cbdlli.adb (Insert): When capacity exceeded, raise Capacity_Error,
+	not Constraint_Error.
+	* a-cbmutr.adb (Append_Child, Insert_Child, Prepend_Child): Ditto.
+	* sem_ch5.adb: Code clean up.
+
 2014-02-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Usage_Error): Remove local

@@ -1085,7 +1085,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       end if;
 
       if Container.Length > Container.Capacity - Count then
-         raise Constraint_Error with "new length exceeds capacity";
+         raise Capacity_Error with "capacity exceeded";
       end if;
 
       if Container.Busy > 0 then

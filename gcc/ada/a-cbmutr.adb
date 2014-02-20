@@ -397,7 +397,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -1538,7 +1538,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -1614,7 +1614,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
@@ -2237,7 +2237,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       if Container.Count > Container.Capacity - Count then
-         raise Constraint_Error
+         raise Capacity_Error
            with "requested count exceeds available storage";
       end if;
 
