@@ -7133,6 +7133,13 @@ This is particularly useful for clearly signaling that a particular
 parameter is not modified, even though the spec suggests that it might
 be.
 
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unmodified} for such
+variables, though it is harmless to do so.
+
 @node Pragma Unreferenced
 @unnumberedsec Pragma Unreferenced
 @findex Unreferenced
@@ -7182,6 +7189,13 @@ clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
 @code{Elaborate_All}. The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
+
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unreferenced} for such
+variables, though it is harmless to do so.
 
 @node Pragma Unreferenced_Objects
 @unnumberedsec Pragma Unreferenced_Objects

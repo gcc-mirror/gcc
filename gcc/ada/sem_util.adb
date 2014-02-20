@@ -10369,6 +10369,45 @@ package body Sem_Util is
       end if;
    end Is_Iterator;
 
+   ------------------
+   -- Is_Junk_Name --
+   ------------------
+
+   function Is_Junk_Name (N : Name_Id) return Boolean is
+      function Match (S : String) return Boolean;
+      --  Return true if substring S is found in Name_Buffer (1 .. Name_Len)
+
+      -----------
+      -- Match --
+      -----------
+
+      function Match (S : String) return Boolean is
+         Slen1 : constant Integer := S'Length - 1;
+
+      begin
+         for J in 1 .. Name_Len - S'Length + 1 loop
+            if Name_Buffer (J .. J + Slen1) = S then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end Match;
+
+   --  Start of processing for Is_Junk_Name
+
+   begin
+      Get_Unqualified_Decoded_Name_String (N);
+      Set_All_Upper_Case;
+
+      return
+        Match ("DISCARD") or else
+        Match ("DUMMY")   or else
+        Match ("IGNORE")  or else
+        Match ("JUNK")    or else
+        Match ("UNUSED");
+   end Is_Junk_Name;
+
    ------------
    -- Is_LHS --
    ------------

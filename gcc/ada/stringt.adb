@@ -121,6 +121,11 @@ package body Stringt is
    begin
       String_Chars.Init;
       Strings.Init;
+
+      --  Set up the null string
+
+      Start_String;
+      Null_String_Id := End_String;
    end Initialize;
 
    ----------
@@ -471,12 +476,5 @@ package body Stringt is
          Write_Char ('"');
       end if;
    end Write_String_Table_Entry;
-
---  Setup the null string
-
-begin
-   Initialize;
-   Start_String;
-   Null_String_Id := End_String;
 
 end Stringt;
