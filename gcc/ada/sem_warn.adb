@@ -1265,6 +1265,7 @@ package body Sem_Warn is
                      if Referenced (E1) then
                         if not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
+                          and then not Is_Junk_Name (Chars (E1))
                         then
                            Output_Reference_Error
                              ("?v?variable& is read but never assigned!");
@@ -1272,6 +1273,7 @@ package body Sem_Warn is
 
                      elsif not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
+                       and then not Is_Junk_Name (Chars (E1))
                      then
                         Output_Reference_Error -- CODEFIX
                           ("?v?variable& is never read and never assigned!");
@@ -3899,6 +3901,7 @@ package body Sem_Warn is
       if not Referenced_Check_Spec (E)
         and then not Has_Pragma_Unreferenced_Check_Spec (E)
         and then not Warnings_Off_Check_Spec (E)
+        and then not Is_Junk_Name (Chars (Spec_E))
       then
          case Ekind (E) is
             when E_Variable =>
@@ -4105,6 +4108,7 @@ package body Sem_Warn is
         and then not Is_Exported (Ent)
         and then Safe_To_Capture_Value (N, Ent)
         and then not Has_Pragma_Unreferenced_Check_Spec (Ent)
+        and then not Is_Junk_Name (Chars (Ent))
       then
          --  Before we issue the message, check covering exception handlers.
          --  Search up tree for enclosing statement sequences and handlers.

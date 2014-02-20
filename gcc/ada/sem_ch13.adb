@@ -11493,6 +11493,7 @@ package body Sem_Ch13 is
       First_Id       := Empty;
       Next_Id        := Empty;
       Has_Element_Id := Empty;
+      Element_Id     := Empty;
 
       --  Each expression must resolve to a function with the proper signature
 

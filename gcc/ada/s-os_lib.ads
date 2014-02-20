@@ -301,9 +301,14 @@ package System.OS_Lib is
       New_Name : String;
       Success  : out Boolean);
    --  Rename a file. Success is set True or False indicating if the rename is
-   --  successful or not. Note that on some Systems (notably Windows), if there
-   --  is already an existing file with the name New_Name, that is one of the
-   --  conditions that can cause failure.
+   --  successful or not.
+   --
+   --  WARNING: In one very important respect, this function is significantly
+   --  non-portable. If New_Name already exists then on Unix systems, the call
+   --  deletes the existing file, and the call signals success. On Windows, the
+   --  call fails, without doing the rename operation. See also the procedure
+   --  Ada.Directories.Rename, which portably provides the windows semantics,
+   --  i.e. fails if the output file already exists.
 
    --  The following defines the mode for the Copy_File procedure below. Note
    --  that "time stamps and other file attributes" in the descriptions below

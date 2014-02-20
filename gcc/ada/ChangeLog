@@ -1,3 +1,22 @@
+2014-02-20  Vincent Celier  <celier@adacore.com>
+
+	* errutil.adb (Initialize): Properly initialize entry in table
+	Warnings when warnings are suppressed.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-os_lib.ads: Add warning about non-portability of Rename_File.
+	* sem_util.ads, sem_util.adb (Is_Junk_Name): New function.
+	* sem_warn.adb: Use Is_Junk_Name to suppress some warnings.
+	* gnat_ugn.texi: Document no warnings on junk variable names.
+	* layout.adb: Minor code reorganization (use Ekind_In).
+	* stringt.adb: Move initialization of Null_String_Id to Initialize
+	routine.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Initialize optional Element_Id.
+
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* s-os_lib.ads (Rename_File): Minor commment addition.

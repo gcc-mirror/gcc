@@ -2276,9 +2276,7 @@ package body Layout is
       --  original, nothing else needs to be done in this case, since the
       --  components themselves are all shared.
 
-      if (Ekind (E) = E_Record_Subtype
-            or else
-          Ekind (E) = E_Class_Wide_Subtype)
+      if Ekind_In (E, E_Record_Subtype, E_Class_Wide_Subtype)
         and then Present (Cloned_Subtype (E))
       then
          Set_Esize     (E, Esize     (Cloned_Subtype (E)));
