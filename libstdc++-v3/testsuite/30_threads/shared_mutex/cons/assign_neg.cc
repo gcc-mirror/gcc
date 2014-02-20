@@ -26,7 +26,7 @@
 void test01()
 {
   // assign
-  typedef std::shared_mutex mutex_type;
+  typedef std::shared_timed_mutex mutex_type;
   mutex_type m1;
   mutex_type m2;
   m1 = m2;			// { dg-error "deleted" }
