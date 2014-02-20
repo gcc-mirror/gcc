@@ -474,8 +474,6 @@ package body Stringt is
 
 --  Setup the null string
 
-pragma Warnings (Off); -- kill strange warning from code below ???
-
 begin
    Start_String;
    Null_String_Id := End_String;

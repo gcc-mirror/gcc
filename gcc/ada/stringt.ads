@@ -33,6 +33,8 @@ with System; use System;
 with Types;  use Types;
 
 package Stringt is
+   pragma Elaborate_Body;
+   --  This is to make sure Null_String_Id is properly initialized
 
 --  This package contains routines for handling the strings table which is
 --  used to store string constants encountered in the source, and also those
