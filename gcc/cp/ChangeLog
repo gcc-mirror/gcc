@@ -1,3 +1,8 @@
+2014-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/58835
+	* semantics.c (finish_fname): Handle error_mark_node.
+
 2014-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60046
