@@ -6204,8 +6204,9 @@ package body Sem_Attr is
 
          --  Local variables
 
-         Assoc : Node_Id;
-         Comp  : Node_Id;
+         Assoc     : Node_Id;
+         Comp      : Node_Id;
+         Comp_Type : Entity_Id;
 
       --  Start of processing for Update
 
@@ -6240,6 +6241,7 @@ package body Sem_Attr is
          while Present (Assoc) loop
             Comp := First (Choices (Assoc));
             Analyze (Expression (Assoc));
+            Comp_Type := Empty;
             while Present (Comp) loop
                if Nkind (Comp) = N_Others_Choice then
                   Error_Attr
@@ -6304,6 +6306,17 @@ package body Sem_Attr is
                      Error_Msg_N ("name should be identifier or OTHERS", Comp);
                   else
                      Check_Component_Reference (Comp, P_Type);
+
+                     --  Verify that all choices in an association denote
+                     --  components of the same type.
+
+                     if No (Comp_Type) then
+                        Comp_Type := Base_Type (Etype (Comp));
+                     elsif Comp_Type /= Base_Type (Etype (Comp)) then
+                        Error_Msg_N
+                          ("components in choice list must have same type",
+                             Assoc);
+                     end if;
                   end if;
                end if;
 

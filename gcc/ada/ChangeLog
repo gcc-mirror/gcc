@@ -1,3 +1,65 @@
+2014-02-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Add_Item_To_Name_Buffer): New routine.
+	(Analyze_Contract_Case): Remove the use of
+	"may". Replace "aspect Contract_Cases" to avoid categorization
+	of aspect vs pragma.
+	(Analyze_External_Property_In_Decl_Part): Remove the use of "formal".
+	(Analyze_Global_Item): Remove
+	the use of "formal", specify the subprogram.  Split the
+	error message about a state with visible refinement into
+	two. Remove the use of "global" from "volatile global item".
+	(Analyze_Initialization_Item): Ensure that the SPARK RM reference
+	is on one line.
+	(Analyze_Input_Output): Update the call to
+	Check_Mode. Specify the duplicated item. Reword the error
+	message concerning an input of a null output list. Use "\"
+	for error message continuation.
+	(Analyze_Part_Of): Remove
+	the use of "may". Use "\" for error message continuation.
+	(Analyze_Refined_Depends_In_Decl_Part): Update the error
+	message concerning a useless refinement to match the format
+	of Refined_Global.
+	(Analyze_Refined_Global_In_Decl_Part): Reword the error message
+	concerning a useless refinement.
+	(Analyze_Refinement_Clause): Use "\" for error message continuation.
+	(Check_Constituent_Usage): Use "\" for error message continuation.
+	(Check_Dependency_Clause): Use "\" for error message continuation.
+	(Check_Matching_Constituent): Use "\" for error message continuation.
+	(Check_Missing_Part_Of): Use "\" for error message continuation.
+	(Check_Mode): Renamed to
+	Check_Role. Update the comment on usage. Redo the error reporting
+	to use Role_Error.
+	(Check_Mode_Restriction_In_Enclosing_Context): Use "\" for error
+	message continuation.
+	(Find_Mode): Renamed to Find_Role. Update the parameter profile along
+	with comment on usage. Update all occurrences of Is_Input and Is_Output.
+	(Inconsistent_Mode_Error): Use "\" for error message continuation.
+	(Input_Match): Use "\" for error message continuation.
+	(Role_Error): New routine.
+	(Set_Convention_From_Pragma): Use "\" for error message continuation.
+	(Usage_Error): Add local variable Error_Msg. Build specialized error
+	message showcasing the offending item kind. Redo the diagnostics for
+	unconstrained types.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Is_Iterated_Container): Use high-level primitives
+	to determine whether a type is a container type, rather than
+	examining only its type declaration, so that subtypes and derived
+	types are handled properly.
+
+2014-02-20  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: gnatmetric: add description of project-specific
+	options.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): Verify that
+	all choices in an association for a record type have the same
+	type, as is done for record aggregates.
+
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* a-cborma.adb, a-cbhama.adb, a-cbdlli.adb, a-cbmutr.adb: Use pragma

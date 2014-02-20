@@ -15773,7 +15773,8 @@ in files with names that do not follow the GNAT file naming rules, you have to
 provide the configuration file describing the corresponding naming scheme (see
 the description of the @command{gnatmetric} switches below.)
 Alternatively, you may use a project file and invoke @command{gnatmetric}
-through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}).
+through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}),
+or you can directly specify a project file as a @command{gnatmetric} parameter.
 
 The @command{gnatmetric} command has the form
 
@@ -15822,7 +15823,9 @@ The following subsections describe the various switches accepted by
 * Disable Metrics For Local Units::
 * Specifying a set of metrics to compute::
 * Other gnatmetric Switches::
+@ignore
 * Generate project-wide metrics::
+@end ignore
 @end menu
 
 @node Output Files Control
@@ -15839,14 +15842,22 @@ for each Ada source file a corresponding text file
 containing the computed metrics, except for the case when the set of metrics
 specified by gnatmetric parameters consists only of metrics that are computed
 for the whole set of analyzed sources, but not for each Ada source.
-By default, this file is placed in the same directory as where the source
-file is located, and its name is obtained
-by appending the ^@file{.metrix}^@file{$METRIX}^ suffix to the name of the
-input file.
+By default, the name of the file containing metric information for a source
+is obtained by appending the ^@file{.metrix}^@file{$METRIX}^ suffix to the
+name of the input source file. If not otherwise specified and no project file
+is specified as @command{gnatmetric} option this file is placed in the same
+directory as where the source file is located. If @command{gnatmetric} has a
+project  file as its parameter, it places all the generated files in the
+object directory of the project (or in the project source directory if the
+project does not define an objects directory), if @option{--subdirs} option
+is specified, the files are placed in the subrirectory of this directory
+specified by this option.
 
 All the output information generated in XML format is placed in a single
-file. By default this file is placed in the current directory and has the
-name ^@file{metrix.xml}^@file{METRIX$XML}^.
+file. By default the name of this file is ^@file{metrix.xml}^@file{METRIX$XML}^.
+If not otherwise specified and if no project file is specified
+as @command{gnatmetric} option  this file is placed in the
+current directory.
 
 Some of the computed metrics are summed over the units passed to
 @command{gnatmetric}; for example, the total number of lines of code.
@@ -16643,6 +16654,39 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatmetric}
 Display usage, then exit disregarding all other options.
 
+@item -P @var{file}
+@cindex @option{-P @var{file}} @command{gnatmetric}
+Indicates the name of the project file that describes the set of sources
+to be processed. The exact set of argument sources depends on other options
+specified, see below.
+
+@item -U
+@cindex @option{-U} @command{gnatmetric}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+all the units of the closure of the argument project. Otherwise this option
+has no effect.
+
+@item -U @var{main_unit}
+@cindex @option{-U @var{main_unit}} @command{gnatmetric}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+the closure of units rooted at @var{main_unit}. Otherwise this option
+has no effect.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X@var{name}=@var{value}} @command{gnatmetric}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
+
+@item --subdirs=@var{dir}
+@cindex @option{--subdirs=@var{dir}} @command{gnatmetric}
+Use the specified subdirectory of the project objects file (or of the
+project file directory if the project does not specify an object directory)
+for tool output files. Has no effect if no project is specified as
+tool argument.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
 Take the argument source files from the specified file. This file should be an
@@ -16673,6 +16717,14 @@ a trace of sources being processed.
 Quiet mode.
 @end table
 
+@noindent
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), and no
+@option{-U} is specified, then the set of processed sources is
+all the immediate units of the argument project.
+
+
+@ignore
 @node Generate project-wide metrics
 @subsection Generate project-wide metrics
 
@@ -16697,6 +16749,7 @@ the @option{-U} option followed by the name of the main unit:
 @smallexample
    gnat metric -Pproj -U main
 @end smallexample
+@end ignore
 
 
 @c ***********************************
