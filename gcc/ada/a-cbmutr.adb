@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011-2012, Free Software Foundation, Inc.      --
+--             Copyright (C) 2011-2013, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1585,6 +1585,15 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Nodes : Tree_Node_Array renames Container.Nodes;
       Last  : Count_Type;
 
+      Elem : Element_Type;
+      pragma Unmodified (Elem);
+      --  There is no explicit element provided, but in an instance the
+      --  element type may be a scalar with a Default_Value aspect, or a
+      --  composite type with such a scalar component, so we insert the
+      --  specified number of possibly initialized elements at the given
+      --  position. So we are declaring Elem just for this possible default
+      --  initialization, which is why we need the pragma Unmodified.
+
    begin
       if Parent = No_Element then
          raise Constraint_Error with "Parent cursor has no element";
@@ -1623,7 +1632,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          Initialize_Root (Container);
       end if;
 
-      Allocate_Node (Container, Position.Node);
+      Allocate_Node (Container, Elem, Position.Node);
       Nodes (Position.Node).Parent := Parent.Node;
 
       Last := Position.Node;

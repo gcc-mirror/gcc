@@ -454,6 +454,12 @@ package Sem_Eval is
    --  it cannot (because the value of Lo or Hi is not known at compile time)
    --  then it returns False.
 
+   function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
+   --  In Ada 2012, subtypes statically match if their static predicates
+   --  match as well. This function performs the required check that
+   --  predicates match. Separated out from Subtypes_Statically_Match so
+   --  that it can be used in specializing error messages.
+
    procedure Why_Not_Static (Expr : Node_Id);
    --  This procedure may be called after generating an error message that
    --  complains that something is non-static. If it finds good reasons,
