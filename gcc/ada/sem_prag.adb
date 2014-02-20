@@ -1235,64 +1235,34 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item : Node_Id; Item_Id : Entity_Id) is
-            Typ       : constant Entity_Id := Etype (Item_Id);
             Error_Msg : Name_Id;
 
          begin
-            Name_Len := 0;
-
             --  Input case
 
             if Is_Input then
-               Add_Item_To_Name_Buffer (Item_Id);
-               Add_Str_To_Name_Buffer
-                 (" & must appear in at least one input dependence list "
-                  & "(SPARK RM 6.1.5(8))");
 
-               Error_Msg := Name_Find;
-               Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+               --  Unconstrained and tagged items are not part of the explicit
+               --  input set of the related subprogram, they do not have to be
+               --  present in a dependence relation and should not be flagged.
 
-               --  Refine the error message for unconstrained parameters and
-               --  variables by giving the reason for the illegality.
+               if not Is_Unconstrained_Or_Tagged_Item (Item_Id) then
+                  Name_Len := 0;
 
-               if Ekind (Item_Id) = E_Out_Parameter then
+                  Add_Item_To_Name_Buffer (Item_Id);
+                  Add_Str_To_Name_Buffer
+                    (" & must appear in at least one input dependence list "
+                     & "(SPARK RM 6.1.5(8))");
 
-                  --  Unconstrained arrays must appear as inputs because their
-                  --  bounds must be read.
-
-                  if Is_Array_Type (Typ)
-                    and then not Is_Constrained (Typ)
-                  then
-                     Error_Msg_NE
-                       ("\\type & is an unconstrained array", Item, Typ);
-                     Error_Msg_N ("\\array bounds must be read", Item);
-
-                  --  Unconstrained discriminated records must appear as inputs
-                  --  because their discriminants and constrained flag must be
-                  --  read.
-
-                  elsif Is_Record_Type (Typ)
-                    and then Has_Discriminants (Typ)
-                    and then not Is_Constrained (Typ)
-                  then
-                     Error_Msg_NE
-                       ("\\type & is an unconstrained discriminated record",
-                        Item, Typ);
-                     Error_Msg_N
-                       ("\\discriminants and constrained flag must be read",
-                        Item);
-
-                  --  Not clear if there are other cases. Anyway, we will
-                  --  simply ignore any other cases.
-
-                  else
-                     null;
-                  end if;
+                  Error_Msg := Name_Find;
+                  Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
                end if;
 
             --  Output case
 
             else
+               Name_Len := 0;
+
                Add_Item_To_Name_Buffer (Item_Id);
                Add_Str_To_Name_Buffer
                  (" & must appear in exactly one output dependence list "

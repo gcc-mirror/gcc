@@ -6310,8 +6310,12 @@ package body Sem_Attr is
                      --  Verify that all choices in an association denote
                      --  components of the same type.
 
-                     if No (Comp_Type) then
+                     if No (Etype (Comp)) then
+                        null;
+
+                     elsif No (Comp_Type) then
                         Comp_Type := Base_Type (Etype (Comp));
+
                      elsif Comp_Type /= Base_Type (Etype (Comp)) then
                         Error_Msg_N
                           ("components in choice list must have same type",

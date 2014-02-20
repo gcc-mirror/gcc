@@ -62,6 +62,16 @@ with Validsw;  use Validsw;
 
 package body Exp_Ch5 is
 
+   procedure Build_Formal_Container_Iteration
+     (N         : Node_Id;
+      Container : Entity_Id;
+      Cursor    : Entity_Id;
+      Init      : out Node_Id;
+      Advance   : out Node_Id;
+      New_Loop  : out Node_Id);
+   --  Utility to create declarations and loop statement for both forms
+   --  of formal container iterators.
+
    function Change_Of_Representation (N : Node_Id) return Boolean;
    --  Determine if the right hand side of assignment N is a type conversion
    --  which requires a change of representation. Called only for the array
@@ -103,9 +113,14 @@ package body Exp_Ch5 is
    --  clause (this last case is required because holes in the tagged type
    --  might be filled with components from child types).
 
-   procedure Expand_Formal_Container_Loop (Typ : Entity_Id; N : Node_Id);
+   procedure Expand_Formal_Container_Loop (N : Node_Id);
    --  Use the primitives specified in an Iterable aspect to expand a loop
    --  over a so-called formal container, primarily for SPARK usage.
+
+   procedure Expand_Formal_Container_Element_Loop (N : Node_Id);
+   --  Same, for an iterator of the form " For E of C". In this case the
+   --  iterator provides the name of the element, and the cursor is generated
+   --  internally.
 
    procedure Expand_Iterator_Loop (N : Node_Id);
    --  Expand loop over arrays and containers that uses the form "for X of C"
@@ -123,6 +138,72 @@ package body Exp_Ch5 is
    --  after and save and restore of the tag and finalization pointers which
    --  are not 'part of the value' and must not be changed upon assignment. N
    --  is the original Assignment node.
+
+   --------------------------------------
+   -- Build_Formal_Container_iteration --
+   --------------------------------------
+
+   procedure Build_Formal_Container_Iteration
+     (N         : Node_Id;
+      Container : Entity_Id;
+      Cursor    : Entity_Id;
+      Init      : out Node_Id;
+      Advance   : out Node_Id;
+      New_Loop  : out Node_Id)
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Stats    : constant List_Id    := Statements (N);
+
+      Typ      : constant Entity_Id := Base_Type (Etype (Container));
+      First_Op : constant Entity_Id :=
+                   Get_Iterable_Type_Primitive (Typ, Name_First);
+      Next_Op  : constant Entity_Id :=
+                   Get_Iterable_Type_Primitive (Typ, Name_Next);
+      Has_Element_Op : constant Entity_Id :=
+                   Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
+   begin
+      --  Declaration for Cursor
+
+      Init :=
+         Make_Object_Declaration (Loc,
+           Defining_Identifier => Cursor,
+           Object_Definition => New_Occurrence_Of (Etype (First_Op),  Loc),
+             Expression =>
+               Make_Function_Call (Loc,
+                 Name => New_Occurrence_Of (First_Op, Loc),
+                   Parameter_Associations =>
+                     New_List (New_Occurrence_Of (Container, Loc))));
+
+      --  Statement that advances cursor in loop
+
+      Advance :=
+        Make_Assignment_Statement (Loc,
+          Name => New_Occurrence_Of (Cursor, Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name => New_Occurrence_Of (Next_Op, Loc),
+                Parameter_Associations =>
+                  New_List
+                    (New_Occurrence_Of (Container, Loc),
+                     New_Occurrence_Of (Cursor, Loc))));
+
+      --  Iterator is rewritten as a while_loop
+
+      New_Loop :=
+        Make_Loop_Statement (Loc,
+          Iteration_Scheme =>
+            Make_Iteration_Scheme (Loc,
+              Condition =>
+                Make_Function_Call (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (Has_Element_Op, Loc),
+                  Parameter_Associations =>
+                    New_List
+                     (New_Occurrence_Of (Container, Loc),
+                      New_Occurrence_Of (Cursor, Loc)))),
+          Statements => Stats,
+          End_Label  => Empty);
+   end Build_Formal_Container_Iteration;
 
    ------------------------------
    -- Change_Of_Representation --
@@ -2660,29 +2741,21 @@ package body Exp_Ch5 is
    -- Expand_Formal_Container_Loop --
    ----------------------------------
 
-   procedure Expand_Formal_Container_Loop (Typ : Entity_Id; N : Node_Id) is
+   procedure Expand_Formal_Container_Loop (N : Node_Id) is
       Isc       : constant Node_Id    := Iteration_Scheme (N);
       I_Spec    : constant Node_Id    := Iterator_Specification (Isc);
       Cursor    : constant Entity_Id  := Defining_Identifier (I_Spec);
       Container : constant Node_Id    := Entity (Name (I_Spec));
       Stats     : constant List_Id    := Statements (N);
-      Loc       : constant Source_Ptr := Sloc (N);
 
-      First_Op : constant Entity_Id :=
-                   Get_Iterable_Type_Primitive (Typ, Name_First);
-      Next_Op  : constant Entity_Id :=
-                   Get_Iterable_Type_Primitive (Typ, Name_Next);
-      Has_Element_Op : constant Entity_Id :=
-                   Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
-
-      Advance  : Node_Id;
-      Init     : Node_Id;
-      New_Loop : Node_Id;
+      Advance   : Node_Id;
+      Init      : Node_Id;
+      New_Loop  : Node_Id;
 
    begin
       --  The expansion resembles the one for Ada containers, but the
-      --  primitives mention the the domain of iteration explicitly, and
-      --  First applied to the container yields a cursor directly.
+      --  primitives mention the domain of iteration explicitly, and
+      --  function First applied to the container yields a cursor directly.
 
       --    Cursor : Cursor_type := First (Container);
       --    while Has_Element (Cursor, Container) loop
@@ -2690,50 +2763,100 @@ package body Exp_Ch5 is
       --       Cursor := Next (Container, Cursor);
       --    end loop;
 
-      Init :=
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => Cursor,
-           Object_Definition => New_Occurrence_Of (Etype (First_Op),  Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name => New_Occurrence_Of (First_Op, Loc),
-                   Parameter_Associations =>
-                     New_List (New_Occurrence_Of (Container, Loc))));
+      Build_Formal_Container_Iteration
+        (N, Container, Cursor, Init, Advance, New_Loop);
 
       Set_Ekind (Cursor, E_Variable);
-
       Insert_Action (N, Init);
-
-      Advance :=
-        Make_Assignment_Statement (Loc,
-          Name => New_Occurrence_Of (Cursor, Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (Next_Op, Loc),
-                Parameter_Associations =>
-                  New_List
-                    (New_Occurrence_Of (Container, Loc),
-                     New_Occurrence_Of (Cursor, Loc))));
 
       Append_To (Stats, Advance);
 
-      New_Loop :=
-        Make_Loop_Statement (Loc,
-          Iteration_Scheme =>
-            Make_Iteration_Scheme (Loc,
-              Condition =>
-                Make_Function_Call (Loc,
-                  Name                   =>
-                    New_Occurrence_Of (Has_Element_Op, Loc),
-                  Parameter_Associations =>
-                    New_List
-                     (New_Occurrence_Of (Container, Loc),
-                      New_Occurrence_Of (Cursor, Loc)))),
-          Statements => Stats,
-          End_Label  => Empty);
       Rewrite (N, New_Loop);
       Analyze (New_Loop);
    end Expand_Formal_Container_Loop;
+
+   ------------------------------------------
+   -- Expand_Formal_Container_Element_Loop --
+   ------------------------------------------
+
+   procedure Expand_Formal_Container_Element_Loop (N : Node_Id) is
+      Loc           : constant Source_Ptr := Sloc (N);
+      Isc           : constant Node_Id    := Iteration_Scheme (N);
+      I_Spec        : constant Node_Id    := Iterator_Specification (Isc);
+      Element       : constant Entity_Id  := Defining_Identifier (I_Spec);
+      Container     : constant Node_Id    := Entity (Name (I_Spec));
+      Container_Typ : constant Entity_Id := Base_Type (Etype (Container));
+      Stats         : constant List_Id    := Statements (N);
+
+      Cursor    : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc,
+                     Chars => New_External_Name (Chars (Element), 'C'));
+      Elmt_Decl : Node_Id;
+      Elmt_Ref  : Node_Id;
+
+      Element_Op     : constant Entity_Id :=
+                         Get_Iterable_Type_Primitive
+                           (Container_Typ, Name_Element);
+
+      Advance   : Node_Id;
+      Init      : Node_Id;
+      New_Loop  : Node_Id;
+
+   begin
+      --  For an element iterator, the Element aspect must be present,
+      --  (this is checked during analysis) and the expansion takes the form:
+
+      --    Cursor : Cursor_type := First (Container);
+      --    Elmt : Element_Type;
+      --    while Has_Element (Cursor, Container) loop
+      --       Elmt := Element (Container, Cursor);
+      --          <original loop statements>
+      --       Cursor := Next (Container, Cursor);
+      --    end loop;
+
+      Build_Formal_Container_Iteration
+        (N, Container, Cursor, Init, Advance, New_Loop);
+
+      Set_Ekind (Cursor, E_Variable);
+      Insert_Action (N, Init);
+
+      --  Declaration for Element.
+
+      Elmt_Decl := Make_Object_Declaration (Loc,
+        Defining_Identifier => Element,
+        Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
+
+      --  The element is only modified in expanded code, so it appears as
+      --  unassigned to the warning machinery. We must suppress this spurious
+      --  warning explicitly.
+
+      Set_Warnings_Off (Element);
+
+      Elmt_Ref := Make_Assignment_Statement (Loc,
+         Name       => New_Occurrence_Of (Element, Loc),
+         Expression =>
+           Make_Function_Call (Loc,
+             Name => New_Occurrence_Of (Element_Op, Loc),
+                 Parameter_Associations =>
+                   New_List
+                    (New_Occurrence_Of (Container, Loc),
+                     New_Occurrence_Of (Cursor, Loc))));
+
+      Prepend (Elmt_Ref, Stats);
+      Append_To (Stats, Advance);
+
+      --  The loop is rewritten as a block, to hold the declaration for the
+      --  element.
+
+      New_Loop := Make_Block_Statement (Loc,
+         Declarations               => New_List (Elmt_Decl),
+         Handled_Statement_Sequence =>
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements =>  New_List (New_Loop)));
+
+      Rewrite (N, New_Loop);
+      Analyze (New_Loop);
+   end Expand_Formal_Container_Element_Loop;
 
    -----------------------------
    -- Expand_N_Goto_Statement --
@@ -3052,7 +3175,11 @@ package body Exp_Ch5 is
          return;
 
       elsif Has_Aspect (Container_Typ, Aspect_Iterable) then
-         Expand_Formal_Container_Loop (Container_Typ, N);
+         if Of_Present (I_Spec) then
+            Expand_Formal_Container_Element_Loop (N);
+         else
+            Expand_Formal_Container_Loop (N);
+         end if;
          return;
       end if;
 
