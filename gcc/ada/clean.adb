@@ -39,6 +39,7 @@ with Prj.Tree; use Prj.Tree;
 with Prj.Util; use Prj.Util;
 with Sdefault;
 with Snames;
+with Stringt;
 with Switch;   use Switch;
 with Table;
 with Targparm; use Targparm;
@@ -1559,6 +1560,7 @@ package body Clean is
 
          Csets.Initialize;
          Snames.Initialize;
+         Stringt.Initialize;
 
          Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
 

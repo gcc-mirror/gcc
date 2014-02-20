@@ -8484,6 +8484,16 @@ Default mode, in which sources are checked for consistency only if
 they are available.
 @end ifset
 
+@item ^-X@var{nnn}^/RETURN_CODES=POSIX^
+@cindex @option{^-X@var{nnn}^/RETURN_CODES=POSIX^} (@code{gnatbind})
+Set default exit status value, normally 0 for POSIX compliance.
+
+@ifset vms
+@item /RETURN_CODES=VMS
+@cindex @option{/RETURN_CODES=VMS} (@code{gnatbind})
+VMS default normal successful return value is 1.
+@end ifset
+
 @item ^-y^/ENABLE_LEAP_SECONDS^
 @cindex @option{^-y^/ENABLE_LEAP_SECONDS^} (@code{gnatbind})
 Enable leap seconds support in @code{Ada.Calendar} and its children.

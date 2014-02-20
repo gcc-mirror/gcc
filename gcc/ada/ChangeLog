@@ -1,5 +1,34 @@
 2014-02-20  Vincent Celier  <celier@adacore.com>
 
+	* gnatcmd.adb, make.adb, prj-makr.adb, clean.adb: Call
+	Stringt.Initialize in all project aware tools.
+
+2014-02-20  Doug Rupp  <rupp@adacore.com>
+
+	* gnat_ugn.texi: Document gnatbind -X option.
+	* vms_data.ads: Minor warnings documentation reformatting.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Only create invariant
+	procedure for a base type.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_Case_Expression): Get type from first
+	expression with type info.
+	* sem_ch13.adb: Minor reformatting.
+	* sem_eval.adb (Subtypes_Statically_Match): Make sure we return
+	False if predicates do not match on the two types.
+
+2014-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma [pragma Attach_Handler]):
+	In Relaxed_RM_Semantics mode, allow any static integer value,
+	for compatibility with other compilers.
+
+2014-02-20  Vincent Celier  <celier@adacore.com>
+
 	* errutil.adb (Initialize): Properly initialize entry in table
 	Warnings when warnings are suppressed.
 
