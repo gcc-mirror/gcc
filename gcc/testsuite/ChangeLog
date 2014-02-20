@@ -1,3 +1,13 @@
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Distinguish src1 and src2.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Call correct intrinsic.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Distinguish src1 and src2.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Fix reference calculation.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Fix reference calculation.
+
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37743

@@ -1,3 +1,27 @@
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+            Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/avx512erintrin.h (_mm_rcp28_round_sd): Swap operands.
+	(_mm_rcp28_round_ss): Ditto.
+	(_mm_rsqrt28_round_sd): Ditto.
+	(_mm_rsqrt28_round_ss): Ditto.
+	* config/i386/avx512erintrin.h (_mm_rcp14_round_sd): Ditto.
+	(_mm_rcp14_round_ss): Ditto.
+	(_mm_rsqrt14_round_sd): Ditto.
+	(_mm_rsqrt14_round_ss): Ditto.
+	* config/i386/sse.md (rsqrt14<mode>): Put nonimmediate operand as
+	the first input operand, get rid of match_dup.
+	(avx512er_exp2<mode><mask_name><round_saeonly_name>): Set type
+	attribute to sse.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512er_vmrcp28<mode><round_saeonly_name>): Put nonimmediate
+	operand as the first input operand, set type attribute.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>):
+	Set type attribute.
+	(avx512er_vmrsqrt28<mode><round_saeonly_name>): Put nonimmediate
+	operand as the first input operand, set type attribute.
+
 2014-02-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (vspltis_constant): Fix most significant
