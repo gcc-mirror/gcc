@@ -11283,6 +11283,17 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatelim}
 Display usage, then exit disregarding all other options.
 
+@item -P @var{file}
+@cindex @option{-P} @command{gnatelim}
+Indicates the name of the project file that describes the set of sources
+to be processed.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatelim}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
+
 @item ^-files^/FILES^=@var{filename}
 @cindex @option{^-files^/FILES^} (@code{gnatelim})
 Take the argument source files from the specified file. This file should be an
@@ -11296,9 +11307,11 @@ an explicit list of files.
 Duplicate all the output sent to @file{stderr} into a log file. The log file
 is named @file{gnatelim.log} and is located in the current directory.
 
+@ignore
 @item ^-log^/LOGFILE^=@var{filename}
 @cindex @option{^-log^/LOGFILE^} (@command{gnatelim})
 Duplicate all the output sent to @file{stderr} into a specified log file.
+@end ignore
 
 @cindex @option{^--no-elim-dispatch^/NO_DISPATCH^} (@command{gnatelim})
 @item ^--no-elim-dispatch^/NO_DISPATCH^
@@ -16655,7 +16668,7 @@ Display Copyright and version, then exit disregarding all other options.
 Display usage, then exit disregarding all other options.
 
 @item -P @var{file}
-@cindex @option{-P @var{file}} @command{gnatmetric}
+@cindex @option{-P} @command{gnatmetric}
 Indicates the name of the project file that describes the set of sources
 to be processed. The exact set of argument sources depends on other options
 specified, see below.
@@ -16668,14 +16681,13 @@ all the units of the closure of the argument project. Otherwise this option
 has no effect.
 
 @item -U @var{main_unit}
-@cindex @option{-U @var{main_unit}} @command{gnatmetric}
 If a project file is specified and no argument source is explicitly
 specified (either directly or by means of @option{-files} option), process
 the closure of units rooted at @var{main_unit}. Otherwise this option
 has no effect.
 
 @item -X@var{name}=@var{value}
-@cindex @option{-X@var{name}=@var{value}} @command{gnatmetric}
+@cindex @option{-X} @command{gnatmetric}
 Indicates that external variable @var{name} in the argument project
 has the @var{value} value. Has no effect if no project is specified as
 tool argument.
@@ -16717,11 +16729,13 @@ a trace of sources being processed.
 Quiet mode.
 @end table
 
+@ignore
 @noindent
 If a project file is specified and no argument source is explicitly
 specified (either directly or by means of @option{-files} option), and no
 @option{-U} is specified, then the set of processed sources is
 all the immediate units of the argument project.
+@end ignore
 
 
 @ignore
@@ -19548,6 +19562,17 @@ Display Copyright and version, then exit disregarding all other options.
 @item --help
 @cindex @option{--help} @command{gnatstub}
 Display usage, then exit disregarding all other options.
+
+@item -P @var{file}
+@cindex @option{-P} @command{gnatstub}
+Indicates the name of the project file that describes the set of sources
+to be processed.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatstub}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
 
 @item ^-f^/FULL^
 @cindex @option{^-f^/FULL^} (@command{gnatstub})

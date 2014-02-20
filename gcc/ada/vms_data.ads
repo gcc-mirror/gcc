@@ -4049,14 +4049,14 @@ package VMS_Data is
    --   text file.
 
    S_Elim_Log     : aliased constant S := "/LOG "                          &
-                                          "-l";
+                                          "-log";
    --        /NOLOG (D)
    --        /LOG
    --
    --   Duplicate all the output sent to Stderr into a default log file.
 
    S_Elim_Logfile : aliased constant S := "/LOGFILE=@"                     &
-                                          "-l@";
+                                          "-log@";
 
    --      /LOGFILE=logfilename
    --

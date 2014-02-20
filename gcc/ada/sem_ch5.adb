@@ -1955,8 +1955,13 @@ package body Sem_Ch5 is
 
       --  A loop parameter cannot be volatile. This check is peformed only when
       --  SPARK_Mode is on as it is not a standard Ada legality check.
+      --  Not clear whether this applies to element iterators, where the
+      --  cursor is not an explicit entity ???
 
-      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Ent) then
+      if SPARK_Mode = On
+        and then not Of_Present (N)
+        and then Is_SPARK_Volatile_Object (Ent)
+      then
          Error_Msg_N
            ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
       end if;
