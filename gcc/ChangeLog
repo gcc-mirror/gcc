@@ -1,3 +1,27 @@
+2014-02-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (unspec): Add UNSPEC_PIC_GOTOFF_SYM enum.
+	* config/nios2/nios2.c (nios2_function_profiler):
+	Add -fPIC (flag_pic == 2) support.
+	(nios2_handle_custom_fpu_cfg): Fix warning parameter.
+	(nios2_large_offset_p): New function.
+	(nios2_unspec_reloc_p): Move up position, update to use
+	nios2_large_offset_p.
+	(nios2_unspec_address): Remove function.
+	(nios2_unspec_offset): New function.
+	(nios2_large_got_address): New function.
+	(nios2_got_address): Add large offset support.
+	(nios2_legitimize_tls_address): Update usage of removed and new
+	functions.
+	(nios2_symbol_binds_local_p): New function.
+	(nios2_load_pic_address): Add -fPIC (flag_pic == 2) support.
+	(nios2_legitimize_address): Update to use nios2_large_offset_p.
+	(nios2_emit_move_sequence): Avoid legitimizing (const (unspec ...)).
+	(nios2_print_operand): Merge H/L processing, add hiadj/lo
+	processing for (const (unspec ...)).
+	(nios2_unspec_reloc_name): Add UNSPEC_PIC_GOTOFF_SYM case.
+
 2014-02-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (replace_uses_by): Mark altered BBs before

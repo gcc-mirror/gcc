@@ -1,3 +1,10 @@
+2014-02-20  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nios2/t-nios2 (CRTSTUFF_T_CFLAGS): Add -mno-gpopt.
+	* config/nios2/crti.S: Remove .file directive.
+	* config/nios2/crtn.S: Likewise.
+
 2014-02-18  Kai Tietz  <ktietz@redhat.com>
 	Jonathan Schleifer  <js@webkeks.org>
 
