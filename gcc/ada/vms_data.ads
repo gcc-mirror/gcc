@@ -3345,7 +3345,7 @@ package VMS_Data is
    --                             qualifier with a value other than NONE (in
    --                             other words, this option is effective only
    --                             if optimization is turned on).
-
+   --
    --   ERRORS                    Warning messages are to be treated as errors.
    --                             The warning string still appears, but the
    --                             warning messages are counted as errors, and
@@ -3389,7 +3389,7 @@ package VMS_Data is
    --                           access to an atomic variable requires the
    --                           generation of atomic synchronization code.
    --
-   --   AVOID_GAPS              Activate warnings for gaps in records.
+   --   AVOIDGAPS               Activate warnings for gaps in records.
    --   (-gnatw.h)              This outputs a warning if a representation
    --                           clause for a record leaves unallocated bits.
    --
@@ -3408,6 +3408,10 @@ package VMS_Data is
    --   (-gnatwc)               in tests where the expression is known to
    --                           be True or False at compile time.
    --
+   --   CONSTANT_VARIABLES      Activate warnings on constant variables.
+   --   (-gnatwk)               A warning is output for a variable which could
+   --                           have been declared as a constant.
+   --
    --   DELETED_CODE            Activate warning for conditional deleted code.
    --   (-gnatwt)               This option generates warnings for tracking of
    --                           code in conditionals (IF and CASE statements)
@@ -3415,10 +3419,6 @@ package VMS_Data is
    --                           be executed, and which is removed by the
    --                           front end. This may be useful for detecting
    --                           deactivated code in certified applications.
-   --
-   --   CONSTANT_VARIABLES      Activate warnings on constant variables.
-   --   (-gnatwk)               A warning is output for a variable which could
-   --                           have been declared as a constant.
    --
    --   ELABORATION             Activate warnings on missing pragma Elaborate
    --   (-gnatwl)               and Elaborate_All statements.
@@ -3432,15 +3432,6 @@ package VMS_Data is
    --                           for a non-overloadable entity, and declares
    --                           an entity with the same name as some other
    --                           entity that is directly or use-visible.
-   --
-   --   IMPORT_EXPORT_PRAGMAS   Activate warnings on import-export pragmas.
-   --   (-gnatwx)               This generates a warning on an Export or Import
-   --                           pragma when the compiler detects a possible
-   --                           conflict between the Ada and foreign language
-   --                           calling sequences. For example, the use of
-   --                           default parameters in a convention C procedure
-   --                           is dubious because the C compiler cannot supply
-   --                           the proper default, so a warning is issued.
    --
    --   IMPLEMENTATION          Activate warnings for a with of an internal
    --   (-gnatwi)               GNAT implementation unit, defined as any unit
@@ -3460,6 +3451,15 @@ package VMS_Data is
    --                           warnings of this type are generated, access
    --                           checks occur only at points where the source
    --                           program contains an explicit use of .all.
+   --
+   --   IMPORT_EXPORT_PRAGMAS   Activate warnings on import-export pragmas.
+   --   (-gnatwx)               This generates a warning on an Export or Import
+   --                           pragma when the compiler detects a possible
+   --                           conflict between the Ada and foreign language
+   --                           calling sequences. For example, the use of
+   --                           default parameters in a convention C procedure
+   --                           is dubious because the C compiler cannot supply
+   --                           the proper default, so a warning is issued.
    --
    --   INEFFECTIVE_INLINE      Activate warnings on ineffective Inlines.
    --   (-gnatwp)               Activates warnings for failure of front end

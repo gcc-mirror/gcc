@@ -55,6 +55,7 @@ with Sdefault;
 with SFN_Scan;
 with Sinput.P;
 with Snames;   use Snames;
+with Stringt;
 
 pragma Warnings (Off);
 with System.HTable;
@@ -6411,6 +6412,7 @@ package body Make is
 
       Csets.Initialize;
       Snames.Initialize;
+      Stringt.Initialize;
 
       Prj.Initialize (Project_Tree);
 

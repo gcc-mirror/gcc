@@ -4901,6 +4901,11 @@ package body Sem_Eval is
       then
          return False;
 
+      --  No match if predicates do not match
+
+      elsif not Predicates_Match then
+         return False;
+
       --  Scalar types
 
       elsif Is_Scalar_Type (T1) then
@@ -4955,7 +4960,7 @@ package body Sem_Eval is
             return True;
          end if;
 
-         --  Otherwise both types have bound that can be compared
+         --  Otherwise both types have bounds that can be compared
 
          declare
             LB1 : constant Node_Id := Type_Low_Bound  (T1);
@@ -4964,11 +4969,10 @@ package body Sem_Eval is
             HB2 : constant Node_Id := Type_High_Bound (T2);
 
          begin
-            --  If the bounds are the same tree node, then match if and only
-            --  if any predicates present also match.
+            --  If the bounds are the same tree node, then match (common case)
 
             if LB1 = LB2 and then HB1 = HB2 then
-               return Predicates_Match;
+               return True;
 
             --  Otherwise bounds must be static and identical value
 

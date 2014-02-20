@@ -44,6 +44,7 @@ with Prj.Util; use Prj.Util;
 with Sdefault;
 with Sinput.P;
 with Snames;   use Snames;
+with Stringt;
 with Table;
 with Targparm;
 with Tempdir;
@@ -1392,6 +1393,7 @@ begin
 
    Csets.Initialize;
    Snames.Initialize;
+   Stringt.Initialize;
 
    Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
 

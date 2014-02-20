@@ -6076,13 +6076,15 @@ package body Exp_Ch3 is
       end if;
 
       if Has_Invariants (Component_Type (Base))
+        and then Typ = Base
         and then In_Open_Scopes (Scope (Component_Type (Base)))
       then
          --  Generate component invariant checking procedure. This is only
          --  relevant if the array type is within the scope of the component
          --  type. Otherwise an array object can only be built using the public
          --  subprograms for the component type, and calls to those will have
-         --  invariant checks.
+         --  invariant checks. The invariant procedure is only generated for
+         --  a base type, not a subtype.
 
          Insert_Component_Invariant_Checks
            (N, Base, Build_Array_Invariant_Proc (Base, N));

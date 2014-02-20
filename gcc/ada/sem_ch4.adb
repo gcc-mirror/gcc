@@ -1356,10 +1356,14 @@ package body Sem_Ch4 is
       --  Local variables
 
       Expr      : constant Node_Id := Expression (N);
-      FirstX    : constant Node_Id := Expression (First (Alternatives (N)));
       Alt       : Node_Id;
       Exp_Type  : Entity_Id;
       Exp_Btype : Entity_Id;
+
+      FirstX : Node_Id := Empty;
+      --  First expression in the case for which there is some type information
+      --  available, i.e. it is not Any_Type, which can happen because of some
+      --  error, or from the use of e.g. raise Constraint_Error.
 
       Others_Present : Boolean;
       --  Indicates if Others was present
@@ -1379,8 +1383,16 @@ package body Sem_Ch4 is
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          Analyze (Expression (Alt));
+
+         if No (FirstX) and then Etype (Expression (Alt)) /= Any_Type then
+            FirstX := Expression (Alt);
+         end if;
+
          Next (Alt);
       end loop;
+
+      --  Get our initial type from the first expression for which we got some
+      --  useful type information from the expression.
 
       if not Is_Overloaded (FirstX) then
          Set_Etype (N, Etype (FirstX));
