@@ -9290,7 +9290,8 @@ package body Einfo is
    procedure Write_Field25_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Package                                    =>
+         when E_Generic_Package                            |
+              E_Package                                    =>
             Write_Str ("Abstract_States");
 
          when E_Variable                                   =>

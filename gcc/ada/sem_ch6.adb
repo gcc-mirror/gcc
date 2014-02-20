@@ -374,6 +374,13 @@ package body Sem_Ch6 is
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
 
+         --  Correct the parent pointer of the aspect specification list to
+         --  reference the rewritten node.
+
+         if Has_Aspects (N) then
+            Set_Parent (Aspect_Specifications (N), N);
+         end if;
+
          --  Propagate any pragmas that apply to the expression function to the
          --  proper body when the expression function acts as a completion.
          --  Aspects are automatically transfered because of node rewriting.
@@ -429,6 +436,14 @@ package body Sem_Ch6 is
            Make_Subprogram_Declaration (Loc, Specification => Spec);
 
          Rewrite (N, New_Decl);
+
+         --  Correct the parent pointer of the aspect specification list to
+         --  reference the rewritten node.
+
+         if Has_Aspects (N) then
+            Set_Parent (Aspect_Specifications (N), N);
+         end if;
+
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 

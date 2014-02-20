@@ -786,6 +786,11 @@ package Aspects is
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
    --  are allowed to appear on a body [stub].
 
+   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id);
+   --  Exchange the aspect specifications of two nodes. If either node lacks an
+   --  aspect specification list, the routine has no effect. It is assumed that
+   --  both nodes can support aspects.
+
    function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
    --  Find the aspect specification of aspect A associated with entity I.
    --  Return Empty if Id does not have the requested aspect.

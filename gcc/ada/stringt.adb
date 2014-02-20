@@ -475,6 +475,7 @@ package body Stringt is
 --  Setup the null string
 
 begin
+   Initialize;
    Start_String;
    Null_String_Id := End_String;
 
