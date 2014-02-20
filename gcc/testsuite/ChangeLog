@@ -1,3 +1,8 @@
+2014-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/55260
+	* gcc.dg/ipa/pr55260.c: New test.
+
 2014-02-20  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Return 0

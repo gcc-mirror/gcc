@@ -1,3 +1,9 @@
+2014-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/55260
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Uce correct
+	info when checking whether lattices are bottom.
+
 2014-02-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60221
