@@ -220,7 +220,7 @@ package body Exp_Ch13 is
                   Assign :=
                     Make_Assignment_Statement (Loc,
                       Name =>
-                        New_Reference_To (Storage_Size_Variable (Ent), Loc),
+                        New_Occurrence_Of (Storage_Size_Variable (Ent), Loc),
                       Expression =>
                         Convert_To (RTE (RE_Size_Type), Expression (N)));
 
@@ -260,7 +260,7 @@ package body Exp_Ch13 is
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => V,
                       Object_Definition  =>
-                        New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                        New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
                       Expression =>
                         Convert_To (RTE (RE_Storage_Offset), Expression (N))));
 
@@ -344,11 +344,11 @@ package body Exp_Ch13 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
                 Object_Definition =>
-                  New_Reference_To (Expr_Typ, Loc),
+                  New_Occurrence_Of (Expr_Typ, Loc),
                 Expression =>
                   Relocate_Node (Expr)));
 
-            New_Expr := New_Reference_To (Temp_Id, Loc);
+            New_Expr := New_Occurrence_Of (Temp_Id, Loc);
             Set_Etype (New_Expr, Expr_Typ);
 
             Set_Expression (N, New_Expr);
@@ -668,7 +668,7 @@ package body Exp_Ch13 is
 
          AtM_Nod :=
            Make_Attribute_Definition_Clause (Loc,
-             Name       => New_Reference_To (Base_Type (Rectype), Loc),
+             Name       => New_Occurrence_Of (Base_Type (Rectype), Loc),
              Chars      => Name_Alignment,
              Expression => Make_Integer_Literal (Loc, Mod_Val));
 

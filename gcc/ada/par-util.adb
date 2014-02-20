@@ -429,9 +429,23 @@ package body Util is
             Error_Msg_SC -- CODEFIX
               ("|extra ""("" ignored");
 
+         --  Note: the following error used to be labeled as a non-serious
+         --  error like the other similar messages here (with a | at the start
+         --  of the message). But this caused some annoying cascaded errors
+         --  that were confusing, as shown by this example:
+
+         --          A : array (1 .. 9) of Integer :=
+         --            ((1 .. 2) => 0,
+         --             1  2   3
+         --       >>> positional aggregate cannot have one component
+         --       >>> named association cannot follow positional association
+         --       >>> extra ")" ignored
+
+         --  So we decided to label it as serious after all
+
          elsif T = Tok_Right_Paren then
             Error_Msg_SC -- CODEFIX
-              ("|extra "")"" ignored");
+              ("extra "")"" ignored");
 
          elsif T = Tok_Semicolon then
             Error_Msg_SC -- CODEFIX

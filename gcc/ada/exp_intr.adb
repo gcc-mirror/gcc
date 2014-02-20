@@ -247,7 +247,7 @@ package body Exp_Intr is
 
             declare
                Fname : constant Node_Id :=
-                         New_Reference_To (RTE (RE_Secondary_Tag), Loc);
+                         New_Occurrence_Of (RTE (RE_Secondary_Tag), Loc);
 
             begin
                pragma Assert (not Is_Interface (Etype (Tag_Arg)));
@@ -256,13 +256,13 @@ package body Exp_Intr is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Make_Temporary (Loc, 'V'),
                    Object_Definition   =>
-                     New_Reference_To (RTE (RE_Tag), Loc),
+                     New_Occurrence_Of (RTE (RE_Tag), Loc),
                    Expression          =>
                      Make_Function_Call (Loc,
                        Name                   => Fname,
                        Parameter_Associations => New_List (
                          Relocate_Node (Tag_Arg),
-                         New_Reference_To
+                         New_Occurrence_Of
                            (Node (First_Elmt (Access_Disp_Table
                                                (Etype (Etype (Act_Constr))))),
                             Loc))));
@@ -324,7 +324,7 @@ package body Exp_Intr is
             Build_CW_Membership (Loc,
               Obj_Tag_Node => Obj_Tag_Node,
               Typ_Tag_Node =>
-                New_Reference_To (
+                New_Occurrence_Of (
                    Node (First_Elmt (Access_Disp_Table (
                                        Root_Type (Result_Typ)))), Loc),
               Related_Nod => N,
@@ -354,7 +354,7 @@ package body Exp_Intr is
                         Prefix         => New_Copy_Tree (Tag_Arg),
                         Attribute_Name => Name_Address),
 
-                      New_Reference_To (
+                      New_Occurrence_Of (
                         Node (First_Elmt (Access_Disp_Table (
                                             Root_Type (Result_Typ)))), Loc)))),
              Then_Statements =>
@@ -1193,7 +1193,7 @@ package body Exp_Intr is
          Set_Expression (Free_Node,
            Unchecked_Convert_To (Typ,
              Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (RE_Base_Address), Loc),
+               Name => New_Occurrence_Of (RTE (RE_Base_Address), Loc),
                Parameter_Associations => New_List (
                  Unchecked_Convert_To (RTE (RE_Address), Free_Arg)))));
 

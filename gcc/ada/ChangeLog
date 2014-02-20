@@ -1,3 +1,22 @@
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor comment addition: Etype of package is
+	Standard_Void_Type.
+	* checks.adb, exp_aggr.adb, exp_atag.adb, exp_attr.adb, exp_ch13.adb,
+	exp_ch2.adb, exp_ch3.adb, exp_ch4.adb, exp_ch5.adb, exp_ch6.adb,
+	exp_ch7.adb, exp_ch9.adb, exp_dbug.adb, exp_disp.adb, exp_imgv.adb,
+	exp_intr.adb, exp_prag.adb, exp_sel.adb, exp_strm.adb, exp_util.adb,
+	freeze.adb, rtsfind.adb, sem_aggr.adb, sem_attr.adb, sem_ch10.adb,
+	sem_ch12.adb, sem_ch13.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb,
+	sem_ch6.adb, sem_ch8.adb, sem_dim.adb, sem_prag.adb, sem_res.adb,
+	sem_util.adb, tbuild.adb, tbuild.ads: Remove New_Reference_To.
+	Replace all calls with calls to New_Occurrence_Of.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* par-util.adb (Ignore, case of right paren): Make this a
+	serious error.
+
 2014-02-19  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb, sem_prag.adb, sem_attr.adb: Minor reformatting.

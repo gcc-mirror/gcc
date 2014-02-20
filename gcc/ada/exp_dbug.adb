@@ -472,7 +472,7 @@ package body Exp_Dbug is
       Res :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj,
-          Object_Definition   => New_Reference_To
+          Object_Definition   => New_Occurrence_Of
                                    (Standard_Debug_Renaming_Type, Loc));
 
       Set_Debug_Renaming_Link (Obj, Entity (Ren));

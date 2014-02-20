@@ -1931,13 +1931,13 @@ package body Sem_Ch12 is
       Lo :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_First,
-          Prefix         => New_Reference_To (T, Loc));
+          Prefix         => New_Occurrence_Of (T, Loc));
       Set_Etype (Lo, T);
 
       Hi :=
         Make_Attribute_Reference (Loc,
           Attribute_Name => Name_Last,
-          Prefix         => New_Reference_To (T, Loc));
+          Prefix         => New_Occurrence_Of (T, Loc));
       Set_Etype (Hi, T);
 
       Set_Scalar_Range (T,
@@ -2143,7 +2143,7 @@ package body Sem_Ch12 is
          then
             declare
                Non_Freezing_Ref : constant Node_Id :=
-                                    New_Reference_To (Id, Sloc (Id));
+                                    New_Occurrence_Of (Id, Sloc (Id));
                Decl : Node_Id;
 
             begin
@@ -3598,7 +3598,7 @@ package body Sem_Ch12 is
            Make_Package_Renaming_Declaration (Loc,
              Defining_Unit_Name =>
                Make_Defining_Identifier (Loc, Chars (Gen_Unit)),
-             Name => New_Reference_To (Act_Decl_Id, Loc));
+             Name => New_Occurrence_Of (Act_Decl_Id, Loc));
 
          Append (Unit_Renaming, Renaming_List);
 
@@ -9048,7 +9048,7 @@ package body Sem_Ch12 is
          Nod :=
            Make_Package_Renaming_Declaration (Loc,
              Defining_Unit_Name => New_Copy (Defining_Identifier (Formal)),
-             Name               => New_Reference_To (Actual_Pack, Loc));
+             Name               => New_Occurrence_Of (Actual_Pack, Loc));
 
          Set_Associated_Formal_Package (Defining_Unit_Name (Nod),
            Defining_Identifier (Formal));
@@ -11743,7 +11743,7 @@ package body Sem_Ch12 is
       Decl_Node :=
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Subt,
-          Subtype_Indication  => New_Reference_To (Act_T, Loc));
+          Subtype_Indication  => New_Occurrence_Of (Act_T, Loc));
 
       if Is_Private_Type (Act_T) then
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
@@ -11806,7 +11806,7 @@ package body Sem_Ch12 is
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => New_Corr,
                 Subtype_Indication  =>
-                  New_Reference_To (Corr_Rec, Loc));
+                  New_Occurrence_Of (Corr_Rec, Loc));
             Append_To (Decl_Nodes, Corr_Decl);
 
             if Ekind (Act_T) = E_Task_Type then

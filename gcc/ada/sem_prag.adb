@@ -871,7 +871,7 @@ package body Sem_Prag is
 
                      if Present (Renamed_Object (Entity (Item))) then
                         Rewrite (Item,
-                          New_Reference_To (Item_Id, Sloc (Item)));
+                          New_Occurrence_Of (Item_Id, Sloc (Item)));
                         Analyze (Item);
                      end if;
 
@@ -2014,7 +2014,7 @@ package body Sem_Prag is
                --  with a reference to the object.
 
                if Present (Renamed_Object (Entity (Item))) then
-                  Rewrite (Item, New_Reference_To (Item_Id, Sloc (Item)));
+                  Rewrite (Item, New_Occurrence_Of (Item_Id, Sloc (Item)));
                   Analyze (Item);
                end if;
 

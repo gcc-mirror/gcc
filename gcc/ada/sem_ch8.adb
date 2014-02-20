@@ -3368,7 +3368,7 @@ package body Sem_Ch8 is
                --  there are no subtypes involved.
 
                Rewrite (Parameter_Type (Param_Spec),
-                 New_Reference_To
+                 New_Occurrence_Of
                    (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
             end if;
 
@@ -3470,7 +3470,7 @@ package body Sem_Ch8 is
 
          Find_Type (Result_Definition (Spec));
          Rewrite (Result_Definition (Spec),
-           New_Reference_To
+           New_Occurrence_Of
              (Base_Type (Entity (Result_Definition (Spec))), Loc));
 
          Body_Node :=
@@ -6625,10 +6625,10 @@ package body Sem_Ch8 is
                      Make_Expanded_Name (Sloc (N),
                        Chars         => Chars (T),
                        Prefix        => New_Copy (Prefix (Prefix (N))),
-                       Selector_Name => New_Reference_To (T, Sloc (N))));
+                       Selector_Name => New_Occurrence_Of (T, Sloc (N))));
 
                else
-                  Rewrite (N, New_Reference_To (T, Sloc (N)));
+                  Rewrite (N, New_Occurrence_Of (T, Sloc (N)));
                end if;
 
                Set_Entity (N, T);
@@ -7836,8 +7836,8 @@ package body Sem_Ch8 is
                 Name =>
                   Make_Expanded_Name (Loc,
                     Chars  => Chars (System_Aux_Id),
-                    Prefix => New_Reference_To (Scope (System_Aux_Id), Loc),
-                    Selector_Name => New_Reference_To (System_Aux_Id, Loc)));
+                    Prefix => New_Occurrence_Of (Scope (System_Aux_Id), Loc),
+                    Selector_Name => New_Occurrence_Of (System_Aux_Id, Loc)));
 
             Set_Entity (Name (Withn), System_Aux_Id);
 

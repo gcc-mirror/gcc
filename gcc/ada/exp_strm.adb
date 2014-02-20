@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1171,7 +1171,7 @@ package body Exp_Strm is
                  Make_Raise_Constraint_Error (Loc,
                    Condition => Make_Op_Ne (Loc,
                                   Left_Opnd  =>
-                                    New_Reference_To
+                                    New_Occurrence_Of
                                       (Defining_Identifier (Decl), Loc),
                                   Right_Opnd =>
                                     New_Copy_Tree (Node (Discr_Elmt))),
@@ -1600,7 +1600,7 @@ package body Exp_Strm is
           Parameter_Type      =>
           Make_Access_Definition (Loc,
              Null_Exclusion_Present => True,
-             Subtype_Mark => New_Reference_To (
+             Subtype_Mark => New_Occurrence_Of (
                Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))));
 
       if Nam /= TSS_Stream_Input then
@@ -1608,7 +1608,7 @@ package body Exp_Strm is
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
              Out_Present         => (Nam = TSS_Stream_Read),
-             Parameter_Type      => New_Reference_To (Typ, Loc)));
+             Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
       end if;
 
       return Profile;
@@ -1644,7 +1644,7 @@ package body Exp_Strm is
               Parameter_Type =>
                 Make_Access_Definition (Loc,
                   Null_Exclusion_Present => True,
-                  Subtype_Mark => New_Reference_To (
+                  Subtype_Mark => New_Occurrence_Of (
                     Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc)))),
 
           Result_Definition => New_Occurrence_Of (Typ, Loc));
@@ -1688,7 +1688,7 @@ package body Exp_Strm is
               Parameter_Type =>
                 Make_Access_Definition (Loc,
                   Null_Exclusion_Present => True,
-                  Subtype_Mark => New_Reference_To (
+                  Subtype_Mark => New_Occurrence_Of (
                     Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc))),
 
             Make_Parameter_Specification (Loc,

@@ -2187,10 +2187,10 @@ package body Sem_Ch6 is
                   Make_Defining_Identifier (Loc, Name_uMaster),
                 Constant_Present => True,
                 Object_Definition =>
-                  New_Reference_To (RTE (RE_Master_Id), Loc),
+                  New_Occurrence_Of (RTE (RE_Master_Id), Loc),
                 Expression =>
                   Make_Explicit_Dereference (Loc,
-                    New_Reference_To (RTE (RE_Current_Master), Loc)));
+                    New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
 
             if Present (Declarations (N)) then
                Prepend (Decl, Declarations (N));
@@ -5588,7 +5588,7 @@ package body Sem_Ch6 is
                    Null_Exclusion_Present =>
                      Null_Exclusion_Present (Parent (Formal)),
                    Parameter_Type =>
-                     New_Reference_To (Etype (Formal), Loc),
+                     New_Occurrence_Of (Etype (Formal), Loc),
                    Expression =>
                      Copy_Separate_Tree (Expression (Parent (Formal)))));
 
@@ -5682,11 +5682,11 @@ package body Sem_Ch6 is
 
          begin
             Append_To (Actual_List,
-              New_Reference_To (Defining_Identifier (New_Obj), Loc));
+              New_Occurrence_Of (Defining_Identifier (New_Obj), Loc));
 
             Formal := First_Formal (Spec_Id);
             while Present (Formal) loop
-               Append_To (Actual_List, New_Reference_To (Formal, Loc));
+               Append_To (Actual_List, New_Occurrence_Of (Formal, Loc));
 
                --  Avoid spurious warning on unreferenced formals
 
@@ -5696,7 +5696,7 @@ package body Sem_Ch6 is
 
             Proc_Call :=
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (Proc_Id, Loc),
+                Name => New_Occurrence_Of (Proc_Id, Loc),
                 Parameter_Associations => Actual_List);
          end;
 
@@ -5720,7 +5720,7 @@ package body Sem_Ch6 is
 
                    Make_Simple_Return_Statement (Loc,
                      Expression =>
-                       New_Reference_To
+                       New_Occurrence_Of
                          (Defining_Identifier (New_Obj), Loc)))));
 
          Rewrite (Ret_Node, Blk_Stmt);
@@ -9693,13 +9693,13 @@ package body Sem_Ch6 is
            Make_Parameter_Specification (Loc,
              Defining_Identifier => A,
              Parameter_Type      =>
-               New_Reference_To (Etype (First_Formal (S)),
+               New_Occurrence_Of (Etype (First_Formal (S)),
                  Sloc (Etype (First_Formal (S))))),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => B,
              Parameter_Type      =>
-               New_Reference_To (Etype (Next_Formal (First_Formal (S))),
+               New_Occurrence_Of (Etype (Next_Formal (First_Formal (S))),
                  Sloc (Etype (Next_Formal (First_Formal (S)))))));
 
          Decl :=
@@ -9709,7 +9709,7 @@ package body Sem_Ch6 is
                  Defining_Unit_Name       => Op_Name,
                  Parameter_Specifications => Formals,
                  Result_Definition        =>
-                   New_Reference_To (Standard_Boolean, Loc)));
+                   New_Occurrence_Of (Standard_Boolean, Loc)));
 
          --  Insert inequality right after equality if it is explicit or after
          --  the derived type when implicit. These entities are created only

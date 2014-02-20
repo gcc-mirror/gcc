@@ -718,7 +718,7 @@ package body Exp_Util is
 
          --  a) Storage pool
 
-         Actuals := New_List (New_Reference_To (Pool_Id, Loc));
+         Actuals := New_List (New_Occurrence_Of (Pool_Id, Loc));
 
          if Is_Allocate then
 
@@ -741,7 +741,7 @@ package body Exp_Util is
 
             if Needs_Finalization (Desig_Typ) then
                Fin_Mas_Id  := Finalization_Master (Ptr_Typ);
-               Fin_Mas_Act := New_Reference_To (Fin_Mas_Id, Loc);
+               Fin_Mas_Act := New_Occurrence_Of (Fin_Mas_Id, Loc);
 
                --  Handle the case where the master is actually a pointer to a
                --  master. This case arises in build-in-place functions.
@@ -769,7 +769,7 @@ package body Exp_Util is
 
                Append_To (Actuals,
                  Make_Attribute_Reference (Loc,
-                   Prefix         => New_Reference_To (Fin_Addr_Id, Loc),
+                   Prefix         => New_Occurrence_Of (Fin_Addr_Id, Loc),
                    Attribute_Name => Name_Unrestricted_Access));
             else
                Append_To (Actuals, Make_Null (Loc));
@@ -780,11 +780,11 @@ package body Exp_Util is
          --  f) Storage_Size
          --  g) Alignment
 
-         Append_To (Actuals, New_Reference_To (Addr_Id, Loc));
-         Append_To (Actuals, New_Reference_To (Size_Id, Loc));
+         Append_To (Actuals, New_Occurrence_Of (Addr_Id, Loc));
+         Append_To (Actuals, New_Occurrence_Of (Size_Id, Loc));
 
          if Is_Allocate or else not Is_Class_Wide_Type (Desig_Typ) then
-            Append_To (Actuals, New_Reference_To (Alig_Id, Loc));
+            Append_To (Actuals, New_Occurrence_Of (Alig_Id, Loc));
 
          --  For deallocation of class wide types we obtain the value of
          --  alignment from the Type Specific Record of the deallocated object.
@@ -831,7 +831,7 @@ package body Exp_Util is
                  and then Is_Type (Entity (Temp))
                then
                   Flag_Expr :=
-                    New_Reference_To
+                    New_Occurrence_Of
                       (Boolean_Literals
                          (Needs_Finalization (Entity (Temp))), Loc);
 
@@ -875,21 +875,21 @@ package body Exp_Util is
                   Flag_Expr :=
                     Make_Function_Call (Loc,
                       Name                   =>
-                        New_Reference_To (RTE (RE_Needs_Finalization), Loc),
+                        New_Occurrence_Of (RTE (RE_Needs_Finalization), Loc),
                       Parameter_Associations => New_List (Param));
 
                --  Processing for generic actuals
 
                elsif Is_Generic_Actual_Type (Desig_Typ) then
                   Flag_Expr :=
-                    New_Reference_To (Boolean_Literals
+                    New_Occurrence_Of (Boolean_Literals
                       (Needs_Finalization (Base_Type (Desig_Typ))), Loc);
 
                --  The object does not require any specialized checks, it is
                --  known to be controlled.
 
                else
-                  Flag_Expr := New_Reference_To (Standard_True, Loc);
+                  Flag_Expr := New_Occurrence_Of (Standard_True, Loc);
                end if;
 
                --  Create the temporary which represents the finalization state
@@ -902,23 +902,23 @@ package body Exp_Util is
                    Defining_Identifier => Flag_Id,
                    Constant_Present    => True,
                    Object_Definition   =>
-                     New_Reference_To (Standard_Boolean, Loc),
+                     New_Occurrence_Of (Standard_Boolean, Loc),
                     Expression          => Flag_Expr));
 
-               Append_To (Actuals, New_Reference_To (Flag_Id, Loc));
+               Append_To (Actuals, New_Occurrence_Of (Flag_Id, Loc));
             end;
 
          --  The object is not controlled
 
          else
-            Append_To (Actuals, New_Reference_To (Standard_False, Loc));
+            Append_To (Actuals, New_Occurrence_Of (Standard_False, Loc));
          end if;
 
          --  i) On_Subpool
 
          if Is_Allocate then
             Append_To (Actuals,
-              New_Reference_To (Boolean_Literals (Present (Subpool)), Loc));
+              New_Occurrence_Of (Boolean_Literals (Present (Subpool)), Loc));
          end if;
 
          --  Step 2: Build a wrapper Allocate / Deallocate which internally
@@ -950,7 +950,7 @@ package body Exp_Util is
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Make_Temporary (Loc, 'P'),
                      Parameter_Type =>
-                       New_Reference_To (RTE (RE_Root_Storage_Pool), Loc)),
+                       New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc)),
 
                   --  A : [out] Address
 
@@ -958,21 +958,21 @@ package body Exp_Util is
                      Defining_Identifier => Addr_Id,
                      Out_Present         => Is_Allocate,
                      Parameter_Type      =>
-                       New_Reference_To (RTE (RE_Address), Loc)),
+                       New_Occurrence_Of (RTE (RE_Address), Loc)),
 
                   --  S : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Size_Id,
                      Parameter_Type      =>
-                       New_Reference_To (RTE (RE_Storage_Count), Loc)),
+                       New_Occurrence_Of (RTE (RE_Storage_Count), Loc)),
 
                   --  L : Storage_Count
 
                    Make_Parameter_Specification (Loc,
                      Defining_Identifier => Alig_Id,
                      Parameter_Type      =>
-                       New_Reference_To (RTE (RE_Storage_Count), Loc)))),
+                       New_Occurrence_Of (RTE (RE_Storage_Count), Loc)))),
 
              Declarations => No_List,
 
@@ -980,7 +980,7 @@ package body Exp_Util is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Procedure_Call_Statement (Loc,
-                     Name => New_Reference_To (Proc_To_Call, Loc),
+                     Name => New_Occurrence_Of (Proc_To_Call, Loc),
                      Parameter_Associations => Actuals)))));
 
          --  The newly generated Allocate / Deallocate becomes the default
@@ -1009,7 +1009,7 @@ package body Exp_Util is
       else
          return
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE), Loc));
+             Name => New_Occurrence_Of (RTE (RE), Loc));
       end if;
    end Build_Runtime_Call;
 
@@ -2097,11 +2097,11 @@ package body Exp_Util is
          begin
             Rewrite (Subtype_Indic,
               Make_Subtype_Indication (Loc,
-                Subtype_Mark => New_Reference_To (Unc_Type, Loc),
+                Subtype_Mark => New_Occurrence_Of (Unc_Type, Loc),
                 Constraint =>
                   Make_Index_Or_Discriminant_Constraint (Loc,
                     Constraints => New_List
-                      (New_Reference_To (Slice_Type, Loc)))));
+                      (New_Occurrence_Of (Slice_Type, Loc)))));
 
             --  This subtype indication may be used later for constraint checks
             --  we better make sure that if a variable was used as a bound of
@@ -2113,7 +2113,7 @@ package body Exp_Util is
       elsif Ekind (Exp_Typ) = E_String_Literal_Subtype then
          Rewrite (Subtype_Indic,
            Make_Subtype_Indication (Loc,
-             Subtype_Mark => New_Reference_To (Unc_Type, Loc),
+             Subtype_Mark => New_Occurrence_Of (Unc_Type, Loc),
              Constraint =>
                Make_Index_Or_Discriminant_Constraint (Loc,
                  Constraints => New_List (
@@ -2169,7 +2169,7 @@ package body Exp_Util is
             Insert_Action (N,
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => T,
-                Subtype_Indication  => New_Reference_To (Exp_Typ, Loc)));
+                Subtype_Indication  => New_Occurrence_Of (Exp_Typ, Loc)));
 
             --  This type is marked as an itype even though it has an explicit
             --  declaration since otherwise Is_Generic_Actual_Type can get
@@ -2180,7 +2180,7 @@ package body Exp_Util is
             Set_Associated_Node_For_Itype (T, Exp);
          end if;
 
-         Rewrite (Subtype_Indic, New_Reference_To (T, Loc));
+         Rewrite (Subtype_Indic, New_Occurrence_Of (T, Loc));
 
       --  Nothing needs to be done for private types with unknown discriminants
       --  if the underlying type is not an unconstrained composite type or it
@@ -5532,7 +5532,7 @@ package body Exp_Util is
                  Attribute_Name => Name_Size),
              Right_Opnd =>
                Make_Attribute_Reference (Loc,
-                 Prefix => New_Reference_To (Constr_Root, Loc),
+                 Prefix => New_Occurrence_Of (Constr_Root, Loc),
                  Attribute_Name => Name_Object_Size));
       else
          --  subtype rg__xx is
@@ -5552,7 +5552,7 @@ package body Exp_Util is
           Defining_Identifier => Range_Type,
           Subtype_Indication =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (RTE (RE_Storage_Offset), Loc),
+              Subtype_Mark => New_Occurrence_Of (RTE (RE_Storage_Offset), Loc),
               Constraint => Make_Range_Constraint (Loc,
                 Range_Expression =>
                   Make_Range (Loc,
@@ -5571,11 +5571,11 @@ package body Exp_Util is
           Defining_Identifier => Str_Type,
           Subtype_Indication =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (RTE (RE_Storage_Array), Loc),
+              Subtype_Mark => New_Occurrence_Of (RTE (RE_Storage_Array), Loc),
               Constraint =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints =>
-                    New_List (New_Reference_To (Range_Type, Loc))))));
+                    New_List (New_Occurrence_Of (Range_Type, Loc))))));
 
       --  type Equiv_T is record
       --    [ _parent : Tnn; ]
@@ -5602,7 +5602,7 @@ package body Exp_Util is
              Component_Definition =>
                Make_Component_Definition (Loc,
                  Aliased_Present    => False,
-                 Subtype_Indication => New_Reference_To (Constr_Root, Loc))));
+                 Subtype_Indication => New_Occurrence_Of (Constr_Root, Loc))));
       end if;
 
       Append_To (Comp_List,
@@ -5611,7 +5611,7 @@ package body Exp_Util is
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present    => False,
-              Subtype_Indication => New_Reference_To (Str_Type, Loc))));
+              Subtype_Indication => New_Occurrence_Of (Str_Type, Loc))));
 
       Append_To (List_Def,
         Make_Full_Type_Declaration (Loc,
@@ -5882,7 +5882,7 @@ package body Exp_Util is
 
          Set_Full_View (Priv_Subtyp, Full_Subtyp);
 
-         return New_Reference_To (Priv_Subtyp, Loc);
+         return New_Occurrence_Of (Priv_Subtyp, Loc);
 
       elsif Is_Array_Type (Unc_Typ) then
          for J in 1 .. Number_Dimensions (Unc_Typ) loop
@@ -5947,7 +5947,7 @@ package body Exp_Util is
             Append_To (List_Constr,
               Make_Selected_Component (Loc,
                 Prefix        => Duplicate_Subexpr_No_Checks (E),
-                Selector_Name => New_Reference_To (D, Loc)));
+                Selector_Name => New_Occurrence_Of (D, Loc)));
 
             Next_Discriminant (D);
          end loop;
@@ -5955,7 +5955,7 @@ package body Exp_Util is
 
       return
         Make_Subtype_Indication (Loc,
-          Subtype_Mark => New_Reference_To (Unc_Typ, Loc),
+          Subtype_Mark => New_Occurrence_Of (Unc_Typ, Loc),
           Constraint   =>
             Make_Index_Or_Discriminant_Constraint (Loc,
               Constraints => List_Constr));
@@ -6696,7 +6696,7 @@ package body Exp_Util is
       then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Set_Etype (Def_Id, Exp_Type);
-         Res := New_Reference_To (Def_Id, Loc);
+         Res := New_Occurrence_Of (Def_Id, Loc);
 
          --  If the expression is a packed reference, it must be reanalyzed and
          --  expanded, depending on context. This is the case for actuals where
@@ -6713,7 +6713,7 @@ package body Exp_Util is
          E :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Def_Id,
-             Object_Definition   => New_Reference_To (Exp_Type, Loc),
+             Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
              Constant_Present    => True,
              Expression          => Relocate_Node (Exp));
 
@@ -6726,13 +6726,13 @@ package body Exp_Util is
       elsif Nkind (Exp) = N_Explicit_Dereference then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
          Res :=
-           Make_Explicit_Dereference (Loc, New_Reference_To (Def_Id, Loc));
+           Make_Explicit_Dereference (Loc, New_Occurrence_Of (Def_Id, Loc));
 
          Insert_Action (Exp,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Def_Id,
              Object_Definition   =>
-               New_Reference_To (Etype (Prefix (Exp)), Loc),
+               New_Occurrence_Of (Etype (Prefix (Exp)), Loc),
              Constant_Present    => True,
              Expression          => Relocate_Node (Prefix (Exp))));
 
@@ -6767,23 +6767,23 @@ package body Exp_Util is
             --  a controlled temporary.
 
             Def_Id := Make_Temporary (Loc, 'R', Exp);
-            Res := New_Reference_To (Def_Id, Loc);
+            Res := New_Occurrence_Of (Def_Id, Loc);
 
             Insert_Action (Exp,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
+                Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
                 Name                => Relocate_Node (Exp)));
 
          else
             Def_Id := Make_Temporary (Loc, 'R', Exp);
             Set_Etype (Def_Id, Exp_Type);
-            Res := New_Reference_To (Def_Id, Loc);
+            Res := New_Occurrence_Of (Def_Id, Loc);
 
             E :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Object_Definition   => New_Reference_To (Exp_Type, Loc),
+                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
                 Constant_Present    => not Is_Variable (Exp),
                 Expression          => Relocate_Node (Exp));
 
@@ -6828,16 +6828,16 @@ package body Exp_Util is
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
                 Subtype_Mark        =>
-                  New_Reference_To (Base_Type (Etype (Prefix (Exp))), Loc),
+                  New_Occurrence_Of (Base_Type (Etype (Prefix (Exp))), Loc),
                 Name                => Relocate_Node (Prefix (Exp))));
 
          else
-            Res := New_Reference_To (Def_Id, Loc);
+            Res := New_Occurrence_Of (Def_Id, Loc);
 
             Insert_Action (Exp,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
-                Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
+                Subtype_Mark        => New_Occurrence_Of (Exp_Type, Loc),
                 Name                => Relocate_Node (Exp)));
          end if;
 
@@ -6910,7 +6910,7 @@ package body Exp_Util is
          --  and "copies" the returned object.
 
          if GNATprove_Mode then
-            Res := New_Reference_To (Def_Id, Loc);
+            Res := New_Occurrence_Of (Def_Id, Loc);
             Ref_Type := Exp_Type;
 
          --  Regular expansion utilizing an access type and 'reference
@@ -6918,7 +6918,7 @@ package body Exp_Util is
          else
             Res :=
               Make_Explicit_Dereference (Loc,
-                Prefix => New_Reference_To (Def_Id, Loc));
+                Prefix => New_Occurrence_Of (Def_Id, Loc));
 
             --  Generate:
             --    type Ann is access all <Exp_Type>;
@@ -6932,7 +6932,7 @@ package body Exp_Util is
                   Make_Access_To_Object_Definition (Loc,
                     All_Present        => True,
                     Subtype_Indication =>
-                      New_Reference_To (Exp_Type, Loc)));
+                      New_Occurrence_Of (Exp_Type, Loc)));
 
             Insert_Action (Exp, Ptr_Typ_Decl);
          end if;
@@ -6981,7 +6981,7 @@ package body Exp_Util is
          Insert_Action (Exp,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Def_Id,
-             Object_Definition   => New_Reference_To (Ref_Type, Loc),
+             Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
              Constant_Present    => True,
              Expression          => New_Exp));
       end if;
