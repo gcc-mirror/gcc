@@ -6,6 +6,7 @@ ACLOCAL_AMFLAGS = -I . -I .. -I ../config -I libltdl
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+export gcc_version
 
 SUBDIRS = $(DIRLTDL) gcj include classpath
 if TESTSUBDIR
