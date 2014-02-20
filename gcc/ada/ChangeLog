@@ -1,5 +1,35 @@
 2014-02-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Usage_Error): Remove local
+	constant Typ. Remove the specialized diagnostics for unconstrained
+	or tagged items as those are not part of the explicit input set
+	of the related subprogram and should not be flagged.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Add guard to preserve all errors.
+
+2014-02-20  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Take into account
+	switches that are recorded in ALI files: -gnateA, -gnateE,
+	-gnateF, -gnateinn, -gnateu, -gnateV and -gnateY.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Check legality
+	of an element iterator form over a formal container with an
+	Iterable aspect.
+	* exp_ch5.adb (Build_Formal_Container_Iteration): Utility
+	to create declaration and loop statements for both forms of
+	container iterators.
+	(Expand_Formal_Container_Element_Iterator): New procedure
+	to handle loops of the form  "for E of C" when C is a formal
+	container.
+	(Expand_Formal_Container_Iterator): Code cleanup.
+
+2014-02-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Add_Item_To_Name_Buffer): New routine.
 	(Analyze_Contract_Case): Remove the use of
 	"may". Replace "aspect Contract_Cases" to avoid categorization
