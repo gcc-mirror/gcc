@@ -1,3 +1,13 @@
+2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58555
+	* ipa-inline-transform.c (clone_inlined_nodes): Add freq_scale parameter
+	specifying the scaling.
+	(inline_call): Update.
+	(want_inline_recursively): Guard division by zero.
+	(recursive_inlining): Update.
+	* ipa-inline.h (clone_inlined_nodes): Update.
+
 2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
 
 	PR target/60204
