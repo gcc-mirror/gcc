@@ -1,5 +1,9 @@
 2014-02-20  Kai Tietz  <ktietz@redhat.com>
 
+	PR c++/58873
+	* parser.c (cp_parser_functional_cast): Treat NULL_TREE
+	valued type argument as error_mark_node.
+
 	PR c++/58835
 	* semantics.c (finish_fname): Handle error_mark_node.
 

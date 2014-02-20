@@ -21419,6 +21419,9 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
   tree cast;
   bool nonconst_p;
 
+  if (!type)
+    type = error_mark_node;
+
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
