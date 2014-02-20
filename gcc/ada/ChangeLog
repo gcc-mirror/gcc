@@ -1,5 +1,34 @@
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* a-crbtgk.adb, a-cihama.adb, a-coinve.adb, a-ciorse.adb, a-crbtgo.adb,
+	a-cidlli.adb, a-cimutr.adb, a-cihase.adb, a-cohama.adb, a-coorse.adb,
+	a-chtgke.adb, a-chtgop.adb, a-comutr.adb, a-ciorma.adb, a-cobove.adb,
+	a-convec.adb, a-cohase.adb, a-chtgbk.adb, a-chtgbo.adb: Minor
+	reformatting.
+
+2014-02-20  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads: Minor: Remove incorrect comment.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_Elab_Assign): Clearer warning message.
+
+2014-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-cborma.adb (Assign): When creating a node without a specified
+	element, insert an uninitialized element in the map, because
+	the instance may provide an element type with a default
+	initialization, e.g a scalar with a Default_Value aspect.
+	* a-cbhama.adb (Assign_Key): Remove useless Allocate procedure.
+	(Insert): In the version without explicit element, provide an
+	uninitialized element, as above.
+	* a-cbdlli.adb (Append): In the version without explicit element,
+	provide an uninitalized element, as above.
+	(Allocate): Remove unused version.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_elab.adb: Minor code reorganization (use Nkind_In).
 	* stringt.adb: Remove temporary pragma Warnings (Off).
 	* stringt.ads: Add pragma Elaborate_Body to ensure initialization

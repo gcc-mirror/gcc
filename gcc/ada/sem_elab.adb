@@ -1717,13 +1717,11 @@ package body Sem_Elab is
             Error_Msg_Sloc := Sloc (Ent);
 
             Error_Msg_NE
-              ("??elaboration code may access& before it is initialized",
+              ("??& can be accessed by clients before this initialization",
                N, Ent);
             Error_Msg_NE
-              ("\??suggest adding pragma Elaborate_Body to spec of &",
-               N, Scop);
-            Error_Msg_N
-              ("\??or an explicit initialization could be added #", N);
+              ("\??add Elaborate_Body to spec to ensure & is initialized",
+               N, Ent);
          end if;
 
          if not All_Errors_Mode then

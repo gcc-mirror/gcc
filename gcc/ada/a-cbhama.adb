@@ -556,15 +556,19 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       -----------------
 
       procedure Assign_Key (Node : in out Node_Type) is
+         New_Item : Element_Type;
+         pragma Warnings (Off, New_Item);
+         --  Default-initialized element (ok to reference, see below)
+
       begin
          Node.Key := Key;
 
-         --  Note that we do not also assign the element component of the node
-         --  here, because this version of Insert does not accept an element
-         --  parameter.
+         --  There is no explicit element provided, but in an instance the
+         --  element type may be a scalar with a Default_Value aspect, or
+         --  a composite type with such a scalar component, so we insert
+         --  a possibly initialized element under the given key.
 
-         --  Node.Element := New_Item;
-         --  What is this deleted code about???
+         Node.Element := New_Item;
       end Assign_Key;
 
       --------------

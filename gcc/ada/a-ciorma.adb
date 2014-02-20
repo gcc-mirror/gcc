@@ -455,6 +455,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
                             Color   => Source.Color,
                             Key     => K,
                             Element => E);
+
    exception
       when others =>
          Free_Key (K);
@@ -966,6 +967,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
       begin
          Local_Iterate (Container.Tree);
+
       exception
          when others =>
             B := B - 1;
@@ -1305,7 +1307,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          declare
             K : Key_Type renames Position.Node.Key.all;
             E : Element_Type renames Position.Node.Element.all;
-
          begin
             Process (K, E);
          exception
@@ -1683,10 +1684,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          declare
             K : Key_Type renames Position.Node.Key.all;
             E : Element_Type renames Position.Node.Element.all;
-
          begin
             Process (K, E);
-
          exception
             when others =>
                L := L - 1;

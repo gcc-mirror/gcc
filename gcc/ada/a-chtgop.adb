@@ -145,6 +145,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       L := L - 1;
 
       return Result;
+
    exception
       when others =>
          B := B - 1;
@@ -411,6 +412,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       LR := LR - 1;
 
       return Result;
+
    exception
       when others =>
          BL := BL - 1;
@@ -738,12 +740,14 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
                   pragma Assert (L > 0);
                   L := L - 1;
                end loop;
+
             exception
                when others =>
+
                   --  If there's an error computing a hash value during a
-                  --  rehash, then AI-302 says the nodes "become lost."  The
+                  --  rehash, then AI-302 says the nodes "become lost." The
                   --  issue is whether to actually deallocate these lost nodes,
-                  --  since they might be designated by extant cursors.  Here
+                  --  since they might be designated by extant cursors. Here
                   --  we decide to deallocate the nodes, since it's better to
                   --  solve real problems (storage consumption) rather than
                   --  imaginary ones (the user might, or might not, dereference

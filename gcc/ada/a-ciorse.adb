@@ -440,6 +440,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                             Right   => null,
                             Color   => Source.Color,
                             Element => Element);
+
    exception
       when others =>
          Free_Element (Element);
@@ -1908,6 +1909,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -1960,6 +1962,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 

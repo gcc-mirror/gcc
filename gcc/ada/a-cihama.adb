@@ -308,11 +308,9 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    function Copy_Node (Node : Node_Access) return Node_Access is
       K : Key_Access := new Key_Type'(Node.Key.all);
       E : Element_Access;
-
    begin
       E := new Element_Type'(Node.Element.all);
       return new Node_Type'(K, E, null);
-
    exception
       when others =>
          Free_Key (K);
@@ -603,6 +601,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       begin
          Free_Key (X.Key);
+
       exception
          when others =>
             X.Key := null;
@@ -623,7 +622,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       exception
          when others =>
             X.Element := null;
-
             Deallocate (X);
             raise;
       end;
@@ -979,10 +977,12 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
          begin
             Process (K, E);
+
          exception
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 

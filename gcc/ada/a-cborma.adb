@@ -826,20 +826,19 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       ------------
 
       procedure Assign (Node : in out Node_Type) is
+         New_Item : Element_Type;
+         pragma Warnings (Off, New_Item);
+         --  Default-initialized element (ok to reference, see below)
+
       begin
          Node.Key := Key;
 
-         --  Were this insertion operation to accept an element parameter, this
-         --  is the point where the element value would be used, to update the
-         --  element component of the new node. However, this insertion
-         --  operation is special, in the sense that it does not accept an
-         --  element parameter. Rather, this version of Insert allocates a node
-         --  (inserting it among the active nodes of the container in the
-         --  normal way, with the node's position being determined by the Key),
-         --  and passes back a cursor designating the node. It is then up to
-         --  the caller to assign a value to the node's element.
+         --  There is no explicit element provided, but in an instance the
+         --  element type may be a scalar with a Default_Value aspect, or
+         --  a composite type with such a scalar component, so we insert
+         --  a possibly initialized element under the given key.
 
-         --  Node.Element := New_Item;
+         Node.Element := New_Item;
       end Assign;
 
       --------------

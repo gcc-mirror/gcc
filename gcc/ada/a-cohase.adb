@@ -1208,7 +1208,6 @@ package body Ada.Containers.Hashed_Sets is
      return Node_Access
    is
       Node : Node_Access := new Node_Type;
-
    begin
       Element_Type'Read (Stream, Node.Element);
       return Node;
@@ -1522,6 +1521,7 @@ package body Ada.Containers.Hashed_Sets is
 
       begin
          Iterate (Left_HT);
+
       exception
          when others =>
             HT_Ops.Free_Hash_Table (Buckets);
@@ -1563,6 +1563,7 @@ package body Ada.Containers.Hashed_Sets is
 
       begin
          Iterate (Right_HT);
+
       exception
          when others =>
             HT_Ops.Free_Hash_Table (Buckets);
@@ -1718,6 +1719,7 @@ package body Ada.Containers.Hashed_Sets is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -1785,6 +1787,7 @@ package body Ada.Containers.Hashed_Sets is
 
          LL := LL - 1;
          LB := LB - 1;
+
       exception
          when others =>
             RL := RL - 1;

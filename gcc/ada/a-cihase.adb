@@ -471,6 +471,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
                begin
                   Bucket := new Node_Type'(Tgt, Bucket);
+
                exception
                   when others =>
                      Free_Element (Tgt);
@@ -485,6 +486,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          Iterate (Left.HT);
+
       exception
          when others =>
             HT_Ops.Free_Hash_Table (Buckets);
@@ -774,6 +776,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          Free_Element (X.Element);
+
       exception
          when others =>
             X.Element := null;
@@ -1021,6 +1024,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
                begin
                   Bucket := new Node_Type'(Tgt, Bucket);
+
                exception
                   when others =>
                      Free_Element (Tgt);
@@ -1035,6 +1039,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          Iterate (Left.HT);
+
       exception
          when others =>
             HT_Ops.Free_Hash_Table (Buckets);
@@ -1753,6 +1758,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       begin
          Iterate (Right_HT);
+
       exception
          when others =>
             HT_Ops.Free_Hash_Table (Buckets);
@@ -1916,6 +1922,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
          L := L - 1;
          B := B - 1;
+
       exception
          when others =>
             L := L - 1;
@@ -1991,6 +1998,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
          LL := LL - 1;
          LB := LB - 1;
+
       exception
          when others =>
             RL := RL - 1;
@@ -2426,10 +2434,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                Indx := HT_Ops.Index (HT, Position.Node);
                Process (E);
                Eq := Equivalent_Keys (K, Key (E));
+
             exception
                when others =>
                   L := L - 1;
                   B := B - 1;
+
                   raise;
             end;
 

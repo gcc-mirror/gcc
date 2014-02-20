@@ -53,6 +53,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       L := L - 1;
 
       return Result;
+
    exception
       when others =>
          B := B - 1;
@@ -84,6 +85,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       L := L - 1;
 
       return Result;
+
    exception
       when others =>
          B := B - 1;
@@ -285,6 +287,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
       declare
          B : Natural renames HT.Busy;
          L : Natural renames HT.Lock;
+
       begin
          B := B + 1;
          L := L + 1;
@@ -293,6 +296,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Keys is
 
          B := B - 1;
          L := L - 1;
+
       exception
          when others =>
             B := B - 1;

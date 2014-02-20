@@ -7381,7 +7381,7 @@ pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
 pragma Warnings (static_string_EXPRESSION [,REASON]);
 pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
-REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
+REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
 @end smallexample
 
 @noindent

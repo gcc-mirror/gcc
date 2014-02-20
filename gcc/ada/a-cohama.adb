@@ -887,7 +887,6 @@ package body Ada.Containers.Hashed_Maps is
          declare
             K : Key_Type renames Position.Node.Key;
             E : Element_Type renames Position.Node.Element;
-
          begin
             Process (K, E);
          exception
@@ -1134,10 +1133,8 @@ package body Ada.Containers.Hashed_Maps is
          declare
             K : Key_Type renames Position.Node.Key;
             E : Element_Type renames Position.Node.Element;
-
          begin
             Process (K, E);
-
          exception
             when others =>
                L := L - 1;

@@ -77,6 +77,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Ceiling;
 
@@ -136,6 +137,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Find;
 
@@ -183,6 +185,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Floor;
 
@@ -252,6 +255,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -297,6 +301,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -374,6 +379,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 
@@ -419,6 +425,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -445,6 +452,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 
@@ -483,6 +491,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -509,6 +518,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 

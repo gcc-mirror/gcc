@@ -1742,6 +1742,7 @@ package body Ada.Containers.Ordered_Sets is
          when others =>
             L := L - 1;
             B := B - 1;
+
             raise;
       end;
 
@@ -1783,6 +1784,7 @@ package body Ada.Containers.Ordered_Sets is
             when others =>
                L := L - 1;
                B := B - 1;
+
                raise;
          end;
 

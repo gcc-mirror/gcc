@@ -543,6 +543,7 @@ package body Ada.Containers.Indefinite_Vectors is
       LR := LR - 1;
 
       return Result;
+
    exception
       when others =>
          BL := BL - 1;
@@ -1280,6 +1281,7 @@ package body Ada.Containers.Indefinite_Vectors is
       when others =>
          B := B - 1;
          L := L - 1;
+
          raise;
    end Find_Index;
 
@@ -1421,6 +1423,7 @@ package body Ada.Containers.Indefinite_Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Is_Sorted;
@@ -1599,6 +1602,7 @@ package body Ada.Containers.Indefinite_Vectors is
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
       end Sort;
