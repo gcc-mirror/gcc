@@ -1,5 +1,40 @@
 2014-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* s-os_lib.ads (Rename_File): Minor commment addition.
+
+2014-02-20  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2014-02-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Exchange_Aspects): New routine.
+	* aspects.ads (Exchange_Aspects): New routine.
+	* atree.adb (Rewrite): Do not check whether the save node has
+	aspects as it never will, instead check the node about to be clobbered.
+	* einfo.adb (Write_Field25_Name): Abstract_States can appear in
+	entities of generic packages.
+	* sem_ch6.adb (Analyze_Expression_Function): Fix the parent
+	pointer of an aspect specification list after rewriting takes place.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Swap the aspect
+	specifications of the generic template and the copy used for analysis.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Swap
+	the aspect specifications of the generic template and the
+	copy used for analysis.
+	(Analyze_Package_Instantiation): Propagate the aspect specifications
+	from the generic template to the instantiation.
+	(Build_Instance_Compilation_Unit_Nodes): Propagate the aspect
+	specifications from the generic template to the instantiation.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Handle aspects
+	Abstract_State, Initializes and Initial_Condition when they
+	apply to a package instantiation.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* stringt.adb: Add call to Initialize in package initialization.
+
+2014-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* a-crbtgk.adb, a-cihama.adb, a-coinve.adb, a-ciorse.adb, a-crbtgo.adb,
 	a-cidlli.adb, a-cimutr.adb, a-cihase.adb, a-cohama.adb, a-coorse.adb,
 	a-chtgke.adb, a-chtgop.adb, a-comutr.adb, a-ciorma.adb, a-cobove.adb,

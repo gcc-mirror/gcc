@@ -3622,13 +3622,12 @@ package Einfo is
 --       in a Relative_Deadline pragma for a task type.
 
 --    Renamed_Entity (Node18)
---       Defined in exceptions, packages, subprograms and generic units. Set
+--       Defined in exceptions, packages, subprograms, and generic units. Set
 --       for entities that are defined by a renaming declaration. Denotes the
 --       renamed entity, or transitively the ultimate renamed entity if
 --       there is a chain of renaming declarations. Empty if no renaming.
 
 --    Renamed_In_Spec (Flag231)
-
 --       Defined in package entities. If a package renaming occurs within
 --       a package spec, then this flag is set on the renamed package. The
 --       purpose is to prevent a warning about unused entities in the renamed

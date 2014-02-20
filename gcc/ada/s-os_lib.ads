@@ -301,7 +301,9 @@ package System.OS_Lib is
       New_Name : String;
       Success  : out Boolean);
    --  Rename a file. Success is set True or False indicating if the rename is
-   --  successful or not.
+   --  successful or not. Note that on some Systems (notably Windows), if there
+   --  is already an existing file with the name New_Name, that is one of the
+   --  conditions that can cause failure.
 
    --  The following defines the mode for the Copy_File procedure below. Note
    --  that "time stamps and other file attributes" in the descriptions below

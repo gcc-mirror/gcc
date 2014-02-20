@@ -2008,13 +2008,22 @@ package body Sem_Ch13 is
                --  immediately.
 
                when Aspect_Abstract_State => Abstract_State : declare
-                  Decls : List_Id;
+                  Context : Node_Id := N;
+                  Decls   : List_Id;
 
                begin
-                  if Nkind_In (N, N_Generic_Package_Declaration,
-                                  N_Package_Declaration)
+                  --  When aspect Abstract_State appears on a generic package,
+                  --  it is propageted to the package instance. The context in
+                  --  this case is the instance spec.
+
+                  if Nkind (Context) = N_Package_Instantiation then
+                     Context := Instance_Spec (Context);
+                  end if;
+
+                  if Nkind_In (Context, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (N));
+                     Decls := Visible_Declarations (Specification (Context));
 
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -2025,7 +2034,7 @@ package body Sem_Ch13 is
 
                      if No (Decls) then
                         Decls := New_List;
-                        Set_Visible_Declarations (N, Decls);
+                        Set_Visible_Declarations (Context, Decls);
                      end if;
 
                      Prepend_To (Decls, Aitem);
@@ -2084,13 +2093,22 @@ package body Sem_Ch13 is
                --  it must be evaluated at the end of the said declarations.
 
                when Aspect_Initial_Condition => Initial_Condition : declare
-                  Decls : List_Id;
+                  Context : Node_Id := N;
+                  Decls   : List_Id;
 
                begin
-                  if Nkind_In (N, N_Generic_Package_Declaration,
-                                  N_Package_Declaration)
+                  --  When aspect Abstract_State appears on a generic package,
+                  --  it is propageted to the package instance. The context in
+                  --  this case is the instance spec.
+
+                  if Nkind (Context) = N_Package_Instantiation then
+                     Context := Instance_Spec (Context);
+                  end if;
+
+                  if Nkind_In (Context, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (N));
+                     Decls := Visible_Declarations (Specification (Context));
 
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -2104,7 +2122,7 @@ package body Sem_Ch13 is
 
                      if No (Decls) then
                         Decls := New_List;
-                        Set_Visible_Declarations (N, Decls);
+                        Set_Visible_Declarations (Context, Decls);
                      end if;
 
                      Prepend_To (Decls, Aitem);
@@ -2125,13 +2143,22 @@ package body Sem_Ch13 is
                --  said declarations.
 
                when Aspect_Initializes => Initializes : declare
-                  Decls : List_Id;
+                  Context : Node_Id := N;
+                  Decls   : List_Id;
 
                begin
-                  if Nkind_In (N, N_Generic_Package_Declaration,
-                                  N_Package_Declaration)
+                  --  When aspect Abstract_State appears on a generic package,
+                  --  it is propageted to the package instance. The context in
+                  --  this case is the instance spec.
+
+                  if Nkind (Context) = N_Package_Instantiation then
+                     Context := Instance_Spec (Context);
+                  end if;
+
+                  if Nkind_In (Context, N_Generic_Package_Declaration,
+                                        N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (N));
+                     Decls := Visible_Declarations (Specification (Context));
 
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
@@ -2144,7 +2171,7 @@ package body Sem_Ch13 is
 
                      if No (Decls) then
                         Decls := New_List;
-                        Set_Visible_Declarations (N, Decls);
+                        Set_Visible_Declarations (Context, Decls);
                      end if;
 
                      Prepend_To (Decls, Aitem);

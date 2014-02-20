@@ -174,6 +174,31 @@ package body Aspects is
       return True;
    end Aspects_On_Body_Or_Stub_OK;
 
+   ----------------------
+   -- Exchange_Aspects --
+   ----------------------
+
+   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id) is
+   begin
+      pragma Assert
+        (Permits_Aspect_Specifications (N1)
+           and then Permits_Aspect_Specifications (N2));
+
+      --  Perform the exchange only when both nodes have lists to be swapped
+
+      if Has_Aspects (N1) and then Has_Aspects (N2) then
+         declare
+            L1 : constant List_Id := Aspect_Specifications (N1);
+            L2 : constant List_Id := Aspect_Specifications (N2);
+         begin
+            Set_Parent (L1, N2);
+            Set_Parent (L2, N1);
+            Aspect_Specifications_Hash_Table.Set (N1, L2);
+            Aspect_Specifications_Hash_Table.Set (N2, L1);
+         end;
+      end if;
+   end Exchange_Aspects;
+
    -----------------
    -- Find_Aspect --
    -----------------
