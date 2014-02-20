@@ -1,3 +1,9 @@
+2014-02-20  Richard Henderson <rth@redhat.com>
+
+	PR c++/60272
+	* cas_n.c (libat_compare_exchange): Conditionalize on failure
+	the store back to EPTR.
+
 2014-01-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Update copyright years
