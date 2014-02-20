@@ -1121,15 +1121,16 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
-      New_Item : Element_Type;  --  Default initialized.
-      pragma Warnings (Off, New_Item);
+      New_Item : Element_Type;
+      pragma Unmodified (New_Item);
+      --  OK to reference, see below
 
    begin
-      --  There is no explicit element provided, but in an instance the
-      --  element type may be a scalar with a Default_Value aspect, or a
-      --  composite type with such a scalar component, so  we insert the
-      --  specified number of possibly initialized elements at the given
-      --  position.
+      --  There is no explicit element provided, but in an instance the element
+      --  type may be a scalar with a Default_Value aspect, or a composite
+      --  type with such a scalar component, or components with default
+      --  initialization, so insert the specified number of possibly
+      --  initialized elements at the given position.
 
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;

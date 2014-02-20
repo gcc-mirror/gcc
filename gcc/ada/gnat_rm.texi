@@ -8740,6 +8740,10 @@ alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
 
+If the alignment of the above record is specified to be 1, then the
+object size will be 40 (5 bytes). This is true by default, and also
+an object size of 40 can be explicitly specified in this case.
+
 A consequence of this capability is that different object sizes can be
 given to subtypes that would otherwise be considered in Ada to be
 statically matching.  But it makes no sense to consider such subtypes

@@ -371,14 +371,6 @@ package Stand is
    --  candidate interpretations has been examined. If after examining all of
    --  them the type is still Any_Type, the node has no possible interpretation
    --  and an error can be emitted (and Any_Type will be propagated upwards).
-   --
-   --  There is one situation in which Any_Type is used to legitimately
-   --  represent a case where the type is not known pre-resolution, and that
-   --  is for the N_Raise_Expression node. In this case, the Etype being set to
-   --  Any_Type is normal and does not represent an error. In particular, it is
-   --  compatible with the type of any constituent of the enclosing expression,
-   --  if any. The type is eventually replaced with the type of the context,
-   --  which plays no role in the resolution of the Raise_Expression.
 
    Any_Access : Entity_Id;
    --  Used to resolve the overloaded literal NULL
@@ -426,6 +418,11 @@ package Stand is
    --  It corresponds to array (Positive range <>) of character where the
    --  component type is compatible with any character type, not just
    --  Standard_Character.
+
+   Raise_Type : Entity_Id;
+   --  The type Raise_Type denotes the type of a Raise_Expression. It is
+   --  compatible with all other types, and must eventually resolve to a
+   --  concrete type that is imposed by the context.
 
    Universal_Integer : Entity_Id;
    --  Entity for universal integer type. The bounds of this type correspond

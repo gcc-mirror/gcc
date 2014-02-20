@@ -2060,17 +2060,8 @@ package body Sem_Res is
          Analyze_Dimension (N);
          return;
 
-      --  A Raise_Expression takes its type from context. The Etype was set
-      --  to Any_Type, reflecting the fact that the expression itself does
-      --  not specify any possible interpretation. So we set the type to the
-      --  resolution type here and now. We need to do this before Resolve sees
-      --  the Any_Type value.
-
-      elsif Nkind (N) = N_Raise_Expression then
-         Set_Etype (N, Typ);
-
-      --  Any other case of Any_Type as the Etype value means that we had
-      --  a previous error.
+      --  Any case of Any_Type as the Etype value means that we had a
+      --  previous error.
 
       elsif Etype (N) = Any_Type then
          Debug_A_Exit ("resolving  ", N, "  (done, Etype = Any_Type)");
@@ -7405,6 +7396,16 @@ package body Sem_Res is
       Check_Fully_Declared_Prefix (Typ, P);
       P_Typ := Empty;
 
+      --  A useful optimization:  check whether the dereference denotes an
+      --  element of a container, and if so rewrite it as a call to the
+      --  corresponding Element function.
+      --  Disabled for now, on advice of ARG. A more restricted form of the
+      --  predicate might be acceptable ???
+
+      --  if Is_Container_Element (N) then
+      --     return;
+      --  end if;
+
       if Is_Overloaded (P) then
 
          --  Use the context type to select the prefix that has the correct
@@ -8816,7 +8817,12 @@ package body Sem_Res is
 
    procedure Resolve_Raise_Expression (N : Node_Id; Typ : Entity_Id) is
    begin
-      Set_Etype (N, Typ);
+      if Typ = Raise_Type then
+         Error_Msg_N ("cannot find unique type for raise expression", N);
+         Set_Etype (N, Any_Type);
+      else
+         Set_Etype (N, Typ);
+      end if;
    end Resolve_Raise_Expression;
 
    -------------------
