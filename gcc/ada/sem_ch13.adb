@@ -5610,7 +5610,7 @@ package body Sem_Ch13 is
             if Operating_Mode = Check_Semantics and then ASIS_Mode then
                AtM_Nod :=
                  Make_Attribute_Definition_Clause (Loc,
-                   Name       => New_Reference_To (Base_Type (Rectype), Loc),
+                   Name       => New_Occurrence_Of (Base_Type (Rectype), Loc),
                    Chars      => Name_Alignment,
                    Expression => Relocate_Node (Expression (M)));
 
@@ -6861,14 +6861,14 @@ package body Sem_Ch13 is
                        Defining_Identifier => BTemp,
                        Constant_Present    => True,
                          Object_Definition =>
-                           New_Reference_To (Standard_Boolean, Loc),
+                           New_Occurrence_Of (Standard_Boolean, Loc),
                          Expression        => Expr_M)),
 
                    Handled_Statement_Sequence =>
                      Make_Handled_Sequence_Of_Statements (Loc,
                        Statements => New_List (
                          Make_Simple_Return_Statement (Loc,
-                           Expression => New_Reference_To (BTemp, Loc)))));
+                           Expression => New_Occurrence_Of (BTemp, Loc)))));
 
                --  Insert declaration before freeze node and body after
 
@@ -10266,7 +10266,7 @@ package body Sem_Ch13 is
          Out_P   : constant Boolean := (Nam = TSS_Stream_Read);
          Formals : List_Id;
          Spec    : Node_Id;
-         T_Ref   : constant Node_Id := New_Reference_To (Etyp, Loc);
+         T_Ref   : constant Node_Id := New_Occurrence_Of (Etyp, Loc);
 
       begin
          Subp_Id := Make_Defining_Identifier (Loc, Sname);
@@ -10280,7 +10280,7 @@ package body Sem_Ch13 is
                         Parameter_Type =>
                           Make_Access_Definition (Loc,
                             Subtype_Mark =>
-                              New_Reference_To (
+                              New_Occurrence_Of (
                                 Designated_Type (Etype (F)), Loc))));
 
          if Nam = TSS_Stream_Input then
@@ -10350,7 +10350,7 @@ package body Sem_Ch13 is
       Subp_Decl :=
         Make_Subprogram_Renaming_Declaration (Loc,
           Specification => Build_Spec,
-          Name => New_Reference_To (Subp, Loc));
+          Name => New_Occurrence_Of (Subp, Loc));
 
       if Defer_Declaration then
          Set_TSS (Base_Type (Ent), Subp_Id);

@@ -458,7 +458,7 @@ package body Exp_Imgv is
       elsif Is_Floating_Point_Type (Rtyp) then
          Append_To (Arg_List,
            Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Ptyp, Loc),
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Attribute_Name => Name_Digits));
 
       --  For ordinary fixed-point types, append Aft parameter
@@ -466,7 +466,7 @@ package body Exp_Imgv is
       elsif Is_Ordinary_Fixed_Point_Type (Rtyp) then
          Append_To (Arg_List,
            Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Ptyp, Loc),
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Attribute_Name => Name_Aft));
 
          if Has_Decimal_Small (Rtyp) then
@@ -479,7 +479,7 @@ package body Exp_Imgv is
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
          Append_To (Arg_List,
            Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Ptyp, Loc),
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Attribute_Name => Name_Scale));
 
          Set_Conversion_OK (First (Arg_List));
@@ -489,14 +489,15 @@ package body Exp_Imgv is
 
       elsif Rtyp = Standard_Wide_Character then
          Append_To (Arg_List,
-           New_Reference_To (Boolean_Literals (Ada_Version >= Ada_2005), Loc));
+           New_Occurrence_Of
+             (Boolean_Literals (Ada_Version >= Ada_2005), Loc));
       end if;
 
       --  Now append the procedure call to the insert list
 
       Append_To (Ins_List,
          Make_Procedure_Call_Statement (Loc,
-          Name                   => New_Reference_To (Proc_Ent, Loc),
+          Name                   => New_Occurrence_Of (Proc_Ent, Loc),
           Parameter_Associations => Arg_List));
 
       --  Insert declarations of Snn, Pnn, and the procedure call. We suppress
@@ -643,13 +644,13 @@ package body Exp_Imgv is
 
          Append_To (Args,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Reference_To (Typ, Loc),
+             Prefix => New_Occurrence_Of (Typ, Loc),
              Attribute_Name => Name_Scale));
 
          Rewrite (N,
            OK_Convert_To (Btyp,
              Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (Vid), Loc),
+               Name => New_Occurrence_Of (RTE (Vid), Loc),
                Parameter_Associations => Args)));
 
          Set_Etype (N, Btyp);
@@ -672,7 +673,7 @@ package body Exp_Imgv is
          then
             Rewrite (N,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Btyp, Loc),
+                Prefix => New_Occurrence_Of (Btyp, Loc),
                 Attribute_Name => Name_Val,
                 Expressions => New_List (
                   Make_Attribute_Reference (Loc,
@@ -718,12 +719,12 @@ package body Exp_Imgv is
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Typ, Loc),
+                Prefix => New_Occurrence_Of (Typ, Loc),
                 Attribute_Name => Name_Val,
                 Expressions => New_List (
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Reference_To (RTE (Func), Loc),
+                      New_Occurrence_Of (RTE (Func), Loc),
                     Parameter_Associations => Args))));
 
             Analyze_And_Resolve (N, Btyp);
@@ -758,7 +759,7 @@ package body Exp_Imgv is
          Rewrite (N,
            Convert_To (Btyp,
              Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (Vid), Loc),
+               Name => New_Occurrence_Of (RTE (Vid), Loc),
                Parameter_Associations => Args)));
       end if;
 
@@ -826,15 +827,15 @@ package body Exp_Imgv is
 
          Make_Procedure_Call_Statement (Loc,
            Name =>
-             New_Reference_To (RTE (RE_String_To_Wide_String), Loc),
+             New_Occurrence_Of (RTE (RE_String_To_Wide_String), Loc),
 
            Parameter_Associations => New_List (
              Make_Attribute_Reference (Loc,
                Prefix         => Prefix (N),
                Attribute_Name => Name_Image,
                Expressions    => Expressions (N)),
-             New_Reference_To (Rnn, Loc),
-             New_Reference_To (Lnn, Loc),
+             New_Occurrence_Of (Rnn, Loc),
+             New_Occurrence_Of (Lnn, Loc),
              Make_Integer_Literal (Loc,
                Intval => Int (Wide_Character_Encoding_Method))))),
 
@@ -918,15 +919,15 @@ package body Exp_Imgv is
 
          Make_Procedure_Call_Statement (Loc,
            Name =>
-             New_Reference_To (RTE (RE_String_To_Wide_Wide_String), Loc),
+             New_Occurrence_Of (RTE (RE_String_To_Wide_Wide_String), Loc),
 
            Parameter_Associations => New_List (
              Make_Attribute_Reference (Loc,
                Prefix         => Prefix (N),
                Attribute_Name => Name_Image,
                Expressions    => Expressions (N)),
-             New_Reference_To (Rnn, Loc),
-             New_Reference_To (Lnn, Loc),
+             New_Occurrence_Of (Rnn, Loc),
+             New_Occurrence_Of (Lnn, Loc),
              Make_Integer_Literal (Loc,
                Intval => Int (Wide_Character_Encoding_Method))))),
 
@@ -1141,18 +1142,18 @@ package body Exp_Imgv is
                Make_Op_Gt (Loc,
                  Left_Opnd =>
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Reference_To (Ptyp, Loc),
+                     Prefix => New_Occurrence_Of (Ptyp, Loc),
                      Attribute_Name => Name_First),
 
                  Right_Opnd =>
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Reference_To (Ptyp, Loc),
+                     Prefix => New_Occurrence_Of (Ptyp, Loc),
                      Attribute_Name => Name_Last)),
 
                Make_Integer_Literal (Loc, 0),
 
                Make_Attribute_Reference (Loc,
-                 Prefix => New_Reference_To (Base_Type (Ptyp), Loc),
+                 Prefix => New_Occurrence_Of (Base_Type (Ptyp), Loc),
                  Attribute_Name => Name_Width))));
 
          Analyze_And_Resolve (N, Typ);
@@ -1311,27 +1312,27 @@ package body Exp_Imgv is
                Attribute_Name => Name_Address),
 
              Make_Attribute_Reference (Loc,
-               Prefix => New_Reference_To (Ptyp, Loc),
+               Prefix => New_Occurrence_Of (Ptyp, Loc),
                Attribute_Name => Name_Pos,
 
                Expressions => New_List (
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (Ptyp, Loc),
+                   Prefix => New_Occurrence_Of (Ptyp, Loc),
                    Attribute_Name => Name_First))),
 
              Make_Attribute_Reference (Loc,
-               Prefix => New_Reference_To (Ptyp, Loc),
+               Prefix => New_Occurrence_Of (Ptyp, Loc),
                Attribute_Name => Name_Pos,
 
                Expressions => New_List (
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (Ptyp, Loc),
+                   Prefix => New_Occurrence_Of (Ptyp, Loc),
                    Attribute_Name => Name_Last))));
 
          Rewrite (N,
            Convert_To (Typ,
              Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (XX), Loc),
+               Name => New_Occurrence_Of (RTE (XX), Loc),
                Parameter_Associations => Arglist)));
 
          Analyze_And_Resolve (N, Typ);
@@ -1343,18 +1344,18 @@ package body Exp_Imgv is
       Arglist := New_List (
         Convert_To (YY,
           Make_Attribute_Reference (Loc,
-            Prefix => New_Reference_To (Ptyp, Loc),
+            Prefix => New_Occurrence_Of (Ptyp, Loc),
             Attribute_Name => Name_First)),
 
         Convert_To (YY,
           Make_Attribute_Reference (Loc,
-            Prefix => New_Reference_To (Ptyp, Loc),
+            Prefix => New_Occurrence_Of (Ptyp, Loc),
             Attribute_Name => Name_Last)));
 
       Rewrite (N,
         Convert_To (Typ,
           Make_Function_Call (Loc,
-            Name => New_Reference_To (RTE (XX), Loc),
+            Name => New_Occurrence_Of (RTE (XX), Loc),
             Parameter_Associations => Arglist)));
 
       Analyze_And_Resolve (N, Typ);

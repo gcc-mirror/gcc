@@ -1236,12 +1236,12 @@ package body Exp_Aggr is
                         Make_Selected_Component (Loc,
                           Prefix        =>  New_Copy_Tree (Indexed_Comp),
                           Selector_Name =>
-                            New_Reference_To
+                            New_Occurrence_Of
                               (First_Tag_Component (Full_Typ), Loc)),
 
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To
+                          New_Occurrence_Of
                             (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
                              Loc)));
 
@@ -1409,7 +1409,7 @@ package body Exp_Aggr is
 
          --  Construct the statements to execute in the loop body
 
-         L_Body := Gen_Assign (New_Reference_To (L_J, Loc), Expr);
+         L_Body := Gen_Assign (New_Occurrence_Of (L_J, Loc), Expr);
 
          --  Construct the final loop
 
@@ -1496,7 +1496,7 @@ package body Exp_Aggr is
              (Loc,
               Condition => Make_Op_Lt
                              (Loc,
-                              Left_Opnd  => New_Reference_To (W_J, Loc),
+                              Left_Opnd  => New_Occurrence_Of (W_J, Loc),
                               Right_Opnd => New_Copy_Tree (H)));
 
          --  Construct the statements to execute in the loop body
@@ -1506,17 +1506,17 @@ package body Exp_Aggr is
              (Loc,
               Prefix         => Index_Base_Name,
               Attribute_Name => Name_Succ,
-              Expressions    => New_List (New_Reference_To (W_J, Loc)));
+              Expressions    => New_List (New_Occurrence_Of (W_J, Loc)));
 
          W_Increment  :=
            Make_OK_Assignment_Statement
              (Loc,
-              Name       => New_Reference_To (W_J, Loc),
+              Name       => New_Occurrence_Of (W_J, Loc),
               Expression => W_Index_Succ);
 
          Append_To (W_Body, W_Increment);
          Append_List_To (W_Body,
-           Gen_Assign (New_Reference_To (W_J, Loc), Expr));
+           Gen_Assign (New_Occurrence_Of (W_J, Loc), Expr));
 
          --  Construct the final loop
 
@@ -1535,7 +1535,7 @@ package body Exp_Aggr is
 
       function Index_Base_Name return Node_Id is
       begin
-         return New_Reference_To (Index_Base, Sloc (N));
+         return New_Occurrence_Of (Index_Base, Sloc (N));
       end Index_Base_Name;
 
       ------------------------------------
@@ -2198,7 +2198,7 @@ package body Exp_Aggr is
             Append_To (L,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Reference_To
+                  New_Occurrence_Of
                     (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
          end if;
@@ -2490,12 +2490,12 @@ package body Exp_Aggr is
                         Make_Selected_Component (Loc,
                           Prefix => New_Copy_Tree (Target),
                           Selector_Name =>
-                            New_Reference_To
+                            New_Occurrence_Of
                               (First_Tag_Component (Base_Type (Typ)), Loc)),
 
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To
+                          New_Occurrence_Of
                             (Node (First_Elmt
                                (Access_Disp_Table (Base_Type (Typ)))),
                              Loc)));
@@ -2628,7 +2628,7 @@ package body Exp_Aggr is
                if Present (CPP_Init_Proc (T)) then
                   Append_To (L,
                     Make_Procedure_Call_Statement (Loc,
-                      New_Reference_To (CPP_Init_Proc (T), Loc)));
+                      New_Occurrence_Of (CPP_Init_Proc (T), Loc)));
                end if;
             end Invoke_IC_Proc;
 
@@ -2641,7 +2641,7 @@ package body Exp_Aggr is
                Append_To (L,
                  Make_Procedure_Call_Statement (Loc,
                    Name =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Base_Init_Proc (CPP_Parent), Loc),
                    Parameter_Associations => New_List (
                      Unchecked_Convert_To (CPP_Parent,
@@ -2798,7 +2798,7 @@ package body Exp_Aggr is
                          Subtype_Indication  =>
                            Make_Subtype_Indication (Loc,
                              Subtype_Mark =>
-                               New_Reference_To (Etype (Comp_Type), Loc),
+                               New_Occurrence_Of (Etype (Comp_Type), Loc),
                              Constraint =>
                                Make_Index_Or_Discriminant_Constraint
                                  (Loc,
@@ -2814,7 +2814,7 @@ package body Exp_Aggr is
                      TmpD : constant Node_Id :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => TmpE,
-                         Object_Definition   => New_Reference_To (SubE, Loc));
+                         Object_Definition   => New_Occurrence_Of (SubE, Loc));
 
                   begin
                      Set_No_Initialization (TmpD);
@@ -2825,14 +2825,14 @@ package body Exp_Aggr is
 
                      Append_List_To (L,
                        Late_Expansion (Expr_Q, Comp_Type,
-                         New_Reference_To (TmpE, Loc)));
+                         New_Occurrence_Of (TmpE, Loc)));
 
                      --  Slide
 
                      Append_To (L,
                        Make_Assignment_Statement (Loc,
                          Name       => New_Copy_Tree (Comp_Expr),
-                         Expression => New_Reference_To (TmpE, Loc)));
+                         Expression => New_Occurrence_Of (TmpE, Loc)));
                   end;
 
                --  Normal case (sliding not required)
@@ -2872,12 +2872,12 @@ package body Exp_Aggr is
                         Make_Selected_Component (Loc,
                           Prefix =>  New_Copy_Tree (Comp_Expr),
                           Selector_Name =>
-                            New_Reference_To
+                            New_Occurrence_Of
                               (First_Tag_Component (Comp_Type), Loc)),
 
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To
+                          New_Occurrence_Of
                             (Node (First_Elmt (Access_Disp_Table (Comp_Type))),
                              Loc)));
 
@@ -2990,12 +2990,12 @@ package body Exp_Aggr is
                Make_Selected_Component (Loc,
                  Prefix => New_Copy_Tree (Target),
                  Selector_Name =>
-                   New_Reference_To
+                   New_Occurrence_Of
                      (First_Tag_Component (Base_Type (Typ)), Loc)),
 
              Expression =>
                Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Reference_To
+                 New_Occurrence_Of
                    (Node (First_Elmt (Access_Disp_Table (Base_Type (Typ)))),
                     Loc)));
 
@@ -3073,7 +3073,7 @@ package body Exp_Aggr is
 
       Occ  : constant Node_Id :=
         Unchecked_Convert_To (Typ,
-          Make_Explicit_Dereference (Loc, New_Reference_To (Temp, Loc)));
+          Make_Explicit_Dereference (Loc, New_Occurrence_Of (Temp, Loc)));
 
    begin
       if Is_Array_Type (Typ) then
@@ -4655,7 +4655,7 @@ package body Exp_Aggr is
                   Make_Op_Add (Loc,
                     Left_Opnd  =>
                       Make_Attribute_Reference (Loc,
-                        Prefix         => New_Reference_To (Ind_Typ, Loc),
+                        Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
                         Attribute_Name => Name_Pos,
                         Expressions    =>
                           New_List
@@ -4664,7 +4664,7 @@ package body Exp_Aggr is
 
                 Right_Opnd =>
                   Make_Attribute_Reference (Loc,
-                    Prefix         => New_Reference_To (Ind_Typ, Loc),
+                    Prefix         => New_Occurrence_Of (Ind_Typ, Loc),
                     Attribute_Name => Name_Pos,
                     Expressions    => New_List (
                       Duplicate_Subexpr_Move_Checks (Aggr_Hi))));
@@ -5214,7 +5214,7 @@ package body Exp_Aggr is
 
       begin
          if Nkind (Tmp) = N_Defining_Identifier then
-            Target := New_Reference_To (Tmp, Loc);
+            Target := New_Occurrence_Of (Tmp, Loc);
 
          else
 
@@ -6579,7 +6579,7 @@ package body Exp_Aggr is
          --   Call init proc to set discriminants.
          --   There should eventually be a special procedure for this ???
 
-         Ref := New_Reference_To (Defining_Identifier (N), Loc);
+         Ref := New_Occurrence_Of (Defining_Identifier (N), Loc);
          Insert_Actions_After (N,
            Build_Initialization_Call (Sloc (N), Ref, Typ));
       end if;

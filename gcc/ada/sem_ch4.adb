@@ -6644,7 +6644,7 @@ package body Sem_Ch4 is
          --  can never assign to its prefix). The Comes_From_Source attribute
          --  needs to be propagated for accurate warnings.
 
-         Ref := New_Reference_To (E, Sloc (P));
+         Ref := New_Occurrence_Of (E, Sloc (P));
          Set_Comes_From_Source (Ref, Comes_From_Source (P));
          Generate_Reference (E, Ref);
       end if;
@@ -7728,7 +7728,7 @@ package body Sem_Ch4 is
                   Success := False;
 
                   if No (Matching_Op) then
-                     Hom_Ref := New_Reference_To (Hom, Sloc (Subprog));
+                     Hom_Ref := New_Occurrence_Of (Hom, Sloc (Subprog));
                      Set_Etype (Call_Node, Any_Type);
                      Set_Parent (Call_Node, Parent (Node_To_Replace));
 
@@ -8188,7 +8188,7 @@ package body Sem_Ch4 is
                Set_Is_Overloaded (Call_Node, False);
 
                if No (Matching_Op) then
-                  Prim_Op_Ref := New_Reference_To (Prim_Op, Sloc (Subprog));
+                  Prim_Op_Ref := New_Occurrence_Of (Prim_Op, Sloc (Subprog));
                   Candidate := Prim_Op;
 
                   Set_Parent (Call_Node, Parent (Node_To_Replace));

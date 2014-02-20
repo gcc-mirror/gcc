@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package body Exp_Sel is
    begin
       return
         Make_Block_Statement (Loc,
-          Identifier   => New_Reference_To (Abr_Blk_Ent, Loc),
+          Identifier   => New_Occurrence_Of (Abr_Blk_Ent, Loc),
 
           Declarations => No_List,
 
@@ -84,13 +84,13 @@ package body Exp_Sel is
 
          Stmt :=
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc),
+             Name => New_Occurrence_Of (RTE (RE_Abort_Undefer), Loc),
              Parameter_Associations => No_List);
       end if;
 
       return Make_Implicit_Exception_Handler (Loc,
         Exception_Choices =>
-          New_List (New_Reference_To (Stand.Abort_Signal, Loc)),
+          New_List (New_Occurrence_Of (Stand.Abort_Signal, Loc)),
         Statements        => New_List (Stmt));
    end Build_Abort_Block_Handler;
 
@@ -107,8 +107,8 @@ package body Exp_Sel is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => B,
-          Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
-          Expression          => New_Reference_To (Standard_False, Loc)));
+          Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+          Expression          => New_Occurrence_Of (Standard_False, Loc)));
       return B;
    end Build_B;
 
@@ -125,7 +125,8 @@ package body Exp_Sel is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => C,
-          Object_Definition => New_Reference_To (RTE (RE_Prim_Op_Kind), Loc)));
+          Object_Definition   =>
+            New_Occurrence_Of (RTE (RE_Prim_Op_Kind), Loc)));
       return C;
    end Build_C;
 
@@ -142,7 +143,7 @@ package body Exp_Sel is
       Cleanup_Block : constant Node_Id :=
                         Make_Block_Statement (Loc,
                           Identifier                 =>
-                            New_Reference_To (Blk_Ent, Loc),
+                            New_Occurrence_Of (Blk_Ent, Loc),
                           Declarations               => No_List,
                           Handled_Statement_Sequence =>
                             Make_Handled_Sequence_Of_Statements (Loc,
@@ -181,10 +182,10 @@ package body Exp_Sel is
         Make_Object_Declaration (Loc,
           Defining_Identifier => K,
           Object_Definition   =>
-            New_Reference_To (RTE (RE_Tagged_Kind), Loc),
+            New_Occurrence_Of (RTE (RE_Tagged_Kind), Loc),
           Expression          =>
             Make_Function_Call (Loc,
-              Name => New_Reference_To (RTE (RE_Get_Tagged_Kind), Loc),
+              Name => New_Occurrence_Of (RTE (RE_Get_Tagged_Kind), Loc),
               Parameter_Associations => New_List (Tag_Node))));
       return K;
    end Build_K;
@@ -202,7 +203,7 @@ package body Exp_Sel is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => S,
-          Object_Definition   => New_Reference_To (Standard_Integer, Loc)));
+          Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc)));
       return S;
    end Build_S;
 
@@ -222,10 +223,10 @@ package body Exp_Sel is
       if Tagged_Type_Expansion then
          return
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (S, Loc),
+             Name       => New_Occurrence_Of (S, Loc),
              Expression =>
                Make_Function_Call (Loc,
-                 Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                 Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
                  Parameter_Associations => New_List (
                    Unchecked_Convert_To (RTE (RE_Tag), Obj),
                    Make_Integer_Literal (Loc, DT_Position (Call_Ent)))));
@@ -235,10 +236,10 @@ package body Exp_Sel is
       else
          return
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (S, Loc),
+             Name       => New_Occurrence_Of (S, Loc),
              Expression =>
                Make_Function_Call (Loc,
-                 Name => New_Reference_To (RTE (RE_Get_Offset_Index), Loc),
+                 Name => New_Occurrence_Of (RTE (RE_Get_Offset_Index), Loc),
 
                  Parameter_Associations => New_List (
 
@@ -251,7 +252,7 @@ package body Exp_Sel is
                      --  Iface_Typ
 
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Reference_To (Typ, Loc),
+                     Prefix => New_Occurrence_Of (Typ, Loc),
                      Attribute_Name => Name_Tag),
 
                      --  Position

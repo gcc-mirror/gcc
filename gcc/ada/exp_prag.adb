@@ -319,17 +319,17 @@ package body Exp_Prag is
            Make_Object_Declaration (Loc,
              Defining_Identifier => New_Msg,
              Constant_Present    => True,
-             Object_Definition   => New_Reference_To (Standard_String, Loc),
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
              Expression          =>
                Make_If_Expression (Loc,
                  Expressions => New_List (
-                   New_Reference_To (Flag, Loc),
+                   New_Occurrence_Of (Flag, Loc),
 
                    Make_Op_Concat (Loc,
-                     Left_Opnd  => New_Reference_To (Msg, Loc),
+                     Left_Opnd  => New_Occurrence_Of (Msg, Loc),
                      Right_Opnd => Make_String_Literal (Loc, End_String)),
 
-                   New_Reference_To (Msg, Loc)))));
+                   New_Occurrence_Of (Msg, Loc)))));
 
          Msg := New_Msg;
       end Case_Guard_Error;
@@ -352,7 +352,7 @@ package body Exp_Prag is
 
          Cond :=
            Make_And_Then (Loc,
-             Left_Opnd  => New_Reference_To (Flag, Loc),
+             Left_Opnd  => New_Occurrence_Of (Flag, Loc),
              Right_Opnd =>
                Make_Op_Not (Loc,
                  Right_Opnd => Relocate_Node (Conseq)));
@@ -368,7 +368,7 @@ package body Exp_Prag is
          Error :=
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
-               New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+               New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
              Parameter_Associations => New_List (
                Make_String_Literal (Loc, End_String)));
 
@@ -399,8 +399,8 @@ package body Exp_Prag is
          return
            Make_Object_Declaration (Loc,
              Defining_Identifier => Id,
-             Object_Definition   => New_Reference_To (Standard_Boolean, Loc),
-             Expression          => New_Reference_To (Standard_False, Loc));
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_False, Loc));
       end Declaration_Of;
 
       -------------------------------
@@ -444,7 +444,7 @@ package body Exp_Prag is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
                    Object_Definition   =>
-                     New_Reference_To (Etype (Pref), Loc));
+                     New_Occurrence_Of (Etype (Pref), Loc));
                Set_No_Initialization (Decl);
 
                Append_To (Decls, Decl);
@@ -458,7 +458,7 @@ package body Exp_Prag is
 
                Append_To (Eval_Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name       => New_Reference_To (Temp, Loc),
+                   Name       => New_Occurrence_Of (Temp, Loc),
                    Expression => Pref));
 
                --  Ensure that the prefix is valid
@@ -470,7 +470,7 @@ package body Exp_Prag is
                --  Replace the original attribute 'Old by a reference to the
                --  generated temporary.
 
-               Rewrite (N, New_Reference_To (Temp, Loc));
+               Rewrite (N, New_Occurrence_Of (Temp, Loc));
             end if;
 
             return OK;
@@ -497,7 +497,7 @@ package body Exp_Prag is
          if No (Evals) then
             Evals :=
               Make_Implicit_If_Statement (CCs,
-                Condition       => New_Reference_To (Flag, Loc),
+                Condition       => New_Occurrence_Of (Flag, Loc),
                 Then_Statements => Eval_Stmts);
 
          --  Otherwise generate:
@@ -512,7 +512,7 @@ package body Exp_Prag is
 
             Append_To (Elsif_Parts (Evals),
               Make_Elsif_Part (Loc,
-                Condition       => New_Reference_To (Flag, Loc),
+                Condition       => New_Occurrence_Of (Flag, Loc),
                 Then_Statements => Eval_Stmts));
          end if;
       end Expand_Old_In_Consequence;
@@ -525,10 +525,10 @@ package body Exp_Prag is
       begin
          return
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Id, Loc),
+             Name       => New_Occurrence_Of (Id, Loc),
              Expression =>
                Make_Op_Add (Loc,
-                 Left_Opnd  => New_Reference_To (Id, Loc),
+                 Left_Opnd  => New_Occurrence_Of (Id, Loc),
                  Right_Opnd => Make_Integer_Literal (Loc, 1)));
       end Increment;
 
@@ -540,8 +540,8 @@ package body Exp_Prag is
       begin
          return
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Id, Loc),
-             Expression => New_Reference_To (Standard_True, Loc));
+             Name       => New_Occurrence_Of (Id, Loc),
+             Expression => New_Occurrence_Of (Standard_True, Loc));
       end Set;
 
       --  Local variables
@@ -590,7 +590,7 @@ package body Exp_Prag is
       Prepend_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Count,
-          Object_Definition   => New_Reference_To (Standard_Natural, Loc),
+          Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc),
           Expression          => Make_Integer_Literal (Loc, 0)));
 
       --  Create the base error message for multiple overlapping case guards
@@ -609,7 +609,7 @@ package body Exp_Prag is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Msg_Str,
              Constant_Present    => True,
-             Object_Definition   => New_Reference_To (Standard_String, Loc),
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
              Expression          => Make_String_Literal (Loc, End_String)));
       end if;
 
@@ -726,7 +726,7 @@ package body Exp_Prag is
          CG_Stmts := New_List (
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
-               New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+               New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
              Parameter_Associations => New_List (
                Make_String_Literal (Loc, End_String))));
       end if;
@@ -735,7 +735,7 @@ package body Exp_Prag is
         Make_Implicit_If_Statement (CCs,
           Condition       =>
             Make_Op_Eq (Loc,
-              Left_Opnd  => New_Reference_To (Count, Loc),
+              Left_Opnd  => New_Occurrence_Of (Count, Loc),
               Right_Opnd => Make_Integer_Literal (Loc, 0)),
           Then_Statements => CG_Stmts);
 
@@ -755,7 +755,7 @@ package body Exp_Prag is
            Make_Elsif_Part (Loc,
              Condition       =>
                Make_Op_Gt (Loc,
-                 Left_Opnd  => New_Reference_To (Count, Loc),
+                 Left_Opnd  => New_Occurrence_Of (Count, Loc),
                  Right_Opnd => Make_Integer_Literal (Loc, 1)),
 
              Then_Statements => New_List (
@@ -766,10 +766,10 @@ package body Exp_Prag is
                      Statements => New_List (
                        Make_Procedure_Call_Statement (Loc,
                          Name                   =>
-                           New_Reference_To
+                           New_Occurrence_Of
                              (RTE (RE_Raise_Assert_Failure), Loc),
                          Parameter_Associations => New_List (
-                           New_Reference_To (Msg_Str, Loc))))))))));
+                           New_Occurrence_Of (Msg_Str, Loc))))))))));
       end if;
 
       Append_To (Decls, CG_Checks);
@@ -996,7 +996,7 @@ package body Exp_Prag is
              Then_Statements => New_List (
                Make_Raise_Statement (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Assert_Failure), Loc)))));
+                   New_Occurrence_Of (RTE (RE_Assert_Failure), Loc)))));
 
       --  Case where we call the procedure
 
@@ -1083,7 +1083,7 @@ package body Exp_Prag is
              Then_Statements => New_List (
                Make_Procedure_Call_Statement (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Raise_Assert_Failure), Loc),
+                   New_Occurrence_Of (RTE (RE_Raise_Assert_Failure), Loc),
                  Parameter_Associations => New_List (Relocate_Node (Msg))))));
       end if;
 
@@ -1376,7 +1376,7 @@ package body Exp_Prag is
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Excep_Internal,
                          Object_Definition   =>
-                           New_Reference_To (RTE (RE_Address), Loc));
+                           New_Occurrence_Of (RTE (RE_Address), Loc));
 
                      Insert_Action (N, Excep_Object);
                      Analyze (Excep_Object);
@@ -1396,7 +1396,7 @@ package body Exp_Prag is
                          Pragma_Argument_Associations => New_List (
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
+                               New_Occurrence_Of (Excep_Internal, Loc)),
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
@@ -1417,7 +1417,7 @@ package body Exp_Prag is
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
+                               New_Occurrence_Of (Excep_Internal, Loc)),
 
                            Make_Pragma_Argument_Association (Loc,
                              Expression =>
@@ -1434,7 +1434,7 @@ package body Exp_Prag is
                      Code :=
                         Make_Function_Call (Loc,
                           Name                   =>
-                            New_Reference_To (RTE (RE_Import_Address), Loc),
+                            New_Occurrence_Of (RTE (RE_Import_Address), Loc),
                           Parameter_Associations => New_List
                             (Make_String_Literal (Loc,
                               Strval => Excep_Image)));
@@ -1444,7 +1444,7 @@ package body Exp_Prag is
 
                   Rewrite (Call,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Reference_To
+                      Name => New_Occurrence_Of
                                 (RTE (RE_Register_VMS_Exception), Loc),
                       Parameter_Associations => New_List (
                         Code,
@@ -1675,9 +1675,9 @@ package body Exp_Prag is
               Make_Object_Declaration (Loop_Loc,
                 Defining_Identifier => Flag_Id,
                 Object_Definition   =>
-                  New_Reference_To (Standard_Boolean, Loop_Loc),
+                  New_Occurrence_Of (Standard_Boolean, Loop_Loc),
                 Expression          =>
-                  New_Reference_To (Standard_False, Loop_Loc)));
+                  New_Occurrence_Of (Standard_False, Loop_Loc)));
 
             --  Prevent an unwanted optimization where the Current_Value of
             --  the flag eliminates the if statement which stores the variant
@@ -1706,7 +1706,7 @@ package body Exp_Prag is
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Curr_Id,
-             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loop_Loc)));
 
          --  Generate:
          --    Old : <type of Expr>;
@@ -1716,7 +1716,7 @@ package body Exp_Prag is
          Insert_Action (Loop_Stmt,
            Make_Object_Declaration (Loop_Loc,
              Defining_Identifier => Old_Id,
-             Object_Definition   => New_Reference_To (Expr_Typ, Loop_Loc)));
+             Object_Definition   => New_Occurrence_Of (Expr_Typ, Loop_Loc)));
 
          --  Restore original scope after all temporaries have been analyzed
 
@@ -1733,8 +1733,8 @@ package body Exp_Prag is
 
          Append_To (Old_Assign,
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Old_Id, Loc),
-             Expression => New_Reference_To (Curr_Id, Loc)));
+             Name       => New_Occurrence_Of (Old_Id, Loc),
+             Expression => New_Occurrence_Of (Curr_Id, Loc)));
 
          --  Step 4: Store the current value of the expression
 
@@ -1747,7 +1747,7 @@ package body Exp_Prag is
 
          Append_To (Curr_Assign,
            Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Curr_Id, Loc),
+             Name       => New_Occurrence_Of (Curr_Id, Loc),
              Expression => Relocate_Node (Expr)));
 
          --  Step 5: Create corresponding assertion to verify change of value
@@ -1764,8 +1764,8 @@ package body Exp_Prag is
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
                    Make_Op (Loc,
-                     Curr_Val => New_Reference_To (Curr_Id, Loc),
-                     Old_Val  => New_Reference_To (Old_Id, Loc)))));
+                     Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
+                     Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
          --  Generate:
          --    if Curr /= Old then
@@ -1783,8 +1783,8 @@ package body Exp_Prag is
                  Make_If_Statement (Loc,
                    Condition       =>
                      Make_Op_Ne (Loc,
-                       Left_Opnd  => New_Reference_To (Curr_Id, Loc),
-                       Right_Opnd => New_Reference_To (Old_Id, Loc)),
+                       Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                       Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
                    Then_Statements => New_List (Prag));
             end if;
 
@@ -1809,8 +1809,8 @@ package body Exp_Prag is
               Make_Elsif_Part (Loc,
                 Condition       =>
                   Make_Op_Ne (Loc,
-                    Left_Opnd  => New_Reference_To (Curr_Id, Loc),
-                    Right_Opnd => New_Reference_To (Old_Id, Loc)),
+                    Left_Opnd  => New_Occurrence_Of (Curr_Id, Loc),
+                    Right_Opnd => New_Occurrence_Of (Old_Id, Loc)),
                 Then_Statements => New_List (Prag)));
          end if;
       end Process_Variant;
@@ -1861,7 +1861,7 @@ package body Exp_Prag is
 
       Insert_Action (N,
         Make_If_Statement (Loc,
-          Condition       => New_Reference_To (Flag_Id, Loc),
+          Condition       => New_Occurrence_Of (Flag_Id, Loc),
           Then_Statements => Old_Assign));
 
       --  Update the values of all expressions
@@ -1878,12 +1878,12 @@ package body Exp_Prag is
 
       Insert_Action (N,
         Make_If_Statement (Loc,
-          Condition       => New_Reference_To (Flag_Id, Loc),
+          Condition       => New_Occurrence_Of (Flag_Id, Loc),
           Then_Statements => New_List (If_Stmt),
           Else_Statements => New_List (
             Make_Assignment_Statement (Loc,
-              Name       => New_Reference_To (Flag_Id, Loc),
-              Expression => New_Reference_To (Standard_True, Loc)))));
+              Name       => New_Occurrence_Of (Flag_Id, Loc),
+              Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
       --  Note: the pragma has been completely transformed into a sequence of
       --  corresponding declarations and statements. We leave it in the tree
@@ -1919,15 +1919,15 @@ package body Exp_Prag is
          Rewrite
            (N,
             Make_Procedure_Call_Statement (Loc,
-              Name => New_Reference_To (RTE (RE_Set_Deadline), Loc),
+              Name => New_Occurrence_Of (RTE (RE_Set_Deadline), Loc),
               Parameter_Associations => New_List (
                 Unchecked_Convert_To (RTE (RO_RT_Time),
                   Make_Op_Add (Loc,
                     Left_Opnd  =>
                       Make_Function_Call (Loc,
-                        New_Reference_To (RTE (RO_RT_To_Duration), Loc),
+                        New_Occurrence_Of (RTE (RO_RT_To_Duration), Loc),
                         New_List (Make_Function_Call (Loc,
-                          New_Reference_To (RTE (RE_Clock), Loc)))),
+                          New_Occurrence_Of (RTE (RE_Clock), Loc)))),
                     Right_Opnd  =>
                       Unchecked_Convert_To (Standard_Duration, Arg1 (N)))))));
 

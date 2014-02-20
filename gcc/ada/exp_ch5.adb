@@ -793,7 +793,7 @@ package body Exp_Ch5 is
 
                   Rewrite (N,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Reference_To (Proc, Loc),
+                      Name => New_Occurrence_Of (Proc, Loc),
                       Parameter_Associations => Actuals));
                end;
 
@@ -859,7 +859,7 @@ package body Exp_Ch5 is
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
-                                   New_Reference_To
+                                   New_Occurrence_Of
                                      (L_Index_Typ, Loc),
                                  Attribute_Name => Name_First))),
                          Attribute_Name => Name_Address)),
@@ -874,7 +874,7 @@ package body Exp_Ch5 is
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
-                                   New_Reference_To
+                                   New_Occurrence_Of
                                      (R_Index_Typ, Loc),
                                  Attribute_Name => Name_First))),
                          Attribute_Name => Name_Address)));
@@ -942,7 +942,7 @@ package body Exp_Ch5 is
 
                   Rewrite (N,
                     Make_Procedure_Call_Statement (Loc,
-                      Name => New_Reference_To (Proc, Loc),
+                      Name => New_Occurrence_Of (Proc, Loc),
                       Parameter_Associations => Actuals));
                end;
 
@@ -1172,7 +1172,7 @@ package body Exp_Ch5 is
                            Defining_Identifier => Lnn (J),
                            Reverse_Present => Rev,
                            Discrete_Subtype_Definition =>
-                             New_Reference_To (L_Index_Type (J), Loc))),
+                             New_Occurrence_Of (L_Index_Type (J), Loc))),
 
                    Statements => New_List (Assign, Build_Step (J))))));
       end loop;
@@ -1629,10 +1629,10 @@ package body Exp_Ch5 is
 
                if Number_Entries (Conctyp) = 0 then
                   RT_Subprg_Name :=
-                    New_Reference_To (RTE (RE_Set_Ceiling), Loc);
+                    New_Occurrence_Of (RTE (RE_Set_Ceiling), Loc);
                else
                   RT_Subprg_Name :=
-                    New_Reference_To (RTE (RO_PE_Set_Ceiling), Loc);
+                    New_Occurrence_Of (RTE (RO_PE_Set_Ceiling), Loc);
                end if;
 
                Call :=
@@ -2177,7 +2177,7 @@ package body Exp_Ch5 is
 
                      Append_To (L,
                        Make_Procedure_Call_Statement (Loc,
-                         Name => New_Reference_To (Op, Loc),
+                         Name => New_Occurrence_Of (Op, Loc),
                          Parameter_Associations => New_List (
                            Node1 => Left_N,
                            Node2 => Right_N)));
@@ -2727,8 +2727,8 @@ package body Exp_Ch5 is
                     New_Occurrence_Of (Has_Element_Op, Loc),
                   Parameter_Associations =>
                     New_List
-                     (New_Reference_To (Container, Loc),
-                      New_Reference_To (Cursor, Loc)))),
+                     (New_Occurrence_Of (Container, Loc),
+                      New_Occurrence_Of (Cursor, Loc)))),
           Statements => Stats,
           End_Label  => Empty);
       Rewrite (N, New_Loop);
@@ -3204,7 +3204,7 @@ package body Exp_Ch5 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Id,
                    Subtype_Mark     =>
-                     New_Reference_To (Element_Type, Loc),
+                     New_Occurrence_Of (Element_Type, Loc),
                    Name             =>
                      Make_Indexed_Component (Loc,
                        Prefix      => Relocate_Node (Container_Arg),
@@ -3296,10 +3296,10 @@ package body Exp_Ch5 is
               Make_Function_Call (Loc,
                 Name                   =>
                   Make_Selected_Component (Loc,
-                    Prefix        => New_Reference_To (Iterator, Loc),
+                    Prefix        => New_Occurrence_Of (Iterator, Loc),
                     Selector_Name => Make_Identifier (Loc, Name_Step)),
                 Parameter_Associations => New_List (
-                   New_Reference_To (Cursor, Loc)));
+                   New_Occurrence_Of (Cursor, Loc)));
 
             Append_To (Stats,
               Make_Assignment_Statement (Loc,
@@ -3324,7 +3324,7 @@ package body Exp_Ch5 is
                        New_Occurrence_Of (
                         Next_Entity (First_Entity (Pack)), Loc),
                      Parameter_Associations =>
-                       New_List (New_Reference_To (Cursor, Loc)))),
+                       New_List (New_Occurrence_Of (Cursor, Loc)))),
 
              Statements => Stats,
              End_Label  => Empty);
@@ -3364,7 +3364,7 @@ package body Exp_Ch5 is
                   New_Occurrence_Of (Etype (Cursor), Loc),
                 Expression          =>
                   Make_Selected_Component (Loc,
-                    Prefix        => New_Reference_To (Iterator, Loc),
+                    Prefix        => New_Occurrence_Of (Iterator, Loc),
                     Selector_Name =>
                       Make_Identifier (Loc, Name_Init)));
 
@@ -3426,13 +3426,13 @@ package body Exp_Ch5 is
          Ind_Comp :=
            Make_Indexed_Component (Loc,
              Prefix      => Relocate_Node (Array_Node),
-             Expressions => New_List (New_Reference_To (Iterator, Loc)));
+             Expressions => New_List (New_Occurrence_Of (Iterator, Loc)));
 
          Prepend_To (Stats,
            Make_Object_Renaming_Declaration (Loc,
              Defining_Identifier => Id,
              Subtype_Mark        =>
-               New_Reference_To (Component_Type (Array_Typ), Loc),
+               New_Occurrence_Of (Component_Type (Array_Typ), Loc),
              Name                => Ind_Comp));
 
          --  Mark the loop variable as needing debug info, so that expansion
@@ -3508,7 +3508,7 @@ package body Exp_Ch5 is
             --  the new iterator.
 
             Prepend_To (Expressions (Ind_Comp),
-              New_Reference_To (Iterator, Loc));
+              New_Occurrence_Of (Iterator, Loc));
          end loop;
       end if;
 
@@ -3631,16 +3631,16 @@ package body Exp_Ch5 is
                          Left_Opnd =>
                             Make_Integer_Literal (Loc,
                               Enumeration_Rep (First_Literal (Btype))),
-                         Right_Opnd => New_Reference_To (New_Id, Loc)));
+                         Right_Opnd => New_Occurrence_Of (New_Id, Loc)));
                else
                   --  Use the constructed array Enum_Pos_To_Rep
 
                   Expr :=
                     Make_Indexed_Component (Loc,
                       Prefix      =>
-                        New_Reference_To (Enum_Pos_To_Rep (Btype), Loc),
+                        New_Occurrence_Of (Enum_Pos_To_Rep (Btype), Loc),
                       Expressions =>
-                        New_List (New_Reference_To (New_Id, Loc)));
+                        New_List (New_Occurrence_Of (New_Id, Loc)));
                end if;
 
                --  Build declaration for loop identifier
@@ -3650,7 +3650,7 @@ package body Exp_Ch5 is
                    Make_Object_Declaration (Loc,
                      Defining_Identifier => Loop_Id,
                      Constant_Present    => True,
-                     Object_Definition   => New_Reference_To (Ltype, Loc),
+                     Object_Definition   => New_Occurrence_Of (Ltype, Loc),
                      Expression          => Expr));
 
                Rewrite (N,
@@ -3668,7 +3668,7 @@ package body Exp_Ch5 is
                              Make_Subtype_Indication (Loc,
 
                                Subtype_Mark =>
-                                 New_Reference_To (Standard_Natural, Loc),
+                                 New_Occurrence_Of (Standard_Natural, Loc),
 
                                Constraint =>
                                  Make_Range_Constraint (Loc,
@@ -3678,7 +3678,7 @@ package body Exp_Ch5 is
                                        Low_Bound =>
                                          Make_Attribute_Reference (Loc,
                                            Prefix =>
-                                             New_Reference_To (Btype, Loc),
+                                             New_Occurrence_Of (Btype, Loc),
 
                                            Attribute_Name => Name_Pos,
 
@@ -3689,7 +3689,7 @@ package body Exp_Ch5 is
                                        High_Bound =>
                                          Make_Attribute_Reference (Loc,
                                            Prefix =>
-                                             New_Reference_To (Btype, Loc),
+                                             New_Occurrence_Of (Btype, Loc),
 
                                            Attribute_Name => Name_Pos,
 
@@ -4087,12 +4087,12 @@ package body Exp_Ch5 is
          Append_To (Res,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tag_Id,
-             Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc),
+             Object_Definition   => New_Occurrence_Of (RTE (RE_Tag), Loc),
              Expression          =>
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name =>
-                   New_Reference_To (First_Tag_Component (T), Loc))));
+                   New_Occurrence_Of (First_Tag_Component (T), Loc))));
 
       --  Otherwise Tag_Id is not used
 
@@ -4116,7 +4116,7 @@ package body Exp_Ch5 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Prev_Id,
              Object_Definition   =>
-               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
              Expression          =>
                Make_Selected_Component (Loc,
                  Prefix        =>
@@ -4132,7 +4132,7 @@ package body Exp_Ch5 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Next_Id,
              Object_Definition   =>
-               New_Reference_To (RTE (RE_Root_Controlled_Ptr), Loc),
+               New_Occurrence_Of (RTE (RE_Root_Controlled_Ptr), Loc),
              Expression          =>
                Make_Selected_Component (Loc,
                  Prefix        =>
@@ -4163,8 +4163,8 @@ package body Exp_Ch5 is
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name =>
-                   New_Reference_To (First_Tag_Component (T), Loc)),
-             Expression => New_Reference_To (Tag_Id, Loc)));
+                   New_Occurrence_Of (First_Tag_Component (T), Loc)),
+             Expression => New_Occurrence_Of (Tag_Id, Loc)));
       end if;
 
       --  Restore the Prev and Next fields on .NET/JVM
@@ -4184,7 +4184,7 @@ package body Exp_Ch5 is
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
                  Selector_Name =>
                    Make_Identifier (Loc, Name_Prev)),
-             Expression => New_Reference_To (Prev_Id, Loc)));
+             Expression => New_Occurrence_Of (Prev_Id, Loc)));
 
          --  Generate:
          --    Root_Controlled (L).Next := Next_Id;
@@ -4197,7 +4197,7 @@ package body Exp_Ch5 is
                    Unchecked_Convert_To
                      (RTE (RE_Root_Controlled), New_Copy_Tree (L)),
                  Selector_Name => Make_Identifier (Loc, Name_Next)),
-             Expression => New_Reference_To (Next_Id, Loc)));
+             Expression => New_Occurrence_Of (Next_Id, Loc)));
       end if;
 
       --  Adjust the target after the assignment when controlled (not in the

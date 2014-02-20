@@ -408,7 +408,7 @@ package body Exp_Ch6 is
                Actual :=
                  Make_Attribute_Reference (Loc,
                    Prefix =>
-                     New_Reference_To (Finalization_Master (Ptr_Typ), Loc),
+                     New_Occurrence_Of (Finalization_Master (Ptr_Typ), Loc),
                    Attribute_Name => Name_Unrestricted_Access);
 
             --  Tagged types
@@ -515,7 +515,7 @@ package body Exp_Ch6 is
       --  the actual is an entity and requires an explicit reference.
 
       elsif Nkind (Actual) = N_Defining_Identifier then
-         Actual := New_Reference_To (Actual, Loc);
+         Actual := New_Occurrence_Of (Actual, Loc);
       end if;
 
       --  Locate the implicit master parameter in the called function
@@ -1154,7 +1154,7 @@ package body Exp_Ch6 is
          --  For IN parameter, all we do is to replace the actual
 
          if Ekind (Formal) = E_In_Parameter then
-            Rewrite (Actual, New_Reference_To (Temp, Loc));
+            Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
             Analyze (Actual);
 
          --  Processing for OUT or IN OUT parameter
@@ -1178,7 +1178,7 @@ package body Exp_Ch6 is
                Expr := New_Occurrence_Of (Temp, Loc);
             end if;
 
-            Rewrite (Actual, New_Reference_To (Temp, Loc));
+            Rewrite (Actual, New_Occurrence_Of (Temp, Loc));
             Analyze (Actual);
 
             --  If the actual is a conversion of a packed reference, it may
@@ -1809,7 +1809,7 @@ package body Exp_Ch6 is
                if In_Open_Scopes (Entity (Actual)) then
                   Rewrite (Actual,
                     (Make_Function_Call (Loc,
-                     Name => New_Reference_To (RTE (RE_Self), Loc))));
+                     Name => New_Occurrence_Of (RTE (RE_Self), Loc))));
                   Analyze (Actual);
 
                --  A task type cannot otherwise appear as an actual
@@ -2555,7 +2555,7 @@ package body Exp_Ch6 is
             Rewrite (N,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Reference_To (Deep_Fin, Loc),
+                  New_Occurrence_Of (Deep_Fin, Loc),
                 Parameter_Associations =>
                   New_Copy_List_Tree (Parameter_Associations (N))));
 
@@ -3418,8 +3418,8 @@ package body Exp_Ch6 is
                                Make_Selected_Component (Loc,
                                  Prefix        => New_Value (Param),
                                  Selector_Name =>
-                                   New_Reference_To (First_Tag_Component (Typ),
-                                                     Loc)),
+                                   New_Occurrence_Of
+                                     (First_Tag_Component (Typ), Loc)),
 
                              Right_Opnd =>
                                Make_Selected_Component (Loc,
@@ -3427,7 +3427,7 @@ package body Exp_Ch6 is
                                    Unchecked_Convert_To (Typ,
                                      New_Value (Next_Actual (Param))),
                                  Selector_Name =>
-                                   New_Reference_To
+                                   New_Occurrence_Of
                                      (First_Tag_Component (Typ), Loc))),
                       Right_Opnd => Prev_Call);
 
@@ -4248,7 +4248,7 @@ package body Exp_Ch6 is
       begin
          if No (Exit_Lab) then
             Lab_Ent := Make_Temporary (Loc, 'L');
-            Lab_Id  := New_Reference_To (Lab_Ent, Loc);
+            Lab_Id  := New_Occurrence_Of (Lab_Ent, Loc);
             Exit_Lab := Make_Label (Loc, Lab_Id);
             Lab_Decl :=
               Make_Implicit_Label_Declaration (Loc,
@@ -5172,7 +5172,7 @@ package body Exp_Ch6 is
 
             Remove (First (Parameter_Associations (Blk_Call_Stmt)));
             Prepend_To (Parameter_Associations (Blk_Call_Stmt),
-              New_Reference_To (Targ, Loc));
+              New_Occurrence_Of (Targ, Loc));
          end;
 
          --  Remove the return statement
@@ -5432,17 +5432,17 @@ package body Exp_Ch6 is
                  Make_Object_Renaming_Declaration (Loc,
                    Defining_Identifier => Pool_Id,
                    Subtype_Mark        =>
-                     New_Reference_To (RTE (RE_Root_Storage_Pool), Loc),
+                     New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
                    Name                =>
                      Make_Explicit_Dereference (Loc,
                        Prefix =>
                          Make_Function_Call (Loc,
                            Name                   =>
-                             New_Reference_To (RTE (RE_Base_Pool), Loc),
+                             New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
                            Parameter_Associations => New_List (
                              Make_Explicit_Dereference (Loc,
                                Prefix =>
-                                 New_Reference_To (Fin_Mas_Id, Loc)))))));
+                                 New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
 
                --  Create an access type which uses the storage pool of the
                --  caller's master. This additional type is necessary because
@@ -5472,7 +5472,7 @@ package body Exp_Ch6 is
                    Type_Definition     =>
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
-                         New_Reference_To (Desig_Typ, Loc))));
+                         New_Occurrence_Of (Desig_Typ, Loc))));
 
                --  Perform minor decoration in order to set the master and the
                --  storage pool attributes.
@@ -5490,14 +5490,14 @@ package body Exp_Ch6 is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Local_Id,
                    Object_Definition   =>
-                     New_Reference_To (Ptr_Typ, Loc)));
+                     New_Occurrence_Of (Ptr_Typ, Loc)));
 
                --  Allocate the object, generate:
                --    Local_Id := <Alloc_Expr>;
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name       => New_Reference_To (Local_Id, Loc),
+                   Name       => New_Occurrence_Of (Local_Id, Loc),
                    Expression => Alloc_Expr));
 
                --  Generate:
@@ -5505,10 +5505,10 @@ package body Exp_Ch6 is
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name       => New_Reference_To (Temp_Id, Loc),
+                   Name       => New_Occurrence_Of (Temp_Id, Loc),
                    Expression =>
                      Unchecked_Convert_To (Temp_Typ,
-                       New_Reference_To (Local_Id, Loc))));
+                       New_Occurrence_Of (Local_Id, Loc))));
 
                --  Wrap the allocation in a block. This is further conditioned
                --  by checking the caller finalization master at runtime. A
@@ -5528,7 +5528,7 @@ package body Exp_Ch6 is
                  Make_If_Statement (Loc,
                    Condition       =>
                      Make_Op_Ne (Loc,
-                       Left_Opnd  => New_Reference_To (Fin_Mas_Id, Loc),
+                       Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
                        Right_Opnd => Make_Null (Loc)),
 
                    Then_Statements => New_List (
@@ -5545,7 +5545,7 @@ package body Exp_Ch6 is
          else
             return
               Make_Assignment_Statement (Loc,
-                Name       => New_Reference_To (Temp_Id, Loc),
+                Name       => New_Occurrence_Of (Temp_Id, Loc),
                 Expression => Alloc_Expr);
          end if;
       end Build_Heap_Allocator;
@@ -5559,7 +5559,7 @@ package body Exp_Ch6 is
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
-               New_Reference_To (RTE (RE_Move_Activation_Chain), Loc),
+               New_Occurrence_Of (RTE (RE_Move_Activation_Chain), Loc),
 
              Parameter_Associations => New_List (
 
@@ -5571,12 +5571,12 @@ package body Exp_Ch6 is
 
                --  Destination chain
 
-               New_Reference_To
+               New_Occurrence_Of
                  (Build_In_Place_Formal (Par_Func, BIP_Activation_Chain), Loc),
 
                --  New master
 
-               New_Reference_To
+               New_Occurrence_Of
                  (Build_In_Place_Formal (Par_Func, BIP_Task_Master), Loc)));
       end Move_Activation_Chain;
 
@@ -5633,8 +5633,9 @@ package body Exp_Ch6 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Flag_Id,
                   Object_Definition =>
-                    New_Reference_To (Standard_Boolean, Loc),
-                  Expression        => New_Reference_To (Standard_False, Loc));
+                    New_Occurrence_Of (Standard_Boolean, Loc),
+                  Expression        =>
+                    New_Occurrence_Of (Standard_False, Loc));
 
             Prepend_To (Declarations (Func_Bod), Flag_Decl);
             Analyze (Flag_Decl);
@@ -5710,8 +5711,8 @@ package body Exp_Ch6 is
 
                Append_To (Stmts,
                  Make_Assignment_Statement (Loc,
-                   Name       => New_Reference_To (Flag_Id, Loc),
-                   Expression => New_Reference_To (Standard_True, Loc)));
+                   Name       => New_Occurrence_Of (Flag_Id, Loc),
+                   Expression => New_Occurrence_Of (Standard_True, Loc)));
             end;
          end if;
 
@@ -5829,7 +5830,7 @@ package body Exp_Ch6 is
                then
                   Init_Assignment :=
                     Make_Assignment_Statement (Loc,
-                      Name       => New_Reference_To (Return_Obj_Id, Loc),
+                      Name       => New_Occurrence_Of (Return_Obj_Id, Loc),
                       Expression => Relocate_Node (Return_Obj_Expr));
 
                   Set_Etype (Name (Init_Assignment), Etype (Return_Obj_Id));
@@ -5924,7 +5925,7 @@ package body Exp_Ch6 is
                            Make_Access_To_Object_Definition (Loc,
                              All_Present        => True,
                              Subtype_Indication =>
-                               New_Reference_To (Return_Obj_Typ, Loc)));
+                               New_Occurrence_Of (Return_Obj_Typ, Loc)));
 
                      Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
 
@@ -5940,7 +5941,7 @@ package body Exp_Ch6 is
                        Make_Object_Declaration (Loc,
                          Defining_Identifier => Alloc_Obj_Id,
                          Object_Definition   =>
-                           New_Reference_To (Ref_Type, Loc));
+                           New_Occurrence_Of (Ref_Type, Loc));
 
                      Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
 
@@ -5964,7 +5965,7 @@ package body Exp_Ch6 is
                             Expression =>
                               Make_Qualified_Expression (Loc,
                                 Subtype_Mark =>
-                                  New_Reference_To
+                                  New_Occurrence_Of
                                     (Etype (Return_Obj_Expr), Loc),
                                 Expression   =>
                                   New_Copy_Tree (Return_Obj_Expr)));
@@ -5979,13 +5980,13 @@ package body Exp_Ch6 is
                            Heap_Allocator :=
                              Make_Allocator (Loc,
                                Expression =>
-                                 New_Reference_To
+                                 New_Occurrence_Of
                                    (Etype (Return_Obj_Expr), Loc));
                         else
                            Heap_Allocator :=
                              Make_Allocator (Loc,
                                Expression =>
-                                 New_Reference_To (Return_Obj_Typ, Loc));
+                                 New_Occurrence_Of (Return_Obj_Typ, Loc));
                         end if;
 
                         --  If the object requires default initialization then
@@ -6013,11 +6014,11 @@ package body Exp_Ch6 is
                           Make_Object_Renaming_Declaration (Loc,
                             Defining_Identifier => Pool_Id,
                             Subtype_Mark        =>
-                              New_Reference_To
+                              New_Occurrence_Of
                                 (RTE (RE_Root_Storage_Pool), Loc),
                             Name                =>
                               Make_Explicit_Dereference (Loc,
-                                New_Reference_To
+                                New_Occurrence_Of
                                   (Build_In_Place_Formal
                                      (Par_Func, BIP_Storage_Pool), Loc)));
                         Set_Storage_Pool (Pool_Allocator, Pool_Id);
@@ -6104,7 +6105,7 @@ package body Exp_Ch6 is
                          Condition =>
                            Make_Op_Eq (Loc,
                              Left_Opnd  =>
-                               New_Reference_To (Obj_Alloc_Formal, Loc),
+                               New_Occurrence_Of (Obj_Alloc_Formal, Loc),
                              Right_Opnd =>
                                Make_Integer_Literal (Loc,
                                  UI_From_Int (BIP_Allocation_Form'Pos
@@ -6113,20 +6114,20 @@ package body Exp_Ch6 is
                          Then_Statements => New_List (
                            Make_Assignment_Statement (Loc,
                              Name       =>
-                               New_Reference_To (Alloc_Obj_Id, Loc),
+                               New_Occurrence_Of (Alloc_Obj_Id, Loc),
                              Expression =>
                                Make_Unchecked_Type_Conversion (Loc,
                                  Subtype_Mark =>
-                                   New_Reference_To (Ref_Type, Loc),
+                                   New_Occurrence_Of (Ref_Type, Loc),
                                  Expression   =>
-                                   New_Reference_To (Object_Access, Loc)))),
+                                   New_Occurrence_Of (Object_Access, Loc)))),
 
                          Elsif_Parts => New_List (
                            Make_Elsif_Part (Loc,
                              Condition =>
                                Make_Op_Eq (Loc,
                                  Left_Opnd  =>
-                                   New_Reference_To (Obj_Alloc_Formal, Loc),
+                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
                                  Right_Opnd =>
                                    Make_Integer_Literal (Loc,
                                      UI_From_Int (BIP_Allocation_Form'Pos
@@ -6135,14 +6136,14 @@ package body Exp_Ch6 is
                              Then_Statements => New_List (
                                Make_Assignment_Statement (Loc,
                                  Name       =>
-                                   New_Reference_To (Alloc_Obj_Id, Loc),
+                                   New_Occurrence_Of (Alloc_Obj_Id, Loc),
                                  Expression => SS_Allocator))),
 
                            Make_Elsif_Part (Loc,
                              Condition =>
                                Make_Op_Eq (Loc,
                                  Left_Opnd  =>
-                                   New_Reference_To (Obj_Alloc_Formal, Loc),
+                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
                                  Right_Opnd =>
                                    Make_Integer_Literal (Loc,
                                      UI_From_Int (BIP_Allocation_Form'Pos
@@ -6176,7 +6177,7 @@ package body Exp_Ch6 is
                      if Present (Init_Assignment) then
                         Rewrite (Name (Init_Assignment),
                           Make_Explicit_Dereference (Loc,
-                            Prefix => New_Reference_To (Alloc_Obj_Id, Loc)));
+                            Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
 
                         Set_Etype
                           (Name (Init_Assignment), Etype (Return_Obj_Id));
@@ -6200,7 +6201,7 @@ package body Exp_Ch6 is
 
                Obj_Acc_Deref :=
                  Make_Explicit_Dereference (Loc,
-                   Prefix => New_Reference_To (Object_Access, Loc));
+                   Prefix => New_Occurrence_Of (Object_Access, Loc));
 
                Rewrite (Ret_Obj_Decl,
                  Make_Object_Renaming_Declaration (Loc,
@@ -6420,7 +6421,8 @@ package body Exp_Ch6 is
                   Insert_Action (Rtn,
                     Make_Procedure_Call_Statement (Loc,
                       Name =>
-                        New_Reference_To (Postcondition_Proc (Spec_Id), Loc)));
+                        New_Occurrence_Of
+                          (Postcondition_Proc (Spec_Id), Loc)));
                end if;
             end;
          end if;
@@ -6882,7 +6884,7 @@ package body Exp_Ch6 is
          pragma Assert (Present (Postcondition_Proc (Scope_Id)));
          Insert_Action (N,
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (Postcondition_Proc (Scope_Id), Loc)));
+             Name => New_Occurrence_Of (Postcondition_Proc (Scope_Id), Loc)));
       end if;
 
       --  If it is a return from a procedure do no extra steps
@@ -6924,7 +6926,7 @@ package body Exp_Ch6 is
 
          Call :=
            Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Complete_Rendezvous), Loc));
+             Name => New_Occurrence_Of (RTE (RE_Complete_Rendezvous), Loc));
          Insert_Before (N, Call);
          --  why not insert actions here???
          Analyze (Call);
@@ -6953,11 +6955,11 @@ package body Exp_Ch6 is
          Call :=
            Make_Procedure_Call_Statement (Loc,
              Name =>
-               New_Reference_To (RTE (RE_Complete_Entry_Body), Loc),
+               New_Occurrence_Of (RTE (RE_Complete_Entry_Body), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
                  Prefix         =>
-                   New_Reference_To
+                   New_Occurrence_Of
                      (Find_Protection_Object (Current_Scope), Loc),
                  Attribute_Name => Name_Unchecked_Access)));
 
@@ -7043,7 +7045,7 @@ package body Exp_Ch6 is
                   Type_Definition   =>
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
-                         New_Reference_To
+                         New_Occurrence_Of
                            (Corresponding_Record_Type (Scop), Loc))));
 
             Insert_Actions (N, Decls);
@@ -7432,7 +7434,7 @@ package body Exp_Ch6 is
                  Make_Allocator (Loc,
                    Expression =>
                      Make_Qualified_Expression (Loc,
-                       Subtype_Mark => New_Reference_To (Etype (Exp), Loc),
+                       Subtype_Mark => New_Occurrence_Of (Etype (Exp), Loc),
                        Expression   => Relocate_Node (Exp)));
 
                --  We do not want discriminant checks on the declaration,
@@ -7451,12 +7453,12 @@ package body Exp_Ch6 is
 
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Temp,
-                   Object_Definition   => New_Reference_To (Acc_Typ, Loc),
+                   Object_Definition   => New_Occurrence_Of (Acc_Typ, Loc),
                    Expression          => Alloc_Node)));
 
                Rewrite (Exp,
                  Make_Explicit_Dereference (Loc,
-                 Prefix => New_Reference_To (Temp, Loc)));
+                 Prefix => New_Occurrence_Of (Temp, Loc)));
 
                --  Ada 2005 (AI-251): If the type of the returned object is
                --  an interface then add an implicit type conversion to force
@@ -7532,12 +7534,12 @@ package body Exp_Ch6 is
                Result_Id  : constant Entity_Id :=
                               Make_Temporary (Loc, 'R', ExpR);
                Result_Exp : constant Node_Id   :=
-                              New_Reference_To (Result_Id, Loc);
+                              New_Occurrence_Of (Result_Id, Loc);
                Result_Obj : constant Node_Id   :=
                               Make_Object_Declaration (Loc,
                                 Defining_Identifier => Result_Id,
                                 Object_Definition   =>
-                                  New_Reference_To (R_Type, Loc),
+                                  New_Occurrence_Of (R_Type, Loc),
                                 Constant_Present    => True,
                                 Expression          => ExpR);
 
@@ -7597,7 +7599,7 @@ package body Exp_Ch6 is
                      Unchecked_Convert_To (RTE (RE_Tag_Ptr),
                        Make_Function_Call (Loc,
                          Name                   =>
-                           New_Reference_To (RTE (RE_Base_Address), Loc),
+                           New_Occurrence_Of (RTE (RE_Base_Address), Loc),
                          Parameter_Associations => New_List (
                            Unchecked_Convert_To (RTE (RE_Address),
                              Duplicate_Subexpr (Prefix (Exp)))))));
@@ -8396,7 +8398,7 @@ package body Exp_Ch6 is
                   Append_Enabled_Item
                     (Item =>
                        Make_Predicate_Check
-                         (Typ, New_Reference_To (Formal, Loc)),
+                         (Typ, New_Occurrence_Of (Formal, Loc)),
                      List => Stmts);
                end if;
             end if;
@@ -8520,7 +8522,7 @@ package body Exp_Ch6 is
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Result,
                 Parameter_Type      =>
-                  New_Reference_To (Etype (Result), Loc)));
+                  New_Occurrence_Of (Etype (Result), Loc)));
          end if;
 
          --  Insert _Postconditions before the first source declaration of the
@@ -9268,24 +9270,24 @@ package body Exp_Ch6 is
 
                  Build_Set_Predefined_Prim_Op_Address (Loc,
                    Tag_Node     =>
-                     New_Reference_To (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
+                     New_Occurrence_Of (Node (Next_Elmt (Iface_DT_Ptr)), Loc),
                    Position     => DT_Position (Prim),
                    Address_Node =>
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (Thunk_Id, Loc),
+                         Prefix         => New_Occurrence_Of (Thunk_Id, Loc),
                          Attribute_Name => Name_Unrestricted_Access))),
 
                  Build_Set_Predefined_Prim_Op_Address (Loc,
                    Tag_Node     =>
-                     New_Reference_To
+                     New_Occurrence_Of
                       (Node (Next_Elmt (Next_Elmt (Next_Elmt (Iface_DT_Ptr)))),
                        Loc),
                    Position     => DT_Position (Prim),
                    Address_Node =>
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (Prim, Loc),
+                         Prefix         => New_Occurrence_Of (Prim, Loc),
                          Attribute_Name => Name_Unrestricted_Access)))));
             end if;
 
@@ -9542,7 +9544,7 @@ package body Exp_Ch6 is
 
          New_Allocator :=
            Make_Allocator (Loc,
-             Expression => New_Reference_To (Result_Subt, Loc));
+             Expression => New_Occurrence_Of (Result_Subt, Loc));
          Set_No_Initialization (New_Allocator);
 
          --  Copy attributes to new allocator. Note that the new allocator
@@ -9567,7 +9569,7 @@ package body Exp_Ch6 is
          Insert_Action (Allocator,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Return_Obj_Access,
-             Object_Definition   => New_Reference_To (Acc_Type, Loc),
+             Object_Definition   => New_Occurrence_Of (Acc_Type, Loc),
              Expression          => Relocate_Node (Allocator)));
 
          --  When the function has a controlling result, an allocation-form
@@ -9594,10 +9596,10 @@ package body Exp_Ch6 is
            (Func_Call,
             Function_Id,
             Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Reference_To (Result_Subt, Loc),
+              Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
               Expression   =>
                 Make_Explicit_Dereference (Loc,
-                  Prefix => New_Reference_To (Return_Obj_Access, Loc))));
+                  Prefix => New_Occurrence_Of (Return_Obj_Access, Loc))));
 
       --  When the result subtype is unconstrained, the function itself must
       --  perform the allocation of the return object, so we pass parameters
@@ -9620,7 +9622,7 @@ package body Exp_Ch6 is
                Pool_Actual =>
                  Make_Attribute_Reference (Loc,
                    Prefix         =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Associated_Storage_Pool (Acc_Type), Loc),
                    Attribute_Name => Name_Unrestricted_Access));
 
@@ -9768,13 +9770,13 @@ package body Exp_Ch6 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Temp_Id,
                 Object_Definition =>
-                  New_Reference_To (Result_Subt, Loc),
+                  New_Occurrence_Of (Result_Subt, Loc),
                 Expression =>
                   New_Copy_Tree (Function_Call));
 
             Insert_Action (Function_Call, Temp_Decl);
 
-            Rewrite (Function_Call, New_Reference_To (Temp_Id, Loc));
+            Rewrite (Function_Call, New_Occurrence_Of (Temp_Id, Loc));
             Analyze (Function_Call);
          end;
 
@@ -9792,7 +9794,7 @@ package body Exp_Ch6 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Return_Obj_Id,
              Aliased_Present     => True,
-             Object_Definition   => New_Reference_To (Result_Subt, Loc));
+             Object_Definition   => New_Occurrence_Of (Result_Subt, Loc));
 
          Set_No_Initialization (Return_Obj_Decl);
 
@@ -9817,7 +9819,7 @@ package body Exp_Ch6 is
          --  to the caller's return object.
 
          Add_Access_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, New_Reference_To (Return_Obj_Id, Loc));
+           (Func_Call, Function_Id, New_Occurrence_Of (Return_Obj_Id, Loc));
 
       --  When the result subtype is unconstrained, the function must allocate
       --  the return object in the secondary stack, so appropriate implicit
@@ -9923,7 +9925,7 @@ package body Exp_Ch6 is
         (Func_Call,
          Func_Id,
          Make_Unchecked_Type_Conversion (Loc,
-           Subtype_Mark => New_Reference_To (Result_Subt, Loc),
+           Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
            Expression   => Relocate_Node (Lhs)));
 
       --  Create an access type designating the function's result subtype
@@ -9937,7 +9939,7 @@ package body Exp_Ch6 is
             Make_Access_To_Object_Definition (Loc,
               All_Present        => True,
               Subtype_Indication =>
-                New_Reference_To (Result_Subt, Loc)));
+                New_Occurrence_Of (Result_Subt, Loc)));
       Insert_After_And_Analyze (Assign, Ptr_Typ_Decl);
 
       --  Finally, create an access object initialized to a reference to the
@@ -9953,7 +9955,7 @@ package body Exp_Ch6 is
       Obj_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
-          Object_Definition   => New_Reference_To (Ptr_Typ, Loc),
+          Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
           Expression          => New_Expr);
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
@@ -10065,7 +10067,7 @@ package body Exp_Ch6 is
               RTE_Available (RE_Root_Storage_Pool_Ptr)
             then
                Pool_Actual :=
-                 New_Reference_To (Build_In_Place_Formal
+                 New_Occurrence_Of (Build_In_Place_Formal
                    (Enclosing_Func, BIP_Storage_Pool), Loc);
 
             --  The build-in-place pool formal is not built on .NET/JVM
@@ -10078,7 +10080,7 @@ package body Exp_Ch6 is
               (Func_Call,
                Function_Id,
                Alloc_Form_Exp =>
-                 New_Reference_To
+                 New_Occurrence_Of
                    (Build_In_Place_Formal (Enclosing_Func, BIP_Alloc_Form),
                     Loc),
                Pool_Actual => Pool_Actual);
@@ -10093,7 +10095,7 @@ package body Exp_Ch6 is
 
          if Needs_BIP_Finalization_Master (Enclosing_Func) then
             Fmaster_Actual :=
-              New_Reference_To
+              New_Occurrence_Of
                 (Build_In_Place_Formal
                    (Enclosing_Func, BIP_Finalization_Master), Loc);
          end if;
@@ -10104,12 +10106,12 @@ package body Exp_Ch6 is
          Caller_Object :=
             Make_Unchecked_Type_Conversion (Loc,
               Subtype_Mark =>
-                New_Reference_To
+                New_Occurrence_Of
                   (Etype
                      (Build_In_Place_Formal (Function_Id, BIP_Object_Access)),
                    Loc),
               Expression   =>
-                New_Reference_To
+                New_Occurrence_Of
                   (Build_In_Place_Formal (Enclosing_Func, BIP_Object_Access),
                    Loc));
 
@@ -10121,8 +10123,8 @@ package body Exp_Ch6 is
       elsif Is_Constrained (Underlying_Type (Result_Subt)) then
          Caller_Object :=
             Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Reference_To (Result_Subt, Loc),
-              Expression   => New_Reference_To (Obj_Def_Id, Loc));
+              Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
+              Expression   => New_Occurrence_Of (Obj_Def_Id, Loc));
 
          --  When the function has a controlling result, an allocation-form
          --  parameter must be passed indicating that the caller is allocating
@@ -10164,7 +10166,7 @@ package body Exp_Ch6 is
          Add_Task_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id,
             Master_Actual =>
-              New_Reference_To (Build_In_Place_Formal
+              New_Occurrence_Of (Build_In_Place_Formal
                 (Enclosing_Func, BIP_Task_Master), Loc));
 
       else
@@ -10189,7 +10191,7 @@ package body Exp_Ch6 is
             Make_Access_To_Object_Definition (Loc,
               All_Present        => True,
               Subtype_Indication =>
-                New_Reference_To (Etype (Function_Call), Loc)));
+                New_Occurrence_Of (Etype (Function_Call), Loc)));
 
       --  The access type and its accompanying object must be inserted after
       --  the object declaration in the constrained case, so that the function
@@ -10220,7 +10222,7 @@ package body Exp_Ch6 is
       Res_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Def_Id,
-          Object_Definition   => New_Reference_To (Ref_Type, Loc),
+          Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
           Expression          => New_Expr);
       Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
@@ -10262,7 +10264,7 @@ package body Exp_Ch6 is
       else
          Call_Deref :=
            Make_Explicit_Dereference (Loc,
-             Prefix => New_Reference_To (Def_Id, Loc));
+             Prefix => New_Occurrence_Of (Def_Id, Loc));
 
          Loc := Sloc (Object_Decl);
          Rewrite (Object_Decl,
@@ -10360,7 +10362,7 @@ package body Exp_Ch6 is
 
       New_Allocator :=
         Make_Allocator (Loc,
-          Expression => New_Reference_To (Result_Subt, Loc));
+          Expression => New_Occurrence_Of (Result_Subt, Loc));
       Set_No_Initialization (New_Allocator);
 
       --  Copy attributes to new allocator. Note that the new allocator
@@ -10390,7 +10392,7 @@ package body Exp_Ch6 is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Return_Obj_Access,
           Constant_Present    => True,
-          Object_Definition   => New_Reference_To (Acc_Type, Loc),
+          Object_Definition   => New_Occurrence_Of (Acc_Type, Loc),
           Expression          => Relocate_Node (Allocator));
       Insert_Action (Allocator, Tmp_Obj);
 
@@ -10398,7 +10400,7 @@ package body Exp_Ch6 is
         Build_Initialization_Call (Loc,
           Id_Ref =>
             Make_Explicit_Dereference (Loc,
-              Prefix => New_Reference_To (Return_Obj_Access, Loc)),
+              Prefix => New_Occurrence_Of (Return_Obj_Access, Loc)),
           Typ => Etype (Function_Id),
           Constructor_Ref => Function_Call));
 
@@ -10406,7 +10408,7 @@ package body Exp_Ch6 is
       --  the function call itself (which will effectively be an access to the
       --  object created by the allocator).
 
-      Rewrite (Allocator, New_Reference_To (Return_Obj_Access, Loc));
+      Rewrite (Allocator, New_Occurrence_Of (Return_Obj_Access, Loc));
 
       --  Ada 2005 (AI-251): If the type of the allocator is an interface then
       --  generate an implicit conversion to force displacement of the "this"

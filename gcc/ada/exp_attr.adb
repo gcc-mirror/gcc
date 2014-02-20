@@ -272,7 +272,7 @@ package body Exp_Attr is
             Index :=
               Make_Defining_Identifier (Loc, New_External_Name ('J', N));
 
-            Append (New_Reference_To (Index, Loc), Index_List);
+            Append (New_Occurrence_Of (Index, Loc), Index_List);
 
             return New_List (
               Make_Implicit_Loop_Statement (Nod,
@@ -309,7 +309,7 @@ package body Exp_Attr is
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_uA),
           In_Present          => True,
           Out_Present         => False,
-          Parameter_Type      => New_Reference_To (A_Type, Loc)));
+          Parameter_Type      => New_Occurrence_Of (A_Type, Loc)));
 
       --  Build body
 
@@ -575,7 +575,7 @@ package body Exp_Attr is
 
       Fnm :=
         Make_Selected_Component (Loc,
-          Prefix        => New_Reference_To (RTE (Pkg), Loc),
+          Prefix        => New_Occurrence_Of (RTE (Pkg), Loc),
           Selector_Name => Make_Identifier (Loc, Nam));
 
       --  The generated call is given the provided set of parameters, and then
@@ -912,7 +912,7 @@ package body Exp_Attr is
                     Make_Op_Gt (Loc,
                       Left_Opnd  =>
                         Make_Attribute_Reference (Loc,
-                          Prefix         => New_Reference_To (Array_Nam, Loc),
+                          Prefix         => New_Occurrence_Of (Array_Nam, Loc),
                           Attribute_Name => Name_Length,
                           Expressions    => New_List (
                             Make_Integer_Literal (Loc, Dim))),
@@ -1000,13 +1000,13 @@ package body Exp_Attr is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp_Id,
           Constant_Present    => True,
-          Object_Definition   => New_Reference_To (Typ, Loc),
+          Object_Definition   => New_Occurrence_Of (Typ, Loc),
           Expression          => Relocate_Node (Pref));
       Append_To (Decls, Temp_Decl);
 
       --  Step 4: Analyze all bits
 
-      Rewrite (N, New_Reference_To (Temp_Id, Loc));
+      Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
 
       Installed := Current_Scope = Scope (Loop_Id);
 
@@ -1835,7 +1835,7 @@ package body Exp_Attr is
          then
             Rewrite (N,
               Make_Function_Call (Loc,
-                Name => New_Reference_To (RTE (RE_Base_Address), Loc),
+                Name => New_Occurrence_Of (RTE (RE_Base_Address), Loc),
                 Parameter_Associations => New_List (
                   Relocate_Node (N))));
             Analyze (N);
@@ -1884,7 +1884,7 @@ package body Exp_Attr is
             else
                New_Node :=
                  Make_Function_Call (Loc,
-                   Name => New_Reference_To (RTE (RE_Get_Alignment), Loc),
+                   Name => New_Occurrence_Of (RTE (RE_Get_Alignment), Loc),
                    Parameter_Associations => New_List (New_Node));
             end if;
 
@@ -2126,7 +2126,7 @@ package body Exp_Attr is
 
             Rewrite (N,
               Make_Function_Call (Loc,
-                Name => New_Reference_To (RTE (RE_Get_Version_String), Loc),
+                Name => New_Occurrence_Of (RTE (RE_Get_Version_String), Loc),
                 Parameter_Associations => New_List (
                   New_Occurrence_Of (E, Loc))));
          end if;
@@ -2164,11 +2164,11 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Function_Call (Loc,
                 Name =>
-                  New_Reference_To (RTE (RE_Callable), Loc),
+                  New_Occurrence_Of (RTE (RE_Callable), Loc),
                 Parameter_Associations => New_List (
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
-                      New_Reference_To (RTE (RO_ST_Task_Id), Loc),
+                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
                     Expression =>
                       Make_Selected_Component (Loc,
                         Prefix =>
@@ -2206,12 +2206,12 @@ package body Exp_Attr is
             case Corresponding_Runtime_Package (Conctype) is
                when System_Tasking_Protected_Objects_Entries =>
                   Name :=
-                    New_Reference_To
+                    New_Occurrence_Of
                       (RTE (RE_Protected_Entry_Caller), Loc);
 
                when System_Tasking_Protected_Objects_Single_Entry =>
                   Name :=
-                    New_Reference_To
+                    New_Occurrence_Of
                       (RTE (RE_Protected_Single_Entry_Caller), Loc);
 
                when others =>
@@ -2223,7 +2223,7 @@ package body Exp_Attr is
                 Make_Function_Call (Loc,
                   Name => Name,
                   Parameter_Associations => New_List (
-                    New_Reference_To
+                    New_Occurrence_Of
                       (Find_Protection_Object (Current_Scope), Loc)))));
 
          --  Task case
@@ -2255,7 +2255,7 @@ package body Exp_Attr is
               Unchecked_Convert_To (Id_Kind,
                 Make_Function_Call (Loc,
                   Name =>
-                    New_Reference_To (RTE (RE_Task_Entry_Caller), Loc),
+                    New_Occurrence_Of (RTE (RE_Task_Entry_Caller), Loc),
                   Parameter_Associations => New_List (
                     Make_Integer_Literal (Loc,
                       Intval => Int (Nest_Depth))))));
@@ -2421,7 +2421,7 @@ package body Exp_Attr is
                                and then Is_Limited_Type (Ptyp));
                end if;
 
-               Rewrite (N, New_Reference_To (Boolean_Literals (Res), Loc));
+               Rewrite (N, New_Occurrence_Of (Boolean_Literals (Res), Loc));
             end;
 
          --  Prefix is not an entity name. These are also cases where we can
@@ -2433,7 +2433,7 @@ package body Exp_Attr is
 
          else
             Rewrite (N,
-              New_Reference_To (
+              New_Occurrence_Of (
                 Boolean_Literals (
                   not Is_Variable (Pref)
                     or else
@@ -2503,26 +2503,26 @@ package body Exp_Attr is
          if Is_Protected_Type (Conctyp) then
             case Corresponding_Runtime_Package (Conctyp) is
                when System_Tasking_Protected_Objects_Entries =>
-                  Name := New_Reference_To (RTE (RE_Protected_Count), Loc);
+                  Name := New_Occurrence_Of (RTE (RE_Protected_Count), Loc);
 
                   Call :=
                     Make_Function_Call (Loc,
                       Name => Name,
                       Parameter_Associations => New_List (
-                        New_Reference_To
+                        New_Occurrence_Of
                           (Find_Protection_Object (Current_Scope), Loc),
                         Entry_Index_Expression
                           (Loc, Entry_Id, Index, Scope (Entry_Id))));
 
                when System_Tasking_Protected_Objects_Single_Entry =>
                   Name :=
-                    New_Reference_To (RTE (RE_Protected_Count_Entry), Loc);
+                    New_Occurrence_Of (RTE (RE_Protected_Count_Entry), Loc);
 
                   Call :=
                     Make_Function_Call (Loc,
                       Name => Name,
                       Parameter_Associations => New_List (
-                        New_Reference_To
+                        New_Occurrence_Of
                           (Find_Protection_Object (Current_Scope), Loc)));
 
                when others =>
@@ -2534,7 +2534,7 @@ package body Exp_Attr is
          else
             Call :=
               Make_Function_Call (Loc,
-                Name => New_Reference_To (RTE (RE_Task_Count), Loc),
+                Name => New_Occurrence_Of (RTE (RE_Task_Count), Loc),
                 Parameter_Associations => New_List (
                   Entry_Index_Expression (Loc,
                     Entry_Id, Index, Scope (Entry_Id))));
@@ -2802,7 +2802,7 @@ package body Exp_Attr is
                  Left_Opnd =>
                    Make_Function_Call (Loc,
                      Name =>
-                       New_Reference_To (TSS (Btyp, TSS_Rep_To_Pos), Loc),
+                       New_Occurrence_Of (TSS (Btyp, TSS_Rep_To_Pos), Loc),
                      Parameter_Associations => New_List (
                        Relocate_Node (Duplicate_Subexpr (Expr)),
                          New_Occurrence_Of (Standard_False, Loc))),
@@ -2834,7 +2834,7 @@ package body Exp_Attr is
       begin
          Rewrite (N,
            Make_Function_Call (Loc,
-             Name => New_Reference_To (RTE (RE_External_Tag), Loc),
+             Name => New_Occurrence_Of (RTE (RE_External_Tag), Loc),
              Parameter_Associations => New_List (
                Make_Attribute_Reference (Loc,
                  Attribute_Name => Name_Tag,
@@ -2859,7 +2859,7 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_First,
-                Prefix => New_Reference_To (Get_Index_Subtype (N), Loc)));
+                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
 
          elsif Is_Access_Type (Ptyp) then
@@ -2970,17 +2970,17 @@ package body Exp_Attr is
          Rewrite (N,
            Convert_To (Typ,
              Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (RE_Fore), Loc),
+               Name => New_Occurrence_Of (RTE (RE_Fore), Loc),
 
                Parameter_Associations => New_List (
                  Convert_To (Universal_Real,
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Reference_To (Ptyp, Loc),
+                     Prefix => New_Occurrence_Of (Ptyp, Loc),
                      Attribute_Name => Name_First)),
 
                  Convert_To (Universal_Real,
                    Make_Attribute_Reference (Loc,
-                     Prefix => New_Reference_To (Ptyp, Loc),
+                     Prefix => New_Occurrence_Of (Ptyp, Loc),
                      Attribute_Name => Name_Last))))));
 
          Analyze_And_Resolve (N, Typ);
@@ -3087,7 +3087,7 @@ package body Exp_Attr is
       begin
          Rewrite (N,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Reference_To (Ptyp, Loc),
+             Prefix => New_Occurrence_Of (Ptyp, Loc),
              Attribute_Name => Name_Image,
              Expressions => New_List (Relocate_Node (Pref))));
 
@@ -3273,7 +3273,7 @@ package body Exp_Attr is
                           Expressions => New_List (
                             Relocate_Node (Duplicate_Subexpr (Strm)))),
                         Make_Attribute_Reference (Loc,
-                          Prefix => New_Reference_To (P_Type, Loc),
+                          Prefix => New_Occurrence_Of (P_Type, Loc),
                           Attribute_Name => Name_Tag)));
 
                   Dnn := Make_Temporary (Loc, 'D', Expr);
@@ -3439,7 +3439,7 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Attribute_Reference (Loc,
                 Attribute_Name => Name_Last,
-                Prefix => New_Reference_To (Get_Index_Subtype (N), Loc)));
+                Prefix => New_Occurrence_Of (Get_Index_Subtype (N), Loc)));
             Analyze_And_Resolve (N, Typ);
 
          elsif Is_Access_Type (Ptyp) then
@@ -3590,7 +3590,7 @@ package body Exp_Attr is
                Rewrite (N,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Range_Length,
-                   Prefix => New_Reference_To (Ityp, Loc)));
+                   Prefix => New_Occurrence_Of (Ityp, Loc)));
                Analyze_And_Resolve (N, Typ);
             end if;
 
@@ -3810,13 +3810,13 @@ package body Exp_Attr is
                   Convert_To (Universal_Integer,
                     Make_Function_Call (Loc,
                       Name                   =>
-                        New_Reference_To
+                        New_Occurrence_Of
                           (RTE (RE_Header_Size_With_Padding), Loc),
 
                       Parameter_Associations => New_List (
                         Make_Attribute_Reference (Loc,
                           Prefix         =>
-                            New_Reference_To (Ptyp, Loc),
+                            New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Alignment))))));
 
             --  Add a conversion to the target type
@@ -3824,7 +3824,7 @@ package body Exp_Attr is
             if not Conversion_Added then
                Rewrite (Attr,
                  Make_Type_Conversion (Loc,
-                   Subtype_Mark => New_Reference_To (Typ, Loc),
+                   Subtype_Mark => New_Occurrence_Of (Typ, Loc),
                    Expression   => Relocate_Node (Attr)));
             end if;
 
@@ -4370,7 +4370,7 @@ package body Exp_Attr is
                  Convert_To (Typ,
                    Make_Function_Call (Loc,
                      Name =>
-                       New_Reference_To (TSS (Etyp, TSS_Rep_To_Pos), Loc),
+                       New_Occurrence_Of (TSS (Etyp, TSS_Rep_To_Pos), Loc),
                      Parameter_Associations => Exprs)));
 
                Analyze_And_Resolve (N, Typ);
@@ -4472,7 +4472,7 @@ package body Exp_Attr is
                         Right_Opnd =>
                           Make_Function_Call (Loc,
                             Name =>
-                              New_Reference_To
+                              New_Occurrence_Of
                                (TSS (Etyp, TSS_Rep_To_Pos), Loc),
 
                             Parameter_Associations =>
@@ -4495,14 +4495,14 @@ package body Exp_Attr is
                Rewrite (N,
                  Make_Indexed_Component (Loc,
                    Prefix =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Enum_Pos_To_Rep (Etyp), Loc),
                    Expressions => New_List (
                      Make_Op_Subtract (Loc,
                     Left_Opnd =>
                       Make_Function_Call (Loc,
                         Name =>
-                          New_Reference_To
+                          New_Occurrence_Of
                             (TSS (Etyp, TSS_Rep_To_Pos), Loc),
                           Parameter_Associations => Exprs),
                     Right_Opnd => Make_Integer_Literal (Loc, 1)))));
@@ -4608,7 +4608,7 @@ package body Exp_Attr is
                         Make_Selected_Component (Loc,
                           Prefix =>
                             Unchecked_Convert_To (New_Itype,
-                              New_Reference_To
+                              New_Occurrence_Of
                                 (First_Entity
                                   (Protected_Body_Subprogram (Subprg)),
                                  Loc)),
@@ -4624,7 +4624,7 @@ package body Exp_Attr is
                  Make_Attribute_Reference (Loc,
                     Prefix =>
                       Make_Selected_Component (Loc,
-                        Prefix => New_Reference_To
+                        Prefix => New_Occurrence_Of
                                     (First_Entity
                                       (Protected_Body_Subprogram (Subprg)),
                                        Loc),
@@ -4636,10 +4636,10 @@ package body Exp_Attr is
 
             if Number_Entries (Conctyp) = 0 then
                RT_Subprg_Name :=
-                 New_Reference_To (RTE (RE_Get_Ceiling), Loc);
+                 New_Occurrence_Of (RTE (RE_Get_Ceiling), Loc);
             else
                RT_Subprg_Name :=
-                 New_Reference_To (RTE (RO_PE_Get_Ceiling), Loc);
+                 New_Occurrence_Of (RTE (RO_PE_Get_Ceiling), Loc);
             end if;
 
             Call :=
@@ -5044,8 +5044,8 @@ package body Exp_Attr is
       when Attribute_Simple_Storage_Pool =>
          Rewrite (N,
            Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Reference_To (Etype (N), Loc),
-             Expression   => New_Reference_To (Entity (N), Loc)));
+             Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
+             Expression   => New_Occurrence_Of (Entity (N), Loc)));
          Analyze_And_Resolve (N, Typ);
 
       ----------
@@ -5151,7 +5151,7 @@ package body Exp_Attr is
 
             New_Node :=
               Make_Function_Call (Loc,
-                Name => New_Reference_To
+                Name => New_Occurrence_Of
                   (Find_Prim_Op (Ptyp, Name_uSize), Loc),
                 Parameter_Associations => New_List (Pref));
 
@@ -5298,8 +5298,8 @@ package body Exp_Attr is
       when Attribute_Storage_Pool =>
          Rewrite (N,
            Make_Type_Conversion (Loc,
-             Subtype_Mark => New_Reference_To (Etype (N), Loc),
-             Expression   => New_Reference_To (Entity (N), Loc)));
+             Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
+             Expression   => New_Occurrence_Of (Entity (N), Loc)));
          Analyze_And_Resolve (N, Typ);
 
       ------------------
@@ -5322,12 +5322,12 @@ package body Exp_Attr is
             if Present (Storage_Size_Variable (Root_Type (Ptyp))) then
                Rewrite (N,
                  Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (Typ, Loc),
+                   Prefix => New_Occurrence_Of (Typ, Loc),
                    Attribute_Name => Name_Max,
                    Expressions => New_List (
                      Make_Integer_Literal (Loc, 0),
                      Convert_To (Typ,
-                       New_Reference_To
+                       New_Occurrence_Of
                          (Storage_Size_Variable (Root_Type (Ptyp)), Loc)))));
 
             elsif Present (Associated_Storage_Pool (Root_Type (Ptyp))) then
@@ -5382,10 +5382,10 @@ package body Exp_Attr is
                     OK_Convert_To (Typ,
                       Make_Function_Call (Loc,
                         Name =>
-                          New_Reference_To (Alloc_Op, Loc),
+                          New_Occurrence_Of (Alloc_Op, Loc),
 
                         Parameter_Associations => New_List (
-                          New_Reference_To
+                          New_Occurrence_Of
                             (Associated_Storage_Pool
                                (Root_Type (Ptyp)), Loc)))));
                end if;
@@ -5427,7 +5427,7 @@ package body Exp_Attr is
                        New_List (
                          Make_Function_Call (Loc,
                            Name =>
-                             New_Reference_To (RTE (RE_Self), Loc))))));
+                             New_Occurrence_Of (RTE (RE_Self), Loc))))));
 
             elsif not Is_Entity_Name (Pref)
               or else not Is_Type (Entity (Pref))
@@ -5461,7 +5461,7 @@ package body Exp_Attr is
                        RTE (RE_Adjust_Storage_Size), Loc),
                      Parameter_Associations =>
                        New_List (
-                         New_Reference_To (
+                         New_Occurrence_Of (
                            Storage_Size_Variable (Ptyp), Loc)))));
             else
                --  Get system default
@@ -5521,7 +5521,7 @@ package body Exp_Attr is
                         Right_Opnd =>
                           Make_Function_Call (Loc,
                             Name =>
-                              New_Reference_To
+                              New_Occurrence_Of
                                (TSS (Etyp, TSS_Rep_To_Pos), Loc),
 
                             Parameter_Associations =>
@@ -5543,14 +5543,14 @@ package body Exp_Attr is
                Rewrite (N,
                  Make_Indexed_Component (Loc,
                    Prefix =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Enum_Pos_To_Rep (Etyp), Loc),
                    Expressions => New_List (
                      Make_Op_Add (Loc,
                        Left_Opnd =>
                          Make_Function_Call (Loc,
                            Name =>
-                             New_Reference_To
+                             New_Occurrence_Of
                                (TSS (Etyp, TSS_Rep_To_Pos), Loc),
                            Parameter_Associations => Exprs),
                        Right_Opnd => Make_Integer_Literal (Loc, 1)))));
@@ -5621,7 +5621,7 @@ package body Exp_Attr is
             if Tagged_Type_Expansion then
                Rewrite (N,
                  Unchecked_Convert_To (RTE (RE_Tag),
-                   New_Reference_To
+                   New_Occurrence_Of
                      (Node (First_Elmt (Access_Disp_Table (Ttyp))), Loc)));
                Analyze_And_Resolve (N, RTE (RE_Tag));
             end if;
@@ -5658,7 +5658,7 @@ package body Exp_Attr is
               Make_Selected_Component (Loc,
                 Prefix => Relocate_Node (Pref),
                 Selector_Name =>
-                  New_Reference_To (First_Tag_Component (Ttyp), Loc)));
+                  New_Occurrence_Of (First_Tag_Component (Ttyp), Loc)));
             Analyze_And_Resolve (N, RTE (RE_Tag));
          end if;
       end Tag;
@@ -5683,11 +5683,11 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Function_Call (Loc,
                 Name =>
-                  New_Reference_To (RTE (RE_Terminated), Loc),
+                  New_Occurrence_Of (RTE (RE_Terminated), Loc),
                 Parameter_Associations => New_List (
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
-                      New_Reference_To (RTE (RO_ST_Task_Id), Loc),
+                      New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
                     Expression =>
                       Make_Selected_Component (Loc,
                         Prefix =>
@@ -5871,7 +5871,7 @@ package body Exp_Attr is
                            Right_Opnd =>
                              Make_Function_Call (Loc,
                                Name =>
-                                 New_Reference_To
+                                 New_Occurrence_Of
                                    (TSS (Etyp, TSS_Rep_To_Pos), Loc),
                                Parameter_Associations => New_List (
                                  Rep_Node,
@@ -5881,7 +5881,7 @@ package body Exp_Attr is
             else
                Rewrite (N,
                  Make_Indexed_Component (Loc,
-                   Prefix => New_Reference_To (Enum_Pos_To_Rep (Etyp), Loc),
+                   Prefix => New_Occurrence_Of (Enum_Pos_To_Rep (Etyp), Loc),
                    Expressions => New_List (
                      Convert_To (Standard_Integer,
                        Relocate_Node (First (Exprs))))));
@@ -6081,7 +6081,7 @@ package body Exp_Attr is
                 Left_Opnd =>
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Reference_To (TSS (Btyp, TSS_Rep_To_Pos), Loc),
+                      New_Occurrence_Of (TSS (Btyp, TSS_Rep_To_Pos), Loc),
                     Parameter_Associations => New_List (
                       Pref,
                       New_Occurrence_Of (Standard_False, Loc))),
@@ -6379,7 +6379,7 @@ package body Exp_Attr is
              Expressions    => New_List (
                Make_Function_Call (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Wide_String_To_String), Loc),
+                   New_Occurrence_Of (RTE (RE_Wide_String_To_String), Loc),
 
                  Parameter_Associations => New_List (
                    Relocate_Node (First (Exprs)),
@@ -6417,7 +6417,8 @@ package body Exp_Attr is
              Expressions    => New_List (
                Make_Function_Call (Loc,
                  Name =>
-                   New_Reference_To (RTE (RE_Wide_Wide_String_To_String), Loc),
+                   New_Occurrence_Of
+                     (RTE (RE_Wide_Wide_String_To_String), Loc),
 
                  Parameter_Associations => New_List (
                    Relocate_Node (First (Exprs)),
@@ -6734,7 +6735,7 @@ package body Exp_Attr is
                  Right_Opnd =>
                    Make_Attribute_Reference (Loc,
                      Prefix =>
-                       New_Reference_To (Base_Type (Etype (Prefix (N))), Loc),
+                       New_Occurrence_Of (Base_Type (Etype (Prefix (N))), Loc),
                      Attribute_Name => Cnam)),
              Reason => CE_Overflow_Check_Failed));
       end if;
@@ -6809,7 +6810,7 @@ package body Exp_Attr is
 
             LHS :=
               Make_Indexed_Component (Loc,
-                Prefix      => New_Reference_To (Temp, Loc),
+                Prefix      => New_Occurrence_Of (Temp, Loc),
                 Expressions => Exprs);
 
          --  A record component update appears in the following form:
@@ -6824,7 +6825,7 @@ package body Exp_Attr is
          else pragma Assert (Is_Record_Type (Typ));
             LHS :=
               Make_Selected_Component (Loc,
-                Prefix        => New_Reference_To (Temp, Loc),
+                Prefix        => New_Occurrence_Of (Temp, Loc),
                 Selector_Name => Relocate_Node (Comp));
          end if;
 
@@ -6876,9 +6877,10 @@ package body Exp_Attr is
                Make_Assignment_Statement (Loc,
                  Name       =>
                    Make_Indexed_Component (Loc,
-                     Prefix      => New_Reference_To (Temp, Loc),
+                     Prefix      => New_Occurrence_Of (Temp, Loc),
                      Expressions => New_List (
-                       Convert_To (Index_Typ, New_Reference_To (Index, Loc)))),
+                       Convert_To (Index_Typ,
+                         New_Occurrence_Of (Index, Loc)))),
                  Expression => Relocate_Node (Expr))),
 
              End_Label        => Empty));
@@ -6908,7 +6910,7 @@ package body Exp_Attr is
       Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Temp,
-          Object_Definition   => New_Reference_To (Typ, Loc),
+          Object_Definition   => New_Occurrence_Of (Typ, Loc),
           Expression          => Relocate_Node (Pref)));
 
       --  Process the update aggregate
@@ -6932,7 +6934,7 @@ package body Exp_Attr is
 
       --  The attribute is replaced by a reference to the anonymous object
 
-      Rewrite (N, New_Reference_To (Temp, Loc));
+      Rewrite (N, New_Occurrence_Of (Temp, Loc));
       Analyze (N);
    end Expand_Update_Attribute;
 

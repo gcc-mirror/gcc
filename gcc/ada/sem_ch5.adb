@@ -2039,7 +2039,7 @@ package body Sem_Ch5 is
                    Defining_Identifier => Subt,
                    Subtype_Indication  =>
                       Make_Subtype_Indication (Loc,
-                        Subtype_Mark => New_Reference_To (Indx, Loc),
+                        Subtype_Mark => New_Occurrence_Of (Indx, Loc),
                         Constraint   =>
                           Make_Range_Constraint (Loc, Relocate_Node (DS))));
                Insert_Before (Loop_Nod, Decl);
@@ -2047,7 +2047,7 @@ package body Sem_Ch5 is
 
                Rewrite (DS,
                  Make_Attribute_Reference (Loc,
-                   Prefix         => New_Reference_To (Subt, Loc),
+                   Prefix         => New_Occurrence_Of (Subt, Loc),
                    Attribute_Name => Attribute_Name (DS)));
 
                Analyze (DS);

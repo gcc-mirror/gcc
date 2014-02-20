@@ -1377,7 +1377,7 @@ package body Sem_Aggr is
                Expr :=
                  Make_Attribute_Reference
                    (Loc,
-                    Prefix         => New_Reference_To (Index_Typ, Loc),
+                    Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                     Attribute_Name => Name_Val,
                     Expressions    => New_List (Expr_Pos));
             end if;
@@ -1400,7 +1400,7 @@ package body Sem_Aggr is
             To_Pos :=
               Make_Attribute_Reference
                 (Loc,
-                 Prefix         => New_Reference_To (Index_Typ, Loc),
+                 Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                  Attribute_Name => Name_Pos,
                  Expressions    => New_List (Duplicate_Subexpr (To)));
 
@@ -1412,7 +1412,7 @@ package body Sem_Aggr is
             Expr :=
               Make_Attribute_Reference
                 (Loc,
-                 Prefix         => New_Reference_To (Index_Typ, Loc),
+                 Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                  Attribute_Name => Name_Val,
                  Expressions    => New_List (Expr_Pos));
 
@@ -1432,11 +1432,12 @@ package body Sem_Aggr is
                   Insert_Action (N,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Def_Id,
-                      Object_Definition   => New_Reference_To (Index_Typ, Loc),
+                      Object_Definition   =>
+                        New_Occurrence_Of (Index_Typ, Loc),
                       Constant_Present    => True,
                       Expression          => Relocate_Node (Expr)));
 
-                  Expr := New_Reference_To (Def_Id, Loc);
+                  Expr := New_Occurrence_Of (Def_Id, Loc);
                end;
             end if;
          end if;
