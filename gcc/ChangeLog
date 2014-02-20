@@ -1,3 +1,10 @@
+2014-02-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (replace_uses_by): Mark altered BBs before
+	doing the substitution.
+	(verify_gimple_assign_single): Also verify bare MEM_REFs
+	on the lhs.
+
 2014-02-20  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/55260
