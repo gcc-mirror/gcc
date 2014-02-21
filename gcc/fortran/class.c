@@ -218,6 +218,14 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 	break;
       tail = &((*tail)->next);
     }
+  if (derived->components->next->ts.type == BT_DERIVED &&
+      derived->components->next->ts.u.derived == NULL)
+    {
+      /* Fix up missing vtype.  */
+      gfc_symbol *vtab = gfc_find_derived_vtab (derived->components->ts.u.derived);
+      gcc_assert (vtab);
+      derived->components->next->ts.u.derived = vtab->ts.u.derived;
+    }
   if (*tail != NULL && strcmp (name, "_data") == 0)
     next = *tail;
   (*tail) = gfc_get_ref();
@@ -543,7 +551,7 @@ gfc_intrinsic_hash_value (gfc_typespec *ts)
 
 bool
 gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
-			gfc_array_spec **as, bool delayed_vtab)
+			gfc_array_spec **as)
 {
   char name[GFC_MAX_SYMBOL_LEN+1], tname[GFC_MAX_SYMBOL_LEN+1];
   gfc_symbol *fclass;
@@ -637,16 +645,17 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
       if (!gfc_add_component (fclass, "_vptr", &c))
 	return false;
       c->ts.type = BT_DERIVED;
-      if (delayed_vtab
-	  || (ts->u.derived->f2k_derived
-	      && ts->u.derived->f2k_derived->finalizers))
-	c->ts.u.derived = NULL;
-      else
+
+      if (ts->u.derived->attr.unlimited_polymorphic)
 	{
 	  vtab = gfc_find_derived_vtab (ts->u.derived);
 	  gcc_assert (vtab);
 	  c->ts.u.derived = vtab->ts.u.derived;
 	}
+      else
+	/* Build vtab later.  */
+	c->ts.u.derived = NULL;
+
       c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
@@ -790,7 +799,9 @@ has_finalizer_component (gfc_symbol *derived)
 static bool
 comp_is_finalizable (gfc_component *comp)
 {
-  if (comp->attr.allocatable && comp->ts.type != BT_CLASS)
+  if (comp->attr.proc_pointer)
+    return false;
+  else if (comp->attr.allocatable && comp->ts.type != BT_CLASS)
     return true;
   else if (comp->ts.type == BT_DERIVED && !comp->attr.pointer
 	   && (comp->ts.u.derived->attr.alloc_comp
