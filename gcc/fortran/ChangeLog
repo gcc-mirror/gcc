@@ -1,3 +1,17 @@
+2014-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60234
+	* gfortran.h (gfc_build_class_symbol): Removed argument.
+	* class.c (gfc_add_component_ref): Fix up missing vtype if necessary.
+	(gfc_build_class_symbol): Remove argument 'delayed_vtab'. vtab is always
+	delayed now, except for unlimited polymorphics.
+	(comp_is_finalizable): Procedure pointer components are not finalizable.
+	* decl. (build_sym, build_struct, attr_decl1): Removed argument of
+	'gfc_build_class_symbol'.
+	* match.c (copy_ts_from_selector_to_associate, select_type_set_tmp):
+	Ditto.
+	* symbol.c (gfc_set_default_type): Ditto.
+
 2014-02-19  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60232

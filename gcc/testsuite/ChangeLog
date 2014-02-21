@@ -1,3 +1,8 @@
+2014-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60234
+	* gfortran.dg/finalize_23.f90: New.
+
 2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60052

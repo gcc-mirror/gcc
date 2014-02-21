@@ -5148,8 +5148,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
       assoc_sym->ts.type = BT_CLASS;
       assoc_sym->ts.u.derived = CLASS_DATA (selector)->ts.u.derived;
       assoc_sym->attr.pointer = 1;
-      gfc_build_class_symbol (&assoc_sym->ts, &assoc_sym->attr,
-			      &assoc_sym->as, false);
+      gfc_build_class_symbol (&assoc_sym->ts, &assoc_sym->attr, &assoc_sym->as);
     }
 }
 
@@ -5273,7 +5272,7 @@ select_type_set_tmp (gfc_typespec *ts)
 
   if (ts->type == BT_CLASS)
     gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
-			    &tmp->n.sym->as, false);
+			    &tmp->n.sym->as);
     }
 
   /* Add an association for it, so the rest of the parser knows it is
