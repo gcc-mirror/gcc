@@ -21457,7 +21457,7 @@ ix86_expand_vec_perm (rtx operands[])
 	  return;
 
 	case V8SFmode:
-	  mask = gen_lowpart (V8SFmode, mask);
+	  mask = gen_lowpart (V8SImode, mask);
 	  if (one_operand_shuffle)
 	    emit_insn (gen_avx2_permvarv8sf (target, op0, mask));
 	  else
