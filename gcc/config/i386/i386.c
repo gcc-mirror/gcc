@@ -36855,6 +36855,9 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
     return false;
   gcc_assert (d->op0 != d->op1);
 
+  if (d->testing_p)
+    return true;
+
   nelt = d->nelt;
   eltsz = GET_MODE_SIZE (GET_MODE_INNER (d->vmode));
 
