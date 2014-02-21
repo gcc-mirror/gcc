@@ -3986,7 +3986,7 @@ expand_or_defer_fn_1 (tree fn)
 	     linkage of all functions, and as that causes writes to
 	     the data mapped in from the PCH file, it's advantageous
 	     to mark the functions at this point.  */
-	  if (!DECL_IMPLICIT_INSTANTIATION (fn))
+	  if (!DECL_IMPLICIT_INSTANTIATION (fn) || DECL_DEFAULTED_FN (fn))
 	    {
 	      /* This function must have external linkage, as
 		 otherwise DECL_INTERFACE_KNOWN would have been
