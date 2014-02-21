@@ -1,3 +1,16 @@
+2014-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56490
+	* params.def (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS): New param.
+	* tree-ssa-uninit.c: Include params.h.
+	(compute_control_dep_chain): Add num_calls argument, return false
+	if it exceed PARAM_UNINIT_CONTROL_DEP_ATTEMPTS param, pass
+	num_calls to recursive call.
+	(find_predicates): Change dep_chain into normal array,
+	cur_chain into auto_vec<edge, MAX_CHAIN_LEN + 1>, add num_calls
+	variable and adjust compute_control_dep_chain caller.
+	(find_def_preds): Likewise.
+
 2014-02-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_for) [flags & TDF_RAW]
