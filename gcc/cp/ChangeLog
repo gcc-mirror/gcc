@@ -1,5 +1,9 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60216
+	* pt.c (register_specialization): Copy DECL_DELETED_FN to clones.
+	(check_explicit_specialization): Don't clone.
+
 	PR c++/60219
 	* pt.c (coerce_template_parms): Bail if argument packing fails.
 
