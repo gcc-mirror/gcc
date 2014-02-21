@@ -1,5 +1,11 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60241
+	* pt.c (lookup_template_class_1): Update DECL_TEMPLATE_INSTANTIATIONS
+	of the partial instantiation, not the most general template.
+	(maybe_process_partial_specialization): Reassign everything on
+	that list.
+
 	PR c++/60216
 	* pt.c (register_specialization): Copy DECL_DELETED_FN to clones.
 	(check_explicit_specialization): Don't clone.
