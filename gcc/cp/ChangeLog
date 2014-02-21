@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60248
+	* mangle.c (mangle_decl): Don't make an alias for a TYPE_DECL.
+
 	PR c++/60252
 	* lambda.c (maybe_resolve_dummy): Don't try to capture this
 	in declaration context.
