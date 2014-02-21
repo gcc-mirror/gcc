@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 
-static const char undefined[] = "UNDEFINED";
+static const char yes[] = "YES", no[] = "NO", undefined[] = "UNDEFINED";
 
 
 /* inquire_via_unit()-- Inquiry via unit number.  The unit might not exist. */
@@ -130,10 +130,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  {
 	  case ACCESS_DIRECT:
 	  case ACCESS_STREAM:
-	    p = "NO";
+	    p = no;
 	    break;
 	  case ACCESS_SEQUENTIAL:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad access");
@@ -151,10 +151,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	  {
 	  case ACCESS_SEQUENTIAL:
 	  case ACCESS_STREAM:
-	    p = "NO";
+	    p = no;
 	    break;
 	  case ACCESS_DIRECT:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad access");
@@ -191,10 +191,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.form)
 	  {
 	  case FORM_FORMATTED:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  case FORM_UNFORMATTED:
-	    p = "NO";
+	    p = no;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad form");
@@ -211,10 +211,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.form)
 	  {
 	  case FORM_FORMATTED:
-	    p = "NO";
+	    p = no;
 	    break;
 	  case FORM_UNFORMATTED:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad form");
@@ -266,10 +266,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.pad)
 	  {
 	  case PAD_YES:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  case PAD_NO:
-	    p = "NO";
+	    p = no;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad pad");
@@ -336,10 +336,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	    switch (u->flags.async)
 	    {
 	      case ASYNC_YES:
-		p = "YES";
+		p = yes;
 		break;
 	      case ASYNC_NO:
-		p = "NO";
+		p = no;
 		break;
 	      default:
 		internal_error (&iqp->common, "inquire_via_unit(): Bad async");
@@ -423,10 +423,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	      {
 	      case ACCESS_SEQUENTIAL:
 	      case ACCESS_DIRECT:
-		p = "NO";
+		p = no;
 		break;
 	      case ACCESS_STREAM:
-		p = "YES";
+		p = yes;
 		break;
 	      default:
 		internal_error (&iqp->common, "inquire_via_unit(): Bad pad");
@@ -499,25 +499,19 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if ((cf & IOPARM_INQUIRE_HAS_READ) != 0)
     {
-      p = (u == NULL) ? inquire_read (NULL, 0) :
-	inquire_read (u->file, u->file_len);
-
+      p = (!u || u->flags.action == ACTION_WRITE) ? no : yes;
       cf_strcpy (iqp->read, iqp->read_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_WRITE) != 0)
     {
-      p = (u == NULL) ? inquire_write (NULL, 0) :
-	inquire_write (u->file, u->file_len);
-
+      p = (!u || u->flags.action == ACTION_READ) ? no : yes;
       cf_strcpy (iqp->write, iqp->write_len, p);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_READWRITE) != 0)
     {
-      p = (u == NULL) ? inquire_readwrite (NULL, 0) :
-	inquire_readwrite (u->file, u->file_len);
-
+      p = (!u || u->flags.action != ACTION_READWRITE) ? no : yes;
       cf_strcpy (iqp->readwrite, iqp->readwrite_len, p);
     }
 
@@ -552,10 +546,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.pad)
 	  {
 	  case PAD_NO:
-	    p = "NO";
+	    p = no;
 	    break;
 	  case PAD_YES:
-	    p = "YES";
+	    p = yes;
 	    break;
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad pad");
