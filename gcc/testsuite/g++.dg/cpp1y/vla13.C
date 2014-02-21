@@ -1,4 +1,4 @@
-// PR c++/60277
+// PR c++/60227
 // { dg-options "-std=c++1y -pedantic-errors" }
 
 void foo(int n)
