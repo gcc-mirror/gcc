@@ -403,6 +403,13 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 	                     "dependence distance negative.\n");
+	  /* Record a negative dependence distance to later limit the
+	     amount of stmt copying / unrolling we can perform.
+	     Only need to handle read-after-write dependence.  */
+	  if (DR_IS_READ (drb)
+	      && (STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) == 0
+		  || STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) > (unsigned)dist))
+	    STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) = dist;
 	  continue;
 	}
 
