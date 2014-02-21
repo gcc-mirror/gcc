@@ -1,3 +1,11 @@
+2014-02-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60274
+	Revert:
+	PR c++/58606
+	* pt.c (template_parm_to_arg): Call convert_from_reference.
+	(tsubst_template_arg): Don't strip reference refs.
+
 2014-02-20  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/58873
