@@ -3944,16 +3944,17 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
   if (shape)
     {
       mpz_t size;
-
-      if (gfc_array_size (shape, &size)
-	  && mpz_cmp_ui (size, fptr->rank) != 0)
+      if (gfc_array_size (shape, &size))
 	{
+	  if (mpz_cmp_ui (size, fptr->rank) != 0)
+	    {
+	      mpz_clear (size);
+	      gfc_error ("SHAPE argument at %L to C_F_POINTER must have the same "
+			"size as the RANK of FPTR", &shape->where);
+	      return false;
+	    }
 	  mpz_clear (size);
-	  gfc_error ("SHAPE argument at %L to C_F_POINTER must have the same "
-		     "size as the RANK of FPTR", &shape->where);
-	  return false;
 	}
-      mpz_clear (size);
     }
 
   if (fptr->ts.type == BT_CLASS)

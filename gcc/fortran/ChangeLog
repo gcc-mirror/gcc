@@ -1,5 +1,11 @@
 2014-02-21  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/60302
+	* check.c (gfc_check_c_f_pointer): Only clear 'size' if 'gfc_array_size'
+	is successful.
+
+2014-02-21  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/60234
 	* gfortran.h (gfc_build_class_symbol): Removed argument.
 	* class.c (gfc_add_component_ref): Fix up missing vtype if necessary.
