@@ -1,3 +1,9 @@
+2014-02-20  Richard Henderson  <rth@redhat.com>
+
+	PR c++/60272
+	* builtins.c (expand_builtin_atomic_compare_exchange): Always make
+	a new pseudo for OLDVAL.
+
 2014-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57896
