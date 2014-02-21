@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60251
+	* lambda.c (is_normal_capture_proxy): Handle VLA capture.
+
 	PR c++/60167
 	PR c++/60222
 	PR c++/58606

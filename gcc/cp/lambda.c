@@ -250,6 +250,10 @@ is_normal_capture_proxy (tree decl)
     /* It's not a capture proxy.  */
     return false;
 
+  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+    /* VLA capture.  */
+    return true;
+
   /* It is a capture proxy, is it a normal capture?  */
   tree val = DECL_VALUE_EXPR (decl);
   if (val == error_mark_node)
