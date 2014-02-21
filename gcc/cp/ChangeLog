@@ -1,5 +1,9 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60187
+	* parser.c (cp_parser_enum_specifier): Call
+	check_for_bare_parameter_packs.
+
 	PR c++/59347
 	* pt.c (tsubst_decl) [TYPE_DECL]: Don't try to instantiate an
 	erroneous typedef.
