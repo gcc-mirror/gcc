@@ -1,3 +1,21 @@
+2014-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm): Use V8SImode
+	mode for mask of V8SFmode permutation.
+
+	Backport from 4.8 branch
+	2014-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57896
+	* config/i386/i386.c (expand_vec_perm_interleave2): Don't call
+	gen_reg_rtx if d->testing_p.
+	(expand_vec_perm_pshufb2, expand_vec_perm_even_odd_1,
+	expand_vec_perm_broadcast_1): Return early if d->testing_p and
+	we will certainly return true.
+
 2014-02-20  Terry Guo  <terry.guo@arm.com>
 
 	Backport from mainline
