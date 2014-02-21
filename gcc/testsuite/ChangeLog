@@ -1,3 +1,11 @@
+2014-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/i386-2.C (dg-options): Add -mavx512pf.
+	* g++.dg/other/i386-3.C (dg-options): Ditto.
+	* gcc.target/i386/sse-12.c (dg-options): Add -msha.
+	* gcc.target/i386/sse-13.c (dg-options): Add -mavx512er, -mavx512cd,
+	-mavx512pf and -msha.
+
 2014-02-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60276

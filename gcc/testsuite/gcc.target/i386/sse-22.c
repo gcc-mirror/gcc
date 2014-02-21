@@ -99,7 +99,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512pf,avx512er,avx512cd,sha")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
