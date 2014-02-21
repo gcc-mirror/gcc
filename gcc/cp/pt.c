@@ -1419,6 +1419,8 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		    = DECL_DECLARED_INLINE_P (fn);
 		  DECL_SOURCE_LOCATION (clone)
 		    = DECL_SOURCE_LOCATION (fn);
+		  DECL_DELETED_FN (clone)
+		    = DECL_DELETED_FN (fn);
 		}
 	      check_specialization_namespace (tmpl);
 
