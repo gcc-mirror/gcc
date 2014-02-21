@@ -18633,8 +18633,24 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   /* Parse the assignment-expression.  */
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
+  tree saved_class_ptr = NULL_TREE;
+  tree saved_class_ref = NULL_TREE;
+  /* The "this" pointer is not valid in a default argument.  */
+  if (cfun)
+    {
+      saved_class_ptr = current_class_ptr;
+      cp_function_chain->x_current_class_ptr = NULL_TREE;
+      saved_class_ref = current_class_ref;
+      cp_function_chain->x_current_class_ref = NULL_TREE;
+    }
   default_argument
     = cp_parser_initializer (parser, &is_direct_init, &non_constant_p);
+  /* Restore the "this" pointer.  */
+  if (cfun)
+    {
+      cp_function_chain->x_current_class_ptr = saved_class_ptr;
+      cp_function_chain->x_current_class_ref = saved_class_ref;
+    }
   if (BRACE_ENCLOSED_INITIALIZER_P (default_argument))
     maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
   if (template_parm_p)

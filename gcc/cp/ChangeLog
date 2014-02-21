@@ -1,5 +1,9 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60185
+	* parser.c (cp_parser_default_argument): Clear
+	current_class_ptr/current_class_ref like tsubst_default_argument.
+
 	PR c++/60252
 	* lambda.c (maybe_resolve_dummy): Check lambda_function rather
 	than current_binding_level.
