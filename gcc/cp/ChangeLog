@@ -1,3 +1,11 @@
+2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60052
+	PR c++/60053
+	* parser.c (cp_parser_parameter_declaration_list): Correctly reset
+	implicit_template_scope upon leaving an out-of-line generic member
+	function definition.
+
 2014-02-20  Kai Tietz  <ktietz@redhat.com>
 
 	PR c++/58873
