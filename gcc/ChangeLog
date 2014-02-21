@@ -1,5 +1,15 @@
 2014-02-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/60276
+	* tree-vectorizer.h (struct _stmt_vec_info): Add min_neg_dist field.
+	(STMT_VINFO_MIN_NEG_DIST): New macro.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Record
+	STMT_VINFO_MIN_NEG_DIST.
+	* tree-vect-stmts.c (vectorizable_load): Verify if assumptions
+	made for negative dependence distances still hold.
+
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/60291
 	* tree-ssa-live.c (mark_all_vars_used_1): Do not walk
 	DECL_INITIAL for globals not in the current function context.

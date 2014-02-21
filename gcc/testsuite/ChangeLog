@@ -1,3 +1,8 @@
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60276
+	* gcc.dg/vect/pr60276.c: New testcase.
+
 2014-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60234
