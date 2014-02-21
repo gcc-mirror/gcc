@@ -1,3 +1,44 @@
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lvxl): Rename as
+	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
+	V4SI.
+	(altivec_lvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_lvx): Rename as *altivec_lvx_<mode>_internal.
+	(altivec_lvx_<mode>): New define_expand incorporating -maltivec=be
+	semantics where needed.
+	(altivec_stvx): Rename as *altivec_stvx_<mode>_internal.
+	(altivec_stvx_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_stvxl): Rename as *altivec_stvxl_<mode>_internal and use
+	VM2 iterator instead of V4SI.
+	(altivec_stvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	* config/rs6000/rs6000-builtin.def: Add new built-in definitions
+	LVXL_V2DF, LVXL_V2DI, LVXL_V4SF, LVXL_V4SI, LVXL_V8HI, LVXL_V16QI,
+	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI,
+	STVX_V2DF, STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI,
+	STVXL_V2DF, STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI,
+	STVXL_V16QI.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Replace
+	ALTIVEC_BUILTIN_LVX with ALTIVEC_BUILTIN_LVX_<MODE> throughout;
+	similarly for ALTIVEC_BUILTIN_LVXL, ALTIVEC_BUILTIN_STVX, and
+	ALTIVEC_BUILTIN_STVXL.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New
+	prototype.
+	(altivec_expand_stvx_be): Likewise.
+	* config/rs6000/rs6000.c (swap_selector_for_mode): New function.
+	(altivec_expand_lvx_be): Likewise.
+	(altivec_expand_stvx_be): Likewise.
+	(altivec_expand_builtin): Add cases for
+	ALTIVEC_BUILTIN_STVX_<MODE>, ALTIVEC_BUILTIN_STVXL_<MODE>,
+	ALTIVEC_BUILTIN_LVXL_<MODE>, and ALTIVEC_BUILTIN_LVX_<MODE>.
+	(altivec_init_builtins): Add definitions for
+	__builtin_altivec_lvxl_<mode>, __builtin_altivec_lvx_<mode>,
+	__builtin_altivec_stvx_<mode>, and
+	__builtin_altivec_stvxl_<mode>.
+
 2014-02-21  Catherine Moore  <clm@codesourcery.com>
 
 	* doc/invoke.texi (mvirt, mno-virt): Document.

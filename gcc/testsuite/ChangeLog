@@ -1,3 +1,22 @@
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld.c: New test.
+	* gcc.dg/vmx/ld-be-order.c: New test.
+	* gcc.dg/vmx/ld-vsx.c: New test.
+	* gcc.dg/vmx/ld-vsx-be-order.c: New test.
+	* gcc.dg/vmx/ldl.c: New test.
+	* gcc.dg/vmx/ldl-be-order.c: New test.
+	* gcc.dg/vmx/ldl-vsx.c: New test.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: New test.
+	* gcc.dg/vmx/st.c: New test.
+	* gcc.dg/vmx/st-be-order.c: New test.
+	* gcc.dg/vmx/st-vsx.c: New test.
+	* gcc.dg/vmx/st-vsx-be-order.c: New test.
+	* gcc.dg/vmx/stl.c: New test.
+	* gcc.dg/vmx/stl-be-order.c: New test.
+	* gcc.dg/vmx/stl-vsx.c: New test.
+	* gcc.dg/vmx/stl-vsx-be-order.c: New test.
+
 2014-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/i386-2.C (dg-options): Add -mavx512pf.
