@@ -1,5 +1,12 @@
 2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/altivec.md (altivec_vsumsws): Replace second
+	vspltw with vsldoi.
+	(reduc_uplus_v16qi): Use gen_altivec_vsumsws_direct instead of
+	gen_altivec_vsumsws.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* config/rs6000/altivec.md (altivec_lvxl): Rename as
 	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
 	V4SI.

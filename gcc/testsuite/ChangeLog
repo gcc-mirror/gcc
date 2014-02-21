@@ -1,5 +1,10 @@
 2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* gcc.dg/vmx/vsums.c: Check entire result vector.
+	* gcc.dg/vmx/vsums-be-order.c: Likewise.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* gcc.dg/vmx/ld.c: New test.
 	* gcc.dg/vmx/ld-be-order.c: New test.
 	* gcc.dg/vmx/ld-vsx.c: New test.
