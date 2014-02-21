@@ -17262,14 +17262,16 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 				   explain_p);
 	}
 
-      if (TREE_CODE (parm) == ARRAY_TYPE)
+      if (TREE_CODE (parm) == ARRAY_TYPE
+	  && deducible_array_bound (TYPE_DOMAIN (parm)))
 	{
 	  /* Also deduce from the length of the initializer list.  */
 	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
 	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
-	  if (TYPE_DOMAIN (parm) != NULL_TREE)
-	    return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
-				       idx, explain_p);
+	  if (idx == error_mark_node)
+	    return unify_invalid (explain_p);
+	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				     idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the
