@@ -1,3 +1,10 @@
+2014-02-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Rename testsuite directory shared_mutex to shared_timed_mutex
+	for consistency.
+	* testsuite/30_threads/shared_mutex: Moved to...
+	* testsuite/30_threads/shared_timed_mutex: ...here
+
 2014-02-20  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Rename shared_mutex to shared_timed_mutex per C++14 acceptance of N3891.
