@@ -1,3 +1,8 @@
+2014-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60286
+	* gfortran.dg/inquire_16.f90: New.
+
 2014-02-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/nios2/biggot-1.c: New.
