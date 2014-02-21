@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60219
+	* pt.c (coerce_template_parms): Bail if argument packing fails.
+
 	PR c++/60224
 	* decl.c (cp_complete_array_type, maybe_deduce_size_from_array_init):
 	Don't get confused by a CONSTRUCTOR that already has a type.

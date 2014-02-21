@@ -6808,6 +6808,8 @@ coerce_template_parms (tree parms,
           /* Store this argument.  */
           if (arg == error_mark_node)
             lost++;
+	  if (lost)
+	    break;
           TREE_VEC_ELT (new_inner_args, parm_idx) = arg;
 
 	  /* We are done with all of the arguments.  */
