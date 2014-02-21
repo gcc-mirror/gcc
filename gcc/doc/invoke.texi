@@ -779,6 +779,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
 -meva -mno-eva @gol
+-mvirt -mno-virt @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -17446,6 +17447,12 @@ Use (do not use) the MIPS MCU ASE instructions.
 @opindex meva
 @opindex mno-eva
 Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
+
+@item -mvirt
+@itemx -mno-virt
+@opindex mvirt
+@opindex mno-virt
+Use (do not use) the MIPS Virtualization Application Specific instructions.
 
 @item -mlong64
 @opindex mlong64
