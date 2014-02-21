@@ -1,3 +1,9 @@
+2014-02-21  Catherine Moore  <clm@codesourcery.com>
+
+	* doc/invoke.texi (mvirt, mno-virt): Document.
+	* config/mips/mips.opt (mvirt): New option.
+	* config/mips/mips.h (ASM_SPEC): Pass mvirt to the assembler.
+
 2014-02-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60276

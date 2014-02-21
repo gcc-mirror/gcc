@@ -1175,6 +1175,7 @@ struct mips_cpu_info {
 %{mdspr2} %{mno-dspr2} \
 %{mmcu} %{mno-mcu} \
 %{meva} %{mno-eva} \
+%{mvirt} %{mno-virt} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-rm7000} %{mno-fix-rm7000} \
