@@ -1,5 +1,9 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60250
+	* parser.c (cp_parser_direct_declarator): Don't wrap a
+	type-dependent expression in a NOP_EXPR.
+
 	PR c++/60251
 	* lambda.c (is_normal_capture_proxy): Handle VLA capture.
 
