@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60108
+	* semantics.c (expand_or_defer_fn_1): Check DECL_DEFAULTED_FN.
+
 	PR c++/60185
 	* parser.c (cp_parser_default_argument): Clear
 	current_class_ptr/current_class_ref like tsubst_default_argument.
