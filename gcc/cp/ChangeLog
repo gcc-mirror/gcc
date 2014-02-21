@@ -1,5 +1,9 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59347
+	* pt.c (tsubst_decl) [TYPE_DECL]: Don't try to instantiate an
+	erroneous typedef.
+
 	PR c++/60241
 	* pt.c (lookup_template_class_1): Update DECL_TEMPLATE_INSTANTIATIONS
 	of the partial instantiation, not the most general template.

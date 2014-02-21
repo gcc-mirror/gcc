@@ -10824,6 +10824,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	tree type = NULL_TREE;
 	bool local_p;
 
+	if (TREE_TYPE (t) == error_mark_node)
+	  RETURN (error_mark_node);
+
 	if (TREE_CODE (t) == TYPE_DECL
 	    && t == TYPE_MAIN_DECL (TREE_TYPE (t)))
 	  {
