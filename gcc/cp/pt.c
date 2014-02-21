@@ -1440,6 +1440,8 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		    = DECL_DECLARED_INLINE_P (fn);
 		  DECL_SOURCE_LOCATION (clone)
 		    = DECL_SOURCE_LOCATION (fn);
+		  DECL_DELETED_FN (clone)
+		    = DECL_DELETED_FN (fn);
 		}
 	      check_specialization_namespace (tmpl);
 
@@ -2770,15 +2772,16 @@ check_explicit_specialization (tree declarator,
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  else if (DECL_CONSTRUCTOR_P (decl) || DECL_DESTRUCTOR_P (decl))
-	    /* This is indeed a specialization.  In case of constructors
-	       and destructors, we need in-charge and not-in-charge
-	       versions in V3 ABI.  */
-	    clone_function_decl (decl, /*update_method_vec_p=*/0);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
 	  decl = register_specialization (decl, gen_tmpl, targs, is_friend, 0);
+
+	  /* A 'structor should already have clones.  */
+	  gcc_assert (decl == error_mark_node
+		      || !(DECL_CONSTRUCTOR_P (decl)
+			   || DECL_DESTRUCTOR_P (decl))
+		      || DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)));
 	}
     }
 
