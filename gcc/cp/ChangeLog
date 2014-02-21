@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60108
+	* semantics.c (expand_or_defer_fn_1): Check DECL_DEFAULTED_FN.
+
 	PR c++/60187
 	* parser.c (cp_parser_enum_specifier): Call
 	check_for_bare_parameter_packs.
