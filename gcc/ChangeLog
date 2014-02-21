@@ -1,3 +1,8 @@
+2014-02-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_for) [flags & TDF_RAW]
+	<case GF_OMP_FOR_KIND_CILKSIMD>: Add missing break statement.
+
 2014-02-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.md (pushdqi1): Add mode to post_inc.
