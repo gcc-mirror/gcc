@@ -1,3 +1,9 @@
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60291
+	* tree-ssa-live.c (mark_all_vars_used_1): Do not walk
+	DECL_INITIAL for globals not in the current function context.
+
 2014-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/56490
