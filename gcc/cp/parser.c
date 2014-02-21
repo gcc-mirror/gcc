@@ -17233,7 +17233,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 				   "array bound is not an integer constant");
 		  bounds = error_mark_node;
 		}
-	      else if (processing_template_decl)
+	      else if (processing_template_decl
+		       && !type_dependent_expression_p (bounds))
 		{
 		  /* Remember this wasn't a constant-expression.  */
 		  bounds = build_nop (TREE_TYPE (bounds), bounds);
