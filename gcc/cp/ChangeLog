@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60186
+	* typeck2.c (massage_init_elt): Call fold_non_dependent_expr_sfinae.
+
 	PR c++/60187
 	* parser.c (cp_parser_enum_specifier): Call
 	check_for_bare_parameter_packs.
