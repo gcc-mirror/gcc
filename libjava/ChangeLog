@@ -1,3 +1,8 @@
+2014-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcj/55637
+	* testsuite/libjava.lang/sourcelocation.xfail: New file.
+
 2014-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR libjava/60261
