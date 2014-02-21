@@ -3378,6 +3378,7 @@ mangle_decl (const tree decl)
 
   if (G.need_abi_warning
       /* Don't do this for a fake symbol we aren't going to emit anyway.  */
+      && TREE_CODE (decl) != TYPE_DECL
       && !DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     {
