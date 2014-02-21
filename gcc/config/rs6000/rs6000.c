@@ -11808,6 +11808,83 @@ paired_expand_lv_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
+/* Return a constant vector for use as a little-endian permute control vector
+   to reverse the order of elements of the given vector mode.  */
+static rtx
+swap_selector_for_mode (enum machine_mode mode)
+{
+  /* These are little endian vectors, so their elements are reversed
+     from what you would normally expect for a permute control vector.  */
+  unsigned int swap2[16] = {7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+  unsigned int swap4[16] = {3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+  unsigned int swap8[16] = {1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+  unsigned int swap16[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  unsigned int *swaparray, i;
+  rtx perm[16];
+
+  switch (mode)
+    {
+    case V2DFmode:
+    case V2DImode:
+      swaparray = swap2;
+      break;
+    case V4SFmode:
+    case V4SImode:
+      swaparray = swap4;
+      break;
+    case V8HImode:
+      swaparray = swap8;
+      break;
+    case V16QImode:
+      swaparray = swap16;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  for (i = 0; i < 16; ++i)
+    perm[i] = GEN_INT (swaparray[i]);
+
+  return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
+}
+
+/* Generate code for an "lvx" or "lvxl" built-in for a little endian target
+   with -maltivec=be specified.  Issue the load followed by an element-reversing
+   permute.  */
+void
+altivec_expand_lvx_be (rtx op0, rtx op1, enum machine_mode mode, unsigned unspec)
+{
+  rtx tmp = gen_reg_rtx (mode);
+  rtx load = gen_rtx_SET (VOIDmode, tmp, op1);
+  rtx lvx = gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), unspec);
+  rtx par = gen_rtx_PARALLEL (mode, gen_rtvec (2, load, lvx));
+  rtx sel = swap_selector_for_mode (mode);
+  rtx vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, tmp, tmp, sel), UNSPEC_VPERM);
+
+  gcc_assert (REG_P (op0));
+  emit_insn (par);
+  emit_insn (gen_rtx_SET (VOIDmode, op0, vperm));
+}
+
+/* Generate code for a "stvx" or "stvxl" built-in for a little endian target
+   with -maltivec=be specified.  Issue the store preceded by an element-reversing
+   permute.  */
+void
+altivec_expand_stvx_be (rtx op0, rtx op1, enum machine_mode mode, unsigned unspec)
+{
+  rtx tmp = gen_reg_rtx (mode);
+  rtx store = gen_rtx_SET (VOIDmode, op0, tmp);
+  rtx stvx = gen_rtx_UNSPEC (mode, gen_rtvec (1, const0_rtx), unspec);
+  rtx par = gen_rtx_PARALLEL (mode, gen_rtvec (2, store, stvx));
+  rtx sel = swap_selector_for_mode (mode);
+  rtx vperm;
+
+  gcc_assert (REG_P (op1));
+  vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op1, sel), UNSPEC_VPERM);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp, vperm));
+  emit_insn (par);
+}
+
 static rtx
 altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target, bool blk)
 {
@@ -12597,16 +12674,38 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
   switch (fcode)
     {
+    case ALTIVEC_BUILTIN_STVX_V2DF:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2df, exp);
+    case ALTIVEC_BUILTIN_STVX_V2DI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v2di, exp);
+    case ALTIVEC_BUILTIN_STVX_V4SF:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4sf, exp);
     case ALTIVEC_BUILTIN_STVX:
+    case ALTIVEC_BUILTIN_STVX_V4SI:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v4si, exp);
+    case ALTIVEC_BUILTIN_STVX_V8HI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v8hi, exp);
+    case ALTIVEC_BUILTIN_STVX_V16QI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvx_v16qi, exp);
     case ALTIVEC_BUILTIN_STVEBX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvebx, exp);
     case ALTIVEC_BUILTIN_STVEHX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvehx, exp);
     case ALTIVEC_BUILTIN_STVEWX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvewx, exp);
+    case ALTIVEC_BUILTIN_STVXL_V2DF:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v2df, exp);
+    case ALTIVEC_BUILTIN_STVXL_V2DI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v2di, exp);
+    case ALTIVEC_BUILTIN_STVXL_V4SF:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v4sf, exp);
     case ALTIVEC_BUILTIN_STVXL:
-      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl, exp);
+    case ALTIVEC_BUILTIN_STVXL_V4SI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v4si, exp);
+    case ALTIVEC_BUILTIN_STVXL_V8HI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v8hi, exp);
+    case ALTIVEC_BUILTIN_STVXL_V16QI:
+      return altivec_expand_stv_builtin (CODE_FOR_altivec_stvxl_v16qi, exp);
 
     case ALTIVEC_BUILTIN_STVLX:
       return altivec_expand_stv_builtin (CODE_FOR_altivec_stvlx, exp);
@@ -12750,11 +12849,43 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case ALTIVEC_BUILTIN_LVEWX:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvewx,
 					exp, target, false);
+    case ALTIVEC_BUILTIN_LVXL_V2DF:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v2df,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVXL_V2DI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v2di,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVXL_V4SF:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v4sf,
+					exp, target, false);
     case ALTIVEC_BUILTIN_LVXL:
-      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl,
+    case ALTIVEC_BUILTIN_LVXL_V4SI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v4si,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVXL_V8HI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v8hi,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVXL_V16QI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvxl_v16qi,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V2DF:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2df,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V2DI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v2di,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V4SF:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4sf,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVX:
+    case ALTIVEC_BUILTIN_LVX_V4SI:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v4si,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V8HI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v8hi,
+					exp, target, false);
+    case ALTIVEC_BUILTIN_LVX_V16QI:
+      return altivec_expand_lv_builtin (CODE_FOR_altivec_lvx_v16qi,
 					exp, target, false);
     case ALTIVEC_BUILTIN_LVLX:
       return altivec_expand_lv_builtin (CODE_FOR_altivec_lvlx,
@@ -14085,10 +14216,58 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_altivec_lvehx", v8hi_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEHX);
   def_builtin ("__builtin_altivec_lvewx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVEWX);
   def_builtin ("__builtin_altivec_lvxl", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVXL);
+  def_builtin ("__builtin_altivec_lvxl_v2df", v2df_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V2DF);
+  def_builtin ("__builtin_altivec_lvxl_v2di", v2di_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V2DI);
+  def_builtin ("__builtin_altivec_lvxl_v4sf", v4sf_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V4SF);
+  def_builtin ("__builtin_altivec_lvxl_v4si", v4si_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V4SI);
+  def_builtin ("__builtin_altivec_lvxl_v8hi", v8hi_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V8HI);
+  def_builtin ("__builtin_altivec_lvxl_v16qi", v16qi_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVXL_V16QI);
   def_builtin ("__builtin_altivec_lvx", v4si_ftype_long_pcvoid, ALTIVEC_BUILTIN_LVX);
+  def_builtin ("__builtin_altivec_lvx_v2df", v2df_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V2DF);
+  def_builtin ("__builtin_altivec_lvx_v2di", v2di_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V2DI);
+  def_builtin ("__builtin_altivec_lvx_v4sf", v4sf_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V4SF);
+  def_builtin ("__builtin_altivec_lvx_v4si", v4si_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V4SI);
+  def_builtin ("__builtin_altivec_lvx_v8hi", v8hi_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V8HI);
+  def_builtin ("__builtin_altivec_lvx_v16qi", v16qi_ftype_long_pcvoid,
+	       ALTIVEC_BUILTIN_LVX_V16QI);
   def_builtin ("__builtin_altivec_stvx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVX);
+  def_builtin ("__builtin_altivec_stvx_v2df", void_ftype_v2df_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V2DF);
+  def_builtin ("__builtin_altivec_stvx_v2di", void_ftype_v2di_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V2DI);
+  def_builtin ("__builtin_altivec_stvx_v4sf", void_ftype_v4sf_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V4SF);
+  def_builtin ("__builtin_altivec_stvx_v4si", void_ftype_v4si_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V4SI);
+  def_builtin ("__builtin_altivec_stvx_v8hi", void_ftype_v8hi_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V8HI);
+  def_builtin ("__builtin_altivec_stvx_v16qi", void_ftype_v16qi_long_pvoid,
+	       ALTIVEC_BUILTIN_STVX_V16QI);
   def_builtin ("__builtin_altivec_stvewx", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVEWX);
   def_builtin ("__builtin_altivec_stvxl", void_ftype_v4si_long_pvoid, ALTIVEC_BUILTIN_STVXL);
+  def_builtin ("__builtin_altivec_stvxl_v2df", void_ftype_v2df_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V2DF);
+  def_builtin ("__builtin_altivec_stvxl_v2di", void_ftype_v2di_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V2DI);
+  def_builtin ("__builtin_altivec_stvxl_v4sf", void_ftype_v4sf_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V4SF);
+  def_builtin ("__builtin_altivec_stvxl_v4si", void_ftype_v4si_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V4SI);
+  def_builtin ("__builtin_altivec_stvxl_v8hi", void_ftype_v8hi_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V8HI);
+  def_builtin ("__builtin_altivec_stvxl_v16qi", void_ftype_v16qi_long_pvoid,
+	       ALTIVEC_BUILTIN_STVXL_V16QI);
   def_builtin ("__builtin_altivec_stvebx", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_STVEBX);
   def_builtin ("__builtin_altivec_stvehx", void_ftype_v8hi_long_pvoid, ALTIVEC_BUILTIN_STVEHX);
   def_builtin ("__builtin_vec_ld", opaque_ftype_long_pcvoid, ALTIVEC_BUILTIN_VEC_LD);
