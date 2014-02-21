@@ -1,3 +1,13 @@
+2014-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60167
+	PR c++/60222
+	PR c++/58606
+	* parser.c (cp_parser_template_argument): Restore dereference.
+	* pt.c (template_parm_to_arg): Dereference non-pack expansions too.
+	(process_partial_specialization): Handle deref.
+	(unify): Likewise.
+
 2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60052
