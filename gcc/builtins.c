@@ -5350,7 +5350,7 @@ static rtx
 expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp, 
 					rtx target)
 {
-  rtx expect, desired, mem, oldval;
+  rtx expect, desired, mem, oldval, label;
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
@@ -5388,14 +5388,26 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
   if (host_integerp (weak, 0) && tree_low_cst (weak, 0) != 0)
     is_weak = true;
 
-  oldval = expect;
-  if (!expand_atomic_compare_and_swap ((target == const0_rtx ? NULL : &target),
-				       &oldval, mem, oldval, desired,
+  if (target == const0_rtx)
+    target = NULL;
+
+  /* Lest the rtl backend create a race condition with an imporoper store
+     to memory, always create a new pseudo for OLDVAL.  */
+  oldval = NULL;
+
+  if (!expand_atomic_compare_and_swap (&target, &oldval, mem, expect, desired,
 				       is_weak, success, failure))
     return NULL_RTX;
 
-  if (oldval != expect)
-    emit_move_insn (expect, oldval);
+  /* Conditionally store back to EXPECT, lest we create a race condition
+     with an improper store to memory.  */
+  /* ??? With a rearrangement of atomics at the gimple level, we can handle
+     the normal case where EXPECT is totally private, i.e. a register.  At
+     which point the store can be unconditional.  */
+  label = gen_label_rtx ();
+  emit_cmp_and_jump_insns (target, const0_rtx, NE, NULL, VOIDmode, 1, label);
+  emit_move_insn (expect, oldval);
+  emit_label (label);
 
   return target;
 }
