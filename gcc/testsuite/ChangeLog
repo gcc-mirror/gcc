@@ -1,3 +1,10 @@
+2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60052
+	PR c++/60053
+	* g++.dg/cpp1y/pr60052.C: New testcase.
+	* g++.dg/cpp1y/pr60053.C: New testcase.
+
 2014-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60286
