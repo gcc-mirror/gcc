@@ -1,3 +1,10 @@
+2014-02-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md (pushdqi1): Add mode to post_inc.
+	(pushhi1): Likewise.
+	(popqi1): Add mode to pre_dec.
+	(pophi1): Likewise.
+
 2014-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vec_perm): Use V8SImode
