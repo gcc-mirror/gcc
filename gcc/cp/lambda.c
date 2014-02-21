@@ -749,10 +749,8 @@ maybe_resolve_dummy (tree object)
   if (type != current_class_type
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
-      && DERIVED_FROM_P (type, current_nonlambda_class_type ())
-      /* If we get here while parsing the parameter list of a lambda, it
-	 will fail, so don't even try (c++/60252).  */
-      && current_binding_level->kind != sk_function_parms)
+      && lambda_function (current_class_type)
+      && DERIVED_FROM_P (type, current_nonlambda_class_type ()))
     {
       /* In a lambda, need to go through 'this' capture.  */
       tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
