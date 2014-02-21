@@ -1,5 +1,8 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60277
+	* call.c (build_array_conv): Don't crash on VLA.
+
 	PR c++/60248
 	* mangle.c (mangle_decl): Don't make an alias for a TYPE_DECL.
 
