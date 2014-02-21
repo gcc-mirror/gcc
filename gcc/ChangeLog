@@ -1,3 +1,9 @@
+2014-02-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/60298
+	* lra-constraints.c (inherit_reload_reg): Use lra_emit_move
+	instead of emit_move_insn.
+
 2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_vsumsws): Replace second
