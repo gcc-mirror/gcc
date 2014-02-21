@@ -5332,9 +5332,12 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
 
   if (target == const0_rtx)
     target = NULL;
-  oldval = expect;
 
-  if (!expand_atomic_compare_and_swap (&target, &oldval, mem, oldval, desired,
+  /* Lest the rtl backend create a race condition with an imporoper store
+     to memory, always create a new pseudo for OLDVAL.  */
+  oldval = NULL;
+
+  if (!expand_atomic_compare_and_swap (&target, &oldval, mem, expect, desired,
 				       is_weak, success, failure))
     return NULL_RTX;
 
