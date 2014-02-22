@@ -14763,7 +14763,7 @@ cp_parser_type_name (cp_parser* parser)
 	 instantiation of an alias template...  */
       type_decl = cp_parser_template_id (parser,
 					 /*template_keyword_p=*/false,
-					 /*check_dependency_p=*/false,
+					 /*check_dependency_p=*/true,
 					 none_type,
 					 /*is_declaration=*/false);
       /* Note that this must be an instantiation of an alias template
@@ -18083,7 +18083,16 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 	     type-specifier-seq at all.  */
 	  if (!seen_type_specifier)
 	    {
-	      cp_parser_error (parser, "expected type-specifier");
+	      /* Set in_declarator_p to avoid skipping to the semicolon.  */
+	      int in_decl = parser->in_declarator_p;
+	      parser->in_declarator_p = true;
+
+	      if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+		  || !cp_parser_parse_and_diagnose_invalid_type_name (parser))
+		cp_parser_error (parser, "expected type-specifier");
+
+	      parser->in_declarator_p = in_decl;
+
 	      type_specifier_seq->type = error_mark_node;
 	      return;
 	    }
