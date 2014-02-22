@@ -5696,6 +5696,7 @@ proc check_effective_target_logical_op_short_circuit {} {
     if { [istarget mips*-*-*]
 	 || [istarget arc*-*-*]
 	 || [istarget avr*-*-*]
+	 || [istarget crisv32-*-*] || [istarget cris-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }

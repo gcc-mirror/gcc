@@ -1,3 +1,10 @@
+2014-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/60173
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): Add cris-*-*
+	and crisv32-*-* to list.
+
 2014-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60302
