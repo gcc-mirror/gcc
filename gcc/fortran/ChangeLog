@@ -1,3 +1,9 @@
+2014-02-22  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/59599
+	* trans-intrinsic.c (gfc_conv_intrinsic_ichar): Calculate the
+	number of arguments.
+
 2014-02-20  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
