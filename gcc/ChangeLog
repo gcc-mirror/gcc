@@ -1,3 +1,11 @@
+2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/avr.c (avr_can_eliminate): Allow elimination from
+	ARG_POINTER_REGNUM
+	to STACK_POINTER_REGNUM if !frame_pointer_needed.
+	* config/avr/avr.c (ELIMINABLE_REGS): Add elimination from
+	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM.
+
 2014-02-21  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/60298
