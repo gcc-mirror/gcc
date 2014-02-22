@@ -1,5 +1,10 @@
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58170
+	* parser.c (cp_parser_type_name): Always check dependency.
+	(cp_parser_type_specifier_seq): Call
+	cp_parser_parse_and_diagnose_invalid_type_name.
+
 	PR c++/60108
 	* semantics.c (expand_or_defer_fn_1): Check DECL_DEFAULTED_FN.
 

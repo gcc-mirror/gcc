@@ -8,7 +8,7 @@ template<typename T>
   { typedef __underlying_type(T) type; }; // { dg-error "not an enumeration" }
 
 __underlying_type(int) i1; // { dg-error "not an enumeration|invalid" }
-__underlying_type(A)   i2; // { dg-error "expected" }
+__underlying_type(A)   i2; // { dg-error "expected|type" }
 __underlying_type(B)   i3; // { dg-error "not an enumeration|invalid" }
 __underlying_type(U)   i4; // { dg-error "not an enumeration|invalid" }
 
