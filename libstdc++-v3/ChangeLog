@@ -1,3 +1,18 @@
+2014-02-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/60308
+	* include/bits/stl_deque.h (_Deque_base::_Deque_base(const
+	allocator_type&)): Remove redundant call to _M_initialize_map.
+	(deque::deque(const allocator_type&)): Initialize _Base with a
+	constructor that calls _M_initialize_map.
+
+	Partial revert:
+
+	2013-09-20  Marc Glisse  <marc.glisse@inria.fr>
+	PR libstdc++/58338
+	(_Deque_base) [_Deque_base(const allocator_type&)]: Add missing call to
+	_M_initialize_map.
+
 2014-02-21  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Rename testsuite directory shared_mutex to shared_timed_mutex
