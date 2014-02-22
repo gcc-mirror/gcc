@@ -467,7 +467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _Deque_base(const allocator_type& __a)
       : _M_impl(__a)
-      { _M_initialize_map(0); }
+      { }
 
 #if __cplusplus >= 201103L
       _Deque_base(_Deque_base&& __x)
@@ -793,7 +793,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       deque(const allocator_type& __a)
-      : _Base(__a) { }
+      : _Base(__a, 0) { }
 
 #if __cplusplus >= 201103L
       /**
