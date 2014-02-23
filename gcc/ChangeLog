@@ -1,3 +1,7 @@
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md: Correct ashrsi_reg / lshrsi_reg names
+
 2014-02-23  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
 
 	* config/microblaze/microblaze.h: Remove SECONDARY_MEMORY_NEEDED
