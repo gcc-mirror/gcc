@@ -1,3 +1,13 @@
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/predicates.md: Add cmp_op predicate.
+	* config/microblaze/microblaze.md: Add branch_compare instruction 
+	which uses cmp_op predicate and emits cmp insn before branch.
+	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename 
+	to microblaze_expand_conditional_branch and consolidate logic.
+	(microblaze_expand_conditional_branch): emit branch_compare
+	insn instead of handling cmp op separate from branch insn.
+
 2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Relax assert
@@ -5,16 +15,16 @@
 
 2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-        * config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
-        define_insn with define_expand and new define_insn
-        *altivec_lve<VI_char>x_internal.
-        (altivec_stve<VI_char>x): Replace define_insn with define_expand
-        and new define_insn *altivec_stve<VI_char>x_internal.
-        * config/rs6000/rs6000-protos.h (altivec_expand_stvex_be): New
-        prototype.
-        * config/rs6000/rs6000.c (altivec_expand_lvx_be): Document use by
-        lve*x built-ins.
-        (altivec_expand_stvex_be): New function.
+	* config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
+	define_insn with define_expand and new define_insn
+	*altivec_lve<VI_char>x_internal.
+	(altivec_stve<VI_char>x): Replace define_insn with define_expand
+	and new define_insn *altivec_stve<VI_char>x_internal.
+	* config/rs6000/rs6000-protos.h (altivec_expand_stvex_be): New
+	prototype.
+	* config/rs6000/rs6000.c (altivec_expand_lvx_be): Document use by
+	lve*x built-ins.
+	(altivec_expand_stvex_be): New function.
 
 2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
 
