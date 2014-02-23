@@ -1,5 +1,10 @@
 2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Relax assert
+	to permit subregs.
+
+2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
         * config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
         define_insn with define_expand and new define_insn
         *altivec_lve<VI_char>x_internal.

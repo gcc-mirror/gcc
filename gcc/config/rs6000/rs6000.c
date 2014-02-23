@@ -8040,7 +8040,7 @@ rs6000_emit_le_vsx_move (rtx dest, rtx source, enum machine_mode mode)
 
   if (MEM_P (source))
     {
-      gcc_assert (REG_P (dest));
+      gcc_assert (REG_P (dest) || GET_CODE (dest) == SUBREG);
       rs6000_emit_le_vsx_load (dest, source, mode);
     }
   else
