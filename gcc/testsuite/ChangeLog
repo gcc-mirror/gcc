@@ -1,3 +1,7 @@
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc/testsuite/gcc.target/microblaze/others/mem_reload.c: New test.
+
 2014-02-22  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/59599
