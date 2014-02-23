@@ -1,5 +1,9 @@
 2014-02-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Make-lang.in (ADA_TOOLS_FLAGS_TO_PASS): Robustify.
+
+2014-02-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_simple_component_ref): Fix formatting.
 	Look through a conversion between original and packable version to get
 	the base object.
