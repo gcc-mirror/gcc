@@ -1,9 +1,13 @@
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc/testsuite/gcc.target/microblaze/others/mem_reload.c: New test.
+
 2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-        * gcc.dg/vmx/lde.c: New test.
-        * gcc.dg/vmx/lde-be-order.c: New test.
-        * gcc.dg/vmx/ste.c: New test.
-        * gcc.dg/vmx/ste-be-order.c: New test.
+	* gcc.dg/vmx/lde.c: New test.
+	* gcc.dg/vmx/lde-be-order.c: New test.
+	* gcc.dg/vmx/ste.c: New test.
+	* gcc.dg/vmx/ste-be-order.c: New test.
 
 2014-02-22  Hans-Peter Nilsson  <hp@axis.com>
 

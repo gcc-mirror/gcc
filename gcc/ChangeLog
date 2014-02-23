@@ -1,3 +1,8 @@
+2014-02-23  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
+
+	* config/microblaze/microblaze.h: Remove SECONDARY_MEMORY_NEEDED
+	definition.
+
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
