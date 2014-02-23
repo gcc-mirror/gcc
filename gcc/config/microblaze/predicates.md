@@ -123,3 +123,7 @@
 ;; Test for valid PIC call operand
 (define_predicate "call_insn_plt_operand"
   (match_test "PLT_ADDR_P (op)"))
+
+;; Return if the code of this rtx pattern is a comparison.
+(define_predicate "cmp_op"
+  (match_code "gt,ge,gtu,geu,lt,le,ltu,leu"))

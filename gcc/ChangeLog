@@ -1,3 +1,13 @@
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/predicates.md: Add cmp_op predicate.
+	* config/microblaze/microblaze.md: Add branch_compare instruction 
+	which uses cmp_op predicate and emits cmp insn before branch.
+	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename 
+	to microblaze_expand_conditional_branch and consolidate logic.
+	(microblaze_expand_conditional_branch): emit branch_compare
+	insn instead of handling cmp op separate from branch insn.
+
 2014-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/55260
