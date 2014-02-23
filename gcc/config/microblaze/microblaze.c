@@ -3087,6 +3087,73 @@ expand_pic_symbol_ref (enum machine_mode mode ATTRIBUTE_UNUSED, rtx op)
   return result;
 }
 
+static void
+microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
+        HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+        tree function)
+{
+  rtx this_rtx, insn, funexp;
+
+  reload_completed = 1;
+  epilogue_completed = 1;
+
+  /* Mark the end of the (empty) prologue.  */
+  emit_note (NOTE_INSN_PROLOGUE_END);
+
+  /* Find the "this" pointer.  If the function returns a structure,
+     the structure return pointer is in MB_ABI_FIRST_ARG_REGNUM.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
+    this_rtx = gen_rtx_REG (Pmode, (MB_ABI_FIRST_ARG_REGNUM + 1));
+  else
+    this_rtx = gen_rtx_REG (Pmode, MB_ABI_FIRST_ARG_REGNUM);
+
+  /* Apply the constant offset, if required.  */
+  if (delta)
+    emit_insn (gen_addsi3 (this_rtx, this_rtx, GEN_INT (delta)));
+
+  /* Apply the offset from the vtable, if required.  */
+  if (vcall_offset)
+  {
+    rtx vcall_offset_rtx = GEN_INT (vcall_offset);
+    rtx temp1 = gen_rtx_REG (Pmode, MB_ABI_TEMP1_REGNUM);
+
+    emit_move_insn (temp1, gen_rtx_MEM (Pmode, this_rtx));
+
+    rtx loc = gen_rtx_PLUS (Pmode, temp1, vcall_offset_rtx);
+    emit_move_insn (temp1, gen_rtx_MEM (Pmode, loc));
+
+    emit_insn (gen_addsi3 (this_rtx, this_rtx, temp1));
+  }
+
+  /* Generate a tail call to the target function.  */
+  if (!TREE_USED (function))
+  {
+    assemble_external (function);
+    TREE_USED (function) = 1;
+  }
+
+  funexp = XEXP (DECL_RTL (function), 0);
+  rtx temp2 = gen_rtx_REG (Pmode, MB_ABI_TEMP2_REGNUM);
+
+  if (flag_pic)
+    emit_move_insn (temp2, expand_pic_symbol_ref (Pmode, funexp));
+  else
+    emit_move_insn (temp2, funexp);
+
+  emit_insn (gen_indirect_jump (temp2));
+
+  /* Run just enough of rest_of_compilation.  This sequence was
+     "borrowed" from rs6000.c.  */
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
+  final_end_function ();
+
+  reload_completed = 0;
+  epilogue_completed = 0;
+}
+
 bool
 microblaze_expand_move (enum machine_mode mode, rtx operands[])
 {
@@ -3503,6 +3570,12 @@ microblaze_legitimate_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD		microblaze_secondary_reload
+
+#undef  TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK      microblaze_asm_output_mi_thunk
+
+#undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST	microblaze_adjust_cost
