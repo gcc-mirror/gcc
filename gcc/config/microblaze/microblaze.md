@@ -1485,7 +1485,7 @@
   (set_attr "length"   "124")]
 )
 
-(define_insn "*ashlri_reg"
+(define_insn "*ashrsi_reg"
   [(set (match_operand:SI 0 "register_operand" "=&d")
        (ashiftrt:SI (match_operand:SI 1 "register_operand"  "d")
                    (match_operand:SI 2 "register_operand" "d")))]
@@ -1574,7 +1574,7 @@
   (set_attr "length"   "124")]
 )
 
-(define_insn "*lshlri_reg"
+(define_insn "*lshrsi_reg"
   [(set (match_operand:SI 0 "register_operand" "=&d")
        (lshiftrt:SI (match_operand:SI 1 "register_operand"  "d")
                    (match_operand:SI 2 "register_operand" "d")))]
