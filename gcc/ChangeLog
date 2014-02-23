@@ -1,3 +1,16 @@
+2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+        * config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
+        define_insn with define_expand and new define_insn
+        *altivec_lve<VI_char>x_internal.
+        (altivec_stve<VI_char>x): Replace define_insn with define_expand
+        and new define_insn *altivec_stve<VI_char>x_internal.
+        * config/rs6000/rs6000-protos.h (altivec_expand_stvex_be): New
+        prototype.
+        * config/rs6000/rs6000.c (altivec_expand_lvx_be): Document use by
+        lve*x built-ins.
+        (altivec_expand_stvex_be): New function.
+
 2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/avr/avr.c (avr_can_eliminate): Allow elimination from

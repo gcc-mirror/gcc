@@ -2325,7 +2325,21 @@
 ;; Parallel some of the LVE* and STV*'s with unspecs because some have
 ;; identical rtl but different instructions-- and gcc gets confused.
 
-(define_insn "altivec_lve<VI_char>x"
+(define_expand "altivec_lve<VI_char>x"
+  [(parallel
+    [(set (match_operand:VI 0 "register_operand" "=v")
+	  (match_operand:VI 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_LVE)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lve<VI_char>x_internal"
   [(parallel
     [(set (match_operand:VI 0 "register_operand" "=v")
 	  (match_operand:VI 1 "memory_operand" "Z"))
@@ -2435,7 +2449,19 @@
   "stvxl %1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stve<VI_char>x"
+(define_expand "altivec_stve<VI_char>x"
+  [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
+	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvex_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stve<VI_char>x_internal"
   [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
 	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
   "TARGET_ALTIVEC"

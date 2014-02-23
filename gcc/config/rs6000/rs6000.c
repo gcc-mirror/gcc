@@ -11848,7 +11848,7 @@ swap_selector_for_mode (enum machine_mode mode)
   return force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm)));
 }
 
-/* Generate code for an "lvx" or "lvxl" built-in for a little endian target
+/* Generate code for an "lvx", "lvxl", or "lve*x" built-in for a little endian target
    with -maltivec=be specified.  Issue the load followed by an element-reversing
    permute.  */
 void
@@ -11883,6 +11883,23 @@ altivec_expand_stvx_be (rtx op0, rtx op1, enum machine_mode mode, unsigned unspe
   vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op1, sel), UNSPEC_VPERM);
   emit_insn (gen_rtx_SET (VOIDmode, tmp, vperm));
   emit_insn (par);
+}
+
+/* Generate code for a "stve*x" built-in for a little endian target with -maltivec=be
+   specified.  Issue the store preceded by an element-reversing permute.  */
+void
+altivec_expand_stvex_be (rtx op0, rtx op1, enum machine_mode mode, unsigned unspec)
+{
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  rtx tmp = gen_reg_rtx (mode);
+  rtx stvx = gen_rtx_UNSPEC (inner_mode, gen_rtvec (1, tmp), unspec);
+  rtx sel = swap_selector_for_mode (mode);
+  rtx vperm;
+
+  gcc_assert (REG_P (op1));
+  vperm = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op1, sel), UNSPEC_VPERM);
+  emit_insn (gen_rtx_SET (VOIDmode, tmp, vperm));
+  emit_insn (gen_rtx_SET (VOIDmode, op0, stvx));
 }
 
 static rtx
