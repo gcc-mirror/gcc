@@ -1635,28 +1635,6 @@
   (set_attr "length"	"4")]
 )              
 
-(define_insn "signed_compare"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec
-		[(match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")] UNSPEC_CMP))]
-  ""
-  "cmp\t%0,%1,%2"
-  [(set_attr "type"	"arith")
-  (set_attr "mode"	"SI")
-  (set_attr "length"	"4")])
-
-(define_insn "unsigned_compare"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec 
-		[(match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")] UNSPEC_CMPU))]
-  ""
-  "cmpu\t%0,%1,%2"
-  [(set_attr "type"	"arith")
-  (set_attr "mode"	"SI")
-  (set_attr "length"	"4")])
-
 ;;----------------------------------------------------------------
 ;; Setting a register from an floating point comparison. 
 ;;----------------------------------------------------------------
@@ -1728,6 +1706,47 @@
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")
    (set_attr "length"	"4")]
+)
+
+(define_insn "branch_compare"
+  [(set (pc)
+        (if_then_else (match_operator:SI 0 "cmp_op"
+                                         [(match_operand:SI 1 "register_operand" "d")
+                                          (match_operand:SI 2 "register_operand" "d")
+                                         ])
+                      (label_ref (match_operand 3))
+                      (pc)))
+  (clobber(reg:SI R_TMP))]
+  ""
+  {
+    operands[4] = gen_rtx_REG (SImode, MB_ABI_ASM_TEMP_REGNUM);
+    enum rtx_code code = GET_CODE (operands[0]);
+
+    if (code == GT || code == LE)
+      {
+        output_asm_insn ("cmp\tr18,%z1,%z2", operands);
+        code = swap_condition (code);
+      }
+    else if (code == GTU || code == LEU)
+      {
+        output_asm_insn ("cmpu\tr18,%z1,%z2", operands);
+        code = swap_condition (code);
+      }
+    else if (code == GE || code == LT)
+      {
+        output_asm_insn ("cmp\tr18,%z2,%z1", operands);
+      }
+    else if (code == GEU || code == LTU)
+      {
+        output_asm_insn ("cmpu\tr18,%z2,%z1", operands);
+      }
+
+    operands[0] = gen_rtx_fmt_ee (signed_condition (code), SImode, operands[4], const0_rtx);
+    return "b%C0i%?\tr18,%3";
+  }
+  [(set_attr "type"     "branch")
+   (set_attr "mode"     "none")
+   (set_attr "length"   "12")]
 )
 
 ;;----------------------------------------------------------------
