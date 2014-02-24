@@ -1,3 +1,17 @@
+2014-02-24  Olivier Ramonat  <ramonat@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Replace Ada Compiler by Ada Development
+	Environment.
+
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Constituent_Usage): Remove leading spaces in
+	error messages.
+	(Inconsistent_Mode_Error): Remove leading spaces in error messages.
+	Merge the expected and available mode errors.
+	(Report_Unused_Constituents): Remove leading spaces in error messages.
+	(Report_Unused_States): Remove leading spaces in error messages.
+
 2014-02-24  Thomas Quinot  <quinot@adacore.com>
 
 	* par_sco.adb (Traverse_One): Refine categorization of statement

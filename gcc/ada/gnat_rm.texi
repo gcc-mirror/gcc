@@ -41,7 +41,7 @@ included in the section entitled ``GNU Free Documentation License''.
 
 @titlepage
 @title GNAT Reference Manual
-@subtitle GNAT, The GNU Ada Compiler
+@subtitle GNAT, The GNU Ada Development Environment
 @versionsubtitle
 @author AdaCore
 @page
@@ -59,7 +59,7 @@ included in the section entitled ``GNU Free Documentation License''.
 GNAT Reference Manual
 
 @noindent
-GNAT, The GNU Ada Compiler@*
+GNAT, The GNU Ada Development Environment@*
 GCC version @value{version-GCC}@*
 
 @noindent
