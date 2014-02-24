@@ -759,10 +759,11 @@ package body Ada.Directories is
          if Match (Name (1 .. Last), Search.Value.Pattern) then
             declare
                C_Full_Name : constant String :=
-                 Compose (To_String (Search.Value.Name), Name (1 .. Last))
-                   & ASCII.NUL;
-               Full_Name   : String renames C_Full_Name
-                               (C_Full_Name'First .. C_Full_Name'Last - 1);
+                               Compose (To_String (Search.Value.Name),
+                                        Name (1 .. Last)) & ASCII.NUL;
+               Full_Name   : String renames
+                               C_Full_Name
+                                 (C_Full_Name'First .. C_Full_Name'Last - 1);
                Found       : Boolean := False;
                Attr        : aliased File_Attributes;
                Exists      : Integer;

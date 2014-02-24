@@ -283,9 +283,9 @@ package body Ada.Tags is
 
       procedure Set_HT_Link (T : Tag; Next : Tag) is
          TSD_Ptr : constant Addr_Ptr :=
-           To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+                     To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
          TSD     : constant Type_Specific_Data_Ptr :=
-           To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+                     To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       begin
          TSD.HT_Link.all := Next;
       end Set_HT_Link;
@@ -309,8 +309,9 @@ package body Ada.Tags is
       T : Tag;
 
       E_Tag_Len : constant Integer :=
-        Integer (strlen (TSD.External_Tag.all'Address));
-      E_Tag     : String (1 .. E_Tag_Len);
+                    Integer (strlen (TSD.External_Tag.all'Address));
+
+      E_Tag : String (1 .. E_Tag_Len);
       for E_Tag'Address use TSD.External_Tag.all'Address;
       pragma Import (Ada, E_Tag);
 
@@ -344,13 +345,12 @@ package body Ada.Tags is
 
    function Descendant_Tag (External : String; Ancestor : Tag) return Tag is
       Int_Tag : constant Tag := Internal_Tag (External);
-
    begin
       if not Is_Descendant_At_Same_Level (Int_Tag, Ancestor) then
          raise Tag_Error;
+      else
+         return Int_Tag;
       end if;
-
-      return Int_Tag;
    end Descendant_Tag;
 
    --------------

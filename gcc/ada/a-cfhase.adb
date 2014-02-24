@@ -268,26 +268,26 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Current_To_Last (Container : Set; Current : Cursor) return Set is
       Curs : Cursor := First (Container);
       C    : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin
       if Curs = No_Element then
          Clear (C);
          return C;
-      end if;
 
-      if Current /= No_Element and not Has_Element (Container, Current) then
+      elsif Current /= No_Element and not Has_Element (Container, Current) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= Current.Node loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= Current.Node loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end Current_To_Last;
 
    ---------------------
@@ -661,28 +661,29 @@ package body Ada.Containers.Formal_Hashed_Sets is
 
    function First_To_Previous
      (Container : Set;
-      Current : Cursor) return Set is
+      Current   : Cursor) return Set
+   is
       Curs : Cursor := Current;
       C    : Set (Container.Capacity, Container.Modulus) :=
-        Copy (Container, Container.Capacity);
+               Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin
       if Curs = No_Element then
          return C;
-      end if;
 
-      if not Has_Element (Container, Curs) then
+      elsif not Has_Element (Container, Curs) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= 0 loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= 0 loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end First_To_Previous;
 
    ----------

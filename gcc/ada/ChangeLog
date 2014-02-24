@@ -1,3 +1,16 @@
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.adb, sem_ch5.adb, a-cfdlli.adb, a-cfhase.adb, a-tags.adb,
+	s-filatt.ads, a-cforma.adb, sem_ch6.adb, g-socthi-mingw.adb,
+	a-cfhama.adb, a-cforse.adb, a-cofove.adb: Minor reformatting and code
+	reorganization.
+
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in (OSCONS_CPP, OSCONS_EXTRACT): Make sure
+	that the source directory containing s-oscons-tmplt.c is on the
+	include path, so that all internal header files are available.
+
 2014-02-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): If the

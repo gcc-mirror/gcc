@@ -600,7 +600,8 @@ package body Ada.Containers.Formal_Ordered_Sets is
 
    function First_To_Previous
      (Container : Set;
-      Current : Cursor) return Set is
+      Current   : Cursor) return Set
+   is
       Curs : Cursor := Current;
       C    : Set (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
@@ -608,19 +609,19 @@ package body Ada.Containers.Formal_Ordered_Sets is
    begin
       if Curs = No_Element then
          return C;
-      end if;
 
-      if not Has_Element (Container, Curs) then
+      elsif not Has_Element (Container, Curs) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= 0 loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= 0 loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end First_To_Previous;
 
    -----------
