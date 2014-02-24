@@ -57,8 +57,6 @@ package body GNAT.Sockets.Thin is
    --  non-blocking mode and we spend a period of time Quantum between
    --  two attempts on a blocking operation.
 
-   Unknown_System_Error : constant String := "Unknown system error";
-
    --  Comments required for following functions ???
 
    function Syscall_Accept

@@ -1709,7 +1709,7 @@ package body GNAT.Sockets is
    begin
       raise Host_Error with
         Err_Code_Image (H_Error)
-        & C.Strings.Value (Host_Error_Messages.Host_Error_Message (H_Error));
+          & Host_Error_Messages.Host_Error_Message (H_Error);
    end Raise_Host_Error;
 
    ------------------------
