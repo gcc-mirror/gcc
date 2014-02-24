@@ -70,6 +70,11 @@ package System.CRTL is
    function atoi (A : System.Address) return Integer;
    pragma Import (C, atoi, "atoi");
 
+   function strlen (A : System.Address) return size_t;
+   pragma Import (Intrinsic, strlen, "strlen");
+   --  Import with convention Intrinsic so that we take advantage of the GCC
+   --  builtin where available (and fall back to the library function if not).
+
    procedure clearerr (stream : FILEs);
    pragma Import (C, clearerr, "clearerr");
 

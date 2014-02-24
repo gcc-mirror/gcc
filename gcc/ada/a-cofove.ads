@@ -48,8 +48,10 @@
 --    There are three new functions:
 
 --      function Strict_Equal (Left, Right : Vector) return Boolean;
---      function Left  (Container : Vector; Position : Cursor) return Vector;
---      function Right (Container : Vector; Position : Cursor) return Vector;
+--      function First_To_Previous  (Container : Vector; Current : Cursor)
+--         return Vector;
+--      function Current_To_Last (Container : Vector; Current : Cursor)
+--         return Vector;
 
 --    See detailed specifications for these subprograms
 
@@ -430,18 +432,25 @@ package Ada.Containers.Formal_Vectors is
    --  they are structurally equal (function "=" returns True) and that they
    --  have the same set of cursors.
 
-   function Left (Container : Vector; Position : Cursor) return Vector with
+   function First_To_Previous
+     (Container : Vector;
+      Current : Cursor) return Vector
+   with
      Global => null,
-     Pre    => Has_Element (Container, Position) or else Position = No_Element;
-   function Right (Container : Vector; Position : Cursor) return Vector with
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   function Current_To_Last
+     (Container : Vector;
+      Current : Cursor) return Vector
+   with
      Global => null,
-     Pre    => Has_Element (Container, Position) or else Position = No_Element;
-   --  Left returns a container containing all elements preceding Position
-   --  (excluded) in Container. Right returns a container containing all
-   --  elements following Position (included) in Container. These two new
-   --  functions can be used to express invariant properties in loops which
-   --  iterate over containers. Left returns the part of the container already
-   --  scanned and Right the part not scanned yet.
+     Pre    => Has_Element (Container, Current) or else Current = No_Element;
+   --  First_To_Previous returns a container containing all elements preceding
+   --  Current (excluded) in Container. Current_To_Last returns a container
+   --  containing all elements following Current (included) in Container.
+   --  These two new functions can be used to express invariant properties in
+   --  loops which iterate over containers. First_To_Previous returns the part
+   --  of the container already scanned and Current_To_Last the part not
+   --  scanned yet.
 
 private
 

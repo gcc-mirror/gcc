@@ -350,6 +350,7 @@ GNAT_ADA_OBJS =	\
  ada/s-htable.o	\
  ada/s-imenne.o	\
  ada/s-imgenu.o	\
+ ada/s-imgint.o \
  ada/s-mastop.o	\
  ada/s-memory.o	\
  ada/s-os_lib.o	\
@@ -457,27 +458,16 @@ GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
 GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS) ada/b_gnat1.o
 
 GNATBIND_OBJS = \
- ada/adaint.o     \
- ada/argv.o       \
- ada/cio.o        \
- ada/cstreams.o   \
- ada/env.o        \
- ada/exit.o       \
- ada/final.o      \
- ada/init.o       \
- ada/initialize.o \
- ada/link.o       \
- ada/raise.o      \
- ada/seh_init.o   \
- ada/targext.o    \
- ada/ada.o        \
  ada/a-clrefi.o   \
  ada/a-comlin.o   \
  ada/a-elchha.o   \
  ada/a-except.o   \
+ ada/ada.o        \
+ ada/adaint.o     \
  ada/ali-util.o   \
  ada/ali.o        \
  ada/alloc.o      \
+ ada/argv.o       \
  ada/aspects.o    \
  ada/atree.o      \
  ada/bcheck.o     \
@@ -487,34 +477,41 @@ GNATBIND_OBJS = \
  ada/bindusg.o    \
  ada/butil.o      \
  ada/casing.o     \
+ ada/cio.o        \
  ada/csets.o      \
+ ada/cstreams.o   \
  ada/debug.o      \
  ada/einfo.o      \
  ada/elists.o     \
+ ada/env.o        \
  ada/err_vars.o   \
  ada/errout.o     \
  ada/erroutc.o    \
+ ada/exit.o       \
+ ada/final.o      \
  ada/fmap.o       \
- ada/fname.o      \
  ada/fname-uf.o   \
+ ada/fname.o      \
  ada/g-byorma.o   \
  ada/g-hesora.o   \
  ada/g-htable.o   \
- ada/s-os_lib.o   \
- ada/s-string.o   \
  ada/gnat.o       \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
+ ada/init.o       \
+ ada/initialize.o \
  ada/interfac.o   \
  ada/krunch.o     \
  ada/lib.o        \
+ ada/link.o       \
  ada/namet.o      \
  ada/nlists.o     \
  ada/opt.o        \
  ada/osint-b.o    \
  ada/osint.o      \
  ada/output.o     \
+ ada/raise.o      \
  ada/restrict.o   \
  ada/rident.o     \
  ada/s-addope.o   \
@@ -537,8 +534,10 @@ GNATBIND_OBJS = \
  ada/s-htable.o   \
  ada/s-imenne.o   \
  ada/s-imgenu.o   \
+ ada/s-imgint.o   \
  ada/s-mastop.o   \
  ada/s-memory.o   \
+ ada/s-os_lib.o   \
  ada/s-parame.o   \
  ada/s-restri.o   \
  ada/s-secsta.o   \
@@ -550,6 +549,7 @@ GNATBIND_OBJS = \
  ada/s-stalib.o   \
  ada/s-stoele.o   \
  ada/s-strhas.o   \
+ ada/s-string.o   \
  ada/s-strops.o   \
  ada/s-traent.o   \
  ada/s-unstyp.o   \
@@ -557,24 +557,26 @@ GNATBIND_OBJS = \
  ada/s-wchcnv.o   \
  ada/s-wchcon.o   \
  ada/s-wchjis.o   \
- ada/scng.o       \
  ada/scans.o      \
  ada/scil_ll.o    \
+ ada/scng.o       \
  ada/sdefault.o   \
+ ada/seh_init.o   \
  ada/sem_aux.o    \
  ada/sinfo.o      \
- ada/sinput.o     \
  ada/sinput-c.o   \
+ ada/sinput.o     \
  ada/snames.o     \
  ada/stand.o      \
  ada/stringt.o    \
- ada/switch-b.o   \
- ada/switch.o     \
  ada/style.o      \
  ada/styleg.o     \
  ada/stylesw.o    \
+ ada/switch-b.o   \
+ ada/switch.o     \
  ada/system.o     \
  ada/table.o      \
+ ada/targext.o    \
  ada/targparm.o   \
  ada/tree_io.o    \
  ada/types.o      \

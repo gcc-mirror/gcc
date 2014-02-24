@@ -89,6 +89,7 @@ pragma Style_Checks ("M32766");
 /* Include gsocket.h before any system header so it can redefine FD_SETSIZE */
 
 #include "gsocket.h"
+#include "adaint.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -309,6 +310,16 @@ CND(SIZEOF_unsigned_int, "Size of unsigned int")
 # define IOV_MAX INT_MAX
 #endif
 CND(IOV_MAX, "Maximum writev iovcnt")
+
+#ifndef NAME_MAX
+# define NAME_MAX 255
+#endif
+CND(NAME_MAX, "Maximum file name length")
+
+#ifndef PATH_MAX
+# define PATH_MAX 1024
+#endif
+CND(FILENAME_MAX, "Maximum file path length")
 
 /*
 
@@ -1319,19 +1330,43 @@ CND(SIZEOF_sockaddr_in, "struct sockaddr_in")
 CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
-CND(SIZEOF_fd_set, "fd_set");
-CND(FD_SETSIZE, "Max fd value");
+CND(SIZEOF_fd_set, "fd_set")
+CND(FD_SETSIZE, "Max fd value")
 
 #define SIZEOF_struct_hostent (sizeof (struct hostent))
-CND(SIZEOF_struct_hostent, "struct hostent");
+CND(SIZEOF_struct_hostent, "struct hostent")
 
 #define SIZEOF_struct_servent (sizeof (struct servent))
-CND(SIZEOF_struct_servent, "struct servent");
+CND(SIZEOF_struct_servent, "struct servent")
 
 #if defined (__linux__)
 #define SIZEOF_sigset (sizeof (sigset_t))
-CND(SIZEOF_sigset, "sigset");
+CND(SIZEOF_sigset, "sigset")
 #endif
+
+/**
+ ** Note: this constant can be used in the GNAT runtime library. In compiler
+ ** units on the other hand, System.OS_Constants is not available, so we
+ ** declare an Ada constant (Osint.File_Attributes_Size) independently, which
+ ** is at least as large as sizeof (struct file_attributes), and we have an
+ ** assertion at initialization of Osint checking that the size is indeed at
+ ** least sufficient.
+ **/
+#define SIZEOF_struct_file_attributes (sizeof (struct file_attributes))
+CND(SIZEOF_struct_file_attributes, "struct file_attributes")
+
+/**
+ ** Maximal size of buffer for struct dirent. Note: Since POSIX.1 does not
+ ** specify the size of the d_name field, and other nonstandard fields may
+ ** precede that field within the dirent structure, we must make a conservative
+ ** computation.
+ **/
+{
+  struct dirent dent;
+#define SIZEOF_struct_dirent_alloc \
+  ((char*) &dent.d_name - (char*) &dent) + NAME_MAX + 1
+CND(SIZEOF_struct_dirent_alloc, "struct dirent allocation")
+}
 
 /*
 
