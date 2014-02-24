@@ -4637,8 +4637,7 @@ package body Sem_Prag is
             procedure Grouping_Error (Prag : Node_Id) is
             begin
                Error_Msg_Sloc := Sloc (Prag);
-               Error_Pragma
-                 ("pragma% should appear immediately after pragma#");
+               Error_Pragma ("pragma% must appear next to pragma#");
             end Grouping_Error;
 
          --  Start of processing for Check_Loop_Pragma_Grouping
@@ -22604,7 +22603,7 @@ package body Sem_Prag is
                   end if;
 
                   Error_Msg_NE
-                    ("\\  constituent & is missing in output list",
+                    ("\\constituent & is missing in output list",
                      N, Constit_Id);
                end if;
 
@@ -22764,10 +22763,8 @@ package body Sem_Prag is
                  ("global item & has inconsistent modes", Item, Item_Id);
 
                Error_Msg_Name_1 := Global_Mode;
-               Error_Msg_N ("\\  expected mode %", Item);
-
-               Error_Msg_Name_1 := Expect;
-               Error_Msg_N ("\\  found mode %", Item);
+               Error_Msg_Name_2 := Expect;
+               Error_Msg_N ("\\expected mode %, found mode %", Item);
             end Inconsistent_Mode_Error;
 
          --  Start of processing for Check_Refined_Global_Item
@@ -23472,10 +23469,10 @@ package body Sem_Prag is
 
                   if Ekind (Constit_Id) = E_Abstract_State then
                      Error_Msg_NE
-                       ("\\  abstract state & defined #", State, Constit_Id);
+                       ("\\abstract state & defined #", State, Constit_Id);
                   else
                      Error_Msg_NE
-                       ("\\  variable & defined #", State, Constit_Id);
+                       ("\\variable & defined #", State, Constit_Id);
                   end if;
 
                   Next_Elmt (Constit_Elmt);
@@ -23794,10 +23791,10 @@ package body Sem_Prag is
 
                if Ekind (State_Id) = E_Abstract_State then
                   Error_Msg_NE
-                    ("\\  abstract state & defined #", Body_Id, State_Id);
+                    ("\\abstract state & defined #", Body_Id, State_Id);
                else
                   Error_Msg_NE
-                    ("\\  variable & defined #", Body_Id, State_Id);
+                    ("\\variable & defined #", Body_Id, State_Id);
                end if;
 
                Next_Elmt (State_Elmt);

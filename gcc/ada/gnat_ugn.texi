@@ -138,7 +138,7 @@ Texts.  A copy of the license is included in the section entitled
 
 @sp 2
 
-@subtitle GNAT, The GNU Ada Compiler
+@subtitle GNAT, The GNU Ada Development Environment
 @versionsubtitle
 @author AdaCore
 
@@ -157,7 +157,7 @@ Texts.  A copy of the license is included in the section entitled
 @value{EDITION} User's Guide @value{PLATFORM}
 
 @noindent
-GNAT, The GNU Ada Compiler@*
+GNAT, The GNU Ada Development Environment@*
 GCC version @value{version-GCC}@*
 
 @noindent
