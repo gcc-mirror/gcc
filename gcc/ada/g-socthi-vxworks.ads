@@ -35,7 +35,7 @@
 
 --  This is the version for VxWorks
 
-with Interfaces.C.Strings;
+with Interfaces.C;
 
 with GNAT.OS_Lib;
 with GNAT.Sockets.Thin_Common;
@@ -67,8 +67,7 @@ package GNAT.Sockets.Thin is
 
    package Host_Error_Messages is
 
-      function Host_Error_Message
-        (H_Errno : Integer) return C.Strings.chars_ptr;
+      function Host_Error_Message (H_Errno : Integer) return String;
       --  Returns the error message string for the host error number H_Errno.
       --  If H_Errno is not known, returns "Unknown system error".
 

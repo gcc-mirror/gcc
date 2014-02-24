@@ -1,3 +1,12 @@
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* g-stheme.adb, g-socthi-vms.adb, g-socthi-vms.ads,
+	g-socthi-vxworks.adb, g-socthi-vxworks.ads, g-stseme.adb,
+	g-socthi-mingw.adb, g-socthi-mingw.ads, g-socthi.adb,
+	g-socthi.ads, g-socket.adb (Host_Error_Message): Return a string, not
+	a chars_ptr, because on Windows this is a renaming of
+	Socket_Error_Message.
+
 2014-02-24  Robert Dewar  <dewar@adacore.com>
 
 	* a-direct.adb, sem_ch5.adb, a-cfdlli.adb, a-cfhase.adb, a-tags.adb,

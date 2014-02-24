@@ -44,5 +44,5 @@ function Socket_Error_Message
   (Errno : Integer) return String
 is
 begin
-   return Errno_Message (Errno, Default => Unknown_System_Error);
+   return Errno_Message (Errno, Default => "Unknown system error");
 end Socket_Error_Message;

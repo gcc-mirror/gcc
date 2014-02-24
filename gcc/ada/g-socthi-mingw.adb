@@ -535,8 +535,7 @@ package body GNAT.Sockets.Thin is
       --  error messages are provided by Socket_Error_Message, so the default
       --  separate body for Host_Error_Messages is not used in this case.
 
-      function Host_Error_Message
-        (H_Errno : Integer) return C.Strings.chars_ptr
+      function Host_Error_Message (H_Errno : Integer) return String
          renames Socket_Error_Message;
 
    end Host_Error_Messages;
@@ -572,61 +571,62 @@ package body GNAT.Sockets.Thin is
 
    begin
       case Errno is
-         when EINTR =>           Errm := N_EINTR;
-         when EBADF =>           Errm := N_EBADF;
-         when EACCES =>          Errm := N_EACCES;
-         when EFAULT =>          Errm := N_EFAULT;
-         when EINVAL =>          Errm := N_EINVAL;
-         when EMFILE =>          Errm := N_EMFILE;
-         when EWOULDBLOCK =>     Errm := N_EWOULDBLOCK;
-         when EINPROGRESS =>     Errm := N_EINPROGRESS;
-         when EALREADY =>        Errm := N_EALREADY;
-         when ENOTSOCK =>        Errm := N_ENOTSOCK;
-         when EDESTADDRREQ =>    Errm := N_EDESTADDRREQ;
-         when EMSGSIZE =>        Errm := N_EMSGSIZE;
-         when EPROTOTYPE =>      Errm := N_EPROTOTYPE;
-         when ENOPROTOOPT =>     Errm := N_ENOPROTOOPT;
-         when EPROTONOSUPPORT => Errm := N_EPROTONOSUPPORT;
-         when ESOCKTNOSUPPORT => Errm := N_ESOCKTNOSUPPORT;
-         when EOPNOTSUPP =>      Errm := N_EOPNOTSUPP;
-         when EPFNOSUPPORT =>    Errm := N_EPFNOSUPPORT;
-         when EAFNOSUPPORT =>    Errm := N_EAFNOSUPPORT;
-         when EADDRINUSE =>      Errm := N_EADDRINUSE;
-         when EADDRNOTAVAIL =>   Errm := N_EADDRNOTAVAIL;
-         when ENETDOWN =>        Errm := N_ENETDOWN;
-         when ENETUNREACH =>     Errm := N_ENETUNREACH;
-         when ENETRESET =>       Errm := N_ENETRESET;
-         when ECONNABORTED =>    Errm := N_ECONNABORTED;
-         when ECONNRESET =>      Errm := N_ECONNRESET;
-         when ENOBUFS =>         Errm := N_ENOBUFS;
-         when EISCONN =>         Errm := N_EISCONN;
-         when ENOTCONN =>        Errm := N_ENOTCONN;
-         when ESHUTDOWN =>       Errm := N_ESHUTDOWN;
-         when ETOOMANYREFS =>    Errm := N_ETOOMANYREFS;
-         when ETIMEDOUT =>       Errm := N_ETIMEDOUT;
-         when ECONNREFUSED =>    Errm := N_ECONNREFUSED;
-         when ELOOP =>           Errm := N_ELOOP;
-         when ENAMETOOLONG =>    Errm := N_ENAMETOOLONG;
-         when EHOSTDOWN =>       Errm := N_EHOSTDOWN;
-         when EHOSTUNREACH =>    Errm := N_EHOSTUNREACH;
+         when EINTR =>           Errm := Error_Messages (N_EINTR);
+         when EBADF =>           Errm := Error_Messages (N_EBADF);
+         when EACCES =>          Errm := Error_Messages (N_EACCES);
+         when EFAULT =>          Errm := Error_Messages (N_EFAULT);
+         when EINVAL =>          Errm := Error_Messages (N_EINVAL);
+         when EMFILE =>          Errm := Error_Messages (N_EMFILE);
+         when EWOULDBLOCK =>     Errm := Error_Messages (N_EWOULDBLOCK);
+         when EINPROGRESS =>     Errm := Error_Messages (N_EINPROGRESS);
+         when EALREADY =>        Errm := Error_Messages (N_EALREADY);
+         when ENOTSOCK =>        Errm := Error_Messages (N_ENOTSOCK);
+         when EDESTADDRREQ =>    Errm := Error_Messages (N_EDESTADDRREQ);
+         when EMSGSIZE =>        Errm := Error_Messages (N_EMSGSIZE);
+         when EPROTOTYPE =>      Errm := Error_Messages (N_EPROTOTYPE);
+         when ENOPROTOOPT =>     Errm := Error_Messages (N_ENOPROTOOPT);
+         when EPROTONOSUPPORT => Errm := Error_Messages (N_EPROTONOSUPPORT);
+         when ESOCKTNOSUPPORT => Errm := Error_Messages (N_ESOCKTNOSUPPORT);
+         when EOPNOTSUPP =>      Errm := Error_Messages (N_EOPNOTSUPP);
+         when EPFNOSUPPORT =>    Errm := Error_Messages (N_EPFNOSUPPORT);
+         when EAFNOSUPPORT =>    Errm := Error_Messages (N_EAFNOSUPPORT);
+         when EADDRINUSE =>      Errm := Error_Messages (N_EADDRINUSE);
+         when EADDRNOTAVAIL =>   Errm := Error_Messages (N_EADDRNOTAVAIL);
+         when ENETDOWN =>        Errm := Error_Messages (N_ENETDOWN);
+         when ENETUNREACH =>     Errm := Error_Messages (N_ENETUNREACH);
+         when ENETRESET =>       Errm := Error_Messages (N_ENETRESET);
+         when ECONNABORTED =>    Errm := Error_Messages (N_ECONNABORTED);
+         when ECONNRESET =>      Errm := Error_Messages (N_ECONNRESET);
+         when ENOBUFS =>         Errm := Error_Messages (N_ENOBUFS);
+         when EISCONN =>         Errm := Error_Messages (N_EISCONN);
+         when ENOTCONN =>        Errm := Error_Messages (N_ENOTCONN);
+         when ESHUTDOWN =>       Errm := Error_Messages (N_ESHUTDOWN);
+         when ETOOMANYREFS =>    Errm := Error_Messages (N_ETOOMANYREFS);
+         when ETIMEDOUT =>       Errm := Error_Messages (N_ETIMEDOUT);
+         when ECONNREFUSED =>    Errm := Error_Messages (N_ECONNREFUSED);
+         when ELOOP =>           Errm := Error_Messages (N_ELOOP);
+         when ENAMETOOLONG =>    Errm := Error_Messages (N_ENAMETOOLONG);
+         when EHOSTDOWN =>       Errm := Error_Messages (N_EHOSTDOWN);
+         when EHOSTUNREACH =>    Errm := Error_Messages (N_EHOSTUNREACH);
 
          --  Windows-specific error codes
 
-         when WSASYSNOTREADY =>  Errm := N_WSASYSNOTREADY;
+         when WSASYSNOTREADY =>  Errm := Error_Messages (N_WSASYSNOTREADY);
          when WSAVERNOTSUPPORTED =>
-                                 Errm := N_WSAVERNOTSUPPORTED;
+            Errm := Error_Messages (N_WSAVERNOTSUPPORTED);
          when WSANOTINITIALISED =>
-                                 Errm := N_WSANOTINITIALISED;
-         when WSAEDISCON =>      Errm := N_WSAEDISCON;
+            Errm := Error_Messages (N_WSANOTINITIALISED);
+         when WSAEDISCON =>
+            Errm := Error_Messages (N_WSAEDISCON);
 
          --  h_errno values
 
-         when HOST_NOT_FOUND =>  Errm := N_HOST_NOT_FOUND;
-         when TRY_AGAIN =>       Errm := N_TRY_AGAIN;
-         when NO_RECOVERY =>     Errm := N_NO_RECOVERY;
-         when NO_DATA =>         Errm := N_NO_DATA;
+         when HOST_NOT_FOUND =>  Errm := Error_Messages (N_HOST_NOT_FOUND);
+         when TRY_AGAIN =>       Errm := Error_Messages (N_TRY_AGAIN);
+         when NO_RECOVERY =>     Errm := Error_Messages (N_NO_RECOVERY);
+         when NO_DATA =>         Errm := Error_Messages (N_NO_DATA);
 
-         when others =>          Errm := N_OTHERS;
+         when others =>          Errm := Error_Messages (N_OTHERS);
       end case;
 
       return Value (Errm);
