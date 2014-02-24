@@ -1,3 +1,9 @@
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): If the
+	domain of iteration is an attribute reference 'Old, this is an
+	Ada 2012 iterator and the loop must be rewritten as such.
+
 2014-02-24  Thomas Quinot  <quinot@adacore.com>
 
 	* s-fileio.adb (Errno_Message): Remove, use shared version from

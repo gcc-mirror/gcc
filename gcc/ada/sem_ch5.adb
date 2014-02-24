@@ -2362,12 +2362,21 @@ package body Sem_Ch5 is
          Set_Parent (DS_Copy, Parent (DS));
          Preanalyze_Range (DS_Copy);
 
-         --  Ada 2012: If the domain of iteration is a function call, it is the
-         --  new iterator form.
+         --  Ada 2012: If the domain of iteration is:
+
+         --  a)  a function call,
+         --  b)  an identifier that is not a type,
+         --  c)  an attribute reference 'Old (within a postcondition)
+
+         --  then it is an iteration over a container. It was classified as
+         --  a loop specification by the parser, and must be rewritten now
+         --  to activate container iteration.
 
          if Nkind (DS_Copy) = N_Function_Call
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
+           or else (Nkind (DS_Copy) = N_Attribute_Reference
+             and then Attribute_Name (DS_Copy) = Name_Old)
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
