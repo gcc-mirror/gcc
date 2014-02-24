@@ -7540,7 +7540,6 @@ package body Sem_Res is
       Pref     : Node_Id;
 
    begin
-
       --  In ASIS mode, propagate the information about the indices back to
       --  to the original indexing node. The generalized indexing is either
       --  a function call, or a dereference of one. The actuals include the
@@ -7550,9 +7549,9 @@ package body Sem_Res is
          Resolve (Indexing, Typ);
          Set_Etype  (N, Etype (Indexing));
          Set_Is_Overloaded (N, False);
+
          Call := Indexing;
-         while Nkind_In (Call,
-            N_Explicit_Dereference, N_Selected_Component)
+         while Nkind_In (Call, N_Explicit_Dereference, N_Selected_Component)
          loop
             Call := Prefix (Call);
          end loop;

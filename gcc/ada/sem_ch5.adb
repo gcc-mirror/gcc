@@ -1855,6 +1855,9 @@ package body Sem_Ch5 is
 
       else
          Set_Ekind (Def_Id, E_Loop_Parameter);
+         if Ada_Version < Ada_2012 then
+            Error_Msg_N ("container iterators are an Ada 2012 feature", N);
+         end if;
 
          --  OF present
 

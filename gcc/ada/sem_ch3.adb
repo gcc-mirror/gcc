@@ -2999,7 +2999,7 @@ package body Sem_Ch3 is
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
             Error_Msg_N
-              ("constant cannot be volatile (SPARK RM 7.1.3(4))", Obj_Id);
+              ("constant cannot be volatile (SPARK RM 7.1.3(6))", Obj_Id);
          end if;
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
@@ -3016,7 +3016,7 @@ package body Sem_Ch3 is
             then
                Error_Msg_N
                  ("non-volatile variable & cannot have volatile components "
-                  & "(SPARK RM 7.1.3(6))", Obj_Id);
+                  & "(SPARK RM 7.1.3(7))", Obj_Id);
 
             --  The declaration of a volatile object must appear at the library
             --  level.

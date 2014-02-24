@@ -1,3 +1,28 @@
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, sem_ch12.adb, sem_res.adb, sem_ch4.adb, par-ch12.adb:
+	Minor reformatting.
+	* atree.ads, atree.adb (Node35): New function.
+	(Set_Node35): New procedure.
+	* debug.adb: Define new debug flag -gnatd.X.
+	* einfo.ads, einfo.adb (Import_Pragma): New field.
+	* freeze.adb (Wrap_Imported_Procedure): New procedure (not
+	really active yet, has to be activated with -gnatd.X.
+	* sem_prag.adb (Set_Imported): Set new Import_Pragma
+	field (Set_Imported): Don't set Is_Public (see
+	Freeze.Wrap_Imported_Subprogram)
+	* par-ch3.adb (P_Component_List): Handle unexpected null component.
+
+2014-02-24  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb: Correct reference to SPARK RM in error messages.
+	* gnat_rm.texi: Correct documentation of attribute Update.
+
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Reject container
+	iterator in older versions of Ada.
+
 2014-02-24  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch5.adb, sem_aux.ads, sem_ch12.adb, gnat_ugn.texi, par.adb,

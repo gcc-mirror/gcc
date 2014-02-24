@@ -1094,13 +1094,13 @@ package body Sem_Ch4 is
             --  indexed component and analyze as container indexing.
 
             if not Is_Overloadable (Nam_Ent) then
-               if Present (
-                 Find_Value_Of_Aspect
-                    (Etype (Nam_Ent), Aspect_Constant_Indexing))
+               if Present
+                    (Find_Value_Of_Aspect
+                       (Etype (Nam_Ent), Aspect_Constant_Indexing))
                then
                   Replace (N,
                     Make_Indexed_Component (Sloc (N),
-                      Prefix => Nam,
+                      Prefix      => Nam,
                       Expressions => Parameter_Associations (N)));
 
                   if Try_Container_Indexing (N, Nam, Expressions (N)) then
@@ -1112,6 +1112,7 @@ package body Sem_Ch4 is
                else
                   No_Interpretation;
                end if;
+
                return;
             end if;
          end if;
@@ -7065,7 +7066,6 @@ package body Sem_Ch4 is
             while Present (Disc) loop
                declare
                   Elmt_Type : Entity_Id;
-
                begin
                   if Has_Implicit_Dereference (Disc) then
                      Elmt_Type := Designated_Type (Etype (Disc));
@@ -7098,6 +7098,7 @@ package body Sem_Ch4 is
             Set_Etype (Indexing, Any_Type);
             while Present (It.Nam) loop
                Analyze_One_Call (Indexing, It.Nam, False, Success);
+
                if Success then
                   Set_Etype (Name (Indexing), It.Typ);
                   Set_Entity (Name (Indexing), It.Nam);
@@ -7122,6 +7123,7 @@ package body Sem_Ch4 is
 
                   exit;
                end if;
+
                Get_Next_Interp (I, It);
             end loop;
          end;

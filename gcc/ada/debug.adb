@@ -141,7 +141,7 @@ package body Debug is
    --  d.U  Ignore indirect calls for static elaboration
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X
+   --  d.X  Activate wrapping of imported subprograms with pre/post conditions
    --  d.Y
    --  d.Z
 
@@ -663,6 +663,9 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for use in
    --       debugging CodePeer mode.
+
+   --  d.X  Activates Wrap_Imported_Subprogram in Freeze (not yet working so
+   --       this allows checkin of partial implementation).
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

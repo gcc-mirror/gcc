@@ -3270,87 +3270,100 @@ package body Ch3 is
       Component_List_Node : Node_Id;
       Decls_List          : List_Id;
       Scan_State          : Saved_Scan_State;
+      Null_Loc            : Source_Ptr;
 
    begin
       Component_List_Node := New_Node (N_Component_List, Token_Ptr);
       Decls_List := New_List;
 
+      --  Handle null
+
       if Token = Tok_Null then
+         Null_Loc := Token_Ptr;
          Scan; -- past NULL
          TF_Semicolon;
          P_Pragmas_Opt (Decls_List);
-         Set_Null_Present (Component_List_Node, True);
-         return Component_List_Node;
 
-      else
-         P_Pragmas_Opt (Decls_List);
+         --  If we have an END or WHEN now, everything is fine, otherwise we
+         --  complain about the null, ignore it, and scan for more components.
 
-         if Token /= Tok_Case then
-            Component_Scan_Loop : loop
-               P_Component_Items (Decls_List);
-               P_Pragmas_Opt (Decls_List);
+         if Token = Tok_End or else Token = Tok_When then
+            Set_Null_Present (Component_List_Node, True);
+            return Component_List_Node;
+         else
+            Error_Msg ("NULL component only allowed in null record", Null_Loc);
+         end if;
+      end if;
 
-               exit Component_Scan_Loop when Token = Tok_End
-                 or else Token = Tok_Case
-                 or else Token = Tok_When;
+      --  Scan components for non-null record
 
-               --  We are done if we do not have an identifier. However, if
-               --  we have a misspelled reserved identifier that is in a column
-               --  to the right of the record definition, we will treat it as
-               --  an identifier. It turns out to be too dangerous in practice
-               --  to accept such a mis-spelled identifier which does not have
-               --  this additional clue that confirms the incorrect spelling.
+      P_Pragmas_Opt (Decls_List);
 
-               if Token /= Tok_Identifier then
-                  if Start_Column > Scope.Table (Scope.Last).Ecol
-                    and then Is_Reserved_Identifier
-                  then
-                     Save_Scan_State (Scan_State); -- at reserved id
-                     Scan; -- possible reserved id
+      if Token /= Tok_Case then
+         Component_Scan_Loop : loop
+            P_Component_Items (Decls_List);
+            P_Pragmas_Opt (Decls_List);
 
-                     if Token = Tok_Comma or else Token = Tok_Colon then
-                        Restore_Scan_State (Scan_State);
-                        Scan_Reserved_Identifier (Force_Msg => True);
+            exit Component_Scan_Loop when Token = Tok_End
+              or else Token = Tok_Case
+              or else Token = Tok_When;
 
-                     --  Note reserved identifier used as field name after
-                     --  all because not followed by colon or comma
+            --  We are done if we do not have an identifier. However, if we
+            --  have a misspelled reserved identifier that is in a column to
+            --  the right of the record definition, we will treat it as an
+            --  identifier. It turns out to be too dangerous in practice to
+            --  accept such a mis-spelled identifier which does not have this
+            --  additional clue that confirms the incorrect spelling.
 
-                     else
-                        Restore_Scan_State (Scan_State);
-                        exit Component_Scan_Loop;
-                     end if;
+            if Token /= Tok_Identifier then
+               if Start_Column > Scope.Table (Scope.Last).Ecol
+                 and then Is_Reserved_Identifier
+               then
+                  Save_Scan_State (Scan_State); -- at reserved id
+                  Scan; -- possible reserved id
+
+                  if Token = Tok_Comma or else Token = Tok_Colon then
+                     Restore_Scan_State (Scan_State);
+                     Scan_Reserved_Identifier (Force_Msg => True);
+
+                     --  Note reserved identifier used as field name after all
+                     --  because not followed by colon or comma.
+
+                  else
+                     Restore_Scan_State (Scan_State);
+                     exit Component_Scan_Loop;
+                  end if;
 
                   --  Non-identifier that definitely was not reserved id
 
-                  else
-                     exit Component_Scan_Loop;
-                  end if;
-               end if;
-            end loop Component_Scan_Loop;
-         end if;
-
-         if Token = Tok_Case then
-            Set_Variant_Part (Component_List_Node, P_Variant_Part);
-
-            --  Check for junk after variant part
-
-            if Token = Tok_Identifier then
-               Save_Scan_State (Scan_State);
-               Scan; -- past identifier
-
-               if Token = Tok_Colon then
-                  Restore_Scan_State (Scan_State);
-                  Error_Msg_SC ("component may not follow variant part");
-                  Discard_Junk_Node (P_Component_List);
-
-               elsif Token = Tok_Case then
-                  Restore_Scan_State (Scan_State);
-                  Error_Msg_SC ("only one variant part allowed in a record");
-                  Discard_Junk_Node (P_Component_List);
-
                else
-                  Restore_Scan_State (Scan_State);
+                  exit Component_Scan_Loop;
                end if;
+            end if;
+         end loop Component_Scan_Loop;
+      end if;
+
+      if Token = Tok_Case then
+         Set_Variant_Part (Component_List_Node, P_Variant_Part);
+
+         --  Check for junk after variant part
+
+         if Token = Tok_Identifier then
+            Save_Scan_State (Scan_State);
+            Scan; -- past identifier
+
+            if Token = Tok_Colon then
+               Restore_Scan_State (Scan_State);
+               Error_Msg_SC ("component may not follow variant part");
+               Discard_Junk_Node (P_Component_List);
+
+            elsif Token = Tok_Case then
+               Restore_Scan_State (Scan_State);
+               Error_Msg_SC ("only one variant part allowed in a record");
+               Discard_Junk_Node (P_Component_List);
+
+            else
+               Restore_Scan_State (Scan_State);
             end if;
          end if;
       end if;

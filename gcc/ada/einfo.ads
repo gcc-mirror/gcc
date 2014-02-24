@@ -1973,6 +1973,13 @@ package Einfo is
 --       that we still have a concrete type. For entities other than types,
 --       returns the entity unchanged.
 
+--    Import_Pragma (Node35)
+--       Defined in subprogram entities. Set if a valid pragma Import or pragma
+--       Import_Function or pragma Import_Procedure aplies to the subprogram,
+--       in which case this field points to the pragma (we can't use the normal
+--       Rep_Item chain mechanism, because a single pragma Import can apply
+--       to multiple subprogram entities.
+
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
 --       package (the defining occurrence of the package declaration) while
@@ -6478,6 +6485,7 @@ package Einfo is
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
    function Homonym                             (Id : E) return E;
+   function Import_Pragma                       (Id : E) return E;
    function In_Package_Body                     (Id : E) return B;
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
@@ -7100,6 +7108,7 @@ package Einfo is
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
+   procedure Set_Import_Pragma                   (Id : E; V : E);
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
@@ -7836,6 +7845,7 @@ package Einfo is
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
+   pragma Inline (Import_Pragma);
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
@@ -8306,6 +8316,7 @@ package Einfo is
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
+   pragma Inline (Set_Import_Pragma);
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);
