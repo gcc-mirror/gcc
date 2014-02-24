@@ -4626,6 +4626,17 @@ package body Ch3 is
          then
             Error_Msg ("proper body not allowed in package spec", Sloc (Decl));
 
+            --  Complete declaration of mangled subprogram body, for better
+            --  recovery if analysis is attempted.
+
+            if Nkind_In
+              (Decl, N_Subprogram_Body, N_Package_Body, N_Task_Body)
+            then
+               Set_Handled_Statement_Sequence (Decl,
+                 Make_Handled_Sequence_Of_Statements (Sloc (Decl),
+                   Statements => New_List));
+            end if;
+
          --  Test for body stub scanned, not acceptable as basic decl item
 
          elsif Kind in N_Body_Stub then
