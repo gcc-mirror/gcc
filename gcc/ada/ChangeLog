@@ -1,5 +1,28 @@
 2014-02-24  Thomas Quinot  <quinot@adacore.com>
 
+	* s-os_lib.adb (Errno_Message): Do not depend on Integer'Image.
+	* s-oscons-tmplt.c: On VxWorks, include adaint.h only after
+	vxWorks.h has been included.  Also ensure that file attributes
+	related definitions are output even in cases where socket support
+	is not enabled.
+	* a-tags.adb: Code clean up.
+	* Make-generated.in (OSCONS_CPP, OSCONS_EXTRACT): Use -iquote
+	instead of -I to add the main ada source directory to the header
+	search path, in order to avoid conflict between our own "types.h"
+	and VxWork's <types.h>.
+
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb (Copy_Separate_Tree): Add Syntax_Only parameter.
+	* debug.adb: Remove documentation of -gnatd.X, no longer used.
+	* freeze.adb (Wrap_Imported_Subprogram): Fixed and activated.
+
+2014-02-24  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Improve documentation of gnatpp.
+
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
 	* g-stheme.adb, g-socthi-vms.adb, g-socthi-vms.ads,
 	g-socthi-vxworks.adb, g-socthi-vxworks.ads, g-stseme.adb,
 	g-socthi-mingw.adb, g-socthi-mingw.ads, g-socthi.adb,

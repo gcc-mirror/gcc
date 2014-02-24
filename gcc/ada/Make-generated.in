@@ -67,12 +67,20 @@ $(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 	touch $(ADA_GEN_SUBDIR)/stamp-nmake
 
 # GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
-# for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
+# for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons.
+
 OSCONS_CC=$(subst ./xgcc,../../../xgcc,$(subst -B./, -B../../../,$(GCC_FOR_TARGET)))
+
+# The main ada source directory must be on the include path for #include "..."
+# because s-oscons-tmplt.c requires adaint.h, gsocket.h, and any file included
+# by these headers. However note that we must use -iquote, not -I, so that
+# ada/types.h does not conflict with a same-named system header (VxWorks
+# has a <types.h> header).
+
 OSCONS_SRCDIR=$${_oscons_srcdir}
 OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
-  -DTARGET=\"$(target)\" -I$(OSCONS_SRCDIR) s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) -I$(OSCONS_SRCDIR) -S s-oscons-tmplt.i
+  -DTARGET=\"$(target)\" -iquote $(OSCONS_SRCDIR) s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) -iquote $(OSCONS_SRCDIR) -S s-oscons-tmplt.i
 
 # Note: if you need to build with a non-GNU compiler, you could adapt the
 # following definitions (written for VMS DEC-C)
