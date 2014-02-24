@@ -174,6 +174,7 @@ package body Sem_Res is
    procedure Resolve_Explicit_Dereference      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Expression_With_Actions   (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_If_Expression             (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_Generalized_Indexing      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Indexed_Component         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Integer_Literal           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Logical_Op                (N : Node_Id; Typ : Entity_Id);
@@ -2375,7 +2376,15 @@ package body Sem_Res is
                  and then Ekind (It.Nam) = E_Discriminant
                  and then Has_Implicit_Dereference (It.Nam)
                then
-                  Build_Explicit_Dereference (N, It.Nam);
+                  --  If the node is a general indexing, the dereference is
+                  --  is inserted when resolving the rewritten form, else
+                  --  insert it now.
+
+                  if Nkind (N) /= N_Indexed_Component
+                    or else No (Generalized_Indexing (N))
+                  then
+                     Build_Explicit_Dereference (N, It.Nam);
+                  end if;
 
                --  For an explicit dereference, attribute reference, range,
                --  short-circuit form (which is not an operator node), or call
@@ -7520,6 +7529,47 @@ package body Sem_Res is
       end if;
    end Resolve_Expression_With_Actions;
 
+   ----------------------------------
+   -- Resolve_Generalized_Indexing --
+   ----------------------------------
+
+   procedure Resolve_Generalized_Indexing (N : Node_Id; Typ : Entity_Id) is
+      Indexing : constant Node_Id := Generalized_Indexing (N);
+      Call     : Node_Id;
+      Indices  : List_Id;
+      Pref     : Node_Id;
+
+   begin
+
+      --  In ASIS mode, propagate the information about the indices back to
+      --  to the original indexing node. The generalized indexing is either
+      --  a function call, or a dereference of one. The actuals include the
+      --  prefix of the original node, which is the container expression.
+
+      if ASIS_Mode then
+         Resolve (Indexing, Typ);
+         Set_Etype  (N, Etype (Indexing));
+         Set_Is_Overloaded (N, False);
+         Call := Indexing;
+         while Nkind_In (Call,
+            N_Explicit_Dereference, N_Selected_Component)
+         loop
+            Call := Prefix (Call);
+         end loop;
+
+         if Nkind (Call) = N_Function_Call then
+            Indices := Parameter_Associations (Call);
+            Pref := Remove_Head (Indices);
+            Set_Expressions (N, Indices);
+            Set_Prefix (N, Pref);
+         end if;
+
+      else
+         Rewrite (N, Indexing);
+         Resolve (N, Typ);
+      end if;
+   end Resolve_Generalized_Indexing;
+
    ---------------------------
    -- Resolve_If_Expression --
    ---------------------------
@@ -7591,6 +7641,11 @@ package body Sem_Res is
       Index      : Node_Id;
 
    begin
+      if Present (Generalized_Indexing (N)) then
+         Resolve_Generalized_Indexing (N, Typ);
+         return;
+      end if;
+
       if Is_Overloaded (Name) then
 
          --  Use the context type to select the prefix that yields the correct

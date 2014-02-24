@@ -1089,10 +1089,29 @@ package body Sem_Ch4 is
          else
             Nam_Ent := Entity (Nam);
 
-            --  If no interpretations, give error message
+            --  If not overloadable, this may be a generalized indexing
+            --  operation with named associations. Rewrite again as an
+            --  indexed component and analyze as container indexing.
 
             if not Is_Overloadable (Nam_Ent) then
-               No_Interpretation;
+               if Present (
+                 Find_Value_Of_Aspect
+                    (Etype (Nam_Ent), Aspect_Constant_Indexing))
+               then
+                  Replace (N,
+                    Make_Indexed_Component (Sloc (N),
+                      Prefix => Nam,
+                      Expressions => Parameter_Associations (N)));
+
+                  if Try_Container_Indexing (N, Nam, Expressions (N)) then
+                     return;
+                  else
+                     No_Interpretation;
+                  end if;
+
+               else
+                  No_Interpretation;
+               end if;
                return;
             end if;
          end if;
@@ -1991,8 +2010,19 @@ package body Sem_Ch4 is
 
    procedure Analyze_Expression (N : Node_Id) is
    begin
-      Analyze (N);
-      Check_Parameterless_Call (N);
+
+      --  If the expression is an indexed component that will be rewritten
+      --  as a container indexing, it has already been analyzed.
+
+      if Nkind (N) = N_Indexed_Component
+        and then Present (Generalized_Indexing (N))
+      then
+         null;
+
+      else
+         Analyze (N);
+         Check_Parameterless_Call (N);
+      end if;
    end Analyze_Expression;
 
    -------------------------------------
@@ -6993,8 +7023,15 @@ package body Sem_Ch4 is
 
       Assoc := New_List (Relocate_Node (Prefix));
 
-      --  A generalized iterator may have nore than one index expression, so
+      --  A generalized indexing may have nore than one index expression, so
       --  transfer all of them to the argument list to be used in the call.
+      --  Note that there may be named associations, in which case the node
+      --  was rewritten earlier as a call, and has been transformed back into
+      --  an indexed expression to share the following processing.
+      --  The generalized indexing node is the one on which analysis and
+      --  resolution take place. Before expansion the original node is replaced
+      --  with the generalized indexing node, which is a call, possibly with
+      --  a dereference operation.
 
       declare
          Arg : Node_Id;
@@ -7012,21 +7049,31 @@ package body Sem_Ch4 is
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Func, Loc),
              Parameter_Associations => Assoc);
-         Rewrite (N, Indexing);
-         Analyze (N);
+         Set_Parent (Indexing, Parent (N));
+         Set_Generalized_Indexing (N, Indexing);
+         Analyze (Indexing);
+         Set_Etype (N, Etype (Indexing));
 
          --  If the return type of the indexing function is a reference type,
          --  add the dereference as a possible interpretation. Note that the
          --  indexing aspect may be a function that returns the element type
-         --  with no intervening implicit dereference.
+         --  with no intervening implicit dereference, and that the reference
+         --  discriminant is not the first discriminant.
 
          if Has_Discriminants (Etype (Func)) then
             Disc := First_Discriminant (Etype (Func));
             while Present (Disc) loop
-               if Has_Implicit_Dereference (Disc) then
-                  Add_One_Interp (N, Disc, Designated_Type (Etype (Disc)));
-                  exit;
-               end if;
+               declare
+                  Elmt_Type : Entity_Id;
+
+               begin
+                  if Has_Implicit_Dereference (Disc) then
+                     Elmt_Type := Designated_Type (Etype (Disc));
+                     Add_One_Interp (Indexing, Disc, Elmt_Type);
+                     Add_One_Interp (N, Disc, Elmt_Type);
+                     exit;
+                  end if;
+               end;
 
                Next_Discriminant (Disc);
             end loop;
@@ -7038,7 +7085,8 @@ package body Sem_Ch4 is
              Name => Make_Identifier (Loc, Chars (Func_Name)),
              Parameter_Associations => Assoc);
 
-         Rewrite (N, Indexing);
+         Set_Parent (Indexing, Parent (N));
+         Set_Generalized_Indexing (N, Indexing);
 
          declare
             I       : Interp_Index;
@@ -7047,12 +7095,13 @@ package body Sem_Ch4 is
 
          begin
             Get_First_Interp (Func_Name, I, It);
-            Set_Etype (N, Any_Type);
+            Set_Etype (Indexing, Any_Type);
             while Present (It.Nam) loop
-               Analyze_One_Call (N, It.Nam, False, Success);
+               Analyze_One_Call (Indexing, It.Nam, False, Success);
                if Success then
-                  Set_Etype (Name (N), It.Typ);
-                  Set_Entity (Name (N), It.Nam);
+                  Set_Etype (Name (Indexing), It.Typ);
+                  Set_Entity (Name (Indexing), It.Nam);
+                  Set_Etype (N, Etype (Indexing));
 
                   --  Add implicit dereference interpretation
 
@@ -7060,6 +7109,8 @@ package body Sem_Ch4 is
                      Disc := First_Discriminant (Etype (It.Nam));
                      while Present (Disc) loop
                         if Has_Implicit_Dereference (Disc) then
+                           Add_One_Interp
+                             (Indexing, Disc, Designated_Type (Etype (Disc)));
                            Add_One_Interp
                              (N, Disc, Designated_Type (Etype (Disc)));
                            exit;
@@ -7076,12 +7127,10 @@ package body Sem_Ch4 is
          end;
       end if;
 
-      if Etype (N) = Any_Type then
+      if Etype (Indexing) = Any_Type then
          Error_Msg_NE
            ("container cannot be indexed with&", N, Etype (First (Exprs)));
          Rewrite (N, New_Occurrence_Of (Any_Id, Loc));
-      else
-         Analyze (N);
       end if;
 
       return True;

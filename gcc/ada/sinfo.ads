@@ -1277,6 +1277,15 @@ package Sinfo is
    --    declaration is treated as an implicit reference to the formal in the
    --    ali file.
 
+   --  Generalized_Indexing (Node4-Sem)
+   --  Generalized_Indexing is set in Indexed_Component nodes that are Ada 2012
+   --  container indexing operations. The value of the attribute is a function
+   --  call (possibly dereferenced) that corresponds to the proper expansion
+   --  of the source indexing operation. Before expansion, the source node
+   --  is rewritten as the resolved generalized indexing. In ASIS mode, the
+   --  expansion does not take place, so that the source is preserved and
+   --  properly annotated with types.
+
    --  Generic_Parent (Node5-Sem)
    --    Generic_Parent is defined on declaration nodes that are instances. The
    --    value of Generic_Parent is the generic entity from which the instance
@@ -3470,6 +3479,7 @@ package Sinfo is
       --  Sloc contains a copy of the Sloc value of the Prefix
       --  Prefix (Node3)
       --  Expressions (List1)
+      --  Generalized_Indexing (Node4-Sem)
       --  Atomic_Sync_Required (Flag14-Sem)
       --  plus fields for expression
 
@@ -8912,6 +8922,8 @@ package Sinfo is
    function From_Default
      (N : Node_Id) return Boolean;    -- Flag6
 
+   function Generalized_Indexing
+     (N : Node_Id) return Node_Id;    -- Node4
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -9907,6 +9919,9 @@ package Sinfo is
 
    procedure Set_From_Default
      (N : Node_Id; Val : Boolean := True);    -- Flag6
+
+   procedure Set_Generalized_Indexing
+     (N : Node_Id; Val : Node_Id);            -- Node4
 
    procedure Set_Generic_Associations
      (N : Node_Id; Val : List_Id);            -- List3
@@ -10918,7 +10933,7 @@ package Sinfo is
        (1 => True,    --  Expressions (List1)
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,   --  unused
+        4 => False,    --  Generalized_Indexing (Node4-Sem)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Slice =>
@@ -12372,6 +12387,7 @@ package Sinfo is
    pragma Inline (From_At_End);
    pragma Inline (From_At_Mod);
    pragma Inline (From_Default);
+   pragma Inline (Generalized_Indexing);
    pragma Inline (Generic_Associations);
    pragma Inline (Generic_Formal_Declarations);
    pragma Inline (Generic_Parent);
@@ -12701,6 +12717,7 @@ package Sinfo is
    pragma Inline (Set_From_At_End);
    pragma Inline (Set_From_At_Mod);
    pragma Inline (Set_From_Default);
+   pragma Inline (Set_Generalized_Indexing);
    pragma Inline (Set_Generic_Associations);
    pragma Inline (Set_Generic_Formal_Declarations);
    pragma Inline (Set_Generic_Parent);
