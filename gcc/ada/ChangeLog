@@ -1,3 +1,19 @@
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom-mingw.adb (Open): Fix incorrect test for error return
+	value.
+	* erroutc.adb: Minor reformatting.
+
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Clause_Syntax): Account
+	for a solitary input item in a dependency list.
+
+2014-02-24  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Do not
+	use validity checks at all in GNATprove_Mode.
+
 2014-02-24  Robert Dewar  <dewar@adacore.com>
 
 	* g-sercom-mingw.adb, g-sercom-linux.adb, sem_prag.adb, freeze.adb,

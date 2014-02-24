@@ -24261,17 +24261,22 @@ package body Sem_Prag is
 
          --  Input items
 
-         if Nkind (Inputs) = N_Aggregate
-           and then Present (Expressions (Inputs))
-         then
-            Input := First (Expressions (Inputs));
-            while Present (Input) loop
-               Check_Item_Syntax (Input);
-               Next (Input);
-            end loop;
+         if Nkind (Inputs) = N_Aggregate then
+            if Present (Expressions (Inputs)) then
+               Input := First (Expressions (Inputs));
+               while Present (Input) loop
+                  Check_Item_Syntax (Input);
+                  Next (Input);
+               end loop;
+
+            else
+               Error_Msg_N ("malformed input dependency list", Inputs);
+            end if;
+
+         --  Single input item
 
          else
-            Error_Msg_N ("malformed input dependency list", Inputs);
+            Check_Item_Syntax (Inputs);
          end if;
       end Check_Clause_Syntax;
 

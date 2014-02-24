@@ -384,6 +384,12 @@ procedure Gnat1drv is
 
          Assertions_Enabled := True;
 
+         --  Disable validity checks, since it generates code raising
+         --  exceptions for invalid data, which confuses GNATprove. Invalid
+         --  data is directly detected by GNATprove's flow analysis.
+
+         Validity_Checks_On := False;
+
          --  Turn off style check options since we are not interested in any
          --  front-end warnings when we are getting SPARK output.
 

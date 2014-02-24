@@ -481,8 +481,8 @@ package body Erroutc is
       Max := Integer (Length - Column + 1);
 
       declare
-         Txt : constant String := Text.all & Warn_Tag.all;
-         Len : constant Natural    := Txt'Length;
+         Txt : constant String  := Text.all & Warn_Tag.all;
+         Len : constant Natural := Txt'Length;
 
       begin
          --  For warning, add "warning: " unless msg starts with "info: "
