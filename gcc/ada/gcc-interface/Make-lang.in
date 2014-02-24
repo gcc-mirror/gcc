@@ -350,7 +350,6 @@ GNAT_ADA_OBJS =	\
  ada/s-htable.o	\
  ada/s-imenne.o	\
  ada/s-imgenu.o	\
- ada/s-imgint.o \
  ada/s-mastop.o	\
  ada/s-memory.o	\
  ada/s-os_lib.o	\
@@ -534,7 +533,6 @@ GNATBIND_OBJS = \
  ada/s-htable.o   \
  ada/s-imenne.o   \
  ada/s-imgenu.o   \
- ada/s-imgint.o   \
  ada/s-mastop.o   \
  ada/s-memory.o   \
  ada/s-os_lib.o   \
