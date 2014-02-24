@@ -436,6 +436,7 @@ package body Exp_Prag is
             then
                Pref := Prefix (N);
                Temp := Make_Temporary (Loc, 'T', Pref);
+               Set_Etype (Temp, Etype (Pref));
 
                --  Generate a temporary to capture the value of the prefix:
                --    Temp : <Pref type>;

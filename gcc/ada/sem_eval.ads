@@ -214,17 +214,25 @@ package Sem_Eval is
    --  static, or because one or the other bound raises CE).
 
    function Subtypes_Statically_Compatible
-     (T1 : Entity_Id;
-      T2 : Entity_Id) return Boolean;
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean;
    --  Returns true if the subtypes are unconstrained or the constraint on
    --  on T1 is statically compatible with T2 (as defined by 4.9.1(4)).
-   --  Otherwise returns false.
+   --  Otherwise returns false. Formal_Derived_Matching indicates whether
+   --  the type T1 is a generic actual being checked against ancestor T2
+   --  in a formal derived type association.
 
-   function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean;
+   function Subtypes_Statically_Match
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean;
    --  Determine whether two types T1, T2, which have the same base type,
    --  are statically matching subtypes (RM 4.9.1(1-2)). Also includes the
    --  extra GNAT rule that object sizes must match (this can be false for
-   --  types that match in the RM sense because of use of 'Object_Size).
+   --  types that match in the RM sense because of use of 'Object_Size),
+   --  except when testing a generic actual T1 against an ancestor T2 in a
+   --  formal derived type association (indicated by Formal_Derived_Matching).
 
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean;
    --  Returns true if Op is an expression not raising Constraint_Error whose

@@ -1,3 +1,31 @@
+2014-02-24  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* gnat_ugn.texi: Misc updates.
+
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_prag.adb (Expand_Old): Set the type of the generated temporary.
+
+2014-02-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Layout_Variant_Record): Instantiate
+	Generic_Check_Choices and call Check_Choices before calling
+	Build_Discr_Checking_Funcs, since we need Others_Discrete_Choices
+	set to prevent generating incorrect discriminant-checking
+	functions for 'others' variants (functions that unconditionally
+	return True rather than accounting for the values covered by the
+	'others' choice).
+	* sem_eval.ads (Subtypes_Statically_Compatible): Add formal
+	Formal_Derived_Matching.
+	(Subtypes_Statically_Match): Add formal Formal_Derived_Matching.
+	* sem_eval.adb (Subtypes_Statically_Compatible): Pass new
+	Formal_Derived_Matching formal to Subtypes_Statically_Match.
+	(Subtypes_Statically_Match): Suppress the Object_Size matching
+	test in the case where Formal_Derived_Matching is True.
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Pass
+	True for Formal_Derived_Matching_Formal on the call to
+	Subtypes_Statically_Compatible.
+
 2014-02-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (ADA_TOOLS_FLAGS_TO_PASS): Robustify.
