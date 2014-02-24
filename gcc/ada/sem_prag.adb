@@ -2060,16 +2060,28 @@ package body Sem_Prag is
 
                --  Variable related checks
 
-               else
+               elsif Is_SPARK_Volatile_Object (Item_Id) then
+
+                  --  A volatile object cannot appear as a global item of a
+                  --  function. This check is only relevant when SPARK_Mode is
+                  --  on as it is not a standard Ada legality rule.
+
+                  if SPARK_Mode = On
+                    and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+                  then
+                     Error_Msg_NE
+                       ("volatile object & cannot act as global item of a "
+                        & "function (SPARK RM 7.1.3(9))", Item, Item_Id);
+                     return;
+
                   --  A volatile object with property Effective_Reads set to
                   --  True must have mode Output or In_Out.
 
-                  if Is_SPARK_Volatile_Object (Item_Id)
-                    and then Effective_Reads_Enabled (Item_Id)
+                  elsif Effective_Reads_Enabled (Item_Id)
                     and then Global_Mode = Name_Input
                   then
                      Error_Msg_NE
-                       ("volatile item & with property Effective_Reads must "
+                       ("volatile object & with property Effective_Reads must "
                         & "have mode In_Out or Output (SPARK RM 7.1.3(11))",
                         Item, Item_Id);
                      return;
@@ -2098,19 +2110,6 @@ package body Sem_Prag is
 
             if Nam_In (Global_Mode, Name_In_Out, Name_Output) then
                Check_Mode_Restriction_In_Enclosing_Context (Item, Item_Id);
-            end if;
-
-            --  A volatile object cannot appear as a global item of a function.
-            --  This check is only relevant when SPARK_Mode is on as it is not
-            --  a standard Ada legality rule.
-
-            if SPARK_Mode = On
-              and then Is_SPARK_Volatile_Object (Item)
-              and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
-            then
-               Error_Msg_NE
-                 ("volatile object & cannot act as global item of a function "
-                  & "(SPARK RM 7.1.3(9))", Item, Item_Id);
             end if;
 
             --  The same entity might be referenced through various way. Check
