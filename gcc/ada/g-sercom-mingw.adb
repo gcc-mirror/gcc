@@ -93,10 +93,11 @@ package body GNAT.Serial_Communications is
       N_Img : constant String := Positive'Image (Number);
    begin
       if Number > 9 then
-         return Port_Name ("\\.\COM" & N_Img (N_Img'First + 1 .. N_Img'Last));
+         return
+           Port_Name ("\\.\COM" & N_Img (N_Img'First + 1 .. N_Img'Last));
       else
-         return Port_Name
-           ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
+         return
+           Port_Name ("COM" & N_Img (N_Img'First + 1 .. N_Img'Last) & ':');
       end if;
    end Name;
 
@@ -234,10 +235,10 @@ package body GNAT.Serial_Communications is
             Com_Settings.fOutxCtsFlow := 0;
       end case;
 
-      Com_Settings.fAbortOnError   := 0;
-      Com_Settings.ByteSize        := BYTE (C_Bits (Bits));
-      Com_Settings.Parity          := BYTE (C_Parity (Parity));
-      Com_Settings.StopBits        := BYTE (C_Stop_Bits (Stop_Bits));
+      Com_Settings.fAbortOnError := 0;
+      Com_Settings.ByteSize      := BYTE (C_Bits (Bits));
+      Com_Settings.Parity        := BYTE (C_Parity (Parity));
+      Com_Settings.StopBits      := BYTE (C_Stop_Bits (Stop_Bits));
 
       Success := SetCommState (HANDLE (Port.H.all), Com_Settings'Access);
 

@@ -3426,7 +3426,8 @@ package body Freeze is
             --  Note on calls to Copy_Separate_Tree. The trees we are copying
             --  here are fully analyzed, but we definitely want fully syntactic
             --  unanalyzed trees in the body we construct, so that the analysis
-            --  generates the right visibility.
+            --  generates the right visibility, and that is exactly what the
+            --  calls to Copy_Separate_Tree give us.
 
             --  Acquire copy of Inline pragma
 
