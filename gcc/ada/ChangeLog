@@ -1,3 +1,23 @@
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* s-fileio.adb (Errno_Message): Remove, use shared version from
+	s-os_lib instead.
+	* s-crtrun.ads, Makefile.rtl: Remove now unused unit.
+	* g-stseme (Socket_Error_Message): Reimplement in terms of new
+	s-os_lib function.
+	* g-socthi.ads, g-socthi.adb: Change profile of
+	Socket_Error_Message to return String to allow the above.
+	* g-socket.adb, g-socthi-mingw.adb, g-socthi-mingw.ads,
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	* g-socthi-vxworks.ads: Update to account for the above profile
+	change.
+	* a-tags.adb: Use strlen builtin binding provided by s-crtl.
+	* s-crtl.ads (strncpy): New procedure.
+	* s-os_lib.adb (Copy_Attributes): Import just once (strncpy):
+	Use import from s-crtl.
+	* a-envvar.adb, osint.adb: Use imports of C runtime functions
+	from s-crtl instead of re-importing locally.
+
 2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Global_Item): Emit the

@@ -33,10 +33,9 @@ with Ada.Finalization;  use Ada.Finalization;
 with Ada.IO_Exceptions; use Ada.IO_Exceptions;
 
 with Interfaces.C;
-with Interfaces.C.Strings; use Interfaces.C.Strings;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 
-with System.CRTL.Runtime;
+with System.CRTL;
 with System.Case_Util;    use System.Case_Util;
 with System.OS_Lib;
 with System.Soft_Links;
@@ -130,15 +129,9 @@ package body System.File_IO is
    --  the access method from the Access_Method field of the FCB.
 
    function Errno_Message
-     (Errno : Integer := OS_Lib.Errno) return String;
-   function Errno_Message
-     (Name : String;
+     (Name  : String;
       Errno : Integer := OS_Lib.Errno) return String;
-   --  Return a message suitable for "raise ... with Errno_Message (...)".
-   --  Errno defaults to the current errno, but should be passed explicitly if
-   --  there is significant code in between the call that sets errno and the
-   --  call to Errno_Message, in case that code also sets errno. The version
-   --  with Name includes that file name in the message.
+   --  Return Errno_Message for Errno, with file name prepended
 
    procedure Raise_Device_Error
      (File  : AFCB_Ptr;
@@ -241,7 +234,7 @@ package body System.File_IO is
       Close_Status : int := 0;
       Dup_Strm     : Boolean := False;
       File         : AFCB_Ptr renames File_Ptr.all;
-      Errno        : Integer;
+      Errno        : Integer := 0;
 
    begin
       --  Take a task lock, to protect the global data value Open_Files
@@ -351,7 +344,7 @@ package body System.File_IO is
          --  we did the open, and we want to unlink the right file.
 
          if unlink (Filename'Address) = -1 then
-            raise Use_Error with Errno_Message;
+            raise Use_Error with OS_Lib.Errno_Message;
          end if;
       end;
    end Delete;
@@ -383,23 +376,12 @@ package body System.File_IO is
    -- Errno_Message --
    -------------------
 
-   function Errno_Message (Errno : Integer := OS_Lib.Errno) return String is
-      Message : constant chars_ptr := CRTL.Runtime.strerror (Errno);
-
-   begin
-      if Message = Null_Ptr then
-         return "errno =" & Errno'Img;
-      else
-         return Value (Message);
-      end if;
-   end Errno_Message;
-
    function Errno_Message
      (Name  : String;
       Errno : Integer := OS_Lib.Errno) return String
    is
    begin
-      return Name & ": " & String'(Errno_Message (Errno));
+      return Name & ": " & OS_Lib.Errno_Message (Err => Errno);
    end Errno_Message;
 
    --------------
@@ -1321,7 +1303,7 @@ package body System.File_IO is
          clearerr (File.Stream);
       end if;
 
-      raise Device_Error with Errno_Message (Errno);
+      raise Device_Error with OS_Lib.Errno_Message (Err => Errno);
    end Raise_Device_Error;
 
    --------------

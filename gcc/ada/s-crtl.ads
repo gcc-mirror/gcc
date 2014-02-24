@@ -67,13 +67,26 @@ package System.CRTL is
    pragma Convention (C, Filename_Encoding);
    --  Describes the filename's encoding
 
-   function atoi (A : System.Address) return Integer;
-   pragma Import (C, atoi, "atoi");
+   --------------------
+   -- GCC intrinsics --
+   --------------------
+
+   --  The following functions are imported with convention Intrinsic so that
+   --  we take advantage of back-end builtins if present (else we fall back
+   --  to C library functions by the same names).
 
    function strlen (A : System.Address) return size_t;
    pragma Import (Intrinsic, strlen, "strlen");
-   --  Import with convention Intrinsic so that we take advantage of the GCC
-   --  builtin where available (and fall back to the library function if not).
+
+   procedure strncpy (dest, src : System.Address; n : size_t);
+   pragma Import (Intrinsic, strncpy, "strncpy");
+
+   -------------------------------
+   -- Other C runtime functions --
+   -------------------------------
+
+   function atoi (A : System.Address) return Integer;
+   pragma Import (C, atoi, "atoi");
 
    procedure clearerr (stream : FILEs);
    pragma Import (C, clearerr, "clearerr");
