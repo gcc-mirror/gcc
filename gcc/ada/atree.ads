@@ -494,7 +494,9 @@ package Atree is
    --  is thus still attached to the tree. It is valid for Source to be Empty,
    --  in which case Relocate_Node simply returns Empty as the result.
 
-   function Copy_Separate_Tree (Source : Node_Id) return Node_Id;
+   function Copy_Separate_Tree
+     (Source      : Node_Id;
+      Syntax_Only : Boolean := False) return Node_Id;
    --  Given a node that is the root of a subtree, Copy_Separate_Tree copies
    --  the entire syntactic subtree, including recursively any descendants
    --  whose parent field references a copied node (descendants not linked to
@@ -505,6 +507,33 @@ package Atree is
    --  is called on an unanalyzed tree, and no semantic information is copied.
    --  However, to ensure that no entities are shared between the two when the
    --  source is already analyzed, entity fields in the copy are zeroed out.
+   --
+   --  In addition, if Syntax_Only is set True, then when Copy_Separate_Tree
+   --  is applied Identical to Copy_Separate_Tree except that in the case of
+   --  applying it to an already analyzed tree, all Etype fields are reset,
+   --  and all Analyzed flags are set False. In addition, Expanded_Name
+   --  nodes are converted back into the original parser form (where they are
+   --  Selected_Components), so that renalysis does the right thing.
+   --
+   --  Note: it really seems like Copy_Separate_Tree could do these identical
+   --  steps unconditionally, and that nearly works, except for this one known
+   --  test case that fails:
+   --
+   --    1. procedure III is
+   --    2.    procedure Proc2 is
+   --    3.       pragma Inline_Always (Proc2);
+   --                                   |
+   --       >>> argument of "INLINE_ALWAYS" must be entity in
+   --           current scope
+   --
+   --    4.    begin
+   --    5.       null;
+   --    6.    end Proc2;
+   --    7. begin
+   --    8.    null;
+   --    9. end III;
+   --
+   --  To be investigated ???
 
    function Copy_Separate_List (Source : List_Id) return List_Id;
    --  Applies Copy_Separate_Tree to each element of the Source list, returning

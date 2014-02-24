@@ -31,7 +31,6 @@
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
-with System.CRTL;             use System.CRTL;
 with System.HTable;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.WCh_Con;          use System.WCh_Con;
@@ -56,6 +55,10 @@ package body Ada.Tags is
    --  Given a tag returns True if it has the signature of a primary dispatch
    --  table.  This is Inline_Always since it is called from other Inline_
    --  Always subprograms where we want no out of line code to be generated.
+
+   function Length (Str : Cstring_Ptr) return Natural;
+   --  Length of string represented by the given pointer (treating the string
+   --  as a C-style string, which is Nul terminated).
 
    function OSD (T : Tag) return Object_Specific_Data_Ptr;
    --  Ada 2005 (AI-251): Given a pointer T to a secondary dispatch table,
@@ -270,11 +273,10 @@ package body Ada.Tags is
 
       function Hash (F : System.Address) return HTable_Headers is
          function H is new System.HTable.Hash (HTable_Headers);
-         Str : String (1 .. Integer (strlen (F)));
-         for Str'Address use F;
-         pragma Import (Ada, Str);
+         Str : constant Cstring_Ptr    := To_Cstring_Ptr (F);
+         Res : constant HTable_Headers := H (Str (1 .. Length (Str)));
       begin
-         return H (Str);
+         return Res;
       end Hash;
 
       -----------------
@@ -283,9 +285,9 @@ package body Ada.Tags is
 
       procedure Set_HT_Link (T : Tag; Next : Tag) is
          TSD_Ptr : constant Addr_Ptr :=
-                     To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
+           To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
          TSD     : constant Type_Specific_Data_Ptr :=
-                     To_Type_Specific_Data_Ptr (TSD_Ptr.all);
+           To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       begin
          TSD.HT_Link.all := Next;
       end Set_HT_Link;
@@ -308,10 +310,8 @@ package body Ada.Tags is
    procedure Check_TSD (TSD : Type_Specific_Data_Ptr) is
       T : Tag;
 
-      E_Tag_Len : constant Integer :=
-                    Integer (strlen (TSD.External_Tag.all'Address));
-
-      E_Tag : String (1 .. E_Tag_Len);
+      E_Tag_Len : constant Integer := Length (TSD.External_Tag);
+      E_Tag     : String (1 .. E_Tag_Len);
       for E_Tag'Address use TSD.External_Tag.all'Address;
       pragma Import (Ada, E_Tag);
 
@@ -486,7 +486,7 @@ package body Ada.Tags is
       TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
       TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       Result  := TSD.Expanded_Name;
-      return Result (1 .. Integer (strlen  (Result.all'Address)));
+      return Result (1 .. Length (Result));
    end Expanded_Name;
 
    ------------------
@@ -506,7 +506,7 @@ package body Ada.Tags is
       TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
       TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       Result  := TSD.External_Tag;
-      return Result (1 .. Integer (strlen (Result.all'Address)));
+      return Result (1 .. Length (Result));
    end External_Tag;
 
    ---------------------
@@ -729,6 +729,27 @@ package body Ada.Tags is
       return CW_Membership (Descendant, Ancestor)
         and then D_TSD.Access_Level = A_TSD.Access_Level;
    end Is_Descendant_At_Same_Level;
+
+   ------------
+   -- Length --
+   ------------
+
+   --  Note: This unit is used in the Ravenscar runtime library, so it cannot
+   --  depend on System.CTRL. Furthermore, this happens on CPUs where the GCC
+   --  intrinsic strlen may not be available, so we need to recode our own Ada
+   --  version here.
+
+   function Length (Str : Cstring_Ptr) return Natural is
+      Len : Integer;
+
+   begin
+      Len := 1;
+      while Str (Len) /= ASCII.NUL loop
+         Len := Len + 1;
+      end loop;
+
+      return Len - 1;
+   end Length;
 
    -------------------
    -- Offset_To_Top --

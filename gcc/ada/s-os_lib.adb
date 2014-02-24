@@ -924,8 +924,35 @@ package body System.OS_Lib is
       if C_Msg = Null_Address then
          if Default /= "" then
             return Default;
+
          else
-            return "errno =" & Err'Img;
+            --  Note: for bootstrap reasons, it is impractical
+            --  to use Integer'Image here.
+
+            declare
+               Val   : Integer;
+               First : Integer;
+               Buf   : String (1 .. 20);
+               --  Buffer large enough to hold image of largest Integer values
+
+            begin
+               Val   := abs Err;
+               First := Buf'Last;
+               loop
+                  Buf (First) :=
+                    Character'Val (Character'Pos ('0') + Val mod 10);
+                  Val := Val / 10;
+                  exit when Val = 0;
+                  First := First - 1;
+               end loop;
+
+               if Err < 0 then
+                  First := First - 1;
+                  Buf (First) := '-';
+               end if;
+
+               return "errno = " & Buf (First .. Buf'Last);
+            end;
          end if;
 
       else

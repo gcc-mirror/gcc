@@ -3400,6 +3400,7 @@ package body Freeze is
 
       procedure Wrap_Imported_Subprogram (E : Entity_Id) is
          Loc   : constant Source_Ptr := Sloc (E);
+         CE    : constant Name_Id    := Chars (E);
          Spec  : Node_Id;
          Parms : List_Id;
          Stmt  : Node_Id;
@@ -3412,29 +3413,30 @@ package body Freeze is
 
          if not Is_Imported (E) then
             return;
-         end if;
 
          --  Test enabling conditions for wrapping
 
-         if Is_Subprogram (E)
+         elsif Is_Subprogram (E)
            and then Present (Contract (E))
            and then Present (Pre_Post_Conditions (Contract (E)))
            and then not GNATprove_Mode
          then
-            --  For now, activate this only if -gnatd.X is set, because there
-            --  are problems with this procedure, it is not working yet, but
-            --  we would like to be able to check it in ???
+            --  Here we do the wrap
 
-            if not Debug_Flag_Dot_XX then
-               Error_Msg_NE
-                 ("pre/post conditions on imported subprogram are not "
-                  & "enforced??", E, Pre_Post_Conditions (Contract (E)));
-               goto Not_Wrapped;
-            end if;
+            --  Note on calls to Copy_Separate_Tree. The trees we are copying
+            --  here are fully analyzed, but we definitely want fully syntactic
+            --  unanalyzed trees in the body we construct, so that the analysis
+            --  generates the right visibility. So this is a case in which we
+            --  set Syntax_Only. See spec of Copy_Separate_Tree for details on
+            --  the use of this flag.
+
+            --  Acquire copy of Inline pragma
+
+            Iprag :=
+              Copy_Separate_Tree (Import_Pragma (E), Syntax_Only => True);
 
             --  Fix up spec to be not imported any more
 
-            Iprag := Import_Pragma (E);
             Set_Is_Imported    (E, False);
             Set_Interface_Name (E, Empty);
             Set_Has_Completion (E, False);
@@ -3449,7 +3451,7 @@ package body Freeze is
             Parms := New_List;
             Forml := First_Formal (E);
             while Present (Forml) loop
-               Append_To (Parms, New_Occurrence_Of (Forml, Loc));
+               Append_To (Parms, Make_Identifier (Loc, Chars (Forml)));
                Next_Formal (Forml);
             end loop;
 
@@ -3460,13 +3462,13 @@ package body Freeze is
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
                      Make_Function_Call (Loc,
-                       Name                   => New_Occurrence_Of (E, Loc),
+                       Name                   => Make_Identifier (Loc, CE),
                        Parameter_Associations => Parms));
 
             else
                Stmt :=
                  Make_Procedure_Call_Statement (Loc,
-                   Name                   => New_Occurrence_Of (E, Loc),
+                   Name                   => Make_Identifier (Loc, CE),
                    Parameter_Associations => Parms);
             end if;
 
@@ -3474,33 +3476,34 @@ package body Freeze is
 
             Bod :=
               Make_Subprogram_Body (Loc,
-                Specification              => Copy_Separate_Tree (Spec),
+                Specification              =>
+                  Copy_Separate_Tree (Spec, Syntax_Only => True),
                 Declarations               => New_List (
                   Make_Subprogram_Declaration (Loc,
-                    Specification => Copy_Separate_Tree (Spec)),
-                  Copy_Separate_Tree (Iprag)),
+                    Specification =>
+                      Copy_Separate_Tree (Spec, Syntax_Only => True)),
+                    Iprag),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements             => New_List (Stmt),
-                    End_Label              => New_Occurrence_Of (E, Loc)));
+                    End_Label              => Make_Identifier (Loc, CE)));
 
             --  Append the body to freeze result
 
             Add_To_Result (Bod);
             return;
-         end if;
 
          --  Case of imported subprogram that does not get wrapped
 
-         <<Not_Wrapped>>
+         else
+            --  Set Is_Public. All imported entities need an external symbol
+            --  created for them since they are always referenced from another
+            --  object file. Note this used to be set when we set Is_Imported
+            --  back in Sem_Prag, but now we delay it to this point, since we
+            --  don't want to set this flag if we wrap an imported subprogram.
 
-         --  Set Is_Public. All imported entities need an external symbol
-         --  created for them since they are always referenced from another
-         --  object file. Note this used to be set when we set Is_Imported
-         --  back in Sem_Prag, but now we delay it to this point, since we
-         --  don't want to set this flag if we wrap an imported subprogram.
-
-         Set_Is_Public (E);
+            Set_Is_Public (E);
+         end if;
       end Wrap_Imported_Subprogram;
 
    --  Start of processing for Freeze_Entity

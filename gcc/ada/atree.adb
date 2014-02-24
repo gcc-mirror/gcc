@@ -772,7 +772,10 @@ package body Atree is
    -- Copy_Separate_Tree --
    ------------------------
 
-   function Copy_Separate_Tree (Source : Node_Id) return Node_Id is
+   function Copy_Separate_Tree
+     (Source      : Node_Id;
+      Syntax_Only : Boolean := False) return Node_Id
+   is
       New_Id  : Node_Id;
 
       function Copy_Entity (E : Entity_Id) return Entity_Id;
@@ -793,6 +796,10 @@ package body Atree is
          New_Ent : Entity_Id;
 
       begin
+         --  Build appropriate node. Note that in this case, we do not need to
+         --  do any special casing for Syntax_Only, since the new node has no
+         --  Etype set, and is always unanalyzed.
+
          case N_Entity (Nkind (E)) is
             when N_Defining_Identifier =>
                New_Ent := New_Entity (N_Defining_Identifier, Sloc (E));
@@ -828,7 +835,7 @@ package body Atree is
                if Has_Extension (E) then
                   Append (Copy_Entity (E), NL);
                else
-                  Append (Copy_Separate_Tree (E), NL);
+                  Append (Copy_Separate_Tree (E, Syntax_Only), NL);
                end if;
 
                Next (E);
@@ -847,7 +854,8 @@ package body Atree is
 
       begin
          if Field in Node_Range then
-            New_N := Union_Id (Copy_Separate_Tree (Node_Id (Field)));
+            New_N :=
+              Union_Id (Copy_Separate_Tree (Node_Id (Field), Syntax_Only));
 
             if Parent (Node_Id (Field)) = Source then
                Set_Parent (Node_Id (New_N), New_Id);
@@ -896,6 +904,47 @@ package body Atree is
            or else Nkind (New_Id) = N_Freeze_Entity
          then
             Set_Entity (New_Id, Empty);
+         end if;
+
+         --  This is the point at which we do the special processing for
+         --  the Syntax_Only flag being set:
+
+         if Syntax_Only then
+
+            --  Reset all Etype fields and Analyzed flags
+
+            if Nkind (New_Id) in N_Has_Etype then
+               Set_Etype (New_Id, Empty);
+            end if;
+
+            Set_Analyzed (New_Id, False);
+
+            --  Rather special case, if we have an expanded name, then change
+            --  it back into a selected component, so that the tree looks the
+            --  way it did coming out of the parser. This will change back
+            --  when we analyze the selected component node.
+
+            if Nkind (New_Id) = N_Expanded_Name then
+
+               --  The following code is a bit kludgy. It would be cleaner to
+               --  Add an entry Change_Expanded_Name_To_Selected_Component to
+               --  Sinfo.CN, but that's an earthquake, because it has the wrong
+               --  license, and Atree is used outside the compiler, e.g. in the
+               --  binder and in ASIS, so we don't want to add that dependency.
+
+               --  Consequently we have no choice but to hold our noses and do
+               --  the change manually. At least we are Atree, so this odd use
+               --  of Atree.Unchecked_Access is at least all in the family.
+
+               --  Change the node type
+
+               Atree.Unchecked_Access.Set_Nkind (New_Id, N_Selected_Component);
+
+               --  Clear the Chars field which is not present in a selected
+               --  component node, so we don't want a junk value around.
+
+               Set_Node1 (New_Id, Empty);
+            end if;
          end if;
 
          --  All done, return copied node
