@@ -1,3 +1,29 @@
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New attribute Generalized_Indexing, for
+	indexed_components that are instances of Ada 2012 container
+	indexing operations. Analysis and resolution of such nodes
+	is performed on the attribute, and the original source is
+	preserved for ASIS operations. If expansion is enabled, the
+	indexed component is replaced by the value of this attribute,
+	which is in a call to an Indexing aspect, in most case wrapped
+	in a dereference operation.
+	* sem_ch4.adb (Analyze_Indexed_Component): Create
+	Generalized_Indexing attribute when appropriate.
+	(Analyze_Call): If prefix is not overloadable and has an indexing
+	aspect, transform into an indexed component so it can be analyzed
+	as a potential container indexing.
+	(Analyze_Expression): If node is an indexed component with a
+	Generalized_ Indexing, do not re-analyze.
+	* sem_res.adb (Resolve_Generalized_Indexing): Complete resolution
+	of an indexed_component that has been transformed into a container
+	indexing operation.
+	(Resolve_Indexed_Component): Call the above when required.
+	(Resolve): Do not insert an explicit dereference operation on
+	an indexed_component whose type has an implicit dereference:
+	the operation is inserted when resolving the related
+	Generalized_Indexing.
+
 2014-02-24  Olivier Ramonat  <ramonat@adacore.com>
 
 	* gnat_rm.texi, gnat_ugn.texi: Replace Ada Compiler by Ada Development
