@@ -1,6 +1,11 @@
+2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60268
+	* gcc.c-torture/compile/pr60268.c: New test.
+
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
-	* gcc/testsuite/gcc.target/microblaze/others/mem_reload.c: New test.
+	* gcc.target/microblaze/others/mem_reload.c: New test.
 
 2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
