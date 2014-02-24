@@ -772,8 +772,7 @@ package body Atree is
    -- Copy_Separate_Tree --
    ------------------------
 
-   function Copy_Separate_Tree (Source : Node_Id) return Node_Id
-   is
+   function Copy_Separate_Tree (Source : Node_Id) return Node_Id is
       New_Id  : Node_Id;
 
       function Copy_Entity (E : Entity_Id) return Entity_Id;
@@ -794,7 +793,7 @@ package body Atree is
          New_Ent : Entity_Id;
 
       begin
-         --  Build appropriate node.
+         --  Build appropriate node
 
          case N_Entity (Nkind (E)) is
             when N_Defining_Identifier =>
@@ -902,8 +901,8 @@ package body Atree is
             Set_Entity (New_Id, Empty);
          end if;
 
-         --  Reset all Etype fields and Analyzed flags, because tree may
-         --  have been partly analyzed.
+         --  Reset all Etype fields and Analyzed flags, because input tree may
+         --  have been fully or partially analyzed.
 
          if Nkind (New_Id) in N_Has_Etype then
             Set_Etype (New_Id, Empty);

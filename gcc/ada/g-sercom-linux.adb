@@ -220,23 +220,23 @@ package body GNAT.Serial_Communications is
 
       --  Change settings now
 
-      Current.c_cflag      := C_Data_Rate (Rate)
-                                or C_Bits (Bits)
-                                or C_Stop_Bits (Stop_Bits)
-                                or C_Parity (Parity)
-                                or CREAD;
-      Current.c_iflag      := 0;
-      Current.c_lflag      := 0;
-      Current.c_oflag      := 0;
+      Current.c_cflag := C_Data_Rate (Rate)
+                           or C_Bits (Bits)
+                           or C_Stop_Bits (Stop_Bits)
+                           or C_Parity (Parity)
+                           or CREAD;
+      Current.c_iflag := 0;
+      Current.c_lflag := 0;
+      Current.c_oflag := 0;
 
       if Local then
          Current.c_cflag := Current.c_cflag or CLOCAL;
       end if;
 
       case Flow is
-         when None =>
+         when None     =>
             null;
-         when RTS_CTS =>
+         when RTS_CTS  =>
             Current.c_cflag := Current.c_cflag or CRTSCTS;
          when Xon_Xoff =>
             Current.c_iflag := Current.c_iflag or IXON;

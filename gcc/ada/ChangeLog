@@ -1,3 +1,8 @@
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* g-sercom-mingw.adb, g-sercom-linux.adb, sem_prag.adb, freeze.adb,
+	atree.adb, atree.ads: Minor reformatting.
+
 2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Do not enforce

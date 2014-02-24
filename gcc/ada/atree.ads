@@ -501,14 +501,17 @@ package Atree is
    --  a copied node by the parent field are also copied.) The parent pointers
    --  in the copy are properly set. Copy_Separate_Tree (Empty/Error) returns
    --  Empty/Error. The new subtree does not share entities with the source,
-   --  but has new entities with the same name. Most of the time this routine
-   --  is called on an unanalyzed tree, and no semantic information is copied.
-   --  However, to ensure that no entities are shared between the two when the
-   --  source is already analyzed, entity fields in the copy are zeroed out,
-   --  as well as Etype fields and the Analyzed flag.
+   --  but has new entities with the same name.
+   --
+   --  Most of the time this routine is called on an unanalyzed tree, and no
+   --  semantic information is copied. However, to ensure that no entities
+   --  are shared between the two when the source is already analyzed, and
+   --  that the result looks like an unanalyzed tree from the parser, Entity
+   --  fields and Etype fields are set to Empty, and Analyzed flags set False.
+   --
    --  In addition, Expanded_Name nodes are converted back into the original
-   --  parser form (where they are Selected_Components), so that renalysis does
-   --  the right thing.
+   --  parser form (where they are Selected_Components), so that reanalysis
+   --  does the right thing.
 
    function Copy_Separate_List (Source : List_Id) return List_Id;
    --  Applies Copy_Separate_Tree to each element of the Source list, returning

@@ -24403,6 +24403,9 @@ package body Sem_Prag is
                Next (Assoc);
             end loop;
          end if;
+
+      --  Anything else is an error
+
       else
          Error_Msg_N ("malformed global list", List);
       end if;
