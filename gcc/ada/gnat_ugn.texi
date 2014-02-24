@@ -14643,6 +14643,31 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatpp}
 Display usage, then exit disregarding all other options.
 
+@item -P @var{file}
+@cindex @option{-P} @command{gnatpp}
+Indicates the name of the project file that describes the set of sources
+to be processed. The exact set of argument sources depends on other options
+specified, see below.
+
+@item -U
+@cindex @option{-U} @command{gnatpp}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+all the units of the closure of the argument project. Otherwise this option
+has no effect.
+
+@item -U @var{main_unit}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+the closure of units rooted at @var{main_unit}. Otherwise this option
+has no effect.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatpp}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
+
 @item --pp-off=@var{xxx}
 @cindex @option{--pp-off} @command{gnatpp}
 Use @code{--xxx} as the command to turn off pretty printing, instead
@@ -14691,6 +14716,13 @@ Warning mode;
 @command{gnatpp} generates a warning whenever it cannot provide
 a required layout in the result source.
 @end table
+
+@noindent
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), and no
+@option{-U} is specified, then the set of processed sources is
+all the immediate units of the argument project.
+
 
 @node Formatting Rules
 @section Formatting Rules
@@ -15318,6 +15350,23 @@ Options:
 -h
 --help -- generate usage information and quit, ignoring all other options
 
+-P @file{file} -- indicates the name of the project file that describes
+      the set of sources to be processed. The exact set of argument
+      sources depends on other options specified, see below.
+
+-U -- if a project file is specified and no argument source is explicitly
+      specified, process all the units of the closure of the argument project.
+      Otherwise this option has no effect.
+
+-U @var{main_unit} -- if a project file is specified and no argument source
+      is explicitly specified (either directly or by means of @option{-files}
+      option), process the closure of units rooted at @var{main_unit}.
+      Otherwise this option has no effect.
+
+-X@var{name}=@var{value} -- indicates that external variable @var{name} in
+      the argument project has the @var{value} value. Has no effect if no
+      project is specified as tool argument.
+
 -mdir -- generate one .xml file for each Ada source file, in directory
          @file{dir}. (Default is to generate the XML to standard output.)
 
@@ -15340,6 +15389,11 @@ Options:
 @end smallexample
 
 @noindent
+If a project file is specified and no argument source is explicitly
+specified, and no @option{-U} is specified, then the set of processed
+sources is all the immediate units of the argument project.
+
+
 You can generate the ``tree files'' ahead of time using the -gnatct switch:
 
 @smallexample
@@ -16697,7 +16751,14 @@ tool argument.
 Use the specified subdirectory of the project objects file (or of the
 project file directory if the project does not specify an object directory)
 for tool output files. Has no effect if no project is specified as
-tool argument.
+tool argument r if @option{--no_objects_dir} is specified.
+
+@item --no_objects_dir
+@cindex @option{--no_objects_dir} @command{gnatmetric}
+Place all the result files into the current directory instead of
+project objects directory. This corresponds to the @command{gnatcheck}
+behavior when it is called with the project file from the
+GNAT driver. Has no effect if no project is specified.
 
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
@@ -16729,13 +16790,11 @@ a trace of sources being processed.
 Quiet mode.
 @end table
 
-@ignore
 @noindent
 If a project file is specified and no argument source is explicitly
 specified (either directly or by means of @option{-files} option), and no
 @option{-U} is specified, then the set of processed sources is
 all the immediate units of the argument project.
-@end ignore
 
 
 @ignore
