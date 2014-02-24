@@ -2058,17 +2058,17 @@ package body Sem_Prag is
                         Ref      => Item);
                   end if;
 
-               --  Variable related checks
+               --  Variable related checks. These are only relevant when
+               --  SPARK_Mode is on as they are not standard Ada legality
+               --  rules.
 
-               elsif Is_SPARK_Volatile_Object (Item_Id) then
-
+               elsif SPARK_Mode = On
+                 and then Is_SPARK_Volatile_Object (Item_Id)
+               then
                   --  A volatile object cannot appear as a global item of a
-                  --  function. This check is only relevant when SPARK_Mode is
-                  --  on as it is not a standard Ada legality rule.
+                  --  function.
 
-                  if SPARK_Mode = On
-                    and then Ekind_In (Spec_Id, E_Function, E_Generic_Function)
-                  then
+                  if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
                      Error_Msg_NE
                        ("volatile object & cannot act as global item of a "
                         & "function (SPARK RM 7.1.3(9))", Item, Item_Id);

@@ -88,8 +88,8 @@ package body System.OS_Lib is
    --  parameters are as in Create_Temp_File.
 
    function C_String_Length (S : Address) return Integer;
-   --  Returns the length of a C string. Does check for null address
-   --  (returns 0).
+   --  Returns the length of C (null-terminated) string at S, or 0 for
+   --  Null_Address.
 
    procedure Spawn_Internal
      (Program_Name : String;
@@ -252,13 +252,11 @@ package body System.OS_Lib is
    ---------------------
 
    function C_String_Length (S : Address) return Integer is
-      function Strlen (S : Address) return Integer;
-      pragma Import (C, Strlen, "strlen");
    begin
       if S = Null_Address then
          return 0;
       else
-         return Strlen (S);
+         return Integer (CRTL.strlen (S));
       end if;
    end C_String_Length;
 
@@ -912,6 +910,38 @@ package body System.OS_Lib is
       Delete_File (C_Name'Address, Success);
    end Delete_File;
 
+   -------------------
+   -- Errno_Message --
+   -------------------
+
+   function Errno_Message
+     (Err     : Integer := Errno;
+      Default : String  := "") return String
+   is
+      function strerror (errnum : Integer) return System.Address;
+      pragma Import (C, strerror, "strerror");
+
+      C_Msg : constant System.Address := strerror (Err);
+
+   begin
+      if C_Msg = Null_Address then
+         if Default /= "" then
+            return Default;
+         else
+            return "errno =" & Err'Img;
+         end if;
+
+      else
+         declare
+            Msg : String (1 .. Integer (CRTL.strlen (C_Msg)));
+            for Msg'Address use C_Msg;
+            pragma Import (Ada, Msg);
+         begin
+            return Msg;
+         end;
+      end if;
+   end Errno_Message;
+
    ---------------------
    -- File_Time_Stamp --
    ---------------------
@@ -1028,14 +1058,11 @@ package body System.OS_Lib is
       procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
       pragma Import (C, Strncpy, "strncpy");
 
-      function Strlen (Cstring : Address) return Integer;
-      pragma Import (C, Strlen, "strlen");
-
       Suffix_Length : Integer;
       Result        : String_Access;
 
    begin
-      Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
+      Suffix_Length := Integer (CRTL.strlen (Target_Exec_Ext_Ptr));
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1057,14 +1084,11 @@ package body System.OS_Lib is
       procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
       pragma Import (C, Strncpy, "strncpy");
 
-      function Strlen (Cstring : Address) return Integer;
-      pragma Import (C, Strlen, "strlen");
-
       Suffix_Length : Integer;
       Result        : String_Access;
 
    begin
-      Suffix_Length := Strlen (Target_Exec_Ext_Ptr);
+      Suffix_Length := Integer (CRTL.strlen (Target_Exec_Ext_Ptr));
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1086,14 +1110,11 @@ package body System.OS_Lib is
       procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
       pragma Import (C, Strncpy, "strncpy");
 
-      function Strlen (Cstring : Address) return Integer;
-      pragma Import (C, Strlen, "strlen");
-
       Suffix_Length : Integer;
       Result        : String_Access;
 
    begin
-      Suffix_Length := Strlen (Target_Object_Ext_Ptr);
+      Suffix_Length := Integer (CRTL.strlen (Target_Object_Ext_Ptr));
       Result := new String (1 .. Suffix_Length);
 
       if Suffix_Length > 0 then
@@ -1792,9 +1813,6 @@ package body System.OS_Lib is
       Canonical_File_Addr : System.Address;
       Canonical_File_Len  : Integer;
 
-      function Strlen (S : System.Address) return Integer;
-      pragma Import (C, Strlen, "strlen");
-
       function Final_Value (S : String) return String;
       --  Make final adjustment to the returned string. This function strips
       --  trailing directory separators, and folds returned string to lower
@@ -1926,7 +1944,7 @@ package body System.OS_Lib is
          The_Name (The_Name'Last) := ASCII.NUL;
 
          Canonical_File_Addr := To_Canonical_File_Spec (The_Name'Address);
-         Canonical_File_Len  := Strlen (Canonical_File_Addr);
+         Canonical_File_Len  := Integer (CRTL.strlen (Canonical_File_Addr));
 
          --  If VMS syntax conversion has failed, return an empty string
          --  to indicate the failure.
@@ -1937,17 +1955,12 @@ package body System.OS_Lib is
 
          declare
             subtype Path_String is String (1 .. Canonical_File_Len);
-            type    Path_String_Access is access Path_String;
-
-            function Address_To_Access is new
-               Ada.Unchecked_Conversion (Source => Address,
-                                     Target => Path_String_Access);
-
-            Path_Access : constant Path_String_Access :=
-                            Address_To_Access (Canonical_File_Addr);
+            Canonical_File : Path_String;
+            for Canonical_File'Address use Canonical_File_Addr;
+            pragma Import (Ada, Canonical_File);
 
          begin
-            Path_Buffer (1 .. Canonical_File_Len) := Path_Access.all;
+            Path_Buffer (1 .. Canonical_File_Len) := Canonical_File;
             End_Path := Canonical_File_Len;
             Last := 1;
          end;

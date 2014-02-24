@@ -3874,21 +3874,13 @@ package body Sem_Ch13 is
 
                   begin
                      if Present (Init_Call) then
+                        Append_Freeze_Action (U_Ent, Init_Call);
 
-                        --  If the init call is an expression with actions with
-                        --  null expression, just extract the actions.
+                        --  Reset Initialization_Statements pointer so that
+                        --  if there is a pragma Import further down, it can
+                        --  clear any default initialization.
 
-                        if Nkind (Init_Call) = N_Expression_With_Actions
-                          and then
-                            Nkind (Expression (Init_Call)) = N_Null_Statement
-                        then
-                           Append_Freeze_Actions (U_Ent, Actions (Init_Call));
-
-                        --  General case: move Init_Call to freeze actions
-
-                        else
-                           Append_Freeze_Action (U_Ent, Init_Call);
-                        end if;
+                        Set_Initialization_Statements (U_Ent, Init_Call);
                      end if;
                   end;
 

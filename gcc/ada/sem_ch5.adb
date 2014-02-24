@@ -1688,7 +1688,7 @@ package body Sem_Ch5 is
       if Present (Subt) then
          Analyze (Subt);
 
-         --  Save type of subtype indication for subsequent check.
+         --  Save type of subtype indication for subsequent check
 
          if Nkind (Subt) = N_Subtype_Indication then
             Bas := Entity (Subtype_Mark (Subt));
@@ -1855,9 +1855,7 @@ package body Sem_Ch5 is
 
       else
          Set_Ekind (Def_Id, E_Loop_Parameter);
-         if Ada_Version < Ada_2012 then
-            Error_Msg_N ("container iterators are an Ada 2012 feature", N);
-         end if;
+         Error_Msg_Ada_2012_Feature ("container iterator", Sloc (N));
 
          --  OF present
 

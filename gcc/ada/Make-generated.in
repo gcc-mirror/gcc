@@ -84,7 +84,7 @@ OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
 #  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
 #  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
 
-$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
+$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/adaint.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons

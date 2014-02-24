@@ -962,6 +962,13 @@ package System.OS_Lib is
    pragma Import (C, Set_Errno, "__set_errno");
    --  Set the task-safe error number
 
+   function Errno_Message
+     (Err     : Integer := Errno;
+      Default : String  := "") return String;
+   --  Return a message describing the given Errno value. If none is provided
+   --  by the system, return Default if not empty, else return a generic
+   --  message indicating the numeric errno value.
+
    Directory_Separator : constant Character;
    --  The character that is used to separate parts of a pathname
 

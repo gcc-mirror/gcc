@@ -1,5 +1,70 @@
 2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_prag.adb (Analyze_Global_Item): Emit the
+	variable related checks concerning volatile objects only when
+	SPARK_Mode is on.
+
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): use
+	Error_Msg_Ada_2012_Feature.
+
+2014-02-24  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-rident.ads (Profile_Info): For Ravenscar, the restrictions
+	No_Local_Timing_Events and No_Specific_Termination_Handlers
+	must be set, according to the Ravenscar profile definition
+	in D.13(6/3).
+
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): If this is a
+	completion, freeze return type and its designated type if needed.
+
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	'Address): When moving initialization statements to a freeze
+	entity, keep them under a single node (i.e. do not unwrap
+	expressions with actions), and set the Initialization_Statements
+	attribute again so that processing of a later pragma Import can
+	still remove them.
+
+2014-02-24  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.adb, a-cfdlli.ads, a-cfhama.adb, a-cfhama.ads,
+	a-cfhase.adb, a-cfhase.ads, a-cforma.adb, a-cforma.ads,
+	a-cforse.adb, a-cforse.ads, a-cofove.adb, a-cofove.ads: Rename
+	Left/Right to First_To_Previous/Current_To_Last.
+
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.h (struct file_attributes): New component "error"
+	(__gnat_error_attributes): Accessor for the above.
+	* adaint.c (__gnat_error_attributes): New subprogram
+	(__gnat_stat): Fix returned value (expect errno value)
+	(__gnat_stat_to_attr): Add management of error component (set to
+	stat errno value, except for missing files where it is set to 0,
+	and exists is set to 0).
+	* osint.ads (File_Attributes_Size): Update per change above,
+	also clarify documentation.
+	* s-filatt.ads: New file, binding to file attributes related
+	functions.
+	* Makefile.rtl (s-filatt): New runtime unit.
+	* s-crtl.ads (strlen): Expose binding to GCC builtin (falls back
+	to library function if not available on target).
+	* s-os_lib.ads, s-os_lib.adb (Errno_Message): New subprogram.
+	* s-oscons-tmplt.c (SIZEOF_struct_file_attributes,
+	SIZEOF_struct_dirent_alloc): New constants.
+	* Make-generated.in (s-oscons.ads): Now requires adaint.h.
+	* a-direct.adb (Fetch_Next_Entry): Fix incorrect buffer sizes.
+	Perform appropriate error checking if stat fails (do not just
+	ignore existing files if stat fails)
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS, GNATBIND_OBJS): Update
+	dependencies.
+
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Analyze_Global_Item): Move the check concerning
 	the use of volatile objects as global items in a function to
 	the variable related checks section.

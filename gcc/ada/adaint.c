@@ -350,7 +350,9 @@ int __gnat_vmsp = 0;
 
 #endif
 
-/* Used for Ada bindings */
+/* Used for runtime check that Ada constant File_Attributes_Size is no
+   less than the actual size of struct file_attributes (see Osint
+   initialization). */
 int __gnat_size_of_file_attributes = sizeof (struct file_attributes);
 
 void __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr);
@@ -411,6 +413,7 @@ void
 __gnat_reset_attributes (struct file_attributes* attr)
 {
   attr->exists     = ATTR_UNSET;
+  attr->error      = EINVAL;
 
   attr->writable   = ATTR_UNSET;
   attr->readable   = ATTR_UNSET;
@@ -422,6 +425,11 @@ __gnat_reset_attributes (struct file_attributes* attr)
 
   attr->timestamp = (OS_Time)-2;
   attr->file_length = -1;
+}
+
+int
+__gnat_error_attributes (struct file_attributes *attr) {
+  return attr->error;
 }
 
 OS_Time
@@ -1170,12 +1178,28 @@ void
 __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
 {
   GNAT_STRUCT_STAT statbuf;
-  int ret;
+  int ret, error;
 
-  if (fd != -1)
+  if (fd != -1) {
+    /* GNAT_FSTAT returns -1 and sets errno for failure */
     ret = GNAT_FSTAT (fd, &statbuf);
+    error = ret ? errno : 0;
+
+  } else {
+    /* __gnat_stat returns errno value directly */
+    error = __gnat_stat (name, &statbuf);
+    ret = error ? -1 : 0;
+  }
+
+  /*
+   * A missing file is reported as an attr structure with error == 0 and
+   * exists == 0.
+   */
+
+  if (error == 0 || error == ENOENT)
+    attr->error = 0;
   else
-    ret = __gnat_stat (name, &statbuf);
+    attr->error = error;
 
   attr->regular   = (!ret && S_ISREG (statbuf.st_mode));
   attr->directory = (!ret && S_ISDIR (statbuf.st_mode));
@@ -1793,6 +1817,9 @@ __gnat_get_libraries_from_registry (void)
   return result;
 }
 
+/* Query information for the given file NAME and return it in STATBUF.
+ * Returns 0 for success, or errno value for failure.
+ */
 int
 __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
 {
@@ -1807,7 +1834,7 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
   name_len = _tcslen (wname);
 
   if (name_len > GNAT_MAX_PATH_LEN)
-    return -1;
+    return EINVAL;
 
   ZeroMemory (statbuf, sizeof(GNAT_STRUCT_STAT));
 
@@ -1860,7 +1887,7 @@ __gnat_stat (char *name, GNAT_STRUCT_STAT *statbuf)
   return 0;
 
 #else
-  return GNAT_STAT (name, statbuf);
+  return GNAT_STAT (name, statbuf) == 0 ? 0 : errno;
 #endif
 }
 

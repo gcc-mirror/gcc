@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,20 +36,17 @@ with Ada.Directories.Validity;   use Ada.Directories.Validity;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
-with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
-with System;              use System;
-with System.CRTL;         use System.CRTL;
-with System.File_IO;      use System.File_IO;
-with System.OS_Constants; use System.OS_Constants;
-with System.OS_Lib;       use System.OS_Lib;
-with System.Regexp;       use System.Regexp;
+with System;                 use System;
+with System.CRTL;            use System.CRTL;
+with System.File_Attributes; use System.File_Attributes;
+with System.File_IO;         use System.File_IO;
+with System.OS_Constants;    use System.OS_Constants;
+with System.OS_Lib;          use System.OS_Lib;
+with System.Regexp;          use System.Regexp;
 
 package body Ada.Directories is
-
-   Filename_Max : constant Integer := 1024;
-   --  1024 is the value of FILENAME_MAX in stdio.h
 
    type Dir_Type_Value is new Address;
    --  This is the low-level address directory structure as returned by the C
@@ -708,7 +705,7 @@ package body Ada.Directories is
    ----------------------
 
    procedure Fetch_Next_Entry (Search : Search_Type) is
-      Name : String (1 .. 255);
+      Name : String (1 .. NAME_MAX);
       Last : Natural;
 
       Kind : File_Kind := Ordinary_File;
@@ -717,9 +714,7 @@ package body Ada.Directories is
       Filename_Addr : Address;
       Filename_Len  : aliased Integer;
 
-      Buffer : array (0 .. Filename_Max + 12) of Character;
-      --  12 is the size of the dirent structure (see dirent.h), without the
-      --  field for the filename.
+      Buffer : array (1 .. SIZEOF_struct_dirent_alloc) of Character;
 
       function readdir_gnat
         (Directory : Address;
@@ -744,43 +739,60 @@ package body Ada.Directories is
             exit;
          end if;
 
+         if Filename_Len > Name'Length then
+            raise Use_Error with "file name too long";
+         end if;
+
          declare
-            subtype Path_String is String (1 .. Filename_Len);
-            type    Path_String_Access is access Path_String;
-
-            function Address_To_Access is new
-              Ada.Unchecked_Conversion
-                (Source => Address,
-                 Target => Path_String_Access);
-
-            Path_Access : constant Path_String_Access :=
-              Address_To_Access (Filename_Addr);
+            subtype Name_String is String (1 .. Filename_Len);
+            Dent_Name : Name_String;
+            for Dent_Name'Address use Filename_Addr;
+            pragma Import (Ada, Dent_Name);
 
          begin
             Last := Filename_Len;
-            Name (1 .. Last) := Path_Access.all;
+            Name (1 .. Last) := Dent_Name;
          end;
 
          --  Check if the entry matches the pattern
 
          if Match (Name (1 .. Last), Search.Value.Pattern) then
             declare
-               Full_Name : constant String :=
-                 Compose (To_String (Search.Value.Name), Name (1 .. Last));
-               Found     : Boolean := False;
+               C_Full_Name : constant String :=
+                 Compose (To_String (Search.Value.Name), Name (1 .. Last))
+                   & ASCII.NUL;
+               Full_Name   : String renames C_Full_Name
+                               (C_Full_Name'First .. C_Full_Name'Last - 1);
+               Found       : Boolean := False;
+               Attr        : aliased File_Attributes;
+               Exists      : Integer;
+               Error       : Integer;
 
             begin
-               if File_Exists (Full_Name) then
+               Reset_Attributes (Attr'Access);
+               Exists := File_Exists_Attr (C_Full_Name'Address, Attr'Access);
+               Error  := Error_Attributes (Attr'Access);
+
+               if Error /= 0 then
+                  raise Use_Error
+                    with Full_Name & ": " & Errno_Message (Err => Error);
+               end if;
+
+               if Exists = 1 then
 
                   --  Now check if the file kind matches the filter
 
-                  if Is_Regular_File (Full_Name) then
+                  if Is_Regular_File_Attr
+                       (C_Full_Name'Address, Attr'Access) = 1
+                  then
                      if Search.Value.Filter (Ordinary_File) then
                         Kind := Ordinary_File;
                         Found := True;
                      end if;
 
-                  elsif Is_Directory (Full_Name) then
+                  elsif Is_Directory_Attr
+                          (C_Full_Name'Address, Attr'Access) = 1
+                  then
                      if Search.Value.Filter (Directory) then
                         Kind := Directory;
                         Found := True;
@@ -821,7 +833,7 @@ package body Ada.Directories is
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
-      return C_File_Exists (C_Name (1)'Address) = 1;
+      return C_File_Exists (C_Name'Address) = 1;
    end File_Exists;
 
    --------------
