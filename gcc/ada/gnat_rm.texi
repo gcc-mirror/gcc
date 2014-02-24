@@ -279,8 +279,6 @@ Implementation Defined Pragmas
 Implementation Defined Aspects
 
 * Aspect Abstract_State::
-* Aspect Ada_2005::
-* Aspect Ada_2012::
 * Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
@@ -1188,6 +1186,7 @@ either Ada 83 or Ada 95 programs.
 Syntax:
 @smallexample @c ada
 pragma Ada_05;
+pragma Ada_05 (local_NAME);
 @end smallexample
 
 @noindent
@@ -1196,6 +1195,17 @@ it applies, regardless of the mode set by the command line switches.
 This pragma is useful when writing a reusable component that
 itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
+
+The one argument form (which is not a configuration pragma)
+is used for managing the transition from
+Ada 95 to Ada 2005 in the run-time library. If an entity is marked
+as Ada_2005 only, then referencing the entity in Ada_83 or Ada_95
+mode will generate a warning. In addition, in Ada_83 or Ada_95
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2005 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
 
 @node Pragma Ada_2005
 @unnumberedsec Pragma Ada_2005
@@ -1217,6 +1227,7 @@ same syntax and effect.
 Syntax:
 @smallexample @c ada
 pragma Ada_12;
+pragma Ada_12 (local_NAME);
 @end smallexample
 
 @noindent
@@ -1227,6 +1238,17 @@ packages and their children, so you need not specify it in these
 contexts.  This pragma is useful when writing a reusable component that
 itself uses Ada 2012 features, but which is intended to be usable from
 Ada 83, Ada 95, or Ada 2005 programs.
+
+The one argument form, which is not a configuration pragma,
+is used for managing the transition from Ada
+2005 to Ada 2012 in the run-time library. If an entity is marked
+as Ada_201 only, then referencing the entity in any pre-Ada_2012
+mode will generate a warning. In addition, in any pre-Ada_2012
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2012 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
 
 @node Pragma Ada_2012
 @unnumberedsec Pragma Ada_2012
@@ -7640,8 +7662,6 @@ clause.
 
 @menu
 * Aspect Abstract_State::
-* Aspect Ada_2005::
-* Aspect Ada_2012::
 * Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
@@ -7685,18 +7705,6 @@ clause.
 @findex Abstract_State
 @noindent
 This aspect is equivalent to pragma @code{Abstract_State}.
-
-@node Aspect Ada_2005
-@unnumberedsec Aspect Ada_2005
-@findex Ada_2005
-@noindent
-This aspect is equivalent to the one argument form of pragma @code{Ada_2005}.
-
-@node Aspect Ada_2012
-@unnumberedsec Aspect Ada_2012
-@findex Ada_2012
-@noindent
-This aspect is equivalent to the one argument form of pragma @code{Ada_2012}.
 
 @node Aspect Compiler_Unit
 @unnumberedsec Aspect Compiler_Unit
