@@ -628,6 +628,7 @@ package body GNAT.Sockets.Thin is
 
          when others =>          Errm := N_OTHERS;
       end case;
+
       return Value (Errm);
    end Socket_Error_Message;
 

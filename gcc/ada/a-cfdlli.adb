@@ -507,7 +507,8 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
    function First_To_Previous
      (Container : List;
-      Current : Cursor) return List is
+      Current   : Cursor) return List
+   is
       Curs : Cursor := Current;
       C    : List (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
@@ -515,19 +516,19 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
    begin
       if Curs = No_Element then
          return C;
-      end if;
 
-      if not Has_Element (Container, Curs) then
+      elsif not Has_Element (Container, Curs) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= 0 loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= 0 loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end First_To_Previous;
 
    ----------
@@ -907,6 +908,7 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       if Container.Last = 0 then
          return No_Element;
       end if;
+
       return (Node => Container.Last);
    end Last;
 
@@ -1192,16 +1194,18 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
 
       if Container.Length = 0 then
          return No_Element;
+
+      else
+         while CFirst /= 0 loop
+            if Container.Nodes (CFirst).Element = Item then
+               return (Node => CFirst);
+            else
+               CFirst := Container.Nodes (CFirst).Prev;
+            end if;
+         end loop;
+
+         return No_Element;
       end if;
-
-      while CFirst /= 0 loop
-         if Container.Nodes (CFirst).Element = Item then
-            return (Node => CFirst);
-         end if;
-         CFirst := Container.Nodes (CFirst).Prev;
-      end loop;
-
-      return No_Element;
    end Reverse_Find;
 
    ------------

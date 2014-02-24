@@ -319,24 +319,25 @@ package body Ada.Containers.Formal_Vectors is
 
    function Current_To_Last
      (Container : Vector;
-      Current : Cursor) return Vector is
+      Current   : Cursor) return Vector
+   is
       C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
 
    begin
       if Current = No_Element then
          Clear (C);
          return C;
-      end if;
 
-      if not Has_Element (Container, Current) then
+      elsif not Has_Element (Container, Current) then
          raise Constraint_Error;
+
+      else
+         while C.Last /= Container.Last - Current.Index + 1 loop
+            Delete_First (C);
+         end loop;
+
+         return C;
       end if;
-
-      while C.Last /= Container.Last - Current.Index + 1 loop
-         Delete_First (C);
-      end loop;
-
-      return C;
    end Current_To_Last;
 
    ------------
@@ -610,22 +611,24 @@ package body Ada.Containers.Formal_Vectors is
 
    function First_To_Previous
      (Container : Vector;
-      Current : Cursor) return Vector is
+      Current   : Cursor) return Vector
+   is
       C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
 
    begin
       if Current = No_Element then
          return C;
-      end if;
 
-      if not Has_Element (Container, Current) then
+      elsif not Has_Element (Container, Current) then
          raise Constraint_Error;
-      end if;
 
-      while C.Last /= Current.Index - 1 loop
-         Delete_Last (C);
-      end loop;
-      return C;
+      else
+         while C.Last /= Current.Index - 1 loop
+            Delete_Last (C);
+         end loop;
+
+         return C;
+      end if;
    end First_To_Previous;
 
    ---------------------

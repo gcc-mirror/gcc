@@ -68,26 +68,30 @@ $(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nma
 
 # GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
 # for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
-OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
-  | sed -e 's^\./xgcc^../../../xgcc^' -e 's^-B./^-B../../../^'`
+OSCONS_CC=$(subst ./xgcc,../../../xgcc,$(subst -B./, -B../../../,$(GCC_FOR_TARGET)))
+OSCONS_SRCDIR=$${_oscons_srcdir}
 OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
-  -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
-OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
+  -DTARGET=\"$(target)\" -I$(OSCONS_SRCDIR) s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) -I$(OSCONS_SRCDIR) -S s-oscons-tmplt.i
 
 # Note: if you need to build with a non-GNU compiler, you could adapt the
 # following definitions (written for VMS DEC-C)
 #OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
-#             -DTARGET='""$(target)""' s-oscons-tmplt.c
+#             -DTARGET='""$(target)""' -I$(OSCONS_SRCDIR) s-oscons-tmplt.c
 #
 #OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
-#                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
+#                 -DTARGET='""$(target)""' -I$(OSCONS_SRCDIR) s-oscons-tmplt.c ; \
 #  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
 #  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
 
-$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/adaint.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
+# Note: the first dependency of s-oscons.ads *must* remain s-oscons-tmplt.c, as
+# we use $(<D) to locate the main ada/ source directory and pass it to OSCONS_CPP
+# as a -I argument.
+$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons
+	_oscons_srcdir=`cd $(<D) && pwd` ; \
 	(cd $(ADA_GEN_SUBDIR)/bldtools/oscons ; gnatmake -q xoscons ; \
 		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
 		$(OSCONS_CPP) ; \

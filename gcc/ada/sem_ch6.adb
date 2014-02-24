@@ -372,11 +372,13 @@ package body Sem_Ch6 is
          --  An expression function that is a completion freezes the
          --  expression. This means freezing the return type, and if it is
          --  an access type, freezing its designated type as well.
+
          --  Note that we cannot defer this freezing to the analysis of the
-         --  expression itself, because a freeze node might appear in a
-         --  nested scope, leading to an elaboration order issue in gigi.
+         --  expression itself, because a freeze node might appear in a nested
+         --  scope, leading to an elaboration order issue in gigi.
 
          Freeze_Before (N, Etype (Prev));
+
          if Is_Access_Type (Etype (Prev)) then
             Freeze_Before (N, Designated_Type (Etype (Prev)));
          end if;

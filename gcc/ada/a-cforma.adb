@@ -336,18 +336,18 @@ package body Ada.Containers.Formal_Ordered_Maps is
          Clear (C);
          return C;
 
-      end if;
-      if Current /= No_Element and not Has_Element (Container, Current) then
+      elsif Current /= No_Element and not Has_Element (Container, Current) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= Current.Node loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= Current.Node loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end Current_To_Last;
 
    ------------
@@ -524,7 +524,8 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
    function First_To_Previous
      (Container : Map;
-      Current : Cursor) return Map is
+      Current   : Cursor) return Map
+   is
       Curs : Cursor := Current;
       C    : Map (Container.Capacity) := Copy (Container, Container.Capacity);
       Node : Count_Type;
@@ -532,19 +533,19 @@ package body Ada.Containers.Formal_Ordered_Maps is
    begin
       if Curs = No_Element then
          return C;
-      end if;
 
-      if not Has_Element (Container, Curs) then
+      elsif not Has_Element (Container, Curs) then
          raise Constraint_Error;
+
+      else
+         while Curs.Node /= 0 loop
+            Node := Curs.Node;
+            Delete (C, Curs);
+            Curs := Next (Container, (Node => Node));
+         end loop;
+
+         return C;
       end if;
-
-      while Curs.Node /= 0 loop
-         Node := Curs.Node;
-         Delete (C, Curs);
-         Curs := Next (Container, (Node => Node));
-      end loop;
-
-      return C;
    end First_To_Previous;
 
    -----------

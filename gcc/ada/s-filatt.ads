@@ -39,23 +39,27 @@ package System.File_Attributes is
    type File_Attributes is private;
 
    procedure Reset_Attributes (A : access File_Attributes);
+
    function Error_Attributes (A : access File_Attributes) return Integer;
+
    function File_Exists_Attr
      (N : System.Address;
       A : access File_Attributes) return Integer;
+
    function Is_Regular_File_Attr
      (N : System.Address;
       A : access File_Attributes) return Integer;
+
    function Is_Directory_Attr
      (N : System.Address;
       A : access File_Attributes) return Integer;
 
 private
-
    package SOSC renames System.OS_Constants;
 
-   type File_Attributes is new System.Storage_Elements.Storage_Array
-     (1 .. SOSC.SIZEOF_struct_file_attributes);
+   type File_Attributes is new
+     System.Storage_Elements.Storage_Array
+       (1 .. SOSC.SIZEOF_struct_file_attributes);
    for File_Attributes'Alignment use Standard'Maximum_Alignment;
 
    pragma Import (C, Reset_Attributes,     "__gnat_reset_attributes");
