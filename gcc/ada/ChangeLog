@@ -1,3 +1,21 @@
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-dimmks.ads: Replace symbol for temperature, previously the
+	Greek letter Theta, by the ASCII @ sign.
+	* s-diflio.ads: ditto.
+
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor code reorganization (use OR for boolean
+	variables).
+	* sem_ch3.adb, sem_prag.adb, freeze.adb: Minor reformatting.
+
+2014-02-24  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi, projects.texi: Added the necessary conditionalization
+	so that references to gnatmem and ASIS tools do not appear in the FSF
+	edition of the GNAT User's Guide.
+
 2014-02-24  Yannick Moy  <moy@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Do not issue warning

@@ -2381,9 +2381,8 @@ package body Sem_Ch3 is
          elsif Nkind (Decl) = N_Subprogram_Body then
             Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
 
-         elsif Nkind_In (Decl,
-           N_Subprogram_Declaration,
-           N_Abstract_Subprogram_Declaration)
+         elsif Nkind_In (Decl, N_Subprogram_Declaration,
+                               N_Abstract_Subprogram_Declaration)
          then
             Analyze_Subprogram_Contract (Defining_Entity (Decl));
          end if;

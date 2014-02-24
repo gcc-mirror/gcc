@@ -178,11 +178,13 @@ AdaCore@*
 * GNAT Project Manager::
 * Tools Supporting Project Files::
 * The Cross-Referencing Tools gnatxref and gnatfind::
+@ifclear FSFEDITION
 * The GNAT Pretty-Printer gnatpp::
 @ifclear vms
 * The Ada-to-XML converter gnat2xml::
 @end ifclear
 * The GNAT Metrics Tool gnatmetric::
+@end ifclear
 * File Name Krunching with gnatkr::
 * Preprocessing with gnatprep::
 * The GNAT Library Browser gnatls::
@@ -193,9 +195,11 @@ AdaCore@*
 @end ifclear
 * Memory Management Issues::
 * Stack Related Facilities::
+@ifclear FSFEDITION
 * Verifying Properties with gnatcheck::
 * Creating Sample Bodies with gnatstub::
 * Creating Unit Tests with gnattest::
+@end ifclear
 * Performing Dimensionality Analysis in GNAT::
 * Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
@@ -297,10 +301,13 @@ binding and link.
 
 @item
 @ref{Improving Performance}, shows various techniques for making your
-Ada program run faster or take less space.
-It discusses the effect of the compiler's optimization switch and
-also describes the @command{gnatelim} tool and unused subprogram/data
-elimination.
+Ada program run faster or take less space and describes the effect of
+the compiler's optimization switch.
+It also describes
+@ifclear FSFEDITION
+the @command{gnatelim} tool and
+@end ifclear
+unused subprogram/data elimination.
 
 @item
 @ref{Renaming Files with gnatchop}, describes
@@ -326,21 +333,27 @@ to organize large projects.
 @code{gnatxref} and @code{gnatfind}, two tools that provide an easy
 way to navigate through sources.
 
+@ifclear FSFEDITION
 @item
 @ref{The GNAT Pretty-Printer gnatpp}, shows how to produce a reformatted
 version of an Ada source file with control over casing, indentation,
 comment placement, and other elements of program presentation style.
+@end ifclear
 
+@ifclear FSFEDITION
 @ifclear vms
 @item
 @ref{The Ada-to-XML converter gnat2xml}, shows how to convert Ada
 source code into XML.
 @end ifclear
+@end ifclear
 
+@ifclear FSFEDITION
 @item
 @ref{The GNAT Metrics Tool gnatmetric}, shows how to compute various
 metrics for an Ada source file, such as the number of types and subprograms,
 and assorted complexity measures.
+@end ifclear
 
 @item
 @ref{File Name Krunching with gnatkr}, describes the @code{gnatkr}
@@ -378,14 +391,17 @@ the GNAT toolset in Makefiles.
 and in particular the GNAT Debug Pool facility, which helps detect incorrect
 memory references.
 @ifclear vms
+@ifclear FSFEDITION
 It also describes @command{gnatmem}, a utility that monitors dynamic
 allocation and deallocation and helps detect ``memory leaks''.
+@end ifclear
 @end ifclear
 
 @item
 @ref{Stack Related Facilities}, describes some useful tools associated with
 stack checking and analysis.
 
+@ifclear FSFEDITION
 @item
 @ref{Verifying Properties with gnatcheck}, discusses @code{gnatcheck},
 a utility that checks Ada code against a set of rules.
@@ -393,10 +409,13 @@ a utility that checks Ada code against a set of rules.
 @item
 @ref{Creating Sample Bodies with gnatstub}, discusses @code{gnatstub},
 a utility that generates empty but compilable bodies for library units.
+@end ifclear
 
+@ifclear FSFEDITION
 @item
 @ref{Creating Unit Tests with gnattest}, discusses @code{gnattest},
 a utility that generates unit testing templates for library units.
+@end ifclear
 
 @item
 @ref{Performing Dimensionality Analysis in GNAT}, describes the Ada 2012
@@ -6211,11 +6230,14 @@ checking arbitrary coding standards. It is simply an embedding of the
 style rules we have chosen for the GNAT sources. If you are starting
 a project which does not have established style standards, you may
 find it useful to adopt the entire set of GNAT coding standards, or
-some subset of them. If you already have an established set of coding
-standards, then it may be that selected style checking options do
+some subset of them.
+@ifclear FSFEDITION
+If you already have an established set of coding
+standards, then the selected style checking options may
 indeed correspond to choices you have made, but for general checking
 of an existing set of coding rules, you should look to the gnatcheck
 tool, which is designed for that purpose.
+@end ifclear
 
 @ifset vms
 @code{(option,option,@dots{})} is a sequence of keywords
@@ -10128,14 +10150,20 @@ displaying commands it is executing.
 This chapter presents several topics related to program performance.
 It first describes some of the tradeoffs that need to be considered
 and some of the techniques for making your program run faster.
-It then documents the @command{gnatelim} tool and unused subprogram/data
+It then documents
+@ifclear FSFEDITION
+the @command{gnatelim} tool and
+@end ifclear
+unused subprogram/data
 elimination feature, which can reduce the size of program executables.
 
 @ifnottex
 @menu
 * Performance Considerations::
 * Text_IO Suggestions::
+@ifclear FSFEDITION
 * Reducing Size of Ada Executables with gnatelim::
+@end ifclear
 * Reducing Size of Executables with unused subprogram/data elimination::
 @end menu
 @end ifnottex
@@ -11189,7 +11217,7 @@ of the standard output file, or change the standard output file to
 be buffered using @code{Interfaces.C_Streams.setvbuf}.
 
 
-
+@ifclear FSFEDITION
 @node Reducing Size of Ada Executables with gnatelim
 @section Reducing Size of Ada Executables with @code{gnatelim}
 @findex gnatelim
@@ -11454,6 +11482,7 @@ $ gnatmake ^-f main_prog^/FORCE_COMPILE MAIN_PROG^
 @end smallexample
 
 @end enumerate
+@end ifclear
 
 @node Reducing Size of Executables with unused subprogram/data elimination
 @section Reducing Size of Executables with Unused Subprogram/Data Elimination
@@ -12959,15 +12988,21 @@ When a library project file is specified, switches ^-b^/ACTION=BIND^ and
 A number of GNAT tools, other than @command{^gnatmake^gnatmake^}
 can benefit from project files:
 (@command{^gnatbind^gnatbind^},
+@ifclear FSFEDITION
 @command{^gnatcheck^gnatcheck^},
+@end ifclear
 @command{^gnatclean^gnatclean^},
+@ifclear FSFEDITION
 @command{^gnatelim^gnatelim^},
+@end ifclear
 @command{^gnatfind^gnatfind^},
 @command{^gnatlink^gnatlink^},
 @command{^gnatls^gnatls^},
+@ifclear FSFEDITION
 @command{^gnatmetric^gnatmetric^},
 @command{^gnatpp^gnatpp^},
 @command{^gnatstub^gnatstub^},
+@end ifclear
 and @command{^gnatxref^gnatxref^}). However, none of these tools can be invoked
 directly with a project file switch (@option{^-P^/PROJECT_FILE=^}).
 They must be invoked through the @command{gnat} driver.
@@ -12985,7 +13020,9 @@ On non-VMS platforms, the @command{gnat} driver accepts the following commands
 @item CHOP to invoke @command{^gnatchop^gnatchop^}
 @item CLEAN to invoke @command{^gnatclean^gnatclean^}
 @item COMP or COMPILE to invoke the compiler
+@ifclear FSFEDITION
 @item ELIM to invoke @command{^gnatelim^gnatelim^}
+@end ifclear
 @item FIND to invoke @command{^gnatfind^gnatfind^}
 @item KR or KRUNCH to invoke @command{^gnatkr^gnatkr^}
 @item LINK to invoke @command{^gnatlink^gnatlink^}
@@ -12993,9 +13030,11 @@ On non-VMS platforms, the @command{gnat} driver accepts the following commands
 @item MAKE to invoke @command{^gnatmake^gnatmake^}
 @item NAME to invoke @command{^gnatname^gnatname^}
 @item PREP or PREPROCESS to invoke @command{^gnatprep^gnatprep^}
+@ifclear FSFEDITION
 @item PP or PRETTY to invoke @command{^gnatpp^gnatpp^}
 @item METRIC to invoke @command{^gnatmetric^gnatmetric^}
 @item STUB to invoke @command{^gnatstub^gnatstub^}
+@end ifclear
 @item XREF to invoke @command{^gnatxref^gnatxref^}
 
 @end itemize
@@ -13034,23 +13073,37 @@ files may be specified with their path name preceded by '@@'.
 @end smallexample
 
 @noindent
-In addition, for commands BIND, COMP or COMPILE, FIND, ELIM, LS or LIST, LINK,
-METRIC, PP or PRETTY, STUB and XREF, the project file related switches
+In addition, for commands BIND, COMP or COMPILE, FIND,
+@ifclear FSFEDITION
+ELIM,
+@end ifclear
+LS or LIST, LINK,
+@ifclear FSFEDITION
+METRIC,
+PP or PRETTY,
+STUB,
+@end ifclear
+and XREF, the project file related switches
 (@option{^-P^/PROJECT_FILE^},
 @option{^-X^/EXTERNAL_REFERENCE^} and
 @option{^-vP^/MESSAGES_PROJECT_FILE=^x}) may be used in addition to
 the switches of the invoking tool.
 
+@ifclear FSFEDITION
 When GNAT PP or GNAT PRETTY is used with a project file, but with no source
 specified on the command line, it invokes @command{^gnatpp^gnatpp^} with all
 the immediate sources of the specified project file.
+@end ifclear
 
+@ifclear FSFEDITION
 When GNAT METRIC is used with a project file, but with no source
 specified on the command line, it invokes @command{^gnatmetric^gnatmetric^}
 with all the immediate sources of the specified project file and with
 @option{^-d^/DIRECTORY^} with the parameter pointing to the object directory
 of the project.
+@end ifclear
 
+@ifclear FSFEDITION
 In addition, when GNAT PP, GNAT PRETTY or GNAT METRIC is used with
 a project file, no source is specified on the command line and
 switch ^-U^/ALL_PROJECTS^ is specified on the command line, then
@@ -13060,6 +13113,7 @@ not only for the immediate sources of the main project.
 @ifclear vms
 (-U stands for Universal or Union of the project files of the project tree)
 @end ifclear
+@end ifclear
 
 For each of the following commands, there is optionally a corresponding
 package in the main project.
@@ -13067,34 +13121,46 @@ package in the main project.
 @itemize @bullet
 @item package @code{Binder} for command BIND (invoking @code{^gnatbind^gnatbind^})
 
+@ifclear FSFEDITION
 @item package @code{Check} for command CHECK (invoking
   @code{^gnatcheck^gnatcheck^})
+@end ifclear
 
 @item package @code{Compiler} for command COMP or COMPILE (invoking the compiler)
 
 @item package @code{Cross_Reference} for command XREF (invoking
   @code{^gnatxref^gnatxref^})
 
+@ifclear FSFEDITION
 @item package @code{Eliminate} for command ELIM (invoking
   @code{^gnatelim^gnatelim^})
+@end ifclear
 
 @item package @code{Finder} for command FIND (invoking @code{^gnatfind^gnatfind^})
 
 @item package @code{Gnatls} for command LS or LIST (invoking @code{^gnatls^gnatls^})
 
+@ifclear FSFEDITION
 @item package @code{Gnatstub} for command STUB
   (invoking @code{^gnatstub^gnatstub^})
+@end ifclear
 
 @item package @code{Linker} for command LINK (invoking @code{^gnatlink^gnatlink^})
 
+@ifclear FSFEDITION
 @item package @code{Check} for command CHECK
   (invoking @code{^gnatcheck^gnatcheck^})
+@end ifclear
 
+@ifclear FSFEDITION
 @item package @code{Metrics} for command METRIC
   (invoking @code{^gnatmetric^gnatmetric^})
+@end ifclear
 
+@ifclear FSFEDITION
 @item package @code{Pretty_Printer} for command PP or PRETTY
   (invoking @code{^gnatpp^gnatpp^})
+@end ifclear
 
 @end itemize
 
@@ -13208,6 +13274,7 @@ found in the package corresponding to the tool:
 @code{^Default_Switches^Default_Switches^ ("Ada")} for all tools,
 except @code{Switches ("main.adb")}
 for @code{^gnatlink^gnatlink^}.
+@ifclear FSFEDITION
 It is also possible to invoke some of the tools,
 (@code{^gnatcheck^gnatcheck^},
 @code{^gnatmetric^gnatmetric^},
@@ -13240,6 +13307,7 @@ on @command{gnatbind}'s option @option{-R}. But if the argument files for the
 tool invoked by the @command{gnat} driver are explicitly  specified
 either directly or through the tool @option{-files} option, then the tool
 is called only for these explicitly specified files.
+@end ifclear
 
 @c *****************************************
 @c * Cross-referencing tools
@@ -13983,6 +14051,7 @@ point to any character in the middle of the identifier.
 
 @end table
 
+@ifclear FSFEDITION
 @c *********************************
 @node The GNAT Pretty-Printer gnatpp
 @chapter The GNAT Pretty-Printer @command{gnatpp}
@@ -15310,7 +15379,9 @@ begin
 end Test;
 @end cartouche
 @end smallexample
+@end ifclear
 
+@ifclear FSFEDITION
 @ifclear vms
 @c *********************************
 @node The Ada-to-XML converter gnat2xml
@@ -15807,7 +15878,10 @@ formal_package
 formal_package_declaration_with_box
 @end smallexample
 @end ifclear
+@end ifclear
 
+
+@ifclear FSFEDITION
 @c *********************************
 @node The GNAT Metrics Tool gnatmetric
 @chapter The GNAT Metrics Tool @command{gnatmetric}
@@ -16019,7 +16093,7 @@ Suppression of metrics computation for eligible local units can be
 obtained via the following switch:
 
 @table @option
-@cindex @option{^-n@var{x}^/SUPPRESS^} (@command{gnatmetric})
+@cindex @option{^-nolocal^/SUPPRESS^} (@command{gnatmetric})
 @item ^-nolocal^/SUPPRESS=LOCAL_DETAILS^
 Do not compute detailed metrics for eligible local program units
 
@@ -16823,6 +16897,7 @@ the @option{-U} option followed by the name of the main unit:
    gnat metric -Pproj -U main
 @end smallexample
 @end ignore
+@end ifclear
 
 
 @c ***********************************
@@ -18724,15 +18799,19 @@ This chapter describes some useful memory pools provided in the GNAT library
 and in particular the GNAT Debug Pool facility, which can be used to detect
 incorrect uses of access values (including ``dangling references'').
 @ifclear vms
+@ifclear FSFEDITION
 It also describes the @command{gnatmem} tool, which can be used to track down
 ``memory leaks''.
+@end ifclear
 @end ifclear
 
 @menu
 * Some Useful Memory Pools::
 * The GNAT Debug Pool Facility::
 @ifclear vms
+@ifclear FSFEDITION
 * The gnatmem Tool::
+@end ifclear
 @end ifclear
 @end menu
 
@@ -18947,6 +19026,7 @@ Debug Pool info:
 @end smallexample
 
 @ifclear vms
+@ifclear FSFEDITION
 @node The gnatmem Tool
 @section The @command{gnatmem} Tool
 @findex gnatmem
@@ -19298,7 +19378,7 @@ Allocation Root # 4
 @noindent
 The allocation root #1 of the first example has been split in 2 roots #1
 and #3 thanks to the more precise associated backtrace.
-
+@end ifclear
 @end ifclear
 
 @node Stack Related Facilities
@@ -19506,6 +19586,7 @@ only processed when the environment variable GNAT_STACK_LIMIT is set.
 The package @code{GNAT.Task_Stack_Usage} provides facilities to get
 stack usage reports at run-time. See its body for the details.
 
+@ifclear FSFEDITION
 @c *********************************
 @c *            GNATCHECK          *
 @c *********************************
@@ -19528,8 +19609,9 @@ calling @command{gnatcheck}, either through a specified project file or
 through @command{gnatcheck} switches.
 
 For full details, refer to @cite{GNATcheck Reference Manual} document.
+@end ifclear
 
-
+@ifclear FSFEDITION
 @c *********************************
 @node Creating Sample Bodies with gnatstub
 @chapter Creating Sample Bodies with @command{gnatstub}
@@ -19757,7 +19839,9 @@ unless this option is set.
 Verbose mode: generate version information.
 
 @end table
+@end ifclear
 
+@ifclear FSFEDITION
 @c *********************************
 @node Creating Unit Tests with gnattest
 @chapter Creating Unit Tests with @command{gnattest}
@@ -20374,6 +20458,8 @@ The tool currently does not support following features:
 @item tests for protected subprograms and entries
 
 @end itemize
+@end ifclear
+
 
 @c *********************************
 @node Performing Dimensionality Analysis in GNAT

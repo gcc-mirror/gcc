@@ -7615,7 +7615,7 @@ package body Exp_Ch4 is
          --  arithmetic instructions check overflow automatically, so only
          --  one version of the exponentiation unit is needed.
 
-         if Ovflo or else AAMP_On_Target then
+         if Ovflo or AAMP_On_Target then
             Rent := RE_Exp_Long_Long_Integer;
          else
             Rent := RE_Exn_Long_Long_Integer;
@@ -7628,7 +7628,7 @@ package body Exp_Ch4 is
          --  arithmetic instructions check overflow automatically, so only
          --  one version of the exponentiation unit is needed.
 
-         if Ovflo or else AAMP_On_Target then
+         if Ovflo or AAMP_On_Target then
             Rent := RE_Exp_Integer;
          else
             Rent := RE_Exn_Integer;
