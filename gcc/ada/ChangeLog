@@ -1,3 +1,10 @@
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Basic_Declarative_Items): If an improper body
+	appears in a list of basic declarations, complete the tree with
+	an empty statement list, to prevent cascaded errors and crashes
+	if semantic analysis is attempted.
+
 2014-02-24  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sercom-mingw.adb (Open): Fix incorrect test for error return
