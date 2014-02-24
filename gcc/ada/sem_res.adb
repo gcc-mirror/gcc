@@ -7399,6 +7399,7 @@ package body Sem_Res is
       --  A useful optimization:  check whether the dereference denotes an
       --  element of a container, and if so rewrite it as a call to the
       --  corresponding Element function.
+
       --  Disabled for now, on advice of ARG. A more restricted form of the
       --  predicate might be acceptable ???
 

@@ -423,6 +423,11 @@ package Stand is
    --  The type Raise_Type denotes the type of a Raise_Expression. It is
    --  compatible with all other types, and must eventually resolve to a
    --  concrete type that is imposed by the context.
+   --
+   --  Historical note: we used to use Any_Type for this purpose, but the
+   --  confusion of meanings (Any_Type normally indicates an error) caused
+   --  difficulties. In particular some needed expansions were skipped since
+   --  the nodes in question looked like they had an error.
 
    Universal_Integer : Entity_Id;
    --  Entity for universal integer type. The bounds of this type correspond

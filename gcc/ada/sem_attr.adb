@@ -6319,7 +6319,7 @@ package body Sem_Attr is
                      elsif Comp_Type /= Base_Type (Etype (Comp)) then
                         Error_Msg_N
                           ("components in choice list must have same type",
-                             Assoc);
+                           Assoc);
                      end if;
                   end if;
                end if;

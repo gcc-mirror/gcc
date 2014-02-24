@@ -4631,7 +4631,8 @@ package body Sem_Prag is
             procedure Grouping_Error (Prag : Node_Id) is
             begin
                Error_Msg_Sloc := Sloc (Prag);
-               Error_Pragma ("pragma% must appear immediately after pragma#");
+               Error_Pragma
+                 ("pragma% should appear immediately after pragma#");
             end Grouping_Error;
 
          --  Start of processing for Check_Loop_Pragma_Grouping
