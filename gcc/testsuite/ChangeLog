@@ -1,3 +1,10 @@
+2014-02-24  Fabien Chêne  <fabien@gcc.gnu.org>
+
+        PR c++/37140
+        * g++.dg/template/using27.C: New.
+        * g++.dg/template/using28.C: New.
+        * g++.dg/template/using29.C: New.
+
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* gcc/testsuite/gcc.target/microblaze/others/mem_reload.c: New test.
