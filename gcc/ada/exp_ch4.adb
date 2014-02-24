@@ -7611,7 +7611,11 @@ package body Exp_Ch4 is
       then
          Etyp := Standard_Long_Long_Integer;
 
-         if Ovflo then
+         --  Overflow checking is the only choice on the AAMP target, where
+         --  arithmetic instructions check overflow automatically, so only
+         --  one version of the exponentiation unit is needed.
+
+         if Ovflo or else AAMP_On_Target then
             Rent := RE_Exp_Long_Long_Integer;
          else
             Rent := RE_Exn_Long_Long_Integer;
@@ -7620,7 +7624,11 @@ package body Exp_Ch4 is
       elsif Is_Signed_Integer_Type (Rtyp) then
          Etyp := Standard_Integer;
 
-         if Ovflo then
+         --  Overflow checking is the only choice on the AAMP target, where
+         --  arithmetic instructions check overflow automatically, so only
+         --  one version of the exponentiation unit is needed.
+
+         if Ovflo or else AAMP_On_Target then
             Rent := RE_Exp_Integer;
          else
             Rent := RE_Exn_Integer;

@@ -1,3 +1,45 @@
+2014-02-24  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not issue warning
+	for pre/post being ignored on imported subprogram in GNATprove
+	mode.
+
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb, sem_ch5.adb, sem_type.adb, sem_res.adb, sem_attr.adb,
+	stand.ads, sem_eval.adb: Minor reformatting.
+
+2014-02-24  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb: Minor rewording in error message.
+
+2014-02-24  Johannes Kanig  <kanig@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Do not expand subtypes in
+	GNATprove_mode, gnat2why doesn't need nor use these types.
+
+2014-02-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Expon): On the AAMP
+	target, in the case of signed integer exponentiation that uses a
+	run-time routine, always select the Exp_* versions, since overflow
+	checking is automatically done by AAMP arithmetic instructions.
+
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications):
+	When the related context is a package instace, insert pragma
+	Abstract_State after all internally-generated renamings related
+	to the instance "header".
+
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Analyze Contract of abstract
+	subprograms.
+	* sem_disp.adb (Check_Dispatching_Context): A non-dispatching
+	call to an abstract subprogram is legal if it appears in a
+	pre/postcondition of another abstract operation.
+
 2014-02-24  Sergey Rybin  <rybin@adacore.com frybin>
 
 	* gnat_ugn.texi: Misc updates.

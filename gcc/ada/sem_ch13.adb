@@ -2009,6 +2009,7 @@ package body Sem_Ch13 is
 
                when Aspect_Abstract_State => Abstract_State : declare
                   Context : Node_Id := N;
+                  Decl    : Node_Id;
                   Decls   : List_Id;
 
                begin
@@ -2023,8 +2024,6 @@ package body Sem_Ch13 is
                   if Nkind_In (Context, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (Context));
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
@@ -2032,12 +2031,56 @@ package body Sem_Ch13 is
                         Pragma_Name                  => Name_Abstract_State);
                      Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (Context, Decls);
-                     end if;
+                     Decls := Visible_Declarations (Specification (Context));
 
-                     Prepend_To (Decls, Aitem);
+                     --  In general pragma Abstract_State must be at the top
+                     --  of the existing visible declarations to emulate its
+                     --  source counterpart. The only exception to this is a
+                     --  generic instance in which case the pragma must be
+                     --  inserted after the association renamings.
+
+                     if Present (Decls) then
+
+                        --  The visible declarations of a generic instance have
+                        --  the following structure:
+
+                        --    <renamings of generic formals>
+                        --    <renamings of internally-generated spec and body>
+                        --    <first source declaration>
+
+                        --  The pragma must be inserted before the first source
+                        --  declaration.
+
+                        if Is_Generic_Instance (Defining_Entity (Context)) then
+
+                           --  Skip the instance "header"
+
+                           Decl := First (Decls);
+                           while Present (Decl)
+                             and then not Comes_From_Source (Decl)
+                           loop
+                              Decl := Next (Decl);
+                           end loop;
+
+                           if Present (Decl) then
+                              Insert_Before (Decl, Aitem);
+                           else
+                              Append_To (Decls, Aitem);
+                           end if;
+
+                        --  The related package is not a generic instance, the
+                        --  corresponding pragma must be the first declaration.
+
+                        else
+                           Prepend_To (Decls, Aitem);
+                        end if;
+
+                     --  Otherwise the pragma forms a new declarative list
+
+                     else
+                        Set_Visible_Declarations
+                          (Specification (Context), New_List (Aitem));
+                     end if;
 
                   else
                      Error_Msg_NE

@@ -2074,19 +2074,15 @@ package body Exp_Util is
       --  may be constants that depend on the bounds of a string literal, both
       --  standard string types and more generally arrays of characters.
 
-      --  In GNATprove mode, we also need the more precise subtype to be set
+      --  In GNATprove mode, these extra subtypes are not needed
 
-      if not (Expander_Active or GNATprove_Mode)
-        and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
-      then
+      if GNATprove_Mode then
          return;
       end if;
 
-      --  In GNATprove mode, Unc_Type might not be complete when analyzing
-      --  a generic unit. As generic units are not analyzed directly in
-      --  GNATprove, return here rather than failing later.
-
-      if GNATprove_Mode and then No (Underlying_Type (Unc_Type)) then
+      if not Expander_Active
+        and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
+      then
          return;
       end if;
 

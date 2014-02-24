@@ -4803,7 +4803,8 @@ package body Sem_Eval is
          --  If either subtype is nonstatic then they're not compatible
 
          elsif not Is_Static_Subtype (T1)
-           or else not Is_Static_Subtype (T2)
+                 or else
+               not Is_Static_Subtype (T2)
          then
             return False;
 
@@ -4899,7 +4900,8 @@ package body Sem_Eval is
       --  (and Esizes can be set when Frontend_Layout_On_Target is True).
 
       elsif not Formal_Derived_Matching
-        and then Known_Static_Esize (T1) and then Known_Static_Esize (T2)
+        and then Known_Static_Esize (T1)
+        and then Known_Static_Esize (T2)
         and then Esize (T1) /= Esize (T2)
       then
          return False;

@@ -1856,10 +1856,12 @@ package body Sem_Ch5 is
       else
          Set_Ekind (Def_Id, E_Loop_Parameter);
 
+         --  OF present
+
          if Of_Present (N) then
             if Has_Aspect (Typ, Aspect_Iterable) then
                if No (Get_Iterable_Type_Primitive (Typ, Name_Element)) then
-                  Error_Msg_N ("Missing Element primitive for iteration", N);
+                  Error_Msg_N ("missing Element primitive for iteration", N);
                end if;
 
             --  For a predefined container, The type of the loop variable is
@@ -1868,11 +1870,13 @@ package body Sem_Ch5 is
             else
                declare
                   Element : constant Entity_Id :=
-                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+                    Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+
                begin
                   if No (Element) then
                      Error_Msg_NE ("cannot iterate over&", N, Typ);
                      return;
+
                   else
                      Set_Etype (Def_Id, Entity (Element));
 
@@ -1880,11 +1884,11 @@ package body Sem_Ch5 is
                      --  matches element type of container.
 
                      if Present (Subt)
-                        and then Bas /= Base_Type (Etype (Def_Id))
+                       and then Bas /= Base_Type (Etype (Def_Id))
                      then
                         Error_Msg_N
                           ("subtype indication does not match element type",
-                             Subt);
+                           Subt);
                      end if;
 
                      --  If the container has a variable indexing aspect, the
@@ -1896,6 +1900,8 @@ package body Sem_Ch5 is
                   end if;
                end;
             end if;
+
+         --  OF not present
 
          else
             --  For an iteration of the form IN, the name must denote an
@@ -1936,7 +1942,8 @@ package body Sem_Ch5 is
             if Has_Aspect (Typ, Aspect_Iterable) then
                Set_Etype (Def_Id,
                  Get_Cursor_Type
-                  (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)), Typ));
+                   (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)),
+                    Typ));
                Ent := Etype (Def_Id);
 
             else
@@ -1955,6 +1962,7 @@ package body Sem_Ch5 is
 
       --  A loop parameter cannot be volatile. This check is peformed only when
       --  SPARK_Mode is on as it is not a standard Ada legality check.
+
       --  Not clear whether this applies to element iterators, where the
       --  cursor is not an explicit entity ???
 

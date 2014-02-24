@@ -1128,7 +1128,7 @@ package body Sem_Type is
       elsif BT2 = Any_Type then
          return True;
 
-      --  A Raise_Expressions is legal in any expression context.
+      --  A Raise_Expressions is legal in any expression context
 
       elsif BT2 = Raise_Type then
          return True;

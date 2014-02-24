@@ -153,39 +153,38 @@ package body Exp_Ch5 is
    is
       Loc      : constant Source_Ptr := Sloc (N);
       Stats    : constant List_Id    := Statements (N);
-
-      Typ      : constant Entity_Id := Base_Type (Etype (Container));
-      First_Op : constant Entity_Id :=
+      Typ      : constant Entity_Id  := Base_Type (Etype (Container));
+      First_Op : constant Entity_Id  :=
                    Get_Iterable_Type_Primitive (Typ, Name_First);
-      Next_Op  : constant Entity_Id :=
+      Next_Op  : constant Entity_Id  :=
                    Get_Iterable_Type_Primitive (Typ, Name_Next);
+
       Has_Element_Op : constant Entity_Id :=
                    Get_Iterable_Type_Primitive (Typ, Name_Has_Element);
    begin
       --  Declaration for Cursor
 
       Init :=
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => Cursor,
-           Object_Definition => New_Occurrence_Of (Etype (First_Op),  Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name => New_Occurrence_Of (First_Op, Loc),
-                   Parameter_Associations =>
-                     New_List (New_Occurrence_Of (Container, Loc))));
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Cursor,
+          Object_Definition   => New_Occurrence_Of (Etype (First_Op),  Loc),
+          Expression          =>
+            Make_Function_Call (Loc,
+              Name                   => New_Occurrence_Of (First_Op, Loc),
+              Parameter_Associations => New_List (
+                New_Occurrence_Of (Container, Loc))));
 
       --  Statement that advances cursor in loop
 
       Advance :=
         Make_Assignment_Statement (Loc,
-          Name => New_Occurrence_Of (Cursor, Loc),
+          Name       => New_Occurrence_Of (Cursor, Loc),
           Expression =>
             Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (Next_Op, Loc),
-                Parameter_Associations =>
-                  New_List
-                    (New_Occurrence_Of (Container, Loc),
-                     New_Occurrence_Of (Cursor, Loc))));
+              Name                   => New_Occurrence_Of (Next_Op, Loc),
+              Parameter_Associations => New_List (
+                New_Occurrence_Of (Container, Loc),
+                New_Occurrence_Of (Cursor, Loc))));
 
       --  Iterator is rewritten as a while_loop
 
@@ -195,14 +194,12 @@ package body Exp_Ch5 is
             Make_Iteration_Scheme (Loc,
               Condition =>
                 Make_Function_Call (Loc,
-                  Name                   =>
-                    New_Occurrence_Of (Has_Element_Op, Loc),
-                  Parameter_Associations =>
-                    New_List
-                     (New_Occurrence_Of (Container, Loc),
-                      New_Occurrence_Of (Cursor, Loc)))),
-          Statements => Stats,
-          End_Label  => Empty);
+                  Name => New_Occurrence_Of (Has_Element_Op, Loc),
+                  Parameter_Associations => New_List (
+                    New_Occurrence_Of (Container, Loc),
+                    New_Occurrence_Of (Cursor, Loc)))),
+          Statements       => Stats,
+          End_Label        => Empty);
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -2748,9 +2745,9 @@ package body Exp_Ch5 is
       Container : constant Node_Id    := Entity (Name (I_Spec));
       Stats     : constant List_Id    := Statements (N);
 
-      Advance   : Node_Id;
-      Init      : Node_Id;
-      New_Loop  : Node_Id;
+      Advance  : Node_Id;
+      Init     : Node_Id;
+      New_Loop : Node_Id;
 
    begin
       --  The expansion resembles the one for Ada containers, but the
@@ -2790,13 +2787,12 @@ package body Exp_Ch5 is
 
       Cursor    : constant Entity_Id :=
                     Make_Defining_Identifier (Loc,
-                     Chars => New_External_Name (Chars (Element), 'C'));
+                      Chars => New_External_Name (Chars (Element), 'C'));
       Elmt_Decl : Node_Id;
       Elmt_Ref  : Node_Id;
 
-      Element_Op     : constant Entity_Id :=
-                         Get_Iterable_Type_Primitive
-                           (Container_Typ, Name_Element);
+      Element_Op : constant Entity_Id :=
+                     Get_Iterable_Type_Primitive (Container_Typ, Name_Element);
 
       Advance   : Node_Id;
       Init      : Node_Id;
@@ -2822,9 +2818,10 @@ package body Exp_Ch5 is
 
       --  Declaration for Element.
 
-      Elmt_Decl := Make_Object_Declaration (Loc,
-        Defining_Identifier => Element,
-        Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
+      Elmt_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Element,
+          Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
 
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious
@@ -2832,27 +2829,27 @@ package body Exp_Ch5 is
 
       Set_Warnings_Off (Element);
 
-      Elmt_Ref := Make_Assignment_Statement (Loc,
-         Name       => New_Occurrence_Of (Element, Loc),
-         Expression =>
-           Make_Function_Call (Loc,
-             Name => New_Occurrence_Of (Element_Op, Loc),
-                 Parameter_Associations =>
-                   New_List
-                    (New_Occurrence_Of (Container, Loc),
-                     New_Occurrence_Of (Cursor, Loc))));
+      Elmt_Ref :=
+        Make_Assignment_Statement (Loc,
+          Name       => New_Occurrence_Of (Element, Loc),
+          Expression =>
+            Make_Function_Call (Loc,
+              Name                   => New_Occurrence_Of (Element_Op, Loc),
+              Parameter_Associations => New_List (
+                New_Occurrence_Of (Container, Loc),
+                New_Occurrence_Of (Cursor, Loc))));
 
       Prepend (Elmt_Ref, Stats);
       Append_To (Stats, Advance);
 
-      --  The loop is rewritten as a block, to hold the declaration for the
-      --  element.
+      --  The loop is rewritten as a block, to hold the element declaration
 
-      New_Loop := Make_Block_Statement (Loc,
-         Declarations               => New_List (Elmt_Decl),
-         Handled_Statement_Sequence =>
-           Make_Handled_Sequence_Of_Statements (Loc,
-             Statements =>  New_List (New_Loop)));
+      New_Loop :=
+        Make_Block_Statement (Loc,
+          Declarations               => New_List (Elmt_Decl),
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements =>  New_List (New_Loop)));
 
       Rewrite (N, New_Loop);
       Analyze (New_Loop);
@@ -3180,6 +3177,7 @@ package body Exp_Ch5 is
          else
             Expand_Formal_Container_Loop (N);
          end if;
+
          return;
       end if;
 

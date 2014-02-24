@@ -3868,9 +3868,12 @@ package body Freeze is
                   end if;
                end;
 
-               --  Pre/post conditions are implemented through a subprogram in
-               --  the corresponding body, and therefore are not checked on an
-               --  imported subprogram for which the body is not available.
+               --  Pre/post conditions are implemented through a subprogram
+               --  in the corresponding body, and therefore are not checked on
+               --  an imported subprogram for which the body is not available.
+               --  This warning is not issued in GNATprove mode, as these
+               --  contracts are handled in formal verification, so the
+               --  warning would be misleading in that case.
 
                --  Could consider generating a wrapper to take care of this???
 
@@ -3878,6 +3881,7 @@ package body Freeze is
                  and then Is_Imported (E)
                  and then Present (Contract (E))
                  and then Present (Pre_Post_Conditions (Contract (E)))
+                 and then not GNATprove_Mode
                then
                   Error_Msg_NE
                     ("pre/post conditions on imported subprogram are not "
