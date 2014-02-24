@@ -1,3 +1,8 @@
+2014-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60312
+	* parser.c (cp_parser_template_type_arg): Check for invalid 'auto'.
+
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58170

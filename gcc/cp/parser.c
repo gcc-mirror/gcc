@@ -18005,6 +18005,11 @@ static tree cp_parser_template_type_arg (cp_parser *parser)
     = G_("types may not be defined in template arguments");
   r = cp_parser_type_id_1 (parser, true, false);
   parser->type_definition_forbidden_message = saved_message;
+  if (cxx_dialect >= cxx1y && type_uses_auto (r))
+    {
+      error ("invalid use of %<auto%> in template argument");
+      r = error_mark_node;
+    }
   return r;
 }
 
