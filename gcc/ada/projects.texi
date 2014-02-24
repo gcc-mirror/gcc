@@ -3166,6 +3166,7 @@ The following packages are currently supported in project files
   but there are some general options that should be defined in this
   package. @xref{Main Subprograms}, and @pxref{Executable File Names} in
   particular.
+@ifclear FSFEDITION
 @item Check
   This package specifies the options used when calling the checking tool
   @command{gnatcheck} via the @command{gnat} driver. Its attribute
@@ -3173,6 +3174,7 @@ The following packages are currently supported in project files
   @code{Builder}. The first string should always be @code{-rules} to specify
   that all the other options belong to the @code{-rules} section of the
   parameters to @command{gnatcheck}.
+@end ifclear
 @item Clean
   This package specifies the options used when cleaning a project or a project
   tree using the tools @command{gnatclean} or @command{gprclean}.
@@ -3184,11 +3186,13 @@ The following packages are currently supported in project files
   @command{gnatxref} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
+@ifclear FSFEDITION
 @item Eliminate
   This package specifies the options used when calling the tool
   @command{gnatelim} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
+@end ifclear
 @item Finder
   This package specifies the options used when calling the search tool
   @command{gnatfind} via the @command{gnat} driver. Its attributes
@@ -3197,11 +3201,13 @@ The following packages are currently supported in project files
 @item ^Gnatls^Gnatls^
   This package specifies the options to use when invoking @command{gnatls}
   via the @command{gnat} driver.
+@ifclear FSFEDITION
 @item ^Gnatstub^Gnatstub^
   This package specifies the options used when calling the tool
   @command{gnatstub} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
+@end ifclear
 @item IDE
   This package specifies the options used when starting an integrated
   development environment, for instance @command{GPS} or @command{Gnatbench}.
@@ -3211,22 +3217,26 @@ The following packages are currently supported in project files
 @item Linker
   This package specifies the options used by the linker.
   @xref{Main Subprograms}.
+@ifclear FSFEDITION
 @item Metrics
   This package specifies the options used when calling the tool
   @command{gnatmetric} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
+@end ifclear
 @item Naming
   This package specifies the naming conventions that apply
   to the source files in a project. In particular, these conventions are
   used to automatically find all source files in the source directories,
   or given a file name to find out its language for proper processing.
   @xref{Naming Schemes}.
+@ifclear FSFEDITION
 @item Pretty_Printer
   This package specifies the options used when calling the formatting tool
   @command{gnatpp} via the @command{gnat} driver. Its attributes
   @b{Default_Switches} and @b{^Switches^Switches^} have the same semantics as for the
   package @code{Builder}.
+@end ifclear
 @item Remote
   This package is used by @command{gprbuild} to describe how distributed
   compilation should be done.
@@ -3648,20 +3658,30 @@ end MyProj;
 * Project Level Attributes::
 * Package Binder Attributes::
 * Package Builder Attributes::
+@ifclear FSFEDITION
 * Package Check Attributes::
+@end ifclear
 * Package Clean Attributes::
 * Package Compiler Attributes::
 * Package Cross_Reference Attributes::
+@ifclear FSFEDITION
 * Package Eliminate Attributes::
+@end ifclear
 * Package Finder Attributes::
 * Package ^gnatls^gnatls^ Attributes::
+@ifclear FSFEDITION
 * Package ^gnatstub^gnatstub^ Attributes::
+@end ifclear
 * Package IDE Attributes::
 * Package Install Attributes::
 * Package Linker Attributes::
+@ifclear FSFEDITION
 * Package Metrics Attribute::
+@end ifclear
 * Package Naming Attributes::
+@ifclear FSFEDITION
 * Package Pretty_Printer Attributes::
+@end ifclear
 * Package Remote Attributes::
 * Package Stack Attributes::
 * Package Synchronize Attributes::
@@ -4310,6 +4330,7 @@ project tree.
 
 @end itemize
 
+@ifclear FSFEDITION
 @node Package Check Attributes
 @subsubsection Package Check Attributes
 
@@ -4328,6 +4349,7 @@ Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatcheck} for the source.
 
 @end itemize
+@end ifclear
 
 @node Package Clean Attributes
 @subsubsection Package Clean Attributes
@@ -4619,6 +4641,7 @@ invoking @code{gnatxref} for the source.
 
 @end itemize
 
+@ifclear FSFEDITION
 @node Package Eliminate Attributes
 @subsubsection Package Eliminate Attributes
 
@@ -4637,6 +4660,7 @@ Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatelim} for the source.
 
 @end itemize
+@end ifclear
 
 @node Package Finder Attributes
 @subsubsection Package Finder Attributes
@@ -4668,6 +4692,7 @@ Value is a list of switches to be used when invoking @code{gnatls}.
 
 @end itemize
 
+@ifclear FSFEDITION
 @node Package ^gnatstub^gnatstub^ Attributes
 @subsubsection Package ^gnatstub^gnatstub^ Attributes
 
@@ -4686,6 +4711,7 @@ Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatstub} for the source.
 
 @end itemize
+@end ifclear
 
 @node Package IDE Attributes
 @subsubsection Package IDE Attributes
@@ -4878,6 +4904,7 @@ Value is the list of switches to specify a response file to the linker.
 
 @end itemize
 
+@ifclear FSFEDITION
 @node Package Metrics Attribute
 @subsubsection Package Metrics Attribute
 
@@ -4896,6 +4923,7 @@ Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatmetric} for the source.
 
 @end itemize
+@end ifclear
 
 @node Package Naming Attributes
 @subsubsection Package Naming Attributes
@@ -4966,6 +4994,7 @@ be found in the source directories of the project.
 
 @end itemize
 
+@ifclear FSFEDITION
 @node Package Pretty_Printer Attributes
 @subsubsection Package Pretty_Printer Attributes
 
@@ -4984,6 +5013,7 @@ Index is a source file name. Value is the list of switches to be used when
 invoking @code{gnatpp} for the source.
 
 @end itemize
+@end ifclear
 
 @node Package Remote Attributes
 @subsubsection Package Remote Attributes
