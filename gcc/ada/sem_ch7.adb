@@ -191,10 +191,13 @@ package body Sem_Ch7 is
       if Present (Prag) then
          Analyze_Refined_State_In_Decl_Part (Prag);
 
-      --  State refinement is required when the package declaration has
-      --  abstract states. Null states are not considered.
+      --  State refinement is required when the package declaration defines at
+      --  least one abstract state. Null states are not considered. Refinement
+      --  is not envorced when SPARK checks are turned off.
 
-      elsif Requires_State_Refinement (Spec_Id, Body_Id) then
+      elsif SPARK_Mode /= Off
+        and then Requires_State_Refinement (Spec_Id, Body_Id)
+      then
          Error_Msg_N ("package & requires state refinement", Spec_Id);
       end if;
    end Analyze_Package_Body_Contract;

@@ -184,6 +184,19 @@ package body Sem_Prag is
    --  whether a particular item appears in a mixed list of nodes and entities.
    --  It is assumed that all nodes in the list have entities.
 
+   procedure Check_Dependence_List_Syntax (List : Node_Id);
+   --  Subsidiary to the analysis of pragmas Depends and Refined_Depends.
+   --  Verify the syntax of dependence relation List.
+
+   procedure Check_Global_List_Syntax (List : Node_Id);
+   --  Subsidiary to the analysis of pragmas Global and Refined_Global. Verify
+   --  the syntax of global list List.
+
+   procedure Check_Item_Syntax (Item : Node_Id);
+   --  Subsidiary to the analysis of pragmas Depends, Global, Initializes,
+   --  Part_Of, Refined_Depends, Refined_Depends and Refined_State. Verify the
+   --  syntax of a SPARK annotation item.
+
    function Check_Kind (Nam : Name_Id) return Name_Id;
    --  This function is used in connection with pragmas Assert, Check,
    --  and assertion aspects and pragmas, to determine if Check pragmas
@@ -267,6 +280,11 @@ package body Sem_Prag is
    --  Subsidiary to the analysis of pragma SPARK_Mode as well as subprogram
    --  Get_SPARK_Mode_Type. Convert a name into a corresponding value of type
    --  SPARK_Mode_Type.
+
+   function Has_Extra_Parentheses (Clause : Node_Id) return Boolean;
+   --  Subsidiary to the analysis of pragmas Depends and Refined_Depends.
+   --  Determine whether dependency clause Clause is surrounded by extra
+   --  parentheses. If this is the case, issue an error message.
 
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
@@ -986,9 +1004,9 @@ package body Sem_Prag is
          Analyze_Input_List (Inputs);
       end Analyze_Dependency_Clause;
 
-      ----------------------------
-      --  Check_Function_Return --
-      ----------------------------
+      ---------------------------
+      -- Check_Function_Return --
+      ---------------------------
 
       procedure Check_Function_Return is
       begin
@@ -1659,9 +1677,11 @@ package body Sem_Prag is
 
       --  Local variables
 
+      Deps        : constant Node_Id :=
+                      Get_Pragma_Arg
+                        (First (Pragma_Argument_Associations (N)));
       Clause      : Node_Id;
       Errors      : Nat;
-      Expr        : Node_Id;
       Last_Clause : Node_Id;
       Subp_Decl   : Node_Id;
 
@@ -1672,6 +1692,14 @@ package body Sem_Prag is
 
    begin
       Set_Analyzed (N);
+
+      --  Verify the syntax of pragma Depends when SPARK checks are suppressed.
+      --  Semantic analysis and normalization are disabled in this mode.
+
+      if SPARK_Mode = Off then
+         Check_Dependence_List_Syntax (Deps);
+         return;
+      end if;
 
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
       Subp_Id   := Defining_Entity (Subp_Decl);
@@ -1693,11 +1721,9 @@ package body Sem_Prag is
          Spec_Id := Subp_Id;
       end if;
 
-      Clause := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
-
       --  Empty dependency list
 
-      if Nkind (Clause) = N_Null then
+      if Nkind (Deps) = N_Null then
 
          --  Gather all states, variables and formal parameters that the
          --  subprogram may depend on. These items are obtained from the
@@ -1718,51 +1744,17 @@ package body Sem_Prag is
 
       --  Dependency clauses appear as component associations of an aggregate
 
-      elsif Nkind (Clause) = N_Aggregate then
+      elsif Nkind (Deps) = N_Aggregate then
 
-         --  The aggregate should not have an expression list because a clause
-         --  is always interpreted as a component association. The only way an
-         --  expression list can sneak in is by adding extra parenthesis around
-         --  the individual clauses:
+         --  Do not attempt to perform analysis of a syntactically illegal
+         --  clause as this will lead to misleading errors.
 
-         --    Depends  (Output => Input)   --  proper form
-         --    Depends ((Output => Input))  --  extra parenthesis
-
-         --  Since the extra parenthesis are not allowed by the syntax of the
-         --  pragma, flag them now to avoid emitting misleading errors down the
-         --  line.
-
-         if Present (Expressions (Clause)) then
-            Expr := First (Expressions (Clause));
-            while Present (Expr) loop
-
-               --  A dependency clause surrounded by extra parenthesis appears
-               --  as an aggregate of component associations with an optional
-               --  Paren_Count set.
-
-               if Nkind (Expr) = N_Aggregate
-                 and then Present (Component_Associations (Expr))
-               then
-                  Error_Msg_N
-                    ("dependency clause contains extra parentheses", Expr);
-
-               --  Otherwise the expression is a malformed construct
-
-               else
-                  Error_Msg_N ("malformed dependency clause", Expr);
-               end if;
-
-               Next (Expr);
-            end loop;
-
-            --  Do not attempt to perform analysis of syntactically illegal
-            --  clauses as this will lead to misleading errors.
-
+         if Has_Extra_Parentheses (Deps) then
             return;
          end if;
 
-         if Present (Component_Associations (Clause)) then
-            Last_Clause := Last (Component_Associations (Clause));
+         if Present (Component_Associations (Deps)) then
+            Last_Clause := Last (Component_Associations (Deps));
 
             --  Gather all states, variables and formal parameters that the
             --  subprogram may depend on. These items are obtained from the
@@ -1785,7 +1777,7 @@ package body Sem_Prag is
                Install_Formals (Spec_Id);
             end if;
 
-            Clause := First (Component_Associations (Clause));
+            Clause := First (Component_Associations (Deps));
             while Present (Clause) loop
                Errors := Serious_Errors_Detected;
 
@@ -1825,14 +1817,14 @@ package body Sem_Prag is
          --  The dependency list is malformed
 
          else
-            Error_Msg_N ("malformed dependency relation", Clause);
+            Error_Msg_N ("malformed dependency relation", Deps);
             return;
          end if;
 
       --  The top level dependency relation is malformed
 
       else
-         Error_Msg_N ("malformed dependency relation", Clause);
+         Error_Msg_N ("malformed dependency relation", Deps);
          return;
       end if;
 
@@ -2318,13 +2310,14 @@ package body Sem_Prag is
          --  Any other attempt to declare a global item is erroneous
 
          else
-            Error_Msg_N ("malformed global list declaration", List);
+            Error_Msg_N ("malformed global list", List);
          end if;
       end Analyze_Global_List;
 
       --  Local variables
 
-      Items     : Node_Id;
+      Items     : constant Node_Id :=
+                    Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
       Subp_Decl : Node_Id;
 
       Restore_Scope : Boolean := False;
@@ -2334,6 +2327,14 @@ package body Sem_Prag is
 
    begin
       Set_Analyzed (N);
+
+      --  Verify the syntax of pragma Global when SPARK checks are suppressed.
+      --  Semantic analysis is disabled in this mode.
+
+      if SPARK_Mode = Off then
+         Check_Global_List_Syntax (Items);
+         return;
+      end if;
 
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
       Subp_Id   := Defining_Entity (Subp_Decl);
@@ -2354,8 +2355,6 @@ package body Sem_Prag is
       else
          Spec_Id := Subp_Id;
       end if;
-
-      Items := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       --  There is nothing to be done for a null global list
 
@@ -2448,6 +2447,9 @@ package body Sem_Prag is
       procedure Analyze_Initialization_Item_With_Inputs (Item : Node_Id);
       --  Verify the legality of a single initialization item followed by a
       --  list of input items.
+
+      procedure Check_Initialization_List_Syntax (List : Node_Id);
+      --  Verify the syntax of initialization list List
 
       procedure Collect_States_And_Variables;
       --  Inspect the visible declarations of the related package and gather
@@ -2695,6 +2697,61 @@ package body Sem_Prag is
          end if;
       end Analyze_Initialization_Item_With_Inputs;
 
+      --------------------------------------
+      -- Check_Initialization_List_Syntax --
+      --------------------------------------
+
+      procedure Check_Initialization_List_Syntax (List : Node_Id) is
+         Init  : Node_Id;
+         Input : Node_Id;
+
+      begin
+         --  Null initialization list
+
+         if Nkind (List) = N_Null then
+            null;
+
+         elsif Nkind (List) = N_Aggregate then
+
+            --  Simple initialization items
+
+            if Present (Expressions (List)) then
+               Init := First (Expressions (List));
+               while Present (Init) loop
+                  Check_Item_Syntax (Init);
+                  Next (Init);
+               end loop;
+            end if;
+
+            --  Initialization items with a input lists
+
+            if Present (Component_Associations (List)) then
+               Init := First (Component_Associations (List));
+               while Present (Init) loop
+                  Check_Item_Syntax (First (Choices (Init)));
+
+                  if Nkind (Expression (Init)) = N_Aggregate
+                    and then Present (Expressions (Expression (Init)))
+                  then
+                     Input := First (Expressions (Expression (Init)));
+                     while Present (Input) loop
+                        Check_Item_Syntax (Input);
+                        Next (Input);
+                     end loop;
+
+                  else
+                     Error_Msg_N ("malformed initialization item", Init);
+                  end if;
+
+                  Next (Init);
+               end loop;
+            end if;
+
+         else
+            Error_Msg_N ("malformed initialization list", List);
+         end if;
+      end Check_Initialization_List_Syntax;
+
       ----------------------------------
       -- Collect_States_And_Variables --
       ----------------------------------
@@ -2741,6 +2798,13 @@ package body Sem_Prag is
       --  Nothing to do when the initialization list is empty
 
       if Nkind (Inits) = N_Null then
+         return;
+
+      --  Verify the syntax of pragma Initializes when SPARK checks are
+      --  suppressed. Semantic analysis is disabled in this mode.
+
+      elsif SPARK_Mode = Off then
+         Check_Initialization_List_Syntax (Inits);
          return;
       end if;
 
@@ -3402,6 +3466,14 @@ package body Sem_Prag is
          --  Assume that the pragma/option is illegal
 
          Legal := False;
+
+         --  Verify the syntax of the encapsulating state when SPARK check are
+         --  suppressed. Semantic analysis is disabled in this mode.
+
+         if SPARK_Mode = Off then
+            Check_Item_Syntax (State);
+            return;
+         end if;
 
          Analyze       (State);
          Resolve_State (State);
@@ -10037,6 +10109,9 @@ package body Sem_Prag is
             --  decorate a state abstraction entity and introduce it into the
             --  visibility chain.
 
+            procedure Check_State_Declaration_Syntax (State : Node_Id);
+            --  Verify the syntex of state declaration State
+
             ----------------------------
             -- Analyze_Abstract_State --
             ----------------------------
@@ -10542,6 +10617,49 @@ package body Sem_Prag is
                end if;
             end Analyze_Abstract_State;
 
+            ------------------------------------
+            -- Check_State_Declaration_Syntax --
+            ------------------------------------
+
+            procedure Check_State_Declaration_Syntax (State : Node_Id) is
+               Decl : Node_Id;
+
+            begin
+               --  Null abstract state
+
+               if Nkind (State) = N_Null then
+                  null;
+
+               --  Single state
+
+               elsif Nkind (State) = N_Identifier then
+                  null;
+
+               --  State with various options
+
+               elsif Nkind (State) = N_Extension_Aggregate then
+                  if Nkind (Ancestor_Part (State)) /= N_Identifier then
+                     Error_Msg_N
+                       ("state name must be an identifier",
+                        Ancestor_Part (State));
+                  end if;
+
+               --  Multiple states
+
+               elsif Nkind (State) = N_Aggregate
+                 and then Present (Expressions (State))
+               then
+                  Decl := First (Expressions (State));
+                  while Present (Decl) loop
+                     Check_State_Declaration_Syntax (Decl);
+                     Next (Decl);
+                  end loop;
+
+               else
+                  Error_Msg_N ("malformed abstract state", State);
+               end if;
+            end Check_State_Declaration_Syntax;
+
             --  Local variables
 
             Context : constant Node_Id := Parent (Parent (N));
@@ -10564,17 +10682,17 @@ package body Sem_Prag is
                return;
             end if;
 
-            Pack_Id := Defining_Entity (Context);
-            Add_Contract_Item (N, Pack_Id);
-
-            --  Verify the declaration order of pragmas Abstract_State and
-            --  Initializes.
-
-            Check_Declaration_Order
-              (First  => N,
-               Second => Get_Pragma (Pack_Id, Pragma_Initializes));
-
             State := Expression (Arg1);
+
+            --  Verify the syntax of pragma Abstract_State when SPARK checks
+            --  are suppressed. Semantic analysis is disabled in this mode.
+
+            if SPARK_Mode = Off then
+               Check_State_Declaration_Syntax (State);
+               return;
+            end if;
+
+            Pack_Id := Defining_Entity (Context);
 
             --  Multiple non-null abstract states appear as an aggregate
 
@@ -10591,6 +10709,17 @@ package body Sem_Prag is
             else
                Analyze_Abstract_State (State);
             end if;
+
+            --  Save the pragma for retrieval by other tools
+
+            Add_Contract_Item (N, Pack_Id);
+
+            --  Verify the declaration order of pragmas Abstract_State and
+            --  Initializes.
+
+            Check_Declaration_Order
+              (First  => N,
+               Second => Get_Pragma (Pack_Id, Pragma_Initializes));
          end Abstract_State;
 
          ------------
@@ -14891,15 +15020,18 @@ package body Sem_Prag is
             Add_Contract_Item (N, Pack_Id);
 
             --  Verify the declaration order of pragma Initial_Condition with
-            --  respect to pragmas Abstract_State and Initializes.
+            --  respect to pragmas Abstract_State and Initializes when SPARK
+            --  checks are enabled.
 
-            Check_Declaration_Order
-              (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
-               Second => N);
+            if SPARK_Mode /= Off then
+               Check_Declaration_Order
+                 (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
+                  Second => N);
 
-            Check_Declaration_Order
-              (First  => Get_Pragma (Pack_Id, Pragma_Initializes),
-               Second => N);
+               Check_Declaration_Order
+                 (First  => Get_Pragma (Pack_Id, Pragma_Initializes),
+                  Second => N);
+            end if;
          end Initial_Condition;
 
          ------------------------
@@ -15003,11 +15135,13 @@ package body Sem_Prag is
             Add_Contract_Item (N, Pack_Id);
 
             --  Verify the declaration order of pragmas Abstract_State and
-            --  Initializes.
+            --  Initializes when SPARK checks are enabled.
 
-            Check_Declaration_Order
-              (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
-               Second => N);
+            if SPARK_Mode /= Off then
+               Check_Declaration_Order
+                 (First  => Get_Pragma (Pack_Id, Pragma_Abstract_State),
+                  Second => N);
+            end if;
          end Initializes;
 
          ------------
@@ -18778,13 +18912,16 @@ package body Sem_Prag is
                Stmt := Prev (Stmt);
             end loop;
 
-            --  State refinement is allowed only when the corresponding package
-            --  declaration has a non-null pragma Abstract_State.
-
             Spec_Id := Corresponding_Spec (Context);
 
-            if No (Abstract_States (Spec_Id))
-              or else Has_Null_Abstract_State (Spec_Id)
+            --  State refinement is allowed only when the corresponding package
+            --  declaration has a non-null pragma Abstract_State. Refinement is
+            --  not enforced when SPARK checks are suppressed.
+
+            if SPARK_Mode /= Off
+              and then
+                (No (Abstract_States (Spec_Id))
+                   or else Has_Null_Abstract_State (Spec_Id))
             then
                Error_Msg_NE
                  ("useless refinement, package & does not define abstract "
@@ -22184,13 +22321,22 @@ package body Sem_Prag is
 
       Body_Decl : constant Node_Id := Parent (N);
       Errors    : constant Nat     := Serious_Errors_Detected;
+      Refs      : constant Node_Id :=
+                    Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
       Clause    : Node_Id;
       Deps      : Node_Id;
-      Refs      : Node_Id;
 
    --  Start of processing for Analyze_Refined_Depends_In_Decl_Part
 
    begin
+      --  Verify the syntax of pragma Refined_Depends when SPARK checks are
+      --  suppressed. Semantic analysis is disabled in this mode.
+
+      if SPARK_Mode = Off then
+         Check_Dependence_List_Syntax (Refs);
+         return;
+      end if;
+
       Spec_Id := Corresponding_Spec (Body_Decl);
       Depends := Get_Pragma (Spec_Id, Pragma_Depends);
 
@@ -22228,7 +22374,6 @@ package body Sem_Prag is
       --  is consistent with their role.
 
       Analyze_Depends_In_Decl_Part (N);
-      Refs := Get_Pragma_Arg (First (Pragma_Argument_Associations (N)));
 
       if Serious_Errors_Detected = Errors then
          if Nkind (Refs) = N_Null then
@@ -22950,6 +23095,14 @@ package body Sem_Prag is
    --  Start of processing for Analyze_Refined_Global_In_Decl_Part
 
    begin
+      --  Verify the syntax of pragma Refined_Global when SPARK checks are
+      --  suppressed. Semantic analysis is disabled in this mode.
+
+      if SPARK_Mode = Off then
+         Check_Global_List_Syntax (Items);
+         return;
+      end if;
+
       Global := Get_Pragma (Spec_Id, Pragma_Global);
 
       --  The subprogram declaration lacks pragma Global. This renders
@@ -23089,6 +23242,9 @@ package body Sem_Prag is
 
       procedure Analyze_Refinement_Clause (Clause : Node_Id);
       --  Perform full analysis of a single refinement clause
+
+      procedure Check_Refinement_List_Syntax (List : Node_Id);
+      --  Verify the syntax of refinement clause list List
 
       function Collect_Body_States (Pack_Id : Entity_Id) return Elist_Id;
       --  Gather the entities of all abstract states and variables declared in
@@ -23651,6 +23807,70 @@ package body Sem_Prag is
          Report_Unused_Constituents (Part_Of_Constits);
       end Analyze_Refinement_Clause;
 
+      ----------------------------------
+      -- Check_Refinement_List_Syntax --
+      ----------------------------------
+
+      procedure Check_Refinement_List_Syntax (List : Node_Id) is
+         procedure Check_Clause_Syntax (Clause : Node_Id);
+         --  Verify the syntax of state refinement clause Clause
+
+         -------------------------
+         -- Check_Clause_Syntax --
+         -------------------------
+
+         procedure Check_Clause_Syntax (Clause : Node_Id) is
+            Constits : constant Node_Id := Expression (Clause);
+            Constit  : Node_Id;
+
+         begin
+            --  State to be refined
+
+            Check_Item_Syntax (First (Choices (Clause)));
+
+            --  Multiple constituents
+
+            if Nkind (Constits) = N_Aggregate
+              and then Present (Expressions (Constits))
+            then
+               Constit := First (Expressions (Constits));
+               while Present (Constit) loop
+                  Check_Item_Syntax (Constit);
+                  Next (Constit);
+               end loop;
+
+            --  Single constituent
+
+            else
+               Check_Item_Syntax (Constits);
+            end if;
+         end Check_Clause_Syntax;
+
+         --  Local variables
+
+         Clause : Node_Id;
+
+      --  Start of processing for Check_Refinement_List_Syntax
+
+      begin
+         --  Multiple state refinement clauses
+
+         if Nkind (List) = N_Aggregate
+           and then Present (Component_Associations (List))
+         then
+            Clause := First (Component_Associations (List));
+            while Present (Clause) loop
+               Check_Clause_Syntax (Clause);
+               Next (Clause);
+            end loop;
+
+         --  Single state refinement clause
+
+         else
+            Check_Clause_Syntax (List);
+         end if;
+      end Check_Refinement_List_Syntax;
+
       -------------------------
       -- Collect_Body_States --
       -------------------------
@@ -23812,6 +24032,14 @@ package body Sem_Prag is
 
    begin
       Set_Analyzed (N);
+
+      --  Verify the syntax of pragma Refined_State when SPARK checks are
+      --  suppressed. Semantic analysis is disabled in this mode.
+
+      if SPARK_Mode = Off then
+         Check_Refinement_List_Syntax (Clauses);
+         return;
+      end if;
 
       Body_Id := Defining_Entity (Body_Decl);
       Spec_Id := Corresponding_Spec (Body_Decl);
@@ -23997,6 +24225,89 @@ package body Sem_Prag is
       end if;
    end Check_Applicable_Policy;
 
+   ----------------------------------
+   -- Check_Dependence_List_Syntax --
+   ----------------------------------
+
+   procedure Check_Dependence_List_Syntax (List : Node_Id) is
+      procedure Check_Clause_Syntax (Clause : Node_Id);
+      --  Verify the syntax of a dependency clause Clause
+
+      -------------------------
+      -- Check_Clause_Syntax --
+      -------------------------
+
+      procedure Check_Clause_Syntax (Clause : Node_Id) is
+         Input  : Node_Id;
+         Inputs : Node_Id;
+         Output : Node_Id;
+
+      begin
+         --  Output items
+
+         Output := First (Choices (Clause));
+         while Present (Output) loop
+            Check_Item_Syntax (Output);
+            Next (Output);
+         end loop;
+
+         Inputs := Expression (Clause);
+
+         --  A self-dependency appears as operator "+"
+
+         if Nkind (Inputs) = N_Op_Plus then
+            Inputs := Right_Opnd (Inputs);
+         end if;
+
+         --  Input items
+
+         if Nkind (Inputs) = N_Aggregate
+           and then Present (Expressions (Inputs))
+         then
+            Input := First (Expressions (Inputs));
+            while Present (Input) loop
+               Check_Item_Syntax (Input);
+               Next (Input);
+            end loop;
+
+         else
+            Error_Msg_N ("malformed input dependency list", Inputs);
+         end if;
+      end Check_Clause_Syntax;
+
+      --  Local variables
+
+      Clause : Node_Id;
+
+   --  Start of processing for Check_Dependence_List_Syntax
+
+   begin
+      --  Null dependency relation
+
+      if Nkind (List) = N_Null then
+         null;
+
+      --  Verify the syntax of a single or multiple dependency clauses
+
+      elsif Nkind (List) = N_Aggregate
+        and then Present (Component_Associations (List))
+      then
+         Clause := First (Component_Associations (List));
+         while Present (Clause) loop
+            if Has_Extra_Parentheses (Clause) then
+               null;
+            else
+               Check_Clause_Syntax (Clause);
+            end if;
+
+            Next (Clause);
+         end loop;
+
+      else
+         Error_Msg_N ("malformed dependency relation", List);
+      end if;
+   end Check_Dependence_List_Syntax;
+
    -------------------------------
    -- Check_External_Properties --
    -------------------------------
@@ -24047,6 +24358,88 @@ package body Sem_Prag is
             Item);
       end if;
    end Check_External_Properties;
+
+   ------------------------------
+   -- Check_Global_List_Syntax --
+   ------------------------------
+
+   procedure Check_Global_List_Syntax (List : Node_Id) is
+      Assoc : Node_Id;
+      Item  : Node_Id;
+
+   begin
+      --  Null global list
+
+      if Nkind (List) = N_Null then
+         null;
+
+      --  Single global item
+
+      elsif Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+      then
+         null;
+
+      elsif Nkind (List) = N_Aggregate then
+
+         --  Items in a simple global list
+
+         if Present (Expressions (List)) then
+            Item := First (Expressions (List));
+            while Present (Item) loop
+               Check_Item_Syntax (Item);
+               Next (Item);
+            end loop;
+
+         --  Items in a moded global list
+
+         elsif Present (Component_Associations (List)) then
+            Assoc := First (Component_Associations (List));
+            while Present (Assoc) loop
+               Check_Item_Syntax (First (Choices (Assoc)));
+               Check_Global_List_Syntax (Expression (Assoc));
+
+               Next (Assoc);
+            end loop;
+         end if;
+      else
+         Error_Msg_N ("malformed global list", List);
+      end if;
+   end Check_Global_List_Syntax;
+
+   -----------------------
+   -- Check_Item_Syntax --
+   -----------------------
+
+   procedure Check_Item_Syntax (Item : Node_Id) is
+   begin
+      --  Null can appear in various annotation lists to denote a missing or
+      --  optional relation.
+
+      if Nkind (Item) = N_Null then
+         null;
+
+      --  Formal parameter, state or variable nodes
+
+      elsif Nkind_In (Item, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+      then
+         null;
+
+      --  Attribute 'Result can appear in annotations to denote the outcome of
+      --  a function call.
+
+      elsif Is_Attribute_Result (Item) then
+         null;
+
+      --  Any other node cannot possibly denote a legal SPARK item
+
+      else
+         Error_Msg_N ("malformed item", Item);
+      end if;
+   end Check_Item_Syntax;
 
    ----------------
    -- Check_Kind --
@@ -24844,6 +25237,57 @@ package body Sem_Prag is
          return On;
       end if;
    end Get_SPARK_Mode_From_Pragma;
+
+   ---------------------------
+   -- Has_Extra_Parentheses --
+   ---------------------------
+
+   function Has_Extra_Parentheses (Clause : Node_Id) return Boolean is
+      Expr : Node_Id;
+
+   begin
+      --  The aggregate should not have an expression list because a clause
+      --  is always interpreted as a component association. The only way an
+      --  expression list can sneak in is by adding extra parentheses around
+      --  the individual clauses:
+
+      --    Depends  (Output => Input)   --  proper form
+      --    Depends ((Output => Input))  --  extra parentheses
+
+      --  Since the extra parentheses are not allowed by the syntax of the
+      --  pragma, flag them now to avoid emitting misleading errors down the
+      --  line.
+
+      if Nkind (Clause) = N_Aggregate
+        and then Present (Expressions (Clause))
+      then
+         Expr := First (Expressions (Clause));
+         while Present (Expr) loop
+
+            --  A dependency clause surrounded by extra parentheses appears
+            --  as an aggregate of component associations with an optional
+            --  Paren_Count set.
+
+            if Nkind (Expr) = N_Aggregate
+              and then Present (Component_Associations (Expr))
+            then
+               Error_Msg_N
+                 ("dependency clause contains extra parentheses", Expr);
+
+            --  Otherwise the expression is a malformed construct
+
+            else
+               Error_Msg_N ("malformed dependency clause", Expr);
+            end if;
+
+            Next (Expr);
+         end loop;
+
+         return True;
+      end if;
+
+      return False;
+   end Has_Extra_Parentheses;
 
    ----------------
    -- Initialize --
