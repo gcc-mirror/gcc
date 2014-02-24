@@ -2352,6 +2352,15 @@ package body Sem_Ch6 is
                      Set_Has_Pragma_Inline_Always (Subp);
                   end if;
 
+                  --  Prior to copying the subprogram body to create a template
+                  --  for it for subsequent inlining, remove the pragma from
+                  --  the current body so that the copy that will produce the
+                  --  new body will start from a completely unanalyzed tree.
+
+                  if Nkind (Parent (Prag)) = N_Subprogram_Body then
+                     Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+                  end if;
+
                   Spec := Subp;
                end;
             end if;

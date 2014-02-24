@@ -1,3 +1,27 @@
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* a-tags.adb, s-os_lib.adb: Minor reformatting.
+
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom-mingw.adb, g-sercom-linux.adb (Raise_Error): Include
+	strerror message, not just numeric errno value.
+
+2014-02-24  Doug Rupp  <rupp@adacore.com>
+
+	* raise-gcc.c (exception_class_eq): Make endian neutral.
+
+2014-02-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.ads, atree,adb (Copy_Separate_Tree): Remove Syntax_Only
+	flag, and reset Etype and Analyzed attributes unconditionally
+	when copying a tree that may be partly analyzed.
+	* freeze.adb: Change calls to Copy_Separate_Tree accordingly.
+	* sem_ch6.adb (Check_Inline_Pragma): If the Inline pragma appears
+	within a subprogram body and applies to it, remove it from the
+	body before making a copy of it, to prevent spurious errors when
+	analyzing the copied body.
+
 2014-02-24  Thomas Quinot  <quinot@adacore.com>
 
 	* s-os_lib.adb (Errno_Message): Do not depend on Integer'Image.

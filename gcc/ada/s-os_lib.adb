@@ -932,7 +932,8 @@ package body System.OS_Lib is
             declare
                Val   : Integer;
                First : Integer;
-               Buf   : String (1 .. 20);
+
+               Buf : String (1 .. 20);
                --  Buffer large enough to hold image of largest Integer values
 
             begin
