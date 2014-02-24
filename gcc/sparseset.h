@@ -177,7 +177,7 @@ sparseset_pop (sparseset s)
   gcc_checking_assert (mem != 0);
 
   s->members = mem - 1;
-  return s->dense[mem];
+  return s->dense[s->members];
 }
 
 static inline void
