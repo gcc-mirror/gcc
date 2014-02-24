@@ -129,7 +129,7 @@ package body GNAT.Serial_Communications is
          dwFlagsAndAttributes  => 0,
          hTemplateFile         => 0);
 
-      if Port.H.all = 0 then
+      if Port.H.all = Port_Data (INVALID_HANDLE_VALUE) then
          Raise_Error ("cannot open com port");
       end if;
    end Open;
