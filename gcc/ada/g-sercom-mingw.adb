@@ -41,6 +41,8 @@ with System.OS_Constants;
 with System.Win32;         use System.Win32;
 with System.Win32.Ext;     use System.Win32.Ext;
 
+with GNAT.OS_Lib;
+
 package body GNAT.Serial_Communications is
 
    package OSC renames System.OS_Constants;
@@ -137,7 +139,10 @@ package body GNAT.Serial_Communications is
 
    procedure Raise_Error (Message : String; Error : DWORD := GetLastError) is
    begin
-      raise Serial_Error with Message & " (" & DWORD'Image (Error) & ')';
+      raise Serial_Error with Message
+        & (if Error /= 0
+           then " (" & GNAT.OS_Lib.Errno_Message (Err => Integer (Error)) & ')'
+           else "");
    end Raise_Error;
 
    ----------

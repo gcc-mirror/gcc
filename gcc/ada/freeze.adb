@@ -3426,14 +3426,12 @@ package body Freeze is
             --  Note on calls to Copy_Separate_Tree. The trees we are copying
             --  here are fully analyzed, but we definitely want fully syntactic
             --  unanalyzed trees in the body we construct, so that the analysis
-            --  generates the right visibility. So this is a case in which we
-            --  set Syntax_Only. See spec of Copy_Separate_Tree for details on
-            --  the use of this flag.
+            --  generates the right visibility.
 
             --  Acquire copy of Inline pragma
 
             Iprag :=
-              Copy_Separate_Tree (Import_Pragma (E), Syntax_Only => True);
+              Copy_Separate_Tree (Import_Pragma (E));
 
             --  Fix up spec to be not imported any more
 
@@ -3477,11 +3475,11 @@ package body Freeze is
             Bod :=
               Make_Subprogram_Body (Loc,
                 Specification              =>
-                  Copy_Separate_Tree (Spec, Syntax_Only => True),
+                  Copy_Separate_Tree (Spec),
                 Declarations               => New_List (
                   Make_Subprogram_Declaration (Loc,
                     Specification =>
-                      Copy_Separate_Tree (Spec, Syntax_Only => True)),
+                      Copy_Separate_Tree (Spec)),
                     Iprag),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,

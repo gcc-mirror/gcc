@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2012, AdaCore                      --
+--                    Copyright (C) 2007-2013, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,7 +132,10 @@ package body GNAT.Serial_Communications is
 
    procedure Raise_Error (Message : String; Error : Integer := Errno) is
    begin
-      raise Serial_Error with Message & " (" & Integer'Image (Error) & ')';
+      raise Serial_Error with Message
+        & (if Error /= 0
+           then " (" & Errno_Message (Err => Error) & ')'
+           else "");
    end Raise_Error;
 
    ----------

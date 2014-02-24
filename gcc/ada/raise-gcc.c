@@ -84,8 +84,13 @@ extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 /* The known and handled exception classes.  */
 
+#ifdef __ARM_EABI_UNWINDER__
+#define CXX_EXCEPTION_CLASS "GNUCC++"
+#define GNAT_EXCEPTION_CLASS "GNU-Ada"
+#else
 #define CXX_EXCEPTION_CLASS 0x474e5543432b2b00ULL
 #define GNAT_EXCEPTION_CLASS 0x474e552d41646100ULL
+#endif
 
 /* Structure of a C++ exception, represented as a C structure...  See
    unwind-cxx.h for the full definition.  */
@@ -863,16 +868,10 @@ extern struct Exception_Data Non_Ada_Error;
 /* Return true iff the exception class of EXCEPT is EC.  */
 
 static int
-exception_class_eq (const _GNAT_Exception *except, unsigned long long ec)
+exception_class_eq (const _GNAT_Exception *except, _Unwind_Exception_Class ec)
 {
 #ifdef __ARM_EABI_UNWINDER__
-  union {
-    char exception_class[8];
-    unsigned long long ec;
-  } u;
-
-  u.ec = ec;
-  return memcmp (except->common.exception_class, u.exception_class, 8) == 0;
+  return memcmp (except->common.exception_class, ec, 8) == 0;
 #else
   return except->common.exception_class == ec;
 #endif
