@@ -1067,7 +1067,6 @@ haifa_find_rgns (void)
 	BLOCK_TO_BB (bb->index) = 0;
       }
 
-  nr_regions_initial = nr_regions;
   free (max_hdr);
   free (degree);
   free (stack);
@@ -2997,10 +2996,10 @@ schedule_region (int rgn)
 
   /* Do not support register pressure sensitive scheduling for the new regions
      as we don't update the liveness info for them.  */
-  if (rgn >= nr_regions_initial)
+  if (sched_pressure != SCHED_PRESSURE_NONE
+      && rgn >= nr_regions_initial)
     {
-      if (sched_pressure != SCHED_PRESSURE_NONE)
-	free_global_sched_pressure_data ();
+      free_global_sched_pressure_data ();
       sched_pressure = SCHED_PRESSURE_NONE;
     }
 
@@ -3166,6 +3165,7 @@ sched_rgn_init (bool single_blocks_p)
 
   RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
 			     RGN_NR_BLOCKS (nr_regions - 1));
+  nr_regions_initial = nr_regions;
 }
 
 /* Free data structures for region scheduling.  */
