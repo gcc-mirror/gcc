@@ -257,7 +257,7 @@ package body Einfo is
 
    --    Contract                        Node34
 
-   --    (unused)                        Node35
+   --    Import_Pragma                   Node35
 
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
@@ -1784,6 +1784,12 @@ package body Einfo is
    begin
       return Node4 (Id);
    end Homonym;
+
+   function Import_Pragma (Id : E) return E is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Node35 (Id);
+   end Import_Pragma;
 
    function Interface_Alias (Id : E) return E is
    begin
@@ -4482,6 +4488,12 @@ package body Einfo is
       pragma Assert (Id /= V);
       Set_Node4 (Id, V);
    end Set_Homonym;
+
+   procedure Set_Import_Pragma (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_Node35 (Id, V);
+   end Set_Import_Pragma;
 
    procedure Set_Interface_Alias (Id : E; V : E) is
    begin
@@ -9554,6 +9566,8 @@ package body Einfo is
    procedure Write_Field35_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when Subprogram_Kind                              =>
+            Write_Str ("Import_Pragma");
          when others                                       =>
             Write_Str ("Field35??");
       end case;

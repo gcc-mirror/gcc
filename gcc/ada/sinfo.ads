@@ -1278,13 +1278,13 @@ package Sinfo is
    --    ali file.
 
    --  Generalized_Indexing (Node4-Sem)
-   --  Generalized_Indexing is set in Indexed_Component nodes that are Ada 2012
-   --  container indexing operations. The value of the attribute is a function
-   --  call (possibly dereferenced) that corresponds to the proper expansion
-   --  of the source indexing operation. Before expansion, the source node
-   --  is rewritten as the resolved generalized indexing. In ASIS mode, the
-   --  expansion does not take place, so that the source is preserved and
-   --  properly annotated with types.
+   --    Present in N_Indexed_Component nodes. Set for Indexed_Component nodes
+   --    that are Ada 2012 container indexing operations. The value of the
+   --    attribute is a function call (possibly dereferenced) that corresponds
+   --    to the proper expansion of the source indexing operation. Before
+   --    expansion, the source node is rewritten as the resolved generalized
+   --    indexing. In ASIS mode, the expansion does not take place, so that
+   --    the source is preserved and properly annotated with types.
 
    --  Generic_Parent (Node5-Sem)
    --    Generic_Parent is defined on declaration nodes that are instances. The
@@ -8924,6 +8924,7 @@ package Sinfo is
 
    function Generalized_Indexing
      (N : Node_Id) return Node_Id;    -- Node4
+
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -10933,7 +10934,7 @@ package Sinfo is
        (1 => True,    --  Expressions (List1)
         2 => False,   --  unused
         3 => True,    --  Prefix (Node3)
-        4 => False,    --  Generalized_Indexing (Node4-Sem)
+        4 => False,   --  Generalized_Indexing (Node4-Sem)
         5 => False),  --  Etype (Node5-Sem)
 
      N_Slice =>

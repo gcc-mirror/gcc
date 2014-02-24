@@ -9286,14 +9286,21 @@ The @code{Update} attribute creates a copy of an array or record value
 with one or more modified components. The syntax is:
 
 @smallexample @c ada
-PREFIX'Update (AGGREGATE)
+PREFIX'Update ( RECORD_COMPONENT_ASSOCIATION_LIST )
+PREFIX'Update ( ARRAY_COMPONENT_ASSOCIATION @{, ARRAY_COMPONENT_ASSOCIATION @} )
+PREFIX'Update ( MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION
+                @{, MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION @} )
+
+MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION ::= INDEX_EXPRESSION_LIST_LIST => EXPRESSION
+INDEX_EXPRESSION_LIST_LIST                   ::= INDEX_EXPRESSION_LIST @{| INDEX_EXPRESSION_LIST @}
+INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION @{, EXPRESSION @} )
 @end smallexample
 
 @noindent
 where @code{PREFIX} is the name of an array or record object, and
-@code{AGGREGATE} is a named aggregate that does not contain an @code{others}
+the association list in parentheses does not contain an @code{others}
 choice. The effect is to yield a copy of the array or record value which
-is unchanged apart from the components mentioned in the aggregate, which
+is unchanged apart from the components mentioned in the association list, which
 are changed to the indicated value. The original value of the array or
 record value is not affected. For example:
 
@@ -9301,7 +9308,7 @@ record value is not affected. For example:
 type Arr is Array (1 .. 5) of Integer;
 ...
 Avar1 : Arr := (1,2,3,4,5);
-Avar2 : Arr := Avar1'Update ((2 => 10, 3 .. 4 => 20));
+Avar2 : Arr := Avar1'Update (2 => 10, 3 .. 4 => 20);
 @end smallexample
 
 @noindent
@@ -9312,7 +9319,7 @@ begin unmodified. Similarly:
 type Rec is A, B, C : Integer;
 ...
 Rvar1 : Rec := (A => 1, B => 2, C => 3);
-Rvar2 : Rec := Rvar1'Update ((B => 20));
+Rvar2 : Rec := Rvar1'Update (B => 20);
 @end smallexample
 
 @noindent
@@ -9322,7 +9329,7 @@ Note that the value of the attribute reference is computed
 completely before it is used. This means that if you write:
 
 @smallexample @c ada
-Avar1 := Avar1'Update ((1 => 10, 2 => Function_Call));
+Avar1 := Avar1'Update (1 => 10, 2 => Function_Call);
 @end smallexample
 
 @noindent
@@ -9338,7 +9345,7 @@ The accessibility level of an Update attribute result object is defined
 as for an aggregate.
 
 In the record case, no component can be mentioned more than once. In
-the array case, two overlapping ranges can appear in the aggregate,
+the array case, two overlapping ranges can appear in the association list,
 in which case the modifications are processed left to right.
 
 Multi-dimensional arrays can be modified, as shown by this example:
@@ -9346,7 +9353,7 @@ Multi-dimensional arrays can be modified, as shown by this example:
 @smallexample @c ada
 A : array (1 .. 10, 1 .. 10) of Integer;
 ..
-A := A'Update (1 => (2 => 20), 3 => (4 => 30));
+A := A'Update ((1, 2) => 20, (3, 4) => 30);
 @end smallexample
 
 @noindent

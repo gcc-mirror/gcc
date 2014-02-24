@@ -1505,8 +1505,8 @@ package body Sem_Ch12 is
                      Check_Overloaded_Formal_Subprogram (Formal);
                   end if;
 
-                  --  If there is no corresponding actual, this may be case of
-                  --  partial parameterization, or else the formal has a
+                  --  If there is no corresponding actual, this may be case
+                  --  of partial parameterization, or else the formal has a
                   --  default or a box.
 
                   if No (Match) and then Partial_Parameterization then
