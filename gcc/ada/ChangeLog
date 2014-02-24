@@ -1,3 +1,19 @@
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Move the check concerning
+	the use of volatile objects as global items in a function to
+	the variable related checks section.
+	* sem_util.adb (Async_Readers_Enabled): Directly call
+	Has_Enabled_Property.
+	(Async_Writers_Enabled): Directly call Has_Enabled_Property.
+	(Effective_Reads_Enabled): Directly call Has_Enabled_Property.
+	(Effective_Writes_Enabled): Directly call Has_Enabled_Property.
+	(Has_Enabled_Property): Rename formal parameter State_Id to Item_Id.
+	Update the comment on usage. State_Has_Enabled_Property how handles
+	the original logic of the routine. Add processing for variables.
+	(State_Has_Enabled_Property): New routine.
+	(Variable_Has_Enabled_Property): New routine.
+
 2014-02-24  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads, sem_ch12.adb, sem_res.adb, sem_ch4.adb, par-ch12.adb:

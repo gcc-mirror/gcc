@@ -116,11 +116,11 @@ package body Sem_Util is
    --  have a default.
 
    function Has_Enabled_Property
-     (State_Id : Node_Id;
+     (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean;
    --  Subsidiary to routines Async_xxx_Enabled and Effective_xxx_Enabled.
-   --  Determine whether an abstract state denoted by its entity State_Id has
-   --  enabled property Property.
+   --  Determine whether an abstract state or a variable denoted by entity
+   --  Item_Id has enabled property Property.
 
    function Has_Null_Extension (T : Entity_Id) return Boolean;
    --  T is a derived tagged type. Check whether the type extension is null.
@@ -575,12 +575,7 @@ package body Sem_Util is
 
    function Async_Readers_Enabled (Id : Entity_Id) return Boolean is
    begin
-      if Ekind (Id) = E_Abstract_State then
-         return Has_Enabled_Property (Id, Name_Async_Readers);
-
-      else pragma Assert (Ekind (Id) = E_Variable);
-         return Present (Get_Pragma (Id, Pragma_Async_Readers));
-      end if;
+      return Has_Enabled_Property (Id, Name_Async_Readers);
    end Async_Readers_Enabled;
 
    ---------------------------
@@ -589,12 +584,7 @@ package body Sem_Util is
 
    function Async_Writers_Enabled (Id : Entity_Id) return Boolean is
    begin
-      if Ekind (Id) = E_Abstract_State then
-         return Has_Enabled_Property (Id, Name_Async_Writers);
-
-      else pragma Assert (Ekind (Id) = E_Variable);
-         return Present (Get_Pragma (Id, Pragma_Async_Writers));
-      end if;
+      return Has_Enabled_Property (Id, Name_Async_Writers);
    end Async_Writers_Enabled;
 
    --------------------------------------
@@ -4737,12 +4727,7 @@ package body Sem_Util is
 
    function Effective_Reads_Enabled (Id : Entity_Id) return Boolean is
    begin
-      if Ekind (Id) = E_Abstract_State then
-         return Has_Enabled_Property (Id, Name_Effective_Reads);
-
-      else pragma Assert (Ekind (Id) = E_Variable);
-         return Present (Get_Pragma (Id, Pragma_Effective_Reads));
-      end if;
+      return Has_Enabled_Property (Id, Name_Effective_Reads);
    end Effective_Reads_Enabled;
 
    ------------------------------
@@ -4751,12 +4736,7 @@ package body Sem_Util is
 
    function Effective_Writes_Enabled (Id : Entity_Id) return Boolean is
    begin
-      if Ekind (Id) = E_Abstract_State then
-         return Has_Enabled_Property (Id, Name_Effective_Writes);
-
-      else pragma Assert (Ekind (Id) = E_Variable);
-         return Present (Get_Pragma (Id, Pragma_Effective_Writes));
-      end if;
+      return Has_Enabled_Property (Id, Name_Effective_Writes);
    end Effective_Writes_Enabled;
 
    ------------------------------
@@ -7292,89 +7272,173 @@ package body Sem_Util is
    --------------------------
 
    function Has_Enabled_Property
-     (State_Id : Node_Id;
+     (Item_Id  : Entity_Id;
       Property : Name_Id) return Boolean
    is
-      Decl     : constant Node_Id := Parent (State_Id);
-      Opt      : Node_Id;
-      Opt_Nam  : Node_Id;
-      Prop     : Node_Id;
-      Prop_Nam : Node_Id;
-      Props    : Node_Id;
+      function State_Has_Enabled_Property return Boolean;
+      --  Determine whether a state denoted by Item_Id has the property
 
-   begin
-      --  The declaration of an external abstract state appears as an extension
-      --  aggregate. If this is not the case, properties can never be set.
+      function Variable_Has_Enabled_Property return Boolean;
+      --  Determine whether a variable denoted by Item_Id has the property
 
-      if Nkind (Decl) /= N_Extension_Aggregate then
+      --------------------------------
+      -- State_Has_Enabled_Property --
+      --------------------------------
+
+      function State_Has_Enabled_Property return Boolean is
+         Decl     : constant Node_Id := Parent (Item_Id);
+         Opt      : Node_Id;
+         Opt_Nam  : Node_Id;
+         Prop     : Node_Id;
+         Prop_Nam : Node_Id;
+         Props    : Node_Id;
+
+      begin
+         --  The declaration of an external abstract state appears as an
+         --  extension aggregate. If this is not the case, properties can never
+         --  be set.
+
+         if Nkind (Decl) /= N_Extension_Aggregate then
+            return False;
+         end if;
+
+         --  When External appears as a simple option, it automatically enables
+         --  all properties.
+
+         Opt := First (Expressions (Decl));
+         while Present (Opt) loop
+            if Nkind (Opt) = N_Identifier
+              and then Chars (Opt) = Name_External
+            then
+               return True;
+            end if;
+
+            Next (Opt);
+         end loop;
+
+         --  When External specifies particular properties, inspect those and
+         --  find the desired one (if any).
+
+         Opt := First (Component_Associations (Decl));
+         while Present (Opt) loop
+            Opt_Nam := First (Choices (Opt));
+
+            if Nkind (Opt_Nam) = N_Identifier
+              and then Chars (Opt_Nam) = Name_External
+            then
+               Props := Expression (Opt);
+
+               --  Multiple properties appear as an aggregate
+
+               if Nkind (Props) = N_Aggregate then
+
+                  --  Simple property form
+
+                  Prop := First (Expressions (Props));
+                  while Present (Prop) loop
+                     if Chars (Prop) = Property then
+                        return True;
+                     end if;
+
+                     Next (Prop);
+                  end loop;
+
+                  --  Property with expression form
+
+                  Prop := First (Component_Associations (Props));
+                  while Present (Prop) loop
+                     Prop_Nam := First (Choices (Prop));
+
+                     if Chars (Prop_Nam) = Property then
+                        return Is_True (Expr_Value (Expression (Prop)));
+                     end if;
+
+                     Next (Prop);
+                  end loop;
+
+               --  Single property
+
+               else
+                  return Chars (Props) = Property;
+               end if;
+            end if;
+
+            Next (Opt);
+         end loop;
+
          return False;
-      end if;
+      end State_Has_Enabled_Property;
 
-      --  When External appears as a simple option, it automatically enables
-      --  all properties.
+      -----------------------------------
+      -- Variable_Has_Enabled_Property --
+      -----------------------------------
 
-      Opt := First (Expressions (Decl));
-      while Present (Opt) loop
-         if Nkind (Opt) = N_Identifier
-           and then Chars (Opt) = Name_External
+      function Variable_Has_Enabled_Property return Boolean is
+         AR : constant Node_Id :=
+                Get_Pragma (Item_Id, Pragma_Async_Readers);
+         AW : constant Node_Id :=
+                Get_Pragma (Item_Id, Pragma_Async_Writers);
+         ER : constant Node_Id :=
+                Get_Pragma (Item_Id, Pragma_Effective_Reads);
+         EW : constant Node_Id :=
+                Get_Pragma (Item_Id, Pragma_Effective_Writes);
+      begin
+         --  A non-volatile object can never possess external properties
+
+         if not Is_SPARK_Volatile_Object (Item_Id) then
+            return False;
+
+         --  External properties related to variables come in two flavors -
+         --  explicit and implicit. The explicit case is characterized by the
+         --  presence of a property pragma while the implicit case lacks all
+         --  such pragmas.
+
+         elsif Property = Name_Async_Readers
+           and then
+             (Present (AR)
+                or else
+             (No (AW) and then No (ER) and then No (EW)))
          then
             return True;
-         end if;
 
-         Next (Opt);
-      end loop;
-
-      --  When External specifies particular properties, inspect those and
-      --  find the desired one (if any).
-
-      Opt := First (Component_Associations (Decl));
-      while Present (Opt) loop
-         Opt_Nam := First (Choices (Opt));
-
-         if Nkind (Opt_Nam) = N_Identifier
-           and then Chars (Opt_Nam) = Name_External
+         elsif Property = Name_Async_Writers
+           and then
+             (Present (AW)
+                or else
+             (No (AR) and then No (ER) and then No (EW)))
          then
-            Props := Expression (Opt);
+            return True;
 
-            --  Multiple properties appear as an aggregate
+         elsif Property = Name_Effective_Reads
+           and then
+             (Present (ER)
+                or else
+             (No (AR) and then No (AW) and then No (EW)))
+         then
+            return True;
 
-            if Nkind (Props) = N_Aggregate then
+         elsif Property = Name_Effective_Writes
+           and then
+             (Present (EW)
+                or else
+             (No (AR) and then No (AW) and then No (ER)))
+         then
+            return True;
 
-               --  Simple property form
-
-               Prop := First (Expressions (Props));
-               while Present (Prop) loop
-                  if Chars (Prop) = Property then
-                     return True;
-                  end if;
-
-                  Next (Prop);
-               end loop;
-
-               --  Property with expression form
-
-               Prop := First (Component_Associations (Props));
-               while Present (Prop) loop
-                  Prop_Nam := First (Choices (Prop));
-
-                  if Chars (Prop_Nam) = Property then
-                     return Is_True (Expr_Value (Expression (Prop)));
-                  end if;
-
-                  Next (Prop);
-               end loop;
-
-            --  Single property
-
-            else
-               return Chars (Props) = Property;
-            end if;
+         else
+            return False;
          end if;
+      end Variable_Has_Enabled_Property;
 
-         Next (Opt);
-      end loop;
+   --  Start of processing for Has_Enabled_Property
 
-      return False;
+   begin
+      if Ekind (Item_Id) = E_Abstract_State then
+         return State_Has_Enabled_Property;
+
+      else pragma Assert (Ekind (Item_Id) = E_Variable);
+         return Variable_Has_Enabled_Property;
+      end if;
    end Has_Enabled_Property;
 
    --------------------
