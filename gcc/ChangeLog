@@ -1,3 +1,9 @@
+2014-02-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60266
+	* ipa-cp.c (propagate_constants_accross_call): Bail out early if
+	there are no parameter descriptors.
+
 2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60268
