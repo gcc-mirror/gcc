@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
+with System.CRTL;             use System.CRTL;
 with System.HTable;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.WCh_Con;          use System.WCh_Con;
@@ -55,10 +56,6 @@ package body Ada.Tags is
    --  Given a tag returns True if it has the signature of a primary dispatch
    --  table.  This is Inline_Always since it is called from other Inline_
    --  Always subprograms where we want no out of line code to be generated.
-
-   function Length (Str : Cstring_Ptr) return Natural;
-   --  Length of string represented by the given pointer (treating the string
-   --  as a C-style string, which is Nul terminated).
 
    function OSD (T : Tag) return Object_Specific_Data_Ptr;
    --  Ada 2005 (AI-251): Given a pointer T to a secondary dispatch table,
@@ -273,10 +270,11 @@ package body Ada.Tags is
 
       function Hash (F : System.Address) return HTable_Headers is
          function H is new System.HTable.Hash (HTable_Headers);
-         Str : constant Cstring_Ptr    := To_Cstring_Ptr (F);
-         Res : constant HTable_Headers := H (Str (1 .. Length (Str)));
+         Str : String (1 .. Integer (strlen (F)));
+         for Str'Address use F;
+         pragma Import (Ada, Str);
       begin
-         return Res;
+         return H (Str);
       end Hash;
 
       -----------------
@@ -310,7 +308,8 @@ package body Ada.Tags is
    procedure Check_TSD (TSD : Type_Specific_Data_Ptr) is
       T : Tag;
 
-      E_Tag_Len : constant Integer := Length (TSD.External_Tag);
+      E_Tag_Len : constant Integer :=
+        Integer (strlen (TSD.External_Tag.all'Address));
       E_Tag     : String (1 .. E_Tag_Len);
       for E_Tag'Address use TSD.External_Tag.all'Address;
       pragma Import (Ada, E_Tag);
@@ -487,7 +486,7 @@ package body Ada.Tags is
       TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
       TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       Result  := TSD.Expanded_Name;
-      return Result (1 .. Length (Result));
+      return Result (1 .. Integer (strlen  (Result.all'Address)));
    end Expanded_Name;
 
    ------------------
@@ -507,7 +506,7 @@ package body Ada.Tags is
       TSD_Ptr := To_Addr_Ptr (To_Address (T) - DT_Typeinfo_Ptr_Size);
       TSD     := To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       Result  := TSD.External_Tag;
-      return Result (1 .. Length (Result));
+      return Result (1 .. Integer (strlen (Result.all'Address)));
    end External_Tag;
 
    ---------------------
@@ -730,24 +729,6 @@ package body Ada.Tags is
       return CW_Membership (Descendant, Ancestor)
         and then D_TSD.Access_Level = A_TSD.Access_Level;
    end Is_Descendant_At_Same_Level;
-
-   ------------
-   -- Length --
-   ------------
-
-   --  Should this be reimplemented using the strlen GCC builtin???
-
-   function Length (Str : Cstring_Ptr) return Natural is
-      Len : Integer;
-
-   begin
-      Len := 1;
-      while Str (Len) /= ASCII.NUL loop
-         Len := Len + 1;
-      end loop;
-
-      return Len - 1;
-   end Length;
 
    -------------------
    -- Offset_To_Top --

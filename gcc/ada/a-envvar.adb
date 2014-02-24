@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;
+with System.CRTL;
 with Interfaces.C.Strings;
 with Ada.Unchecked_Deallocation;
 
@@ -188,13 +188,10 @@ package body Ada.Environment_Variables is
    -----------
 
    function Value (Name : String) return String is
-      use System;
+      use System, System.CRTL;
 
       procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
       pragma Import (C, Get_Env_Value_Ptr, "__gnat_getenv");
-
-      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
-      pragma Import (C, Strncpy, "strncpy");
 
       Env_Value_Ptr    : aliased Address;
       Env_Value_Length : aliased Integer;
@@ -215,7 +212,7 @@ package body Ada.Environment_Variables is
          declare
             Result : aliased String (1 .. Env_Value_Length);
          begin
-            Strncpy (Result'Address, Env_Value_Ptr, Env_Value_Length);
+            strncpy (Result'Address, Env_Value_Ptr, size_t (Env_Value_Length));
             return Result;
          end;
       else
