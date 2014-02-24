@@ -1,3 +1,8 @@
+2014-02-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch5.adb, sem_aux.ads, sem_ch12.adb, gnat_ugn.texi, par.adb,
+	par-ch12.adb: Change spelling 'parametrization' to 'parameterization'.
+
 2014-02-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads, sinfo.adb: New attribute Generalized_Indexing, for

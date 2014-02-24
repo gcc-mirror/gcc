@@ -282,7 +282,7 @@ package Sem_Aux is
    function Is_Generic_Formal (E : Entity_Id) return Boolean;
    --  Determine whether E is a generic formal parameter. In particular this is
    --  used to set the visibility of generic formals of a generic package
-   --  declared with a box or with partial parametrization.
+   --  declared with a box or with partial parameterization.
 
    function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Determines if given entity is an unconstrained array

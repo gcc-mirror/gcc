@@ -2525,7 +2525,7 @@ package body Sem_Ch5 is
 
                --  Suppress the warning if inside a generic template or
                --  instance, since in practice they tend to be dubious in these
-               --  cases since they can result from intended parametrization.
+               --  cases since they can result from intended parameterization.
 
                if not Inside_A_Generic and then not In_Instance then
 
