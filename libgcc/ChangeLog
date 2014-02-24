@@ -1,3 +1,9 @@
+2014-02-24  Walter Lee  <walt@tilera.com>
+
+	* config.host: Support "tilegx*" and "tilepro*" triplets.
+	* config/tilegx/sfp-machine32.h (__BYTE_ORDER): Handle big endian.
+	* config/tilegx/sfp-machine64.h (__BYTE_ORDER): Handle big endian.
+
 2014-02-20  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

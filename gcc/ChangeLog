@@ -1,3 +1,61 @@
+2014-02-24  Walter Lee  <walt@tilera.com>
+
+	* config.gcc (tilepro-*-*): Change to tilepro*-*-*.
+	(tilegx-*-linux*): Change to tilegx*-*-linux*; Support tilegxbe
+	triplet.
+	* common/config/tilegx/tilegx-common.c
+	(TARGET_DEFAULT_TARGET_FLAGS): Define.
+	* config/tilegx/linux.h (ASM_SPEC): Add endian_spec.
+	(LINK_SPEC): Ditto.
+	* config/tilegx/sync.md (atomic_test_and_set): Handle big endian.
+	* config/tilegx/tilegx.c (tilegx_return_in_msb): New.
+	(tilegx_gimplify_va_arg_expr): Handle big endian.
+	(tilegx_expand_unaligned_load): Ditto.
+	(tilegx_expand_unaligned_store): Ditto.
+	(TARGET_RETURN_IN_MSB): New.
+	* config/tilegx/tilegx.h (TARGET_DEFAULT): New.
+	(TARGET_ENDIAN_DEFAULT): New.
+	(TARGET_BIG_ENDIAN): Handle big endian.
+	(BYTES_BIG_ENDIAN): Ditto.
+	(WORDS_BIG_ENDIAN): Ditto.
+	(FLOAT_WORDS_BIG_ENDIAN): Ditto.
+	(ENDIAN_SPEC): New.
+	(EXTRA_SPECS): New.
+	* config/tilegx/tilegx.md (extv): Handle big endian.
+	(extzv): Ditto.
+	(insn_st<n>): Ditto.
+	(insn_st<n>_add<bitsuffix>): Ditto.
+	(insn_stnt<n>): Ditto.
+	(insn_stnt<n>_add<bitsuffix>):Ditto.
+	(vec_interleave_highv8qi): Handle big endian.
+	(vec_interleave_highv8qi_be): New.
+	(vec_interleave_highv8qi_le): New.
+	(insn_v1int_h): Handle big endian.
+	(vec_interleave_lowv8qi): Handle big endian.
+	(vec_interleave_lowv8qi_be): New.
+	(vec_interleave_lowv8qi_le): New.
+	(insn_v1int_l): Handle big endian.
+	(vec_interleave_highv4hi): Handle big endian.
+	(vec_interleave_highv4hi_be): New.
+	(vec_interleave_highv4hi_le): New.
+	(insn_v2int_h): Handle big endian.
+	(vec_interleave_lowv4hi): Handle big endian.
+	(vec_interleave_lowv4hi_be): New.
+	(vec_interleave_lowv4hi_le): New.
+	(insn_v2int_l): Handle big endian.
+	(vec_interleave_highv2si): Handle big endian.
+	(vec_interleave_highv2si_be): New.
+	(vec_interleave_highv2si_le): New.
+	(insn_v4int_h): Handle big endian.
+	(vec_interleave_lowv2si): Handle big endian.
+	(vec_interleave_lowv2si_be): New.
+	(vec_interleave_lowv2si_le): New.
+	(insn_v4int_l): Handle big endian.
+	* config/tilegx/tilegx.opt (mbig-endian): New option.
+	(mlittle-endian): New option.
+	* doc/install.texi: Document tilegxbe-linux.
+	* doc/invoke.texi: Document -mbig-endian and -mlittle-endian.
+
 2014-02-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/60266

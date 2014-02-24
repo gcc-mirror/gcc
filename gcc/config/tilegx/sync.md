@@ -177,8 +177,7 @@
    (match_operand:SI 2 "const_int_operand" "")]         ;; model
   ""
 {
-  rtx addr, aligned_addr, aligned_mem, offset, word, shmt;
-  rtx tmp0, tmp1;
+  rtx addr, aligned_addr, aligned_mem, offset, word, shmt, tmp;
   rtx result = operands[0];
   rtx mem = operands[1];
   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
@@ -191,27 +190,38 @@
   aligned_mem = change_address (mem, DImode, aligned_addr);
   set_mem_alias_set (aligned_mem, 0);
 
+  tmp = gen_reg_rtx (Pmode);
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_move_insn (gen_lowpart (DImode, tmp),
+                      gen_rtx_NOT (DImode, gen_lowpart (DImode, addr)));
+    }
+  else
+    {
+      tmp = addr;
+    }
+
   offset = gen_reg_rtx (DImode);
-  emit_move_insn (offset, gen_rtx_AND (DImode, gen_lowpart (DImode, addr),
+  emit_move_insn (offset, gen_rtx_AND (DImode, gen_lowpart (DImode, tmp),
                                        GEN_INT (7)));
 
-  tmp0 = gen_reg_rtx (DImode);
-  emit_move_insn (tmp0, GEN_INT (1));
+  tmp = gen_reg_rtx (DImode);
+  emit_move_insn (tmp, GEN_INT (1));
 
   shmt = gen_reg_rtx (DImode);
   emit_move_insn (shmt, gen_rtx_ASHIFT (DImode, offset, GEN_INT (3)));
 
   word = gen_reg_rtx (DImode);
-  emit_move_insn (word, gen_rtx_ASHIFT (DImode, tmp0,
+  emit_move_insn (word, gen_rtx_ASHIFT (DImode, tmp,
                                         gen_lowpart (SImode, shmt)));
 
-  tmp1 = gen_reg_rtx (DImode);
+  tmp = gen_reg_rtx (DImode);
   tilegx_pre_atomic_barrier (model);
-  emit_insn (gen_atomic_fetch_or_baredi (tmp1, aligned_mem, word));
+  emit_insn (gen_atomic_fetch_or_baredi (tmp, aligned_mem, word));
   tilegx_post_atomic_barrier (model);
 
   emit_move_insn (gen_lowpart (DImode, result),
-                  gen_rtx_LSHIFTRT (DImode, tmp1,
+                  gen_rtx_LSHIFTRT (DImode, tmp,
                                     gen_lowpart (SImode, shmt)));
   DONE;
 })

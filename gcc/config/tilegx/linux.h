@@ -22,10 +22,11 @@
 #define CPP_SPEC "%{pthread:-D_REENTRANT}"
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{m32:--32} %{m64:--64}"
+#define ASM_SPEC "%(endian_spec) %{m32:--32} %{m64:--64}"
 
 #undef	LINK_SPEC
-#define LINK_SPEC "%{m64:-m elf64tilegx} %{m32:-m elf32tilegx} \
+#define LINK_SPEC "%(endian_spec) \
+  %{m64:-m elf64tilegx} %{m32:-m elf32tilegx} \
   %{shared:-shared} \
   %{!shared: \
     %{!static: \

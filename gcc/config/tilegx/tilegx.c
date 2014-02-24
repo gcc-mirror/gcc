@@ -175,6 +175,17 @@ tilegx_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 }
 
 
+/* Implement TARGET_RETURN_IN_MSB.  We return a value in the most
+   significant part of a register if:
+   - the target is big-endian; and
+   - the value has an aggregate type (e.g., structure or union).  */
+static bool
+tilegx_return_in_msb (const_tree valtype)
+{
+  return (TARGET_BIG_ENDIAN && AGGREGATE_TYPE_P (valtype));
+}
+
+
 /* Implement TARGET_RETURN_IN_MEMORY.  */
 static bool
 tilegx_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
@@ -440,7 +451,10 @@ tilegx_setup_incoming_varargs (cumulative_args_t cum,
     else
       addr = VALIST.__args;
     VALIST.__args = addr + paddedsize;
-    ret = *(TYPE *)addr;
+    if (BYTES_BIG_ENDIAN)
+      ret = *(TYPE *)(addr + paddedsize - sizeof(TYPE));
+    else
+      ret = *(TYPE *)addr;
  */
 static tree
 tilegx_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
@@ -503,10 +517,17 @@ tilegx_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 			size_int (STACK_POINTER_OFFSET)),
 		unshare_expr (args));
 
+  /* Adjust the address of va_arg if it is in big endian mode.  */
+  if (BYTES_BIG_ENDIAN && rsize > size)
+    tmp = fold_build_pointer_plus_hwi (tmp, rsize - size);
   gimplify_assign (addr, tmp, pre_p);
 
   /* Update VALIST.__args.  */
-  tmp = fold_build_pointer_plus_hwi (addr, rsize);
+  
+  if (BYTES_BIG_ENDIAN && rsize > size)
+    tmp = fold_build_pointer_plus_hwi (addr, size);
+  else
+    tmp = fold_build_pointer_plus_hwi (addr, rsize);
   gimplify_assign (unshare_expr (args), tmp, pre_p);
 
   addr = fold_convert (build_pointer_type (type), addr);
@@ -1847,39 +1868,51 @@ tilegx_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
 
   mode = GET_MODE (dest_reg);
 
-  hi = gen_reg_rtx (mode);
-
   if (bitsize == 2 * BITS_PER_UNIT && (bit_offset % BITS_PER_UNIT) == 0)
     {
+      rtx mem_left, mem_right;
+      rtx left = gen_reg_rtx (mode);
+
       /* When just loading a two byte value, we can load the two bytes
 	 individually and combine them efficiently.  */
 
       mem_lo = adjust_address (mem, QImode, byte_offset);
       mem_hi = adjust_address (mem, QImode, byte_offset + 1);
 
+      if (BYTES_BIG_ENDIAN)
+	{
+	  mem_left = mem_lo;
+	  mem_right = mem_hi;
+	}
+      else
+	{
+	  mem_left = mem_hi;
+	  mem_right = mem_lo;
+	}
+
       if (sign)
 	{
 	  /* Do a signed load of the second byte and use bfins to set
 	     the high bits of the result.  */
 	  emit_insn (gen_zero_extendqidi2 (gen_lowpart (DImode, dest_reg),
-					   mem_lo));
-	  emit_insn (gen_extendqidi2 (gen_lowpart (DImode, hi), mem_hi));
+					   mem_right));
+	  emit_insn (gen_extendqidi2 (gen_lowpart (DImode, left), mem_left));
 	  emit_insn (gen_insv (gen_lowpart (DImode, dest_reg),
 			       GEN_INT (64 - 8), GEN_INT (8),
-			       gen_lowpart (DImode, hi)));
+			       gen_lowpart (DImode, left)));
 	}
       else
 	{
 	  /* Do two unsigned loads and use v1int_l to interleave
 	     them.  */
-	  rtx lo = gen_reg_rtx (mode);
-	  emit_insn (gen_zero_extendqidi2 (gen_lowpart (DImode, lo),
-					   mem_lo));
-	  emit_insn (gen_zero_extendqidi2 (gen_lowpart (DImode, hi),
-					   mem_hi));
+	  rtx right = gen_reg_rtx (mode);
+	  emit_insn (gen_zero_extendqidi2 (gen_lowpart (DImode, right),
+					   mem_right));
+	  emit_insn (gen_zero_extendqidi2 (gen_lowpart (DImode, left),
+					   mem_left));
 	  emit_insn (gen_insn_v1int_l (gen_lowpart (DImode, dest_reg),
-				       gen_lowpart (DImode, hi),
-				       gen_lowpart (DImode, lo)));
+				       gen_lowpart (DImode, left),
+				       gen_lowpart (DImode, right)));
 	}
 
       return;
@@ -1917,6 +1950,7 @@ tilegx_expand_unaligned_load (rtx dest_reg, rtx mem, HOST_WIDE_INT bitsize,
     }
 
   /* Load hi first in case dest_reg is used in mema.  */
+  hi = gen_reg_rtx (mode);
   emit_move_insn (hi, mem_hi);
   emit_move_insn (wide_result, mem_lo);
 
@@ -1945,12 +1979,17 @@ tilegx_expand_unaligned_store (rtx mem, rtx src, HOST_WIDE_INT bitsize,
 {
   HOST_WIDE_INT byte_offset = bit_offset / BITS_PER_UNIT;
   HOST_WIDE_INT bytesize = bitsize / BITS_PER_UNIT;
-  HOST_WIDE_INT shift_amt;
+  HOST_WIDE_INT shift_init, shift_increment, shift_amt;
   HOST_WIDE_INT i;
   rtx mem_addr;
   rtx store_val;
 
-  for (i = 0, shift_amt = 0; i < bytesize; i++, shift_amt += BITS_PER_UNIT)
+  shift_init = BYTES_BIG_ENDIAN ? (bitsize - BITS_PER_UNIT) : 0;
+  shift_increment = BYTES_BIG_ENDIAN ? -BITS_PER_UNIT : BITS_PER_UNIT;
+
+  for (i = 0, shift_amt = shift_init;
+       i < bytesize;
+       i++, shift_amt += shift_increment)
     {
       mem_addr = adjust_address (mem, QImode, byte_offset + i);
 
@@ -5529,6 +5568,9 @@ tilegx_file_end (void)
 
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE tilegx_pass_by_reference
+
+#undef  TARGET_RETURN_IN_MSB
+#define TARGET_RETURN_IN_MSB tilegx_return_in_msb
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY tilegx_return_in_memory
