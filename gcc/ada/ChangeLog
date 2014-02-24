@@ -1,3 +1,43 @@
+2014-02-24  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Do not enforce
+	global and dependence refinement when SPARK_Mode is off.
+	* sem_ch7.adb (Analyze_Package_Body_Contract): Do not enforce
+	state refinement when SPARK_Mode is off.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Add local
+	variable Decl. Insert the generated pragma for Refined_State
+	after a potential pragma SPARK_Mode.
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Add local
+	constant Deps. Remove local variable Expr. Check the syntax
+	of pragma Depends when SPARK_Mode is off. Factor out the
+	processing for extra parenthesis around individual clauses.
+	(Analyze_Global_In_Decl_List): Items is now a constant. Check
+	the syntax of pragma Global when SPARK_Mode is off.
+	(Analyze_Initializes_In_Decl_Part): Check the syntax of pragma
+	Initializes when SPARK_Mode is off.
+	(Analyze_Part_Of): Check
+	the syntax of the encapsulating state when SPARK_Mode is off.
+	(Analyze_Pragma): Check the syntax of pragma Abstract_State when
+	SPARK_Mode is off. Move the declaration order check with respect
+	to pragma Initializes to the end of the processing. Do not verify
+	the declaration order for pragma Initial_Condition when SPARK_Mode
+	is off. Do not complain about a useless package refinement when
+	SPARK_Mode is off.
+	(Analyze_Refined_Depends_In_Decl_Part): Refs
+	is now a constant. Check the syntax of pragma Refined_Depends
+	when SPARK_Mode is off.
+	(Analyze_Refined_Global_In_Decl_Part):
+	Check the syntax of pragma Refined_Global when SPARK_Mode is off.
+	(Analyze_Refined_State_In_Decl_Part): Check the syntax of pragma
+	Refined_State when SPARK_Mode is off.
+	(Check_Dependence_List_Syntax): New routine.
+	(Check_Global_List_Syntax): New routine.
+	(Check_Initialization_List_Syntax): New routine.
+	(Check_Item_Syntax): New routine.
+	(Check_State_Declaration_Syntax): New routine.
+	(Check_Refinement_List_Syntax): New routine.
+	(Has_Extra_Parentheses): Moved to the top level of Sem_Prag.
+
 2014-02-24  Robert Dewar  <dewar@adacore.com>
 
 	* a-tags.adb, s-os_lib.adb: Minor reformatting.

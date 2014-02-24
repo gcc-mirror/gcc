@@ -2343,6 +2343,7 @@ package body Sem_Ch13 is
                --  Refined_State
 
                when Aspect_Refined_State => Refined_State : declare
+                  Decl  : Node_Id;
                   Decls : List_Id;
 
                begin
@@ -2352,8 +2353,6 @@ package body Sem_Ch13 is
                   --  the pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Decls := Declarations (N);
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
@@ -2361,12 +2360,31 @@ package body Sem_Ch13 is
                         Pragma_Name                  => Name_Refined_State);
                      Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Declarations (N, Decls);
-                     end if;
+                     Decls := Declarations (N);
 
-                     Prepend_To (Decls, Aitem);
+                     --  When the package body is subject to pragma SPARK_Mode,
+                     --  insert pragma Refined_State after SPARK_Mode.
+
+                     if Present (Decls) then
+                        Decl := First (Decls);
+
+                        if Nkind (Decl) = N_Pragma
+                          and then Pragma_Name (Decl) = Name_SPARK_Mode
+                        then
+                           Insert_After (Decl, Aitem);
+
+                        --  The related package body lacks SPARK_Mode, the
+                        --  corresponding pragma must be the first declaration.
+
+                        else
+                           Prepend_To (Decls, Aitem);
+                        end if;
+
+                     --  Otherwise the pragma forms a new declarative list
+
+                     else
+                        Set_Declarations (N, New_List (Aitem));
+                     end if;
 
                   else
                      Error_Msg_NE

@@ -2062,12 +2062,16 @@ package body Sem_Ch6 is
          Analyze_Refined_Global_In_Decl_Part (Ref_Global);
 
       --  When the corresponding Global aspect/pragma references a state with
-      --  visible refinement, the body requires Refined_Global.
+      --  visible refinement, the body requires Refined_Global. Refinement is
+      --  not required when SPARK checks are suppressed.
 
       elsif Present (Spec_Id) then
          Prag := Get_Pragma (Spec_Id, Pragma_Global);
 
-         if Present (Prag) and then Contains_Refined_State (Prag) then
+         if SPARK_Mode /= Off
+           and then Present (Prag)
+           and then Contains_Refined_State (Prag)
+         then
             Error_Msg_NE
               ("body of subprogram & requires global refinement",
                Body_Decl, Spec_Id);
@@ -2081,12 +2085,16 @@ package body Sem_Ch6 is
          Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
 
       --  When the corresponding Depends aspect/pragma references a state with
-      --  visible refinement, the body requires Refined_Depends.
+      --  visible refinement, the body requires Refined_Depends. Refinement is
+      --  not required when SPARK checks are suppressed.
 
       elsif Present (Spec_Id) then
          Prag := Get_Pragma (Spec_Id, Pragma_Depends);
 
-         if Present (Prag) and then Contains_Refined_State (Prag) then
+         if SPARK_Mode /= Off
+           and then Present (Prag)
+           and then Contains_Refined_State (Prag)
+         then
             Error_Msg_NE
               ("body of subprogram & requires dependance refinement",
                Body_Decl, Spec_Id);
