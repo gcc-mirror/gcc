@@ -197,7 +197,7 @@ case $target in
 	sparc*-*-* | \
 	spu-*-* | \
 	sh[123456789lbe]*-*-* | sh-*-* | \
-	tilegx-*-* | tilepro-*-* )
+	tilegx*-*-* | tilepro*-*-* )
 		need_64bit_hwint=yes ;;
 	*)
 		need_64bit_hwint=no ;;

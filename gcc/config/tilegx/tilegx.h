@@ -18,6 +18,23 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Default target_flags if no switches are specified  */
+#ifndef TARGET_DEFAULT
+#define TARGET_DEFAULT 0
+#endif
+
+#ifndef TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_BIG_ENDIAN_DEFAULT 0
+#endif
+
+#ifndef TARGET_ENDIAN_DEFAULT
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define TARGET_ENDIAN_DEFAULT MASK_BIG_ENDIAN
+#else
+#define TARGET_ENDIAN_DEFAULT 0
+#endif
+#endif
+
 /* This is used by tilegx_cpu_cpp_builtins to indicate the byte order
    we're compiling for.  */
 #define TILEGX_CPU_CPP_ENDIAN_BUILTINS()	\
@@ -52,10 +69,10 @@
 
 /* Target machine storage layout */
 
-#define TARGET_BIG_ENDIAN 0
 #define BITS_BIG_ENDIAN 0
-#define BYTES_BIG_ENDIAN TARGET_BIG_ENDIAN
-#define WORDS_BIG_ENDIAN TARGET_BIG_ENDIAN
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define FLOAT_WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
 
 #define UNITS_PER_WORD 8
 #define PARM_BOUNDARY BITS_PER_WORD
@@ -520,3 +537,20 @@ typedef struct GTY(()) machine_function
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 #endif
+
+#ifndef ENDIAN_SPEC
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define ENDIAN_SPEC \
+  "%{!mlittle-endian:-EB} \
+   %{mlittle-endian:%{mbig-endian: \
+     %e-mbig-endian and -mlittle-endian may not be used together}-EL}"
+#else
+#define ENDIAN_SPEC \
+  "%{!mbig-endian:-EL} \
+   %{mbig-endian:%{mlittle-endian: \
+    %e-mbig-endian and -mlittle-endian may not be used together}-EB}"
+#endif
+#endif
+
+#define EXTRA_SPECS		\
+  { "endian_spec", ENDIAN_SPEC }

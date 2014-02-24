@@ -40,6 +40,14 @@ m64
 Target Report RejectNegative Negative(m32) InverseMask(32BIT, 64BIT)
 Compile with 64 bit longs and pointers.
 
+mbig-endian
+Target Report RejectNegative Mask(BIG_ENDIAN)
+Use big-endian byte order.
+
+mlittle-endian
+Target Report RejectNegative InverseMask(BIG_ENDIAN)
+Use little-endian byte order.
+
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(tilegx_cmodel) Init(CM_SMALL)
 Use given TILE-Gx code model

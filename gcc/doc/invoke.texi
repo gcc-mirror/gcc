@@ -1012,7 +1012,8 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{TILE-Gx Options}
-@gccoptlist{-mcpu=@var{cpu} -m32 -m64 -mcmodel=@var{code-model}}
+@gccoptlist{-mcpu=CPU -m32 -m64 -mbig-endian -mlittle-endian @gol
+-mcmodel=@var{code-model}}
 
 @emph{TILEPro Options}
 @gccoptlist{-mcpu=@var{cpu} -m32}
@@ -21344,6 +21345,12 @@ type is @samp{tilegx}.
 Generate code for a 32-bit or 64-bit environment.  The 32-bit
 environment sets int, long, and pointer to 32 bits.  The 64-bit
 environment sets int to 32 bits and long and pointer to 64 bits.
+
+@item -mbig-endian
+@itemx -mlittle-endian
+@opindex mbig-endian
+@opindex mlittle-endian
+Generate code in big/little endian mode, respectively.
 @end table
 
 @node TILEPro Options
