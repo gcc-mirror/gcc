@@ -1,5 +1,9 @@
 2014-02-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60146
+	* pt.c (tsubst_omp_for_iterator): Don't let substitution of the
+	DECL_EXPR initialize a non-class iterator.
+
 	PR c++/60312
 	* parser.c (cp_parser_template_type_arg): Check for invalid 'auto'.
 
