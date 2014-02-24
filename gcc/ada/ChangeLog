@@ -1,3 +1,18 @@
+2014-02-24  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_One): Refine categorization of statement
+	SCOs.
+
+2014-02-24  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Remove aspects Ada_2005 and Ada_2012,
+	Pure_05, Pure_12 and Preelaborate_05.
+	* gnat_rm.texi: Update accordingly.
+	* sem_prag.adb: Document one argument form of Ada_05/Ada_2005
+	pragmas Document one argument form of Ada_12/Ada_2012 pragmas
+	Recognize one argument form of these pragmas only in GNAT mode
+	(-gnatg).
+
 2014-02-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* s-dimmks.ads: Replace symbol for temperature, previously the
