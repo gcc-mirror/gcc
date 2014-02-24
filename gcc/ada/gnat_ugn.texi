@@ -3927,7 +3927,7 @@ alignment in bits. The name is followed by at least two blanks, fields
 are separated by at least one blank, and a LF character immediately
 follows the alignment field.
 
-Here is an example of target parametrization file:
+Here is an example of a target parameterization file:
 
 @smallexample
 Bits_BE                       0
