@@ -31942,7 +31942,8 @@ synthesize_implicit_template_parm  (cp_parser *parser)
 
       current_binding_level = scope;
 
-      if (scope->kind != sk_template_parms)
+      if (scope->kind != sk_template_parms
+	  || !function_being_declared_is_template_p (parser))
 	{
 	  /* Introduce a new template parameter list for implicit template
 	     parameters.  */

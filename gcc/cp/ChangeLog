@@ -1,5 +1,9 @@
 2014-02-25  Adam Butcher  <adam@jessamine.co.uk>
 
+	* parser.c (synthesize_implicit_template_parm): Inject new template
+	argument list appropriately when a generic member function
+	of a class template is declared out-of-line.
+
 	PR c++/60065
 	* parser.c (cp_parser_direct_declarator): Don't save and
 	restore num_template_parameter_lists around call to
