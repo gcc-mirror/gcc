@@ -6434,12 +6434,42 @@ package body Sem_Res is
    --  Used to resolve identifiers and expanded names
 
    procedure Resolve_Entity_Name (N : Node_Id; Typ : Entity_Id) is
-      E    : constant Entity_Id := Entity (N);
-      Par  : Node_Id;
-      Prev : Node_Id;
+      function Appears_In_Check (Nod : Node_Id) return Boolean;
+      --  Denote whether an arbitrary node Nod appears in a check node
 
-      Usage_OK : Boolean := False;
-      --  Flag set when the use of a volatile object agrees with its context
+      ----------------------
+      -- Appears_In_Check --
+      ----------------------
+
+      function Appears_In_Check (Nod : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         --  Climb the parent chain looking for a check node
+
+         Par := Nod;
+         while Present (Par) loop
+            if Nkind (Par) in N_Raise_xxx_Error then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end Appears_In_Check;
+
+      --  Local variables
+
+      E   : constant Entity_Id := Entity (N);
+      Par : constant Node_Id   := Parent (N);
+
+   --  Start of processing for Resolve_Entity_Name
 
    begin
       --  If garbage from errors, set to Any_Type and return
@@ -6555,62 +6585,43 @@ package body Sem_Res is
           (Async_Writers_Enabled (E)
              or else Effective_Reads_Enabled (E))
       then
-         Par  := Parent (N);
-         Prev := N;
-         while Present (Par) loop
+         --  The volatile object can appear on either side of an assignment
 
-            --  The volatile object can appear on either side of an assignment
+         if Nkind (Par) = N_Assignment_Statement then
+            null;
 
-            if Nkind (Par) = N_Assignment_Statement then
-               Usage_OK := True;
-               exit;
+         --  The volatile object is part of the initialization expression of
+         --  another object. Ensure that the climb of the parent chain came
+         --  from the expression side and not from the name side.
 
-            --  The volatile object is part of the initialization expression of
-            --  another object. Ensure that the climb of the parent chain came
-            --  from the expression side and not from the name side.
+         elsif Nkind (Par) = N_Object_Declaration
+           and then Present (Expression (Par))
+           and then N = Expression (Par)
+         then
+            null;
 
-            elsif Nkind (Par) = N_Object_Declaration
-              and then Present (Expression (Par))
-              and then Prev = Expression (Par)
-            then
-               Usage_OK := True;
-               exit;
+         --  The volatile object appears as an actual parameter in a call to an
+         --  instance of Unchecked_Conversion whose result is renamed.
 
-            --  The volatile object appears as an actual parameter in a call to
-            --  an instance of Unchecked_Conversion whose result is renamed.
+         elsif Nkind (Par) = N_Function_Call
+           and then Is_Unchecked_Conversion_Instance (Entity (Name (Par)))
+           and then Nkind (Parent (Par)) = N_Object_Renaming_Declaration
+         then
+            null;
 
-            elsif Nkind (Par) = N_Function_Call
-              and then Is_Unchecked_Conversion_Instance (Entity (Name (Par)))
-              and then Nkind (Parent (Par)) = N_Object_Renaming_Declaration
-            then
-               Usage_OK := True;
-               exit;
+         --  Assume that references to volatile objects that appear as actual
+         --  parameters in a procedure call are always legal. The full legality
+         --  check is done when the actuals are resolved.
 
-            --  Assume that references to volatile objects that appear as
-            --  actual parameters in a procedure call are always legal. The
-            --  full legality check is done when the actuals are resolved.
+         elsif Nkind (Par) = N_Procedure_Call_Statement then
+            null;
 
-            elsif Nkind (Par) = N_Procedure_Call_Statement then
-               Usage_OK := True;
-               exit;
+         --  Allow references to volatile objects in various checks
 
-            --  Allow references to volatile objects in various checks
+         elsif Appears_In_Check (Par) then
+            null;
 
-            elsif Nkind (Par) in N_Raise_xxx_Error then
-               Usage_OK := True;
-               exit;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Prev := Par;
-            Par  := Parent (Par);
-         end loop;
-
-         if not Usage_OK then
+         else
             Error_Msg_N
               ("volatile object cannot appear in this context "
                & "(SPARK RM 7.1.3(13))", N);

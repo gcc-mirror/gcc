@@ -3061,14 +3061,14 @@ package body Checks is
       Source_Typ : Entity_Id;
       Do_Static  : Boolean)
    is
-      Cond     : Node_Id;
-      R_Result : Check_Result;
-      R_Cno    : Node_Id;
-
       Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
-        (not Index_Checks_Suppressed (Target_Typ))
-         or else (not Range_Checks_Suppressed (Target_Typ));
+                    not Index_Checks_Suppressed (Target_Typ)
+                      or else not Range_Checks_Suppressed (Target_Typ);
+
+      Cond     : Node_Id;
+      R_Cno    : Node_Id;
+      R_Result : Check_Result;
 
    begin
       if not Expander_Active or else not Checks_On then
@@ -3079,27 +3079,33 @@ package body Checks is
         Selected_Range_Checks (Ck_Node, Target_Typ, Source_Typ, Empty);
 
       for J in 1 .. 2 loop
-
          R_Cno := R_Result (J);
          exit when No (R_Cno);
 
-         --  If the item is a conditional raise of constraint error, then have
-         --  a look at what check is being performed and ???
+         --  The range check requires runtime evaluation. Depending on what its
+         --  triggering condition is, the check may be converted into a compile
+         --  time constraint check.
 
          if Nkind (R_Cno) = N_Raise_Constraint_Error
            and then Present (Condition (R_Cno))
          then
             Cond := Condition (R_Cno);
 
-            if not Has_Dynamic_Range_Check (Ck_Node) then
-               Insert_Action (Ck_Node, R_Cno);
+            --  Insert the range check before the related context. Note that
+            --  this action analyses the triggering condition.
 
-               if not Do_Static then
-                  Set_Has_Dynamic_Range_Check (Ck_Node);
-               end if;
+            Insert_Action (Ck_Node, R_Cno);
+
+            --  This old code doesn't make sense, why is the context flagged as
+            --  requiring dynamic range checks now in the middle of generating
+            --  them ???
+
+            if not Do_Static then
+               Set_Has_Dynamic_Range_Check (Ck_Node);
             end if;
 
-            --  Output a warning if the condition is known to be True
+            --  The triggering condition evaluates to True, the range check
+            --  can be converted into a compile time constraint check.
 
             if Is_Entity_Name (Cond)
               and then Entity (Cond) = Standard_True
@@ -3130,10 +3136,14 @@ package body Checks is
             --  on, then we want to delete the check, since it is not needed.
             --  We do this by replacing the if statement by a null statement
 
+            --  Why are we even generating checks if checks are turned off ???
+
             elsif Do_Static or else not Checks_On then
                Remove_Warning_Messages (R_Cno);
                Rewrite (R_Cno, Make_Null_Statement (Loc));
             end if;
+
+         --  The range check raises Constrant_Error explicitly
 
          else
             Install_Static_Check (R_Cno, Loc);
