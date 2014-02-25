@@ -66,7 +66,7 @@ extern "C" {
      The unwinder will unwind frames 0, 1 and 2 as usual. But the CFI of frame
      3 is set up as if the caller of frame 3 was frame 6 so, when frame 3 is
      unwound, the unwinder ends up in frame 6 directly. It's possible to do so
-     since the kernel has saved the context of frame 3 and passed it on to
+     since the kernel has saved the context of frame 6 and passed it on to
      __gnat_sigtramp.  */
 
 #ifdef __cplusplus

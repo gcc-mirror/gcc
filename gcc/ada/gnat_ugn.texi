@@ -21299,6 +21299,20 @@ examined to the frame of its callee (the reverse of the previous command),
 Inspect the frame with the given number. The value 0 denotes the frame
 of the current breakpoint, that is to say the top of the call stack.
 
+@item kill
+Kills the child process in which the program is running under GDB.
+This may be useful for several purposes:
+@itemize @bullet
+@item
+It allows you to recompile and relink your program, since on many systems
+you cannot regenerate an executable file while it is running in a process.
+@item
+You can run your program outside the debugger, on systems that do not
+permit executing a program outside GDB while breakpoints are set
+within GDB.
+@item
+It allows you to debug a core dump rather than a running process.
+@end itemize
 @end table
 
 @noindent

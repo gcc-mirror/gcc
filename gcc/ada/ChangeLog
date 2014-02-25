@@ -1,3 +1,17 @@
+2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sigtramp.h: Fix minor inaccuracy.
+
+2014-02-25  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_ugn.texi: Added description of kill command.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi (Address_Clauses): Add a section discussing the
+	problem of address clauses causing unexpected initialization,
+	including the effect of Initialize_Scalars.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb: Various changes for better msgs for anonmous access
