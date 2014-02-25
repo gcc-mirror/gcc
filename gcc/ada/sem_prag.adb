@@ -427,7 +427,7 @@ package body Sem_Prag is
                if Others_Seen then
                   Error_Msg_N
                     ("only one others choice allowed in contract cases "
-                     & "(SPARK RM 6.1.3(1))", Case_Guard);
+                     & "(SPARK 'R'M 6.1.3(1))", Case_Guard);
                else
                   Others_Seen := True;
                end if;
@@ -435,7 +435,7 @@ package body Sem_Prag is
             elsif Others_Seen then
                Error_Msg_N
                  ("others must be the last choice in contract cases "
-                  & "(SPARK RM 6.1.3(1))", N);
+                  & "(SPARK 'R'M 6.1.3(1))", N);
             end if;
 
             --  Preanalyze the case guard and consequence
@@ -783,15 +783,15 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Name_Result;
                   Error_Msg_N
                     ("prefix of attribute % must denote the enclosing "
-                     & "function (SPARK RM 6.1.5(11))", Item);
+                     & "function (SPARK 'R'M 6.1.5(11))", Item);
 
                --  Function'Result is allowed to appear on the output side of a
                --  dependency clause.
 
                elsif Is_Input then
                   Error_Msg_N
-                    ("function result cannot act as input (SPARK RM 6.1.5(6))",
-                     Item);
+                    ("function result cannot act as input "
+                     & "(SPARK 'R'M 6.1.5(6))", Item);
 
                elsif Null_Seen then
                   Error_Msg_N
@@ -821,7 +821,8 @@ package body Sem_Prag is
                      if not Is_Last then
                         Error_Msg_N
                           ("null output list must be the last clause in a "
-                           & "dependency relation (SPARK RM 6.1.5(12))", Item);
+                           & "dependency relation (SPARK 'R'M 6.1.5(12))",
+                           Item);
 
                      --  Catch a useless dependence of the form:
                      --    null =>+ ...
@@ -885,7 +886,7 @@ package body Sem_Prag is
                      then
                         Error_Msg_N
                           ("input of a null output list cannot appear in "
-                           & "multiple input lists (SPARK RM 6.1.5(13))",
+                           & "multiple input lists (SPARK 'R'M 6.1.5(13))",
                            Item);
                      end if;
 
@@ -905,7 +906,7 @@ package body Sem_Prag is
                               Item, Item_Id);
                            Error_Msg_N
                               ("\\use its constituents instead "
-                               & "(SPARK RM 6.1.5(3))", Item);
+                               & "(SPARK 'R'M 6.1.5(3))", Item);
                            return;
 
                         --  If the reference to the abstract state appears in
@@ -947,7 +948,7 @@ package body Sem_Prag is
                   else
                      Error_Msg_N
                        ("item must denote parameter, variable or state "
-                        & "(SPARK RM 6.1.5(1))", Item);
+                        & "(SPARK 'R'M 6.1.5(1))", Item);
                   end if;
 
                --  All other input/output items are illegal
@@ -955,7 +956,7 @@ package body Sem_Prag is
                else
                   Error_Msg_N
                     ("item must denote parameter, variable or state "
-                     & "(SPARK RM 6.1.5(1))", Item);
+                     & "(SPARK 'R'M 6.1.5(1))", Item);
                end if;
             end if;
          end Analyze_Input_Output;
@@ -1013,7 +1014,7 @@ package body Sem_Prag is
          if Ekind (Spec_Id) = E_Function and then not Result_Seen then
             Error_Msg_NE
               ("result of & must appear in exactly one output list "
-               & "(SPARK RM 6.1.5(10))", N, Spec_Id);
+               & "(SPARK 'R'M 6.1.5(10))", N, Spec_Id);
          end if;
       end Check_Function_Return;
 
@@ -1195,9 +1196,9 @@ package body Sem_Prag is
                --  and updating.
 
                if Item_Is_Input then
-                  Add_Str_To_Name_Buffer ("(SPARK RM 6.1.5(5))");
+                  Add_Str_To_Name_Buffer ("(SPARK 'R'M 6.1.5(5))");
                else
-                  Add_Str_To_Name_Buffer ("(SPARK RM 6.1.5(6))");
+                  Add_Str_To_Name_Buffer ("(SPARK 'R'M 6.1.5(6))");
                end if;
 
                Error_Msg := Name_Find;
@@ -1270,7 +1271,7 @@ package body Sem_Prag is
                   Add_Item_To_Name_Buffer (Item_Id);
                   Add_Str_To_Name_Buffer
                     (" & must appear in at least one input dependence list "
-                     & "(SPARK RM 6.1.5(8))");
+                     & "(SPARK 'R'M 6.1.5(8))");
 
                   Error_Msg := Name_Find;
                   Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
@@ -1284,7 +1285,7 @@ package body Sem_Prag is
                Add_Item_To_Name_Buffer (Item_Id);
                Add_Str_To_Name_Buffer
                  (" & must appear in exactly one output dependence list "
-                  & "(SPARK RM 6.1.5(10))");
+                  & "(SPARK 'R'M 6.1.5(10))");
 
                Error_Msg := Name_Find;
                Error_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
@@ -1496,7 +1497,7 @@ package body Sem_Prag is
             elsif Is_Attribute_Result (Output) then
                Error_Msg_N
                  ("function result cannot depend on itself "
-                  & "(SPARK RM 6.1.5(10))", Output);
+                  & "(SPARK 'R'M 6.1.5(10))", Output);
                return;
             end if;
 
@@ -1867,7 +1868,7 @@ package body Sem_Prag is
       else
          Error_Msg_N
            ("external property % must apply to a volatile object "
-            & "(SPARK RM 7.1.3(2))", N);
+            & "(SPARK 'R'M 7.1.3(2))", N);
       end if;
 
       --  Ensure that the expression (if present) is static Boolean. A missing
@@ -1883,7 +1884,7 @@ package body Sem_Prag is
          else
             Error_Msg_Name_1 := Pragma_Name (N);
             Error_Msg_N
-              ("expression of % must be static (SPARK RM 7.1.2(5))", Expr);
+              ("expression of % must be static (SPARK 'R'M 7.1.2(5))", Expr);
          end if;
       end if;
    end Analyze_External_Property_In_Decl_Part;
@@ -2001,7 +2002,7 @@ package body Sem_Prag is
                   if Scope (Item_Id) = Spec_Id then
                      Error_Msg_NE
                        ("global item cannot reference parameter of subprogram "
-                        & "& (SPARK RM 6.1.4(6))", Item, Spec_Id);
+                        & "& (SPARK 'R'M 6.1.4(6))", Item, Spec_Id);
                      return;
                   end if;
 
@@ -2011,7 +2012,7 @@ package body Sem_Prag is
                elsif Ekind (Item_Id) = E_Constant then
                   Error_Msg_N
                     ("global item cannot denote a constant "
-                     & "(SPARK RM 6.1.4(7))", Item);
+                     & "(SPARK 'R'M 6.1.4(7))", Item);
 
                --  The only legal references are those to abstract states and
                --  variables.
@@ -2019,7 +2020,7 @@ package body Sem_Prag is
                elsif not Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
                   Error_Msg_N
                     ("global item must denote variable or state "
-                     & "(SPARK RM 6.1.4(4))", Item);
+                     & "(SPARK 'R'M 6.1.4(4))", Item);
                   return;
                end if;
 
@@ -2036,7 +2037,7 @@ package body Sem_Prag is
                        ("cannot mention state & in global refinement",
                         Item, Item_Id);
                      Error_Msg_N
-                       ("\\use its constituents instead (SPARK RM 6.1.4(8))",
+                       ("\\use its constituents instead (SPARK 'R'M 6.1.4(8))",
                         Item);
                      return;
 
@@ -2063,7 +2064,7 @@ package body Sem_Prag is
                   if Ekind_In (Spec_Id, E_Function, E_Generic_Function) then
                      Error_Msg_NE
                        ("volatile object & cannot act as global item of a "
-                        & "function (SPARK RM 7.1.3(9))", Item, Item_Id);
+                        & "function (SPARK 'R'M 7.1.3(9))", Item, Item_Id);
                      return;
 
                   --  A volatile object with property Effective_Reads set to
@@ -2093,7 +2094,7 @@ package body Sem_Prag is
             else
                Error_Msg_N
                  ("global item must denote variable or state "
-                  & "(SPARK RM 6.1.4(4))", Item);
+                  & "(SPARK 'R'M 6.1.4(4))", Item);
                return;
             end if;
 
@@ -2109,7 +2110,7 @@ package body Sem_Prag is
 
             if Contains (Seen, Item_Id) then
                Error_Msg_N
-                 ("duplicate global item (SPARK RM 6.1.4(11))", Item);
+                 ("duplicate global item (SPARK 'R'M 6.1.4(11))", Item);
 
             --  Add the entity of the current item to the list of processed
             --  items.
@@ -2139,7 +2140,8 @@ package body Sem_Prag is
          is
          begin
             if Status then
-               Error_Msg_N ("duplicate global mode (SPARK RM 6.1.4(9))", Mode);
+               Error_Msg_N
+                 ("duplicate global mode (SPARK 'R'M 6.1.4(9))", Mode);
             end if;
 
             Status := True;
@@ -2184,7 +2186,7 @@ package body Sem_Prag is
                   then
                      Error_Msg_NE
                        ("global item & cannot have mode In_Out or Output "
-                        & "(SPARK RM 6.1.4(12))", Item, Item_Id);
+                        & "(SPARK 'R'M 6.1.4(12))", Item, Item_Id);
                      Error_Msg_NE
                        ("\\item already appears as input of subprogram &",
                         Item, Context);
@@ -2208,7 +2210,7 @@ package body Sem_Prag is
             if Ekind (Spec_Id) = E_Function then
                Error_Msg_N
                  ("global mode & is not applicable to functions "
-                  & "(SPARK RM 6.1.4(10))", Mode);
+                  & "(SPARK 'R'M 6.1.4(10))", Mode);
             end if;
          end Check_Mode_Restriction_In_Function;
 
@@ -2501,14 +2503,14 @@ package body Sem_Prag is
                      Error_Msg_Name_1 := Chars (Pack_Id);
                      Error_Msg_NE
                        ("initialization item & must appear in the visible "
-                        & "declarations of package % (SPARK RM 7.1.5(7))",
+                        & "declarations of package % (SPARK 'R'M 7.1.5(7))",
                         Item, Item_Id);
 
                   --  Detect a duplicate use of the same initialization item
 
                   elsif Contains (Items_Seen, Item_Id) then
                      Error_Msg_N
-                       ("duplicate initialization item (SPARK RM 7.1.5(5))",
+                       ("duplicate initialization item (SPARK 'R'M 7.1.5(5))",
                         Item);
 
                   --  The item is legal, add it to the list of processed states
@@ -2532,7 +2534,7 @@ package body Sem_Prag is
                else
                   Error_Msg_N
                     ("initialization item must denote variable or state "
-                     & "(SPARK RM 7.1.5(3))", Item);
+                     & "(SPARK 'R'M 7.1.5(3))", Item);
                end if;
 
             --  Some form of illegal construct masquerading as a name
@@ -2540,7 +2542,7 @@ package body Sem_Prag is
             else
                Error_Msg_N
                  ("initialization item must denote variable or state "
-                  & "(SPARK RM 7.1.5(3))", Item);
+                  & "(SPARK 'R'M 7.1.5(3))", Item);
             end if;
          end if;
       end Analyze_Initialization_Item;
@@ -2615,7 +2617,8 @@ package body Sem_Prag is
 
                      elsif Contains (Inputs_Seen, Input_Id) then
                         Error_Msg_N
-                          ("duplicate input item (SPARK RM 7.1.5(5))", Input);
+                          ("duplicate input item (SPARK 'R'M 7.1.5(5))",
+                           Input);
 
                      --  Input is legal, add it to the list of processed inputs
 
@@ -10305,7 +10308,7 @@ package body Sem_Prag is
                      else
                         Error_Msg_N
                           ("expression of external state property must be "
-                           & "static (SPARK RM 7.1.2(5))", Expr);
+                           & "static (SPARK 'R'M 7.1.2(5))", Expr);
                      end if;
 
                   --  The lack of expression defaults the property to True
@@ -10398,7 +10401,7 @@ package body Sem_Prag is
                begin
                   if Status then
                      Error_Msg_N
-                       ("duplicate state option (SPARK RM 7.1.4(1))", Opt);
+                       ("duplicate state option (SPARK 'R'M 7.1.4(1))", Opt);
                   end if;
 
                   Status := True;
@@ -10415,7 +10418,7 @@ package body Sem_Prag is
                begin
                   if Status then
                      Error_Msg_N
-                       ("duplicate external property (SPARK RM 7.1.4(2))",
+                       ("duplicate external property (SPARK 'R'M 7.1.4(2))",
                         Prop);
                   end if;
 
@@ -10547,7 +10550,7 @@ package body Sem_Prag is
                      elsif Chars (Opt) = Name_Part_Of then
                         Error_Msg_N
                           ("indicator Part_Of must denote an abstract state "
-                           & "(SPARK RM 7.1.4(9))", Opt);
+                           & "(SPARK 'R'M 7.1.4(9))", Opt);
 
                      else
                         Error_Msg_N
@@ -11526,7 +11529,8 @@ package body Sem_Prag is
             --  construct, issue a generic error.
 
             Error_Pragma
-              ("pragma % must apply to a volatile object (SPARK RM 7.1.3(2))");
+               ("pragma % must apply to a volatile object "
+                & "(SPARK 'R'M 7.1.3(2))");
          end Async_Effective;
 
          ------------------
@@ -18925,7 +18929,7 @@ package body Sem_Prag is
             then
                Error_Msg_NE
                  ("useless refinement, package & does not define abstract "
-                  & "states (SPARK RM 7.2.2(3))", N, Spec_Id);
+                  & "states (SPARK 'R'M 7.2.2(3))", N, Spec_Id);
                return;
             end if;
 
@@ -22346,7 +22350,7 @@ package body Sem_Prag is
       if No (Depends) then
          Error_Msg_NE
            ("useless refinement, declaration of subprogram & lacks aspect or "
-            & "pragma Depends (SPARK RM 7.2.5(2))", N, Spec_Id);
+            & "pragma Depends (SPARK 'R'M 7.2.5(2))", N, Spec_Id);
          return;
       end if;
 
@@ -22359,7 +22363,8 @@ package body Sem_Prag is
       if Nkind (Deps) = N_Null then
          Error_Msg_NE
            ("useless refinement, subprogram & does not depend on abstract "
-            & "state with visible refinement (SPARK RM 7.2.5(2))", N, Spec_Id);
+            & "state with visible refinement (SPARK 'R'M 7.2.5(2))",
+            N, Spec_Id);
          return;
       end if;
 
@@ -22548,7 +22553,7 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Chars (State_Id);
                   Error_Msg_NE
                     ("constituent & of state % must have mode Input, In_Out "
-                     & "or Output in global refinement (SPARK RM 7.2.4(5))",
+                     & "or Output in global refinement (SPARK 'R'M 7.2.4(5))",
                      N, Constit_Id);
 
                else
@@ -22578,7 +22583,7 @@ package body Sem_Prag is
             else
                Error_Msg_NE
                  ("global refinement of state & redefines the mode of its "
-                  & "constituents (SPARK RM 7.2.4(5))", N, State_Id);
+                  & "constituents (SPARK 'R'M 7.2.4(5))", N, State_Id);
             end if;
          end Check_Constituent_Usage;
 
@@ -22651,7 +22656,7 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Chars (State_Id);
                   Error_Msg_NE
                     ("constituent & of state % must have mode Input in global "
-                     & "refinement (SPARK RM 7.2.4(5))", N, Constit_Id);
+                     & "refinement (SPARK 'R'M 7.2.4(5))", N, Constit_Id);
                end if;
 
                Next_Elmt (Constit_Elmt);
@@ -22733,7 +22738,8 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Chars (State_Id);
                   Error_Msg_NE
                     ("constituent & of state % must have mode Output in "
-                     & "global refinement (SPARK RM 7.2.4(5))", N, Constit_Id);
+                     & "global refinement (SPARK 'R'M 7.2.4(5))",
+                     N, Constit_Id);
 
                --  The constituent is altogether missing
 
@@ -22743,7 +22749,7 @@ package body Sem_Prag is
                      Error_Msg_NE
                        ("output state & must be replaced by all its "
                         & "constituents in global refinement "
-                        & "(SPARK RM 7.2.5(3))", N, State_Id);
+                        & "(SPARK 'R'M 7.2.5(3))", N, State_Id);
                   end if;
 
                   Error_Msg_NE
@@ -22824,7 +22830,8 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Chars (State_Id);
                   Error_Msg_NE
                     ("constituent & of state % must have mode Proof_In in "
-                     & "global refinement (SPARK RM 7.2.4(5))", N, Constit_Id);
+                     & "global refinement (SPARK 'R'M 7.2.4(5))",
+                     N, Constit_Id);
                end if;
 
                Next_Elmt (Constit_Elmt);
@@ -22960,7 +22967,7 @@ package body Sem_Prag is
 
             else
                Error_Msg_NE
-                 ("extra global item & (SPARK RM 7.2.4(3))", Item, Item_Id);
+                 ("extra global item & (SPARK 'R'M 7.2.4(3))", Item, Item_Id);
             end if;
          end Check_Refined_Global_Item;
 
@@ -23141,7 +23148,8 @@ package body Sem_Prag is
       then
          Error_Msg_NE
            ("useless refinement, subprogram & does not depends on abstract "
-            & "state with visible refinement (SPARK RM 7.2.4(2))", N, Spec_Id);
+            & "state with visible refinement (SPARK 'R'M 7.2.4(2))",
+            N, Spec_Id);
          return;
       end if;
 
@@ -23438,7 +23446,7 @@ package body Sem_Prag is
                   Error_Msg_Name_1 := Chars (Spec_Id);
                   Error_Msg_NE
                     ("cannot use & in refinement, constituent is not a hidden "
-                     & "state of package % (SPARK RM 7.2.2(9))",
+                     & "state of package % (SPARK 'R'M 7.2.2(9))",
                      Constit, Constit_Id);
                end if;
             end Check_Matching_Constituent;
@@ -23531,7 +23539,7 @@ package body Sem_Prag is
                if No (Constit) then
                   Error_Msg_NE
                     ("external state & requires at least one constituent with "
-                     & "property % (SPARK RM 7.2.8(3))", State, State_Id);
+                     & "property % (SPARK 'R'M 7.2.8(3))", State, State_Id);
                end if;
 
             --  The property is missing in the declaration of the state, but a
@@ -23541,7 +23549,7 @@ package body Sem_Prag is
                Error_Msg_Name_2 := Chars (Constit);
                Error_Msg_NE
                  ("external state & lacks property % set by constituent % "
-                  & "(SPARK RM 7.2.8(3))", State, State_Id);
+                  & "(SPARK 'R'M 7.2.8(3))", State, State_Id);
             end if;
          end Check_External_Property;
 
@@ -23557,7 +23565,7 @@ package body Sem_Prag is
 
             if Contains (Refined_States_Seen, State_Id) then
                Error_Msg_NE
-                 ("duplicate refinement of state & (SPARK RM 7.2.2(8))",
+                 ("duplicate refinement of state & (SPARK 'R'M 7.2.2(8))",
                   State, State_Id);
                return;
             end if;
@@ -23690,7 +23698,7 @@ package body Sem_Prag is
                   Body_Ref := Node (Body_Ref_Elmt);
 
                   Error_Msg_N
-                    ("reference to & not allowed (SPARK RM 6.1.4(8))",
+                    ("reference to & not allowed (SPARK 'R'M 6.1.4(8))",
                      Body_Ref);
                   Error_Msg_Sloc := Sloc (State);
                   Error_Msg_N ("\\refinement of & is visible#", Body_Ref);
@@ -23788,7 +23796,7 @@ package body Sem_Prag is
             else
                Error_Msg_NE
                  ("external state & requires at least one external "
-                  & "constituent or null refinement (SPARK RM 7.2.8(2))",
+                  & "constituent or null refinement (SPARK 'R'M 7.2.8(2))",
                   State, State_Id);
             end if;
 
@@ -23798,7 +23806,7 @@ package body Sem_Prag is
          elsif External_Constit_Seen then
             Error_Msg_NE
               ("non-external state & cannot contain external constituents in "
-               & "refinement (SPARK RM 7.2.8(1))", State, State_Id);
+               & "refinement (SPARK 'R'M 7.2.8(1))", State, State_Id);
          end if;
 
          --  Ensure that all Part_Of candidate constituents have been mentioned
@@ -24733,7 +24741,7 @@ package body Sem_Prag is
             Error_Msg_Name_1 := Chars (Constit_Id);
             Error_Msg_NE
               ("cannot mention state & and its constituent % in the same "
-               & "context (SPARK RM 7.2.6(7))", Context, State_Id);
+               & "context (SPARK 'R'M 7.2.6(7))", Context, State_Id);
             exit;
          end if;
 

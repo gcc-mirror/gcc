@@ -4484,7 +4484,7 @@ package body Sem_Attr is
             else
                Error_Attr
                  ("attribute % cannot appear in the condition of a contract "
-                  & "case (SPARK RM 6.1.3(2))", P);
+                  & "case (SPARK 'R'M 6.1.3(2))", P);
             end if;
          end Check_Use_In_Contract_Cases;
 
