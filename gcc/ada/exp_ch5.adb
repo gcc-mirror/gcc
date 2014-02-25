@@ -3264,7 +3264,7 @@ package body Exp_Ch5 is
                Ent           : Entity_Id;
 
             begin
-               Cursor := Make_Temporary (Loc, 'I');
+               Cursor := Make_Temporary (Loc, 'C');
 
                --  For an container element iterator, the iterator type
                --  is obtained from the corresponding aspect, whose return

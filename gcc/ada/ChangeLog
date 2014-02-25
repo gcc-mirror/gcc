@@ -1,3 +1,32 @@
+2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.ads Update the usage of flag
+	Uses_Sec_Stack. Uses_Sec_Stack now applies to E_Loop entities.
+	* exp_ch5.adb (Expand_Iterator_Loop): The temporary for a cursor
+	now starts with the letter 'C'. This makes reading expanded
+	code easier.
+	* exp_ch7.adb (Establish_Transient_Scope): Add local variable
+	Iter_Loop. Signal that an Ada 2012 iterator loop requires
+	secondary stack management when creating a transient scope for
+	an element reference.
+	* exp_util.adb (Process_Statements_For_Controlled_Objects):
+	When wrapping the statements of a loop, pass the E_Loop entity
+	to the wrapping machinery.
+	(Wrap_Statements_In_Block): Add
+	formal parameter Scop along with comment on usage. Add local
+	variables Block_Id, Block_Nod and Iter_Loop. Mark the generated
+	block as requiring secondary stack management when the block is
+	created inside an Ada 2012 iterator loop. This ensures that any
+	reference objects are reclaimed on each iteration of the loop.
+	* sem_ch5.adb (Analyze_Loop_Statement): Mark the generated block
+	tasked with the handling of container iterators as requiring
+	secondary stack management. This ensures that iterators are
+	reclaimed when the loop terminates or is exited in any fashion.
+	* sem_util.adb (Add_Block_Identifier): New routine.
+	(Find_Enclosing_Iterator_Loop): New routine.
+	* sem_util.ads (Add_Block_Identifier): New routine.
+	(Find_Enclosing_Iterator_Loop): New routine.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Minor reformatting.

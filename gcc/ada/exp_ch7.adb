@@ -3558,6 +3558,7 @@ package body Exp_Ch7 is
 
    procedure Establish_Transient_Scope (N : Node_Id; Sec_Stack : Boolean) is
       Loc       : constant Source_Ptr := Sloc (N);
+      Iter_Loop : Entity_Id;
       Wrap_Node : Node_Id;
 
    begin
@@ -3571,8 +3572,8 @@ package body Exp_Ch7 is
 
             return;
 
-         --  If we have encountered Standard there are no enclosing
-         --  transient scopes.
+         --  If we have encountered Standard there are no enclosing transient
+         --  scopes.
 
          elsif Scope_Stack.Table (S).Entity = Standard_Standard then
             exit;
@@ -3581,17 +3582,17 @@ package body Exp_Ch7 is
 
       Wrap_Node := Find_Node_To_Be_Wrapped (N);
 
-      --  Case of no wrap node, false alert, no transient scope needed
+      --  The context does not contain a node that requires a transient scope,
+      --  nothing to do.
 
       if No (Wrap_Node) then
          null;
 
-      --  If the node to wrap is an iteration_scheme, the expression is
-      --  one of the bounds, and the expansion will make an explicit
-      --  declaration for it (see Analyze_Iteration_Scheme, sem_ch5.adb),
-      --  so do not apply any transformations here. Same for an Ada 2012
-      --  iterator specification, where a block is created for the expression
-      --  that build the container.
+      --  If the node to wrap is an iteration_scheme, the expression is one of
+      --  the bounds, and the expansion will make an explicit declaration for
+      --  it (see Analyze_Iteration_Scheme, sem_ch5.adb), so do not apply any
+      --  transformations here. Same for an Ada 2012 iterator specification,
+      --  where a block is created for the expression that build the container.
 
       elsif Nkind_In (Wrap_Node, N_Iteration_Scheme,
                                  N_Iterator_Specification)
@@ -3608,13 +3609,51 @@ package body Exp_Ch7 is
       then
          null;
 
+      --  Create a block entity to act as a transient scope. Note that when the
+      --  node to be wrapped is an expression or a statement, a real physical
+      --  block is constructed (see routines Wrap_Transient_Expression and
+      --  Wrap_Transient_Statement) and inserted into the tree.
+
       else
          Push_Scope (New_Internal_Entity (E_Block, Current_Scope, Loc, 'B'));
          Set_Scope_Is_Transient;
 
+         --  The transient scope must also take care of the secondary stack
+         --  management.
+
          if Sec_Stack then
             Set_Uses_Sec_Stack (Current_Scope);
             Check_Restriction (No_Secondary_Stack, N);
+
+            --  The expansion of iterator loops generates references to objects
+            --  in order to extract elements from a container:
+
+            --    Ref : Reference_Type_Ptr := Reference (Container, Cursor);
+            --    Obj : <object type> renames Ref.all.Element.all;
+
+            --  These references are controlled and returned on the secondary
+            --  stack. A new reference is created at each iteration of the loop
+            --  and as a result it must be finalized and the space occupied by
+            --  it on the secondary stack reclaimed at the end of the current
+            --  iteration.
+
+            --  When the context that requires a transient scope is a call to
+            --  routine Reference, the node to be wrapped is the source object:
+
+            --    for Obj of Container loop
+
+            --  Routine Wrap_Transient_Declaration however does not generate a
+            --  physical block as wrapping a declaration will kill it too ealy.
+            --  To handle this peculiar case, mark the related iterator loop as
+            --  requiring the secondary stack. This signals the finalization
+            --  machinery to manage the secondary stack (see routine
+            --  Process_Statements_For_Controlled_Objects).
+
+            Iter_Loop := Find_Enclosing_Iterator_Loop (Current_Scope);
+
+            if Present (Iter_Loop) then
+               Set_Uses_Sec_Stack (Iter_Loop);
+            end if;
          end if;
 
          Set_Etype (Current_Scope, Standard_Void_Type);
