@@ -1,3 +1,12 @@
+2014-02-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60317
+	* params.def (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS): New.
+	* params.h (LRA_MAX_CONSIDERED_RELOAD_PSEUDOS): New.
+	* lra-assigns.c: Include params.h.
+	(spill_for): Use LRA_MAX_CONSIDERED_RELOAD_PSEUDOS as guard for
+	other reload pseudos considerations.
+
 2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/vector.md (*vector_unordered<mode>): Change split
