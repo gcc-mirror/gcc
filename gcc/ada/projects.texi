@@ -1085,6 +1085,14 @@ The following attributes can be defined in package @code{Install}:
 Whether the project is to be installed, values are @code{true}
 (default) or @code{false}.
 
+@item @b{Artifacts}
+@cindex @code{Artifacts}
+
+An array attribute to declare a set of files not part of the sources
+to be installed. The array discriminant is the directory where the
+file is to be installed. If a relative directory then Prefix (see
+below) is prepended.
+
 @item @b{Prefix}:
 @cindex @code{Prefix}
 

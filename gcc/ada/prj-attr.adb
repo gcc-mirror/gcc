@@ -364,6 +364,7 @@ package body Prj.Attr is
    "SVlib_subdir#" &
    "SVproject_subdir#" &
    "SVactive#" &
+   "LAartifacts#" &
 
    --  package Remote
 
