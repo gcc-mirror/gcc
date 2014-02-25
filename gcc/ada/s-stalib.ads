@@ -44,7 +44,7 @@
 --  package and the packages it references are included in all Ada programs,
 --  together with the included data.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get

@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 package System.Exceptions is
 

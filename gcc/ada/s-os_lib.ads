@@ -51,7 +51,7 @@
 --  Note: a distinct body for this spec is included in the .NET runtime library
 --  and must be kept in sync with changes made in this file.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with System;
 with System.Strings;

@@ -374,6 +374,7 @@ package Snames is
    Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
    Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Compiler_Unit                  : constant Name_Id := N + $; -- GNAT
+   Name_Compiler_Unit_Warning          : constant Name_Id := N + $; -- GNAT
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
@@ -1730,6 +1731,7 @@ package Snames is
       Pragma_Compile_Time_Error,
       Pragma_Compile_Time_Warning,
       Pragma_Compiler_Unit,
+      Pragma_Compiler_Unit_Warning,
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,

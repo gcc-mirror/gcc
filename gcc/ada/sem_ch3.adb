@@ -1245,6 +1245,7 @@ package body Sem_Ch3 is
       --  be updated when the full type declaration is seen. This only applies
       --  to incomplete types declared in some enclosing scope, not to limited
       --  views from other packages.
+
       --  Prior to Ada 2012, access to functions can only have in_parameters.
 
       if Present (Formals) then
@@ -9707,8 +9708,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Ada 2012 (AI05-0030): Perform some checks related to pragma
-         --  Implemented
+         --  Ada 2012 (AI05-0030): Perform checks related to pragma Implemented
 
          --  Subp is an expander-generated procedure which maps an interface
          --  alias to a protected wrapper. The interface alias is flagged by
@@ -10568,15 +10568,14 @@ package body Sem_Ch3 is
                --  the full view is tagged: must disallow discriminants with
                --  defaults, unless compiling for Ada 2012, which allows a
                --  limited tagged type to have defaulted discriminants (see
-               --  AI05-0214). However, suppress the error here if it was
-               --  already reported on the default expression of the partial
-               --  view.
+               --  AI05-0214). However, suppress error here if it was already
+               --  reported on the default expression of the partial view.
 
                if Is_Tagged_Type (T)
-                    and then Present (Expression (Parent (D)))
-                    and then (not Is_Limited_Type (Current_Scope)
-                               or else Ada_Version < Ada_2012)
-                    and then not Error_Posted (Expression (Parent (D)))
+                 and then Present (Expression (Parent (D)))
+                 and then (not Is_Limited_Type (Current_Scope)
+                            or else Ada_Version < Ada_2012)
+                 and then not Error_Posted (Expression (Parent (D)))
                then
                   if Ada_Version >= Ada_2012 then
                      Error_Msg_N
@@ -15424,6 +15423,7 @@ package body Sem_Ch3 is
                Error_Msg_NE
                  ("full declaration of } must be a tagged type ", Id, Prev);
             end if;
+
          else
             if Ada_Version >= Ada_2012
               and then Nkind (N) = N_Private_Type_Declaration
@@ -15470,9 +15470,9 @@ package body Sem_Ch3 is
                                 N_Protected_Type_Declaration)
            and then
              (Ada_Version < Ada_2012
-                or else not Is_Incomplete_Type (Prev)
-                or else not Nkind_In (N, N_Private_Type_Declaration,
-                                         N_Private_Extension_Declaration))
+               or else not Is_Incomplete_Type (Prev)
+               or else not Nkind_In (N, N_Private_Type_Declaration,
+                                        N_Private_Extension_Declaration))
          then
             --  Completion must be a full type declarations (RM 7.3(4))
 
@@ -15681,7 +15681,7 @@ package body Sem_Ch3 is
                        or else Present (Class_Wide_Type (Prev)))
          then
             --  Ada 2012 (AI05-0162): A private type may be the completion of
-            --  an incomplete type
+            --  an incomplete type.
 
             if Ada_Version >= Ada_2012
               and then Is_Incomplete_Type (Prev)

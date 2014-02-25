@@ -1,3 +1,37 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, sem_util.adb, sem_util.ads, exp_ch6.adb: Minor
+	reformatting.
+
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): If the return type of a function
+	is a limited view, and the non-limited view has not been seen yet,
+	defer freezing to some later point.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* s-excdeb.ads, s-except.ads, s-exctab.adb, s-exctab.ads, s-finmas.ads,
+	s-htable.adb, s-htable.ads, s-imenne.adb, s-imenne.ads, s-imgenu.adb,
+	s-imgenu.ads, s-mastop.adb, s-mastop.ads, s-memory-vms_64.adb,
+	s-memory-vms_64.ads, s-memory.adb, s-memory.ads, s-os_lib.adb,
+	s-os_lib.ads, s-parame.adb, s-parame.ads, s-purexc.ads, s-restri.adb,
+	s-restri.ads, s-rident.ads, s-secsta.adb, s-secsta.ads, s-soflin.adb,
+	s-soflin.ads, s-sopco3.adb, s-sopco3.ads, s-sopco4.adb, s-sopco4.ads,
+	s-sopco5.adb, s-sopco5.ads, s-spsufi.ads, s-stache.adb, s-stache.ads,
+	s-stalib.adb, s-stalib.ads, s-stoele.adb, s-stoele.ads, s-strcom.adb,
+	s-strcom.ads, s-strhas.adb, s-string.adb, s-string.ads, s-strops.adb,
+	s-strops.ads, s-ststop.adb, s-ststop.ads, s-traceb.adb, s-traceb.ads,
+	s-traent.adb, s-traent.ads, s-unstyp.ads, s-utf_32.adb, s-utf_32.ads,
+	s-wchcnv.adb, s-wchcnv.ads, s-wchcon.adb, s-wchcon.ads, s-wchjis.adb,
+	s-wchjis.ads, sem_ch11.adb, sem_ch4.adb, sem_ch5.adb, sem_prag.adb,
+	snames.ads-tmpl: Change Compiler_Unit everywhere to
+	Compiler_Unit_Warning.
+
 2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Add_Or_Save_Precondition): New routine.

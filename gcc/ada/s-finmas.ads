@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@ with Ada.Finalization;
 with System.Storage_Elements;
 with System.Storage_Pools;
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 package System.Finalization_Masters is
    pragma Preelaborate;

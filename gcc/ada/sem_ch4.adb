@@ -2668,6 +2668,10 @@ package body Sem_Ch4 is
          Common_Type       : Entity_Id := Empty;
 
       begin
+         if Comes_From_Source (N) then
+            Check_Compiler_Unit (N);
+         end if;
+
          Analyze (L);
          Candidate_Interps := L;
 
@@ -2745,9 +2749,7 @@ package body Sem_Ch4 is
    begin
       Analyze_Expression (L);
 
-      if No (R)
-        and then Ada_Version >= Ada_2012
-      then
+      if No (R) and then Ada_Version >= Ada_2012 then
          Analyze_Set_Membership;
          return;
       end if;
@@ -7029,10 +7031,15 @@ package body Sem_Ch4 is
       --  Note that there may be named associations, in which case the node
       --  was rewritten earlier as a call, and has been transformed back into
       --  an indexed expression to share the following processing.
+
       --  The generalized indexing node is the one on which analysis and
       --  resolution take place. Before expansion the original node is replaced
       --  with the generalized indexing node, which is a call, possibly with
       --  a dereference operation.
+
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
 
       declare
          Arg : Node_Id;

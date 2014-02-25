@@ -5640,8 +5640,9 @@ package body Sem_Util is
 
             if Nkind (Constr) = N_Loop_Statement
               and then Present (Iteration_Scheme (Constr))
-              and then Nkind (Iterator_Specification (Iteration_Scheme
-                         (Constr))) = N_Iterator_Specification
+              and then Nkind (Iterator_Specification
+                                (Iteration_Scheme (Constr))) =
+                                                 N_Iterator_Specification
             then
                return S;
             end if;
