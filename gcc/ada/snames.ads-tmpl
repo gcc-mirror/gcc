@@ -445,6 +445,7 @@ package Snames is
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + $; -- GNAT
+   Name_Warning_As_Error               : constant Name_Id := N + $; -- GNAT
    Name_Warnings                       : constant Name_Id := N + $; -- GNAT
    Name_Wide_Character_Encoding        : constant Name_Id := N + $; -- GNAT
    Last_Configuration_Pragma_Name      : constant Name_Id := N + $;
@@ -1790,6 +1791,7 @@ package Snames is
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,
       Pragma_Validity_Checks,
+      Pragma_Warning_As_Error,
       Pragma_Warnings,
       Pragma_Wide_Character_Encoding,
 

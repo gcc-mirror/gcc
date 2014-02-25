@@ -308,7 +308,7 @@ package Lib is
    --      from running (i.e. fatal error during parsing stops semantics,
    --      fatal error during semantics stops code generation). Note that
    --      currently, errors of any kind cause Fatal_Error to be set, but
-   --      eventually perhaps only errors labeled as Fatal_Errors should be
+   --      eventually perhaps only errors labeled as fatal errors should be
    --      this severe if we decide to try Sem on sources with minor errors.
 
    --    Generate_Code

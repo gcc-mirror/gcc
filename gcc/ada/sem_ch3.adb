@@ -5007,6 +5007,16 @@ package body Sem_Ch3 is
       while Present (Index) loop
          Analyze (Index);
 
+         --  Test for odd case of trying to index a type by the type itself
+
+         if Is_Entity_Name (Index) and then Entity (Index) = T then
+            Error_Msg_N ("type& cannot be indexed by itself", Index);
+            Set_Entity (Index, Standard_Boolean);
+            Set_Etype (Index, Standard_Boolean);
+         end if;
+
+         --  Check SPARK restriction requiring a subtype mark
+
          if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
             Check_SPARK_Restriction ("subtype mark required", Index);
          end if;
