@@ -1,5 +1,9 @@
 2014-02-25  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (finish_static_data_member_decl): Diagnose static data
+	member in unnamed class.
+	* class.c (finish_struct_anon_r): Avoid redundant diagnostic.
+
 	PR lto/53808
 	* class.c (clone_function_decl): Call note_vague_linkage_fn for
 	defaulted virtual dtor.

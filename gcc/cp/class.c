@@ -2851,7 +2851,9 @@ finish_struct_anon_r (tree field, bool complain)
 
       if (TREE_CODE (elt) != FIELD_DECL)
 	{
-	  if (complain)
+	  /* We already complained about static data members in
+	     finish_static_data_member_decl.  */
+	  if (complain && TREE_CODE (elt) != VAR_DECL)
 	    {
 	      if (is_union)
 		permerror (input_location,

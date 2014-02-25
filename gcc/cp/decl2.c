@@ -802,6 +802,17 @@ finish_static_data_member_decl (tree decl,
       && !DECL_TEMPLATE_INSTANTIATION (decl))
     permerror (input_location, "local class %q#T shall not have static data member %q#D",
 	       current_class_type, decl);
+  else
+    for (tree t = current_class_type; TYPE_P (t);
+	 t = CP_TYPE_CONTEXT (t))
+      if (TYPE_ANONYMOUS_P (t))
+	{
+	  if (permerror (DECL_SOURCE_LOCATION (decl),
+			 "static data member %qD in unnamed class", decl))
+	    inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)),
+		    "unnamed class defined here");
+	  break;
+	}
 
   DECL_IN_AGGR_P (decl) = 1;
 
