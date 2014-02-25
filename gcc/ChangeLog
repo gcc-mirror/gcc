@@ -1,3 +1,27 @@
+2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PREFETCHWT1_SET),
+	(OPTION_MASK_ISA_PREFETCHWT1_UNSET): New.
+	(ix86_handle_option): Handle OPT_mprefetchwt1.
+	* config/i386/cpuid.h (bit_PREFETCHWT1): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	PREFETCHWT1 CPUID.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_PREFETCHWT1.
+	* config/i386/i386.c (ix86_target_string): Handle mprefetchwt1.
+	(PTA_PREFETCHWT1): New.
+	(ix86_option_override_internal): Handle PTA_PREFETCHWT1.
+	(ix86_valid_target_attribute_inner_p): Handle OPT_mprefetchwt1.
+	* config/i386/i386.h (TARGET_PREFETCHWT1), (TARGET_PREFETCHWT1_P):
+	  New.
+	* config/i386/i386.md (prefetch): Check TARGET_PREFETCHWT1
+	(*prefetch_avx512pf_<mode>_: Change into ...
+	 (*prefetch_prefetchwt1_<mode>: This.
+	* config/i386/i386.opt (mprefetchwt1): New.
+	* config/i386/xmmintrin.h (_mm_hint): Add _MM_HINT_ET1.
+	(_mm_prefetch): Handle intent to write.
+	* doc/invoke.texi (mprefetchwt1), (mno-prefetchwt1): Doccument.
+
 2014-02-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60291
@@ -17,7 +41,7 @@
 	(run_gcc): And pass them through.
 
 2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
-	
+
 	* sel-sched.c (calculate_new_fences): New parameter ptime.
 	Calculate it as a maximum over all fence cycles.
 	(sel_sched_region_2): Adjust the call to calculate_new_fences.
