@@ -1,5 +1,26 @@
 2014-02-25  Yannick Moy  <moy@adacore.com>
 
+	* sem_prag.adb: Remove obsolete reference to SPARK RM in error message.
+
+2014-02-25  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE): Enable for ARM.
+	(__gnat_adjust_context_for_raise): Bump the PC by 2.
+
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch3.adb (P_Basic_Declarative_Items): In the case of a
+	misplaced IS, add a statement sequence to improper body only if
+	one has not been parsed already.
+
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Update): Check for
+	mismatch when multidimensional array is updated with a single
+	index.
+
+2014-02-25  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch3.adb, sem_ch5.adb, sem_prag.adb, sem_attr.adb, errout.ads,
 	sem_ch6.adb: Mark most references to SPARK RM in error messages
 	for removal.
