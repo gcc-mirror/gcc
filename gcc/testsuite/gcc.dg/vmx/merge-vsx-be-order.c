@@ -9,6 +9,11 @@ static int vec_long_eq (vector long x, vector long y)
   return (x[0] == y[0] && x[1] == y[1]);
 }
 
+static int vec_double_eq (vector double x, vector double y)
+{
+  return (x[0] == y[0] && x[1] == y[1]);
+}
+
 static void test()
 {
   /* Input vectors.  */
@@ -41,6 +46,6 @@ static void test()
 
   check (vec_long_eq (vlh, vlrh), "vlh");
   check (vec_long_eq (vll, vlrl), "vll");
-  check (vec_all_eq (vdh, vdrh), "vdh" );
-  check (vec_all_eq (vdl, vdrl), "vdl" );
+  check (vec_double_eq (vdh, vdrh), "vdh" );
+  check (vec_double_eq (vdl, vdrl), "vdl" );
 }
