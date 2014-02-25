@@ -53,6 +53,8 @@ typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 /* Constants for use with _mm_prefetch.  */
 enum _mm_hint
 {
+  /* _MM_HINT_ET is _MM_HINT_T with set 3rd bit.  */
+  _MM_HINT_ET1 = 6,
   _MM_HINT_T0 = 3,
   _MM_HINT_T1 = 2,
   _MM_HINT_T2 = 1,
@@ -1191,11 +1193,11 @@ _m_psadbw (__m64 __A, __m64 __B)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_prefetch (const void *__P, enum _mm_hint __I)
 {
-  __builtin_prefetch (__P, 0, __I);
+  __builtin_prefetch (__P, (__I & 0x4) >> 2, __I & 0x3);
 }
 #else
 #define _mm_prefetch(P, I) \
-  __builtin_prefetch ((P), 0, (I))
+  __builtin_prefetch ((P), ((I & 0x4) >> 2), (I & 0x3))
 #endif
 
 /* Stores the data in A to the address P without polluting the caches.  */

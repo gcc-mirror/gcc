@@ -667,7 +667,7 @@ Objective-C and Objective-C++ Dialects}.
 -mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd -msha @gol
--maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
+-maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma -mprefetchwt1 @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
@@ -15265,6 +15265,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-f16c
 @itemx -mfma
 @itemx -mno-fma
+@itemx -mprefetchwt1
+@itemx -mno-prefetchwt1
 @itemx -msse4a
 @itemx -mno-sse4a
 @itemx -mfma4

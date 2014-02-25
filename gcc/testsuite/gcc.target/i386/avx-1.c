@@ -152,7 +152,7 @@
 #define __builtin_ia32_shufpd(A, B, N) __builtin_ia32_shufpd(A, B, 0)
 
 /* xmmintrin.h */
-#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, A, _MM_HINT_NTA)
+#define __builtin_prefetch(P, A, I) __builtin_prefetch(P, 0, _MM_HINT_NTA)
 #define __builtin_ia32_pshufw(A, N) __builtin_ia32_pshufw(A, 0)
 #define __builtin_ia32_vec_set_v4hi(A, D, N) \
   __builtin_ia32_vec_set_v4hi(A, D, 0)

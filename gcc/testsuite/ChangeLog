@@ -1,3 +1,14 @@
+2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx-1.c: Update __builtin_prefetch.
+	* gcc.target/i386/prefetchwt1-1.c: New.
+	* g++.dg/other/i386-2.C: Add new option.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Update __builtin_prefetch, add new option.
+	* gcc.target/i386/sse-22.c: Add new option.
+	* gcc.target/i386/sse-23.c: Update __builtin_prefetch, add new option.
+
 2014-02-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libfortran/59313
