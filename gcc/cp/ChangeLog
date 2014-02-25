@@ -1,3 +1,15 @@
+2014-02-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60065
+	* parser.c (cp_parser_direct_declarator): Don't save and
+	restore num_template_parameter_lists around call to
+	cp_parser_parameter_declaration_list.
+	(function_being_declared_is_template_p): New predicate.
+	(cp_parser_parameter_declaration_list): Use
+	function_being_declared_is_template_p as predicate for
+	inspecting current function template parameter list length
+	rather than num_template_parameter_lists.
+
 2014-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60146
