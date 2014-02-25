@@ -211,7 +211,7 @@ begin
    --  Line for -gnatei switch
 
    Write_Switch_Char ("einn");
-   Write_Line ("Set maximumum number of instantiations to nn");
+   Write_Line ("Set maximum number of instantiations to nn");
 
    --  Line for -gnateI switch
 

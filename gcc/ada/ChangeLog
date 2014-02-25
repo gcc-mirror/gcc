@@ -1,5 +1,36 @@
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, einfo.adb (Has_Shift_Operator): New flag.
+	* gnat_rm.texi: Document pragma Provide_Shift_Operators.
+	* interfac.ads: Minor code reorganization (add pragma
+	Compiler_Unit_Warning).
+	* par-prag.adb: Add dummy entry for Provide_Shift_Operators.
+	* sem_ch3.adb (Build_Derived_Numeric_Type): Copy
+	Has_Shift_Operator flag.
+	* sem_intr.adb (Check_Intrinsic_Subprogram): Make sure
+	Check_Shift is always called (Check_Shift): Set Has_Shift_Operator.
+	* sem_prag.adb: Implement pragma Provide_Shift_Operators.
+	* snames.ads-tmpl: Add entries for pragma Provide_Shift_Operators
+	Add entry for Name_Amount.
+	* checks.adb (Selected_Range_Checks): When checking for a null
+	range, make sure we use the base type, and not the subtype for
+	deciding a range is null.
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Check
+	for suspicious loop bound which is outside the range of the
+	loop subtype.
+	* gnat_ugn.texi: Add documentation section "Determining the
+	Chosen Elaboration Order"
+	* sem_ch13.adb (UC_Entry): Add field Act_Unit
+	(Validate_Unchecked_Conversion): Store Act_Unit
+	(Validate_Unchecked_Conversions): Test Warnings_Off in Act_Unit
+	* treepr.adb: Minor reformatting.
+
+2014-02-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb: Minor: fix typo.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
 	* lib.ads, s-bitops.adb, s-bitops.ads, s-conca5.adb, gnat_rm.texi,
 	s-conca5.ads, s-conca7.adb, s-conca7.ads, s-crc32.adb, s-crc32.ads,
 	s-conca9.adb, s-conca9.ads, g-dyntab.adb, s-crtl.ads, g-dyntab.ads,

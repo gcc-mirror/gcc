@@ -1278,6 +1278,7 @@ begin
            Pragma_Profile                        |
            Pragma_Profile_Warnings               |
            Pragma_Propagate_Exceptions           |
+           Pragma_Provide_Shift_Operators        |
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
            Pragma_Pure_05                        |

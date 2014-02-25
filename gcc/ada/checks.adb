@@ -9157,8 +9157,12 @@ package body Checks is
                     Make_And_Then (Loc,
                       Left_Opnd =>
                         Make_Op_Ge (Loc,
-                          Left_Opnd  => Duplicate_Subexpr_No_Checks (HB),
-                          Right_Opnd => Duplicate_Subexpr_No_Checks (LB)),
+                          Left_Opnd  =>
+                            Convert_To (Base_Type (Etype (HB)),
+                              Duplicate_Subexpr_No_Checks (HB)),
+                          Right_Opnd =>
+                            Convert_To (Base_Type (Etype (LB)),
+                              Duplicate_Subexpr_No_Checks (LB))),
                       Right_Opnd => Cond);
                end;
             end if;

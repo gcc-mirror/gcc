@@ -14948,7 +14948,7 @@ package body Sem_Prag is
 
             elsif K = N_Object_Declaration
               or else (K = N_Component_Declaration
-                       and then Original_Record_Component (E) = E)
+                        and then Original_Record_Component (E) = E)
             then
                if Rep_Item_Too_Late (E, N) then
                   return;
@@ -15514,7 +15514,6 @@ package body Sem_Prag is
          --  Ada.Interrupts.Interrupt_ID.
 
          when Pragma_Interrupt_State => Interrupt_State : declare
-
             Int_Id : constant Entity_Id := RTE (RE_Interrupt_ID);
             --  This is the entity Ada.Interrupts.Interrupt_ID;
 
@@ -18471,6 +18470,123 @@ package body Sem_Prag is
                  ("'G'N'A'T pragma Propagate'_Exceptions is now obsolete " &
                   "and has no effect?j?", N);
             end if;
+
+         -----------------------------
+         -- Provide_Shift_Operators --
+         -----------------------------
+
+         --  pragma Provide_Shift_Operators (integer_subtype_LOCAL_NAME);
+
+         when Pragma_Provide_Shift_Operators =>
+         Provide_Shift_Operators : declare
+            Ent : Entity_Id;
+
+            procedure Declare_Shift_Operator (Nam : Name_Id);
+            --  Insert declaration and pragma Instrinsic for named shift op
+
+            ----------------------------
+            -- Declare_Shift_Operator --
+            ----------------------------
+
+            procedure Declare_Shift_Operator (Nam : Name_Id) is
+               Func   : Node_Id;
+               Import : Node_Id;
+
+            begin
+               Func :=
+                 Make_Subprogram_Declaration (Loc,
+                   Make_Function_Specification (Loc,
+                     Defining_Unit_Name       =>
+                       Make_Defining_Identifier (Loc, Chars => Nam),
+
+                     Result_Definition        =>
+                       Make_Identifier (Loc, Chars => Chars (Ent)),
+
+                     Parameter_Specifications => New_List (
+                       Make_Parameter_Specification (Loc,
+                         Defining_Identifier  =>
+                           Make_Defining_Identifier (Loc, Name_Value),
+                         Parameter_Type       =>
+                           Make_Identifier (Loc, Chars => Chars (Ent))),
+
+                       Make_Parameter_Specification (Loc,
+                         Defining_Identifier  =>
+                           Make_Defining_Identifier (Loc, Name_Amount),
+                         Parameter_Type       =>
+                           New_Occurrence_Of (Standard_Natural, Loc)))));
+
+               Import :=
+                 Make_Pragma (Loc,
+                   Pragma_Identifier => Make_Identifier (Loc, Name_Import),
+                   Pragma_Argument_Associations => New_List (
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression => Make_Identifier (Loc, Name_Intrinsic)),
+                     Make_Pragma_Argument_Association (Loc,
+                       Expression => Make_Identifier (Loc, Nam))));
+
+               Insert_After (N, Import);
+               Insert_After (N, Func);
+            end Declare_Shift_Operator;
+
+         --  Start of processing for Provide_Shift_Operators
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Arg1 := Get_Pragma_Arg (Arg1);
+
+            --  We must have an entity name
+
+            if not Is_Entity_Name (Arg1) then
+               Error_Pragma_Arg
+                 ("pragma % must apply to integer first subtype", Arg1);
+            end if;
+
+            --  If no Entity, means there was a prior error so ignore
+
+            if Present (Entity (Arg1)) then
+               Ent := Entity (Arg1);
+
+               --  Apply error checks
+
+               if not Is_First_Subtype (Ent) then
+                  Error_Pragma_Arg
+                    ("cannot apply pragma %",
+                     "\& is not a first subtype",
+                     Arg1);
+
+               elsif not Is_Integer_Type (Ent) then
+                  Error_Pragma_Arg
+                    ("cannot apply pragma %",
+                     "\& is not an integer type",
+                     Arg1);
+
+               elsif Has_Shift_Operator (Ent) then
+                  Error_Pragma_Arg
+                    ("cannot apply pragma %",
+                     "\& already has declared shift operators",
+                     Arg1);
+
+               elsif Is_Frozen (Ent) then
+                  Error_Pragma_Arg
+                    ("pragma % appears too late",
+                     "\& is already frozen",
+                     Arg1);
+               end if;
+
+               --  Now declare the operators. We do this during analysis rather
+               --  than expansion, since we want the operators available if we
+               --  are operating in -gnatc or ASIS mode.
+
+               Declare_Shift_Operator (Name_Rotate_Left);
+               Declare_Shift_Operator (Name_Rotate_Right);
+               Declare_Shift_Operator (Name_Shift_Left);
+               Declare_Shift_Operator (Name_Shift_Right);
+               Declare_Shift_Operator (Name_Shift_Right_Arithmetic);
+            end if;
+         end Provide_Shift_Operators;
 
          ------------------
          -- Psect_Object --
@@ -25675,6 +25791,7 @@ package body Sem_Prag is
       Pragma_Profile                        =>  0,
       Pragma_Profile_Warnings               =>  0,
       Pragma_Propagate_Exceptions           => -1,
+      Pragma_Provide_Shift_Operators        => -1,
       Pragma_Psect_Object                   => -1,
       Pragma_Pure                           => -1,
       Pragma_Pure_05                        => -1,

@@ -1826,6 +1826,10 @@ package Einfo is
 --       is detected while analyzing the body. Used to activate some error
 --       checks for infinite recursion.
 
+--    Has_Shift_Operator (Flag267) [base type only]
+--       Defined in integer types. Set in the base type of an integer type for
+--       which at least one of the shift operators is defined.
+
 --    Has_Size_Clause (Flag29)
 --       Defined in entities for types and objects. Set if a size clause is
 --       defined for the entity. Used to prevent multiple Size clauses for a
@@ -5644,6 +5648,7 @@ package Einfo is
    --    Static_Predicate                    (List25)
    --    Non_Binary_Modulus                  (Flag58)   (base type only)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Shift_Operator                  (Flag267)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -5940,6 +5945,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Static_Predicate                    (List25)
    --    Has_Biased_Representation           (Flag139)
+   --    Has_Shift_Operator                  (Flag267)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
    --    (plus type attributes)
@@ -6465,6 +6471,7 @@ package Einfo is
    function Has_RACW                            (Id : E) return B;
    function Has_Record_Rep_Clause               (Id : E) return B;
    function Has_Recursive_Call                  (Id : E) return B;
+   function Has_Shift_Operator                  (Id : E) return B;
    function Has_Size_Clause                     (Id : E) return B;
    function Has_Small_Clause                    (Id : E) return B;
    function Has_Specified_Layout                (Id : E) return B;
@@ -7088,6 +7095,7 @@ package Einfo is
    procedure Set_Has_RACW                        (Id : E; V : B := True);
    procedure Set_Has_Record_Rep_Clause           (Id : E; V : B := True);
    procedure Set_Has_Recursive_Call              (Id : E; V : B := True);
+   procedure Set_Has_Shift_Operator              (Id : E; V : B := True);
    procedure Set_Has_Size_Clause                 (Id : E; V : B := True);
    procedure Set_Has_Small_Clause                (Id : E; V : B := True);
    procedure Set_Has_Specified_Layout            (Id : E; V : B := True);
@@ -7825,6 +7833,7 @@ package Einfo is
    pragma Inline (Has_RACW);
    pragma Inline (Has_Record_Rep_Clause);
    pragma Inline (Has_Recursive_Call);
+   pragma Inline (Has_Shift_Operator);
    pragma Inline (Has_Size_Clause);
    pragma Inline (Has_Small_Clause);
    pragma Inline (Has_Specified_Layout);
@@ -8296,6 +8305,7 @@ package Einfo is
    pragma Inline (Set_Has_RACW);
    pragma Inline (Set_Has_Record_Rep_Clause);
    pragma Inline (Set_Has_Recursive_Call);
+   pragma Inline (Set_Has_Shift_Operator);
    pragma Inline (Set_Has_Size_Clause);
    pragma Inline (Set_Has_Small_Clause);
    pragma Inline (Set_Has_Specified_Layout);
