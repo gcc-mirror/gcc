@@ -907,7 +907,7 @@ package body Sem_Prag is
                              ("cannot mention state & in global refinement",
                               Item, Item_Id);
                            Error_Msg_N
-                             ("\\use its constituents instead", Item);
+                             ("\use its constituents instead", Item);
                            return;
 
                         --  If the reference to the abstract state appears in
@@ -1168,7 +1168,7 @@ package body Sem_Prag is
 
                Error_Msg_Name_1 := Chars (Subp_Id);
                Error_Msg_NE
-                 ("\\& is not part of the input or output set of subprogram %",
+                 ("\& is not part of the input or output set of subprogram %",
                   Item, Item_Id);
 
             --  The mode of the item and its role in pragma [Refined_]Depends
@@ -2018,7 +2018,7 @@ package body Sem_Prag is
                      Error_Msg_NE
                        ("cannot mention state & in global refinement",
                         Item, Item_Id);
-                     Error_Msg_N ("\\use its constituents instead", Item);
+                     Error_Msg_N ("\use its constituents instead", Item);
                      return;
 
                   --  If the reference to the abstract state appears in an
@@ -2166,7 +2166,7 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
                      Error_Msg_NE
-                       ("\\item already appears as input of subprogram &",
+                       ("\item already appears as input of subprogram &",
                         Item, Context);
 
                      --  Stop the traversal once an error has been detected
@@ -3490,7 +3490,7 @@ package body Sem_Prag is
                & "(SPARK RM 7.2.6(5))", Indic);
             Error_Msg_Name_1 := Chars (Scope (State_Id));
             Error_Msg_NE
-              ("\\& is not part of the hidden state of package %",
+              ("\& is not part of the hidden state of package %",
                Indic, Item_Id);
 
          --  The item appears in the visible state space of some package. In
@@ -3507,6 +3507,18 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("indicator Part_Of must denote an abstract state of "
                      & "parent unit or descendant (SPARK RM 7.2.6(3))", Indic);
+
+               --  If the unit is a public child of a private unit it cannot
+               --  refine the state of a private parent, only that of a
+               --  public ancestor or descendant thereof.
+
+               elsif not Private_Present
+                           (Parent (Unit_Declaration_Node (Pack_Id)))
+                 and then Is_Private_Descendant (Scope (State_Id))
+               then
+                  Error_Msg_N
+                    ("indicator Part_Of must denote the abstract state of "
+                     & "a public ancestor", State);
                end if;
 
             --  Indicator Part_Of is not needed when the related package is not
@@ -3518,7 +3530,7 @@ package body Sem_Prag is
                   & "RM 7.2.6(5))", Indic);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\\& is declared in the visible part of package %",
+                 ("\& is declared in the visible part of package %",
                   Indic, Item_Id);
             end if;
 
@@ -3532,7 +3544,7 @@ package body Sem_Prag is
                   & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\\& is declared in the private part of package %",
+                 ("\& is declared in the private part of package %",
                   Indic, Item_Id);
             end if;
 
@@ -3547,7 +3559,7 @@ package body Sem_Prag is
             if Scope (State_Id) = Pack_Id then
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_NE
-                 ("\\& is declared in the body of package %", Indic, Item_Id);
+                 ("\& is declared in the body of package %", Indic, Item_Id);
             end if;
          end if;
 
@@ -6652,7 +6664,7 @@ package body Sem_Prag is
                Error_Msg_N
                  ("& may not have Ghost convention", E);
                Error_Msg_N
-                 ("\\only functions are permitted to have Ghost convention",
+                 ("\only functions are permitted to have Ghost convention",
                   E);
                return;
             end if;
@@ -21862,7 +21874,7 @@ package body Sem_Prag is
 
             if Has_Refined_State then
                Error_Msg_N
-                 ("\\check the use of constituents in dependence refinement",
+                 ("\check the use of constituents in dependence refinement",
                   Ref_Clause);
             end if;
          end if;
@@ -22087,7 +22099,7 @@ package body Sem_Prag is
 
             if Has_Refined_State then
                Match_Error
-                 ("\\check the use of constituents in dependence refinement",
+                 ("\check the use of constituents in dependence refinement",
                   Dep_Input);
             end if;
 
@@ -22737,7 +22749,7 @@ package body Sem_Prag is
                   end if;
 
                   Error_Msg_NE
-                    ("\\constituent & is missing in output list",
+                    ("\constituent & is missing in output list",
                      N, Constit_Id);
                end if;
 
@@ -22898,7 +22910,7 @@ package body Sem_Prag is
 
                Error_Msg_Name_1 := Global_Mode;
                Error_Msg_Name_2 := Expect;
-               Error_Msg_N ("\\expected mode %, found mode %", Item);
+               Error_Msg_N ("\expected mode %, found mode %", Item);
             end Inconsistent_Mode_Error;
 
          --  Start of processing for Check_Refined_Global_Item
@@ -23395,7 +23407,7 @@ package body Sem_Prag is
                        ("& cannot act as constituent of state %",
                         Constit, Constit_Id);
                      Error_Msg_NE
-                       ("\\Part_Of indicator specifies & as encapsulating "
+                       ("\Part_Of indicator specifies & as encapsulating "
                         & "state", Constit, Encapsulating_State (Constit_Id));
                   end if;
 
@@ -23612,10 +23624,10 @@ package body Sem_Prag is
 
                   if Ekind (Constit_Id) = E_Abstract_State then
                      Error_Msg_NE
-                       ("\\abstract state & defined #", State, Constit_Id);
+                       ("\abstract state & defined #", State, Constit_Id);
                   else
                      Error_Msg_NE
-                       ("\\variable & defined #", State, Constit_Id);
+                       ("\variable & defined #", State, Constit_Id);
                   end if;
 
                   Next_Elmt (Constit_Elmt);
@@ -23679,7 +23691,7 @@ package body Sem_Prag is
 
                   Error_Msg_N ("reference to & not allowed", Body_Ref);
                   Error_Msg_Sloc := Sloc (State);
-                  Error_Msg_N ("\\refinement of & is visible#", Body_Ref);
+                  Error_Msg_N ("\refinement of & is visible#", Body_Ref);
 
                   Next_Elmt (Body_Ref_Elmt);
                end loop;
@@ -23995,10 +24007,10 @@ package body Sem_Prag is
 
                if Ekind (State_Id) = E_Abstract_State then
                   Error_Msg_NE
-                    ("\\abstract state & defined #", Body_Id, State_Id);
+                    ("\abstract state & defined #", Body_Id, State_Id);
                else
                   Error_Msg_NE
-                    ("\\variable & defined #", Body_Id, State_Id);
+                    ("\variable & defined #", Body_Id, State_Id);
                end if;
 
                Next_Elmt (State_Elmt);
@@ -24607,7 +24619,7 @@ package body Sem_Prag is
                   & "(SPARK RM 7.2.6(3))", Item_Id);
                Error_Msg_Name_1 := Chars (Pack_Id);
                Error_Msg_N
-                 ("\\& is declared in the visible part of private child "
+                 ("\& is declared in the visible part of private child "
                   & "unit %", Item_Id);
             end if;
          end if;
@@ -24640,7 +24652,7 @@ package body Sem_Prag is
                & "(SPARK RM 7.2.6(2))", Item_Id);
             Error_Msg_Name_1 := Chars (Pack_Id);
             Error_Msg_N
-              ("\\& is declared in the private part of package %", Item_Id);
+              ("\& is declared in the private part of package %", Item_Id);
          end if;
       end if;
    end Check_Missing_Part_Of;

@@ -1,3 +1,19 @@
+2014-02-25  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_ch10.adb: Minor comment fix.
+
+2014-02-25  Bob Duff  <duff@adacore.com>
+
+	* s-tasdeb.adb: Misc cleanup of this package,
+	including printing addresses in hexadecimal.
+	(Write): Fix minor bug when taking 'Address of an empty string.
+
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Reject state refinement in a
+	public child unit when it does not refer to the abstract state
+	of a public ancestor.
+
 2014-02-25  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma/Pragma_Validity_Checks): Ignore pragma
