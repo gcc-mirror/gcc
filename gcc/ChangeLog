@@ -1,3 +1,7 @@
+2014-02-24  Alangi Derick  <alangiderick@gmail.com>
+
+	* calls.h: Fix typo in comment.
+
 2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Don't valididate when
