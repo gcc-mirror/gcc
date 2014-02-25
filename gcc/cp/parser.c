@@ -18122,7 +18122,7 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 static bool
 function_being_declared_is_template_p (cp_parser* parser)
 {
-  if (!current_template_parms)
+  if (!current_template_parms || processing_template_parmlist)
     return false;
 
   if (parser->implicit_template_scope)
@@ -18165,7 +18165,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 
   (void) cleanup;
 
-  if (!processing_specialization)
+  if (!processing_specialization && !processing_template_parmlist)
     if (!current_function_decl
 	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
       parser->auto_is_implicit_function_template_parm_p = true;

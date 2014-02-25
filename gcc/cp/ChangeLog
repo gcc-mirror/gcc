@@ -1,5 +1,12 @@
 2014-02-25  Adam Butcher  <adam@jessamine.co.uk>
 
+	PR c++/60311
+	* parser.c (function_being_declared_is_template_p): Return false when
+	processing a template parameter list.
+	(cp_parser_parameter_declaration_clause): Don't set
+	auto_is_implicit_function_template_parm_p when processing a
+	template parameter list.
+
 	* parser.c (synthesize_implicit_template_parm): Inject new template
 	argument list appropriately when a generic member function
 	of a class template is declared out-of-line.
