@@ -1,5 +1,15 @@
 2014-02-25  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60291
+	* emit-rtl.c (mem_attrs_htab): Remove.
+	(mem_attrs_htab_hash): Likewise.
+	(mem_attrs_htab_eq): Likewise.
+	(set_mem_attrs): Always allocate new mem-attrs when something
+	changed.
+	(init_emit_once): Do not allocate mem_attrs_htab.
+
+2014-02-25  Richard Biener  <rguenther@suse.de>
+
 	PR lto/60319
 	* lto-opts.c (lto_write_options): Output non-explicit conservative
 	-fwrapv, -fno-trapv and -fno-strict-overflow.

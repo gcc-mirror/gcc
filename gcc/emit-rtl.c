@@ -126,10 +126,6 @@ rtx cc0_rtx;
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_int_htab;
 
-/* A hash table storing memory attribute structures.  */
-static GTY ((if_marked ("ggc_marked_p"), param_is (struct mem_attrs)))
-     htab_t mem_attrs_htab;
-
 /* A hash table storing register attribute structures.  */
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct reg_attrs)))
      htab_t reg_attrs_htab;
@@ -157,8 +153,6 @@ static rtx lookup_const_double (rtx);
 static hashval_t const_fixed_htab_hash (const void *);
 static int const_fixed_htab_eq (const void *, const void *);
 static rtx lookup_const_fixed (rtx);
-static hashval_t mem_attrs_htab_hash (const void *);
-static int mem_attrs_htab_eq (const void *, const void *);
 static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
@@ -249,20 +243,6 @@ const_fixed_htab_eq (const void *x, const void *y)
   return fixed_identical (CONST_FIXED_VALUE (a), CONST_FIXED_VALUE (b));
 }
 
-/* Returns a hash code for X (which is a really a mem_attrs *).  */
-
-static hashval_t
-mem_attrs_htab_hash (const void *x)
-{
-  const mem_attrs *const p = (const mem_attrs *) x;
-
-  return (p->alias ^ (p->align * 1000)
-	  ^ (p->addrspace * 4000)
-	  ^ ((p->offset_known_p ? p->offset : 0) * 50000)
-	  ^ ((p->size_known_p ? p->size : 0) * 2500000)
-	  ^ (size_t) iterative_hash_expr (p->expr, 0));
-}
-
 /* Return true if the given memory attributes are equal.  */
 
 static bool
@@ -280,23 +260,11 @@ mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
 		  && operand_equal_p (p->expr, q->expr, 0))));
 }
 
-/* Returns nonzero if the value represented by X (which is really a
-   mem_attrs *) is the same as that given by Y (which is also really a
-   mem_attrs *).  */
-
-static int
-mem_attrs_htab_eq (const void *x, const void *y)
-{
-  return mem_attrs_eq_p ((const mem_attrs *) x, (const mem_attrs *) y);
-}
-
 /* Set MEM's memory attributes so that they are the same as ATTRS.  */
 
 static void
 set_mem_attrs (rtx mem, mem_attrs *attrs)
 {
-  void **slot;
-
   /* If everything is the default, we can just clear the attributes.  */
   if (mem_attrs_eq_p (attrs, mode_mem_attrs[(int) GET_MODE (mem)]))
     {
@@ -304,14 +272,12 @@ set_mem_attrs (rtx mem, mem_attrs *attrs)
       return;
     }
 
-  slot = htab_find_slot (mem_attrs_htab, attrs, INSERT);
-  if (*slot == 0)
+  if (!MEM_ATTRS (mem)
+      || !mem_attrs_eq_p (attrs, MEM_ATTRS (mem)))
     {
-      *slot = ggc_alloc_mem_attrs ();
-      memcpy (*slot, attrs, sizeof (mem_attrs));
+      MEM_ATTRS (mem) = ggc_alloc_mem_attrs ();
+      memcpy (MEM_ATTRS (mem), attrs, sizeof (mem_attrs));
     }
-
-  MEM_ATTRS (mem) = (mem_attrs *) *slot;
 }
 
 /* Returns a hash code for X (which is a really a reg_attrs *).  */
@@ -5665,8 +5631,6 @@ init_emit_once (void)
   const_fixed_htab = htab_create_ggc (37, const_fixed_htab_hash,
 				      const_fixed_htab_eq, NULL);
 
-  mem_attrs_htab = htab_create_ggc (37, mem_attrs_htab_hash,
-				    mem_attrs_htab_eq, NULL);
   reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
 				    reg_attrs_htab_eq, NULL);
 
