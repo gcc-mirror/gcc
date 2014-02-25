@@ -1,4 +1,4 @@
-/* Declarations anda data types for RTL call insn generation.
+/* Declarations and data types for RTL call insn generation.
    Copyright (C) 2013-2014 Free Software Foundation, Inc.
 
 This file is part of GCC.
