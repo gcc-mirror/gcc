@@ -1,3 +1,7 @@
+2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu): Deal with Warning_As_Error.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* rtsfind.adb (Is_RTE): Protect against entity with no scope
