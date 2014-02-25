@@ -8671,15 +8671,80 @@ package body Exp_Ch6 is
 
       procedure Collect_Body_Postconditions (Stmts : in out List_Id) is
          procedure Collect_Body_Postconditions_Of_Kind (Post_Nam : Name_Id);
-         --  Process postconditions of a particular kind denoted by Post_Nam
+         --  Process all postconditions of a particular kind denoted by
+         --  Post_Nam.
 
          -----------------------------------------
          -- Collect_Body_Postconditions_Of_Kind --
          -----------------------------------------
 
          procedure Collect_Body_Postconditions_Of_Kind (Post_Nam : Name_Id) is
-            Check_Prag : Node_Id;
-            Decl       : Node_Id;
+            procedure Collect_Body_Postconditions_In_Decls
+              (First_Decl : Node_Id);
+            --  Process all postconditions found in a declarative list starting
+            --  with declaration First_Decl.
+
+            ------------------------------------------
+            -- Collect_Body_Postconditions_In_Decls --
+            ------------------------------------------
+
+            procedure Collect_Body_Postconditions_In_Decls
+              (First_Decl : Node_Id)
+            is
+               Check_Prag : Node_Id;
+               Decl       : Node_Id;
+
+            begin
+               --  Inspect the declarative list looking for a pragma that
+               --  matches the desired name.
+
+               Decl := First_Decl;
+               while Present (Decl) loop
+
+                  --  Note that non-matching pragmas are skipped
+
+                  if Nkind (Decl) = N_Pragma then
+                     if Pragma_Name (Decl) = Post_Nam then
+                        if not Analyzed (Decl) then
+                           Analyze (Decl);
+                        end if;
+
+                        Check_Prag := Build_Pragma_Check_Equivalent (Decl);
+
+                        if Expander_Active then
+                           Append_Enabled_Item
+                             (Item => Check_Prag,
+                              List => Stmts);
+
+                        --  When analyzing a generic unit, save the pragma for
+                        --  later.
+
+                        else
+                           Prepend_To_Declarations (Check_Prag);
+                        end if;
+                     end if;
+
+                  --  Skip internally generated code
+
+                  elsif not Comes_From_Source (Decl) then
+                     null;
+
+                  --  Postcondition pragmas are usually grouped together. There
+                  --  is no need to inspect the whole declarative list.
+
+                  else
+                     exit;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end Collect_Body_Postconditions_In_Decls;
+
+            --  Local variables
+
+            Unit_Decl : constant Node_Id := Parent (N);
+
+         --  Start of processing for Collect_Body_Postconditions_Of_Kind
 
          begin
             pragma Assert (Nam_In (Post_Nam, Name_Postcondition,
@@ -8688,41 +8753,18 @@ package body Exp_Ch6 is
             --  Inspect the declarations of the subprogram body looking for a
             --  pragma that matches the desired name.
 
-            Decl := First (Declarations (N));
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Pragma then
-                  if Pragma_Name (Decl) = Post_Nam then
-                     Analyze (Decl);
-                     Check_Prag := Build_Pragma_Check_Equivalent (Decl);
+            Collect_Body_Postconditions_In_Decls
+              (First_Decl => First (Declarations (N)));
 
-                     if Expander_Active then
-                        Append_Enabled_Item
-                          (Item => Check_Prag,
-                           List => Stmts);
+            --  The subprogram body being processed is actually the proper body
+            --  of a stub with a corresponding spec. The subprogram stub may
+            --  carry a postcondition pragma in which case it must be taken
+            --  into account. The pragma appears after the stub.
 
-                     --  When analyzing a generic unit, save the pragma for
-                     --  later.
-
-                     else
-                        Prepend_To_Declarations (Check_Prag);
-                     end if;
-                  end if;
-
-               --  Skip internally generated code
-
-               elsif not Comes_From_Source (Decl) then
-                  null;
-
-               --  Postconditions in bodies are usually grouped at the top of
-               --  the declarations. There is no point in inspecting the whole
-               --  source list.
-
-               else
-                  exit;
-               end if;
-
-               Next (Decl);
-            end loop;
+            if Present (Spec_Id) and then Nkind (Unit_Decl) = N_Subunit then
+               Collect_Body_Postconditions_In_Decls
+                 (First_Decl => Next (Corresponding_Stub (Unit_Decl)));
+            end if;
          end Collect_Body_Postconditions_Of_Kind;
 
       --  Start of processing for Collect_Body_Postconditions
@@ -8808,10 +8850,44 @@ package body Exp_Ch6 is
       --------------------------------
 
       procedure Collect_Spec_Preconditions (Subp_Id : Entity_Id) is
+         Class_Pre : Node_Id := Empty;
+         --  The sole class-wide precondition pragma that applies to the
+         --  subprogram.
+
+         procedure Add_Or_Save_Precondition (Prag : Node_Id);
+         --  Save a class-wide precondition or add a regulat precondition to
+         --  the declarative list of the body.
+
          procedure Merge_Preconditions (From : Node_Id; Into : Node_Id);
          --  Merge two class-wide preconditions by "or else"-ing them. The
          --  changes are accumulated in parameter Into. Update the error
          --  message of Into.
+
+         ------------------------------
+         -- Add_Or_Save_Precondition --
+         ------------------------------
+
+         procedure Add_Or_Save_Precondition (Prag : Node_Id) is
+            Check_Prag : Node_Id;
+
+         begin
+            Check_Prag := Build_Pragma_Check_Equivalent (Prag);
+
+            --  Save the sole class-wide precondition (if any) for the next
+            --  step where it will be merged with inherited preconditions.
+
+            if Class_Present (Prag) then
+               pragma Assert (No (Class_Pre));
+               Class_Pre := Check_Prag;
+
+            --  Accumulate the corresponding Check pragmas to the top of the
+            --  declarations. Prepending the items ensures that they will be
+            --  evaluated in their original order.
+
+            else
+               Prepend_To_Declarations (Check_Prag);
+            end if;
+         end Add_Or_Save_Precondition;
 
          -------------------------
          -- Merge_Preconditions --
@@ -8889,8 +8965,9 @@ package body Exp_Ch6 is
 
          Inher_Subps   : constant Subprogram_List :=
                            Inherited_Subprograms (Subp_Id);
+         Subp_Decl     : constant Node_Id := Parent (Parent (Subp_Id));
          Check_Prag    : Node_Id;
-         Class_Pre     : Node_Id := Empty;
+         Decl          : Node_Id;
          Inher_Subp_Id : Entity_Id;
          Prag          : Node_Id;
 
@@ -8902,25 +8979,49 @@ package body Exp_Ch6 is
          Prag := Pre_Post_Conditions (Contract (Subp_Id));
          while Present (Prag) loop
             if Pragma_Name (Prag) = Name_Precondition then
-               Check_Prag := Build_Pragma_Check_Equivalent (Prag);
-
-               --  Save the sole class-wide precondition (if any) for the next
-               --  step where it will be merged with inherited preconditions.
-
-               if Class_Present (Prag) then
-                  Class_Pre := Check_Prag;
-
-               --  Accumulate the corresponding Check pragmas to the top of the
-               --  declarations. Prepending the items ensures that they will
-               --  be evaluated in their original order.
-
-               else
-                  Prepend_To_Declarations (Check_Prag);
-               end if;
+               Add_Or_Save_Precondition (Prag);
             end if;
 
             Prag := Next_Pragma (Prag);
          end loop;
+
+         --  The subprogram declaration being processed is actually a body
+         --  stub. The stub may carry a precondition pragma in which case it
+         --  must be taken into account. The pragma appears after the stub.
+
+         if Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
+
+            --  Inspect the declarations following the body stub
+
+            Decl := Next (Subp_Decl);
+            while Present (Decl) loop
+
+               --  Note that non-matching pragmas are skipped
+
+               if Nkind (Decl) = N_Pragma then
+                  if Pragma_Name (Decl) = Name_Precondition then
+                     if not Analyzed (Decl) then
+                        Analyze (Decl);
+                     end if;
+
+                     Add_Or_Save_Precondition (Decl);
+                  end if;
+
+               --  Skip internally generated code
+
+               elsif not Comes_From_Source (Decl) then
+                  null;
+
+               --  Preconditions are usually grouped together. There is no need
+               --  to inspect the whole declarative list.
+
+               else
+                  exit;
+               end if;
+
+               Next (Decl);
+            end loop;
+         end if;
 
          --  Process the contracts of all inherited subprograms, looking for
          --  class-wide preconditions.

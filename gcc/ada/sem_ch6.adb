@@ -2485,8 +2485,17 @@ package body Sem_Ch6 is
 
             if Has_Aspect (Spec_Id, Asp_Id) then
                Error_Msg_Name_1 := Asp_Nam;
-               Error_Msg_Name_2 := Ref_Nam;
-               Error_Msg_N ("aspect % should be %", Asp);
+
+               --  Subunits cannot carry aspects that apply to a subprogram
+               --  declaration.
+
+               if Nkind (Parent (N)) = N_Subunit then
+                  Error_Msg_N ("aspect % cannot apply to a subunit", Asp);
+
+               else
+                  Error_Msg_Name_2 := Ref_Nam;
+                  Error_Msg_N ("aspect % should be %", Asp);
+               end if;
 
             --  Otherwise the aspect must appear in the spec, not in the body:
 
@@ -2912,27 +2921,15 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Language-defined aspects cannot appear in a subprogram body [stub] if
-      --  the subprogram has a separate spec. Certainly implementation-defined
-      --  aspects are allowed to appear (per Aspects_On_Body_Of_Stub_OK).
+      --  Language-defined aspects cannot appear on a subprogram body [stub] if
+      --  the subprogram has a spec. Certain implementation-defined aspects are
+      --  allowed to break this rule (see table Aspect_On_Body_Or_Stub_OK).
 
       if Has_Aspects (N) then
          if Present (Spec_Id)
            and then not Aspects_On_Body_Or_Stub_OK (N)
-
-            --  Do not emit an error on a subprogram body stub that act as
-            --  its own spec.
-
-           and then Nkind (Parent (Parent (Spec_Id))) /= N_Subprogram_Body_Stub
          then
             Diagnose_Misplaced_Aspect_Specifications;
-
-         --  Delay the analysis of aspect specifications that apply to a body
-         --  stub until the proper body is analyzed. If the corresponding body
-         --  is missing, the aspects are still analyzed in Analyze_Proper_Body.
-
-         elsif Nkind (N) in N_Body_Stub then
-            null;
 
          else
             Analyze_Aspect_Specifications (N, Body_Id);

@@ -3601,39 +3601,41 @@ package body Sem_Prag is
 
          Body_Decl := Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
-         if not Nkind_In (Body_Decl, N_Subprogram_Body,
-                                     N_Subprogram_Body_Stub)
-         then
+         --  Extract the entities of the spec and body
+
+         if Nkind (Body_Decl) = N_Subprogram_Body then
+            Body_Id := Defining_Entity (Body_Decl);
+            Spec_Id := Corresponding_Spec (Body_Decl);
+
+         elsif Nkind (Body_Decl) = N_Subprogram_Body_Stub then
+            Body_Id := Defining_Entity (Body_Decl);
+            Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
+
+         else
             Pragma_Misplaced;
             return;
          end if;
 
-         Body_Id := Defining_Entity (Body_Decl);
-
-         --  The body [stub] must not act as a spec, in other words it has to
-         --  be paired with a corresponding spec.
-
-         if Nkind (Body_Decl) = N_Subprogram_Body then
-            Spec_Id := Corresponding_Spec (Body_Decl);
-         else
-            Spec_Id := Corresponding_Spec_Of_Stub (Body_Decl);
-         end if;
+         --  The pragma must apply to the second declaration of a subprogram.
+         --  In other words, the body [stub] cannot acts as a spec.
 
          if No (Spec_Id) then
             Error_Pragma ("pragma % cannot apply to a stand alone body");
             return;
+
+         --  Catch the case where the subprogram body is a subunit and acts as
+         --  the third declaration of the subprogram.
+
+         elsif Nkind (Parent (Body_Decl)) = N_Subunit then
+            Error_Pragma ("pragma % cannot apply to a subunit");
+            return;
          end if;
 
-         --  The pragma may only apply to the body [stub] of a subprogram
+         --  The pragma can only apply to the body [stub] of a subprogram
          --  declared in the visible part of a package. Retrieve the context of
          --  the subprogram declaration.
 
          Spec_Decl := Parent (Parent (Spec_Id));
-
-         pragma Assert
-           (Nkind_In (Spec_Decl, N_Abstract_Subprogram_Declaration,
-                                 N_Generic_Subprogram_Declaration,
-                                 N_Subprogram_Declaration));
 
          if Nkind (Parent (Spec_Decl)) /= N_Package_Specification then
             Error_Pragma
@@ -12445,10 +12447,24 @@ package body Sem_Prag is
             Subp_Decl :=
               Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
-            if Nkind (Subp_Decl) /= N_Subprogram_Declaration
-              and then (Nkind (Subp_Decl) /= N_Subprogram_Body
-                         or else not Acts_As_Spec (Subp_Decl))
+            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
             then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            else
                Pragma_Misplaced;
                return;
             end if;
@@ -12969,10 +12985,24 @@ package body Sem_Prag is
             Subp_Decl :=
               Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
-            if Nkind (Subp_Decl) /= N_Subprogram_Declaration
-              and then (Nkind (Subp_Decl) /= N_Subprogram_Body
-                          or else not Acts_As_Spec (Subp_Decl))
+            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
             then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            else
                Pragma_Misplaced;
                return;
             end if;
@@ -14239,10 +14269,24 @@ package body Sem_Prag is
             Subp_Decl :=
               Find_Related_Subprogram_Or_Body (N, Do_Checks => True);
 
-            if Nkind (Subp_Decl) /= N_Subprogram_Declaration
-              and then (Nkind (Subp_Decl) /= N_Subprogram_Body
-                          or else not Acts_As_Spec (Subp_Decl))
+            if Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
             then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            else
                Pragma_Misplaced;
                return;
             end if;

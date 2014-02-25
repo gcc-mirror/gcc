@@ -1,5 +1,42 @@
 2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch6.adb (Add_Or_Save_Precondition): New routine.
+	(Collect_Body_Postconditions_In_Decls): New routine.
+	(Collect_Body_Postconditions_Of_Kind): Factor out code. Handle
+	postcondition aspects or pragmas that appear on a subprogram
+	body stub.
+	(Collect_Spec_Preconditions): Factor out code. Handle
+	precondition aspects or pragmas that appear on a subprogram
+	body stub.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The analysis of
+	aspects that apply to a subprogram body stub is no longer delayed,
+	the aspects are analyzed on the spot.
+	(SPARK_Aspect_Error):
+	Aspects that apply to a subprogram declaration cannot appear in
+	a subunit.
+	* sem_ch10.adb Remove with and use clause for Sem_Ch13.
+	(Analyze_Proper_Body): Add local variable Comp_Unit. Unum
+	is now a local variable. Code cleanup. Analysis related to
+	the aspects of a subprogram body stub is now carried out by
+	Analyze_Subprogram_Body_Helper. Do not propagate the aspects
+	and/or pragmas of a subprogram body stub to the proper body
+	as this is no longer needed. Do not analyze the aspects of a
+	subprogram stub when the corresponding source unit is missing.
+	(Analyze_Protected_Body_Stub): Flag the illegal use of aspects
+	on a stub.
+	(Analyze_Task_Body_Stub): Flag the illegal use of
+	aspects on a stub.
+	(Optional_Subunit): Add local variable Unum.
+	* sem_ch13.adb (Insert_Delayed_Pragma): Do not analyze a generated
+	pragma when it applies to a subprogram body stub.
+	* sem_prag.adb (Analyze_Pragma): Pragmas Contract_Cases,
+	Depends and Global can now apply to a subprogram body stub as
+	long as it acts as its own spec.
+	(Analyze_Refined_Pragma):
+	Code reformatting. Refinement pragmas cannot apply to a subunit.
+
+2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* einfo.ads Update the usage of flag
 	Uses_Sec_Stack. Uses_Sec_Stack now applies to E_Loop entities.
 	* exp_ch5.adb (Expand_Iterator_Loop): The temporary for a cursor
