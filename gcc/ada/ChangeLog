@@ -1,3 +1,10 @@
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Better error message when
+	the full view of  a private type without discriminants is an
+	unconstrained type.
+	* sem_ch7.adb (Uninstall_Declarations): Ditto.
+
 2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sigtramp-armvxw.c: Also restore r0.

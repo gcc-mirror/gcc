@@ -2611,11 +2611,15 @@ package body Sem_Ch7 is
 
             Set_Is_Potentially_Use_Visible (Id, In_Use (P));
 
+            --  The following test may be redundant, as this is already
+            --  diagnosed in sem_ch3. ???
+
             if  Is_Indefinite_Subtype (Full)
               and then not Is_Indefinite_Subtype (Id)
             then
-               Error_Msg_N
-                 ("full view of type must be definite subtype", Full);
+               Error_Msg_Sloc := Sloc (Parent (Id));
+               Error_Msg_NE
+                 ("full view of& not compatible with declaration#", Full, Id);
             end if;
 
             --  Swap out the subtypes and derived types of Id that
