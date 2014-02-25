@@ -235,6 +235,7 @@ Implementation Defined Pragmas
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Reviewable::
 * Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -1068,6 +1069,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Remote_Access_Type::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Reviewable::
 * Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
@@ -6121,6 +6123,114 @@ By including the above lines in a configuration pragmas file,
 the Ada_95 and Style_Checks pragmas are accepted without
 generating a warning, but any other use of implementation
 defined pragmas will cause a warning to be generated.
+
+@node Pragma Reviewable
+@unnumberedsec Pragma Reviewable
+@findex Reviewable
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Reviewable;
+@end smallexample
+
+@noindent
+This pragma is an RM-defined standard pragma, but has no effect on the
+program being compiled, or on the code generated for the program.
+
+To obtain the required output specified in RM H.3.1, the compiler must be
+run with various special switches as follows:
+
+@table @i
+
+@item Where compiler-generated run-time checks remain
+
+The switch @option{-gnatGL}
+@findex @option{-gnatGL}
+may be used to list the expanded code in pseudo-Ada form.
+Runtime checks show up in the listing either as explicit
+checks or operators marked with @{@} to indicate a check is present.
+
+@item An identification of known exceptions at compile time
+
+If the program is compiled with @option{-gnatwa},
+@findex @option{-gnatwa}
+the compiler warning messages will indicate all cases where the compiler
+detects that an exception is certain to occur at run time.
+
+@item Possible reads of uninitialized variables
+
+The compiler warns of many such cases, but its output is incomplete.
+@ifclear FSFEDITION
+The CodePeer analysis tool
+@findex CodePeer static analysis tool
+@end ifclear
+@ifset FSFEDITION
+A supplemental static analysis tool
+@end ifset
+may be used to obtain a comprehensive list of all
+possible points at which uninitialized data may be read.
+
+@item Where run-time support routines are implicitly invoked
+
+In the output from @option{-gnatGL},
+@findex @option{-gnatGL}
+run-time calls are explicitly listed as calls to the relevant
+run-time routine.
+
+@item Object code listing
+
+This may be obtained either by using the @option{-S} switch,
+@findex @option{-S}
+or the objdump utility.
+@findex objdump
+
+@item Constructs known to be erroneous at compile time
+
+These are identified by warnings issued by the compiler (use @option{-gnatwa}).
+@findex @option{-gnatwa}
+
+@item Stack usage information
+
+Static stack usage data (maximum per-subprogram) can be obtained via the
+@option{-fstack-usage} switch to the compiler.
+@findex @option{-fstack-usage}
+Dynamic stack usage data (per task) can be obtained via the @option{-u} switch
+to gnatbind
+@findex @option{-u}
+@ifclear FSFEDITION
+The gnatstack utility
+@findex gnatstack
+can be used to provide additional information on stack usage.
+@end ifclear
+
+@item Object code listing of entire partition
+
+This can be obtained by compiling the partition with @option{-S},
+@findex @option{-S}
+or by applying objdump
+@findex objdump
+to all the object files that are part of the partition.
+
+@item A description of the run-time model
+
+The full sources of the run-time are available, and the documentation of
+these routines describes how these run-time routines interface to the
+underlying operating system facilities.
+
+@item Control and data-flow information
+
+@ifclear FSFEDITION
+The CodePeer tool
+@findex CodePeer static analysis tool
+@end ifclear
+@ifset FSFEDITION
+A supplemental static analysis tool
+@end ifset
+may be used to obtain complete control and data-flow information, as well as
+comprehensive messages identifying possible problems based on this
+information.
+@end table
 
 @node Pragma Share_Generic
 @unnumberedsec Pragma Share_Generic
@@ -16035,8 +16145,42 @@ dynamic allocation or finalization.
 @item Ada.Strings.Bounded.Equal_Case_Insensitive (A.4.10)
 Provides case-insensitive comparisons of bounded strings
 
+@item Ada.Strings.Bounded.Hash (A.4.9)
+This package provides a generic hash function for bounded strings
+
+@item Ada.Strings.Bounded.Hash_Case_Insensitive (A.4.9)
+This package provides a generic hash function for bounded strings that
+converts the string to be hashed to lower case.
+
+@item Ada.Strings.Bounded.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for bounded strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
 @item Ada.Strings.Fixed (A.4.3)
 This package provides facilities for handling fixed length strings.
+
+@item Ada.Strings.Fixed.Equal_Case_Insensitive (A.4.10)
+This package provides an equality function for fixed strings that compares
+the strings after converting both to lower case.
+
+@item Ada.Strings.Fixed.Hash_Case_Insensitive (A.4.9)
+This package provides a case insensitive hash function for fixed strings that
+converts the string to lower case before computing the hash.
+
+@item Ada.Strings.Fixed.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for fixed strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
+Ada.Strings.Hash (A.4.9)
+This package provides a hash function for strings.
+
+Ada.Strings.Hash_Case_Insensitive (A.4.9)
+This package provides a hash function for strings that is case insensitive.
+The string is converted to lower case before computing the hash.
+
+@item Ada.Strings.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for\strings that works
+in a case insensitive manner by converting to lower case before the comparison.
 
 @item Ada.Strings.Maps (A.4.2)
 This package provides facilities for handling character mappings and
@@ -16057,42 +16201,86 @@ This package provides facilities for handling variable length
 strings.  The unbounded model allows arbitrary length strings, but
 requires the use of dynamic allocation and finalization.
 
+@item Ada.Strings.Unbounded.Equal_Case_Insensitive (A.4.10)
+Provides case-insensitive comparisons of unbounded strings
+
+@item Ada.Strings.Unbounded.Hash (A.4.9)
+This package provides a generic hash function for unbounded strings
+
+@item Ada.Strings.Unbounded.Hash_Case_Insensitive (A.4.9)
+This package provides a generic hash function for unbounded strings that
+converts the string to be hashed to lower case.
+
+@item Ada.Strings.Unbounded.Less_Case_Insensitive (A.4.10)
+This package provides a comparison function for unbounded strings that works
+in a case insensitive manner by converting to lower case before the comparison.
+
+@item Ada.Strings.UTF_Encoding (A.4.11)
+This package provides basic definitions for dealing with UTF-encoded strings.
+
+@item Ada.Strings.UTF_Encoding.Conversions (A.4.11)
+This package provides conversion functions for UTF-encoded strings.
+
+@item Ada.Strings.UTF_Encoding.Strings (A.4.11)
+@itemx Ada.Strings.UTF_Encoding.Wide_Strings (A.4.11)
+@itemx Ada.Strings.UTF_Encoding.Wide_Wide_Strings (A.4.11)
+These packages provide facilities for handling UTF encodings for
+Strings, Wide_Strings and Wide_Wide_Strings.
+
 @item Ada.Strings.Wide_Bounded (A.4.7)
 @itemx Ada.Strings.Wide_Fixed (A.4.7)
 @itemx Ada.Strings.Wide_Maps (A.4.7)
-@itemx Ada.Strings.Wide_Maps.Constants (A.4.7)
 @itemx Ada.Strings.Wide_Unbounded (A.4.7)
 These packages provide analogous capabilities to the corresponding
 packages without @samp{Wide_} in the name, but operate with the types
 @code{Wide_String} and @code{Wide_Character} instead of @code{String}
-and @code{Character}.
+and @code{Character}. Versions of all the child packages are available.
 
 @item Ada.Strings.Wide_Wide_Bounded (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Fixed (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Maps (A.4.7)
-@itemx Ada.Strings.Wide_Wide_Maps.Constants (A.4.7)
 @itemx Ada.Strings.Wide_Wide_Unbounded (A.4.7)
 These packages provide analogous capabilities to the corresponding
 packages without @samp{Wide_} in the name, but operate with the types
 @code{Wide_Wide_String} and @code{Wide_Wide_Character} instead
 of @code{String} and @code{Character}.
 
+@item Ada.Synchronous_Barriers (D.10.1)
+This package provides facilities for synchronizing tasks at a low level
+with barriers.
+
 @item Ada.Synchronous_Task_Control (D.10)
 This package provides some standard facilities for controlling task
 communication in a synchronous manner.
+
+@item Ada.Synchronous_Task_Control.EDF (D.10)
+Not implemented in GNAT.
 
 @item Ada.Tags
 This package contains definitions for manipulation of the tags of tagged
 values.
 
-@item Ada.Task_Attributes
+@item Ada.Tags.Generic_Dispatching_Constructor (3.9)
+This package provides a way of constructing tagged class-wide values given
+only the tag value.
+
+@item Ada.Task_Attributes (C.7.2)
 This package provides the capability of associating arbitrary
 task-specific data with separate tasks.
+
+@item Ada.Task_Identifification (C.7.1)
+This package provides capabilities for task identification.
+
+@item Ada.Task_Termination (C.7.3)
+This package provides control over task termination.
 
 @item Ada.Text_IO
 This package provides basic text input-output capabilities for
 character, string and numeric data.  The subpackages of this
-package are listed next.
+package are listed next. Note that although these are defined
+as subpackages in the RM, they are actually transparently
+implemented as child packages in GNAT, meaning that they
+are only loaded if needed.
 
 @item Ada.Text_IO.Decimal_IO
 Provides input-output facilities for decimal fixed-point types
@@ -16134,7 +16322,10 @@ predefined instantiations of this generic package are available:
 @end table
 
 @item Ada.Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
+Provides input-output facilities for modular (unsigned) types.
+
+@item Ada.Text_IO.Bounded_IO (A.10.11)
+Provides input-output facilities for bounded strings.
 
 @item Ada.Text_IO.Complex_IO (G.1.3)
 This package provides basic text input-output capabilities for complex
@@ -16149,6 +16340,9 @@ close copy of the facility in COBOL@.
 This package provides a facility that allows Text_IO files to be treated
 as streams, so that the stream attributes can be used for writing
 arbitrary data, including binary data, to Text_IO files.
+
+@item Ada.Text_IO.Unbounded_IO (A.10.12)
+This package provides input-output facilities for unbounded strings.
 
 @item Ada.Unchecked_Conversion (13.9)
 This generic package allows arbitrary conversion from one type to
@@ -16209,126 +16403,20 @@ allocated by use of an allocator.
 This package is similar to @code{Ada.Text_IO}, except that the external
 file supports wide character representations, and the internal types are
 @code{Wide_Character} and @code{Wide_String} instead of @code{Character}
-and @code{String}.  It contains generic subpackages listed next.
-
-@item Ada.Wide_Text_IO.Decimal_IO
-Provides input-output facilities for decimal fixed-point types
-
-@item Ada.Wide_Text_IO.Enumeration_IO
-Provides input-output facilities for enumeration types.
-
-@item Ada.Wide_Text_IO.Fixed_IO
-Provides input-output facilities for ordinary fixed-point types.
-
-@item Ada.Wide_Text_IO.Float_IO
-Provides input-output facilities for float types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Float
-@code{Short_Float_Wide_Text_IO}
-@item Float
-@code{Float_Wide_Text_IO}
-@item Long_Float
-@code{Long_Float_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Text_IO.Integer_IO
-Provides input-output facilities for integer types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Short_Integer
-@code{Ada.Short_Short_Integer_Wide_Text_IO}
-@item Short_Integer
-@code{Ada.Short_Integer_Wide_Text_IO}
-@item Integer
-@code{Ada.Integer_Wide_Text_IO}
-@item Long_Integer
-@code{Ada.Long_Integer_Wide_Text_IO}
-@item Long_Long_Integer
-@code{Ada.Long_Long_Integer_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
-
-@item Ada.Wide_Text_IO.Complex_IO (G.1.3)
-This package is similar to @code{Ada.Text_IO.Complex_IO}, except that the
-external file supports wide character representations.
-
-@item Ada.Wide_Text_IO.Editing (F.3.4)
-This package is similar to @code{Ada.Text_IO.Editing}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-
-@item Ada.Wide_Text_IO.Streams (A.12.3)
-This package is similar to @code{Ada.Text_IO.Streams}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
+and @code{String}. The corresponding set of nested packages and child
+packages are defined.
 
 @item Ada.Wide_Wide_Text_IO (A.11)
 This package is similar to @code{Ada.Text_IO}, except that the external
 file supports wide character representations, and the internal types are
 @code{Wide_Character} and @code{Wide_String} instead of @code{Character}
-and @code{String}.  It contains generic subpackages listed next.
+and @code{String}. The corresponding set of nested packages and child
+packages are defined.
 
-@item Ada.Wide_Wide_Text_IO.Decimal_IO
-Provides input-output facilities for decimal fixed-point types
-
-@item Ada.Wide_Wide_Text_IO.Enumeration_IO
-Provides input-output facilities for enumeration types.
-
-@item Ada.Wide_Wide_Text_IO.Fixed_IO
-Provides input-output facilities for ordinary fixed-point types.
-
-@item Ada.Wide_Wide_Text_IO.Float_IO
-Provides input-output facilities for float types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Float
-@code{Short_Float_Wide_Wide_Text_IO}
-@item Float
-@code{Float_Wide_Wide_Text_IO}
-@item Long_Float
-@code{Long_Float_Wide_Wide_Text_IO}
 @end table
 
-@item Ada.Wide_Wide_Text_IO.Integer_IO
-Provides input-output facilities for integer types.  The following
-predefined instantiations of this generic package are available:
-
-@table @code
-@item Short_Short_Integer
-@code{Ada.Short_Short_Integer_Wide_Wide_Text_IO}
-@item Short_Integer
-@code{Ada.Short_Integer_Wide_Wide_Text_IO}
-@item Integer
-@code{Ada.Integer_Wide_Wide_Text_IO}
-@item Long_Integer
-@code{Ada.Long_Integer_Wide_Wide_Text_IO}
-@item Long_Long_Integer
-@code{Ada.Long_Long_Integer_Wide_Wide_Text_IO}
-@end table
-
-@item Ada.Wide_Wide_Text_IO.Modular_IO
-Provides input-output facilities for modular (unsigned) types
-
-@item Ada.Wide_Wide_Text_IO.Complex_IO (G.1.3)
-This package is similar to @code{Ada.Text_IO.Complex_IO}, except that the
-external file supports wide character representations.
-
-@item Ada.Wide_Wide_Text_IO.Editing (F.3.4)
-This package is similar to @code{Ada.Text_IO.Editing}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-
-@item Ada.Wide_Wide_Text_IO.Streams (A.12.3)
-This package is similar to @code{Ada.Text_IO.Streams}, except that the
-types are @code{Wide_Character} and @code{Wide_String} instead of
-@code{Character} and @code{String}.
-@end table
+For packages in Interfaces and System, all the RM defined packages are
+available in GNAT, see the Ada 2012 RM for full details.
 
 @node The Implementation of Standard I/O
 @chapter The Implementation of Standard I/O

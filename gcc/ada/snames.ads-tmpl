@@ -237,6 +237,7 @@ package Snames is
 
    Name_Const                          : constant Name_Id := N + $;
    Name_Error                          : constant Name_Id := N + $;
+   Name_False                          : constant Name_Id := N + $;
    Name_Go                             : constant Name_Id := N + $;
    Name_Put                            : constant Name_Id := N + $;
    Name_Put_Line                       : constant Name_Id := N + $;

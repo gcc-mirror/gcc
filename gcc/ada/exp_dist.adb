@@ -2660,10 +2660,10 @@ package body Exp_Dist is
    ------------------------
 
    function Copy_Specification
-     (Loc         : Source_Ptr;
-      Spec        : Node_Id;
-      Ctrl_Type   : Entity_Id := Empty;
-      New_Name    : Name_Id   := No_Name) return Node_Id
+     (Loc       : Source_Ptr;
+      Spec      : Node_Id;
+      Ctrl_Type : Entity_Id := Empty;
+      New_Name  : Name_Id   := No_Name) return Node_Id
    is
       Parameters : List_Id := No_List;
 
