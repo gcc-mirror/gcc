@@ -517,14 +517,11 @@ package body Switch.C is
 
                      return;
 
-                  --  -gnateC switch (CodePeer SCIL generation)
+                  --  -gnateC switch (generate CodePeer messages)
 
-                  --  Not enabled for now, keep it for later???
-                  --  use -gnatd.I only for now
-
-                  --  when 'C' =>
-                  --     Ptr := Ptr + 1;
-                  --     Generate_SCIL := True;
+                  when 'C' =>
+                     Ptr := Ptr + 1;
+                     Generate_CodePeer_Messages := True;
 
                   --  -gnated switch (disable atomic synchronization)
 

@@ -1,3 +1,16 @@
+2014-02-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* usage.adb (Usage): Add help on -gnateC.
+	* switch-c.adb (Scan_Front_End_Switches): Add handling of -gnateC.
+	* opt.ads (Generate_CodePeer_Messages): New flag.
+	* gnat_ugn.texi: Document new switch -gnateC.
+
+2014-02-25  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Corrected minor typos in Implementation Defined
+	Aspects.
+	* opt.ads: Minor reformatting.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* binde.adb: Change messages to mention -gnatel instead of -gnatwl.

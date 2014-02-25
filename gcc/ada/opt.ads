@@ -356,7 +356,7 @@ package Opt is
    CodePeer_Mode : Boolean := False;
    --  GNAT, GNATBIND, GPRBUILD
    --  Enable full CodePeer mode (SCIL generation, disable switches that
-   --  interact badly with it, etc...).
+   --  interact badly with it, etc...). This is turned on by -gnatC.
 
    Commands_To_Stdout : Boolean := False;
    --  GNATMAKE
@@ -666,6 +666,11 @@ package Opt is
    --  Set to file name to generate full source listing to named file (or if
    --  the name is of the form .xxx, then to name.xxx where name is the source
    --  file name with extension stripped.
+
+   Generate_CodePeer_Messages : Boolean := False;
+   --  GNAT
+   --  Generate CodePeer messages. Ignored if CodePeer_Mode is false.
+   --  This is turned on by -gnateC.
 
    Generate_Processed_File : Boolean := False;
    --  GNAT

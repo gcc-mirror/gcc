@@ -7644,15 +7644,15 @@ or subunits.
 @node Implementation Defined Aspects
 @chapter Implementation Defined Aspects
 Ada defines (throughout the Ada 2012 reference manual, summarized
-in annex K) a set of aspects that can be specified for certain entities.
+in Annex K) a set of aspects that can be specified for certain entities.
 These language defined aspects are implemented in GNAT in Ada 2012 mode
 and work as described in the Ada 2012 Reference Manual.
 
 In addition, Ada 2012 allows implementations to define additional aspects
 whose meaning is defined by the implementation.  GNAT provides
-a number of these implementation-dependent aspects which can be used
+a number of these implementation-defined aspects which can be used
 to extend and enhance the functionality of the compiler.  This section of
-the GNAT reference manual describes these additional attributes.
+the GNAT reference manual describes these additional aspects.
 
 Note that any program using these aspects may not be portable to
 other compilers (although GNAT implements this set of aspects on all
@@ -7693,7 +7693,7 @@ pragma Shared (R);
 @end smallexample
 
 @noindent
-In the documentation sections that follow, such cases are simply marked
+In the documentation below, such cases are simply marked
 as being equivalent to the corresponding pragma or attribute definition
 clause.
 
@@ -7756,8 +7756,6 @@ aggregate.
 @noindent
 This aspect is equivalent to pragma @code{Depends}.
 
-* Dimension::
-
 @node Aspect Dimension
 @unnumberedsec Aspect Dimension
 @findex Dimension
@@ -7817,11 +7815,12 @@ will represent values within the dimension system. Each @code{DIMENSION}
 corresponds to one particular dimension. A maximum of 7 dimensions may
 be specified. @code{Unit_Name} is the name of the dimension (for example
 @code{Meter}). @code{Unit_Symbol} is the shorthand used for quantities
-of this dimension (for example 'm' for Meter). @code{Dim_Symbol} gives
+of this dimension (for example @code{m} for @code{Meter}).
+@code{Dim_Symbol} gives
 the identification within the dimension system (typically this is a
-single letter, e.g. 'L' standing for length for unit name Meter). The
-Unit_Smbol is used in formatted output of dimensioned quantities. The
-Dim_Symbol is used in error messages when numeric operations have
+single letter, e.g. @code{L} standing for length for unit name @code{Meter}).
+The @code{Unit_Symbol} is used in formatted output of dimensioned quantities.
+The @code{Dim_Symbol} is used in error messages when numeric operations have
 inconsistent dimensions.
 
 GNAT provides the standard definition of the International MKS system in
@@ -7844,7 +7843,7 @@ following aspect:
 @end smallexample
 
 @noindent
-See section "Performing Dimensionality Analysis in GNAT" in the GNAT Users
+See section ``Performing Dimensionality Analysis in GNAT'' in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
 @node Aspect Favor_Top_Level
@@ -8048,6 +8047,7 @@ attribute definition clause.
 This aspect is equivalent to the two argument form of pragma @code{Warnings},
 where the first argument is @code{ON} or @code{OFF} and the second argument
 is the entity.
+
 
 @node Implementation Defined Attributes
 @chapter Implementation Defined Attributes
