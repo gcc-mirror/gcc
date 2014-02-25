@@ -970,6 +970,8 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     EXTRA_LIBGNAT_OBJS+=affinity.o
   else
     ifeq ($(strip $(filter-out kernel-smp,$(THREAD_KIND))),)
+      EH_MECHANISM=-gcc
+
       LIBGNAT_TARGET_PAIRS += \
       s-mudido.adb<s-mudido-affinity.adb \
       s-tpopsp.adb<s-tpopsp-vxworks-tls.adb \
@@ -977,16 +979,20 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
       s-vxwext.adb<s-vxwext-kernel-smp.adb \
       system.ads<system-vxworks-arm.ads
 
-      EXTRA_LIBGNAT_OBJS+=affinity.o
+      EXTRA_LIBGNAT_OBJS+=affinity.o sigtramp-armvxw.o
     else
       LIBGNAT_TARGET_PAIRS += \
       s-tpopsp.adb<s-tpopsp-vxworks.adb \
       system.ads<system-vxworks-arm.ads
 
       ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
+        EH_MECHANISM=-gcc
+
         LIBGNAT_TARGET_PAIRS += \
         s-vxwext.ads<s-vxwext-kernel.ads \
         s-vxwext.adb<s-vxwext-kernel.adb
+
+        EXTRA_LIBGNAT_OBJS+=sigtramp-armvxw.o
       endif
     endif
   endif
@@ -1952,11 +1958,15 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb
 
   ifeq ($(strip $(filter-out arm%b,$(target_cpu))),)
+    EH_MECHANISM=
     LIBGNAT_TARGET_PAIRS += \
     system.ads<system-linux-armeb.ads
   else
+    EH_MECHANISM=-arm
     LIBGNAT_TARGET_PAIRS += \
-    system.ads<system-linux-armel.ads
+    system.ads<system-linux-armel.ads \
+    a-exexpr.adb<a-exexpr-gcc.adb \
+    s-excmac.ads<s-excmac-arm.ads
   endif
 
   TOOLS_TARGET_PAIRS =  \
@@ -1964,7 +1974,8 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
     indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
-  EH_MECHANISM=
+  EXTRA_LIBGNAT_OBJS+=raise-gcc.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
@@ -3051,6 +3062,7 @@ mkdir.o   : mkdir.c
 socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 raise.o   : raise.c raise.h
+sigtramp-armvxw.o : sigtramp-armvxw.c sigtramp.h
 sigtramp-ppcvxw.o : sigtramp-ppcvxw.c sigtramp.h
 terminals.o : terminals.c
 vx_stack_info.o : vx_stack_info.c

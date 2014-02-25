@@ -1,3 +1,15 @@
+2014-02-25  Doug Rupp  <rupp@adacore.com>
+
+	* gcc-interface/Makefile.in (arm-linux):
+	(EH_MECHANISM): Use ARM unwinder (-arm)
+	(LIBGNAT_TARGET_PAIRS: Override defaults with a-exexpr-gcc.adb and
+	s-excmac-arm.ads.
+	(EXTRA_LIBGNAT_OBJS): Add raise-gcc.o
+	(EXTRA_GNATRTL_NONTASKING_OBJS): Add g-cppexc.o s-excmac.o.
+	(arm-wrs-vxworks): Add EH_MECHANISM=-gcc for kernel mode.
+	(EXTRA_LIBGNAT_OBJS): Add sigtramp-armvxw.o
+	Add dependencies for sigtramp-armvxw.o.
+
 2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Pragma_to_gnu): Deal with Warning_As_Error.
