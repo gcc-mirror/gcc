@@ -3581,6 +3581,16 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  return false;
 	}
 
+      /* Check F2008Cor2, C729.  */
+      if (!s2->attr.intrinsic && s2->attr.if_source == IFSRC_UNKNOWN
+	  && !s2->attr.external && !s2->attr.subroutine && !s2->attr.function)
+	{
+	  gfc_error ("Procedure pointer target '%s' at %L must be either an "
+		     "intrinsic, host or use associated, referenced or have "
+		     "the EXTERNAL attribute", s2->name, &rvalue->where);
+	  return false;
+	}
+
       return true;
     }
 
@@ -3962,9 +3972,10 @@ gfc_get_variable_expr (gfc_symtree *var)
   e->symtree = var;
   e->ts = var->n.sym->ts;
 
-  if ((var->n.sym->as != NULL && var->n.sym->ts.type != BT_CLASS)
-      || (var->n.sym->ts.type == BT_CLASS && CLASS_DATA (var->n.sym)
-	  && CLASS_DATA (var->n.sym)->as))
+  if (var->n.sym->attr.flavor != FL_PROCEDURE
+      && ((var->n.sym->as != NULL && var->n.sym->ts.type != BT_CLASS)
+	   || (var->n.sym->ts.type == BT_CLASS && CLASS_DATA (var->n.sym)
+	       && CLASS_DATA (var->n.sym)->as)))
     {
       e->rank = var->n.sym->ts.type == BT_CLASS
 		? CLASS_DATA (var->n.sym)->as->rank : var->n.sym->as->rank;

@@ -3,5 +3,5 @@
 
 struct A
 {
-  int* p = new foo; // { dg-error "16:expected type-specifier" }
+  int* p = new foo; // { dg-error "16:foo. does not name a type" }
 };

@@ -1651,7 +1651,7 @@
   if (VECTOR_ELT_ORDER_BIG)
     return "vsumsws %0,%1,%2";
   else
-    return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvspltw %0,%3,3";
+    return "vspltw %3,%2,0\n\tvsumsws %3,%1,%3\n\tvsldoi %0,%3,%3,12";
 }
   [(set_attr "type" "veccomplex")
    (set (attr "length")
@@ -2325,7 +2325,21 @@
 ;; Parallel some of the LVE* and STV*'s with unspecs because some have
 ;; identical rtl but different instructions-- and gcc gets confused.
 
-(define_insn "altivec_lve<VI_char>x"
+(define_expand "altivec_lve<VI_char>x"
+  [(parallel
+    [(set (match_operand:VI 0 "register_operand" "=v")
+	  (match_operand:VI 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_LVE)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lve<VI_char>x_internal"
   [(parallel
     [(set (match_operand:VI 0 "register_operand" "=v")
 	  (match_operand:VI 1 "memory_operand" "Z"))
@@ -2343,16 +2357,44 @@
   "lvewx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_lvxl"
+(define_expand "altivec_lvxl_<mode>"
   [(parallel
-    [(set (match_operand:V4SI 0 "register_operand" "=v")
-	  (match_operand:V4SI 1 "memory_operand" "Z"))
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
   "TARGET_ALTIVEC"
-  "lvxl %0,%y1"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_SET_VSCR);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lvxl_<mode>_internal"
+  [(parallel
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
+  "TARGET_ALTIVEC"
+  "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_lvx_<mode>"
+(define_expand "altivec_lvx_<mode>"
+  [(parallel
+    [(set (match_operand:VM2 0 "register_operand" "=v")
+	  (match_operand:VM2 1 "memory_operand" "Z"))
+     (unspec [(const_int 0)] UNSPEC_LVX)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_lvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_LVX);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_lvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "register_operand" "=v")
 	  (match_operand:VM2 1 "memory_operand" "Z"))
@@ -2361,7 +2403,21 @@
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
-(define_insn "altivec_stvx_<mode>"
+(define_expand "altivec_stvx_<mode>"
+  [(parallel
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVX)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVX);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stvx_<mode>_internal"
   [(parallel
     [(set (match_operand:VM2 0 "memory_operand" "=Z")
 	  (match_operand:VM2 1 "register_operand" "v"))
@@ -2370,16 +2426,42 @@
   "stvx %1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stvxl"
+(define_expand "altivec_stvxl_<mode>"
   [(parallel
-    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
-	  (match_operand:V4SI 1 "register_operand" "v"))
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
+     (unspec [(const_int 0)] UNSPEC_STVXL)])]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvx_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVXL);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stvxl_<mode>_internal"
+  [(parallel
+    [(set (match_operand:VM2 0 "memory_operand" "=Z")
+	  (match_operand:VM2 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVXL)])]
   "TARGET_ALTIVEC"
   "stvxl %1,%y0"
   [(set_attr "type" "vecstore")])
 
-(define_insn "altivec_stve<VI_char>x"
+(define_expand "altivec_stve<VI_char>x"
+  [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
+	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
+  "TARGET_ALTIVEC"
+{
+  if (!BYTES_BIG_ENDIAN && VECTOR_ELT_ORDER_BIG)
+    {
+      altivec_expand_stvex_be (operands[0], operands[1], <MODE>mode, UNSPEC_STVE);
+      DONE;
+    }
+})
+
+(define_insn "*altivec_stve<VI_char>x_internal"
   [(set (match_operand:<VI_scalar> 0 "memory_operand" "=Z")
 	(unspec:<VI_scalar> [(match_operand:VI 1 "register_operand" "v")] UNSPEC_STVE))]
   "TARGET_ALTIVEC"
@@ -2483,7 +2565,7 @@
 
   emit_insn (gen_altivec_vspltisw (vzero, const0_rtx));
   emit_insn (gen_altivec_vsum4ubs (vtmp1, operands[1], vzero));
-  emit_insn (gen_altivec_vsumsws (dest, vtmp1, vzero));
+  emit_insn (gen_altivec_vsumsws_direct (dest, vtmp1, vzero));
   DONE;
 })
 

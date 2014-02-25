@@ -1,3 +1,10 @@
+2014-02-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* include/cilk/common.h (__CILKRTS_ABI_VERSION): Set the ABI version
+	to 1 instead of 0.
+	* runtime/cilk-abi-cilk-for.cpp (cilk_for_recursive): Added a fix to
+	initialize stack frame correctly.
+
 2014-02-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR target/59691

@@ -24,17 +24,35 @@
 
 
 #include <shared_mutex>
+#include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
 int main()
 {
   bool test __attribute__((unused)) = true;
-  typedef std::shared_mutex mutex_type;
+  typedef std::shared_timed_mutex mutex_type;
 
   try
     {
-      mutex_type m1;
+      mutex_type m;
+      m.lock();
+      bool b;
+
+      std::thread t([&] {
+        try
+          {
+            b = m.try_lock();
+          }
+        catch (const std::system_error& e)
+          {
+            VERIFY( false );
+          }
+      });
+      t.join();
+      VERIFY( !b );
+
+      m.unlock();
     }
   catch (const std::system_error& e)
     {

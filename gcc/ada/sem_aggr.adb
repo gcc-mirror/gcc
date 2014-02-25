@@ -455,11 +455,16 @@ package body Sem_Aggr is
       end if;
 
       --  This is really expansion activity, so make sure that expansion is
-      --  on and is allowed. In GNATprove mode, we also want check flags to be
-      --  added in the tree, so that the formal verification can rely on those
-      --  to be present.
+      --  on and is allowed. In GNATprove mode, we also want check flags to
+      --  be added in the tree, so that the formal verification can rely on
+      --  those to be present. In GNATprove mode for formal verification, some
+      --  treatment typically only done during expansion needs to be performed
+      --  on the tree, but it should not be applied inside generics. Otherwise,
+      --  this breaks the name resolution mechanism for generic instances.
 
-      if not (Expander_Active or GNATprove_Mode) or In_Spec_Expression then
+      if not Expander_Active
+        and (Inside_A_Generic or not Full_Analysis or not GNATprove_Mode)
+      then
          return;
       end if;
 
@@ -1372,7 +1377,7 @@ package body Sem_Aggr is
                Expr :=
                  Make_Attribute_Reference
                    (Loc,
-                    Prefix         => New_Reference_To (Index_Typ, Loc),
+                    Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                     Attribute_Name => Name_Val,
                     Expressions    => New_List (Expr_Pos));
             end if;
@@ -1395,7 +1400,7 @@ package body Sem_Aggr is
             To_Pos :=
               Make_Attribute_Reference
                 (Loc,
-                 Prefix         => New_Reference_To (Index_Typ, Loc),
+                 Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                  Attribute_Name => Name_Pos,
                  Expressions    => New_List (Duplicate_Subexpr (To)));
 
@@ -1407,7 +1412,7 @@ package body Sem_Aggr is
             Expr :=
               Make_Attribute_Reference
                 (Loc,
-                 Prefix         => New_Reference_To (Index_Typ, Loc),
+                 Prefix         => New_Occurrence_Of (Index_Typ, Loc),
                  Attribute_Name => Name_Val,
                  Expressions    => New_List (Expr_Pos));
 
@@ -1427,11 +1432,12 @@ package body Sem_Aggr is
                   Insert_Action (N,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Def_Id,
-                      Object_Definition   => New_Reference_To (Index_Typ, Loc),
+                      Object_Definition   =>
+                        New_Occurrence_Of (Index_Typ, Loc),
                       Constant_Present    => True,
                       Expression          => Relocate_Node (Expr)));
 
-                  Expr := New_Reference_To (Def_Id, Loc);
+                  Expr := New_Occurrence_Of (Def_Id, Loc);
                end;
             end if;
          end if;

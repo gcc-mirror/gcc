@@ -1078,6 +1078,12 @@ DEFPARAM (PARAM_ASAN_USE_AFTER_RETURN,
          "asan-use-after-return",
          "Enable asan builtin functions protection",
          1, 0, 1)
+
+DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,
+	  "uninit-control-dep-attempts",
+	  "Maximum number of nested calls to search for control dependencies "
+	  "during uninitialized variable analysis",
+	  1000, 1, 0)
 /*
 
 Local variables:

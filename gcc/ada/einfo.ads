@@ -1121,7 +1121,8 @@ package Einfo is
 --       itself. For a subtype entity, Etype points to the base type. For
 --       a class wide type, points to the corresponding specific type. For a
 --       subprogram or subprogram type, Etype has the return type of a function
---       or is set to Standard_Void_Type to represent a procedure.
+--       or is set to Standard_Void_Type to represent a procedure. The Etype
+--       field of a package is also set to Standard_Void_Type.
 --
 --       Note one obscure case: for pragma Default_Storage_Pool (null), the
 --       Etype of the N_Null node is Empty.
@@ -3621,13 +3622,12 @@ package Einfo is
 --       in a Relative_Deadline pragma for a task type.
 
 --    Renamed_Entity (Node18)
---       Defined in exceptions, packages, subprograms and generic units. Set
+--       Defined in exceptions, packages, subprograms, and generic units. Set
 --       for entities that are defined by a renaming declaration. Denotes the
 --       renamed entity, or transitively the ultimate renamed entity if
 --       there is a chain of renaming declarations. Empty if no renaming.
 
 --    Renamed_In_Spec (Flag231)
-
 --       Defined in package entities. If a package renaming occurs within
 --       a package spec, then this flag is set on the renamed package. The
 --       purpose is to prevent a warning about unused entities in the renamed

@@ -459,12 +459,13 @@ package body Ada.Containers.Formal_Hashed_Maps is
 
    function Has_Element (Container : Map; Position : Cursor) return Boolean is
    begin
-      if Position.Node = 0 or else
-        not Container.Nodes (Position.Node).Has_Element then
+      if Position.Node = 0
+        or else not Container.Nodes (Position.Node).Has_Element
+      then
          return False;
+      else
+         return True;
       end if;
-
-      return True;
    end Has_Element;
 
    ---------------
@@ -858,12 +859,12 @@ package body Ada.Containers.Formal_Hashed_Maps is
          return False;
       end if;
 
-      while CuL.Node /= 0 or CuR.Node /= 0 loop
-         if CuL.Node /= CuR.Node or else
-           (Left.Nodes (CuL.Node).Element /=
-              Right.Nodes (CuR.Node).Element or
-              Left.Nodes (CuL.Node).Key /=
-              Right.Nodes (CuR.Node).Key) then
+      while CuL.Node /= 0 or else CuR.Node /= 0 loop
+         if CuL.Node /= CuR.Node
+           or else
+             Left.Nodes (CuL.Node).Element /= Right.Nodes (CuR.Node).Element
+           or else Left.Nodes (CuL.Node).Key /= Right.Nodes (CuR.Node).Key
+         then
             return False;
          end if;
 

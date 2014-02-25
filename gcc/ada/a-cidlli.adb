@@ -609,6 +609,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Find;
@@ -746,6 +747,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end Is_Sorted;
 
@@ -945,10 +947,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
             B := B - 1;
             L := L - 1;
+
          exception
             when others =>
                B := B - 1;
                L := L - 1;
+
                raise;
          end;
 
@@ -1753,6 +1757,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          when others =>
             B := B - 1;
             L := L - 1;
+
             raise;
       end;
    end Reverse_Find;

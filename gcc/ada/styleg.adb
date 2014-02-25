@@ -1005,17 +1005,23 @@ package body Styleg is
 
    --  In check if then layout mode (-gnatyi), we expect a THEN keyword
    --  to appear either on the same line as the IF, or on a separate line
-   --  after multiple conditions. In any case, it may not appear on the
-   --  line immediately following the line with the IF.
+   --  if the IF statement extends for more than one line.
 
    procedure Check_Then (If_Loc : Source_Ptr) is
    begin
       if Style_Check_If_Then_Layout then
-         if Get_Physical_Line_Number (Token_Ptr) =
-            Get_Physical_Line_Number (If_Loc) + 1
-         then
-            Error_Msg_SC ("(style) misplaced THEN");
-         end if;
+         declare
+            If_Line   : constant Physical_Line_Number :=
+              Get_Physical_Line_Number (If_Loc);
+            Then_Line : constant Physical_Line_Number :=
+              Get_Physical_Line_Number (Token_Ptr);
+         begin
+            if If_Line = Then_Line then
+               null;
+            elsif Token_Ptr /= First_Non_Blank_Location then
+               Error_Msg_SC ("(style) misplaced THEN");
+            end if;
+         end;
       end if;
    end Check_Then;
 

@@ -948,7 +948,8 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   bool user = false;
   enum conversion_rank rank = cr_exact;
 
-  if (TYPE_DOMAIN (type))
+  if (TYPE_DOMAIN (type)
+      && !variably_modified_type_p (TYPE_DOMAIN (type), NULL_TREE))
     {
       unsigned HOST_WIDE_INT alen = tree_to_uhwi (array_type_nelts_top (type));
       if (alen < len)

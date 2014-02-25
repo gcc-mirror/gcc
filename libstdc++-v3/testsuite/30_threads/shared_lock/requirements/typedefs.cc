@@ -28,6 +28,6 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::shared_lock<std::shared_mutex> test_type;
+  typedef std::shared_lock<std::shared_timed_mutex> test_type;
   typedef test_type::mutex_type mutex_type;
 }

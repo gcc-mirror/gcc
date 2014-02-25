@@ -435,7 +435,8 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     {
       /* When a global var becomes used for the first time also walk its
          initializer (non global ones don't have any).  */
-      if (set_is_used (t) && is_global_var (t))
+      if (set_is_used (t) && is_global_var (t)
+	  && DECL_CONTEXT (t) == current_function_decl)
 	mark_all_vars_used (&DECL_INITIAL (t));
     }
   /* remove_unused_scope_block_p requires information about labels

@@ -374,6 +374,13 @@ package body Sem_Ch6 is
          Generate_Reference (Prev, Defining_Entity (N), 'b', Force => True);
          Rewrite (N, New_Body);
 
+         --  Correct the parent pointer of the aspect specification list to
+         --  reference the rewritten node.
+
+         if Has_Aspects (N) then
+            Set_Parent (Aspect_Specifications (N), N);
+         end if;
+
          --  Propagate any pragmas that apply to the expression function to the
          --  proper body when the expression function acts as a completion.
          --  Aspects are automatically transfered because of node rewriting.
@@ -429,6 +436,14 @@ package body Sem_Ch6 is
            Make_Subprogram_Declaration (Loc, Specification => Spec);
 
          Rewrite (N, New_Decl);
+
+         --  Correct the parent pointer of the aspect specification list to
+         --  reference the rewritten node.
+
+         if Has_Aspects (N) then
+            Set_Parent (Aspect_Specifications (N), N);
+         end if;
+
          Analyze (N);
          Set_Is_Inlined (Defining_Entity (New_Decl));
 
@@ -654,24 +669,43 @@ package body Sem_Ch6 is
          Subtype_Ind : constant Node_Id :=
                          Object_Definition (Original_Node (Obj_Decl));
 
-         R_Type_Is_Anon_Access :
-           constant Boolean :=
-             Ekind (R_Type) = E_Anonymous_Access_Subprogram_Type
-               or else
-             Ekind (R_Type) = E_Anonymous_Access_Protected_Subprogram_Type
-               or else
-             Ekind (R_Type) = E_Anonymous_Access_Type;
+         R_Type_Is_Anon_Access : constant Boolean :=
+             Ekind_In (R_Type,
+                       E_Anonymous_Access_Subprogram_Type,
+                       E_Anonymous_Access_Protected_Subprogram_Type,
+                       E_Anonymous_Access_Type);
          --  True if return type of the function is an anonymous access type
          --  Can't we make Is_Anonymous_Access_Type in einfo ???
 
-         R_Stm_Type_Is_Anon_Access :
-           constant Boolean :=
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Subprogram_Type
-               or else
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Protected_Subprogram_Type
-               or else
-             Ekind (R_Stm_Type) = E_Anonymous_Access_Type;
+         R_Stm_Type_Is_Anon_Access : constant Boolean :=
+             Ekind_In (R_Stm_Type,
+                       E_Anonymous_Access_Subprogram_Type,
+                       E_Anonymous_Access_Protected_Subprogram_Type,
+                       E_Anonymous_Access_Type);
          --  True if type of the return object is an anonymous access type
+
+         procedure Error_No_Match (N : Node_Id);
+         --  Output error messages for case where types do not statically
+         --  match. N is the location for the messages.
+
+         --------------------
+         -- Error_No_Match --
+         --------------------
+
+         procedure Error_No_Match (N : Node_Id) is
+         begin
+            Error_Msg_N
+              ("subtype must statically match function result subtype", N);
+
+            if not Predicates_Match (R_Stm_Type, R_Type) then
+               Error_Msg_Node_2 := R_Type;
+               Error_Msg_NE
+                 ("\predicate of & does not match predicate of &",
+                  N, R_Stm_Type);
+            end if;
+         end Error_No_Match;
+
+      --  Start of processing for Check_Return_Subtype_Indication
 
       begin
          --  First, avoid cascaded errors
@@ -693,9 +727,7 @@ package body Sem_Ch6 is
                      Base_Type (Designated_Type (R_Type))
                     or else not Subtypes_Statically_Match (R_Stm_Type, R_Type)
                   then
-                     Error_Msg_N
-                      ("subtype must statically match function result subtype",
-                       Subtype_Mark (Subtype_Ind));
+                     Error_No_Match (Subtype_Mark (Subtype_Ind));
                   end if;
 
                else
@@ -705,9 +737,7 @@ package body Sem_Ch6 is
                   if not Conforming_Types
                     (R_Stm_Type, R_Type, Fully_Conformant)
                   then
-                     Error_Msg_N
-                      ("subtype must statically match function result subtype",
-                         Subtype_Ind);
+                     Error_No_Match (Subtype_Ind);
                   end if;
                end if;
 
@@ -748,9 +778,7 @@ package body Sem_Ch6 is
                  or else Null_Exclusion_Present (Parent (Scope_Id))) /=
                                               Can_Never_Be_Null (R_Stm_Type)
             then
-               Error_Msg_N
-                 ("subtype must statically match function result subtype",
-                  Subtype_Ind);
+               Error_No_Match (Subtype_Ind);
             end if;
 
             --  AI05-103: for elementary types, subtypes must statically match
@@ -759,9 +787,7 @@ package body Sem_Ch6 is
               or else Is_Access_Type (R_Type)
             then
                if not Subtypes_Statically_Match (R_Stm_Type, R_Type) then
-                  Error_Msg_N
-                    ("subtype must statically match function result subtype",
-                     Subtype_Ind);
+                  Error_No_Match (Subtype_Ind);
                end if;
             end if;
 
@@ -2116,6 +2142,11 @@ package body Sem_Ch6 is
       --  verify that a function ends with a RETURN and that a procedure does
       --  not contain any RETURN.
 
+      procedure Diagnose_Misplaced_Aspect_Specifications;
+      --  It is known that subprogram body N has aspects, but they are not
+      --  properly placed. Provide specific error messages depending on the
+      --  aspects involved.
+
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
       --  view of a concurrent type which implements an interface, a special
@@ -2182,10 +2213,10 @@ package body Sem_Ch6 is
                   Make_Defining_Identifier (Loc, Name_uMaster),
                 Constant_Present => True,
                 Object_Definition =>
-                  New_Reference_To (RTE (RE_Master_Id), Loc),
+                  New_Occurrence_Of (RTE (RE_Master_Id), Loc),
                 Expression =>
                   Make_Explicit_Dereference (Loc,
-                    New_Reference_To (RTE (RE_Current_Master), Loc)));
+                    New_Occurrence_Of (RTE (RE_Current_Master), Loc)));
 
             if Present (Declarations (N)) then
                Prepend (Decl, Declarations (N));
@@ -2387,6 +2418,90 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Missing_Return;
+
+      ----------------------------------------------
+      -- Diagnose_Misplaced_Aspect_Specifications --
+      ----------------------------------------------
+
+      procedure Diagnose_Misplaced_Aspect_Specifications is
+         Asp     : Node_Id;
+         Asp_Nam : Name_Id;
+         Asp_Id  : Aspect_Id;
+         --  The current aspect along with its name and id
+
+         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id);
+         --  Emit an error message concerning SPARK aspect Asp. Ref_Nam is the
+         --  name of the refined version of the aspect.
+
+         ------------------------
+         -- SPARK_Aspect_Error --
+         ------------------------
+
+         procedure SPARK_Aspect_Error (Ref_Nam : Name_Id) is
+         begin
+            --  The corresponding spec already contains the aspect in question
+            --  and the one appearing on the body must be the refined form:
+
+            --    procedure P with Global ...;
+            --    procedure P with Global ... is ... end P;
+            --                     ^
+            --                     Refined_Global
+
+            if Has_Aspect (Spec_Id, Asp_Id) then
+               Error_Msg_Name_1 := Asp_Nam;
+               Error_Msg_Name_2 := Ref_Nam;
+               Error_Msg_N ("aspect % should be %", Asp);
+
+            --  Otherwise the aspect must appear in the spec, not in the body:
+
+            --    procedure P;
+            --    procedure P with Global ... is ... end P;
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+         end SPARK_Aspect_Error;
+
+      --  Start of processing for Diagnose_Misplaced_Aspect_Specifications
+
+      begin
+         --  Iterate over the aspect specifications and emit specific errors
+         --  where applicable.
+
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            Asp_Nam := Chars (Identifier (Asp));
+            Asp_Id  := Get_Aspect_Id (Asp_Nam);
+
+            --  Do not emit errors on aspects that can appear on a subprogram
+            --  body. This scenario occurs when the aspect specification list
+            --  contains both misplaced and properly placed aspects.
+
+            if Aspect_On_Body_Or_Stub_OK (Asp_Id) then
+               null;
+
+            --  Special diagnostics for SPARK aspects
+
+            elsif Asp_Nam = Name_Depends then
+               SPARK_Aspect_Error (Name_Refined_Depends);
+
+            elsif Asp_Nam = Name_Global then
+               SPARK_Aspect_Error (Name_Refined_Global);
+
+            elsif Asp_Nam = Name_Post then
+               SPARK_Aspect_Error (Name_Refined_Post);
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+
+            Next (Asp);
+         end loop;
+      end Diagnose_Misplaced_Aspect_Specifications;
 
       -----------------------
       -- Disambiguate_Spec --
@@ -2774,9 +2889,7 @@ package body Sem_Ch6 is
 
            and then Nkind (Parent (Parent (Spec_Id))) /= N_Subprogram_Body_Stub
          then
-            Error_Msg_N
-              ("aspect specifications must appear in subprogram declaration",
-               N);
+            Diagnose_Misplaced_Aspect_Specifications;
 
          --  Delay the analysis of aspect specifications that apply to a body
          --  stub until the proper body is analyzed. If the corresponding body
@@ -3576,7 +3689,25 @@ package body Sem_Ch6 is
             Error_Msg_N
               ("contract cases do not mention result?T?", Case_Prag);
 
+         --  OK if we have at least one IN OUT parameter
+
          elsif Present (Post_Prag) and then not Seen_In_Post then
+            declare
+               F : Entity_Id;
+            begin
+               F := First_Formal (Subp);
+               while Present (F) loop
+                  if Ekind (F) = E_In_Out_Parameter then
+                     return;
+                  else
+                     Next_Formal (F);
+                  end if;
+               end loop;
+            end;
+
+            --  If no in-out parameters and no mention of Result, the contract
+            --  is certainly suspicious.
+
             Error_Msg_N
               ("function postcondition does not mention result?T?", Post_Prag);
          end if;
@@ -5483,7 +5614,7 @@ package body Sem_Ch6 is
                    Null_Exclusion_Present =>
                      Null_Exclusion_Present (Parent (Formal)),
                    Parameter_Type =>
-                     New_Reference_To (Etype (Formal), Loc),
+                     New_Occurrence_Of (Etype (Formal), Loc),
                    Expression =>
                      Copy_Separate_Tree (Expression (Parent (Formal)))));
 
@@ -5577,11 +5708,11 @@ package body Sem_Ch6 is
 
          begin
             Append_To (Actual_List,
-              New_Reference_To (Defining_Identifier (New_Obj), Loc));
+              New_Occurrence_Of (Defining_Identifier (New_Obj), Loc));
 
             Formal := First_Formal (Spec_Id);
             while Present (Formal) loop
-               Append_To (Actual_List, New_Reference_To (Formal, Loc));
+               Append_To (Actual_List, New_Occurrence_Of (Formal, Loc));
 
                --  Avoid spurious warning on unreferenced formals
 
@@ -5591,7 +5722,7 @@ package body Sem_Ch6 is
 
             Proc_Call :=
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (Proc_Id, Loc),
+                Name => New_Occurrence_Of (Proc_Id, Loc),
                 Parameter_Associations => Actual_List);
          end;
 
@@ -5615,7 +5746,7 @@ package body Sem_Ch6 is
 
                    Make_Simple_Return_Statement (Loc,
                      Expression =>
-                       New_Reference_To
+                       New_Occurrence_Of
                          (Defining_Identifier (New_Obj), Loc)))));
 
          Rewrite (Ret_Node, Blk_Stmt);
@@ -5811,7 +5942,16 @@ package body Sem_Ch6 is
             null;
 
          elsif not Conforming_Types (Old_Type, New_Type, Ctype, Get_Inst) then
-            Conformance_Error ("\return type does not match!", New_Id);
+            if Ctype >= Subtype_Conformant
+              and then not Predicates_Match (Old_Type, New_Type)
+            then
+               Conformance_Error
+                 ("\predicate of return type does not match!", New_Id);
+            else
+               Conformance_Error
+                 ("\return type does not match!", New_Id);
+            end if;
+
             return;
          end if;
 
@@ -6048,7 +6188,16 @@ package body Sem_Ch6 is
             if Errmsg and then Old_Formal_Base = Any_Type then
                Conforms := False;
             else
-               Conformance_Error ("\type of & does not match!", New_Formal);
+               if Ctype >= Subtype_Conformant
+                 and then
+                   not Predicates_Match (Old_Formal_Base, New_Formal_Base)
+               then
+                  Conformance_Error
+                    ("\predicate of & does not match!", New_Formal);
+               else
+                  Conformance_Error
+                    ("\type of & does not match!", New_Formal);
+               end if;
             end if;
 
             return;
@@ -9588,13 +9737,13 @@ package body Sem_Ch6 is
            Make_Parameter_Specification (Loc,
              Defining_Identifier => A,
              Parameter_Type      =>
-               New_Reference_To (Etype (First_Formal (S)),
+               New_Occurrence_Of (Etype (First_Formal (S)),
                  Sloc (Etype (First_Formal (S))))),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => B,
              Parameter_Type      =>
-               New_Reference_To (Etype (Next_Formal (First_Formal (S))),
+               New_Occurrence_Of (Etype (Next_Formal (First_Formal (S))),
                  Sloc (Etype (Next_Formal (First_Formal (S)))))));
 
          Decl :=
@@ -9604,7 +9753,7 @@ package body Sem_Ch6 is
                  Defining_Unit_Name       => Op_Name,
                  Parameter_Specifications => Formals,
                  Result_Definition        =>
-                   New_Reference_To (Standard_Boolean, Loc)));
+                   New_Occurrence_Of (Standard_Boolean, Loc)));
 
          --  Insert inequality right after equality if it is explicit or after
          --  the derived type when implicit. These entities are created only

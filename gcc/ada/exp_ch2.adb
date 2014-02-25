@@ -44,7 +44,6 @@ with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
 
 package body Exp_Ch2 is
 
@@ -575,9 +574,9 @@ package body Exp_Ch2 is
           Prefix =>
             Make_Explicit_Dereference (Loc,
               Unchecked_Convert_To (Parm_Type,
-                New_Reference_To (Addr_Ent, Loc))),
+                New_Occurrence_Of (Addr_Ent, Loc))),
           Selector_Name =>
-            New_Reference_To (Entry_Component (Ent_Formal), Loc));
+            New_Occurrence_Of (Entry_Component (Ent_Formal), Loc));
 
       --  For all types of parameters, the constructed parameter record object
       --  contains a pointer to the parameter. Thus we must dereference them to

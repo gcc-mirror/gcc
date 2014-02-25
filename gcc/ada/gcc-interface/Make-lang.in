@@ -162,7 +162,7 @@ ifeq ($(build), $(host))
         CC="$(CC)" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
-        ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
+        ADA_INCLUDES="-I$(RTS_DIR)/../adainclude -I$(RTS_DIR)" \
         GNATMAKE="gnatmake" \
         GNATBIND="gnatbind" \
         GNATLINK="gnatlink" \
@@ -200,7 +200,7 @@ else
         CC="$(CC)" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
-        ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
+        ADA_INCLUDES="-I$(RTS_DIR)/../adainclude -I$(RTS_DIR)" \
         GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
         GNATBIND="$(GNATBIND_FOR_HOST)"      \
         GNATLINK="$(GNATLINK_FOR_HOST)"      \

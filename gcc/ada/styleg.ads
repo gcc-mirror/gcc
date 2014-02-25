@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,8 +134,7 @@ package Styleg is
    procedure Check_Then (If_Loc : Source_Ptr);
    --  Called to check that THEN and IF keywords are appropriately positioned.
    --  The parameters show the first characters of the two keywords. This
-   --  procedure is called only if THEN appears at the start of a line with
-   --  Token_Ptr pointing to the THEN keyword.
+   --  procedure is called with Token_Ptr pointing to the THEN keyword.
 
    procedure Check_Separate_Stmt_Lines;
    pragma Inline (Check_Separate_Stmt_Lines);

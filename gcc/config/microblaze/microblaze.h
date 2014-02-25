@@ -412,9 +412,6 @@ extern enum reg_class microblaze_regno_to_class[];
 	  || GET_MODE (X) == VOIDmode)					\
 	 ? (GR_REGS) : (CLASS))))
 
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (GET_MODE_CLASS (MODE) == MODE_INT)
-
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD

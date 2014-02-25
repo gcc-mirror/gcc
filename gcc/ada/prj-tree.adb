@@ -1679,13 +1679,15 @@ package body Prj.Tree is
                Empty_Line := False;
 
             when others =>
+
                --  If there are comments, where the first comment is not
                --  following an empty line, put the initial uninterrupted
                --  comment zone with the node of the preceding line (either
                --  a Previous_Line or a Previous_End node), if any.
 
                if Comments.Last > 0 and then
-                 not Comments.Table (1).Follows_Empty_Line then
+                 not Comments.Table (1).Follows_Empty_Line
+               then
                   if Present (Previous_Line_Node) then
                      Add_Comments
                        (To      => Previous_Line_Node,
@@ -2920,7 +2922,7 @@ package body Prj.Tree is
             Prj.Tree.Tree_Private_Part.Project_Name_And_Node'
               (Name           => Name,
                Display_Name   => Name,
-               Canonical_Path => No_Path,
+               Resolved_Path  => No_Path,
                Node           => Project,
                Extended       => False,
                From_Extended  => False,

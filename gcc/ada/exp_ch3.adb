@@ -629,7 +629,7 @@ package body Exp_Ch3 is
             Index :=
               Make_Defining_Identifier (Loc, New_External_Name ('J', N));
 
-            Append (New_Reference_To (Index, Loc), Index_List);
+            Append (New_Occurrence_Of (Index, Loc), Index_List);
 
             return New_List (
               Make_Implicit_Loop_Statement (Nod,
@@ -874,7 +874,7 @@ package body Exp_Ch3 is
             Index :=
               Make_Defining_Identifier (Loc, New_External_Name ('J', N));
 
-            Append (New_Reference_To (Index, Loc), Index_List);
+            Append (New_Occurrence_Of (Index, Loc), Index_List);
 
             return New_List (
               Make_Implicit_Loop_Statement (Nod,
@@ -1019,7 +1019,7 @@ package body Exp_Ch3 is
                    Expression =>
                      Make_Function_Call (Loc,
                        Name =>
-                         New_Reference_To (Enclosing_Func_Id,  Loc),
+                         New_Occurrence_Of (Enclosing_Func_Id,  Loc),
                        Parameter_Associations =>
                          Actuals_List));
 
@@ -1027,7 +1027,7 @@ package body Exp_Ch3 is
                Return_Node :=
                  Make_Simple_Return_Statement (Loc,
                    Expression =>
-                     New_Reference_To (Standard_False, Loc));
+                     New_Occurrence_Of (Standard_False, Loc));
             end if;
 
             Set_Statements (Case_Alt_Node, New_List (Return_Node));
@@ -1041,7 +1041,7 @@ package body Exp_Ch3 is
          Return_Node :=
            Make_Simple_Return_Statement (Loc,
              Expression =>
-               New_Reference_To (Standard_True, Loc));
+               New_Occurrence_Of (Standard_True, Loc));
 
          Set_Statements (Case_Alt_Node, New_List (Return_Node));
          Append (Case_Alt_Node, Alt_List);
@@ -1079,7 +1079,7 @@ package body Exp_Ch3 is
 
          Set_Parameter_Specifications (Spec_Node, Parameter_List);
          Set_Result_Definition (Spec_Node,
-                                New_Reference_To (Standard_Boolean,  Loc));
+                                New_Occurrence_Of (Standard_Boolean,  Loc));
          Set_Specification (Body_Node, Spec_Node);
          Set_Declarations (Body_Node, New_List);
 
@@ -1229,7 +1229,7 @@ package body Exp_Ch3 is
               Make_Parameter_Specification (Loc,
                   Defining_Identifier => Formal,
                 Parameter_Type =>
-                  New_Reference_To (Formal_Type, Loc));
+                  New_Occurrence_Of (Formal_Type, Loc));
             Append (Param_Spec_Node, Parameter_List);
             Next_Discriminant (D);
          end loop;
@@ -1622,7 +1622,7 @@ package body Exp_Ch3 is
                if Nkind (Arg) = N_Identifier
                   and then Ekind (Entity (Arg)) = E_Discriminant
                then
-                  Arg := New_Reference_To (Discriminal (Entity (Arg)), Loc);
+                  Arg := New_Occurrence_Of (Discriminal (Entity (Arg)), Loc);
 
                --  Otherwise make a copy of the default expression. Note that
                --  we use the current Sloc for this, because we do not want the
@@ -1872,11 +1872,11 @@ package body Exp_Ch3 is
                     Prefix        =>
                       New_Copy_Tree (Lhs, New_Scope => Proc_Id),
                     Selector_Name =>
-                      New_Reference_To (First_Tag_Component (Typ), N_Loc)),
+                      New_Occurrence_Of (First_Tag_Component (Typ), N_Loc)),
 
                 Expression =>
                   Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Reference_To
+                    New_Occurrence_Of
                       (Node
                         (First_Elmt
                           (Access_Disp_Table (Underlying_Type (Typ)))),
@@ -1937,7 +1937,7 @@ package body Exp_Ch3 is
                   D_Loc := Sloc (D);
                   Append_List_To (Statement_List,
                     Build_Assignment (D,
-                      New_Reference_To (Discriminal (D), D_Loc)));
+                      New_Occurrence_Of (Discriminal (D), D_Loc)));
                end if;
 
                Next_Discriminant (D);
@@ -1973,7 +1973,8 @@ package body Exp_Ch3 is
 
          First_Arg :=
            OK_Convert_To (Parent_Type,
-             New_Reference_To (Defining_Identifier (First (Parameters)), Loc));
+             New_Occurrence_Of
+               (Defining_Identifier (First (Parameters)), Loc));
 
          Set_Etype (First_Arg, Parent_Type);
 
@@ -2044,7 +2045,7 @@ package body Exp_Ch3 is
                   and then Ekind (Entity (Arg)) = E_Discriminant
                then
                   Append_To (Args,
-                    New_Reference_To (Discriminal (Entity (Arg)), Loc));
+                    New_Occurrence_Of (Discriminal (Entity (Arg)), Loc));
 
                --  Case of access discriminants. We replace the reference
                --  to the type by a reference to the actual object.
@@ -2109,9 +2110,9 @@ package body Exp_Ch3 is
                   Make_Defining_Identifier (Loc, Name_uO),
                 In_Present          => True,
                 Parameter_Type      =>
-                  New_Reference_To (RTE (RE_Address), Loc))));
+                  New_Occurrence_Of (RTE (RE_Address), Loc))));
             Set_Result_Definition (Spec_Node,
-              New_Reference_To (RTE (RE_Storage_Offset), Loc));
+              New_Occurrence_Of (RTE (RE_Storage_Offset), Loc));
 
             --  Generate
             --    function Fxx (O : in Rec_Typ) return Storage_Offset is
@@ -2132,7 +2133,7 @@ package body Exp_Ch3 is
                     Null_Exclusion_Present => False,
                     Constant_Present       => False,
                     Subtype_Indication     =>
-                      New_Reference_To (Rec_Type, Loc)))));
+                      New_Occurrence_Of (Rec_Type, Loc)))));
 
             Set_Handled_Statement_Sequence (Body_Node,
               Make_Handled_Sequence_Of_Statements (Loc,
@@ -2146,7 +2147,7 @@ package body Exp_Ch3 is
                               Unchecked_Convert_To (Acc_Type,
                                 Make_Identifier (Loc, Name_uO)),
                             Selector_Name =>
-                              New_Reference_To (Iface_Comp, Loc)),
+                              New_Occurrence_Of (Iface_Comp, Loc)),
                         Attribute_Name => Name_Position)))));
 
             Set_Ekind       (Func_Id, E_Function);
@@ -2252,9 +2253,9 @@ package body Exp_Ch3 is
            Make_Object_Declaration (Loc,
              Defining_Identifier => Flag_Id,
              Object_Definition =>
-               New_Reference_To (Standard_Boolean, Loc),
+               New_Occurrence_Of (Standard_Boolean, Loc),
              Expression =>
-               New_Reference_To (Standard_True, Loc));
+               New_Occurrence_Of (Standard_True, Loc));
 
          Analyze (Flag_Decl);
          Append_Freeze_Action (Rec_Type, Flag_Decl);
@@ -2282,9 +2283,9 @@ package body Exp_Ch3 is
          Append_To (Init_Tags_List,
            Make_Assignment_Statement (Loc,
              Name =>
-               New_Reference_To (Flag_Id, Loc),
+               New_Occurrence_Of (Flag_Id, Loc),
              Expression =>
-               New_Reference_To (Standard_False, Loc)));
+               New_Occurrence_Of (Standard_False, Loc)));
 
          Append_To (Body_Stmts,
            Make_If_Statement (Loc,
@@ -2435,10 +2436,10 @@ package body Exp_Ch3 is
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name =>
-                         New_Reference_To
+                         New_Occurrence_Of
                            (First_Tag_Component (Rec_Type), Loc)),
                    Expression =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Node
                          (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
 
@@ -2490,10 +2491,10 @@ package body Exp_Ch3 is
                      Make_Selected_Component (Loc,
                        Prefix        => Make_Identifier (Loc, Name_uInit),
                        Selector_Name =>
-                         New_Reference_To
+                         New_Occurrence_Of
                            (First_Tag_Component (Rec_Type), Loc)),
                    Expression =>
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Node
                          (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
 
@@ -2550,7 +2551,7 @@ package body Exp_Ch3 is
 
                         New_Nod :=
                           Make_Procedure_Call_Statement (Loc,
-                            New_Reference_To (Init_DT, Loc));
+                            New_Occurrence_Of (Init_DT, Loc));
                         Insert_After (Ins_Nod, New_Nod);
 
                         --  Update location of init tag statements
@@ -2623,11 +2624,11 @@ package body Exp_Ch3 is
                    Statements => New_List (
                      Make_Procedure_Call_Statement (Loc,
                        Name =>
-                         New_Reference_To (Local_DF_Id, Loc),
+                         New_Occurrence_Of (Local_DF_Id, Loc),
 
                        Parameter_Associations => New_List (
                          Make_Identifier (Loc, Name_uInit),
-                         New_Reference_To (Standard_False, Loc))),
+                         New_Occurrence_Of (Standard_False, Loc))),
 
                      Make_Raise_Statement (Loc)))));
             end;
@@ -2700,10 +2701,10 @@ package body Exp_Ch3 is
 
             Append_To (Stmts,
               Make_Assignment_Statement (Loc,
-                Name       => New_Reference_To (Counter_Id, Loc),
+                Name       => New_Occurrence_Of (Counter_Id, Loc),
                 Expression =>
                   Make_Op_Add (Loc,
-                    Left_Opnd  => New_Reference_To (Counter_Id, Loc),
+                    Left_Opnd  => New_Occurrence_Of (Counter_Id, Loc),
                     Right_Opnd => Make_Integer_Literal (Loc, 1))));
          end Increment_Counter;
 
@@ -2730,7 +2731,7 @@ package body Exp_Ch3 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Counter_Id,
                 Object_Definition   =>
-                  New_Reference_To (Standard_Integer, Loc),
+                  New_Occurrence_Of (Standard_Integer, Loc),
                 Expression          =>
                   Make_Integer_Literal (Loc, 0)));
          end Make_Counter;
@@ -3043,7 +3044,7 @@ package body Exp_Ch3 is
                               Append_To (Stmts,
                                 Make_Procedure_Call_Statement (Decl_Loc,
                                   Name =>
-                                    New_Reference_To (RTE (
+                                    New_Occurrence_Of (RTE (
                                       RE_Bind_Interrupt_To_Entry), Decl_Loc),
                                   Parameter_Associations => New_List (
                                     Make_Selected_Component (Decl_Loc,
@@ -3149,7 +3150,7 @@ package body Exp_Ch3 is
                Append_To (Stmts,
                  Make_Case_Statement (Var_Loc,
                    Expression =>
-                     New_Reference_To (Discriminal (
+                     New_Occurrence_Of (Discriminal (
                        Entity (Name (Variant_Part (Comp_List)))), Var_Loc),
                    Alternatives => Variant_Alts));
             end;
@@ -4063,38 +4064,38 @@ package body Exp_Ch3 is
              Defining_Identifier => Larray,
              Out_Present => True,
              Parameter_Type =>
-               New_Reference_To (Base_Type (Typ), Loc)),
+               New_Occurrence_Of (Base_Type (Typ), Loc)),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Rarray,
              Parameter_Type =>
-               New_Reference_To (Base_Type (Typ), Loc)),
+               New_Occurrence_Of (Base_Type (Typ), Loc)),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Left_Lo,
              Parameter_Type =>
-               New_Reference_To (Index, Loc)),
+               New_Occurrence_Of (Index, Loc)),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Left_Hi,
              Parameter_Type =>
-               New_Reference_To (Index, Loc)),
+               New_Occurrence_Of (Index, Loc)),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Right_Lo,
              Parameter_Type =>
-               New_Reference_To (Index, Loc)),
+               New_Occurrence_Of (Index, Loc)),
 
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Right_Hi,
              Parameter_Type =>
-               New_Reference_To (Index, Loc)));
+               New_Occurrence_Of (Index, Loc)));
 
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Rev,
              Parameter_Type =>
-               New_Reference_To (Standard_Boolean, Loc)));
+               New_Occurrence_Of (Standard_Boolean, Loc)));
 
          Spec :=
            Make_Procedure_Specification (Loc,
@@ -4340,7 +4341,7 @@ package body Exp_Ch3 is
             Make_Function_Specification (Loc,
               Defining_Unit_Name       => F,
               Parameter_Specifications => Pspecs,
-              Result_Definition => New_Reference_To (Standard_Boolean, Loc)),
+              Result_Definition => New_Occurrence_Of (Standard_Boolean, Loc)),
           Declarations               => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
@@ -4348,12 +4349,12 @@ package body Exp_Ch3 is
       Append_To (Pspecs,
         Make_Parameter_Specification (Loc,
           Defining_Identifier => X,
-          Parameter_Type      => New_Reference_To (Typ, Loc)));
+          Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
       Append_To (Pspecs,
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Y,
-          Parameter_Type      => New_Reference_To (Typ, Loc)));
+          Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
       --  Unchecked_Unions require additional machinery to support equality.
       --  Two extra parameters (A and B) are added to the equality function
@@ -4386,12 +4387,14 @@ package body Exp_Ch3 is
                Append_To (Pspecs,
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => A,
-                   Parameter_Type      => New_Reference_To (Discr_Type, Loc)));
+                   Parameter_Type      =>
+                     New_Occurrence_Of (Discr_Type, Loc)));
 
                Append_To (Pspecs,
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => B,
-                   Parameter_Type      => New_Reference_To (Discr_Type, Loc)));
+                   Parameter_Type      =>
+                     New_Occurrence_Of (Discr_Type, Loc)));
 
                Append_Elmt (A, New_Discrs);
 
@@ -4406,8 +4409,8 @@ package body Exp_Ch3 is
                  Make_If_Statement (Loc,
                    Condition       =>
                      Make_Op_Ne (Loc,
-                       Left_Opnd  => New_Reference_To (A, Loc),
-                       Right_Opnd => New_Reference_To (B, Loc)),
+                       Left_Opnd  => New_Occurrence_Of (A, Loc),
+                       Right_Opnd => New_Occurrence_Of (B, Loc)),
                    Then_Statements => New_List (
                      Make_Simple_Return_Statement (Loc,
                        Expression =>
@@ -4437,7 +4440,7 @@ package body Exp_Ch3 is
 
       Append_To (Stmts,
         Make_Simple_Return_Statement (Loc,
-          Expression => New_Reference_To (Standard_True, Loc)));
+          Expression => New_Occurrence_Of (Standard_True, Loc)));
 
       Set_TSS (Typ, F);
       Set_Is_Pure (F);
@@ -4580,7 +4583,7 @@ package body Exp_Ch3 is
          Par_Subtype :=
            Process_Subtype (
              Make_Subtype_Indication (Loc,
-               Subtype_Mark => New_Reference_To (Entity (Indic), Loc),
+               Subtype_Mark => New_Occurrence_Of (Entity (Indic), Loc),
                Constraint   =>
                  Make_Index_Or_Discriminant_Constraint (Loc,
                    Constraints => List_Constr)),
@@ -4600,7 +4603,7 @@ package body Exp_Ch3 is
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present => False,
-              Subtype_Indication => New_Reference_To (Par_Subtype, Loc)));
+              Subtype_Indication => New_Occurrence_Of (Par_Subtype, Loc)));
 
       if Null_Present (Rec_Ext_Part) then
          Set_Component_List (Rec_Ext_Part,
@@ -5176,7 +5179,7 @@ package body Exp_Ch3 is
             --  address clause is applied to the object, causing it to get
             --  delayed freezing).
 
-            Id_Ref := New_Reference_To (Def_Id, Loc);
+            Id_Ref := New_Occurrence_Of (Def_Id, Loc);
             Set_Must_Not_Freeze (Id_Ref);
             Set_Assignment_OK (Id_Ref);
 
@@ -5393,7 +5396,7 @@ package body Exp_Ch3 is
                        Make_Selected_Component (Loc,
                          Prefix => New_Occurrence_Of (Obj_Id, Loc),
                          Selector_Name =>
-                           New_Reference_To
+                           New_Occurrence_Of
                              (Find_Interface_Tag (Expr_Typ, Iface), Loc));
 
                   --  Replace
@@ -5464,12 +5467,12 @@ package body Exp_Ch3 is
 
                      Tag_Comp :=
                        Make_Function_Call (Loc,
-                         Name => New_Reference_To (RTE (RE_Displace), Loc),
+                         Name => New_Occurrence_Of (RTE (RE_Displace), Loc),
                          Parameter_Associations => New_List (
                            Make_Attribute_Reference (Loc,
                              Prefix => New_Occurrence_Of (Obj_Id, Loc),
                              Attribute_Name => Name_Address),
-                           New_Reference_To
+                           New_Occurrence_Of
                              (Node (First_Elmt (Access_Disp_Table (Iface))),
                               Loc)));
                   end if;
@@ -5591,7 +5594,7 @@ package body Exp_Ch3 is
             then
                Insert_Action_After (Init_After,
                  Make_Adjust_Call (
-                   Obj_Ref => New_Reference_To (Def_Id, Loc),
+                   Obj_Ref => New_Occurrence_Of (Def_Id, Loc),
                    Typ     => Base_Typ));
             end if;
 
@@ -5624,7 +5627,7 @@ package body Exp_Ch3 is
                     Make_Selected_Component (Loc,
                        Prefix => New_Occurrence_Of (Def_Id, Loc),
                        Selector_Name =>
-                         New_Reference_To (First_Tag_Component (Full_Typ),
+                         New_Occurrence_Of (First_Tag_Component (Full_Typ),
                                            Loc));
                   Set_Assignment_OK (New_Ref);
 
@@ -5633,7 +5636,7 @@ package body Exp_Ch3 is
                       Name       => New_Ref,
                       Expression =>
                         Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Reference_To
+                          New_Occurrence_Of
                             (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
                              Loc))));
                end;
@@ -5648,7 +5651,7 @@ package body Exp_Ch3 is
                --  The call to the initialization procedure does NOT freeze the
                --  object being initialized.
 
-               Id_Ref := New_Reference_To (Def_Id, Loc);
+               Id_Ref := New_Occurrence_Of (Def_Id, Loc);
                Set_Must_Not_Freeze (Id_Ref);
                Set_Assignment_OK (Id_Ref);
 
@@ -5714,7 +5717,7 @@ package body Exp_Ch3 is
             declare
                Stat : constant Node_Id :=
                        Make_Assignment_Statement (Loc,
-                         Name       => New_Reference_To (Def_Id, Loc),
+                         Name       => New_Occurrence_Of (Def_Id, Loc),
                          Expression => Relocate_Node (Expr));
             begin
                Set_Expression (N, Empty);
@@ -5936,7 +5939,7 @@ package body Exp_Ch3 is
           Component_Definition =>
             Make_Component_Definition (Sloc_N,
               Aliased_Present => False,
-              Subtype_Indication => New_Reference_To (RTE (RE_Tag), Sloc_N)));
+              Subtype_Indication => New_Occurrence_Of (RTE (RE_Tag), Sloc_N)));
 
       if Null_Present (Comp_List)
         or else Is_Empty_List (Component_Items (Comp_List))
@@ -6073,13 +6076,15 @@ package body Exp_Ch3 is
       end if;
 
       if Has_Invariants (Component_Type (Base))
+        and then Typ = Base
         and then In_Open_Scopes (Scope (Component_Type (Base)))
       then
          --  Generate component invariant checking procedure. This is only
          --  relevant if the array type is within the scope of the component
          --  type. Otherwise an array object can only be built using the public
          --  subprograms for the component type, and calls to those will have
-         --  invariant checks.
+         --  invariant checks. The invariant procedure is only generated for
+         --  a base type, not a subtype.
 
          Insert_Component_Invariant_Checks
            (N, Base, Build_Array_Invariant_Proc (Base, N));
@@ -6211,7 +6216,7 @@ package body Exp_Ch3 is
          Set_Has_Contiguous_Rep (Typ);
          Ent := First_Literal (Typ);
          Num := 1;
-         Lst := New_List (New_Reference_To (Ent, Sloc (Ent)));
+         Lst := New_List (New_Occurrence_Of (Ent, Sloc (Ent)));
 
       else
          --  Build list of literal references
@@ -6221,7 +6226,7 @@ package body Exp_Ch3 is
 
          Ent := First_Literal (Typ);
          while Present (Ent) loop
-            Append_To (Lst, New_Reference_To (Ent, Sloc (Ent)));
+            Append_To (Lst, New_Occurrence_Of (Ent, Sloc (Ent)));
             Num := Num + 1;
             Next_Literal (Ent);
          end loop;
@@ -6249,7 +6254,7 @@ package body Exp_Ch3 is
             Make_Constrained_Array_Definition (Loc,
               Discrete_Subtype_Definitions => New_List (
                 Make_Subtype_Indication (Loc,
-                  Subtype_Mark => New_Reference_To (Standard_Natural, Loc),
+                  Subtype_Mark => New_Occurrence_Of (Standard_Natural, Loc),
                   Constraint =>
                     Make_Range_Constraint (Loc,
                       Range_Expression =>
@@ -6262,7 +6267,7 @@ package body Exp_Ch3 is
               Component_Definition =>
                 Make_Component_Definition (Loc,
                   Aliased_Present => False,
-                  Subtype_Indication => New_Reference_To (Typ, Loc))),
+                  Subtype_Indication => New_Occurrence_Of (Typ, Loc))),
 
           Expression =>
             Make_Aggregate (Loc,
@@ -6431,13 +6436,14 @@ package body Exp_Ch3 is
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier =>
                     Make_Defining_Identifier (Loc, Name_uA),
-                  Parameter_Type => New_Reference_To (Typ, Loc)),
+                  Parameter_Type => New_Occurrence_Of (Typ, Loc)),
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier =>
                     Make_Defining_Identifier (Loc, Name_uF),
-                  Parameter_Type => New_Reference_To (Standard_Boolean, Loc))),
+                  Parameter_Type =>
+                    New_Occurrence_Of (Standard_Boolean, Loc))),
 
-              Result_Definition => New_Reference_To (Standard_Integer, Loc)),
+              Result_Definition => New_Occurrence_Of (Standard_Integer, Loc)),
 
             Declarations => Empty_List,
 
@@ -7018,10 +7024,10 @@ package body Exp_Ch3 is
                            Insert_Action (Ins_Node,
                              Make_Procedure_Call_Statement (Loc,
                                Name =>
-                                 New_Reference_To
+                                 New_Occurrence_Of
                                    (RTE (RE_Set_Is_Heterogeneous), Loc),
                                Parameter_Associations => New_List (
-                                 New_Reference_To (Fin_Mas_Id, Loc))));
+                                 New_Occurrence_Of (Fin_Mas_Id, Loc))));
                         end if;
                      end if;
 
@@ -7204,12 +7210,12 @@ package body Exp_Ch3 is
                   else
                      DT_Size :=
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Desig_Type, Loc),
+                         Prefix => New_Occurrence_Of (Desig_Type, Loc),
                          Attribute_Name => Name_Max_Size_In_Storage_Elements);
 
                      DT_Align :=
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Desig_Type, Loc),
+                         Prefix => New_Occurrence_Of (Desig_Type, Loc),
                          Attribute_Name => Name_Alignment);
                   end if;
 
@@ -7246,7 +7252,7 @@ package body Exp_Ch3 is
                       Object_Definition =>
                         Make_Subtype_Indication (Loc,
                           Subtype_Mark =>
-                            New_Reference_To
+                            New_Occurrence_Of
                               (RTE (RE_Stack_Bounded_Pool), Loc),
 
                           Constraint =>
@@ -7255,7 +7261,7 @@ package body Exp_Ch3 is
 
                               --  First discriminant is the Pool Size
 
-                                New_Reference_To (
+                                New_Occurrence_Of (
                                   Storage_Size_Variable (Def_Id), Loc),
 
                               --  Second discriminant is the element size
@@ -7331,9 +7337,9 @@ package body Exp_Ch3 is
                             Condition =>
                               Make_In (Loc,
                                 Left_Opnd =>
-                                  New_Reference_To (Pool, Loc),
+                                  New_Occurrence_Of (Pool, Loc),
                                 Right_Opnd =>
-                                  New_Reference_To
+                                  New_Occurrence_Of
                                     (Class_Wide_Type (RSPWS), Loc)),
 
                             Then_Statements => New_List (
@@ -7853,7 +7859,7 @@ package body Exp_Ch3 is
                    Name => New_Occurrence_Of (Proc_Id, Loc),
                    Parameter_Associations =>
                      New_List
-                       (New_Reference_To (First_Formal (Inv_Id), Loc)));
+                       (New_Occurrence_Of (First_Formal (Inv_Id), Loc)));
 
             begin
 
@@ -7953,7 +7959,7 @@ package body Exp_Ch3 is
             Make_Defining_Identifier (Loc, Name_uInit),
           In_Present  => True,
           Out_Present => True,
-          Parameter_Type => New_Reference_To (Typ, Loc)));
+          Parameter_Type => New_Occurrence_Of (Typ, Loc)));
 
       --  For task record value, or type that contains tasks, add two more
       --  formals, _Master : Master_Id and _Chain : in out Activation_Chain
@@ -7967,7 +7973,7 @@ package body Exp_Ch3 is
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uMaster),
              Parameter_Type      =>
-               New_Reference_To (RTE (RE_Master_Id), Loc)));
+               New_Occurrence_Of (RTE (RE_Master_Id), Loc)));
 
          --  Add _Chain (not done for sequential elaboration policy, see
          --  comment for Create_Restricted_Task_Sequential in s-tarest.ads).
@@ -7980,7 +7986,7 @@ package body Exp_Ch3 is
                 In_Present          => True,
                 Out_Present         => True,
                 Parameter_Type      =>
-                  New_Reference_To (RTE (RE_Activation_Chain), Loc)));
+                  New_Occurrence_Of (RTE (RE_Activation_Chain), Loc)));
          end if;
 
          Append_To (Formals,
@@ -7988,7 +7994,7 @@ package body Exp_Ch3 is
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uTask_Name),
              In_Present          => True,
-             Parameter_Type      => New_Reference_To (Standard_String, Loc)));
+             Parameter_Type      => New_Occurrence_Of (Standard_String, Loc)));
       end if;
 
       return Formals;
@@ -8048,9 +8054,9 @@ package body Exp_Ch3 is
                 Name =>
                   Make_Selected_Component (Loc,
                     Prefix => New_Copy_Tree (Target),
-                    Selector_Name => New_Reference_To (Tag_Comp, Loc)),
+                    Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
                 Expression =>
-                  New_Reference_To (Iface_Tag, Loc)));
+                  New_Occurrence_Of (Iface_Tag, Loc)));
          end if;
 
          Comp_Typ := Scope (Tag_Comp);
@@ -8083,7 +8089,7 @@ package body Exp_Ch3 is
 
             Append_To (Stmts_List,
               Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To
+                Name => New_Occurrence_Of
                           (RTE (RE_Set_Dynamic_Offset_To_Top), Loc),
                 Parameter_Associations => New_List (
                   Make_Attribute_Reference (Loc,
@@ -8091,7 +8097,7 @@ package body Exp_Ch3 is
                     Attribute_Name => Name_Address),
 
                   Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Reference_To
+                    New_Occurrence_Of
                       (Node (First_Elmt (Access_Disp_Table (Iface))),
                        Loc)),
 
@@ -8102,12 +8108,12 @@ package body Exp_Ch3 is
                          Make_Selected_Component (Loc,
                            Prefix        => New_Copy_Tree (Target),
                            Selector_Name =>
-                             New_Reference_To (Tag_Comp, Loc)),
+                             New_Occurrence_Of (Tag_Comp, Loc)),
                        Attribute_Name => Name_Position)),
 
                   Unchecked_Convert_To (RTE (RE_Offset_To_Top_Function_Ptr),
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To
+                      Prefix => New_Occurrence_Of
                                   (DT_Offset_To_Top_Func (Tag_Comp), Loc),
                       Attribute_Name => Name_Address)))));
 
@@ -8122,14 +8128,14 @@ package body Exp_Ch3 is
                 Name =>
                   Make_Selected_Component (Loc,
                     Prefix => New_Copy_Tree (Target),
-                    Selector_Name => New_Reference_To
+                    Selector_Name => New_Occurrence_Of
                                        (Offset_To_Top_Comp, Loc)),
                 Expression =>
                   Make_Attribute_Reference (Loc,
                     Prefix       =>
                       Make_Selected_Component (Loc,
                         Prefix        => New_Copy_Tree (Target),
-                        Selector_Name => New_Reference_To (Tag_Comp, Loc)),
+                        Selector_Name => New_Occurrence_Of (Tag_Comp, Loc)),
                   Attribute_Name => Name_Position)));
 
          --  Normal case: No discriminants in the parent type
@@ -8141,7 +8147,7 @@ package body Exp_Ch3 is
             if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
                Append_To (Stmts_List,
                  Build_Set_Static_Offset_To_Top (Loc,
-                   Iface_Tag    => New_Reference_To (Iface_Tag, Loc),
+                   Iface_Tag    => New_Occurrence_Of (Iface_Tag, Loc),
                    Offset_Value =>
                      Unchecked_Convert_To (RTE (RE_Storage_Offset),
                        Make_Attribute_Reference (Loc,
@@ -8149,7 +8155,7 @@ package body Exp_Ch3 is
                            Make_Selected_Component (Loc,
                              Prefix        => New_Copy_Tree (Target),
                              Selector_Name =>
-                               New_Reference_To (Tag_Comp, Loc)),
+                               New_Occurrence_Of (Tag_Comp, Loc)),
                          Attribute_Name => Name_Position))));
             end if;
 
@@ -8164,7 +8170,7 @@ package body Exp_Ch3 is
             if RTE_Available (RE_Register_Interface_Offset) then
                Append_To (Stmts_List,
                  Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To
+                   Name => New_Occurrence_Of
                              (RTE (RE_Register_Interface_Offset), Loc),
                    Parameter_Associations => New_List (
                      Make_Attribute_Reference (Loc,
@@ -8172,7 +8178,7 @@ package body Exp_Ch3 is
                        Attribute_Name => Name_Address),
 
                      Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Reference_To
+                       New_Occurrence_Of
                          (Node (First_Elmt (Access_Disp_Table (Iface))), Loc)),
 
                      New_Occurrence_Of (Standard_True, Loc),
@@ -8184,7 +8190,7 @@ package body Exp_Ch3 is
                             Make_Selected_Component (Loc,
                               Prefix         => New_Copy_Tree (Target),
                               Selector_Name  =>
-                                New_Reference_To (Tag_Comp, Loc)),
+                                New_Occurrence_Of (Tag_Comp, Loc)),
                          Attribute_Name => Name_Position)),
 
                      Make_Null (Loc))));
@@ -8295,9 +8301,9 @@ package body Exp_Ch3 is
                      Make_Selected_Component (Loc,
                        Prefix => New_Copy_Tree (Target),
                        Selector_Name =>
-                         New_Reference_To (Node (Iface_Comp_Elmt), Loc)),
+                         New_Occurrence_Of (Node (Iface_Comp_Elmt), Loc)),
                    Expression =>
-                     New_Reference_To (Node (Iface_Tag_Elmt), Loc)));
+                     New_Occurrence_Of (Node (Iface_Tag_Elmt), Loc)));
             end if;
 
          --  Otherwise generate code to initialize the tag
@@ -8417,7 +8423,7 @@ package body Exp_Ch3 is
                         Null_Exclusion_Present =>
                           Null_Exclusion_Present (Parent (Formal)),
                         Parameter_Type =>
-                          New_Reference_To (Etype (Formal), Loc),
+                          New_Occurrence_Of (Etype (Formal), Loc),
                         Expression =>
                           New_Copy_Tree (Expression (Parent (Formal)))),
                      Formal_List);
@@ -8433,7 +8439,7 @@ package body Exp_Ch3 is
                     Chars => Chars (Subp)),
                 Parameter_Specifications => Formal_List,
                 Result_Definition        =>
-                  New_Reference_To (Etype (Subp), Loc));
+                  New_Occurrence_Of (Etype (Subp), Loc));
 
             Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
             Append_To (Decl_List, Func_Decl);
@@ -8463,12 +8469,12 @@ package body Exp_Ch3 is
                       Subtype_Mark =>
                         New_Occurrence_Of (Etype (Par_Formal), Loc),
                       Expression   =>
-                        New_Reference_To
+                        New_Occurrence_Of
                           (Defining_Identifier (Formal_Node), Loc)));
                else
                   Append_To
                     (Actual_List,
-                     New_Reference_To
+                     New_Occurrence_Of
                        (Defining_Identifier (Formal_Node), Loc));
                end if;
 
@@ -8483,7 +8489,7 @@ package body Exp_Ch3 is
                   Make_Extension_Aggregate (Loc,
                     Ancestor_Part =>
                       Make_Function_Call (Loc,
-                        Name => New_Reference_To (Alias (Subp), Loc),
+                        Name => New_Occurrence_Of (Alias (Subp), Loc),
                         Parameter_Associations => Actual_List),
                     Null_Record_Present => True));
 
@@ -8542,12 +8548,12 @@ package body Exp_Ch3 is
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Name_X),
-              Parameter_Type      => New_Reference_To (Typ, Loc)),
+              Parameter_Type      => New_Occurrence_Of (Typ, Loc)),
 
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Name_Y),
-              Parameter_Type      => New_Reference_To (Typ, Loc))),
+              Parameter_Type      => New_Occurrence_Of (Typ, Loc))),
 
           Ret_Type => Standard_Boolean,
           For_Body => True);
@@ -8571,7 +8577,7 @@ package body Exp_Ch3 is
          Append_List_To (Stmts, Make_Eq_Case (Typ, Comps));
          Append_To (Stmts,
            Make_Simple_Return_Statement (Loc,
-             Expression => New_Reference_To (Standard_True, Loc)));
+             Expression => New_Occurrence_Of (Standard_True, Loc)));
 
       else
          Append_To (Stmts,
@@ -8689,7 +8695,7 @@ package body Exp_Ch3 is
          Append_To (Result,
            Make_Case_Statement (Loc,
              Expression =>
-               New_Reference_To (Corresponding_Formal (CL), Loc),
+               New_Occurrence_Of (Corresponding_Formal (CL), Loc),
              Alternatives => Alt_List));
 
       else
@@ -8747,7 +8753,7 @@ package body Exp_Ch3 is
             --  abstract.
 
             --  Note also that in the following, we use Make_Identifier for
-            --  the component names. Use of New_Reference_To to identify the
+            --  the component names. Use of New_Occurrence_Of to identify the
             --  components would be incorrect because the wrong entities for
             --  discriminants could be picked up in the private type case.
 
@@ -8898,12 +8904,12 @@ package body Exp_Ch3 is
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Chars (Left_Op)),
-              Parameter_Type      => New_Reference_To (Tag_Typ, Loc)),
+              Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
 
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Chars (Right_Op)),
-              Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+              Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
 
           Ret_Type => Standard_Boolean,
           For_Body => True);
@@ -8946,7 +8952,7 @@ package body Exp_Ch3 is
           Expression =>
             Make_Op_Not (Loc,
               Make_Function_Call (Loc,
-                Name => New_Reference_To (Target, Loc),
+                Name => New_Occurrence_Of (Target, Loc),
                 Parameter_Associations => New_List (
                   Make_Identifier (Loc, Chars (Left_Op)),
                   Make_Identifier (Loc, Chars (Right_Op)))))));
@@ -9097,7 +9103,7 @@ package body Exp_Ch3 is
         Profile => New_List (
           Make_Parameter_Specification (Loc,
             Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
-            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+            Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
 
         Ret_Type => Standard_Long_Long_Integer));
 
@@ -9205,11 +9211,11 @@ package body Exp_Ch3 is
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier =>
                     Make_Defining_Identifier (Loc, Name_X),
-                    Parameter_Type      => New_Reference_To (Tag_Typ, Loc)),
+                    Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier =>
                     Make_Defining_Identifier (Loc, Name_Y),
-                    Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+                    Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
                 Ret_Type => Standard_Boolean);
             Append_To (Res, Eq_Spec);
 
@@ -9250,11 +9256,11 @@ package body Exp_Ch3 is
              Make_Parameter_Specification (Loc,
                Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
                Out_Present         => True,
-               Parameter_Type      => New_Reference_To (Tag_Typ, Loc)),
+               Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
 
              Make_Parameter_Specification (Loc,
                Defining_Identifier => Make_Defining_Identifier (Loc, Name_Y),
-               Parameter_Type      => New_Reference_To (Tag_Typ, Loc)))));
+               Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)))));
       end if;
 
       --  Ada 2005: Generate declarations for the following primitive
@@ -9478,7 +9484,7 @@ package body Exp_Ch3 is
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
           In_Present          => True,
           Out_Present         => True,
-          Parameter_Type      => New_Reference_To (Tag_Typ, Loc)));
+          Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)));
 
       --  F : Boolean := True
 
@@ -9488,8 +9494,8 @@ package body Exp_Ch3 is
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier => Make_Defining_Identifier (Loc, Name_F),
-             Parameter_Type      => New_Reference_To (Standard_Boolean, Loc),
-             Expression          => New_Reference_To (Standard_True, Loc)));
+             Parameter_Type      => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_True, Loc)));
       end if;
 
       return
@@ -9544,7 +9550,7 @@ package body Exp_Ch3 is
            Make_Function_Specification (Loc,
              Defining_Unit_Name       => Id,
              Parameter_Specifications => Profile,
-             Result_Definition        => New_Reference_To (Ret_Type, Loc));
+             Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
       end if;
 
       if Is_Interface (Tag_Typ) then
@@ -9689,7 +9695,7 @@ package body Exp_Ch3 is
         Profile => New_List (
           Make_Parameter_Specification (Loc,
             Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
-            Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+            Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
 
         Ret_Type => Standard_Long_Long_Integer,
         For_Body => True);
@@ -9814,11 +9820,11 @@ package body Exp_Ch3 is
                Make_Parameter_Specification (Loc,
                  Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
                  Out_Present         => True,
-                 Parameter_Type      => New_Reference_To (Tag_Typ, Loc)),
+                 Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
 
                Make_Parameter_Specification (Loc,
                  Defining_Identifier => Make_Defining_Identifier (Loc, Name_Y),
-                 Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+                 Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
              For_Body => True);
 
          Set_Handled_Statement_Sequence (Decl,

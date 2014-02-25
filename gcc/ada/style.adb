@@ -29,6 +29,8 @@ with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stand;    use Stand;
@@ -257,21 +259,36 @@ package body Style is
    ------------------------
 
    procedure Missing_Overriding (N : Node_Id; E : Entity_Id) is
-   begin
+      Nod : Node_Id;
 
+   begin
       --  Perform the check on source subprograms and on subprogram instances,
-      --  because these can be primitives of untagged types.
+      --  because these can be primitives of untagged types. Note that such
+      --  indicators were introduced in Ada 2005.
 
       if Style_Check_Missing_Overriding
         and then (Comes_From_Source (N) or else Is_Generic_Instance (E))
+        and then Ada_Version_Explicit >= Ada_2005
       then
+         --  If the subprogram is an instantiation,  its declaration appears
+         --  within a wrapper package that precedes the instance node. Place
+         --  warning on the node to avoid references to the original generic.
+
+         if Nkind (N) = N_Subprogram_Declaration
+           and then Is_Generic_Instance (E)
+         then
+            Nod := Next (Parent (Parent (List_Containing (N))));
+         else
+            Nod := N;
+         end if;
+
          if Nkind (N) = N_Subprogram_Body then
             Error_Msg_NE -- CODEFIX
               ("(style) missing OVERRIDING indicator in body of&", N, E);
          else
             Error_Msg_NE -- CODEFIX
               ("(style) missing OVERRIDING indicator in declaration of&",
-               N, E);
+               Nod, E);
          end if;
       end if;
    end Missing_Overriding;

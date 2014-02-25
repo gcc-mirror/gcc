@@ -5,5 +5,5 @@ void
 foo (bool b)
 {
   if (b)
-    try { throw 0; } catch (X) { }	// { dg-error "expected type-specifier before" }
+    try { throw 0; } catch (X) { }	// { dg-error "type" }
 }

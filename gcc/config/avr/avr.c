@@ -734,11 +734,8 @@ avr_allocate_stack_slots_for_args (void)
 static bool
 avr_can_eliminate (const int from, const int to)
 {
-  return ((from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-          || (frame_pointer_needed && to == FRAME_POINTER_REGNUM)
-          || ((from == FRAME_POINTER_REGNUM
-               || from == FRAME_POINTER_REGNUM + 1)
-              && !frame_pointer_needed));
+  return ((frame_pointer_needed && to == FRAME_POINTER_REGNUM)
+          || !frame_pointer_needed);
 }
 
 

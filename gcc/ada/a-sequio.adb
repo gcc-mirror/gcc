@@ -202,15 +202,10 @@ package body Ada.Sequential_IO is
          --  buffer if Item is constrained, to check that the discriminants
          --  are correct.
 
-         pragma Extensions_Allowed (On);
-         --  Needed to allow Constrained reference here
-
-         if Element_Type'Has_Discriminants
-           and then Item'Constrained
-         then
+         if Element_Type'Has_Discriminants and then Item'Constrained then
             declare
                RsizS : constant SSE.Storage_Offset :=
-                 SSE.Storage_Offset (Rsiz - 1);
+                         SSE.Storage_Offset (Rsiz - 1);
 
                type SA is new SSE.Storage_Array (0 .. RsizS);
 

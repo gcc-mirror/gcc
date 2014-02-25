@@ -79,6 +79,9 @@ static int is_cfg_nonregular (void);
 /* Number of regions in the procedure.  */
 int nr_regions = 0;
 
+/* Same as above before adding any new regions.  */
+static int nr_regions_initial = 0;
+
 /* Table of region descriptions.  */
 region *rgn_table = NULL;
 
@@ -2991,6 +2994,15 @@ schedule_region (int rgn)
 
   rgn_n_insns = 0;
 
+  /* Do not support register pressure sensitive scheduling for the new regions
+     as we don't update the liveness info for them.  */
+  if (sched_pressure != SCHED_PRESSURE_NONE
+      && rgn >= nr_regions_initial)
+    {
+      free_global_sched_pressure_data ();
+      sched_pressure = SCHED_PRESSURE_NONE;
+    }
+
   rgn_setup_region (rgn);
 
   /* Don't schedule region that is marked by
@@ -3153,6 +3165,7 @@ sched_rgn_init (bool single_blocks_p)
 
   RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
 			     RGN_NR_BLOCKS (nr_regions - 1));
+  nr_regions_initial = nr_regions;
 }
 
 /* Free data structures for region scheduling.  */

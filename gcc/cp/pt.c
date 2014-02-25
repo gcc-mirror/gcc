@@ -914,11 +914,13 @@ maybe_process_partial_specialization (tree type)
 	       t; t = TREE_CHAIN (t))
 	    {
 	      tree inst = TREE_VALUE (t);
-	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (inst))
+	      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (inst)
+		  || !COMPLETE_OR_OPEN_TYPE_P (inst))
 		{
 		  /* We already have a full specialization of this partial
-		     instantiation.  Reassign it to the new member
-		     specialization template.  */
+		     instantiation, or a full specialization has been
+		     looked up but not instantiated.  Reassign it to the
+		     new member specialization template.  */
 		  spec_entry elt;
 		  spec_entry *entry;
 		  void **slot;
@@ -937,7 +939,7 @@ maybe_process_partial_specialization (tree type)
 		  *entry = elt;
 		  *slot = entry;
 		}
-	      else if (COMPLETE_OR_OPEN_TYPE_P (inst))
+	      else
 		/* But if we've had an implicit instantiation, that's a
 		   problem ([temp.expl.spec]/6).  */
 		error ("specialization %qT after instantiation %qT",
@@ -1440,6 +1442,8 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		    = DECL_DECLARED_INLINE_P (fn);
 		  DECL_SOURCE_LOCATION (clone)
 		    = DECL_SOURCE_LOCATION (fn);
+		  DECL_DELETED_FN (clone)
+		    = DECL_DELETED_FN (fn);
 		}
 	      check_specialization_namespace (tmpl);
 
@@ -2770,15 +2774,16 @@ check_explicit_specialization (tree declarator,
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  else if (DECL_CONSTRUCTOR_P (decl) || DECL_DESTRUCTOR_P (decl))
-	    /* This is indeed a specialization.  In case of constructors
-	       and destructors, we need in-charge and not-in-charge
-	       versions in V3 ABI.  */
-	    clone_function_decl (decl, /*update_method_vec_p=*/0);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
 	  decl = register_specialization (decl, gen_tmpl, targs, is_friend, 0);
+
+	  /* A 'structor should already have clones.  */
+	  gcc_assert (decl == error_mark_node
+		      || !(DECL_CONSTRUCTOR_P (decl)
+			   || DECL_DESTRUCTOR_P (decl))
+		      || DECL_CLONED_FUNCTION_P (DECL_CHAIN (decl)));
 	}
     }
 
@@ -3861,6 +3866,8 @@ template_parm_to_arg (tree t)
 	  SET_ARGUMENT_PACK_ARGS (t, vec);
 	  TREE_TYPE (t) = type;
 	}
+      else
+	t = convert_from_reference (t);
     }
   return t;
 }
@@ -4218,10 +4225,12 @@ process_partial_specialization (tree decl)
           if (/* These first two lines are the `non-type' bit.  */
               !TYPE_P (arg)
               && TREE_CODE (arg) != TEMPLATE_DECL
-              /* This next line is the `argument expression is not just a
+              /* This next two lines are the `argument expression is not just a
                  simple identifier' condition and also the `specialized
                  non-type argument' bit.  */
-              && TREE_CODE (arg) != TEMPLATE_PARM_INDEX)
+              && TREE_CODE (arg) != TEMPLATE_PARM_INDEX
+	      && !(REFERENCE_REF_P (arg)
+		   && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_PARM_INDEX))
             {
               if ((!packed_args && tpd.arg_uses_template_parms[i])
                   || (packed_args && uses_template_parms (arg)))
@@ -6804,6 +6813,8 @@ coerce_template_parms (tree parms,
           /* Store this argument.  */
           if (arg == error_mark_node)
             lost++;
+	  if (lost)
+	    break;
           TREE_VEC_ELT (new_inner_args, parm_idx) = arg;
 
 	  /* We are done with all of the arguments.  */
@@ -7587,7 +7598,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	}
 
       /* Let's consider the explicit specialization of a member
-         of a class template specialization that is implicitely instantiated,
+         of a class template specialization that is implicitly instantiated,
 	 e.g.:
 	     template<class T>
 	     struct S
@@ -7685,9 +7696,9 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 
       /* Note this use of the partial instantiation so we can check it
 	 later in maybe_process_partial_specialization.  */
-      DECL_TEMPLATE_INSTANTIATIONS (templ)
+      DECL_TEMPLATE_INSTANTIATIONS (found)
 	= tree_cons (arglist, t,
-		     DECL_TEMPLATE_INSTANTIATIONS (templ));
+		     DECL_TEMPLATE_INSTANTIATIONS (found));
 
       if (TREE_CODE (template_type) == ENUMERAL_TYPE && !is_dependent_type
 	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
@@ -10813,6 +10824,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	tree type = NULL_TREE;
 	bool local_p;
 
+	if (TREE_TYPE (t) == error_mark_node)
+	  RETURN (error_mark_node);
+
 	if (TREE_CODE (t) == TYPE_DECL
 	    && t == TYPE_MAIN_DECL (TREE_TYPE (t)))
 	  {
@@ -13805,6 +13819,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       RETURN (build_x_compound_expr (EXPR_LOCATION (t), tmp,
 				    RECUR (TREE_OPERAND (t, 1)),
 				    complain));
+
+    case ANNOTATE_EXPR:
+      tmp = RECUR (TREE_OPERAND (t, 0));
+      RETURN (build2_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			  TREE_TYPE (tmp), tmp, RECUR (TREE_OPERAND (t, 1))));
 
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
@@ -17253,14 +17272,16 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 				   explain_p);
 	}
 
-      if (TREE_CODE (parm) == ARRAY_TYPE)
+      if (TREE_CODE (parm) == ARRAY_TYPE
+	  && deducible_array_bound (TYPE_DOMAIN (parm)))
 	{
 	  /* Also deduce from the length of the initializer list.  */
 	  tree max = size_int (CONSTRUCTOR_NELTS (arg));
 	  tree idx = compute_array_index_type (NULL_TREE, max, tf_none);
-	  if (TYPE_DOMAIN (parm) != NULL_TREE)
-	    return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
-				       idx, explain_p);
+	  if (idx == error_mark_node)
+	    return unify_invalid (explain_p);
+	  return unify_array_domain (tparms, targs, TYPE_DOMAIN (parm),
+				     idx, explain_p);
 	}
 
       /* If the std::initializer_list<T> deduction worked, replace the
@@ -17887,6 +17908,12 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case ERROR_MARK:
       /* Unification fails if we hit an error node.  */
       return unify_invalid (explain_p);
+
+    case INDIRECT_REF:
+      if (REFERENCE_REF_P (parm))
+	return unify (tparms, targs, TREE_OPERAND (parm, 0), arg,
+		      strict, explain_p);
+      /* FALLTHRU */
 
     default:
       /* An unresolved overload is a nondeduced context.  */
@@ -19279,6 +19306,10 @@ void
 maybe_instantiate_noexcept (tree fn)
 {
   tree fntype, spec, noex, clone;
+
+  /* Don't instantiate a noexcept-specification from template context.  */
+  if (processing_template_decl)
+    return;
 
   if (DECL_CLONED_FUNCTION_P (fn))
     fn = DECL_CLONED_FUNCTION (fn);

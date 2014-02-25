@@ -127,11 +127,15 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
    the edge and redirect it to the new clone.
    DUPLICATE is used for bookkeeping on whether we are actually creating new
    clones or re-using node originally representing out-of-line function call.
-   */
+   By default the offline copy is removed, when it appears dead after inlining.
+   UPDATE_ORIGINAL prevents this transformation.
+   If OVERALL_SIZE is non-NULL, the size is updated to reflect the
+   transformation.
+   FREQ_SCALE specify the scaling of frequencies of call sites.  */
 
 void
 clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
-		     bool update_original, int *overall_size)
+		     bool update_original, int *overall_size, int freq_scale)
 {
   struct cgraph_node *inlining_into;
   struct cgraph_edge *next;
@@ -175,8 +179,11 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       else
 	{
 	  struct cgraph_node *n;
+
+	  if (freq_scale == -1)
+	    freq_scale = e->frequency;
 	  n = cgraph_clone_node (e->callee, e->callee->decl,
-				 e->count, e->frequency, update_original,
+				 e->count, freq_scale, update_original,
 				 vNULL, true, inlining_into);
 	  cgraph_redirect_edge_callee (e, n);
 	}
@@ -191,7 +198,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     {
       next = e->next_callee;
       if (!e->inline_failed)
-        clone_inlined_nodes (e, duplicate, update_original, overall_size);
+        clone_inlined_nodes (e, duplicate, update_original, overall_size, freq_scale);
       if (e->speculative && !speculation_useful_p (e, true))
 	{
 	  cgraph_resolve_speculation (e, NULL);
@@ -260,7 +267,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	}
     }
 
-  clone_inlined_nodes (e, true, update_original, overall_size);
+  clone_inlined_nodes (e, true, update_original, overall_size, e->frequency);
 
   gcc_assert (curr->callee->global.inlined_to == to);
 

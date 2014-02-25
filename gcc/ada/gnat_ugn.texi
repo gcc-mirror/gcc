@@ -4852,7 +4852,12 @@ Internal GNAT unit @code{with}'ed by application unit
 Values known to be out of range at compile time
 
 @item
-Unreferenced labels and variables
+Unreferenced or unmodified variables. Note that a special
+exemption applies to variables which contain any of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED}, in any casing. Such variables
+are considered likely to be intentionally used in a situation where
+otherwise a warning would be given, so warnings of this kind are
+always suppressed for such variables.
 
 @item
 Address overlays that could clobber memory
@@ -6353,8 +6358,7 @@ source tokens.
 @emph{Check if-then layout.}
 The keyword @code{then} must appear either on the same
 line as corresponding @code{if}, or on a line on its own, lined
-up under the @code{if} with at least one non-blank line in between
-containing all or part of the condition to be tested.
+up under the @code{if}.
 
 @item ^I^IN_MODE^
 @emph{check mode IN keywords.}
@@ -8478,6 +8482,16 @@ Exclude source files (check object consistency only).
 @cindex @option{/READ_SOURCES} (@code{gnatbind})
 Default mode, in which sources are checked for consistency only if
 they are available.
+@end ifset
+
+@item ^-X@var{nnn}^/RETURN_CODES=POSIX^
+@cindex @option{^-X@var{nnn}^/RETURN_CODES=POSIX^} (@code{gnatbind})
+Set default exit status value, normally 0 for POSIX compliance.
+
+@ifset vms
+@item /RETURN_CODES=VMS
+@cindex @option{/RETURN_CODES=VMS} (@code{gnatbind})
+VMS default normal successful return value is 1.
 @end ifset
 
 @item ^-y^/ENABLE_LEAP_SECONDS^
@@ -11269,6 +11283,17 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatelim}
 Display usage, then exit disregarding all other options.
 
+@item -P @var{file}
+@cindex @option{-P} @command{gnatelim}
+Indicates the name of the project file that describes the set of sources
+to be processed.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatelim}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
+
 @item ^-files^/FILES^=@var{filename}
 @cindex @option{^-files^/FILES^} (@code{gnatelim})
 Take the argument source files from the specified file. This file should be an
@@ -11282,9 +11307,11 @@ an explicit list of files.
 Duplicate all the output sent to @file{stderr} into a log file. The log file
 is named @file{gnatelim.log} and is located in the current directory.
 
+@ignore
 @item ^-log^/LOGFILE^=@var{filename}
 @cindex @option{^-log^/LOGFILE^} (@command{gnatelim})
 Duplicate all the output sent to @file{stderr} into a specified log file.
+@end ignore
 
 @cindex @option{^--no-elim-dispatch^/NO_DISPATCH^} (@command{gnatelim})
 @item ^--no-elim-dispatch^/NO_DISPATCH^
@@ -14484,19 +14511,19 @@ uses the same switches as the GNAT compiler, with the same effects.
 
 @table @option
 @item ^-I^/SEARCH=^@var{dir}
-@cindex @option{^-I^/SEARCH^} (@code{gnatpp})
+@cindex @option{^-I^/SEARCH^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^-I-^/NOCURRENT_DIRECTORY^
-@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gnatpp})
+@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^-gnatec^/CONFIGURATION_PRAGMAS_FILE^=@var{path}
-@cindex @option{^-gnatec^/CONFIGURATION_PRAGMAS_FILE^} (@code{gnatpp})
+@cindex @option{^-gnatec^/CONFIGURATION_PRAGMAS_FILE^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @item ^--RTS^/RUNTIME_SYSTEM^=@var{path}
-@cindex @option{^--RTS^/RUNTIME_SYSTEM^} (@code{gnatpp})
+@cindex @option{^--RTS^/RUNTIME_SYSTEM^} (@command{gnatpp})
 The same as the corresponding gcc switch
 
 @end table
@@ -14515,7 +14542,7 @@ The output may be redirected by the following switches:
 
 @table @option
 @item ^-pipe^/STANDARD_OUTPUT^
-@cindex @option{^-pipe^/STANDARD_OUTPUT^} (@code{gnatpp})
+@cindex @option{^-pipe^/STANDARD_OUTPUT^} (@command{gnatpp})
 Send the output to @code{Standard_Output}
 
 @item ^-o @var{output_file}^/OUTPUT=@var{output_file}^
@@ -14525,12 +14552,12 @@ If @var{output_file} already exists, @command{gnatpp} terminates without
 reading or processing the input file.
 
 @item ^-of ^/FORCED_OUTPUT=^@var{output_file}
-@cindex @option{^-of^/FORCED_OUTPUT^} (@code{gnatpp})
+@cindex @option{^-of^/FORCED_OUTPUT^} (@command{gnatpp})
 Write the output into @var{output_file}, overwriting the existing file
 (if one is present).
 
 @item ^-r^/REPLACE^
-@cindex @option{^-r^/REPLACE^} (@code{gnatpp})
+@cindex @option{^-r^/REPLACE^} (@command{gnatpp})
 Replace the input source file with the reformatted output, and copy the
 original input source into the file whose name is obtained by appending the
 ^@file{.npp}^@file{$NPP}^ suffix to the name of the input file.
@@ -14543,7 +14570,7 @@ Like @option{^-r^/REPLACE^} except that if the file with the specified name
 already exists, it is overwritten.
 
 @item ^-rnb^/REPLACE_NO_BACKUP^
-@cindex @option{^-rnb^/REPLACE_NO_BACKUP^} (@code{gnatpp})
+@cindex @option{^-rnb^/REPLACE_NO_BACKUP^} (@command{gnatpp})
 Replace the input source file with the reformatted output without
 creating any backup copy of the input source.
 
@@ -14644,6 +14671,9 @@ Use @var{n} processes to carry out the tree creations (internal representations
 of the argument sources). On a multiprocessor machine this speeds up processing
 of big sets of argument sources. If @var{n} is 0, then the maximum number of
 parallel tree creations is the number of core processors on the platform.
+This option cannot be used together with @option{^-r^/REPLACE^},
+@option{^-rf^/OVERRIDING_REPLACE^} or
+@option{^-rnb^/REPLACE_NO_BACKUP^} option.
 
 @cindex @option{^-t^/TIME^} (@command{gnatpp})
 @item ^-t^/TIME^
@@ -15756,7 +15786,8 @@ in files with names that do not follow the GNAT file naming rules, you have to
 provide the configuration file describing the corresponding naming scheme (see
 the description of the @command{gnatmetric} switches below.)
 Alternatively, you may use a project file and invoke @command{gnatmetric}
-through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}).
+through the @command{gnat} driver (see @ref{The GNAT Driver and Project Files}),
+or you can directly specify a project file as a @command{gnatmetric} parameter.
 
 The @command{gnatmetric} command has the form
 
@@ -15805,7 +15836,9 @@ The following subsections describe the various switches accepted by
 * Disable Metrics For Local Units::
 * Specifying a set of metrics to compute::
 * Other gnatmetric Switches::
+@ignore
 * Generate project-wide metrics::
+@end ignore
 @end menu
 
 @node Output Files Control
@@ -15822,14 +15855,22 @@ for each Ada source file a corresponding text file
 containing the computed metrics, except for the case when the set of metrics
 specified by gnatmetric parameters consists only of metrics that are computed
 for the whole set of analyzed sources, but not for each Ada source.
-By default, this file is placed in the same directory as where the source
-file is located, and its name is obtained
-by appending the ^@file{.metrix}^@file{$METRIX}^ suffix to the name of the
-input file.
+By default, the name of the file containing metric information for a source
+is obtained by appending the ^@file{.metrix}^@file{$METRIX}^ suffix to the
+name of the input source file. If not otherwise specified and no project file
+is specified as @command{gnatmetric} option this file is placed in the same
+directory as where the source file is located. If @command{gnatmetric} has a
+project  file as its parameter, it places all the generated files in the
+object directory of the project (or in the project source directory if the
+project does not define an objects directory), if @option{--subdirs} option
+is specified, the files are placed in the subrirectory of this directory
+specified by this option.
 
 All the output information generated in XML format is placed in a single
-file. By default this file is placed in the current directory and has the
-name ^@file{metrix.xml}^@file{METRIX$XML}^.
+file. By default the name of this file is ^@file{metrix.xml}^@file{METRIX$XML}^.
+If not otherwise specified and if no project file is specified
+as @command{gnatmetric} option  this file is placed in the
+current directory.
 
 Some of the computed metrics are summed over the units passed to
 @command{gnatmetric}; for example, the total number of lines of code.
@@ -16626,6 +16667,38 @@ Display Copyright and version, then exit disregarding all other options.
 @cindex @option{--help} @command{gnatmetric}
 Display usage, then exit disregarding all other options.
 
+@item -P @var{file}
+@cindex @option{-P} @command{gnatmetric}
+Indicates the name of the project file that describes the set of sources
+to be processed. The exact set of argument sources depends on other options
+specified, see below.
+
+@item -U
+@cindex @option{-U} @command{gnatmetric}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+all the units of the closure of the argument project. Otherwise this option
+has no effect.
+
+@item -U @var{main_unit}
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), process
+the closure of units rooted at @var{main_unit}. Otherwise this option
+has no effect.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatmetric}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
+
+@item --subdirs=@var{dir}
+@cindex @option{--subdirs=@var{dir}} @command{gnatmetric}
+Use the specified subdirectory of the project objects file (or of the
+project file directory if the project does not specify an object directory)
+for tool output files. Has no effect if no project is specified as
+tool argument.
+
 @item ^-files @var{filename}^/FILES=@var{filename}^
 @cindex @option{^-files^/FILES^} (@code{gnatmetric})
 Take the argument source files from the specified file. This file should be an
@@ -16656,6 +16729,16 @@ a trace of sources being processed.
 Quiet mode.
 @end table
 
+@ignore
+@noindent
+If a project file is specified and no argument source is explicitly
+specified (either directly or by means of @option{-files} option), and no
+@option{-U} is specified, then the set of processed sources is
+all the immediate units of the argument project.
+@end ignore
+
+
+@ignore
 @node Generate project-wide metrics
 @subsection Generate project-wide metrics
 
@@ -16680,6 +16763,7 @@ the @option{-U} option followed by the name of the main unit:
 @smallexample
    gnat metric -Pproj -U main
 @end smallexample
+@end ignore
 
 
 @c ***********************************
@@ -19478,6 +19562,17 @@ Display Copyright and version, then exit disregarding all other options.
 @item --help
 @cindex @option{--help} @command{gnatstub}
 Display usage, then exit disregarding all other options.
+
+@item -P @var{file}
+@cindex @option{-P} @command{gnatstub}
+Indicates the name of the project file that describes the set of sources
+to be processed.
+
+@item -X@var{name}=@var{value}
+@cindex @option{-X} @command{gnatstub}
+Indicates that external variable @var{name} in the argument project
+has the @var{value} value. Has no effect if no project is specified as
+tool argument.
 
 @item ^-f^/FULL^
 @cindex @option{^-f^/FULL^} (@command{gnatstub})

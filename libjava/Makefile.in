@@ -10581,6 +10581,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-libexecsubPROGRAMS uninstall-toolexeclibLTLIBRARIES \
 	uninstall-toolexecmainlibDATA
 
+export gcc_version
 
 interpret.lo:  AM_CXXFLAGS += -fwrapv
 prims.lo: AM_CXXFLAGS += -fno-omit-frame-pointer

@@ -1454,8 +1454,7 @@ package body Ada.Containers.Formal_Ordered_Sets is
             return True;
          end if;
 
-         if Left.Nodes (LNode).Element /=
-           Right.Nodes (RNode).Element then
+         if Left.Nodes (LNode).Element /= Right.Nodes (RNode).Element then
             exit;
          end if;
 

@@ -1031,7 +1031,7 @@ package body Checks is
             Rewrite (N,
               OK_Convert_To (Typ,
                 Make_Function_Call (Loc,
-                  Name => New_Reference_To (RTE (Cent), Loc),
+                  Name => New_Occurrence_Of (RTE (Cent), Loc),
                   Parameter_Associations => New_List (
                     OK_Convert_To (RTE (RE_Integer_64), Left_Opnd  (N)),
                     OK_Convert_To (RTE (RE_Integer_64), Right_Opnd (N))))));
@@ -2258,7 +2258,7 @@ package body Checks is
                 Then_Statements => New_List (
                   Make_Raise_Statement (Loc,
                     Name       =>
-                      New_Reference_To (Standard_Program_Error, Loc),
+                      New_Occurrence_Of (Standard_Program_Error, Loc),
                     Expression => Make_String_Literal (Loc, End_String)))));
 
          --  Create a sequence of overlapping checks by and-ing them all
@@ -2388,7 +2388,7 @@ package body Checks is
          --  Step 1: Create the expression to verify the validity of the
          --  context.
 
-         Check := New_Reference_To (Context, Loc);
+         Check := New_Occurrence_Of (Context, Loc);
 
          --  When processing a function result, use 'Result. Generate
          --    Context'Result
@@ -5734,7 +5734,7 @@ package body Checks is
                          Duplicate_Subexpr_Move_Checks (Sub)),
                      Right_Opnd =>
                        Make_Attribute_Reference (Loc,
-                         Prefix         => New_Reference_To (Etype (A), Loc),
+                         Prefix         => New_Occurrence_Of (Etype (A), Loc),
                          Attribute_Name => Name_Range)),
                 Reason => CE_Index_Check_Failed));
          end if;
@@ -5788,7 +5788,7 @@ package body Checks is
                      Range_N :=
                        Make_Attribute_Reference (Loc,
                          Prefix         =>
-                           New_Reference_To (Etype (A_Idx), Loc),
+                           New_Occurrence_Of (Etype (A_Idx), Loc),
                          Attribute_Name => Name_Range);
 
                   --  For arrays with non-constant bounds we cannot generate
@@ -6936,7 +6936,7 @@ package body Checks is
                 New_Occurrence_Of (RTE (RE_Mark_Id), Loc),
               Expression          =>
                 Make_Function_Call (Loc,
-                  Name => New_Reference_To (RTE (RE_SS_Mark), Loc)))),
+                  Name => New_Occurrence_Of (RTE (RE_SS_Mark), Loc)))),
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
@@ -6944,7 +6944,7 @@ package body Checks is
                 Make_Procedure_Call_Statement (Loc,
                   Name => New_Occurrence_Of (RTE (RE_SS_Release), Loc),
                   Parameter_Associations => New_List (
-                    New_Reference_To (M, Loc))))));
+                    New_Occurrence_Of (M, Loc))))));
    end Make_Bignum_Block;
 
    ----------------------------------

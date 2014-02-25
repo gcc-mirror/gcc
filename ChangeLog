@@ -1,3 +1,11 @@
+2014-02-17  Loren J. Rittle  <ljrittle@acm.org>
+
+	* MAINTAINERS (Various Maintainers: c++ runtime libs): Remove myself.
+
+2014-02-17  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2014-02-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/59788

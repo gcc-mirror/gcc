@@ -1553,11 +1553,9 @@ package body Sem_Elab is
       --  then there is nothing to do (we do not know what is being assigned),
       --  but otherwise this is an assignment to the prefix.
 
-      if Nkind (N) = N_Indexed_Component
-           or else
-         Nkind (N) = N_Selected_Component
-           or else
-         Nkind (N) = N_Slice
+      if Nkind_In (N, N_Indexed_Component,
+                      N_Selected_Component,
+                      N_Slice)
       then
          if not Is_Access_Type (Etype (Prefix (N))) then
             Check_Elab_Assign (Prefix (N));
@@ -1719,13 +1717,11 @@ package body Sem_Elab is
             Error_Msg_Sloc := Sloc (Ent);
 
             Error_Msg_NE
-              ("??elaboration code may access& before it is initialized",
+              ("??& can be accessed by clients before this initialization",
                N, Ent);
             Error_Msg_NE
-              ("\??suggest adding pragma Elaborate_Body to spec of &",
-               N, Scop);
-            Error_Msg_N
-              ("\??or an explicit initialization could be added #", N);
+              ("\??add Elaborate_Body to spec to ensure & is initialized",
+               N, Ent);
          end if;
 
          if not All_Errors_Mode then
@@ -2292,8 +2288,9 @@ package body Sem_Elab is
            --  within an assertion expression, since we can get false warnings
            --  in this case, due to the out of order handling in this case.
 
-           and then (Nkind (Original_Node (N)) /= N_Function_Call
-                      or else not In_Assertion_Expression (Original_Node (N)))
+           and then
+             (Nkind (Original_Node (N)) /= N_Function_Call
+               or else not In_Assertion_Expression_Pragma (Original_Node (N)))
          then
             Error_Msg_Warn := SPARK_Mode /= On;
 

@@ -9127,15 +9127,15 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
-	if (template_param_list)
-	  {
-	    fco = finish_member_template_decl (fco);
-	    finish_template_decl (template_param_list);
-	    --parser->num_template_parameter_lists;
-	  }
-	else if (parser->fully_implicit_function_template_p)
-	  fco = finish_fully_implicit_template (parser, fco);
       }
+    if (template_param_list)
+      {
+	fco = finish_member_template_decl (fco);
+	finish_template_decl (template_param_list);
+	--parser->num_template_parameter_lists;
+      }
+    else if (parser->fully_implicit_function_template_p)
+      fco = finish_fully_implicit_template (parser, fco);
 
     finish_member_declaration (fco);
 
@@ -13937,6 +13937,7 @@ cp_parser_template_argument (cp_parser* parser)
 
 	  if (INDIRECT_REF_P (argument))
 	    {
+	      /* Strip the dereference temporarily.  */
 	      gcc_assert (REFERENCE_REF_P (argument));
 	      argument = TREE_OPERAND (argument, 0);
 	    }
@@ -13975,6 +13976,8 @@ cp_parser_template_argument (cp_parser* parser)
 	      if (address_p)
 		argument = build_x_unary_op (loc, ADDR_EXPR, argument,
 					     tf_warning_or_error);
+	      else
+		argument = convert_from_reference (argument);
 	      return argument;
 	    }
 	}
@@ -14760,7 +14763,7 @@ cp_parser_type_name (cp_parser* parser)
 	 instantiation of an alias template...  */
       type_decl = cp_parser_template_id (parser,
 					 /*template_keyword_p=*/false,
-					 /*check_dependency_p=*/false,
+					 /*check_dependency_p=*/true,
 					 none_type,
 					 /*is_declaration=*/false);
       /* Note that this must be an instantiation of an alias template
@@ -15373,7 +15376,8 @@ cp_parser_enum_specifier (cp_parser* parser)
         {
           underlying_type = grokdeclarator (NULL, &type_specifiers, TYPENAME,
                                             /*initialized=*/0, NULL);
-          if (underlying_type == error_mark_node)
+          if (underlying_type == error_mark_node
+	      || check_for_bare_parameter_packs (underlying_type))
             underlying_type = NULL_TREE;
         }
     }
@@ -17230,7 +17234,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 				   "array bound is not an integer constant");
 		  bounds = error_mark_node;
 		}
-	      else if (processing_template_decl)
+	      else if (processing_template_decl
+		       && !type_dependent_expression_p (bounds))
 		{
 		  /* Remember this wasn't a constant-expression.  */
 		  bounds = build_nop (TREE_TYPE (bounds), bounds);
@@ -18078,7 +18083,16 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 	     type-specifier-seq at all.  */
 	  if (!seen_type_specifier)
 	    {
-	      cp_parser_error (parser, "expected type-specifier");
+	      /* Set in_declarator_p to avoid skipping to the semicolon.  */
+	      int in_decl = parser->in_declarator_p;
+	      parser->in_declarator_p = true;
+
+	      if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+		  || !cp_parser_parse_and_diagnose_invalid_type_name (parser))
+		cp_parser_error (parser, "expected type-specifier");
+
+	      parser->in_declarator_p = in_decl;
+
 	      type_specifier_seq->type = error_mark_node;
 	      return;
 	    }
@@ -18372,11 +18386,21 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
   parser->in_unbraced_linkage_specification_p
     = saved_in_unbraced_linkage_specification_p;
 
+  /* Reset implicit_template_scope if we are about to leave the function
+     parameter list that introduced it.  Note that for out-of-line member
+     definitions, there will be one or more class scopes before we get to
+     the template parameter scope.  */
+
   if (cp_binding_level *its = parser->implicit_template_scope)
-    if (current_binding_level->level_chain == its)
+    if (cp_binding_level *maybe_its = current_binding_level->level_chain)
       {
-	parser->implicit_template_parms = 0;
-	parser->implicit_template_scope = 0;
+	while (maybe_its->kind == sk_class)
+	  maybe_its = maybe_its->level_chain;
+	if (maybe_its == its)
+	  {
+	    parser->implicit_template_parms = 0;
+	    parser->implicit_template_scope = 0;
+	  }
       }
 
   return parameters;
@@ -18618,8 +18642,24 @@ cp_parser_default_argument (cp_parser *parser, bool template_parm_p)
   /* Parse the assignment-expression.  */
   if (template_parm_p)
     push_deferring_access_checks (dk_no_deferred);
+  tree saved_class_ptr = NULL_TREE;
+  tree saved_class_ref = NULL_TREE;
+  /* The "this" pointer is not valid in a default argument.  */
+  if (cfun)
+    {
+      saved_class_ptr = current_class_ptr;
+      cp_function_chain->x_current_class_ptr = NULL_TREE;
+      saved_class_ref = current_class_ref;
+      cp_function_chain->x_current_class_ref = NULL_TREE;
+    }
   default_argument
     = cp_parser_initializer (parser, &is_direct_init, &non_constant_p);
+  /* Restore the "this" pointer.  */
+  if (cfun)
+    {
+      cp_function_chain->x_current_class_ptr = saved_class_ptr;
+      cp_function_chain->x_current_class_ref = saved_class_ref;
+    }
   if (BRACE_ENCLOSED_INITIALIZER_P (default_argument))
     maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
   if (template_parm_p)
@@ -20406,13 +20446,11 @@ cp_parser_member_declaration (cp_parser* parser)
 							      &decl_specifiers,
 							      declarator,
 							      attributes);
+		  if (parser->fully_implicit_function_template_p)
+		    decl = finish_fully_implicit_template (parser, decl);
 		  /* If the member was not a friend, declare it here.  */
 		  if (!friend_p)
-		    {
-		      if (parser->fully_implicit_function_template_p)
-			decl = finish_fully_implicit_template (parser, decl);
-		      finish_member_declaration (decl);
-		    }
+		    finish_member_declaration (decl);
 		  /* Peek at the next token.  */
 		  token = cp_lexer_peek_token (parser->lexer);
 		  /* If the next token is a semicolon, consume it.  */
@@ -23166,6 +23204,9 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
   tree expression_list;
   tree cast;
   bool nonconst_p;
+
+  if (!type)
+    type = error_mark_node;
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {

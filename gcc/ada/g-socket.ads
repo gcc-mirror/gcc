@@ -107,8 +107,6 @@ package GNAT.Sockets is
    --        Channel  : Stream_Access;
 
    --     begin
-   --        accept Start;
-   --
    --        --  Get an Internet address of a host (here the local host name).
    --        --  Note that a host can have several addresses. Here we get
    --        --  the first one which is supposed to be the official one.
@@ -144,6 +142,8 @@ package GNAT.Sockets is
    --        --  can be accepted. The returned Socket is a new socket that
    --        --  represents the server side of the connection. Server remains
    --        --  available to receive further connections.
+
+   --        accept Start;
 
    --        Accept_Socket (Server, Socket, Address);
 
@@ -278,7 +278,7 @@ package GNAT.Sockets is
    --           Socket_Level,
    --           (Reuse_Address, True));
 
-   --        --  Force Pong to block
+   --        --  Force Ping to block
 
    --        delay 0.2;
 

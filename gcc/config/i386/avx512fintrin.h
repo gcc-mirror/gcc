@@ -1470,16 +1470,16 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp14_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_rcp14sd ((__v2df) __A,
-					   (__v2df) __B);
+  return (__m128d) __builtin_ia32_rcp14sd ((__v2df) __B,
+					   (__v2df) __A);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rcp14_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_rcp14ss ((__v4sf) __A,
-					  (__v4sf) __B);
+  return (__m128) __builtin_ia32_rcp14ss ((__v4sf) __B,
+					  (__v4sf) __A);
 }
 
 extern __inline __m512d
@@ -1544,16 +1544,16 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt14_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_rsqrt14sd ((__v2df) __A,
-					     (__v2df) __B);
+  return (__m128d) __builtin_ia32_rsqrt14sd ((__v2df) __B,
+					     (__v2df) __A);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_rsqrt14_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_rsqrt14ss ((__v4sf) __A,
-					    (__v4sf) __B);
+  return (__m128) __builtin_ia32_rsqrt14ss ((__v4sf) __B,
+					    (__v4sf) __A);
 }
 
 #ifdef __OPTIMIZE__
@@ -6148,8 +6148,8 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_permutexvar_epi64 (__mmask8 __M, __m512i __X, __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __X,
-						     (__v8di) __Y,
+  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __Y,
+						     (__v8di) __X,
 						     (__v8di)
 						     _mm512_setzero_si512 (),
 						     __M);
@@ -6159,8 +6159,8 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_permutexvar_epi64 (__m512i __X, __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __X,
-						     (__v8di) __Y,
+  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __Y,
+						     (__v8di) __X,
 						     (__v8di)
 						     _mm512_setzero_si512 (),
 						     (__mmask8) -1);
@@ -6171,8 +6171,8 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_permutexvar_epi64 (__m512i __W, __mmask8 __M, __m512i __X,
 			       __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __X,
-						     (__v8di) __Y,
+  return (__m512i) __builtin_ia32_permvardi512_mask ((__v8di) __Y,
+						     (__v8di) __X,
 						     (__v8di) __W,
 						     __M);
 }
@@ -6181,8 +6181,8 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_permutexvar_epi32 (__mmask16 __M, __m512i __X, __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __X,
-						     (__v16si) __Y,
+  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __Y,
+						     (__v16si) __X,
 						     (__v16si)
 						     _mm512_setzero_si512 (),
 						     __M);
@@ -6192,8 +6192,8 @@ extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_permutexvar_epi32 (__m512i __X, __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __X,
-						     (__v16si) __Y,
+  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __Y,
+						     (__v16si) __X,
 						     (__v16si)
 						     _mm512_setzero_si512 (),
 						     (__mmask16) -1);
@@ -6204,8 +6204,8 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_permutexvar_epi32 (__m512i __W, __mmask16 __M, __m512i __X,
 			       __m512i __Y)
 {
-  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __X,
-						     (__v16si) __Y,
+  return (__m512i) __builtin_ia32_permvarsi512_mask ((__v16si) __Y,
+						     (__v16si) __X,
 						     (__v16si) __W,
 						     __M);
 }

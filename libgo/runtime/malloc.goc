@@ -27,6 +27,31 @@ package runtime
 #define KindPtr GO_PTR
 #define KindNoPointers GO_NO_POINTERS
 
+// GCCGO SPECIFIC CHANGE
+//
+// There is a long comment in runtime_mallocinit about where to put the heap
+// on a 64-bit system.  It makes assumptions that are not valid on linux/arm64
+// -- it assumes user space can choose the lower 47 bits of a pointer, but on
+// linux/arm64 we can only choose the lower 39 bits.  This means the heap is
+// roughly a quarter of the available address space and we cannot choose a bit
+// pattern that all pointers will have -- luckily the GC is mostly precise
+// these days so this doesn't matter all that much.  The kernel (as of 3.13)
+// will allocate address space starting either down from 0x7fffffffff or up
+// from 0x2000000000, so we put the heap roughly in the middle of these two
+// addresses to minimize the chance that a non-heap allocation will get in the
+// way of the heap.
+//
+// This all means that there isn't much point in trying 256 different
+// locations for the heap on such systems.
+#ifdef __aarch64__
+#define HeapBase(i) ((void*)(uintptr)(0x40ULL<<32))
+#define HeapBaseOptions 1
+#else
+#define HeapBase(i) ((void*)(uintptr)(i<<40|0x00c0ULL<<32))
+#define HeapBaseOptions 0x80
+#endif
+// END GCCGO SPECIFIC CHANGE
+
 // Mark mheap as 'no pointers', it does not contain interesting pointers but occupies ~45K.
 MHeap runtime_mheap;
 
@@ -423,9 +448,8 @@ runtime_mallocinit(void)
 		bitmap_size = arena_size / (sizeof(void*)*8/4);
 		spans_size = arena_size / PageSize * sizeof(runtime_mheap.spans[0]);
 		spans_size = ROUND(spans_size, PageSize);
-		for(i = 0; i <= 0x7f; i++) {
-			p = (void*)(uintptr)(i<<40 | 0x00c0ULL<<32);
-			p = runtime_SysReserve(p, bitmap_size + spans_size + arena_size);
+		for(i = 0; i < HeapBaseOptions; i++) {
+			p = runtime_SysReserve(HeapBase(i), bitmap_size + spans_size + arena_size);
 			if(p != nil)
 				break;
 		}

@@ -1,3 +1,253 @@
+2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60268
+	* gcc.c-torture/compile/pr60268.c: New test.
+
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* gcc.target/microblaze/others/mem_reload.c: New test.
+
+2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/lde.c: New test.
+	* gcc.dg/vmx/lde-be-order.c: New test.
+	* gcc.dg/vmx/ste.c: New test.
+	* gcc.dg/vmx/ste-be-order.c: New test.
+
+2014-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/60173
+	* lib/target-supports.exp
+	(check_effective_target_logical_op_short_circuit): Add cris-*-*
+	and crisv32-*-* to list.
+
+2014-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60302
+	* gfortran.dg/c_f_pointer_shape_tests_6.f90: New.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/vsums.c: Check entire result vector.
+	* gcc.dg/vmx/vsums-be-order.c: Likewise.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld.c: New test.
+	* gcc.dg/vmx/ld-be-order.c: New test.
+	* gcc.dg/vmx/ld-vsx.c: New test.
+	* gcc.dg/vmx/ld-vsx-be-order.c: New test.
+	* gcc.dg/vmx/ldl.c: New test.
+	* gcc.dg/vmx/ldl-be-order.c: New test.
+	* gcc.dg/vmx/ldl-vsx.c: New test.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: New test.
+	* gcc.dg/vmx/st.c: New test.
+	* gcc.dg/vmx/st-be-order.c: New test.
+	* gcc.dg/vmx/st-vsx.c: New test.
+	* gcc.dg/vmx/st-vsx-be-order.c: New test.
+	* gcc.dg/vmx/stl.c: New test.
+	* gcc.dg/vmx/stl-be-order.c: New test.
+	* gcc.dg/vmx/stl-vsx.c: New test.
+	* gcc.dg/vmx/stl-vsx-be-order.c: New test.
+
+2014-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/other/i386-2.C (dg-options): Add -mavx512pf.
+	* g++.dg/other/i386-3.C (dg-options): Ditto.
+	* gcc.target/i386/sse-12.c (dg-options): Add -msha.
+	* gcc.target/i386/sse-13.c (dg-options): Add -mavx512er, -mavx512cd,
+	-mavx512pf and -msha.
+
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60276
+	* gcc.dg/vect/pr60276.c: New testcase.
+
+2014-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60234
+	* gfortran.dg/finalize_23.f90: New.
+
+2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60052
+	PR c++/60053
+	* g++.dg/cpp1y/pr60052.C: New testcase.
+	* g++.dg/cpp1y/pr60053.C: New testcase.
+
+2014-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60286
+	* gfortran.dg/inquire_16.f90: New.
+
+2014-02-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/biggot-1.c: New.
+	* gcc.target/nios2/biggot-2.c: New.
+
+2014-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/55260
+	* gcc.dg/ipa/pr55260.c: New test.
+
+2014-02-20  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-prof/crossmodule-indircall-1.c: Return 0
+	for execution test case.
+
+2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58555
+	* g++.dg/torture/pr58555.C: New testcase.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/60204
+	* gcc.target/x86_64/abi/avx512f/test_passing_structs.c: Update to
+	reflect abi fix.
+	* gcc.target/x86_64/abi/avx512f/test_passing_unions.c: Ditto.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Distinguish src1 and src2.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Call correct intrinsic.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Distinguish src1 and src2.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512f-vrcp14sd-2.c: Fix reference calculation.
+	* gcc.target/i386/avx512f-vrcp14ss-2.c: Fix reference calculation.
+
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37743
+	* g++.dg/ext/builtin-bswap1.C: New test.
+	* c-c++-common/pr37743.c: New test.
+
+2014-02-19  Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
+
+	* gcc.dg/decl-10.c: New test.
+
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/60267
+	* g++.dg/ext/ivdep-1.C: New test.
+
+	PR c++/60267
+	* gcc.dg/pr60267.c: New test.
+
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* gcc.target/i386/pr39162.c: Add dg-prune-output.
+	(dg-options): Remove -Wno-psabi.
+	* gcc.target/i386/pr59794-2.c: Ditto.
+	* gcc.target/i386/pr60205-1.c: Ditto.
+	* gcc.target/i386/sse-5.c: Ditto.
+
+2014-02-18  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/graphite/pr46966.c: Only run on 32-bit+ targets.
+	* gcc.dg/pr23623.c: Likewise.
+	* gcc.dg/pr48784-1.c: Likewise.
+	* gcc.dg/pr48784-2.c: Likewise.
+	* gcc.dg/pr56997-2.c: Likewise.
+	* gcc.dg/sms-6.c: Likewise.
+	* gcc.dg/torture/pr60183.c: Likewise.
+	* gcc.dg/torture/vec-cvt-1.c: Likewise.
+	* gcc.c-torture/execute/20061220-1.x: New.
+	* gcc.c-torture/execute/pr43220.x: New.
+	* gcc.c-torture/execute/pr51581-1.x: New.
+	* gcc.c-torture/execute/pr51581-2.x: New.
+	* gcc.c-torture/execute/pr58570.x: New.
+	* gcc.c-torture/unsorted/DFcmp.x: New.
+	* gcc.c-torture/unsorted/SFset.x: New.
+
+2014-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt31.adb: New test.
+
+2014-02-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/torture/pr60092.c: xfail execution on *-*-solaris2.11* at -O0.
+
+2014-02-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60232
+	* gfortran.dg/typebound_proc_33.f90: New.
+
+2014-02-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60195
+	* gcc.dg/pr60195.c: New test.
+
+2014-02-19  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* gcc.dg/vect/no-vfa-vect-depend-2.c (main1): Fix buffer
+	overflow.
+
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/58844
+	* c-c++-common/cpp/pr58844-1.c: New test.
+	* c-c++-common/cpp/pr58844-2.c: New test.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60225
+	* g++.dg/cpp0x/constexpr-ice10.C: New.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60215
+	* g++.dg/cpp0x/pr60215.C: New.
+
+2014-02-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49397
+	* gfortran.dg/proc_ptr_45.f90: New.
+	* gfortran.dg/proc_ptr_46.f90: New.
+
+2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60190
+	* g++.dg/cpp1y/pr60190.C: New testcase.
+
+	PR c++/60064
+	* g++.dg/cpp1y/pr60064.C: New testcase.
+
+2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60205
+	* gcc.target/i386/pr60205-1.c: New test.
+	* gcc.target/i386/pr60205-2.c: Ditto.
+
+2014-02-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60193
+	* gcc.target/i386/nest-1.c: New testcase.
+
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt32.adb: New test.
+
+2014-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60231
+	* gfortran.dg/typebound_generic_15.f90: New.
+
+2014-02-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/55907
+	* gfortran.dg/init_flag_12.f90: New.
+
+2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512f-vpermd-2.c: Fix reference calculations.
+	* gcc.target/i386/avx512f-vpermpd-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermps-2.c: Ditto.
+	* gcc.target/i386/avx512f-vpermq-var-2.c: Ditto.
+
 2014-02-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* lib/target-supports.exp
@@ -660,7 +910,7 @@
 	in dg-output regexps.
 	* c-c++-common/tsan/simple_stack.c: Likewise.
 
-2014-01-31  Richard Henderson <rth@redhat.com>
+2014-01-31  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/tm/pr60004.C: New.
 
@@ -1126,7 +1376,7 @@
 	* c-c++-common/cpp/warning-zero-in-literals-1.c: New test file.
 
 2014-01-23  Kirill Yukhin  <kirill.yukhin@intel.com>
-	    Ilya Tocar     <ilya.tocar@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx512f-kmovw-1.c: New.
 

@@ -1,3 +1,133 @@
+2014-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58170
+	* parser.c (cp_parser_type_name): Always check dependency.
+	(cp_parser_type_specifier_seq): Call
+	cp_parser_parse_and_diagnose_invalid_type_name.
+
+	PR c++/60108
+	* semantics.c (expand_or_defer_fn_1): Check DECL_DEFAULTED_FN.
+
+	PR c++/60185
+	* parser.c (cp_parser_default_argument): Clear
+	current_class_ptr/current_class_ref like tsubst_default_argument.
+
+	PR c++/60252
+	* lambda.c (maybe_resolve_dummy): Check lambda_function rather
+	than current_binding_level.
+
+	PR c++/60186
+	* typeck2.c (massage_init_elt): Call fold_non_dependent_expr_sfinae.
+
+	PR c++/60187
+	* parser.c (cp_parser_enum_specifier): Call
+	check_for_bare_parameter_packs.
+
+	PR c++/59347
+	* pt.c (tsubst_decl) [TYPE_DECL]: Don't try to instantiate an
+	erroneous typedef.
+
+	PR c++/60241
+	* pt.c (lookup_template_class_1): Update DECL_TEMPLATE_INSTANTIATIONS
+	of the partial instantiation, not the most general template.
+	(maybe_process_partial_specialization): Reassign everything on
+	that list.
+
+	PR c++/60216
+	* pt.c (register_specialization): Copy DECL_DELETED_FN to clones.
+	(check_explicit_specialization): Don't clone.
+
+	PR c++/60219
+	* pt.c (coerce_template_parms): Bail if argument packing fails.
+
+	PR c++/60224
+	* decl.c (cp_complete_array_type, maybe_deduce_size_from_array_init):
+	Don't get confused by a CONSTRUCTOR that already has a type.
+
+	PR c++/60227
+	* call.c (build_array_conv): Don't crash on VLA.
+
+	PR c++/60248
+	* mangle.c (mangle_decl): Don't make an alias for a TYPE_DECL.
+
+	PR c++/60252
+	* lambda.c (maybe_resolve_dummy): Don't try to capture this
+	in declaration context.
+
+	DR 1591
+	PR c++/60051
+	* pt.c (unify): Only unify if deducible.  Handle 0-length list.
+
+	PR c++/60250
+	* parser.c (cp_parser_direct_declarator): Don't wrap a
+	type-dependent expression in a NOP_EXPR.
+
+	PR c++/60251
+	* lambda.c (is_normal_capture_proxy): Handle VLA capture.
+
+	PR c++/60167
+	PR c++/60222
+	PR c++/58606
+	* parser.c (cp_parser_template_argument): Restore dereference.
+	* pt.c (template_parm_to_arg): Dereference non-pack expansions too.
+	(process_partial_specialization): Handle deref.
+	(unify): Likewise.
+
+2014-02-21  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60052
+	PR c++/60053
+	* parser.c (cp_parser_parameter_declaration_list): Correctly reset
+	implicit_template_scope upon leaving an out-of-line generic member
+	function definition.
+
+2014-02-20  Kai Tietz  <ktietz@redhat.com>
+
+	PR c++/58873
+	* parser.c (cp_parser_functional_cast): Treat NULL_TREE
+	valued type argument as error_mark_node.
+
+	PR c++/58835
+	* semantics.c (finish_fname): Handle error_mark_node.
+
+2014-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60046
+	* pt.c (maybe_instantiate_noexcept): Don't instantiate exception
+	spec from template context.
+
+2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/56563
+	* cp-objcp-common.c (cp_function_decl_explicit_p): Remove
+	FUNCTION_FIRST_USER_PARMTYPE (decl) != void_list_node check.
+
+	PR c++/60267
+	* pt.c (tsubst_expr): Handle ANNOTATE_EXPR.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60225
+	* semantics.c (ensure_literal_type_for_constexpr_object): Use
+	strip_array_types.
+
+2014-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60215
+	* semantics.c (cxx_eval_constant_expression, [COMPONENT_REF]):
+	During error recovery allow_non_constant may be false.
+
+2014-02-18  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60190
+	* parser.c (cp_parser_lambda_declarator_opt): Pop template parameter
+	scope whenever a template parameter list has been started, independent
+	of whether the function call operator was well-formed or not.
+
+	PR c++/60064
+	* parser.c (cp_parser_member_declaration): Pop fully implicit template
+	scope for generic friend declarations as well as for non-friends.
+
 2014-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60047

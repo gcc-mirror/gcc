@@ -988,9 +988,9 @@ verify_ssa (bool check_modified_stmt)
 	  if (!gimple_nop_p (stmt))
 	    {
 	      basic_block bb = gimple_bb (stmt);
-	      verify_def (bb, definition_block,
-			  name, stmt, virtual_operand_p (name));
-
+	      if (verify_def (bb, definition_block,
+			      name, stmt, virtual_operand_p (name)))
+		goto err;
 	    }
 	}
     }

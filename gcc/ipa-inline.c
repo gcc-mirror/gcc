@@ -708,6 +708,12 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
   if (outer_node->global.inlined_to)
     caller_freq = outer_node->callers->frequency;
 
+  if (!caller_freq)
+    {
+      reason = "function is inlined and unlikely";
+      want_inline = false;
+    }
+
   if (!want_inline)
     ;
   /* Inlining of self recursive function into copy of itself within other function
@@ -1385,7 +1391,7 @@ recursive_inlining (struct cgraph_edge *edge,
 					    false, vNULL, true, NULL);
 	  for (e = master_clone->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
-	      clone_inlined_nodes (e, true, false, NULL);
+	      clone_inlined_nodes (e, true, false, NULL, CGRAPH_FREQ_BASE);
           cgraph_redirect_edge_callee (curr, master_clone);
           reset_edge_growth_cache (curr);
 	}

@@ -1,5 +1,6 @@
 /* PR target/59794 */
-/* { dg-options "-O2 -mno-avx -Wno-psabi" } */
+/* { dg-prune-output "ABI for passing parameters" } */
+/* { dg-options "-O2 -mno-avx" } */
 /* { dg-skip-if "no AVX vector" { *-*-mingw* } } */
 
 typedef int __v8si __attribute__ ((__vector_size__ (32)));

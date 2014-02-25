@@ -1281,8 +1281,9 @@ package body Ada.Containers.Formal_Vectors is
          return;
       end if;
 
-      if Position.Index > Index_Type'First and
-        Position.Index <= Last_Index (Container) then
+      if Position.Index > Index_Type'First
+        and then Position.Index <= Last_Index (Container)
+      then
          Position.Index := Position.Index - 1;
       else
          Position := No_Element;
@@ -1295,8 +1296,9 @@ package body Ada.Containers.Formal_Vectors is
          return No_Element;
       end if;
 
-      if Position.Index > Index_Type'First and
-        Position.Index <= Last_Index (Container) then
+      if Position.Index > Index_Type'First
+        and then Position.Index <= Last_Index (Container)
+      then
          return (True, Position.Index - 1);
       end if;
 

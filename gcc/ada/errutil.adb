@@ -31,6 +31,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
+with Stringt;  use Stringt;
 with Stylesw;  use Stylesw;
 
 package body Errutil is
@@ -193,7 +194,7 @@ package body Errutil is
       --  Immediate return if warning message and warnings are suppressed.
       --  Note that style messages are not warnings for this purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Sptr) then
+      if Is_Warning_Msg and then Warnings_Suppressed (Sptr) /= No_String then
          Cur_Msg := No_Error_Msg;
          return;
       end if;
@@ -599,9 +600,11 @@ package body Errutil is
       Warnings.Init;
 
       if Warning_Mode = Suppress then
-         Warnings.Increment_Last;
-         Warnings.Table (Warnings.Last).Start := Source_Ptr'First;
-         Warnings.Table (Warnings.Last).Stop  := Source_Ptr'Last;
+         Warnings.Append
+           (New_Val =>
+              (Start  => Source_Ptr'First,
+               Stop   => Source_Ptr'Last,
+               Reason => Null_String_Id));
       end if;
    end Initialize;
 

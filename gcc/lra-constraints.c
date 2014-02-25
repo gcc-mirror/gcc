@@ -4473,9 +4473,9 @@ inherit_reload_reg (bool def_p, int original_regno,
 				rclass, "inheritance");
   start_sequence ();
   if (def_p)
-    emit_move_insn (original_reg, new_reg);
+    lra_emit_move (original_reg, new_reg);
   else
-    emit_move_insn (new_reg, original_reg);
+    lra_emit_move (new_reg, original_reg);
   new_insns = get_insns ();
   end_sequence ();
   if (NEXT_INSN (new_insns) != NULL_RTX)

@@ -10,7 +10,7 @@
 #include "avx512f-mask-type.h"
 
 static void
-CALC (double *s1, long long *mask, double *r)
+CALC (long long *mask, double *s1, double *r)
 {
   int i;
 
@@ -41,7 +41,7 @@ TEST (void)
   res2.x = INTRINSIC (_mask_permutexvar_pd) (res2.x, mask, src2.x, src1.x);
   res3.x = INTRINSIC (_maskz_permutexvar_pd) (mask, src2.x, src1.x);
 
-  CALC (src1.a, src2.a, res_ref);
+  CALC (src2.a, src1.a, res_ref);
 
   if (UNION_CHECK (AVX512F_LEN, d) (res1, res_ref))
     abort ();

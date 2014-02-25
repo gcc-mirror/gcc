@@ -1563,8 +1563,9 @@ package body Sem_Ch10 is
       procedure Optional_Subunit;
       --  This procedure is called when the main unit is a stub, or when we
       --  are not generating code. In such a case, we analyze the subunit if
-      --  present, which is user-friendly and in fact required for ASIS, but
-      --  we don't complain if the subunit is missing.
+      --  present, which is user-friendly and in fact required for ASIS, but we
+      --  don't complain if the subunit is missing. In GNATprove_Mode, we issue
+      --  an error to avoid formal verification of a partial unit.
 
       ----------------------
       -- Optional_Subunit --
@@ -1579,18 +1580,18 @@ package body Sem_Ch10 is
          --  ignore all errors. Note that Fatal_Error will still be set, so we
          --  will be able to check for this case below.
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
          end if;
 
          Unum :=
            Load_Unit
              (Load_Name  => Subunit_Name,
-              Required   => False,
+              Required   => GNATprove_Mode,
               Subunit    => True,
               Error_Node => N);
 
-         if not ASIS_Mode then
+         if not (ASIS_Mode or GNATprove_Mode) then
             Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          end if;
 
@@ -2378,7 +2379,7 @@ package body Sem_Ch10 is
                 Name =>
                   Make_Identifier (Loc,
                     Chars => New_External_Name (Chars (Etype (Nam)), 'E')),
-                 Expression => New_Reference_To (Standard_True, Loc)));
+                 Expression => New_Occurrence_Of (Standard_True, Loc)));
          end if;
       end if;
    end Analyze_Task_Body_Stub;
@@ -3169,7 +3170,7 @@ package body Sem_Ch10 is
 
       function Build_Ancestor_Name (P : Node_Id) return Node_Id is
          P_Ref  : constant Node_Id :=
-                   New_Reference_To (Defining_Entity (P), Loc);
+                   New_Occurrence_Of (Defining_Entity (P), Loc);
          P_Spec : Node_Id := P;
 
       begin
@@ -3201,14 +3202,14 @@ package body Sem_Ch10 is
 
       begin
          if No (Parent_Spec (P_Unit)) then
-            return New_Reference_To (P_Name, Loc);
+            return New_Occurrence_Of (P_Name, Loc);
 
          else
             Result :=
               Make_Expanded_Name (Loc,
                 Chars  => Chars (P_Name),
                 Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P_Unit))),
-                Selector_Name => New_Reference_To (P_Name, Loc));
+                Selector_Name => New_Occurrence_Of (P_Name, Loc));
             Set_Entity (Result, P_Name);
             return Result;
          end if;
@@ -3944,7 +3945,7 @@ package body Sem_Ch10 is
                      --  a parent unit that has limited with-clauses.
 
                      Set_Subtype_Indication (Decl,
-                       New_Reference_To (Non_Lim_View, Sloc (Def_Id)));
+                       New_Occurrence_Of (Non_Lim_View, Sloc (Def_Id)));
                      Set_Etype (Def_Id, Non_Lim_View);
                      Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
                      Set_Analyzed (Decl, False);

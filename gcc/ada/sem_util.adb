@@ -51,6 +51,7 @@ with Sem_Attr; use Sem_Attr;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sinfo;    use Sinfo;
@@ -709,7 +710,7 @@ package body Sem_Util is
       Loc := Sloc (N);
 
       if Nkind (N) = N_Defining_Identifier then
-         Obj := New_Reference_To (N, Loc);
+         Obj := New_Occurrence_Of (N, Loc);
 
          --  If this is a formal parameter of a subprogram declaration, and
          --  we are compiling the body, we want the declaration for the
@@ -807,7 +808,7 @@ package body Sem_Util is
           Defining_Identifier => Subt,
           Subtype_Indication =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (T,  Loc),
+              Subtype_Mark => New_Occurrence_Of (T,  Loc),
               Constraint  =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => Constraints)));
@@ -1037,7 +1038,7 @@ package body Sem_Util is
           Defining_Identifier => Subt,
           Subtype_Indication =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (Base_Type (T),  Loc),
+              Subtype_Mark => New_Occurrence_Of (Base_Type (T),  Loc),
               Constraint  =>
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => C)));
@@ -3873,7 +3874,7 @@ package body Sem_Util is
                 In_Present  => In_Present (Parent (Formal)),
                 Out_Present => Out_Present (Parent (Formal)),
              Parameter_Type =>
-                  New_Reference_To (Etype (Formal), Loc),
+                  New_Occurrence_Of (Etype (Formal), Loc),
                 Expression =>
                   New_Copy_Tree (Expression (Parent (Formal)))),
               Plist);
@@ -4034,138 +4035,6 @@ package body Sem_Util is
          return Type_Access_Level (Typ);
       end if;
    end Deepest_Type_Access_Level;
-
-   ----------------------------
-   -- Default_Initialization --
-   ----------------------------
-
-   function Default_Initialization
-     (Typ : Entity_Id) return Default_Initialization_Kind
-   is
-      Comp : Entity_Id;
-      Init : Default_Initialization_Kind;
-
-      FDI : Boolean := False;
-      NDI : Boolean := False;
-      --  Two flags used to designate whether a record type has at least one
-      --  fully default initialized component and/or one not fully default
-      --  initialized component.
-
-   begin
-      --  Access types are always fully default initialized
-
-      if Is_Access_Type (Typ) then
-         return Full_Default_Initialization;
-
-      --  An array type subject to aspect/pragma Default_Component_Value is
-      --  fully default initialized. Otherwise its initialization status is
-      --  that of its component type.
-
-      elsif Is_Array_Type (Typ) then
-         if Present (Default_Aspect_Component_Value (Base_Type (Typ))) then
-            return Full_Default_Initialization;
-         else
-            return Default_Initialization (Component_Type (Typ));
-         end if;
-
-      --  The initialization status of a private type depends on its full view
-
-      elsif Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
-         return Default_Initialization (Full_View (Typ));
-
-      --  Record and protected types offer several initialization options
-      --  depending on their components (if any).
-
-      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
-         Comp := First_Component (Typ);
-
-         --  Inspect all components
-
-         if Present (Comp) then
-            while Present (Comp) loop
-
-               --  Do not process internally generated components except for
-               --  _parent which represents the ancestor portion of a derived
-               --  type.
-
-               if Comes_From_Source (Comp)
-                 or else Chars (Comp) = Name_uParent
-               then
-                  Init := Default_Initialization (Base_Type (Etype (Comp)));
-
-                  --  A component with mixed initialization renders the whole
-                  --  record/protected type mixed.
-
-                  if Init = Mixed_Initialization then
-                     return Mixed_Initialization;
-
-                  --  The component is fully default initialized when its type
-                  --  is fully default initialized or when the component has an
-                  --  initialization expression. Note that this has precedence
-                  --  given that the component type may lack initialization.
-
-                  elsif Init = Full_Default_Initialization
-                    or else Present (Expression (Parent (Comp)))
-                  then
-                     FDI := True;
-
-                  --  Components with no possible initialization are ignored
-
-                  elsif Init = No_Possible_Initialization then
-                     null;
-
-                  --  The component has no full default initialization
-
-                  else
-                     NDI := True;
-                  end if;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            --  Detect a mixed case of initialization
-
-            if FDI and NDI then
-               return Mixed_Initialization;
-
-            elsif FDI then
-               return Full_Default_Initialization;
-
-            elsif NDI then
-               return No_Default_Initialization;
-
-            --  The type either has no components or they are all internally
-            --  generated.
-
-            else
-               return No_Possible_Initialization;
-            end if;
-
-         --  The record type is null, there is nothing to initialize
-
-         else
-            return No_Possible_Initialization;
-         end if;
-
-      --  A scalar type subject to aspect/pragma Default_Value is fully default
-      --  initialized.
-
-      elsif Is_Scalar_Type (Typ)
-        and then Present (Default_Aspect_Value (Base_Type (Typ)))
-      then
-         return Full_Default_Initialization;
-
-      --  Task types are always fully default initialized
-
-      elsif Is_Task_Type (Typ) then
-         return Full_Default_Initialization;
-      end if;
-
-      --  The type has no full default initialization
-
-      return No_Default_Initialization;
-   end Default_Initialization;
 
    ---------------------
    -- Defining_Entity --
@@ -6386,6 +6255,80 @@ package body Sem_Util is
       return Proper_Body (Unit (Library_Unit (N)));
    end Get_Body_From_Stub;
 
+   ---------------------
+   -- Get_Cursor_Type --
+   ---------------------
+
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+      Typ    : Entity_Id) return Entity_Id
+   is
+      Assoc    : Node_Id;
+      Func     : Entity_Id;
+      First_Op : Entity_Id;
+      Cursor   : Entity_Id;
+
+   begin
+      --  If error already detected, return
+
+      if Error_Posted (Aspect) then
+         return Any_Type;
+      end if;
+
+      --  The cursor type for an Iterable aspect is the return type of a
+      --  non-overloaded First primitive operation. Locate association for
+      --  First.
+
+      Assoc := First (Component_Associations (Expression (Aspect)));
+      First_Op  := Any_Id;
+      while Present (Assoc) loop
+         if Chars (First (Choices (Assoc))) = Name_First then
+            First_Op := Expression (Assoc);
+            exit;
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if First_Op = Any_Id then
+         Error_Msg_N ("aspect Iterable must specify First operation", Aspect);
+         return Any_Type;
+      end if;
+
+      Cursor := Any_Type;
+
+      --  Locate function with desired name and profile in scope of type
+
+      Func := First_Entity (Scope (Typ));
+      while Present (Func) loop
+         if Chars (Func) = Chars (First_Op)
+           and then Ekind (Func) = E_Function
+           and then Present (First_Formal (Func))
+           and then Etype (First_Formal (Func)) = Typ
+           and then No (Next_Formal (First_Formal (Func)))
+         then
+            if Cursor /= Any_Type then
+               Error_Msg_N
+                 ("Operation First for iterable type must be unique", Aspect);
+               return Any_Type;
+            else
+               Cursor :=  Etype (Func);
+            end if;
+         end if;
+
+         Next_Entity (Func);
+      end loop;
+
+      --  If not found, no way to resolve remaining primitives.
+
+      if Cursor = Any_Type then
+         Error_Msg_N
+           ("No legal primitive operation First for Iterable type", Aspect);
+      end if;
+
+      return Cursor;
+   end Get_Cursor_Type;
+
    -------------------------------
    -- Get_Default_External_Name --
    -------------------------------
@@ -6618,6 +6561,35 @@ package body Sem_Util is
       end if;
    end Get_Index_Bounds;
 
+   ---------------------------------
+   -- Get_Iterable_Type_Primitive --
+   ---------------------------------
+
+   function Get_Iterable_Type_Primitive
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id
+   is
+      Funcs : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Iterable);
+      Assoc : Node_Id;
+
+   begin
+      if No (Funcs) then
+         return Empty;
+
+      else
+         Assoc := First (Component_Associations (Funcs));
+         while Present (Assoc) loop
+            if Chars (First (Choices (Assoc))) = Nam then
+               return Entity (Expression (Assoc));
+            end if;
+
+            Assoc := Next (Assoc);
+         end loop;
+
+         return Empty;
+      end if;
+   end Get_Iterable_Type_Primitive;
+
    ----------------------------------
    -- Get_Library_Unit_Name_string --
    ----------------------------------
@@ -6662,6 +6634,30 @@ package body Sem_Util is
    begin
       return Get_Pragma_Id (Pragma_Name (N));
    end Get_Pragma_Id;
+
+   -----------------------
+   -- Get_Reason_String --
+   -----------------------
+
+   procedure Get_Reason_String (N : Node_Id) is
+   begin
+      if Nkind (N) = N_String_Literal then
+         Store_String_Chars (Strval (N));
+
+      elsif Nkind (N) = N_Op_Concat then
+         Get_Reason_String (Left_Opnd (N));
+         Get_Reason_String (Right_Opnd (N));
+
+      --  If not of required form, error
+
+      else
+         Error_Msg_N
+           ("Reason for pragma Warnings has wrong form", N);
+         Error_Msg_N
+           ("\must be string literal or concatenation of string literals", N);
+         return;
+      end if;
+   end Get_Reason_String;
 
    ---------------------------
    -- Get_Referenced_Object --
@@ -8325,6 +8321,44 @@ package body Sem_Util is
       return False;
    end Implements_Interface;
 
+   ------------------------------------
+   -- In_Assertion_Expression_Pragma --
+   ------------------------------------
+
+   function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean is
+      Par  : Node_Id;
+      Prag : Node_Id := Empty;
+
+   begin
+      --  Climb the parent chain looking for an enclosing pragma
+
+      Par := N;
+      while Present (Par) loop
+         if Nkind (Par) = N_Pragma then
+            Prag := Par;
+            exit;
+
+         --  Precondition-like pragmas are expanded into if statements, check
+         --  the original node instead.
+
+         elsif Nkind (Original_Node (Par)) = N_Pragma then
+            Prag := Original_Node (Par);
+            exit;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (Par) then
+            return False;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return
+        Present (Prag)
+          and then Assertion_Expression_Pragma (Get_Pragma_Id (Prag));
+   end In_Assertion_Expression_Pragma;
+
    -----------------
    -- In_Instance --
    -----------------
@@ -9262,6 +9296,185 @@ package body Sem_Util is
                or else Is_Task_Interface (T));
    end Is_Concurrent_Interface;
 
+   ---------------------------
+   --  Is_Container_Element --
+   ---------------------------
+
+   function Is_Container_Element (Exp : Node_Id) return Boolean is
+      Loc  : constant Source_Ptr := Sloc (Exp);
+      Pref : constant Node_Id   := Prefix (Exp);
+
+      Call : Node_Id;
+      --  Call to an indexing aspect
+
+      Cont_Typ : Entity_Id;
+      --  The type of the container being accessed
+
+      Elem_Typ : Entity_Id;
+      --  Its element type
+
+      Indexing : Entity_Id;
+      Is_Const : Boolean;
+      --  Indicates that constant indexing is used, and the element is thus
+      --  a constant.
+
+      Ref_Typ : Entity_Id;
+      --  The reference type returned by the indexing operation
+
+   begin
+      --  If C is a container, in a context that imposes the element type of
+      --  that container, the indexing notation C (X) is rewritten as:
+
+      --    Indexing (C, X).Discr.all
+
+      --  where Indexing is one of the indexing aspects of the container.
+      --  If the context does not require a reference, the construct can be
+      --  rewritten as
+
+      --    Element (C, X)
+
+      --  First, verify that the construct has the proper form
+
+      if not Expander_Active then
+         return False;
+
+      elsif Nkind (Pref) /= N_Selected_Component then
+         return False;
+
+      elsif Nkind (Prefix (Pref)) /= N_Function_Call then
+         return False;
+
+      else
+         Call    := Prefix (Pref);
+         Ref_Typ := Etype (Call);
+      end if;
+
+      if not Has_Implicit_Dereference (Ref_Typ)
+        or else No (First (Parameter_Associations (Call)))
+        or else not Is_Entity_Name (Name (Call))
+      then
+         return False;
+      end if;
+
+      --  Retrieve type of container object, and its iterator aspects
+
+      Cont_Typ := Etype (First (Parameter_Associations (Call)));
+      Indexing := Find_Value_Of_Aspect (Cont_Typ, Aspect_Constant_Indexing);
+      Is_Const := False;
+
+      if No (Indexing) then
+
+         --  Container should have at least one indexing operation
+
+         return False;
+
+      elsif Entity (Name (Call)) /= Entity (Indexing) then
+
+         --  This may be a variable indexing operation
+
+         Indexing := Find_Value_Of_Aspect (Cont_Typ, Aspect_Variable_Indexing);
+
+         if No (Indexing)
+           or else Entity (Name (Call)) /= Entity (Indexing)
+         then
+            return False;
+         end if;
+
+      else
+         Is_Const := True;
+      end if;
+
+      Elem_Typ := Find_Value_Of_Aspect (Cont_Typ, Aspect_Iterator_Element);
+
+      if No (Elem_Typ) or else Entity (Elem_Typ) /= Etype (Exp) then
+         return False;
+      end if;
+
+      --  Check that the expression is not the target of an assignment, in
+      --  which case the rewriting is not possible.
+
+      if not Is_Const then
+         declare
+            Par : Node_Id;
+
+         begin
+            Par := Exp;
+            while Present (Par)
+            loop
+               if Nkind (Parent (Par)) = N_Assignment_Statement
+                 and then Par = Name (Parent (Par))
+               then
+                  return False;
+
+               --  A renaming produces a reference, and the transformation
+               --  does not apply.
+
+               elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
+                  return False;
+
+               elsif Nkind_In
+                 (Nkind (Parent (Par)), N_Function_Call,
+                                        N_Procedure_Call_Statement,
+                                        N_Entry_Call_Statement)
+               then
+                  --  Check that the element is not part of an actual for an
+                  --  in-out parameter.
+
+                  declare
+                     F : Entity_Id;
+                     A : Node_Id;
+
+                  begin
+                     F := First_Formal (Entity (Name (Parent (Par))));
+                     A := First (Parameter_Associations (Parent (Par)));
+                     while Present (F) loop
+                        if A = Par and then Ekind (F) /= E_In_Parameter then
+                           return False;
+                        end if;
+
+                        Next_Formal (F);
+                        Next (A);
+                     end loop;
+                  end;
+
+                  --  E_In_Parameter in a call: element is not modified.
+
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+         end;
+      end if;
+
+      --  The expression has the proper form and the context requires the
+      --  element type. Retrieve the Element function of the container and
+      --  rewrite the construct as a call to it.
+
+      declare
+         Op : Elmt_Id;
+
+      begin
+         Op := First_Elmt (Primitive_Operations (Cont_Typ));
+         while Present (Op) loop
+            exit when Chars (Node (Op)) = Name_Element;
+            Next_Elmt (Op);
+         end loop;
+
+         if No (Op) then
+            return False;
+
+         else
+            Rewrite (Exp,
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Node (Op), Loc),
+                Parameter_Associations => Parameter_Associations (Call)));
+            Analyze_And_Resolve (Exp, Entity (Elem_Typ));
+            return True;
+         end if;
+      end;
+   end Is_Container_Element;
+
    -----------------------
    -- Is_Constant_Bound --
    -----------------------
@@ -10000,6 +10213,9 @@ package body Sem_Util is
       elsif not Is_Tagged_Type (Typ) or else not Is_Derived_Type (Typ) then
          return False;
 
+      elsif Present (Find_Value_Of_Aspect (Typ, Aspect_Iterable)) then
+         return True;
+
       else
          Collect_Interfaces (Typ, Ifaces_List);
 
@@ -10020,6 +10236,45 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Iterator;
+
+   ------------------
+   -- Is_Junk_Name --
+   ------------------
+
+   function Is_Junk_Name (N : Name_Id) return Boolean is
+      function Match (S : String) return Boolean;
+      --  Return true if substring S is found in Name_Buffer (1 .. Name_Len)
+
+      -----------
+      -- Match --
+      -----------
+
+      function Match (S : String) return Boolean is
+         Slen1 : constant Integer := S'Length - 1;
+
+      begin
+         for J in 1 .. Name_Len - S'Length + 1 loop
+            if Name_Buffer (J .. J + Slen1) = S then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end Match;
+
+   --  Start of processing for Is_Junk_Name
+
+   begin
+      Get_Unqualified_Decoded_Name_String (N);
+      Set_All_Upper_Case;
+
+      return
+        Match ("DISCARD") or else
+        Match ("DUMMY")   or else
+        Match ("IGNORE")  or else
+        Match ("JUNK")    or else
+        Match ("UNUSED");
+   end Is_Junk_Name;
 
    ------------
    -- Is_LHS --
@@ -10537,11 +10792,11 @@ package body Sem_Util is
       Expr := N;
       Par  := Parent (N);
       while not Nkind_In (Par, N_If_Expression,
-                                N_Case_Expression,
-                                N_And_Then,
-                                N_Or_Else,
-                                N_In,
-                                N_Not_In)
+                               N_Case_Expression,
+                               N_And_Then,
+                               N_Or_Else,
+                               N_In,
+                               N_Not_In)
       loop
          Expr := Par;
          Par  := Parent (Par);

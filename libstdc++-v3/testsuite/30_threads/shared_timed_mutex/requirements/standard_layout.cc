@@ -27,5 +27,5 @@
 void test01()
 {
   __gnu_test::standard_layout test;
-  test.operator()<std::shared_mutex>();
+  test.operator()<std::shared_timed_mutex>();
 }

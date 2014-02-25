@@ -1870,8 +1870,7 @@ package body Atree is
          --  Both the old and new copies of the node will share the same list
          --  of aspect specifications if aspect specifications are present.
 
-         if Has_Aspects (Sav_Node) then
-            Set_Has_Aspects (Sav_Node, False);
+         if Old_Has_Aspects then
             Set_Aspect_Specifications
               (Sav_Node, Aspect_Specifications (Old_Node));
          end if;

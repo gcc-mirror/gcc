@@ -114,7 +114,7 @@
 ;; insns like this one are never generated.
 
 (define_insn "pushqi1"
-  [(set (mem:QI (post_inc (reg:HI 15)))
+  [(set (mem:QI (post_inc:HI (reg:HI 15)))
 	(match_operand:QI 0 "register_operand" "r"))]
   ""
   "push %0"
@@ -123,7 +123,7 @@
 
 (define_insn "popqi1"
   [(set (match_operand:QI 0 "register_operand" "=r")
-	(mem:QI (pre_dec (reg:HI 15))))]
+	(mem:QI (pre_dec:HI (reg:HI 15))))]
   ""
   "pop %0"
   [(set_attr "psw_operand" "nop")
@@ -168,7 +168,7 @@
    (set_attr "psw_operand" "0,0,0,0,nop,0,nop,0,0")])
 
 (define_insn "pushhi1"
-  [(set (mem:HI (post_inc (reg:HI 15)))
+  [(set (mem:HI (post_inc:HI (reg:HI 15)))
 	(match_operand:HI 0 "register_operand" "r"))]
   ""
   "push %0"
@@ -177,7 +177,7 @@
 
 (define_insn "pophi1"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(mem:HI (pre_dec (reg:HI 15))))]
+	(mem:HI (pre_dec:HI (reg:HI 15))))]
   ""
   "pop %0"
   [(set_attr "psw_operand" "nop")

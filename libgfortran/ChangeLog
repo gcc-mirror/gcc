@@ -1,3 +1,10 @@
+2014-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/60286
+	* libgfortran/io/inquire.c (yes, no): New static const char vars.
+	(inquire_via_unit): Use them. Use OPEN mode instead of using
+	POSIX's access to query about write=, read= and readwrite=.
+
 2014-01-20  Jerry DeLisle  <jvdelisle@gcc.gnu>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 

@@ -1727,8 +1727,11 @@ package body Sem_Ch5 is
 
         --  Do not perform this expansion in SPARK mode, since the formal
         --  verification directly deals with the source form of the iterator.
+        --  Ditto for ASIS, where the temporary may hide the transformation
+        --  of a selected component into a prefixed function call.
 
         and then not GNATprove_Mode
+        and then not ASIS_Mode
       then
          declare
             Id   : constant Entity_Id := Make_Temporary (Loc, 'R', Iter_Name);
@@ -1807,7 +1810,10 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      Typ := Etype (Iter_Name);
+      --  Get base type of container, for proper retrieval of Cursor type
+      --  and primitive operations.
+
+      Typ := Base_Type (Etype (Iter_Name));
 
       if Is_Array_Type (Typ) then
          if Of_Present (N) then
@@ -1851,49 +1857,61 @@ package body Sem_Ch5 is
          Set_Ekind (Def_Id, E_Loop_Parameter);
 
          if Of_Present (N) then
-
-            --  The type of the loop variable is the Iterator_Element aspect of
-            --  the container type.
-
-            declare
-               Element : constant Entity_Id :=
-                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
-            begin
-               if No (Element) then
-                  Error_Msg_NE ("cannot iterate over&", N, Typ);
-                  return;
-               else
-                  Set_Etype (Def_Id, Entity (Element));
-
-                  --  If subtype indication was given, verify that it matches
-                  --  element type of container.
-
-                  if Present (Subt)
-                     and then Bas /= Base_Type (Etype (Def_Id))
-                  then
-                     Error_Msg_N
-                       ("subtype indication does not match element type",
-                          Subt);
-                  end if;
-
-                  --  If the container has a variable indexing aspect, the
-                  --  element is a variable and is modifiable in the loop.
-
-                  if Has_Aspect (Typ, Aspect_Variable_Indexing) then
-                     Set_Ekind (Def_Id, E_Variable);
-                  end if;
+            if Has_Aspect (Typ, Aspect_Iterable) then
+               if No (Get_Iterable_Type_Primitive (Typ, Name_Element)) then
+                  Error_Msg_N ("Missing Element primitive for iteration", N);
                end if;
-            end;
+
+            --  For a predefined container, The type of the loop variable is
+            --  the Iterator_Element aspect of the container type.
+
+            else
+               declare
+                  Element : constant Entity_Id :=
+                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+               begin
+                  if No (Element) then
+                     Error_Msg_NE ("cannot iterate over&", N, Typ);
+                     return;
+                  else
+                     Set_Etype (Def_Id, Entity (Element));
+
+                     --  If subtype indication was given, verify that it
+                     --  matches element type of container.
+
+                     if Present (Subt)
+                        and then Bas /= Base_Type (Etype (Def_Id))
+                     then
+                        Error_Msg_N
+                          ("subtype indication does not match element type",
+                             Subt);
+                     end if;
+
+                     --  If the container has a variable indexing aspect, the
+                     --  element is a variable and is modifiable in the loop.
+
+                     if Has_Aspect (Typ, Aspect_Variable_Indexing) then
+                        Set_Ekind (Def_Id, E_Variable);
+                     end if;
+                  end if;
+               end;
+            end if;
 
          else
             --  For an iteration of the form IN, the name must denote an
             --  iterator, typically the result of a call to Iterate. Give a
             --  useful error message when the name is a container by itself.
 
+            --  The type may be a formal container type, which has to have
+            --  an Iterable aspect detailing the required primitives.
+
             if Is_Entity_Name (Original_Node (Name (N)))
               and then not Is_Iterator (Typ)
             then
-               if not Has_Aspect (Typ, Aspect_Iterator_Element) then
+               if Has_Aspect (Typ, Aspect_Iterable) then
+                  null;
+
+               elsif not Has_Aspect (Typ, Aspect_Iterator_Element) then
                   Error_Msg_NE
                     ("cannot iterate over&", Name (N), Typ);
                else
@@ -1901,31 +1919,49 @@ package body Sem_Ch5 is
                     ("name must be an iterator, not a container", Name (N));
                end if;
 
-               Error_Msg_NE
-                 ("\to iterate directly over the elements of a container, " &
-                   "write `of &`", Name (N), Original_Node (Name (N)));
+               if Has_Aspect (Typ, Aspect_Iterable) then
+                  null;
+               else
+                  Error_Msg_NE
+                    ("\to iterate directly over the elements of a container, "
+                     & "write `of &`", Name (N), Original_Node (Name (N)));
+               end if;
             end if;
 
             --  The result type of Iterate function is the classwide type of
             --  the interface parent. We need the specific Cursor type defined
-            --  in the container package.
+            --  in the container package. We obtain it by name for a predefined
+            --  container, or through the Iterable aspect for a formal one.
 
-            Ent := First_Entity (Scope (Typ));
-            while Present (Ent) loop
-               if Chars (Ent) = Name_Cursor then
-                  Set_Etype (Def_Id, Etype (Ent));
-                  exit;
-               end if;
+            if Has_Aspect (Typ, Aspect_Iterable) then
+               Set_Etype (Def_Id,
+                 Get_Cursor_Type
+                  (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)), Typ));
+               Ent := Etype (Def_Id);
 
-               Next_Entity (Ent);
-            end loop;
+            else
+               Ent := First_Entity (Scope (Typ));
+               while Present (Ent) loop
+                  if Chars (Ent) = Name_Cursor then
+                     Set_Etype (Def_Id, Etype (Ent));
+                     exit;
+                  end if;
+
+                  Next_Entity (Ent);
+               end loop;
+            end if;
          end if;
       end if;
 
       --  A loop parameter cannot be volatile. This check is peformed only when
       --  SPARK_Mode is on as it is not a standard Ada legality check.
+      --  Not clear whether this applies to element iterators, where the
+      --  cursor is not an explicit entity ???
 
-      if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Ent) then
+      if SPARK_Mode = On
+        and then not Of_Present (N)
+        and then Is_SPARK_Volatile_Object (Ent)
+      then
          Error_Msg_N
            ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
       end if;
@@ -2015,7 +2051,7 @@ package body Sem_Ch5 is
                    Defining_Identifier => Subt,
                    Subtype_Indication  =>
                       Make_Subtype_Indication (Loc,
-                        Subtype_Mark => New_Reference_To (Indx, Loc),
+                        Subtype_Mark => New_Occurrence_Of (Indx, Loc),
                         Constraint   =>
                           Make_Range_Constraint (Loc, Relocate_Node (DS))));
                Insert_Before (Loop_Nod, Decl);
@@ -2023,7 +2059,7 @@ package body Sem_Ch5 is
 
                Rewrite (DS,
                  Make_Attribute_Reference (Loc,
-                   Prefix         => New_Reference_To (Subt, Loc),
+                   Prefix         => New_Occurrence_Of (Subt, Loc),
                    Attribute_Name => Attribute_Name (DS)));
 
                Analyze (DS);

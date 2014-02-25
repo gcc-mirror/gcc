@@ -4880,7 +4880,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	 those are not supported in GNU C++, and as the middle-end
 	 will crash if presented with a non-numeric designated
 	 initializer.  */
-      if (initializer && TREE_CODE (initializer) == CONSTRUCTOR)
+      if (initializer && BRACE_ENCLOSED_INITIALIZER_P (initializer))
 	{
 	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initializer);
 	  constructor_elt *ce;
@@ -7098,6 +7098,11 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
   int failure;
   tree type, elt_type;
+
+  /* Don't get confused by a CONSTRUCTOR for some other type.  */
+  if (initial_value && TREE_CODE (initial_value) == CONSTRUCTOR
+      && !BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+    return 1;
 
   if (initial_value)
     {

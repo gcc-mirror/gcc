@@ -419,39 +419,6 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   --  The following type lists all possible forms of default initialization
-   --  that may apply to a type.
-
-   type Default_Initialization_Kind is
-     (No_Possible_Initialization,
-      --  This value signifies that a type cannot possibly be initialized
-      --  because it has no content, for example - a null record.
-
-      Full_Default_Initialization,
-      --  This value covers the following combinations of types and content:
-      --    * Access type
-      --    * Array-of-scalars with specified Default_Component_Value
-      --    * Array type with fully default initialized component type
-      --    * Record or protected type with components that either have a
-      --      default expression or their related types are fully default
-      --      initialized.
-      --    * Scalar type with specified Default_Value
-      --    * Task type
-      --    * Type extension of a type with full default initialization where
-      --      the extension components are also fully default initialized.
-
-      Mixed_Initialization,
-      --  This value applies to a type where some of its internals are fully
-      --  default initialized and some are not.
-
-      No_Default_Initialization);
-      --  This value reflects a type where none of its content is fully
-      --  default initialized.
-
-   function Default_Initialization
-     (Typ : Entity_Id) return Default_Initialization_Kind;
-   --  Determine default initialization kind that applies to a particular type
-
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the
@@ -777,6 +744,14 @@ package Sem_Util is
    function Get_Body_From_Stub (N : Node_Id) return Node_Id;
    --  Return the body node for a stub (subprogram or package)
 
+   function Get_Cursor_Type
+     (Aspect : Node_Id;
+      Typ    : Entity_Id) return Entity_Id;
+   --  Find Cursor type in scope of formal container Typ, by locating primitive
+   --  operation First. For use in resolving the other primitive operations
+   --  of an Iterable type and expanding loops and quantified expressions
+   --  over formal containers.
+
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
    --  default external name, i.e. one that is constructed from the name of an
@@ -818,6 +793,12 @@ package Sem_Util is
    --  The third argument supplies a source location for constructed nodes
    --  returned by this function.
 
+   function Get_Iterable_Type_Primitive
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id;
+   --  Retrieve one of the primitives First, Next, Has_Element, Element from
+   --  the value of the Iterable aspect of a formal type.
+
    procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
    --  Retrieve the fully expanded name of the library unit declared by
    --  Decl_Node into the name buffer.
@@ -836,6 +817,13 @@ package Sem_Util is
    function Get_Pragma_Id (N : Node_Id) return Pragma_Id;
    pragma Inline (Get_Pragma_Id);
    --  Obtains the Pragma_Id from the Chars field of Pragma_Identifier (N)
+
+   procedure Get_Reason_String (N : Node_Id);
+   --  Recursive routine to analyze reason argument for pragma Warnings. The
+   --  value of the reason argument is appended to the current string using
+   --  Store_String_Chars. The reason argument is expected to be a string
+   --  literal or concatenation of string literals. An error is given for
+   --  any other form.
 
    function Get_Referenced_Object (N : Node_Id) return Node_Id;
    --  Given a node, return the renamed object if the node represents a renamed
@@ -999,6 +987,10 @@ package Sem_Util is
       Exclude_Parents : Boolean := False) return Boolean;
    --  Returns true if the Typ_Ent implements interface Iface_Ent
 
+   function In_Assertion_Expression_Pragma (N : Node_Id) return Boolean;
+   --  Determine whether an arbitrary node appears in a pragma that acts as an
+   --  assertion expression. See Sem_Prag for the list of qualifying pragmas.
+
    function In_Instance return Boolean;
    --  Returns True if the current scope is within a generic instance
 
@@ -1098,6 +1090,17 @@ package Sem_Util is
    --  enumeration literal, or an expression composed of constant-bound
    --  subexpressions which are evaluated by means of standard operators.
 
+   function Is_Container_Element (Exp : Node_Id) return Boolean;
+   --  This routine recognizes expressions that denote an element of one of
+   --  the predefined containers, when the source only contains an indexing
+   --  operation and an implicit dereference is inserted by the compiler.
+   --  In the absence of this optimization, the indexing creates a temporary
+   --  controlled cursor that sets the tampering bit of the container, and
+   --  restricts the use of the convenient notation C (X) to contexts that
+   --  do not check the tampering bit (e.g. C.Include (X, C (Y)). Exp is an
+   --  explicit dereference. The transformation applies when it has the form
+   --  F (X).Discr.all.
+
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;
    --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure
@@ -1177,6 +1180,16 @@ package Sem_Util is
    function Is_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
    --  Ada.Iterator_Interfaces, or it is derived from one.
+
+   function Is_Junk_Name (N : Name_Id) return Boolean;
+   --  Returns True if the given name contains any of the following substrings
+   --    discard
+   --    dummy
+   --    ignore
+   --    junk
+   --    unused
+   --  Used to suppress warnings on names matching these patterns. The contents
+   --  of Name_Buffer and Name_Len are desteoyed by this call.
 
    type Is_LHS_Result is (Yes, No, Unknown);
    function Is_LHS (N : Node_Id) return Is_LHS_Result;

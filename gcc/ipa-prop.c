@@ -57,6 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "params.h"
 #include "ipa-utils.h"
+#include "stringpool.h"
+#include "tree-ssanames.h"
 
 /* Intermediate information about a parameter that is only useful during the
    run of ipa_analyze_node and is not kept afterwards.  */
@@ -393,6 +395,9 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 {
   gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
 	      && TYPE_BINFO (component_type));
+  if (!flag_devirtualize)
+    return;
+  gcc_assert (BINFO_VTABLE (TYPE_BINFO (component_type)));
   jfunc->type = IPA_JF_KNOWN_TYPE;
   jfunc->value.known_type.offset = offset,
   jfunc->value.known_type.base_type = base_type;
@@ -477,10 +482,16 @@ ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 		     tree type, int formal_id, bool agg_preserved,
 		     bool type_preserved)
 {
+  if (!flag_devirtualize)
+    type_preserved = false;
+  gcc_assert (!type_preserved
+	      || (TREE_CODE (type) == RECORD_TYPE
+		  && TYPE_BINFO (type)
+		  && BINFO_VTABLE (TYPE_BINFO (type))));
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
-  jfunc->value.ancestor.type = type;
+  jfunc->value.ancestor.type = type_preserved ? type : NULL;
   jfunc->value.ancestor.agg_preserved = agg_preserved;
   jfunc->value.ancestor.type_preserved = type_preserved;
 }
@@ -686,7 +697,7 @@ detect_type_change (tree arg, tree base, tree comp_type, gimple call,
       || TREE_CODE (comp_type) != RECORD_TYPE
       || !TYPE_BINFO (comp_type)
       || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
-    return false;
+    return true;
 
   /* C++ methods are not allowed to change THIS pointer unless they
      are constructors or destructors.  */
@@ -1103,7 +1114,8 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       bool type_p = !detect_type_change (op1, base, TREE_TYPE (param_type),
 					 call, jfunc, offset);
       if (type_p || jfunc->type == IPA_JF_UNKNOWN)
-	ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (op1), index,
+	ipa_set_ancestor_jf (jfunc, offset,
+			     type_p ? TREE_TYPE (param_type) : NULL, index,
 			     parm_ref_data_pass_through_p (&parms_ainfo[index],
 							   call, ssa), type_p);
     }
@@ -1211,7 +1223,8 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     return;
   parm = TREE_OPERAND (expr, 0);
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (parm));
-  gcc_assert (index >= 0);
+  if (index < 0)
+    return;
 
   cond_bb = single_pred (assign_bb);
   cond = last_stmt (cond_bb);
@@ -1235,7 +1248,7 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     type_p = !detect_type_change (obj, expr, TREE_TYPE (param_type),
 				  call, jfunc, offset);
   if (type_p || jfunc->type == IPA_JF_UNKNOWN)
-    ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (obj), index,
+    ipa_set_ancestor_jf (jfunc, offset, type_p ? TREE_TYPE (param_type) : NULL, index,
 			 parm_ref_data_pass_through_p (&parms_ainfo[index],
 						       call, parm), type_p);
 }
@@ -2390,7 +2403,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		    ipa_set_jf_known_type (dst,
 					   ipa_get_jf_known_type_offset (src),
 					   ipa_get_jf_known_type_base_type (src),
-					   ipa_get_jf_known_type_base_type (src));
+					   ipa_get_jf_known_type_component_type (src));
 		  else
 		    dst->type = IPA_JF_UNKNOWN;
 		  break;
@@ -3783,18 +3796,32 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		align = (misalign & -misalign);
 	      if (align < TYPE_ALIGN (type))
 		type = build_aligned_type (type, align);
+	      base = force_gimple_operand_gsi (&gsi, base,
+					       true, NULL, true, GSI_SAME_STMT);
 	      expr = fold_build2_loc (loc, MEM_REF, type, base, off);
+	      /* If expr is not a valid gimple call argument emit
+	         a load into a temporary.  */
+	      if (is_gimple_reg_type (TREE_TYPE (expr)))
+		{
+		  gimple tem = gimple_build_assign (NULL_TREE, expr);
+		  if (gimple_in_ssa_p (cfun))
+		    {
+		      gimple_set_vuse (tem, gimple_vuse (stmt));
+		      expr = make_ssa_name (TREE_TYPE (expr), tem);
+		    }
+		  else
+		    expr = create_tmp_reg (TREE_TYPE (expr), NULL);
+		  gimple_assign_set_lhs (tem, expr);
+		  gsi_insert_before (&gsi, tem, GSI_SAME_STMT);
+		}
 	    }
 	  else
 	    {
 	      expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
 	      expr = build_fold_addr_expr (expr);
+	      expr = force_gimple_operand_gsi (&gsi, expr,
+					       true, NULL, true, GSI_SAME_STMT);
 	    }
-
-	  expr = force_gimple_operand_gsi (&gsi, expr,
-					   adj->by_ref
-					   || is_gimple_reg_type (adj->type),
-					   NULL, true, GSI_SAME_STMT);
 	  vargs.quick_push (expr);
 	}
       if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_STMTS)
@@ -3850,6 +3877,15 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
     gimple_set_location (new_stmt, gimple_location (stmt));
   gimple_call_set_chain (new_stmt, gimple_call_chain (stmt));
   gimple_call_copy_flags (new_stmt, stmt);
+  if (gimple_in_ssa_p (cfun))
+    {
+      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+      if (gimple_vdef (stmt))
+	{
+	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3867,9 +3903,6 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
     }
   while ((gsi_end_p (prev_gsi) && !gsi_end_p (gsi))
 	 || (!gsi_end_p (prev_gsi) && gsi_stmt (gsi) == gsi_stmt (prev_gsi)));
-
-  update_ssa (TODO_update_ssa);
-  free_dominance_info (CDI_DOMINATORS);
 }
 
 /* If the expression *EXPR should be replaced by a reduction of a parameter, do

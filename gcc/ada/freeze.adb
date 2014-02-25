@@ -350,7 +350,7 @@ package body Freeze is
          then
             Call_Name := New_Copy (Name (N));
          else
-            Call_Name := New_Reference_To (Old_S, Loc);
+            Call_Name := New_Occurrence_Of (Old_S, Loc);
          end if;
 
       else
@@ -432,7 +432,7 @@ package body Freeze is
 
       if Present (Formal) then
          while Present (Formal) loop
-            Append (New_Reference_To (Formal, Loc), Actuals);
+            Append (New_Occurrence_Of (Formal, Loc), Actuals);
             Next_Formal (Formal);
          end loop;
       end if;

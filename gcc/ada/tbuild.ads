@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -303,13 +303,6 @@ package Tbuild is
    --  and Etype of the result are set from the given defining identifier as
    --  follows: Entity is simply a copy of Def_Id. Etype is a copy of Def_Id
    --  for types, and a copy of the Etype of Def_Id for other entities.
-
-   function New_Reference_To
-     (Def_Id : Entity_Id;
-      Loc    : Source_Ptr) return Node_Id;
-   --  This is like New_Occurrence_Of, but it does not set the Etype field. It
-   --  is used from the expander, where Etype fields are generally not set,
-   --  since they are set when the expanded tree is reanalyzed.
 
    function New_Suffixed_Name
      (Related_Id : Name_Id;

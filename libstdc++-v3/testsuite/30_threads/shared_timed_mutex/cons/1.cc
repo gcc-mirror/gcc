@@ -1,9 +1,11 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++1y" }
+// { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* powerpc-ibm-aix* } }
+// { dg-options " -std=gnu++1y -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* powerpc-ibm-aix* } }
+// { dg-options " -std=gnu++1y -pthreads" { target *-*-solaris* } }
+// { dg-options " -std=gnu++1y " { target *-*-cygwin *-*-darwin* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2008-2014 Free Software Foundation, Inc.
+// Copyright (C) 2013-2014 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,14 +24,26 @@
 
 
 #include <shared_mutex>
+#include <system_error>
+#include <testsuite_hooks.h>
 
-void test01()
+int main()
 {
-  // assign
-  typedef std::shared_mutex mutex_type;
-  mutex_type m1;
-  mutex_type m2;
-  m1 = m2;			// { dg-error "deleted" }
-}
+  bool test __attribute__((unused)) = true;
+  typedef std::shared_timed_mutex mutex_type;
 
-// { dg-prune-output "include" }
+  try
+    {
+      mutex_type m1;
+    }
+  catch (const std::system_error& e)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+
+  return 0;
+}

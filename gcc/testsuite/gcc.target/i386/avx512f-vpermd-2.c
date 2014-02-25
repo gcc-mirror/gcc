@@ -11,7 +11,7 @@
 #include "avx512f-mask-type.h"
 
 static void
-CALC (int *src1, int *mask, int *dst)
+CALC (int *mask, int *src1, int *dst)
 {
   int i;
 

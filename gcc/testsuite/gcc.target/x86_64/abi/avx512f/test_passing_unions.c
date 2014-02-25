@@ -52,24 +52,8 @@ check_union_passing1(union un1 u1 ATTRIBUTE_UNUSED,
 		     union un1 u7 ATTRIBUTE_UNUSED,
 		     union un1 u8 ATTRIBUTE_UNUSED)
 {
-   /* Check the passing on the stack by comparing the address of the
-      stack elements to the expected place on the stack.  */
-  assert ((unsigned long)&u1.x == rsp+8);
-  assert ((unsigned long)&u1.f == rsp+8);
-  assert ((unsigned long)&u2.x == rsp+72);
-  assert ((unsigned long)&u2.f == rsp+72);
-  assert ((unsigned long)&u3.x == rsp+136);
-  assert ((unsigned long)&u3.f == rsp+136);
-  assert ((unsigned long)&u4.x == rsp+200);
-  assert ((unsigned long)&u4.f == rsp+200);
-  assert ((unsigned long)&u5.x == rsp+264);
-  assert ((unsigned long)&u5.f == rsp+264);
-  assert ((unsigned long)&u6.x == rsp+328);
-  assert ((unsigned long)&u6.f == rsp+328);
-  assert ((unsigned long)&u7.x == rsp+392);
-  assert ((unsigned long)&u7.f == rsp+392);
-  assert ((unsigned long)&u8.x == rsp+456);
-  assert ((unsigned long)&u8.f == rsp+456);
+  /* Check register contents.  */
+  check_m512_arguments;
 }
 
 void
@@ -82,24 +66,8 @@ check_union_passing2(union un2 u1 ATTRIBUTE_UNUSED,
 		     union un2 u7 ATTRIBUTE_UNUSED,
 		     union un2 u8 ATTRIBUTE_UNUSED)
 {
-   /* Check the passing on the stack by comparing the address of the
-      stack elements to the expected place on the stack.  */
-  assert ((unsigned long)&u1.x == rsp+8);
-  assert ((unsigned long)&u1.d == rsp+8);
-  assert ((unsigned long)&u2.x == rsp+72);
-  assert ((unsigned long)&u2.d == rsp+72);
-  assert ((unsigned long)&u3.x == rsp+136);
-  assert ((unsigned long)&u3.d == rsp+136);
-  assert ((unsigned long)&u4.x == rsp+200);
-  assert ((unsigned long)&u4.d == rsp+200);
-  assert ((unsigned long)&u5.x == rsp+264);
-  assert ((unsigned long)&u5.d == rsp+264);
-  assert ((unsigned long)&u6.x == rsp+328);
-  assert ((unsigned long)&u6.d == rsp+328);
-  assert ((unsigned long)&u7.x == rsp+392);
-  assert ((unsigned long)&u7.d == rsp+392);
-  assert ((unsigned long)&u8.x == rsp+456);
-  assert ((unsigned long)&u8.d == rsp+456);
+  /* Check register contents.  */
+  check_m512_arguments;
 }
 
 void
@@ -112,24 +80,8 @@ check_union_passing3(union un3 u1 ATTRIBUTE_UNUSED,
 		     union un3 u7 ATTRIBUTE_UNUSED,
 		     union un3 u8 ATTRIBUTE_UNUSED)
 {
-   /* Check the passing on the stack by comparing the address of the
-      stack elements to the expected place on the stack.  */
-  assert ((unsigned long)&u1.x == rsp+8);
-  assert ((unsigned long)&u1.v == rsp+8);
-  assert ((unsigned long)&u2.x == rsp+72);
-  assert ((unsigned long)&u2.v == rsp+72);
-  assert ((unsigned long)&u3.x == rsp+136);
-  assert ((unsigned long)&u3.v == rsp+136);
-  assert ((unsigned long)&u4.x == rsp+200);
-  assert ((unsigned long)&u4.v == rsp+200);
-  assert ((unsigned long)&u5.x == rsp+264);
-  assert ((unsigned long)&u5.v == rsp+264);
-  assert ((unsigned long)&u6.x == rsp+328);
-  assert ((unsigned long)&u6.v == rsp+328);
-  assert ((unsigned long)&u7.x == rsp+392);
-  assert ((unsigned long)&u7.v == rsp+392);
-  assert ((unsigned long)&u8.x == rsp+456);
-  assert ((unsigned long)&u8.v == rsp+456);
+  /* Check register contents.  */
+  check_m512_arguments;
 }
 
 void
@@ -160,22 +112,8 @@ check_union_passing6(union un6 u1 ATTRIBUTE_UNUSED,
 		     union un6 u7 ATTRIBUTE_UNUSED,
 		     union un6 u8 ATTRIBUTE_UNUSED)
 {
-  assert ((unsigned long)&u1.x == rsp+8);
-  assert ((unsigned long)&u1.v == rsp+8);
-  assert ((unsigned long)&u2.x == rsp+72);
-  assert ((unsigned long)&u2.v == rsp+72);
-  assert ((unsigned long)&u3.x == rsp+136);
-  assert ((unsigned long)&u3.v == rsp+136);
-  assert ((unsigned long)&u4.x == rsp+200);
-  assert ((unsigned long)&u4.v == rsp+200);
-  assert ((unsigned long)&u5.x == rsp+264);
-  assert ((unsigned long)&u5.v == rsp+264);
-  assert ((unsigned long)&u6.x == rsp+328);
-  assert ((unsigned long)&u6.v == rsp+328);
-  assert ((unsigned long)&u7.x == rsp+392);
-  assert ((unsigned long)&u7.v == rsp+392);
-  assert ((unsigned long)&u8.x == rsp+456);
-  assert ((unsigned long)&u8.v == rsp+456);
+  /* Check register contents.  */
+  check_m512_arguments;
 }
 
 #define check_union_passing1 WRAP_CALL(check_union_passing1)

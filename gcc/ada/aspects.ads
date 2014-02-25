@@ -102,6 +102,7 @@ package Aspects is
       Aspect_Interrupt_Priority,
       Aspect_Invariant,                     -- GNAT
       Aspect_Iterator_Element,
+      Aspect_Iterable,                      -- GNAT
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
       Aspect_Machine_Radix,
@@ -325,6 +326,7 @@ package Aspects is
       Aspect_Input                   => Name,
       Aspect_Interrupt_Priority      => Expression,
       Aspect_Invariant               => Expression,
+      Aspect_Iterable                => Expression,
       Aspect_Iterator_Element        => Name,
       Aspect_Link_Name               => Expression,
       Aspect_Linker_Section          => Expression,
@@ -423,6 +425,7 @@ package Aspects is
       Aspect_Interrupt_Priority           => Name_Interrupt_Priority,
       Aspect_Invariant                    => Name_Invariant,
       Aspect_Iterator_Element             => Name_Iterator_Element,
+      Aspect_Iterable                     => Name_Iterable,
       Aspect_Link_Name                    => Name_Link_Name,
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
@@ -628,6 +631,7 @@ package Aspects is
       Aspect_Interrupt_Handler            => Always_Delay,
       Aspect_Interrupt_Priority           => Always_Delay,
       Aspect_Invariant                    => Always_Delay,
+      Aspect_Iterable                     => Always_Delay,
       Aspect_Iterator_Element             => Always_Delay,
       Aspect_Link_Name                    => Always_Delay,
       Aspect_Linker_Section               => Always_Delay,
@@ -781,6 +785,11 @@ package Aspects is
    function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean;
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
    --  are allowed to appear on a body [stub].
+
+   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id);
+   --  Exchange the aspect specifications of two nodes. If either node lacks an
+   --  aspect specification list, the routine has no effect. It is assumed that
+   --  both nodes can support aspects.
 
    function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
    --  Find the aspect specification of aspect A associated with entity I.

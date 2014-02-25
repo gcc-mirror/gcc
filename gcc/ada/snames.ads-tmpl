@@ -872,6 +872,7 @@ package Snames is
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Iterator_Element               : constant Name_Id := N + $; -- GNAT
+   Name_Iterable                       : constant Name_Id := N + $; -- GNAT
    Name_Large                          : constant Name_Id := N + $; -- Ada 83
    Name_Last                           : constant Name_Id := N + $;
    Name_Last_Bit                       : constant Name_Id := N + $;
@@ -1496,6 +1497,7 @@ package Snames is
       Attribute_Integer_Value,
       Attribute_Invalid_Value,
       Attribute_Iterator_Element,
+      Attribute_Iterable,
       Attribute_Large,
       Attribute_Last,
       Attribute_Last_Bit,

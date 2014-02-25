@@ -550,7 +550,11 @@ package Sinfo is
    --  do not lead to data dependences for subprograms can be safely ignored.
 
    --  In addition pragma Debug statements are removed from the tree (rewritten
-   --  to NULL stmt), since they should be taken into account in flow analysis.
+   --  to NULL stmt), since they should be ignored in formal verification.
+
+   --  An error is also issued for missing subunits, similar to the warning
+   --  issued when generating code, to avoid formal verification of a partial
+   --  unit.
 
    -----------------------
    -- Check Flag Fields --
@@ -641,6 +645,12 @@ package Sinfo is
 
    --    Min and Max attributes are expanded into equivalent if expressions,
    --    dealing properly with side effect issues.
+
+   --    Mod for signed integer types is expanded into equivalent expressions
+   --    using Rem (which is % in C) and other C-available operators.
+
+   --    The Actions list of an Expression_With_Actions node does not contain
+   --    any declarations,(so that DO X, .. Y IN Z becomes (X, .. Y, Z) in C).
 
    ------------------------------------
    -- Description of Semantic Fields --
@@ -1401,11 +1411,6 @@ package Sinfo is
    --     This flag is set in an Interface or Import pragma if a matching
    --     pragma of the other kind is also present. This is used to avoid
    --     generating some unwanted error messages.
-
-   --  In_Assertion_Expression (Flag4-Sem)
-   --     This flag is present in N_Function_Call nodes. It is set if the
-   --     function is called from within an assertion expression. This is
-   --     used to avoid some bogus warnings about early elaboration.
 
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of
@@ -2923,6 +2928,10 @@ package Sinfo is
       --  Discrete_Subtype_Definitions (List2)
       --  Component_Definition (Node4)
 
+      --  Note: although the language allows the full syntax for discrete
+      --  subtype definitions (i.e. a discrete subtype indication or a range),
+      --  in the generated tree, we always rewrite these as N_Range nodes.
+
       --------------------------------------
       -- 3.6  Discrete Subtype Definition --
       --------------------------------------
@@ -4132,6 +4141,11 @@ package Sinfo is
       --  and we are running in ELIMINATED mode, the operator node will be
       --  changed to be a call to the appropriate routine in System.Bignums.
 
+      --  Note: In Modify_Tree_For_C mode, we do not generate an N_Op_Mod node
+      --  for signed integer types (since there is no equivalent operator in
+      --  C). Instead we rewrite such an operation in terms of REM (which is
+      --  % in C) and other C-available operators.
+
       ------------------------------------
       -- 4.5.7  Conditional Expressions --
       ------------------------------------
@@ -5036,7 +5050,6 @@ package Sinfo is
       --   actual parameter part)
       --  First_Named_Actual (Node4-Sem)
       --  Controlling_Argument (Node1-Sem) (set to Empty if not dispatching)
-      --  In_Assertion_Expression (Flag4-Sem)
       --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  No_Elaboration_Check (Flag14-Sem)
@@ -7412,6 +7425,9 @@ package Sinfo is
       --  not a proper expression), and in the long term all cases of this
       --  idiom should instead use a new node kind N_Compound_Statement.
 
+      --  Note: In Modify_Tree_For_C, we never generate any declarations in
+      --  the action list, which can contain only non-declarative statements.
+
       --------------------
       -- Free Statement --
       --------------------
@@ -8986,9 +9002,6 @@ package Sinfo is
    function Import_Interface_Present
      (N : Node_Id) return Boolean;    -- Flag16
 
-   function In_Assertion_Expression
-     (N : Node_Id) return Boolean;    -- Flag4
-
    function In_Present
      (N : Node_Id) return Boolean;    -- Flag15
 
@@ -9984,9 +9997,6 @@ package Sinfo is
 
    procedure Set_Import_Interface_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag16
-
-   procedure Set_In_Assertion_Expression
-     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_In_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag15
@@ -12393,7 +12403,6 @@ package Sinfo is
    pragma Inline (Interface_Present);
    pragma Inline (Includes_Infinities);
    pragma Inline (Import_Interface_Present);
-   pragma Inline (In_Assertion_Expression);
    pragma Inline (In_Present);
    pragma Inline (Inherited_Discriminant);
    pragma Inline (Instance_Spec);
@@ -12719,7 +12728,6 @@ package Sinfo is
    pragma Inline (Set_Identifier);
    pragma Inline (Set_Implicit_With);
    pragma Inline (Set_Import_Interface_Present);
-   pragma Inline (Set_In_Assertion_Expression);
    pragma Inline (Set_In_Present);
    pragma Inline (Set_Includes_Infinities);
    pragma Inline (Set_Inherited_Discriminant);

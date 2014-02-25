@@ -1199,7 +1199,7 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   sym->attr.implied_index = 0;
 
   if (sym->ts.type == BT_CLASS)
-    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as);
 
   return true;
 }
@@ -1656,10 +1656,7 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 scalar:
   if (c->ts.type == BT_CLASS)
     {
-      bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
-		     || (!c->ts.u.derived->components
-			 && !c->ts.u.derived->attr.zero_comp);
-      bool t2 = gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+      bool t2 = gfc_build_class_symbol (&c->ts, &c->attr, &c->as);
 
       if (t)
 	t = t2;
@@ -6340,7 +6337,7 @@ attr_decl1 (void)
     }
 
   if (sym->ts.type == BT_CLASS
-      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false))
+      && !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
     {
       m = MATCH_ERROR;
       goto cleanup;

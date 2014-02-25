@@ -10,19 +10,20 @@
 void static
 avx512er_test (void)
 {
-  union128d src, res;
+  union128d src1, src2, res;
   double res_ref[2];
   int i;
   
   for (i = 0; i < 2; i++)
     {
-      src.a[i] = 179.345 - 6.5645 * i;
-      res_ref[i] = src.a[i];
+      src1.a[i] = 179.345 - 6.5645 * i;
+      src2.a[i] = 204179.345 + 6.5645 * i;
+      res_ref[i] = src1.a[i];
     }
 
-  res_ref[0] = 1.0 / src.a[0];
+  res_ref[0] = 1.0 / src2.a[0];
 
-  res.x = _mm_rcp28_round_sd (src.x, src.x, _MM_FROUND_NO_EXC);
+  res.x = _mm_rcp28_round_sd (src1.x, src2.x, _MM_FROUND_NO_EXC);
 
   if (checkVd (res.a, res_ref, 2))
     abort ();

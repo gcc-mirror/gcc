@@ -474,8 +474,9 @@ package body Ada.Containers.Formal_Hashed_Sets is
                return False;
             end if;
 
-            if Equivalent_Elements (L_Node.Element,
-                                    RN (R_Node).Element) then
+            if Equivalent_Elements
+                 (L_Node.Element, RN (R_Node).Element)
+            then
                return True;
             end if;
 

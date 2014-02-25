@@ -2342,10 +2342,24 @@ package body Sem_Ch3 is
       if Present (L) then
          Context := Parent (L);
 
-         if Nkind (Context) = N_Package_Specification
-           and then L = Visible_Declarations (Context)
-         then
-            Analyze_Package_Contract (Defining_Entity (Context));
+         if Nkind (Context) = N_Package_Specification then
+
+            --  When a package has private declarations, its contract must be
+            --  analyzed at the end of the said declarations. This way both the
+            --  analysis and freeze actions are properly synchronized in case
+            --  of private type use within the contract.
+
+            if L = Private_Declarations (Context) then
+               Analyze_Package_Contract (Defining_Entity (Context));
+
+            --  Otherwise the contract is analyzed at the end of the visible
+            --  declarations.
+
+            elsif L = Visible_Declarations (Context)
+              and then No (Private_Declarations (Context))
+            then
+               Analyze_Package_Contract (Defining_Entity (Context));
+            end if;
 
          elsif Nkind (Context) = N_Package_Body then
             In_Package_Body := True;
@@ -5637,7 +5651,7 @@ package body Sem_Ch3 is
                 Defining_Identifier => Derived_Type,
                 Subtype_Indication  =>
                   Make_Subtype_Indication (Loc,
-                    Subtype_Mark => New_Reference_To (Implicit_Base, Loc),
+                    Subtype_Mark => New_Occurrence_Of (Implicit_Base, Loc),
                     Constraint => Constraint (Indic)));
 
             Rewrite (N, New_Indic);
@@ -6012,13 +6026,13 @@ package body Sem_Ch3 is
                Lo :=
                   Make_Attribute_Reference (Loc,
                     Attribute_Name => Name_First,
-                    Prefix         => New_Reference_To (Derived_Type, Loc));
+                    Prefix         => New_Occurrence_Of (Derived_Type, Loc));
                Set_Etype (Lo, Derived_Type);
 
                Hi :=
                   Make_Attribute_Reference (Loc,
                     Attribute_Name => Name_Last,
-                    Prefix         => New_Reference_To (Derived_Type, Loc));
+                    Prefix         => New_Occurrence_Of (Derived_Type, Loc));
                Set_Etype (Hi, Derived_Type);
 
                Set_Scalar_Range (Derived_Type,
@@ -9262,7 +9276,7 @@ package body Sem_Ch3 is
           Defining_Identifier => Subt,
           Subtype_Indication  =>
             Make_Subtype_Indication (Loc,
-              Subtype_Mark => New_Reference_To (Par, Loc),
+              Subtype_Mark => New_Occurrence_Of (Par, Loc),
               Constraint   => New_Copy_Tree (Constr)));
 
       --  If this is a component subtype for an outer itype, it is not
@@ -9377,7 +9391,26 @@ package body Sem_Ch3 is
                Error_Msg_NE
                  ("type & must implement abstract subprogram & with a " &
                   "procedure", Subp_Alias, Contr_Typ);
+
+            elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
+              and then Implementation_Kind (Impl_Subp) /= Impl_Kind
+            then
+               Error_Msg_Name_1 := Impl_Kind;
+               Error_Msg_N
+                ("overriding operation& must have synchronization%",
+                 Subp_Alias);
             end if;
+
+         --  If primitive has Optional synchronization, overriding operation
+         --  must match if it has an explicit synchronization..
+
+         elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
+           and then Implementation_Kind (Impl_Subp) /= Impl_Kind
+         then
+               Error_Msg_Name_1 := Impl_Kind;
+               Error_Msg_N
+                ("overriding operation& must have syncrhonization%",
+                 Subp_Alias);
          end if;
       end Check_Pragma_Implemented;
 
@@ -9435,7 +9468,7 @@ package body Sem_Ch3 is
              Chars                        => Name_Implemented,
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Loc,
-                 Expression => New_Reference_To (Subp, Loc)),
+                 Expression => New_Occurrence_Of (Subp, Loc)),
 
                Make_Pragma_Argument_Association (Loc,
                  Expression => Make_Identifier (Loc, Iface_Kind))));
@@ -16631,7 +16664,7 @@ package body Sem_Ch3 is
       then
          D := First_Discriminant (Derived_Base);
          while Present (D) loop
-            Append_Elmt (New_Reference_To (D, Loc), Discs);
+            Append_Elmt (New_Occurrence_Of (D, Loc), Discs);
             Next_Discriminant (D);
          end loop;
       end if;
@@ -18844,7 +18877,7 @@ package body Sem_Ch3 is
 
          elsif Ekind (Priv_Dep) = E_Incomplete_Subtype then
             Set_Subtype_Indication
-              (Parent (Priv_Dep), New_Reference_To (Full_T, Sloc (Priv_Dep)));
+              (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
             Set_Etype (Priv_Dep, Full_T);
             Set_Ekind (Priv_Dep, Subtype_Kind (Ekind (Full_T)));
             Set_Analyzed (Parent (Priv_Dep), False);
@@ -18963,7 +18996,7 @@ package body Sem_Ch3 is
             Rewrite (Lo,
               Make_Attribute_Reference (Sloc (Lo),
                 Attribute_Name => Name_First,
-                Prefix => New_Reference_To (T, Sloc (Lo))));
+                Prefix => New_Occurrence_Of (T, Sloc (Lo))));
             Analyze_And_Resolve (Lo);
          end if;
 
@@ -18971,7 +19004,7 @@ package body Sem_Ch3 is
             Rewrite (Hi,
               Make_Attribute_Reference (Sloc (Hi),
                 Attribute_Name => Name_First,
-                Prefix => New_Reference_To (T, Sloc (Hi))));
+                Prefix => New_Occurrence_Of (T, Sloc (Hi))));
             Analyze_And_Resolve (Hi);
          end if;
 

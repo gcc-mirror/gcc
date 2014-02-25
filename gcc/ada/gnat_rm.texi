@@ -3718,7 +3718,7 @@ This means that you can compile a program, and then without having to
 recompile the program, you can run it with different values being used
 for initializing otherwise uninitialized values, to test if your program
 behavior depends on the choice.  Of course the behavior should not change,
-and if it does, then most likely you have an erroneous reference to an
+and if it does, then most likely you have an incorrect reference to an
 uninitialized value.
 
 It is even possible to change the value at execution time eliminating even
@@ -4348,10 +4348,16 @@ except that in an @code{Assertion_Policy} pragma, the identifier
 (or disabled).
 
 @code{Loop_Invariant} can only appear as one of the items in the sequence
-of statements of a loop body. The intention is that it be used to
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+The intention is that it be used to
 represent a "loop invariant" assertion, i.e. something that is true each
 time through the loop, and which can be used to show that the loop is
 achieving its purpose.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements.
 
 To aid in writing such invariants, the special attribute @code{Loop_Entry}
 may be used to refer to the value of an expression on entry to the loop. This
@@ -4420,8 +4426,10 @@ CHANGE_DIRECTION ::= Increases | Decreases
 @end smallexample
 
 @noindent
-This pragma must appear immediately within the sequence of statements of a
-loop statement. It allows the specification of quantities which must always
+@code{Loop_Variant} can only appear as one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+It allows the specification of quantities which must always
 decrease or increase in successive iterations of the loop. In its simplest
 form, just one expression is specified, whose value must increase or decrease
 on each iteration of the loop.
@@ -4445,6 +4453,10 @@ policy can be @code{Check} to enable the loop variant check, @code{Ignore}
 to ignore the check (in which case the pragma has no effect on the program),
 or @code{Disable} in which case the pragma is not even checked for correct
 syntax.
+
+Multiple @code{Loop_Invariant} and @code{Loop_Variant} pragmas that
+apply to the same loop should be grouped in the same sequence of
+statements.
 
 The @code{Loop_Entry} attribute may be used within the expressions of the
 @code{Loop_Variant} pragma to refer to values on entry to the loop.
@@ -6442,11 +6454,11 @@ pragma Stream_Convert (
 @end smallexample
 
 @noindent
-This pragma provides an efficient way of providing stream functions for
-types defined in packages.  Not only is it simpler to use than declaring
-the necessary functions with attribute representation clauses, but more
-significantly, it allows the declaration to made in such a way that the
-stream packages are not loaded unless they are needed.  The use of
+This pragma provides an efficient way of providing user-defined stream
+attributes.  Not only is it simpler to use than specifying the attributes
+directly, but more importantly, it allows the specification to be made in such
+a way that the predefined unit Ada.Streams is not loaded unless it is actually
+needed (i.e. unless the stream attributes are actually used); the use of
 the Stream_Convert pragma adds no overhead at all, unless the stream
 attributes are actually used on the designated type.
 
@@ -7121,6 +7133,13 @@ This is particularly useful for clearly signaling that a particular
 parameter is not modified, even though the spec suggests that it might
 be.
 
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unmodified} for such
+variables, though it is harmless to do so.
+
 @node Pragma Unreferenced
 @unnumberedsec Pragma Unreferenced
 @findex Unreferenced
@@ -7170,6 +7189,13 @@ clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
 @code{Elaborate_All}. The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
+
+For the variable case, warnings are never given for unreferenced variables
+whose name contains one of the substrings
+@code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
+are typically to be used in cases where such warnings are expected.
+Thus it is never necessary to use @code{pragma Unreferenced} for such
+variables, though it is harmless to do so.
 
 @node Pragma Unreferenced_Objects
 @unnumberedsec Pragma Unreferenced_Objects
@@ -7369,7 +7395,7 @@ pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
 pragma Warnings (static_string_EXPRESSION [,REASON]);
 pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
 
-REASON ::= Reason => static_string_EXPRESSION
+REASON ::= Reason => STRING_LITERAL @{& STRING_LITERAL@}
 @end smallexample
 
 @noindent
@@ -8713,6 +8739,49 @@ will have a size of 40 (that is @code{Rec'Size} will be 40).  The
 alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
+
+If the alignment of the above record is specified to be 1, then the
+object size will be 40 (5 bytes). This is true by default, and also
+an object size of 40 can be explicitly specified in this case.
+
+A consequence of this capability is that different object sizes can be
+given to subtypes that would otherwise be considered in Ada to be
+statically matching.  But it makes no sense to consider such subtypes
+as statically matching.  Consequently, in @code{GNAT} we add a rule
+to the static matching rules that requires object sizes to match.
+Consider this example:
+
+@smallexample @c ada
+ 1. procedure BadAVConvert is
+ 2.    type R is new Integer;
+ 3.    subtype R1 is R range 1 .. 10;
+ 4.    subtype R2 is R range 1 .. 10;
+ 5.    for R1'Object_Size use 8;
+ 6.    for R2'Object_Size use 16;
+ 7.    type R1P is access all R1;
+ 8.    type R2P is access all R2;
+ 9.    R1PV : R1P := new R1'(4);
+10.    R2PV : R2P;
+11. begin
+12.    R2PV := R2P (R1PV);
+               |
+       >>> target designated subtype not compatible with
+           type "R1" defined at line 3
+
+13. end;
+@end smallexample
+
+@noindent
+In the absence of lines 5 and 6,
+types @code{R1} and @code{R2} statically match and
+hence the conversion on line 12 is legal. But since lines 5 and 6
+cause the object sizes to differ, @code{GNAT} considers that types
+@code{R1} and @code{R2} are not statically matching, and line 12
+generates the diagnostic shown above.
+
+@noindent
+Similar additional checks are performed in other contexts requiring
+statically matching subtypes.
 
 @node Attribute Passed_By_Reference
 @unnumberedsec Attribute Passed_By_Reference
@@ -14185,7 +14254,9 @@ an attribute definition clause.  Note that the use of these attributes
 can cause the RM 13.1(14) rule to be violated.  If two access types
 reference aliased objects whose subtypes have differing @code{Object_Size}
 values as a result of explicit attribute definition clauses, then it
-is erroneous to convert from one access subtype to the other.
+is illegal to convert from one access subtype to the other. For a more
+complete description of this additional legality rule, see the
+description of the @code{Object_Size} attribute.
 
 At the implementation level, Esize stores the Object_Size and the
 RM_Size field stores the @code{Value_Size} (and hence the value of the
@@ -14261,6 +14332,34 @@ alignment (4 bytes = 32 bits).
 For all other types, the @code{Object_Size}
 and Value_Size are the same (and equivalent to the RM attribute @code{Size}).
 Only @code{Size} may be specified for such types.
+
+Note that @code{Value_Size} can be used to force biased representation
+for a particular subtype. Consider this example:
+
+@smallexample
+   type R is (A, B, C, D, E, F);
+   subtype RAB is R range A .. B;
+   subtype REF is R range E .. F;
+@end smallexample
+
+@noindent
+By default, @code{RAB}
+has a size of 1 (sufficient to accommodate the representation
+of @code{A} and @code{B}, 0 and 1), and @code{REF}
+has a size of 3 (sufficient to accommodate the representation
+of @code{E} and @code{F}, 4 and 5). But if we add the
+following @code{Value_Size} attribute definition clause:
+
+@smallexample
+   for REF'Value_Size use 1;
+@end smallexample
+
+@noindent
+then biased representation is forced for @code{REF},
+and 0 will represent @code{E} and 1 will represent @code{F}.
+A warning is issued when a @code{Value_Size} attribute
+definition clause forces biased representation. This
+warning can be turned off using @code{-gnatw.B}.
 
 @node Component_Size Clauses
 @section Component_Size Clauses
@@ -17442,8 +17541,12 @@ is specifically authorized by the Ada Reference Manual
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for doubly linked lists, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Maps (a-cfhama.ads)
 @section @code{Ada.Containers.Formal_Hashed_Maps} (@file{a-cfhama.ads})
@@ -17454,8 +17557,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Hashed_Sets (a-cfhase.ads)
 @section @code{Ada.Containers.Formal_Hashed_Sets} (@file{a-cfhase.ads})
@@ -17466,8 +17573,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for hashed sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Maps (a-cforma.ads)
 @section @code{Ada.Containers.Formal_Ordered_Maps} (@file{a-cforma.ads})
@@ -17478,8 +17589,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered maps, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Ordered_Sets (a-cforse.ads)
 @section @code{Ada.Containers.Formal_Ordered_Sets} (@file{a-cforse.ads})
@@ -17490,8 +17605,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for ordered sets, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Containers.Formal_Vectors (a-cofove.ads)
 @section @code{Ada.Containers.Formal_Vectors} (@file{a-cofove.ads})
@@ -17502,8 +17621,12 @@ be subject to incompatible changes as SPARK 2014 evolves.
 This child of @code{Ada.Containers} defines a modified version of the
 Ada 2005 container for vectors, meant to facilitate formal
 verification of code using such containers. The specification of this
-unit is compatible with SPARK 2014. Note that the API of this unit may
-be subject to incompatible changes as SPARK 2014 evolves.
+unit is compatible with SPARK 2014.
+
+Note that although this container was designed with formal verification
+in mind, it may well be generally useful in that it is a simplified more
+efficient version than the one defined in the standard. In particular it
+does not have the complex overhead required to detect cursor tampering.
 
 @node Ada.Command_Line.Environment (a-colien.ads)
 @section @code{Ada.Command_Line.Environment} (@file{a-colien.ads})

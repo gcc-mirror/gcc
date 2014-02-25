@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1160,7 +1160,8 @@ package body Inline is
 
          elsif Ekind (Scop) = E_Task_Type
            or else Ekind (Scop) = E_Entry
-           or else Ekind (Scop) = E_Entry_Family then
+           or else Ekind (Scop) = E_Entry_Family
+         then
             return True;
          end if;
 

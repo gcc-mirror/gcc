@@ -222,7 +222,9 @@ package Sem_Eval is
 
    function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean;
    --  Determine whether two types T1, T2, which have the same base type,
-   --  are statically matching subtypes (RM 4.9.1(1-2)).
+   --  are statically matching subtypes (RM 4.9.1(1-2)). Also includes the
+   --  extra GNAT rule that object sizes must match (this can be false for
+   --  types that match in the RM sense because of use of 'Object_Size).
 
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean;
    --  Returns true if Op is an expression not raising Constraint_Error whose
@@ -451,6 +453,12 @@ package Sem_Eval is
    --  Returns True if it can guarantee that Lo .. Hi is not a null range. If
    --  it cannot (because the value of Lo or Hi is not known at compile time)
    --  then it returns False.
+
+   function Predicates_Match (T1, T2 : Entity_Id) return Boolean;
+   --  In Ada 2012, subtypes statically match if their static predicates
+   --  match as well. This function performs the required check that
+   --  predicates match. Separated out from Subtypes_Statically_Match so
+   --  that it can be used in specializing error messages.
 
    procedure Why_Not_Static (Expr : Node_Id);
    --  This procedure may be called after generating an error message that

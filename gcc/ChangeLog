@@ -1,7 +1,443 @@
+2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60268
+	* sched-rgn.c (haifa_find_rgns): Move the nr_regions_initial variable
+	initialization to ...
+	(sched_rgn_init): ... here.
+	(schedule_region): Check for SCHED_PRESSURE_NONE earlier.
+
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.md: Correct ashrsi_reg / lshrsi_reg
+	names.
+
+2014-02-23  Edgar E. Iglesias <edgar.iglesias@xilinx.com>
+
+	* config/microblaze/microblaze.h: Remove SECONDARY_MEMORY_NEEDED
+	definition.
+
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
+	and define TARGET_ASM_OUTPUT_MI_THUNK and
+	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
+
+2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/predicates.md: Add cmp_op predicate.
+	* config/microblaze/microblaze.md: Add branch_compare instruction 
+	which uses cmp_op predicate and emits cmp insn before branch.
+	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename 
+	to microblaze_expand_conditional_branch and consolidate logic.
+	(microblaze_expand_conditional_branch): emit branch_compare
+	insn instead of handling cmp op separate from branch insn.
+
+2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_move): Relax assert
+	to permit subregs.
+
+2014-02-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lve<VI_char>x): Replace
+	define_insn with define_expand and new define_insn
+	*altivec_lve<VI_char>x_internal.
+	(altivec_stve<VI_char>x): Replace define_insn with define_expand
+	and new define_insn *altivec_stve<VI_char>x_internal.
+	* config/rs6000/rs6000-protos.h (altivec_expand_stvex_be): New
+	prototype.
+	* config/rs6000/rs6000.c (altivec_expand_lvx_be): Document use by
+	lve*x built-ins.
+	(altivec_expand_stvex_be): New function.
+
+2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/avr.c (avr_can_eliminate): Allow elimination from
+	ARG_POINTER_REGNUM
+	to STACK_POINTER_REGNUM if !frame_pointer_needed.
+	* config/avr/avr.c (ELIMINABLE_REGS): Add elimination from
+	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM.
+
+2014-02-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/60298
+	* lra-constraints.c (inherit_reload_reg): Use lra_emit_move
+	instead of emit_move_insn.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vsumsws): Replace second
+	vspltw with vsldoi.
+	(reduc_uplus_v16qi): Use gen_altivec_vsumsws_direct instead of
+	gen_altivec_vsumsws.
+
+2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_lvxl): Rename as
+	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
+	V4SI.
+	(altivec_lvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_lvx): Rename as *altivec_lvx_<mode>_internal.
+	(altivec_lvx_<mode>): New define_expand incorporating -maltivec=be
+	semantics where needed.
+	(altivec_stvx): Rename as *altivec_stvx_<mode>_internal.
+	(altivec_stvx_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	(altivec_stvxl): Rename as *altivec_stvxl_<mode>_internal and use
+	VM2 iterator instead of V4SI.
+	(altivec_stvxl_<mode>): New define_expand incorporating
+	-maltivec=be semantics where needed.
+	* config/rs6000/rs6000-builtin.def: Add new built-in definitions
+	LVXL_V2DF, LVXL_V2DI, LVXL_V4SF, LVXL_V4SI, LVXL_V8HI, LVXL_V16QI,
+	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI,
+	STVX_V2DF, STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI,
+	STVXL_V2DF, STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI,
+	STVXL_V16QI.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Replace
+	ALTIVEC_BUILTIN_LVX with ALTIVEC_BUILTIN_LVX_<MODE> throughout;
+	similarly for ALTIVEC_BUILTIN_LVXL, ALTIVEC_BUILTIN_STVX, and
+	ALTIVEC_BUILTIN_STVXL.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New
+	prototype.
+	(altivec_expand_stvx_be): Likewise.
+	* config/rs6000/rs6000.c (swap_selector_for_mode): New function.
+	(altivec_expand_lvx_be): Likewise.
+	(altivec_expand_stvx_be): Likewise.
+	(altivec_expand_builtin): Add cases for
+	ALTIVEC_BUILTIN_STVX_<MODE>, ALTIVEC_BUILTIN_STVXL_<MODE>,
+	ALTIVEC_BUILTIN_LVXL_<MODE>, and ALTIVEC_BUILTIN_LVX_<MODE>.
+	(altivec_init_builtins): Add definitions for
+	__builtin_altivec_lvxl_<mode>, __builtin_altivec_lvx_<mode>,
+	__builtin_altivec_stvx_<mode>, and
+	__builtin_altivec_stvxl_<mode>.
+
+2014-02-21  Catherine Moore  <clm@codesourcery.com>
+
+	* doc/invoke.texi (mvirt, mno-virt): Document.
+	* config/mips/mips.opt (mvirt): New option.
+	* config/mips/mips.h (ASM_SPEC): Pass mvirt to the assembler.
+
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60276
+	* tree-vectorizer.h (struct _stmt_vec_info): Add min_neg_dist field.
+	(STMT_VINFO_MIN_NEG_DIST): New macro.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Record
+	STMT_VINFO_MIN_NEG_DIST.
+	* tree-vect-stmts.c (vectorizable_load): Verify if assumptions
+	made for negative dependence distances still hold.
+
+2014-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60291
+	* tree-ssa-live.c (mark_all_vars_used_1): Do not walk
+	DECL_INITIAL for globals not in the current function context.
+
+2014-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/56490
+	* params.def (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS): New param.
+	* tree-ssa-uninit.c: Include params.h.
+	(compute_control_dep_chain): Add num_calls argument, return false
+	if it exceed PARAM_UNINIT_CONTROL_DEP_ATTEMPTS param, pass
+	num_calls to recursive call.
+	(find_predicates): Change dep_chain into normal array,
+	cur_chain into auto_vec<edge, MAX_CHAIN_LEN + 1>, add num_calls
+	variable and adjust compute_control_dep_chain caller.
+	(find_def_preds): Likewise.
+
+2014-02-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_for) [flags & TDF_RAW]
+	<case GF_OMP_FOR_KIND_CILKSIMD>: Add missing break statement.
+
+2014-02-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md (pushdqi1): Add mode to post_inc.
+	(pushhi1): Likewise.
+	(popqi1): Add mode to pre_dec.
+	(pophi1): Likewise.
+
+2014-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_vec_perm): Use V8SImode
+	mode for mask of V8SFmode permutation.
+
+2014-02-20  Richard Henderson  <rth@redhat.com>
+
+	PR c++/60272
+	* builtins.c (expand_builtin_atomic_compare_exchange): Always make
+	a new pseudo for OLDVAL.
+
+2014-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57896
+	* config/i386/i386.c (expand_vec_perm_interleave2): Don't call
+	gen_reg_rtx if d->testing_p.
+	(expand_vec_perm_pshufb2, expand_vec_perm_broadcast_1): Return early
+	if d->testing_p and we will certainly return true.
+	(expand_vec_perm_even_odd_1): Likewise.  Don't call gen_reg_rtx
+	if d->testing_p.
+
+2014-02-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* emit-rtl.c (gen_reg_rtx): Assert that
+	crtl->emit.regno_pointer_align_length is non-zero.
+
+2014-02-20  Richard Henderson  <rth@redhat.com>
+
+	PR c++/60272
+	* builtins.c (expand_builtin_atomic_compare_exchange): Conditionalize
+	on failure the store back into EXPECT.
+
+2014-02-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (unspec): Add UNSPEC_PIC_GOTOFF_SYM enum.
+	* config/nios2/nios2.c (nios2_function_profiler):
+	Add -fPIC (flag_pic == 2) support.
+	(nios2_handle_custom_fpu_cfg): Fix warning parameter.
+	(nios2_large_offset_p): New function.
+	(nios2_unspec_reloc_p): Move up position, update to use
+	nios2_large_offset_p.
+	(nios2_unspec_address): Remove function.
+	(nios2_unspec_offset): New function.
+	(nios2_large_got_address): New function.
+	(nios2_got_address): Add large offset support.
+	(nios2_legitimize_tls_address): Update usage of removed and new
+	functions.
+	(nios2_symbol_binds_local_p): New function.
+	(nios2_load_pic_address): Add -fPIC (flag_pic == 2) support.
+	(nios2_legitimize_address): Update to use nios2_large_offset_p.
+	(nios2_emit_move_sequence): Avoid legitimizing (const (unspec ...)).
+	(nios2_print_operand): Merge H/L processing, add hiadj/lo
+	processing for (const (unspec ...)).
+	(nios2_unspec_reloc_name): Add UNSPEC_PIC_GOTOFF_SYM case.
+
+2014-02-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (replace_uses_by): Mark altered BBs before
+	doing the substitution.
+	(verify_gimple_assign_single): Also verify bare MEM_REFs on the lhs.
+
+2014-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/55260
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Uce correct
+	info when checking whether lattices are bottom.
+
+2014-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60221
+	* tree-eh.c (execute_cleanup_eh_1): Also cleanup empty EH
+	regions at -O0.
+
+2014-02-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/58555
+	* ipa-inline-transform.c (clone_inlined_nodes): Add freq_scale
+	parameter specifying the scaling.
+	(inline_call): Update.
+	(want_inline_recursively): Guard division by zero.
+	(recursive_inlining): Update.
+	* ipa-inline.h (clone_inlined_nodes): Update.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/60204
+	* config/i386/i386.c (classify_argument): Pass structures of size
+	64 bytes or less in register.
+
+2014-02-20  Ilya Tocar  <ilya.tocar@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/avx512erintrin.h (_mm_rcp28_round_sd): Swap operands.
+	(_mm_rcp28_round_ss): Ditto.
+	(_mm_rsqrt28_round_sd): Ditto.
+	(_mm_rsqrt28_round_ss): Ditto.
+	* config/i386/avx512erintrin.h (_mm_rcp14_round_sd): Ditto.
+	(_mm_rcp14_round_ss): Ditto.
+	(_mm_rsqrt14_round_sd): Ditto.
+	(_mm_rsqrt14_round_ss): Ditto.
+	* config/i386/sse.md (rsqrt14<mode>): Put nonimmediate operand as
+	the first input operand, get rid of match_dup.
+	(avx512er_exp2<mode><mask_name><round_saeonly_name>): Set type
+	attribute to sse.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512er_vmrcp28<mode><round_saeonly_name>): Put nonimmediate
+	operand as the first input operand, set type attribute.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>):
+	Set type attribute.
+	(avx512er_vmrsqrt28<mode><round_saeonly_name>): Put nonimmediate
+	operand as the first input operand, set type attribute.
+
+2014-02-19  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (vspltis_constant): Fix most significant
+	bit of zero.
+
+2014-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/60207
+	* config/i386/i386.c (construct_container): Remove TFmode check
+	for X86_64_INTEGER_CLASS.
+
+2014-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/59794
+	* config/i386/i386.c (type_natural_mode): Warn for ABI changes
+	only when -Wpsabi is enabled.
+
+2014-02-19  Michael Hudson-Doyle  <michael.hudson@linaro.org>
+
+	 PR target/59799
+	* config/aarch64/aarch64.c (aarch64_pass_by_reference): The rules for
+	passing arrays in registers are the same as for structs, so remove the
+	special case for them.
+
+2014-02-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: For a bit-field
+	destination type, extract only the valid bits if the source type is not
+	integral and has a different mode.
+
+2014-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60243
+	* tree-inline.c (estimate_num_insns): Avoid calling cgraph_get_node
+	for all calls.
+
+2014-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60243
+	* ipa-prop.c: Include stringpool.h and tree-ssanames.h.
+	(ipa_modify_call_arguments): Emit an argument load explicitely and
+	preserve virtual SSA form there and for the replacement call.
+	Do not update SSA form nor free dominance info.
+
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (function_and_variable_visibility): Also clear WEAK
+	flag when disolving COMDAT_GROUP.
+
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.h (ipa_ancestor_jf_data): Update ocmment.
+	* ipa-prop.c (ipa_set_jf_known_type): Return early when
+	not devirtualizing.
+	(ipa_set_ancestor_jf): Set type to NULL hwen it is not preserved;
+	do more sanity checks.
+	(detect_type_change): Return true when giving up early.
+	(compute_complex_assign_jump_func): Fix type parameter of
+	ipa_set_ancestor_jf.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(update_jump_functions_after_inlining): Fix updating of
+	ancestor function.
+	* ipa-cp.c (ipa_get_jf_ancestor_result): Be ready for type to be NULL.
+
+2014-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Also remove
+	inline clones when edge disappears.
+
+2014-02-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/60203
+	* config/rs6000/rs6000.md (mov<mode>_64bit, TF/TDmode moves):
+	Split 64-bit moves into 2 patterns.  Do not allow the use of
+	direct move for TDmode in little endian, since the decimal value
+	has little endian bytes within a word, but the 64-bit pieces are
+	ordered in a big endian fashion, and normal subreg's of TDmode are
+	not allowed.
+	(mov<mode>_64bit_dm): Likewise.
+	(movtd_64bit_nodm): Likewise.
+
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/60174
+	* tree-ssa-reassoc.c (init_range_entry): Do not look into the defining
+	statement of an SSA_NAME that occurs in an abnormal PHI node.
+
+2014-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/60142
+	* final.c (SEEN_BB): Remove.
+	(SEEN_NOTE, SEEN_EMITTED): Renumber.
+	(final_scan_insn): Don't force_source_line on second
+	NOTE_INSN_BASIC_BLOCK.
+
+2014-02-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/60205
+	* config/i386/i386.h (struct ix86_args): Add warn_avx512f.
+	* config/i386/i386.c (init_cumulative_args): Initialize warn_avx512f.
+	(type_natural_mode): Warn ABI change when %zmm register is not
+	available for AVX512F vector value passing.
+
+2014-02-18  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/60193
+	* config/i386/i386.c (ix86_expand_prologue): Use value in
+	rax register as displacement when restoring %r10 or %rax.
+	Fix wrong offset when restoring both registers.
+
+2014-02-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-prop.c (compute_complex_ancestor_jump_func): Replace overzealous
+	assertion with conditional return.
+
+2014-02-18  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR driver/60233
+	* config/i386/driver-i386.c (host_detect_local_cpu): If
+	YMM state is not saved by the OS, also clear has_f16c.  Move
+	CPUID 0x80000001 handling before YMM state saving checking.
+
+2014-02-18  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/58960
+	* haifa-sched.c (alloc_global_sched_pressure_data): New,
+	factored out from ...
+	(sched_init): ... here.
+	(free_global_sched_pressure_data): New, factored out from ...
+	(sched_finish): ... here.
+	* sched-int.h (free_global_sched_pressure_data): Declare.
+	* sched-rgn.c (nr_regions_initial): New static global.
+	(haifa_find_rgns): Initialize it.
+	(schedule_region): Disable sched-pressure for the newly
+	generated regions.
+
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (free_stmt_vec_info): Clear BB and
+	release SSA defs of pattern stmts.
+
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Release the virtual
+	operand defined by the call we are about to inline.
+
+2014-02-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa.c (verify_ssa): If verify_def found an error, ICE.
+
+2014-02-17  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_maskz_permutexvar_epi64): Swap
+	arguments order in builtin.
+	(_mm512_permutexvar_epi64): Ditto.
+	(_mm512_mask_permutexvar_epi64): Ditto
+	(_mm512_maskz_permutexvar_epi32): Ditto
+	(_mm512_permutexvar_epi32): Ditto
+	(_mm512_mask_permutexvar_epi32): Ditto
+
 2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian
-	targets.
+	* config/rs6000/altivec.md (p8_vmrgew): Handle little endian targets.
 	(p8_vmrgow): Likewise.
 
 2014-02-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
@@ -30,16 +466,14 @@
 2014-02-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60183
-	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating
-	loads.
+	* tree-ssa-phiprop.c (propagate_with_phi): Avoid speculating loads.
 	(tree_ssa_phiprop): Calculate and free post-dominators.
 
 2014-02-14  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/60131
 	* ree.c (get_extended_src_reg): New function.
-	(combine_reaching_defs): Use it rather than assuming location
-	of REG.
+	(combine_reaching_defs): Use it rather than assuming location of REG.
 	(find_and_remove_re): Verify first operand of extension is
 	a REG before adding the insns to the copy list.
 
@@ -80,8 +514,7 @@
 	DECL_FUNCTION_SPECIFIC_TARGET.
 	(hash_tree): Do not hash DECL_FUNCTION_SPECIFIC_TARGET.
 	* tree-streamer-out.c (pack_ts_target_option): Remove.
-	(streamer_pack_tree_bitfields): Do not stream
-	TS_TARGET_OPTION.
+	(streamer_pack_tree_bitfields): Do not stream TS_TARGET_OPTION.
 	(write_ts_function_decl_tree_pointers): Do not stream
 	DECL_FUNCTION_SPECIFIC_TARGET.
 	* tree-streamer-in.c (unpack_ts_target_option): Remove.
@@ -91,8 +524,7 @@
 
 2014-02-14  Jakub Jelinek  <jakub@redhat.com>
 
-	* tree-vect-loop.c (vect_is_slp_reduction): Don't set
-	use_stmt twice.
+	* tree-vect-loop.c (vect_is_slp_reduction): Don't set use_stmt twice.
 	(get_initial_def_for_induction, vectorizable_induction): Ignore
 	debug stmts when looking for exit_phi.
 	(vectorizable_live_operation): Fix up condition.
@@ -321,7 +753,7 @@
 
 	* config/microblaze/microblaze.h: Define SIZE_TYPE and PTRDIFF_TYPE.
 
-2014-02-10  Richard Henderson <rth@redhat.com>
+2014-02-10  Richard Henderson  <rth@redhat.com>
 
 	PR target/59927
 	* calls.c (expand_call): Don't double-push for reg_parm_stack_space.
@@ -740,7 +1172,7 @@
 	(altivec_vupklpx): Emit vupkhpx instead of vupklpx when target is
 	little endian and -maltivec=be is not specified.
 
-2014-02-05  Richard Henderson <rth@redhat.com>
+2014-02-05  Richard Henderson  <rth@redhat.com>
 
 	PR debug/52727
 	* combine-stack-adj.c: Revert r206943.
@@ -2680,7 +3112,7 @@
 	* config/aarch64/aarch64.c (aarch64_register_move_cost): Correct cost
 	of moving from/to the STACK_REG register class.
 
-2014-01-15  Richard Henderson <rth@redhat.com>
+2014-01-15  Richard Henderson  <rth@redhat.com>
 
 	PR debug/54694
 	* reginfo.c (global_regs_decl): Globalize.

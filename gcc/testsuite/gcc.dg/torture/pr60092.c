@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-weak "" } */
+/* { dg-xfail-run-if "posix_memalign modifies first arg on error" { *-*-solaris2.11* } { "-O0" } } */
 
 typedef __SIZE_TYPE__ size_t;
 extern int posix_memalign(void **memptr, size_t alignment, size_t size) __attribute__((weak));

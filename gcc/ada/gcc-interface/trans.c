@@ -316,6 +316,10 @@ gigi (Node_Id gnat_root,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+#if TARGET_ABI_OPEN_VMS
+  vms_float_format = Float_Format;
+#endif
+
   for (i = 0; i < number_file; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
