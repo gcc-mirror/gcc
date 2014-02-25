@@ -732,6 +732,7 @@ package body Errout is
       Continuation_New_Line := False;
       Suppress_Message := False;
       Kill_Message := False;
+      Warning_Msg_Char := ' ';
       Set_Msg_Text (Msg, Sptr);
 
       --  Kill continuation if parent message killed
@@ -2756,26 +2757,20 @@ package body Errout is
 
       procedure Set_Msg_Insertion_Warning (C : Character) is
       begin
-         Warning_Msg_Char := ' ';
-
          if P <= Text'Last and then Text (P) = C then
-            if Warning_Doc_Switch then
-               Warning_Msg_Char := '?';
-            end if;
-
+            Warning_Msg_Char := '?';
             P := P + 1;
 
          elsif P + 1 <= Text'Last
            and then (Text (P) in 'a' .. 'z'
-                      or else
+                       or else
                      Text (P) in 'A' .. 'Z')
            and then Text (P + 1) = C
          then
-            if Warning_Doc_Switch then
-               Warning_Msg_Char := Text (P);
-            end if;
-
+            Warning_Msg_Char := Text (P);
             P := P + 2;
+         else
+            Warning_Msg_Char := ' ';
          end if;
       end Set_Msg_Insertion_Warning;
 

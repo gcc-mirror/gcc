@@ -1,3 +1,30 @@
+2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sigtramp-armvxw.c: Also restore r0.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Warning_Msg_Char set
+	unconditionally (Set_Msg_Insertion_Warning): Warning_Msg_Char
+	set unconditionally.
+	* erroutc.adb (Get_Warning_Tag): Does not give a leading space
+	any more (Output_Msg_Text): Rewritten with new convention on
+	output of warnings that are treated as errors.
+	* erroutc.ads (Error_Msg_Object): Warn_Chr is always set even
+	if Warn is False.
+	* gnat_rm.texi: Updates to documentation on pragma
+	Warning_As_Error.
+	* warnsw.adb (Set_Dot_Warning_Switch): -gnatw.e should not
+	set Warning_Doc_Switch.
+	* lib-writ.ads: Add documentation note on ALI file generation
+	for C.
+	* exp_ch6.adb (Expand_Call): Remove check for No_Abort_Statements
+	(belongs in Sem).
+	* sem_attr.adb (Resolve_Attribute, case Access):
+	Abort_Task'Access violates the No_Abort_Statements restriction.
+	* sem_res.adb (Resolve_Call): Check restriction
+	No_Abort_Statements for call to Abort_Task or a renaming of it.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb (Array_Type_Declaration): Check for case of using

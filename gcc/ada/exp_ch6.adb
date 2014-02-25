@@ -3253,9 +3253,8 @@ package body Exp_Ch6 is
                                (Return_Applies_To
                                  (Return_Statement_Entity (Ancestor))))
                   then
-                     --  Pass along value that was passed in if the routine
-                     --  we are returning from also has an
-                     --  Accessibility_Of_Result formal.
+                     --  Pass along value that was passed in if the returned
+                     --  routine also has an Accessibility_Of_Result formal.
 
                      Level :=
                        New_Occurrence_Of
@@ -3642,16 +3641,9 @@ package body Exp_Ch6 is
          Subp := Parent_Subp;
       end if;
 
-      --  Check for violation of No_Abort_Statements
-
-      if Restriction_Check_Required (No_Abort_Statements)
-        and then Is_RTE (Subp, RE_Abort_Task)
-      then
-         Check_Restriction (No_Abort_Statements, Call_Node);
-
       --  Check for violation of No_Dynamic_Attachment
 
-      elsif Restriction_Check_Required (No_Dynamic_Attachment)
+      if Restriction_Check_Required (No_Dynamic_Attachment)
         and then RTU_Loaded (Ada_Interrupts)
         and then (Is_RTE (Subp, RE_Is_Reserved)      or else
                   Is_RTE (Subp, RE_Is_Attached)      or else

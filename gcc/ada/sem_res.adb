@@ -5408,6 +5408,17 @@ package body Sem_Res is
          Nam := Entity (Subp);
          Set_Entity_With_Style_Check (Subp, Nam);
 
+         --  Check restriction No_Abort_Statements, which is triggered by a
+         --  call to Ada.Task_Identification.Abort_Task.
+
+         if Restriction_Check_Required (No_Abort_Statements)
+           and then (Is_RTE (Nam, RE_Abort_Task)
+                      or else (Present (Alias (Nam))
+                                and then Is_RTE (Alias (Nam), RE_Abort_Task)))
+         then
+            Check_Restriction (No_Abort_Statements, N);
+         end if;
+
       --  Otherwise we must have the case of an overloaded call
 
       else
