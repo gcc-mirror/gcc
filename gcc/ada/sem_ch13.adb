@@ -199,9 +199,10 @@ package body Sem_Ch13 is
    --  already have modified all Sloc values if the -gnatD option is set.
 
    type UC_Entry is record
-      Eloc   : Source_Ptr; -- node used for posting warnings
-      Source : Entity_Id;  -- source type for unchecked conversion
-      Target : Entity_Id;  -- target type for unchecked conversion
+      Eloc     : Source_Ptr; -- node used for posting warnings
+      Source   : Entity_Id;  -- source type for unchecked conversion
+      Target   : Entity_Id;  -- target type for unchecked conversion
+      Act_Unit : Entity_Id;  -- actual function instantiated
    end record;
 
    package Unchecked_Conversions is new Table.Table (
@@ -11700,9 +11701,10 @@ package body Sem_Ch13 is
 
       if Warn_On_Unchecked_Conversion then
          Unchecked_Conversions.Append
-           (New_Val => UC_Entry'(Eloc   => Sloc (N),
-                                 Source => Source,
-                                 Target => Target));
+           (New_Val => UC_Entry'(Eloc     => Sloc (N),
+                                 Source   => Source,
+                                 Target   => Target,
+                                 Act_Unit => Act_Unit));
 
          --  If both sizes are known statically now, then back end annotation
          --  is not required to do a proper check but if either size is not
@@ -11757,14 +11759,21 @@ package body Sem_Ch13 is
          declare
             T : UC_Entry renames Unchecked_Conversions.Table (N);
 
-            Eloc   : constant Source_Ptr := T.Eloc;
-            Source : constant Entity_Id  := T.Source;
-            Target : constant Entity_Id  := T.Target;
+            Eloc     : constant Source_Ptr := T.Eloc;
+            Source   : constant Entity_Id  := T.Source;
+            Target   : constant Entity_Id  := T.Target;
+            Act_Unit : constant Entity_Id  := T.Act_Unit;
 
             Source_Siz : Uint;
             Target_Siz : Uint;
 
          begin
+            --  Skip if function marked as warnings off
+
+            if Warnings_Off (Act_Unit) then
+               goto Continue;
+            end if;
+
             --  This validation check, which warns if we have unequal sizes for
             --  unchecked conversion, and thus potentially implementation
             --  dependent semantics, is one of the few occasions on which we
@@ -11904,6 +11913,9 @@ package body Sem_Ch13 is
                end;
             end if;
          end;
+
+      <<Continue>>
+         null;
       end loop;
    end Validate_Unchecked_Conversions;
 

@@ -2488,9 +2488,9 @@ package body Sem_Ch5 is
         or else Etype (Id) = Any_Type
         or else
           (Present (Etype (Id))
-             and then Is_Itype (Etype (Id))
-             and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
-             and then Nkind (Original_Node (Parent (Loop_Nod))) =
+            and then Is_Itype (Etype (Id))
+            and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
+            and then Nkind (Original_Node (Parent (Loop_Nod))) =
                                                    N_Quantified_Expression)
       then
          Set_Etype (Id, Etype (DS));
@@ -2517,19 +2517,33 @@ package body Sem_Ch5 is
          end;
       end if;
 
-      --  Check for null or possibly null range and issue warning. We suppress
-      --  such messages in generic templates and instances, because in practice
-      --  they tend to be dubious in these cases. The check applies as well to
-      --  rewritten array element loops where a null range may be detected
-      --  statically.
+      --  Case where we have a range or a subtype, get type bounds
 
-      if Nkind (DS) = N_Range then
+      if Nkind_In (DS, N_Range, N_Subtype_Indication)
+        and then not Error_Posted (DS)
+        and then Etype (DS) /= Any_Type
+        and then Is_Discrete_Type (Etype (DS))
+      then
          declare
-            L : constant Node_Id := Low_Bound  (DS);
-            H : constant Node_Id := High_Bound (DS);
+            L : Node_Id;
+            H : Node_Id;
 
          begin
-            --  If range of loop is null, issue warning
+            if Nkind (DS) = N_Range then
+               L := Low_Bound  (DS);
+               H := High_Bound (DS);
+            else
+               L :=
+                 Type_Low_Bound  (Underlying_Type (Etype (Subtype_Mark (DS))));
+               H :=
+                 Type_High_Bound (Underlying_Type (Etype (Subtype_Mark (DS))));
+            end if;
+
+            --  Check for null or possibly null range and issue warning. We
+            --  suppress such messages in generic templates and instances,
+            --  because in practice they tend to be dubious in these cases. The
+            --  check applies as well to rewritten array element loops where a
+            --  null range may be detected statically.
 
             if Compile_Time_Compare (L, H, Assume_Valid => True) = GT then
 
@@ -2610,6 +2624,65 @@ package body Sem_Ch5 is
                   Error_Msg_N ("\??bounds may be wrong way round", DS);
                end if;
             end if;
+
+            --  Check if either bound is known to be outside the range of the
+            --  loop parameter type, this is e.g. the case of a loop from
+            --  20..X where the type is 1..19.
+
+            --  Such a loop is dubious since either it raises CE or it executes
+            --  zero times, and that cannot be useful!
+
+            if Etype (DS) /= Any_Type
+              and then not Error_Posted (DS)
+              and then Nkind (DS) = N_Subtype_Indication
+              and then Nkind (Constraint (DS)) = N_Range_Constraint
+            then
+               declare
+                  LLo : constant Node_Id :=
+                          Low_Bound  (Range_Expression (Constraint (DS)));
+                  LHi : constant Node_Id :=
+                          High_Bound (Range_Expression (Constraint (DS)));
+
+                  Bad_Bound : Node_Id := Empty;
+                  --  Suspicious loop bound
+
+               begin
+                  --  At this stage L, H are the bounds of the type, and LLo
+                  --  Lhi are the low bound and high bound of the loop.
+
+                  if Compile_Time_Compare (LLo, L, Assume_Valid => True) = LT
+                       or else
+                     Compile_Time_Compare (LLo, H, Assume_Valid => True) = GT
+                  then
+                     Bad_Bound := LLo;
+                  end if;
+
+                  if Compile_Time_Compare (LHi, L, Assume_Valid => True) = LT
+                       or else
+                     Compile_Time_Compare (LHi, H, Assume_Valid => True) = GT
+                  then
+                     Bad_Bound := LHi;
+                  end if;
+
+                  if Present (Bad_Bound) then
+                     Error_Msg_N
+                       ("suspicious loop bound out of range of "
+                        & "loop subtype??", Bad_Bound);
+                     Error_Msg_N
+                       ("\loop executes zero times or raises "
+                        & "Constraint_Error??", Bad_Bound);
+                  end if;
+               end;
+            end if;
+
+         --  This declare block is about warnings, if we get an exception while
+         --  testing for warnings, we simply abandon the attempt silently. This
+         --  most likely occurs as the result of a previous error, but might
+         --  just be an obscure case we have missed. In either case, not giving
+         --  the warning is perfectly acceptable.
+
+         exception
+            when others => null;
          end;
       end if;
 

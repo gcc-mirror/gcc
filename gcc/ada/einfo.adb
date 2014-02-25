@@ -557,12 +557,12 @@ package body Einfo is
    --    Is_Discriminant_Check_Function  Flag264
    --    SPARK_Pragma_Inherited          Flag265
    --    SPARK_Aux_Pragma_Inherited      Flag266
+   --    Has_Shift_Operator              Flag267
 
    --    (unused)                        Flag1
    --    (unused)                        Flag2
    --    (unused)                        Flag3
 
-   --    (unused)                        Flag267
    --    (unused)                        Flag268
    --    (unused)                        Flag269
    --    (unused)                        Flag270
@@ -1666,6 +1666,12 @@ package body Einfo is
       pragma Assert (Is_Subprogram (Id));
       return Flag143 (Id);
    end Has_Recursive_Call;
+
+   function Has_Shift_Operator (Id : E) return B is
+   begin
+      pragma Assert (Is_Integer_Type (Id));
+      return Flag267 (Base_Type (Id));
+   end Has_Shift_Operator;
 
    function Has_Size_Clause (Id : E) return B is
    begin
@@ -4371,6 +4377,12 @@ package body Einfo is
       pragma Assert (Is_Subprogram (Id));
       Set_Flag143 (Id, V);
    end Set_Has_Recursive_Call;
+
+   procedure Set_Has_Shift_Operator (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Integer_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag267 (Id, V);
+   end Set_Has_Shift_Operator;
 
    procedure Set_Has_Size_Clause (Id : E; V : B := True) is
    begin
@@ -8203,6 +8215,7 @@ package body Einfo is
       W ("Has_RACW",                        Flag214 (Id));
       W ("Has_Record_Rep_Clause",           Flag65  (Id));
       W ("Has_Recursive_Call",              Flag143 (Id));
+      W ("Has_Shift_Operator",              Flag267 (Id));
       W ("Has_Size_Clause",                 Flag29  (Id));
       W ("Has_Small_Clause",                Flag67  (Id));
       W ("Has_Specified_Layout",            Flag100 (Id));

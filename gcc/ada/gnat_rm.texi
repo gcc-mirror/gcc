@@ -224,6 +224,7 @@ Implementation Defined Pragmas
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Propagate_Exceptions::
+* Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -1056,6 +1057,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Propagate_Exceptions::
+* Pragma Provide_Shift_Operators::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -5851,6 +5853,25 @@ on obsolescent features are enabled, is ignored.
 It is retained for compatibility
 purposes. It used to be used in connection with optimization of
 a now-obsolete mechanism for implementation of exceptions.
+
+@node Pragma Provide_Shift_Operators
+@unnumberedsec Pragma Provide_Shift_Operators
+@cindex Shift operators
+@findex Provide_Shift_Operators
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Provide_Shift_Operators (integer_first_subtype_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma can be applied to a first subtype local name that specifies
+either an unsigned or signed type. It has the effect of providing the
+five shift operators (Shift_Left, Shift_Right, Shift_Right_Arithmetic,
+Rotate_Left and Rotate_Right) for the given type. It is equivalent to
+including the function declarations for these five operators, together
+with the pragma Import (Intrinsic, ...) statements.
 
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
@@ -13685,8 +13706,7 @@ type (signed or modular), as in this example:
 @smallexample @c ada
    function Shift_Left
      (Value  : T;
-      Amount : Natural)
-      return   T;
+      Amount : Natural) return T;
 @end smallexample
 
 @noindent
@@ -13698,6 +13718,10 @@ must be 2**8, 2**16, 2**32 or 2**64.
 The result type must be the same as the type of @code{Value}.
 The shift amount must be Natural.
 The formal parameter names can be anything.
+
+A more convenient way of providing these shift operators is to use
+the Provide_Shift_Operators pragma, which provides the function declarations
+and corresponding pragma Import's for all five shift functions.
 
 @node Source_Location
 @section Source_Location

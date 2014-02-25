@@ -6401,6 +6401,11 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      if Is_Integer_Type (Parent_Type) then
+         Set_Has_Shift_Operator
+           (Implicit_Base, Has_Shift_Operator (Parent_Type));
+      end if;
+
       --  The type of the bounds is that of the parent type, and they
       --  must be converted to the derived type.
 
@@ -14807,7 +14812,7 @@ package body Sem_Ch3 is
       if Parent_Type = Any_Type
         or else Etype (Parent_Type) = Any_Type
         or else (Is_Class_Wide_Type (Parent_Type)
-                   and then Etype (Parent_Type) = T)
+                  and then Etype (Parent_Type) = T)
       then
          --  If Parent_Type is undefined or illegal, make new type into a
          --  subtype of Any_Type, and set a few attributes to prevent cascaded
