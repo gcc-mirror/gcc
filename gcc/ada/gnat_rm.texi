@@ -123,6 +123,7 @@ Implementation Defined Pragmas
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Compiler_Unit::
+* Pragma Compiler_Unit_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -279,7 +280,6 @@ Implementation Defined Pragmas
 Implementation Defined Aspects
 
 * Aspect Abstract_State::
-* Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
@@ -955,6 +955,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Compile_Time_Error::
 * Pragma Compile_Time_Warning::
 * Pragma Compiler_Unit::
+* Pragma Compiler_Unit_Warning::
 * Pragma Complete_Representation::
 * Pragma Complex_Representation::
 * Pragma Component_Alignment::
@@ -2027,12 +2028,27 @@ pragma Compiler_Unit;
 @end smallexample
 
 @noindent
+This pragma is obsolete. It is equivalent to Compiler_Unit_Warning. It is
+retained so that old versions of the GNAT run-time that use this pragma can
+be compiled with newer versions of the compiler.
+
+@node Pragma Compiler_Unit_Warning
+@unnumberedsec Pragma Compiler_Unit_Warning
+@findex Compiler_Unit_Warning
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Compiler_Unit_Warning;
+@end smallexample
+
+@noindent
 This pragma is intended only for internal use in the GNAT run-time library.
 It indicates that the unit is used as part of the compiler build. The effect
-is to disallow constructs (raise with message, conditional expressions etc)
-that would cause trouble when bootstrapping using an older version of GNAT.
-For the exact list of restrictions, see the compiler sources and references
-to Is_Compiler_Unit.
+is to generate warnings for the use of constructs (for example, conditional
+expressions) that would cause trouble when bootstrapping using an older
+version of GNAT. For the exact list of restrictions, see the compiler sources
+and references to Check_Compiler_Unit.
 
 @node Pragma Complete_Representation
 @unnumberedsec Pragma Complete_Representation
@@ -7662,7 +7678,6 @@ clause.
 
 @menu
 * Aspect Abstract_State::
-* Aspect Compiler_Unit::
 * Aspect Contract_Cases::
 * Aspect Depends::
 * Aspect Dimension::
@@ -7705,12 +7720,6 @@ clause.
 @findex Abstract_State
 @noindent
 This aspect is equivalent to pragma @code{Abstract_State}.
-
-@node Aspect Compiler_Unit
-@unnumberedsec Aspect Compiler_Unit
-@findex Compiler_Unit
-@noindent
-This aspect is equivalent to pragma @code{Compiler_Unit}.
 
 @node Aspect Contract_Cases
 @unnumberedsec Aspect Contract_Cases

@@ -143,7 +143,6 @@ package Aspects is
       --  The following aspects correspond to library unit pragmas
 
       Aspect_All_Calls_Remote,
-      Aspect_Compiler_Unit,                 -- GNAT
       Aspect_Elaborate_Body,
       Aspect_Preelaborate,
       Aspect_Pure,
@@ -217,7 +216,6 @@ package Aspects is
      (Aspect_Abstract_State           => True,
       Aspect_Async_Readers            => True,
       Aspect_Async_Writers            => True,
-      Aspect_Compiler_Unit            => True,
       Aspect_Contract_Cases           => True,
       Aspect_Depends                  => True,
       Aspect_Dimension                => True,
@@ -377,7 +375,6 @@ package Aspects is
       Aspect_Atomic_Components            => Name_Atomic_Components,
       Aspect_Attach_Handler               => Name_Attach_Handler,
       Aspect_Bit_Order                    => Name_Bit_Order,
-      Aspect_Compiler_Unit                => Name_Compiler_Unit,
       Aspect_Component_Size               => Name_Component_Size,
       Aspect_Constant_Indexing            => Name_Constant_Indexing,
       Aspect_Contract_Cases               => Name_Contract_Cases,
@@ -585,7 +582,6 @@ package Aspects is
       Aspect_Async_Writers                => Always_Delay,
       Aspect_Asynchronous                 => Always_Delay,
       Aspect_Attach_Handler               => Always_Delay,
-      Aspect_Compiler_Unit                => Always_Delay,
       Aspect_Constant_Indexing            => Always_Delay,
       Aspect_Contract_Cases               => Always_Delay,
       Aspect_CPU                          => Always_Delay,

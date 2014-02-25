@@ -40,7 +40,7 @@
 --  2005 functionality is required. In particular, it is used for building
 --  run times on all targets.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 pragma Style_Checks (All_Checks);
 --  No subprogram ordering check, due to logical grouping

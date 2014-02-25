@@ -1784,9 +1784,11 @@ package body Sem_Prag is
                end if;
 
                --  Do not normalize an erroneous clause because the inputs
-               --  and/or outputs may denote illegal items.
+               --  and/or outputs may denote illegal items. Normalization is
+               --  disabled in ASIS mode as it alters the tree by introducing
+               --  new nodes similar to expansion.
 
-               if Serious_Errors_Detected = Errors then
+               if Serious_Errors_Detected = Errors and then not ASIS_Mode then
                   Normalize_Clause (Clause);
                end if;
 
