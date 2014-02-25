@@ -958,7 +958,7 @@ package body Sem_Prag is
 
                else
                   Error_Msg_N
-                    ("item must denote parameter, variable or state",
+                    ("item must denote parameter, variable, or state",
                      Item);
                end if;
             end if;

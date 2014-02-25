@@ -572,6 +572,10 @@ package Sinfo is
    --  particular, these flags should also be correctly set in ASIS mode and
    --  GNATprove mode.
 
+   --  Note: the expander always takes care of the Do_Range check case,
+   --  so this flag will never be set in the expanded tree passed to the
+   --  back end code generator.
+
    --  Note that this accounts for all nodes that trigger the corresponding
    --  checks, except for range checks on subtype_indications, which may be
    --  required to check that a range_constraint is compatible with the given

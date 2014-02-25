@@ -1,5 +1,15 @@
 2014-02-25  Yannick Moy  <moy@adacore.com>
 
+	* sem_prag.adb: Minor reformatting to get consistent messages.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Minor reformatting.
+	* sinfo.ads (Do_Range_Check): Document that this flag is never
+	passed to the back end.
+
+2014-02-25  Yannick Moy  <moy@adacore.com>
+
 	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_prag.adb, sem_attr.adb,
 	sem_ch6.adb: Remove useless references to SPARK RM in error messages.
 

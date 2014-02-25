@@ -3064,14 +3064,15 @@ package body Checks is
       Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
                     not Index_Checks_Suppressed (Target_Typ)
-                      or else not Range_Checks_Suppressed (Target_Typ);
+                      or else
+                    not Range_Checks_Suppressed (Target_Typ);
 
       Cond     : Node_Id;
       R_Cno    : Node_Id;
       R_Result : Check_Result;
 
    begin
-      if not Expander_Active or else not Checks_On then
+      if not Expander_Active or not Checks_On then
          return;
       end if;
 
@@ -3117,7 +3118,8 @@ package body Checks is
 
                if Nkind (Ck_Node) = N_Range then
                   Apply_Compile_Time_Constraint_Error
-                    (Low_Bound (Ck_Node), "static range out of bounds of}??",
+                    (Low_Bound (Ck_Node),
+                     "static range out of bounds of}??",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
@@ -3126,7 +3128,8 @@ package body Checks is
 
                else
                   Apply_Compile_Time_Constraint_Error
-                    (Ck_Node, "static value out of range of}?",
+                    (Ck_Node,
+                     "static value out of range of}?",
                      CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
