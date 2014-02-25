@@ -1,3 +1,40 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Check for case of using
+	type name as index.
+	* lib.ads: Minor reformatting.
+	* einfo.ads: Minor reformatting.
+
+2014-02-25  Doug Rupp  <rupp@adacore.com>
+
+	* sem_mech.adb (Set_Mechanisms): For convention Fortran on VMS
+	use Short_Descriptor(S) as the argument passing mechanism.
+
+2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sigtramp-ppcvxw.c (CFI_COMMON_REGS): Also include r0.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads (Warnings_Treated_As_Errors): New variable.
+	* errout.adb (Error_Msg_Internal): Set Warn_Err flag in
+	error object (Initialize): Initialize Warnings_As_Errors_Count
+	(Write_Error_Summary): Include count of warnings treated as errors.
+	* erroutc.adb (Warning_Treated_As_Error): New function.
+	(Matches): Function moved to outer level of package.
+	* erroutc.ads (Error_Msg_Object): Add Warn_Err flag.
+	(Warning_Treated_As_Error): New function.
+	* gnat_rm.texi: Document pragma Treat_Warning_As_Error.
+	* opt.adb: Add handling of Warnings_As_Errors_Count[_Config].
+	* opt.ads (Config_Switches_Type): Add entry for
+	Warnings_As_Errors_Count.
+	(Warnings_As_Errors_Count): New variable.
+	(Warnings_As_Errors): New array.
+	* par-prag.adb: Add dummy entry for Warning_As_Error.
+	* sem_prag.adb (Analyze_Pragma): Implement new pragma
+	Warning_As_Error.
+	* snames.ads-tmpl: Add entries for Warning_As_Error pragma.
+
 2014-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sigtramp.h: Fix minor inaccuracy.

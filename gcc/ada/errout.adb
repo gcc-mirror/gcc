@@ -690,6 +690,9 @@ package body Errout is
 
       Temp_Msg : Error_Msg_Id;
 
+      Warn_Err : Boolean;
+      --  Set if warning to be treated as error
+
       procedure Handle_Serious_Error;
       --  Internal procedure to do all error message handling for a serious
       --  error message, other than bumping the error counts and arranging
@@ -940,6 +943,7 @@ package body Errout is
           Line     => Get_Physical_Line_Number (Sptr),
           Col      => Get_Column_Number (Sptr),
           Warn     => Is_Warning_Msg,
+          Warn_Err => False, -- reset below
           Warn_Chr => Warning_Msg_Char,
           Style    => Is_Style_Msg,
           Serious  => Is_Serious_Error,
@@ -947,6 +951,21 @@ package body Errout is
           Msg_Cont => Continuation,
           Deleted  => False));
       Cur_Msg := Errors.Last;
+
+      --  Test if warning to be treated as error
+
+      Warn_Err :=
+        Is_Warning_Msg
+          and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
+                      or else
+                    Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
+
+      --  Propagate Warn_Err to this message and preceding continuations
+
+      for J in reverse 1 .. Errors.Last loop
+         Errors.Table (J).Warn_Err := Warn_Err;
+         exit when not Errors.Table (J).Msg_Cont;
+      end loop;
 
       --  If immediate errors mode set, output error message now. Also output
       --  now if the -d1 debug flag is set (so node number message comes out
@@ -1498,11 +1517,13 @@ package body Errout is
       Last_Error_Msg := No_Error_Msg;
       Serious_Errors_Detected := 0;
       Total_Errors_Detected := 0;
+      Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
+      Warnings_As_Errors_Count := 0;
       Cur_Msg := No_Error_Msg;
       List_Pragmas.Init;
 
-      --  Initialize warnings table
+      --  Initialize warnings tables
 
       Warnings.Init;
       Specific_Warnings.Init;
@@ -1656,6 +1677,11 @@ package body Errout is
                end if;
 
                Write_Char (')');
+
+            elsif Warnings_Treated_As_Errors /= 0 then
+               Write_Str (" (");
+               Write_Int (Warnings_Treated_As_Errors);
+               Write_Str (" treated as errors)");
             end if;
          end if;
 
