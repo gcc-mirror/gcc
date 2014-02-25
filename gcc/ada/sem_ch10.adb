@@ -1110,8 +1110,8 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  Deal with creating elaboration Boolean if needed. We create an
-      --  elaboration boolean only for units that come from source since
+      --  Deal with creating elaboration counter if needed. We create an
+      --  elaboration counter only for units that come from source since
       --  units manufactured by the compiler never need elab checks.
 
       if Comes_From_Source (N)

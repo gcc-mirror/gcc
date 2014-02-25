@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,33 +37,40 @@
 --  Do not add any dependency to GNARL packages since this package is used
 --  in both normal and restricted (ravenscar) environments.
 
+with System.Address_Image;
 with System.CRTL;
 with System.Task_Primitives;
 with System.Task_Primitives.Operations;
-with Ada.Unchecked_Conversion;
 
 package body System.Tasking.Debug is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   function To_Integer is new
-     Ada.Unchecked_Conversion (Task_Id, System.Task_Primitives.Task_Address);
-
    type Trace_Flag_Set is array (Character) of Boolean;
 
    Trace_On : Trace_Flag_Set := ('A' .. 'Z' => False, others => True);
+
+   Stderr_Fd : constant := 2;
+   --  File descriptor for standard error
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    procedure Write (Fd : Integer; S : String; Count : Integer);
+   --  Write Count characters of S to the file descriptor Fd
 
    procedure Put (S : String);
-   --  Display S on standard output
+   --  Display S on standard error
 
    procedure Put_Line (S : String := "");
-   --  Display S on standard output with an additional line terminator
+   --  Display S on standard error with an additional line terminator
+
+   function Task_Image (T : Task_Id) return String;
+   --  Return the relevant characters from T.Common.Task_Image
+
+   function Task_Id_Image (T : Task_Id) return String;
+   --  Return the address in hexadecimal form
 
    ------------------------
    -- Continue_All_Tasks --
@@ -134,16 +141,13 @@ package body System.Tasking.Debug is
          return;
       end if;
 
-      Put (T.Common.Task_Image (1 .. T.Common.Task_Image_Len) & ": " &
-           Task_States'Image (T.Common.State));
-
+      Put (Task_Image (T) & ": " & Task_States'Image (T.Common.State));
       Parent := T.Common.Parent;
 
       if Parent = null then
          Put (", parent: <none>");
       else
-         Put (", parent: " &
-              Parent.Common.Task_Image (1 .. Parent.Common.Task_Image_Len));
+         Put (", parent: " & Task_Image (Parent));
       end if;
 
       Put (", prio:" & T.Common.Current_Priority'Img);
@@ -165,7 +169,7 @@ package body System.Tasking.Debug is
          Put (", serving:");
 
          while Entry_Call /= null loop
-            Put (To_Integer (Entry_Call.Self)'Img);
+            Put (Task_Id_Image (Entry_Call.Self));
             Entry_Call := Entry_Call.Acceptor_Prev_Call;
          end loop;
       end if;
@@ -195,7 +199,7 @@ package body System.Tasking.Debug is
 
    procedure Put (S : String) is
    begin
-      Write (2, S, S'Length);
+      Write (Stderr_Fd, S, S'Length);
    end Put;
 
    --------------
@@ -204,7 +208,7 @@ package body System.Tasking.Debug is
 
    procedure Put_Line (S : String := "") is
    begin
-      Write (2, S & ASCII.LF, S'Length + 1);
+      Write (Stderr_Fd, S & ASCII.LF, S'Length + 1);
    end Put_Line;
 
    ----------------------
@@ -323,6 +327,35 @@ package body System.Tasking.Debug is
       null;
    end Task_Creation_Hook;
 
+   ----------------
+   -- Task_Id_Image --
+   ----------------
+
+   function Task_Id_Image (T : Task_Id) return String is
+   begin
+      if T = null then
+         return "Null_Task_Id";
+      else
+         return Address_Image (T.all'Address);
+      end if;
+   end Task_Id_Image;
+
+   ----------------
+   -- Task_Image --
+   ----------------
+
+   function Task_Image (T : Task_Id) return String is
+   begin
+      --  In case T.Common.Task_Image_Len is uninitialized junk, we check that
+      --  it is in range, to make this more robust.
+
+      if T.Common.Task_Image_Len in T.Common.Task_Image'Range then
+         return T.Common.Task_Image (1 .. T.Common.Task_Image_Len);
+      else
+         return T.Common.Task_Image;
+      end if;
+   end Task_Image;
+
    ---------------------------
    -- Task_Termination_Hook --
    ---------------------------
@@ -344,13 +377,13 @@ package body System.Tasking.Debug is
    is
    begin
       if Trace_On (Flag) then
-         Put (To_Integer (Self_Id)'Img &
+         Put (Task_Id_Image (Self_Id) &
               ':' & Flag & ':' &
-              Self_Id.Common.Task_Image (1 .. Self_Id.Common.Task_Image_Len) &
+              Task_Image (Self_Id) &
               ':');
 
          if Other_Id /= null then
-            Put (To_Integer (Other_Id)'Img & ':');
+            Put (Task_Id_Image (Other_Id) & ':');
          end if;
 
          Put_Line (Msg);
@@ -365,9 +398,10 @@ package body System.Tasking.Debug is
       Discard : System.CRTL.ssize_t;
       pragma Unreferenced (Discard);
    begin
-      Discard := System.CRTL.write (Fd, S (S'First)'Address,
+      Discard := System.CRTL.write (Fd, S'Address,
                                     System.CRTL.size_t (Count));
-      --  Is it really right to ignore write errors here ???
+      --  Ignore write errors here; this is just debugging output, and there's
+      --  nothing to be done about errors anyway.
    end Write;
 
 end System.Tasking.Debug;
