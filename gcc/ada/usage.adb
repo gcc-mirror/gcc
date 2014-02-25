@@ -218,6 +218,16 @@ begin
    Write_Switch_Char ("eInn");
    Write_Line ("Index in multi-unit source, e.g. -gnateI2");
 
+   --  Line for -gnatel switch
+
+   Write_Switch_Char ("el");
+   Write_Line ("Turn on info messages on generated Elaborate[_All] pragmas");
+
+   --  Line for -gnateL switch
+
+   Write_Switch_Char ("eL");
+   Write_Line ("Turn off info messages on generated Elaborate[_All] pragmas");
+
    --  Line for -gnatem switch
 
    Write_Switch_Char ("em=?");
@@ -512,10 +522,8 @@ begin
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");
    Write_Line ("        .K*  turn off warnings for standard redefinition");
-   Write_Line ("        l    turn on warnings for missing " &
-                                                  "elaboration pragma");
-   Write_Line ("        L*   turn off warnings for missing " &
-                                                  "elaboration pragma");
+   Write_Line ("        l    turn on warnings for elaboration problems");
+   Write_Line ("        L*   turn off warnings for elaboration problems");
    Write_Line ("        .l   turn on info messages for inherited aspects");
    Write_Line ("        .L*  turn off info messages for inherited aspects");
    Write_Line ("        m+   turn on warnings for variable assigned " &

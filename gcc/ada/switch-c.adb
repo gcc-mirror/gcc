@@ -588,6 +588,18 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Scan_Pos (Switch_Chars, Max, Ptr, Multiple_Unit_Index, C);
 
+                  --  -gnatel
+
+                  when 'l' =>
+                     Ptr := Ptr + 1;
+                     Elab_Info_Messages := True;
+
+                  --  -gnateL
+
+                  when 'L' =>
+                     Ptr := Ptr + 1;
+                     Elab_Info_Messages := False;
+
                   --  -gnatem (mapping file)
 
                   when 'm' =>

@@ -509,9 +509,13 @@ package Opt is
    --  GNATBIND
    --  Set to True to output chosen elaboration order
 
+   Elab_Info_Messages : Boolean := False;
+   --  GNAT
+   --  Set to True to output info messages for static elabmodel (-gnatel)
+
    Elab_Warnings : Boolean := False;
    --  GNAT
-   --  Set to True to generate full elaboration warnings (-gnatwl)
+   --  Set to True to generate elaboration warnings (-gnatwl)
 
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT

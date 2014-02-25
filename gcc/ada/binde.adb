@@ -1023,7 +1023,7 @@ package body Binde is
                Info => True);
 
             Error_Msg_Output
-              ("     recompile $ with -gnatwl for full details",
+              ("     recompile $ with -gnatel for full details",
                Info => True);
 
          when Elab_Desirable =>
@@ -1032,7 +1032,7 @@ package body Binde is
                Info => True);
 
             Error_Msg_Output
-              ("     recompile $ with -gnatwl for full details",
+              ("     recompile $ with -gnatel for full details",
                Info => True);
 
          when Spec_First =>
