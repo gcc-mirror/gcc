@@ -1,5 +1,7 @@
 2014-02-25  Adam Butcher  <adam@jessamine.co.uk>
 
+	* g++.dg/cpp1y/fn-generic-member-ool.C: New testcase.
+
 	PR c++/60065
 	* g++.dg/cpp1y/pr60065.C: New testcase.
 
