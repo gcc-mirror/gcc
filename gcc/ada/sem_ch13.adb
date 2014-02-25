@@ -1234,14 +1234,6 @@ package body Sem_Ch13 is
 
          else
             Insert_After (N, Prag);
-
-            --  Analyze the pragma before analyzing the proper body of a stub.
-            --  This ensures that the pragma will appear on the proper contract
-            --  list (see N_Contract).
-
-            if Nkind (N) = N_Subprogram_Body_Stub then
-               Analyze (Prag);
-            end if;
          end if;
       end Insert_Delayed_Pragma;
 
