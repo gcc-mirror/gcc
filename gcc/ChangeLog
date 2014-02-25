@@ -1,8 +1,7 @@
 2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
-	* config/rs6000/vector.md (*vector_ordered<mode>): Change split to
-	use canonical form for nor<mode>3.
-	(*vector_unordered<mode>): Likewise.
+	* config/rs6000/vector.md (*vector_unordered<mode>): Change split
+	to use canonical form for nor<mode>3.
 
 2014-02-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
