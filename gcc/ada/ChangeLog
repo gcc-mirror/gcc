@@ -1,5 +1,21 @@
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
+	* binde.adb: Change messages to mention -gnatel instead of -gnatwl.
+	* gnat_ugn.texi: Update documentation of -gnatwl Add documentation
+	of -gnatel/-gnateL.
+	* opt.ads (Warn_Info_Messages): New flag.
+	* sem_elab.adb: Use Elab_Warnings, Elab_Info_Messages to control
+	messages.
+	* sem_prag.adb: Use Elab_Warnings, Elab_Info_Messages to control
+	messages.
+	* switch-m.ad, switch-c.adb: Recognize new -gnatel/EL switches.
+	* usage.adb: Add documentation of -gnatel/-gnateL Update
+	documentation of -gnatwl/-gnatwL.
+	* warnsw.adb: New handling of Elab_Warnings, Elab_Info_Messages
+	* warnsw.ads (Elab_Info_Messages): New field in Warning_Record
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb (Has_Shift_Operator): New flag.
 	* gnat_rm.texi: Document pragma Provide_Shift_Operators.
 	* interfac.ads: Minor code reorganization (add pragma

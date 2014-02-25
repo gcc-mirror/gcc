@@ -867,7 +867,7 @@ package body Sem_Elab is
            and then not Elaboration_Checks_Suppressed (Ent)
            and then not Suppress_Elaboration_Warnings (E_Scope)
            and then not Elaboration_Checks_Suppressed (E_Scope)
-           and then Elab_Warnings
+           and then (Elab_Warnings or Elab_Info_Messages)
            and then Generate_Warnings
          then
             Generate_Elab_Warnings : declare
@@ -877,8 +877,9 @@ package body Sem_Elab is
                   Ent   : Node_Or_Entity_Id);
                --  Generate a call to Error_Msg_NE with parameters Msg_D or
                --  Msg_S (for dynamic or static elaboration model), N and Ent.
-               --  Msg_D is suppressed for the attribute reference case, since
-               --  we never raise Program_Error for an attribute reference.
+               --  Msg_D is a real warning (output if Msg_D is non-null and
+               --  Elab_Warnings is set), Msg_S is an info message (output if
+               --  Elab_Info_Messages is set.
 
                ------------------
                -- Elab_Warning --
@@ -890,12 +891,21 @@ package body Sem_Elab is
                   Ent   : Node_Or_Entity_Id)
                is
                begin
+                  --  Dynamic elaboration checks, real warning
+
                   if Dynamic_Elaboration_Checks then
                      if not Access_Case then
-                        Error_Msg_NE (Msg_D, N, Ent);
+                        if Msg_D /= "" and then Elab_Warnings then
+                           Error_Msg_NE (Msg_D, N, Ent);
+                        end if;
                      end if;
+
+                  --  Static elaboration checks, info message
+
                   else
-                     Error_Msg_NE (Msg_S, N, Ent);
+                     if Elab_Info_Messages then
+                        Error_Msg_NE (Msg_S, N, Ent);
+                     end if;
                   end if;
                end Elab_Warning;
 
@@ -907,15 +917,15 @@ package body Sem_Elab is
                if Inst_Case then
                   Elab_Warning
                     ("instantiation of& may raise Program_Error?l?",
-                     "info: instantiation of& during elaboration?l?", Ent);
+                     "info: instantiation of& during elaboration?", Ent);
 
-               --  Indirect call case, warning only in static elaboration
+               --  Indirect call case, info message only in static elaboration
                --  case, because the attribute reference itself cannot raise
                --  an exception.
 
                elsif Access_Case then
                   Elab_Warning
-                    ("", "info: access to& during elaboration?l?", Ent);
+                    ("", "info: access to& during elaboration?", Ent);
 
                --  Subprogram call case
 
@@ -926,13 +936,13 @@ package body Sem_Elab is
                   then
                      Elab_Warning
                        ("implicit call to & may raise Program_Error?l?",
-                        "info: implicit call to & during elaboration?l?",
+                        "info: implicit call to & during elaboration?",
                         Ent);
 
                   else
                      Elab_Warning
                        ("call to & may raise Program_Error?l?",
-                        "info: call to & during elaboration?l?",
+                        "info: call to & during elaboration?",
                         Ent);
                   end if;
                end if;
@@ -942,13 +952,13 @@ package body Sem_Elab is
                if Nkind (N) in N_Subprogram_Instantiation then
                   Elab_Warning
                     ("\missing pragma Elaborate for&?l?",
-                     "\info: implicit pragma Elaborate for& generated?l?",
+                     "\info: implicit pragma Elaborate for& generated?",
                      W_Scope);
 
                else
                   Elab_Warning
                     ("\missing pragma Elaborate_All for&?l?",
-                     "\info: implicit pragma Elaborate_All for & generated?l?",
+                     "\info: implicit pragma Elaborate_All for & generated?",
                      W_Scope);
                end if;
             end Generate_Elab_Warnings;
@@ -1018,17 +1028,17 @@ package body Sem_Elab is
             --  Here we need to generate an implicit elaborate all
 
             else
-               --  Generate elaborate_all warning unless suppressed
+               --  Generate Elaborate_all warning unless suppressed
 
-               if (Elab_Warnings and Generate_Warnings and not Inst_Case)
+               if (Elab_Info_Messages and Generate_Warnings and not Inst_Case)
                  and then not Suppress_Elaboration_Warnings (Ent)
                  and then not Suppress_Elaboration_Warnings (E_Scope)
                  and then not Suppress_Elaboration_Warnings (W_Scope)
                then
                   Error_Msg_Node_2 := W_Scope;
                   Error_Msg_NE
-                    ("call to& in elaboration code " &
-                     "requires pragma Elaborate_All on&?l?", N, E);
+                    ("info: call to& in elaboration code " &
+                     "requires pragma Elaborate_All on&?", N, E);
                end if;
 
                --  Set indication for binder to generate Elaborate_All
@@ -2540,13 +2550,13 @@ package body Sem_Elab is
 
             if not Suppress_Elaboration_Warnings (Ent)
               and then not Elaboration_Checks_Suppressed (Ent)
-              and then Elab_Warnings
+              and then Elab_Info_Messages
               and then not Suppress_Elaboration_Warnings (Task_Scope)
               and then not Elaboration_Checks_Suppressed (Task_Scope)
             then
                Error_Msg_Node_2 := Task_Scope;
                Error_Msg_NE
-                 ("activation of an instance of task type&" &
+                 ("info: activation of an instance of task type&" &
                   " requires pragma Elaborate_All on &?l?", N, Ent);
             end if;
 

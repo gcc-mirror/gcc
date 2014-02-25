@@ -47,6 +47,8 @@ package body Warnsw is
         W.Constant_Condition_Warnings;
       Elab_Warnings                       :=
         W.Elab_Warnings;
+      Elab_Info_Messages                  :=
+        W.Elab_Info_Messages;
       Implementation_Unit_Warnings        :=
         W.Implementation_Unit_Warnings;
       Ineffective_Inline_Warnings         :=
@@ -141,6 +143,8 @@ package body Warnsw is
         Check_Withs;
       W.Constant_Condition_Warnings         :=
         Constant_Condition_Warnings;
+      W.Elab_Info_Messages                  :=
+        Elab_Info_Messages;
       W.Elab_Warnings                       :=
         Elab_Warnings;
       W.Implementation_Unit_Warnings        :=

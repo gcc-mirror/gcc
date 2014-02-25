@@ -331,6 +331,7 @@ package body Switch.M is
                            when 'i' | 'I' =>
                               declare
                                  First : constant Positive := Ptr;
+
                               begin
                                  Ptr := Ptr + 1;
 
@@ -353,6 +354,14 @@ package body Switch.M is
                                    (Storing (Storing'First ..
                                       First_Stored + Ptr - First));
                               end;
+
+                           when 'l' =>
+                              Ptr := Ptr + 1;
+                              Add_Switch_Component ("-gnatel");
+
+                           when 'L' =>
+                              Ptr := Ptr + 1;
+                              Add_Switch_Component ("-gnateL");
 
                            when 'p' =>
                               Ptr := Ptr + 1;
