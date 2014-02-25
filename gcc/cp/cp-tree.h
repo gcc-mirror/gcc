@@ -5313,12 +5313,15 @@ extern tree coerce_delete_type			(tree);
 extern void comdat_linkage			(tree);
 extern void determine_visibility		(tree);
 extern void constrain_class_visibility		(tree);
+extern void reset_type_linkage			(tree);
+extern void tentative_decl_linkage		(tree);
 extern void import_export_decl			(tree);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree	(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool decl_constant_var_p			(tree);
 extern bool decl_maybe_constant_var_p		(tree);
+extern void no_linkage_error			(tree);
 extern void check_default_args			(tree);
 extern bool mark_used				(tree);
 extern bool mark_used			        (tree, tsubst_flags_t);

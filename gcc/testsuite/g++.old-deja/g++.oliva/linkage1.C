@@ -11,8 +11,6 @@
 // checking that another translation unit can call it.  We don't do
 // the right things on functions, but we do on data members.
 
-// { dg-bogus "" "" { xfail *-*-* } 0 }
-
 typedef struct {
   void f();
 } S;
