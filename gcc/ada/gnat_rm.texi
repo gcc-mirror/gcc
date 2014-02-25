@@ -6684,6 +6684,11 @@ is expected when a value of this type is read from the stream. Note that the
 value written always includes the bounds, even for Unbounded_String'Write,
 since Unbounded_String is not an array type.
 
+Note that the @code{Stream_Convert} pragma is not effective in the case of
+a derived type of a non-limited tagged type. If such a type is specified then
+the pragma is silently ignored, and the default implementation of the stream
+attributes is used instead.
+
 @node Pragma Style_Checks
 @unnumberedsec Pragma Style_Checks
 @findex Style_Checks
@@ -15556,6 +15561,103 @@ this recommendation to the overlaid variable (@code{A}
 in the above example) in this case. This means that the overlay
 works "as expected", in that a modification to one of the variables
 will affect the value of the other.
+
+Note that when address clause overlays are used in this way, there is an
+issue of unintentional initialization, as shown by this example:
+
+@smallexample @c ada
+package Overwrite_Record is
+   type R is record
+      A : Character := 'C';
+      B : Character := 'A';
+   end record;
+   X : Short_Integer := 3;
+   Y : R;
+   for Y'Address use X'Address;
+       |
+>>> warning: default initialization of "Y" may
+    modify "X", use pragma Import for "Y" to
+    suppress initialization (RM B.1(24))
+
+end Overwrite_Record;
+@end smallexample
+
+@noindent
+Here the default initialization of @code{Y} will clobber the value
+of @code{X}, which justifies the warning. The warning notes that
+this effect can be eliminated by adding a @code{pragma Import}
+which suppresses the initialization:
+
+@smallexample @c ada
+package Overwrite_Record is
+   type R is record
+      A : Character := 'C';
+      B : Character := 'A';
+   end record;
+   X : Short_Integer := 3;
+   Y : R;
+   for Y'Address use X'Address;
+   pragma Import (Ada, Y);
+end Overwrite_Record;
+@end smallexample
+
+@noindent
+Note that the use of @code{pragma Initialize_Scalars} may cause variables to
+be initialized when they would not otherwise have been in the absence
+of the use of this pragma. This may cause an overlay to have this
+unintended clobbering effect. The compiler avoids this for scalar
+types, but not for composite objects (where in general the effect
+of @code{Initialize_Scalars} is part of the initialization routine
+for the composite object:
+
+@smallexample @c ada
+pragma Initialize_Scalars;
+with Ada.Text_IO;  use Ada.Text_IO;
+procedure Overwrite_Array is
+   type Arr is array (1 .. 5) of Integer;
+   X : Arr := (others => 1);
+   A : Arr;
+   for A'Address use X'Address;
+       |
+>>> warning: default initialization of "A" may
+    modify "X", use pragma Import for "A" to
+    suppress initialization (RM B.1(24))
+
+begin
+   if X /= Arr'(others => 1) then
+      Put_Line ("X was clobbered");
+   else
+      Put_Line ("X was not clobbered");
+   end if;
+end Overwrite_Array;
+@end smallexample
+
+@noindent
+The above program generates the warning as shown, and at execution
+time, prints @code{X was clobbered}. If the @code{pragma Import} is
+added as suggested:
+
+@smallexample @c ada
+pragma Initialize_Scalars;
+with Ada.Text_IO;  use Ada.Text_IO;
+procedure Overwrite_Array is
+   type Arr is array (1 .. 5) of Integer;
+   X : Arr := (others => 1);
+   A : Arr;
+   for A'Address use X'Address;
+   pragma Import (Ada, A);
+begin
+   if X /= Arr'(others => 1) then
+      Put_Line ("X was clobbered");
+   else
+      Put_Line ("X was not clobbered");
+   end if;
+end Overwrite_Array;
+@end smallexample
+
+@noindent
+then the program compiles without the waraning and when run will generate
+the output @code{X was not clobbered}.
 
 @node Effect of Convention on Representation
 @section Effect of Convention on Representation
