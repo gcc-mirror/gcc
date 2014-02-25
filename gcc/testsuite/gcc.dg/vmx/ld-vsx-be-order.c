@@ -29,12 +29,16 @@ static void test ()
 
   vector unsigned long vul;
   vector double vd;
+  unsigned i;
 
   init ();
 
   vul = vec_ld (0, (vector unsigned long *)svul);
   vd  = vec_ld (0, (vector double *)svd);
 
-  check (vec_all_eq (vul, evul), "vul");
-  check (vec_all_eq (vd,  evd ), "vd" );
+  for (i = 0; i < 2; ++i)
+    {
+      check (vul[i] == evul[i], "vul");
+      check (vd[i]  == evd[i],  "vd" );
+    }
 }

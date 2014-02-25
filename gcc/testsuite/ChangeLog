@@ -1,3 +1,12 @@
+2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld-vsx.c: Don't use vec_all_eq.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+
 2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/avx-1.c: Update __builtin_prefetch.
