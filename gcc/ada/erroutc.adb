@@ -309,11 +309,11 @@ package body Erroutc is
    begin
       if Warn and then Warn_Chr /= ' ' then
          if Warn_Chr = '?' then
-            return " [enabled by default]";
+            return "[enabled by default]";
          elsif Warn_Chr in 'a' .. 'z' then
-            return " [-gnatw" & Warn_Chr & ']';
+            return "[-gnatw" & Warn_Chr & ']';
          else pragma Assert (Warn_Chr in 'A' .. 'Z');
-            return " [-gnatw." & Fold_Lower (Warn_Chr) & ']';
+            return "[-gnatw." & Fold_Lower (Warn_Chr) & ']';
          end if;
       else
          return "";
@@ -554,41 +554,45 @@ package body Erroutc is
       Start : Natural;
 
    begin
-      --  Set error message line length
-
-      if Error_Msg_Line_Length = 0 then
-         Length := Nat'Last;
-      else
-         Length := Error_Msg_Line_Length;
-      end if;
-
-      Max := Integer (Length - Column + 1);
-
       declare
-         Txt : constant String  := Text.all & Get_Warning_Tag (E);
-         Len : constant Natural := Txt'Length;
+         Tag : constant String := Get_Warning_Tag (E);
+         Txt : String_Ptr;
+         Len : Natural;
 
       begin
-         --  For warning, add "warning: " unless msg starts with "info: "
+         --  Postfix warning tag to message if needed
+
+         if Tag /= "" and then Warning_Doc_Switch then
+            Txt := new String'(Text.all & ' ' & Tag);
+         else
+            Txt := Text;
+         end if;
+
+         --  Deal with warning case
 
          if Errors.Table (E).Warn then
-            if Len < 6
-              or else Txt (Txt'First .. Txt'First + 5) /= "info: "
+
+            --  Nothing to do with info messages, "info " already set
+
+            if Txt'Length >= 6
+              and then Txt (Txt'First .. Txt'First + 5) = "info: "
             then
-               --  One more check, if warning is to be treated as error, then
-               --  here is where we deal with that.
+               null;
 
-               if Errors.Table (E).Warn_Err then
-                  Write_Str ("warning(error): ");
-                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-                  Max := Max - 16;
+            --  Warning treated as error
 
-               --  Normal case
+            elsif Errors.Table (E).Warn_Err then
 
-               else
-                  Write_Str ("warning: ");
-                  Max := Max - 9;
-               end if;
+               --  We prefix the tag error: rather than warning: and postfix
+               --  [warning-as-error] at the end.
+
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+               Txt := new String'("error: " & Txt.all & " [warning-as-error]");
+
+            --  Normal case, prefix
+
+            else
+               Txt := new String'("warning: " & Txt.all);
             end if;
 
             --  No prefix needed for style message, "(style)" is there already
@@ -596,12 +600,22 @@ package body Erroutc is
          elsif Errors.Table (E).Style then
             null;
 
-            --  All other cases, add "error: "
+            --  All other cases, add "error: " if unique error tag set
 
          elsif Opt.Unique_Error_Tag then
-            Write_Str ("error: ");
-            Max := Max - 7;
+            Txt := new String'("error: " & Txt.all);
          end if;
+
+         --  Set error message line length and length of message
+
+         if Error_Msg_Line_Length = 0 then
+            Length := Nat'Last;
+         else
+            Length := Error_Msg_Line_Length;
+         end if;
+
+         Max := Integer (Length - Column + 1);
+         Len := Txt'Length;
 
          --  Here we have to split the message up into multiple lines
 

@@ -165,16 +165,14 @@ CR(".cfi_def_cfa " S(CFA_REG) ", 0")
 /* Register location blocks
    ------------------------
    Rules to find registers of interest from the CFA. This should comprise
-   all the non-volatile registers relevant to the interrupted context.
-
-   ??? Note that r0 was excluded for consistency with the PPC version of
-   this file, not sure if that's right.  */
+   all the non-volatile registers relevant to the interrupted context.  */
 
 #define COMMON_CFI(REG) \
   ".cfi_offset " S(REGNO_##REG) "," S(REG_SET_##REG)
 
 #define CFI_COMMON_REGS \
 CR("# CFI for common registers\n") \
+TCR(COMMON_CFI(G_REG_OFFSET(0)))  \
 TCR(COMMON_CFI(G_REG_OFFSET(1)))  \
 TCR(COMMON_CFI(G_REG_OFFSET(2)))  \
 TCR(COMMON_CFI(G_REG_OFFSET(3)))  \

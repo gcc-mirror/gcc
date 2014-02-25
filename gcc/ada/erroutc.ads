@@ -200,8 +200,8 @@ package Erroutc is
       --  as a result of a match with a Warning_As_Error pragma.
 
       Warn_Chr : Character;
-      --  Warning character, valid only if Warn is True
-      --    ' '      -- ? appeared on its own in message
+      --  Warning character (note: set even if Warning_Doc_Switch is False)
+      --    ' '      -- ? appeared on its own in message or no ? in message
       --    '?'      -- ?? appeared in message
       --    'x'      -- ?x? appeared in message
       --    'X'      -- ?x? appeared in message (X is upper case of x)
