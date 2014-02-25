@@ -152,7 +152,7 @@ begin
    --  Line for -gnatC switch
 
    Write_Switch_Char ("C");
-   Write_Line ("Generate CodePeer information (no code generation)");
+   Write_Line ("Generate CodePeer intermediate format (no code generation)");
 
    --  Line for -gnatd switch
 
@@ -177,6 +177,11 @@ begin
 
    Write_Switch_Char ("ec=?");
    Write_Line ("Specify configuration pragmas file, e.g. -gnatec=/x/f.adc");
+
+   --  Line for -gnateC switch
+
+   Write_Switch_Char ("eC");
+   Write_Line ("Generate CodePeer messages (ignored without -gnatcC)");
 
    --  Line for -gnated switch
 

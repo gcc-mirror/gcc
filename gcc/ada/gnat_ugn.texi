@@ -3738,7 +3738,7 @@ be called to complete determination of representation information.
 
 @item -gnatC
 @cindex @option{-gnatC} (@command{gcc})
-Generate CodePeer information (no code generation attempted).
+Generate CodePeer intermediate format (no code generation attempted).
 This switch will generate an intermediate representation suitable for
 use by CodePeer (@file{.scil} files). This switch is not compatible with
 code generation (it will, among other things, disable some switches such
@@ -3777,6 +3777,12 @@ Specify a configuration pragma file
 (the equal sign is optional)
 @end ifclear
 (@pxref{The Configuration Pragmas Files}).
+
+@item -gnateC
+@cindex @option{-gnateC} (@command{gcc})
+Generate CodePeer messages in a compiler-like format. This switch is only
+effective if @option{-gnatcC} is also specified and requires an installation
+of CodePeer.
 
 @item ^-gnated^/DISABLE_ATOMIC_SYNCHRONIZATION^
 @cindex @option{-gnated} (@command{gcc})
