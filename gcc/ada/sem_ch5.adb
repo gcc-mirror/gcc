@@ -134,6 +134,7 @@ package body Sem_Ch5 is
                if Ekind (Ent) = E_In_Parameter then
                   Error_Msg_N
                     ("assignment to IN mode parameter not allowed", N);
+                  return;
 
                --  Renamings of protected private components are turned into
                --  constants when compiling a protected function. In the case
@@ -151,21 +152,23 @@ package body Sem_Ch5 is
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
+                  return;
 
                elsif Ekind (Ent) = E_Loop_Parameter then
-                  Error_Msg_N
-                    ("assignment to loop parameter not allowed", N);
-
-               else
-                  Error_Msg_N
-                    ("left hand side of assignment must be a variable", N);
+                  Error_Msg_N ("assignment to loop parameter not allowed", N);
+                  return;
                end if;
             end;
 
-         --  For indexed components or selected components, test prefix
+         --  For indexed components, test prefix if it is in array. We do not
+         --  want to recurse for cases where the prefix is a pointer, since we
+         --  may get a message confusing the pointer and what it references.
 
-         elsif Nkind (N) = N_Indexed_Component then
+         elsif Nkind (N) = N_Indexed_Component
+           and then Is_Array_Type (Etype (Prefix (N)))
+         then
             Diagnose_Non_Variable_Lhs (Prefix (N));
+            return;
 
          --  Another special case for assignment to discriminant
 
@@ -173,17 +176,21 @@ package body Sem_Ch5 is
             if Present (Entity (Selector_Name (N)))
               and then Ekind (Entity (Selector_Name (N))) = E_Discriminant
             then
-               Error_Msg_N
-                 ("assignment to discriminant not allowed", N);
-            else
+               Error_Msg_N ("assignment to discriminant not allowed", N);
+               return;
+
+            --  For selection from record, diagnose prefix, but note that again
+            --  we only do this for a record, not e.g. for a pointer.
+
+            elsif Is_Record_Type (Etype (Prefix (N))) then
                Diagnose_Non_Variable_Lhs (Prefix (N));
+               return;
             end if;
-
-         else
-            --  If we fall through, we have no special message to issue
-
-            Error_Msg_N ("left hand side of assignment must be a variable", N);
          end if;
+
+         --  If we fall through, we have no special message to issue
+
+         Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
 
       --------------
