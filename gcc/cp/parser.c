@@ -17042,7 +17042,6 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  if (!first || dcl_kind != CP_PARSER_DECLARATOR_NAMED)
 	    {
 	      tree params;
-	      unsigned saved_num_template_parameter_lists;
 	      bool is_declarator = false;
 
 	      /* In a member-declarator, the only valid interpretation
@@ -17064,21 +17063,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  parser->in_declarator_p = true;
 		}
 
-	      /* Inside the function parameter list, surrounding
-		 template-parameter-lists do not apply.  */
-	      saved_num_template_parameter_lists
-		= parser->num_template_parameter_lists;
-	      parser->num_template_parameter_lists = 0;
-
 	      begin_scope (sk_function_parms, NULL_TREE);
 
 	      /* Parse the parameter-declaration-clause.  */
 	      params = cp_parser_parameter_declaration_clause (parser);
-
-	      /* Restore saved template parameter lists accounting for implicit
-		 template parameters.  */
-	      parser->num_template_parameter_lists
-		+= saved_num_template_parameter_lists;
 
 	      /* Consume the `)'.  */
 	      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
@@ -18128,6 +18116,26 @@ cp_parser_type_specifier_seq (cp_parser* parser,
     }
 }
 
+/* Return whether the function currently being declared has an associated
+   template parameter list.  */
+
+static bool
+function_being_declared_is_template_p (cp_parser* parser)
+{
+  if (!current_template_parms)
+    return false;
+
+  if (parser->implicit_template_scope)
+    return true;
+
+  if (at_class_scope_p ()
+      && TYPE_BEING_DEFINED (current_class_type))
+    return parser->num_template_parameter_lists != 0;
+
+  return ((int) parser->num_template_parameter_lists > template_class_depth
+	  (current_class_type));
+}
+
 /* Parse a parameter-declaration-clause.
 
    parameter-declaration-clause:
@@ -18266,7 +18274,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       cp_parameter_declarator *parameter;
       tree decl = error_mark_node;
       bool parenthesized_p = false;
-      int template_parm_idx = (parser->num_template_parameter_lists?
+      int template_parm_idx = (function_being_declared_is_template_p (parser)?
 			       TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS
 						(current_template_parms)) : 0);
 
