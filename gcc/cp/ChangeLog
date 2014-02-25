@@ -1,5 +1,9 @@
 2014-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR lto/53808
+	* class.c (clone_function_decl): Call note_vague_linkage_fn for
+	defaulted virtual dtor.
+
 	DR 1286
 	PR c++/60328
 	* pt.c (get_underlying_template): Fix equivalence calculation.
