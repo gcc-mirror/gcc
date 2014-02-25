@@ -1,3 +1,8 @@
+2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Don't valididate when
+	adjusting offsetable addresses.
+
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.md: Correct ashrsi_reg / lshrsi_reg names
