@@ -1,3 +1,8 @@
+2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Don't valididate when
+	adjusting offsetable addresses.
+
 2014-02-24  Guozhi Wei  <carrot@google.com>
 
 	* sparseset.h (sparseset_pop): Fix the wrong index.
