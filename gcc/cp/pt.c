@@ -5185,9 +5185,12 @@ get_underlying_template (tree tmpl)
 	  tree sub = TYPE_TI_TEMPLATE (result);
 	  if (PRIMARY_TEMPLATE_P (sub)
 	      && (num_innermost_template_parms (tmpl)
-		  == num_innermost_template_parms (sub))
-	      && same_type_p (result, TREE_TYPE (sub)))
+		  == num_innermost_template_parms (sub)))
 	    {
+	      tree alias_args = INNERMOST_TEMPLATE_ARGS
+		(template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl)));
+	      if (!comp_template_args (TYPE_TI_ARGS (result), alias_args))
+		break;
 	      /* The alias type is equivalent to the pattern of the
 		 underlying template, so strip the alias.  */
 	      tmpl = sub;
