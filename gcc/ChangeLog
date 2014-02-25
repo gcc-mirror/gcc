@@ -1,3 +1,9 @@
+2014-02-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/55426
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Allow 128 to 64-bit
+	conversions.
+
 2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PREFETCHWT1_SET),
