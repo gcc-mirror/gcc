@@ -1,6 +1,7 @@
 ! { dg-do run { xfail spu-*-* ia64-*-linux* } }
 ! { dg-options "-fno-range-check -ffree-line-length-none -O0" }
 ! { dg-add-options ieee }
+! { dg-skip-if "PR libfortran/59313" { sparc*-*-solaris2.9* } }
 !
 ! Check that simplification functions and runtime library agree on ERF,
 ! ERFC and ERFC_SCALED, for quadruple-precision.
