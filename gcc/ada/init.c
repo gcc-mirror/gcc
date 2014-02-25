@@ -452,7 +452,8 @@ void fake_linux_sigemptyset (sigset_t *set)
 
 #endif
 
-#if defined (i386) || defined (__x86_64__) || defined (__ia64__)
+#if defined (i386) || defined (__x86_64__) || defined (__ia64__) \
+    || defined (__ARMEL__)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
@@ -496,6 +497,9 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
   mcontext->sc_ip++;
+#elif defined (__ARMEL__)
+  /* ARM Bump has to be an even number because of odd/even architecture.  */
+  mcontext->arm_pc+=2;
 #endif
 }
 

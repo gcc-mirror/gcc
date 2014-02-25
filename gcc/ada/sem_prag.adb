@@ -10554,8 +10554,8 @@ package body Sem_Prag is
 
                      else
                         Error_Msg_N
-                          ("simple option not allowed in state declaration "
-                           & "(SPARK RM 7.1.4(3))", Opt);
+                          ("simple option not allowed in state declaration",
+                           Opt);
                      end if;
 
                      Next (Opt);

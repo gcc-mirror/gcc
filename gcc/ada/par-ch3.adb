@@ -4631,6 +4631,7 @@ package body Ch3 is
 
             if Nkind_In
               (Decl, N_Subprogram_Body, N_Package_Body, N_Task_Body)
+                and then No (Handled_Statement_Sequence (Decl))
             then
                Set_Handled_Statement_Sequence (Decl,
                  Make_Handled_Sequence_Of_Statements (Sloc (Decl),
