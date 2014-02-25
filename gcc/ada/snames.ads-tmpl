@@ -1232,6 +1232,7 @@ package Snames is
    Name_Archive_Builder_Append_Option      : constant Name_Id := N + $;
    Name_Archive_Indexer                    : constant Name_Id := N + $;
    Name_Archive_Suffix                     : constant Name_Id := N + $;
+   Name_Artifacts                          : constant Name_Id := N + $;
    Name_Artifacts_In_Exec_Dir              : constant Name_Id := N + $; -- GB
    Name_Artifacts_In_Object_Dir            : constant Name_Id := N + $; -- GB
    Name_Binder                             : constant Name_Id := N + $;

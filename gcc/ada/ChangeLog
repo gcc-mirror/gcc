@@ -1,5 +1,15 @@
 2014-02-25  Yannick Moy  <moy@adacore.com>
 
+	* sem_prag.adb (Analyze_Pragma/Pragma_Validity_Checks): Ignore pragma
+	Validity_Checks in GNATprove and CodePeer modes.
+
+2014-02-25  Pascal Obry  <obry@adacore.com>
+
+	* prj-attr.adb, projects.texi, snames.ads-tmpl: Add package Install's
+	Artifacts attribute.
+
+2014-02-25  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb: Minor reformatting to get consistent messages.
 
 2014-02-25  Robert Dewar  <dewar@adacore.com>
