@@ -642,9 +642,6 @@ package body Errout is
 
    procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id) is
    begin
-      --  Error message below needs rewording (remember comma in -gnatj
-      --  mode) ???
-
       Error_Msg_NE
         ("first formal of & must be of mode `OUT`, `IN OUT` or " &
          "access-to-variable", Typ, Subp);
@@ -2318,6 +2315,12 @@ package body Errout is
          Set_Msg_Blank;
          Set_Msg_Str ("procedure name");
 
+      elsif Nkind (Error_Msg_Node_1) in N_Entity
+        and then Ekind (Error_Msg_Node_1) = E_Anonymous_Access_Subprogram_Type
+      then
+         Set_Msg_Blank;
+         Set_Msg_Str ("access to subprogram");
+
       else
          Set_Msg_Blank_Conditional;
 
@@ -2334,7 +2337,7 @@ package body Errout is
            or else K = N_Operator_Symbol
            or else K = N_Defining_Operator_Symbol
            or else ((K = N_Identifier or else K = N_Defining_Identifier)
-                       and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
+                      and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
          then
             Set_Msg_Node (Error_Msg_Node_1);
 
@@ -2456,6 +2459,7 @@ package body Errout is
          Get_Unqualified_Decoded_Name_String
            (Unit_Name (Get_Source_Unit (Ent)));
          Name_Len := Name_Len - 2;
+         Set_Msg_Blank_Conditional;
          Set_Msg_Quote;
          Set_Casing (Mixed_Case);
          Set_Msg_Name_Buffer;
@@ -2474,11 +2478,11 @@ package body Errout is
          Set_Msg_Node (Ent);
          Add_Class;
 
-         --  If Ent is an anonymous subprogram type, there is no name to print,
-         --  so remove enclosing quotes.
+         --  If we did not print a name (e.g. in the case of an anonymous
+         --  subprogram type), there is no name to print, so remove quotes.
 
-         if Buffer_Ends_With ("""") then
-            Buffer_Remove ("""");
+         if Buffer_Ends_With ('"') then
+            Buffer_Remove ('"');
          else
             Set_Msg_Quote;
          end if;
@@ -2607,10 +2611,13 @@ package body Errout is
          end if;
 
          --  If the type is the designated type of an access_to_subprogram,
-         --  there is no name to provide in the call.
+         --  then there is no name to provide in the call.
 
          if Ekind (Ent) = E_Subprogram_Type then
             return;
+
+         --  Otherwise, we will be able to find some kind of name to output
+
          else
             Unwind_Internal_Type (Ent);
             Nam := Chars (Ent);
@@ -3053,34 +3060,14 @@ package body Errout is
                   if Buffer_Ends_With ("type ") then
                      Buffer_Remove ("type ");
                   end if;
+               end if;
 
-                  if Is_Itype (Ent) then
-                     declare
-                        Assoc : constant Node_Id :=
-                          Associated_Node_For_Itype (Ent);
-
-                     begin
-                        if Nkind (Assoc) in N_Subprogram_Specification then
-
-                           --  Anonymous access to subprogram in a signature.
-                           --  Indicate the enclosing subprogram.
-
-                           Ent :=
-                             Defining_Unit_Name
-                               (Associated_Node_For_Itype (Ent));
-                           Set_Msg_Str
-                             ("access to subprogram declared in profile of ");
-
-                        else
-                           Set_Msg_Str ("access to subprogram with profile ");
-                        end if;
-                     end;
-                  end if;
-
-               elsif Ekind (Ent) = E_Function then
+               if Ekind (Ent) = E_Function then
                   Set_Msg_Str ("access to function ");
-               else
+               elsif Ekind (Ent) = E_Procedure then
                   Set_Msg_Str ("access to procedure ");
+               else
+                  Set_Msg_Str ("access to subprogram");
                end if;
 
                exit Find;

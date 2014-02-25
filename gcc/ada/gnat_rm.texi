@@ -13865,6 +13865,7 @@ source file location.
 * Enumeration Clauses::
 * Address Clauses::
 * Effect of Convention on Representation::
+* Conventions and Anonymous Access Types::
 * Determining the Representations chosen by GNAT::
 @end menu
 
@@ -15634,6 +15635,78 @@ pointers 32-bits, which provides an easier path for migration of 32-bit legacy
 code. size clause specifying 64-bits must be used to obtain a 64-bit pointer.
 
 @end itemize
+
+@node Conventions and Anonymous Access Types
+@section Conventions and Anonymous Access Types
+@cindex Anonymous access types
+@cindex Convention for anonymous access types
+
+The RM is not entirely clear on convention handling in a number of cases,
+and in particular, it is not clear on the convention to be given to
+anonymous access types in general, and in particular what is to be
+done for the case of anonymous access-to-subprogram.
+
+In GNAT, we decide that if an explicit Convention is applied
+to an object or component, and its type is such an anonymous type,
+then the convention will apply to this anonymous type as well. This
+seems to make sense since it is anomolous in any case to have a
+different convention for an object and its type, and there is clearly
+no way to explicitly specify a convention for an anonymous type, since
+it doesn't have a name to specify!
+
+Furthermore, we decide that if a convention is applied to a record type,
+then this convention is inherited by any of its components that are of an
+anonymous access type which do not have an explicitly specified convention.
+
+The following program shows these conventions in action:
+
+@smallexample @c ada
+package ConvComp is
+   type Foo is range 1 .. 10;
+   type T1 is record
+      A : access function (X : Foo) return Integer;
+      B : Integer;
+   end record;
+   pragma Convention (C, T1);
+
+   type T2 is record
+      A : access function (X : Foo) return Integer;
+      pragma Convention  (C, A);
+      B : Integer;
+   end record;
+   pragma Convention (COBOL, T2);
+
+   type T3 is record
+      A : access function (X : Foo) return Integer;
+      pragma Convention  (COBOL, A);
+      B : Integer;
+   end record;
+   pragma Convention (C, T3);
+
+   type T4 is record
+      A : access function (X : Foo) return Integer;
+      B : Integer;
+   end record;
+   pragma Convention (COBOL, T4);
+
+   function F (X : Foo) return Integer;
+   pragma Convention (C, F);
+
+   function F (X : Foo) return Integer is (13);
+
+   TV1 : T1 := (F'Access, 12);  -- OK
+   TV2 : T2 := (F'Access, 13);  -- OK
+
+   TV3 : T3 := (F'Access, 13);  -- ERROR
+                |
+>>> subprogram "F" has wrong convention
+>>> does not match access to subprogram declared at line 17
+     38.    TV4 : T4 := (F'Access, 13);  -- ERROR
+                |
+>>> subprogram "F" has wrong convention
+>>> does not match access to subprogram declared at line 24
+     39. end ConvComp;
+@end smallexample
 
 @node Determining the Representations chosen by GNAT
 @section Determining the Representations chosen by GNAT

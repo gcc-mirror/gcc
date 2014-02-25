@@ -34,6 +34,7 @@
  **********************************************************/
 
 #include "sigtramp.h"
+/* See sigtramp.h for a general explanation of functionality.  */
 
 #include <vxWorks.h>
 #include <arch/../regs.h>
