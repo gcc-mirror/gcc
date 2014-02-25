@@ -1,3 +1,24 @@
+2014-02-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb, sem_ch5.adb, sem_ch9.adb, sem_prag.adb, sem_attr.adb,
+	sem_ch6.adb: Remove useless references to SPARK RM in error messages.
+
+2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Appears_In_Check): New routine.
+	(Resolve_Entity_Name): Remove local variables Prev and
+	Usage_OK. Par is now a constant. Remove the parent chain traversal
+	as the placement of a volatile object with enabled property
+	Async_Writers and/or Effective_Reads must appear immediately
+	within a legal construct.
+
+2014-02-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Selected_Range_Checks):
+	Alphabetize local constants and variables. Add comments.
+	Always insert a range check that requires runtime evaluation into
+	the tree.
+
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb, sem_ch6.adb, par-ch3.adb: Minor reformatting.

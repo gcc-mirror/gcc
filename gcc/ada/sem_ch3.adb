@@ -2992,14 +2992,13 @@ package body Sem_Ch3 is
          --  A constant cannot be volatile. This check is only relevant when
          --  SPARK_Mode is on as it is not standard Ada legality rule. Do not
          --  flag internally-generated constants that map generic formals to
-         --  actuals in instantiations.
+         --  actuals in instantiations (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
            and then Is_SPARK_Volatile_Object (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
-            Error_Msg_N
-              ("constant cannot be volatile (SPARK 'R'M 7.1.3(6))", Obj_Id);
+            Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
@@ -3010,13 +3009,14 @@ package body Sem_Ch3 is
          if SPARK_Mode = On then
 
             --  A non-volatile object cannot have volatile components
+            --  (SPARK RM 7.1.3(7)).
 
             if not Is_SPARK_Volatile_Object (Obj_Id)
               and then Has_Volatile_Component (Etype (Obj_Id))
             then
                Error_Msg_N
-                 ("non-volatile variable & cannot have volatile components "
-                  & "(SPARK 'R'M 7.1.3(7))", Obj_Id);
+                 ("non-volatile variable & cannot have volatile components",
+                  Obj_Id);
 
             --  The declaration of a volatile object must appear at the library
             --  level.
@@ -18042,13 +18042,13 @@ package body Sem_Ch3 is
          end if;
 
          --  A discriminant cannot be volatile. This check is only relevant
-         --  when SPARK_Mode is on as it is not standard Ada legality rule.
+         --  when SPARK_Mode is on as it is not standard Ada legality rule
+         --  (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
            and then Is_SPARK_Volatile_Object (Defining_Identifier (Discr))
          then
-            Error_Msg_N
-              ("discriminant cannot be volatile (SPARK 'R'M 7.1.3(6))", Discr);
+            Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;
 
          Next (Discr);

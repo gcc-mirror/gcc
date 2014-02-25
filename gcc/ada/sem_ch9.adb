@@ -3089,8 +3089,8 @@ package body Sem_Ch9 is
                           (Entity (Name (Trigger)))
          then
             Error_Msg_N
-              ("triggering statement must be procedure_or_entry_call " &
-               "('R'M 9.7.2) or delay statement", Trigger);
+              ("triggering statement must be procedure or entry call " &
+               "or delay statement", Trigger);
          end if;
       end if;
 

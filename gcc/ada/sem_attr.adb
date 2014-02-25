@@ -4480,11 +4480,12 @@ package body Sem_Attr is
 
             --  Attribute 'Old appears in the condition of a contract case.
             --  Emit an error since this is not a postcondition-like context.
+            --  (SPARK RM 6.1.3(2))
 
             else
                Error_Attr
-                 ("attribute % cannot appear in the condition of a contract "
-                  & "case (SPARK 'R'M 6.1.3(2))", P);
+                 ("attribute % cannot appear in the condition "
+                  & "of a contract case", P);
             end if;
          end Check_Use_In_Contract_Cases;
 
