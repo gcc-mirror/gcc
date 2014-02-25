@@ -1,5 +1,9 @@
 2014-02-25  Jason Merrill  <jason@redhat.com>
 
+	DR 1571
+	* call.c (reference_binding): Recurse on user-defined conversion.
+	(convert_like_real) [ck_ref_bind]: Explain cv-qual mismatch.
+
 	* call.c (print_conversion_rejection): Handle n_arg of -2.
 	(build_user_type_conversion_1): Pass it.
 
