@@ -328,7 +328,7 @@ package Lib is
 
    --    Is_Compiler_Unit
    --      A Boolean flag, initially set False by default, set to True if a
-   --      pragma Compiler_Unit appears in the unit.
+   --      pragma Compiler_Unit_Warning appears in the unit.
 
    --    Ident_String
    --      N_String_Literal node from a valid pragma Ident that applies to

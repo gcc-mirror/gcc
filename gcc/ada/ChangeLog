@@ -1,5 +1,28 @@
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
+	* lib.ads, s-bitops.adb, s-bitops.ads, s-conca5.adb, gnat_rm.texi,
+	s-conca5.ads, s-conca7.adb, s-conca7.ads, s-crc32.adb, s-crc32.ads,
+	s-conca9.adb, s-conca9.ads, g-dyntab.adb, s-crtl.ads, g-dyntab.ads,
+	s-excdeb.adb, s-addope.adb, s-addope.ads, s-carun8.adb, s-carun8.ads,
+	g-htable.adb, g-htable.ads, g-hesora.adb, g-hesora.ads, s-conca2.adb,
+	s-conca2.ads, a-comlin.adb, a-chlat1.ads, a-comlin.ads, errout.ads,
+	a-except.adb, s-conca4.adb, a-except.ads, s-conca4.ads, s-conca6.adb,
+	s-conca6.ads, g-spchge.adb, g-spchge.ads, g-u3spch.adb, g-u3spch.ads,
+	a-strhas.ads, restrict.adb, aspects.adb, aspects.ads, s-conca8.adb,
+	s-conca8.ads, back_end.adb, par-prag.adb, g-byorma.adb, g-byorma.ads,
+	a-elchha.adb, a-elchha.ads, g-speche.adb, g-speche.ads, s-casuti.adb,
+	s-assert.adb, s-casuti.ads, s-assert.ads, a-clrefi.adb, a-clrefi.ads,
+	s-conca3.adb, s-conca3.ads, a-ioexce.ads: Implement pragma
+	Compiler_Unit_Warning, change Compiler_Unit everywhere to
+	Compiler_Unit_Warning.
+
+2014-02-25  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Do not normalize
+	in ASIS mode aggregates that are used as aspect definitions.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch7.adb, sem_util.adb, sem_util.ads, exp_ch6.adb: Minor
 	reformatting.
 
