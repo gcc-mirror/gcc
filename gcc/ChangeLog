@@ -1,4 +1,11 @@
 2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
+	
+	* sel-sched.c (calculate_new_fences): New parameter ptime.
+	Calculate it as a maximum over all fence cycles.
+	(sel_sched_region_2): Adjust the call to calculate_new_fences.
+	Print the final schedule timing when sched_verbose.
+
+2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60292
 	* sel-sched.c (fill_vec_av_set): Do not reset target availability
