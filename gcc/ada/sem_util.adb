@@ -11989,8 +11989,6 @@ package body Sem_Util is
       Last_Assignment_Only : Boolean := False)
    is
    begin
-      --  ??? do we have to worry about clearing cached checks?
-
       if Is_Assignable (Ent) then
          Set_Last_Assignment (Ent, Empty);
       end if;

@@ -13751,6 +13751,7 @@ source file location.
 * Pragma Pack for Arrays::
 * Pragma Pack for Records::
 * Record Representation Clauses::
+* Handling of Records with Holes::
 * Enumeration Clauses::
 * Address Clauses::
 * Effect of Convention on Representation::
@@ -15092,6 +15093,83 @@ For non-primitive types, including packed arrays with a size greater than
 type, in particular, always starting on a byte boundary, and the length
 must be a multiple of the storage unit.
 
+@node Handling of Records with Holes
+@section Handling of Records with Holes
+@cindex Handling of Records with Holes
+
+As a result of alignment considerations, records may contain "holes"
+or gaps
+which do not correspond to the data bits of any of the components.
+Record representation clauses can also result in holes in records.
+
+GNAT does not attempt to clear these holes, so in record objects,
+they should be considered to hold undefined rubbish. The generated
+equality routine just tests components so does not access these
+undefined bits, and assignment and copy operations may or may not
+preserve the contents of these holes (for assignments, the holes
+in the target will in practice contain either the bits that are
+present in the holes in the source, or the bits that were present
+in the target before the assignment).
+
+If it is necessary to ensure that holes in records have all zero
+bits, then record objects for which this initialization is desired
+should be explicitly set to all zero values using Unchecked_Conversion
+or address overlays. For example
+
+@smallexample @c ada
+type HRec is record
+   C : Character;
+   I : Integer;
+end record;
+@end smallexample
+
+@noindent
+On typical machines, integers need to be aligned on a four-byte
+boundary, resulting in three bytes of undefined rubbish following
+the 8-bit field for C. To ensure that the hole in a variable of
+type HRec is set to all zero bits,
+you could for example do:
+
+@smallexample @c ada
+type Base is record
+   Dummy1, Dummy2 : Integer := 0;
+end record;
+
+BaseVar : Base;
+RealVar : Hrec;
+for RealVar'Address use BaseVar'Address;
+@end smallexample
+
+@noindent
+Now the 8-bytes of the value of RealVar start out containing all zero
+bits. A safer approach is to just define dummy fields, avoiding the
+holes, as in:
+
+@smallexample @c ada
+type HRec is record
+   C      : Character;
+   Dummy1 : Short_Short_Integer := 0;
+   Dummy2 : Short_Short_Integer := 0;
+   Dummy3 : Short_Short_Integer := 0;
+   I      : Integer;
+end record;
+@end smallexample
+
+@noindent
+And to make absolutely sure that the intent of this is followed, you
+can use representation clauses:
+
+@smallexample @c ada
+for Hrec use record
+   C      at 0 range 0 .. 7;
+   Dummy1 at 1 range 0 .. 7;
+   Dummy2 at 2 range 0 .. 7;
+   Dummy3 at 3 range 0 .. 7;
+   I      at 4 range 0 .. 31;
+end record;
+for Hrec'Size use 64;
+@end smallexample
+
 @node Enumeration Clauses
 @section Enumeration Clauses
 
@@ -15619,7 +15697,11 @@ together with a brief description of the functionality that is provided.
 
 For completeness, references are included to other predefined library
 routines defined in other sections of the Ada Reference Manual (these are
-cross-indexed from Annex A).
+cross-indexed from Annex A). For further details see the relevant
+package declarations in the run-time library. In particular, a few units
+are not implemented, as marked by the presence of pragma Unimplemented_Unit,
+and in this case the package declaration contains comments explaining why
+the unit is not implemented.
 
 @table @code
 @item Ada (A.2)
@@ -15627,12 +15709,34 @@ This is a parent package for all the standard library packages.  It is
 usually included implicitly in your program, and itself contains no
 useful data or routines.
 
+@item Ada.Assertions (11.4.2)
+@code{Assertions} provides the @code{Assert} subprograms, and also
+the declaration of the @code{Assertion_Error} exception.
+
+@item Ada.Asynchronous_Task_Control (D.11)
+@code{Asynchronous_Task_Control} provides low level facilities for task
+synchronization. It is typically not implemented. See package spec for details.
+
 @item Ada.Calendar (9.6)
 @code{Calendar} provides time of day access, and routines for
 manipulating times and durations.
 
+@item Ada.Calendar.Arithmetic (9.6.1)
+This package provides additional arithmetic
+operations for @code{Calendar}.
+
+@item Ada.Calendar.Formatting (9.6.1)
+This package provides formatting operations for @code{Calendar}.
+
+@item Ada.Calendar.Time_Zones (9.6.1)
+This package provides additional @code{Calendar} facilities
+for handling time zones.
+
 @item Ada.Characters (A.3.1)
 This is a dummy parent package that contains no useful entities
+
+@item Ada.Characters.Conversions (A.3.2)
+This package provides character conversion functions.
 
 @item Ada.Characters.Handling (A.3.2)
 This package provides some basic character handling capabilities,
@@ -15654,6 +15758,71 @@ of the current program (analogous to the use of @code{argc} and @code{argv}
 in C), and also allows the exit status for the program to be set in a
 system-independent manner.
 
+@item Ada.Complex_Text_IO (G.1.3)
+This package provides text input and output of complex numbers.
+
+@item Ada.Containers (A.18.1)
+A top level package providing a few basic definitions used by all the
+following specific child packages that provide specific kinds of
+containers.
+
+@item Ada.Containers.Bounded_Priority_Queues (A.18.31)
+
+@item Ada.Containers.Bounded_Synchronized_Queues (A.18.29)
+
+@item Ada.Containers.Doubly_Linked_Lists (A.18.3)
+
+@item Ada.Containers.Generic_Array_Sort (A.18.26)
+
+@item Ada.Containers.Generic_Constrained_Array_Sort (A.18.26)
+
+@item Ada.Containers.Generic_Sort (A.18.26)
+
+@item Ada.Containers.Hashed_Maps (A.18.5)
+
+@item Ada.Containers.Hashed_Sets (A.18.8)
+
+@item Ada.Containers.Indefinite_Doubly_Linked_Lists (A.18.12)
+
+@item Ada.Containers.Indefinite_Hashed_Maps (A.18.13)
+
+@item Ada.Containers.Indefinite_Hashed_Sets (A.18.15)
+
+@item Ada.Containers.Indefinite_Holders (A.18.18)
+
+@item Ada.Containers.Indefinite_Multiway_Trees (A.18.17)
+
+@item Ada.Containers.Indefinite_Ordered_Maps (A.18.14)
+
+@item Ada.Containers.Indefinite_Ordered_Sets (A.18.16)
+
+@item Ada.Containers.Indefinite_Vectors (A.18.11)
+
+@item Ada.Containers.Multiway_Trees (A.18.10)
+
+@item Ada.Containers.Ordered_Maps (A.18.6)
+
+@item Ada.Containers.Ordered_Sets (A.18.9)
+
+@item Ada.Containers.Synchronized_Queue_Interfaces (A.18.27)
+
+@item Ada.Containers.Unbounded_Priority_Queues (A.18.30)
+
+@item Ada.Containers.Unbounded_Synchronized_Queues (A.18.28)
+
+@item Ada.Containers.Vectors (A.18.2)
+
+@item Ada.Directories (A.16)
+This package provides operations on directories.
+
+@item Ada.Directories.Hierarchical_File_Names (A.16.1)
+This package provides additional directory operations handling
+hiearchical file names.
+
+@item Ada.Directories.Information (A.16)
+This is an implementation defined package for additional directory
+operations, which is not implemented in GNAT.
+
 @item Ada.Decimal (F.2)
 This package provides constants describing the range of decimal numbers
 implemented, and also a decimal divide routine (analogous to the COBOL
@@ -15664,19 +15833,61 @@ This package provides input-output using a model of a set of records of
 fixed-length, containing an arbitrary definite Ada type, indexed by an
 integer record number.
 
+@item Ada.Dispatching (D.2.1)
+A parent package containing definitions for task dispatching operations.
+
+@item Ada.Dispatching.EDF (D.2.6)
+Not implemented in GNAT.
+
+@item Ada.Dispatching.Non_Preemptive (D.2.4)
+Not implemented in GNAT.
+
+@item Ada.Dispatching.Round_Robin (D.2.5)
+Not implemented in GNAT.
+
 @item Ada.Dynamic_Priorities (D.5)
 This package allows the priorities of a task to be adjusted dynamically
 as the task is running.
+
+@item Ada.Environment_Variables (A.17)
+This package provides facilities for accessing environment variables.
 
 @item Ada.Exceptions (11.4.1)
 This package provides additional information on exceptions, and also
 contains facilities for treating exceptions as data objects, and raising
 exceptions with associated messages.
 
+@item Ada.Execution_Time (D.14)
+Not implemented in GNAT.
+
+@item Ada.Execution_Time.Group_Budgets (D.14.2)
+Not implemented in GNAT.
+
+@item Ada.Execution_Time.Timers (D.14.1)'
+Not implemented in GNAT.
+
 @item Ada.Finalization (7.6)
 This package contains the declarations and subprograms to support the
 use of controlled types, providing for automatic initialization and
-finalization (analogous to the constructors and destructors of C++)
+finalization (analogous to the constructors and destructors of C++).
+
+@item Ada.Float_Text_IO (A.10.9)
+A library level instantiation of Text_IO.Float_IO for type Float.
+
+@item Ada.Float_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Text_IO.Float_IO for type Float.
+
+@item Ada.Float_Wide_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Wide_Text_IO.Float_IO for type Float.
+
+@item Ada.Integer_Text_IO (A.10.9)
+A library level instantiation of Text_IO.Integer_IO for type Integer.
+
+@item Ada.Integer_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Text_IO.Integer_IO for type Integer.
+
+@item Ada.Integer_Wide_Wide_Text_IO (A.10.9)
+A library level instantiation of Wide_Wide_Text_IO.Integer_IO for type Integer.
 
 @item Ada.Interrupts (C.3.2)
 This package provides facilities for interfacing to interrupts, which
@@ -15691,11 +15902,21 @@ or condition names) that can be handled by GNAT@.
 This package defines the set of exceptions that can be raised by use of
 the standard IO packages.
 
+@item Ada.Iterator_Interfaces (5.5.1)
+This package provides a generic interface to generalized iterators.
+
+@item Ada.Locales (A.19)
+This package provides declarations providing information (Language
+and Country) about the current locale.
+
 @item Ada.Numerics
 This package contains some standard constants and exceptions used
 throughout the numerics packages.  Note that the constants pi and e are
 defined here, and it is better to use these definitions than rolling
 your own.
+
+@item Ada.Numerics.Complex_Arrays (G.3.2)
+Provides operations on arrays of complex numbers.
 
 @item Ada.Numerics.Complex_Elementary_Functions
 Provides the implementation of standard elementary functions (such as
@@ -15762,6 +15983,12 @@ The following predefined instantiations of this package exist
 @code{Ada.Numerics.Long_Elementary_Functions}
 @end table
 
+@item Ada.Numerics.Generic_Real_Arrays (G.3.1)
+Generic operations on arrays of reals
+
+@item Ada.Numerics.Real_Arrays (G.3.1)
+Preinstantiation of Ada.Numerics.Generic_Real_Arrays (Float).
+
 @item Ada.Real_Time (D.8)
 This package provides facilities similar to those of @code{Calendar}, but
 operating with a finer clock suitable for real time control. Note that
@@ -15769,6 +15996,9 @@ annex D requires that there be no backward clock jumps, and GNAT generally
 guarantees this behavior, but of course if the external clock on which
 the GNAT runtime depends is deliberately reset by some external event,
 then such a backward jump may occur.
+
+@item Ada.Real_Time.Timing_Events (D.15)
+Not implemented in GNAT.
 
 @item Ada.Sequential_IO (A.8.1)
 This package provides input-output facilities for sequential files,
@@ -15801,6 +16031,9 @@ This package provides facilities for handling variable length
 strings.  The bounded model requires a maximum length.  It is thus
 somewhat more limited than the unbounded model, but avoids the use of
 dynamic allocation or finalization.
+
+@item Ada.Strings.Bounded.Equal_Case_Insensitive (A.4.10)
+Provides case-insensitive comparisons of bounded strings
 
 @item Ada.Strings.Fixed (A.4.3)
 This package provides facilities for handling fixed length strings.

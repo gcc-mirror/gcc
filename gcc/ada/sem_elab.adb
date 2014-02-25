@@ -2557,7 +2557,7 @@ package body Sem_Elab is
                Error_Msg_Node_2 := Task_Scope;
                Error_Msg_NE
                  ("info: activation of an instance of task type&" &
-                  " requires pragma Elaborate_All on &?l?", N, Ent);
+                  " requires pragma Elaborate_All on &?", N, Ent);
             end if;
 
             Activate_Elaborate_All_Desirable (N, Task_Scope);
