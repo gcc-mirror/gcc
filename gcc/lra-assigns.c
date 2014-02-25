@@ -94,6 +94,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "df.h"
 #include "ira.h"
 #include "sparseset.h"
+#include "params.h"
 #include "lra-int.h"
 
 /* Array containing corresponding values of function
@@ -896,14 +897,16 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap)
 	    }
 	}
       n = 0;
-      EXECUTE_IF_SET_IN_SPARSESET (live_range_reload_inheritance_pseudos,
-				   reload_regno)
-	if ((int) reload_regno != regno
-	    && (ira_reg_classes_intersect_p
-		[rclass][regno_allocno_class_array[reload_regno]])
-	    && live_pseudos_reg_renumber[reload_regno] < 0
-	    && find_hard_regno_for (reload_regno, &cost, -1) < 0)
-	  sorted_reload_pseudos[n++] = reload_regno;
+      if (sparseset_cardinality (live_range_reload_inheritance_pseudos)
+	  <= LRA_MAX_CONSIDERED_RELOAD_PSEUDOS)
+	EXECUTE_IF_SET_IN_SPARSESET (live_range_reload_inheritance_pseudos,
+				     reload_regno)
+	  if ((int) reload_regno != regno
+	      && (ira_reg_classes_intersect_p
+		  [rclass][regno_allocno_class_array[reload_regno]])
+	      && live_pseudos_reg_renumber[reload_regno] < 0
+	      && find_hard_regno_for (reload_regno, &cost, -1) < 0)
+	    sorted_reload_pseudos[n++] = reload_regno;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	{
 	  update_lives (spill_regno, true);
