@@ -6259,6 +6259,7 @@ package body Sem_Attr is
                         --  dimensional array.
 
                         Index_Type := First_Index (P_Type);
+
                         if Present (Next_Index (Index_Type)) then
                            Error_Msg_N
                              ("too few subscripts in array reference", Comp);

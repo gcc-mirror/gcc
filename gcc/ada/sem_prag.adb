@@ -216,6 +216,12 @@ package body Sem_Prag is
    --  _Post, _Invariant, or _Type_Invariant, which are special names used
    --  in identifiers to represent these attribute references.
 
+   procedure Check_SPARK_Aspect_For_ASIS (N : Node_Id);
+   --  In ASIS mode we need to analyze the original expression in the aspect
+   --  specification. For Initializes, Global, and related SPARK aspects, the
+   --  expression has a sui-generis syntax which may be a list, an expression,
+   --  or an aggregate.
+
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
       Constits : Elist_Id;
@@ -2329,6 +2335,7 @@ package body Sem_Prag is
 
    begin
       Set_Analyzed (N);
+      Check_SPARK_Aspect_For_ASIS (N);
 
       --  Verify the syntax of pragma Global when SPARK checks are suppressed.
       --  Semantic analysis is disabled in this mode.
@@ -2797,6 +2804,8 @@ package body Sem_Prag is
 
    begin
       Set_Analyzed (N);
+
+      Check_SPARK_Aspect_For_ASIS (N);
 
       --  Nothing to do when the initialization list is empty
 
@@ -24667,6 +24676,43 @@ package body Sem_Prag is
          end if;
       end if;
    end Check_Missing_Part_Of;
+
+   ---------------------------------
+   -- Check_SPARK_Aspect_For_ASIS --
+   ---------------------------------
+
+   procedure Check_SPARK_Aspect_For_ASIS (N : Node_Id) is
+      Expr : Node_Id;
+
+   begin
+      if ASIS_Mode and then From_Aspect_Specification (N) then
+         Expr := Expression (Corresponding_Aspect (N));
+         if Nkind (Expr) /= N_Aggregate then
+            Preanalyze_And_Resolve (Expr);
+
+         else
+            declare
+               Comps : constant List_Id := Component_Associations (Expr);
+               Exprs : constant List_Id := Expressions (Expr);
+               C     : Node_Id;
+               E     : Node_Id;
+
+            begin
+               E := First (Exprs);
+               while Present (E) loop
+                  Analyze (E);
+                  Next (E);
+               end loop;
+
+               C := First (Comps);
+               while Present (C) loop
+                  Analyze (Expression (C));
+                  Next (C);
+               end loop;
+            end;
+         end if;
+      end if;
+   end Check_SPARK_Aspect_For_ASIS;
 
    -------------------------------------
    -- Check_State_And_Constituent_Use --

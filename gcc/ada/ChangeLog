@@ -1,3 +1,28 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb, sem_ch6.adb, par-ch3.adb: Minor reformatting.
+
+2014-02-25  Bob Duff  <duff@adacore.com>
+
+	* s-tassta.adb (Finalize_Global_Tasks): Limit the number of loop
+	iterations while waiting for independent tasks to terminate;
+	if an independent task does not terminate, we do not want to
+	hang here. In that case, the thread will be terminated when the
+	process exits.
+	* s-taprop-linux.adb (Abort_Task): Fix Assert to allow for ESRCH.
+
+2014-02-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_SPARK_Aspect_For_ASIS): New subprogram,
+	used to perform pre-analysis of the expression for SPARK
+	aspects that have a non-standard syntax, such as GLobal and
+	Initializes. The procedure applies to the original expression
+	in an aspect specification, prior to the analysis of the
+	corresponding pragma, in order to provide semantic information
+	for ASIS navigation purposes.
+	(Analyze_Global_In_Decl_List, Analyze_Initializes_In_Decl_Part):
+	Call new subprogram.
+
 2014-02-25  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb: Remove obsolete reference to SPARK RM in error message.
