@@ -217,6 +217,33 @@ package body Sem_Util is
       Append_Elmt (A, L);
    end Add_Access_Type_To_Process;
 
+   --------------------------
+   -- Add_Block_Identifier --
+   --------------------------
+
+   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+   begin
+      pragma Assert (Nkind (N) = N_Block_Statement);
+
+      --  The block already has a label, return its entity
+
+      if Present (Identifier (N)) then
+         Id := Entity (Identifier (N));
+
+      --  Create a new block label and set its attributes
+
+      else
+         Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Set_Etype  (Id, Standard_Void_Type);
+         Set_Parent (Id, N);
+
+         Set_Identifier (N, New_Occurrence_Of (Id, Loc));
+         Set_Block_Node (Id, Identifier (N));
+      end if;
+   end Add_Block_Identifier;
+
    -----------------------
    -- Add_Contract_Item --
    -----------------------
@@ -5591,6 +5618,40 @@ package body Sem_Util is
 
       raise Program_Error;
    end Find_Corresponding_Discriminant;
+
+   ----------------------------------
+   -- Find_Enclosing_Iterator_Loop --
+   ----------------------------------
+
+   function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id is
+      Constr : Node_Id;
+      S      : Entity_Id;
+
+   begin
+      --  Traverse the scope chain looking for an iterator loop. Such loops are
+      --  usually transformed into blocks, hence the use of Original_Node.
+
+      S := Id;
+      while Present (S) and then S /= Standard_Standard loop
+         if Ekind (S) = E_Loop
+           and then Nkind (Parent (S)) = N_Implicit_Label_Declaration
+         then
+            Constr := Original_Node (Label_Construct (Parent (S)));
+
+            if Nkind (Constr) = N_Loop_Statement
+              and then Present (Iteration_Scheme (Constr))
+              and then Nkind (Iterator_Specification (Iteration_Scheme
+                         (Constr))) = N_Iterator_Specification
+            then
+               return S;
+            end if;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      return Empty;
+   end Find_Enclosing_Iterator_Loop;
 
    ------------------------------------
    -- Find_Loop_In_Conditional_Block --

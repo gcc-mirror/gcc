@@ -2767,20 +2767,46 @@ package body Sem_Ch5 is
       --  Iteration over a container in Ada 2012 involves the creation of a
       --  controlled iterator object. Wrap the loop in a block to ensure the
       --  timely finalization of the iterator and release of container locks.
+      --  The same applies to the use of secondary stack when obtaining an
+      --  iterator.
 
       if Ada_Version >= Ada_2012
         and then Is_Container_Iterator (Iter)
         and then not Is_Wrapped_In_Block (N)
       then
-         Rewrite (N,
-           Make_Block_Statement (Loc,
-             Declarations               => New_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (Relocate_Node (N)))));
+         declare
+            Block_Nod : Node_Id;
+            Block_Id  : Entity_Id;
 
-         Analyze (N);
-         return;
+         begin
+            Block_Nod :=
+              Make_Block_Statement (Loc,
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Relocate_Node (N))));
+
+            Add_Block_Identifier (Block_Nod, Block_Id);
+
+            --  The expansion of iterator loops generates an iterator in order
+            --  to traverse the elements of a container:
+
+            --    Iter : <iterator type> := Iterate (Container)'reference;
+
+            --  The iterator is controlled and returned on the secondary stack.
+            --  The analysis of the call to Iterate establishes a transient
+            --  scope to deal with the secondary stack management, but never
+            --  really creates a physical block as this would kill the iterator
+            --  too early (see Wrap_Transient_Declaration). To address this
+            --  case, mark the generated block as needing secondary stack
+            --  management.
+
+            Set_Uses_Sec_Stack (Block_Id);
+
+            Rewrite (N, Block_Nod);
+            Analyze (N);
+            return;
+         end;
       end if;
 
       --  Kill current values on entry to loop, since statements in the body of
