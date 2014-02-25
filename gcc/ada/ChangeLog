@@ -1,3 +1,22 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb (Is_RTE): Protect against entity with no scope
+	field (previously this call blew up on the Standard entity).
+	* sem_attr.adb (Analyze_Attribute, case Access): Remove
+	test for No_Abort_Statements, this is now handled in
+	Set_Entity_With_Checks.
+	* exp_ch6.adb, sem_ch10.adb, sem_ch4.adb, sem_ch8.adb, sem_res.adb:
+	Change name Set_Entity_With_Style_Check => Set_Entity_With_Checks.
+	* sem_util.ads, sem_util.adb: Change name Set_Entity_With_Style_Check =>
+	Set_Entity_With_Checks.
+	(Set_Entity_With_Checks): Add checks for No_Dynamic_Attachment,
+	Add checks for No_Abort_Statements.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb (Expand_Entry_Barrier): Add comment that call to
+	Check_Restriction is OK.
+
 2014-02-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Process_Full_View): Better error message when

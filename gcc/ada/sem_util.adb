@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -15805,18 +15805,58 @@ package body Sem_Util is
       end if;
    end Set_Debug_Info_Needed;
 
-   ---------------------------------
-   -- Set_Entity_With_Style_Check --
-   ---------------------------------
+   ----------------------------
+   -- Set_Entity_With_Checks --
+   ----------------------------
 
-   procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id) is
+   procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id) is
       Val_Actual : Entity_Id;
       Nod        : Node_Id;
+      Post_Node  : Node_Id;
 
    begin
       --  Unconditionally set the entity
 
       Set_Entity (N, Val);
+
+      --  Remaining checks are only done on source nodes
+
+      if not Comes_From_Source (N) then
+         return;
+      end if;
+
+      --  The node to post on is the selector in the case of an expanded name,
+      --  and otherwise the node itself.
+
+      if Nkind (N) = N_Expanded_Name then
+         Post_Node := Selector_Name (N);
+      else
+         Post_Node := N;
+      end if;
+
+      --  Check for violation of No_Abort_Statements, which is triggered by
+      --  call to Ada.Task_Identification.Abort_Task.
+
+      if Restriction_Check_Required (No_Abort_Statements)
+        and then (Is_RTE (Val, RE_Abort_Task))
+      then
+         Check_Restriction (No_Abort_Statements, Post_Node);
+      end if;
+
+      --  Check for violation of No_Dynamic_Attachment
+
+      if Restriction_Check_Required (No_Dynamic_Attachment)
+        and then RTU_Loaded (Ada_Interrupts)
+        and then (Is_RTE (Val, RE_Is_Reserved)      or else
+                  Is_RTE (Val, RE_Is_Attached)      or else
+                  Is_RTE (Val, RE_Current_Handler)  or else
+                  Is_RTE (Val, RE_Attach_Handler)   or else
+                  Is_RTE (Val, RE_Exchange_Handler) or else
+                  Is_RTE (Val, RE_Detach_Handler)   or else
+                  Is_RTE (Val, RE_Reference))
+      then
+         Check_Restriction (No_Dynamic_Attachment, Post_Node);
+      end if;
 
       --  Check for No_Implementation_Identifiers
 
@@ -15834,7 +15874,7 @@ package body Sem_Util is
            and then not (Ekind_In (Val, E_Package, E_Generic_Package)
                           and then Is_Library_Level_Entity (Val))
          then
-            Check_Restriction (No_Implementation_Identifiers, N);
+            Check_Restriction (No_Implementation_Identifiers, Post_Node);
          end if;
       end if;
 
@@ -15877,7 +15917,7 @@ package body Sem_Util is
       end if;
 
       Set_Entity (N, Val);
-   end Set_Entity_With_Style_Check;
+   end Set_Entity_With_Checks;
 
    ------------------------
    -- Set_Name_Entity_Id --
