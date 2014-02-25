@@ -1,3 +1,9 @@
+2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60292
+	* sel-sched.c (fill_vec_av_set): Do not reset target availability
+	bit fot the fence instruction.
+
 2014-02-24  Alangi Derick  <alangiderick@gmail.com>
 
 	* calls.h: Fix typo in comment.

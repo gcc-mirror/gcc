@@ -3823,7 +3823,8 @@ fill_vec_av_set (av_set_t av, blist_t bnds, fence_t fence,
 
       /* If insn was already scheduled on the current fence,
 	 set TARGET_AVAILABLE to -1 no matter what expr's attribute says.  */
-      if (vinsn_vec_has_expr_p (vec_target_unavailable_vinsns, expr))
+      if (vinsn_vec_has_expr_p (vec_target_unavailable_vinsns, expr)
+	  && !fence_insn_p)
 	target_available = -1;
 
       /* If the availability of the EXPR is invalidated by the insertion of
