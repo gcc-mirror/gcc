@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9645,9 +9645,7 @@ package body Sem_Attr is
             | Attribute_Unchecked_Access
             | Attribute_Unrestricted_Access =>
 
-         Access_Attribute : declare
-            Nam : Entity_Id;
-
+         Access_Attribute :
          begin
             if Is_Variable (P) then
                Note_Possible_Modification (P, Sure => False);
@@ -9692,24 +9690,11 @@ package body Sem_Attr is
                --    If it is an object, complete its resolution.
 
                elsif Is_Overloadable (Entity (P)) then
-                  Nam := Entity (P);
 
                   --  Avoid insertion of freeze actions in spec expression mode
 
                   if not In_Spec_Expression then
                      Freeze_Before (N, Entity (P));
-                  end if;
-
-                  --  Forbid access to Abort_Task if restriction active
-
-                  if Restriction_Check_Required (No_Abort_Statements)
-                    and then
-                      (Is_RTE (Nam, RE_Abort_Task)
-                        or else
-                         (Present (Alias (Nam))
-                           and then Is_RTE (Alias (Nam), RE_Abort_Task)))
-                  then
-                     Check_Restriction (No_Abort_Statements, N);
                   end if;
 
                elsif Is_Type (Entity (P)) then

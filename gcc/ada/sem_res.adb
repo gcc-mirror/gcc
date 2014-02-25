@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5406,18 +5406,7 @@ package body Sem_Res is
 
       elsif not (Is_Type (Entity (Subp))) then
          Nam := Entity (Subp);
-         Set_Entity_With_Style_Check (Subp, Nam);
-
-         --  Check restriction No_Abort_Statements, which is triggered by a
-         --  call to Ada.Task_Identification.Abort_Task.
-
-         if Restriction_Check_Required (No_Abort_Statements)
-           and then (Is_RTE (Nam, RE_Abort_Task)
-                      or else (Present (Alias (Nam))
-                                and then Is_RTE (Alias (Nam), RE_Abort_Task)))
-         then
-            Check_Restriction (No_Abort_Statements, N);
-         end if;
+         Set_Entity_With_Checks (Subp, Nam);
 
       --  Otherwise we must have the case of an overloaded call
 
@@ -5433,7 +5422,7 @@ package body Sem_Res is
          while Present (It.Typ) loop
             if Covers (Typ, It.Typ) then
                Nam := It.Nam;
-               Set_Entity_With_Style_Check (Subp, Nam);
+               Set_Entity_With_Checks (Subp, Nam);
                exit;
             end if;
 
@@ -6235,7 +6224,7 @@ package body Sem_Res is
          C := Current_Entity (N);
          while Present (C) loop
             if Etype (C) = B_Typ then
-               Set_Entity_With_Style_Check (N, C);
+               Set_Entity_With_Checks (N, C);
                Generate_Reference (C, N);
                return;
             end if;
@@ -6507,7 +6496,7 @@ package body Sem_Res is
       --  not do a style check during the first phase of analysis.
 
       elsif Ekind (E) = E_Enumeration_Literal then
-         Set_Entity_With_Style_Check (N, E);
+         Set_Entity_With_Checks (N, E);
          Eval_Entity_Name (N);
 
       --  Case of subtype name appearing as an operand in expression
@@ -9226,7 +9215,7 @@ package body Sem_Res is
 
          Resolve (P, It1.Typ);
          Set_Etype (N, Typ);
-         Set_Entity_With_Style_Check (S, Comp1);
+         Set_Entity_With_Checks (S, Comp1);
 
       else
          --  Resolve prefix with its type

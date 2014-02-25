@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2632,7 +2632,7 @@ package body Sem_Ch10 is
       --  to consider the unit as unreferenced if this is the only reference
       --  that occurs.
 
-      Set_Entity_With_Style_Check (Name (N), E_Name);
+      Set_Entity_With_Checks (Name (N), E_Name);
       Generate_Reference (E_Name, Name (N), 'w', Set_Ref => False);
 
       --  Generate references and check No_Dependence restriction for parents
@@ -2657,7 +2657,7 @@ package body Sem_Ch10 is
                exit;
             end if;
 
-            Set_Entity_With_Style_Check (Pref, Par_Name);
+            Set_Entity_With_Checks (Pref, Par_Name);
 
             Generate_Reference (Par_Name, Pref);
             Check_Restriction_No_Dependence (Pref, N);
@@ -2697,7 +2697,7 @@ package body Sem_Ch10 is
          --  Guard against missing or misspelled child units
 
          if Present (Par_Name) then
-            Set_Entity_With_Style_Check (Pref, Par_Name);
+            Set_Entity_With_Checks (Pref, Par_Name);
             Generate_Reference (Par_Name, Pref);
 
          else

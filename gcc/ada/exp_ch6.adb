@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3639,21 +3639,6 @@ package body Exp_Ch6 is
 
          Orig_Subp := Subp;
          Subp := Parent_Subp;
-      end if;
-
-      --  Check for violation of No_Dynamic_Attachment
-
-      if Restriction_Check_Required (No_Dynamic_Attachment)
-        and then RTU_Loaded (Ada_Interrupts)
-        and then (Is_RTE (Subp, RE_Is_Reserved)      or else
-                  Is_RTE (Subp, RE_Is_Attached)      or else
-                  Is_RTE (Subp, RE_Current_Handler)  or else
-                  Is_RTE (Subp, RE_Attach_Handler)   or else
-                  Is_RTE (Subp, RE_Exchange_Handler) or else
-                  Is_RTE (Subp, RE_Detach_Handler)   or else
-                  Is_RTE (Subp, RE_Reference))
-      then
-         Check_Restriction (No_Dynamic_Attachment, Call_Node);
       end if;
 
       --  Deal with case where call is an explicit dereference

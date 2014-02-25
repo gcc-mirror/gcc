@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1298,7 +1298,7 @@ package body Sem_Ch4 is
             --  Resolution yields a single interpretation. Verify that the
             --  reference has capitalization consistent with the declaration.
 
-            Set_Entity_With_Style_Check (Nam, Entity (Nam));
+            Set_Entity_With_Checks (Nam, Entity (Nam));
             Generate_Reference (Entity (Nam), Nam);
 
             Set_Etype (Nam, Etype (Entity (Nam)));
@@ -3503,7 +3503,7 @@ package body Sem_Ch4 is
                   if Is_Overloadable (Comp) then
                      Add_One_Interp (Sel, Comp, Etype (Comp));
                   else
-                     Set_Entity_With_Style_Check (Sel, Comp);
+                     Set_Entity_With_Checks (Sel, Comp);
                      Generate_Reference (Comp, Sel);
                   end if;
 
@@ -4002,7 +4002,7 @@ package body Sem_Ch4 is
          Comp := First_Component (Rec);
          while Present (Comp) loop
             if Chars (Comp) = Chars (Sel) then
-               Set_Entity_With_Style_Check (Sel, Comp);
+               Set_Entity_With_Checks (Sel, Comp);
                Set_Etype (Sel, Etype (Comp));
                Set_Etype (N,   Etype (Comp));
                return;
@@ -4239,7 +4239,7 @@ package body Sem_Ch4 is
             if Chars (Comp) = Chars (Sel)
               and then Is_Visible_Component (Comp, N)
             then
-               Set_Entity_With_Style_Check (Sel, Comp);
+               Set_Entity_With_Checks (Sel, Comp);
                Set_Etype (Sel, Etype (Comp));
 
                if Ekind (Comp) = E_Discriminant then
@@ -4420,7 +4420,7 @@ package body Sem_Ch4 is
          while Present (Comp) loop
             if Chars (Comp) = Chars (Sel) then
                if Ekind (Comp) = E_Discriminant then
-                  Set_Entity_With_Style_Check (Sel, Comp);
+                  Set_Entity_With_Checks (Sel, Comp);
                   Generate_Reference (Comp, Sel);
 
                   Set_Etype (Sel, Etype (Comp));
@@ -4497,7 +4497,7 @@ package body Sem_Ch4 is
                             and then not Is_Protected_Type (Prefix_Type)
                             and then Is_Entity_Name (Name))
                then
-                  Set_Entity_With_Style_Check (Sel, Comp);
+                  Set_Entity_With_Checks (Sel, Comp);
                   Generate_Reference (Comp, Sel);
 
                   --  The selector is not overloadable, so we have a candidate
@@ -4706,7 +4706,7 @@ package body Sem_Ch4 is
                   if Chars (Comp) = Chars (Sel)
                     and then Is_Visible_Component (Comp)
                   then
-                     Set_Entity_With_Style_Check (Sel, Comp);
+                     Set_Entity_With_Checks (Sel, Comp);
                      Generate_Reference (Comp, Sel);
                      Set_Etype (Sel, Etype (Comp));
                      Set_Etype (N,   Etype (Comp));

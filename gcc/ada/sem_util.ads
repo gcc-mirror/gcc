@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1765,11 +1765,22 @@ package Sem_Util is
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
 
-   procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
-   --  This procedure has the same calling sequence as Set_Entity, but
-   --  if Style_Check is set, then it calls a style checking routine which
-   --  can check identifier spelling style. This procedure also takes care
-   --  of checking the restriction No_Implementation_Identifiers.
+   procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
+   --  This procedure has the same calling sequence as Set_Entity, but it
+   --  performs additional checks as follows:
+   --
+   --    If Style_Check is set, then it calls a style checking routine which
+   --    can check identifier spelling style. This procedure also takes care
+   --    of checking the restriction No_Implementation_Identifiers.
+   --
+   --    If restriction No_Abort_Statements is set, then it checks that the
+   --    entity is not Ada.Task_Identification.Abort_Task.
+   --
+   --    If restriction No_Dynamic_Attachment is set, then it checks that the
+   --    entity is not one of the restricted names for this restriction.
+   --
+   --    If restriction No_Implementation_Identifiers is set, then it checks
+   --    that the entity is not implementation defined.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);
