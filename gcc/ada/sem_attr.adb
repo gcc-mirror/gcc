@@ -9755,11 +9755,12 @@ package body Sem_Attr is
                   then
                      Error_Msg_FE
                        ("subprogram & has wrong convention", P, Entity (P));
-                     Error_Msg_FE
-                       ("\does not match convention of access type &",
-                        P, Btyp);
+                     Error_Msg_Sloc := Sloc (Btyp);
+                     Error_Msg_FE ("\does not match & declared#", P, Btyp);
 
-                     if not Has_Convention_Pragma (Btyp) then
+                     if not Is_Itype (Btyp)
+                       and then not Has_Convention_Pragma (Btyp)
+                     then
                         Error_Msg_FE
                           ("\probable missing pragma Convention for &",
                            P, Btyp);

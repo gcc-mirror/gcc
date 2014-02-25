@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *            Copyright (C) 2011, Free Software Foundation, Inc.            *
+ *          Copyright (C) 2011-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,7 +49,25 @@ extern "C" {
   /* To be called from an established signal handler.  Setup the DWARF CFI
      bits letting unwinders walk through the signal frame up into the
      interrupted application code, and then call HANDLER (SIGNO, SIGINFO,
-     SIGCONTEXT).  */
+     SIGCONTEXT).
+
+     The sigtramp construct makes it so that the unwinder jumps over it + the
+     signal handler + the kernel frame. For a typical backtrace from the raise
+     function:
+
+     #0  __gnat_Unwind_RaiseException
+     #1  Raise_From_Signal_Handler
+     #2  __gnat_map_signal
+     #3  __gnat_sigtramp
+     #4  __gnat_error_handler
+     #5  <kernel frame>
+     #6  interrupted function
+
+     The unwinder will unwind frames 0, 1 and 2 as usual. But the CFI of frame
+     3 is set up as if the caller of frame 3 was frame 6 so, when frame 3 is
+     unwound, the unwinder ends up in frame 6 directly. It's possible to do so
+     since the kernel has saved the context of frame 3 and passed it on to
+     __gnat_sigtramp.  */
 
 #ifdef __cplusplus
 }

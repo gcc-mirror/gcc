@@ -344,12 +344,18 @@ package Erroutc is
    procedure Add_Class;
    --  Add 'Class to buffer for class wide type case (Class_Flag set)
 
+   function Buffer_Ends_With (C : Character) return Boolean;
+   --  Tests if message buffer ends with given character
+
    function Buffer_Ends_With (S : String) return Boolean;
    --  Tests if message buffer ends with given string preceded by a space
 
+   procedure Buffer_Remove (C : Character);
+   --  Remove given character fron end of buffer if it is present
+
    procedure Buffer_Remove (S : String);
-   --  Removes given string from end of buffer if it is present
-   --  at end of buffer, and preceded by a space.
+   --  Removes given string from end of buffer if it is present at end of
+   --  buffer, and preceded by a space.
 
    function Compilation_Errors return Boolean;
    --  Returns true if errors have been detected, or warnings in -gnatwe

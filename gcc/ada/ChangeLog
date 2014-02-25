@@ -1,5 +1,28 @@
 2014-02-25  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb: Various changes for better msgs for anonmous access
+	subprogram types.
+	* erroutc.ads, erroutc.adb (Buffer_Ends_With): Version with character
+	argument.
+	(Buffer_Remove): Version with character argument.
+	* sem_attr.adb (Resolve_Attribute, case Access): Better handling
+	of mismatching conventions for access-to-subprogram case.
+	* sem_prag.adb (Set_Convention_From_Pragma): Deal with anonymous
+	access types in record.
+	* sem_util.ads, sem_util.adb (Set_Convention): Handle anonymous access
+	types, including in records.
+
+2014-02-25  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-ppcvxw.c, sigtramp.h, sigtramp-armvxw.c: Comment
+	enhancements and corrections.
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: New section "Conventions and Anonymous Access Types"
+
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: First set of documentation additions for
 	predefined RM units.
 	* checks.adb: Minor reformatting.

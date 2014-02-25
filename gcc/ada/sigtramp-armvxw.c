@@ -34,6 +34,7 @@
  ******************************************************/
 
 #include "sigtramp.h"
+/* See sigtramp.h for a general explanation of functionality.  */
 
 #include <vxWorks.h>
 #include <arch/../regs.h>
@@ -125,7 +126,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
 #define REGNO_G_REG_OFFSET(N) (N)
 
-#define REGNO_PC_OFFSET  15  /* ARG_POINTER_REGNUM  */
+#define REGNO_PC_OFFSET  15  /* PC_REGNUM  */
 
 /* asm string construction helpers.  */
 
@@ -153,10 +154,8 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
    Only non-volatile registers are suitable for a CFA base. These are the
    only ones we can expect to be able retrieve from the unwinding context
    while walking up the chain, saved by at least the bottom-most exception
-   propagation services.  We use r15 here and set it to the value we need
-   in stub body that follows.  Note that r14 is inappropriate here, even
-   though it is non-volatile according to the ABI, because GCC uses it as
-   an extra SCRATCH on SPE targets.  */
+   propagation services. We use r8 here and set it to the value we need
+   in stub body that follows. Any of r4-r8 should work.  */
 
 #define CFA_REG 8
 
@@ -168,13 +167,8 @@ CR(".cfi_def_cfa " S(CFA_REG) ", 0")
    Rules to find registers of interest from the CFA. This should comprise
    all the non-volatile registers relevant to the interrupted context.
 
-   Note that we include r1 in this set, unlike the libgcc unwinding
-   fallbacks.  This is useful for fallbacks to allow the use of r1 in CFI
-   expressions and the absence of rule for r1 gets compensated by using the
-   target CFA instead.  We don't need the expression facility here and
-   setup a fake CFA to allow very simple offset expressions, so having a
-   rule for r1 is the proper thing to do.  We for sure have observed
-   crashes in some cases without it.  */
+   ??? Note that r0 was excluded for consistency with the PPC version of
+   this file, not sure if that's right.  */
 
 #define COMMON_CFI(REG) \
   ".cfi_offset " S(REGNO_##REG) "," S(REG_SET_##REG)

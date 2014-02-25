@@ -15631,6 +15631,52 @@ package body Sem_Util is
       then
          Set_Can_Use_Internal_Rep (E, False);
       end if;
+
+      --  If E is an object or component, and the type of E is an anonymous
+      --  access type with no convention set, then also set the convention of
+      --  the anonymous access type. We do not do this for anonymous protected
+      --  types, since protected types always have the default convention.
+
+      if Present (Etype (E))
+        and then (Is_Object (E)
+                   or else Ekind (E) = E_Component
+
+                   --  Allow E_Void (happens for pragma Convention appearing
+                   --  in the middle of a record applying to a component)
+
+                   or else Ekind (E) = E_Void)
+      then
+         declare
+            Typ : constant Entity_Id := Etype (E);
+
+         begin
+            if Ekind_In (Typ, E_Anonymous_Access_Type,
+                              E_Anonymous_Access_Subprogram_Type)
+              and then not Has_Convention_Pragma (Typ)
+            then
+               Basic_Set_Convention (Typ, Val);
+               Set_Has_Convention_Pragma (Typ);
+
+               --  And for the access subprogram type, deal similarly with the
+               --  designated E_Subprogram_Type if it is also internal (which
+               --  it always is?)
+
+               if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
+                  declare
+                     Dtype : constant Entity_Id := Designated_Type (Typ);
+                  begin
+                     if Ekind (Dtype) = E_Subprogram_Type
+                       and then Is_Itype (Dtype)
+                       and then not Has_Convention_Pragma (Dtype)
+                     then
+                        Basic_Set_Convention (Dtype, Val);
+                        Set_Has_Convention_Pragma (Dtype);
+                     end if;
+                  end;
+               end if;
+            end if;
+         end;
+      end if;
    end Set_Convention;
 
    ------------------------

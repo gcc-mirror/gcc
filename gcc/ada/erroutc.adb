@@ -64,18 +64,29 @@ package body Erroutc is
    -- Buffer_Ends_With --
    ----------------------
 
+   function Buffer_Ends_With (C : Character) return Boolean is
+   begin
+      return Msglen > 0 and then Msg_Buffer (Msglen) = C;
+   end Buffer_Ends_With;
+
    function Buffer_Ends_With (S : String) return Boolean is
       Len : constant Natural := S'Length;
    begin
-      return
-        Msglen > Len
-          and then Msg_Buffer (Msglen - Len) = ' '
-          and then Msg_Buffer (Msglen - Len + 1 .. Msglen) = S;
+      return Msglen > Len
+        and then Msg_Buffer (Msglen - Len) = ' '
+        and then Msg_Buffer (Msglen - Len + 1 .. Msglen) = S;
    end Buffer_Ends_With;
 
    -------------------
    -- Buffer_Remove --
    -------------------
+
+   procedure Buffer_Remove (C : Character) is
+   begin
+      if Buffer_Ends_With (C) then
+         Msglen := Msglen - 1;
+      end if;
+   end Buffer_Remove;
 
    procedure Buffer_Remove (S : String) is
    begin
