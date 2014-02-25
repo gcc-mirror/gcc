@@ -1,3 +1,12 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: First set of documentation additions for
+	predefined RM units.
+	* checks.adb: Minor reformatting.
+	* sem_elab.adb (Check_Task_Activation): Minor fix to error
+	message.
+	* sem_util.adb: Minor reformatting.
+
 2014-02-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* usage.adb (Usage): Add help on -gnateC.

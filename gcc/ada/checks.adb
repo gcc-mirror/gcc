@@ -1516,8 +1516,8 @@ package body Checks is
 
       if Nkind (Original_Node (N)) /= N_Allocator
         and then (No (Lhs)
-          or else not Is_Entity_Name (Lhs)
-          or else No (Param_Entity (Lhs)))
+                   or else not Is_Entity_Name (Lhs)
+                   or else No (Param_Entity (Lhs)))
       then
          if (Etype (N) = Typ
               or else (Do_Access and then Designated_Type (Typ) = S_Typ))
@@ -1767,7 +1767,6 @@ package body Checks is
          if Do_Overflow_Check (N)
            and then not Overflow_Checks_Suppressed (Etype (N))
          then
-
             --  Test for extremely annoying case of xxx'First divided by -1
             --  for division of signed integer types (only overflow case).
 
