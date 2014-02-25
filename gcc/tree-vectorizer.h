@@ -542,6 +542,10 @@ typedef struct _stmt_vec_info {
      is 1.  */
   unsigned int gap;
 
+  /* The minimum negative dependence distance this stmt participates in
+     or zero if none.  */
+  unsigned int min_neg_dist;
+
   /* Not all stmts in the loop need to be vectorized. e.g, the increment
      of the loop induction variable and computation of array indexes. relevant
      indicates whether the stmt needs to be vectorized.  */
@@ -593,6 +597,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 #define STMT_VINFO_GROUPED_ACCESS(S)      ((S)->first_element != NULL && (S)->data_ref_info)
 #define STMT_VINFO_LOOP_PHI_EVOLUTION_PART(S) (S)->loop_phi_evolution_part
+#define STMT_VINFO_MIN_NEG_DIST(S)	(S)->min_neg_dist
 
 #define GROUP_FIRST_ELEMENT(S)          (S)->first_element
 #define GROUP_NEXT_ELEMENT(S)           (S)->next_element
