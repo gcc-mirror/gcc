@@ -1,3 +1,11 @@
+2014-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60319
+	* lto-opts.c (lto_write_options): Output non-explicit conservative
+	-fwrapv, -fno-trapv and -fno-strict-overflow.
+	* lto-wrapper.c (merge_and_complain): Handle merging those options.
+	(run_gcc): And pass them through.
+
 2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
 	
 	* sel-sched.c (calculate_new_fences): New parameter ptime.
