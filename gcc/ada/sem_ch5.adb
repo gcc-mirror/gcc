@@ -1972,7 +1972,7 @@ package body Sem_Ch5 is
         and then Is_SPARK_Volatile_Object (Ent)
       then
          Error_Msg_N
-           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
+           ("loop parameter cannot be volatile (SPARK 'R'M 7.1.3(6))", Ent);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -2618,7 +2618,7 @@ package body Sem_Ch5 is
 
       if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
          Error_Msg_N
-           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Id);
+           ("loop parameter cannot be volatile (SPARK 'R'M 7.1.3(6))", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 

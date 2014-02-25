@@ -11421,14 +11421,14 @@ package body Sem_Ch6 is
             if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
                Error_Msg_N
                  ("function cannot have parameter of mode `OUT` or `IN OUT` "
-                  & "(SPARK RM 6.1)", Formal);
+                  & "(SPARK 'R'M 6.1)", Formal);
 
             --  A function cannot have a volatile formal parameter
 
             elsif Is_SPARK_Volatile_Object (Formal) then
                Error_Msg_N
                  ("function cannot have a volatile formal parameter "
-                  & "(SPARK RM 7.1.3(10))", Formal);
+                  & "(SPARK 'R'M 7.1.3(10))", Formal);
             end if;
          end if;
 

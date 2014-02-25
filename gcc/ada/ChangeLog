@@ -1,3 +1,9 @@
+2014-02-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb, sem_ch5.adb, sem_prag.adb, sem_attr.adb, errout.ads,
+	sem_ch6.adb: Mark most references to SPARK RM in error messages
+	for removal.
+
 2014-02-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch3.adb (P_Basic_Declarative_Items): If an improper body
