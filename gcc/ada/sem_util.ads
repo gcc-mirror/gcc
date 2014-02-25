@@ -46,8 +46,7 @@ package Sem_Util is
    procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
    --  Given a block statement N, generate an internal E_Block label and make
    --  it the identifier of the block. Id denotes the generated entity. If the
-   --  block already has an identifier, Id denotes the entity of the existing
-   --  label.
+   --  block already has an identifier, Id returns the entity of its label.
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of an entry, a package [body], a

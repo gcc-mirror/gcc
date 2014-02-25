@@ -435,6 +435,10 @@ package body Sem_Ch11 is
       Exception_Name : Entity_Id        := Empty;
 
    begin
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
+
       Check_SPARK_Restriction ("raise expression is not allowed", N);
 
       --  Check exception restrictions on the original source
@@ -461,7 +465,6 @@ package body Sem_Ch11 is
       --  Deal with RAISE WITH case
 
       if Present (Expression (N)) then
-         Check_Compiler_Unit (Expression (N));
          Analyze_And_Resolve (Expression (N), Standard_String);
       end if;
 
@@ -629,7 +632,6 @@ package body Sem_Ch11 is
          --  Deal with RAISE WITH case
 
          if Present (Expression (N)) then
-            Check_Compiler_Unit (Expression (N));
             Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;

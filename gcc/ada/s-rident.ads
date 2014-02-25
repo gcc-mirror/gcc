@@ -69,7 +69,7 @@
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 generic
 package System.Rident is

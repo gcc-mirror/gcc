@@ -8671,8 +8671,7 @@ package body Exp_Ch6 is
 
       procedure Collect_Body_Postconditions (Stmts : in out List_Id) is
          procedure Collect_Body_Postconditions_Of_Kind (Post_Nam : Name_Id);
-         --  Process all postconditions of a particular kind denoted by
-         --  Post_Nam.
+         --  Process all postconditions of the kind denoted by Post_Nam
 
          -----------------------------------------
          -- Collect_Body_Postconditions_Of_Kind --
@@ -8716,8 +8715,7 @@ package body Exp_Ch6 is
                              (Item => Check_Prag,
                               List => Stmts);
 
-                        --  When analyzing a generic unit, save the pragma for
-                        --  later.
+                        --  If analyzing a generic unit, save pragma for later
 
                         else
                            Prepend_To_Declarations (Check_Prag);

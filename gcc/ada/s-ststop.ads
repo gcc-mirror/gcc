@@ -63,7 +63,7 @@
 --  handles versions of System.Stream_Attributes (in particular the XDR version
 --  found in s-stratt-xdr) which do not permit block io optimization.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with Ada.Streams;
 

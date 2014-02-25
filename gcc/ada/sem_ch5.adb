@@ -1052,7 +1052,7 @@ package body Sem_Ch5 is
         Generic_Check_Choices
           (Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
-           Process_Associated_Node   => No_Op);
+           Process_Associated_Node   => No_OP);
       use Check_Case_Choices;
       --  Instantiation of the generic choice processing package
 

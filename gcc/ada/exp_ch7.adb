@@ -3572,8 +3572,7 @@ package body Exp_Ch7 is
 
             return;
 
-         --  If we have encountered Standard there are no enclosing transient
-         --  scopes.
+         --  If we encounter Standard there are no enclosing transient scopes
 
          elsif Scope_Stack.Table (S).Entity = Standard_Standard then
             exit;
