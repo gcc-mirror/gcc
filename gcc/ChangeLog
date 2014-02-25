@@ -1,3 +1,9 @@
+2014-02-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/55426
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Allow 128 to 64-bit
+	conversions.
+
 2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Don't valididate when
