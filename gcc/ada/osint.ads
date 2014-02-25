@@ -677,7 +677,10 @@ package Osint is
 
    ALI_Default_Suffix : constant String_Ptr := new String'("ali");
    ALI_Suffix         : String_Ptr          := ALI_Default_Suffix;
-   --  The suffixes used for the library files (also known as ALI files)
+   --  The suffixes used for the ALI files
+
+   function Prep_Suffix return String;
+   --  The suffix used for pre-processed files
 
 private
 

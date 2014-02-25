@@ -2190,6 +2190,19 @@ package body Osint is
       return GNAT_Time;
    end OS_Time_To_GNAT_Time;
 
+   -----------------
+   -- Prep_Suffix --
+   -----------------
+
+   function Prep_Suffix return String is
+   begin
+      if Hostparm.OpenVMS then
+         return "_prep";
+      else
+         return ".prep";
+      end if;
+   end Prep_Suffix;
+
    ------------------
    -- Program_Name --
    ------------------

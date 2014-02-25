@@ -29,7 +29,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Fname;    use Fname;
-with Hostparm;
 with Lib;      use Lib;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -646,12 +645,7 @@ package body Sinput.L is
 
                      begin
                         Get_Name_String (N);
-
-                        if Hostparm.OpenVMS then
-                           Add_Str_To_Name_Buffer ("_prep");
-                        else
-                           Add_Str_To_Name_Buffer (".prep");
-                        end if;
+                        Add_Str_To_Name_Buffer (Prep_Suffix);
 
                         Delete_File (Name_Buffer (1 .. Name_Len), Status);
 

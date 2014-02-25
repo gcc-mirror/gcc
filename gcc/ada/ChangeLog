@@ -1,3 +1,15 @@
+2014-02-25  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Minor reformatting.
+
+2014-02-25  Tristan Gingold  <gingold@adacore.com>
+
+	* s-expllu.ads, s-expuns.ads, s-expmod.ads: Minor comment fix.
+
+2014-02-25  Pascal Obry  <obry@adacore.com>
+
+	* sinput-l.adb, osint.adb, osint.ads: Add Prep_Suffix to factorize code.
+
 2014-02-25  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_ch10.adb: Minor comment fix.

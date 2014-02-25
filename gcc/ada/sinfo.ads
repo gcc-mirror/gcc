@@ -4573,16 +4573,16 @@ package Sinfo is
       --  the implicit label declaration which occurs in the innermost
       --  enclosing block.
 
-      --  Note: there is always a loop statement identifier present in
-      --  the tree, even if none was given in the source. In the case where
-      --  no loop identifier is given in the source, the parser creates
-      --  a name of the form _Loop_n, where n is a decimal integer (the
-      --  two underlines ensure that the loop names created in this manner
-      --  do not conflict with any user defined identifiers), and the flag
-      --  Has_Created_Identifier is set to True. The only exception to the
-      --  rule that all loop statement nodes have identifiers occurs for
-      --  loops constructed by the expander, and the semantic analyzer will
-      --  create and supply dummy loop identifiers in these cases.
+      --  Note: there is always a loop statement identifier present in the
+      --  tree, even if none was given in the source. In the case where no loop
+      --  identifier is given in the source, the parser creates a name of the
+      --  form _Loop_n, where n is a decimal integer (the two underlines ensure
+      --  that the loop names created in this manner do not conflict with any
+      --  user defined identifiers), and the flag Has_Created_Identifier is set
+      --  to True. The only exception to the rule that all loop statement nodes
+      --  have identifiers occurs for loops constructed by the expander, and
+      --  the semantic analyzer will create and supply dummy loop identifiers
+      --  in these cases.
 
       --  N_Loop_Statement
       --  Sloc points to LOOP
@@ -4614,9 +4614,9 @@ package Sinfo is
       --  is present at a time, in which case the other one is empty. Both are
       --  empty in the case of a WHILE loop.
 
-      --  Gigi restriction: This expander ensures that the type of the
-      --  Condition field is always Standard.Boolean, even if the type
-      --  in the source is some non-standard boolean type.
+      --  Gigi restriction: The expander ensures that the type of the Condition
+      --  field is always Standard.Boolean, even if the type in the source is
+      --  some non-standard boolean type.
 
       --  N_Iteration_Scheme
       --  Sloc points to WHILE or FOR
@@ -4675,12 +4675,12 @@ package Sinfo is
       --  or body; the block identifier denotes that E_Block.
 
       --  For block statements that come from source code, there is always a
-      --  block statement identifier present in the tree, denoting an
-      --  E_Block. In the case where no block identifier is given in the
-      --  source, the parser creates a name of the form B_n, where n is a
-      --  decimal integer, and the flag Has_Created_Identifier is set to
-      --  True. Blocks constructed by the expander usually have no identifier,
-      --  and no corresponding entity.
+      --  block statement identifier present in the tree, denoting an E_Block.
+      --  In the case where no block identifier is given in the source,
+      --  the parser creates a name of the form B_n, where n is a decimal
+      --  integer, and the flag Has_Created_Identifier is set to True. Blocks
+      --  constructed by the expander usually have no identifier, and no
+      --  corresponding entity.
 
       --  Note: the block statement created for an extended return statement
       --  has an entity, and this entity is an E_Return_Statement, rather than
@@ -4716,9 +4716,9 @@ package Sinfo is
 
       --  EXIT_STATEMENT ::= exit [loop_NAME] [when CONDITION];
 
-      --  Gigi restriction: This expander ensures that the type of the
-      --  Condition field is always Standard.Boolean, even if the type
-      --  in the source is some non-standard boolean type.
+      --  Gigi restriction: The expander ensures that the type of the Condition
+      --  field is always Standard.Boolean, even if the type in the source is
+      --  some non-standard boolean type.
 
       --  N_Exit_Statement
       --  Sloc points to EXIT
@@ -4813,10 +4813,11 @@ package Sinfo is
 
       --  N_Designator
       --  Sloc points to period
-      --  Name (Node2) holds the parent unit name. Note that this is always
-      --   non-Empty, since this node is only used for the case where a
-      --   parent library unit package name is present.
+      --  Name (Node2) holds the parent unit name
       --  Identifier (Node1)
+
+      --  Note: Name is always non-Empty, since this node is only used for the
+      --  case where a parent library unit package name is present.
 
       --  Note that the identifier can also be an operator symbol here
 
@@ -4834,19 +4835,20 @@ package Sinfo is
       --  DEFINING_PROGRAM_UNIT_NAME ::=
       --    [PARENT_UNIT_NAME .] DEFINING_IDENTIFIER
 
-      --  The parent unit name is present only in the case of a child unit
-      --  name (permissible only for Ada 95 for a library level unit, i.e.
-      --  a unit at scope level one). If no such name is present, the defining
-      --  program unit name is represented simply as the defining identifier.
-      --  In the child unit case, the following node is used to represent the
-      --  child unit name.
+      --  The parent unit name is present only in the case of a child unit name
+      --  (permissible only for Ada 95 for a library level unit, i.e. a unit
+      --  at scope level one). If no such name is present, the defining program
+      --  unit name is represented simply as the defining identifier. In the
+      --  child unit case, the following node is used to represent the child
+      --  unit name.
 
       --  N_Defining_Program_Unit_Name
       --  Sloc points to period
-      --  Name (Node2) holds the parent unit name. Note that this is always
-      --   non-Empty, since this node is only used for the case where a
-      --   parent unit name is present.
+      --  Name (Node2) holds the parent unit name
       --  Defining_Identifier (Node1)
+
+      --  Note: Name is always non-Empty, since this node is only used for the
+      --  case where a parent unit name is present.
 
       --------------------------
       -- 6.1  Operator Symbol --
@@ -4854,13 +4856,13 @@ package Sinfo is
 
       --  OPERATOR_SYMBOL ::= STRING_LITERAL
 
-      --  Note: the fields of the N_Operator_Symbol node are laid out to
-      --  match the corresponding fields of an N_Character_Literal node. This
-      --  allows easy conversion of the operator symbol node into a character
-      --  literal node in the case where a string constant of the form of an
-      --  operator symbol is scanned out as such, but turns out semantically
-      --  to be a string literal that is not an operator. For details see
-      --  Sinfo.CN.Change_Operator_Symbol_To_String_Literal.
+      --  Note: the fields of the N_Operator_Symbol node are laid out to match
+      --  the corresponding fields of an N_Character_Literal node. This allows
+      --  easy conversion of the operator symbol node into a character literal
+      --  node in the case where a string constant of the form of an operator
+      --  symbol is scanned out as such, but turns out semantically to be a
+      --  string literal that is not an operator. For details see Sinfo.CN.
+      --  Change_Operator_Symbol_To_String_Literal.
 
       --  N_Operator_Symbol
       --  Sloc points to literal
@@ -5020,11 +5022,11 @@ package Sinfo is
       --  PROCEDURE_CALL_STATEMENT ::=
       --    procedure_NAME; | procedure_PREFIX ACTUAL_PARAMETER_PART;
 
-      --  Note: the reason that a procedure call has expression fields is
-      --  that it semantically resembles an expression, e.g. overloading is
-      --  allowed and a type is concocted for semantic processing purposes.
-      --  Certain of these fields, such as Parens are not relevant, but it
-      --  is easier to just supply all of them together.
+      --  Note: the reason that a procedure call has expression fields is that
+      --  it semantically resembles an expression, e.g. overloading is allowed
+      --  and a type is concocted for semantic processing purposes. Certain of
+      --  these fields, such as Parens are not relevant, but it is easier to
+      --  just supply all of them together.
 
       --  N_Procedure_Call_Statement
       --  Sloc points to first token of name or prefix
@@ -5161,8 +5163,8 @@ package Sinfo is
       --                                      [:= EXPRESSION]
 
       --  There are two entities associated with an extended_return_statement:
-      --  the Return_Statement_Entity represents the statement itself, and the
-      --  Defining_Identifier of the Object_Declaration in
+      --  the Return_Statement_Entity represents the statement itself,
+      --  and the Defining_Identifier of the Object_Declaration in
       --  Return_Object_Declarations represents the object being
       --  returned. N_Simple_Return_Statement has only the former.
 
