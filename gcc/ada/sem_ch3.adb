@@ -18471,13 +18471,22 @@ package body Sem_Ch3 is
          end if;
 
       else
-         --  For untagged types, verify that a type without discriminants
-         --  is not completed with an unconstrained type.
+         --  For untagged types, verify that a type without discriminants is
+         --  not completed with an unconstrained type. A separate error message
+         --  is produced if the full type has defaulted discriminants.
 
          if not Is_Indefinite_Subtype (Priv_T)
            and then Is_Indefinite_Subtype (Full_T)
          then
-            Error_Msg_N ("full view of type must be definite subtype", Full_T);
+            Error_Msg_Sloc := Sloc (Parent (Priv_T));
+            Error_Msg_NE
+              ("full view of& not compatible with declaration#",
+               Full_T, Priv_T);
+
+            if not Is_Tagged_Type (Full_T) then
+               Error_Msg_N
+                 ("\one is constrained, the other unconstrained", Full_T);
+            end if;
          end if;
       end if;
 
