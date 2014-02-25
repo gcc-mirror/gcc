@@ -309,17 +309,18 @@ package body Sem_Ch6 is
       if Present (Parameter_Specifications (New_Spec)) then
          declare
             Formal_Spec : Node_Id;
+            Def         : Entity_Id;
+
          begin
             Formal_Spec := First (Parameter_Specifications (New_Spec));
 
             --  Create a new formal parameter at the same source position
 
             while Present (Formal_Spec) loop
-               Set_Defining_Identifier
-                 (Formal_Spec,
-                  Make_Defining_Identifier
-                    (Sloc (Defining_Identifier (Formal_Spec)),
-                    Chars => Chars (Defining_Identifier (Formal_Spec))));
+               Def := Defining_Identifier (Formal_Spec);
+               Set_Defining_Identifier (Formal_Spec,
+                 Make_Defining_Identifier (Sloc (Def),
+                   Chars => Chars (Def)));
                Next (Formal_Spec);
             end loop;
          end;
