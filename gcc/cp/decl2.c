@@ -2475,6 +2475,125 @@ constrain_class_visibility (tree type)
     }
 }
 
+/* Functions for adjusting the visibility of a tagged type and its nested
+   types and declarations when it gets a name for linkage purposes from a
+   typedef.  */
+
+static void bt_reset_linkage_1 (binding_entry, void *);
+static void bt_reset_linkage_2 (binding_entry, void *);
+
+/* First reset the visibility of all the types.  */
+
+static void
+reset_type_linkage_1 (tree type)
+{
+  set_linkage_according_to_type (type, TYPE_MAIN_DECL (type));
+  if (CLASS_TYPE_P (type))
+    binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
+			   bt_reset_linkage_1, NULL);
+}
+static void
+bt_reset_linkage_1 (binding_entry b, void */*data*/)
+{
+  reset_type_linkage_1 (b->type);
+}
+
+/* Then reset the visibility of any static data members or member
+   functions that use those types.  */
+
+static void
+reset_decl_linkage (tree decl)
+{
+  if (TREE_PUBLIC (decl))
+    return;
+  if (DECL_CLONED_FUNCTION_P (decl))
+    return;
+  TREE_PUBLIC (decl) = true;
+  DECL_INTERFACE_KNOWN (decl) = false;
+  determine_visibility (decl);
+  tentative_decl_linkage (decl);
+}
+static void
+reset_type_linkage_2 (tree type)
+{
+  if (CLASS_TYPE_P (type))
+    {
+      if (tree vt = CLASSTYPE_VTABLES (type))
+	{
+	  tree name = mangle_vtbl_for_type (type);
+	  DECL_NAME (vt) = name;
+	  SET_DECL_ASSEMBLER_NAME (vt, name);
+	  reset_decl_linkage (vt);
+	}
+      if (tree ti = CLASSTYPE_TYPEINFO_VAR (type))
+	{
+	  tree name = mangle_typeinfo_for_type (type);
+	  DECL_NAME (ti) = name;
+	  SET_DECL_ASSEMBLER_NAME (ti, name);
+	  TREE_TYPE (name) = type;
+	  reset_decl_linkage (ti);
+	}
+      for (tree m = TYPE_FIELDS (type); m; m = DECL_CHAIN (m))
+	if (TREE_CODE (m) == VAR_DECL)
+	  reset_decl_linkage (m);
+      for (tree m = TYPE_METHODS (type); m; m = DECL_CHAIN (m))
+	reset_decl_linkage (m);
+      binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
+			     bt_reset_linkage_2, NULL);
+    }
+}
+static void
+bt_reset_linkage_2 (binding_entry b, void */*data*/)
+{
+  reset_type_linkage_2 (b->type);
+}
+void
+reset_type_linkage (tree type)
+{
+  reset_type_linkage_1 (type);
+  reset_type_linkage_2 (type);
+}
+
+/* Set up our initial idea of what the linkage of DECL should be.  */
+
+void
+tentative_decl_linkage (tree decl)
+{
+  if (DECL_INTERFACE_KNOWN (decl))
+    /* We've already made a decision as to how this function will
+       be handled.  */;
+  else if (vague_linkage_p (decl))
+    {
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  DECL_EXTERNAL (decl) = 1;
+	  DECL_NOT_REALLY_EXTERN (decl) = 1;
+	  note_vague_linkage_fn (decl);
+	  /* A non-template inline function with external linkage will
+	     always be COMDAT.  As we must eventually determine the
+	     linkage of all functions, and as that causes writes to
+	     the data mapped in from the PCH file, it's advantageous
+	     to mark the functions at this point.  */
+	  if (DECL_DECLARED_INLINE_P (decl)
+	      && (!DECL_IMPLICIT_INSTANTIATION (decl)
+		  || DECL_DEFAULTED_FN (decl)))
+	    {
+	      /* This function must have external linkage, as
+		 otherwise DECL_INTERFACE_KNOWN would have been
+		 set.  */
+	      gcc_assert (TREE_PUBLIC (decl));
+	      comdat_linkage (decl);
+	      DECL_INTERFACE_KNOWN (decl) = 1;
+	    }
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+	  maybe_commonize_var (decl);
+	}
+    }
+}
+
 /* DECL is a FUNCTION_DECL or VAR_DECL.  If the object file linkage
    for DECL has not already been determined, do so now by setting
    DECL_EXTERNAL, DECL_COMDAT and other related flags.  Until this
@@ -3966,23 +4085,57 @@ decl_maybe_constant_var_p (tree decl)
 	  && INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 }
 
-/* Complain that DECL uses a type with no linkage but is never defined.  */
+/* Complain that DECL uses a type with no linkage.  In C++98 mode this is
+   called from grokfndecl and grokvardecl; in all modes it is called from
+   cp_write_global_declarations.  */
 
-static void
+void
 no_linkage_error (tree decl)
 {
+  if (cxx_dialect >= cxx11 && decl_defined_p (decl))
+    /* In C++11 it's ok if the decl is defined.  */
+    return;
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
-  if (TYPE_ANONYMOUS_P (t))
+  if (t == NULL_TREE)
+    /* The type that got us on no_linkage_decls must have gotten a name for
+       linkage purposes.  */;
+  else if (CLASS_TYPE_P (t) && TYPE_BEING_DEFINED (t))
+    /* The type might end up having a typedef name for linkage purposes.  */
+    vec_safe_push (no_linkage_decls, decl);
+  else if (TYPE_ANONYMOUS_P (t))
     {
-      permerror (0, "%q+#D, declared using anonymous type, "
-		 "is used but never defined", decl);
-      if (is_typedef_decl (TYPE_NAME (t)))
-	permerror (0, "%q+#D does not refer to the unqualified type, "
-		   "so it is not used for linkage", TYPE_NAME (t));
+      bool d = false;
+      if (cxx_dialect >= cxx11)
+	d = permerror (DECL_SOURCE_LOCATION (decl), "%q#D, declared using "
+		       "anonymous type, is used but never defined", decl);
+      else if (DECL_EXTERN_C_P (decl))
+	/* Allow this; it's pretty common in C.  */;
+      else if (TREE_CODE (decl) == VAR_DECL)
+	/* DRs 132, 319 and 389 seem to indicate types with
+	   no linkage can only be used to declare extern "C"
+	   entities.  Since it's not always an error in the
+	   ISO C++ 90 Standard, we only issue a warning.  */
+	d = warning_at (DECL_SOURCE_LOCATION (decl), 0, "anonymous type "
+			"with no linkage used to declare variable %q#D with "
+			"linkage", decl);
+      else
+	d = permerror (DECL_SOURCE_LOCATION (decl), "anonymous type with no "
+		       "linkage used to declare function %q#D with linkage",
+		       decl);
+      if (d && is_typedef_decl (TYPE_NAME (t)))
+	inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "%q#D does not refer "
+		"to the unqualified type, so it is not used for linkage",
+		TYPE_NAME (t));
     }
+  else if (cxx_dialect >= cxx11)
+    permerror (DECL_SOURCE_LOCATION (decl), "%q#D, declared using local type "
+	       "%qT, is used but never defined", decl, t);
+  else if (TREE_CODE (decl) == VAR_DECL)
+    warning_at (DECL_SOURCE_LOCATION (decl), 0, "type %qT with no linkage "
+		"used to declare variable %q#D with linkage", t, decl);
   else
-    permerror (0, "%q+#D, declared using local type %qT, "
-	       "is used but never defined", decl, t);
+    permerror (DECL_SOURCE_LOCATION (decl), "type %qT with no linkage used "
+	       "to declare function %q#D with linkage", t, decl);
 }
 
 /* Collect declarations from all namespaces relevant to SOURCE_FILE.  */
@@ -4407,8 +4560,7 @@ cp_write_global_declarations (void)
 
   /* So must decls that use a type with no linkage.  */
   FOR_EACH_VEC_SAFE_ELT (no_linkage_decls, i, decl)
-    if (!decl_defined_p (decl))
-      no_linkage_error (decl);
+    no_linkage_error (decl);
 
   /* Then, do the Objective-C stuff.  This is where all the
      Objective-C module stuff gets generated (symtab,
