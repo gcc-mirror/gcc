@@ -1,3 +1,11 @@
+2014-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60345
+	Revert:
+	DR 1571
+	* call.c (reference_binding): Recurse on user-defined conversion.
+	(convert_like_real) [ck_ref_bind]: Explain cv-qual mismatch.
+
 2014-02-25  Jason Merrill  <jason@redhat.com>
 
 	DR 1571
