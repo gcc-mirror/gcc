@@ -1,3 +1,14 @@
+2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512cd-vptestnmd-1.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmd-1.c: This.
+	* gcc.target/i386/avx512cd-vptestnmq-1.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmq-1.c: This.
+	* gcc.target/i386/avx512cd-vptestnmd-2.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmd-2.c: This.
+	* gcc.target/i386/avx512cd-vptestnmq-2.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmq-2.c: This.
+
 2014-02-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/60280

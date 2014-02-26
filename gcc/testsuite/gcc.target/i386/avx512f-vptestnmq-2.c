@@ -1,8 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512cd" } */
-/* { dg-require-effective-target avx512cd } */
+/* { dg-options "-O2 -mavx512f" } */
+/* { dg-require-effective-target avx512f } */
 
-#define AVX512CD
+#define AVX512F
 
 #include "avx512f-helper.h"
 
