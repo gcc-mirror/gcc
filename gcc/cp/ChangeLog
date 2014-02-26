@@ -1,5 +1,10 @@
 2014-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60347
+	PR lto/53808
+	* class.c (clone_function_decl): Don't note_vague_linkage_fn.
+	* init.c (build_vtbl_address): Do it here.
+
 	PR c++/59231
 	PR c++/11586
 	PR c++/14710
