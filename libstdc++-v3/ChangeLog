@@ -1,3 +1,11 @@
+2014-02-26  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.tcc (match_results<>::format,
+	regex_replace<>): Update __out after calling std::copy.
+	* testsuite/28_regex/algorithms/regex_replace/char/dr2213.cc:
+	Add testcase.
+	* testsuite/28_regex/match_results/format.cc: Likewise.
+
 2014-02-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/60308
