@@ -1,5 +1,16 @@
 2014-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54440
+	* pt.c (get_template_parm_index): New.
+	(fixed_parameter_pack_p_1, fixed_parameter_pack_p): New.
+	(process_template_parm): Allow bare packs in template template
+	parm template parms.
+	(coerce_template_parameter_pack): Handle fixed template template
+	parm packs and fixed packs not at the end of the parm list.
+	(coerce_template_parms): Handle template parm packs not at the end
+	of the parm list.
+	(gen_elem_of_pack_expansion_instantiation): Handle a decl expansion.
+
 	PR c++/60182
 	* pt.c (unify): Ignore alias templates when deducing a template
 	template parameter.
