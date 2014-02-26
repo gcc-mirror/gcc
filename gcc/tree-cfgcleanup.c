@@ -308,14 +308,24 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   if (current_loops)
     {
       basic_block dest;
-      /* Protect loop latches, headers and preheaders.  */
+      /* Protect loop headers.  */
       if (bb->loop_father->header == bb)
 	return false;
-      dest = EDGE_SUCC (bb, 0)->dest;
 
+      dest = EDGE_SUCC (bb, 0)->dest;
+      /* Protect loop preheaders and latches if requested.  */
       if (dest->loop_father->header == dest)
-	return false;
+	{
+	  if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
+	      && bb->loop_father->header != dest)
+	    return false;
+
+	  if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES)
+	      && bb->loop_father->header == dest)
+	    return false;
+	}
     }
+
   return true;
 }
 
@@ -496,6 +506,11 @@ remove_forwarder_block (basic_block bb)
 
       set_immediate_dominator (CDI_DOMINATORS, dest, dom);
     }
+
+  /* Adjust latch infomation of BB's parent loop as otherwise
+     the cfg hook has a hard time not to kill the loop.  */
+  if (current_loops && bb->loop_father->latch == bb)
+    bb->loop_father->latch = dest;
 
   /* And kill the forwarder block.  */
   delete_basic_block (bb);

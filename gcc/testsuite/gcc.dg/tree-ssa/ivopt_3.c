@@ -14,7 +14,7 @@ void foo (int i_width, char* dst, char* src1, char* src2)
 	   src1+=sizeof(TYPE);
 	   src2+=sizeof(TYPE);
        }
-} 
+}
 
-/* { dg-final { scan-tree-dump-times "PHI <ivtmp" 1 "ivopts"} } */
+/* { dg-final { scan-tree-dump-times "ivtmp.\[0-9_\]* = PHI <" 1 "ivopts"} } */
 /* { dg-final { cleanup-tree-dump "ivopts" } } */

@@ -1,3 +1,16 @@
+2014-02-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/60280
+	* gnat.dg/renaming5.adb: Change to two expected gotos.
+	* gcc.dg/tree-ssa/pr21559.c: Change back to three expected
+	jump threads.
+	* gcc.dg/tree-prof/update-loopch.c: Check two "Invalid sum"
+	messages for removed basic block.
+	* gcc.dg/tree-ssa/ivopt_1.c: Fix unreliable scanning string.
+	* gcc.dg/tree-ssa/ivopt_2.c: Ditto.
+	* gcc.dg/tree-ssa/ivopt_3.c: Ditto.
+	* gcc.dg/tree-ssa/ivopt_4.c: Ditto.
+
 2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vmx/ld-vsx.c: Don't use vec_all_eq.
