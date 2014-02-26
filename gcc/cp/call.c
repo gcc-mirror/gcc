@@ -1677,37 +1677,20 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   if (!conv)
     return NULL;
 
-  /* Limit this to C++11 mode for GCC 4.9, to be safe.  */
-  if (cxx_dialect >= cxx11 && conv->user_conv_p)
-    {
-      /* If initializing the temporary used a conversion function,
-	 recalculate the second conversion sequence.  */
-      for (conversion *t = conv; t; t = next_conversion (t))
-	if (t->kind == ck_user
-	    && DECL_CONV_FN_P (t->cand->fn))
-	  {
-	    tree ftype = TREE_TYPE (TREE_TYPE (t->cand->fn));
-	    if (TREE_CODE (ftype) != REFERENCE_TYPE)
-	      /* Pretend we start from an xvalue to avoid trouble from
-		 LOOKUP_NO_TEMP_BIND.  */
-	      ftype = cp_build_reference_type (ftype, true);
-	    conversion *new_second
-	      = reference_binding (rto, ftype, NULL_TREE, c_cast_p,
-				   flags|LOOKUP_NO_CONVERSION, complain);
-	    if (!new_second)
-	      return NULL;
-	    conv = merge_conversion_sequences (t, new_second);
-	    break;
-	  }
-    }
-
-  if (conv->kind != ck_ref_bind)
-    conv = build_conv (ck_ref_bind, rto, conv);
-
+  conv = build_conv (ck_ref_bind, rto, conv);
   /* This reference binding, unlike those above, requires the
      creation of a temporary.  */
   conv->need_temporary_p = true;
-  conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
+  if (TYPE_REF_IS_RVALUE (rto))
+    {
+      conv->rvaluedness_matches_p = 1;
+      /* In the second case, if the reference is an rvalue reference and
+	 the second standard conversion sequence of the user-defined
+	 conversion sequence includes an lvalue-to-rvalue conversion, the
+	 program is ill-formed.  */
+      if (conv->user_conv_p && next_conversion (conv)->kind == ck_rvalue)
+	conv->bad_p = 1;
+    }
 
   return conv;
 }
@@ -6230,25 +6213,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
-	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type));
+	    gcc_assert (TYPE_REF_IS_RVALUE (ref_type)
+			&& (real_lvalue_p (expr)
+			    || next_conversion(convs)->kind == ck_rvalue));
 
-	    if (real_lvalue_p (expr)
-		|| next_conversion(convs)->kind == ck_rvalue)
-	      error_at (loc, "cannot bind %qT lvalue to %qT",
-			TREE_TYPE (expr), totype);
-	    else if (!reference_compatible_p (totype, TREE_TYPE (expr)))
-	      error_at (loc, "binding %qT to reference of type %qT "
-			"discards qualifiers", TREE_TYPE (expr),totype);
-	    else
-	      gcc_unreachable ();
-	    if (convs->user_conv_p)
-	      for (conversion *t = convs; t; t = next_conversion (t))
-		if (t->kind == ck_user)
-		  {
-		    print_z_candidate (loc, "after user-defined conversion:",
-				       t->cand);
-		    break;
-		  }
+	    error_at (loc, "cannot bind %qT lvalue to %qT",
+		      TREE_TYPE (expr), totype);
 	    if (fn)
 	      inform (input_location,
 		      "initializing argument %P of %q+D", argnum, fn);
