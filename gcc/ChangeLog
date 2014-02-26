@@ -1,3 +1,12 @@
+2014-02-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/60280
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Protect loop
+	preheaders and latches only if requested.  Fix latch if it
+	is removed.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Set
+	LOOPS_HAVE_PREHEADERS.
+
 2014-02-25  Andrew Pinski  <apinski@cavium.com>
 
 	* builtins.c (expand_builtin_thread_pointer): Create a new target
