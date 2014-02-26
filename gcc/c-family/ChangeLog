@@ -1,3 +1,10 @@
+2014-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59231
+	PR c++/11586
+	* c-common.c (shorten_compare): Don't check
+	c_inhibit_evaluation_warnings.
+
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37743
