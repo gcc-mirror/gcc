@@ -1,3 +1,9 @@
+2014-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60327
+	* ipa.c (walk_polymorphic_call_targets): Properly guard
+	call to inline_update_overall_summary.
+
 2014-02-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/60280
