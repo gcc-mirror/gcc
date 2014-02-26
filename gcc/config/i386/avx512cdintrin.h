@@ -176,40 +176,6 @@ _mm512_broadcastmw_epi32 (__mmask16 __A)
   return (__m512i) __builtin_ia32_broadcastmw512 (__A);
 }
 
-extern __inline __mmask16
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_testn_epi32_mask (__m512i __A, __m512i __B)
-{
-  return (__mmask16) __builtin_ia32_ptestnmd512 ((__v16si) __A,
-						 (__v16si) __B,
-						 (__mmask16) -1);
-}
-
-extern __inline __mmask16
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_testn_epi32_mask (__mmask16 __U, __m512i __A, __m512i __B)
-{
-  return (__mmask16) __builtin_ia32_ptestnmd512 ((__v16si) __A,
-						 (__v16si) __B, __U);
-}
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_testn_epi64_mask (__m512i __A, __m512i __B)
-{
-  return (__mmask8) __builtin_ia32_ptestnmq512 ((__v8di) __A,
-						(__v8di) __B,
-						(__mmask8) -1);
-}
-
-extern __inline __mmask8
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_testn_epi64_mask (__mmask8 __U, __m512i __A, __m512i __B)
-{
-  return (__mmask8) __builtin_ia32_ptestnmq512 ((__v8di) __A,
-						(__v8di) __B, __U);
-}
-
 #ifdef __DISABLE_AVX512CD__
 #undef __DISABLE_AVX512CD__
 #pragma GCC pop_options

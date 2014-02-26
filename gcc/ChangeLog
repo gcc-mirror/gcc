@@ -1,3 +1,15 @@
+2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_testn_epi32_mask),
+	(_mm512_mask_testn_epi32_mask), (_mm512_testn_epi64_mask),
+	(_mm512_mask_testn_epi64_mask): Move to ...
+	* config/i386/avx512cdintrin.h: Here.
+	* config/i386/i386.c (bdesc_args): Change MASK_ISA for testnm.
+	* config/i386/sse.md (avx512f_vmscalef<mode><round_name>): Remove %.
+	(avx512f_scalef<mode><mask_name><round_name>): Ditto.
+	(avx512f_testnm<mode>3<mask_scalar_merge_name>): Change conditon to
+	TARGET_AVX512F from TARGET_AVX512CD.
+
 2014-02-26  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/60327
