@@ -5712,7 +5712,10 @@ expand_builtin_thread_pointer (tree exp, rtx target)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand op;
-      if (!REG_P (target) || GET_MODE (target) != Pmode)
+      /* If the target is not sutitable then create a new target. */
+      if (target == NULL_RTX
+	  || !REG_P (target)
+	  || GET_MODE (target) != Pmode)
 	target = gen_reg_rtx (Pmode);
       create_output_operand (&op, target, Pmode);
       expand_insn (icode, 1, &op);

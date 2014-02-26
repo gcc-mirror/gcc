@@ -1,3 +1,8 @@
+2014-02-25  Andrew Pinski  <apinski@cavium.com>
+
+	* builtins.c (expand_builtin_thread_pointer): Create a new target
+	when the target is NULL.
+
 2014-02-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/60317
