@@ -1,5 +1,15 @@
 2014-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59231
+	PR c++/11586
+	PR c++/14710
+	PR c++/57132
+	* pt.c (struct warning_sentinel): New.
+	(tsubst_copy_and_build): Use it instead of
+	c_inhibit_evaluation_warnings.
+	* typeck.c (maybe_warn_about_useless_cast): Remove
+	c_inhibit_evaluation_warnings check.
+
 	PR c++/54440
 	* pt.c (get_template_parm_index): New.
 	(fixed_parameter_pack_p_1, fixed_parameter_pack_p): New.

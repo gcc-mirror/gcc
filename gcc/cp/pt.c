@@ -1,4 +1,4 @@
-/* Handle parameterized types (templates) for GNU C++.
+/* Handle parameterized types (templates) for GNU -*- C++ -*-.
    Copyright (C) 1992-2014 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
@@ -14063,6 +14063,16 @@ tsubst_non_call_postfix_expression (tree t, tree args,
   return t;
 }
 
+/* Sentinel to disable certain warnings during template substitution.  */
+
+struct warning_sentinel {
+  int &flag;
+  int val;
+  warning_sentinel(int& flag, bool suppress=true)
+    : flag(flag), val(flag) { if (suppress) flag = 0; }
+  ~warning_sentinel() { flag = val; }
+};
+
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)".  */
 
@@ -14229,7 +14239,7 @@ tsubst_copy_and_build (tree t,
 
 	op = RECUR (TREE_OPERAND (t, 0));
 
-	++c_inhibit_evaluation_warnings;
+	warning_sentinel s(warn_useless_cast);
 	switch (TREE_CODE (t))
 	  {
 	  case CAST_EXPR:
@@ -14250,7 +14260,6 @@ tsubst_copy_and_build (tree t,
 	  default:
 	    gcc_unreachable ();
 	  }
-	--c_inhibit_evaluation_warnings;
 
 	RETURN (r);
       }
@@ -14325,11 +14334,9 @@ tsubst_copy_and_build (tree t,
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {
-	tree r;
-
-	++c_inhibit_evaluation_warnings;
-
-	r = build_x_binary_op
+	warning_sentinel s1(warn_type_limits);
+	warning_sentinel s2(warn_div_by_zero);
+	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
 	   RECUR (TREE_OPERAND (t, 0)),
 	   (TREE_NO_WARNING (TREE_OPERAND (t, 0))
@@ -14343,8 +14350,6 @@ tsubst_copy_and_build (tree t,
 	   complain|decltype_flag);
 	if (EXPR_P (r) && TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
-
-	--c_inhibit_evaluation_warnings;
 
 	RETURN (r);
       }
@@ -14460,11 +14465,8 @@ tsubst_copy_and_build (tree t,
 
     case MODOP_EXPR:
       {
-	tree r;
-
-	++c_inhibit_evaluation_warnings;
-
-	r = build_x_modify_expr
+	warning_sentinel s(warn_div_by_zero);
+	tree r = build_x_modify_expr
 	  (EXPR_LOCATION (t),
 	   RECUR (TREE_OPERAND (t, 0)),
 	   TREE_CODE (TREE_OPERAND (t, 1)),
@@ -14478,8 +14480,6 @@ tsubst_copy_and_build (tree t,
 	   here.  */
 	if (TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
-
-	--c_inhibit_evaluation_warnings;
 
 	RETURN (r);
       }

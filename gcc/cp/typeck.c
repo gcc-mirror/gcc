@@ -6282,8 +6282,7 @@ void
 maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
 {
   if (warn_useless_cast
-      && complain & tf_warning
-      && c_inhibit_evaluation_warnings == 0)
+      && complain & tf_warning)
     {
       if (REFERENCE_REF_P (expr))
 	expr = TREE_OPERAND (expr, 0);

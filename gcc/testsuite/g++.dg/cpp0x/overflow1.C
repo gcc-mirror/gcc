@@ -1,3 +1,5 @@
+// { dg-prune-output "-Woverflow" }
+
 template <long long i>
 struct Fib
 {
