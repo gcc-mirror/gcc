@@ -4584,10 +4584,6 @@ clone_function_decl (tree fn, int update_method_vec_p)
 	 destructor.  */
       if (DECL_VIRTUAL_P (fn))
 	{
-	  if (DECL_DEFAULTED_FN (fn) && flag_devirtualize)
-	    /* Make sure the destructor gets synthesized so that it can be
-	       inlined after devirtualization.  */
-	    note_vague_linkage_fn (fn);
 	  clone = build_clone (fn, deleting_dtor_identifier);
 	  if (update_method_vec_p)
 	    add_method (DECL_CONTEXT (clone), clone, NULL_TREE);
