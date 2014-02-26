@@ -17390,9 +17390,11 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  if (TREE_CODE (arg) != BOUND_TEMPLATE_TEMPLATE_PARM
 	      && !CLASSTYPE_SPECIALIZATION_OF_PRIMARY_TEMPLATE_P (arg))
 	    return unify_template_deduction_failure (explain_p, parm, arg);
-
 	  {
 	    tree parmvec = TYPE_TI_ARGS (parm);
+	    /* An alias template name is never deduced.  */
+	    if (TYPE_ALIAS_P (arg))
+	      arg = strip_typedefs (arg);
 	    tree argvec = INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (arg));
 	    tree full_argvec = add_to_template_args (targs, argvec);
 	    tree parm_parms 
