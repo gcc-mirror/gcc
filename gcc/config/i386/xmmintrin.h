@@ -54,6 +54,7 @@ typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 enum _mm_hint
 {
   /* _MM_HINT_ET is _MM_HINT_T with set 3rd bit.  */
+  _MM_HINT_ET0 = 5,
   _MM_HINT_ET1 = 6,
   _MM_HINT_T0 = 3,
   _MM_HINT_T1 = 2,
