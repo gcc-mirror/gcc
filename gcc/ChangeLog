@@ -1,3 +1,9 @@
+2014-02-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/57935
+	* reload1.c (emit_input_reload_insns): When reload_override_in,
+	set old to rl->in_reg when rl->in_reg is a subreg.
+
 2014-02-26  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/60343
