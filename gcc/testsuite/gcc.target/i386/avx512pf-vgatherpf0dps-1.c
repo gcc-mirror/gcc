@@ -11,5 +11,5 @@ int *base;
 void extern
 avx512pf_test (void)
 {
-  _mm512_mask_prefetch_i32gather_ps (idx, m16, base, 8, 1);
+  _mm512_mask_prefetch_i32gather_ps (idx, m16, base, 8, _MM_HINT_T0);
 }

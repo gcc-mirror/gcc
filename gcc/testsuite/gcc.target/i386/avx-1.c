@@ -358,14 +358,14 @@
 #define __builtin_ia32_rsqrt28sd_round(A, B, C) __builtin_ia32_rsqrt28sd_round(A, B, 8)
 
 /* avx512pfintrin.h */
-#define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfdpd(A, B, C, D, E) __builtin_ia32_gatherpfdpd(A, B, C, 1, 1)
-#define __builtin_ia32_gatherpfqpd(A, B, C, D, E) __builtin_ia32_gatherpfqpd(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfdpd(A, B, C, D, E) __builtin_ia32_scatterpfdpd(A, B, C, 1, 1)
-#define __builtin_ia32_scatterpfqpd(A, B, C, D, E) __builtin_ia32_scatterpfqpd(A, B, C, 1, 1)
+#define __builtin_ia32_gatherpfdps(A, B, C, D, E) __builtin_ia32_gatherpfdps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfqps(A, B, C, D, E) __builtin_ia32_gatherpfqps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfdps(A, B, C, D, E) __builtin_ia32_scatterpfdps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfqps(A, B, C, D, E) __builtin_ia32_scatterpfqps(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfdpd(A, B, C, D, E) __builtin_ia32_gatherpfdpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_gatherpfqpd(A, B, C, D, E) __builtin_ia32_gatherpfqpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfdpd(A, B, C, D, E) __builtin_ia32_scatterpfdpd(A, B, C, 1, _MM_HINT_T0)
+#define __builtin_ia32_scatterpfqpd(A, B, C, D, E) __builtin_ia32_scatterpfqpd(A, B, C, 1, _MM_HINT_T0)
 
 /* shaintrin.h */
 #define __builtin_ia32_sha1rnds4(A, B, C) __builtin_ia32_sha1rnds4(A, B, 1)
