@@ -399,7 +399,8 @@ pop_binding (tree id, tree decl)
     }
 }
 
-/* Strip non dependent using declarations.  */
+/* Strip non dependent using declarations. If DECL is dependent,
+   surreptitiously create a typename_type and return it.  */
 
 tree
 strip_using_decl (tree decl)
@@ -409,6 +410,23 @@ strip_using_decl (tree decl)
 
   while (TREE_CODE (decl) == USING_DECL && !DECL_DEPENDENT_P (decl))
     decl = USING_DECL_DECLS (decl);
+
+  if (TREE_CODE (decl) == USING_DECL && DECL_DEPENDENT_P (decl)
+      && USING_DECL_TYPENAME_P (decl))
+    {
+      /* We have found a type introduced by a using
+	 declaration at class scope that refers to a dependent
+	 type.
+	     
+	 using typename :: [opt] nested-name-specifier unqualified-id ;
+      */
+      decl = make_typename_type (TREE_TYPE (decl),
+				 DECL_NAME (decl),
+				 typename_type, tf_error);
+      if (decl != error_mark_node)
+	decl = TYPE_NAME (decl);
+    }
+
   return decl;
 }
 

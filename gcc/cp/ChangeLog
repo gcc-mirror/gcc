@@ -1,3 +1,9 @@
+2014-02-26  Fabien Chêne  <fabien@gcc.gnu.org>
+        PR c++/37140
+        * parser.c (cp_parser_nonclass_name): Call strip_using_decl and
+	move the code handling dependent USING_DECLs...
+        * name-lookup.c (strip_using_decl): ...Here.
+
 2014-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60248
