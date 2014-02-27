@@ -1,3 +1,9 @@
+2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+            Jeff Law  <law@redhat.com>
+
+	 PR rtl-optimization/49847
+	 * g++.dg/pr49847.C: New test.
+
 2014-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/59223
