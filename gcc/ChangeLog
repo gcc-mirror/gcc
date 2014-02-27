@@ -1,3 +1,12 @@
+2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+	    Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/49847
+	* cse.c (fold_rtx) Handle case where cc0 setter and cc0 user
+	are in different blocks.
+	* doc/tm.texi (Condition Code Status): Update documention for
+	relative locations of cc0-setter and cc0-user.
+
 2014-02-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/59222
