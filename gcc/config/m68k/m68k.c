@@ -642,6 +642,7 @@ m68k_option_override (void)
       flag_schedule_insns = 0;
       flag_schedule_insns_after_reload = 0;
       flag_modulo_sched = 0;
+      flag_live_range_shrinkage = 0;
     }
 
   if (m68k_sched_cpu != CPU_UNKNOWN)
@@ -665,6 +666,7 @@ m68k_override_options_after_change (void)
       flag_schedule_insns = 0;
       flag_schedule_insns_after_reload = 0;
       flag_modulo_sched = 0;
+      flag_live_range_shrinkage = 0;
     }
 }
 
