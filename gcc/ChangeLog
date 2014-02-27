@@ -1,3 +1,8 @@
+2014-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/tm.texi.in (Condition Code Status): Update documention for
+	relative locations of cc0-setter and cc0-user.
+
 2014-02-27  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/52714
