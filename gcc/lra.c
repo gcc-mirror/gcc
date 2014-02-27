@@ -340,8 +340,9 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	  base = a1;
 	  index = a2;
 	}
-      if (! REG_P (base)
-	  || (index != NULL_RTX && ! REG_P (index))
+      if (! (REG_P (base) || GET_CODE (base) == SUBREG)
+	  || (index != NULL_RTX
+	      && ! (REG_P (index) || GET_CODE (index) == SUBREG))
 	  || (disp != NULL_RTX && ! CONSTANT_P (disp))
 	  || (scale != NULL_RTX && ! CONSTANT_P (scale)))
 	{

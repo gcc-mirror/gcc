@@ -1,3 +1,8 @@
+2014-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/59222
+	* lra.c (lra_emit_add): Check SUBREG too.
+
 2014-02-27  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.c (m68k_option_override): Disable
