@@ -3712,6 +3712,9 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 #ifdef HAVE_cc0
 	  && !reg_referenced_p (cc0_rtx, set0)
 #endif
+	  /* If I3 is a jump, ensure that set0 is a jump so that
+	     we do not create invalid RTL.  */
+	  && (!JUMP_P (i3) || SET_DEST (set0) == pc_rtx)
 	 )
 	{
 	  newi2pat = set1;
@@ -3726,6 +3729,9 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 #ifdef HAVE_cc0
 	       && !reg_referenced_p (cc0_rtx, set1)
 #endif
+	       /* If I3 is a jump, ensure that set1 is a jump so that
+		  we do not create invalid RTL.  */
+	       && (!JUMP_P (i3) || SET_DEST (set1) == pc_rtx)
 	      )
 	{
 	  newi2pat = set0;

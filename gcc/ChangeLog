@@ -1,3 +1,10 @@
+2014-02-27  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/52714
+	* combine.c (try_combine): When splitting an unrecognized PARALLEL
+	into two independent simple sets, if I3 is a jump, ensure the
+	pattern we place into I3 is a (set (pc) ...)
+
 2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
 	    Jeff Law  <law@redhat.com>
 
