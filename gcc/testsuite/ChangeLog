@@ -1,3 +1,8 @@
+2014-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60253
+	* g++.dg/overload/ellipsis2.C: New.
+
 2014-02-27  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/52714
