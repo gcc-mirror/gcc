@@ -1,3 +1,9 @@
+2014-02-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/60147
+	* tree-pretty-print.c (dump_generic_node, print_declaration): Handle
+	NAMELIST_DECL.
+
 2014-02-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/tm.texi.in (Condition Code Status): Update documention for
