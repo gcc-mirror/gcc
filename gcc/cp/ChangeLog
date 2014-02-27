@@ -1,3 +1,10 @@
+2014-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60353
+	PR c++/55877
+	* decl2.c (tentative_decl_linkage): Don't mess with functions that
+	are not yet defined.
+
 2014-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60347

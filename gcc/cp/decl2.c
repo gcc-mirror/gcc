@@ -2564,7 +2564,8 @@ tentative_decl_linkage (tree decl)
        be handled.  */;
   else if (vague_linkage_p (decl))
     {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && decl_defined_p (decl))
 	{
 	  DECL_EXTERNAL (decl) = 1;
 	  DECL_NOT_REALLY_EXTERN (decl) = 1;
@@ -2586,11 +2587,8 @@ tentative_decl_linkage (tree decl)
 	      DECL_INTERFACE_KNOWN (decl) = 1;
 	    }
 	}
-      else
-	{
-	  gcc_assert (TREE_CODE (decl) == VAR_DECL);
-	  maybe_commonize_var (decl);
-	}
+      else if (TREE_CODE (decl) == VAR_DECL)
+	maybe_commonize_var (decl);
     }
 }
 
