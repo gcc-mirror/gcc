@@ -1390,6 +1390,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case FIELD_DECL:
     case DEBUG_EXPR_DECL:
     case NAMESPACE_DECL:
+    case NAMELIST_DECL:
       dump_decl_name (buffer, node, flags);
       break;
 
@@ -2685,6 +2686,14 @@ void
 print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
 {
   INDENT (spc);
+
+  if (TREE_CODE(t) == NAMELIST_DECL)
+    {
+      pp_string(buffer, "namelist ");
+      dump_decl_name (buffer, t, flags);
+      pp_semicolon (buffer);
+      return;
+    }
 
   if (TREE_CODE (t) == TYPE_DECL)
     pp_string (buffer, "typedef ");
