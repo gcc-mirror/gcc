@@ -1,3 +1,9 @@
+2014-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60253
+	* call.c (convert_arg_to_ellipsis): Return error_mark_node after
+	error_at.
+
 2014-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60353
