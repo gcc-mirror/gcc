@@ -1,3 +1,9 @@
+2014-02-27  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (m68k_option_override): Disable
+	-flive-range-shrinkage for classic m68k.
+	(m68k_override_options_after_change): Likewise.
+
 2014-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/59223
