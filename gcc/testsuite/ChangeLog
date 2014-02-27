@@ -1,3 +1,8 @@
+2014-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59223
+	* c-c++-common/pr59223.c: New test.
+
 2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* common/config/i386/predicates.md (const1256_operand): Remove.

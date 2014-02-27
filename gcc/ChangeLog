@@ -1,3 +1,9 @@
+2014-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59223
+	* tree-ssa-uninit.c (gate_warn_uninitialized): Run the pass even for
+	-Wmaybe-uninitialized.
+
 2014-02-27  Alan Modra  <amodra@gmail.com>
 
 	PR target/57936
