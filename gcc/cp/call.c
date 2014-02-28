@@ -3237,7 +3237,7 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%T <conversion>", msg, candidate->fn);
   else if (candidate->viable == -1)
     inform (cloc, "%s%#D <near match>", msg, candidate->fn);
-  else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
+  else if (DECL_DELETED_FN (candidate->fn))
     inform (cloc, "%s%#D <deleted>", msg, candidate->fn);
   else
     inform (cloc, "%s%#D", msg, candidate->fn);
