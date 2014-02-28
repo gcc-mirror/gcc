@@ -2532,17 +2532,22 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 
-	      /* Check to see if copy function already exists.  Note
-		 that this is only used for characters of different
-		 lengths.  */
-	      contained = ns->contained;
-	      for (; contained; contained = contained->sibling)
-		if (contained->proc_name
-		    && strcmp (name, contained->proc_name->name) == 0)
-		  {
-		    copy = contained->proc_name;
-		    goto got_char_copy;
-		  }
+	      if (ts->type != BT_CHARACTER)
+		sprintf (name, "__copy_%s", tname);
+	      else
+		{
+		  /* __copy is always the same for characters.
+		     Check to see if copy function already exists.  */
+		  sprintf (name, "__copy_character_%d", ts->kind);
+		  contained = ns->contained;
+		  for (; contained; contained = contained->sibling)
+		    if (contained->proc_name
+			&& strcmp (name, contained->proc_name->name) == 0)
+		      {
+			copy = contained->proc_name;
+			goto got_char_copy;
+		      }
+		}
 
 	      /* Set up namespace.  */
 	      sub_ns = gfc_get_namespace (ns, 0);
@@ -2550,11 +2555,6 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      ns->contained = sub_ns;
 	      sub_ns->resolved = 1;
 	      /* Set up procedure symbol.  */
-	      if (ts->type != BT_CHARACTER)
-		sprintf (name, "__copy_%s", tname);
-	      else
-		/* __copy is always the same for characters.  */
-		sprintf (name, "__copy_character_%d", ts->kind);
 	      gfc_get_symbol (name, sub_ns, &copy);
 	      sub_ns->proc_name = copy;
 	      copy->attr.flavor = FL_PROCEDURE;
