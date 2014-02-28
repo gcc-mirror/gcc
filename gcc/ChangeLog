@@ -1,3 +1,8 @@
+2014-02-28  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.h: Define __ARM_NEON by default if
+	we are not using general regs only.
+
 2014-02-28  Richard Biener  <rguenther@suse.de>
 
 	PR target/60280
