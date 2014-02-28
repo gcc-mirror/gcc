@@ -1,3 +1,8 @@
+2014-02-28  Joey Ye  <joey.ye@arm.com>
+
+	PR target/PR60169
+	* gcc.target/arm/thumb1-far-jump-3.c: New case.
+
 2014-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60253
