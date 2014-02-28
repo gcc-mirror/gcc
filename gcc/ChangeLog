@@ -1,3 +1,11 @@
+2014-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60314
+	* dwarf2out.c (decltype_auto_die): New static.
+	(gen_subprogram_die): Handle 'decltype(auto)' like 'auto'.
+	(gen_type_die_with_usage): Handle 'decltype(auto)'.
+	(is_cxx_auto): Likewise.
+
 2014-02-28  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.h: Define __ARM_NEON by default if
