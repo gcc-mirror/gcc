@@ -9924,7 +9924,8 @@ vt_initialize (void)
       val = cselib_lookup_from_insn (reg, GET_MODE (reg), 1,
 				     VOIDmode, get_insns ());
       preserve_value (val);
-      cselib_preserve_cfa_base_value (val, REGNO (reg));
+      if (reg != hard_frame_pointer_rtx && fixed_regs[REGNO (reg)])
+	cselib_preserve_cfa_base_value (val, REGNO (reg));
       expr = plus_constant (GET_MODE (stack_pointer_rtx),
 			    stack_pointer_rtx, -ofst);
       cselib_add_permanent_equiv (val, expr, get_insns ());

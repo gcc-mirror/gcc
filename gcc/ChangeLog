@@ -1,3 +1,9 @@
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/57232
+	* var-tracking.c (vt_initialize): Apply the same condition to
+	preserve the CFA base value.
+
 2014-02-28  Joey Ye  <joey.ye@arm.com>
 
 	PR target/PR60169
