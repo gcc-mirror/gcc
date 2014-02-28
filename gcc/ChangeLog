@@ -1,5 +1,12 @@
 2014-02-28  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/59992
+	* cselib.c (remove_useless_values): Skip to avoid quadratic
+	behavior if the condition moved from...
+	(cselib_process_insn): ... here holds.
+
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/57232
 	* var-tracking.c (vt_initialize): Apply the same condition to
 	preserve the CFA base value.
