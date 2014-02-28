@@ -1,6 +1,17 @@
 2014-02-28  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/59992
+	* cselib.c (cselib_hasher::equal): Special-case VALUE lookup.
+	(cselib_preserved_hash_table): New.
+	(preserve_constants_and_equivs): Move preserved vals to it.
+	(cselib_find_slot): Look it up first.
+	(cselib_init): Initialize it.
+	(cselib_finish): Release it.
+	(dump_cselib_table): Dump it.
+
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/59992
 	* cselib.c (remove_useless_values): Skip to avoid quadratic
 	behavior if the condition moved from...
 	(cselib_process_insn): ... here holds.

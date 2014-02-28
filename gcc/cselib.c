@@ -132,6 +132,9 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
 	  || GET_CODE (XEXP (x, 0)) == CONST_FIXED))
     x = XEXP (x, 0);
 
+  if (GET_CODE (x) == VALUE)
+    return x == v->val_rtx;
+
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
@@ -146,6 +149,9 @@ cselib_hasher::equal (const value_type *v, const compare_type *x_arg)
 
 /* A table that enables us to look up elts by their value.  */
 static hash_table <cselib_hasher> cselib_hash_table;
+
+/* A table to hold preserved values.  */
+static hash_table <cselib_hasher> cselib_preserved_hash_table;
 
 /* This is a global so we don't have to pass this through every function.
    It is used in new_elt_loc_list to set SETTING_INSN.  */
@@ -490,8 +496,17 @@ preserve_constants_and_equivs (cselib_val **x, void *info ATTRIBUTE_UNUSED)
 {
   cselib_val *v = *x;
 
-  if (!invariant_or_equiv_p (v))
-    cselib_hash_table.clear_slot (x);
+  if (invariant_or_equiv_p (v))
+    {
+      cselib_val **slot
+	= cselib_preserved_hash_table.find_slot_with_hash (v->val_rtx,
+							   v->hash, INSERT);
+      gcc_assert (!*slot);
+      *slot = v;
+    }
+
+  cselib_hash_table.clear_slot (x);
+
   return 1;
 }
 
@@ -565,9 +580,13 @@ static cselib_val **
 cselib_find_slot (rtx x, hashval_t hash, enum insert_option insert,
 		  enum machine_mode memmode)
 {
-  cselib_val **slot;
+  cselib_val **slot = NULL;
   find_slot_memmode = memmode;
-  slot = cselib_hash_table.find_slot_with_hash (x, hash, insert);
+  if (cselib_preserve_constants)
+    slot = cselib_preserved_hash_table.find_slot_with_hash (x, hash,
+							    NO_INSERT);
+  if (!slot)
+    slot = cselib_hash_table.find_slot_with_hash (x, hash, insert);
   find_slot_memmode = VOIDmode;
   return slot;
 }
@@ -2742,6 +2761,8 @@ cselib_init (int record_what)
   used_regs = XNEWVEC (unsigned int, cselib_nregs);
   n_used_regs = 0;
   cselib_hash_table.create (31);
+  if (cselib_preserve_constants)
+    cselib_preserved_hash_table.create (31);
   next_uid = 1;
 }
 
@@ -2750,6 +2771,7 @@ cselib_init (int record_what)
 void
 cselib_finish (void)
 {
+  bool preserved = cselib_preserve_constants;
   cselib_discard_hook = NULL;
   cselib_preserve_constants = false;
   cselib_any_perm_equivs = false;
@@ -2761,6 +2783,8 @@ cselib_finish (void)
   free_alloc_pool (value_pool);
   cselib_clear_table ();
   cselib_hash_table.dispose ();
+  if (preserved)
+    cselib_preserved_hash_table.dispose ();
   free (used_regs);
   used_regs = 0;
   n_useless_values = 0;
@@ -2850,6 +2874,8 @@ dump_cselib_table (FILE *out)
 {
   fprintf (out, "cselib hash table:\n");
   cselib_hash_table.traverse <FILE *, dump_cselib_val> (out);
+  fprintf (out, "cselib preserved hash table:\n");
+  cselib_preserved_hash_table.traverse <FILE *, dump_cselib_val> (out);
   if (first_containing_mem != &dummy_val)
     {
       fputs ("first mem ", out);
