@@ -1,3 +1,9 @@
+2014-02-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60359
+	* class.c (find_intrinsic_vtab): Prevent duplicate creation of copy
+	procedure for characters.
+
 2014-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60302
