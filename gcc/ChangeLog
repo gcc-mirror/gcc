@@ -1,3 +1,12 @@
+2014-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR target/60280
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Restrict
+	previous fix and only allow to remove trivial pre-headers
+	and latches.  Also honor LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
+	(remove_forwarder_block): Properly update the latch of
+	a loop.
+
 2014-02-28  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/59992
