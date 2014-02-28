@@ -1,3 +1,10 @@
+2014-02-28  Joey Ye  <joey.ye@arm.com>
+
+	PR libgcc/60166
+	* config/arm/sfp-machine.h (_FP_NANFRAC_H,
+	_FP_NANFRAC_S, _FP_NANFRAC_D, _FP_NANFRAC_Q):
+	Set to zero.
+
 2014-02-24  Walter Lee  <walt@tilera.com>
 
 	* config.host: Support "tilegx*" and "tilepro*" triplets.
