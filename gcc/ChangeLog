@@ -1,3 +1,9 @@
+2014-02-28  Joey Ye  <joey.ye@arm.com>
+
+	PR target/PR60169
+	* config/arm/arm.c (thumb_far_jump_used_p): Don't change
+	if reload in progress or completed.
+
 2014-02-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR middle-end/60147
