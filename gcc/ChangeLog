@@ -4,8 +4,7 @@
 	* tree-cfgcleanup.c (tree_forwarder_block_p): Restrict
 	previous fix and only allow to remove trivial pre-headers
 	and latches.  Also honor LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
-	(remove_forwarder_block): Properly update the latch of
-	a loop.
+	(remove_forwarder_block): Properly update the latch of a loop.
 
 2014-02-28  Alexandre Oliva <aoliva@redhat.com>
 
@@ -53,7 +52,7 @@
 	PR rtl-optimization/52714
 	* combine.c (try_combine): When splitting an unrecognized PARALLEL
 	into two independent simple sets, if I3 is a jump, ensure the
-	pattern we place into I3 is a (set (pc) ...)
+	pattern we place into I3 is a (set (pc) ...).
 
 2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
 	    Jeff Law  <law@redhat.com>
@@ -132,9 +131,8 @@
 2014-02-26  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/60280
-	* tree-cfgcleanup.c (tree_forwarder_block_p): Protect loop
-	preheaders and latches only if requested.  Fix latch if it
-	is removed.
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Protect loop preheaders
+	and latches only if requested.  Fix latch if it is removed.
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Set
 	LOOPS_HAVE_PREHEADERS.
 
@@ -177,11 +175,10 @@
 	(PTA_PREFETCHWT1): New.
 	(ix86_option_override_internal): Handle PTA_PREFETCHWT1.
 	(ix86_valid_target_attribute_inner_p): Handle OPT_mprefetchwt1.
-	* config/i386/i386.h (TARGET_PREFETCHWT1), (TARGET_PREFETCHWT1_P):
-	  New.
+	* config/i386/i386.h (TARGET_PREFETCHWT1, TARGET_PREFETCHWT1_P): New.
 	* config/i386/i386.md (prefetch): Check TARGET_PREFETCHWT1
 	(*prefetch_avx512pf_<mode>_: Change into ...
-	 (*prefetch_prefetchwt1_<mode>: This.
+	(*prefetch_prefetchwt1_<mode>: This.
 	* config/i386/i386.opt (mprefetchwt1): New.
 	* config/i386/xmmintrin.h (_mm_hint): Add _MM_HINT_ET1.
 	(_mm_prefetch): Handle intent to write.
@@ -193,8 +190,7 @@
 	* emit-rtl.c (mem_attrs_htab): Remove.
 	(mem_attrs_htab_hash): Likewise.
 	(mem_attrs_htab_eq): Likewise.
-	(set_mem_attrs): Always allocate new mem-attrs when something
-	changed.
+	(set_mem_attrs): Always allocate new mem-attrs when something changed.
 	(init_emit_once): Do not allocate mem_attrs_htab.
 
 2014-02-25  Richard Biener  <rguenther@suse.de>
@@ -315,16 +311,15 @@
 
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
-	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
-	and define TARGET_ASM_OUTPUT_MI_THUNK and
-	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
+	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk,
+	define TARGET_ASM_OUTPUT_MI_THUNK and TARGET_ASM_CAN_OUTPUT_MI_THUNK.
 
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/predicates.md: Add cmp_op predicate.
-	* config/microblaze/microblaze.md: Add branch_compare instruction 
+	* config/microblaze/microblaze.md: Add branch_compare instruction
 	which uses cmp_op predicate and emits cmp insn before branch.
-	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename 
+	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename
 	to microblaze_expand_conditional_branch and consolidate logic.
 	(microblaze_expand_conditional_branch): emit branch_compare
 	insn instead of handling cmp op separate from branch insn.
@@ -350,8 +345,7 @@
 2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/avr/avr.c (avr_can_eliminate): Allow elimination from
-	ARG_POINTER_REGNUM
-	to STACK_POINTER_REGNUM if !frame_pointer_needed.
+	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM if !frame_pointer_needed.
 	* config/avr/avr.c (ELIMINABLE_REGS): Add elimination from
 	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM.
 
@@ -371,8 +365,7 @@
 2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_lvxl): Rename as
-	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
-	V4SI.
+	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of V4SI.
 	(altivec_lvxl_<mode>): New define_expand incorporating
 	-maltivec=be semantics where needed.
 	(altivec_lvx): Rename as *altivec_lvx_<mode>_internal.
@@ -387,16 +380,14 @@
 	-maltivec=be semantics where needed.
 	* config/rs6000/rs6000-builtin.def: Add new built-in definitions
 	LVXL_V2DF, LVXL_V2DI, LVXL_V4SF, LVXL_V4SI, LVXL_V8HI, LVXL_V16QI,
-	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI,
-	STVX_V2DF, STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI,
-	STVXL_V2DF, STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI,
-	STVXL_V16QI.
+	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI, STVX_V2DF,
+	STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI, STVXL_V2DF,
+	STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI, STVXL_V16QI.
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Replace
 	ALTIVEC_BUILTIN_LVX with ALTIVEC_BUILTIN_LVX_<MODE> throughout;
 	similarly for ALTIVEC_BUILTIN_LVXL, ALTIVEC_BUILTIN_STVX, and
 	ALTIVEC_BUILTIN_STVXL.
-	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New
-	prototype.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New prototype.
 	(altivec_expand_stvx_be): Likewise.
 	* config/rs6000/rs6000.c (swap_selector_for_mode): New function.
 	(altivec_expand_lvx_be): Likewise.
@@ -406,8 +397,7 @@
 	ALTIVEC_BUILTIN_LVXL_<MODE>, and ALTIVEC_BUILTIN_LVX_<MODE>.
 	(altivec_init_builtins): Add definitions for
 	__builtin_altivec_lvxl_<mode>, __builtin_altivec_lvx_<mode>,
-	__builtin_altivec_stvx_<mode>, and
-	__builtin_altivec_stvxl_<mode>.
+	__builtin_altivec_stvx_<mode>, and __builtin_altivec_stvxl_<mode>.
 
 2014-02-21  Catherine Moore  <clm@codesourcery.com>
 
@@ -492,8 +482,8 @@
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (unspec): Add UNSPEC_PIC_GOTOFF_SYM enum.
-	* config/nios2/nios2.c (nios2_function_profiler):
-	Add -fPIC (flag_pic == 2) support.
+	* config/nios2/nios2.c (nios2_function_profiler): Add
+	-fPIC (flag_pic == 2) support.
 	(nios2_handle_custom_fpu_cfg): Fix warning parameter.
 	(nios2_large_offset_p): New function.
 	(nios2_unspec_reloc_p): Move up position, update to use
