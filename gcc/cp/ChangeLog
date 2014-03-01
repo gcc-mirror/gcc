@@ -1,3 +1,9 @@
+2014-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60182
+	* pt.c (unify): Ignore alias templates when deducing a template
+	template parameter.
+
 2014-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60146
