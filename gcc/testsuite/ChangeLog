@@ -1,3 +1,8 @@
+2014-03-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50025
+	* g++.dg/cpp0x/pr50025.C: New.
+
 2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60377
