@@ -1,3 +1,8 @@
+2014-03-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60341
+	* gfortran.dg/str_comp_optimize_1.f90: New test.
+
 2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/60071
