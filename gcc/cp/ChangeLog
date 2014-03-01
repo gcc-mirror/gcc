@@ -1,3 +1,9 @@
+2014-03-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60379
+	* semantics.c (begin_maybe_infinite_loop): Use
+	fold_non_dependent_expr_sfinae.
+
 2014-02-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58845
