@@ -1,3 +1,8 @@
+2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60377
+	* g++.dg/cpp1y/pr60377.C: New testcase.
+
 2014-03-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60341
