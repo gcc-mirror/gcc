@@ -1,3 +1,8 @@
+2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60071
+	* gcc.c-torture/compile/pr60071.c: New.
+
 2014-02-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60359
