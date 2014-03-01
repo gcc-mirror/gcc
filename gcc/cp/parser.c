@@ -18208,7 +18208,12 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
      parameter-declaration-list, then the entire
      parameter-declaration-clause is erroneous.  */
   if (is_error)
-    return NULL;
+    {
+      /* Unwind generic function template scope if necessary.  */
+      if (parser->fully_implicit_function_template_p)
+	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+      return NULL;
+    }
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);

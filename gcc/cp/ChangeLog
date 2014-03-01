@@ -1,3 +1,9 @@
+2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60377
+	* parser.c (cp_parser_parameter_declaration_clause): Unwind generic
+	function scope on parse error in function parameter list.
+
 2014-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* method.c (implicitly_declare_fn): Remove redundant
