@@ -4103,6 +4103,11 @@ cp_build_binary_op (location_t location,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
+      if (TREE_CODE (type0) == VECTOR_TYPE || TREE_CODE (type1) == VECTOR_TYPE)
+	{
+	  sorry ("logical operation on vector type");
+	  return error_mark_node;
+	}
       result_type = boolean_type_node;
       break;
 
