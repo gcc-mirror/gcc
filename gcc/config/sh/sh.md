@@ -11434,6 +11434,10 @@ label:
 ;;	T = 1: 0x80000000 -> reg
 ;;	T = 0: 0x7FFFFFFF -> reg
 ;; This works because 0 - 0x80000000 = 0x80000000.
+;;
+;; This insn must not match again after it has been split into the constant
+;; load and negc.  This is accomplished by the special negc insn that
+;; has a use on the operand.
 (define_insn_and_split "*mov_t_msb_neg"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(minus:SI (const_int -2147483648)  ;; 0x80000000
@@ -11444,11 +11448,22 @@ label:
   "&& can_create_pseudo_p ()"
   [(set (match_dup 2) (const_int -2147483648))
    (parallel [(set (match_dup 0) (minus:SI (neg:SI (match_dup 2))
-				 (reg:SI T_REG)))
-	      (clobber (reg:SI T_REG))])]
+				 	   (reg:SI T_REG)))
+	      (clobber (reg:SI T_REG))
+	      (use (match_dup 2))])]
 {
   operands[2] = gen_reg_rtx (SImode);
 })
+
+(define_insn "*mov_t_msb_neg_negc"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(minus:SI (neg:SI (match_operand:SI 1 "arith_reg_operand" "r"))
+		  (match_operand:SI 2 "t_reg_operand")))
+   (clobber (reg:SI T_REG))
+   (use (match_dup 1))]
+  "TARGET_SH1"
+  "negc	%1,%0"
+  [(set_attr "type" "arith")])
 
 ;; These are essentially the same as above, but with the inverted T bit.
 ;; Combine recognizes the split patterns, but does not take them sometimes

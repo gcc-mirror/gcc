@@ -1,3 +1,9 @@
+2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60071
+	* config/sh/sh.md (*mov_t_msb_neg): Split into ...
+	(*mov_t_msb_neg_negc): ... this new insn.
+
 2014-02-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58678
