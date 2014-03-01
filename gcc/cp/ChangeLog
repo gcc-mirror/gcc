@@ -1,3 +1,9 @@
+2014-02-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60146
+	* pt.c (tsubst_omp_for_iterator): Don't let substitution of the
+	DECL_EXPR initialize a non-class iterator.
+
 2014-02-24  Fabien Chêne  <fabien@gcc.gnu.org>
         PR c++/37140
         * parser.c (cp_parser_nonclass_name): Call strip_using_decl and
