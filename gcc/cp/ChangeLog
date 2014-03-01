@@ -1,3 +1,8 @@
+2014-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58845
+	* typeck.c (cp_build_binary_op): Sorry on vector&&vector.
+
 2014-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58610
