@@ -1710,7 +1710,7 @@ ipa_devirt (void)
 
   int npolymorphic = 0, nspeculated = 0, nconverted = 0, ncold = 0;
   int nmultiple = 0, noverwritable = 0, ndevirtualized = 0, nnotdefined = 0;
-  int nwrong = 0, nok = 0, nexternal = 0;;
+  int nwrong = 0, nok = 0, nexternal = 0, nartificial = 0;
 
   FOR_EACH_DEFINED_FUNCTION (n)
     {	
@@ -1820,6 +1820,17 @@ ipa_devirt (void)
 		nexternal++;
 		continue;
 	      }
+	    /* Don't use an implicitly-declared destructor (c++/58678).  */
+	    struct cgraph_node *non_thunk_target
+	      = cgraph_function_node (likely_target);
+	    if (DECL_ARTIFICIAL (non_thunk_target->decl)
+		&& DECL_COMDAT (non_thunk_target->decl))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Target is artificial\n\n");
+		nartificial++;
+		continue;
+	      }
 	    if (cgraph_function_body_availability (likely_target)
 		<= AVAIL_OVERWRITABLE
 		&& symtab_can_be_discarded (likely_target))
@@ -1862,10 +1873,10 @@ ipa_devirt (void)
 	     " %i speculatively devirtualized, %i cold\n"
 	     "%i have multiple targets, %i overwritable,"
 	     " %i already speculated (%i agree, %i disagree),"
-	     " %i external, %i not defined\n",
+	     " %i external, %i not defined, %i artificial\n",
 	     npolymorphic, ndevirtualized, nconverted, ncold,
 	     nmultiple, noverwritable, nspeculated, nok, nwrong,
-	     nexternal, nnotdefined);
+	     nexternal, nnotdefined, nartificial);
   return ndevirtualized ? TODO_remove_functions : 0;
 }
 
