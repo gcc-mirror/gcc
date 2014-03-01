@@ -1465,7 +1465,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
       else if (DECL_VIRTUAL_P (t))
 	pp_cxx_ws_string (pp, "virtual");
 
-      if (DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (t)))
+      if (DECL_DECLARED_CONSTEXPR_P (t))
 	pp_cxx_ws_string (pp, "constexpr");
     }
 

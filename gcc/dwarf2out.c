@@ -18028,11 +18028,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
 	  /* If the prototype had an 'auto' or 'decltype(auto)' return type,
 	     emit the real type on the definition die.  */
-	  if (is_cxx() && debug_info_level > DINFO_LEVEL_TERSE
-	      && (get_AT_ref (old_die, DW_AT_type) == auto_die
-		  || get_AT_ref (old_die, DW_AT_type) == decltype_auto_die))
-	    add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
-				0, 0, context_die);
+	  if (is_cxx() && debug_info_level > DINFO_LEVEL_TERSE)
+	    {
+	      dw_die_ref die = get_AT_ref (old_die, DW_AT_type);
+	      if (die == auto_die || die == decltype_auto_die)
+		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
+				    0, 0, context_die);
+	    }
 	}
     }
   else
