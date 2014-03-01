@@ -1,3 +1,10 @@
+2014-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* method.c (implicitly_declare_fn): Remove redundant
+	DECL_TEMPLATE_RESULT and STRIP_TEMPLATE uses.
+	* semantics.c (is_instantiation_of_constexpr): Likewise.
+	* error.c (dump_function_decl): Likewise.
+
 2014-03-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60379

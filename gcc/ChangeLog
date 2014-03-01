@@ -1,3 +1,7 @@
+2014-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* dwarf2out.c (gen_subprogram_die): Tidy.
+
 2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/60071
