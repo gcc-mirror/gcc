@@ -1,4 +1,10 @@
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60150
+	* ipa.c (function_and_variable_visibility): When dissolving comdat
+	group, also set all symbols to local.
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
 	
 	PR ipa/60306
 

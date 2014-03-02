@@ -970,15 +970,32 @@ function_and_variable_visibility (bool whole_program)
 	  gcc_assert (whole_program || in_lto_p
 		      || !TREE_PUBLIC (node->decl));
 	  node->unique_name = ((node->resolution == LDPR_PREVAILING_DEF_IRONLY
-				      || node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
-				      && TREE_PUBLIC (node->decl));
+				|| node->unique_name
+				|| node->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+				&& TREE_PUBLIC (node->decl));
 	  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
 	  if (node->same_comdat_group && TREE_PUBLIC (node->decl))
-	    /* cgraph_externally_visible_p has already checked all other nodes
-	       in the group and they will all be made local.  We need to
-	       dissolve the group at once so that the predicate does not
-	       segfault though. */
-	    symtab_dissolve_same_comdat_group_list (node);
+	    {
+	      symtab_node *next = node;
+
+	      /* Set all members of comdat group local.  */
+	      if (node->same_comdat_group)
+		for (next = node->same_comdat_group;
+		     next != node;
+		     next = next->same_comdat_group)
+		{
+		  symtab_make_decl_local (next->decl);
+		  next->unique_name = ((next->resolution == LDPR_PREVAILING_DEF_IRONLY
+					|| next->unique_name
+					|| next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+					&& TREE_PUBLIC (next->decl));
+		}
+	      /* cgraph_externally_visible_p has already checked all other nodes
+	         in the group and they will all be made local.  We need to
+	         dissolve the group at once so that the predicate does not
+	         segfault though. */
+	      symtab_dissolve_same_comdat_group_list (node);
+	    }
 	  symtab_make_decl_local (node->decl);
 	}
 
