@@ -573,8 +573,7 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
 {
   if (is_gimple_call (stmt))
     return false;
-  else if (gimple_clobber_p (stmt))
-    return false;
+  /* TODO: Skip clobbers, doing so triggers problem in PR60306.  */
   else if (is_gimple_assign (stmt))
     {
       tree lhs = gimple_assign_lhs (stmt);
