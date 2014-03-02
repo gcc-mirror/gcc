@@ -1,5 +1,12 @@
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/60150
+	* g++.dg/lto/pr60150.H: New testcase.
+	* g++.dg/lto/pr60150_0.C: New testcase.
+	* g++.dg/lto/pr60150_1.C: New testcase.
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/60306
 	* testsuite/g++.dg/ipa/devirt-29.C: New testcase
 
