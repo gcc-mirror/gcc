@@ -1,3 +1,16 @@
+2014-03-02  Jon Beniston  <jon@beniston.com>
+
+	PR bootstrap/48230
+	PR bootstrap/50927
+	PR bootstrap/52466
+	PR target/46898
+	* config/lm32/lm32.c (lm32_legitimate_constant_p): Remove, as incorrect.
+	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.  
+	* config/lm32/lm32.md (movsi_insn): Add 32-bit immediate support.
+	(simple_return, *simple_return): New patterns     
+	* config/lm32/predicates.md (movsi_rhs_operand): Remove as obsolete.
+	* configure.ac (force_sjlj_exceptions): Force sjlj exceptions for lm32.
+
 2014-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* dwarf2out.c (gen_subprogram_die): Tidy.
