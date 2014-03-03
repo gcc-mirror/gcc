@@ -6,6 +6,8 @@
 	* opt-functions.awk: Process PchIgnore.
 	* doc/options.texi: Document PchIgnore.
 
+	* config/arc/arc.opt (misize): Add PchIgnore property.
+
 2014-03-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Disallow
