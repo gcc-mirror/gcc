@@ -197,6 +197,8 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	      // We are executing a transaction now.
 	      // Monitor the writer flag in the serial-mode lock, and abort
 	      // if there is an active or waiting serial-mode transaction.
+	      // Note that this can also happen due to an enclosing
+	      // serial-mode transaction; we handle this case below.
 	      if (unlikely(serial_lock.is_write_locked()))
 		htm_abort();
 	      else
@@ -219,6 +221,14 @@ GTM::gtm_thread::begin_transaction (uint32_t prop, const gtm_jmpbuf *jb)
 	          tx = new gtm_thread();
 	          set_gtm_thr(tx);
 	        }
+	      // Check whether there is an enclosing serial-mode transaction;
+	      // if so, we just continue as a nested transaction and don't
+	      // try to use the HTM fastpath.  This case can happen when an
+	      // outermost relaxed transaction calls unsafe code that starts
+	      // a transaction.
+	      if (tx->nesting > 0)
+		break;
+	      // Another thread is running a serial-mode transaction.  Wait.
 	      serial_lock.read_lock(tx);
 	      serial_lock.read_unlock(tx);
 	      // TODO We should probably reset the retry count t here, unless

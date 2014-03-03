@@ -43,6 +43,15 @@ _ITM_libraryVersion (void)
 _ITM_howExecuting ITM_REGPARM
 _ITM_inTransaction (void)
 {
+#if defined(USE_HTM_FASTPATH)
+  // If we use the HTM fastpath, we cannot reliably detect whether we are
+  // in a transaction because this function can be called outside of
+  // a transaction and thus we can't deduce this by looking at just the serial
+  // lock.  This function isn't used in practice currently, so the easiest
+  // way to handle it is to just abort.
+  if (htm_fastpath && htm_transaction_active())
+    htm_abort();
+#endif
   struct gtm_thread *tx = gtm_thr();
   if (tx && (tx->nesting > 0))
     {
@@ -58,6 +67,11 @@ _ITM_inTransaction (void)
 _ITM_transactionId_t ITM_REGPARM
 _ITM_getTransactionId (void)
 {
+#if defined(USE_HTM_FASTPATH)
+  // See ITM_inTransaction.
+  if (htm_fastpath && htm_transaction_active())
+    htm_abort();
+#endif
   struct gtm_thread *tx = gtm_thr();
   return (tx && (tx->nesting > 0)) ? tx->id : _ITM_noTransactionId;
 }
