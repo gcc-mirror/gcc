@@ -1,3 +1,10 @@
+2014-03-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Disallow
+	reload of PLUS rtx's outside of GENERAL_REGS or BASE_REGS; relax
+	constraint on constants to permit them being loaded into
+	GENERAL_REGS or BASE_REGS.
+
 2014-03-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78-real.md (cbranchsi4_real_signed): Add

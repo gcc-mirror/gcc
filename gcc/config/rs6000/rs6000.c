@@ -16751,8 +16751,14 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
       && easy_vector_constant (x, mode))
     return ALTIVEC_REGS;
 
-  if (CONSTANT_P (x) && reg_classes_intersect_p (rclass, FLOAT_REGS))
-    return NO_REGS;
+  if ((CONSTANT_P (x) || GET_CODE (x) == PLUS))
+    {
+      if (reg_class_subset_p (GENERAL_REGS, rclass))
+	return GENERAL_REGS;
+      if (reg_class_subset_p (BASE_REGS, rclass))
+	return BASE_REGS;
+      return NO_REGS;
+    }
 
   if (GET_MODE_CLASS (mode) == MODE_INT && rclass == NON_SPECIAL_REGS)
     return GENERAL_REGS;
