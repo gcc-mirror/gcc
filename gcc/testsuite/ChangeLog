@@ -1,5 +1,8 @@
 2014-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR objc++/60398
+	* obj-c++.dg/invalid-method-2.mm: Adjust dg-error regexps.
+
 	* c-c++-common/cilk-plus/PS/vectorlength-2.c: New test.
 	* c-c++-common/cilk-plus/PS/vectorlength-3.c: New test.
 
