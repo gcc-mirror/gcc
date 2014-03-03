@@ -25,25 +25,13 @@
 # error "Never use <prfchwintrin.h> directly; include <x86intrin.h> or <mm3dnow.h> instead."
 #endif
 
-
 #ifndef _PRFCHWINTRIN_H_INCLUDED
 #define _PRFCHWINTRIN_H_INCLUDED
-
-#ifndef __PRFCHW__
-#pragma GCC push_options
-#pragma GCC target("prfchw")
-#define __DISABLE_PRFCHW__
-#endif /* __PRFCHW__ */
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_prefetchw (void *__P)
 {
   __builtin_prefetch (__P, 1, 3 /* _MM_HINT_T0 */);
 }
-
-#ifdef __DISABLE_PRFCHW__
-#undef __DISABLE_PRFCHW__
-#pragma GCC pop_options
-#endif /* __DISABLE_PRFCHW__ */
 
 #endif /* _PRFCHWINTRIN_H_INCLUDED */

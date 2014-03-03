@@ -1,3 +1,15 @@
+2014-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/xmmintrin.h (enum _mm_hint) <_MM_HINT_ET0>: Correct
+	hint value.
+	(_mm_prefetch): Move out of GCC target("sse") pragma.
+	* config/i386/prfchwintrin.h (_m_prefetchw): Move out of
+	GCC target("prfchw") pragma.
+	* config/i386/i386.md (prefetch): Emit prefetchwt1 only
+	for locality <= 2.
+	* config/i386/i386.c (ix86_option_override_internal): Enable
+	-mprfchw with -mprefetchwt1.
+
 2014-03-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/arc/arc.md (casesi_load) <length attribute alternative 0>:
@@ -35,7 +47,7 @@
 	* doc/avr-mmcu.texi: Regenerate.
 
 2014-03-03  Tobias Grosser  <tobias@grosser.es>
-	Mircea Namolaru  <mircea.namolaru@inria.fr>
+	    Mircea Namolaru  <mircea.namolaru@inria.fr>
 
 	PR tree-optimization/58028
 	* graphite-clast-to-gimple.c (set_cloog_options): Don't remove
