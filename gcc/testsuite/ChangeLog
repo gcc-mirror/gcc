@@ -1,3 +1,10 @@
+2014-03-03  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/avx512er-vexp2ps-2.c: Decrease exponent
+	argument to avoid inf values.
+	* gcc.target/i386/avx512f-vdivps-2.c: Compare results with
+	UNION_FP_CHECK machinery.
+
 2014-03-03  Renlin Li  <Renlin.Li@arm.com>
 
 	* gcc.target/aarch64/aapcs64/validate_memory.h: Move f32in64 and

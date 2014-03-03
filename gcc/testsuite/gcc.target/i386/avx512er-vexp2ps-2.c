@@ -25,7 +25,7 @@ avx512er_test (void)
 
   for (i = 0; i < 16; i++)
     {
-      src.a[i] = 179.345 - 6.5645 * i;
+      src.a[i] = 79.345 - 6.5645 * i;
       res2.a[i] = DEFAULT_VALUE;
     }
 

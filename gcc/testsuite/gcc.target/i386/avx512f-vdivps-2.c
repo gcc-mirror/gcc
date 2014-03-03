@@ -46,10 +46,10 @@ TEST (void)
     abort ();
 
   MASK_MERGE () (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN,) (res2, res_ref))
+  if (UNION_FP_CHECK (AVX512F_LEN,) (res2, res_ref))
     abort ();
 
   MASK_ZERO () (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN,) (res3, res_ref))
+  if (UNION_FP_CHECK (AVX512F_LEN,) (res3, res_ref))
     abort ();
 }
