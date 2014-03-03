@@ -3611,7 +3611,11 @@
       (const_string "false")])
    (set_attr_alternative "length"
      [(cond
-	[(eq_attr "iscompact" "false") (const_int 4)]
+	[(eq_attr "iscompact" "false") (const_int 4)
+	; We have to mention (match_dup 3) to convince genattrtab.c that this
+	; is a varying length insn.
+	 (eq (symbol_ref "1+1") (const_int 2)) (const_int 2)
+	 (gt (minus (match_dup 3) (pc)) (const_int 42)) (const_int 4)]
 	(const_int 2))
       (const_int 4)
       (const_int 8)])])

@@ -1,5 +1,10 @@
 2014-03-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
+	* config/arc/arc.md (casesi_load) <length attribute alternative 0>:
+	Mark as varying.
+
+2014-03-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
 	* opts.h (CL_PCH_IGNORE): Define.
 	* targhooks.c (option_affects_pch_p):
 	Return false for options that have CL_PCH_IGNORE set.
