@@ -18167,18 +18167,25 @@ post- fixed with @code{__}.  This in turn will be used by the
 @code{msp430.h} header file to select an MCU specific supplimentary
 header file.
 
-In addition two scripts will be added to the linker command line:
-@code{memory.ld} and @code{peripherals.ld}, with a search path based
-upon the MCU name.
+The option also sets the ISA to use.  If the MCU name is one that is
+known to only support the 430 ISA then that is selected, otherwise the
+430X ISA is selected.  A generic MCU name of @code{msp430} can also be
+used to select the 430 ISA.  Similarly the generic @code{msp430x} MCU
+name will select the 430X ISA.
+
+In addition an MCU specific linker script will be added to the linker
+command line.  The script's name is the name of the MCU with
+@code{.ld} appended.  Thus specifying @option{-mmcu=xxx} on the gcc
+command line will define the C preprocessor symbol @code{__XXX__} and
+cause the linker to search for a script called @file{xxx.ld}.
 
 This option is also passed on to the assembler.
 
 @item -mcpu=
 @opindex -mcpu=
-Specific the ISA to use.  Accepted values are @code{msp430},
-@code{msp430x} and @code{msp430xv2}.  This option is needed in order
-to ensure that the correct instructions are generated and that the
-correct libraries are linked in.
+Specifies the ISA to use.  Accepted values are @code{msp430},
+@code{msp430x} and @code{msp430xv2}.  This option is deprecated.  The
+@option{-mmcu=} option should be used to select the ISA.
 
 @item -msim
 @opindex msim

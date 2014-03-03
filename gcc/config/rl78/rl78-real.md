@@ -127,9 +127,9 @@
 )
 
 (define_insn "*addqihi3a_real"
-  [(set (match_operand:HI          0 "register_operand"  "=r")
-	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "%r"))
-		 (match_operand:HI 2 "register_operand" "r")))
+  [(set (match_operand:HI                          0 "register_operand" "=r")
+	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "r"))
+		 (match_operand:HI                 2 "register_operand"  "0")))
    ]
   "rl78_real_insns_ok ()"
   "add\t%q0, %q1 \;addc\t%Q0, #0"
@@ -411,8 +411,8 @@
 (define_insn "*cbranchsi4_real_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
-			      [(match_operand:SI 1 "nonimmediate_operand" "vU,vU,vU")
-			       (match_operand:SI 2 "nonmemory_operand" "ISsi,i,v")])
+			      [(match_operand:SI 1 "general_operand"   "vU,vU,vU,i,i")
+			       (match_operand:SI 2 "nonmemory_operand" "ISsi,i,v,S,v")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))
    (clobber (reg:HI AX_REG))
@@ -421,7 +421,9 @@
   "@
    movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;not1 CY\;      movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
    movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;               movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
-   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3"
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%C0 \;br\t!!%3
+   movw ax, %H1\; cmpw  ax, %H2\; xor1 CY, a.7\; not1 CY\; movw ax, %h1 \;sknz\; cmpw  ax, %h2 \;sk%0 \;br\t!!%3
+   movw ax, %H1\; cmpw  ax, %H2\; xor1 CY, a.7\; movw ax, %h1\; sknz\; cmpw ax, %h2\; sk%0\; br\t!!%3"
   )
 
 (define_insn "*cbranchsi4_real"
@@ -549,3 +551,11 @@
   [(set (reg:QI A_REG) (and:QI (reg:QI A_REG) (match_dup 1)))]
   )
 
+(define_insn "*negandhi3_real"
+  [(set (match_operand:HI                 0 "register_operand"  "=A")
+	(and:HI (neg:HI (match_operand:HI 1 "register_operand"  "0"))
+		(match_operand:HI         2 "immediate_operand" "n")))
+   ]
+  "rl78_real_insns_ok ()"
+  "xor a, #0xff @ xch a, x @ xor a, #0xff @ xch a, x @ addw ax, #1 @ and a, %Q2 @ xch a, x @ and a, %q2 @ xch a, x"
+)
