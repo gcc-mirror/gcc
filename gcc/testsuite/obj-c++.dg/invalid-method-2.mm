@@ -7,11 +7,11 @@
 @end
 
 @implementation MyClass
-- (x) method /* { dg-error "expected" } */
+- (x) method /* { dg-error "expected|type" } */
 {
   return 0;
 }
-- (id) method2: (x)argument /* { dg-error "expected" } */
+- (id) method2: (x)argument /* { dg-error "expected|type" } */
 {
   return 0;
 }
