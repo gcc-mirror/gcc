@@ -1430,6 +1430,8 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   args = IPA_EDGE_REF (cs);
   args_count = ipa_get_cs_argument_count (args);
   parms_count = ipa_get_param_count (callee_info);
+  if (parms_count == 0)
+    return false;
 
   /* If this call goes through a thunk we must not propagate to the first (0th)
      parameter.  However, we might need to uncover a thunk from below a series

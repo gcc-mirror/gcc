@@ -1,3 +1,370 @@
+2014-03-03  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/neon.md (*movmisalign<mode>): Legitimize addresses
+	not handled by recognizers.
+
+2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60175
+	* function.c (expand_function_end): Don't emit
+	clobber_return_register sequence if clobber_after is a BARRIER.
+	* cfgexpand.c (construct_exit_block): Append instructions before
+	return_label to prev_bb.
+
+2014-03-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md: Document reserved use of "wc".
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60150
+	* ipa.c (function_and_variable_visibility): When dissolving comdat
+	group, also set all symbols to local.
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+	
+	PR ipa/60306
+
+	Revert:
+	2013-12-14   Jan Hubicka  <jh@suse.cz>
+        PR middle-end/58477
+        * ipa-prop.c (stmt_may_be_vtbl_ptr_store): Skip clobbers.
+
+2014-03-02  Jon Beniston  <jon@beniston.com>
+
+	PR bootstrap/48230
+	PR bootstrap/50927
+	PR bootstrap/52466
+	PR target/46898
+	* config/lm32/lm32.c (lm32_legitimate_constant_p): Remove, as incorrect.
+	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.  
+	* config/lm32/lm32.md (movsi_insn): Add 32-bit immediate support.
+	(simple_return, *simple_return): New patterns     
+	* config/lm32/predicates.md (movsi_rhs_operand): Remove as obsolete.
+	* configure.ac (force_sjlj_exceptions): Force sjlj exceptions for lm32.
+
+2014-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* dwarf2out.c (gen_subprogram_die): Tidy.
+
+2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60071
+	* config/sh/sh.md (*mov_t_msb_neg): Split into ...
+	(*mov_t_msb_neg_negc): ... this new insn.
+
+2014-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58678
+	* ipa-devirt.c (ipa_devirt): Don't choose an implicitly-declared
+	function.
+
+2014-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60314
+	* dwarf2out.c (decltype_auto_die): New static.
+	(gen_subprogram_die): Handle 'decltype(auto)' like 'auto'.
+	(gen_type_die_with_usage): Handle 'decltype(auto)'.
+	(is_cxx_auto): Likewise.
+
+2014-02-28  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.h: Define __ARM_NEON by default if
+	we are not using general regs only.
+
+2014-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR target/60280
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Restrict
+	previous fix and only allow to remove trivial pre-headers
+	and latches.  Also honor LOOPS_MAY_HAVE_MULTIPLE_LATCHES.
+	(remove_forwarder_block): Properly update the latch of a loop.
+
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/59992
+	* cselib.c (cselib_hasher::equal): Special-case VALUE lookup.
+	(cselib_preserved_hash_table): New.
+	(preserve_constants_and_equivs): Move preserved vals to it.
+	(cselib_find_slot): Look it up first.
+	(cselib_init): Initialize it.
+	(cselib_finish): Release it.
+	(dump_cselib_table): Dump it.
+
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/59992
+	* cselib.c (remove_useless_values): Skip to avoid quadratic
+	behavior if the condition moved from...
+	(cselib_process_insn): ... here holds.
+
+2014-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/57232
+	* var-tracking.c (vt_initialize): Apply the same condition to
+	preserve the CFA base value.
+
+2014-02-28  Joey Ye  <joey.ye@arm.com>
+
+	PR target/PR60169
+	* config/arm/arm.c (thumb_far_jump_used_p): Don't change
+	if reload in progress or completed.
+
+2014-02-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/60147
+	* tree-pretty-print.c (dump_generic_node, print_declaration): Handle
+	NAMELIST_DECL.
+
+2014-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/tm.texi.in (Condition Code Status): Update documention for
+	relative locations of cc0-setter and cc0-user.
+
+2014-02-27  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/52714
+	* combine.c (try_combine): When splitting an unrecognized PARALLEL
+	into two independent simple sets, if I3 is a jump, ensure the
+	pattern we place into I3 is a (set (pc) ...).
+
+2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+	    Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/49847
+	* cse.c (fold_rtx) Handle case where cc0 setter and cc0 user
+	are in different blocks.
+	* doc/tm.texi (Condition Code Status): Update documention for
+	relative locations of cc0-setter and cc0-user.
+
+2014-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/59222
+	* lra.c (lra_emit_add): Check SUBREG too.
+
+2014-02-27  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (m68k_option_override): Disable
+	-flive-range-shrinkage for classic m68k.
+	(m68k_override_options_after_change): Likewise.
+
+2014-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59223
+	* tree-ssa-uninit.c (gate_warn_uninitialized): Run the pass even for
+	-Wmaybe-uninitialized.
+
+2014-02-27  Alan Modra  <amodra@gmail.com>
+
+	PR target/57936
+	* reload1.c (emit_input_reload_insns): When reload_override_in,
+	set old to rl->in_reg when rl->in_reg is a subreg.
+
+2014-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/60343
+	* lra-assigns.c (spill_for): Avoid mixed-sign comparison.
+
+2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/predicates.md (const1256_operand): Remove.
+	(const2356_operand): New.
+	(const_1_to_2_operand): Remove.
+	* config/i386/sse.md (avx512pf_gatherpf<mode>sf): Change hint value.
+	(*avx512pf_gatherpf<mode>sf_mask): Ditto.
+	(*avx512pf_gatherpf<mode>sf): Ditto.
+	(avx512pf_gatherpf<mode>df): Ditto.
+	(*avx512pf_gatherpf<mode>df_mask): Ditto.
+	(*avx512pf_gatherpf<mode>df): Ditto.
+	(avx512pf_scatterpf<mode>sf): Ditto.
+	(*avx512pf_scatterpf<mode>sf_mask): Ditto.
+	(*avx512pf_scatterpf<mode>sf): Ditto.
+	(avx512pf_scatterpf<mode>df): Ditto.
+	(*avx512pf_scatterpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df): Ditto.
+	* common/config/i386/xmmintrin.h (_mm_hint): Add _MM_HINT_ET0.
+
+2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm512_testn_epi32_mask),
+	(_mm512_mask_testn_epi32_mask), (_mm512_testn_epi64_mask),
+	(_mm512_mask_testn_epi64_mask): Move to ...
+	* config/i386/avx512cdintrin.h: Here.
+	* config/i386/i386.c (bdesc_args): Change MASK_ISA for testnm.
+	* config/i386/sse.md (avx512f_vmscalef<mode><round_name>): Remove %.
+	(avx512f_scalef<mode><mask_name><round_name>): Ditto.
+	(avx512f_testnm<mode>3<mask_scalar_merge_name>): Change conditon to
+	TARGET_AVX512F from TARGET_AVX512CD.
+
+2014-02-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/60327
+	* ipa.c (walk_polymorphic_call_targets): Properly guard
+	call to inline_update_overall_summary.
+
+2014-02-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/60280
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Protect loop preheaders
+	and latches only if requested.  Fix latch if it is removed.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Set
+	LOOPS_HAVE_PREHEADERS.
+
+2014-02-25  Andrew Pinski  <apinski@cavium.com>
+
+	* builtins.c (expand_builtin_thread_pointer): Create a new target
+	when the target is NULL.
+
+2014-02-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/60317
+	* params.def (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS): New.
+	* params.h (LRA_MAX_CONSIDERED_RELOAD_PSEUDOS): New.
+	* lra-assigns.c: Include params.h.
+	(spill_for): Use LRA_MAX_CONSIDERED_RELOAD_PSEUDOS as guard for
+	other reload pseudos considerations.
+
+2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (*vector_unordered<mode>): Change split
+	to use canonical form for nor<mode>3.
+
+2014-02-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/55426
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Allow 128 to 64-bit
+	conversions.
+
+2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PREFETCHWT1_SET),
+	(OPTION_MASK_ISA_PREFETCHWT1_UNSET): New.
+	(ix86_handle_option): Handle OPT_mprefetchwt1.
+	* config/i386/cpuid.h (bit_PREFETCHWT1): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	PREFETCHWT1 CPUID.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	OPTION_MASK_ISA_PREFETCHWT1.
+	* config/i386/i386.c (ix86_target_string): Handle mprefetchwt1.
+	(PTA_PREFETCHWT1): New.
+	(ix86_option_override_internal): Handle PTA_PREFETCHWT1.
+	(ix86_valid_target_attribute_inner_p): Handle OPT_mprefetchwt1.
+	* config/i386/i386.h (TARGET_PREFETCHWT1, TARGET_PREFETCHWT1_P): New.
+	* config/i386/i386.md (prefetch): Check TARGET_PREFETCHWT1
+	(*prefetch_avx512pf_<mode>_: Change into ...
+	(*prefetch_prefetchwt1_<mode>: This.
+	* config/i386/i386.opt (mprefetchwt1): New.
+	* config/i386/xmmintrin.h (_mm_hint): Add _MM_HINT_ET1.
+	(_mm_prefetch): Handle intent to write.
+	* doc/invoke.texi (mprefetchwt1), (mno-prefetchwt1): Doccument.
+
+2014-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60291
+	* emit-rtl.c (mem_attrs_htab): Remove.
+	(mem_attrs_htab_hash): Likewise.
+	(mem_attrs_htab_eq): Likewise.
+	(set_mem_attrs): Always allocate new mem-attrs when something changed.
+	(init_emit_once): Do not allocate mem_attrs_htab.
+
+2014-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR lto/60319
+	* lto-opts.c (lto_write_options): Output non-explicit conservative
+	-fwrapv, -fno-trapv and -fno-strict-overflow.
+	* lto-wrapper.c (merge_and_complain): Handle merging those options.
+	(run_gcc): And pass them through.
+
+2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	* sel-sched.c (calculate_new_fences): New parameter ptime.
+	Calculate it as a maximum over all fence cycles.
+	(sel_sched_region_2): Adjust the call to calculate_new_fences.
+	Print the final schedule timing when sched_verbose.
+
+2014-02-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/60292
+	* sel-sched.c (fill_vec_av_set): Do not reset target availability
+	bit fot the fence instruction.
+
+2014-02-24  Alangi Derick  <alangiderick@gmail.com>
+
+	* calls.h: Fix typo in comment.
+
+2014-02-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Don't valididate when
+	adjusting offsetable addresses.
+
+2014-02-24  Guozhi Wei  <carrot@google.com>
+
+	* sparseset.h (sparseset_pop): Fix the wrong index.
+
+2014-02-24  Walter Lee  <walt@tilera.com>
+
+	* config.gcc (tilepro-*-*): Change to tilepro*-*-*.
+	(tilegx-*-linux*): Change to tilegx*-*-linux*; Support tilegxbe
+	triplet.
+	* common/config/tilegx/tilegx-common.c
+	(TARGET_DEFAULT_TARGET_FLAGS): Define.
+	* config/tilegx/linux.h (ASM_SPEC): Add endian_spec.
+	(LINK_SPEC): Ditto.
+	* config/tilegx/sync.md (atomic_test_and_set): Handle big endian.
+	* config/tilegx/tilegx.c (tilegx_return_in_msb): New.
+	(tilegx_gimplify_va_arg_expr): Handle big endian.
+	(tilegx_expand_unaligned_load): Ditto.
+	(tilegx_expand_unaligned_store): Ditto.
+	(TARGET_RETURN_IN_MSB): New.
+	* config/tilegx/tilegx.h (TARGET_DEFAULT): New.
+	(TARGET_ENDIAN_DEFAULT): New.
+	(TARGET_BIG_ENDIAN): Handle big endian.
+	(BYTES_BIG_ENDIAN): Ditto.
+	(WORDS_BIG_ENDIAN): Ditto.
+	(FLOAT_WORDS_BIG_ENDIAN): Ditto.
+	(ENDIAN_SPEC): New.
+	(EXTRA_SPECS): New.
+	* config/tilegx/tilegx.md (extv): Handle big endian.
+	(extzv): Ditto.
+	(insn_st<n>): Ditto.
+	(insn_st<n>_add<bitsuffix>): Ditto.
+	(insn_stnt<n>): Ditto.
+	(insn_stnt<n>_add<bitsuffix>):Ditto.
+	(vec_interleave_highv8qi): Handle big endian.
+	(vec_interleave_highv8qi_be): New.
+	(vec_interleave_highv8qi_le): New.
+	(insn_v1int_h): Handle big endian.
+	(vec_interleave_lowv8qi): Handle big endian.
+	(vec_interleave_lowv8qi_be): New.
+	(vec_interleave_lowv8qi_le): New.
+	(insn_v1int_l): Handle big endian.
+	(vec_interleave_highv4hi): Handle big endian.
+	(vec_interleave_highv4hi_be): New.
+	(vec_interleave_highv4hi_le): New.
+	(insn_v2int_h): Handle big endian.
+	(vec_interleave_lowv4hi): Handle big endian.
+	(vec_interleave_lowv4hi_be): New.
+	(vec_interleave_lowv4hi_le): New.
+	(insn_v2int_l): Handle big endian.
+	(vec_interleave_highv2si): Handle big endian.
+	(vec_interleave_highv2si_be): New.
+	(vec_interleave_highv2si_le): New.
+	(insn_v4int_h): Handle big endian.
+	(vec_interleave_lowv2si): Handle big endian.
+	(vec_interleave_lowv2si_be): New.
+	(vec_interleave_lowv2si_le): New.
+	(insn_v4int_l): Handle big endian.
+	* config/tilegx/tilegx.opt (mbig-endian): New option.
+	(mlittle-endian): New option.
+	* doc/install.texi: Document tilegxbe-linux.
+	* doc/invoke.texi: Document -mbig-endian and -mlittle-endian.
+
+2014-02-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/60266
+	* ipa-cp.c (propagate_constants_accross_call): Bail out early if
+	there are no parameter descriptors.
+
 2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60268
@@ -18,16 +385,15 @@
 
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
-	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
-	and define TARGET_ASM_OUTPUT_MI_THUNK and
-	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
+	* /config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk,
+	define TARGET_ASM_OUTPUT_MI_THUNK and TARGET_ASM_CAN_OUTPUT_MI_THUNK.
 
 2014-02-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/predicates.md: Add cmp_op predicate.
-	* config/microblaze/microblaze.md: Add branch_compare instruction 
+	* config/microblaze/microblaze.md: Add branch_compare instruction
 	which uses cmp_op predicate and emits cmp insn before branch.
-	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename 
+	* config/microblaze/microblaze.c (microblaze_emit_compare): Rename
 	to microblaze_expand_conditional_branch and consolidate logic.
 	(microblaze_expand_conditional_branch): emit branch_compare
 	insn instead of handling cmp op separate from branch insn.
@@ -53,8 +419,7 @@
 2014-02-22  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/avr/avr.c (avr_can_eliminate): Allow elimination from
-	ARG_POINTER_REGNUM
-	to STACK_POINTER_REGNUM if !frame_pointer_needed.
+	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM if !frame_pointer_needed.
 	* config/avr/avr.c (ELIMINABLE_REGS): Add elimination from
 	ARG_POINTER_REGNUM to STACK_POINTER_REGNUM.
 
@@ -74,8 +439,7 @@
 2014-02-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (altivec_lvxl): Rename as
-	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of
-	V4SI.
+	*altivec_lvxl_<mode>_internal and use VM2 iterator instead of V4SI.
 	(altivec_lvxl_<mode>): New define_expand incorporating
 	-maltivec=be semantics where needed.
 	(altivec_lvx): Rename as *altivec_lvx_<mode>_internal.
@@ -90,16 +454,14 @@
 	-maltivec=be semantics where needed.
 	* config/rs6000/rs6000-builtin.def: Add new built-in definitions
 	LVXL_V2DF, LVXL_V2DI, LVXL_V4SF, LVXL_V4SI, LVXL_V8HI, LVXL_V16QI,
-	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI,
-	STVX_V2DF, STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI,
-	STVXL_V2DF, STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI,
-	STVXL_V16QI.
+	LVX_V2DF, LVX_V2DI, LVX_V4SF, LVX_V4SI, LVX_V8HI, LVX_V16QI, STVX_V2DF,
+	STVX_V2DI, STVX_V4SF, STVX_V4SI, STVX_V8HI, STVX_V16QI, STVXL_V2DF,
+	STVXL_V2DI, STVXL_V4SF, STVXL_V4SI, STVXL_V8HI, STVXL_V16QI.
 	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Replace
 	ALTIVEC_BUILTIN_LVX with ALTIVEC_BUILTIN_LVX_<MODE> throughout;
 	similarly for ALTIVEC_BUILTIN_LVXL, ALTIVEC_BUILTIN_STVX, and
 	ALTIVEC_BUILTIN_STVXL.
-	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New
-	prototype.
+	* config/rs6000/rs6000-protos.h (altivec_expand_lvx_be): New prototype.
 	(altivec_expand_stvx_be): Likewise.
 	* config/rs6000/rs6000.c (swap_selector_for_mode): New function.
 	(altivec_expand_lvx_be): Likewise.
@@ -109,8 +471,7 @@
 	ALTIVEC_BUILTIN_LVXL_<MODE>, and ALTIVEC_BUILTIN_LVX_<MODE>.
 	(altivec_init_builtins): Add definitions for
 	__builtin_altivec_lvxl_<mode>, __builtin_altivec_lvx_<mode>,
-	__builtin_altivec_stvx_<mode>, and
-	__builtin_altivec_stvxl_<mode>.
+	__builtin_altivec_stvx_<mode>, and __builtin_altivec_stvxl_<mode>.
 
 2014-02-21  Catherine Moore  <clm@codesourcery.com>
 
@@ -195,8 +556,8 @@
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (unspec): Add UNSPEC_PIC_GOTOFF_SYM enum.
-	* config/nios2/nios2.c (nios2_function_profiler):
-	Add -fPIC (flag_pic == 2) support.
+	* config/nios2/nios2.c (nios2_function_profiler): Add
+	-fPIC (flag_pic == 2) support.
 	(nios2_handle_custom_fpu_cfg): Fix warning parameter.
 	(nios2_large_offset_p): New function.
 	(nios2_unspec_reloc_p): Move up position, update to use

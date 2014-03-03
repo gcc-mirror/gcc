@@ -24,3 +24,5 @@ A<int*, float*>::X<&i> apple2; // { dg-error "wrong number of template arguments
 A<int*, float*>::X<&i, &f, &f> apple3; // { dg-error "wrong number of template arguments" "wrong number" }
 // { dg-error "invalid type" "invalid" { target *-*-* } 24 }
 A<int, float> apple4;
+
+// { dg-prune-output "provided for" }

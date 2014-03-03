@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3664,7 +3664,7 @@ package body Sem_Ch8 is
         or else Ekind (E) /= E_Discriminant
         or else Inside_A_Generic
       then
-         Set_Entity_With_Style_Check (N, E);
+         Set_Entity_With_Checks (N, E);
 
       --  The replacement of a discriminant by the corresponding discriminal
       --  is not done for a task discriminant that appears in a default
@@ -5058,16 +5058,16 @@ package body Sem_Ch8 is
          end if;
 
          --  Set the entity. Note that the reason we call Set_Entity for the
-         --  overloadable case, as opposed to Set_Entity_With_Style_Check is
+         --  overloadable case, as opposed to Set_Entity_With_Checks is
          --  that in the overloaded case, the initial call can set the wrong
          --  homonym. The call that sets the right homonym is in Sem_Res and
-         --  that call does use Set_Entity_With_Style_Check, so we don't miss
+         --  that call does use Set_Entity_With_Checks, so we don't miss
          --  a style check.
 
          if Is_Overloadable (E) then
             Set_Entity (N, E);
          else
-            Set_Entity_With_Style_Check (N, E);
+            Set_Entity_With_Checks (N, E);
          end if;
 
          if Is_Type (E) then
@@ -6579,7 +6579,7 @@ package body Sem_Ch8 is
                   C := Class_Wide_Type (Entity (Prefix (N)));
                end if;
 
-               Set_Entity_With_Style_Check (N, C);
+               Set_Entity_With_Checks (N, C);
                Generate_Reference (C, N);
                Set_Etype (N, C);
             end if;

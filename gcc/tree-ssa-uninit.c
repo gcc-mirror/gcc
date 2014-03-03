@@ -2355,7 +2355,7 @@ execute_late_warn_uninitialized (void)
 static bool
 gate_warn_uninitialized (void)
 {
-  return warn_uninitialized != 0;
+  return warn_uninitialized || warn_maybe_uninitialized;
 }
 
 namespace {

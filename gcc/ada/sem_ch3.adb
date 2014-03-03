@@ -1245,6 +1245,7 @@ package body Sem_Ch3 is
       --  be updated when the full type declaration is seen. This only applies
       --  to incomplete types declared in some enclosing scope, not to limited
       --  views from other packages.
+
       --  Prior to Ada 2012, access to functions can only have in_parameters.
 
       if Present (Formals) then
@@ -2381,7 +2382,9 @@ package body Sem_Ch3 is
          elsif Nkind (Decl) = N_Subprogram_Body then
             Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
 
-         elsif Nkind (Decl) = N_Subprogram_Declaration then
+         elsif Nkind_In (Decl, N_Subprogram_Declaration,
+                               N_Abstract_Subprogram_Declaration)
+         then
             Analyze_Subprogram_Contract (Defining_Entity (Decl));
          end if;
 
@@ -2990,14 +2993,13 @@ package body Sem_Ch3 is
          --  A constant cannot be volatile. This check is only relevant when
          --  SPARK_Mode is on as it is not standard Ada legality rule. Do not
          --  flag internally-generated constants that map generic formals to
-         --  actuals in instantiations.
+         --  actuals in instantiations (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
            and then Is_SPARK_Volatile_Object (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
          then
-            Error_Msg_N
-              ("constant cannot be volatile (SPARK RM 7.1.3(4))", Obj_Id);
+            Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
@@ -3008,13 +3010,14 @@ package body Sem_Ch3 is
          if SPARK_Mode = On then
 
             --  A non-volatile object cannot have volatile components
+            --  (SPARK RM 7.1.3(7)).
 
             if not Is_SPARK_Volatile_Object (Obj_Id)
               and then Has_Volatile_Component (Etype (Obj_Id))
             then
                Error_Msg_N
-                 ("non-volatile variable & cannot have volatile components "
-                  & "(SPARK RM 7.1.3(6))", Obj_Id);
+                 ("non-volatile variable & cannot have volatile components",
+                  Obj_Id);
 
             --  The declaration of a volatile object must appear at the library
             --  level.
@@ -5004,6 +5007,16 @@ package body Sem_Ch3 is
       while Present (Index) loop
          Analyze (Index);
 
+         --  Test for odd case of trying to index a type by the type itself
+
+         if Is_Entity_Name (Index) and then Entity (Index) = T then
+            Error_Msg_N ("type& cannot be indexed by itself", Index);
+            Set_Entity (Index, Standard_Boolean);
+            Set_Etype (Index, Standard_Boolean);
+         end if;
+
+         --  Check SPARK restriction requiring a subtype mark
+
          if not Nkind_In (Index, N_Identifier, N_Expanded_Name) then
             Check_SPARK_Restriction ("subtype mark required", Index);
          end if;
@@ -6396,6 +6409,11 @@ package body Sem_Ch3 is
                null;
             end if;
          end if;
+      end if;
+
+      if Is_Integer_Type (Parent_Type) then
+         Set_Has_Shift_Operator
+           (Implicit_Base, Has_Shift_Operator (Parent_Type));
       end if;
 
       --  The type of the bounds is that of the parent type, and they
@@ -9705,8 +9723,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Ada 2012 (AI05-0030): Perform some checks related to pragma
-         --  Implemented
+         --  Ada 2012 (AI05-0030): Perform checks related to pragma Implemented
 
          --  Subp is an expander-generated procedure which maps an interface
          --  alias to a protected wrapper. The interface alias is flagged by
@@ -10566,15 +10583,14 @@ package body Sem_Ch3 is
                --  the full view is tagged: must disallow discriminants with
                --  defaults, unless compiling for Ada 2012, which allows a
                --  limited tagged type to have defaulted discriminants (see
-               --  AI05-0214). However, suppress the error here if it was
-               --  already reported on the default expression of the partial
-               --  view.
+               --  AI05-0214). However, suppress error here if it was already
+               --  reported on the default expression of the partial view.
 
                if Is_Tagged_Type (T)
-                    and then Present (Expression (Parent (D)))
-                    and then (not Is_Limited_Type (Current_Scope)
-                               or else Ada_Version < Ada_2012)
-                    and then not Error_Posted (Expression (Parent (D)))
+                 and then Present (Expression (Parent (D)))
+                 and then (not Is_Limited_Type (Current_Scope)
+                            or else Ada_Version < Ada_2012)
+                 and then not Error_Posted (Expression (Parent (D)))
                then
                   if Ada_Version >= Ada_2012 then
                      Error_Msg_N
@@ -14806,7 +14822,7 @@ package body Sem_Ch3 is
       if Parent_Type = Any_Type
         or else Etype (Parent_Type) = Any_Type
         or else (Is_Class_Wide_Type (Parent_Type)
-                   and then Etype (Parent_Type) = T)
+                  and then Etype (Parent_Type) = T)
       then
          --  If Parent_Type is undefined or illegal, make new type into a
          --  subtype of Any_Type, and set a few attributes to prevent cascaded
@@ -15422,6 +15438,7 @@ package body Sem_Ch3 is
                Error_Msg_NE
                  ("full declaration of } must be a tagged type ", Id, Prev);
             end if;
+
          else
             if Ada_Version >= Ada_2012
               and then Nkind (N) = N_Private_Type_Declaration
@@ -15468,9 +15485,9 @@ package body Sem_Ch3 is
                                 N_Protected_Type_Declaration)
            and then
              (Ada_Version < Ada_2012
-                or else not Is_Incomplete_Type (Prev)
-                or else not Nkind_In (N, N_Private_Type_Declaration,
-                                         N_Private_Extension_Declaration))
+               or else not Is_Incomplete_Type (Prev)
+               or else not Nkind_In (N, N_Private_Type_Declaration,
+                                        N_Private_Extension_Declaration))
          then
             --  Completion must be a full type declarations (RM 7.3(4))
 
@@ -15679,7 +15696,7 @@ package body Sem_Ch3 is
                        or else Present (Class_Wide_Type (Prev)))
          then
             --  Ada 2012 (AI05-0162): A private type may be the completion of
-            --  an incomplete type
+            --  an incomplete type.
 
             if Ada_Version >= Ada_2012
               and then Is_Incomplete_Type (Prev)
@@ -18040,13 +18057,13 @@ package body Sem_Ch3 is
          end if;
 
          --  A discriminant cannot be volatile. This check is only relevant
-         --  when SPARK_Mode is on as it is not standard Ada legality rule.
+         --  when SPARK_Mode is on as it is not standard Ada legality rule
+         --  (SPARK RM 7.1.3(6)).
 
          if SPARK_Mode = On
            and then Is_SPARK_Volatile_Object (Defining_Identifier (Discr))
          then
-            Error_Msg_N
-              ("discriminant cannot be volatile (SPARK RM 7.1.3(6))", Discr);
+            Error_Msg_N ("discriminant cannot be volatile", Discr);
          end if;
 
          Next (Discr);
@@ -18454,13 +18471,22 @@ package body Sem_Ch3 is
          end if;
 
       else
-         --  For untagged types, verify that a type without discriminants
-         --  is not completed with an unconstrained type.
+         --  For untagged types, verify that a type without discriminants is
+         --  not completed with an unconstrained type. A separate error message
+         --  is produced if the full type has defaulted discriminants.
 
          if not Is_Indefinite_Subtype (Priv_T)
            and then Is_Indefinite_Subtype (Full_T)
          then
-            Error_Msg_N ("full view of type must be definite subtype", Full_T);
+            Error_Msg_Sloc := Sloc (Parent (Priv_T));
+            Error_Msg_NE
+              ("full view of& not compatible with declaration#",
+               Full_T, Priv_T);
+
+            if not Is_Tagged_Type (Full_T) then
+               Error_Msg_N
+                 ("\one is constrained, the other unconstrained", Full_T);
+            end if;
          end if;
       end if;
 

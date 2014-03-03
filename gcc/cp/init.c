@@ -1123,7 +1123,13 @@ build_vtbl_address (tree binfo)
   /* Figure out what vtable BINFO's vtable is based on, and mark it as
      used.  */
   vtbl = get_vtbl_decl_for_binfo (binfo_for);
-  TREE_USED (vtbl) = 1;
+  if (tree dtor = CLASSTYPE_DESTRUCTORS (DECL_CONTEXT (vtbl)))
+    if (!TREE_USED (vtbl) && DECL_VIRTUAL_P (dtor) && DECL_DEFAULTED_FN (dtor))
+      /* Make sure the destructor gets synthesized so that it can be
+	 inlined after devirtualization even if the vtable is never
+	 emitted.  */
+      note_vague_linkage_fn (dtor);
+  TREE_USED (vtbl) = true;
 
   /* Now compute the address to use when initializing the vptr.  */
   vtbl = unshare_expr (BINFO_VTABLE (binfo_for));

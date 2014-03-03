@@ -237,6 +237,7 @@ package Snames is
 
    Name_Const                          : constant Name_Id := N + $;
    Name_Error                          : constant Name_Id := N + $;
+   Name_False                          : constant Name_Id := N + $;
    Name_Go                             : constant Name_Id := N + $;
    Name_Put                            : constant Name_Id := N + $;
    Name_Put_Line                       : constant Name_Id := N + $;
@@ -374,6 +375,7 @@ package Snames is
    Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
    Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Compiler_Unit                  : constant Name_Id := N + $; -- GNAT
+   Name_Compiler_Unit_Warning          : constant Name_Id := N + $; -- GNAT
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
@@ -443,6 +445,7 @@ package Snames is
    Name_Unsuppress                     : constant Name_Id := N + $; -- Ada 05
    Name_Use_VADS_Size                  : constant Name_Id := N + $; -- GNAT
    Name_Validity_Checks                : constant Name_Id := N + $; -- GNAT
+   Name_Warning_As_Error               : constant Name_Id := N + $; -- GNAT
    Name_Warnings                       : constant Name_Id := N + $; -- GNAT
    Name_Wide_Character_Encoding        : constant Name_Id := N + $; -- GNAT
    Last_Configuration_Pragma_Name      : constant Name_Id := N + $;
@@ -584,6 +587,7 @@ package Snames is
    --  correctly recognize and process Priority. Priority is a standard Ada 95
    --  pragma.
 
+   Name_Provide_Shift_Operators        : constant Name_Id := N + $; -- GNAT
    Name_Psect_Object                   : constant Name_Id := N + $; -- VMS
    Name_Pure                           : constant Name_Id := N + $;
    Name_Pure_05                        : constant Name_Id := N + $; -- GNAT
@@ -685,6 +689,7 @@ package Snames is
 
    --  Other special names used in processing pragmas
 
+   Name_Amount                         : constant Name_Id := N + $;
    Name_As_Is                          : constant Name_Id := N + $;
    Name_Assertion                      : constant Name_Id := N + $;
    Name_Assertions                     : constant Name_Id := N + $;
@@ -1232,6 +1237,7 @@ package Snames is
    Name_Archive_Builder_Append_Option      : constant Name_Id := N + $;
    Name_Archive_Indexer                    : constant Name_Id := N + $;
    Name_Archive_Suffix                     : constant Name_Id := N + $;
+   Name_Artifacts                          : constant Name_Id := N + $;
    Name_Artifacts_In_Exec_Dir              : constant Name_Id := N + $; -- GB
    Name_Artifacts_In_Object_Dir            : constant Name_Id := N + $; -- GB
    Name_Binder                             : constant Name_Id := N + $;
@@ -1729,6 +1735,7 @@ package Snames is
       Pragma_Compile_Time_Error,
       Pragma_Compile_Time_Warning,
       Pragma_Compiler_Unit,
+      Pragma_Compiler_Unit_Warning,
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
@@ -1784,6 +1791,7 @@ package Snames is
       Pragma_Unsuppress,
       Pragma_Use_VADS_Size,
       Pragma_Validity_Checks,
+      Pragma_Warning_As_Error,
       Pragma_Warnings,
       Pragma_Wide_Character_Encoding,
 
@@ -1886,6 +1894,7 @@ package Snames is
       Pragma_Preelaborate,
       Pragma_Preelaborate_05,
       Pragma_Pre_Class,
+      Pragma_Provide_Shift_Operators,
       Pragma_Psect_Object,
       Pragma_Pure,
       Pragma_Pure_05,

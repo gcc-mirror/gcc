@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,11 @@ package Sem_Util is
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
    --  freeze node of E.
+
+   procedure Add_Block_Identifier (N : Node_Id; Id : out Entity_Id);
+   --  Given a block statement N, generate an internal E_Block label and make
+   --  it the identifier of the block. Id denotes the generated entity. If the
+   --  block already has an identifier, Id returns the entity of its label.
 
    procedure Add_Contract_Item (Prag : Node_Id; Id : Entity_Id);
    --  Add pragma Prag to the contract of an entry, a package [body], a
@@ -568,6 +573,11 @@ package Sem_Util is
    --  to a discriminant carries the discriminant that it denotes when it is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
+
+   function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id;
+   --  Given an arbitrary entity, try to find the nearest enclosing iterator
+   --  loop. If such a loop is found, return the entity of its identifier (the
+   --  E_Loop scope), otherwise return Empty.
 
    function Find_Loop_In_Conditional_Block (N : Node_Id) return Node_Id;
    --  Find the nested loop statement in a conditional block. Loops subject to
@@ -1739,6 +1749,8 @@ package Sem_Util is
    --  Same as Basic_Set_Convention, but with an extra check for access types.
    --  In particular, if E is an access-to-subprogram type, and Val is a
    --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
+   --  Also, if the Etype of E is set and is an anonymous access type with
+   --  no convention set, this anonymous type inherits the convention of E.
 
    procedure Set_Current_Entity (E : Entity_Id);
    pragma Inline (Set_Current_Entity);
@@ -1753,11 +1765,22 @@ package Sem_Util is
    --  This routine should always be used instead of Set_Needs_Debug_Info to
    --  ensure that subsidiary entities are properly handled.
 
-   procedure Set_Entity_With_Style_Check (N : Node_Id; Val : Entity_Id);
-   --  This procedure has the same calling sequence as Set_Entity, but
-   --  if Style_Check is set, then it calls a style checking routine which
-   --  can check identifier spelling style. This procedure also takes care
-   --  of checking the restriction No_Implementation_Identifiers.
+   procedure Set_Entity_With_Checks (N : Node_Id; Val : Entity_Id);
+   --  This procedure has the same calling sequence as Set_Entity, but it
+   --  performs additional checks as follows:
+   --
+   --    If Style_Check is set, then it calls a style checking routine which
+   --    can check identifier spelling style. This procedure also takes care
+   --    of checking the restriction No_Implementation_Identifiers.
+   --
+   --    If restriction No_Abort_Statements is set, then it checks that the
+   --    entity is not Ada.Task_Identification.Abort_Task.
+   --
+   --    If restriction No_Dynamic_Attachment is set, then it checks that the
+   --    entity is not one of the restricted names for this restriction.
+   --
+   --    If restriction No_Implementation_Identifiers is set, then it checks
+   --    that the entity is not implementation defined.
 
    procedure Set_Name_Entity_Id (Id : Name_Id; Val : Entity_Id);
    pragma Inline (Set_Name_Entity_Id);

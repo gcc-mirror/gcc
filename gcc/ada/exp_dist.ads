@@ -95,15 +95,17 @@ package Exp_Dist is
    --  Build a literal representing the remote subprogram identifier of E
 
    function Copy_Specification
-     (Loc         : Source_Ptr;
-      Spec        : Node_Id;
-      Ctrl_Type   : Entity_Id := Empty;
-      New_Name    : Name_Id   := No_Name) return Node_Id;
+     (Loc       : Source_Ptr;
+      Spec      : Node_Id;
+      Ctrl_Type : Entity_Id := Empty;
+      New_Name  : Name_Id   := No_Name) return Node_Id;
    --  Build a subprogram specification from another one, or from an
    --  access-to-subprogram definition. If Ctrl_Type is not Empty, and any
    --  controlling formal of an anonymous access type is found, then it is
    --  replaced by an access to Ctrl_Type. If New_Name is given, then it will
    --  be used as the name for the newly created spec.
+   --
+   --  Possibly factor this wrt Exp_Ch9.Build_Private_Protected_Declaration???
 
    function Corresponding_Stub_Type (RACW_Type : Entity_Id) return Entity_Id;
    --  Return the stub type associated with the given RACW type

@@ -4250,8 +4250,7 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	  type = c_common_unsigned_type (type);
 	}
 
-      if (TREE_CODE (primop0) != INTEGER_CST
-	  && c_inhibit_evaluation_warnings == 0)
+      if (TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  if (val == truthvalue_false_node)
 	    warning_at (loc, OPT_Wtype_limits,
@@ -4331,7 +4330,6 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	     warning.  */
 	  bool warn = 
 	    warn_type_limits && !in_system_header_at (loc)
-	    && c_inhibit_evaluation_warnings == 0
 	    && !(TREE_CODE (primop0) == INTEGER_CST
 		 && !TREE_OVERFLOW (convert (c_common_signed_type (type),
 					     primop0)))

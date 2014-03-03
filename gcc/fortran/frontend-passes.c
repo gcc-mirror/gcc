@@ -1391,7 +1391,9 @@ optimize_comparison (gfc_expr *e, gfc_intrinsic_op op)
 	  /* Replace A // B < A // C with B < C, and A // B < C // B
 	     with A < C.  */
 	  if (op1->ts.type == BT_CHARACTER && op2->ts.type == BT_CHARACTER
+	      && op1->expr_type == EXPR_OP
 	      && op1->value.op.op == INTRINSIC_CONCAT
+	      && op2->expr_type == EXPR_OP
 	      && op2->value.op.op == INTRINSIC_CONCAT)
 	    {
 	      gfc_expr *op1_left = op1->value.op.op1;

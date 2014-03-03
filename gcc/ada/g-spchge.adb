@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 package body GNAT.Spelling_Checker_Generic is
 

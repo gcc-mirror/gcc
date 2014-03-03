@@ -544,11 +544,17 @@ package body Sem_Disp is
             --  the current declarative part. The expression will be properly
             --  rewritten/reanalyzed when the postcondition procedure is built.
 
+            --  Similarly, if this is a pre/postcondition for an abstract
+            --  subprogram, it may call another abstract function which is
+            --  a primitive of an abstract type. The call is non-dispatching
+            --  but will be legal in overridings of the operation.
+
             elsif In_Spec_Expression
               and then Is_Subprogram (Current_Scope)
               and then
-                Nkind (Parent (Current_Scope)) = N_Procedure_Specification
-              and then Null_Present (Parent (Current_Scope))
+                ((Nkind (Parent (Current_Scope)) = N_Procedure_Specification
+                   and then Null_Present (Parent (Current_Scope)))
+                 or else Is_Abstract_Subprogram (Current_Scope))
             then
                null;
 

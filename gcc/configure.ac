@@ -1378,6 +1378,10 @@ force_sjlj_exceptions=yes],
     force_sjlj_exceptions=yes
     enableval=yes
     ;;
+  lm32*-*-*)
+     force_sjlj_exceptions=yes
+     enableval=yes
+     ;;
   *)
     force_sjlj_exceptions=no
     ;;

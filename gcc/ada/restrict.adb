@@ -171,7 +171,7 @@ package body Restrict is
    procedure Check_Compiler_Unit (N : Node_Id) is
    begin
       if Is_Compiler_Unit (Get_Source_Unit (N)) then
-         Error_Msg_N ("use of construct not allowed in compiler", N);
+         Error_Msg_N ("use of construct not allowed in compiler!!??", N);
       end if;
    end Check_Compiler_Unit;
 

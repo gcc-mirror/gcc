@@ -117,6 +117,18 @@ lto_write_options (void)
       default:
 	gcc_unreachable ();
       }
+  /* We need to merge -f[no-]strict-overflow, -f[no-]wrapv and -f[no-]trapv
+     conservatively, so stream out their defaults.  */
+  if (!global_options_set.x_flag_wrapv
+      && global_options.x_flag_wrapv)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fwrapv");
+  if (!global_options_set.x_flag_trapv
+      && !global_options.x_flag_trapv)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-trapv");
+  if (!global_options_set.x_flag_strict_overflow
+      && !global_options.x_flag_strict_overflow)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p,
+			       "-fno-strict-overflow");
 
   /* Output explicitly passed options.  */
   for (i = 1; i < save_decoded_options_count; ++i)

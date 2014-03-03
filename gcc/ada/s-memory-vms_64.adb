@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@
 --  you can remove the calls to Abort_Defer.all and Abort_Undefer.all from
 --  this unit.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with Ada.Exceptions;
 with System.Soft_Links;

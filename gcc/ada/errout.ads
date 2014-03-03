@@ -252,7 +252,8 @@ package Errout is
    --      avoided. This is currently used by the Compile_Time_Warning pragma
    --      to ensure the message for a with'ed unit is output, and for warnings
    --      on ineffective back-end inlining, which is detected in units that
-   --      contain subprograms to be inlined in the main program.
+   --      contain subprograms to be inlined in the main program. It is also
+   --      used by the Compiler_Unit_Warning pragma for similar reasons.
 
    --    Insertion character ? (Question: warning message)
    --      The character ? appearing anywhere in a message makes the message
@@ -316,6 +317,10 @@ package Errout is
    --      quotes are added unless manual quotation mode is currently set.
    --      RM and SPARK are special exceptions, they are never treated as
    --      keywords, and just appear verbatim, with no surrounding quotes.
+   --      As a special case, 'R'M is used instead of RM (which is not treated
+   --      as a keyword) to indicate when the reference to the RM is possibly
+   --      not useful anymore, and could possibly be replaced by a comment
+   --      in the source.
 
    --    Insertion character ` (Backquote: set manual quotation mode)
    --      The backquote character always appears in pairs. Each backquote of
@@ -327,7 +332,7 @@ package Errout is
    --    Insertion character ' (Quote: literal character)
    --      Precedes a character which is placed literally into the message.
    --      Used to insert characters into messages that are one of the
-   --      insertion characters defined here. Also used when insertion
+   --      insertion characters defined here. Also used for insertion of
    --      upper case letter sequences not to be treated as keywords.
 
    --    Insertion character \ (Backslash: continuation message)

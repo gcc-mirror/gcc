@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with Ada.Streams;              use Ada.Streams;
 with Ada.Streams.Stream_IO;    use Ada.Streams.Stream_IO;

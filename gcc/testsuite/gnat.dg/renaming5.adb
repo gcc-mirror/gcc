@@ -26,5 +26,5 @@ package body Renaming5 is
 
 end Renaming5;
 
--- { dg-final { scan-tree-dump-times "goto" 3 "optimized" } }
+-- { dg-final { scan-tree-dump-times "goto" 2 "optimized" } }
 -- { dg-final { cleanup-tree-dump "optimized" } }

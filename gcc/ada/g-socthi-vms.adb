@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2012, AdaCore                     --
+--                     Copyright (C) 2001-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,9 +65,6 @@ package body GNAT.Sockets.Thin is
    --  When SOSC.Thread_Blocking_IO is False, we set sockets to non-blocking
    --  mode and we spend a period of time Quantum between two attempts on a
    --  blocking operation.
-
-   Unknown_System_Error : constant C.Strings.chars_ptr :=
-                            C.Strings.New_String ("Unknown system error");
 
    function Syscall_Accept
      (S       : C.int;
@@ -500,8 +497,6 @@ package body GNAT.Sockets.Thin is
    -- Socket_Error_Message --
    --------------------------
 
-   function Socket_Error_Message
-     (Errno : Integer) return C.Strings.chars_ptr
-   is separate;
+   function Socket_Error_Message (Errno : Integer) return String is separate;
 
 end GNAT.Sockets.Thin;

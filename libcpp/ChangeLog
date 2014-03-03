@@ -1,3 +1,8 @@
+2014-02-24  Walter Lee  <walt@tilera.com>
+
+	* configure.ac: Change "tilepro" triplet to "tilepro*".
+	* configure: Regenerate.
+
 2014-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/58844

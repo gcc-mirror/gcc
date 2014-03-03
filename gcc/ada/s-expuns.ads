@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This procedure performs exponentiation of unsigned types (with binary
+--  This function performs exponentiation of unsigned types (with binary
 --  modulus values up to and including that of Unsigned_Types.Unsigned).
 --  The result is always full width, the caller must do a masking operation
 --  the modulus is less than 2 ** (Unsigned'Size).

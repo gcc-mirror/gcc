@@ -869,15 +869,18 @@ package body System.Tasking.Stages is
 
       Write_Lock (Self_ID);
 
-      --  If the Abort_Task signal is set to system, it means that we may not
-      --  have been able to abort all independent tasks (in particular
-      --  Server_Task may be blocked, waiting for a signal), in which case,
-      --  do not wait for Independent_Task_Count to go down to 0.
+      --  If the Abort_Task signal is set to system, it means that we may
+      --  not have been able to abort all independent tasks (in particular
+      --  Server_Task may be blocked, waiting for a signal), in which case, do
+      --  not wait for Independent_Task_Count to go down to 0. We arbitrarily
+      --  limit the number of loop iterations; if an independent task does not
+      --  terminate, we do not want to hang here. In that case, the thread will
+      --  be terminated when the process exits.
 
-      if State
-          (System.Interrupt_Management.Abort_Task_Interrupt) /= Default
+      if State (System.Interrupt_Management.Abort_Task_Interrupt) /=
+        Default
       then
-         loop
+         for J in 1 .. 10 loop
             exit when Utilities.Independent_Task_Count = 0;
 
             --  We used to yield here, but this did not take into account low

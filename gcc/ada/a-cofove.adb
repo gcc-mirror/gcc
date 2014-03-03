@@ -313,6 +313,33 @@ package body Ada.Containers.Formal_Vectors is
       end return;
    end Copy;
 
+   ---------------------
+   -- Current_To_Last --
+   ---------------------
+
+   function Current_To_Last
+     (Container : Vector;
+      Current   : Cursor) return Vector
+   is
+      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
+
+   begin
+      if Current = No_Element then
+         Clear (C);
+         return C;
+
+      elsif not Has_Element (Container, Current) then
+         raise Constraint_Error;
+
+      else
+         while C.Last /= Container.Last - Current.Index + 1 loop
+            Delete_First (C);
+         end loop;
+
+         return C;
+      end if;
+   end Current_To_Last;
+
    ------------
    -- Delete --
    ------------
@@ -577,6 +604,32 @@ package body Ada.Containers.Formal_Vectors is
    begin
       return Index_Type'First;
    end First_Index;
+
+   -----------------------
+   -- First_To_Previous --
+   -----------------------
+
+   function First_To_Previous
+     (Container : Vector;
+      Current   : Cursor) return Vector
+   is
+      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
+
+   begin
+      if Current = No_Element then
+         return C;
+
+      elsif not Has_Element (Container, Current) then
+         raise Constraint_Error;
+
+      else
+         while C.Last /= Current.Index - 1 loop
+            Delete_Last (C);
+         end loop;
+
+         return C;
+      end if;
+   end First_To_Previous;
 
    ---------------------
    -- Generic_Sorting --
@@ -1165,28 +1218,6 @@ package body Ada.Containers.Formal_Vectors is
    end Length;
 
    ----------
-   -- Left --
-   ----------
-
-   function Left (Container : Vector; Position : Cursor) return Vector is
-      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
-
-   begin
-      if Position = No_Element then
-         return C;
-      end if;
-
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error;
-      end if;
-
-      while C.Last /= Position.Index - 1 loop
-         Delete_Last (C);
-      end loop;
-      return C;
-   end Left;
-
-   ----------
    -- Move --
    ----------
 
@@ -1458,30 +1489,6 @@ package body Ada.Containers.Formal_Vectors is
 
       return No_Index;
    end Reverse_Find_Index;
-
-   -----------
-   -- Right --
-   -----------
-
-   function Right (Container : Vector; Position : Cursor) return Vector is
-      C : Vector (Container.Capacity) := Copy (Container, Container.Capacity);
-
-   begin
-      if Position = No_Element then
-         Clear (C);
-         return C;
-      end if;
-
-      if not Has_Element (Container, Position) then
-         raise Constraint_Error;
-      end if;
-
-      while C.Last /= Container.Last - Position.Index + 1 loop
-         Delete_First (C);
-      end loop;
-
-      return C;
-   end Right;
 
    ----------------
    -- Set_Length --

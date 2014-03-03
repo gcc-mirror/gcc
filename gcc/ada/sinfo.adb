@@ -1399,6 +1399,14 @@ package body Sinfo is
       return Flag6 (N);
    end From_Default;
 
+   function Generalized_Indexing
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Indexed_Component);
+      return Node4 (N);
+   end Generalized_Indexing;
+
    function Generic_Associations
       (N : Node_Id) return List_Id is
    begin
@@ -4530,6 +4538,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration);
       Set_Flag6 (N, Val);
    end Set_From_Default;
+
+   procedure Set_Generalized_Indexing
+      (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Indexed_Component);
+      Set_Node4 (N, Val);
+   end Set_Generalized_Indexing;
 
    procedure Set_Generic_Associations
       (N : Node_Id; Val : List_Id) is

@@ -848,6 +848,15 @@ package Lib.Writ is
    --  the spec of SPARK_Xrefs in file spark_xrefs.ads for full details of the
    --  format.
 
+   -------------------------------
+   -- ALI File Generation for C --
+   -------------------------------
+
+   --  The C compiler can also generate ALI files for use by the IDE's in
+   --  providing navigation services in C. These ALI files are a subset of
+   --  the specification above, lacking all Ada-specific output. Primarily
+   --  the IDE uses the cross-reference sections of such files.
+
    ----------------------
    -- Global Variables --
    ----------------------

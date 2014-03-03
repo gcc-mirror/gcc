@@ -1645,9 +1645,8 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       /* For an inheriting constructor template, just copy these flags from
 	 the inherited constructor template for now.  */
       raises = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (inherited_ctor));
-      deleted_p = DECL_DELETED_FN (DECL_TEMPLATE_RESULT (inherited_ctor));
-      constexpr_p
-	= DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT (inherited_ctor));
+      deleted_p = DECL_DELETED_FN (inherited_ctor);
+      constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
@@ -1726,8 +1725,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       TREE_PROTECTED (fn) = TREE_PROTECTED (inherited_ctor);
       /* Copy constexpr from the inherited constructor even if the
 	 inheriting constructor doesn't satisfy the requirements.  */
-      constexpr_p
-	= DECL_DECLARED_CONSTEXPR_P (STRIP_TEMPLATE (inherited_ctor));
+      constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
     }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);

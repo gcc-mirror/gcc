@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6330,11 +6330,16 @@ package body Exp_Ch9 is
          end if;
       end if;
 
-      --  It is not a boolean variable or literal, so check the restriction
-      --  and otherwise emit warning if barrier contains global entities and
-      --  is thus potentially unsynchronized.
+      --  It is not a boolean variable or literal, so check the restriction.
+      --  Note that it is safe to be calling Check_Restriction from here, even
+      --  though this is part of the expander, since Expand_Entry_Barrier is
+      --  called from Sem_Ch9 even in -gnatc mode.
 
       Check_Restriction (Simple_Barriers, Cond);
+
+      --  Emit warning if barrier contains global entities and is thus
+      --  potentially unsynchronized.
+
       Check_Unprotected_Barrier (Cond);
    end Expand_Entry_Barrier;
 
@@ -9079,6 +9084,12 @@ package body Exp_Ch9 is
                   --  warning on a protected type declaration.
 
                   if not Comes_From_Source (Prot_Typ) then
+
+                     --  It's ok to be checking this restriction at expansion
+                     --  time, because this is only for the restricted profile,
+                     --  which is not subject to strict RM conformance, so it
+                     --  is OK to miss this check in -gnatc mode.
+
                      Check_Restriction (No_Implicit_Heap_Allocations, Priv);
 
                   elsif Restriction_Active (No_Implicit_Heap_Allocations) then

@@ -4786,8 +4786,9 @@ package body Sem_Eval is
    ------------------------------------
 
    function Subtypes_Statically_Compatible
-     (T1 : Entity_Id;
-      T2 : Entity_Id) return Boolean
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean
    is
    begin
       --  Scalar types
@@ -4802,7 +4803,8 @@ package body Sem_Eval is
          --  If either subtype is nonstatic then they're not compatible
 
          elsif not Is_Static_Subtype (T1)
-           or else not Is_Static_Subtype (T2)
+                 or else
+               not Is_Static_Subtype (T2)
          then
             return False;
 
@@ -4863,7 +4865,7 @@ package body Sem_Eval is
 
       else
          return (Is_Composite_Type (T1) and then not Is_Constrained (T2))
-           or else Subtypes_Statically_Match (T1, T2);
+           or else Subtypes_Statically_Match (T1, T2, Formal_Derived_Matching);
       end if;
    end Subtypes_Statically_Compatible;
 
@@ -4877,19 +4879,29 @@ package body Sem_Eval is
    --  values match (RM 4.9.1(1)).
 
    --  In addition, in GNAT, the object size (Esize) values of the types must
-   --  match if they are set. The use of 'Object_Size can cause this to be
-   --  false even if the types would otherwise match in the RM sense.
+   --  match if they are set (unless checking an actual for a formal derived
+   --  type). The use of 'Object_Size can cause this to be false even if the
+   --  types would otherwise match in the RM sense.
 
-   function Subtypes_Statically_Match (T1, T2 : Entity_Id) return Boolean is
+   function Subtypes_Statically_Match
+     (T1                      : Entity_Id;
+      T2                      : Entity_Id;
+      Formal_Derived_Matching : Boolean := False) return Boolean
+   is
    begin
       --  A type always statically matches itself
 
       if T1 = T2 then
          return True;
 
-      --  No match if sizes different (from use of 'Object_Size)
+      --  No match if sizes different (from use of 'Object_Size). This test
+      --  is excluded if Formal_Derived_Matching is True, as the base types
+      --  can be different in that case and typically have different sizes
+      --  (and Esizes can be set when Frontend_Layout_On_Target is True).
 
-      elsif Known_Static_Esize (T1) and then Known_Static_Esize (T2)
+      elsif not Formal_Derived_Matching
+        and then Known_Static_Esize (T1)
+        and then Known_Static_Esize (T2)
         and then Esize (T1) /= Esize (T2)
       then
          return False;

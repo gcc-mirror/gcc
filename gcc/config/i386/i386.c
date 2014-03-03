@@ -2622,6 +2622,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mrtm",		OPTION_MASK_ISA_RTM },
     { "-mxsave",	OPTION_MASK_ISA_XSAVE },
     { "-mxsaveopt",	OPTION_MASK_ISA_XSAVEOPT },
+    { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
   };
 
   /* Flag options.  */
@@ -3112,6 +3113,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
 #define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
 #define PTA_SHA			(HOST_WIDE_INT_1 << 45)
+#define PTA_PREFETCHWT1		(HOST_WIDE_INT_1 << 46)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3666,6 +3668,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & PTA_AVX512CD
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512CD))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512CD;
+	if (processor_alias_table[i].flags & PTA_PREFETCHWT1
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PREFETCHWT1))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PREFETCHWT1;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4547,6 +4552,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("fxsr",	OPT_mfxsr),
     IX86_ATTR_ISA ("xsave",	OPT_mxsave),
     IX86_ATTR_ISA ("xsaveopt",	OPT_mxsaveopt),
+    IX86_ATTR_ISA ("prefetchwt1", OPT_mprefetchwt1),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30074,8 +30080,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_subv8di3_mask, "__builtin_ia32_psubq512_mask", IX86_BUILTIN_PSUBQ512, UNKNOWN, (int) V8DI_FTYPE_V8DI_V8DI_V8DI_QI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_testmv16si3_mask, "__builtin_ia32_ptestmd512", IX86_BUILTIN_PTESTMD512, UNKNOWN, (int) HI_FTYPE_V16SI_V16SI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_testmv8di3_mask, "__builtin_ia32_ptestmq512", IX86_BUILTIN_PTESTMQ512, UNKNOWN, (int) QI_FTYPE_V8DI_V8DI_QI },
-  { OPTION_MASK_ISA_AVX512CD, CODE_FOR_avx512f_testnmv16si3_mask, "__builtin_ia32_ptestnmd512", IX86_BUILTIN_PTESTNMD512, UNKNOWN, (int) HI_FTYPE_V16SI_V16SI_HI },
-  { OPTION_MASK_ISA_AVX512CD, CODE_FOR_avx512f_testnmv8di3_mask, "__builtin_ia32_ptestnmq512", IX86_BUILTIN_PTESTNMQ512, UNKNOWN, (int) QI_FTYPE_V8DI_V8DI_QI },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_testnmv16si3_mask, "__builtin_ia32_ptestnmd512", IX86_BUILTIN_PTESTNMD512, UNKNOWN, (int) HI_FTYPE_V16SI_V16SI_HI },
+  { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_testnmv8di3_mask, "__builtin_ia32_ptestnmq512", IX86_BUILTIN_PTESTNMQ512, UNKNOWN, (int) QI_FTYPE_V8DI_V8DI_QI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_interleave_highv16si_mask, "__builtin_ia32_punpckhdq512_mask", IX86_BUILTIN_PUNPCKHDQ512, UNKNOWN, (int) V16SI_FTYPE_V16SI_V16SI_V16SI_HI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_interleave_highv8di_mask, "__builtin_ia32_punpckhqdq512_mask", IX86_BUILTIN_PUNPCKHQDQ512, UNKNOWN, (int) V8DI_FTYPE_V8DI_V8DI_V8DI_QI },
   { OPTION_MASK_ISA_AVX512F, CODE_FOR_avx512f_interleave_lowv16si_mask, "__builtin_ia32_punpckldq512_mask", IX86_BUILTIN_PUNPCKLDQ512, UNKNOWN, (int) V16SI_FTYPE_V16SI_V16SI_V16SI_HI },

@@ -422,6 +422,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  break;
 
+	case OPT_ftrapv:
+	case OPT_fstrict_overflow:
 	case OPT_ffp_contract_:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
@@ -429,8 +431,22 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	      break;
 	  if (j == *decoded_options_count)
 	    append_option (decoded_options, decoded_options_count, foption);
-	  /* FP_CONTRACT_OFF < FP_CONTRACT_ON < FP_CONTRACT_FAST.  */
+	  /* FP_CONTRACT_OFF < FP_CONTRACT_ON < FP_CONTRACT_FAST,
+	     -fno-trapv < -ftrapv,
+	     -fno-strict-overflow < -fstrict-overflow  */
 	  else if (foption->value < (*decoded_options)[j].value)
+	    (*decoded_options)[j] = *foption;
+	  break;
+
+	case OPT_fwrapv:
+	  /* For selected options we can merge conservatively.  */
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == foption->opt_index)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  /* -fwrapv > -fno-wrapv.  */
+	  else if (foption->value > (*decoded_options)[j].value)
 	    (*decoded_options)[j] = *foption;
 	  break;
 
@@ -591,6 +607,9 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
 	case OPT_ffp_contract_:
+	case OPT_fwrapv:
+	case OPT_ftrapv:
+	case OPT_fstrict_overflow:
 	  break;
 
 	default:

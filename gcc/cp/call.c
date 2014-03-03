@@ -3180,6 +3180,10 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     inform (loc, "  no known conversion for implicit "
 	    "%<this%> parameter from %qT to %qT",
 	    info->from_type, info->to_type);
+  else if (info->n_arg == -2)
+    /* Conversion of conversion function return value failed.  */
+    inform (loc, "  no known conversion from %qT to %qT",
+	    info->from_type, info->to_type);
   else
     inform (loc, "  no known conversion for argument %d from %qT to %qT",
 	    info->n_arg+1, info->from_type, info->to_type);
@@ -3233,7 +3237,7 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%T <conversion>", msg, candidate->fn);
   else if (candidate->viable == -1)
     inform (cloc, "%s%#D <near match>", msg, candidate->fn);
-  else if (DECL_DELETED_FN (STRIP_TEMPLATE (candidate->fn)))
+  else if (DECL_DELETED_FN (candidate->fn))
     inform (cloc, "%s%#D <deleted>", msg, candidate->fn);
   else
     inform (cloc, "%s%#D", msg, candidate->fn);
@@ -3604,7 +3608,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	  if (!ics)
 	    {
 	      cand->viable = 0;
-	      cand->reason = arg_conversion_rejection (NULL_TREE, -1,
+	      cand->reason = arg_conversion_rejection (NULL_TREE, -2,
 						       rettype, totype);
 	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
@@ -3624,7 +3628,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	    {
 	      cand->viable = -1;
 	      cand->reason
-		= bad_arg_conversion_rejection (NULL_TREE, -1,
+		= bad_arg_conversion_rejection (NULL_TREE, -2,
 						rettype, totype);
 	    }
 	  else if (primary_template_instantiation_p (cand->fn)
@@ -6407,8 +6411,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	  if (complain & tf_error)
 	    error_at (loc, "cannot pass objects of non-trivially-copyable "
 		      "type %q#T through %<...%>", arg_type);
-	  else
-	    return error_mark_node;
+	  return error_mark_node;
 	}
     }
 

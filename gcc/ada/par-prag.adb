@@ -1154,6 +1154,7 @@ begin
            Pragma_Compile_Time_Error             |
            Pragma_Compile_Time_Warning           |
            Pragma_Compiler_Unit                  |
+           Pragma_Compiler_Unit_Warning          |
            Pragma_Contract_Cases                 |
            Pragma_Convention_Identifier          |
            Pragma_CPP_Class                      |
@@ -1277,6 +1278,7 @@ begin
            Pragma_Profile                        |
            Pragma_Profile_Warnings               |
            Pragma_Propagate_Exceptions           |
+           Pragma_Provide_Shift_Operators        |
            Pragma_Psect_Object                   |
            Pragma_Pure                           |
            Pragma_Pure_05                        |
@@ -1334,6 +1336,7 @@ begin
            Pragma_Use_VADS_Size                  |
            Pragma_Volatile                       |
            Pragma_Volatile_Components            |
+           Pragma_Warning_As_Error               |
            Pragma_Weak_External                  |
            Pragma_Validity_Checks                =>
          null;

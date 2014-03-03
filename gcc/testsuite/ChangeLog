@@ -1,3 +1,170 @@
+2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/60398
+	* obj-c++.dg/invalid-method-2.mm: Adjust dg-error regexps.
+
+	* c-c++-common/cilk-plus/PS/vectorlength-2.c: New test.
+	* c-c++-common/cilk-plus/PS/vectorlength-3.c: New test.
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60150
+	* g++.dg/lto/pr60150.H: New testcase.
+	* g++.dg/lto/pr60150_0.C: New testcase.
+	* g++.dg/lto/pr60150_1.C: New testcase.
+
+2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/60306
+	* testsuite/g++.dg/ipa/devirt-29.C: New testcase
+
+2014-03-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/60236
+	* gfortran.dg/vect/pr32380.f: Fix expected test results.
+
+2014-03-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/50025
+	* g++.dg/cpp0x/pr50025.C: New.
+
+2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60377
+	* g++.dg/cpp1y/pr60377.C: New testcase.
+
+2014-03-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60341
+	* gfortran.dg/str_comp_optimize_1.f90: New test.
+
+2014-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/60071
+	* gcc.c-torture/compile/pr60071.c: New.
+
+2014-02-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60359
+	* gfortran.dg/unlimited_polymorphic_16.f90: New.
+
+2014-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58610
+	* g++.dg/cpp0x/constexpr-ice11.C: New.
+
+2014-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60314
+	* g++.dg/cpp1y/auto-fn24.C: New.
+
+2014-02-28  Joey Ye  <joey.ye@arm.com>
+
+	PR target/PR60169
+	* gcc.target/arm/thumb1-far-jump-3.c: New case.
+
+2014-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60253
+	* g++.dg/overload/ellipsis2.C: New.
+
+2014-02-27  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/52714
+	* gcc.c-torture/compile/pr52714.c: New test.
+
+2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
+            Jeff Law  <law@redhat.com>
+
+	 PR rtl-optimization/49847
+	 * g++.dg/pr49847.C: New test.
+
+2014-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/59223
+	* c-c++-common/pr59223.c: New test.
+
+2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* common/config/i386/predicates.md (const1256_operand): Remove.
+	(const2356_operand): New.
+	(const_1_to_2_operand): Remove.
+	* config/i386/sse.md (avx512pf_gatherpf<mode>sf): Change hint value.
+	(*avx512pf_gatherpf<mode>sf_mask): Ditto.
+	(*avx512pf_gatherpf<mode>sf): Ditto.
+	(avx512pf_gatherpf<mode>df): Ditto.
+	(*avx512pf_gatherpf<mode>df_mask): Ditto.
+	(*avx512pf_gatherpf<mode>df): Ditto.
+	(avx512pf_scatterpf<mode>sf): Ditto.
+	(*avx512pf_scatterpf<mode>sf_mask): Ditto.
+	(*avx512pf_scatterpf<mode>sf): Ditto.
+	(avx512pf_scatterpf<mode>df): Ditto.
+	(*avx512pf_scatterpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df): Ditto.
+	* common/config/i386/xmmintrin.h (_mm_hint): Add _MM_HINT_ET0.
+
+2014-02-26  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx512cd-vptestnmd-1.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmd-1.c: This.
+	* gcc.target/i386/avx512cd-vptestnmq-1.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmq-1.c: This.
+	* gcc.target/i386/avx512cd-vptestnmd-2.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmd-2.c: This.
+	* gcc.target/i386/avx512cd-vptestnmq-2.c: Change into ...
+	* gcc.target/i386/avx512f-vptestnmq-2.c: This.
+
+2014-02-26  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/60280
+	* gnat.dg/renaming5.adb: Change to two expected gotos.
+	* gcc.dg/tree-ssa/pr21559.c: Change back to three expected
+	jump threads.
+	* gcc.dg/tree-prof/update-loopch.c: Check two "Invalid sum"
+	messages for removed basic block.
+	* gcc.dg/tree-ssa/ivopt_1.c: Fix unreliable scanning string.
+	* gcc.dg/tree-ssa/ivopt_2.c: Ditto.
+	* gcc.dg/tree-ssa/ivopt_3.c: Ditto.
+	* gcc.dg/tree-ssa/ivopt_4.c: Ditto.
+
+2014-02-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/ld-vsx.c: Don't use vec_all_eq.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+
+2014-02-25  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/avx-1.c: Update __builtin_prefetch.
+	* gcc.target/i386/prefetchwt1-1.c: New.
+	* g++.dg/other/i386-2.C: Add new option.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Update __builtin_prefetch, add new option.
+	* gcc.target/i386/sse-22.c: Add new option.
+	* gcc.target/i386/sse-23.c: Update __builtin_prefetch, add new option.
+
+2014-02-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libfortran/59313
+	* gfortran.dg/erf_3.F90: Skip on sparc*-*-solaris2.9*.
+
+	PR libfortran/58015
+	* gfortran.dg/round_4.f90: Skip on *-*-solaris2.9*.
+
+2014-02-25  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60311
+	* g++.dg/cpp1y/pr60311.C: New testcase.
+
+	* g++.dg/cpp1y/fn-generic-member-ool.C: New testcase.
+
+	PR c++/60065
+	* g++.dg/cpp1y/pr60065.C: New testcase.
+
 2014-02-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/60268

@@ -503,7 +503,7 @@ begin_maybe_infinite_loop (tree cond)
   bool maybe_infinite = true;
   if (cond)
     {
-      cond = fold_non_dependent_expr (cond);
+      cond = fold_non_dependent_expr_sfinae (cond, tf_none);
       cond = maybe_constant_value (cond);
       maybe_infinite = integer_nonzerop (cond);
     }
@@ -3941,8 +3941,7 @@ static inline bool
 is_instantiation_of_constexpr (tree fun)
 {
   return (DECL_TEMPLOID_INSTANTIATION (fun)
-	  && DECL_DECLARED_CONSTEXPR_P (DECL_TEMPLATE_RESULT
-					(DECL_TI_TEMPLATE (fun))));
+	  && DECL_DECLARED_CONSTEXPR_P (DECL_TI_TEMPLATE (fun)));
 }
 
 /* Generate RTL for FN.  */
@@ -3977,25 +3976,7 @@ expand_or_defer_fn_1 (tree fn)
 	/* We've already made a decision as to how this function will
 	   be handled.  */;
       else if (!at_eof)
-	{
-	  DECL_EXTERNAL (fn) = 1;
-	  DECL_NOT_REALLY_EXTERN (fn) = 1;
-	  note_vague_linkage_fn (fn);
-	  /* A non-template inline function with external linkage will
-	     always be COMDAT.  As we must eventually determine the
-	     linkage of all functions, and as that causes writes to
-	     the data mapped in from the PCH file, it's advantageous
-	     to mark the functions at this point.  */
-	  if (!DECL_IMPLICIT_INSTANTIATION (fn) || DECL_DEFAULTED_FN (fn))
-	    {
-	      /* This function must have external linkage, as
-		 otherwise DECL_INTERFACE_KNOWN would have been
-		 set.  */
-	      gcc_assert (TREE_PUBLIC (fn));
-	      comdat_linkage (fn);
-	      DECL_INTERFACE_KNOWN (fn) = 1;
-	    }
-	}
+	tentative_decl_linkage (fn);
       else
 	import_export_decl (fn);
 

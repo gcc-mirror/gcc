@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with System.Soft_Links;
 with System.Parameters;

@@ -1709,7 +1709,7 @@ package body GNAT.Sockets is
    begin
       raise Host_Error with
         Err_Code_Image (H_Error)
-        & C.Strings.Value (Host_Error_Messages.Host_Error_Message (H_Error));
+          & Host_Error_Messages.Host_Error_Message (H_Error);
    end Raise_Host_Error;
 
    ------------------------
@@ -1720,8 +1720,7 @@ package body GNAT.Sockets is
       use type C.Strings.chars_ptr;
    begin
       raise Socket_Error with
-        Err_Code_Image (Error)
-        & C.Strings.Value (Socket_Error_Message (Error));
+        Err_Code_Image (Error) & Socket_Error_Message (Error);
    end Raise_Socket_Error;
 
    ----------

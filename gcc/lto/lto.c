@@ -2498,7 +2498,7 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder, bool last)
 #ifdef HAVE_WORKING_FORK
   static int nruns;
 
-  if (!lto_parallelism || lto_parallelism == 1)
+  if (lto_parallelism <= 1)
     {
       do_stream_out (temp_filename, encoder);
       return;

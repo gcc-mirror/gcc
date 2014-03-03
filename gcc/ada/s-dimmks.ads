@@ -53,7 +53,7 @@ package System.Dim.Mks is
         (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
         (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
         (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
-        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Θ"),
+        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => '@'),
         (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
         (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 

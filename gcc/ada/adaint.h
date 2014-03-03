@@ -78,6 +78,11 @@ typedef long OS_Time;
 */
 
 struct file_attributes {
+  int           error;
+  /* Errno value returned by stat()/fstat(). If non-zero, other fields should
+   * be considered as invalid.
+   */
+
   unsigned char exists;
 
   unsigned char writable;
@@ -163,7 +168,8 @@ extern int    __gnat_is_writable_file		   (char *);
 extern int    __gnat_is_readable_file		   (char *name);
 extern int    __gnat_is_executable_file      (char *name);
 
-extern void __gnat_reset_attributes (struct file_attributes* attr);
+extern void   __gnat_reset_attributes (struct file_attributes *);
+extern int    __gnat_error_attributes (struct file_attributes *);
 extern long   __gnat_file_length_attr        (int, char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_name_attr    (char *, struct file_attributes *);
 extern OS_Time __gnat_file_time_fd_attr      (int,    struct file_attributes *);

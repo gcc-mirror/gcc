@@ -199,9 +199,10 @@ package body Sem_Ch13 is
    --  already have modified all Sloc values if the -gnatD option is set.
 
    type UC_Entry is record
-      Eloc   : Source_Ptr; -- node used for posting warnings
-      Source : Entity_Id;  -- source type for unchecked conversion
-      Target : Entity_Id;  -- target type for unchecked conversion
+      Eloc     : Source_Ptr; -- node used for posting warnings
+      Source   : Entity_Id;  -- source type for unchecked conversion
+      Target   : Entity_Id;  -- target type for unchecked conversion
+      Act_Unit : Entity_Id;  -- actual function instantiated
    end record;
 
    package Unchecked_Conversions is new Table.Table (
@@ -1234,14 +1235,6 @@ package body Sem_Ch13 is
 
          else
             Insert_After (N, Prag);
-
-            --  Analyze the pragma before analyzing the proper body of a stub.
-            --  This ensures that the pragma will appear on the proper contract
-            --  list (see N_Contract).
-
-            if Nkind (N) = N_Subprogram_Body_Stub then
-               Analyze (Prag);
-            end if;
          end if;
       end Insert_Delayed_Pragma;
 
@@ -2009,6 +2002,7 @@ package body Sem_Ch13 is
 
                when Aspect_Abstract_State => Abstract_State : declare
                   Context : Node_Id := N;
+                  Decl    : Node_Id;
                   Decls   : List_Id;
 
                begin
@@ -2023,8 +2017,6 @@ package body Sem_Ch13 is
                   if Nkind_In (Context, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                   then
-                     Decls := Visible_Declarations (Specification (Context));
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
@@ -2032,12 +2024,56 @@ package body Sem_Ch13 is
                         Pragma_Name                  => Name_Abstract_State);
                      Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Visible_Declarations (Context, Decls);
-                     end if;
+                     Decls := Visible_Declarations (Specification (Context));
 
-                     Prepend_To (Decls, Aitem);
+                     --  In general pragma Abstract_State must be at the top
+                     --  of the existing visible declarations to emulate its
+                     --  source counterpart. The only exception to this is a
+                     --  generic instance in which case the pragma must be
+                     --  inserted after the association renamings.
+
+                     if Present (Decls) then
+
+                        --  The visible declarations of a generic instance have
+                        --  the following structure:
+
+                        --    <renamings of generic formals>
+                        --    <renamings of internally-generated spec and body>
+                        --    <first source declaration>
+
+                        --  The pragma must be inserted before the first source
+                        --  declaration.
+
+                        if Is_Generic_Instance (Defining_Entity (Context)) then
+
+                           --  Skip the instance "header"
+
+                           Decl := First (Decls);
+                           while Present (Decl)
+                             and then not Comes_From_Source (Decl)
+                           loop
+                              Decl := Next (Decl);
+                           end loop;
+
+                           if Present (Decl) then
+                              Insert_Before (Decl, Aitem);
+                           else
+                              Append_To (Decls, Aitem);
+                           end if;
+
+                        --  The related package is not a generic instance, the
+                        --  corresponding pragma must be the first declaration.
+
+                        else
+                           Prepend_To (Decls, Aitem);
+                        end if;
+
+                     --  Otherwise the pragma forms a new declarative list
+
+                     else
+                        Set_Visible_Declarations
+                          (Specification (Context), New_List (Aitem));
+                     end if;
 
                   else
                      Error_Msg_NE
@@ -2300,6 +2336,7 @@ package body Sem_Ch13 is
                --  Refined_State
 
                when Aspect_Refined_State => Refined_State : declare
+                  Decl  : Node_Id;
                   Decls : List_Id;
 
                begin
@@ -2309,8 +2346,6 @@ package body Sem_Ch13 is
                   --  the pragma.
 
                   if Nkind (N) = N_Package_Body then
-                     Decls := Declarations (N);
-
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Loc,
@@ -2318,12 +2353,31 @@ package body Sem_Ch13 is
                         Pragma_Name                  => Name_Refined_State);
                      Decorate_Aspect_And_Pragma (Aspect, Aitem);
 
-                     if No (Decls) then
-                        Decls := New_List;
-                        Set_Declarations (N, Decls);
-                     end if;
+                     Decls := Declarations (N);
 
-                     Prepend_To (Decls, Aitem);
+                     --  When the package body is subject to pragma SPARK_Mode,
+                     --  insert pragma Refined_State after SPARK_Mode.
+
+                     if Present (Decls) then
+                        Decl := First (Decls);
+
+                        if Nkind (Decl) = N_Pragma
+                          and then Pragma_Name (Decl) = Name_SPARK_Mode
+                        then
+                           Insert_After (Decl, Aitem);
+
+                        --  The related package body lacks SPARK_Mode, the
+                        --  corresponding pragma must be the first declaration.
+
+                        else
+                           Prepend_To (Decls, Aitem);
+                        end if;
+
+                     --  Otherwise the pragma forms a new declarative list
+
+                     else
+                        Set_Declarations (N, New_List (Aitem));
+                     end if;
 
                   else
                      Error_Msg_NE
@@ -3831,21 +3885,13 @@ package body Sem_Ch13 is
 
                   begin
                      if Present (Init_Call) then
+                        Append_Freeze_Action (U_Ent, Init_Call);
 
-                        --  If the init call is an expression with actions with
-                        --  null expression, just extract the actions.
+                        --  Reset Initialization_Statements pointer so that
+                        --  if there is a pragma Import further down, it can
+                        --  clear any default initialization.
 
-                        if Nkind (Init_Call) = N_Expression_With_Actions
-                          and then
-                            Nkind (Expression (Init_Call)) = N_Null_Statement
-                        then
-                           Append_Freeze_Actions (U_Ent, Actions (Init_Call));
-
-                        --  General case: move Init_Call to freeze actions
-
-                        else
-                           Append_Freeze_Action (U_Ent, Init_Call);
-                        end if;
+                        Set_Initialization_Statements (U_Ent, Init_Call);
                      end if;
                   end;
 
@@ -11655,9 +11701,10 @@ package body Sem_Ch13 is
 
       if Warn_On_Unchecked_Conversion then
          Unchecked_Conversions.Append
-           (New_Val => UC_Entry'(Eloc   => Sloc (N),
-                                 Source => Source,
-                                 Target => Target));
+           (New_Val => UC_Entry'(Eloc     => Sloc (N),
+                                 Source   => Source,
+                                 Target   => Target,
+                                 Act_Unit => Act_Unit));
 
          --  If both sizes are known statically now, then back end annotation
          --  is not required to do a proper check but if either size is not
@@ -11712,14 +11759,21 @@ package body Sem_Ch13 is
          declare
             T : UC_Entry renames Unchecked_Conversions.Table (N);
 
-            Eloc   : constant Source_Ptr := T.Eloc;
-            Source : constant Entity_Id  := T.Source;
-            Target : constant Entity_Id  := T.Target;
+            Eloc     : constant Source_Ptr := T.Eloc;
+            Source   : constant Entity_Id  := T.Source;
+            Target   : constant Entity_Id  := T.Target;
+            Act_Unit : constant Entity_Id  := T.Act_Unit;
 
             Source_Siz : Uint;
             Target_Siz : Uint;
 
          begin
+            --  Skip if function marked as warnings off
+
+            if Warnings_Off (Act_Unit) then
+               goto Continue;
+            end if;
+
             --  This validation check, which warns if we have unequal sizes for
             --  unchecked conversion, and thus potentially implementation
             --  dependent semantics, is one of the few occasions on which we
@@ -11859,6 +11913,9 @@ package body Sem_Ch13 is
                end;
             end if;
          end;
+
+      <<Continue>>
+         null;
       end loop;
    end Validate_Unchecked_Conversions;
 

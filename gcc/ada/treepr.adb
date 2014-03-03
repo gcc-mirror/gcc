@@ -1701,7 +1701,6 @@ package body Treepr is
          Print_Node_Subtree (Cunit (Main_Unit));
          Write_Eol;
       end if;
-
    end Tree_Dump;
 
    -----------------
@@ -1956,13 +1955,13 @@ package body Treepr is
             then
                return;
 
-            --  Otherwise we can visit the list. Note that we don't bother
-            --  to do the parent test that we did for the node case, because
-            --  it just does not happen that lists are referenced more than
-            --  one place in the tree. We aren't counting on this being the
-            --  case to generate valid output, it is just that we don't need
-            --  in practice to worry about listing the list at a place that
-            --  is inconvenient.
+            --  Otherwise we can visit the list. Note that we don't bother to
+            --  do the parent test that we did for the node case, because it
+            --  just does not happen that lists are referenced more than one
+            --  place in the tree. We aren't counting on this being the case
+            --  to generate valid output, it is just that we don't need in
+            --  practice to worry about listing the list at a place that is
+            --  inconvenient.
 
             else
                Visit_List (List_Id (D), New_Prefix);
@@ -2024,9 +2023,9 @@ package body Treepr is
       else
          if Serial_Number (Int (N)) < Next_Serial_Number then
 
-            --  Here we have already visited the node, but if it is in
-            --  a list, we still want to print the reference, so that
-            --  it is clear that it belongs to the list.
+            --  Here we have already visited the node, but if it is in a list,
+            --  we still want to print the reference, so that it is clear that
+            --  it belongs to the list.
 
             if Is_List_Member (N) then
                Print_Str (Prefix_Str);
@@ -2109,9 +2108,9 @@ package body Treepr is
          --  indentations coming from this effect.
 
          --  To prevent this, what we do is to control references via
-         --  Next_Entity only from the first entity on a given scope
-         --  chain, and we keep them all at the same level. Of course
-         --  if an entity has already been referenced it is not printed.
+         --  Next_Entity only from the first entity on a given scope chain,
+         --  and we keep them all at the same level. Of course if an entity
+         --  has already been referenced it is not printed.
 
          if Present (Next_Entity (N))
            and then Present (Scope (N))

@@ -2074,19 +2074,15 @@ package body Exp_Util is
       --  may be constants that depend on the bounds of a string literal, both
       --  standard string types and more generally arrays of characters.
 
-      --  In GNATprove mode, we also need the more precise subtype to be set
+      --  In GNATprove mode, these extra subtypes are not needed
 
-      if not (Expander_Active or GNATprove_Mode)
-        and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
-      then
+      if GNATprove_Mode then
          return;
       end if;
 
-      --  In GNATprove mode, Unc_Type might not be complete when analyzing
-      --  a generic unit. As generic units are not analyzed directly in
-      --  GNATprove, return here rather than failing later.
-
-      if GNATprove_Mode and then No (Underlying_Type (Unc_Type)) then
+      if not Expander_Active
+        and then (No (Etype (Exp)) or else not Is_String_Type (Etype (Exp)))
+      then
          return;
       end if;
 
@@ -6387,9 +6383,12 @@ package body Exp_Util is
       function Are_Wrapped (L : List_Id) return Boolean;
       --  Determine whether list L contains only one statement which is a block
 
-      function Wrap_Statements_In_Block (L : List_Id) return Node_Id;
+      function Wrap_Statements_In_Block
+        (L    : List_Id;
+         Scop : Entity_Id := Current_Scope) return Node_Id;
       --  Given a list of statements L, wrap it in a block statement and return
-      --  the generated node.
+      --  the generated node. Scop is either the current scope or the scope of
+      --  the context (if applicable).
 
       -----------------
       -- Are_Wrapped --
@@ -6408,14 +6407,39 @@ package body Exp_Util is
       -- Wrap_Statements_In_Block --
       ------------------------------
 
-      function Wrap_Statements_In_Block (L : List_Id) return Node_Id is
+      function Wrap_Statements_In_Block
+        (L    : List_Id;
+         Scop : Entity_Id := Current_Scope) return Node_Id
+      is
+         Block_Id  : Entity_Id;
+         Block_Nod : Node_Id;
+         Iter_Loop : Entity_Id;
+
       begin
-         return
+         Block_Nod :=
            Make_Block_Statement (Loc,
-             Declarations => No_List,
+             Declarations               => No_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => L));
+
+         --  Create a label for the block in case the block needs to manage the
+         --  secondary stack. A label allows for flag Uses_Sec_Stack to be set.
+
+         Add_Block_Identifier (Block_Nod, Block_Id);
+
+         --  When wrapping the statements of an iterator loop, check whether
+         --  the loop requires secondary stack management and if so, propagate
+         --  the flag to the block. This way the secondary stack is marked and
+         --  released at each iteration of the loop.
+
+         Iter_Loop := Find_Enclosing_Iterator_Loop (Scop);
+
+         if Present (Iter_Loop) and then Uses_Sec_Stack (Iter_Loop) then
+            Set_Uses_Sec_Stack (Block_Id);
+         end if;
+
+         return Block_Nod;
       end Wrap_Statements_In_Block;
 
       --  Local variables
@@ -6479,9 +6503,18 @@ package body Exp_Util is
               and then not Are_Wrapped (Statements (N))
               and then Requires_Cleanup_Actions (Statements (N), False, False)
             then
-               Block := Wrap_Statements_In_Block (Statements (N));
-               Set_Statements (N, New_List (Block));
+               if Nkind (N) = N_Loop_Statement
+                 and then Present (Identifier (N))
+               then
+                  Block :=
+                    Wrap_Statements_In_Block
+                      (L    => Statements (N),
+                       Scop => Entity (Identifier (N)));
+               else
+                  Block := Wrap_Statements_In_Block (Statements (N));
+               end if;
 
+               Set_Statements (N, New_List (Block));
                Analyze (Block);
             end if;
 

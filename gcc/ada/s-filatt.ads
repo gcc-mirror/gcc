@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                        GNAT RUN-TIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . C R T L . R U N T I M E                   --
+--                S Y S T E M . F I L E _ A T T R I B U T E S               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--             Copyright (C) 2013, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the low level interface to the C runtime library
---  (additional declarations for use in the Ada runtime only, not in the
---  compiler itself).
+--  This package provides a binding to the GNAT file attribute query functions
 
-with Interfaces.C.Strings;
+with System.OS_Constants;
+with System.Storage_Elements;
 
-package System.CRTL.Runtime is
-   pragma Preelaborate;
+package System.File_Attributes is
 
-   subtype chars_ptr is Interfaces.C.Strings.chars_ptr;
+   type File_Attributes is private;
 
-   function strerror (errno : int) return chars_ptr;
-   pragma Import (C, strerror, "strerror");
+   procedure Reset_Attributes (A : access File_Attributes);
 
-end System.CRTL.Runtime;
+   function Error_Attributes (A : access File_Attributes) return Integer;
+
+   function File_Exists_Attr
+     (N : System.Address;
+      A : access File_Attributes) return Integer;
+
+   function Is_Regular_File_Attr
+     (N : System.Address;
+      A : access File_Attributes) return Integer;
+
+   function Is_Directory_Attr
+     (N : System.Address;
+      A : access File_Attributes) return Integer;
+
+private
+   package SOSC renames System.OS_Constants;
+
+   type File_Attributes is new
+     System.Storage_Elements.Storage_Array
+       (1 .. SOSC.SIZEOF_struct_file_attributes);
+   for File_Attributes'Alignment use Standard'Maximum_Alignment;
+
+   pragma Import (C, Reset_Attributes,     "__gnat_reset_attributes");
+   pragma Import (C, Error_Attributes,     "__gnat_error_attributes");
+   pragma Import (C, File_Exists_Attr,     "__gnat_file_exists_attr");
+   pragma Import (C, Is_Regular_File_Attr, "__gnat_is_regular_file_attr");
+   pragma Import (C, Is_Directory_Attr,    "__gnat_is_directory_attr");
+
+end System.File_Attributes;

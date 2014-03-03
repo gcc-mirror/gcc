@@ -134,6 +134,7 @@ package body Sem_Ch5 is
                if Ekind (Ent) = E_In_Parameter then
                   Error_Msg_N
                     ("assignment to IN mode parameter not allowed", N);
+                  return;
 
                --  Renamings of protected private components are turned into
                --  constants when compiling a protected function. In the case
@@ -151,21 +152,23 @@ package body Sem_Ch5 is
                then
                   Error_Msg_N
                     ("protected function cannot modify protected object", N);
+                  return;
 
                elsif Ekind (Ent) = E_Loop_Parameter then
-                  Error_Msg_N
-                    ("assignment to loop parameter not allowed", N);
-
-               else
-                  Error_Msg_N
-                    ("left hand side of assignment must be a variable", N);
+                  Error_Msg_N ("assignment to loop parameter not allowed", N);
+                  return;
                end if;
             end;
 
-         --  For indexed components or selected components, test prefix
+         --  For indexed components, test prefix if it is in array. We do not
+         --  want to recurse for cases where the prefix is a pointer, since we
+         --  may get a message confusing the pointer and what it references.
 
-         elsif Nkind (N) = N_Indexed_Component then
+         elsif Nkind (N) = N_Indexed_Component
+           and then Is_Array_Type (Etype (Prefix (N)))
+         then
             Diagnose_Non_Variable_Lhs (Prefix (N));
+            return;
 
          --  Another special case for assignment to discriminant
 
@@ -173,17 +176,21 @@ package body Sem_Ch5 is
             if Present (Entity (Selector_Name (N)))
               and then Ekind (Entity (Selector_Name (N))) = E_Discriminant
             then
-               Error_Msg_N
-                 ("assignment to discriminant not allowed", N);
-            else
+               Error_Msg_N ("assignment to discriminant not allowed", N);
+               return;
+
+            --  For selection from record, diagnose prefix, but note that again
+            --  we only do this for a record, not e.g. for a pointer.
+
+            elsif Is_Record_Type (Etype (Prefix (N))) then
                Diagnose_Non_Variable_Lhs (Prefix (N));
+               return;
             end if;
-
-         else
-            --  If we fall through, we have no special message to issue
-
-            Error_Msg_N ("left hand side of assignment must be a variable", N);
          end if;
+
+         --  If we fall through, we have no special message to issue
+
+         Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
 
       --------------
@@ -1052,7 +1059,7 @@ package body Sem_Ch5 is
         Generic_Check_Choices
           (Process_Empty_Choice      => No_OP,
            Process_Non_Static_Choice => Non_Static_Choice_Error,
-           Process_Associated_Node   => No_Op);
+           Process_Associated_Node   => No_OP);
       use Check_Case_Choices;
       --  Instantiation of the generic choice processing package
 
@@ -1688,7 +1695,7 @@ package body Sem_Ch5 is
       if Present (Subt) then
          Analyze (Subt);
 
-         --  Save type of subtype indication for subsequent check.
+         --  Save type of subtype indication for subsequent check
 
          if Nkind (Subt) = N_Subtype_Indication then
             Bas := Entity (Subtype_Mark (Subt));
@@ -1855,11 +1862,14 @@ package body Sem_Ch5 is
 
       else
          Set_Ekind (Def_Id, E_Loop_Parameter);
+         Error_Msg_Ada_2012_Feature ("container iterator", Sloc (N));
+
+         --  OF present
 
          if Of_Present (N) then
             if Has_Aspect (Typ, Aspect_Iterable) then
                if No (Get_Iterable_Type_Primitive (Typ, Name_Element)) then
-                  Error_Msg_N ("Missing Element primitive for iteration", N);
+                  Error_Msg_N ("missing Element primitive for iteration", N);
                end if;
 
             --  For a predefined container, The type of the loop variable is
@@ -1868,11 +1878,13 @@ package body Sem_Ch5 is
             else
                declare
                   Element : constant Entity_Id :=
-                           Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+                    Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+
                begin
                   if No (Element) then
                      Error_Msg_NE ("cannot iterate over&", N, Typ);
                      return;
+
                   else
                      Set_Etype (Def_Id, Entity (Element));
 
@@ -1880,11 +1892,11 @@ package body Sem_Ch5 is
                      --  matches element type of container.
 
                      if Present (Subt)
-                        and then Bas /= Base_Type (Etype (Def_Id))
+                       and then Bas /= Base_Type (Etype (Def_Id))
                      then
                         Error_Msg_N
                           ("subtype indication does not match element type",
-                             Subt);
+                           Subt);
                      end if;
 
                      --  If the container has a variable indexing aspect, the
@@ -1896,6 +1908,8 @@ package body Sem_Ch5 is
                   end if;
                end;
             end if;
+
+         --  OF not present
 
          else
             --  For an iteration of the form IN, the name must denote an
@@ -1936,7 +1950,8 @@ package body Sem_Ch5 is
             if Has_Aspect (Typ, Aspect_Iterable) then
                Set_Etype (Def_Id,
                  Get_Cursor_Type
-                  (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)), Typ));
+                   (Parent (Find_Value_Of_Aspect (Typ, Aspect_Iterable)),
+                    Typ));
                Ent := Etype (Def_Id);
 
             else
@@ -1953,8 +1968,10 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      --  A loop parameter cannot be volatile. This check is peformed only when
-      --  SPARK_Mode is on as it is not a standard Ada legality check.
+      --  A loop parameter cannot be volatile. This check is peformed only
+      --  when SPARK_Mode is on as it is not a standard Ada legality check
+      --  (SPARK RM 7.1.3(6)).
+
       --  Not clear whether this applies to element iterators, where the
       --  cursor is not an explicit entity ???
 
@@ -1962,8 +1979,7 @@ package body Sem_Ch5 is
         and then not Of_Present (N)
         and then Is_SPARK_Volatile_Object (Ent)
       then
-         Error_Msg_N
-           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Ent);
+         Error_Msg_N ("loop parameter cannot be volatile", Ent);
       end if;
    end Analyze_Iterator_Specification;
 
@@ -2353,12 +2369,21 @@ package body Sem_Ch5 is
          Set_Parent (DS_Copy, Parent (DS));
          Preanalyze_Range (DS_Copy);
 
-         --  Ada 2012: If the domain of iteration is a function call, it is the
-         --  new iterator form.
+         --  Ada 2012: If the domain of iteration is:
+
+         --  a)  a function call,
+         --  b)  an identifier that is not a type,
+         --  c)  an attribute reference 'Old (within a postcondition)
+
+         --  then it is an iteration over a container. It was classified as
+         --  a loop specification by the parser, and must be rewritten now
+         --  to activate container iteration.
 
          if Nkind (DS_Copy) = N_Function_Call
            or else (Is_Entity_Name (DS_Copy)
                      and then not Is_Type (Entity (DS_Copy)))
+           or else (Nkind (DS_Copy) = N_Attribute_Reference
+                     and then Attribute_Name (DS_Copy) = Name_Old)
          then
             --  This is an iterator specification. Rewrite it as such and
             --  analyze it to capture function calls that may require
@@ -2470,9 +2495,9 @@ package body Sem_Ch5 is
         or else Etype (Id) = Any_Type
         or else
           (Present (Etype (Id))
-             and then Is_Itype (Etype (Id))
-             and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
-             and then Nkind (Original_Node (Parent (Loop_Nod))) =
+            and then Is_Itype (Etype (Id))
+            and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
+            and then Nkind (Original_Node (Parent (Loop_Nod))) =
                                                    N_Quantified_Expression)
       then
          Set_Etype (Id, Etype (DS));
@@ -2499,25 +2524,39 @@ package body Sem_Ch5 is
          end;
       end if;
 
-      --  Check for null or possibly null range and issue warning. We suppress
-      --  such messages in generic templates and instances, because in practice
-      --  they tend to be dubious in these cases. The check applies as well to
-      --  rewritten array element loops where a null range may be detected
-      --  statically.
+      --  Case where we have a range or a subtype, get type bounds
 
-      if Nkind (DS) = N_Range then
+      if Nkind_In (DS, N_Range, N_Subtype_Indication)
+        and then not Error_Posted (DS)
+        and then Etype (DS) /= Any_Type
+        and then Is_Discrete_Type (Etype (DS))
+      then
          declare
-            L : constant Node_Id := Low_Bound  (DS);
-            H : constant Node_Id := High_Bound (DS);
+            L : Node_Id;
+            H : Node_Id;
 
          begin
-            --  If range of loop is null, issue warning
+            if Nkind (DS) = N_Range then
+               L := Low_Bound  (DS);
+               H := High_Bound (DS);
+            else
+               L :=
+                 Type_Low_Bound  (Underlying_Type (Etype (Subtype_Mark (DS))));
+               H :=
+                 Type_High_Bound (Underlying_Type (Etype (Subtype_Mark (DS))));
+            end if;
+
+            --  Check for null or possibly null range and issue warning. We
+            --  suppress such messages in generic templates and instances,
+            --  because in practice they tend to be dubious in these cases. The
+            --  check applies as well to rewritten array element loops where a
+            --  null range may be detected statically.
 
             if Compile_Time_Compare (L, H, Assume_Valid => True) = GT then
 
                --  Suppress the warning if inside a generic template or
                --  instance, since in practice they tend to be dubious in these
-               --  cases since they can result from intended parametrization.
+               --  cases since they can result from intended parameterization.
 
                if not Inside_A_Generic and then not In_Instance then
 
@@ -2592,15 +2631,74 @@ package body Sem_Ch5 is
                   Error_Msg_N ("\??bounds may be wrong way round", DS);
                end if;
             end if;
+
+            --  Check if either bound is known to be outside the range of the
+            --  loop parameter type, this is e.g. the case of a loop from
+            --  20..X where the type is 1..19.
+
+            --  Such a loop is dubious since either it raises CE or it executes
+            --  zero times, and that cannot be useful!
+
+            if Etype (DS) /= Any_Type
+              and then not Error_Posted (DS)
+              and then Nkind (DS) = N_Subtype_Indication
+              and then Nkind (Constraint (DS)) = N_Range_Constraint
+            then
+               declare
+                  LLo : constant Node_Id :=
+                          Low_Bound  (Range_Expression (Constraint (DS)));
+                  LHi : constant Node_Id :=
+                          High_Bound (Range_Expression (Constraint (DS)));
+
+                  Bad_Bound : Node_Id := Empty;
+                  --  Suspicious loop bound
+
+               begin
+                  --  At this stage L, H are the bounds of the type, and LLo
+                  --  Lhi are the low bound and high bound of the loop.
+
+                  if Compile_Time_Compare (LLo, L, Assume_Valid => True) = LT
+                       or else
+                     Compile_Time_Compare (LLo, H, Assume_Valid => True) = GT
+                  then
+                     Bad_Bound := LLo;
+                  end if;
+
+                  if Compile_Time_Compare (LHi, L, Assume_Valid => True) = LT
+                       or else
+                     Compile_Time_Compare (LHi, H, Assume_Valid => True) = GT
+                  then
+                     Bad_Bound := LHi;
+                  end if;
+
+                  if Present (Bad_Bound) then
+                     Error_Msg_N
+                       ("suspicious loop bound out of range of "
+                        & "loop subtype??", Bad_Bound);
+                     Error_Msg_N
+                       ("\loop executes zero times or raises "
+                        & "Constraint_Error??", Bad_Bound);
+                  end if;
+               end;
+            end if;
+
+         --  This declare block is about warnings, if we get an exception while
+         --  testing for warnings, we simply abandon the attempt silently. This
+         --  most likely occurs as the result of a previous error, but might
+         --  just be an obscure case we have missed. In either case, not giving
+         --  the warning is perfectly acceptable.
+
+         exception
+            when others => null;
          end;
       end if;
 
-      --  A loop parameter cannot be volatile. This check is peformed only when
-      --  SPARK_Mode is on as it is not a standard Ada legality check.
+      --  A loop parameter cannot be volatile. This check is peformed only
+      --  when SPARK_Mode is on as it is not a standard Ada legality check
+      --  (SPARK RM 7.1.3(6)).
 
       if SPARK_Mode = On and then Is_SPARK_Volatile_Object (Id) then
-         Error_Msg_N
-           ("loop parameter cannot be volatile (SPARK RM 7.1.3(6))", Id);
+         Error_Msg_N ("loop parameter cannot be volatile", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 
@@ -2749,20 +2847,46 @@ package body Sem_Ch5 is
       --  Iteration over a container in Ada 2012 involves the creation of a
       --  controlled iterator object. Wrap the loop in a block to ensure the
       --  timely finalization of the iterator and release of container locks.
+      --  The same applies to the use of secondary stack when obtaining an
+      --  iterator.
 
       if Ada_Version >= Ada_2012
         and then Is_Container_Iterator (Iter)
         and then not Is_Wrapped_In_Block (N)
       then
-         Rewrite (N,
-           Make_Block_Statement (Loc,
-             Declarations               => New_List,
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (Relocate_Node (N)))));
+         declare
+            Block_Nod : Node_Id;
+            Block_Id  : Entity_Id;
 
-         Analyze (N);
-         return;
+         begin
+            Block_Nod :=
+              Make_Block_Statement (Loc,
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Relocate_Node (N))));
+
+            Add_Block_Identifier (Block_Nod, Block_Id);
+
+            --  The expansion of iterator loops generates an iterator in order
+            --  to traverse the elements of a container:
+
+            --    Iter : <iterator type> := Iterate (Container)'reference;
+
+            --  The iterator is controlled and returned on the secondary stack.
+            --  The analysis of the call to Iterate establishes a transient
+            --  scope to deal with the secondary stack management, but never
+            --  really creates a physical block as this would kill the iterator
+            --  too early (see Wrap_Transient_Declaration). To address this
+            --  case, mark the generated block as needing secondary stack
+            --  management.
+
+            Set_Uses_Sec_Stack (Block_Id);
+
+            Rewrite (N, Block_Nod);
+            Analyze (N);
+            return;
+         end;
       end if;
 
       --  Kill current values on entry to loop, since statements in the body of

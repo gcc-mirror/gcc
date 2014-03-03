@@ -1,3 +1,15 @@
+2014-03-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60341
+	* frontend-passes.c (optimize_comparison): Guard two union accesses
+	with the corresponding tag checks.
+
+2014-02-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60359
+	* class.c (find_intrinsic_vtab): Prevent duplicate creation of copy
+	procedure for characters.
+
 2014-02-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60302

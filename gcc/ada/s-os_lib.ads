@@ -48,7 +48,10 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
-pragma Compiler_Unit;
+--  Note: a distinct body for this spec is included in the .NET runtime library
+--  and must be kept in sync with changes made in this file.
+
+pragma Compiler_Unit_Warning;
 
 with System;
 with System.Strings;
@@ -961,6 +964,13 @@ package System.OS_Lib is
    procedure Set_Errno (Errno : Integer);
    pragma Import (C, Set_Errno, "__set_errno");
    --  Set the task-safe error number
+
+   function Errno_Message
+     (Err     : Integer := Errno;
+      Default : String  := "") return String;
+   --  Return a message describing the given Errno value. If none is provided
+   --  by the system, return Default if not empty, else return a generic
+   --  message indicating the numeric errno value.
 
    Directory_Separator : constant Character;
    --  The character that is used to separate parts of a pathname

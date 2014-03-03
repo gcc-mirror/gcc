@@ -1,5 +1,12 @@
 2014-02-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/60295
+	* lto.c (stream_out): Avoid parallel streaming with
+	-flto=jobserver until we are able to throttle it down
+	resonably.
+
+2014-02-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-partition.c (add_symbol_to_partition_1,
 	undo_partition, lto_balanced_map): Aliases have no
 	defined size.

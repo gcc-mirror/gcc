@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4480,11 +4480,12 @@ package body Sem_Attr is
 
             --  Attribute 'Old appears in the condition of a contract case.
             --  Emit an error since this is not a postcondition-like context.
+            --  (SPARK RM 6.1.3(2))
 
             else
                Error_Attr
-                 ("attribute % cannot appear in the condition of a contract "
-                  & "case (SPARK RM 6.1.3(2))", P);
+                 ("attribute % cannot appear in the condition "
+                  & "of a contract case", P);
             end if;
          end Check_Use_In_Contract_Cases;
 
@@ -6260,6 +6261,11 @@ package body Sem_Attr is
 
                         Index_Type := First_Index (P_Type);
 
+                        if Present (Next_Index (Index_Type)) then
+                           Error_Msg_N
+                             ("too few subscripts in array reference", Comp);
+                        end if;
+
                         Index := First (Choices (Assoc));
                         while Present (Index) loop
                            if Nkind (Index) = N_Range then
@@ -6319,7 +6325,7 @@ package body Sem_Attr is
                      elsif Comp_Type /= Base_Type (Etype (Comp)) then
                         Error_Msg_N
                           ("components in choice list must have same type",
-                             Assoc);
+                           Assoc);
                      end if;
                   end if;
                end if;
@@ -9678,8 +9684,7 @@ package body Sem_Attr is
                      Get_Next_Interp (Index, It);
                   end loop;
 
-               --  If Prefix is a subprogram name, it is frozen by this
-               --  reference:
+               --  If Prefix is a subprogram name, this reference freezes:
 
                --    If it is a type, there is nothing to resolve.
                --    If it is an object, complete its resolution.
@@ -9749,11 +9754,12 @@ package body Sem_Attr is
                   then
                      Error_Msg_FE
                        ("subprogram & has wrong convention", P, Entity (P));
-                     Error_Msg_FE
-                       ("\does not match convention of access type &",
-                        P, Btyp);
+                     Error_Msg_Sloc := Sloc (Btyp);
+                     Error_Msg_FE ("\does not match & declared#", P, Btyp);
 
-                     if not Has_Convention_Pragma (Btyp) then
+                     if not Is_Itype (Btyp)
+                       and then not Has_Convention_Pragma (Btyp)
+                     then
                         Error_Msg_FE
                           ("\probable missing pragma Convention for &",
                            P, Btyp);

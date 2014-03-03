@@ -309,13 +309,18 @@ package body Sem_Ch6 is
       if Present (Parameter_Specifications (New_Spec)) then
          declare
             Formal_Spec : Node_Id;
+            Def         : Entity_Id;
+
          begin
             Formal_Spec := First (Parameter_Specifications (New_Spec));
+
+            --  Create a new formal parameter at the same source position
+
             while Present (Formal_Spec) loop
-               Set_Defining_Identifier
-                 (Formal_Spec,
-                  Make_Defining_Identifier (Sloc (Formal_Spec),
-                    Chars => Chars (Defining_Identifier (Formal_Spec))));
+               Def := Defining_Identifier (Formal_Spec);
+               Set_Defining_Identifier (Formal_Spec,
+                 Make_Defining_Identifier (Sloc (Def),
+                   Chars => Chars (Def)));
                Next (Formal_Spec);
             end loop;
          end;
@@ -368,6 +373,20 @@ package body Sem_Ch6 is
 
       elsif Present (Prev) and then Comes_From_Source (Prev) then
          Set_Has_Completion (Prev, False);
+
+         --  An expression function that is a completion freezes the
+         --  expression. This means freezing the return type, and if it is
+         --  an access type, freezing its designated type as well.
+
+         --  Note that we cannot defer this freezing to the analysis of the
+         --  expression itself, because a freeze node might appear in a nested
+         --  scope, leading to an elaboration order issue in gigi.
+
+         Freeze_Before (N, Etype (Prev));
+
+         if Is_Access_Type (Etype (Prev)) then
+            Freeze_Before (N, Designated_Type (Etype (Prev)));
+         end if;
 
          --  For navigation purposes, indicate that the function is a body
 
@@ -2048,12 +2067,16 @@ package body Sem_Ch6 is
          Analyze_Refined_Global_In_Decl_Part (Ref_Global);
 
       --  When the corresponding Global aspect/pragma references a state with
-      --  visible refinement, the body requires Refined_Global.
+      --  visible refinement, the body requires Refined_Global. Refinement is
+      --  not required when SPARK checks are suppressed.
 
       elsif Present (Spec_Id) then
          Prag := Get_Pragma (Spec_Id, Pragma_Global);
 
-         if Present (Prag) and then Contains_Refined_State (Prag) then
+         if SPARK_Mode /= Off
+           and then Present (Prag)
+           and then Contains_Refined_State (Prag)
+         then
             Error_Msg_NE
               ("body of subprogram & requires global refinement",
                Body_Decl, Spec_Id);
@@ -2067,12 +2090,16 @@ package body Sem_Ch6 is
          Analyze_Refined_Depends_In_Decl_Part (Ref_Depends);
 
       --  When the corresponding Depends aspect/pragma references a state with
-      --  visible refinement, the body requires Refined_Depends.
+      --  visible refinement, the body requires Refined_Depends. Refinement is
+      --  not required when SPARK checks are suppressed.
 
       elsif Present (Spec_Id) then
          Prag := Get_Pragma (Spec_Id, Pragma_Depends);
 
-         if Present (Prag) and then Contains_Refined_State (Prag) then
+         if SPARK_Mode /= Off
+           and then Present (Prag)
+           and then Contains_Refined_State (Prag)
+         then
             Error_Msg_NE
               ("body of subprogram & requires dependance refinement",
                Body_Decl, Spec_Id);
@@ -2338,6 +2365,15 @@ package body Sem_Ch6 is
                      Set_Has_Pragma_Inline_Always (Subp);
                   end if;
 
+                  --  Prior to copying the subprogram body to create a template
+                  --  for it for subsequent inlining, remove the pragma from
+                  --  the current body so that the copy that will produce the
+                  --  new body will start from a completely unanalyzed tree.
+
+                  if Nkind (Parent (Prag)) = N_Subprogram_Body then
+                     Rewrite (Prag, Make_Null_Statement (Sloc (Prag)));
+                  end if;
+
                   Spec := Subp;
                end;
             end if;
@@ -2449,8 +2485,17 @@ package body Sem_Ch6 is
 
             if Has_Aspect (Spec_Id, Asp_Id) then
                Error_Msg_Name_1 := Asp_Nam;
-               Error_Msg_Name_2 := Ref_Nam;
-               Error_Msg_N ("aspect % should be %", Asp);
+
+               --  Subunits cannot carry aspects that apply to a subprogram
+               --  declaration.
+
+               if Nkind (Parent (N)) = N_Subunit then
+                  Error_Msg_N ("aspect % cannot apply to a subunit", Asp);
+
+               else
+                  Error_Msg_Name_2 := Ref_Nam;
+                  Error_Msg_N ("aspect % should be %", Asp);
+               end if;
 
             --  Otherwise the aspect must appear in the spec, not in the body:
 
@@ -2876,27 +2921,15 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Language-defined aspects cannot appear in a subprogram body [stub] if
-      --  the subprogram has a separate spec. Certainly implementation-defined
-      --  aspects are allowed to appear (per Aspects_On_Body_Of_Stub_OK).
+      --  Language-defined aspects cannot appear on a subprogram body [stub] if
+      --  the subprogram has a spec. Certain implementation-defined aspects are
+      --  allowed to break this rule (see table Aspect_On_Body_Or_Stub_OK).
 
       if Has_Aspects (N) then
          if Present (Spec_Id)
            and then not Aspects_On_Body_Or_Stub_OK (N)
-
-            --  Do not emit an error on a subprogram body stub that act as
-            --  its own spec.
-
-           and then Nkind (Parent (Parent (Spec_Id))) /= N_Subprogram_Body_Stub
          then
             Diagnose_Misplaced_Aspect_Specifications;
-
-         --  Delay the analysis of aspect specifications that apply to a body
-         --  stub until the proper body is analyzed. If the corresponding body
-         --  is missing, the aspects are still analyzed in Analyze_Proper_Body.
-
-         elsif Nkind (N) in N_Body_Stub then
-            null;
 
          else
             Analyze_Aspect_Specifications (N, Body_Id);
@@ -7127,9 +7160,44 @@ package body Sem_Ch6 is
          Stm      : Node_Id;
          Kind     : Node_Kind;
 
+         function Assert_False return Boolean;
+         --  Returns True if Last_Stm is a pragma Assert (False) that has been
+         --  rewritten as a null statement when assertions are off. The assert
+         --  is not active, but it is still enough to kill the warning.
+
+         ------------------
+         -- Assert_False --
+         ------------------
+
+         function Assert_False return Boolean is
+            Orig : constant Node_Id := Original_Node (Last_Stm);
+
+         begin
+            if Nkind (Orig) = N_Pragma
+              and then Pragma_Name (Orig) = Name_Assert
+              and then not Error_Posted (Orig)
+            then
+               declare
+                  Arg : constant Node_Id :=
+                          First (Pragma_Argument_Associations (Orig));
+                  Exp : constant Node_Id := Expression (Arg);
+               begin
+                  return Nkind (Exp) = N_Identifier
+                    and then Chars (Exp) = Name_False;
+               end;
+
+            else
+               return False;
+            end if;
+         end Assert_False;
+
+         --  Local variables
+
          Raise_Exception_Call : Boolean;
          --  Set True if statement sequence terminated by Raise_Exception call
          --  or a Reraise_Occurrence call.
+
+      --  Start of processing for Check_Statement_Sequence
 
       begin
          Raise_Exception_Call := False;
@@ -7420,11 +7488,20 @@ package body Sem_Ch6 is
          --  If we fall through, issue appropriate message
 
          if Mode = 'F' then
-            if not Raise_Exception_Call then
+
+            --  Kill warning if last statement is a raise exception call,
+            --  or a pragma Assert (False). Note that with assertions enabled,
+            --  such a pragma has been converted into a raise exception call
+            --  already, so the Assert_False is for the assertions off case.
+
+            if not Raise_Exception_Call and then not Assert_False then
 
                --  In GNATprove mode, it is an error to have a missing return
 
                Error_Msg_Warn := SPARK_Mode /= On;
+
+               --  Issue error message or warning
+
                Error_Msg_N
                  ("RETURN statement missing following this statement<<!",
                   Last_Stm);
@@ -11382,18 +11459,19 @@ package body Sem_Ch6 is
            and then Ekind_In (Scope (Formal), E_Function, E_Generic_Function)
          then
             --  A function cannot have a parameter of mode IN OUT or OUT
+            --  (SPARK RM 6.1).
 
             if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
                Error_Msg_N
-                 ("function cannot have parameter of mode `OUT` or `IN OUT` "
-                  & "(SPARK RM 6.1)", Formal);
+                 ("function cannot have parameter of mode `OUT` or `IN OUT`",
+                  Formal);
 
             --  A function cannot have a volatile formal parameter
+            --  (SPARK RM 7.1.3(10)).
 
             elsif Is_SPARK_Volatile_Object (Formal) then
                Error_Msg_N
-                 ("function cannot have a volatile formal parameter "
-                  & "(SPARK RM 7.1.3(10))", Formal);
+                 ("function cannot have a volatile formal parameter", Formal);
             end if;
          end if;
 

@@ -195,9 +195,13 @@ package Erroutc is
       Warn : Boolean;
       --  True if warning message (i.e. insertion character ? appeared)
 
+      Warn_Err : Boolean;
+      --  True if this is a warning message which is to be treated as an error
+      --  as a result of a match with a Warning_As_Error pragma.
+
       Warn_Chr : Character;
-      --  Warning character, valid only if Warn is True
-      --    ' '      -- ? appeared on its own in message
+      --  Warning character (note: set even if Warning_Doc_Switch is False)
+      --    ' '      -- ? appeared on its own in message or no ? in message
       --    '?'      -- ?? appeared in message
       --    'x'      -- ?x? appeared in message
       --    'X'      -- ?x? appeared in message (X is upper case of x)
@@ -344,12 +348,18 @@ package Erroutc is
    procedure Add_Class;
    --  Add 'Class to buffer for class wide type case (Class_Flag set)
 
+   function Buffer_Ends_With (C : Character) return Boolean;
+   --  Tests if message buffer ends with given character
+
    function Buffer_Ends_With (S : String) return Boolean;
    --  Tests if message buffer ends with given string preceded by a space
 
+   procedure Buffer_Remove (C : Character);
+   --  Remove given character fron end of buffer if it is present
+
    procedure Buffer_Remove (S : String);
-   --  Removes given string from end of buffer if it is present
-   --  at end of buffer, and preceded by a space.
+   --  Removes given string from end of buffer if it is present at end of
+   --  buffer, and preceded by a space.
 
    function Compilation_Errors return Boolean;
    --  Returns true if errors have been detected, or warnings in -gnatwe
@@ -368,6 +378,10 @@ package Erroutc is
    --  ignored. Otherwise a check is made to see if M1 and M2 are duplicated or
    --  redundant. If so, the message to be deleted and all its continuations
    --  are marked with the Deleted flag set to True.
+
+   function Get_Warning_Tag (Id : Error_Msg_Id) return String;
+   --  Given an error message ID, return tag showing warning message class, or
+   --  the null string if this option is not enabled or this is not a warning.
 
    procedure Output_Error_Msgs (E : in out Error_Msg_Id);
    --  Output source line, error flag, and text of stored error message and all
@@ -546,6 +560,11 @@ package Erroutc is
    --  If the warning is not suppressed then No_String is returned, otherwise
    --  the corresponding warning string is returned (or the null string if no
    --  Warning argument was present in the pragma).
+
+   function Warning_Treated_As_Error (Msg : String) return Boolean;
+   --  Returns True if the warning message Msg matches any of the strings
+   --  given by Warning_As_Error pragmas, as stored in the Warnings_As_Errors
+   --  table by Set_Warning_As_Error.
 
    type Error_Msg_Proc is
      access procedure (Msg : String; Flag_Location : Source_Ptr);

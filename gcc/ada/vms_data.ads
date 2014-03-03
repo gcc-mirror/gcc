@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
---                                                                          --
+--                                                                         --
 --                             V M S _ D A T A                              --
 --                                                                          --
 --                                 S p e c                                  --
@@ -1570,7 +1570,20 @@ package VMS_Data is
 
    S_GCC_DistX   : aliased constant S := "/NODISTRIBUTION_STUBS "          &
                                             "!-gnatzr,!-gnatzc";
-   --  NODOC (see /DISTRIBUTION_STUBS)
+   --  NODISTRIBUTION_STUBS (see /DISTRIBUTION_STUBS)
+
+   S_GCC_ElabI   : aliased constant S := "/ELABORATION_INFO_MESSAGES "     &
+                                            "-gnatel";
+   --  ELABORATION_INFO_MESSAGES
+   --
+   --  Causes the compiler to output INFO messages that show where implicit
+   --  Elaborate and Elaborate_All pragmas are added when using the static
+   --  elaboration model. Used to diagnose binder circularities when this
+   --  elaboration model is used.
+
+   S_GCC_NoElabI : aliased constant S := "/NOELABORATION_INFO_MESSAGES "     &
+                                            "-gnateL";
+   --  Turns off elaboration info messages (see ELABORATION_INFO_MESSAGES)
 
    S_GCC_Error   : aliased constant S := "/ERROR_LIMIT=#"                  &
                                             "-gnatm#";
@@ -3822,6 +3835,7 @@ package VMS_Data is
                      S_GCC_DisAtom 'Access,
                      S_GCC_Dist    'Access,
                      S_GCC_DistX   'Access,
+                     S_GCC_ElabI   'Access,
                      S_GCC_Error   'Access,
                      S_GCC_ErrorX  'Access,
                      S_GCC_Expand  'Access,
@@ -3857,6 +3871,7 @@ package VMS_Data is
                      S_GCC_Mess    'Access,
                      S_GCC_Nesting 'Access,
                      S_GCC_Noadc   'Access,
+                     S_GCC_NoElabI 'Access,
                      S_GCC_Noload  'Access,
                      S_GCC_Nostinc 'Access,
                      S_GCC_Nostlib 'Access,

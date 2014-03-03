@@ -250,6 +250,9 @@ static GTY(()) section *cold_text_section;
 /* The DIE for C++1y 'auto' in a function return type.  */
 static GTY(()) dw_die_ref auto_die;
 
+/* The DIE for C++1y 'decltype(auto)' in a function return type.  */
+static GTY(()) dw_die_ref decltype_auto_die;
+
 /* Forward declarations for functions defined in this file.  */
 
 static char *stripattributes (const char *);
@@ -10229,7 +10232,8 @@ is_cxx_auto (tree type)
       tree name = TYPE_NAME (type);
       if (TREE_CODE (name) == TYPE_DECL)
 	name = DECL_NAME (name);
-      if (name == get_identifier ("auto"))
+      if (name == get_identifier ("auto")
+	  || name == get_identifier ("decltype(auto)"))
 	return true;
     }
   return false;
@@ -18063,12 +18067,15 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line) != (unsigned) s.line)
 	    add_AT_unsigned (subr_die, DW_AT_decl_line, s.line);
 
-	  /* If the prototype had an 'auto' return type, emit the real
-	     type on the definition die.  */
-	  if (is_cxx() && debug_info_level > DINFO_LEVEL_TERSE
-	      && get_AT_ref (old_die, DW_AT_type) == auto_die)
-	    add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
-				0, 0, context_die);
+	  /* If the prototype had an 'auto' or 'decltype(auto)' return type,
+	     emit the real type on the definition die.  */
+	  if (is_cxx() && debug_info_level > DINFO_LEVEL_TERSE)
+	    {
+	      dw_die_ref die = get_AT_ref (old_die, DW_AT_type);
+	      if (die == auto_die || die == decltype_auto_die)
+		add_type_attribute (subr_die, TREE_TYPE (TREE_TYPE (decl)),
+				    0, 0, context_die);
+	    }
 	}
     }
   else
@@ -19894,13 +19901,18 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     default:
       if (is_cxx_auto (type))
 	{
-	  if (!auto_die)
+	  tree name = TYPE_NAME (type);
+	  if (TREE_CODE (name) == TYPE_DECL)
+	    name = DECL_NAME (name);
+	  dw_die_ref *die = (name == get_identifier ("auto")
+			     ? &auto_die : &decltype_auto_die);
+	  if (!*die)
 	    {
-	      auto_die = new_die (DW_TAG_unspecified_type,
-				  comp_unit_die (), NULL_TREE);
-	      add_name_attribute (auto_die, "auto");
+	      *die = new_die (DW_TAG_unspecified_type,
+			      comp_unit_die (), NULL_TREE);
+	      add_name_attribute (*die, IDENTIFIER_POINTER (name));
 	    }
-	  equate_type_number_to_die (type, auto_die);
+	  equate_type_number_to_die (type, *die);
 	  break;
 	}
       gcc_unreachable ();

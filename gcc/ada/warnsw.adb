@@ -47,6 +47,8 @@ package body Warnsw is
         W.Constant_Condition_Warnings;
       Elab_Warnings                       :=
         W.Elab_Warnings;
+      Elab_Info_Messages                  :=
+        W.Elab_Info_Messages;
       Implementation_Unit_Warnings        :=
         W.Implementation_Unit_Warnings;
       Ineffective_Inline_Warnings         :=
@@ -141,6 +143,8 @@ package body Warnsw is
         Check_Withs;
       W.Constant_Condition_Warnings         :=
         Constant_Condition_Warnings;
+      W.Elab_Info_Messages                  :=
+        Elab_Info_Messages;
       W.Elab_Warnings                       :=
         Elab_Warnings;
       W.Implementation_Unit_Warnings        :=
@@ -263,7 +267,6 @@ package body Warnsw is
             Ineffective_Inline_Warnings         := True;
             List_Body_Required_Info             := True;
             List_Inherited_Aspects              := True;
-            Warning_Doc_Switch                  := True;
             Warn_On_Ada_2005_Compatibility      := True;
             Warn_On_Ada_2012_Compatibility      := True;
             Warn_On_All_Unread_Out_Parameters   := True;

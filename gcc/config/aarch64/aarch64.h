@@ -32,6 +32,9 @@
       else						\
 	builtin_define ("__AARCH64EL__");		\
 							\
+      if (!TARGET_GENERAL_REGS_ONLY)			\
+	builtin_define ("__ARM_NEON");			\
+							\
       switch (aarch64_cmodel)				\
 	{						\
 	  case AARCH64_CMODEL_TINY:			\

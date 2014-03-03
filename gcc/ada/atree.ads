@@ -315,6 +315,10 @@ package Atree is
    --  Number of warnings detected. Initialized to zero at the start of
    --  compilation. Initialized for -gnatVa use, see comment above.
 
+   Warnings_Treated_As_Errors : Nat := 0;
+   --  Number of warnings changed into errors as a result of matching a pattern
+   --  given in a Warning_As_Error configuration pragma.
+
    Configurable_Run_Time_Violations : Nat := 0;
    --  Count of configurable run time violations so far. This is used to
    --  suppress certain cascaded error messages when we know that we may not
@@ -501,10 +505,17 @@ package Atree is
    --  a copied node by the parent field are also copied.) The parent pointers
    --  in the copy are properly set. Copy_Separate_Tree (Empty/Error) returns
    --  Empty/Error. The new subtree does not share entities with the source,
-   --  but has new entities with the same name. Most of the time this routine
-   --  is called on an unanalyzed tree, and no semantic information is copied.
-   --  However, to ensure that no entities are shared between the two when the
-   --  source is already analyzed, entity fields in the copy are zeroed out.
+   --  but has new entities with the same name.
+   --
+   --  Most of the time this routine is called on an unanalyzed tree, and no
+   --  semantic information is copied. However, to ensure that no entities
+   --  are shared between the two when the source is already analyzed, and
+   --  that the result looks like an unanalyzed tree from the parser, Entity
+   --  fields and Etype fields are set to Empty, and Analyzed flags set False.
+   --
+   --  In addition, Expanded_Name nodes are converted back into the original
+   --  parser form (where they are Selected_Components), so that reanalysis
+   --  does the right thing.
 
    function Copy_Separate_List (Source : List_Id) return List_Id;
    --  Applies Copy_Separate_Tree to each element of the Source list, returning
@@ -1235,6 +1246,9 @@ package Atree is
 
       function Node34 (N : Node_Id) return Node_Id;
       pragma Inline (Node34);
+
+      function Node35 (N : Node_Id) return Node_Id;
+      pragma Inline (Node35);
 
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
@@ -2544,6 +2558,9 @@ package Atree is
 
       procedure Set_Node34 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node34);
+
+      procedure Set_Node35 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node35);
 
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);

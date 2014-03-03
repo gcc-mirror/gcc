@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with System.HTable;
 with System.Soft_Links;   use System.Soft_Links;

@@ -26255,6 +26255,11 @@ thumb_far_jump_used_p (void)
 	return 0;
     }
 
+  /* We should not change far_jump_used during or after reload, as there is
+     no chance to change stack frame layout.  */
+  if (reload_in_progress || reload_completed)
+    return 0;
+
   /* Check to see if the function contains a branch
      insn with the far jump attribute set.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

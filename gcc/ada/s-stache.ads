@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1999-2009, Free Software Foundation, Inc.        --
+--           Copyright (C) 1999-2013, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  This package defines basic types and objects. Operations related to
 --  stack checking can be found in package System.Stack_Checking.Operations.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 with System.Storage_Elements;
 

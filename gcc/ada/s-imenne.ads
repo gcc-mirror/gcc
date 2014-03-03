@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@
 --  for bootstrapping with older versions of the compiler which expect to find
 --  functions in this package.
 
-pragma Compiler_Unit;
+pragma Compiler_Unit_Warning;
 
 package System.Img_Enum_New is
    pragma Pure;

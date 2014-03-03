@@ -4177,6 +4177,11 @@ cp_build_binary_op (location_t location,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
+      if (VECTOR_TYPE_P (type0) || VECTOR_TYPE_P (type1))
+	{
+	  sorry ("logical operation on vector type");
+	  return error_mark_node;
+	}
       result_type = boolean_type_node;
       break;
 
@@ -6282,8 +6287,7 @@ void
 maybe_warn_about_useless_cast (tree type, tree expr, tsubst_flags_t complain)
 {
   if (warn_useless_cast
-      && complain & tf_warning
-      && c_inhibit_evaluation_warnings == 0)
+      && complain & tf_warning)
     {
       if (REFERENCE_REF_P (expr))
 	expr = TREE_OPERAND (expr, 0);

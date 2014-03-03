@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_PRFCHW_SET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_SET OPTION_MASK_ISA_RDSEED
 #define OPTION_MASK_ISA_ADX_SET OPTION_MASK_ISA_ADX
+#define OPTION_MASK_ISA_PREFETCHWT1_SET OPTION_MASK_ISA_PREFETCHWT1
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -154,6 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_PRFCHW_UNSET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_UNSET OPTION_MASK_ISA_RDSEED
 #define OPTION_MASK_ISA_ADX_UNSET OPTION_MASK_ISA_ADX
+#define OPTION_MASK_ISA_PREFETCHWT1_UNSET OPTION_MASK_ISA_PREFETCHWT1
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -754,6 +756,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_ADX_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_ADX_UNSET;
+	}
+      return true;
+
+    case OPT_mprefetchwt1:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PREFETCHWT1_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PREFETCHWT1_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_PREFETCHWT1_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_PREFETCHWT1_UNSET;
 	}
       return true;
 
