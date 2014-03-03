@@ -597,173 +597,170 @@ EnumValue
 Enum(avr_mcu) String(atxmega16d4) Value(190)
 
 EnumValue
-Enum(avr_mcu) String(atxmega16x1) Value(191)
+Enum(avr_mcu) String(atxmega32a4) Value(191)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32a4) Value(192)
+Enum(avr_mcu) String(atxmega32d4) Value(192)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32d4) Value(193)
+Enum(avr_mcu) String(atxmega32x1) Value(193)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32x1) Value(194)
+Enum(avr_mcu) String(atmxt112sl) Value(194)
 
 EnumValue
-Enum(avr_mcu) String(atmxt112sl) Value(195)
+Enum(avr_mcu) String(atmxt224) Value(195)
 
 EnumValue
-Enum(avr_mcu) String(atmxt224) Value(196)
+Enum(avr_mcu) String(atmxt224e) Value(196)
 
 EnumValue
-Enum(avr_mcu) String(atmxt224e) Value(197)
+Enum(avr_mcu) String(atmxt336s) Value(197)
 
 EnumValue
-Enum(avr_mcu) String(atmxt336s) Value(198)
+Enum(avr_mcu) String(atxmega16a4u) Value(198)
 
 EnumValue
-Enum(avr_mcu) String(atxmega16a4u) Value(199)
+Enum(avr_mcu) String(atxmega16c4) Value(199)
 
 EnumValue
-Enum(avr_mcu) String(atxmega16c4) Value(200)
+Enum(avr_mcu) String(atxmega32a4u) Value(200)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32a4u) Value(201)
+Enum(avr_mcu) String(atxmega32c4) Value(201)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32c4) Value(202)
+Enum(avr_mcu) String(atxmega32e5) Value(202)
 
 EnumValue
-Enum(avr_mcu) String(atxmega32e5) Value(203)
+Enum(avr_mcu) String(avrxmega4) Value(203)
 
 EnumValue
-Enum(avr_mcu) String(avrxmega4) Value(204)
+Enum(avr_mcu) String(atxmega64a3) Value(204)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64a3) Value(205)
+Enum(avr_mcu) String(atxmega64d3) Value(205)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64d3) Value(206)
+Enum(avr_mcu) String(atxmega64a3u) Value(206)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64a3u) Value(207)
+Enum(avr_mcu) String(atxmega64a4u) Value(207)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64a4u) Value(208)
+Enum(avr_mcu) String(atxmega64b1) Value(208)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64b1) Value(209)
+Enum(avr_mcu) String(atxmega64b3) Value(209)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64b3) Value(210)
+Enum(avr_mcu) String(atxmega64c3) Value(210)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64c3) Value(211)
+Enum(avr_mcu) String(atxmega64d4) Value(211)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64d4) Value(212)
+Enum(avr_mcu) String(avrxmega5) Value(212)
 
 EnumValue
-Enum(avr_mcu) String(avrxmega5) Value(213)
+Enum(avr_mcu) String(atxmega64a1) Value(213)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64a1) Value(214)
+Enum(avr_mcu) String(atxmega64a1u) Value(214)
 
 EnumValue
-Enum(avr_mcu) String(atxmega64a1u) Value(215)
+Enum(avr_mcu) String(avrxmega6) Value(215)
 
 EnumValue
-Enum(avr_mcu) String(avrxmega6) Value(216)
+Enum(avr_mcu) String(atxmega128a3) Value(216)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128a3) Value(217)
+Enum(avr_mcu) String(atxmega128d3) Value(217)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128d3) Value(218)
+Enum(avr_mcu) String(atxmega192a3) Value(218)
 
 EnumValue
-Enum(avr_mcu) String(atxmega192a3) Value(219)
+Enum(avr_mcu) String(atxmega192d3) Value(219)
 
 EnumValue
-Enum(avr_mcu) String(atxmega192d3) Value(220)
+Enum(avr_mcu) String(atxmega256a3) Value(220)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256a3) Value(221)
+Enum(avr_mcu) String(atxmega256a3b) Value(221)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256a3b) Value(222)
+Enum(avr_mcu) String(atxmega256a3bu) Value(222)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256a3bu) Value(223)
+Enum(avr_mcu) String(atxmega256d3) Value(223)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256d3) Value(224)
+Enum(avr_mcu) String(atxmega128a3u) Value(224)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128a3u) Value(225)
+Enum(avr_mcu) String(atxmega128b1) Value(225)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128b1) Value(226)
+Enum(avr_mcu) String(atxmega128b3) Value(226)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128b3) Value(227)
+Enum(avr_mcu) String(atxmega128c3) Value(227)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128c3) Value(228)
+Enum(avr_mcu) String(atxmega128d4) Value(228)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128d4) Value(229)
+Enum(avr_mcu) String(atmxt540s) Value(229)
 
 EnumValue
-Enum(avr_mcu) String(atmxt540s) Value(230)
+Enum(avr_mcu) String(atmxt540sreva) Value(230)
 
 EnumValue
-Enum(avr_mcu) String(atmxt540sreva) Value(231)
+Enum(avr_mcu) String(atxmega192a3u) Value(231)
 
 EnumValue
-Enum(avr_mcu) String(atxmega192a3u) Value(232)
+Enum(avr_mcu) String(atxmega192c3) Value(232)
 
 EnumValue
-Enum(avr_mcu) String(atxmega192c3) Value(233)
+Enum(avr_mcu) String(atxmega256a3u) Value(233)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256a3u) Value(234)
+Enum(avr_mcu) String(atxmega256c3) Value(234)
 
 EnumValue
-Enum(avr_mcu) String(atxmega256c3) Value(235)
+Enum(avr_mcu) String(atxmega384c3) Value(235)
 
 EnumValue
-Enum(avr_mcu) String(atxmega384c3) Value(236)
+Enum(avr_mcu) String(atxmega384d3) Value(236)
 
 EnumValue
-Enum(avr_mcu) String(atxmega384d3) Value(237)
+Enum(avr_mcu) String(avrxmega7) Value(237)
 
 EnumValue
-Enum(avr_mcu) String(avrxmega7) Value(238)
+Enum(avr_mcu) String(atxmega128a1) Value(238)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128a1) Value(239)
+Enum(avr_mcu) String(atxmega128a1u) Value(239)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128a1u) Value(240)
+Enum(avr_mcu) String(atxmega128a4u) Value(240)
 
 EnumValue
-Enum(avr_mcu) String(atxmega128a4u) Value(241)
+Enum(avr_mcu) String(avr1) Value(241)
 
 EnumValue
-Enum(avr_mcu) String(avr1) Value(242)
+Enum(avr_mcu) String(at90s1200) Value(242)
 
 EnumValue
-Enum(avr_mcu) String(at90s1200) Value(243)
+Enum(avr_mcu) String(attiny11) Value(243)
 
 EnumValue
-Enum(avr_mcu) String(attiny11) Value(244)
+Enum(avr_mcu) String(attiny12) Value(244)
 
 EnumValue
-Enum(avr_mcu) String(attiny12) Value(245)
+Enum(avr_mcu) String(attiny15) Value(245)
 
 EnumValue
-Enum(avr_mcu) String(attiny15) Value(246)
-
-EnumValue
-Enum(avr_mcu) String(attiny28) Value(247)
+Enum(avr_mcu) String(attiny28) Value(246)
 

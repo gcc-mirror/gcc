@@ -50,7 +50,7 @@
 
 @item avrxmega2
 ``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{atmxt112sl}, @code{atmxt224}, @code{atmxt224e}, @code{atmxt336s}, @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega16x1}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c4}, @code{atxmega32d4}, @code{atxmega32e5}, @code{atxmega32x1}.
+@*@var{mcu}@tie{}= @code{atmxt112sl}, @code{atmxt224}, @code{atmxt224e}, @code{atmxt336s}, @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c4}, @code{atxmega32d4}, @code{atxmega32e5}, @code{atxmega32x1}.
 
 @item avrxmega4
 ``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB of program memory.
