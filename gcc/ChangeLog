@@ -1,3 +1,10 @@
+2014-03-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (cbranchsi4_real_signed): Add
+	anti-cacnonical alternatives.
+	(negandhi3_real): New pattern.
+	* config/rl78/rl78-virt.md (negandhi3_virt): New pattern.
+
 2014-03-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* config/avr/avr-mcus.def: Remove atxmega16x1.
@@ -36,7 +43,7 @@
 	group, also set all symbols to local.
 
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
-	
+
 	PR ipa/60306
 
 	Revert:
@@ -51,9 +58,9 @@
 	PR bootstrap/52466
 	PR target/46898
 	* config/lm32/lm32.c (lm32_legitimate_constant_p): Remove, as incorrect.
-	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.  
+	  (TARGET_LEGITIMATE_CONSTANT_P): Undefine, as not needed.
 	* config/lm32/lm32.md (movsi_insn): Add 32-bit immediate support.
-	(simple_return, *simple_return): New patterns     
+	(simple_return, *simple_return): New patterns
 	* config/lm32/predicates.md (movsi_rhs_operand): Remove as obsolete.
 	* configure.ac (force_sjlj_exceptions): Force sjlj exceptions for lm32.
 

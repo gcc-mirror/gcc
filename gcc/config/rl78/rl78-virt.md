@@ -405,3 +405,12 @@
    ]
   "rl78_setup_peep_movhi (operands);"
   )
+
+(define_insn "*negandhi3_virt"
+  [(set (match_operand:HI                 0 "register_operand" "=v")
+	(and:HI (neg:HI (match_operand:HI 1 "register_operand"  "0"))
+ 		(match_operand:HI         2 "immediate_operand" "n")))
+   ]
+  "rl78_virt_insns_ok ()"
+  "v.nand\t%0, %1, %2"
+)

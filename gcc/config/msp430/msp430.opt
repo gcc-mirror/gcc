@@ -7,7 +7,7 @@ Target Mask(ASM_HEX)
 Force assembly output to always use hex constants
 
 mmcu=
-Target Joined RejectNegative Var(target_mcu)
+Target ToLower Joined RejectNegative Var(target_mcu)
 Specify the MCU to build for.
 
 mcpu=
@@ -32,3 +32,7 @@ Target Undocumented Mask(OPT_SPACE)
 minrt
 Target Report Mask(MINRT) RejectNegative
 Use a minimum runtime (no static initializers or ctors) for memory-constrained devices.
+
+mhwmult
+Target Report Var(ENABLE_HWMULT, 1) Init(1)
+Enable hardware multiply (except in interrupt routines)

@@ -30,9 +30,11 @@ const char * msp430x_extendhisi (rtx *);
 void	msp430_fixup_compare_operands (enum machine_mode, rtx *);
 int	msp430_hard_regno_mode_ok (int, enum machine_mode);
 int	msp430_hard_regno_nregs (int, enum machine_mode);
+bool    msp430_hwmult_enabled (void);
 rtx	msp430_incoming_return_addr_rtx (void);
 void	msp430_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 int	msp430_initial_elimination_offset (int, int);
+bool    msp430_is_f5_mcu (void);
 bool    msp430_is_interrupt_func (void);
 const char * msp430x_logical_shift_right (rtx);
 const char * msp430_mcu_name (void);
@@ -41,7 +43,7 @@ void	msp430_output_labelref (FILE *, const char *);
 void	msp430_register_pragmas (void);
 rtx	msp430_return_addr_rtx (int);
 void	msp430_split_movsi (rtx *);
-rtx	msp430_subreg (enum machine_mode, rtx, enum machine_mode, int);
 void    msp430_start_function (FILE *, const char *, tree);
+rtx	msp430_subreg (enum machine_mode, rtx, enum machine_mode, int);
 
 #endif /* GCC_MSP430_PROTOS_H */
