@@ -56,6 +56,9 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
+;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
+;; It is currently used for that purpose in LLVM.
+
 (define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
   "VSX vector register to hold vector double data or NO_REGS.")
 
