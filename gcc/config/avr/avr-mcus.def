@@ -260,7 +260,6 @@ AVR_MCU ("atmega2561",           ARCH_AVR6, "__AVR_ATmega2561__",        0, 0, 0
 AVR_MCU ("avrxmega2",        ARCH_AVRXMEGA2, NULL,                       0, 0, 0x2000, 1, "x32a4")
 AVR_MCU ("atxmega16a4",      ARCH_AVRXMEGA2, "__AVR_ATxmega16A4__",      0, 0, 0x2000, 1, "x16a4")
 AVR_MCU ("atxmega16d4",      ARCH_AVRXMEGA2, "__AVR_ATxmega16D4__",      0, 0, 0x2000, 1, "x16d4")
-AVR_MCU ("atxmega16x1",      ARCH_AVRXMEGA2, "__AVR_ATxmega16X1__",      0, 0, 0x2000, 1, "x16x1")
 AVR_MCU ("atxmega32a4",      ARCH_AVRXMEGA2, "__AVR_ATxmega32A4__",      0, 0, 0x2000, 1, "x32a4")
 AVR_MCU ("atxmega32d4",      ARCH_AVRXMEGA2, "__AVR_ATxmega32D4__",      0, 0, 0x2000, 1, "x32d4")
 AVR_MCU ("atxmega32x1",      ARCH_AVRXMEGA2, "__AVR_ATxmega32X1__",      0, 0, 0x2000, 1, "x32x1")

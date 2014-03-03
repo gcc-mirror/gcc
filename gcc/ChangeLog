@@ -1,3 +1,10 @@
+2014-03-03  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* config/avr/avr-mcus.def: Remove atxmega16x1.
+	* config/avr/avr-tables.opt: Regenerate.
+	* config/avr/t-multilib: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
 2014-03-03  Tobias Grosser  <tobias@grosser.es>
 	Mircea Namolaru  <mircea.namolaru@inria.fr>
 
