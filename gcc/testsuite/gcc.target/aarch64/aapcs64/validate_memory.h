@@ -60,8 +60,6 @@ validate_memory (void *mem1, char *mem2, size_t size, enum structure_type type)
     case i8in64:
     case i16in64:
     case i32in64:
-    case f32in64:
-    case i32in128:
       for (i = 0; i < size; i += element_size[type])
 	{
 	  if (memcmp (cmem1 + i,
@@ -72,6 +70,8 @@ validate_memory (void *mem1, char *mem2, size_t size, enum structure_type type)
       return 0;
       break;
 #endif
+    case f32in64:
+    case i32in128:
     default:
       break;
     }

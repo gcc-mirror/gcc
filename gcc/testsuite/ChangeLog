@@ -1,3 +1,8 @@
+2014-03-03  Renlin Li  <Renlin.Li@arm.com>
+
+	* gcc.target/aarch64/aapcs64/validate_memory.h: Move f32in64 and
+	i32in128 cases outside special big-endian processing block.
+
 2014-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/60400
