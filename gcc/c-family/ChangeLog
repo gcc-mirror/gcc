@@ -1,3 +1,9 @@
+2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.c (c_pp_lookup_pragma): Handle PRAGMA_CILK_SIMD.
+	(init_pragma): Call cpp_register_deferred_pragma for PRAGMA_CILK_SIMD
+	even when flag_preprocess_only.
+
 2014-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59231
