@@ -1456,6 +1456,8 @@ option_affects_pch_p (int option, struct cl_option_state *state)
 {
   if ((cl_options[option].flags & CL_TARGET) == 0)
     return false;
+  if ((cl_options[option].flags & CL_PCH_IGNORE) != 0)
+    return false;
   if (option_flag_var (option, &global_options) == &target_flags)
     if (targetm.check_pch_target_flags)
       return false;
