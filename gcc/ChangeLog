@@ -1,3 +1,11 @@
+2014-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/60175
+	* function.c (expand_function_end): Don't emit
+	clobber_return_register sequence if clobber_after is a BARRIER.
+	* cfgexpand.c (construct_exit_block): Append instructions before
+	return_label to prev_bb.
+
 2014-03-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/constraints.md: Document reserved use of "wc".
