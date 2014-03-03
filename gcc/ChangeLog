@@ -1,3 +1,10 @@
+2014-03-03  Tobias Grosser  <tobias@grosser.es>
+	Mircea Namolaru  <mircea.namolaru@inria.fr>
+
+	PR tree-optimization/58028
+	* graphite-clast-to-gimple.c (set_cloog_options): Don't remove
+	scalar dimensions.
+
 2014-03-03  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/neon.md (*movmisalign<mode>): Legitimize addresses
