@@ -1,3 +1,8 @@
+2014-03-03  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/neon.md (*movmisalign<mode>): Legitimize addresses
+	not handled by recognizers.
+
 2014-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/60175
