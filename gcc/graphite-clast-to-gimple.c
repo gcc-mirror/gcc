@@ -1522,6 +1522,13 @@ set_cloog_options (void)
      variables.  */
   options->save_domains = 1;
 
+  /* Do not remove scalar dimensions.  CLooG by default removes scalar 
+     dimensions very early from the input schedule.  However, they are 
+     necessary to correctly derive from the saved domains 
+     (options->save_domains) the relationship between the generated loops 
+     and the schedule dimensions they are generated from.  */ 
+  options->noscalars = 1;
+
   /* Disable optimizations and make cloog generate source code closer to the
      input.  This is useful for debugging,  but later we want the optimized
      code.
