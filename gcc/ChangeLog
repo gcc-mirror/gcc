@@ -1,3 +1,7 @@
+2014-03-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/constraints.md: Document reserved use of "wc".
+
 2014-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60150
