@@ -5273,7 +5273,8 @@ construct_exit_block (void)
   edge e, e2;
   unsigned ix;
   edge_iterator ei;
-  rtx orig_end = BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  basic_block prev_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
+  rtx orig_end = BB_END (prev_bb);
 
   rtl_profile_for_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
 
@@ -5288,13 +5289,25 @@ construct_exit_block (void)
   end = get_last_insn ();
   if (head == end)
     return;
-  /* While emitting the function end we could move end of the last basic block.
-   */
-  BB_END (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb) = orig_end;
+  /* While emitting the function end we could move end of the last basic
+     block.  */
+  BB_END (prev_bb) = orig_end;
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
-  exit_block = create_basic_block (NEXT_INSN (head), end,
-				   EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
+  /* But make sure exit_block starts with RETURN_LABEL, otherwise the
+     bb frequency counting will be confused.  Any instructions before that
+     label are emitted for the case where PREV_BB falls through into the
+     exit block, so append those instructions to prev_bb in that case.  */
+  if (NEXT_INSN (head) != return_label)
+    {
+      while (NEXT_INSN (head) != return_label)
+	{
+	  if (!NOTE_P (NEXT_INSN (head)))
+	    BB_END (prev_bb) = NEXT_INSN (head);
+	  head = NEXT_INSN (head);
+	}
+    }
+  exit_block = create_basic_block (NEXT_INSN (head), end, prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency;
   exit_block->count = EXIT_BLOCK_PTR_FOR_FN (cfun)->count;
   if (current_loops && EXIT_BLOCK_PTR_FOR_FN (cfun)->loop_father)

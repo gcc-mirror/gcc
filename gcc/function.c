@@ -5156,17 +5156,20 @@ expand_function_end (void)
       crtl->return_rtx = outgoing;
     }
 
-  /* Emit the actual code to clobber return register.  */
-  {
-    rtx seq;
+  /* Emit the actual code to clobber return register.  Don't emit
+     it if clobber_after is a barrier, then the previous basic block
+     certainly doesn't fall thru into the exit block.  */
+  if (!BARRIER_P (clobber_after))
+    {
+      rtx seq;
 
-    start_sequence ();
-    clobber_return_register ();
-    seq = get_insns ();
-    end_sequence ();
+      start_sequence ();
+      clobber_return_register ();
+      seq = get_insns ();
+      end_sequence ();
 
-    emit_insn_after (seq, clobber_after);
-  }
+      emit_insn_after (seq, clobber_after);
+    }
 
   /* Output the label for the naked return from the function.  */
   if (naked_return_label)
