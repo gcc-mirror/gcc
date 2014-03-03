@@ -1770,6 +1770,8 @@ runtime_memorydump(void)
 void
 runtime_gchelper(void)
 {
+	uint32 nproc;
+
 	gchelperstart();
 
 	// parallel mark for over gc roots
@@ -1786,7 +1788,8 @@ runtime_gchelper(void)
 
 	runtime_parfordo(work.sweepfor);
 	bufferList[runtime_m()->helpgc].busy = 0;
-	if(runtime_xadd(&work.ndone, +1) == work.nproc-1)
+	nproc = work.nproc;  // work.nproc can change right after we increment work.ndone
+	if(runtime_xadd(&work.ndone, +1) == nproc-1)
 		runtime_notewakeup(&work.alldone);
 }
 
