@@ -1,3 +1,9 @@
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60382
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Do not consider
+	dead PHIs a reduction.
+
 2014-02-25  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
