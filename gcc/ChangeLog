@@ -1,3 +1,11 @@
+2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * tree-streamer.c (record_common_node): Assert we don't record
+        nodes with type double.
+        (preload_common_node): Skip type double, complex double and
+        double pointer since it is now frontend dependent due to
+        fshort-double option.
+
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/60405
