@@ -153,26 +153,30 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
 
   /* FIXME lto: WPA mode does not write compressed sections, so for now
      suppress uncompression if flag_ltrans.  */
-  if (flag_ltrans)
-    return data;
+  if (!flag_ltrans)
+    {
+      /* Create a mapping header containing the underlying data and length,
+	 and prepend this to the uncompression buffer.  The uncompressed data
+	 then follows, and a pointer to the start of the uncompressed data is
+	 returned.  */
+      header = (struct lto_data_header *) xmalloc (header_length);
+      header->data = data;
+      header->len = *len;
 
-  /* Create a mapping header containing the underlying data and length,
-     and prepend this to the uncompression buffer.  The uncompressed data
-     then follows, and a pointer to the start of the uncompressed data is
-     returned.  */
-  header = (struct lto_data_header *) xmalloc (header_length);
-  header->data = data;
-  header->len = *len;
+      buffer.data = (char *) header;
+      buffer.length = header_length;
 
-  buffer.data = (char *) header;
-  buffer.length = header_length;
+      stream = lto_start_uncompression (lto_append_data, &buffer);
+      lto_uncompress_block (stream, data, *len);
+      lto_end_uncompression (stream);
 
-  stream = lto_start_uncompression (lto_append_data, &buffer);
-  lto_uncompress_block (stream, data, *len);
-  lto_end_uncompression (stream);
+      *len = buffer.length - header_length;
+      data = buffer.data + header_length;
+    }
 
-  *len = buffer.length - header_length;
-  return buffer.data + header_length;
+  lto_check_version (((lto_header *)data)->major_version,
+		     ((lto_header *)data)->minor_version);
+  return data;
 }
 
 
