@@ -1,5 +1,14 @@
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
+	PR lto/60405
+	* lto-streamer-in.c (lto_read_body): Remove LTO bytecode version
+	check.
+	(lto_input_toplevel_asms): Likewise.
+	* lto-section-in.c (lto_get_section_data): Instead do it here
+	for every section.
+ 
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/60382
 	* tree-vect-loop.c (vect_is_simple_reduction_1): Do not consider
 	dead PHIs a reduction.
