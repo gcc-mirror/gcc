@@ -1,3 +1,7 @@
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	* lto-section-in.c (lto_get_section_data): Fix const cast.
+ 
 2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
         * tree-streamer.c (record_common_node): Assert we don't record
