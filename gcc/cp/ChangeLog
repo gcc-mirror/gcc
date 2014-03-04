@@ -1,5 +1,9 @@
 2014-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60417
+	* typeck2.c (process_init_constructor_record): Set
+	CONSTRUCTOR_IS_DIRECT_INIT on {} for omitted initializers.
+
 	PR c++/60415
 	PR c++/54359
 	* parser.c (cp_parser_direct_declarator): Set declarator to
