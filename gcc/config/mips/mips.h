@@ -701,8 +701,8 @@ struct mips_cpu_info {
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*|march=m14k*|march=1004k*: -mips32r2} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000 \
-       |march=xlr|march=loongson3a: -mips64} \
-     %{march=mips64r2|march=octeon|march=xlp: -mips64r2} \
+       |march=xlr: -mips64} \
+     %{march=mips64r2|march=loongson3a|march=octeon|march=xlp: -mips64r2} \
      %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
 
 /* A spec that infers a -mhard-float or -msoft-float setting from an
