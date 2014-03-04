@@ -17456,6 +17456,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* But declarations with qualified-ids can't appear in a
 		     function.  */
 		  cp_parser_error (parser, "qualified-id in declaration");
+		  declarator = cp_error_declarator;
 		  break;
 		}
 	      pushed_scope = push_scope (scope);

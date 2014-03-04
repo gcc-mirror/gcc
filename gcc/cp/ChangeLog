@@ -1,3 +1,10 @@
+2014-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60415
+	PR c++/54359
+	* parser.c (cp_parser_direct_declarator): Set declarator to
+	cp_error_declarator on invalid qualified-id.
+
 2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60376
