@@ -1,3 +1,7 @@
+2014-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* MAINTAINERS: Update my email address.
+
 2014-02-24  Walter Lee  <walt@tilera.com>
 
 	* configure.ac (tilepro-*-*) Change to tilepro*-*-*.
