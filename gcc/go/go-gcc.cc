@@ -1871,7 +1871,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 
 Bvariable*
 Gcc_backend::immutable_struct(const std::string& name, bool is_hidden,
-			      bool, Btype* btype, Location location)
+			      bool is_common, Btype* btype, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1887,6 +1887,21 @@ Gcc_backend::immutable_struct(const std::string& name, bool is_hidden,
   DECL_ARTIFICIAL(decl) = 1;
   if (!is_hidden)
     TREE_PUBLIC(decl) = 1;
+
+  // When the initializer for one immutable_struct refers to another,
+  // it needs to know the visibility of the referenced struct so that
+  // compute_reloc_for_constant will return the right value.  On many
+  // systems calling make_decl_one_only will mark the decl as weak,
+  // which will change the return value of compute_reloc_for_constant.
+  // We can't reliably call make_decl_one_only yet, because we don't
+  // yet know the initializer.  This issue doesn't arise in C because
+  // Go initializers, unlike C initializers, can be indirectly
+  // recursive.  To ensure that compute_reloc_for_constant computes
+  // the right value if some other initializer refers to this one, we
+  // mark this symbol as weak here.  We undo that below in
+  // immutable_struct_set_init before calling mark_decl_one_only.
+  if (is_common)
+    DECL_WEAK(decl) = 1;
 
   // We don't call rest_of_decl_compilation until we have the
   // initializer.
@@ -1910,9 +1925,13 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 
   DECL_INITIAL(decl) = init_tree;
 
-  // We can't call make_decl_one_only until we set DECL_INITIAL.
+  // Now that DECL_INITIAL is set, we can't call make_decl_one_only.
+  // See the comment where DECL_WEAK is set in immutable_struct.
   if (is_common)
-    make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+    {
+      DECL_WEAK(decl) = 0;
+      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+    }
 
   // These variables are often unneeded in the final program, so put
   // them in their own section so that linker GC can discard them.
