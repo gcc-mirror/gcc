@@ -1,3 +1,8 @@
+2014-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60148
+	* gfortran.dg/namelist_84.f90: New test.
+
 2014-03-03  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc.target/i386/avx512er-vexp2ps-2.c: Decrease exponent
