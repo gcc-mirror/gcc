@@ -1,3 +1,21 @@
+2014-03-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/extract-vsx.c: Replace "vector long" with "vector
+	long long" throughout.
+	* gcc.dg/vmx/extract-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/insert-vsx.c: Likewise.
+	* gcc.dg/vmx/insert-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ld-vsx.c: Likewise.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/st-vsx.c: Likewise.
+	* gcc.dg/vmx/st-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/stl-vsx.c: Likewise.
+	* gcc.dg/vmx/stl-vsx-be-order.c: Likewise.
+
 2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
         * gcc.dg/lto/pr55113_0.c: New testcase.
