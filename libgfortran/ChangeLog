@@ -1,3 +1,33 @@
+2014-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu>
+
+	PR libfortran/60148
+	* io/inquire.c (inquire_via_unit): In the case of
+	DELIM_UNSPECIFIED set inquire return string to "NONE".
+	* io/list_read.c (read_character): In the case of DELIM_NONE and
+	namelists, complete the character read using the namelist
+	variable length.
+	* io/open.c (new_unit): Don't set delim status to none if not
+	specified so that DELIM_UNSPECIFIED can be used later.
+	* io/transfer.c (data_transfer_init): For namelist I/O, if the
+	unit delim status is unspecified set the current status to quote.
+	Otherwise, set current status to the unit status.
+	* io/unit.c (get_internel_unit, init_unit): Remember to set
+	flags_delim initially to DELIM_UNSPECIFIED so defaults come out
+	correctly.
+	* io/write.c (write_character): Add a new function argument
+	"mode" to signify that raw output is to be used vs output with
+	delimiters. If the mode is set to DELIM (1) proceed with
+	delimiters. (list_formatted_write_scalar): Write the separator
+	only if a delimiter was previously specified. Update the call to
+	write_character with the mode argument given.
+	(namelist_write_newline): Use the mode argument. (nml_write_obj):
+	Use the mode argument. Remove use of tmp_delim. Write the
+	semi-colon or comma correctly only when needed with using
+	delimiters. Cleanup whitespace.
+	(namelist_write): If delim is not specified in namelist I/O,
+	default	to using quotes. Get rid of the tmp_delim variable and
+	use the new mode argument in write_character.
+
 2014-02-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/60286
