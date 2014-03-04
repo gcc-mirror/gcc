@@ -15932,10 +15932,17 @@ cp_parser_using_declaration (cp_parser* parser,
   /* If we saw `typename', or didn't see `::', then there must be a
      nested-name-specifier present.  */
   if (typename_p || !global_scope_p)
-    qscope = cp_parser_nested_name_specifier (parser, typename_p,
-					      /*check_dependency_p=*/true,
-					      /*type_p=*/false,
-					      /*is_declaration=*/true);
+    {
+      qscope = cp_parser_nested_name_specifier (parser, typename_p,
+						/*check_dependency_p=*/true,
+						/*type_p=*/false,
+						/*is_declaration=*/true);
+      if (!qscope && !cp_parser_uncommitted_to_tentative_parse_p (parser))
+	{
+	  cp_parser_skip_to_end_of_block_or_statement (parser);
+	  return false;
+	}
+    }
   /* Otherwise, we could be in either of the two productions.  In that
      case, treat the nested-name-specifier as optional.  */
   else
