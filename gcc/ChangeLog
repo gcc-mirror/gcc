@@ -1,3 +1,9 @@
+2014-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60382
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Do not consider
+	dead PHIs a reduction.
+
 2014-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/xmmintrin.h (enum _mm_hint) <_MM_HINT_ET0>: Correct
