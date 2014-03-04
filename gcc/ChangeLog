@@ -1,3 +1,8 @@
+2014-03-04  Heiher  <r@hev.cc>
+
+	* config/mips/mips-cpus.def (loongson3a): Mark as a MIPS64r2 processor.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Adjust accordingly.
+
 2014-03-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (const2356_operand): Change to ...
