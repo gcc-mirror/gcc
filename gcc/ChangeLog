@@ -1,7 +1,21 @@
+2014-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (const2356_operand): Change to ...
+	(const2367_operand): ... this.
+	* config/i386/sse.md (avx512pf_scatterpf<mode>sf): Use
+	const2367_operand.
+	(*avx512pf_scatterpf<mode>sf_mask): Ditto.
+	(*avx512pf_scatterpf<mode>sf): Ditto.
+	(avx512pf_scatterpf<mode>df): Ditto.
+	(*avx512pf_scatterpf<mode>df_mask): Ditto.
+	(*avx512pf_scatterpf<mode>df): Ditto.
+	* config/i386/i386.c (ix86_expand_builtin): Update
+	incorrect hint operand error message.
+
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
 	* lto-section-in.c (lto_get_section_data): Fix const cast.
- 
+
 2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
         * tree-streamer.c (record_common_node): Assert we don't record
@@ -13,12 +27,11 @@
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR lto/60405
-	* lto-streamer-in.c (lto_read_body): Remove LTO bytecode version
-	check.
+	* lto-streamer-in.c (lto_read_body): Remove LTO bytecode version check.
 	(lto_input_toplevel_asms): Likewise.
 	* lto-section-in.c (lto_get_section_data): Instead do it here
 	for every section.
- 
+
 2014-03-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60382

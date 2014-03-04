@@ -660,12 +660,12 @@
   return i == 2 || i == 4 || i == 8;
 })
 
-;; Match 2, 3, 5, or 6
-(define_predicate "const2356_operand"
+;; Match 2, 3, 6, or 7
+(define_predicate "const2367_operand"
   (match_code "const_int")
 {
   HOST_WIDE_INT i = INTVAL (op);
-  return i == 2 || i == 3 || i == 5 || i == 6;
+  return i == 2 || i == 3 || i == 6 || i == 7;
 })
 
 ;; Match 1, 2, 4, or 8

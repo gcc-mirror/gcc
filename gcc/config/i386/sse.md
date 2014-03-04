@@ -12652,7 +12652,7 @@
 	  [(match_operand 2 "vsib_address_operand")
 	   (match_operand:VI48_512 1 "register_operand")
 	   (match_operand:SI 3 "const1248_operand")]))
-      (match_operand:SI 4 "const2356_operand")]
+      (match_operand:SI 4 "const2367_operand")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
@@ -12670,14 +12670,14 @@
 	    (match_operand:VI48_512 1 "register_operand" "v")
 	    (match_operand:SI 3 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 4 "const2356_operand" "n")]
+      (match_operand:SI 4 "const2367_operand" "n")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
   switch (INTVAL (operands[4]))
     {
     case 3:
-    case 5:
+    case 7:
       return "vscatterpf0<ssemodesuffix>ps\t{%5%{%0%}|%5%{%0%}}";
     case 2:
     case 6:
@@ -12699,14 +12699,14 @@
 	    (match_operand:VI48_512 0 "register_operand" "v")
 	    (match_operand:SI 2 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const2356_operand" "n")]
+      (match_operand:SI 3 "const2367_operand" "n")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
   switch (INTVAL (operands[3]))
     {
     case 3:
-    case 5:
+    case 7:
       return "vscatterpf0<ssemodesuffix>ps\t{%4|%4}";
     case 2:
     case 6:
@@ -12728,7 +12728,7 @@
 	  [(match_operand 2 "vsib_address_operand")
 	   (match_operand:VI4_256_8_512 1 "register_operand")
 	   (match_operand:SI 3 "const1248_operand")]))
-      (match_operand:SI 4 "const2356_operand")]
+      (match_operand:SI 4 "const2367_operand")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
@@ -12746,14 +12746,14 @@
 	    (match_operand:VI4_256_8_512 1 "register_operand" "v")
 	    (match_operand:SI 3 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 4 "const2356_operand" "n")]
+      (match_operand:SI 4 "const2367_operand" "n")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
   switch (INTVAL (operands[4]))
     {
     case 3:
-    case 5:
+    case 7:
       return "vscatterpf0<ssemodesuffix>pd\t{%5%{%0%}|%5%{%0%}}";
     case 2:
     case 6:
@@ -12775,14 +12775,14 @@
 	    (match_operand:VI4_256_8_512 0 "register_operand" "v")
 	    (match_operand:SI 2 "const1248_operand" "n")]
 	   UNSPEC_VSIBADDR)])
-      (match_operand:SI 3 "const2356_operand" "n")]
+      (match_operand:SI 3 "const2367_operand" "n")]
      UNSPEC_SCATTER_PREFETCH)]
   "TARGET_AVX512PF"
 {
   switch (INTVAL (operands[3]))
     {
     case 3:
-    case 5:
+    case 7:
       return "vscatterpf0<ssemodesuffix>pd\t{%4|%4}";
     case 2:
     case 6:
