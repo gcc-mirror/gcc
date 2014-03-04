@@ -332,17 +332,13 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   /* Checks.  */
 
-  if (flags->delim == DELIM_UNSPECIFIED)
-    flags->delim = DELIM_NONE;
-  else
+  if (flags->delim != DELIM_UNSPECIFIED
+      && flags->form == FORM_UNFORMATTED)
     {
-      if (flags->form == FORM_UNFORMATTED)
-	{
-	  generate_error (&opp->common, LIBERROR_OPTION_CONFLICT,
-			  "DELIM parameter conflicts with UNFORMATTED form in "
-			  "OPEN statement");
-	  goto fail;
-	}
+      generate_error (&opp->common, LIBERROR_OPTION_CONFLICT,
+		      "DELIM parameter conflicts with UNFORMATTED form in "
+		      "OPEN statement");
+      goto fail;
     }
 
   if (flags->blank == BLANK_UNSPECIFIED)

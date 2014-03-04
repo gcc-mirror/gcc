@@ -523,6 +523,7 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.delim)
 	  {
 	  case DELIM_NONE:
+	  case DELIM_UNSPECIFIED:
 	    p = "NONE";
 	    break;
 	  case DELIM_QUOTE:

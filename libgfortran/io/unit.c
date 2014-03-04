@@ -464,6 +464,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit->flags.status = STATUS_UNSPECIFIED;
   iunit->flags.sign = SIGN_SUPPRESS;
   iunit->flags.decimal = DECIMAL_POINT;
+  iunit->flags.delim = DELIM_UNSPECIFIED;
   iunit->flags.encoding = ENCODING_DEFAULT;
   iunit->flags.async = ASYNC_NO;
   iunit->flags.round = ROUND_UNSPECIFIED;
@@ -584,6 +585,7 @@ init_units (void)
       u->flags.position = POSITION_ASIS;
       u->flags.sign = SIGN_SUPPRESS;
       u->flags.decimal = DECIMAL_POINT;
+      u->flags.delim = DELIM_UNSPECIFIED;
       u->flags.encoding = ENCODING_DEFAULT;
       u->flags.async = ASYNC_NO;
       u->flags.round = ROUND_UNSPECIFIED;
