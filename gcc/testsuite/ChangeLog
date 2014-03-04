@@ -1,3 +1,7 @@
+2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * gcc.dg/lto/pr55113_0.c: New testcase.
+
 2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60376
