@@ -36022,7 +36022,7 @@ addcarryx:
 
       if (!insn_data[icode].operand[4].predicate (op4, mode4))
 	{
-	  error ("the last argument must be hint 0 or 1");
+	  error ("incorrect hint operand");
 	  return const0_rtx;
 	}
 
