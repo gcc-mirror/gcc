@@ -6,7 +6,7 @@
 
 static void test()
 {
-  vector long vl = {0, 1};
+  vector long long vl = {0, 1};
   vector double vd = {0.0, 1.0};
 
   check (vec_extract (vl, 0) == 0, "vec_extract, vl, 0");

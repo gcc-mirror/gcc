@@ -6,7 +6,7 @@
 
 static void test()
 {
-  vector long vl = {0, 1};
+  vector long long vl = {0, 1};
   vector double vd = {0.0, 1.0};
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__

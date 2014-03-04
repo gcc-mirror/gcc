@@ -4,7 +4,7 @@
 
 #include "harness.h"
 
-static unsigned long svul[2] __attribute__ ((aligned (16)));
+static unsigned long long svul[2] __attribute__ ((aligned (16)));
 static double svd[2] __attribute__ ((aligned (16)));
 
 static void init ()
@@ -20,20 +20,20 @@ static void init ()
 static void test ()
 {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-  vector unsigned long evul = {1,0};
+  vector unsigned long long evul = {1,0};
   vector double evd = {1.0,0.0};
 #else
-  vector unsigned long evul = {0,1};
+  vector unsigned long long evul = {0,1};
   vector double evd = {0.0,1.0};
 #endif
 
-  vector unsigned long vul;
+  vector unsigned long long vul;
   vector double vd;
   unsigned i;
 
   init ();
 
-  vul = vec_ld (0, (vector unsigned long *)svul);
+  vul = vec_ld (0, (vector unsigned long long *)svul);
   vd  = vec_ld (0, (vector double *)svd);
 
   for (i = 0; i < 2; ++i)
