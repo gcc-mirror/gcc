@@ -1,3 +1,9 @@
+2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60376
+	* parser.c (cp_parser_using_declaration): Early return when
+	cp_parser_nested_name_specifier errors out.
+
 2014-03-01  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60377

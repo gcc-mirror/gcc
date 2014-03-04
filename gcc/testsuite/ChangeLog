@@ -1,3 +1,8 @@
+2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60376
+	* g++.dg/cpp1y/pr60376.C: New.
+
 2014-03-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/abi/anon2.C: Don't scan assembler for c++98.
