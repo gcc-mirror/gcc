@@ -1,5 +1,9 @@
 2014-03-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60409
+	* semantics.c (force_paren_expr): Only add a PAREN_EXPR to a
+	dependent expression.
+
 	PR c++/60361
 	* parser.c (cp_parser_template_id): Don't set up a CPP_TEMPLATE_ID
 	if re-parsing might succeed.
