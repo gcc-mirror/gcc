@@ -1,3 +1,9 @@
+2014-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/59335
+	* config/i386/t-i386 (OPTIONS_H_EXTRA): Add stringop.def.
+	(TM_H): Add x86-tune.def.
+
 2014-03-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (generic_tunings):
