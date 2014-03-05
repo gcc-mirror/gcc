@@ -1,5 +1,11 @@
 2014-03-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/60361
+	* parser.c (cp_parser_template_id): Don't set up a CPP_TEMPLATE_ID
+	if re-parsing might succeed.
+	* semantics.c (finish_id_expression): Use of a parameter outside
+	the function body is a parse error.
+
 	* parser.c (cp_parser_mem_initializer): Set input_location
 	properly for init-list warning.
 	(cp_parser_postfix_open_square_expression): Likewise.
