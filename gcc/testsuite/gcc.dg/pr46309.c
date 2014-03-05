@@ -1,10 +1,10 @@
 /* PR tree-optimization/46309 */
-/* { dg-do compile { target { ! { cris*-*-* } } } } */
+/* { dg-do compile { target { { ! logical_op_short_circuit } || { mips*-*-* avr*-*-* } } } } */
 /* { dg-options "-O2 -fdump-tree-reassoc-details" } */
 /* The transformation depends on BRANCH_COST being greater than 1
    (see the notes in the PR), so try to force that.  */
 /* { dg-additional-options "-mtune=octeon2" { target mips*-*-* } } */
-/* { dg-additional-options "-mbranch-cost=2" { target avr*-*-* s390*-*-* } } */
+/* { dg-additional-options "-mbranch-cost=2" { target avr*-*-* s390*-*-* i?86-*-* x86_64-*-* } } */
 
 int
 f1 (int a)
