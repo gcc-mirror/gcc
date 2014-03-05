@@ -3124,7 +3124,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) \
   version.h stringpool.h gimplify.h gimple-iterator.h gimple-ssa.h \
   fold-const.h tree-cfg.h tree-into-ssa.h tree-ssanames.h print-tree.h \
-  varasm.h context.h
+  varasm.h context.h tree-phinodes.h stor-layout.h ssa-iterators.h \
+  $(RESOURCE_H) tree-cfgcleanup.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile

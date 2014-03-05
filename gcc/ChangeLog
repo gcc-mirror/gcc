@@ -1,6 +1,10 @@
 2014-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/59335
+	* Makefile.in (PLUGIN_HEADERS): Add tree-phinodes.h, stor-layout.h,
+	ssa-iterators.h, $(RESOURCE_H) and tree-cfgcleanup.h.
+
+	PR plugins/59335
 	* config/i386/t-i386 (OPTIONS_H_EXTRA): Add stringop.def.
 	(TM_H): Add x86-tune.def.
 
