@@ -1,3 +1,11 @@
+2014-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/60404
+	* cfgexpand.c (expand_used_vars): Do not assume all SSA_NAMEs
+	of PARM/RESULT_DECLs must be coalesced with optimize && in_lto_p.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Use MUST_COALESCE_COST - 1
+	cost for in_lto_p.
+
 2014-03-04  Heiher  <r@hev.cc>
 
 	* config/mips/mips-cpus.def (loongson3a): Mark as a MIPS64r2 processor.

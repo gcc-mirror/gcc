@@ -1289,9 +1289,12 @@ coalesce_ssa_name (void)
 		     _require_ that all the names originating from it be
 		     coalesced, because there must be a single partition
 		     containing all the names so that it can be assigned
-		     the canonical RTL location of the DECL safely.  */
+		     the canonical RTL location of the DECL safely.
+		     If in_lto_p, a function could have been compiled
+		     originally with optimizations and only the link
+		     performed at -O0, so we can't actually require it.  */
 		  const int cost
-		    = TREE_CODE (SSA_NAME_VAR (a)) == VAR_DECL
+		    = (TREE_CODE (SSA_NAME_VAR (a)) == VAR_DECL || in_lto_p)
 		      ? MUST_COALESCE_COST - 1 : MUST_COALESCE_COST;
 		  add_coalesce (cl, SSA_NAME_VERSION (a),
 				SSA_NAME_VERSION (*slot), cost);
