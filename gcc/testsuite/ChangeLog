@@ -1,5 +1,23 @@
 2014-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/59308
+	* gcc.dg/pr46309.c: Don't compile on logical_op_short_circuit targets
+	other than mips/avr.  Use -mbranch-cost=2 even for i?86/x86_64.
+	* gcc.dg/tree-ssa/reassoc-32.c: Use -mbranch-cost=2 even for
+	s390*/i?86/x86_64.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Don't compile on
+	logical_op_short_circuit targets other than avr.  Use -mbranch-cost=2
+	even for mips*/s390*/i?86/x86_64.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+
 	PR lto/60404
 	* gcc.dg/lto/pr60404_0.c: New test.
 	* gcc.dg/lto/pr60404_1.c: New file.
