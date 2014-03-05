@@ -13466,7 +13466,12 @@ cp_parser_template_id (cp_parser *parser,
      the effort required to do the parse, nor will we issue duplicate
      error messages about problems during instantiation of the
      template.  */
-  if (start_of_id)
+  if (start_of_id
+      /* Don't do this if we had a parse error in a declarator; re-parsing
+	 might succeed if a name changes meaning (60361).  */
+      && !(cp_parser_error_occurred (parser)
+	   && cp_parser_parsing_tentatively (parser)
+	   && parser->in_declarator_p))
     {
       cp_token *token = cp_lexer_token_at (parser->lexer, start_of_id);
 
