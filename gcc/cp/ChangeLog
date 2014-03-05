@@ -1,3 +1,14 @@
+2014-03-05  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_mem_initializer): Set input_location
+	properly for init-list warning.
+	(cp_parser_postfix_open_square_expression): Likewise.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_new_initializer): Likewise.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_initializer): Likewise.
+	(cp_parser_functional_cast): Likewise.
+
 2014-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/60417
