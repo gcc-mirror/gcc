@@ -6546,4 +6546,18 @@ builtin_decl_implicit_p (enum built_in_function fncode)
 	  && builtin_info.implicit_p[uns_fncode]);
 }
 
+/* Return pointer to optimization flags of FNDECL.  */
+static inline struct cl_optimization *
+opts_for_fn (const_tree fndecl)
+{
+  tree fn_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl);
+  if (fn_opts == NULL_TREE)
+    fn_opts = optimization_default_node;
+  return TREE_OPTIMIZATION (fn_opts);
+}
+
+/* opt flag for function FNDECL, e.g. opts_for_fn (fndecl, optimize) is
+   the optimization level of function fndecl.  */
+#define opt_for_fn(fndecl, opt) (opts_for_fn (fndecl)->x_##opt)
+
 #endif  /* GCC_TREE_H  */
