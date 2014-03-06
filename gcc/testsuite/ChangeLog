@@ -1,3 +1,8 @@
+2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58595
+	* gcc.dg/tls/pr58595.c: New test.
+
 2014-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60445
