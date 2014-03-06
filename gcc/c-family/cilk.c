@@ -235,6 +235,9 @@ recognize_spawn (tree exp, tree *exp0)
       walk_tree (exp0, unwrap_cilk_spawn_stmt, NULL, NULL);
       spawn_found = true;
     }
+  /* _Cilk_spawn can't be wrapped in expression such as PLUS_EXPR.  */
+  else if (contains_cilk_spawn_stmt (exp))
+    error ("invalid use of %<_Cilk_spawn%>");
   return spawn_found;
 }
 
@@ -1291,4 +1294,26 @@ build_cilk_sync (void)
   tree sync = build0 (CILK_SYNC_STMT, void_type_node);
   TREE_SIDE_EFFECTS (sync) = 1;
   return sync;
+}
+
+/* Helper for contains_cilk_spawn_stmt, callback for walk_tree.  Return
+   non-null tree if TP contains CILK_SPAWN_STMT.  */
+
+static tree
+contains_cilk_spawn_stmt_walker (tree *tp, int *, void *)
+{
+  if (TREE_CODE (*tp) == CILK_SPAWN_STMT)
+    return *tp;
+  else
+    return NULL_TREE;
+}
+
+/* Returns true if EXPR or any of its subtrees contain CILK_SPAWN_STMT
+   node.  */
+
+bool
+contains_cilk_spawn_stmt (tree expr)
+{
+  return walk_tree (&expr, contains_cilk_spawn_stmt_walker, NULL, NULL)
+	 != NULL_TREE;
 }

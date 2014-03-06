@@ -1,3 +1,9 @@
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* typeck.c (check_return_expr): Call contains_cilk_spawn_stmt instead
+	of checking tree code.
+
 2014-03-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_lexer_set_source_position): New.

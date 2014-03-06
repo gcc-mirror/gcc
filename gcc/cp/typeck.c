@@ -8332,7 +8332,7 @@ check_return_expr (tree retval, bool *no_warning)
 
   *no_warning = false;
 
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (EXPR_LOCATION (retval), "use of %<_Cilk_spawn%> in a return "
 		"statement is not allowed");
