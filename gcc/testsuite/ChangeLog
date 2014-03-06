@@ -1,6 +1,12 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/58844
+	* c-c++-common/cpp/pr58844-1.c: New test.
+	* c-c++-common/cpp/pr58844-2.c: New test.
+
 	2014-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/43546
