@@ -1,6 +1,12 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/43546
+	* expr.c (compress_float_constant): If x is a hard register,
+	extend into a pseudo and then move to x.
+
 	2014-02-11  Richard Henderson  <rth@redhat.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
