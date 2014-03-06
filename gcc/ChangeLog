@@ -1,3 +1,8 @@
+2014-03-06  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.in (s-mlib): Only pass MULTIARCH_DIRNAME if
+	MULTILIB_OSDIRNAMES is not defined.
+
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 	    Meador Inge  <meadori@codesourcery.com>
 

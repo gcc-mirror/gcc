@@ -1838,7 +1838,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_EXCLUSIONS)" \
 	    "$(MULTILIB_OSDIRNAMES)" \
 	    "$(MULTILIB_REQUIRED)" \
-	    "$(MULTIARCH_DIRNAME)" \
+	    "$(if $(MULTILIB_OSDIRNAMES),,$(MULTIARCH_DIRNAME))" \
 	    "$(MULTILIB_REUSE)" \
 	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
