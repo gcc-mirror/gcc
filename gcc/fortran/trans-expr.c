@@ -1689,6 +1689,14 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
+  if (gfc_deferred_strlen (c, &field))
+    {
+      tmp = fold_build3_loc (input_location, COMPONENT_REF,
+			     TREE_TYPE (field),
+			     decl, field, NULL_TREE);
+      se->string_length = tmp;
+    }
+
   if (((c->attr.pointer || c->attr.allocatable)
        && (!c->attr.dimension && !c->attr.codimension)
        && c->ts.type != BT_CHARACTER)
@@ -6043,9 +6051,42 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
-  else
+  else if (gfc_deferred_strlen (cm, &tmp))
     {
-      /* Scalar component.  */
+      tree strlen;
+      strlen = tmp;
+      gcc_assert (strlen);
+      strlen = fold_build3_loc (input_location, COMPONENT_REF,
+				TREE_TYPE (strlen),
+				TREE_OPERAND (dest, 0),
+				strlen, NULL_TREE);
+
+      if (expr->expr_type == EXPR_NULL)
+	{
+	  tmp = build_int_cst (TREE_TYPE (cm->backend_decl), 0);
+	  gfc_add_modify (&block, dest, tmp);
+	  tmp = build_int_cst (TREE_TYPE (strlen), 0);
+	  gfc_add_modify (&block, strlen, tmp);
+	}
+      else
+	{
+	  tree size;
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr (&se, expr);
+	  size = size_of_string_in_bytes (cm->ts.kind, se.string_length);
+	  tmp = build_call_expr_loc (input_location,
+				     builtin_decl_explicit (BUILT_IN_MALLOC),
+				     1, size);
+	  gfc_add_modify (&block, dest,
+			  fold_convert (TREE_TYPE (dest), tmp));
+	  gfc_add_modify (&block, strlen, se.string_length);
+	  tmp = gfc_build_memcpy_call (dest, se.expr, size);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+    }
+  else if (!cm->attr.deferred_parameter)
+    {
+      /* Scalar component (excluding deferred parameters).  */
       gfc_init_se (&se, NULL);
       gfc_init_se (&lse, NULL);
 
@@ -7747,7 +7788,10 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
 
       /* Update the lhs character length.  */
       size = string_length;
-      gfc_add_modify (block, expr1->ts.u.cl->backend_decl, size);
+      if (TREE_CODE (expr1->ts.u.cl->backend_decl) == VAR_DECL)
+	gfc_add_modify (block, expr1->ts.u.cl->backend_decl, size);
+      else
+	gfc_add_modify (block, lse.string_length, size);
     }
 }
 

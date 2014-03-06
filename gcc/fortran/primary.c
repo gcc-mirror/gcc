@@ -2355,7 +2355,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	}
 
       /* If it was not found, try the default initializer if there's any;
-	 otherwise, it's an error.  */
+	 otherwise, it's an error unless this is a deferred parameter.  */
       if (!comp_iter)
 	{
 	  if (comp->initializer)
@@ -2365,7 +2365,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
 	    }
-	  else
+	  else if (!comp->attr.deferred_parameter)
 	    {
 	      gfc_error ("No initializer for component '%s' given in the"
 			 " structure constructor at %C!", comp->name);
@@ -2447,7 +2447,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	{
 	  /* Components without name are not allowed after the first named
 	     component initializer!  */
-	  if (!comp)
+	  if (!comp || comp->attr.deferred_parameter)
 	    {
 	      if (last_name)
 		gfc_error ("Component initializer without name after component"

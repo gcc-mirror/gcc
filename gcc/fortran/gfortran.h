@@ -811,6 +811,9 @@ typedef struct
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;
 
+  /* Is a parameter associated with a deferred type component.  */
+  unsigned deferred_parameter:1;
+
   /* The namespace where the attribute has been set.  */
   struct gfc_namespace *volatile_ns, *asynchronous_ns;
 }
