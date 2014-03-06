@@ -3,6 +3,9 @@
 	Backport from mainline
 	2014-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/52370
+	* gfortran.dg/pr52370.f90: New test.
+
 	PR debug/59776
 	* gcc.dg/guality/pr59776.c: New test.
 

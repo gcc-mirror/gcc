@@ -1013,6 +1013,10 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   TREE_STATIC (decl) = 0;
   DECL_EXTERNAL (decl) = 0;
 
+  /* Avoid uninitialized warnings for optional dummy arguments.  */
+  if (sym->attr.optional)
+    TREE_NO_WARNING (decl) = 1;
+
   /* We should never get deferred shape arrays here.  We used to because of
      frontend bugs.  */
   gcc_assert (sym->as->type != AS_DEFERRED);
