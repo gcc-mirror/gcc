@@ -1,6 +1,11 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/59776
+	* gcc.dg/guality/pr59776.c: New test.
+
 	2014-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/56824

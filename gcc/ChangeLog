@@ -1,6 +1,13 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-11  Richard Henderson  <rth@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/59776
+	* tree-sra.c (load_assign_lhs_subreplacements): Add VIEW_CONVERT_EXPR
+	around drhs if type conversion to lacc->type is not useless.
+
 	2014-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/60026
