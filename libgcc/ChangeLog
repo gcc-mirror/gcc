@@ -1,3 +1,8 @@
+2014-03-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/t-msp430 (LIB2ADD): Add lib2hw_mul.S
+	* config/msp430/lib2hw_mul.S: New: Hardware multiply routines.
+
 2014-02-28  Joey Ye  <joey.ye@arm.com>
 
 	PR libgcc/60166

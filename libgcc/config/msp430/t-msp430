@@ -35,6 +35,7 @@ LIB2ADD = \
 	$(srcdir)/config/msp430/srai.S \
 	$(srcdir)/config/msp430/srli.S \
 	$(srcdir)/config/msp430/cmpsi2.S \
+	$(srcdir)/config/msp430/lib2hw_mul.S \
 	$(srcdir)/config/msp430/floatunhisf.c \
 	$(srcdir)/config/msp430/floatunhidf.c \
 	$(srcdir)/config/msp430/floathidf.c \
