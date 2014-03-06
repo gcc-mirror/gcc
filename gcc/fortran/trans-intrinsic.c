@@ -5166,7 +5166,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
    excluding the terminating null characters.  The result has
    gfc_array_index_type type.  */
 
-static tree
+tree
 size_of_string_in_bytes (int kind, tree string_length)
 {
   tree bytesize;

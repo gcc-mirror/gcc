@@ -7365,7 +7365,7 @@ get_full_array_size (stmtblock_t *block, tree decl, int rank)
 
 static tree
 duplicate_allocatable (tree dest, tree src, tree type, int rank,
-		       bool no_malloc)
+		       bool no_malloc, tree str_sz)
 {
   tree tmp;
   tree size;
@@ -7386,7 +7386,11 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       null_data = gfc_finish_block (&block);
 
       gfc_init_block (&block);
-      size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+      if (str_sz != NULL_TREE)
+	size = str_sz;
+      else
+	size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+
       if (!no_malloc)
 	{
 	  tmp = gfc_call_malloc (&block, type, size);
@@ -7410,8 +7414,11 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
       else
 	nelems = gfc_index_one_node;
 
-      tmp = fold_convert (gfc_array_index_type,
-			  TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+      if (str_sz != NULL_TREE)
+	tmp = fold_convert (gfc_array_index_type, str_sz);
+      else
+	tmp = fold_convert (gfc_array_index_type,
+			    TYPE_SIZE_UNIT (gfc_get_element_type (type)));
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      nelems, tmp);
       if (!no_malloc)
@@ -7452,7 +7459,7 @@ duplicate_allocatable (tree dest, tree src, tree type, int rank,
 tree
 gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank)
 {
-  return duplicate_allocatable (dest, src, type, rank, false);
+  return duplicate_allocatable (dest, src, type, rank, false, NULL_TREE);
 }
 
 
@@ -7461,7 +7468,7 @@ gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank)
 tree
 gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank)
 {
-  return duplicate_allocatable (dest, src, type, rank, true);
+  return duplicate_allocatable (dest, src, type, rank, true, NULL_TREE);
 }
 
 
@@ -7718,6 +7725,16 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				     void_type_node, comp,
 				     build_int_cst (TREE_TYPE (comp), 0));
 	      gfc_add_expr_to_block (&fnblock, tmp);
+	      if (gfc_deferred_strlen (c, &comp))
+		{
+		  comp = fold_build3_loc (input_location, COMPONENT_REF,
+					  TREE_TYPE (comp),
+					  decl, comp, NULL_TREE);
+		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					 TREE_TYPE (comp), comp,
+					 build_int_cst (TREE_TYPE (comp), 0));
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		}
 	    }
 	  else if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
@@ -7855,8 +7872,26 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      continue;
 	    }
 
-	  if (c->attr.allocatable && !c->attr.proc_pointer
-	      && !cmp_has_alloc_comps)
+	  if (gfc_deferred_strlen (c, &tmp))
+	    {
+	      tree len, size;
+	      len = tmp;
+	      tmp = fold_build3_loc (input_location, COMPONENT_REF,
+				     TREE_TYPE (len),
+				     decl, len, NULL_TREE);
+	      len = fold_build3_loc (input_location, COMPONENT_REF,
+				     TREE_TYPE (len),
+				     dest, len, NULL_TREE);
+	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				     TREE_TYPE (len), len, tmp);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	      size = size_of_string_in_bytes (c->ts.kind, len);
+	      tmp = duplicate_allocatable (dcmp, comp, ctype, rank,
+					   false, size);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+	  else if (c->attr.allocatable && !c->attr.proc_pointer
+		   && !cmp_has_alloc_comps)
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      if (c->attr.codimension)
@@ -8342,10 +8377,24 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   /* Get the new lhs size in bytes.  */
   if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
     {
-      tmp = expr2->ts.u.cl->backend_decl;
-      gcc_assert (expr1->ts.u.cl->backend_decl);
-      tmp = fold_convert (TREE_TYPE (expr1->ts.u.cl->backend_decl), tmp);
-      gfc_add_modify (&fblock, expr1->ts.u.cl->backend_decl, tmp);
+      if (expr2->ts.deferred)
+	{
+	  if (TREE_CODE (expr2->ts.u.cl->backend_decl) == VAR_DECL)
+	    tmp = expr2->ts.u.cl->backend_decl;
+	  else
+	    tmp = rss->info->string_length;
+	}
+      else
+	{
+	  tmp = expr2->ts.u.cl->backend_decl;
+	  tmp = fold_convert (TREE_TYPE (expr1->ts.u.cl->backend_decl), tmp);
+	}
+
+      if (expr1->ts.u.cl->backend_decl
+	  && TREE_CODE (expr1->ts.u.cl->backend_decl) == VAR_DECL)
+	gfc_add_modify (&fblock, expr1->ts.u.cl->backend_decl, tmp);
+      else
+	gfc_add_modify (&fblock, lss->info->string_length, tmp);
     }
   else if (expr1->ts.type == BT_CHARACTER && expr1->ts.u.cl->backend_decl)
     {

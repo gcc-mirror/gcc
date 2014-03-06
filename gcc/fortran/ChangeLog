@@ -1,3 +1,39 @@
+2014-03-06  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51976
+	* gfortran.h (symbol_attribute): Add deferred_parameter attribute.
+	* primary.c (build_actual_constructor): It is not an error if
+	a missing component has the deferred_parameter attribute;
+	equally, if one is given a value, it is an error.
+	* resolve.c (resolve_fl_derived0): Remove error for deferred
+	character length components.  Add the hidden string length
+	field to the structure. Give it the deferred_parameter
+	attribute.
+	* trans-array.c (duplicate_allocatable): Add a strlen field
+	which is used as the element size if it is non-null.
+	(gfc_duplicate_allocatable, gfc_copy_allocatable_data): Pass a
+	NULL to the new argument in duplicate_allocatable.
+	(structure_alloc_comps): Set the hidden string length as
+	appropriate. Use it in calls to duplicate_allocatable.
+	(gfc_alloc_allocatable_for_assignment): When a deferred length
+	backend declaration is variable, use that; otherwise use the
+	string length from the expression evaluation.
+	* trans-expr.c (gfc_conv_component_ref): If this is a deferred
+	character length component, the string length should have the
+	value of the hidden string length field.
+	(gfc_trans_subcomponent_assign): Set the hidden string length
+	field for deferred character length components.  Allocate the
+	necessary memory for the string.
+	(alloc_scalar_allocatable_for_assignment): Same change as in
+	gfc_alloc_allocatable_for_assignment above.
+	* trans-stmt.c (gfc_trans_allocate): Likewise.
+	* trans-intrinsic (size_of_string_in_bytes): Make non-static.
+	* trans-types.c (gfc_get_derived_type): Set the tree type for
+	a deferred character length component.
+	* trans.c (gfc_deferred_strlen): New function.
+	* trans.h (size_of_string_in_bytes,gfc_deferred_strlen): New prototypes.
+
 2014-03-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60341

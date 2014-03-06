@@ -1,3 +1,10 @@
+2014-03-06  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51976
+	* gfortran.dg/deferred_type_component_1.f90 : New test.
+	* gfortran.dg/deferred_type_component_2.f90 : New test.
+
 2014-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60197

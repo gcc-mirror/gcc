@@ -5028,6 +5028,11 @@ gfc_trans_allocate (gfc_code * code)
 	      if (tmp && TREE_CODE (tmp) == VAR_DECL)
 		gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
 				memsz));
+	      else if (al->expr->ts.type == BT_CHARACTER
+		       && al->expr->ts.deferred && se.string_length)
+		gfc_add_modify (&se.pre, se.string_length,
+				fold_convert (TREE_TYPE (se.string_length),
+				memsz));
 
 	      /* Convert to size in bytes, using the character KIND.  */
 	      if (unlimited_char)

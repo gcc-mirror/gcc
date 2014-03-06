@@ -2044,3 +2044,21 @@ gfc_likely (tree cond)
   cond = fold_convert (boolean_type_node, cond);
   return cond;
 }
+
+
+/* Get the string length for a deferred character length component.  */
+
+bool
+gfc_deferred_strlen (gfc_component *c, tree *decl)
+{
+  char name[GFC_MAX_SYMBOL_LEN+9];
+  gfc_component *strlen;
+  if (!(c->ts.type == BT_CHARACTER && c->ts.deferred))
+    return false;
+  sprintf (name, "_%s_length", c->name);
+  for (strlen = c; strlen; strlen = strlen->next)
+    if (strcmp (strlen->name, name) == 0)
+      break;
+  *decl = strlen ? strlen->backend_decl : NULL_TREE;
+  return strlen != NULL;
+}
