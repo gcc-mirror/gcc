@@ -1,3 +1,15 @@
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c (PLUGIN_COND): Always enable unless -fno-use-linker-plugin
+	or -fno-lto is specified and the linker has full plugin support.
+	* collect2.c (lto_mode): Default to LTO_MODE_WHOPR if LTO is
+	enabled.
+	(main): Remove -flto processing, adjust lto_mode using
+	use_plugin late.
+	* lto-wrapper.c (merge_and_complain): Merge compile-time
+	optimization levels.
+	(run_gcc): And pass it through to the link options.
+
 2014-03-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/60381
