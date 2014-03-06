@@ -1,3 +1,10 @@
+2014-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libgcc/59339
+	* config.host (*-*-linux*, frv-*-*linux*, *-*-kfreebsd*-gnu)
+	(*-*-knetbsd*-gnu, *-*-gnu*, *-*-kopensolaris*-gnu): Only add
+	vtv_*.o to extra_parts if enable_vtable_verify.
+
 2014-03-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/t-msp430 (LIB2ADD): Add lib2hw_mul.S
