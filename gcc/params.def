@@ -1014,6 +1014,12 @@ DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
 	  "strength reduction",
 	  50, 1, 999999)
 
+DEFPARAM (PARAM_UNINIT_CONTROL_DEP_ATTEMPTS,
+	  "uninit-control-dep-attempts",
+	  "Maximum number of nested calls to search for control dependencies "
+	  "during uninitialized variable analysis",
+	  1000, 1, 0)
+
 /*
 Local variables:
 mode:c

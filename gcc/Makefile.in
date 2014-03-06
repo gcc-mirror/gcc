@@ -2256,7 +2256,7 @@ tree-ssa-uninit.o : tree-ssa-uninit.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(FUNCTION_H) $(TM_H) coretypes.h \
    $(TREE_PASS_H) $(BASIC_BLOCK_H) $(BITMAP_H) \
    $(FLAGS_H) $(HASHTAB_H) pointer-set.h \
-   $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
+   $(GIMPLE_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H) $(PARAMS_H)
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(EXPR_H) $(DIAGNOSTIC_H) \
    toplev.h $(FUNCTION_H) $(TM_H) coretypes.h \
