@@ -1024,6 +1024,11 @@ linemap_compare_locations (struct line_maps *set,
   bool pre_virtual_p, post_virtual_p;
   source_location l0 = pre, l1 = post;
 
+  if (IS_ADHOC_LOC (l0))
+    l0 = set->location_adhoc_data_map.data[l0 & MAX_SOURCE_LOCATION].locus;
+  if (IS_ADHOC_LOC (l1))
+    l1 = set->location_adhoc_data_map.data[l1 & MAX_SOURCE_LOCATION].locus;
+
   if (l0 == l1)
     return 0;
 

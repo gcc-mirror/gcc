@@ -1,6 +1,11 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/56824
+	* gcc.dg/pr56824.c: New test.
+
 	2014-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/60062

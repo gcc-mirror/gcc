@@ -1,5 +1,14 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	Backport from mainline
+	2014-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/56824
+	* line-map.c (linemap_compare_locations): Look through adhoc locations
+	for both l0 and l1.
+
+2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+
 	PR preprocessor/60400
 	Backport from mainline
 	2013-06-24  Dehao Chen  <dehao@google.com>
