@@ -1,3 +1,8 @@
+2014-03-05  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/xml/manual/status_cxx2014.xml: Add new items and latest papers
+	for filesystem and fundamentals TS work items.
+
 2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60376
