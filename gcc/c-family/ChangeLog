@@ -1,3 +1,11 @@
+2014-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c/60197
+	* cilk.c (contains_cilk_spawn_stmt): New function.
+	(contains_cilk_spawn_stmt_walker): Likewise.
+	(recognize_spawn): Give error on invalid use of _Cilk_spawn.
+	* c-common.h (contains_cilk_spawn_stmt): Add declaration.
+
 2014-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.c (c_pp_lookup_pragma): Handle PRAGMA_CILK_SIMD.

@@ -9140,7 +9140,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  return error_mark_node;
 	}
     }
-  if (flag_cilkplus && retval && TREE_CODE (retval) == CILK_SPAWN_STMT)
+  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
     {
       error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
 		"allowed");

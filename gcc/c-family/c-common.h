@@ -1389,4 +1389,5 @@ extern tree make_cilk_frame (tree);
 extern tree create_cilk_function_exit (tree, bool, bool);
 extern tree cilk_install_body_pedigree_operations (tree);
 extern void cilk_outline (tree, tree *, void *);
+extern bool contains_cilk_spawn_stmt (tree);
 #endif /* ! GCC_C_COMMON_H */
