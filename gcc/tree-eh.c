@@ -4184,8 +4184,11 @@ cleanup_empty_eh (eh_landing_pad lp)
   /* If the block is totally empty, look for more unsplitting cases.  */
   if (gsi_end_p (gsi))
     {
-      /* For the degenerate case of an infinite loop bail out.  */
-      if (infinite_empty_loop_p (e_out))
+      /* For the degenerate case of an infinite loop bail out.
+	 If bb has no successors and is totally empty, which can happen e.g.
+	 because of incorrect noreturn attribute, bail out too.  */
+      if (e_out == NULL
+	  || infinite_empty_loop_p (e_out))
 	return ret;
 
       return ret | cleanup_empty_eh_unsplit (bb, e_out, lp);
