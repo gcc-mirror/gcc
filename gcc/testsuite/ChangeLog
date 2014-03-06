@@ -1,6 +1,11 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/60101
+	* c-c++-common/pr60101.c: New test.
+
 	2014-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/52370

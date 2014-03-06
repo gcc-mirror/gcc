@@ -1,3 +1,14 @@
+2014-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2014-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/60101
+	* c-common.c (merge_tlist): If copy is true, call new_tlist,
+	if false, add ADD itself, rather than vice versa.
+	(verify_tree): For COND_EXPR, don't call merge_tlist with non-zero
+	copy.  For SAVE_EXPR, only call merge_tlist once.
+
 2013-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/59280
