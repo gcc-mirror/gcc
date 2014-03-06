@@ -192,7 +192,11 @@ enum lto_mode_d {
 };
 
 /* Current LTO mode.  */
+#ifdef ENABLE_LTO
+static enum lto_mode_d lto_mode = LTO_MODE_WHOPR;
+#else
 static enum lto_mode_d lto_mode = LTO_MODE_NONE;
+#endif
 
 bool debug;				/* true if -debug */
 bool helpflag;			/* true if --help */
@@ -1018,15 +1022,11 @@ main (int argc, char **argv)
 	  debug = true;
         else if (! strcmp (argv[i], "-flto-partition=none"))
 	  no_partition = true;
-        else if ((! strncmp (argv[i], "-flto=", 6)
-		  || ! strcmp (argv[i], "-flto")) && ! use_plugin)
-	  lto_mode = LTO_MODE_WHOPR;
 	else if (!strncmp (argv[i], "-fno-lto", 8))
 	  lto_mode = LTO_MODE_NONE;
         else if (! strcmp (argv[i], "-plugin"))
 	  {
 	    use_plugin = true;
-	    lto_mode = LTO_MODE_NONE;
 	    if (selected_linker == USE_DEFAULT_LD)
 	      selected_linker = USE_PLUGIN_LD;
 	  }
@@ -1056,6 +1056,8 @@ main (int argc, char **argv)
       }
     vflag = debug;
     find_file_set_debug (debug);
+    if (use_plugin)
+      lto_mode = LTO_MODE_NONE;
     if (no_partition && lto_mode == LTO_MODE_WHOPR)
       lto_mode = LTO_MODE_LTO;
   }

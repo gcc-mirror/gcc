@@ -459,6 +459,77 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    fatal ("Option %s not used consistently in all LTO input files",
 		   foption->orig_option_with_args_text);
 	  break;
+
+	case OPT_O:
+	case OPT_Ofast:
+	case OPT_Og:
+	case OPT_Os:
+	  for (j = 0; j < *decoded_options_count; ++j)
+	    if ((*decoded_options)[j].opt_index == OPT_O
+		|| (*decoded_options)[j].opt_index == OPT_Ofast
+		|| (*decoded_options)[j].opt_index == OPT_Og
+		|| (*decoded_options)[j].opt_index == OPT_Os)
+	      break;
+	  if (j == *decoded_options_count)
+	    append_option (decoded_options, decoded_options_count, foption);
+	  else if ((*decoded_options)[j].opt_index == foption->opt_index
+		   && foption->opt_index != OPT_O)
+	    /* Exact same options get merged.  */
+	    ;
+	  else
+	    {
+	      /* For mismatched option kinds preserve the optimization
+	         level only, thus merge it as -On.  This also handles
+		 merging of same optimization level -On.  */
+	      int level = 0;
+	      switch (foption->opt_index)
+		{
+		case OPT_O:
+		  if (foption->arg[0] == '\0')
+		    level = MAX (level, 1);
+		  else
+		    level = MAX (level, atoi (foption->arg));
+		  break;
+		case OPT_Ofast:
+		  level = MAX (level, 3);
+		  break;
+		case OPT_Og:
+		  level = MAX (level, 1);
+		  break;
+		case OPT_Os:
+		  level = MAX (level, 2);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	      switch ((*decoded_options)[j].opt_index)
+		{
+		case OPT_O:
+		  if ((*decoded_options)[j].arg[0] == '\0')
+		    level = MAX (level, 1);
+		  else
+		    level = MAX (level, atoi ((*decoded_options)[j].arg));
+		  break;
+		case OPT_Ofast:
+		  level = MAX (level, 3);
+		  break;
+		case OPT_Og:
+		  level = MAX (level, 1);
+		  break;
+		case OPT_Os:
+		  level = MAX (level, 2);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	      (*decoded_options)[j].opt_index = OPT_O;
+	      char *tem;
+	      asprintf (&tem, "-O%d", level);
+	      (*decoded_options)[j].arg = &tem[2];
+	      (*decoded_options)[j].canonical_option[0] = tem;
+	      (*decoded_options)[j].value = 1;
+	    }
+	  break;
 	}
     }
 }
@@ -610,6 +681,10 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fwrapv:
 	case OPT_ftrapv:
 	case OPT_fstrict_overflow:
+	case OPT_O:
+	case OPT_Ofast:
+	case OPT_Og:
+	case OPT_Os:
 	  break;
 
 	default:

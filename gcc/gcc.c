@@ -695,7 +695,7 @@ proper position among the other output files.  */
 #if HAVE_LTO_PLUGIN > 0
 /* The linker used has full plugin support, use LTO plugin by default.  */
 #if HAVE_LTO_PLUGIN == 2
-#define PLUGIN_COND "!fno-use-linker-plugin:%{flto|flto=*|fuse-linker-plugin"
+#define PLUGIN_COND "!fno-use-linker-plugin:%{!fno-lto"
 #define PLUGIN_COND_CLOSE "}"
 #else
 /* The linker used has limited plugin support, use LTO plugin with explicit
