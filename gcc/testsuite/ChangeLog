@@ -1,3 +1,13 @@
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60445
+	PR lto/60424
+	PR lto/60427
+	Revert
+	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * gcc.dg/lto/pr55113_0.c: New testcase.
+
 2014-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/59308

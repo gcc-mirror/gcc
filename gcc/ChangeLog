@@ -1,5 +1,19 @@
 2014-03-06  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/60445
+	PR lto/60424
+	PR lto/60427
+	Revert
+	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
+
+        * tree-streamer.c (record_common_node): Assert we don't record
+        nodes with type double.
+        (preload_common_node): Skip type double, complex double and
+        double pointer since it is now frontend dependent due to
+        fshort-double option.
+
+2014-03-06  Richard Biener  <rguenther@suse.de>
+
 	* gcc.c (PLUGIN_COND): Always enable unless -fno-use-linker-plugin
 	or -fno-lto is specified and the linker has full plugin support.
 	* collect2.c (lto_mode): Default to LTO_MODE_WHOPR if LTO is

@@ -264,8 +264,7 @@ record_common_node (struct streamer_tree_cache_d *cache, tree node)
 
   gcc_checking_assert (node != boolean_type_node
 		       && node != boolean_true_node
-		       && node != boolean_false_node
-		       && node != double_type_node);
+		       && node != boolean_false_node);
 
   /* We have to make sure to fill exactly the same number of
      elements for all frontends.  That can include NULL trees.
@@ -316,14 +315,10 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
     record_common_node (cache, sizetype_tab[i]);
 
   for (i = 0; i < TI_MAX; i++)
-    /* Skip boolean type and constants. They are frontend dependent.
-       Skip double type, frontend dependent due to -fshort-double.  */
+    /* Skip boolean type and constants, they are frontend dependent.  */
     if (i != TI_BOOLEAN_TYPE
 	&& i != TI_BOOLEAN_FALSE
-	&& i != TI_BOOLEAN_TRUE
-	&& i != TI_DOUBLE_TYPE
-	&& i != TI_COMPLEX_DOUBLE_TYPE
-	&& i != TI_DOUBLE_PTR_TYPE)
+	&& i != TI_BOOLEAN_TRUE)
       record_common_node (cache, global_trees[i]);
 }
 
