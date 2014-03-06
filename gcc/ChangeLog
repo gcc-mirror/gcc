@@ -1,5 +1,9 @@
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/60276
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Avoid
+	a -Wsign-compare warning.
+
 	* Makefile.in (tree-ssa-uninit.o): Depend on $(PARAMS_H).
 
 	Backport from mainline

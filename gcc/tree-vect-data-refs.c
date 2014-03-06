@@ -744,7 +744,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	     Only need to handle read-after-write dependence.  */
 	  if (DR_IS_READ (drb)
 	      && (STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) == 0
-		  || STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) > dist))
+		  || STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) > (unsigned)dist))
 	    STMT_VINFO_MIN_NEG_DIST (stmtinfo_b) = dist;
 	  continue;
 	}
