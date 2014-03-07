@@ -1,5 +1,11 @@
 2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* configure.ac (HAVE_AS_IX86_TLSLDMPLT): Improve test for Solaris
+	11/x86 ld.
+	* configure: Regenerate.
+
+2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (TLS_SECTION_ASM_FLAG): Save as tls_section_flag.
 	(LIB_TLS_SPEC): Save as ld_tls_libs.
 	(HAVE_AS_IX86_TLSLDMPLT): Define as 1/0.

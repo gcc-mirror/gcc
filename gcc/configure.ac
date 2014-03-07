@@ -3920,10 +3920,14 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_TLSGDPLT, 1,
         [Define if your assembler and linker support @tlsgdplt.])])
 
+    conftest_s='
+	.section .tdata,"aw'$tls_section_flag'",@progbits
+tls_ld:
+	.section .text,"ax",@progbits
+	 call    tls_ld@tlsldmplt'
     gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM_PLT reloc],
         gcc_cv_as_ix86_tlsldmplt,,,
-	[tls_ld:
-	 call    tls_ld@tlsldmplt],
+	[$conftest_s],
 	[if test x$gcc_cv_ld != x \
 	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes
