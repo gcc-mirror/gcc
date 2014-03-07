@@ -1,3 +1,7 @@
+2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_initializer): Remove dead code.
+
 2014-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60197

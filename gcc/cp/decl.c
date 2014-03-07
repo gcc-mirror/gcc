@@ -5603,7 +5603,6 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 {
   tree type = TREE_TYPE (decl);
   tree init_code = NULL;
-  tree extra_init = NULL_TREE;
   tree core_type;
 
   /* Things that are going to be initialized need to have complete
@@ -5798,9 +5797,6 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
   if (init && init != error_mark_node)
     init_code = build2 (INIT_EXPR, type, decl, init);
-
-  if (extra_init)
-    init_code = add_stmt_to_compound (extra_init, init_code);
 
   if (init_code && DECL_IN_AGGR_P (decl))
     {
