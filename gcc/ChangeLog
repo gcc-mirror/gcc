@@ -1,3 +1,8 @@
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* langhooks.c (lhd_omp_mappable_type): The error_mark_node is not
+	an OpenMP mappable type.
+
 2014-03-06  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.in (s-mlib): Only pass MULTIARCH_DIRNAME if
