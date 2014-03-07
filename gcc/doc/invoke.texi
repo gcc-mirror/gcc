@@ -1722,14 +1722,12 @@ C++ code.
 
 @item c++11
 @itemx c++0x
-The 2011 ISO C++ standard plus amendments.  Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+The 2011 ISO C++ standard plus amendments.
 The name @samp{c++0x} is deprecated.
 
 @item gnu++11
 @itemx gnu++0x
-GNU dialect of @option{-std=c++11}. Support for C++11 is still
-experimental, and may change in incompatible ways in future releases.
+GNU dialect of @option{-std=c++11}.
 The name @samp{gnu++0x} is deprecated.
 
 @item c++1y
