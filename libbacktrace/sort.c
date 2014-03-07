@@ -69,6 +69,12 @@ backtrace_qsort (void *basearg, size_t count, size_t size,
   if (count < 2)
     return;
 
+  /* The symbol table and DWARF tables, which is all we use this
+     routine for, tend to be roughly sorted.  Pick the middle element
+     in the array as our pivot point, so that we are more likely to
+     cut the array in half for each recursion step.  */
+  swap (base, base + (count / 2) * size, size);
+
   mid = 0;
   for (i = 1; i < count; i++)
     {
