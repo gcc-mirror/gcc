@@ -1,3 +1,7 @@
+2014-03-07  Paulo Matos  <paulo@matos-sorge.com>
+
+	* common.opt (fira-loop-pressure): Mark as optimization.
+
 2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* langhooks.c (lhd_omp_mappable_type): The error_mark_node is not
