@@ -5809,9 +5809,11 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	       "member %qD", decl);
       if (!explained)
 	{
-	  error ("(an out of class initialization is required)");
+	  inform (input_location,
+		  "(an out of class initialization is required)");
 	  explained = 1;
 	}
+      return NULL_TREE;
     }
 
   return init_code;
