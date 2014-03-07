@@ -13396,6 +13396,13 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   enum machine_mode tp_mode = Pmode;
   int type;
 
+  /* Fall back to global dynamic model if tool chain cannot support local
+     dynamic.  */
+  if (TARGET_SUN_TLS && !TARGET_64BIT
+      && !HAVE_AS_IX86_TLSLDMPLT && !HAVE_AS_IX86_TLSLDM
+      && model == TLS_MODEL_LOCAL_DYNAMIC)
+    model = TLS_MODEL_GLOBAL_DYNAMIC;
+
   switch (model)
     {
     case TLS_MODEL_GLOBAL_DYNAMIC:

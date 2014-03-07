@@ -10970,6 +10970,10 @@ else
     force_sjlj_exceptions=yes
     enableval=yes
     ;;
+  lm32*-*-*)
+     force_sjlj_exceptions=yes
+     enableval=yes
+     ;;
   *)
     force_sjlj_exceptions=no
     ;;
@@ -17923,7 +17927,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17926 "configure"
+#line 17930 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18029,7 +18033,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18032 "configure"
+#line 18036 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23298,6 +23302,7 @@ foo:	.long	25
 	.section .tdata,"awt",@progbits'
       tls_first_major=0
       tls_first_minor=0
+      tls_section_flag=t
 
 $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
 
@@ -23306,6 +23311,7 @@ $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
 	.section ".tdata","awT",@progbits'
       tls_first_major=2
       tls_first_minor=14
+      tls_section_flag=T
       tls_as_opt="--fatal-warnings"
     fi
     conftest_s="$conftest_s
@@ -23336,6 +23342,7 @@ foo:	.long	25
 	movq	$foo@TPOFF, %rax'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_section_flag=T
 	tls_as_opt=--fatal-warnings
 	;;
   ia64-*-*)
@@ -23782,6 +23789,7 @@ else
   set_have_as_tls=no
 fi
 
+    ld_tls_libs="$LIBS"
     # Clear LIBS if we cannot support TLS.
     if test $set_have_as_tls = no; then
       LIBS=
@@ -25205,11 +25213,73 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_tlsldmplt" >&5
 $as_echo "$gcc_cv_as_ix86_tlsldmplt" >&6; }
-if test $gcc_cv_as_ix86_tlsldmplt = yes; then
 
-$as_echo "#define HAVE_AS_IX86_TLSLDMPLT 1" >>confdefs.h
 
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_TLSLDMPLT `if test $gcc_cv_as_ix86_tlsldmplt = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
+    # Enforce 32-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_tls_ldm_opt="--32"
+    fi
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
+        ld_ix86_tls_ldm_opt="-melf_i386_sol2"
+      else
+        ld_ix86_tls_ldm_opt="-melf_i386"
+      fi
+    fi
+    conftest_s='
+	.section .text,"ax",@progbits
+        .globl  _start
+        .type   _start, @function
+_start:
+	leal	value@tlsldm(%ebx), %eax
+	call	___tls_get_addr@plt
+
+        .section .tdata,"aw'$tls_section_flag'",@progbits
+        .type	value, @object
+value:'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for R_386_TLS_LDM reloc" >&5
+$as_echo_n "checking assembler for R_386_TLS_LDM reloc... " >&6; }
+if test "${gcc_cv_as_ix86_tlsldm+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_ix86_tlsldm=no
+  if test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $as_ix86_tls_ldm_opt -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && $gcc_cv_ld $ld_ix86_tls_ldm_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -d conftest 2>/dev/null | grep nop > /dev/null \
+	      || dis conftest 2>/dev/null | grep nop > /dev/null; then
+	     gcc_cv_as_ix86_tlsldm=yes
+	   fi
+	 fi
+	 rm -f conftest
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_ix86_tlsldm" >&5
+$as_echo "$gcc_cv_as_ix86_tlsldm" >&6; }
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_AS_IX86_TLSLDM `if test $gcc_cv_as_ix86_tlsldm = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 
     ;;
 
