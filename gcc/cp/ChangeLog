@@ -1,5 +1,7 @@
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (check_g++_parallelize): Split dg.exp.
+
 	* parser.c (cp_parser_type_id_1): Only allow 'auto' in C++1y if
 	we're in a trailing return type.
 
