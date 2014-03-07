@@ -3,7 +3,7 @@
 void
 nonconst(int n)
 {
-  new (long[n][n]); // { dg-error "variable length|array size|not a constant" }
+  new (long[n][n]); // { dg-error "variable length|array size|not a constant|runtime bound" }
   new long[n][n]; // { dg-error "variable length|array size|not a constant" }
 }
 
