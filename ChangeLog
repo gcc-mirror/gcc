@@ -1,3 +1,10 @@
+2014-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/58572
+	* Makefile.tpl (POSTSTAGE1_CXX_EXPORT): Use -isystem instead of
+	-I for libstdc++-v3 includes if $(LEAN).
+	* Makefile.in: Regenerated.
+
 2014-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* MAINTAINERS: Update my email address.
