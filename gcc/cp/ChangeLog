@@ -1,5 +1,8 @@
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_type_id_1): Only allow 'auto' in C++1y if
+	we're in a trailing return type.
+
 	* typeck.c (comp_template_parms_position): 'auto' and
 	'decltype(auto)' are different from real template parms.
 
