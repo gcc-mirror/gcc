@@ -1,3 +1,7 @@
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/map-1.c: Extend.
+
 2014-03-06  Paul Thomas  <pault@gcc.gnu.org>
 	    Janus Weil  <janus@gcc.gnu.org>
 

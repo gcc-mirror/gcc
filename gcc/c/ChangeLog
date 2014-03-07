@@ -1,3 +1,9 @@
+2014-03-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-decl.c (c_decl_attributes): Use
+	lang_hooks.types.omp_mappable_type.
+	* c-typeck.c (c_finish_omp_clauses): Likewise.
+
 2014-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c/60197
