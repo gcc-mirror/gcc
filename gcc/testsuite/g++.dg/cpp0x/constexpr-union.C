@@ -1,6 +1,6 @@
 // Test that we don't have to deal with type punning
 // DR 1188 says this is ill-formed
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 union U
 {

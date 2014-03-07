@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<typename F, typename... BoundArgs>
 class bound_functor
 {

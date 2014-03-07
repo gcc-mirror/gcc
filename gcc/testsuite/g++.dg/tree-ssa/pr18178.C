@@ -35,7 +35,7 @@ void doit (array *a)
 {
   for (ORIG i = 0; i < a->len; ++i)
     {
-      if (FIRST  CAST (i) >= CAST (a->len))
+      if (FIRST  CAST i >= CAST (a->len))
 	throw 5;
       call (a->data[i]);
     }

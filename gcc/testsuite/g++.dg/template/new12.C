@@ -1,5 +1,4 @@
 // PR c++/48500
-// { dg-options -std=c++0x }
 
 struct linked_ptr {
 };

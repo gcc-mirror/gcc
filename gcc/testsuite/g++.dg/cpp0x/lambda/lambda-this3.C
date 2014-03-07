@@ -1,5 +1,5 @@
 // PR c++/45520
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 struct M {
   int i;

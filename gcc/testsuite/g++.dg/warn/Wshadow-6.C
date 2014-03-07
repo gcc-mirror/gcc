@@ -1,7 +1,7 @@
 // Test the declaration of nested lambda function shadows
 // a parameter or previous local.
-// { dg-do compile }
-// { dg-options "-std=c++0x -Wshadow" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wshadow" }
 
 struct S {};
 int f1(int x)   // { dg-message "shadowed declaration" }

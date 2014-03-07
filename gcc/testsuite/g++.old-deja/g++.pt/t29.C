@@ -1,4 +1,4 @@
-// { dg-do assemble { target c++98 } }
+// { dg-do assemble { target { ! c++11 } } }
 
 template <class X, int n> X f (auto X (*x)[n]) { return (*x)[n/2]; }
 extern int i[30];

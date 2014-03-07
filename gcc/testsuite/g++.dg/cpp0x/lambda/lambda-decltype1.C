@@ -1,6 +1,7 @@
 // PR c++/59791
 // We force the gimple dump to trigger use of lang_decl_name.
-// { dg-options "-std=c++11 -fdump-tree-gimple" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fdump-tree-gimple" }
 // { dg-final { cleanup-tree-dump "gimple" } }
 
 template < class T > void

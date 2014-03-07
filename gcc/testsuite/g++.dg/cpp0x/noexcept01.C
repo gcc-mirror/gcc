@@ -1,5 +1,6 @@
 // Test for noexcept-expression
-// { dg-options "-std=c++11 -O2" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O2" }
 
 #include <typeinfo>
 

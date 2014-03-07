@@ -1,5 +1,5 @@
 // N3648: redundancy and capture init
-// { dg-options "-std=c++1y -pedantic-errors" }
+// { dg-do compile { target c++1y } }
 
 int main()
 {

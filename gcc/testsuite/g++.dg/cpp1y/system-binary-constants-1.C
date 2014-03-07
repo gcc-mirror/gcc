@@ -1,6 +1,5 @@
 // Origin: Dodji Seketeli <dodji@redhat.com>
-// { dg-options "-std=c++1y -pedantic-errors" }
-// { dg-do compile } 
+// { dg-do compile { target c++1y } }
 
 #include "../system-binary-constants-1.h"
 

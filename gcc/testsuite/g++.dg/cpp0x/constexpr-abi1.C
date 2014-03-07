@@ -1,5 +1,6 @@
 // PR c++/47301
-// { dg-options "-std=c++11 -fabi-version=1" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=1" }
 
 struct A
 {

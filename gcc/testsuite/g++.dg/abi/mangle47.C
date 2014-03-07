@@ -1,5 +1,5 @@
 // PR c++/47132
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_Z1fIiEDToRfp_Li1EET_" } }
 
 template <typename T>

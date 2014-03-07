@@ -1,5 +1,6 @@
 // PR c++/57041
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "" }
 
 template<typename T>
 union u {

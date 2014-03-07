@@ -43,9 +43,9 @@ proc g++-dg-runtest { testcases default-extra-flags } {
 	# if there's a dg-options line.
 	if ![search_for $test "-std=*++"] {
 	    if [search_for $test "dg-options"] {
-		set option_list { -std=gnu++98 -std=gnu++11 }
+		set option_list { -std=gnu++98 -std=gnu++11 -std=gnu++1y }
 	    } else {
-		set option_list { -std=c++98 -std=c++11 }
+		set option_list { -std=c++98 -std=c++11 -std=c++1y }
 	    }
 	} else {
 	    set option_list { "" }

@@ -1,5 +1,5 @@
 // PR c++/48319
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 // We were failing to recognize declval<_Args1> as dependent.
 
 template<typename Tp> Tp declval() noexcept;

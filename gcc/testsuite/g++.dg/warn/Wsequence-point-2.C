@@ -1,6 +1,6 @@
 // PR c++/45894
-// { dg-do compile }
-// { dg-options "-std=c++0x -Wsequence-point" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wsequence-point" }
 
 struct F
 {

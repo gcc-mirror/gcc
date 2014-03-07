@@ -1,6 +1,6 @@
 // PR c++/60053
-// { dg-do compile }
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
+// { dg-options "" }
 
 struct A
 {

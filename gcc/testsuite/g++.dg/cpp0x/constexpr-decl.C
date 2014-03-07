@@ -1,5 +1,5 @@
 // PR c++/46930
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct S {
   static constexpr int size;	// { dg-error "must have an initializer" "must have" }

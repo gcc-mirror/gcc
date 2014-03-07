@@ -1,5 +1,6 @@
 // PR c++/50075
-// { dg-options "-std=c++11 -ftemplate-depth=10" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-ftemplate-depth=10" }
 
 template <typename T>
 auto make_array(const T& il) ->

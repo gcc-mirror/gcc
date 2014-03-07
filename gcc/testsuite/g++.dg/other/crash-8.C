@@ -1,5 +1,6 @@
 // Origin: PR c++/42797
-// { dg-options "-g -O2 -std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g -O2" }
 
 template<typename _Tp, _Tp __v>     struct integral_constant     {
     static const _Tp value = __v;

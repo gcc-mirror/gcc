@@ -1,5 +1,6 @@
 // PR c++/47041
-// { dg-options "-std=c++11 -fno-elide-constructors" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-elide-constructors" }
 
 struct S
 {

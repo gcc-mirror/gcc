@@ -1,5 +1,5 @@
 // PR c++/50086
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<typename T> void tfun();
 template<typename T> void fun1(T);

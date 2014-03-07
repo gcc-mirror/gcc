@@ -1,5 +1,5 @@
 // PR c++/54859
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<unsigned N>
   using Num = int;

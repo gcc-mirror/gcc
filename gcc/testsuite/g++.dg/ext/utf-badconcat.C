@@ -1,7 +1,6 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test unsupported concatenation of char16_t/char32_t* string literals. */
-/* { dg-do compile } */
-/* { dg-options "-std=c++0x" } */
+/* { dg-do compile { target c++11 } } */
 
 const void *s0	= u"a"  "b";
 const void *s1	=  "a" u"b";

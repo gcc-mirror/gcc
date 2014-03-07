@@ -1,6 +1,5 @@
 // PR c++/51365
-// { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 struct A { };
 static_assert( ! __is_final (A), "A not final" );

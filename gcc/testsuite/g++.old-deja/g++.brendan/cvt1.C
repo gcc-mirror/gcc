@@ -5,7 +5,7 @@
 class Thing
 {
 public:
-      typedef enum { GOOD_THING, BAD_THING, } ThingType ; // { dg-error "" "comma" { target c++98 } }
+      typedef enum { GOOD_THING, BAD_THING, } ThingType ; // { dg-error "" "comma" { target { ! c++11 } } }
 	Thing (ThingType type) : thingType (type) { }
 	~Thing () { }
 private:
@@ -15,7 +15,7 @@ private:
 class Group
 {
 public:
-      typedef enum { THIS_GROUP, THAT_GROUP, } GroupType ; // { dg-error "" "comma" { target c++98 } }
+      typedef enum { THIS_GROUP, THAT_GROUP, } GroupType ; // { dg-error "" "comma" { target { ! c++11 } } }
 	Group (GroupType type) : groupType (type), groupCount (0) { }
 	~Group () { }
 	void append (Thing* const &entry) { groupCount ++ ; }

@@ -1,3 +1,16 @@
+2014-03-07  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Run tests in C++1y mode, too.
+	* lib/target-supports.exp (check_effective_target_c++11): Now
+	means C++11 and up.
+	(check_effective_target_c++11_only): New.
+	(check_effective_target_c++11_down): New.
+	(check_effective_target_c++1y): New.
+	(check_effective_target_c++1y_only): New.
+	(check_effective_target_c++98_only): Rename from
+	check_effective_target_c++98.
+	* g++.dg/*: Use { target c++11 } instead of -std=c++11.
+
 2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58609

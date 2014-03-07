@@ -8,5 +8,5 @@ typedef struct {
 } S;
 
 struct B: S{
-  using S::S;	       // { dg-error "" "" { target c++98 } } no such field
+  using S::S;	       // { dg-error "" "" { target { ! c++11 } } } no such field
 };

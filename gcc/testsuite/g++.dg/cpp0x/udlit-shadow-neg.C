@@ -1,4 +1,4 @@
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 //  Test that the standard suffixes shadow any user-defined suffixes of the same name.
 long double

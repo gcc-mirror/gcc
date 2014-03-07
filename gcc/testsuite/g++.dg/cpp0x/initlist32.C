@@ -1,5 +1,5 @@
 // Test that we try normal init if no list ctor is viable.
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 #include <initializer_list>
 

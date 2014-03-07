@@ -1,4 +1,5 @@
-// { dg-options "-std=c++1y -Wno-return-local-addr" }
+// { dg-do compile { target c++1y } }
+// { dg-options "-Wno-return-local-addr" }
 
 template<class,class> struct same_type;
 template<class T> struct same_type<T,T> {};

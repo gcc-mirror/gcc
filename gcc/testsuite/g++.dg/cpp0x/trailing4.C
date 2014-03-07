@@ -1,5 +1,5 @@
 // PR c++/38597
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<class T, class U>
 auto f(T,U) -> decltype(T() + U())

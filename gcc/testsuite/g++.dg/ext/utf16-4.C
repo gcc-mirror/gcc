@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Expected errors for char16_t character constants. */
-/* { dg-do compile } */
-/* { dg-options "-std=c++0x" } */
+/* { dg-do compile { target c++11 } } */
+
 
 const static char16_t	c0 = u'';		/* { dg-error "empty character" } */
 const static char16_t	c1 = u'ab';		/* { dg-warning "constant too long" } */

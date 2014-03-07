@@ -1,5 +1,6 @@
 // PR c++/50084
-// { dg-options "-std=c++11 -fno-inline" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-inline" }
 
 template<typename>   struct remove_reference;
 template<typename T> struct remove_reference<T&> { typedef T type; };

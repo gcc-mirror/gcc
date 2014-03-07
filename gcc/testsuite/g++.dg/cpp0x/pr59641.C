@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 typedef int T __attribute__((vector_size(2*sizeof(int))));
 
 void foo(T& r, const T& a, const T& b)

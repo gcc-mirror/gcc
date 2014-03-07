@@ -1,6 +1,6 @@
 // PR c++/37965
 // Negative test for auto
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 auto i = 6;
 auto j;			// { dg-error "has no initializer" }

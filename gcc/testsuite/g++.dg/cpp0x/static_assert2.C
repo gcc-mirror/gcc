@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 template<int I>
 struct accept_evens {
   static_assert( I % 2 == 0, "I must be an even number"); // { dg-error "even number" }

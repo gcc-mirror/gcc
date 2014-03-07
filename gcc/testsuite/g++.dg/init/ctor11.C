@@ -1,5 +1,4 @@
 // PR c++/49569
-// { dg-options -std=c++0x }
 
 struct A
 {
@@ -18,4 +17,3 @@ struct C
   C(): b() { }
   C(const B& b): b(b) { }
 };
-

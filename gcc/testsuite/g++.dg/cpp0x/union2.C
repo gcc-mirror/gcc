@@ -1,5 +1,5 @@
 // Positive test for C++11 unrestricted unions
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

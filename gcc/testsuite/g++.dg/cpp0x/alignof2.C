@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++11 -pedantic" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-pedantic" }
 int main(void)
 {
   alignof(int); //ok with a type but not with an expression

@@ -1,5 +1,5 @@
 // PR c++/45080
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 typedef void(*pfn)();
 

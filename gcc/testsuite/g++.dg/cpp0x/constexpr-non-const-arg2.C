@@ -1,5 +1,6 @@
 // PR c++/47200
-// { dg-options "-std=c++11 -w" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-w" }
 
 template < int > struct duration
 {

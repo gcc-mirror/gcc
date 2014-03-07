@@ -1,5 +1,5 @@
 // PR c++/47808
-// { dg-options -std=c++0x }
+// { dg-options "" }
 
 template <typename T>
 inline T abs (T const & x) { return x; }

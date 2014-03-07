@@ -1,5 +1,5 @@
 // PR c++/36816, core issue 873
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template <class T> void h (T&&) { }
 

@@ -1,5 +1,5 @@
 // PR c++/48451
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 namespace std {
   template <class T> T&& declval();

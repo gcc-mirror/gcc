@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++11 -fabi-version=5" }
-// { dg-do compile }
+// { dg-options "-fabi-version=5" }
+// { dg-do compile { target c++11 } }
 template<typename... Args>
 void f(Args...) { }
 

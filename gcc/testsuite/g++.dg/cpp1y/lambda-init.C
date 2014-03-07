@@ -1,5 +1,5 @@
 // Test for the explicit initializer extension of C++1y
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
 
 int main()
 {

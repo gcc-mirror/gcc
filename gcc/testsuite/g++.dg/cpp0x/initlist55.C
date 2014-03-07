@@ -1,5 +1,6 @@
 // Test for -Wno-narrowing
-// { dg-options "-std=c++11 -pedantic-errors -Wno-narrowing" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-pedantic-errors -Wno-narrowing" }
 
 int i;
 float d = { i };

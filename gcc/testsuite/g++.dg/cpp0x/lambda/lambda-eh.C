@@ -1,9 +1,9 @@
 // Test that we properly clean up if we get an exception in the middle of
 // constructing the closure object.
-// { dg-options -std=c++0x }
 
 // This test fails because of PR 41449; it isn't a lambda issue.
 // { dg-do run { xfail *-*-* } }
+// { dg-require-effective-target c++11 }
 
 struct A
 {

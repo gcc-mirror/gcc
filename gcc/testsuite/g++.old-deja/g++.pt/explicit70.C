@@ -18,7 +18,7 @@ template int S<int>::t; // { dg-error "duplicate explicit instantiation" }
 template class S<double>;
 template class S<double>; // { dg-error "duplicate explicit instantiation" } 
 
-extern template void f(double); // { dg-error "extern" "" { target c++98 } }
+extern template void f(double); // { dg-error "extern" "" { target { ! c++11 } } }
 inline template class S<float>; // { dg-error "inline" } inline not allowed
 
 template <class T>

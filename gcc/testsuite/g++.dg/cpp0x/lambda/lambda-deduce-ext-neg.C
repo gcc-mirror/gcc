@@ -1,6 +1,6 @@
 // Testcase for DR 975.
 
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 bool b;
 struct A { int fn1(); const int& fn2(); };

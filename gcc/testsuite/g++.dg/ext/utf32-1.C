@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Test the support for char32_t character constants. */
-/* { dg-do run } */
-/* { dg-options "-std=c++0x -Wall -Werror" } */
+/* { dg-do run { target c++11 } } */
+/* { dg-options "-Wall -Werror" } */
 
 extern "C" void abort (void);
 

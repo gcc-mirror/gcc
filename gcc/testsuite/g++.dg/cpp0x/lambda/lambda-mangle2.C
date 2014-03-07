@@ -1,6 +1,5 @@
 // PR c++/49276
-// { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 template <int N>
 struct F

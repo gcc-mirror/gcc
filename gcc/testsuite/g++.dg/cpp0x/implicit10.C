@@ -1,5 +1,5 @@
 // PR c++/46103
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct MoveOnly {
   MoveOnly(const MoveOnly&) = delete;

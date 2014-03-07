@@ -1,6 +1,6 @@
 // PR c++/48281
-// { dg-options "-std=c++11 -O2" }
-// { dg-do run }
+// { dg-options "-O2" }
+// { dg-do run { target c++11 } }
 
 #include <initializer_list>
 

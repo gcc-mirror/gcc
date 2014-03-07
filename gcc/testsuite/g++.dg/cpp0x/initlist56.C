@@ -1,5 +1,5 @@
 // PR c++/47453
-// { dg-options "-std=c++11 -pedantic-errors" }
+// { dg-do compile { target c++11 } }
 
 // invalid
 int a({0});			// { dg-error "" }

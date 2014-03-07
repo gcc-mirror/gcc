@@ -1,5 +1,5 @@
 // Origin PR c++/51289
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename a, template <typename, typename> class b>
 struct foo {

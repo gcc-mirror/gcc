@@ -1,6 +1,6 @@
 // PR c++/60065
-// { dg-do compile }
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
+// { dg-options "" }
 
 template <int> void foo(auto... x);
 template <typename> void foo2(auto... x);

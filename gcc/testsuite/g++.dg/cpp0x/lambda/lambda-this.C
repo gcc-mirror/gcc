@@ -1,5 +1,5 @@
 // Test that implicit 'this' capture works, but that it's still an rvalue.
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

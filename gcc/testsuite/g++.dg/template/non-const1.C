@@ -1,5 +1,4 @@
 // PR c++/48015
-// { dg-options -std=c++0x }
 
 template <typename T> T f(T);
 template <typename T> void g()

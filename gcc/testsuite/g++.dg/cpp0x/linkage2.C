@@ -4,7 +4,7 @@
 //   o the variable or function is not used (3.2 [basic.def.odr]) or is
 //   defined in the same translation unit.
 
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template <typename T> struct B {
   void g(T){}
@@ -16,9 +16,9 @@ template <typename T> struct B {
 
 template <typename T> T B<T>::t2 = { };
 
-enum {} e1;			// OK, defined
-extern enum {} e2;		// { dg-error "never defined" }
-extern "C" enum {} e3;		// OK, extern "C"
+enum { E1 } e1;			// OK, defined
+extern enum { E2 } e2;		// { dg-error "never defined" }
+extern "C" enum { E3 } e3;	// OK, extern "C"
 
 void f() {
   struct A { int x; };  // no linkage

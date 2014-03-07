@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 template<typename R, typename... ArgTypes>
 struct make_function_type
 {

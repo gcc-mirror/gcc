@@ -1,5 +1,6 @@
-// { dg-options "-std=c++11 -pedantic" }
+// { dg-options "-pedantic" }
 // { dg-do compile { target { i?86-*-* && ilp32 } } }
+// { dg-require-effective-target c++11 }
 
 struct A {
   [[gnu::fastcall]]

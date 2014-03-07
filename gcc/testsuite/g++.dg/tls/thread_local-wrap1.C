@@ -2,7 +2,7 @@
 // with a wrapper.
 
 // { dg-require-effective-target tls }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler-not "_ZTW1i" } }
 
 thread_local int i = 42;

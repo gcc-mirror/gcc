@@ -1,5 +1,6 @@
 // PR c++/52637
-// { dg-options "-g -std=c++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g" }
 
 template <typename T>
 struct C { };

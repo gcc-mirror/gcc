@@ -1,5 +1,6 @@
 // Generic lambda conversion to function ptr test from N3690 5.1.2.6
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
+// { dg-options "" }
 
 void f1(int (*)(int)) { }
 void f2(char (*)(int)) { }

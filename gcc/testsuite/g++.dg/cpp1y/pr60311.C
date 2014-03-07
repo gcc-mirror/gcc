@@ -1,5 +1,5 @@
 // PR c++/60311
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 template<void(*)(auto)> struct A {}; // { dg-error "auto" }
 

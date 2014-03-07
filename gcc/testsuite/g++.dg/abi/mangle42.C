@@ -1,6 +1,7 @@
 // Origin: PR c++/43375
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
-// { dg-options "-msse2 -std=gnu++0x" }
+// { dg-require-effective-target c++11 }
+// { dg-options "-msse2" }
 // { dg-require-effective-target sse2 }
 
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));

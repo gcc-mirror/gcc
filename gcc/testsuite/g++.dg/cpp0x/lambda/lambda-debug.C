@@ -1,5 +1,6 @@
 // PR c++/43502
-// { dg-options "-std=c++0x -fcompare-debug" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fcompare-debug" }
 
 void g (int n)
 {

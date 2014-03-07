@@ -1,6 +1,7 @@
 // Test lambda mangling
 // { dg-require-weak "" }
-// { dg-options "-std=c++0x -fno-inline" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-inline" }
 
 template<typename F> int algo(F fn) { return fn(); }
 inline void g(int n) {

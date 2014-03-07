@@ -1,5 +1,5 @@
 // PR c++/44909
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 // Declaring A<D<E>>'s copy ctor means choosing a ctor to initialize D<E>,
 // which means choosing a ctor for C<B<E>>, which meant considering
 // C(const B<E>&) which means choosing a ctor for B<E>, which means choosing

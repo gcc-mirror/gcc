@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-std=gnu++0x -fno-inline" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-fno-inline" } */
 /* { dg-add-options bind_pic_locally } */
 
   struct B

@@ -1,6 +1,6 @@
 // PR c++/51852
-// { dg-do compile }
-// { dg-options "-std=gnu++11 --param ggc-min-heapsize=0 --param ggc-min-expand=0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "--param ggc-min-heapsize=0 --param ggc-min-expand=0" }
 
 template <typename, typename>
 class transformed {};

@@ -1,5 +1,6 @@
 // PR c++/57404
-// { dg-options "-std=c++11 -g" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g" }
 
 void f (int i)
 {

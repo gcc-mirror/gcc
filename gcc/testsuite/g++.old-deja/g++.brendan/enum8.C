@@ -6,7 +6,7 @@ class foo1
    enum foo1_enum
    {
       ENUM1,
-      ENUM2, // { dg-error "comma at end" "" { target c++98 } }
+      ENUM2, // { dg-error "comma at end" "" { target { ! c++11 } } }
    };
 };
 

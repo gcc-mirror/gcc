@@ -1,5 +1,5 @@
 // PR c++/60251
-// { dg-options "-std=c++1y -pedantic-errors" }
+// { dg-do compile { target c++1y } }
 
 void foo(int n)
 {
