@@ -1,5 +1,11 @@
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (REF_PARENTHESIZED_P): New.
+	* semantics.c (force_paren_expr): Set it.
+	* pt.c (do_auto_deduction): Check it.
+	(tsubst) [COMPONENT_REF]: Copy it.
+	* typeck.c (maybe_warn_about_useless_cast): Don't strip dereference.
+
 	* decl.c (create_array_type_for_decl): Only warn about invalid
 	C++1y VLA if flag_iso or warn_vla>0.
 	(grokdeclarator): Likewise.
