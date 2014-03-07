@@ -1134,8 +1134,8 @@ read_abbrevs (struct backtrace_state *state, uint64_t abbrev_offset,
       ++num_abbrevs;
     }
 
-  qsort (abbrevs->abbrevs, abbrevs->num_abbrevs, sizeof (struct abbrev),
-	 abbrev_compare);
+  backtrace_qsort (abbrevs->abbrevs, abbrevs->num_abbrevs,
+		   sizeof (struct abbrev), abbrev_compare);
 
   return 1;
 
@@ -2016,7 +2016,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
     goto fail;
 
   ln = (struct line *) vec.vec.base;
-  qsort (ln, vec.count, sizeof (struct line), line_compare);
+  backtrace_qsort (ln, vec.count, sizeof (struct line), line_compare);
 
   *lines = ln;
   *lines_count = vec.count;
@@ -2476,9 +2476,9 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		    return 0;
 
 		  faddrs = (struct function_addrs *) fvec.vec.base;
-		  qsort (faddrs, fvec.count,
-			 sizeof (struct function_addrs),
-			 function_addrs_compare);
+		  backtrace_qsort (faddrs, fvec.count,
+				   sizeof (struct function_addrs),
+				   function_addrs_compare);
 
 		  function->function_addrs = faddrs;
 		  function->function_addrs_count = fvec.count;
@@ -2555,8 +2555,8 @@ read_function_info (struct backtrace_state *state, struct dwarf_data *ddata,
       fvec->count = 0;
     }
 
-  qsort (addrs, addrs_count, sizeof (struct function_addrs),
-	 function_addrs_compare);
+  backtrace_qsort (addrs, addrs_count, sizeof (struct function_addrs),
+		   function_addrs_compare);
 
   *ret_addrs = addrs;
   *ret_addrs_count = addrs_count;
@@ -2923,7 +2923,8 @@ build_dwarf_data (struct backtrace_state *state,
     return NULL;
   addrs = (struct unit_addrs *) addrs_vec.vec.base;
   addrs_count = addrs_vec.count;
-  qsort (addrs, addrs_count, sizeof (struct unit_addrs), unit_addrs_compare);
+  backtrace_qsort (addrs, addrs_count, sizeof (struct unit_addrs),
+		   unit_addrs_compare);
 
   fdata = ((struct dwarf_data *)
 	   backtrace_alloc (state, sizeof (struct dwarf_data),
