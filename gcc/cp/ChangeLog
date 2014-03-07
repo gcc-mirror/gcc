@@ -1,5 +1,8 @@
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_using_declaration): Consume the semicolon
+	after bare parameter pack error.
+
 	* cp-tree.h (REF_PARENTHESIZED_P): New.
 	* semantics.c (force_paren_expr): Set it.
 	* pt.c (do_auto_deduction): Check it.

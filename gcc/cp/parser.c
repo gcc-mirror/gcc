@@ -16016,7 +16016,10 @@ cp_parser_using_declaration (cp_parser* parser,
 	    USING_DECL_TYPENAME_P (decl) = 1;
 
 	  if (check_for_bare_parameter_packs (decl))
-            return false;
+	    {
+	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	      return false;
+	    }
 	  else
 	    /* Add it to the list of members in this class.  */
 	    finish_member_declaration (decl);
@@ -16031,7 +16034,10 @@ cp_parser_using_declaration (cp_parser* parser,
 					 decl, NLE_NULL,
 					 token->location);
 	  else if (check_for_bare_parameter_packs (decl))
-	    return false;
+	    {
+	      cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	      return false;
+	    }
 	  else if (!at_namespace_scope_p ())
 	    do_local_using_decl (decl, qscope, identifier);
 	  else
