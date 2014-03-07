@@ -1,5 +1,5 @@
 // PR c++/38701, 38702
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 void foo() = default;		// { dg-error "cannot be defaulted" }
 namespace

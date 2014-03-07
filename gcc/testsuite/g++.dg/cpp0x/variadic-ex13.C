@@ -1,4 +1,4 @@
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 template<typename T, typename U> struct is_same {
   static const bool value = false;

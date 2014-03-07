@@ -1,6 +1,6 @@
 // A template declared with auto should be declared with auto in an
 // explicit instantiation or explicit specialization, too.
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 template <class T>
 auto f(T t) { return t; }

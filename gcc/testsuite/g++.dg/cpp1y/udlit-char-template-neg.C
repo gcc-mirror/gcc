@@ -1,4 +1,4 @@
-// { dg-options -std=c++11 }
+// { dg-do compile { target { c++11 && { ! c++1y } } } }
 
 template<typename CharT, CharT... String>
   int

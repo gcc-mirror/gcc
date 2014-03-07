@@ -1,5 +1,4 @@
 // PR c++/48707
-// { dg-options -std=c++0x }
 
 struct A {
   static int a();

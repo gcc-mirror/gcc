@@ -1,5 +1,5 @@
 // FIXME this is currently invalid, but seems like it should be OK
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct A { A() { } };
 

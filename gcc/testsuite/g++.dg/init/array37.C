@@ -1,5 +1,3 @@
-// { dg-options -std=c++0x }
-
 struct A
 {
   int i;

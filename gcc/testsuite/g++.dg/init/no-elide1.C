@@ -1,5 +1,5 @@
 // PR c++/47503
-// { dg-options "-std=c++0x -fno-elide-constructors" }
+// { dg-options "-fno-elide-constructors" }
 
 struct A
 {

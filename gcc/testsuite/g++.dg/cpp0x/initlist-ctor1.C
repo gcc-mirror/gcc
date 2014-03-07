@@ -1,5 +1,5 @@
 // PR c++/52905
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 #include <initializer_list>
 

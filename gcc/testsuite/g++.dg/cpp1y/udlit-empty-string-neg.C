@@ -1,4 +1,4 @@
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 int
 operator "*"_s(unsigned long long) // { dg-error "expected empty string after 'operator'" }

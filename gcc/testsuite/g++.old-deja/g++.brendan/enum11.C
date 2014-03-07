@@ -6,7 +6,7 @@ class X
     {
        oneMask = 0x0000FFFF,
        twoMask  = 0x000F0000,
-       thiMask = 0xFFF00000, // { dg-error "comma at end" "" { target c++98 } }
+       thiMask = 0xFFF00000, // { dg-error "comma at end" "" { target { ! c++11 } } }
     };
     unsigned int foo;
 

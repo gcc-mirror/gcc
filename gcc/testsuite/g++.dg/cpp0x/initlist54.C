@@ -1,5 +1,5 @@
 // PR c++/49355
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 #include <string>
 

@@ -2,8 +2,8 @@
 
 // Test overload resolution among reference types
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "" }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

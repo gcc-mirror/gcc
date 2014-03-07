@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-gpubnames -gdwarf-4 -fdebug-types-section -std=c++0x -dA" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-gpubnames -gdwarf-4 -fdebug-types-section -dA" }
 // { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 } }
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"one\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }

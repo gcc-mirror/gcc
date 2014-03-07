@@ -1,5 +1,6 @@
 // PR c++/57211
-// { dg-options "-std=c++11 -Wunused-parameter" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wunused-parameter" }
 
 template <class T> T&& move(T&);
 

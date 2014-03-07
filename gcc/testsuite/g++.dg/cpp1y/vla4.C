@@ -1,6 +1,5 @@
 // Test for range-based for with VLAs.
-// { dg-options -std=c++1y }
-// { dg-do run }
+// { dg-do run { target c++1y } }
 
 #include <new>
 

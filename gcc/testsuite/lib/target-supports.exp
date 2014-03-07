@@ -5456,29 +5456,44 @@ proc check_effective_target_c++ { } {
  return 0
 }
 
-# Check which language standard is active by checking for the presence of
-# one of the C++11 -std flags.  This assumes that the default for the
-# compiler is C++98, and that there will never be multiple -std= arguments
-# on the command line.
-proc check_effective_target_c++11 { } {
+# Check whether the current active language standard supports the features
+# of C++11/C++1y by checking for the presence of one of the -std
+# flags.  This assumes that the default for the compiler is C++98, and that
+# there will never be multiple -std= arguments on the command line.
+proc check_effective_target_c++11_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
     return [check-flags { { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 } }]
 }
-
-proc check_effective_target_c++1y { } {
+proc check_effective_target_c++11 { } {
+    if [check_effective_target_c++11_only] {
+	return 1
+    }
+    return [check_effective_target_c++1y]
+}
+proc check_effective_target_c++11_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { -std=c++1y -std=gnu++1y } }]
+    return ![check_effective_target_c++1y]
 }
 
-proc check_effective_target_c++98 { } {
+proc check_effective_target_c++1y_only { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [check-flags { { } { } { } { -std=c++0x -std=gnu++0x -std=c++11 -std=gnu++11 -std=c++1y -std=gnu++1y } }]
+    return [check-flags { { } { } { -std=c++1y -std=gnu++1y -std=c++14 -std=gnu++14 } }]
+}
+proc check_effective_target_c++1y { } {
+    return [check_effective_target_c++1y_only]
+}
+
+proc check_effective_target_c++98_only { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return ![check_effective_target_c++11]
 }
 
 # Return 1 if expensive testcases should be run.

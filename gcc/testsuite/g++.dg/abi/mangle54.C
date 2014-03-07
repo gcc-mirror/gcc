@@ -1,4 +1,5 @@
-// { dg-options "-std=c++0x -fabi-version=0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=0" }
 
 int i;
 // { dg-final { scan-assembler "_Z2f1IiEDTppfp_ET_" } }

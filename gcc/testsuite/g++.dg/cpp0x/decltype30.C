@@ -1,5 +1,5 @@
 // PR c++/49369
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template <class,class> struct assert_same;
 template <class T> struct assert_same<T,T> {};

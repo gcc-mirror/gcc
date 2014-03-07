@@ -1,7 +1,7 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Expected errors for char16_t/char32_t string literals. */
-/* { dg-do compile } */
-/* { dg-options "-std=c++0x -fshort-wchar" } */
+/* { dg-do compile { target c++11 } } */
+/* { dg-options "-fshort-wchar" } */
 
 const char	s_0[]	= "ab";
 const char	s_1[]	= u"ab";	/* { dg-error "from wide string" } */

@@ -49,7 +49,7 @@ foo() {std::cout << "foo created" << std::endl; }
 };
 
 foo **f2;
-allocate2d(d1, d2, f2);// { dg-error "" "" { target c++98 } }
-ffree(d1, f2);// { dg-error "" "" { target c++98 } }
+allocate2d(d1, d2, f2);// { dg-error "" "" { target { ! c++11 } } }
+ffree(d1, f2);// { dg-error "" "" { target { ! c++11 } } }
 
 }

@@ -1,4 +1,5 @@
-// { dg-options "-std=c++0x -fabi-version=0" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fabi-version=0" }
 
 // { dg-final { scan-assembler "_Z1fIiEDTcmdlfp_psfp_EPT_" } }
 template <class T> auto f (T* p) -> decltype(delete p, +p) { return p; }

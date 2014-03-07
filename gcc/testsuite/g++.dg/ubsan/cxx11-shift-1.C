@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-fsanitize=shift -w -std=c++11" } */
+/* { dg-do run { target c++11 } } */
+/* { dg-options "-fsanitize=shift -w" } */
 
 int
 main (void)

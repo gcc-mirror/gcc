@@ -29,5 +29,5 @@ int main ()
   call<&B2::fn2> ();	// { dg-error "linkage|no matching" }
   call<&fn3> ();
   call<&B1::fn4> ();
-  call<&fn5> ();	// { dg-error "linkage|no matching" "" { target c++98 } }
+  call<&fn5> ();	// { dg-error "linkage|no matching" "" { target { ! c++11 } } }
 }

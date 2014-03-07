@@ -1,6 +1,5 @@
 // Test that array capture by copy works.
-// { dg-options -std=c++0x }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 struct A
 {

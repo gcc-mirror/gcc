@@ -1,7 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/39637
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
 
 template<class... Types>
 void
@@ -16,5 +15,3 @@ main()
 {
     f(0);
 }
-
-// { dg-message "note" "Types" { target *-*-* } 10 }

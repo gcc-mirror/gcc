@@ -1,5 +1,6 @@
 // PR c++/43912
-// { dg-options "-g -std=c++0x -dA -fno-merge-debug-strings -gno-strict-dwarf" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g -dA -fno-merge-debug-strings -gno-strict-dwarf" }
 
 // Check for the local alias variables that point to the members of the closure.
 // { dg-final { scan-assembler-times "DW_TAG_variable\[^.\]*\.ascii \"j.0\"" 4 } }

@@ -1,5 +1,5 @@
 // PR c++/49290
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 typedef unsigned T;
 struct S

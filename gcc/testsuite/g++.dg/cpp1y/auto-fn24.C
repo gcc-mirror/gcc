@@ -1,5 +1,6 @@
 // PR c++/60314
-// { dg-options "-std=c++1y -g" }
+// { dg-do compile { target c++1y } }
+// { dg-options "-g" }
 
 // fine
 decltype(auto) qux() { return 42; }

@@ -1,6 +1,6 @@
 // Test that simple captures are not named in the closure type, but
 // initialized captures are named.
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
 
 int main()
 {

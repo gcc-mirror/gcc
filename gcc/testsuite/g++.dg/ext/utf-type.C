@@ -1,8 +1,8 @@
 /* Contributed by Kris Van Hees <kris.van.hees@oracle.com> */
 /* Ensure that __CHAR16_TYPE__ and __CHAR32_TYPE__ exist, match the types they
    are the underlying data type for. */
-/* { dg-do run } */
-/* { dg-options "-std=c++0x -Wall -Werror" } */
+/* { dg-do run { target c++11 } } */
+/* { dg-options "-Wall -Werror" } */
 
 extern "C" void abort (void);
 

@@ -1,4 +1,4 @@
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 bool b;
 // { dg-final { scan-assembler "_Z1fIiEDTquL_Z1bEfp_twLi42EET_" } }

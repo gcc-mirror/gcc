@@ -1,5 +1,6 @@
 // PR c++/41927
-// { dg-options "-std=c++0x -Wall" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-Wall" }
 
 // We were getting a spurious ||/&& warning about the enable_if with the
 // source position of d1.

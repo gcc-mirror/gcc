@@ -1,7 +1,6 @@
 // We allocate a cookie to help us run the destructor if it's non-trivial,
 // even if it's deleted.
-// { dg-options "-std=c++0x" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 struct B { ~B() {} };
 struct A

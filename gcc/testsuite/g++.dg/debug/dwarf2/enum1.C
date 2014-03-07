@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-g -dA -gno-strict-dwarf -std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-g -dA -gno-strict-dwarf" }
 // { dg-final { scan-assembler-times "DIE\[^\n\r\]*DW_TAG_enumeration_type" 3 } }
 // { dg-final { scan-assembler-times " DW_AT_enum_class" 2 } }
 

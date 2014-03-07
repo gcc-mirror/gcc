@@ -1,6 +1,6 @@
 // Test that error messages about creating the closure object refer to
 // the lambda-introducer.
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 struct A
 {

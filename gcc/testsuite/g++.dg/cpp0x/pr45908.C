@@ -1,8 +1,7 @@
 // PR c++/45908
 // Testcase by Jonathan Wakely <redi@gcc.gnu.org>
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 struct vector {
     struct iterator { };

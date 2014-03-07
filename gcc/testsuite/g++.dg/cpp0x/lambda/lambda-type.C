@@ -11,7 +11,7 @@
 // So, other appearances of 'x' within decltype do not refer to the closure
 // member, because they are not "use"s in the sense of 3.2.
 
-// { dg-options -std=c++0x }
+// { dg-do compile { target c++11 } }
 
 template<class T, class U>
 struct same_type;

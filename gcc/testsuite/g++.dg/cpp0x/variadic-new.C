@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 // Contributed by Peter Dimov
 // PR c++/32597
 #include <assert.h>

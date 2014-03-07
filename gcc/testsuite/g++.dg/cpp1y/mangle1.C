@@ -1,5 +1,6 @@
 // Test that the parens don't show up in the mangling
-// { dg-options "-std=c++1y -Wno-return-local-addr" }
+// { dg-do compile { target c++1y } }
+// { dg-options "-Wno-return-local-addr" }
 // { dg-final { scan-assembler "_Z1gI1AEDTdtfp_1iET_" } }
 
 struct A { int i; };

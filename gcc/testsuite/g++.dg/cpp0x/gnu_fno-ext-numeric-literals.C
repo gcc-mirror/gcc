@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=gnu++11 -fno-ext-numeric-literals" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fno-ext-numeric-literals" }
 
 //  Integer imaginary...
 

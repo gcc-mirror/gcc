@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "" }
 
 const char	s0[]	= u8"ab";
 const char16_t	s1[]	= u8"ab";	// { dg-error "from non-wide" }

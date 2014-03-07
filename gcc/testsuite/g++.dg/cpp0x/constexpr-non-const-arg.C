@@ -1,6 +1,6 @@
 // Example from issue 1125 drafting; D() and v were well-formed with the
 // wording approved in Rapperswil, now seems they should be ill-formed.
-// { dg-options "-std=c++11 -pedantic-errors" }
+// { dg-do compile { target c++11 } }
 
 struct B {
   constexpr B(int x) : i(0) { }    // "x" is unused

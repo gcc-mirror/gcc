@@ -1,6 +1,5 @@
 // Test for throwing bad_array_length on invalid array length
-// { dg-options -std=c++1y }
-// { dg-do run }
+// { dg-do run { target c++1y } }
 
 #include <new>
 

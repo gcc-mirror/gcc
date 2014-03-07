@@ -1,4 +1,4 @@
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 
 #define assert(E) if(!(E))__builtin_abort();
 

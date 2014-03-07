@@ -1,6 +1,6 @@
 // PR tree-optimization/56381
-// { dg-do compile }
-// { dg-options "-std=c++11 -O2 -w" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-O2 -w" }
 
 template <class>
 class intrusive_ptr {};

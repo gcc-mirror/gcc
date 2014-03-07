@@ -2,8 +2,7 @@
 
 // Test: Implicit cast to rvalue when eliding copy
 
-// { dg-do compile }
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

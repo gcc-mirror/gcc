@@ -1,6 +1,5 @@
 // PR c++/40306, c++/40307
-// { dg-options "-std=c++11" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 template< typename T >
 struct test {

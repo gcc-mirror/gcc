@@ -1,6 +1,6 @@
 // PR preprocessor/57757
-// { dg-do compile }
-// { dg-options "-std=c++11 -save-temps" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-save-temps" }
 // { dg-final cleanup-saved-temps }
 
 #define S(x) x

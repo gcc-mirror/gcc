@@ -1,5 +1,5 @@
 // Generic lambda test from N3690 5.1.2.5
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
 
 #include <iostream>
 

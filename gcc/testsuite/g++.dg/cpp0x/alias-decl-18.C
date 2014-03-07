@@ -1,5 +1,5 @@
 // Origin: PR c++/51541
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<typename Z> using ::T = void(int n); // { dg-error "" }
 template<typename Z> using operator int = void(int n); // { dg-error "" }

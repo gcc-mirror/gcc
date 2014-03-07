@@ -1,5 +1,5 @@
 // PR c++/44969
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 template<typename Tp, typename... Args>
   class mini_is_constructible

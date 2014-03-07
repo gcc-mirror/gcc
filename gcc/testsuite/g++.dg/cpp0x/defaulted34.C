@@ -1,4 +1,4 @@
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "__cxa_deleted_virtual" } }
 
 struct A

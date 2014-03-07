@@ -1,5 +1,6 @@
 // PR c++/53756
-// { dg-options "-std=c++1y -g -dA -fno-debug-types-section" }
+// { dg-do compile { target c++1y } }
+// { dg-options "-g -dA -fno-debug-types-section" }
 // We're looking for something like
 
 // .uleb128 0x3    # (DIE (0x33) DW_TAG_subprogram)

@@ -1,5 +1,5 @@
 // Negative explicit conv test.
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 
 struct A {
   A(const A&, int = 0);		// { dg-message "note" }

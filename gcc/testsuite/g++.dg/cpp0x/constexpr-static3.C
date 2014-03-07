@@ -1,8 +1,8 @@
 // Test for constant initialization of class with vtable
-// { dg-options "-std=c++11 -save-temps" }
+// { dg-options "-save-temps" }
 // { dg-final { scan-assembler-not "static_initialization" } }
 // { dg-final cleanup-saved-temps }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 int r = 1;
 // implicit default constructor for A and B is constexpr

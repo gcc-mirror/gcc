@@ -1,5 +1,5 @@
 // PR c++/56208
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct ostream {
   ostream& operator<<(int);

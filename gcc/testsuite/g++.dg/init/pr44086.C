@@ -3,7 +3,7 @@
 
 struct A		// { dg-error "uninitialized" "" { target c++11 } }
 {
-    int const i : 2; // { dg-message "should be initialized" "" { target c++98 } }
+    int const i : 2; // { dg-message "should be initialized" "" { target { ! c++11 } } }
 };
 
 void f()

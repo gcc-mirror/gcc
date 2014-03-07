@@ -1,5 +1,5 @@
 // Core 1321
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 // Two dependent names are equivalent even if the overload sets found by
 // phase 1 lookup are different.  Merging them keeps the earlier set.
 

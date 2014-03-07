@@ -1,7 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/42225
-// { dg-options "-std=c++0x" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 template<class T>
 struct A

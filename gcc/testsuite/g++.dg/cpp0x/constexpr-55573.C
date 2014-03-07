@@ -1,6 +1,6 @@
 // PR c++/55573
-// { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-do compile { target c++11 } }
+// { dg-options "" }
 // Ignore warning on some powerpc-ibm-aix configurations.
 // { dg-prune-output "non-standard ABI extension" }
 

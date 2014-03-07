@@ -1,5 +1,5 @@
 // PR c++/55801
-// { dg-options "-std=c++11" }
+// { dg-do compile { target c++11 } }
 // { dg-require-effective-target tls }
 
 class C;

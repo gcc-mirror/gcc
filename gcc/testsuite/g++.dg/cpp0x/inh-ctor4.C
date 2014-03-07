@@ -1,5 +1,5 @@
 // From N3337
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 struct B1 {
   B1(int);

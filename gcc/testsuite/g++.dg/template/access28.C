@@ -1,5 +1,4 @@
 // PR c++/49663
-// { dg-options -std=c++0x }
 
 struct Nosm
 {

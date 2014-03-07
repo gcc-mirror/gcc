@@ -1,6 +1,6 @@
 // Origin: PR c++/42336
-// { dg-options "-std=c++0x -O2 -g" }
-// { dg-do compile }
+// { dg-options "-O2 -g" }
+// { dg-do compile { target c++11 } }
 
 struct X {
       void func() {}

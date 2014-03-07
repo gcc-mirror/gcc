@@ -1,6 +1,5 @@
 // Origin: PR c++/47326
-// { dg-options  "-std=c++11" }
-// { dg-do compile }
+// { dg-do compile { target c++11 } }
 
 template <int _N>
 struct A

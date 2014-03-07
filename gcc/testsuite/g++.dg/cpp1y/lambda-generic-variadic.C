@@ -1,6 +1,5 @@
 // Basic generic lambda test
-// { dg-options "-std=c++1y" }
-// { dg-do run }
+// { dg-do run { target c++1y } }
 
 template <typename T, typename U> struct pair {};
 template <typename... T> struct tuple {};

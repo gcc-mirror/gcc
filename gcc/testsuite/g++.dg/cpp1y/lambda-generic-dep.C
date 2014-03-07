@@ -1,5 +1,5 @@
 // Generic lambda type dependence test part from N3690 5.1.2.12
-// { dg-options "-std=c++1y" }
+// { dg-do compile { target c++1y } }
 
 void f(int, const int (&)[2] = {}) { } // #1
 void f(const int&, const int (&)[1]) { } // #2

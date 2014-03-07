@@ -1,6 +1,6 @@
 // PR debug/52260
-// { dg-do compile }
-// { dg-options "-gdwarf-4 -std=c++0x" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-gdwarf-4" }
 
 namespace { typedef decltype (nullptr) T1; }
 struct B {};

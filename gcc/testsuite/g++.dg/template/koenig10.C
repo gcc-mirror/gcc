@@ -1,5 +1,4 @@
 // PR c++/47511
-// { dg-options -std=c++0x }
 
 namespace N {
     template <typename T> bool g( T ) {

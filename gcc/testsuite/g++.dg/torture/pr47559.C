@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-std=c++0x -fnon-call-exceptions" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-fnon-call-exceptions" }
 
 void foo (int *k) noexcept
 {

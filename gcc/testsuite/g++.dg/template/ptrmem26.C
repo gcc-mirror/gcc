@@ -1,5 +1,4 @@
 // PR c++/46552
-// { dg-options -std=c++0x }
 
 struct S
 {

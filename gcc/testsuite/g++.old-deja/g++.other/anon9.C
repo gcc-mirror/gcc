@@ -1,4 +1,4 @@
-// { dg-do assemble { target c++98 } }
+// { dg-do assemble { target { ! c++11 } } }
 // Test that we properly diagnose an attempt to use an anonymous class
 // in declaring an external function.
 

@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options "-std=c++11" }
+// { dg-do run { target c++11 } }
 
 //  Make sure embedded quotes are not a problem for string and char literals.
 
@@ -7,10 +6,10 @@
 #include <cassert>
 
 int operator"" _embedchar(char)
-{ return 41; };
+{ return 41; }
 
 int operator"" _embedstr(const char*, std::size_t len)
-{ return 42 + len; };
+{ return 42 + len; }
 
 void
 test()

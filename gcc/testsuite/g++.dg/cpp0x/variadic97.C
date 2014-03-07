@@ -1,5 +1,5 @@
 // PR c++/42266
-// { dg-options -std=c++11 }
+// { dg-do compile { target c++11 } }
 
 template<typename... _Elements>
   class tuple;

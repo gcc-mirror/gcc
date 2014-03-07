@@ -1,4 +1,4 @@
-// { dg-options -std=c++1y }
+// { dg-do compile { target c++1y } }
 // { dg-final { scan-assembler "_Z1fIiERDaRKT_S1_" } }
 
 template <class T>

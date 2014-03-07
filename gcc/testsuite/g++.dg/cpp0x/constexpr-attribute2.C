@@ -1,5 +1,5 @@
 // { dg-do compile { target init_priority } }
-// { dg-options -std=gnu++11 }
+// { dg-require-effective-target c++11 }
 
 struct t { t(); };
 

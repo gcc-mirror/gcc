@@ -1,5 +1,6 @@
 // PR c++/48969
-// { dg-options "-std=c++11 -ftemplate-depth=10" }
+// { dg-do compile { target c++11 } }
+// { dg-options "-ftemplate-depth=10" }
 
 template<unsigned int N> struct Pair { };
 struct Foo { enum { Mask = 1 }; } foo;

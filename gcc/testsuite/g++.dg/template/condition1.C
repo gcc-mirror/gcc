@@ -1,5 +1,4 @@
 // PR c++/47950
-// { dg-options -std=c++0x }
 
 template <typename T> struct empty
 {

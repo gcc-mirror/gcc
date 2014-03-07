@@ -1,5 +1,5 @@
 // PR c++/44907
-// { dg-options "-std=c++0x" }
+// { dg-do compile { target c++11 } }
 
 #include <utility>
 

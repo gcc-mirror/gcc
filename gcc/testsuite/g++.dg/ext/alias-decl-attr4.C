@@ -1,5 +1,4 @@
-// { dg-options "-std=c++0x" }
-// { dg-do run }
+// { dg-do run { target c++11 } }
 
 using global_vector_type  __attribute__((vector_size(16))) = float;
 
