@@ -7031,7 +7031,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	}
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+      && (flag_iso || warn_vla > 0))
     {
       if (complain & tf_warning_or_error)
 	pedwarn (input_location, OPT_Wvla,

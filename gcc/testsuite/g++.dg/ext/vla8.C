@@ -8,7 +8,7 @@ struct AvlTreeIter
 
   AvlTreeIter()
   {
-    new (void* [Num()]); // { dg-warning "variable-length array" }
+    new (void* [Num()]); // { dg-warning "parentheses" }
   }
 };
 

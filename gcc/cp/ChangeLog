@@ -1,3 +1,14 @@
+2014-03-07  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (create_array_type_for_decl): Only warn about invalid
+	C++1y VLA if flag_iso or warn_vla>0.
+	(grokdeclarator): Likewise.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (finish_decltype_type): Likewise.
+	* typeck.c (cxx_sizeof_or_alignof_type): Likewise.
+	(cp_build_addr_expr_1): Likewise.
+	* init.c (build_new_1): Improve diagnostics.
+
 2014-03-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58609

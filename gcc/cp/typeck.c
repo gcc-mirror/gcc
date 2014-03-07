@@ -1552,7 +1552,8 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+  if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type)
+      && (flag_iso || warn_vla > 0))
     {
       if (complain & tf_warning_or_error)
 	pedwarn (input_location, OPT_Wvla,
@@ -5471,7 +5472,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   if (argtype != error_mark_node)
     {
-      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype))
+      if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (argtype)
+	  && (flag_iso || warn_vla > 0))
 	{
 	  if (complain & tf_warning_or_error)
 	    pedwarn (input_location, OPT_Wvla,

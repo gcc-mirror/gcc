@@ -11954,7 +11954,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (cxx_dialect >= cxx1y
 	    && !(TREE_CODE (t) == REFERENCE_TYPE && REFERENCE_VLA_OK (t))
-	    && array_of_runtime_bound_p (type))
+	    && array_of_runtime_bound_p (type)
+	    && (flag_iso || warn_vla > 0))
 	  {
 	    if (complain & tf_warning_or_error)
 	      pedwarn

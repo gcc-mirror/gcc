@@ -9,7 +9,7 @@ class A { A (int); };
 
 A::A (int i)
 {
-  int ar[1][i];    // { dg-error "variable length array" }
+  int ar[1][i];    // { dg-error "array" }
 
   ar[0][0] = 0;
 }
