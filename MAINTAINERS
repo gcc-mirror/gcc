@@ -51,8 +51,6 @@ arm port		Richard Earnshaw	richard.earnshaw@arm.com
 arm port		Paul Brook		paul@codesourcery.com
 arm port		Ramana Radhakrishnan	ramana.radhakrishnan@arm.com
 avr port		Denis Chertykov		chertykov@gmail.com
-avr port		Anatoly Sokolov		aesok@post.ru
-avr port		Eric Weddington		eric.weddington@atmel.com
 bfin port		Bernd Schmidt		bernds@codesourcery.com
 bfin port		Jie Zhang		jzhang918@gmail.com
 c6x port		Bernd Schmidt		bernds@codesourcery.com
