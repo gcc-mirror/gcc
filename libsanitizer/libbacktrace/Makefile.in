@@ -90,7 +90,7 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am_libsanitizer_libbacktrace_la_OBJECTS = atomic.lo dwarf.lo \
-	fileline.lo posix.lo state.lo cp-demangle.lo bridge.lo
+	fileline.lo posix.lo sort.lo state.lo cp-demangle.lo bridge.lo
 libsanitizer_libbacktrace_la_OBJECTS =  \
 	$(am_libsanitizer_libbacktrace_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -279,6 +279,7 @@ libsanitizer_libbacktrace_la_SOURCES = \
 	../../libbacktrace/fileline.c \
 	../../libbacktrace/internal.h \
 	../../libbacktrace/posix.c \
+	../../libbacktrace/sort.c \
 	../../libbacktrace/state.c \
 	../../libiberty/cp-demangle.c \
 	bridge.cc
@@ -371,6 +372,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mmapio.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/read.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/state.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unknown.Plo@am__quote@
 
@@ -422,6 +424,13 @@ posix.lo: ../../libbacktrace/posix.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../libbacktrace/posix.c' object='posix.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o posix.lo `test -f '../../libbacktrace/posix.c' || echo '$(srcdir)/'`../../libbacktrace/posix.c
+
+sort.lo: ../../libbacktrace/sort.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT sort.lo -MD -MP -MF $(DEPDIR)/sort.Tpo -c -o sort.lo `test -f '../../libbacktrace/sort.c' || echo '$(srcdir)/'`../../libbacktrace/sort.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/sort.Tpo $(DEPDIR)/sort.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../libbacktrace/sort.c' object='sort.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sort.lo `test -f '../../libbacktrace/sort.c' || echo '$(srcdir)/'`../../libbacktrace/sort.c
 
 state.lo: ../../libbacktrace/state.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT state.lo -MD -MP -MF $(DEPDIR)/state.Tpo -c -o state.lo `test -f '../../libbacktrace/state.c' || echo '$(srcdir)/'`../../libbacktrace/state.c
