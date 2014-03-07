@@ -1605,11 +1605,18 @@ force_paren_expr (tree expr)
   if (cxx_dialect < cxx1y)
     return expr;
 
+  /* If we're in unevaluated context, we can't be deducing a
+     return/initializer type, so we don't need to mess with this.  */
+  if (cp_unevaluated_operand)
+    return expr;
+
   if (!DECL_P (expr) && TREE_CODE (expr) != COMPONENT_REF
       && TREE_CODE (expr) != SCOPE_REF)
     return expr;
 
-  if (type_dependent_expression_p (expr))
+  if (TREE_CODE (expr) == COMPONENT_REF)
+    REF_PARENTHESIZED_P (expr) = true;
+  else if (type_dependent_expression_p (expr))
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
   else
     {
@@ -1619,7 +1626,7 @@ force_paren_expr (tree expr)
 	  tree type = unlowered_expr_type (expr);
 	  bool rval = !!(kind & clk_rvalueref);
 	  type = cp_build_reference_type (type, rval);
-	  expr = build_static_cast (type, expr, tf_warning_or_error);
+	  expr = build_static_cast (type, expr, tf_error);
 	}
     }
 
