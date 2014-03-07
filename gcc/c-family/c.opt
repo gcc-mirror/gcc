@@ -1349,15 +1349,18 @@ Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum
 
 std=c++11
 C++ ObjC++
-Conform to the ISO 2011 C++ standard (experimental and incomplete support)
+Conform to the ISO 2011 C++ standard
 
 std=c++0x
-C++ ObjC++ Alias(std=c++11)
+C++ ObjC++ Alias(std=c++11) Undocumented
 Deprecated in favor of -std=c++11
 
 std=c++1y
 C++ ObjC++
-Conform to the ISO 201y(7?) C++ draft standard (experimental and incomplete support)
+Conform to the ISO 2014(?) C++ draft standard (experimental and incomplete support)
+
+std=c++14
+C++ ObjC++ Alias(std=c++1y) Undocumented
 
 std=c11
 C ObjC
