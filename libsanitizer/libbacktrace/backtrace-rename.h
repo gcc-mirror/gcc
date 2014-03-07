@@ -8,6 +8,7 @@
 #define backtrace_initialize __asan_backtrace_initialize
 #define backtrace_open __asan_backtrace_open
 #define backtrace_pcinfo __asan_backtrace_pcinfo
+#define backtrace_qsort __asan_backtrace_qsort
 #define backtrace_release_view __asan_backtrace_release_view
 #define backtrace_syminfo __asan_backtrace_syminfo
 #define backtrace_vector_finish __asan_backtrace_vector_finish

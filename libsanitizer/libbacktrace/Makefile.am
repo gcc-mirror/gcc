@@ -50,6 +50,7 @@ libsanitizer_libbacktrace_la_SOURCES = \
 	../../libbacktrace/fileline.c \
 	../../libbacktrace/internal.h \
 	../../libbacktrace/posix.c \
+	../../libbacktrace/sort.c \
 	../../libbacktrace/state.c \
 	../../libiberty/cp-demangle.c \
 	bridge.cc
