@@ -8,5 +8,5 @@ template<int> struct A
 
 void foo()
 {
-  A<0>().operator auto();	// { dg-error "auto.*conversion" }
+  A<0>().operator auto();	// { dg-error "auto" }
 }

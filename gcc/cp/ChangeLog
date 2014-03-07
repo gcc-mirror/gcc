@@ -1,5 +1,8 @@
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (comp_template_parms_position): 'auto' and
+	'decltype(auto)' are different from real template parms.
+
 	* parser.c (cp_parser_using_declaration): Consume the semicolon
 	after bare parameter pack error.
 
