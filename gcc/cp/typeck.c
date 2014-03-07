@@ -1150,6 +1150,11 @@ comp_template_parms_position (tree t1, tree t2)
 	  != TEMPLATE_PARM_PARAMETER_PACK (index2)))
     return false;
 
+  /* In C++14 we can end up comparing 'auto' to a normal template
+     parameter.  Don't confuse them.  */
+  if (cxx_dialect >= cxx1y && (is_auto (t1) || is_auto (t2)))
+    return TYPE_IDENTIFIER (t1) == TYPE_IDENTIFIER (t2);
+
   return true;
 }
 
