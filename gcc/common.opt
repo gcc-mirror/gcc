@@ -1443,7 +1443,7 @@ Use IRA based register pressure calculation
 in RTL hoist optimizations.
 
 fira-loop-pressure
-Common Report Var(flag_ira_loop_pressure)
+Common Report Var(flag_ira_loop_pressure) Optimization
 Use IRA based register pressure calculation
 in RTL loop optimizations.
 
