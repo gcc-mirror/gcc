@@ -1,3 +1,16 @@
+2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (TLS_SECTION_ASM_FLAG): Save as tls_section_flag.
+	(LIB_TLS_SPEC): Save as ld_tls_libs.
+	(HAVE_AS_IX86_TLSLDMPLT): Define as 1/0.
+	(HAVE_AS_IX86_TLSLDM): New test.
+	* configure, config.in: Regenerate.
+	* config/i386/i386.c (legitimize_tls_address): Fall back to
+	TLS_MODEL_GLOBAL_DYNAMIC on 32-bit Solaris/x86 if tool chain
+	cannot support TLS_MODEL_LOCAL_DYNAMIC.
+	* config/i386/i386.md (*tls_local_dynamic_base_32_gnu): Use if
+	instead of #ifdef in HAVE_AS_IX86_TLSLDMPLT test.
+
 2014-03-07  Paulo Matos  <paulo@matos-sorge.com>
 
 	* common.opt (fira-loop-pressure): Mark as optimization.

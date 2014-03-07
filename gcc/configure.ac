@@ -2973,6 +2973,7 @@ foo:	.long	25
 	.section .tdata,"awt",@progbits'
       tls_first_major=0
       tls_first_minor=0
+      tls_section_flag=t
 changequote([,])dnl
       AC_DEFINE(TLS_SECTION_ASM_FLAG, 't',
 [Define to the flag used to mark TLS sections if the default (`T') doesn't work.])
@@ -2982,6 +2983,7 @@ changequote(,)dnl
 	.section ".tdata","awT",@progbits'
       tls_first_major=2
       tls_first_minor=14
+      tls_section_flag=T
       tls_as_opt="--fatal-warnings"
     fi
     conftest_s="$conftest_s
@@ -3012,6 +3014,7 @@ foo:	.long	25
 	movq	$foo@TPOFF, %rax'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_section_flag=T
 	tls_as_opt=--fatal-warnings
 	;;
   ia64-*-*)
@@ -3368,6 +3371,7 @@ case "$target" in
     # (32-bit x86) only lived in libthread, so check for that.  Keep
     # set_have_as_tls if found, disable if not.
     AC_SEARCH_LIBS([$tga_func], [thread],, [set_have_as_tls=no])
+    ld_tls_libs="$LIBS"
     # Clear LIBS if we cannot support TLS.
     if test $set_have_as_tls = no; then
       LIBS=
@@ -3924,9 +3928,48 @@ foo:	nop
 	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes
 	 fi
-	 rm -f conftest],
-      [AC_DEFINE(HAVE_AS_IX86_TLSLDMPLT, 1,
-        [Define if your assembler and linker support @tlsldmplt.])])
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_TLSLDMPLT,
+      [`if test $gcc_cv_as_ix86_tlsldmplt = yes; then echo 1; else echo 0; fi`],
+      [Define to 1 if your assembler and linker support @tlsldmplt.])
+
+    # Enforce 32-bit output with gas and gld.
+    if test x$gas = xyes; then
+      as_ix86_tls_ldm_opt="--32"
+    fi
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
+        ld_ix86_tls_ldm_opt="-melf_i386_sol2"
+      else
+        ld_ix86_tls_ldm_opt="-melf_i386"
+      fi
+    fi
+    conftest_s='
+	.section .text,"ax",@progbits
+        .globl  _start
+        .type   _start, @function
+_start:      
+	leal	value@tlsldm(%ebx), %eax
+	call	___tls_get_addr@plt
+
+        .section .tdata,"aw'$tls_section_flag'",@progbits
+        .type	value, @object
+value:'
+    gcc_GAS_CHECK_FEATURE([R_386_TLS_LDM reloc],
+        gcc_cv_as_ix86_tlsldm,,
+	[$as_ix86_tls_ldm_opt],
+	[$conftest_s],
+	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	    && $gcc_cv_ld $ld_ix86_tls_ldm_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
+	   if $gcc_cv_objdump -d conftest 2>/dev/null | grep nop > /dev/null \
+	      || dis conftest 2>/dev/null | grep nop > /dev/null; then
+	     gcc_cv_as_ix86_tlsldm=yes
+	   fi
+	 fi
+	 rm -f conftest])
+    AC_DEFINE_UNQUOTED(HAVE_AS_IX86_TLSLDM,
+      [`if test $gcc_cv_as_ix86_tlsldm = yes; then echo 1; else echo 0; fi`],
+      [Define to 1 if your assembler and linker support @tlsldm.])
 
     ;;
 
