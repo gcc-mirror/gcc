@@ -1,3 +1,7 @@
+2014-03-08  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h (unlikely, likely): Add usage comment.
+
 2014-03-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libgfortran/60128
