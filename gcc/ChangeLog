@@ -1,3 +1,8 @@
+2014-03-08  Tobias Burnus  <burnus@net-b.de>
+
+	* doc/invoke.texi (-fcilkplus): Update implementation
+	status.
+
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 	    Richard Biener  <rguenther@suse.de>
 
