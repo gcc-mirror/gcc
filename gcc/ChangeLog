@@ -1,3 +1,10 @@
+2014-03-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/58271
+	* config/mips/mips.c (mips_option_override): Promote -mpaired-single
+	warning to an error.  Disable TARGET_PAIRED_SINGLE and TARGET_MIPS3D
+	if they can't be used.
+
 2014-03-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (HAVE_AS_IX86_TLSLDMPLT): Improve test for Solaris
