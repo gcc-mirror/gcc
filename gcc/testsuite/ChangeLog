@@ -1,3 +1,8 @@
+2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/60393
+	* g++.dg/cpp1y/pr60393.C: New testcase.
+
 2014-03-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR libfortran/60128
