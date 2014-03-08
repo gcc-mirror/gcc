@@ -1,5 +1,12 @@
 2014-03-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/60447
+	* f95-lang.c (gfc_init): Return false when only
+	preprocessing.
+	* options.c (gfc_post_options): Ditto.
+
+2014-03-08  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.texi (Fortran 2003 Status): Mention finalization,
 	deferred-length character support and input rounding.
 	(Fortran 2008 Status): Mention that at termination

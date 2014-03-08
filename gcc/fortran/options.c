@@ -437,14 +437,7 @@ gfc_post_options (const char **pfilename)
 
   gfc_cpp_post_options ();
 
-/* FIXME: return gfc_cpp_preprocess_only ();
-
-   The return value of this function indicates whether the
-   backend needs to be initialized. On -E, we don't need
-   the backend. However, if we return 'true' here, an
-   ICE occurs. Initializing the backend doesn't hurt much,
-   hence, for now we can live with it as is.  */
-  return false;
+  return gfc_cpp_preprocess_only ();
 }
 
 
