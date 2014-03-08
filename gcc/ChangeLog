@@ -1,3 +1,11 @@
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* lto-wrapper.c (merge_and_complain): Ensure -fshort-double is used
+	consistently accross all TUs.
+	(run_gcc): Enable -fshort-double automatically at link at link-time
+	and disallow override.
+
 2014-03-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/58271

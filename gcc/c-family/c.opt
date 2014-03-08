@@ -1141,7 +1141,7 @@ C++ ObjC++ Optimization Var(flag_rtti) Init(1)
 Generate run time type descriptor information
 
 fshort-double
-C ObjC C++ ObjC++ Optimization Var(flag_short_double)
+C ObjC C++ ObjC++ LTO Optimization Var(flag_short_double)
 Use the same size for double as for float
 
 fshort-enums

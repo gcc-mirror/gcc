@@ -452,6 +452,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
+	case OPT_fshort_double:
 	  for (j = 0; j < *decoded_options_count; ++j)
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
 	      break;
@@ -677,6 +678,7 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_fgnu_tm:
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
+	case OPT_fshort_double:
 	case OPT_ffp_contract_:
 	case OPT_fwrapv:
 	case OPT_ftrapv:
@@ -748,6 +750,7 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_freg_struct_return:
 	case OPT_fpcc_struct_return:
+	case OPT_fshort_double:
 	  /* Ignore these, they are determined by the input files.
 	     ???  We fail to diagnose a possible mismatch here.  */
 	  continue;

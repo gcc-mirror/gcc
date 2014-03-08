@@ -1,3 +1,7 @@
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+
+    * gcc.dg/lto/pr55113_0.c: New testcase.
+
 2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60033

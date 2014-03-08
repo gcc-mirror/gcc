@@ -1,3 +1,7 @@
+2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
+
+    * c.opt: Enable LTO FE for fshort-double.
+
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -std=c++14.
