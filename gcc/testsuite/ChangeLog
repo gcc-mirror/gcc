@@ -1,3 +1,8 @@
+2014-03-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libfortran/60128
+	* gfortran.dg/fmt_en.f90: New test.
+
 2014-03-07  Jason Merrill  <jason@redhat.com>
 
 	* lib/g++-dg.exp (g++-dg-runtest): Run tests in C++1y mode, too.
