@@ -1,5 +1,10 @@
 2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
 
+	PR c++/60033
+	* pt.c (tsubst_copy): When retrieving a capture pack from a generic
+	lambda, remove the lambda's own template argument list prior to fetching
+	the specialization.
+
 	PR c++/60393
 	* parser.c (cp_parser_parameter_declaration_clause): Move generic
 	function template unwinding on error into a more general location, ...

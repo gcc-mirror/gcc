@@ -1,5 +1,8 @@
 2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
 
+	PR c++/60033
+	* g++.dg/cpp1y/pr60033.C: New testcase.
+
 	PR c++/60393
 	* g++.dg/cpp1y/pr60393.C: New testcase.
 
