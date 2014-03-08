@@ -12565,13 +12565,21 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	{
 	  /* Check for a local specialization set up by
 	     tsubst_pack_expansion.  */
-	  tree r = retrieve_local_specialization (t);
-	  if (r)
+	  if (tree r = retrieve_local_specialization (t))
 	    {
 	      if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
 		r = ARGUMENT_PACK_SELECT_ARG (r);
 	      return r;
 	    }
+
+	  /* When retrieving a capture pack from a generic lambda, remove the
+	     lambda call op's own template argument list from ARGS.  Only the
+	     template arguments active for the closure type should be used to
+	     retrieve the pack specialization.  */
+	  if (LAMBDA_FUNCTION_P (current_function_decl)
+	      && (template_class_depth (DECL_CONTEXT (t))
+		  != TMPL_ARGS_DEPTH (args)))
+	    args = strip_innermost_template_args (args, 1);
 
 	  /* Otherwise return the full NONTYPE_ARGUMENT_PACK that
 	     tsubst_decl put in the hash table.  */
