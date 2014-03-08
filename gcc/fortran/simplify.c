@@ -5528,7 +5528,7 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
       if (e == &gfc_bad_expr || range_check (e, "SHAPE") == &gfc_bad_expr)
 	{
 	  gfc_free_expr (result);
-	  if (t)
+	  if (t == SUCCESS)
 	    gfc_clear_shape (shape, source->rank);
 	  return &gfc_bad_expr;
 	}
@@ -5536,7 +5536,7 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
       gfc_constructor_append_expr (&result->value.constructor, e, NULL);
     }
 
-  if (t)
+  if (t == SUCCESS)
     gfc_clear_shape (shape, source->rank);
 
   return result;

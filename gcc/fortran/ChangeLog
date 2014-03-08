@@ -1,3 +1,9 @@
+2014-03-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60450
+	* simplify.c (gfc_simplify_shape): Only clear shape if it was really
+	created successfully.
+
 2014-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
