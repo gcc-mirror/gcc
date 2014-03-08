@@ -1,3 +1,7 @@
+2014-03-08  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/vms/vms.opt (vms_float_format): New variable.
+
 2014-03-08  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/invoke.texi (-fcilkplus): Update implementation

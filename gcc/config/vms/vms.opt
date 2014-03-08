@@ -56,4 +56,8 @@ Enum(vms_pointer_size) String(64) Value(VMS_POINTER_SIZE_64)
 EnumValue
 Enum(vms_pointer_size) String(long) Value(VMS_POINTER_SIZE_64)
 
+; The float representation format in effect for Ada
+Variable
+char vms_float_format = 'I'
+
 ; This comment is to ensure we retain the blank line above.
