@@ -1,3 +1,9 @@
+2014-03-09  Tobias Burnus  <burnus@net-b.de>
+
+	* Makefile.am: Install cilk.h.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2014-02-18  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* include/cilk/common.h (__CILKRTS_ABI_VERSION): Set the ABI version

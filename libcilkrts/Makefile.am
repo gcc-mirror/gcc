@@ -50,8 +50,11 @@ AM_LDFLAGS = -lpthread
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
+cilkincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/cilk
+
 # Target list.
 toolexeclib_LTLIBRARIES = libcilkrts.la
+nodist_cilkinclude_HEADERS = include/cilk/cilk.h
 
 libcilkrts_la_SOURCES =            \
   runtime/config/$(config_dir)/cilk-abi-vla.c           \
