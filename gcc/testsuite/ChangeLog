@@ -1,6 +1,10 @@
+2014-03-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Move dg-skip after dg-do.
+
 2014-03-08  Paulo Matos  <paulo@matos-sorge.com>
 
-    * gcc.dg/lto/pr55113_0.c: New testcase.
+	* gcc.dg/lto/pr55113_0.c: New testcase.
 
 2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
 
@@ -63,7 +67,7 @@
 	Revert
 	2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
-        * gcc.dg/lto/pr55113_0.c: New testcase.
+	* gcc.dg/lto/pr55113_0.c: New testcase.
 
 2014-03-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -110,7 +114,7 @@
 
 2014-03-04  Paulo Matos  <paulo@matos-sorge.com>
 
-        * gcc.dg/lto/pr55113_0.c: New testcase.
+	* gcc.dg/lto/pr55113_0.c: New testcase.
 
 2014-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -224,7 +228,7 @@
 	* gcc.c-torture/compile/pr52714.c: New test.
 
 2014-02-27  Mikael Pettersson  <mikpe@it.uu.se>
-            Jeff Law  <law@redhat.com>
+	    Jeff Law  <law@redhat.com>
 
 	 PR rtl-optimization/49847
 	 * g++.dg/pr49847.C: New test.
