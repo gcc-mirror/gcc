@@ -1,7 +1,7 @@
 2014-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu>
 
 	PR libfortran/38199
-	* io/list_read.c (next_char): Delete unuseful error checks.
+	* io/list_read.c (next_char): Mark unlikely error checks.
 	(eat_spaces): For character array reading, skip ahead over
 	spaces rather than call next_char multiple times.
 
