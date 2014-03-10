@@ -1,3 +1,7 @@
+2014-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ADA_DEPFILES): Fix typo.
+
 2014-03-07  Doug Rupp  <rupp@adacore.com>
 
 	PR ada/60411
