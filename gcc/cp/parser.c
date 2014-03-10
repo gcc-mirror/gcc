@@ -19888,7 +19888,13 @@ cp_parser_class_head (cp_parser* parser,
       pushed_scope = push_scope (nested_name_specifier);
       /* Get the canonical version of this type.  */
       type = TYPE_MAIN_DECL (TREE_TYPE (type));
-      if (PROCESSING_REAL_TEMPLATE_DECL_P ()
+      /* Call push_template_decl if it seems like we should be defining a
+	 template either from the template headers or the type we're
+	 defining, so that we diagnose both extra and missing headers.  */
+      if ((PROCESSING_REAL_TEMPLATE_DECL_P ()
+	   || (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (type))
+	       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE
+				      (TREE_TYPE (type)))))
 	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (type)))
 	{
 	  type = push_template_decl (type);

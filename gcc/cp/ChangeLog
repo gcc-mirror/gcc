@@ -1,3 +1,10 @@
+2014-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53492
+	* parser.c (cp_parser_class_head): Also check PRIMARY_TEMPLATE_P
+	when deciding whether to call push_template_decl for a member class.
+	* pt.c (push_template_decl_real): Return after wrong levels error.
+
 2014-03-08  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/60033

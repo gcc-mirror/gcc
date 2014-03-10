@@ -4908,6 +4908,8 @@ push_template_decl_real (tree decl, bool is_friend)
 	{
 	  error ("expected %d levels of template parms for %q#D, got %d",
 		 i, decl, TMPL_ARGS_DEPTH (args));
+	  DECL_INTERFACE_KNOWN (decl) = 1;
+	  return error_mark_node;
 	}
       else
 	for (current = decl; i > 0; --i, parms = TREE_CHAIN (parms))
