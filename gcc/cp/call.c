@@ -6531,20 +6531,10 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
   /* We must make a copy of ARG, in case subsequent processing
      alters any part of it.  */
   arg = break_out_target_exprs (arg);
-  if (TREE_CODE (arg) == CONSTRUCTOR)
-    {
-      arg = digest_init (type, arg, complain);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
-					ICR_DEFAULT_ARGUMENT, fn, parmnum,
-                                        complain);
-    }
-  else
-    {
-      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
-					ICR_DEFAULT_ARGUMENT, fn, parmnum,
-                                        complain);
-      arg = convert_for_arg_passing (type, arg, complain);
-    }
+  arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
+				    ICR_DEFAULT_ARGUMENT, fn, parmnum,
+				    complain);
+  arg = convert_for_arg_passing (type, arg, complain);
   pop_deferring_access_checks();
 
   pop_defarg_context ();
