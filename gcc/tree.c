@@ -10588,7 +10588,8 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
     }
 
   if (!INTEGRAL_TYPE_P (type)
-      && !POINTER_TYPE_P (type))
+      && !POINTER_TYPE_P (type)
+      && TREE_CODE (type) != OFFSET_TYPE)
     return NULL_TREE;
 
   return build_nonstandard_integer_type (TYPE_PRECISION (type), unsignedp);

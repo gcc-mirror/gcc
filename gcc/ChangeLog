@@ -1,3 +1,8 @@
+2014-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60474
+	* tree.c (signed_or_unsigned_type_for): Handle OFFSET_TYPEs.
+
 2014-03-08  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/vms/vms.opt (vms_float_format): New variable.
