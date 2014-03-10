@@ -1,3 +1,9 @@
+2014-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/60457
+	* ipa.c (symtab_remove_unreachable_nodes): Don't call
+	cgraph_get_create_node on VAR_DECLs.
+
 2014-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/60474

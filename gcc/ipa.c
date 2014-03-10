@@ -354,7 +354,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	node->aux = (void *)2;
       else
 	{
-	  if (DECL_ABSTRACT_ORIGIN (node->decl))
+	  if (TREE_CODE (node->decl) == FUNCTION_DECL
+	      && DECL_ABSTRACT_ORIGIN (node->decl))
 	    {
 	      struct cgraph_node *origin_node
 	      = cgraph_get_create_node (DECL_ABSTRACT_ORIGIN (node->decl));
