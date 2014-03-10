@@ -1,3 +1,8 @@
+2014-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60474
+	* g++.dg/torture/pr60474.C: New testcase.
+
 2014-03-09  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/cpp0x/alias-decl-debug-0.C: Move dg-skip after dg-do.
